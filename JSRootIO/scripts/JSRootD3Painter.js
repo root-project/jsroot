@@ -5417,6 +5417,8 @@ function createFillPatterns(svg, id, color) {
       }
       content += key_tree;
       $(container).append(content);
+      // to display the first object in the file, uncomment the following line
+      // setTimeout( function() { showObject(keys[0]['name'],keys[0]['cycle']); }, 20 );
    };
 
    JSROOTPainter.addDirectoryKeys = function(keys, container, dir_id) {
