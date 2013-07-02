@@ -25,6 +25,8 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       throw e1;
    }
 
+   var Z_DEFLATED = 8;
+   var HDRSIZE = 9;
    var kByteCountMask = 0x40000000;
 
    JSROOTIO = {};
@@ -635,6 +637,74 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
          }
       }
       return gFile.fStreamers[clname];
+   };
+
+   JSROOTIO.R__unzip_header = function(str, off) {
+      // Reads header envelope, and determines target size.
+
+      var header = {};
+      header['srcsize'] = HDRSIZE;
+      if (off + HDRSIZE > str.length) {
+         alert("Error R__unzip_header: header size exceeds buffer size");
+         return null;
+      }
+
+      /*   C H E C K   H E A D E R   */
+      if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
+          !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
+          !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
+         alert("Error R__unzip_header: error in header");
+         return null;
+      }
+      header['srcsize'] += ((str.charCodeAt(off+3) & 0xff) |
+                           ((str.charCodeAt(off+4) & 0xff) << 8) |
+                           ((str.charCodeAt(off+5) & 0xff) << 16));
+      return header;
+   };
+
+   JSROOTIO.R__unzip = function(srcsize, str, off) {
+
+      var obj_buf = {};
+      obj_buf['irep'] = 0;
+      obj_buf['unzipdata'] = 0;
+
+      /*   C H E C K   H E A D E R   */
+      if (srcsize < HDRSIZE) {
+         alert("R__unzip: too small source");
+         return null;
+      }
+
+      /*   C H E C K   H E A D E R   */
+      if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
+          !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
+          !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
+         alert("Error R__unzip: error in header");
+         return null;
+      }
+      var ibufcnt = ((str.charCodeAt(off+3) & 0xff) |
+                    ((str.charCodeAt(off+4) & 0xff) << 8) |
+                    ((str.charCodeAt(off+5) & 0xff) << 16));
+      if (ibufcnt + HDRSIZE != srcsize) {
+         alert("R__unzip: discrepancy in source length");
+         return null;
+      }
+
+      /*   D E C O M P R E S S   D A T A  */
+      if (str.charAt(off) == 'Z' && str.charAt(off+1) == 'L') {
+         /* New zlib format */
+         var data = str.substr(off + HDRSIZE + 2, srcsize);
+         var unzipdata = RawInflate.inflate(data);
+         if (typeof(unzipdata) != 'undefined') {
+            obj_buf['unzipdata'] = unzipdata;
+            obj_buf['irep'] = unzipdata.length;
+         }
+      }
+      /* Old zlib format */
+      else {
+         alert("R__unzip: Old zlib format is not supported!");
+         return null;
+      }
+      return obj_buf;
    };
 
    JSROOTIO.Print = function(str, what) {
@@ -1774,10 +1844,6 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       throw e1;
    }
 
-   var logobj = null;
-   var Z_DEFLATED = 8;
-   var HDRSIZE = 9;
-
    // ctor
    JSROOTIO.RootFile = function(url) {
       if (! (this instanceof arguments.callee) ) {
@@ -2003,82 +2069,6 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
          return key;
       };
 
-      JSROOTIO.RootFile.prototype.R__unzip_header = function(str, off) {
-         // Reads header envelope, and determines target size.
-
-         var header = {};
-         header['srcsize'] = HDRSIZE;
-         header['tgtsize'] = 0;
-
-         /*   C H E C K   H E A D E R   */
-         if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
-             !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
-             !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
-            alert("Error R__unzip_header: error in header");
-            return null;
-         }
-         header['srcsize'] += ((str.charCodeAt(off+3) & 0xff) |
-                              ((str.charCodeAt(off+4) & 0xff) << 8) |
-                              ((str.charCodeAt(off+5) & 0xff) << 16));
-         header['tgtsize'] += ((str.charCodeAt(off+6) & 0xff) |
-                              ((str.charCodeAt(off+7) & 0xff) << 8) |
-                              ((str.charCodeAt(off+8) & 0xff) << 16));
-         return header;
-      };
-
-      JSROOTIO.RootFile.prototype.R__unzip = function(srcsize, str, off, tgtsize) {
-
-         var obj_buf = {};
-         obj_buf['irep'] = 0;
-         obj_buf['unzipdata'] = 0;
-
-         /*   C H E C K   H E A D E R   */
-         if (srcsize < HDRSIZE) {
-            alert("R__unzip: too small source");
-            return null;
-         }
-
-         /*   C H E C K   H E A D E R   */
-         if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
-             !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
-             !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
-            alert("Error R__unzip: error in header");
-            return null;
-         }
-         var ibufcnt = ((str.charCodeAt(off+3) & 0xff) |
-                       ((str.charCodeAt(off+4) & 0xff) << 8) |
-                       ((str.charCodeAt(off+5) & 0xff) << 16));
-         var isize   = ((str.charCodeAt(off+6) & 0xff) |
-                       ((str.charCodeAt(off+7) & 0xff) << 8) |
-                       ((str.charCodeAt(off+8) & 0xff) << 16));
-
-         if (tgtsize < isize) {
-            alert("R__unzip: too small target");
-            return null;
-         }
-         if (ibufcnt + HDRSIZE != srcsize) {
-            alert("R__unzip: discrepancy in source length");
-            return null;
-         }
-
-         /*   D E C O M P R E S S   D A T A  */
-         if (str.charAt(off) == 'Z' && str.charAt(off+1) == 'L') {
-            /* New zlib format */
-            var data = str.substr(off + HDRSIZE + 2, srcsize);
-            var unzipdata = RawInflate.inflate(data);
-            if (typeof(unzipdata) != 'undefined') {
-               obj_buf['unzipdata'] = unzipdata;
-               obj_buf['irep'] = unzipdata.length;
-            }
-         }
-         /* Old zlib format */
-         else {
-            alert("R__unzip: Old zlib format is not supported!");
-            return null;
-         }
-         return obj_buf;
-      };
-
       JSROOTIO.RootFile.prototype.GetKey = function(keyname, cycle) {
          // retrieve a key by its name and cycle in the list of keys
          var i, j;
@@ -2105,13 +2095,13 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
             var objbuf = 0;
 
             if (key['objLen'] > key['nbytes']-key['keyLen']) {
-               var hdr = file.R__unzip_header(buffer, 0);
+               var hdr = JSROOTIO.R__unzip_header(buffer, 0);
                if (hdr == null) {
                   delete buffer;
                   buffer = null;
                   return;
                }
-               objbuf = file.R__unzip(hdr['srcsize'], buffer, 0, hdr['tgtsize']);
+               objbuf = JSROOTIO.R__unzip(hdr['srcsize'], buffer, 0);
             }
             else {
                var obj_buf = {};
