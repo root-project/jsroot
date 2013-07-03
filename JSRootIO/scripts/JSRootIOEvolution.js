@@ -31,7 +31,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
 
    JSROOTIO = {};
 
-   JSROOTIO.version = "2.0 2013/04/29";
+   JSROOTIO.version = "2.1 2013/07/03";
 
    JSROOTIO.BIT = function(bits, index) {
       var mask = 1 << index;
@@ -639,13 +639,13 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       return gFile.fStreamers[clname];
    };
 
-   JSROOTIO.R__unzip_header = function(str, off) {
+   JSROOTIO.R__unzip_header = function(str, off, noalert) {
       // Reads header envelope, and determines target size.
 
       var header = {};
       header['srcsize'] = HDRSIZE;
       if (off + HDRSIZE > str.length) {
-         alert("Error R__unzip_header: header size exceeds buffer size");
+         if (!noalert) alert("Error R__unzip_header: header size exceeds buffer size");
          return null;
       }
 
@@ -653,7 +653,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
           !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
           !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
-         alert("Error R__unzip_header: error in header");
+         if (!noalert) alert("Error R__unzip_header: error in header");
          return null;
       }
       header['srcsize'] += ((str.charCodeAt(off+3) & 0xff) |
@@ -662,7 +662,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       return header;
    };
 
-   JSROOTIO.R__unzip = function(srcsize, str, off) {
+   JSROOTIO.R__unzip = function(srcsize, str, off, noalert) {
 
       var obj_buf = {};
       obj_buf['irep'] = 0;
@@ -670,7 +670,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
 
       /*   C H E C K   H E A D E R   */
       if (srcsize < HDRSIZE) {
-         alert("R__unzip: too small source");
+         if (!noalert) alert("R__unzip: too small source");
          return null;
       }
 
@@ -678,14 +678,14 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == Z_DEFLATED) &&
           !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == Z_DEFLATED) &&
           !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
-         alert("Error R__unzip: error in header");
+         if (!noalert) alert("Error R__unzip: error in header");
          return null;
       }
       var ibufcnt = ((str.charCodeAt(off+3) & 0xff) |
                     ((str.charCodeAt(off+4) & 0xff) << 8) |
                     ((str.charCodeAt(off+5) & 0xff) << 16));
       if (ibufcnt + HDRSIZE != srcsize) {
-         alert("R__unzip: discrepancy in source length");
+         if (!noalert) alert("R__unzip: discrepancy in source length");
          return null;
       }
 
@@ -701,7 +701,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       }
       /* Old zlib format */
       else {
-         alert("R__unzip: Old zlib format is not supported!");
+         if (!noalert) alert("R__unzip: Old zlib format is not supported!");
          return null;
       }
       return obj_buf;
@@ -1824,7 +1824,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
 
 (function(){
 
-   var version = "1.7 2012/11/28";
+   var version = "1.8 2013/07/03";
 
    if (typeof JSROOTCore != "object") {
       var e1 = new Error("This extension requires JSROOTCore.js");
@@ -2381,7 +2381,9 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
          // init members of a Root file from given url
          this.fURL = fileurl;
          this.fLogMsg = "";
-         this.fEND = this.GetSize(fileurl);
+         if (fileurl) {
+            this.fEND = this.GetSize(fileurl);
+         }
       };
 
       JSROOTIO.RootFile.prototype.Delete = function() {
@@ -2425,8 +2427,10 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
       this.fTagOffset = 0;
       this.fStreamers = 0;
       this.fStreamerInfo = new JSROOTIO.StreamerInfo();
-      this.fEND = this.GetSize(this.fURL);
-      this.ReadKeys();
+      if (this.fURL) {
+         this.fEND = this.GetSize(this.fURL);
+         this.ReadKeys();
+      }
       this.fStreamers = new Array();
       this.fObjectMap = new Array();
       //this.ReadStreamerInfo();
