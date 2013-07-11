@@ -981,7 +981,7 @@ function createFillPatterns(svg, id, color) {
       l = chopt.indexOf('TEXT');
       if (l != -1) {
          var angle = parseInt(chopt);
-         if (angle != NaN) {
+         if (!isNaN(angle)) {
             if (angle < 0)  angle = 0;
             if (angle > 90) angle = 90;
             option.Text = 1000 + angle;
@@ -2112,6 +2112,10 @@ function createFillPatterns(svg, id, color) {
          var binwidth = ((func['fXmax'] - func['fXmin']) / nb_points);
          for (var i=0;i<nb_points;++i) {
             h = func.evalPar(func['fXmin'] + (i * binwidth));
+            if (isNaN(h)) {
+               func['fXmin'] = 1.2e-308;
+               h = func.evalPar(func['fXmin'] + (i * binwidth));
+            }
             if (h > hmax) hmax = h;
             if (h < hmin) hmin = h;
          }
