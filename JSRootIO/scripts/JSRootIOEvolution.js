@@ -2180,7 +2180,9 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
                }
             };
             file.ReadObjBuffer(key, callback2);
-            JSROOTPainter.displayListOfKeys(file.fKeys, '#status');
+            // use the global one from JSRootInterface.js, allowing the user to
+            // implement his own function.
+            displayListOfKeys(file.fKeys);
             delete buffer;
             buffer = null;
             // the next two lines are for debugging/info purpose
