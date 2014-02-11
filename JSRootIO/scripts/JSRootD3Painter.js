@@ -1215,7 +1215,7 @@ function createFillPatterns(svg, id, color) {
       }
       if (options && options['logz']) zc = Math.log(zc)/Math.log(10);
       if (zc < wlmin) zc = wlmin;
-      var ncolors = default_palette.length
+      var ncolors = default_palette.length;
       var color = Math.round(0.01 + (zc - wlmin) * scale);
       var theColor = Math.round((color + 0.99) * ncolors / ndivz);
       var icol = theColor % ncolors;
@@ -2188,14 +2188,14 @@ function createFillPatterns(svg, id, color) {
             .style("fill", "none");
 
          // add tooltips
-         g.selectAll("line") 
-            .data(bins) 
-            .enter() 
-            .append("svg:circle") 
-            .attr("cx", function(d) { return x(d.x); }) 
-            .attr("cy", function(d) { return y(d.y); }) 
-            .attr("r", 3) 
-            .attr("opacity", 0) 
+         g.selectAll("line")
+            .data(bins)
+            .enter()
+            .append("svg:circle")
+            .attr("cx", function(d) { return x(d.x); })
+            .attr("cy", function(d) { return y(d.y); })
+            .attr("r", 3)
+            .attr("opacity", 0)
             .append("svg:title").text(function(d) {
                return "x = " + d.x.toPrecision(4) + " \ny = " + d.y.toPrecision(4);
             });
@@ -2244,7 +2244,7 @@ function createFillPatterns(svg, id, color) {
                .attr("class", "title")
                .attr("text-anchor", "middle")
                .attr("x", vis.attr("width")/2)
-               .attr("y", 0.07 * vis.attr("height"))
+               .attr("y", 1 + font_size)
                .attr("font-family", "Arial")
                .attr("font-size", font_size)
                .text(func['fTitle']);
@@ -2265,8 +2265,11 @@ function createFillPatterns(svg, id, color) {
 
    JSROOTPainter.drawFunctions = function(vis, histo, pad, frame) {
       /* draw statistics box & other TPaveTexts */
+      var draw_stats = true;
       if ('fFunctions' in histo) {
          for (i=0; i<histo['fFunctions'].length; ++i) {
+            if (histo['fFunctions'][i]['_typename'] == 'JSROOTIO.TPaveStats')
+               draw_stats = false;
             if (histo['fFunctions'][i]['_typename'] == 'JSROOTIO.TPaveText' ||
                 histo['fFunctions'][i]['_typename'] == 'JSROOTIO.TPaveStats') {
                if (histo['fFunctions'][i]['fX1NDC'] < 1.0 && histo['fFunctions'][i]['fY1NDC'] < 1.0 &&
@@ -2292,6 +2295,7 @@ function createFillPatterns(svg, id, color) {
             }
          }
       }
+      return draw_stats;
    };
 
    JSROOTPainter.drawGraph = function(vis, pad, graph, hframe) {
@@ -2738,14 +2742,14 @@ function createFillPatterns(svg, id, color) {
                .style("fill", (optionFill == 1) ? root_colors[graph['fFillColor']] : "none");
 
             // add tooltips
-            g.selectAll("line") 
-               .data(bins) 
-               .enter() 
-               .append("svg:circle") 
-               .attr("cx", function(d) { return x(d.x); }) 
-               .attr("cy", function(d) { return y(d.y); }) 
-               .attr("r", 3) 
-               .attr("opacity", 0) 
+            g.selectAll("line")
+               .data(bins)
+               .enter()
+               .append("svg:circle")
+               .attr("cx", function(d) { return x(d.x); })
+               .attr("cy", function(d) { return y(d.y); })
+               .attr("r", 3)
+               .attr("opacity", 0)
                .append("svg:title").text(function(d) {
                   return "x = " + d.x.toPrecision(4) + " \ny = " + d.y.toPrecision(4);
                });
@@ -2882,7 +2886,7 @@ function createFillPatterns(svg, id, color) {
                      return "x = " + d.x.toPrecision(4) + " \ny = " + d.y.toPrecision(4) +
                             "\nerror x = -" + d.exlow.toPrecision(4) + "/+" + d.exhigh.toPrecision(4) +
                             "\nerror y = -" + d.eylow.toPrecision(4) + "/+" + d.eyhigh.toPrecision(4);
-                  else 
+                  else
                      return "x = " + d.x.toPrecision(4) + " \ny = " + d.y.toPrecision(4);
                });
 
@@ -3160,7 +3164,7 @@ function createFillPatterns(svg, id, color) {
                .style("stroke-width", selwidth)
                .on('mouseover', function() { d3.select(this).transition().duration(100).style("opacity", 0.3) } )
                .on('mouseout', function() { d3.select(this).transition().duration(100).style("opacity", 0) } )
-               .append("svg:title").text(function(d) { return "x = [" + (d.x-(2*d.xerr)).toPrecision(4) + 
+               .append("svg:title").text(function(d) { return "x = [" + (d.x-(2*d.xerr)).toPrecision(4) +
                        ", " + d.x.toPrecision(4) + "] \nentries = " + d.y;
                });
          };
@@ -3171,7 +3175,9 @@ function createFillPatterns(svg, id, color) {
          this.drawAxes(frame, histo, pad, x, y);
       this.drawTitle(vis, histo, pad);
       this.addInteraction(frame, histo);
-      this.drawFunctions(vis, histo, pad, ret);
+      var draw_stats = this.drawFunctions(vis, histo, pad, ret);
+      if (draw_stats && !pad || typeof(pad) == 'undefined')
+         this.drawStat(vis, histo);
       return null;
    };
 
@@ -3197,8 +3203,13 @@ function createFillPatterns(svg, id, color) {
       var scaley = (histo['fYaxis']['fXmax'] - histo['fYaxis']['fXmin']) /
                     histo['fYaxis']['fNbins'];
       var maxbin = -1e32, minbin = 1e32;
-      maxbin = d3.max(histo['fArray']);
-      minbin = d3.min(histo['fArray']);
+      for (i=0; i<nbinsx; ++i) {
+         for (j=0; j<nbinsy; ++j) {
+            var bin_content = histo.getBinContent(i, j);
+            if (bin_content < minbin) minbin = bin_content;
+            if (bin_content > maxbin) maxbin = bin_content;
+         }
+      }
       var bins = new Array();
       for (i=0; i<nbinsx; ++i) {
          for (var j=0; j<nbinsy; ++j) {
@@ -3247,8 +3258,6 @@ function createFillPatterns(svg, id, color) {
          var g = svg_frame.append("svg:g")
             .attr("id", g_id);
 
-         var constx = (w / histo['fXaxis']['fNbins']) / maxbin;
-         var consty = (h / histo['fYaxis']['fNbins']) / maxbin;
          var xdom = histo.x.domain();
          var ydom = histo.y.domain();
          var xfactor = Math.abs(histo['fXaxis']['fXmax']-histo['fXaxis']['fXmin']) / Math.abs(xdom[1]-xdom[0]);
@@ -3314,10 +3323,10 @@ function createFillPatterns(svg, id, color) {
                .enter()
                .append("svg:rect")
                .attr("class", "bins")
-               .attr("x", function(d) { 
+               .attr("x", function(d) {
                   return histo.x(d.x + (scalex / 2)) - (0.5 * d.z * ((w / histo['fXaxis']['fNbins']) / maxbin) * xfactor);
                })
-               .attr("y", function(d) { 
+               .attr("y", function(d) {
                   return histo.y(d.y + (scaley / 2)) - (0.5 * d.z * ((h / histo['fYaxis']['fNbins']) / maxbin) * yfactor);
                })
                .attr("width", function(d) {
@@ -3348,10 +3357,10 @@ function createFillPatterns(svg, id, color) {
                .data(bins)
                .enter()
                .append("svg:rect")
-               .attr("x", function(d) { 
+               .attr("x", function(d) {
                   return histo.x(d.x + (scalex / 2)) - (0.5 * d.z * ((w / histo['fXaxis']['fNbins']) / maxbin) * xfactor);
                })
-               .attr("y", function(d) { 
+               .attr("y", function(d) {
                   return histo.y(d.y + (scaley / 2)) - (0.5 * d.z * ((h / histo['fYaxis']['fNbins']) / maxbin) * yfactor);
                })
                .attr("width", function(d) {
@@ -3372,9 +3381,9 @@ function createFillPatterns(svg, id, color) {
                .on('mouseover', function() { d3.select(this).transition().duration(100).style("opacity", 0.3) } )
                .on('mouseout', function() { d3.select(this).transition().duration(100).style("opacity", 0) } )
                .append("svg:title")
-               .text(function(d) { 
-                  return "x = [" + d.x.toPrecision(4) + ", " + (d.x + scalex).toPrecision(4) + 
-                  "] \ny = [" + d.y.toPrecision(4) + ", " + (d.y + scaley).toPrecision(4) + 
+               .text(function(d) {
+                  return "x = [" + d.x.toPrecision(4) + ", " + (d.x + scalex).toPrecision(4) +
+                  "] \ny = [" + d.y.toPrecision(4) + ", " + (d.y + scaley).toPrecision(4) +
                   "] \nentries = " + d.z;
                 });
          }
@@ -3394,13 +3403,13 @@ function createFillPatterns(svg, id, color) {
       this.drawAxes(frame, histo, pad, x, y);
       this.drawTitle(vis, histo, pad);
       this.addInteraction(frame, histo);
-      this.drawFunctions(vis, histo, pad, ret);
-      if (!pad || typeof(pad) == 'undefined')
+      var draw_stats = this.drawFunctions(vis, histo, pad, ret);
+      if (draw_stats && !pad || typeof(pad) == 'undefined')
          this.drawStat(vis, histo);
    };
 
    JSROOTPainter.drawHistogram2D3D = function(vis, pad, histo, hframe) {
-      var i, j, k, logx = false, logy = false, logz = false, 
+      var i, j, k, logx = false, logy = false, logz = false,
           gridx = false, gridy = false, girdz = false;
       var opt = histo['fOption'].toLowerCase();
       if (pad && typeof(pad) != 'undefined') {
@@ -3623,10 +3632,6 @@ function createFillPatterns(svg, id, color) {
       line.type = THREE.LinePieces;
       toplevel.add( line );
 
-      // create the bin cubes
-      var constx = (size*2 / histo['fXaxis']['fNbins']) / maxbin;
-      var consty = (size*2 / histo['fYaxis']['fNbins']) / maxbin;
-
       var optFlag = ( opt.indexOf('colz') != -1 || opt.indexOf('col') != -1 );
       var fcolor = d3.rgb(root_colors[histo['fFillColor']]);
       var fillcolor = new THREE.Color( 0xDDDDDD );
@@ -3642,7 +3647,7 @@ function createFillPatterns(svg, id, color) {
          bin.position.y = wei/2;
          bin.position.z = -(ty( bins[i].y + (scaley/2)));
          bin.name = "x: [" + bins[i].x.toPrecision(4) + ", " + (bins[i].x + scalex).toPrecision(4) + "]<br>" +
-                    "y: [" + bins[i].y.toPrecision(4) + ", " + (bins[i].y + scaley).toPrecision(4) + "]<br>" + 
+                    "y: [" + bins[i].y.toPrecision(4) + ", " + (bins[i].y + scaley).toPrecision(4) + "]<br>" +
                     "entries: " + bins[i].z.toFixed();
          toplevel.add( bin );
       }
@@ -3919,8 +3924,8 @@ function createFillPatterns(svg, id, color) {
          bin.position.y = tz( bins[i].z - (scalez/2));
          bin.position.z = -(ty( bins[i].y - (scaley/2)));
          bin.name = "x: [" + bins[i].x.toPrecision(4) + ", " + (bins[i].x + scalex).toPrecision(4) + "]<br>" +
-                    "y: [" + bins[i].y.toPrecision(4) + ", " + (bins[i].y + scaley).toPrecision(4) + "]<br>" + 
-                    "z: [" + bins[i].z.toPrecision(4) + ", " + (bins[i].z + scalez).toPrecision(4) + "]<br>" + 
+                    "y: [" + bins[i].y.toPrecision(4) + ", " + (bins[i].y + scaley).toPrecision(4) + "]<br>" +
+                    "z: [" + bins[i].z.toPrecision(4) + ", " + (bins[i].z + scalez).toPrecision(4) + "]<br>" +
                     "entries: " + bins[i].n.toFixed();
          toplevel.add( bin );
       }
@@ -4499,7 +4504,7 @@ function createFillPatterns(svg, id, color) {
             .attr("class", "title")
             .attr("text-anchor", "middle")
             .attr("x", vis.attr("width")/2)
-            .attr("y", 0.07 * vis.attr("height"))
+            .attr("y", 1 + font_size)
             .attr("font-family", "Arial")
             .attr("font-size", font_size)
             .text(mgraph['fTitle']);
@@ -4731,12 +4736,12 @@ function createFillPatterns(svg, id, color) {
        * Add palette axis title
        */
       var title = axis['fTitle'];
-      if (title != "") {
+      if (title != "" && typeof(axis['fTitleFont']) != 'undefined') {
          axisFontDetails = getFontDetails(root_fonts[Math.floor(axis['fTitleFont'] /10)]);
          var axisTitleFontSize = axis['fTitleSize'] * height;
          pal.append("text")
                .attr("class", "Z axis label")
-               .attr("x", s_width + axisLabelFontSize + axisLabelOffset)
+               .attr("x", s_width + axisLabelFontSize)
                .attr("y", s_height)
                .attr("text-anchor", "end")
                .attr("font-family", axisFontDetails['name'])
@@ -4840,6 +4845,7 @@ function createFillPatterns(svg, id, color) {
 
    JSROOTPainter.drawPaveText = function(vis, pavetext) {
       var i, j, lw, w = vis.attr("width"), h = vis.attr("height");
+
       var pos_x = pavetext['fX1NDC'] * w;
       var pos_y = (1.0 - pavetext['fY1NDC']) * h;
       var width = Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w;
@@ -4856,14 +4862,16 @@ function createFillPatterns(svg, id, color) {
       // 1=left adjusted, 2=centered, 3=right adjusted
       // 1=bottom adjusted, 2=centered, 3=top adjusted
       // "middle", "start", "end"
+
       var align = 'start', halign = Math.round(pavetext['fTextAlign']/10);
       var baseline = 'bottom', valign = pavetext['fTextAlign']%10;
-      if (halign == 1) align = 'start';
-      else if (halign == 2) align = 'middle';
-      else if (halign == 3) align = 'end';
-      if (valign == 1) baseline = 'bottom';
-      else if (valign == 2) baseline = 'middle';
-      else if (valign == 3) baseline = 'top';
+      if (halign == 1) align = 'start';  else
+      if (halign == 2) align = 'middle';  else
+      if (halign == 3) align = 'end';
+      if (valign == 1) baseline = 'bottom'; else
+      if (valign == 2) baseline = 'middle'; else
+      if (valign == 3) baseline = 'top';
+
       var lmargin = 0;
       switch (halign) {
          case 1:
@@ -4876,18 +4884,24 @@ function createFillPatterns(svg, id, color) {
             lmargin = width - (pavetext['fMargin'] * width);
             break;
       }
+
+
+      // for now ignore all align parameters, draw as is
+      if (nlines>1) lmargin = pavetext['fMargin'] * width / 2;
+
       var fontDetails = getFontDetails(root_fonts[Math.floor(pavetext['fTextFont']/10)]);
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
 
-      var pave = vis.append("svg:g")
+      // $("#report").append("<br> draw pave");
+
+      this.draw_g = vis.append("svg:g")
          .attr("x", pos_x)
          .attr("y", pos_y)
          .attr("width", width)
          .attr("height", height)
          .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
-      pave.append("svg:rect")
-         .attr("class", "frame")
+      this.draw_g.append("svg:rect")
          .attr("x", 0)
          .attr("y", 0)
          .attr("height", height)
@@ -4896,16 +4910,30 @@ function createFillPatterns(svg, id, color) {
          .style("stroke-width", lwidth ? 1 : 0)
          .style("stroke", lcolor);
 
+      var first_stat = 0;
+      var num_cols = 0;
+      var max_len = 0;
+
+      for (var j=0; j<nlines; ++j) {
+         var line = pavetext['fLines'][j]['fTitle'];
+         line = JSROOTPainter.translateLaTeX(line);
+         var parts = line.split("|");
+         if (parts && (parts.length>1)) {
+            if (first_stat == 0) first_stat = j;
+            if (parts.length > num_cols) num_cols = parts.length;
+         }
+         var lw = lmargin + stringWidth(vis, line, fontDetails['name'], fontDetails['weight'],
+                   font_size, fontDetails['style']);
+         if (lw > max_len) max_len = lw;
+      }
+
+      if (max_len > width)
+         font_size *= 0.98 * (width / max_len);
+
       if (nlines == 1) {
-         line = this.translateLaTeX(pavetext['fLines'][0]['fTitle']);
+         line = JSROOTPainter.translateLaTeX(pavetext['fLines'][0]['fTitle']);
 
-         lw = stringWidth(vis, line, fontDetails['name'], fontDetails['weight'],
-                          font_size, fontDetails['style']);
-         if (lw > width)
-            font_size *= 0.98 * (width / lw);
-
-         pave.append("text")
-            .attr("class", "stat text")
+         this.draw_g.append("text")
             .attr("text-anchor", align)
             .attr("x", lmargin)
             .attr("y", (height/2) + (font_size/3))
@@ -4917,38 +4945,56 @@ function createFillPatterns(svg, id, color) {
             .text(line);
       }
       else {
-         var max_len = 0;
-         for (j=0; j<nlines; ++j) {
-            line = this.translateLaTeX(pavetext['fLines'][j]['fTitle']);
-            lw = lmargin + stringWidth(vis, line, fontDetails['name'], fontDetails['weight'],
-                                       font_size, fontDetails['style']);
-            if (lw > max_len) max_len = lw;
-         }
-         if (max_len > width)
-            font_size *= 0.98 * (width / max_len);
 
          for (j=0; j<nlines; ++j) {
             var jcolor = root_colors[pavetext['fLines'][j]['fTextColor']];
-            if (pavetext['fLines'][j]['fTextColor'] == 0)
-               jcolor = tcolor;
-            line = this.translateLaTeX(pavetext['fLines'][j]['fTitle']);
+            if (pavetext['fLines'][j]['fTextColor'] == 0)  jcolor = tcolor;
+            line = JSROOTPainter.translateLaTeX(pavetext['fLines'][j]['fTitle']);
             if (pavetext['_typename'] == 'JSROOTIO.TPaveStats') {
-               var off_y = (j == 0) ? 0 : (font_size * 0.05);
-               pave.append("text")
-                  .attr("class", "stat text")
-                  .attr("text-anchor", (j == 0) ? "middle" : "start")
-                  .attr("x", ((j==0) ? width/2 : pavetext['fMargin'] * width))
-                  .attr("y", ((j == 0) ? off_y + (font_size * 1.2) : off_y + ((j+1) * (font_size * 1.4))))
-                  .attr("font-family", fontDetails['name'])
-                  .attr("font-weight", fontDetails['weight'])
-                  .attr("font-style", fontDetails['style'])
-                  .attr("font-size", font_size)
-                  .attr("fill", jcolor)
-                  .text(line);
-            }
-            else {
-               pave.append("text")
-                  .attr("class", "stat text")
+               var posy = (j == 0) ? (font_size * 1.2) :
+                                     font_size * (0.05 + (j+1)*1.4);
+               if ((first_stat > 0) && (j >= first_stat)) {
+                  posy -= font_size*0.3; // dut to middle allignment
+                  var parts = line.split("|");
+                  for (var n=0;n<parts.length;n++)
+                     this.draw_g.append("text")
+                     .attr("text-anchor", "middle")
+                     .attr("x",  width*(n+0.5)/num_cols)
+                     .attr("y", posy + font_size*0.6)
+                     .attr("font-family", fontDetails['name'])
+                     .attr("font-weight", fontDetails['weight'])
+                     .attr("font-style", fontDetails['style'])
+                     .attr("font-size", font_size)
+                     .attr("fill", jcolor)
+                     .text(parts[n]);
+               } else
+               if ((j==0) || (line.indexOf('=')<0)) {
+                  this.draw_g.append("text")
+                     .attr("text-anchor", (j == 0) ? "middle" : "start")
+                     .attr("x", ((j==0) ? width/2 : pavetext['fMargin'] * width))
+                     .attr("y", posy)
+                     .attr("font-family", fontDetails['name'])
+                     .attr("font-weight", fontDetails['weight'])
+                     .attr("font-style", fontDetails['style'])
+                     .attr("font-size", font_size)
+                     .attr("fill", jcolor)
+                     .text(line);
+               } else {
+                  var parts = line.split("=");
+                  for (var n=0;n<2;n++)
+                     this.draw_g.append("text")
+                     .attr("text-anchor", (n==0) ? "start" : "end")
+                     .attr("x", (n==0) ? pavetext['fMargin'] * width : (1-pavetext['fMargin']) * width)
+                     .attr("y", posy)
+                     .attr("font-family", fontDetails['name'])
+                     .attr("font-weight", fontDetails['weight'])
+                     .attr("font-style", fontDetails['style'])
+                     .attr("font-size", font_size)
+                     .attr("fill", jcolor)
+                     .text(parts[n]);
+               }
+            } else {
+               this.draw_g.append("text")
                   .attr("text-anchor", "start")
                   .attr("x", lmargin)
                   .attr("y", (j+1) * (font_size * 1.4))
@@ -4962,24 +5008,48 @@ function createFillPatterns(svg, id, color) {
          }
       }
 
-      if (pavetext['fBorderSize'] && pavetext['_typename'] == 'JSROOTIO.TPaveStats')
-         pave.append("svg:line")
+      if (pavetext['fBorderSize'] && pavetext['_typename'] == 'JSROOTIO.TPaveStats') {
+         this.draw_g.append("svg:line")
+            .attr("class", "pavedraw")
             .attr("x1", 0)
             .attr("y1", font_size * 1.6)
             .attr("x2", width)
             .attr("y2", font_size * 1.6)
             .style("stroke", lcolor)
             .style("stroke-width", lwidth ? 1 : 'none');
+      }
+
+      if ((first_stat > 0) && (num_cols > 1)) {
+         var yy = (1.4 * first_stat + 0.6) * font_size;
+
+         this.draw_g.append("svg:line")
+         .attr("x1", 0)
+         .attr("y1", yy)
+         .attr("x2", width)
+         .attr("y2", yy)
+         .style("stroke", lcolor)
+         .style("stroke-width", lwidth ? 1 : 'none');
+
+         for (var ncol = 0; ncol<num_cols-1; ncol++)
+            this.draw_g.append("svg:line")
+            .attr("x1", width/num_cols*(ncol+1))
+            .attr("y1", yy)
+            .attr("x2", width/num_cols*(ncol+1) )
+            .attr("y2", height)
+            .style("stroke", lcolor)
+            .style("stroke-width", lwidth ? 1 : 'none');
+
+      }
 
       if (lwidth && lwidth > 1) {
-         pave.append("svg:line")
+         this.draw_g.append("svg:line")
             .attr("x1", width+(lwidth/2))
             .attr("y1", lwidth+1)
             .attr("x2", width+(lwidth/2))
             .attr("y2", height+lwidth-1)
             .style("stroke", lcolor)
             .style("stroke-width", lwidth);
-         pave.append("svg:line")
+         this.draw_g.append("svg:line")
             .attr("x1", lwidth+1)
             .attr("y1", height+(lwidth/2))
             .attr("x2", width+lwidth-1)
@@ -5108,116 +5178,80 @@ function createFillPatterns(svg, id, color) {
       this.drawAxes(frame, histo, pad, x, y);
       this.drawTitle(vis, histo, pad);
       this.addInteraction(frame, histo);
-      this.drawFunctions(vis, histo, pad, ret);
-      if (!pad || typeof(pad) == 'undefined')
+      var draw_stats = this.drawFunctions(vis, histo, pad, ret);
+      if (draw_stats && !pad || typeof(pad) == 'undefined')
          this.drawStat(vis, histo);
       return null;
    };
 
+   JSROOTPainter.addLine = function(pavetext, txt) {
+      pavetext['fLines'].push( {'fTitle': txt, "fTextColor": 1} );
+   }
+
    JSROOTPainter.drawStat = function(vis, histo) {
-      var w = vis.attr("width"), h = vis.attr("height");
-      var lcount=0, nlines = 4; // name, entries, mean, rms
-      if (histo['_typename'] && histo['_typename'].match(/\bTProfile/))
-         nlines += 2; // mean y, rms y
-      if (histo['_typename'] && histo['_typename'].match(/\bTH2/))
-         nlines += 2; // mean y, rms y
-
-      var statx = 0.980;
-      var staty = 0.935;
-      var statw = 0.2;
-      var stath = 0.25 * nlines * 0.16;
-
-      var pos_x = (statx - statw) * w;
-      var pos_y = (1.0 - staty) * h;
-      var width = statw * w;
-      var height = stath * h;
-      var font_size = Math.round(height / (nlines * 1.7));
-      var fontDetails = getFontDetails(root_fonts[4]);
-
-      var pave = vis.append("svg:g")
-         .attr("width", width)
-         .attr("height", height)
-         .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
-
-      var stat_rect = pave.append("svg:rect")
-         .attr("class", "frame")
-         .attr("x", 0)
-         .attr("y", 0)
-         .attr("width", width)
-         .attr("height", height)
-         .attr("fill", 'white')
-         .style("stroke-width", 1)
-         .style("stroke", 'black');
-
-      var  line = histo['fName'];
-      pave.append("svg:text")
-            .attr("x", width/2)
-            .attr("y", ++lcount * (font_size * 1.4))
-            .attr("font-size", font_size)
-            .attr("text-anchor", "middle")
-            .attr("vertical-anchor", "bottom")
-            .text(line);
-
-      line = 'Entries = ' + histo['fEntries'];
-      pave.append("svg:text")
-            .attr("x", 5)
-            .attr("y", ((font_size * 0.06)) + (++lcount * (font_size * 1.6)))
-            .attr("font-size", font_size)
-            .attr("text-anchor", "start")
-            .attr("vertical-anchor", "bottom")
-            .text(line);
-
-      if (histo['_typename'] && histo['_typename'].match(/\bTH2/))
-         line = 'Mean x = ' + histo.getMean(1).toFixed(6.4);
-      else
-         line = 'Mean = ' + histo.getMean(1).toFixed(6.4);
-      pave.append("svg:text")
-            .attr("x", 5)
-            .attr("y", ((font_size * 0.06)) + (++lcount * (font_size * 1.6)))
-            .attr("font-size", font_size)
-            .attr("text-anchor", "start")
-            .attr("vertical-anchor", "bottom")
-            .text(line);
+      var stats = {};
+      stats['_typename'] = 'JSROOTIO.TPaveStats';
+      stats['fName'] = 'stats';
+      
+      stats['fX1NDC'] = 0.78;
+      stats['fY1NDC'] = 0.75;
+      stats['fX2NDC'] = 0.78 + 0.2;
+      stats['fY2NDC'] = 0.75 + 0.16;
       if ((histo['_typename'] && histo['_typename'].match(/\bTProfile/)) ||
-           (histo['_typename'] && histo['_typename'].match(/\bTH2/))) {
-         line = 'Mean y = ' + histo.getMean(2).toFixed(6.4);
-         pave.append("svg:text")
-               .attr("x", 5)
-               .attr("y", ((font_size * 0.06)) + (++lcount * (font_size * 1.6)))
-               .attr("font-size", font_size)
-               .attr("text-anchor", "start")
-               .attr("vertical-anchor", "bottom")
-               .text(line);
+          (histo['_typename'] && histo['_typename'].match(/\bTH2/)))
+         stats['fY1NDC'] = 0.67;
+
+      stats['fOptStat'] = 1111;
+      stats['fLongest'] = 17;
+      stats['fMargin'] = 0.05;
+
+      stats['fBorderSize'] = 1;
+      stats['fInit'] = 1;
+      stats['fShadowColor'] = 1;
+      stats['fCornerRadius'] = 0;
+
+      stats['fX1'] = 1;
+      stats['fY1'] = 100;
+      stats['fX2'] = 1;
+      stats['fY2'] = 100;
+
+      stats['fResizing'] = false;
+      stats['fBits'] = 0x03000009;
+      stats['fLineColor'] = 1;
+      stats['fLineStyle'] = 1;
+      stats['fLineWidth'] = 1;
+
+      stats['fFillColor'] = 0;
+      stats['fFillStyle'] = 1001;
+      
+      stats['fTextAngle'] = 0;
+      stats['fTextSize'] = 0;
+      stats['fTextAlign'] = 12;
+      stats['fTextColor'] = 1;
+      stats['fTextFont'] = 42;
+      
+      stats['fLines'] = new Array;
+      stats['fLines'].push({'fTitle': "hname", "fTextColor": 1});
+      stats['fLines'][0]['fTitle'] = histo['fName']; 
+
+      this.addLine(stats, "Entries = " + histo['fEntries']);
+      if (histo['_typename'] && histo['_typename'].match(/\bTH2/))
+         this.addLine(stats, "Mean x = " + histo.getMean(1).toFixed(6.4));
+      else
+         this.addLine(stats, "Mean = " + histo.getMean(1).toFixed(6.4));
+      if ((histo['_typename'] && histo['_typename'].match(/\bTProfile/)) ||
+          (histo['_typename'] && histo['_typename'].match(/\bTH2/))) {
+         this.addLine(stats, "Mean y = " + histo.getMean(2).toFixed(6.4));
       }
       if (histo['_typename'] && histo['_typename'].match(/\bTH2/))
-         line = 'RMS x = ' + histo.getRMS(1).toFixed(6.4);
+         this.addLine(stats, "RMS x = " + histo.getRMS(1).toFixed(6.4));
       else
-         line = 'RMS = ' + histo.getRMS(1).toFixed(6.4);
-      pave.append("svg:text")
-            .attr("x", 5)
-            .attr("y", ((font_size * 0.06)) + (++lcount * (font_size * 1.6)))
-            .attr("font-size", font_size)
-            .attr("text-anchor", "start")
-            .attr("vertical-anchor", "bottom")
-            .text(line);
+         this.addLine(stats, "RMS = " + histo.getRMS(1).toFixed(6.4));
       if ((histo['_typename'] && histo['_typename'].match(/\bTProfile/)) ||
-           (histo['_typename'] && histo['_typename'].match(/\bTH2/))){
-         line = 'RMS y = ' + histo.getRMS(2).toFixed(6.4);
-         pave.append("svg:text")
-               .attr("x", 5)
-               .attr("y", ((font_size * 0.06)) + (++lcount * (font_size * 1.6)))
-               .attr("font-size", font_size)
-               .attr("text-anchor", "start")
-               .attr("vertical-anchor", "bottom")
-               .text(line);
+          (histo['_typename'] && histo['_typename'].match(/\bTH2/))) {
+         this.addLine(stats, "RMS y = " + histo.getRMS(2).toFixed(6.4));
       }
-      pave.append("svg:line")
-          .attr("x1", 0)
-          .attr("y1", font_size * 2)
-          .attr("x2", width)
-          .attr("y2", font_size * 2)
-          .style("stroke", 'black')
-          .style("stroke-width", 1);
+      this.drawPaveText(vis, stats);
    };
 
    JSROOTPainter.drawText = function(vis, pad, text) {
@@ -5288,7 +5322,7 @@ function createFillPatterns(svg, id, color) {
             .attr("class", "title")
             .attr("text-anchor", "middle")
             .attr("x", w/2)
-            .attr("y", 0.07 * vis.attr("height"))
+            .attr("y", 1 + font_size)
             .attr("font-family", "Arial")
             .attr("font-size", font_size)
             .text(l_title);

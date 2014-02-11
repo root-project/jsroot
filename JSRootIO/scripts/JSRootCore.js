@@ -921,7 +921,8 @@ landaun = function(f, x, i) {
             return themin;
          };
       }
-      if ((obj['_typename'].indexOf("JSROOTIO.TH2") == 0) ||
+      if ((obj['_typename'].indexOf("JSROOTIO.TH1") == 0) ||
+          (obj['_typename'].indexOf("JSROOTIO.TH2") == 0) ||
           (obj['_typename'].indexOf("JSROOTIO.TH3") == 0) ||
           (obj['_typename'].indexOf("JSROOTIO.TProfile") == 0)) {
          obj['getMean'] = function(axis) {
