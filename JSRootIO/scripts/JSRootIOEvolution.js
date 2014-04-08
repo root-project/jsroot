@@ -1650,7 +1650,8 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
                   var nkeys = JSROOTIO.ntoi4(buffer, offset); offset += 4;
                   for (var i = 0; i < nkeys; i++) {
                      key = _dir.fFile.ReadKey(buffer, offset);
-                     offset += key['keyLen'];
+                     //offset += key['keyLen'];
+                     offset = key['ptr'];
                      if (key['className'] != "" && key['name'] != "") {
                         key['offset'] = offset;
                      }
@@ -2033,12 +2034,13 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
          // read key from buffer
          var key = {};
          key['offset'] = o;
-         var nbytes = JSROOTIO.ntoi4(str, o);
+         var nbytes = JSROOTIO.ntoi4(str, o); o += 4;
          key['nbytes'] = Math.abs(nbytes);
          var largeKey = o + nbytes > 2 * 1024 * 1024 * 1024 /*2G*/;
-         var ntohoff = largeKey ? JSROOTIO.ntou8 : JSROOTIO.ntou4;
-         key['objLen'] = JSROOTIO.ntou4(str, o + 6);
-         var datime = JSROOTIO.ntou4(str, o + 10);
+         //var ntohoff = largeKey ? JSROOTIO.ntou8 : JSROOTIO.ntou4;
+         o += 2;
+         key['objLen'] = JSROOTIO.ntou4(str, o); o += 4;
+         var datime = JSROOTIO.ntou4(str, o); o += 4;
          key['datime'] = {
             year : (datime >>> 26) + 1995,
             month : (datime << 6) >>> 28,
@@ -2047,9 +2049,8 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
             min : (datime << 20) >>> 26,
             sec : (datime << 26) >>> 26
          };
-         key['keyLen'] = JSROOTIO.ntou2(str, o + 14);
-         key['cycle'] = JSROOTIO.ntou2(str, o + 16);
-         o += 18;
+         key['keyLen'] = JSROOTIO.ntou2(str, o); o += 2;
+         key['cycle'] = JSROOTIO.ntou2(str, o); o += 2;
          if (largeKey) {
             key['seekKey'] = JSROOTIO.ntou8(str, o); o += 8;
             o += 8; // skip seekPdir
@@ -2066,6 +2067,7 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
          key['title'] = so['str'];
          key['dataoffset'] = key['seekKey'] + key['keyLen'];
          key['name'] = key['name'].replace(/['"]/g,''); // get rid of quotes
+         key['ptr'] = o;
          return key;
       };
 
@@ -2290,7 +2292,8 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
                         var nkeys = JSROOTIO.ntoi4(buffer, offset); offset += 4;
                         for (var i = 0; i < nkeys; i++) {
                            key = file.ReadKey(buffer, offset);
-                           offset += key['keyLen'];
+                           //offset += key['keyLen'];
+                           offset = key['ptr'];
                            if (key['className'] != "" && key['name'] != "") {
                               key['offset'] = offset;
                            }

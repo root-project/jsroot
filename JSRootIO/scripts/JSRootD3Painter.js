@@ -5421,7 +5421,7 @@ function createFillPatterns(svg, id, color) {
             tree_link = "javascript: displayStreamerInfos(gFile.fStreamerInfo.fStreamerInfos);";
             node_img = source_dir+'img/question.gif';
          }
-         else if (keys[i]['className'] == 'TDirectory') {
+         else if (keys[i]['className'] == 'TDirectory' || keys[i]['className'] == 'TDirectoryFile') {
             tree_link = "javascript: showDirectory('"+keys[i]['name']+"',"+keys[i]['cycle']+","+(i+1)+");";
             node_img = source_dir+'img/folder.gif';
          }
@@ -5444,7 +5444,7 @@ function createFillPatterns(svg, id, color) {
          }
          if (keys[i]['name'] != '' && keys[i]['className'] != 'TFile')
             if (keys[i]['className'] == 'TDirectory' || keys[i]['className'] == 'TList' ||
-                keys[i]['className'] == 'TObjArray')
+                keys[i]['className'] == 'TObjArray' || keys[i]['className'] == 'TDirectoryFile')
                key_tree.add(k, 0, keys[i]['name']+';'+keys[i]['cycle'], tree_link, keys[i]['name'], '', node_img,
                             source_dir+'img/folderopen.gif');
             else if (keys[i]['className'] == 'TTree' || keys[i]['className'] == 'TNtuple')
@@ -5505,7 +5505,7 @@ function createFillPatterns(svg, id, color) {
             node_img = source_dir+'img/question.gif';
             node_title = keys[i]['name'];
          }
-         else if (keys[i]['className'] == 'TDirectory') {
+         else if (keys[i]['className'] == 'TDirectory' || keys[i]['className'] == 'TDirectoryFile') {
             tree_link = "javascript: showDirectory('"+keys[i]['name']+"',"+keys[i]['cycle']+","+k+");";
             node_img = source_dir+'img/folder.gif';
             node_title = keys[i]['name'];
@@ -5527,7 +5527,7 @@ function createFillPatterns(svg, id, color) {
          }
          if (keys[i]['name'] != '' && keys[i]['className'] != 'TFile') {
             if (keys[i]['className'] == 'TDirectory' || keys[i]['className'] == 'TList' ||
-                keys[i]['className'] == 'TObjArray')
+                keys[i]['className'] == 'TObjArray' || keys[i]['className'] == 'TDirectoryFile')
                key_tree.add(k, dir_id, disp_name+';'+keys[i]['cycle'], tree_link, node_title, '', node_img,
                             source_dir+'img/folderopen.gif');
             else if (keys[i]['className'] == 'TNtuple' || keys[i]['className'] == 'TTree')
