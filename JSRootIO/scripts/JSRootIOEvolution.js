@@ -2180,6 +2180,8 @@ var kBase = 0, kOffsetL = 20, kOffsetP = 40, kCounter = 6, kCharStar = 7,
                      file.ReadObject(file.fKeys[i]['name'], file.fKeys[i]['cycle']);
                   }
                }
+               if (typeof(userCallback) == 'function')
+                  userCallback(file);
             };
             file.ReadObjBuffer(key, callback2);
             // use the global one from JSRootInterface.js, allowing the user to
