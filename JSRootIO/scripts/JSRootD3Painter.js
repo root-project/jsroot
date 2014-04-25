@@ -4012,6 +4012,7 @@ function createFillPatterns(svg, id, color) {
          stack['fHistogram']['fXaxis']['fNbins'] = 0;
          stack['fHistogram']['fYaxis']['fNbins'] = 0;
          stack['fHistogram']['fArray'] = new Array();
+         JSROOTCore.addMethods(stack['fHistogram']);
       }
       stack['fHistogram']['fTitle'] = stack['fTitle'];
       //var histo = JSROOTCore.clone(stack['fHistogram']);
