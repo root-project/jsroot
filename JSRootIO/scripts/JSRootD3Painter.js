@@ -2174,19 +2174,6 @@ function createFillPatterns(svg, id, color) {
          var g = svg_frame.append("svg:g")
             .attr("id", g_id);
 
-         var line = d3.svg.line()
-            .x(function(d) { return func.x(d.x);})
-            .y(function(d) { return func.y(d.y);})
-            .interpolate(interpolate_method);
-
-         g.append("svg:path")
-            .attr("class", "line")
-            .attr("d", line(func.bins))
-            .style("stroke", linecolor)
-            .style("stroke-width", func['fLineWidth'])
-            .style("stroke-dasharray", root_line_styles[func['fLineStyle']])
-            .style("fill", "none");
-
          var area = d3.svg.area()
             .x(function(d) { return x(d.x); })
             .y1(h)
@@ -2201,6 +2188,19 @@ function createFillPatterns(svg, id, color) {
               .style("fill", "url(#pat" + func['fFillStyle'] + "_" + func['fFillColor'] + ")")
               .style("antialias", "false");
          }
+
+         var line = d3.svg.line()
+            .x(function(d) { return func.x(d.x);})
+            .y(function(d) { return func.y(d.y);})
+            .interpolate(interpolate_method);
+
+         g.append("svg:path")
+            .attr("class", "line")
+            .attr("d", line(func.bins))
+            .style("stroke", linecolor)
+            .style("stroke-width", func['fLineWidth'])
+            .style("stroke-dasharray", root_line_styles[func['fLineStyle']])
+            .style("fill", "none");
 
          // add tooltips
          g.selectAll("line")
