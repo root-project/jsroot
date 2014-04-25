@@ -2187,6 +2187,21 @@ function createFillPatterns(svg, id, color) {
             .style("stroke-dasharray", root_line_styles[func['fLineStyle']])
             .style("fill", "none");
 
+         var area = d3.svg.area()
+            .x(function(d) { return x(d.x); })
+            .y1(h)
+            .y0(function(d) { return y(d.y); });
+
+         if (func['fFillStyle'] > 3000 && func['fFillStyle'] <= 3025) {
+            createFillPatterns(vis, func['fFillStyle'], func['fFillColor']);
+            g.append("svg:path")
+              .attr("class", "area")
+              .attr("d", area(func.bins))
+              .style("stroke", "none")
+              .style("fill", "url(#pat" + func['fFillStyle'] + "_" + func['fFillColor'] + ")")
+              .style("antialias", "false");
+         }
+
          // add tooltips
          g.selectAll("line")
             .data(bins)
