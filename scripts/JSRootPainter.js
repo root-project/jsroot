@@ -33,7 +33,7 @@
    }
 
    JSROOT.gStyle = {
-      'Tooltip'       : 2,     // 0 - off, 1 - event info, 2 - full but may be slow
+      'Tooltip'       : true,  // tooltip on/off
       'OptimizeDraw'  : false, // if true, drawing of 1-D histogram will be optimized to exclude too-many points
       'AutoStat'      : true,
       'OptStat'       : 1111,
@@ -1513,18 +1513,6 @@
 
    }
 
-   JSROOT.TBasePainter.prototype.CollectTooltips = function(tip) {
-      if (!this.vis) return false;
-
-      tip['empty'] = true;
-
-      for (var n=0;n<this.vis['painters'].length;n++)
-         this.vis['painters'][n].ProvideTooltip(tip);
-
-      return !tip.empty;
-   }
-
-
    JSROOT.TBasePainter.prototype.AddMenuItem = function(menu, text, cmd)
    {
       menu.append("<a href='javascript: JSROOT.Painter.histoDialog(\"" + cmd + "\")'>" + text + "</a><br/>");
@@ -1536,19 +1524,13 @@
       // for the case when drawing should be repeated, probably with different options
    }
 
-   JSROOT.TBasePainter.prototype.ProvideTooltip = function(tip)
-   {
-      // basic method, painter can provide tooltip at specified coordinates
-      // range.x1 .. range.x2, range.y1 .. range.y2
-   }
-
 
    JSROOT.TBasePainter.prototype.FillContextMenu = function(menu)
    {
       this.AddMenuItem(menu,"Unzoom X","unx");
       this.AddMenuItem(menu,"Unzoom Y","uny");
       this.AddMenuItem(menu,"Unzoom","unxy");
-      if (JSROOT.gStyle.Tooltip > 0)
+      if (JSROOT.gStyle.Tooltip)
          this.AddMenuItem(menu,"Disable tooltip","disable_tooltip");
       else
          this.AddMenuItem(menu,"Enable tooltip","enable_tooltip");
@@ -1561,11 +1543,11 @@
       if (cmd=="uny") this.Unzoom(false, true); else
       if (cmd=="unxy") this.Unzoom(true, true); else
       if (cmd=="disable_tooltip") {
-         JSROOT.gStyle.Tooltip = 0;
+         JSROOT.gStyle.Tooltip = false;
          this.RedrawFrame();
       } else
       if (cmd=="enable_tooltip") {
-         JSROOT.gStyle.Tooltip = 2;
+         JSROOT.gStyle.Tooltip = true;
          this.RedrawFrame();
       }
    }
@@ -1713,7 +1695,7 @@
                renderer.render( scene, camera );
             }
             INTERSECTED = null;
-            if (JSROOT.gStyle.Tooltip > 1) tooltip.hide();
+            if (JSROOT.gStyle.Tooltip) tooltip.hide();
             return;
          }
          var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
@@ -1734,7 +1716,7 @@
                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                INTERSECTED.material.emissive.setHex( 0x5f5f5f );
                renderer.render( scene, camera );
-               if (JSROOT.gStyle.Tooltip > 1) tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name : INTERSECTED.parent.name, 200);
+               if (JSROOT.gStyle.Tooltip) tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name : INTERSECTED.parent.name, 200);
             }
          } else {
             if ( INTERSECTED ) {
@@ -1742,13 +1724,13 @@
                renderer.render( scene, camera );
             }
             INTERSECTED = null;
-            if (JSROOT.gStyle.Tooltip > 1) tooltip.hide();
+            if (JSROOT.gStyle.Tooltip) tooltip.hide();
          }
       };
 
       $( renderer.domElement ).on('touchstart mousedown',function (e) {
          //var touch = e.changedTouches[0] || {};
-         if (JSROOT.gStyle.Tooltip > 1) tooltip.hide();
+         if (JSROOT.gStyle.Tooltip) tooltip.hide();
          e.preventDefault();
          var touch = e;
          if ('changedTouches' in e) touch = e.changedTouches[0];
@@ -2055,36 +2037,6 @@
       }
    }
 
-   JSROOT.TF1Painter.prototype.ProvideTooltip = function(tip)
-   {
-      return;
-
-      if (!('bins' in this) || (this.bins==null)) return;
-
-      var nbin = -1;
-      var min = 1e20;
-
-      for (var i=0; i<this.bins.length;i++) {
-         var dist = Math.pow(this.bins[i].x - tip.x, 2) + Math.pow(this.bins[i].y - tip.y, 2);
-
-         if ((nbin<0) || (dist<min)) {
-            nbin = i;
-            min = dist;
-         }
-      }
-
-      if (nbin < 0) return;
-
-      var bin = this.bins[nbin];
-
-      tip['empty'] = false;
-      tip.x = bin.x;
-      tip.y = bin.y;
-      tip['text'].push("tf1:" + this.tf1['fName']);
-      tip['text'].push("bin: "+ nbin);
-   }
-
-
    JSROOT.TF1Painter.prototype.DrawBins = function()
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
@@ -2136,7 +2088,7 @@
 
 
       // add tooltips
-      if (JSROOT.gStyle.Tooltip > 1)
+      if (JSROOT.gStyle.Tooltip)
          this.draw_g.selectAll("line")
             .data(this.bins)
             .enter()
@@ -2570,42 +2522,6 @@
       xf = null; yf = null;
    }
 
-
-   JSROOT.TGraphPainter.prototype.ProvideTooltip = function(tip)
-   {
-      if (!this.draw_content) return;
-
-      if (!('bins' in this) || (this.bins==null)) return;
-
-      var nbin = -1;
-      var min = 1e20;
-
-      for (var i=0; i<this.bins.length;i++) {
-         var dist = Math.pow(this.bins[i].x - tip.x, 2) + Math.pow(this.bins[i].y - tip.y, 2);
-
-         if ((nbin<0) || (dist<min)) {
-            nbin = i;
-            min = dist;
-         }
-      }
-
-      if (nbin < 0) return;
-
-      var bin = this.bins[nbin];
-
-      tip['empty'] = false;
-      tip.x = bin.x;
-      tip.y = bin.y;
-      tip['text'].push("graph:" + this.graph['fName']);
-      tip['text'].push("bin: "+ nbin);
-
-      if (this.draw_errors) {
-         tip['text'].push("error x = -" + bin.exlow.toPrecision(4) + "/+" + bin.exhigh.toPrecision(4));
-         tip['text'].push("error y = -" + bin.eylow.toPrecision(4) + "/+" + bin.eyhigh.toPrecision(4));
-      }
-   }
-
-
    JSROOT.TGraphPainter.prototype.DrawBins = function()
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
@@ -2653,7 +2569,7 @@
             .attr("height", function(d) { return y(d.y) - y(d.y+d.bh); } )
             .style("fill", fillcolor);
 
-         if (JSROOT.gStyle.Tooltip > 1)
+         if (JSROOT.gStyle.Tooltip)
             nodes.append("svg:title").text(function(d) {
                     return "x = " + d.x.toPrecision(4) + " \nentries = " + d.y.toPrecision(4);
                    });
@@ -2687,7 +2603,7 @@
             .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.graph['fLineStyle']])
             .style("fill", (pthis.optionFill == 1) ? JSROOT.Painter.root_colors[pthis.graph['fFillColor']] : "none");
 
-         if (JSROOT.gStyle.Tooltip > 1)
+         if (JSROOT.gStyle.Tooltip)
             this.draw_g.selectAll("draw_line")
               .data(pthis.bins).enter()
               .append("svg:circle")
@@ -2766,7 +2682,7 @@
             .style("stroke-width", this.graph['fLineWidth']);
 
 
-         if (JSROOT.gStyle.Tooltip > 1) {
+         if (JSROOT.gStyle.Tooltip) {
             xerr.append("svg:title").text(TooltipText);
             yerr.append("svg:title").text(TooltipText);
          }
@@ -2821,7 +2737,7 @@
             .style("stroke", JSROOT.Painter.root_colors[this.graph['fMarkerColor']])
             .attr("d", marker);
 
-         if (JSROOT.gStyle.Tooltip > 1)
+         if (JSROOT.gStyle.Tooltip)
             markers
             .append("svg:title")
             .text(TooltipText);
@@ -4170,36 +4086,9 @@
       this.frame.on("mousedown", startRectSel);
       this.frame.on("touchstart", startTouchSel);
 
-      if (JSROOT.gStyle.Tooltip == 1) {
-         this.frame.on("mousemove", moveTooltip);
-         this.frame.on("mouseout", finishTooltip);
-
-//         var tool_text = this.frame.append("svg:text")
-//         .attr("id", "tool_text")
-//         .attr("class", "tips")
-//         .style("opacity", "1")
-//         .attr("x", 100)
-//         .attr("y", 100)
-//         .text("anything important");
-
-         var tool_rec = this.frame.append("svg:rect")
-         .attr("class", "tooltipbox")
-         .attr("fill", "black")
-         .style("opacity", "0")
-         .style("stroke", "black")
-         .style("stroke-width", 1);
-
-         var tool_tmout = null;
-         var tool_pos = null;
-         var tool_changed = false;
-         var tool_moving_inside = false;
-         var tool_visible = false;
-      }
-//      this.frame.on("mouseover", finishTooltip);
       this.frame.on("contextmenu", showContextMenu);
 
       var pthis = this;
-
 
       function startTouchSel() {
 
@@ -4358,125 +4247,6 @@
       }
 
 
-      function checkTooltip() {
-         tool_tmout = null;
-
-         if (tool_visible) return;
-
-         if (tool_changed) {
-            // restart timer, hope it will not changes next time
-
-            // during last changes cursor leave area and we could ignore
-            if (!tool_moving_inside) return;
-
-            tool_changed = false;
-            tool_tmout = setTimeout(checkTooltip, 1000);
-            return;
-         }
-
-         var tip = {};
-         tip['x'] = pthis.x.invert(tool_pos[0]);
-         tip['y'] = pthis.y.invert(tool_pos[1]);
-         tip['text'] = new Array;
-
-         pthis.CollectTooltips(tip);
-
-         pthis.frame.selectAll(".tips").remove();
-
-         // set text position
-          pthis.frame.append("svg:text")
-            .attr("class", "tips")
-            .style("opacity", "0")
-            .attr("x", tool_pos[0])
-            .attr("y", tool_pos[1])
-            .text("x:"+ tip.x.toPrecision(3));
-
-         pthis.frame.append("svg:text")
-            .attr("class", "tips")
-            .style("opacity", "0")
-            .attr("x", tool_pos[0])
-            .attr("y", tool_pos[1] + 15)
-            .text("y: " + tip.y.toPrecision(3));
-
-         for (var n=0;n<tip.text.length;n++)
-            pthis.frame.append("svg:text")
-              .attr("class", "tips")
-              .style("opacity", "0")
-              .attr("x", tool_pos[0])
-              .attr("y", tool_pos[1] + 30 + n*15)
-              .text(tip.text[n]);
-
-         pthis.frame.selectAll(".tips").transition().duration(500).style("opacity", 1);
-
-         if (('x1' in tip) && ('y1' in tip)) {
-            var x1 = pthis.x(tip.x1);
-            var x2 = pthis.x(tip.x2);
-            var y1 = pthis.y(tip.y1);
-            var y2 = pthis.y(tip.y2); if (y2>height) y2 = height;
-
-            tool_rec.attr("x", x1)
-                    .attr("y", y1)
-                    .attr("width", (x2-x1 > 2) ? x2-x1 : 2)
-                    .attr("height", Math.abs(y2-y1));
-//                    .append("svg:title")
-//                    .attr("timeout",0)
-//                    .text("my\nmulti\nline\ntext");
-
-            tool_rec.transition().duration(500).style("opacity", 0.3);
-//            pthis.frame.on('mouseover')();
-         }
-
-//         tool_text
-//          .attr("x", tool_pos[0])
-//          .attr("y", tool_pos[1])
-//          .text(tip_txt);
-
-
-//         $("#report").append("  show tooltip");
-
-         tool_tmout = setTimeout(closeTooltip, 3000);
-
-         tool_visible = true;
-      }
-
-      function closeTooltip(force) {
-         if (tool_visible) {
-            if (force) {
-               tool_rec.style("opacity", 0);
-               pthis.frame.selectAll(".tips").style("opacity", 0);
-            } else {
-               tool_rec.transition().duration(1000).style("opacity", 0);
-               pthis.frame.selectAll(".tips").transition().duration(1000).style("opacity", 0);
-            }
-            // $("#report").append("  hide tooltip");
-            tool_visible = false;
-         }
-         clearTimeout(tool_tmout);
-         tool_tmout = null;
-      }
-
-      function moveTooltip() {
-         //var pos = d3.mouse(this);
-         //tool_text.attr("x",pos[0]).attr("y",pos[1] + 15);
-
-         tool_moving_inside = true;
-
-         // one could detect if mouse moved too far away, disable it faster
-         if (tool_visible) return;
-
-         tool_pos = d3.mouse(this);
-
-         if (tool_tmout == null) {
-            tool_changed = false;
-            tool_tmout = setTimeout(checkTooltip, 300);
-         } else
-            tool_changed = true;
-      }
-
-      function finishTooltip() {
-         tool_moving_inside = false;
-      }
-
       function showContextMenu() {
 
          d3.event.preventDefault();
@@ -4519,7 +4289,6 @@
             $("#root_ctx_menu").empty();
             x.parentNode.removeChild(x);
          }
-         closeTooltip(true);
          if (rect != null) { rect.remove(); rect = null; }
          zoom_kind = 0;
       }
@@ -4926,7 +4695,7 @@
             point['yerr'] =  gry - this.y(cont + this.histo.getBinError(pmax+1));
          }
 
-         if (JSROOT.gStyle.Tooltip > 1) {
+         if (JSROOT.gStyle.Tooltip) {
             if (this.options.Error > 0) {
                point['x'] = (grx1 + grx2)/2;
                point['tip'] = "x = " + this.AxisAsText("x", x1) + " \ny = " + this.AxisAsText("y",cont) +
@@ -5054,7 +4823,7 @@
             .style("stroke", marker_color)
             .attr("d", marker);
 
-      if (JSROOT.gStyle.Tooltip > 1) {
+      if (JSROOT.gStyle.Tooltip) {
          marks.append("svg:title").text(TooltipText);
          xerr.append("svg:title").text(TooltipText);
          yerr.append("svg:title").text(TooltipText);
@@ -5127,7 +4896,7 @@
            .style("antialias", "false");
       }
 
-      if (JSROOT.gStyle.Tooltip > 1) {
+      if (JSROOT.gStyle.Tooltip) {
          // TODO: limit number of tooltips by number of visible pixels
          this.draw_g.selectAll("selections")
             .data(this.draw_bins)
@@ -5145,42 +4914,6 @@
             .append("svg:title").text(function(d) { return d.tip; });
       }
    }
-
-   JSROOT.TH1Painter.prototype.ProvideTooltip = function(tip)
-   {
-      if (!this.draw_content) return;
-
-      if (!('bins' in this) || (this.bins==null)) return;
-
-      var nbin = Math.round((tip.x - this.xmin)/this.binwidthx - 0.5);
-      if ((nbin<0) || (nbin>=this.histo['fXaxis']['fNbins'])) return;
-
-      var value = this.histo.getBinContent(nbin+1);
-
-      var dist = value - tip.y;
-
-      // cursor should be under hist line
-      if (dist <= 0) return;
-
-      // if somebody provides tooltip, which is closer to tip, than ignore our
-      if (('dist' in tip) && (tip.dist< dist)) return;
-
-      tip['empty'] = false;
-
-      tip['dist'] = dist;
-      tip['text'].push("histo: "+this.histo['fName']);
-      tip['text'].push("bin: "+ nbin);
-      tip['text'].push("cont: " + value.toPrecision(4));
-
-      tip['x1'] = this.xmin + this.binwidthx*nbin;
-      tip['x2'] = tip['x1'] + this.binwidthx;
-      tip['y1'] = value;
-      tip['y2'] = this.ymin;
-
-      // basic method, painter can provide tooltip at specified coordinates
-      // range.x1 .. range.x2, range.y1 .. range.y2
-   }
-
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu)
    {
@@ -5729,7 +5462,7 @@
 
 
       var tipkind = 0;
-      if (JSROOT.gStyle.Tooltip > 1) tipkind = draw_markers ? 2 : 1;
+      if (JSROOT.gStyle.Tooltip) tipkind = draw_markers ? 2 : 1;
 
       var local_bins = this.CreateDrawBins(w,h,normal_coordinates ? 0 : 1, tipkind);
 
@@ -5789,7 +5522,7 @@
             .style("stroke", JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
             .attr("d", marker);
 
-         if (JSROOT.gStyle.Tooltip > 1)
+         if (JSROOT.gStyle.Tooltip)
             markers.append("svg:title").text(function(d) { return d.tip; });
       }
       else {
@@ -5805,7 +5538,7 @@
                .style("stroke", function(d) { return d.stroke; })
                .style("fill", function(d) { this['f0'] = d.fill; this['f1'] = d.tipcolor; return d.fill; });
 
-         if (JSROOT.gStyle.Tooltip > 1)
+         if (JSROOT.gStyle.Tooltip)
             drawn_bins
               .on('mouseover', function() { d3.select(this).transition().duration(100).style("fill", this['f1']); })
               .on('mouseout', function() { d3.select(this).transition().duration(100).style("fill", this['f0']); })
@@ -5814,33 +5547,6 @@
 
       delete local_bins;
       local_bins = null;
-   }
-
-   JSROOT.TH2Painter.prototype.ProvideTooltip = function(tip)
-   {
-      var i = Math.round((tip.x - this.binwidthx/2 - this.xmin) / this.binwidthx);
-      var j = Math.round((tip.y - this.binwidthy/2 - this.ymin) / this.binwidthy);
-
-      if ((i < 0) || (i >= this.nbinsx) || (j < 0) || (j >= this.nbinsy)) return;
-
-      var value = this.histo.getBinContent(i, j);
-
-      if (value <= this.minbin) return;
-
-      tip['empty'] = false;
-
-      tip['dist'] = 0;
-      tip['text'].push("histo: " + this.histo['fName']);
-      tip['text'].push("binx:" + i + " biny:" + j);
-      tip['text'].push("cont: " + value);
-
-      tip['x1'] = this.xmin + i*this.binwidthx;
-      tip['x2'] = this.xmin + (i+1)*this.binwidthx;
-      tip['y1'] = this.ymin + (j+1)*this.binwidthy;
-      tip['y2'] = this.ymin + j*this.binwidthy;
-
-      // basic method, painter can provide tooltip at specified coordinates
-      // range.x1 .. range.x2, range.y1 .. range.y2
    }
 
    JSROOT.TH2Painter.prototype.Draw3D = function()
@@ -5887,7 +5593,7 @@
       var colorFlag = ( this.options.Color > 0);
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
 
-      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip > 1 ? 1 : 0));
+      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
 
       var painter = this;
 
@@ -6062,7 +5768,7 @@
          bin.position.y = hh.z/2;
          bin.position.z = -(ty(hh.y));
 
-         if (JSROOT.gStyle.Tooltip > 1) bin.name = hh.tip;
+         if (JSROOT.gStyle.Tooltip) bin.name = hh.tip;
          toplevel.add( bin );
       }
 
