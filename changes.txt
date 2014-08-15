@@ -37,6 +37,7 @@ August 2014:
              style="width: 800px; height:600px"></iframe>
 15.Remove 'JSROOTIO.' prefix from _typename. Now real class name is used.   
 16.Use in all scripts JSROOT as central 'namespace'
+17.Introduce context menu in 3D, use it for switch between 2D/3D modes
      
 
 July 2014:

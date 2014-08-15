@@ -52,6 +52,44 @@
    };
 
    JSROOT.Painter = {};
+
+   
+   JSROOT.Painter.createmenu = function(event, menuname) {
+      var xMousePosition = event.clientX + window.pageXOffset;
+      var yMousePosition = event.clientY + window.pageYOffset;
+
+      // console.log("Menu for " + itemname + " pos = " + xMousePosition + "," + yMousePosition);
+      
+      var x = document.getElementById(menuname);
+      if(x) x.parentNode.removeChild(x);
+     
+      var d = document.createElement('div');
+      d.setAttribute('class', 'ctxmenu');
+      d.setAttribute('id', menuname);  
+      document.body.appendChild(d);
+      d.style.left = xMousePosition + "px";
+      d.style.top = yMousePosition + "px";
+      d.onmouseover = function(e) { this.style.cursor = 'pointer'; }
+      d.onclick = function(e) { 
+         var x = document.getElementById(menuname);
+         if(x) x.parentNode.removeChild(x);
+      }
+      
+      document.body.onclick = function(e) { 
+         var x = document.getElementById(menuname);
+         if(x) x.parentNode.removeChild(x);
+      }
+      
+      return d;
+   }
+   
+   JSROOT.Painter.menuitem = function(menu,txt,func) {
+      var p = document.createElement('p');
+      menu.appendChild(p);
+      p.onclick = func;
+      p.setAttribute('class', 'ctxline');
+      p.innerHTML = txt;
+   }
    
    JSROOT.Painter.Coord = { kCARTESIAN : 1, kPOLAR : 2, kCYLINDRICAL : 3, kSPHERICAL : 4, kRAPIDITY : 5 };
 
@@ -1221,7 +1259,10 @@
       this.svg_frame = vis['ROOT:svg_frame'];
       this.pad = vis['ROOT:pad'];
 
-      if (!('painters' in vis)) {
+      if (!('painters' in vis) || (vis['painters']==null)) {
+         
+         console.log("Add painter as first");
+         
          vis['painters'] = new Array();
 
          // only first object in list can have zoom selection
@@ -1253,6 +1294,9 @@
 
       } else {
          this.first = vis['painters'][0];
+         
+         console.log("Add painter as " + vis['painters'].length);
+
       }
 
       vis['painters'].push(this);
@@ -1292,7 +1336,7 @@
       var vis = this.vis; 
 
       if (!vis) return;
-
+      
       for (var n=0;n<vis['painters'].length;n++) {
 
          var painter = vis['painters'][n];
@@ -1304,8 +1348,19 @@
       }
       
       delete vis['painters'];
+      vis['painters'] = null;
+
+      while (vis.lastChild) {
+         vis.removeChild(vis.lastChild);
+         console.log("remove child");
+     }
       
-      vis.empty();
+      vis.selectAll("*").remove();
+
+      vis.id = "cleanup_id";
+      
+      $("#cleanup_id").empty();
+
    }
 
 
@@ -1600,7 +1655,7 @@
     * Now the real drawing functions (using d3.js)
     */
 
-   JSROOT.Painter.add3DInteraction = function(renderer, scene, camera, toplevel) {
+   JSROOT.Painter.add3DInteraction = function(renderer, scene, camera, toplevel, vis) {
       // add 3D mouse interactive functions
       var mouseX, mouseY, mouseDowned = false;
       var mouse = { x: 0, y: 0 }, INTERSECTED;
@@ -1783,6 +1838,23 @@
          camera.position.z += d * 20;
          renderer.render( scene, camera );
       });
+      
+      $( renderer.domElement ).on('contextmenu', function(e) {
+         
+         e.preventDefault();
+
+         if (JSROOT.gStyle.Tooltip) tooltip.hide();
+         
+         var menu = JSROOT.Painter.createmenu(e.originalEvent,'ctxmenu3');
+
+         if ('painters' in vis)
+            JSROOT.Painter.menuitem(menu,"Switch to 2D", function() {
+               $( vis[0][0] ).show().parent().find( renderer.domElement ).remove();
+            });
+         JSROOT.Painter.menuitem(menu,"Close", function() { });
+         
+      });
+      
    };
 
    JSROOT.Painter.createFrame = function(vis, frame) {
@@ -5448,6 +5520,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function()
    {
+      
       this.RemoveDraw();
 
       this.draw_g = this.svg_frame.append("svg:g");
@@ -5466,6 +5539,9 @@
 
       var local_bins = this.CreateDrawBins(w,h,normal_coordinates ? 0 : 1, tipkind);
 
+      console.log("Draw TH2 bins " + local_bins.length);
+
+      
       if (draw_markers) {
 
          // Add markers
@@ -5553,9 +5629,9 @@
    {
       var vis = this.vis;
       var frame = this.frame;
-   
-      this.ClearFrame();
 
+      // this.ClearFrame();
+      
       var w = Number(frame.attr("width")), h = Number(frame.attr("height")), size = 100;
 
       var xmin = this.xmin, xmax = this.xmax;
@@ -5805,7 +5881,7 @@
       $( vis[0][0] ).hide().parent().append( renderer.domElement );
       renderer.render( scene, camera );
 
-      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel);
+      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, vis);
    })}
    
    JSROOT.Painter.drawHistogram2D = function(vis, histo, opt)
@@ -5852,26 +5928,57 @@
    {
      JSROOT.Assert3DScripts(function() {
       
-      if (vis['ROOT:frame'] == null)
-         JSROOT.Painter.createFrame(vis);
+      function showContextMenu() {
 
-      var pad = vis['ROOT:pad'];
-      var frame = vis['ROOT:frame'];
+         console.log("???context menu???");
+         
+         d3.event.preventDefault();
 
+         var ctx_menu = document.getElementById('root_ctx_menu');
+         if(ctx_menu) ctx_menu.parentNode.removeChild(ctx_menu);
+
+         ctx_menu = document.createElement('div');
+         ctx_menu.setAttribute('id', 'root_ctx_menu');
+         vis.node().parentNode.appendChild(ctx_menu);
+
+         $("#root_ctx_menu").empty();
+
+         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext1</a><br/>");
+         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext2</a><br/>");
+         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext3</a><br/>");
+
+         $("#root_ctx_menu").data("Painter", pthis);
+         $("#root_ctx_menu").data("shown", true);
+
+         $("#root_ctx_menu").dialog({
+            title: "myname",
+            closeOnEscape: true,
+            autoOpen: false,
+            resizable: false,
+            modal: false,
+            width: "auto",
+            height: "auto",
+            position : {my: "left+3 top+3", of: d3.event, collision:"fit"}
+         });
+
+         $("#root_ctx_menu").dialog("open");
+       }
+      
       var logx = false, logy = false, logz = false,
           gridx = false, gridy = false, gridz = false;
 
       var opt = histo['fOption'].toLowerCase();
       // if (opt=="") opt = "colz";
 
-      if (pad && typeof(pad) != 'undefined') {
-         logx = pad['fLogx'];
-         logy = pad['fLogy'];
-         logz = pad['fLogz'];
-         gridx = pad['fGridx'];
-         gridy = pad['fGridy'];
-         gridz = pad['fGridz'];
+      if (vis['ROOT:pad'] && typeof(vis['ROOT:pad']) != 'undefined') {
+         logx = vis['ROOT:pad']['fLogx'];
+         logy = vis['ROOT:pad']['fLogy'];
+         logz = vis['ROOT:pad']['fLogz'];
+         gridx = vis['ROOT:pad']['fGridx'];
+         gridy = vis['ROOT:pad']['fGridy'];
+         gridz = vis['ROOT:pad']['fGridz'];
       }
+      
       var fillcolor = JSROOT.Painter.root_colors[histo['fFillColor']];
       var linecolor = JSROOT.Painter.root_colors[histo['fLineColor']];
       if (histo['fFillColor'] == 0) {
@@ -6144,7 +6251,7 @@
       $( vis[0][0] ).hide().parent().append( renderer.domElement );
       renderer.render( scene, camera );
 
-      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel);
+      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, vis);
    })}
 
    JSROOT.Painter.drawHStack = function(vis, stack, opt) {
@@ -6937,8 +7044,8 @@
                    .style("background-color", fillcolor)
                    .attr("viewBox", "0 0 " + $(render_to).width() + " " + $(render_to).height())
                    .attr("preserveAspectRatio", "xMidYMid meet")
-                   .attr("pointer-events", "all")
-                   .call(d3.behavior.zoom().on("zoom", JSROOT.Painter.redraw));
+                   .attr("pointer-events", "all");
+                   // .call(d3.behavior.zoom().on("zoom", JSROOT.Painter.redraw));
 
       return JSROOT.Painter.drawObjectInFrame(svg, obj, opt);
    }
@@ -7501,48 +7608,20 @@
       }
       this.AddOnlineMethods(this.h);
    }
-   
-   JSROOT.THierarchyPainter.prototype.menuitem = function(d,txt,func)
-   {
-      var p = document.createElement('p');
-      d.appendChild(p);
-      p.onclick = func;
-      p.setAttribute('class', 'ctxline');
-      p.innerHTML = txt;
-   }
+
    
    JSROOT.THierarchyPainter.prototype.contextmenu = function(element, event, itemname)
    {
-      var xMousePosition = event.clientX + window.pageXOffset;
-      var yMousePosition = event.clientY + window.pageYOffset;
-
       event.preventDefault();
-      
-      // console.log("Menu for " + itemname + " pos = " + xMousePosition + "," + yMousePosition);
-      
-      var x = document.getElementById('ctxmenu1');
-      if(x) x.parentNode.removeChild(x);
-     
-      var d = document.createElement('div');
-      d.setAttribute('class', 'ctxmenu');
-      d.setAttribute('id', 'ctxmenu1');
-      element.parentNode.appendChild(d);
-      d.style.left = xMousePosition + "px";
-      d.style.top = yMousePosition + "px";
-      d.onmouseover = function(e) { this.style.cursor = 'pointer'; }
-      d.onclick = function(e) { element.parentNode.removeChild(d);  }
-      
-      document.body.onclick = function(e) { 
-         var x = document.getElementById('ctxmenu1');
-         if(x) x.parentNode.removeChild(x);
-      }
+
+      var menu = JSROOT.Painter.createmenu(event,'ctxmenu1');
 
       var painter = this;
       
-      this.menuitem(d,"Draw", function() { painter.display(itemname); });
-      this.menuitem(d,"Draw in new window", function() { window.open(itemname+"/draw.htm"); });
-      this.menuitem(d,"Draw as png", function() { window.open(itemname+"/root.png?w=400&h=300&opt=colz"); });
-      this.menuitem(d,"Close", function() { });
+      JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
+      JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(itemname+"/draw.htm"); });
+      JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(itemname+"/root.png?w=400&h=300&opt=colz"); });
+      JSROOT.Painter.menuitem(menu,"Close", function() { });
       
       return false;
    }
