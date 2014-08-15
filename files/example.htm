@@ -15,10 +15,10 @@
    
       function updateGUI() {
          // if getting histogram from THttpServer as JSON string, one should parse it like:
-         // var histo = JSROOTCore.parse(your_json_string);
+         // var histo = JSROOT.parse(your_json_string);
 
          // this is just generation of histogram      
-         var histo = JSROOTCore.CreateTH2(20, 20);
+         var histo = JSROOT.CreateTH2(20, 20);
          for (var iy=0;iy<20;iy++)
             for (var ix=0;ix<20;ix++) {
                var bin = histo.getBin(ix+1, iy+1), val = 0;
@@ -47,7 +47,7 @@
    
 </head>
 
-<body onload="JSROOTCore.AssertPrerequisites('2d', updateGUI)">
+<body onload="JSROOT.AssertPrerequisites('2d', updateGUI)">
   <h3>Text Before </h3> 
    
   <div id="object_draw" style="width: 800px; height:600px"></div>

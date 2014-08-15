@@ -18,7 +18,7 @@ function addCollapsible(element) {
        .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
        .hover(function() { $(this).toggleClass("ui-state-hover"); })
        .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
-       .append('<button type="button" class="closeButton" title="close canvas" onclick="closeCollapsible(event, \''+element+'\')"><img src="'+JSROOTCore.source_dir+'/img/remove.gif"/></button>')
+       .append('<button type="button" class="closeButton" title="close canvas" onclick="closeCollapsible(event, \''+element+'\')"><img src="'+JSROOT.source_dir+'/img/remove.gif"/></button>')
        .click(function() {
           $(this)
              .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
@@ -238,7 +238,7 @@ function BuildOnlineGUI() {
       return;
    }
    
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOTCore.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += '<div id="main" class="column"><br/>'
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
@@ -274,7 +274,7 @@ function BuildSimpleGUI() {
    if (!files) files = "file/hsimple.root";
    var arrFiles = files.split(';');
 
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOTCore.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += "<div id='main' class='column'>\n"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>\n"

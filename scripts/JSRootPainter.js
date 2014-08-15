@@ -256,8 +256,8 @@
    JSROOTPainter.decodeOptions = function(opt, histo, pad) {
       /* decode string 'opt' and fill the option structure */
       var hdim = 1; // histo['fDimension'];
-      if (histo['_typename'].match(/\bJSROOTIO.TH2/)) hdim = 2;
-      if (histo['_typename'].match(/\bJSROOTIO.TH3/)) hdim = 3;
+      if (histo['_typename'].match(/\bTH2/)) hdim = 2;
+      if (histo['_typename'].match(/\bTH3/)) hdim = 3;
       var nch = opt.length;
       var option = { 'Axis': 0, 'Bar': 0, 'Curve': 0, 'Error': 0, 'Hist': 0,
          'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Func': 0, 'Scat': 0,
@@ -451,7 +451,7 @@
          }
          chopt = chopt.replace('TEXT', '    ');
          l = chopt.indexOf('N');
-         if (l != -1 && histo['_typename'].match(/\bJSROOTIO.TH2Poly/)) option.Text += 3000;
+         if (l != -1 && histo['_typename'].match(/\bTH2Poly/)) option.Text += 3000;
          option.Scat = 0;
       }
       l = chopt.indexOf('POL');  if (l != -1) { option.System = JSROOTPainter.Coord.kPOLAR;       chopt = chopt.replace('POL', '   '); }
@@ -499,7 +499,7 @@
       if (chopt.indexOf('*') != -1)    option.Star =1;
       if (chopt.indexOf('H') != -1)    option.Hist =2;
       if (chopt.indexOf('P0') != -1)   option.Mark =10;
-      if (histo['_typename'].match(/\bJSROOTIO.TH2Poly/)) {
+      if (histo['_typename'].match(/\bTH2Poly/)) {
          if (option.Fill + option.Line + option.Mark != 0 ) option.Scat = 0;
       }
 
@@ -517,7 +517,7 @@
                if (option.Error == 1)  option.Error += 20;
                option.Error += 10;
             }
-            if (option.Text && histo['_typename'].match(/\bJSROOTIO.TProfile/)) {
+            if (option.Text && histo['_typename'].match(/\bTProfile/)) {
                option.Text += 2000;
                option.Error = 0;
             }
@@ -769,7 +769,7 @@
    JSROOTPainter.xtoPad = function(x, pad) {
       if (pad['fLogx']) {
          if (x > 0)
-            x = JSROOTMath.log10(x);
+            x = JSROOT.Math.log10(x);
          else
             x = pad['fUxmin'];
       }
@@ -779,7 +779,7 @@
    JSROOTPainter.ytoPad = function(y, pad) {
       if (pad['fLogy']) {
          if (y > 0)
-            y = JSROOTMath.log10(y);
+            y = JSROOT.Math.log10(y);
          else
             y = pad['fUymin'];
       }
@@ -1994,7 +1994,7 @@
       if (ymax > 0.0) ymax *= 1.05;
       if (ymin < 0.0) ymin *= 1.05;
 
-      var histo = JSROOTCore.CreateTH1();
+      var histo = JSROOT.CreateTH1();
 
       histo['fName'] = this.tf1['fName'] + "_hist";
       histo['fTitle'] = this.tf1['fTitle'];
@@ -2266,7 +2266,7 @@
       this.xaxis_type = this.logx ? 'logarithmic' : 'linear';
       this.yaxis_type = this.logy ? 'logarithmic' : 'linear';
 
-      if (this.graph['_typename'] == 'JSROOTIO.TGraph') {
+      if (this.graph['_typename'] == 'TGraph') {
          // check for axis scale format, and convert if required
          if (this.graph['fHistogram']['fXaxis']['fTimeDisplay']) {
             this.xaxis_type = 'datetime';
@@ -2276,7 +2276,7 @@
             this.yaxis_type = 'datetime';
          }
       }
-      else if (this.graph['_typename'] == 'JSROOTIO.TGraphErrors') {
+      else if (this.graph['_typename'] == 'TGraphErrors') {
          this.maxEX = d3.max(this.graph['fEX']);
          this.maxEY = d3.max(this.graph['fEY']);
          if (this.maxEX < 1.0e-300 && this.maxEY < 1.0e-300)
@@ -2311,7 +2311,7 @@
                bh: pthis.graph['fY'][p]
             }
          }
-         else if (pthis.graph['_typename'] == 'JSROOTIO.TGraphErrors') {
+         else if (pthis.graph['_typename'] == 'TGraphErrors') {
             return {
                x: pthis.graph['fX'][p],
                y: pthis.graph['fY'][p],
@@ -2321,7 +2321,7 @@
                eyhigh: pthis.graph['fEY'][p]
             };
          }
-         else if (pthis.graph['_typename'] == 'JSROOTIO.TGraphAsymmErrors' ||
+         else if (pthis.graph['_typename'] == 'TGraphAsymmErrors' ||
                   pthis.graph['_typename'].match(/\bRooHist/)) {
             return {
                x: pthis.graph['fX'][p],
@@ -2691,8 +2691,8 @@
               .append("svg:title").text(TooltipText);
 
       }
-      if ((this.graph['_typename'] == 'JSROOTIO.TGraphErrors' ||
-            this.graph['_typename'] == 'JSROOTIO.TGraphAsymmErrors' ||
+      if ((this.graph['_typename'] == 'TGraphErrors' ||
+            this.graph['_typename'] == 'TGraphAsymmErrors' ||
             this.graph['_typename'].match(/\bRooHist/)) && this.draw_errors && !this.optionBar) {
 
          // here are up to five elements are collected, try to group them
@@ -3017,7 +3017,7 @@
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0)  jcolor = tcolor;
             var posy = j * stepy + font_size;
 
-            if (pavetext['_typename'] == 'JSROOTIO.TPaveStats') {
+            if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat>0) && (j>=first_stat)) {
                   var parts = lines[j].split("|");
                   for (var n=0;n<parts.length;n++)
@@ -3072,7 +3072,7 @@
          }
       }
 
-      if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'JSROOTIO.TPaveStats')) {
+      if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
          this.draw_g.append("svg:line")
             .attr("class", "pavedraw")
             .attr("x1", 0)
@@ -3400,7 +3400,7 @@
 
       // here we deciding how histogram will look like and how will be shown
       this.options = JSROOTPainter.decodeOptions(opt, this.histo, this.pad);
-//      if (this.histo['_typename'] == "JSROOTIO.TProfile")
+//      if (this.histo['_typename'] == "TProfile")
 //         this.options.Error = 11;
 
       this.show_gridx = false;
@@ -3586,10 +3586,10 @@
       this['y_axis_sub'] = null;
 
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
-      var noexpx = this.histo['fXaxis'].TestBit(JSROOTCore.EAxisBits.kNoExponent);
-      var noexpy = this.histo['fYaxis'].TestBit(JSROOTCore.EAxisBits.kNoExponent);
-      var moreloglabelsx = this.histo['fXaxis'].TestBit(JSROOTCore.EAxisBits.kMoreLogLabels);
-      var moreloglabelsy = this.histo['fYaxis'].TestBit(JSROOTCore.EAxisBits.kMoreLogLabels);
+      var noexpx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+      var noexpy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+      var moreloglabelsx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+      var moreloglabelsy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
       if (this.histo['fXaxis']['fXmax'] < 100 && this.histo['fXaxis']['fXmax']/this.histo['fXaxis']['fXmin'] < 100) noexpx = true;
       if (this.histo['fYaxis']['fXmax'] < 100 && this.histo['fYaxis']['fXmax']/this.histo['fYaxis']['fXmin'] < 100) noexpy = true;
@@ -3693,7 +3693,7 @@
             .tickSize(-xDivLength, -xDivLength/2, -xDivLength/4)
             .tickFormat(function(d) {
                 var val = parseFloat(d);
-                var vlog = Math.abs(JSROOTMath.log10(val));
+                var vlog = Math.abs(JSROOT.Math.log10(val));
                 if (moreloglabelsx) {
                   if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
                      if (noexpx) return val.toFixed();
@@ -3755,7 +3755,7 @@
             .tickSize(-yDivLength, -yDivLength/2, -yDivLength/4)
             .tickFormat(function(d) {
                var val = parseFloat(d);
-               var vlog = Math.abs(JSROOTMath.log10(val));
+               var vlog = Math.abs(JSROOT.Math.log10(val));
                if (moreloglabelsy) {
                   if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
                      if (noexpy) return val.toFixed();
@@ -3987,8 +3987,8 @@
 
             var func = this.histo.fFunctions.arr[i];
 
-            if (func['_typename'] == 'JSROOTIO.TPaveText' ||
-                func['_typename'] == 'JSROOTIO.TPaveStats') {
+            if (func['_typename'] == 'TPaveText' ||
+                func['_typename'] == 'TPaveStats') {
 
                return func;
             }
@@ -4003,7 +4003,7 @@
       if (this.FindStat() != null) return null;
 
       var stats = {};
-      stats['_typename'] = 'JSROOTIO.TPaveStats';
+      stats['_typename'] = 'TPaveStats';
       stats['fName'] = 'stats';
 
       stats['_AutoCreated'] = true;
@@ -4011,9 +4011,9 @@
       stats['fY1NDC'] = JSROOTPainter.gStyle.StatY;
       stats['fX2NDC'] = JSROOTPainter.gStyle.StatX + JSROOTPainter.gStyle.StatW;
       stats['fY2NDC'] = JSROOTPainter.gStyle.StatY + JSROOTPainter.gStyle.StatH;
-      if ((this.histo['_typename'] && this.histo['_typename'].match(/\bTProfile/)) ||
-          (this.histo['_typename'] && this.histo['_typename'].match(/\bTH2/)))
-         stats['fY1NDC'] = 0.67;
+      if (this.histo['_typename'] && 
+          (this.histo['_typename'].match(/\bTProfile/) || this.histo['_typename'].match(/\bTH2/)))
+             stats['fY1NDC'] = 0.67;
 
       stats['fOptFit'] = 0;
       stats['fOptStat'] = JSROOTPainter.gStyle.OptStat;
@@ -4046,7 +4046,7 @@
       stats['fTextColor'] = JSROOTPainter.gStyle.StatTextColor;
       stats['fTextFont'] = JSROOTPainter.gStyle.StatFont;
 
-      stats['fLines'] = JSROOTCore.CreateTList();
+      stats['fLines'] = JSROOT.CreateTList();
 
       stats['fLines'].arr.push({'fTitle': "hname", "fTextColor": 1});
 //      stats['fLines'].arr.push({'fTitle': "Entries = 4075", "fTextColor": 1});
@@ -4056,7 +4056,7 @@
       stats['fLines'].arr[0]['fTitle'] = this.histo['fName'];
 
       if (!'fFunctions' in this.histo)
-         this.histo['fFunctions'] = JSROOTCore.CreateTList();
+         this.histo['fFunctions'] = JSROOT.CreateTList();
 
       this.histo.fFunctions.arr.push(stats);
 
@@ -4068,7 +4068,7 @@
       if ('fFunctions' in this.histo)
          for (var i in this.histo.fFunctions.arr) {
             var func = this.histo.fFunctions.arr[i];
-            if (func['_typename'] == 'JSROOTIO.TPaletteAxis') return func;
+            if (func['_typename'] == 'TPaletteAxis') return func;
          }
 
       return null;
@@ -4084,17 +4084,17 @@
 
       var lastpainter = this;
       
-      var kNotDraw = JSROOTCore.BIT(9);  // don't draw the function (TF1) when in a TH1
+      var kNotDraw = JSROOT.BIT(9);  // don't draw the function (TF1) when in a TH1
       
       var EStatusBits = {
-            kCanDelete     : JSROOTCore.BIT(0),   // if object in a list can be deleted
-            kMustCleanup   : JSROOTCore.BIT(3),   // if object destructor must call RecursiveRemove()
-            kObjInCanvas   : JSROOTCore.BIT(3),   // for backward compatibility only, use kMustCleanup
-            kIsReferenced  : JSROOTCore.BIT(4),   // if object is referenced by a TRef or TRefArray
-            kHasUUID       : JSROOTCore.BIT(5),   // if object has a TUUID (its fUniqueID=UUIDNumber)
-            kCannotPick    : JSROOTCore.BIT(6),   // if object in a pad cannot be picked
-            kNoContextMenu : JSROOTCore.BIT(8),   // if object does not want context menu
-            kInvalidObject : JSROOTCore.BIT(13)   // if object ctor succeeded but object should not be used
+            kCanDelete     : JSROOT.BIT(0),   // if object in a list can be deleted
+            kMustCleanup   : JSROOT.BIT(3),   // if object destructor must call RecursiveRemove()
+            kObjInCanvas   : JSROOT.BIT(3),   // for backward compatibility only, use kMustCleanup
+            kIsReferenced  : JSROOT.BIT(4),   // if object is referenced by a TRef or TRefArray
+            kHasUUID       : JSROOT.BIT(5),   // if object has a TUUID (its fUniqueID=UUIDNumber)
+            kCannotPick    : JSROOT.BIT(6),   // if object in a pad cannot be picked
+            kNoContextMenu : JSROOT.BIT(8),   // if object does not want context menu
+            kInvalidObject : JSROOT.BIT(13)   // if object ctor succeeded but object should not be used
       };
 
       for (var i in this.histo.fFunctions.arr) {
@@ -4107,23 +4107,23 @@
          // object will be redraw automatically
          if (funcpainter==null) {
 
-            if (func['_typename'] == 'JSROOTIO.TPaveText' ||
-                func['_typename'] == 'JSROOTIO.TPaveStats') {
+            if (func['_typename'] == 'TPaveText' ||
+                func['_typename'] == 'TPaveStats') {
                funcpainter = JSROOTPainter.DrawPaveText(this.vis, func);
             }
 
-            if (func['_typename'] == 'JSROOTIO.TF1') {
+            if (func['_typename'] == 'TF1') {
                if ((!this.pad && !func.TestBit(kNotDraw)) ||
                    (this.pad && func.TestBit(EStatusBits.kObjInCanvas)))
                   funcpainter = JSROOTPainter.drawFunction(this.vis, func);
             }
 
-            if (func['_typename'] == 'JSROOTIO.TPaletteAxis') {
+            if (func['_typename'] == 'TPaletteAxis') {
                funcpainter = JSROOTPainter.drawPaletteAxis(this.vis, func);
             }
          }
 
-         if (func['_typename'] == 'JSROOTIO.TPaletteAxis' && funcpainter) {
+         if (func['_typename'] == 'TPaletteAxis' && funcpainter) {
             funcpainter.Enabled = (this.options.Zscale > 0) && (this.options.Color>0);
          }
 
@@ -5358,7 +5358,7 @@
       if (!rel_width) rel_width = 0.08;
 
       var pal = {};
-      pal['_typename'] = 'JSROOTIO.TPaletteAxis';
+      pal['_typename'] = 'TPaletteAxis';
       pal['fName'] = 'palette';
 
       pal['_AutoCreated'] = true;
@@ -5382,7 +5382,7 @@
 
       var axis = {};
 
-      axis['_typename'] = 'JSROOTIO.TGaxis';
+      axis['_typename'] = 'TGaxis';
       axis['fTickSize'] =    0.03;
       axis['fLabelOffset'] = 0.005;
       axis['fLabelSize'] =   0.035;
@@ -5410,7 +5410,7 @@
       pal['fAxis'] = axis;
 
       if (!'fFunctions' in this.histo)
-         this.histo['fFunctions'] = JSROOTCore.CreateTList();
+         this.histo['fFunctions'] = JSROOT.CreateTList();
 
       // place colz in the beginning, that stat box is always drawn on the top
       this.histo.fFunctions.arr.unshift(pal);
@@ -5925,7 +5925,7 @@
 
       var painter = this;
 
-    JSROOTCore.Assert3DScripts(function() {
+    JSROOT.Assert3DScripts(function() {
       
       // three.js 3D drawing
       var scene = new THREE.Scene();
@@ -6139,7 +6139,7 @@
 
    JSROOTPainter.drawHistogram3D = function(vis, histo, dopt)
    {
-     JSROOTCore.Assert3DScripts(function() {
+     JSROOT.Assert3DScripts(function() {
       
       if (vis['ROOT:frame'] == null)
          JSROOTPainter.createFrame(vis);
@@ -6482,27 +6482,27 @@
       else themin = stack['fMinimum'];
       if (!('fHistogram' in stack)) {
          h = stack['fHists'].arr[0];
-         stack['fHistogram'] = JSROOTCore.CreateTH1();
+         stack['fHistogram'] = JSROOT.CreateTH1();
          stack['fHistogram']['fName'] = "unnamed";
-         stack['fHistogram']['fXaxis'] = JSROOTCore.clone(h['fXaxis']);
-         stack['fHistogram']['fYaxis'] = JSROOTCore.clone(h['fYaxis']);
+         stack['fHistogram']['fXaxis'] = JSROOT.clone(h['fXaxis']);
+         stack['fHistogram']['fYaxis'] = JSROOT.clone(h['fYaxis']);
          stack['fHistogram']['fXaxis']['fXmin'] = xmin;
          stack['fHistogram']['fXaxis']['fXmax'] = xmax;
          stack['fHistogram']['fYaxis']['fXmin'] = ymin;
          stack['fHistogram']['fYaxis']['fXmax'] = ymax;
       }
       stack['fHistogram']['fTitle'] = stack['fTitle'];
-      //var histo = JSROOTCore.clone(stack['fHistogram']);
+      //var histo = JSROOT.clone(stack['fHistogram']);
       var histo = stack['fHistogram'];
-      if (!histo.TestBit(JSROOTCore.TH1StatusBits.kIsZoomed)) {
+      if (!histo.TestBit(JSROOT.TH1StatusBits.kIsZoomed)) {
          if (nostack && stack['fMaximum'] != -1111) histo['fMaximum'] = stack['fMaximum'];
          else {
-            if (pad && pad['fLogy']) histo['fMaximum'] = themax*(1+0.2*JSROOTMath.log10(themax/themin));
+            if (pad && pad['fLogy']) histo['fMaximum'] = themax*(1+0.2*JSROOT.Math.log10(themax/themin));
             else histo['fMaximum'] = 1.05 * themax;
          }
          if (nostack && stack['fMinimum'] != -1111) histo['fMinimum'] = stack['fMinimum'];
          else {
-            if (pad && pad['fLogy']) histo['fMinimum'] = themin/(1+0.5*JSROOTMath.log10(themax/themin));
+            if (pad && pad['fLogy']) histo['fMinimum'] = themin/(1+0.5*JSROOT.Math.log10(themax/themin));
             else histo['fMinimum'] = themin;
          }
       }
@@ -6511,9 +6511,9 @@
          var hopt = histo['fOption'];
          if ((opt!="") && (hopt.indexOf(opt) == -1)) hopt += opt;
 
-         if (histo['_typename'].match(/\bJSROOTIO.TH1/))
+         if (histo['_typename'].match(/\bTH1/))
             JSROOTPainter.drawHistogram1D(vis, histo, hopt);
-         else if (histo['_typename'].match(/\bJSROOTIO.TH2/))
+         else if (histo['_typename'].match(/\bTH2/))
             JSROOTPainter.drawHistogram2D(vis, histo, hopt);
       }
       for (var i=0; i<nhists; ++i) {
@@ -6526,7 +6526,7 @@
          if ((opt!="") && (hopt.indexOf(opt) == -1)) hopt += opt;
          hopt += "same";
 
-         if (h['_typename'].match(/\bJSROOTIO.TH1/))
+         if (h['_typename'].match(/\bTH1/))
             JSROOTPainter.drawHistogram1D(vis, h, hopt);
       }
    };
@@ -6871,8 +6871,8 @@
          uxmax = rwxmax + dx;
          if (logy) {
             if (rwymin <= 0) rwymin = 0.001*rwymax;
-            minimum = rwymin/(1+0.5*JSROOTMath.log10(rwymax/rwymin));
-            maximum = rwymax*(1+0.2*JSROOTMath.log10(rwymax/rwymin));
+            minimum = rwymin/(1+0.5*JSROOT.Math.log10(rwymax/rwymin));
+            maximum = rwymax*(1+0.2*JSROOT.Math.log10(rwymax/rwymin));
          } else {
             minimum  = rwymin - dy;
             maximum  = rwymax + dy;
@@ -6912,7 +6912,7 @@
 
       // Create a temporary histogram to draw the axis (if necessary)
       if (!histo) {
-         histo = JSROOTCore.CreateTH1();
+         histo = JSROOT.CreateTH1();
          histo['fXaxis']['fXmin'] = rwxmin;
          histo['fXaxis']['fXmax'] = rwxmax;
          histo['fYaxis']['fXmin'] = rwymin;
@@ -6934,18 +6934,16 @@
       if ((this.fUserPainters != null) &&
           (typeof(this.fUserPainters[classname]) === 'function')) return true;
 
-      if (classname.match(/\bJSROOTIO.TH1/) ||
-          classname.match(/\bJSROOTIO.TH2/) ||
-          classname.match(/\bJSROOTIO.TH3/) ||
-          classname.match(/\bJSROOTIO.TGraph/) ||
+      if (classname.match(/\bTH1/) ||
+          classname.match(/\bTH2/) ||
+          classname.match(/\bTH3/) ||
+          classname.match(/\bTGraph/) ||
           classname.match(/\bRooHist/) ||
           classname.match(/\RooCurve/) ||
-          classname == 'JSROOTIO.TF1' ||
-          classname == 'JSROOTIO.TCanvas' ||
-          classname == 'JSROOTIO.THStack' ||
-          classname == 'JSROOTIO.TProfile') return true;
-
-      // console.log("Cannot draw class " + classname + "  " + typeof(this.fUserPainters[classname]));
+          classname == 'TF1' ||
+          classname == 'TCanvas' ||
+          classname == 'THStack' ||
+          classname == 'TProfile') return true;
 
       return false;
    }
@@ -7089,7 +7087,7 @@
       // 1=left adjusted, 2=centered, 3=right adjusted
       // 1=bottom adjusted, 2=centered, 3=top adjusted
 
-      var kTextNDC  = JSROOTCore.BIT(14);
+      var kTextNDC  = JSROOT.BIT(14);
 
       var pad = vis['ROOT:pad'];
 
@@ -7131,7 +7129,7 @@
 
       var string = text['fTitle'];
       // translate the LaTeX symbols
-      if (text['_typename'] == 'JSROOTIO.TLatex')
+      if (text['_typename'] == 'TLatex')
          string = this.translateLaTeX(text['fTitle']);
 
       vis.append("text")
@@ -7155,7 +7153,7 @@
 
       var classname = obj['_typename'];
 
-      if (classname == 'JSROOTIO.TCanvas') {
+      if (classname == 'TCanvas') {
          vis['ROOT:canvas'] = obj;
          vis['ROOT:pad'] = obj;
          for (var i=0; i<obj.fPrimitives.arr.length; ++i) {
@@ -7165,45 +7163,45 @@
          return;
       }
 
-      if (classname == 'JSROOTIO.TFrame')
+      if (classname == 'TFrame')
          return JSROOTPainter.createFrame(vis, obj);
 
-      if (classname == 'JSROOTIO.TPad')
+      if (classname == 'TPad')
          return JSROOTPainter.drawPad(vis, obj, opt);
 
-      if (classname == 'JSROOTIO.TPaveLabel')
+      if (classname == 'TPaveLabel')
          return JSROOTPainter.drawPaveLabel(vis, obj);
 
-      if (classname == 'JSROOTIO.TLegend')
+      if (classname == 'TLegend')
          return JSROOTPainter.drawLegend(vis, obj, opt);
 
-      if (classname == 'JSROOTIO.TPaveText')
+      if (classname == 'TPaveText')
          return JSROOTPainter.DrawPaveText(vis, obj);
 
-      if ((classname == 'JSROOTIO.TLatex') || (classname == 'JSROOTIO.TText'))
+      if ((classname == 'TLatex') || (classname == 'TText'))
          return JSROOTPainter.drawText(vis, obj);
 
-      if (classname.match(/\bJSROOTIO.TH1/) || (classname == "JSROOTIO.TProfile"))
+      if (classname.match(/\bTH1/) || (classname == "TProfile"))
          return JSROOTPainter.drawHistogram1D(vis, obj, opt);
 
-      if (classname.match(/\bJSROOTIO.TH2/))
+      if (classname.match(/\bTH2/))
          return JSROOTPainter.drawHistogram2D(vis, obj, opt);
 
-      if (classname.match(/\bJSROOTIO.TH3/))
+      if (classname.match(/\bTH3/))
          return JSROOTPainter.drawHistogram3D(vis, obj, opt);
 
-      if (classname == 'JSROOTIO.THStack')
+      if (classname == 'THStack')
          return JSROOTPainter.drawHStack(vis, obj, opt);
 
-      if (classname == 'JSROOTIO.TF1')
+      if (classname == 'TF1')
          return JSROOTPainter.drawFunction(vis, obj);
 
-      if (classname.match(/\bJSROOTIO.TGraph/) ||
+      if (classname.match(/\bTGraph/) ||
           classname.match(/\bRooHist/) ||
           classname.match(/\RooCurve/))
          return JSROOTPainter.drawGraph(vis, obj, opt);
 
-      if (classname == 'JSROOTIO.TMultiGraph')
+      if (classname == 'TMultiGraph')
          return JSROOTPainter.drawMultiGraph(vis, obj, opt);
 
       if ((this.fUserPainters != null) && typeof(this.fUserPainters[classname]) === 'function')
@@ -7285,7 +7283,7 @@
          var obj = lst.arr[i];
          var item = { 
                _name : obj['fName'],  
-               _kind : "ROOT." + obj['_typename'].slice(9), // remove JSROOTIO. in front
+               _kind : "ROOT." + obj['_typename'],
                _readobj: obj
          };
 
@@ -7500,21 +7498,21 @@
       
       cando.expand = ('_more' in node);
 
-      if (kind == "ROOT.Session") cando.img1 = JSROOTCore.source_dir+'img/globe.gif'; else
-      if (kind.match(/\bROOT.TH1/)) { cando.img1 = JSROOTCore.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; } else
-      if (kind.match(/\bROOT.TH2/)) { cando.img1 = JSROOTCore.source_dir+'img/histo2d.png'; cando.scan = false; cando.display = true; } else  
-      if (kind.match(/\bROOT.TH3/)) { cando.img1 = JSROOTCore.source_dir+'img/histo3d.png'; cando.scan = false; cando.display = true; } else
-      if (kind == "ROOT.TCanvas") { cando.img1 = JSROOTCore.source_dir+'img/canvas.png'; cando.display = true; } else
-      if (kind == "ROOT.TProfile") { cando.img1 = JSROOTCore.source_dir+'img/profile.png'; cando.display = true; } else
-      if (kind.match(/\bROOT.TGraph/)) { cando.img1 = JSROOTCore.source_dir+'img/graph.png'; cando.display = true; } else
-      if (kind == "ROOT.TF1") { cando.img1 = JSROOTCore.source_dir+'img/graph.png'; cando.display = true; } else
-      if (kind == "ROOT.TTree") cando.img1 = JSROOTCore.source_dir+'img/tree.png'; else
-      if (kind == "ROOT.TFolder") { cando.img1 = JSROOTCore.source_dir+'img/folder.gif'; cando.img2 = JSROOTCore.source_dir+'img/folderopen.gif'; }  else
-      if (kind == "ROOT.TNtuple") cando.img1 = JSROOTCore.source_dir+'img/tree.png';   else
-      if (kind == "ROOT.TBranch") cando.img1 = JSROOTCore.source_dir+'img/branch.png';   else
-      if (kind.match(/\bROOT.TLeaf/)) cando.img1 = JSROOTCore.source_dir+'img/leaf.png'; else
-      if (kind == "ROOT.TStreamerInfoList") { cando.img1 = JSROOTCore.source_dir+'img/question.gif'; cando.expand = false; cando.display = true; } else
-      if ((kind.indexOf("ROOT.")==0) && JSROOTPainter.canDrawObject("JSROOTIO." + kind.slice(5))) { cando.img1 = JSROOTCore.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
+      if (kind == "ROOT.Session") cando.img1 = JSROOT.source_dir+'img/globe.gif'; else
+      if (kind.match(/\bROOT.TH1/)) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; } else
+      if (kind.match(/\bROOT.TH2/)) { cando.img1 = JSROOT.source_dir+'img/histo2d.png'; cando.scan = false; cando.display = true; } else  
+      if (kind.match(/\bROOT.TH3/)) { cando.img1 = JSROOT.source_dir+'img/histo3d.png'; cando.scan = false; cando.display = true; } else
+      if (kind == "ROOT.TCanvas") { cando.img1 = JSROOT.source_dir+'img/canvas.png'; cando.display = true; } else
+      if (kind == "ROOT.TProfile") { cando.img1 = JSROOT.source_dir+'img/profile.png'; cando.display = true; } else
+      if (kind.match(/\bROOT.TGraph/)) { cando.img1 = JSROOT.source_dir+'img/graph.png'; cando.display = true; } else
+      if (kind == "ROOT.TF1") { cando.img1 = JSROOT.source_dir+'img/graph.png'; cando.display = true; } else
+      if (kind == "ROOT.TTree") cando.img1 = JSROOT.source_dir+'img/tree.png'; else
+      if (kind == "ROOT.TFolder") { cando.img1 = JSROOT.source_dir+'img/folder.gif'; cando.img2 = JSROOT.source_dir+'img/folderopen.gif'; }  else
+      if (kind == "ROOT.TNtuple") cando.img1 = JSROOT.source_dir+'img/tree.png';   else
+      if (kind == "ROOT.TBranch") cando.img1 = JSROOT.source_dir+'img/branch.png';   else
+      if (kind.match(/\bROOT.TLeaf/)) cando.img1 = JSROOT.source_dir+'img/leaf.png'; else
+      if (kind == "ROOT.TStreamerInfoList") { cando.img1 = JSROOT.source_dir+'img/question.gif'; cando.expand = false; cando.display = true; } else
+      if ((kind.indexOf("ROOT.")==0) && JSROOTPainter.canDrawObject(kind.slice(5))) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
    }
    
    JSROOTPainter.HPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
@@ -7549,8 +7547,8 @@
          if (cando.expand) {   
             cando.html = "javascript: " + this.GlobalName() + ".expand(\'"+nodefullname+"\');";
             if (cando.img1.length == 0) {
-               cando.img1 = JSROOTCore.source_dir+'img/folder.gif'; 
-               cando.img2 = JSROOTCore.source_dir+'img/folderopen.gif';
+               cando.img1 = JSROOT.source_dir+'img/folder.gif'; 
+               cando.img2 = JSROOT.source_dir+'img/folderopen.gif';
             }
          } else
          if (cando.display) {
@@ -7562,8 +7560,8 @@
       if ((maxlvl >= 0) && (lvl >= maxlvl)) {
          cando.html = "javascript: " + this.GlobalName() + ".expand(\'"+nodefullname+"\');";
          if (cando.img1.length == 0) {
-            cando.img1 = JSROOTCore.source_dir+'img/folder.gif'; 
-            cando.img2 = JSROOTCore.source_dir+'img/folderopen.gif';
+            cando.img1 = JSROOT.source_dir+'img/folder.gif'; 
+            cando.img2 = JSROOT.source_dir+'img/folderopen.gif';
          }
          cando.scan = false;
       } 
@@ -7708,9 +7706,9 @@
    {
       var pthis = this;
       
-      var f = new JSROOTIO.RootFile(url, function(file) {
+      var f = new JSROOTIO.TFile(url, function(file) {
          if (file==null) return;
-         // for the moment file is only entry
+         // for the moment file is the only entry
          pthis.h = pthis.FileHierarchy(file);
          
          pthis.RefreshHtml();
@@ -7730,9 +7728,9 @@
          
          itemname += ('_more' in item) ? "h.json?compact=3" : "root.json.gz?compact=3";
          
-         var itemreq = JSROOTCore.NewHttpRequest(itemname, 'text', function(itemres) {
+         var itemreq = JSROOT.NewHttpRequest(itemname, 'text', function(itemres) {
 
-            var obj = JSROOTCore.parse(itemres);
+            var obj = JSROOT.parse(itemres);
              
             if (typeof callback == 'function') callback(item, obj);
          });
@@ -7759,7 +7757,7 @@
       
       var painter = this;
       
-      var req = JSROOTCore.NewHttpRequest(url, 'text', function(arg) {
+      var req = JSROOT.NewHttpRequest(url, 'text', function(arg) {
           if (arg==null) return;
           
           painter.h = JSON.parse(arg);

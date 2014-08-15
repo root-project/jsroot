@@ -16,25 +16,26 @@ August 2014:
    display. Now complete description collected in HPainter class and decoupled from
    visualization, performed with dTree.js. 
 5. Remove all global variables from the code.
-6. Automatic scripts/style loading handled via JSROOTCore.loadScript() function.
+6. Automatic scripts/style loading handled via JSROOT.loadScript() function.
    One can specify arbitrary scripts list, which asynchronously loaded by browser.
 7. Method to build simple GUI changed and more simplified :). The example in index.htm.
-   While loadScript and AssertPrerequisites functions moved to JSROOTCore, one
+   While loadScript and AssertPrerequisites functions moved to JSROOT, one
    can easily build many different kinds of GUIs, reusing provided JSRootCore.js functions.         
 8. In example.htm also use AssertPrerequisites to load necessary scripts.
    This helps to keep code up-to-date even by big changes in JavaScript code.
 9. Provide monitoring of online THttpServer with similar interface as for ROOT files.
 10.Fix several errors in TKey Streamer, use member names as in ROOT itself.        
-11.Keep the only version identifier JSROOTCore.version for JS code
-12.One can specify in JSROOTCore.AssertPrerequisites functionality which is required.
+11.Keep the only version identifier JSROOT.version for JS code
+12.One can specify in JSROOT.AssertPrerequisites functionality which is required.
    One could specify '2d', 'io' (default) or '3d'.
 13.Use new AssertPrerequisites functionality to load only required functionality.
 14.When displaying single element, one could specify draw options and monitor property like:
        http://localhost:8080/Files/job1.root/hpxpy/draw.htm?opt=col&monitor=2000
    Such link is best possibility to integrate display into different HTML pages,
    using <iframe/> tag like:
-  <iframe src="http://localhost:8080/Files/job1.root/hpx/draw.htm" style="width: 800px; height:600px"></iframe>
-   
+      <iframe src="http://localhost:8080/Files/job1.root/hpx/draw.htm" 
+             style="width: 800px; height:600px"></iframe>
+15.Remove 'JSROOTIO.' prefix from _typename. Now real class name is used.   
      
 
 July 2014:

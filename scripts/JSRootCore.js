@@ -1,6 +1,6 @@
 // JSROOTCore.js
 //
-// core methods for Javascript ROOT IO.
+// core methods for JavaScript ROOT.
 //
 
 
@@ -9,55 +9,55 @@
 
 (function(){
 
-   if (typeof JSROOTCore == "object") {
-      var e1 = new Error("JSROOTCore is already defined");
+   if (typeof JSROOT == "object") {
+      var e1 = new Error("JSROOT is already defined");
       e1.source = "JSROOTCore.js";
       throw e1;
    }
 
-   JSROOTCore = {};
+   JSROOT = {};
 
-   JSROOTCore.version = "3.x 2014/08/14";
+   JSROOT.version = "3.x 2014/08/14";
    
-   JSROOTCore.source_dir = null;
+   JSROOT.source_dir = null;
    
-   JSROOTCore.clone = function(obj) {
+   JSROOT.clone = function(obj) {
       return jQuery.extend(true, {}, obj);
    };
    
-   JSROOTCore.id_counter = 0;
+   JSROOT.id_counter = 0;
    
-   JSROOTCore.function_list = []; // do we really need it here?
+   JSROOT.function_list = []; // do we really need it here?
    
-   JSROOTCore.BIT = function(n) { return 1 << (n); }
+   JSROOT.BIT = function(n) { return 1 << (n); }
 
    // TH1 status bits
-   JSROOTCore.TH1StatusBits = {
-         kNoStats       : JSROOTCore.BIT(9),  // don't draw stats box
-         kUserContour   : JSROOTCore.BIT(10), // user specified contour levels
-         kCanRebin      : JSROOTCore.BIT(11), // can rebin axis
-         kLogX          : JSROOTCore.BIT(15), // X-axis in log scale
-         kIsZoomed      : JSROOTCore.BIT(16), // bit set when zooming on Y axis
-         kNoTitle       : JSROOTCore.BIT(17), // don't draw the histogram title
-         kIsAverage     : JSROOTCore.BIT(18)  // Bin contents are average (used by Add)
+   JSROOT.TH1StatusBits = {
+         kNoStats       : JSROOT.BIT(9),  // don't draw stats box
+         kUserContour   : JSROOT.BIT(10), // user specified contour levels
+         kCanRebin      : JSROOT.BIT(11), // can rebin axis
+         kLogX          : JSROOT.BIT(15), // X-axis in log scale
+         kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
+         kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
+         kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
    };
 
-   JSROOTCore.EAxisBits = {
-         kTickPlus      : JSROOTCore.BIT(9),
-         kTickMinus     : JSROOTCore.BIT(10),
-         kAxisRange     : JSROOTCore.BIT(11),
-         kCenterTitle   : JSROOTCore.BIT(12),
-         kCenterLabels  : JSROOTCore.BIT(14),
-         kRotateTitle   : JSROOTCore.BIT(15),
-         kPalette       : JSROOTCore.BIT(16),
-         kNoExponent    : JSROOTCore.BIT(17),
-         kLabelsHori    : JSROOTCore.BIT(18),
-         kLabelsVert    : JSROOTCore.BIT(19),
-         kLabelsDown    : JSROOTCore.BIT(20),
-         kLabelsUp      : JSROOTCore.BIT(21),
-         kIsInteger     : JSROOTCore.BIT(22),
-         kMoreLogLabels : JSROOTCore.BIT(23),
-         kDecimals      : JSROOTCore.BIT(11)
+   JSROOT.EAxisBits = {
+         kTickPlus      : JSROOT.BIT(9),
+         kTickMinus     : JSROOT.BIT(10),
+         kAxisRange     : JSROOT.BIT(11),
+         kCenterTitle   : JSROOT.BIT(12),
+         kCenterLabels  : JSROOT.BIT(14),
+         kRotateTitle   : JSROOT.BIT(15),
+         kPalette       : JSROOT.BIT(16),
+         kNoExponent    : JSROOT.BIT(17),
+         kLabelsHori    : JSROOT.BIT(18),
+         kLabelsVert    : JSROOT.BIT(19),
+         kLabelsDown    : JSROOT.BIT(20),
+         kLabelsUp      : JSROOT.BIT(21),
+         kIsInteger     : JSROOT.BIT(22),
+         kMoreLogLabels : JSROOT.BIT(23),
+         kDecimals      : JSROOT.BIT(11)
    };
 
    // This is part of the JSON-R code, found on 
@@ -65,7 +65,7 @@
    // Only unref part was used, arrays are not accounted as objects
    // Should be used to reintroduce objects references, produced by TBufferJSON 
 
-	JSROOTCore.JSONR_unref = function(value, dy)
+	JSROOT.JSONR_unref = function(value, dy)
 	{
 	   var c, i, k, ks;
 	   if (!dy) dy = [];
@@ -86,7 +86,7 @@
 	         
 	         if (Object.prototype.toString.apply(value) === '[object Array]') {
 	            for (i = 0; i < value.length; i++) {
-	               value[i] = JSROOTCore.JSONR_unref(value[i], dy);
+	               value[i] = JSROOT.JSONR_unref(value[i], dy);
 	            }
 	         } else {
 	
@@ -97,14 +97,14 @@
 	            }
 	
 	            // add methods to all objects, where _typename is specified
-	            if (('_typename' in value) && (typeof JSROOTCore == "object"))
-	               JSROOTCore.addMethods(value);
+	            if (('_typename' in value) && (typeof JSROOT == "object"))
+	               JSROOT.addMethods(value);
 	
 	            ks = Object.keys(value);
 	            for (i = 0; i < ks.length; i++) {
 	               k = ks[i];
 	               //if (dy.length<10) console.log("Check field " + k);
-	               value[k] = JSROOTCore.JSONR_unref(value[k], dy);
+	               value[k] = JSROOT.JSONR_unref(value[k], dy);
 	            }
 	         }
 	      }
@@ -114,14 +114,14 @@
 	   return value;
 	}
 	
-	JSROOTCore.parse = function(arg) {
+	JSROOT.parse = function(arg) {
 	   if (arg==null) return null;
 	   var obj = JSON.parse(arg);
-	   if (obj!=null) obj = JSROOTCore.JSONR_unref(obj)
+	   if (obj!=null) obj = JSROOT.JSONR_unref(obj)
 	   return obj;
 	}
 	
-	JSROOTCore.NewHttpRequest = function(url, kind, callback) {
+	JSROOT.NewHttpRequest = function(url, kind, callback) {
       // kind can be "text", "xml", "bin" or "head"
       var xhr = new XMLHttpRequest();
       
@@ -225,19 +225,19 @@
       return xhr;
    }
 	
-   JSROOTCore.loadScript = function(urllist, callback) {
+   JSROOT.loadScript = function(urllist, callback) {
       // dynamic script loader using callback
       // (as loading scripts may be asynchronous)
       // one could specify list of scripts or style files, separated by semicolon ';'
-      // one can prepend file name with '$$$' - than file will be loaded from JSROOTIO location
-      // This location can be set by JSROOTCore.source_dir or it will be detected automatically
+      // one can prepend file name with '$$$' - than file will be loaded from JSROOT location
+      // This location can be set by JSROOT.source_dir or it will be detected automatically
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
       
       var completeLoad = function() {
          if ((urllist!=null) && (urllist.length>0))
-            JSROOTCore.loadScript(urllist, callback);
+            JSROOT.loadScript(urllist, callback);
          else
             if (typeof callback == 'function') callback();
       }
@@ -291,12 +291,12 @@
             if ((src == null) || (src.length == 0)) continue;
 
             // try to detect place where source for our scripts should be situated
-            if (JSROOTCore.source_dir == null) {
+            if (JSROOT.source_dir == null) {
 
                var pos = src.indexOf("scripts/JSRootCore.js");
                if (pos>=0) {
-                  JSROOTCore.source_dir = src.substr(0, pos);
-                  console.log("Set JSROOTCore.source_dir to " + JSROOTCore.source_dir);
+                  JSROOT.source_dir = src.substr(0, pos);
+                  console.log("Set JSROOT.source_dir to " + JSROOT.source_dir);
                }
             }
 
@@ -308,7 +308,7 @@
          }
       }
 
-      if (isrootjs && (JSROOTCore.source_dir!=null)) filename = JSROOTCore.source_dir + filename;   
+      if (isrootjs && (JSROOT.source_dir!=null)) filename = JSROOT.source_dir + filename;   
       
       var element = null;
       
@@ -346,7 +346,7 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   JSROOTCore.AssertPrerequisites = function(kind, andThan) {
+   JSROOT.AssertPrerequisites = function(kind, andThan) {
       // one could specify which kind of requirements are expected
       // 'io' for I/O functionality (default)
       // '2d' only for 2d graphic
@@ -372,20 +372,20 @@
       if ((kind!=null) && (kind.indexOf("3d")>=0))
          allfiles += ";$$$scripts/jquery.mousewheel.js;$$$scripts/three.min.js;$$$fonts/helvetiker_regular.typeface.js";
       
-      JSROOTCore.loadScript(allfiles, andThan); 
+      JSROOT.loadScript(allfiles, andThan); 
    }
    
-   JSROOTCore.Assert3DScripts = function(andThen) {
-      JSROOTCore.AssertPrerequisites('3d', andThen);
+   JSROOT.Assert3DScripts = function(andThen) {
+      JSROOT.AssertPrerequisites('3d', andThen);
    }
    
-   JSROOTCore.BuildSimpleGUI = function(requirements, andThen) {
+   JSROOT.BuildSimpleGUI = function(requirements, andThen) {
       if (typeof requirements == 'function') {
          andThen = requirements; requirements = null;
       } 
       
-      JSROOTCore.AssertPrerequisites(requirements, function(){
-         JSROOTCore.loadScript('$$$scripts/JSRootInterface.js;$$$style/JSRootInterface.css', function() { 
+      JSROOT.AssertPrerequisites(requirements, function(){
+         JSROOT.loadScript('$$$scripts/JSRootInterface.js;$$$style/JSRootInterface.css', function() { 
             
             if (typeof BuildSimpleGUI != 'function') {
                alert('BuildSimpleGUI function not found');
@@ -399,7 +399,7 @@
       });
    }
 
-   JSROOTCore.addFormula = function(obj) {
+   JSROOT.addFormula = function(obj) {
       var formula = obj['fTitle'];
       formula = formula.replace('abs(', 'Math.abs(');
       formula = formula.replace('sin(', 'Math.sin(');
@@ -408,26 +408,26 @@
       eval(code);
       var sig = obj['fName']+'(x)';
       
-      var pos = JSROOTCore.function_list.indexOf(sig);
+      var pos = JSROOT.function_list.indexOf(sig);
       if (pos >= 0) {
-         JSROOTCore.function_list.splice(pos, 1);
+         JSROOT.function_list.splice(pos, 1);
       }
-      JSROOTCore.function_list.push(sig);
+      JSROOT.function_list.push(sig);
    };
 
-   JSROOTCore.CreateTList = function() {
+   JSROOT.CreateTList = function() {
       var list = {};
-      list['_typename'] = "JSROOTIO.TList";
+      list['_typename'] = "TList";
       list['name'] = "TList";
       list['arr'] = new Array;
       list['opt'] = new Array;
       return list;
    }
 
-   JSROOTCore.CreateTAxis = function() {
+   JSROOT.CreateTAxis = function() {
       var axis = {};
 
-      axis['_typename'] = "JSROOTIO.TAxis";
+      axis['_typename'] = "TAxis";
       axis['fBits'] = 0x3000008;
       axis['fBits2'] = 0;
       axis['fXmin'] = 0;
@@ -452,13 +452,13 @@
       axis['fTitleSize']  = 0.035;
       axis['fTitleColor'] = 1;
       axis['fTitleFont'] = 42;
-      JSROOTCore.addMethods(axis);
+      JSROOT.addMethods(axis);
       return axis;
    }
 
-   JSROOTCore.CreateTH1 = function(nbinsx) {
+   JSROOT.CreateTH1 = function(nbinsx) {
       var histo = {};
-      histo['_typename'] = "JSROOTIO.TH1I";
+      histo['_typename'] = "TH1I";
       histo['fBits'] = 0x3000008;
       histo['fName'] = "dummy_histo_" + this.id_counter++;
       histo['fTitle'] = "dummytitle";
@@ -473,10 +473,10 @@
       histo['fN'] = 0;
       histo['fArray'] = new Array;
       histo['fSumw2'] = new Array;
-      histo['fFunctions'] = JSROOTCore.CreateTList();
+      histo['fFunctions'] = JSROOT.CreateTList();
 
-      histo['fXaxis'] = JSROOTCore.CreateTAxis();
-      histo['fYaxis'] = JSROOTCore.CreateTAxis();
+      histo['fXaxis'] = JSROOT.CreateTAxis();
+      histo['fYaxis'] = JSROOT.CreateTAxis();
 
       if (nbinsx!=null) {
          histo['fNcells'] = nbinsx+2;
@@ -486,14 +486,14 @@
          histo['fXaxis']['fXmax'] = nbinsx;
       }
 
-      JSROOTCore.addMethods(histo);
+      JSROOT.addMethods(histo);
 
       return histo;
    }
 
-   JSROOTCore.CreateTH2 = function(nbinsx, nbinsy) {
+   JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
       var histo = {};
-      histo['_typename'] = "JSROOTIO.TH2I";
+      histo['_typename'] = "TH2I";
       histo['fBits'] = 0x3000008;
       histo['fName'] = "dummy_histo_" + this.id_counter++;
       histo['fTitle'] = "dummytitle";
@@ -508,12 +508,12 @@
       histo['fN'] = 0;
       histo['fArray'] = new Array;
       histo['fSumw2'] = new Array;
-      histo['fFunctions'] = JSROOTCore.CreateTList();
+      histo['fFunctions'] = JSROOT.CreateTList();
       histo['fContour'] = new Array;
 
-      histo['fXaxis'] = JSROOTCore.CreateTAxis();
-      histo['fYaxis'] = JSROOTCore.CreateTAxis();
-      histo['fZaxis'] = JSROOTCore.CreateTAxis();
+      histo['fXaxis'] = JSROOT.CreateTAxis();
+      histo['fYaxis'] = JSROOT.CreateTAxis();
+      histo['fZaxis'] = JSROOT.CreateTAxis();
 
       if ((nbinsx!=null) && (nbinsy!=null)) {
          histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
@@ -527,14 +527,14 @@
          histo['fYaxis']['fXmax'] = nbinsy;
       }
 
-      JSROOTCore.addMethods(histo);
+      JSROOT.addMethods(histo);
 
       return histo;
    }
 
-   JSROOTCore.CreateTGraph = function(npoints) {
+   JSROOT.CreateTGraph = function(npoints) {
       var graph = {};
-      graph['_typename'] = "JSROOTIO.TGraph";
+      graph['_typename'] = "TGraph";
       graph['fBits'] = 0x3000408;
       graph['fName'] = "dummy_graph_" + this.id_counter++;
       graph['fTitle'] = "dummytitle";
@@ -553,8 +553,8 @@
       graph['fNpoints'] = 0;
       graph['fX'] = new Array;
       graph['fY'] = new Array;
-      graph['fFunctions'] = JSROOTCore.CreateTList();
-      graph['fHistogram'] = JSROOTCore.CreateTH1();
+      graph['fFunctions'] = JSROOT.CreateTList();
+      graph['fHistogram'] = JSROOT.CreateTH1();
 
       if (npoints>0) {
          graph['fMaxSize'] = npoints;
@@ -563,14 +563,14 @@
             graph['fX'].push(i);
             graph['fY'].push(i);
          }
-         JSROOTCore.AdjustTGraphRanges(graph);
+         JSROOT.AdjustTGraphRanges(graph);
       }
 
-      JSROOTCore.addMethods(graph);
+      JSROOT.addMethods(graph);
       return graph;
    }
 
-   JSROOTCore.AdjustTGraphRanges = function(graph) {
+   JSROOT.AdjustTGraphRanges = function(graph) {
       if (graph['fNpoints']==0) return;
 
       var minx = graph['fX'][0], maxx = minx;
@@ -595,7 +595,7 @@
    }
 
 
-   JSROOTCore.addMethods = function(obj) {
+   JSROOT.addMethods = function(obj) {
       // check object type and add methods if needed
       if (('fBits' in obj) && !('TestBit' in obj)) {
          obj['TestBit'] = function (f) {
@@ -617,13 +617,13 @@
           kERRORSPREADG : 3
        };
       
-      if (obj['_typename'].indexOf("JSROOTIO.TAxis") == 0) {
+      if (obj['_typename'].indexOf("TAxis") == 0) {
          obj['getFirst'] = function() {
-            if (!this.TestBit(JSROOTCore.EAxisBits.kAxisRange)) return 1;
+            if (!this.TestBit(JSROOT.EAxisBits.kAxisRange)) return 1;
             return this['fFirst'];
          };
          obj['getLast'] = function() {
-            if (!this.TestBit(JSROOTCore.EAxisBits.kAxisRange)) return this['fNbins'];
+            if (!this.TestBit(JSROOT.EAxisBits.kAxisRange)) return this['fNbins'];
             return this['fLast'];
          };
          obj['getBinCenter'] = function(bin) {
@@ -639,25 +639,25 @@
          };
       }
       if ((obj['_typename'].indexOf("TFormula") != -1) ||
-          (obj['_typename'].indexOf("JSROOTIO.TF1") == 0)) {
+          (obj['_typename'].indexOf("TF1") == 0)) {
          obj['evalPar'] = function(x) {
             var i, _function = this['fTitle'];
             _function = _function.replace('TMath::Exp(', 'Math.exp(');
             _function = _function.replace('TMath::Abs(', 'Math.abs(');
-            _function = _function.replace('gaus(', 'JSROOTMath.gaus(this, ' + x + ', ');
-            _function = _function.replace('gausn(', 'JSROOTMath.gausn(this, ' + x + ', ');
-            _function = _function.replace('expo(', 'JSROOTMath.expo(this, ' + x + ', ');
-            _function = _function.replace('landau(', 'JSROOTMath.landau(this, ' + x + ', ');
-            _function = _function.replace('landaun(', 'JSROOTMath.landaun(this, ' + x + ', ');
+            _function = _function.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
+            _function = _function.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
+            _function = _function.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
+            _function = _function.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
+            _function = _function.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
             _function = _function.replace('pi', 'Math.PI');
             for (i=0;i<this['fNpar'];++i) {
                while(_function.indexOf('['+i+']') != -1)
                   _function = _function.replace('['+i+']', this['fParams'][i])
             }
-            for (i=0;i<JSROOTCore.function_list.length;++i) {
-               var f = JSROOTCore.function_list[i].substring(0, JSROOTCore.function_list[i].indexOf('('));
+            for (i=0;i<JSROOT.function_list.length;++i) {
+               var f = JSROOT.function_list[i].substring(0, JSROOT.function_list[i].indexOf('('));
                if (_function.indexOf(f) != -1) {
-                  var fa = JSROOTCore.function_list[i].replace('(x)', '(' + x + ')');
+                  var fa = JSROOT.function_list[i].replace('(x)', '(' + x + ')');
                   _function = _function.replace(f, fa);
                }
             }
@@ -670,7 +670,7 @@
             return ret;
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TGraph") == 0) {
+      if (obj['_typename'].indexOf("TGraph") == 0) {
          obj['computeRange'] = function() {
             // Compute the x/y range of the points in this graph
             var i, xmin = 0, xmax = 0, ymin = 0, ymax = 0;
@@ -692,12 +692,12 @@
             };
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TH1") == 0) obj['fDimension'] = 1;
-      if (obj['_typename'].indexOf("JSROOTIO.TH2") == 0) obj['fDimension'] = 2;
-      if (obj['_typename'].indexOf("JSROOTIO.TH3") == 0) obj['fDimension'] = 3;
-      if (obj['_typename'].indexOf("JSROOTIO.TH1") == 0 ||
-          obj['_typename'].indexOf("JSROOTIO.TH2") == 0 ||
-          obj['_typename'].indexOf("JSROOTIO.TH3") == 0) {
+      if (obj['_typename'].indexOf("TH1") == 0) obj['fDimension'] = 1;
+      if (obj['_typename'].indexOf("TH2") == 0) obj['fDimension'] = 2;
+      if (obj['_typename'].indexOf("TH3") == 0) obj['fDimension'] = 3;
+      if (obj['_typename'].indexOf("TH1") == 0 ||
+          obj['_typename'].indexOf("TH2") == 0 ||
+          obj['_typename'].indexOf("TH3") == 0) {
          obj['getBinError'] = function(bin) {
             //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
             //    if the sum of squares of weights has been defined (via Sumw2),
@@ -729,7 +729,7 @@
                return this.getBinError(bin);
             }
             if (n == 0) return 0;
-            return c - JSROOTMath.gamma_quantile( alpha/2, n, 1.);
+            return c - JSROOT.Math.gamma_quantile( alpha/2, n, 1.);
          };
          obj['getBinErrorUp'] = function(bin) {
             //   -*-*-*-*-*Return lower error associated to bin number bin*-*-*-*-*
@@ -750,7 +750,7 @@
             // for N==0 return an upper limit at 0.68 or (1-alpha)/2 ?
             // decide to return always (1-alpha)/2 upper interval
             //if (n == 0) return ROOT::Math::gamma_quantile_c(alpha,n+1,1);
-            return JSROOTMath.gamma_quantile_c( alpha/2, n+1, 1) - c;
+            return JSROOT.Math.gamma_quantile_c( alpha/2, n+1, 1) - c;
          };
          obj['getBinLowEdge'] = function(bin) {
             // Return low edge of bin
@@ -825,8 +825,8 @@
                   for (binx=0;binx<=nbinsx+1;binx++) {
                      bin = binx +(nbinsx+2)*(biny + (nbinsy+2)*binz);
                      //special case where histograms have the kIsAverage bit set
-                     if (this.TestBit(JSROOTCore.TH1StatusBits.kIsAverage) 
-                         && h1.TestBit(JSROOTCore.TH1StatusBits.kIsAverage)) {
+                     if (this.TestBit(JSROOT.TH1StatusBits.kIsAverage) 
+                         && h1.TestBit(JSROOT.TH1StatusBits.kIsAverage)) {
                         var y1 = h1.getBinContent(bin),
                             y2 = this.getBinContent(bin),
                             e1 = h1.getBinError(bin),
@@ -1030,7 +1030,7 @@
             if (achoice == 'Z') axis = this['fZaxis'];
             if (axis == null) return;
 
-            var hold = JSROOTCore.clone(this);
+            var hold = JSROOT.clone(this);
 
             var timedisp = axis['fTimeDisplay'];
             var nbxold = this['fXaxis']['fNbins'];
@@ -1042,7 +1042,7 @@
             xmax = xmin + 2 * (xmax - xmin);
             axis['fFirst'] = 1;
             axis['fLast'] = axis['fNbins'];
-            this['fBits'] &= ~(JSROOTCore.EAxisBits.kAxisRange & 0x00ffffff); // SetBit(kAxisRange, 0);
+            this['fBits'] &= ~(JSROOT.EAxisBits.kAxisRange & 0x00ffffff); // SetBit(kAxisRange, 0);
             // double the bins and recompute ncells
             axis['fNbins'] = 2*nbins;
             axis['fXmin']  = xmin;
@@ -1103,7 +1103,7 @@
             this['fTsumw'] = 0;
             if (bin < 0) return;
             if (bin >= this['fNcells']-1) {
-               if (this['fXaxis']['fTimeDisplay'] || this.TestBit(JSROOTCore.TH1StatusBits.kCanRebin) ) {
+               if (this['fXaxis']['fTimeDisplay'] || this.TestBit(JSROOT.TH1StatusBits.kCanRebin) ) {
                   while (bin >= this['fNcells']-1) this.labelsInflate();
                } else {
                   if (bin == this['fNcells']-1) this['fArray'][bin] = content;
@@ -1135,7 +1135,7 @@
             }
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TH1") == 0) {
+      if (obj['_typename'].indexOf("TH1") == 0) {
          obj['getBinContent'] = function(bin) {
             if (bin < 0) bin = 0;
             if (bin >= this['fNcells']) bin = this['fNcells']-1;
@@ -1152,14 +1152,14 @@
             var bin, binx, w, err, x, stats = new Array(0,0,0,0,0);
             // case of labels with rebin of axis set
             // statistics in x does not make any sense - set to zero
-            if (this['fXaxis']['fLabels'] && this.TestBit(JSROOTCore.TH1StatusBits.kCanRebin) ) {
+            if (this['fXaxis']['fLabels'] && this.TestBit(JSROOT.TH1StatusBits.kCanRebin) ) {
                stats[0] = this['fTsumw'];
                stats[1] = this['fTsumw2'];
                stats[2] = 0;
                stats[3] = 0;
             }
             else if ((this['fTsumw'] == 0 && this['fEntries'] > 0) ||
-                     this['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange)) {
+                     this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
                for (bin=0;bin<4;bin++) stats[bin] = 0;
 
                var firstBinX = this['fXaxis'].getFirst();
@@ -1182,7 +1182,7 @@
             return stats;
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TH2") == 0) {
+      if (obj['_typename'].indexOf("TH2") == 0) {
          obj['getBin'] = function(x, y) {
             var nx = this['fXaxis']['fNbins']+2;
             return (x + nx * y);
@@ -1192,18 +1192,18 @@
          };
          obj['getStats'] = function() {
             var bin, binx, biny, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if ((this['fTsumw'] == 0 && this['fEntries'] > 0) || this['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) || this['fYaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange)) {
+            if ((this['fTsumw'] == 0 && this['fEntries'] > 0) || this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || this['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
                var firstBinX = this['fXaxis'].getFirst();
                var lastBinX  = this['fXaxis'].getLast();
                var firstBinY = this['fYaxis'].getFirst();
                var lastBinY  = this['fYaxis'].getLast();
                // include underflow/overflow if TH1::StatOverflows(kTRUE) in case no range is set on the axis
                if (this['fgStatOverflows']) {
-                 if ( !this['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) ) {
+                 if ( !this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
                      if (firstBinX == 1) firstBinX = 0;
                      if (lastBinX ==  this['fXaxis']['fNbins'] ) lastBinX += 1;
                   }
-                  if ( !this['fYaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) ) {
+                  if ( !this['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
                      if (firstBinY == 1) firstBinY = 0;
                      if (lastBinY ==  this['fYaxis']['fNbins'] ) lastBinY += 1;
                   }
@@ -1236,7 +1236,7 @@
             return stats;
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TH3") == 0) {
+      if (obj['_typename'].indexOf("TH3") == 0) {
          obj['getBin'] = function(x, y, z) {
             var nx = this['fXaxis']['fNbins']+2;
             if (x < 0) x = 0;
@@ -1251,7 +1251,7 @@
          };
          obj['getStats'] = function() {
             var bin, binx, biny, binz, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if ((obj['fTsumw'] == 0 && obj['fEntries'] > 0) || obj['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) || obj['fYaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) || obj['fZaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange)) {
+            if ((obj['fTsumw'] == 0 && obj['fEntries'] > 0) || obj['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || obj['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || obj['fZaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
                var firstBinX = obj['fXaxis'].getFirst();
                var lastBinX  = obj['fXaxis'].getLast();
                var firstBinY = obj['fYaxis'].getFirst();
@@ -1260,15 +1260,15 @@
                var lastBinZ  = obj['fZaxis'].getLast();
                // include underflow/overflow if TH1::StatOverflows(kTRUE) in case no range is set on the axis
                if (obj['fgStatOverflows']) {
-                 if ( !obj['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) ) {
+                 if ( !obj['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
                      if (firstBinX == 1) firstBinX = 0;
                      if (lastBinX ==  obj['fXaxis']['fNbins'] ) lastBinX += 1;
                   }
-                  if ( !obj['fYaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) ) {
+                  if ( !obj['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
                      if (firstBinY == 1) firstBinY = 0;
                      if (lastBinY ==  obj['fYaxis']['fNbins'] ) lastBinY += 1;
                   }
-                  if ( !obj['fZaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange) ) {
+                  if ( !obj['fZaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
                      if (firstBinZ == 1) firstBinZ = 0;
                      if (lastBinZ ==  obj['fZaxis']['fNbins'] ) lastBinZ += 1;
                   }
@@ -1312,7 +1312,7 @@
             return stats;
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.THStack") == 0) {
+      if (obj['_typename'].indexOf("THStack") == 0) {
          obj['buildStack'] = function() {
             //  build sum of all histograms
             //  Build a separate list fStack containing the running sum of all histograms
@@ -1320,11 +1320,11 @@
             if (!'fHists' in this) return;
             var nhists = this['fHists'].arr.length;
             if (nhists <= 0) return;
-            this['fStack'] = JSROOTCore.CreateTList();
-            var h = JSROOTCore.clone(this['fHists'].arr[0]);
+            this['fStack'] = JSROOT.CreateTList();
+            var h = JSROOT.clone(this['fHists'].arr[0]);
             this['fStack'].arr.push(h);
             for (var i=1;i<nhists;i++) {
-               h = JSROOTCore.clone(this['fHists'].arr[i]);
+               h = JSROOT.clone(this['fHists'].arr[i]);
                h.add(this['fStack'].arr[i-1]);
                this['fStack'].arr.splice(i, 1, h);
             }
@@ -1401,9 +1401,9 @@
             return themin;
          };
       }
-      if ((obj['_typename'].indexOf("JSROOTIO.TH2") == 0) ||
-          (obj['_typename'].indexOf("JSROOTIO.TH3") == 0) ||
-          (obj['_typename'].indexOf("JSROOTIO.TProfile") == 0)) {
+      if ((obj['_typename'].indexOf("TH2") == 0) ||
+          (obj['_typename'].indexOf("TH3") == 0) ||
+          (obj['_typename'].indexOf("TProfile") == 0)) {
          obj['getMean'] = function(axis) {
             if (axis < 1 || (axis > 3 && axis < 11) || axis > 13) return 0;
             var stats = this.getStats();
@@ -1422,7 +1422,7 @@
             return Math.sqrt(rms2);
          };
       }
-      if (obj['_typename'].indexOf("JSROOTIO.TProfile") == 0) {
+      if (obj['_typename'].indexOf("TProfile") == 0) {
          obj['getBinContent'] = function(bin) {
             if (bin < 0 || bin >= this['fNcells']) return 0;
             if (this['fBinEntries'][bin] < 1e-300) return 0;
@@ -1441,7 +1441,7 @@
          };
          obj['getStats'] = function() {
             var bin, binx, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if (this['fTsumw'] < 1e-300 || this['fXaxis'].TestBit(JSROOTCore.EAxisBits.kAxisRange)) {
+            if (this['fTsumw'] < 1e-300 || this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
                var firstBinX = this['fXaxis'].getFirst();
                var lastBinX  = this['fXaxis'].getLast();
                for (binx = this['firstBinX']; binx <= lastBinX; binx++) {
@@ -1520,110 +1520,13 @@
       }
    };
 
-})();
+   
+   // math methods for Javascript ROOT
 
-/// JSROOTCore.js ends
+   JSROOT.Math = {};
 
-// JSROOTMath.js
-//
-// math methods for Javascript ROOT IO.
-//
 
-(function(){
-
-   if (typeof JSROOTMath == "object"){
-      var e1 = new Error("JSROOTMath is already defined");
-      e1.source = "JSRootCore.js";
-      throw e1;
-   }
-
-   JSROOTMath = {};
-
-   /* the machine roundoff error */
-   var kMACHEP = 1.11022302462515654042363166809e-16;
-   var s2pi = 2.50662827463100050242e0;
-
-   var P0 = new Array(
-      -5.99633501014107895267E1,
-       9.80010754185999661536E1,
-      -5.66762857469070293439E1,
-       1.39312609387279679503E1,
-      -1.23916583867381258016E0
-   );
-
-   var Q0 = new Array(
-       1.95448858338141759834E0,
-       4.67627912898881538453E0,
-       8.63602421390890590575E1,
-      -2.25462687854119370527E2,
-       2.00260212380060660359E2,
-      -8.20372256168333339912E1,
-       1.59056225126211695515E1,
-      -1.18331621121330003142E0
-   );
-
-   var P1 = new Array(
-       4.05544892305962419923E0,
-       3.15251094599893866154E1,
-       5.71628192246421288162E1,
-       4.40805073893200834700E1,
-       1.46849561928858024014E1,
-       2.18663306850790267539E0,
-      -1.40256079171354495875E-1,
-      -3.50424626827848203418E-2,
-      -8.57456785154685413611E-4
-   );
-
-   var Q1 = new Array(
-       1.57799883256466749731E1,
-       4.53907635128879210584E1,
-       4.13172038254672030440E1,
-       1.50425385692907503408E1,
-       2.50464946208309415979E0,
-      -1.42182922854787788574E-1,
-      -3.80806407691578277194E-2,
-      -9.33259480895457427372E-4
-   );
-
-   var P2 = new Array(
-       3.23774891776946035970E0,
-       6.91522889068984211695E0,
-       3.93881025292474443415E0,
-       1.33303460815807542389E0,
-       2.01485389549179081538E-1,
-       1.23716634817820021358E-2,
-       3.01581553508235416007E-4,
-       2.65806974686737550832E-6,
-       6.23974539184983293730E-9
-   );
-
-   var Q2 = new Array(
-       6.02427039364742014255E0,
-       3.67983563856160859403E0,
-       1.37702099489081330271E0,
-       2.16236993594496635890E-1,
-       1.34204006088543189037E-2,
-       3.28014464682127739104E-4,
-       2.89247864745380683936E-6,
-       6.79019408009981274425E-9
-   );
-
-   var p1 = new Array(0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253);
-   var q1 = new Array(1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063);
-   var p2 = new Array(0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211);
-   var q2 = new Array(1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714);
-   var p3 = new Array(0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101);
-   var q3 = new Array(1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675);
-   var p4 = new Array(0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186);
-   var q4 = new Array(1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511);
-   var p5 = new Array(1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910);
-   var q5 = new Array(1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357);
-   var p6 = new Array(1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109);
-   var q6 = new Array(1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939);
-   var a1 = new Array(0.04166666667,-0.01996527778, 0.02709538966);
-   var a2 = new Array(-1.845568670,-4.284640743);
-
-   JSROOTMath.lgam = function( x ) {
+   JSROOT.Math.lgam = function( x ) {
       var p, q, u, w, z;
       var i;
 
@@ -1704,7 +1607,7 @@
     * calculates a value of a polynomial of the form:
     * a[0]x^N+a[1]x^(N-1) + ... + a[N]
    */
-   JSROOTMath.Polynomialeval = function(x, a, N) {
+   JSROOT.Math.Polynomialeval = function(x, a, N) {
       if (N==0) return a[0];
       else {
          var pom = a[0];
@@ -1718,7 +1621,7 @@
     * calculates a value of a polynomial of the form:
     * x^N+a[0]x^(N-1) + ... + a[N-1]
    */
-   JSROOTMath.Polynomial1eval = function(x, a, N) {
+   JSROOT.Math.Polynomial1eval = function(x, a, N) {
       if (N==0) return a[0];
       else {
          var pom = x + a[0];
@@ -1728,13 +1631,83 @@
       }
    };
 
-   JSROOTMath.ndtri = function( y0 ) {
-      var x, y, z, y2, x0, x1;
-      var code;
+   JSROOT.Math.ndtri = function( y0 ) {
       if ( y0 <= 0.0 )
          return( Number.NEGATIVE_INFINITY );
       if ( y0 >= 1.0 )
          return( Number.POSITIVE_INFINITY );
+
+      var x, y, z, y2, x0, x1;
+      var code;
+      var s2pi = 2.50662827463100050242e0;
+
+      var P0 = new Array(
+            -5.99633501014107895267E1,
+             9.80010754185999661536E1,
+            -5.66762857469070293439E1,
+             1.39312609387279679503E1,
+            -1.23916583867381258016E0
+         );
+
+         var Q0 = new Array(
+             1.95448858338141759834E0,
+             4.67627912898881538453E0,
+             8.63602421390890590575E1,
+            -2.25462687854119370527E2,
+             2.00260212380060660359E2,
+            -8.20372256168333339912E1,
+             1.59056225126211695515E1,
+            -1.18331621121330003142E0
+         );
+
+         var P1 = new Array(
+             4.05544892305962419923E0,
+             3.15251094599893866154E1,
+             5.71628192246421288162E1,
+             4.40805073893200834700E1,
+             1.46849561928858024014E1,
+             2.18663306850790267539E0,
+            -1.40256079171354495875E-1,
+            -3.50424626827848203418E-2,
+            -8.57456785154685413611E-4
+         );
+
+         var Q1 = new Array(
+             1.57799883256466749731E1,
+             4.53907635128879210584E1,
+             4.13172038254672030440E1,
+             1.50425385692907503408E1,
+             2.50464946208309415979E0,
+            -1.42182922854787788574E-1,
+            -3.80806407691578277194E-2,
+            -9.33259480895457427372E-4
+         );
+
+         var P2 = new Array(
+             3.23774891776946035970E0,
+             6.91522889068984211695E0,
+             3.93881025292474443415E0,
+             1.33303460815807542389E0,
+             2.01485389549179081538E-1,
+             1.23716634817820021358E-2,
+             3.01581553508235416007E-4,
+             2.65806974686737550832E-6,
+             6.23974539184983293730E-9
+         );
+
+         var Q2 = new Array(
+             6.02427039364742014255E0,
+             3.67983563856160859403E0,
+             1.37702099489081330271E0,
+             2.16236993594496635890E-1,
+             1.34204006088543189037E-2,
+             3.28014464682127739104E-4,
+             2.89247864745380683936E-6,
+             6.79019408009981274425E-9
+         );
+
+      
+      
       code = 1;
       y = y0;
       if ( y > (1.0 - 0.13533528323661269189) ) {
@@ -1761,10 +1734,11 @@
       return( x );
    };
 
-   JSROOTMath.igami = function(a, y0) {
+   JSROOT.Math.igami = function(a, y0) {
       var x0, x1, x, yl, yh, y, d, lgm, dithresh;
       var i, dir;
-
+      var kMACHEP = 1.11022302462515654042363166809e-16;
+      
       // check the domain
       if (a <= 0) {
          alert("igami : Wrong domain for parameter a (must be > 0)");
@@ -1876,24 +1850,39 @@
       return( x );
    };
 
-   JSROOTMath.gamma_quantile_c = function(z, alpha, theta) {
+   JSROOT.Math.gamma_quantile_c = function(z, alpha, theta) {
       return theta * this.igami( alpha, z);
    };
 
-   JSROOTMath.gamma_quantile = function(z, alpha, theta) {
+   JSROOT.Math.gamma_quantile = function(z, alpha, theta) {
       return theta * this.igami( alpha, 1.- z);
    };
 
-   JSROOTMath.log10 = function(n) {
+   JSROOT.Math.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    };
 
-   JSROOTMath.landau_pdf = function(x, xi, x0) {
+   JSROOT.Math.landau_pdf = function(x, xi, x0) {
       // LANDAU pdf : algorithm from CERNLIB G110 denlan
       // same algorithm is used in GSL
       if (xi <= 0) return 0;
       var v = (x - x0)/xi;
       var u, ue, us, denlan;
+      var p1 = new Array(0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253);
+      var q1 = new Array(1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063);
+      var p2 = new Array(0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211);
+      var q2 = new Array(1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714);
+      var p3 = new Array(0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101);
+      var q3 = new Array(1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675);
+      var p4 = new Array(0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186);
+      var q4 = new Array(1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511);
+      var p5 = new Array(1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910);
+      var q5 = new Array(1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357);
+      var p6 = new Array(1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109);
+      var q6 = new Array(1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939);
+      var a1 = new Array(0.04166666667,-0.01996527778, 0.02709538966);
+      var a2 = new Array(-1.845568670,-4.284640743);
+      
       if (v < -5.5) {
          u   = Math.exp(v+1.0);
          if (u < 1e-10) return 0.0;
@@ -1930,36 +1919,34 @@
       return denlan/xi;
    };
 
-   JSROOTMath.Landau = function(x, mpv, sigma, norm) {
+   JSROOT.Math.Landau = function(x, mpv, sigma, norm) {
       if (sigma <= 0) return 0;
-      var den = JSROOTMath.landau_pdf((x - mpv) / sigma, 1, 0);
+      var den = JSROOT.Math.landau_pdf((x - mpv) / sigma, 1, 0);
       if (!norm) return den;
       return den/sigma;
    };
    
-   JSROOTMath.gaus = function(f, x, i) {
+   JSROOT.Math.gaus = function(f, x, i) {
       return f['fParams'][i+0] * Math.exp(-0.5 * Math.pow((x-f['fParams'][i+1]) / f['fParams'][i+2], 2));
    };
 
-   JSROOTMath.gausn = function(f, x, i) {
-      return JSROOTMath.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f['fParams'][i+2]);
+   JSROOT.Math.gausn = function(f, x, i) {
+      return JSROOT.Math.gaus(f, x, i)/(Math.sqrt(2 * Math.PI) * f['fParams'][i+2]);
    };
 
-   JSROOTMath.expo = function(f, x, i) {
+   JSROOT.Math.expo = function(f, x, i) {
       return Math.exp(f['fParams'][i+0] + f['fParams'][i+1] * x);
    };
 
-   JSROOTMath.landau = function(f, x, i) {
-      return JSROOTMath.Landau(x, f['fParams'][i+1],f['fParams'][i+2], false);
+   JSROOT.Math.landau = function(f, x, i) {
+      return JSROOT.Math.Landau(x, f['fParams'][i+1],f['fParams'][i+2], false);
    };
 
-   JSROOTMath.landaun = function(f, x, i) {
-      return JSROOTMath.Landau(x, f['fParams'][i+1],f['fParams'][i+2], true);
+   JSROOT.Math.landaun = function(f, x, i) {
+      return JSROOT.Math.Landau(x, f['fParams'][i+1],f['fParams'][i+2], true);
    };
-
-
 
 })();
 
-/// JSROOTMath.js ends
+/// JSRootCore.js ends
 
