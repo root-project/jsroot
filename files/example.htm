@@ -34,7 +34,7 @@
          cnt++;
          
          if (painter==null) {
-            painter = JSROOTPainter.draw('object_draw', histo, "colz");
+            painter = JSROOT.draw('object_draw', histo, "colz");
             setInterval(updateGUI, 3000);
          } else {   
             painter.UpdateObject(histo);   

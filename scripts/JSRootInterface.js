@@ -53,7 +53,7 @@ function CollapsibleDisplay(itemname, obj) {
    
    var issinfo = itemname.lastIndexOf("StreamerInfo") >= 0;
    
-   if (!issinfo && !JSROOTPainter.canDrawObject(obj['_typename'])) return;
+   if (!issinfo && !JSROOT.Painter.canDrawObject(obj['_typename'])) return;
    
    var id = itemname.replace(/[^a-zA-Z0-9]/g,'_');
    
@@ -88,7 +88,7 @@ function CollapsibleDisplay(itemname, obj) {
       document.getElementById(hid).setAttribute("style", "height:"+height+"px");
       document.getElementById(hid).style.height=""+height+'px';
 
-      var hpainter = JSROOTPainter.draw(hid, obj);
+      var hpainter = JSROOT.draw(hid, obj);
       
       document.getElementById(uid)['hpainter'] = hpainter;
    }
@@ -103,7 +103,7 @@ function ResetReport() {
    $("#report").innerHTML = '';
    delete $("#report").get(0);
    //window.location.reload(true);
-   JSROOTPainter.DelHList('sinfo');
+   JSROOT.DelHList('sinfo');
    $('#report').get(0).innerHTML = '';
 }
 
@@ -111,7 +111,7 @@ function ResetReport() {
 function ResetUI() {
    ResetReport();
    $('#status').get(0).innerHTML = '';
-   JSROOTPainter.DelHList('root');
+   JSROOT.DelHList('root');
    $(window).unbind('resize');
 };
 
@@ -166,7 +166,7 @@ function UpdateOnline() {
       var hpainter = document.getElementById(uid)['hpainter'];
       if (hpainter == null) return;
       
-      JSROOTPainter.H('root').get(itemname, function(item, obj) {
+      JSROOT.H('root').get(itemname, function(item, obj) {
          if (hpainter.UpdateObject(obj))
             hpainter.RedrawFrame(); 
       });
@@ -217,7 +217,7 @@ function BuildDrawGUI()
          if (!obj) return;
          
          if (!objpainter) {
-            objpainter = JSROOTPainter.draw('drawGUI', obj, drawopt); 
+            objpainter = JSROOT.draw('drawGUI', obj, drawopt); 
          } else {
             objpainter.UpdateObject(obj);   
             objpainter.RedrawFrame();
