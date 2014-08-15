@@ -55,6 +55,9 @@
 
    
    JSROOT.Painter.createmenu = function(event, menuname) {
+      
+      if (!menuname) menuname = "root_ctx_menu";
+      
       var xMousePosition = event.clientX + window.pageXOffset;
       var yMousePosition = event.clientY + window.pageYOffset;
 
@@ -1210,24 +1213,6 @@
    }
 
 
-   // try to write new drawHistogram1D, where recreation of all graphical objects
-   // can be done in redraw methdod by switching one argument in the histogram
-
-
-   JSROOT.Painter.histoDialog = function(item) {
-
-      var x = document.getElementById('root_ctx_menu');
-      if(!x) return;
-
-      var painter = $("#root_ctx_menu").data("Painter");
-      $("#root_ctx_menu").dialog("close");
-      $("#root_ctx_menu").empty();
-
-      x.parentNode.removeChild(x);
-
-      painter.ExeContextMenu(item);
-   }
-
    // ==============================================================================
 
    JSROOT.TBasePainter = function()
@@ -1261,8 +1246,6 @@
 
       if (!('painters' in vis) || (vis['painters']==null)) {
          
-         console.log("Add painter as first");
-         
          vis['painters'] = new Array();
 
          // only first object in list can have zoom selection
@@ -1294,14 +1277,10 @@
 
       } else {
          this.first = vis['painters'][0];
-         
-         console.log("Add painter as " + vis['painters'].length);
-
       }
 
       vis['painters'].push(this);
       this.vis = vis;    // remember main pad
-
 
       if (check_not_first && !this.frame) {
          alert("frame for the " +  (typeof this) + " was not specified");
@@ -1568,12 +1547,6 @@
 
    }
 
-   JSROOT.TBasePainter.prototype.AddMenuItem = function(menu, text, cmd)
-   {
-      menu.append("<a href='javascript: JSROOT.Painter.histoDialog(\"" + cmd + "\")'>" + text + "</a><br/>");
-   }
-
-
    JSROOT.TBasePainter.prototype.Redraw = function() {
       // basic method, should be reimplemented in all derived objects
       // for the case when drawing should be repeated, probably with different options
@@ -1582,29 +1555,15 @@
 
    JSROOT.TBasePainter.prototype.FillContextMenu = function(menu)
    {
-      this.AddMenuItem(menu,"Unzoom X","unx");
-      this.AddMenuItem(menu,"Unzoom Y","uny");
-      this.AddMenuItem(menu,"Unzoom","unxy");
-      if (JSROOT.gStyle.Tooltip)
-         this.AddMenuItem(menu,"Disable tooltip","disable_tooltip");
-      else
-         this.AddMenuItem(menu,"Enable tooltip","enable_tooltip");
-
-   }
-
-   JSROOT.TBasePainter.prototype.ExeContextMenu = function(cmd)
-   {
-      if (cmd=="unx") this.Unzoom(true, false); else
-      if (cmd=="uny") this.Unzoom(false, true); else
-      if (cmd=="unxy") this.Unzoom(true, true); else
-      if (cmd=="disable_tooltip") {
-         JSROOT.gStyle.Tooltip = false;
-         this.RedrawFrame();
-      } else
-      if (cmd=="enable_tooltip") {
-         JSROOT.gStyle.Tooltip = true;
-         this.RedrawFrame();
-      }
+      JSROOT.Painter.menuitem(menu,"Unzoom X", function() { menu['painter'].Unzoom(true, false); } );
+      JSROOT.Painter.menuitem(menu,"Unzoom Y", function() { menu['painter'].Unzoom(false, true); } );
+      JSROOT.Painter.menuitem(menu,"Unzoom", function() { menu['painter'].Unzoom(true, true); } );
+      
+      JSROOT.Painter.menuitem(menu, JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", 
+            function() { 
+               JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
+               menu['painter'].RedrawFrame();
+            });
    }
 
    JSROOT.TBasePainter.prototype.Unzoom = function(dox,doy) {
@@ -1845,7 +1804,7 @@
 
          if (JSROOT.gStyle.Tooltip) tooltip.hide();
          
-         var menu = JSROOT.Painter.createmenu(e.originalEvent,'ctxmenu3');
+         var menu = JSROOT.Painter.createmenu(e.originalEvent);
 
          if ('painters' in vis)
             JSROOT.Painter.menuitem(menu,"Switch to 2D", function() {
@@ -1997,11 +1956,6 @@
    JSROOT.TF1Painter.prototype.FillContextMenu = function(menu)
    {
       JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
-   }
-
-   JSROOT.TF1Painter.prototype.ExeContextMenu = function(cmd)
-   {
-      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
    JSROOT.TF1Painter.prototype.Eval = function(x)
@@ -2225,10 +2179,6 @@
       JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
    }
 
-   JSROOT.TGraphPainter.prototype.ExeContextMenu = function(cmd)
-   {
-      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
-   }
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.logx = false;
@@ -4155,13 +4105,32 @@
 
       // var zoom = d3.behavior.zoom().x(this.x).y(this.y);
 
-      this.frame.on("mousedown", startRectSel);
-      this.frame.on("touchstart", startTouchSel);
-
-      this.frame.on("contextmenu", showContextMenu);
-
       var pthis = this;
 
+      function closeAllExtras() {
+         var x = document.getElementById('root_ctx_menu');
+         if(x) x.parentNode.removeChild(x);
+         if (rect != null) { rect.remove(); rect = null; }
+         zoom_kind = 0;
+      }
+      
+      function showContextMenu() {
+
+         d3.event.preventDefault();
+
+         // ignore context menu when touches zooming is ongoing
+         if (zoom_kind>100) return;
+         
+         var menu = JSROOT.Painter.createmenu(d3.event, 'root_ctx_menu');
+         
+         menu['painter'] = pthis;
+         
+         JSROOT.Painter.menuitem(menu, pthis.histo['fName']);
+         JSROOT.Painter.menuitem(menu, "----------------");
+
+         pthis.FillContextMenu(menu);
+       }
+      
       function startTouchSel() {
 
          // in case when zooming was started, block any other kind of events
@@ -4318,53 +4287,6 @@
          d3.event.stopPropagation();
       }
 
-
-      function showContextMenu() {
-
-         d3.event.preventDefault();
-
-         // ignore context menu when touches zooming is ongoing
-         if (zoom_kind>100) return;
-
-         var ctx_menu = document.getElementById('root_ctx_menu');
-         if(ctx_menu) ctx_menu.parentNode.removeChild(ctx_menu);
-
-         ctx_menu = document.createElement('div');
-         ctx_menu.setAttribute('id', 'root_ctx_menu');
-         pthis.vis.node().parentNode.appendChild(ctx_menu);
-
-         $("#root_ctx_menu").empty();
-
-         pthis.FillContextMenu($("#root_ctx_menu"));
-
-         $("#root_ctx_menu").data("Painter", pthis);
-         $("#root_ctx_menu").data("shown", true);
-
-         $("#root_ctx_menu").dialog({
-            title: pthis.histo['fName'],
-            closeOnEscape: true,
-            autoOpen: false,
-            resizable: false,
-            modal: false,
-            width: "auto",
-            height: "auto",
-            position : {my: "left+3 top+3", of: d3.event, collision:"fit"}
-         });
-
-         $("#root_ctx_menu").dialog("open");
-       }
-
-      function closeAllExtras() {
-         var x = document.getElementById('root_ctx_menu');
-         if(x) {
-            $("#root_ctx_menu").dialog("close");
-            $("#root_ctx_menu").empty();
-            x.parentNode.removeChild(x);
-         }
-         if (rect != null) { rect.remove(); rect = null; }
-         zoom_kind = 0;
-      }
-
       function startRectSel() {
 
          // ignore when touch selection is actiavated
@@ -4497,6 +4419,10 @@
 
          if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
       }
+      
+      this.frame.on("mousedown", startRectSel);
+      this.frame.on("touchstart", startTouchSel);
+      this.frame.on("contextmenu", showContextMenu);
 
    }
 
@@ -4504,51 +4430,26 @@
    {
       JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
       if (this.options) {
-         if (this.options.Logx > 0)
-            this.AddMenuItem(menu,"Linear X","linx");
-         else
-            this.AddMenuItem(menu,"Log X","logx");
-         if (this.options.Logy > 0)
-            this.AddMenuItem(menu,"Linear Y","liny");
-         else
-            this.AddMenuItem(menu,"Log Y","logy");
+         
+         var item =  this.options.Logx > 0 ? "Linear X" : "Log X";  
+         
+         JSROOT.Painter.menuitem(menu, item, function() { 
+            menu['painter'].options.Logx = 1 - menu['painter'].options.Logx;
+            menu['painter'].RedrawFrame();
+         });
+         
+         var item =  this.options.Logy > 0 ? "Linear Y" : "Log Y";  
+         JSROOT.Painter.menuitem(menu, item, function() { 
+            menu['painter'].options.Logy = 1 - menu['painter'].options.Logy;
+            menu['painter'].RedrawFrame();
+         });
       }
       if (this.draw_content)
-         this.AddMenuItem(menu,"Toggle stat","togstat");
+         JSROOT.Painter.menuitem(menu, "Toggle stat", function() { 
+            menu['painter'].ToggleStat();
+         });
    }
 
-   JSROOT.THistPainter.prototype.ExeContextMenu = function(cmd) {
-      if (cmd == "togstat") {
-         this.ToggleStat();
-         return;
-      }
-
-      if (cmd == "linx") {
-         this.options.Logx = 0;
-         this.RedrawFrame();
-         return;
-      }
-
-      if (cmd == "logx") {
-         this.options.Logx = 1;
-         this.RedrawFrame();
-         return;
-      }
-
-      if (cmd == "liny") {
-         this.options.Logy = 0;
-         this.RedrawFrame();
-         return;
-      }
-
-      if (cmd == "logy") {
-         this.options.Logy = 1;
-         this.RedrawFrame();
-         return;
-      }
-
-      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
-   }
 
 
    // ======= TH1 painter =======================================================
@@ -4991,16 +4892,9 @@
    {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
-         this.AddMenuItem(menu,"Auto zoom-in","autozoom");
-   }
-
-   JSROOT.TH1Painter.prototype.ExeContextMenu = function(cmd) {
-      if (cmd == "autozoom") {
-         this.AutoZoom();
-         return;
-      }
-
-      JSROOT.THistPainter.prototype.ExeContextMenu.call(this, cmd);
+         JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { 
+            menu['painter'].AutoZoom();
+         });
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function()
@@ -5073,50 +4967,36 @@
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu)
    {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      this.AddMenuItem(menu,"Auto zoom-in","autozoom");
-      this.AddMenuItem(menu,"Draw in 3D","draw3d");
-      this.AddMenuItem(menu,"Toggle col","col");
-
+      JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { 
+         menu['painter'].AutoZoom();
+      });
+      JSROOT.Painter.menuitem(menu, "Draw in 3D", function() { 
+         menu['painter'].Draw3D();
+      });
+      JSROOT.Painter.menuitem(menu, "Toggle col", function() { 
+         menu['painter'].options.Color = 1 - menu['painter'].options.Color;
+         menu['painter'].RedrawFrame();
+      });
+      
       if (this.options.Color > 0)
-         this.AddMenuItem(menu,"Toggle colz","colz");
+         JSROOT.Painter.menuitem(menu, "Toggle colz", function() { 
+            menu['painter'].ToggleColz();
+         });
    }
 
-   JSROOT.TH2Painter.prototype.ExeContextMenu = function(cmd) {
+   JSROOT.TH2Painter.prototype.ToggleColz = function() 
+   {
 
-      if (cmd == "draw3d") {
-         this.Draw3D();
-         return;
+      if (this.FindPalette()==null) {
+         JSROOT.Painter.shrinkFrame(this.vis, 0.08);
+         this.CreatePalette(0.08);
+         this.options.Zscale = 1;
+      } else {
+         if (this.options.Zscale>0) this.options.Zscale = 0;
+         else this.options.Zscale = 1;
       }
 
-      if (cmd == "col") {
-         if (this.options.Color > 0)
-            this.options.Color = 0;
-         else
-            this.options.Color = 1;
-         this.RedrawFrame();
-         return;
-      }
-
-      if (cmd == "colz") {
-         if (this.FindPalette()==null) {
-            JSROOT.Painter.shrinkFrame(this.vis, 0.08);
-            this.CreatePalette(0.08);
-            this.options.Zscale = 1;
-         } else {
-            if (this.options.Zscale>0) this.options.Zscale = 0;
-            else this.options.Zscale = 1;
-         }
-
-         this.RedrawFrame();
-         return;
-      }
-
-      if (cmd == "autozoom") {
-         this.AutoZoom();
-         return;
-      }
-
-      JSROOT.THistPainter.prototype.ExeContextMenu.call(this, cmd);
+      this.RedrawFrame();
    }
 
    JSROOT.TH2Painter.prototype.AutoZoom = function()
@@ -5520,7 +5400,6 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function()
    {
-      
       this.RemoveDraw();
 
       this.draw_g = this.svg_frame.append("svg:g");
@@ -5539,13 +5418,9 @@
 
       var local_bins = this.CreateDrawBins(w,h,normal_coordinates ? 0 : 1, tipkind);
 
-      console.log("Draw TH2 bins " + local_bins.length);
-
-      
       if (draw_markers) {
 
          // Add markers
-
          // TODO: fill is not used
          var filled = false;
          if ((this.histo['fMarkerStyle'] == 8) ||
@@ -5927,43 +5802,7 @@
    JSROOT.Painter.drawHistogram3D = function(vis, histo, dopt)
    {
      JSROOT.Assert3DScripts(function() {
-      
-      function showContextMenu() {
-
-         console.log("???context menu???");
-         
-         d3.event.preventDefault();
-
-         var ctx_menu = document.getElementById('root_ctx_menu');
-         if(ctx_menu) ctx_menu.parentNode.removeChild(ctx_menu);
-
-         ctx_menu = document.createElement('div');
-         ctx_menu.setAttribute('id', 'root_ctx_menu');
-         vis.node().parentNode.appendChild(ctx_menu);
-
-         $("#root_ctx_menu").empty();
-
-         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext1</a><br/>");
-         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext2</a><br/>");
-         $("#root_ctx_menu").append("<a href='javascript: myfunc()'>mytext3</a><br/>");
-
-         $("#root_ctx_menu").data("Painter", pthis);
-         $("#root_ctx_menu").data("shown", true);
-
-         $("#root_ctx_menu").dialog({
-            title: "myname",
-            closeOnEscape: true,
-            autoOpen: false,
-            resizable: false,
-            modal: false,
-            width: "auto",
-            height: "auto",
-            position : {my: "left+3 top+3", of: d3.event, collision:"fit"}
-         });
-
-         $("#root_ctx_menu").dialog("open");
-       }
-      
+            
       var logx = false, logy = false, logz = false,
           gridx = false, gridy = false, gridz = false;
 
@@ -7614,7 +7453,7 @@
    {
       event.preventDefault();
 
-      var menu = JSROOT.Painter.createmenu(event,'ctxmenu1');
+      var menu = JSROOT.Painter.createmenu(event);
 
       var painter = this;
       
