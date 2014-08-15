@@ -7264,7 +7264,7 @@
       return null;
    }
    
-   JSROOT.HPainter = function(name,frameid) {
+   JSROOT.THierarchyPainter = function(name,frameid) {
       JSROOTPainter.AddHList(name, this);
       this.name = name;
       this.frameid = frameid;
@@ -7274,13 +7274,13 @@
       this.maxnodeid = -1;
    }
    
-   JSROOT.HPainter.prototype.GlobalName = function(suffix) {
+   JSROOT.THierarchyPainter.prototype.GlobalName = function(suffix) {
       var res = "JSROOTPainter.H(\'" + this.name + "\')";
       if (suffix!=null) res+=suffix;
       return res;
    }
    
-   JSROOT.HPainter.prototype.ListHierarchy = function(folder, lst) {
+   JSROOT.THierarchyPainter.prototype.ListHierarchy = function(folder, lst) {
 
       folder['_childs'] = [];
       
@@ -7297,7 +7297,7 @@
       }
    }
 
-   JSROOT.HPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
+   JSROOT.THierarchyPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
 
       folder['_childs'] = [];
       
@@ -7332,7 +7332,7 @@
       }
    }
    
-   JSROOT.HPainter.prototype.TreeHierarchy = function(node, obj)
+   JSROOT.THierarchyPainter.prototype.TreeHierarchy = function(node, obj)
    {
       node._childs = [];
       
@@ -7367,7 +7367,7 @@
       }
    }
 
-   JSROOT.HPainter.prototype.KeysHierarchy = function(folder, keys, file) {
+   JSROOT.THierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file) {
 
       folder['_childs'] = [];
       
@@ -7423,7 +7423,7 @@
    }
   
    
-   JSROOT.HPainter.prototype.FileHierarchy = function(file)
+   JSROOT.THierarchyPainter.prototype.FileHierarchy = function(file)
    {
       var painter = this;
       
@@ -7454,7 +7454,7 @@
       return folder;
    }
 
-   JSROOT.HPainter.prototype.Find = function(fullname, top, replace) {
+   JSROOT.THierarchyPainter.prototype.Find = function(fullname, top, replace) {
 
       if (!top) top = this.h;
       
@@ -7482,7 +7482,7 @@
       return null;
    }
 
-   JSROOT.HPainter.prototype.itemFullName = function(node, uptoparent)
+   JSROOT.THierarchyPainter.prototype.itemFullName = function(node, uptoparent)
    {
       var res = ""; 
          
@@ -7496,7 +7496,7 @@
       return res;  
    }
    
-   JSROOT.HPainter.prototype.CheckCanDo = function(node, cando) 
+   JSROOT.THierarchyPainter.prototype.CheckCanDo = function(node, cando) 
    {
       var kind = node["_kind"];
       if (kind == null) kind = "";
@@ -7520,7 +7520,7 @@
       if ((kind.indexOf("ROOT.")==0) && JSROOTPainter.canDrawObject(kind.slice(5))) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
    }
    
-   JSROOT.HPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
+   JSROOT.THierarchyPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
    {
       if (lvl == null) lvl = 0;
       if (maxlvl == null) maxlvl = -1;
@@ -7591,7 +7591,7 @@
       return nodeid;
    }
 
-   JSROOT.HPainter.prototype.RefreshHtml = function(force)
+   JSROOT.THierarchyPainter.prototype.RefreshHtml = function(force)
    {
       if (this.frameid == null) return;
       var elem = document.getElementById(this.frameid);
@@ -7630,7 +7630,7 @@
       elem.innerHTML = content;
    }
    
-   JSROOT.HPainter.prototype.get = function(itemname, callback)
+   JSROOT.THierarchyPainter.prototype.get = function(itemname, callback)
    {
       var item = this.Find(itemname);
 
@@ -7650,7 +7650,7 @@
          if (typeof callback == 'function') callback(item, null);
    }
 
-   JSROOT.HPainter.prototype.display = function(itemname)
+   JSROOT.THierarchyPainter.prototype.display = function(itemname)
    {
       var pthis = this;
       
@@ -7664,12 +7664,12 @@
       });
    }
    
-   JSROOT.HPainter.prototype.reload = function()
+   JSROOT.THierarchyPainter.prototype.reload = function()
    {
       if (this.url!=null) this.OpenOnline(this.url);
    }
    
-   JSROOT.HPainter.prototype.ExpandDtree = function(node)
+   JSROOT.THierarchyPainter.prototype.ExpandDtree = function(node)
    {
       var itemname = this.itemFullName(node);
       
@@ -7686,7 +7686,7 @@
       // this.dtree.o(node._nodeid);
    }
    
-   JSROOT.HPainter.prototype.expand = function(itemname)
+   JSROOT.THierarchyPainter.prototype.expand = function(itemname)
    {
       var painter = this;
       
@@ -7707,11 +7707,11 @@
       });
    }
    
-   JSROOT.HPainter.prototype.OpenRootFile = function(url)
+   JSROOT.THierarchyPainter.prototype.OpenRootFile = function(url)
    {
       var pthis = this;
       
-      var f = new JSROOTIO.TFile(url, function(file) {
+      var f = new JSROOT.TFile(url, function(file) {
          if (file==null) return;
          // for the moment file is the only entry
          pthis.h = pthis.FileHierarchy(file);
@@ -7720,7 +7720,7 @@
       });
    }
    
-   JSROOT.HPainter.prototype.AddOnlineMethods = function(h)
+   JSROOT.THierarchyPainter.prototype.AddOnlineMethods = function(h)
    {
       if (typeof h != 'object') return;
       
@@ -7756,7 +7756,7 @@
    }
    
 
-   JSROOT.HPainter.prototype.OpenOnline = function(url)
+   JSROOT.THierarchyPainter.prototype.OpenOnline = function(url)
    {
       this.url = url; // remember url to be able reload id 
       
@@ -7777,20 +7777,20 @@
    }
 
    
-   JSROOT.HPainter.prototype.ShowStreamerInfo = function(sinfo)
+   JSROOT.THierarchyPainter.prototype.ShowStreamerInfo = function(sinfo)
    {
       this.h = { _name : "StreamerInfo" };
       this.StreamerInfoHierarchy(this.h, sinfo);
       this.RefreshHtml();
    }
    
-   JSROOT.HPainter.prototype.Adopt = function(h)
+   JSROOT.THierarchyPainter.prototype.Adopt = function(h)
    {
       this.h = h;
       this.RefreshHtml();
    }
    
-   JSROOT.HPainter.prototype.CreateSingleOnlineElement = function()
+   JSROOT.THierarchyPainter.prototype.CreateSingleOnlineElement = function()
    {
       this.h = {
          _name : ""   
@@ -7798,7 +7798,7 @@
       this.AddOnlineMethods(this.h);
    }
    
-   JSROOT.HPainter.prototype.menuitem = function(d,txt,func)
+   JSROOT.THierarchyPainter.prototype.menuitem = function(d,txt,func)
    {
       var p = document.createElement('p');
       d.appendChild(p);
@@ -7807,7 +7807,7 @@
       p.innerHTML = txt;
    }
    
-   JSROOT.HPainter.prototype.contextmenu = function(element, event, itemname)
+   JSROOT.THierarchyPainter.prototype.contextmenu = function(element, event, itemname)
    {
       var xMousePosition = event.clientX + window.pageXOffset;
       var yMousePosition = event.clientY + window.pageYOffset;
@@ -7869,9 +7869,9 @@
       JSROOTPainter.drawObjectInFrame(vis, obj['fVal'], opt);
    }
 
-   JSROOTIO.addUserStreamer("amore::core::String_t", Amore_String_Streamer);
+   JSROOT.addUserStreamer("amore::core::String_t", Amore_String_Streamer);
 
-   JSROOTPainter.addUserPainter("JSROOTIO.amore::core::MonitorObjectHisto<TH1F>", Amore_Painter);
+   JSROOTPainter.addUserPainter("amore::core::MonitorObjectHisto<TH1F>", Amore_Painter);
 
 })();
 */

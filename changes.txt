@@ -36,6 +36,7 @@ August 2014:
       <iframe src="http://localhost:8080/Files/job1.root/hpx/draw.htm" 
              style="width: 800px; height:600px"></iframe>
 15.Remove 'JSROOTIO.' prefix from _typename. Now real class name is used.   
+16.Use in all scripts JSROOT as central 'namespace'
      
 
 July 2014:
@@ -51,7 +52,7 @@ May 2014:
    in ROOT repository 
 
 March 2014:
-1. Introduce JSROOTIO.TBuffer class, which plays similar role 
+1. Introduce JSROOT.TBuffer class, which plays similar role 
    as TBuffer in native ROOT I/O. Simplifies I/O logic,
    reduce duplication of code in many places, fix errors.
    Main advantage - one could try to keep code synchronous with C++.
@@ -74,6 +75,6 @@ March 2014:
     
 To do:
 1. Redraw of canvas do not work at all.    
-3. In JSROOTIO.R__unzip buffers bigger than 16 MB (0xfffffff) are not 
+3. In JSROOT.R__unzip buffers bigger than 16 MB (0xfffffff) are not 
    treated correctly. In TKey.cxx, lines 259-275, big raw buffer cutted on blocks of 16MB.
     
