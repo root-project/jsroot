@@ -1,12 +1,12 @@
 // JSRootPainter.js
 //
-// core methods for JavaScript ROOT Graphics, using d3.v3.js.
+// JavaScript ROOT Graphics, using d3.v3.js.
 //
 
 (function(){
 
-   if (typeof JSROOTPainter == 'object'){
-      var e1 = new Error('JSROOTPainter is already defined');
+   if (typeof JSROOT != 'object'){
+      var e1 = new Error('JSROOT is not defined');
       e1.source = 'JSRootPainter.js';
       throw e1;
    }
@@ -16,6 +16,13 @@
       e1.source = 'JSRootPainter.js';
       throw e1;
    }
+
+   if (typeof JSROOT.Painter == 'object'){
+      var e1 = new Error('JSROOT.Painter already defined');
+      e1.source = 'JSRootPainter.js';
+      throw e1;
+   }
+   
 
    JSROOTPainter = {};
 
@@ -1185,7 +1192,7 @@
 
    // ==============================================================================
 
-   JSROOTPainter.ObjectPainter = function()
+   JSROOT.TBasePainter = function()
    {
       this.vis   = null;  // canvas where object is drawn
       this.first = null;  // pointer on first painter
@@ -1193,11 +1200,11 @@
       this.original_view_changed = false;  // indicate that original zoom changed and one should recalculate statistic
    }
 
-   JSROOTPainter.ObjectPainter.prototype.IsObject = function(obj) {
+   JSROOT.TBasePainter.prototype.IsObject = function(obj) {
       return false;
    }
 
-   JSROOTPainter.ObjectPainter.prototype.RemoveDraw = function()
+   JSROOT.TBasePainter.prototype.RemoveDraw = function()
    {
       // generic method to delete all graphical elements, associated with painter
       // may not work for all cases
@@ -1208,7 +1215,7 @@
       }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.SetFrame = function(vis, check_not_first) {
+   JSROOT.TBasePainter.prototype.SetFrame = function(vis, check_not_first) {
 
       this.frame = vis['ROOT:frame'];
       this.svg_frame = vis['ROOT:svg_frame'];
@@ -1263,7 +1270,7 @@
       }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.RedrawFrame = function(selobj) {
+   JSROOT.TBasePainter.prototype.RedrawFrame = function(selobj) {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
 
@@ -1280,7 +1287,7 @@
       }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.ClearFrame = function() {
+   JSROOT.TBasePainter.prototype.ClearFrame = function() {
 
       var vis = this.vis; 
 
@@ -1302,7 +1309,7 @@
    }
 
 
-   JSROOTPainter.ObjectPainter.prototype.RemoveDrag = function(id)
+   JSROOT.TBasePainter.prototype.RemoveDrag = function(id)
    {
       var drag_rect_name = id + "_drag_rect";
       var resize_rect_name = id + "_resize_rect";
@@ -1310,7 +1317,7 @@
       if (this[resize_rect_name]) { this[resize_rect_name].remove(); this[resize_rect_name] = null; }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.AddDrag = function(id, main_rect, callback) {
+   JSROOT.TBasePainter.prototype.AddDrag = function(id, main_rect, callback) {
 
       var pthis = this;
 
@@ -1474,7 +1481,7 @@
    }
 
 
-   JSROOTPainter.ObjectPainter.prototype.FindPainterFor = function(selobj)
+   JSROOT.TBasePainter.prototype.FindPainterFor = function(selobj)
    {
       // try to find painter for sepcified object
       // can be used to find painter for some special objects, registered as histogram functions
@@ -1490,7 +1497,7 @@
       return null;
    }
 
-   JSROOTPainter.ObjectPainter.prototype.PlacePainterAfterMe = function(next) {
+   JSROOT.TBasePainter.prototype.PlacePainterAfterMe = function(next) {
       if (!this.vis) return;
 
       var arr = this.vis['painters'];
@@ -1506,7 +1513,7 @@
 
    }
 
-   JSROOTPainter.ObjectPainter.prototype.CollectTooltips = function(tip) {
+   JSROOT.TBasePainter.prototype.CollectTooltips = function(tip) {
       if (!this.vis) return false;
 
       tip['empty'] = true;
@@ -1518,25 +1525,25 @@
    }
 
 
-   JSROOTPainter.ObjectPainter.prototype.AddMenuItem = function(menu, text, cmd)
+   JSROOT.TBasePainter.prototype.AddMenuItem = function(menu, text, cmd)
    {
       menu.append("<a href='javascript: JSROOTPainter.histoDialog(\"" + cmd + "\")'>" + text + "</a><br/>");
    }
 
 
-   JSROOTPainter.ObjectPainter.prototype.Redraw = function() {
+   JSROOT.TBasePainter.prototype.Redraw = function() {
       // basic method, should be reimplemented in all derived objects
       // for the case when drawing should be repeated, probably with different options
    }
 
-   JSROOTPainter.ObjectPainter.prototype.ProvideTooltip = function(tip)
+   JSROOT.TBasePainter.prototype.ProvideTooltip = function(tip)
    {
       // basic method, painter can provide tooltip at specified coordinates
       // range.x1 .. range.x2, range.y1 .. range.y2
    }
 
 
-   JSROOTPainter.ObjectPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TBasePainter.prototype.FillContextMenu = function(menu)
    {
       this.AddMenuItem(menu,"Unzoom X","unx");
       this.AddMenuItem(menu,"Unzoom Y","uny");
@@ -1548,7 +1555,7 @@
 
    }
 
-   JSROOTPainter.ObjectPainter.prototype.ExeContextMenu = function(cmd)
+   JSROOT.TBasePainter.prototype.ExeContextMenu = function(cmd)
    {
       if (cmd=="unx") this.Unzoom(true, false); else
       if (cmd=="uny") this.Unzoom(false, true); else
@@ -1563,7 +1570,7 @@
       }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.Unzoom = function(dox,doy) {
+   JSROOT.TBasePainter.prototype.Unzoom = function(dox,doy) {
       var obj = this.first;
       if (!obj) obj = this;
 
@@ -1586,7 +1593,7 @@
       }
    }
 
-   JSROOTPainter.ObjectPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
+   JSROOT.TBasePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
       var obj = this.first;
       if (!obj) obj = this;
       if (xmin!=xmax) {
@@ -1601,8 +1608,8 @@
       this.RedrawFrame();
    }
 
-   JSROOTPainter.ObjectPainter.prototype.UpdateObject = function(obj) {
-      alert("JSROOTPainter.ObjectPainter.UpdateObject not implemented");
+   JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
+      alert("JSROOT.TBasePainter.UpdateObject not implemented");
       return false;
    }
 
@@ -1917,39 +1924,39 @@
 
    // =========================================================================
 
-   JSROOTPainter.Func1DPainter = function(tf1) {
-      JSROOTPainter.ObjectPainter.call(this);
+   JSROOT.TF1Painter = function(tf1) {
+      JSROOT.TBasePainter.call(this);
       this.tf1 = tf1;
    }
 
-   JSROOTPainter.Func1DPainter.prototype = Object.create( JSROOTPainter.ObjectPainter.prototype );
+   JSROOT.TF1Painter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
-   JSROOTPainter.Func1DPainter.prototype.IsObject = function(obj) {
+   JSROOT.TF1Painter.prototype.IsObject = function(obj) {
       return this.tf1 === obj;
    }
 
-   JSROOTPainter.Func1DPainter.prototype.Redraw = function()
+   JSROOT.TF1Painter.prototype.Redraw = function()
    {
       this.DrawBins();
    }
 
-   JSROOTPainter.Func1DPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TF1Painter.prototype.FillContextMenu = function(menu)
    {
-      JSROOTPainter.ObjectPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
    }
 
-   JSROOTPainter.Func1DPainter.prototype.ExeContextMenu = function(cmd)
+   JSROOT.TF1Painter.prototype.ExeContextMenu = function(cmd)
    {
-      JSROOTPainter.ObjectPainter.prototype.ExeContextMenu.call(this, cmd);
+      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
-   JSROOTPainter.Func1DPainter.prototype.Eval = function(x)
+   JSROOT.TF1Painter.prototype.Eval = function(x)
    {
       //return (x-5)*(x-5);
       return this.tf1.evalPar(x);
    }
 
-   JSROOTPainter.Func1DPainter.prototype.CreateDummyHisto = function()
+   JSROOT.TF1Painter.prototype.CreateDummyHisto = function()
    {
       var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
       if (this.tf1['fNsave'] > 0) {
@@ -2008,7 +2015,7 @@
    }
 
 
-   JSROOTPainter.Func1DPainter.prototype.CreateBins = function() {
+   JSROOT.TF1Painter.prototype.CreateBins = function() {
 
       var pthis = this;
 
@@ -2048,7 +2055,7 @@
       }
    }
 
-   JSROOTPainter.Func1DPainter.prototype.ProvideTooltip = function(tip)
+   JSROOT.TF1Painter.prototype.ProvideTooltip = function(tip)
    {
       return;
 
@@ -2078,7 +2085,7 @@
    }
 
 
-   JSROOTPainter.Func1DPainter.prototype.DrawBins = function()
+   JSROOT.TF1Painter.prototype.DrawBins = function()
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
 
@@ -2143,7 +2150,7 @@
             });
    }
 
-   JSROOTPainter.Func1DPainter.prototype.UpdateObject = function(obj) {
+   JSROOT.TF1Painter.prototype.UpdateObject = function(obj) {
       if (obj['_typename'] != this.tf1['_typename']) return false;
       // TODO: realy update object content
       this.tf1 = obj;
@@ -2154,7 +2161,7 @@
 
    JSROOTPainter.drawFunction = function(vis, tf1)
    {
-      var painter = new JSROOTPainter.Func1DPainter(tf1);
+      var painter = new JSROOT.TF1Painter(tf1);
 
       if (!('painters' in vis)) {
          var histo = painter.CreateDummyHisto();
@@ -2173,33 +2180,33 @@
 
    // =======================================================================
 
-   JSROOTPainter.GraphPainter = function(graph) {
-      JSROOTPainter.ObjectPainter.call(this);
+   JSROOT.TGraphPainter = function(graph) {
+      JSROOT.TBasePainter.call(this);
       this.graph = graph;
    }
 
-   JSROOTPainter.GraphPainter.prototype = Object.create( JSROOTPainter.ObjectPainter.prototype );
+   JSROOT.TGraphPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
-   JSROOTPainter.GraphPainter.prototype.IsObject = function(obj) {
+   JSROOT.TGraphPainter.prototype.IsObject = function(obj) {
       return this.graph === obj;
    }
 
-   JSROOTPainter.GraphPainter.prototype.Redraw = function()
+   JSROOT.TGraphPainter.prototype.Redraw = function()
    {
       this.DrawBins();
    }
 
-   JSROOTPainter.GraphPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TGraphPainter.prototype.FillContextMenu = function(menu)
    {
-      JSROOTPainter.ObjectPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
    }
 
-   JSROOTPainter.GraphPainter.prototype.ExeContextMenu = function(cmd)
+   JSROOT.TGraphPainter.prototype.ExeContextMenu = function(cmd)
    {
-      JSROOTPainter.ObjectPainter.prototype.ExeContextMenu.call(this, cmd);
+      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
-   JSROOTPainter.GraphPainter.prototype.DecodeOptions = function(opt) {
+   JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.logx = false;
       this.logy = false;
       this.logz = false;
@@ -2299,7 +2306,7 @@
       }
    }
 
-   JSROOTPainter.GraphPainter.prototype.CreateBins = function() {
+   JSROOT.TGraphPainter.prototype.CreateBins = function() {
       var pthis = this;
 
       this.bins = d3.range(this.graph['fNpoints']).map(function(p) {
@@ -2564,7 +2571,7 @@
    }
 
 
-   JSROOTPainter.GraphPainter.prototype.ProvideTooltip = function(tip)
+   JSROOT.TGraphPainter.prototype.ProvideTooltip = function(tip)
    {
       if (!this.draw_content) return;
 
@@ -2599,7 +2606,7 @@
    }
 
 
-   JSROOTPainter.GraphPainter.prototype.DrawBins = function()
+   JSROOT.TGraphPainter.prototype.DrawBins = function()
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
 
@@ -2821,7 +2828,7 @@
       }
    }
 
-   JSROOTPainter.GraphPainter.prototype.UpdateObject = function(obj) {
+   JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
       if (obj['_typename']!= this.graph['_typename']) return false;
 
       // if our own histogram was used as axis drawing, we need update histogram as well
@@ -2848,7 +2855,7 @@
          }
       }
 
-      var painter = new JSROOTPainter.GraphPainter(graph);
+      var painter = new JSROOT.TGraphPainter(graph);
 
       painter['ownhisto'] = ownhisto;
 
@@ -2865,8 +2872,8 @@
 
    // ============================================================
 
-   JSROOTPainter.PavePainter = function(pave) {
-      JSROOTPainter.ObjectPainter.call(this);
+   JSROOT.TPavePainter = function(pave) {
+      JSROOT.TBasePainter.call(this);
       this.pavetext = pave;
       this.Enabled = true;
       this.main_rect = null;
@@ -2874,14 +2881,14 @@
       this.resize_rect = null;
    }
 
-   JSROOTPainter.PavePainter.prototype = Object.create( JSROOTPainter.ObjectPainter.prototype );
+   JSROOT.TPavePainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
 
-   JSROOTPainter.PavePainter.prototype.IsObject = function(obj) {
+   JSROOT.TPavePainter.prototype.IsObject = function(obj) {
       return this.pavetext === obj;
    }
 
-   JSROOTPainter.PavePainter.prototype.DrawPaveText = function() {
+   JSROOT.TPavePainter.prototype.DrawPaveText = function() {
       var pavetext = this.pavetext;
       var vis = this.vis;
 
@@ -3122,17 +3129,17 @@
       }
    }
 
-   JSROOTPainter.PavePainter.prototype.AddLine = function(txt) {
+   JSROOT.TPavePainter.prototype.AddLine = function(txt) {
       this.pavetext['fLines'].arr.push( {'fTitle': txt, "fTextColor": 1} );
    }
 
-   JSROOTPainter.PavePainter.prototype.IsStats = function() {
+   JSROOT.TPavePainter.prototype.IsStats = function() {
       if (!this.pavetext) return false;
       return this.pavetext['fName'] == "stats";
    }
 
 
-   JSROOTPainter.PavePainter.prototype.FillStatistic = function()
+   JSROOT.TPavePainter.prototype.FillStatistic = function()
    {
       if (!this.IsStats()) return false;
 
@@ -3151,7 +3158,7 @@
       return true;
    }
 
-   JSROOTPainter.PavePainter.prototype.Redraw = function() {
+   JSROOT.TPavePainter.prototype.Redraw = function() {
 
       this.RemoveDraw();
 
@@ -3176,7 +3183,7 @@
          return;
       }
 
-      var painter = new JSROOTPainter.PavePainter(pavetext);
+      var painter = new JSROOT.TPavePainter(pavetext);
 
       painter.SetFrame(vis, true);
 
@@ -3193,20 +3200,20 @@
 
    // ===========================================================================
 
-   JSROOTPainter.ColzPalettePainter = function(palette) {
-      JSROOTPainter.ObjectPainter.call(this);
+   JSROOT.TColzPalettePainter = function(palette) {
+      JSROOT.TBasePainter.call(this);
       this.palette = palette;
       this.Enabled = true;
    }
 
-   JSROOTPainter.ColzPalettePainter.prototype = Object.create( JSROOTPainter.ObjectPainter.prototype );
+   JSROOT.TColzPalettePainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
 
-   JSROOTPainter.ColzPalettePainter.prototype.IsObject = function(obj) {
+   JSROOT.TColzPalettePainter.prototype.IsObject = function(obj) {
       return this.palette === obj;
    }
 
-   JSROOTPainter.ColzPalettePainter.prototype.DrawPalette = function() {
+   JSROOT.TColzPalettePainter.prototype.DrawPalette = function() {
       var palette  = this.palette;
       var vis = this.vis;
 
@@ -3340,7 +3347,7 @@
 
    }
 
-   JSROOTPainter.ColzPalettePainter.prototype.Redraw = function() {
+   JSROOT.TColzPalettePainter.prototype.Redraw = function() {
 
       this.RemoveDraw();
 
@@ -3355,7 +3362,7 @@
    }
 
    JSROOTPainter.drawPaletteAxis = function(vis, palette) {
-      var painter = new JSROOTPainter.ColzPalettePainter(palette);
+      var painter = new JSROOT.TColzPalettePainter(palette);
 
       painter.SetFrame(vis, true);
 
@@ -3366,30 +3373,30 @@
 
    // =============================================================
 
-   JSROOTPainter.HistPainter = function(histo) {
-      JSROOTPainter.ObjectPainter.call(this);
+   JSROOT.THistPainter = function(histo) {
+      JSROOT.TBasePainter.call(this);
       this.histo = histo;
    }
 
-   JSROOTPainter.HistPainter.prototype = Object.create( JSROOTPainter.ObjectPainter.prototype );
+   JSROOT.THistPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
 
-   JSROOTPainter.HistPainter.prototype.IsObject = function(obj) {
+   JSROOT.THistPainter.prototype.IsObject = function(obj) {
       return this.histo === obj;
    }
 
-   JSROOTPainter.HistPainter.prototype.Dimension = function() {
+   JSROOT.THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
       return this.histo['fDimension'];
    }
 
-   JSROOTPainter.HistPainter.prototype.SetFrame = function(vis, opt) {
+   JSROOT.THistPainter.prototype.SetFrame = function(vis, opt) {
       this.draw_content = false;
 
       if (vis['ROOT:frame']==null)
          JSROOTPainter.createFrame(vis);
 
-      JSROOTPainter.ObjectPainter.prototype.SetFrame.call(this, vis, false)
+      JSROOT.TBasePainter.prototype.SetFrame.call(this, vis, false)
 
       if (vis['ROOT:svg_frame']==null) {
          alert("missing svg_frame");
@@ -3411,7 +3418,7 @@
       }
    }
 
-   JSROOTPainter.HistPainter.prototype.ScanContent = function() {
+   JSROOT.THistPainter.prototype.ScanContent = function() {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
@@ -3421,10 +3428,10 @@
 
 
 
-   JSROOTPainter.HistPainter.prototype.UpdateObject = function(obj)
+   JSROOT.THistPainter.prototype.UpdateObject = function(obj)
    {
       if (obj['_typename'] != this.histo['_typename']) {
-         alert("JSROOTPainter.HistPainter.UpdateObject - wrong class " + obj['_typename']);
+         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj['_typename']);
          return false;
       }
 
@@ -3450,7 +3457,7 @@
    }
 
 
-   JSROOTPainter.HistPainter.prototype.CreateXY = function()
+   JSROOT.THistPainter.prototype.CreateXY = function()
    {
       // here we create x,y objects which maps our physical coordnates into pixels
       // while only first painter really need such object, all others just reuse it
@@ -3501,12 +3508,12 @@
       }
    }
 
-   JSROOTPainter.HistPainter.prototype.CountStat = function()
+   JSROOT.THistPainter.prototype.CountStat = function()
    {
       alert("CountStat not implemented");
    }
 
-   JSROOTPainter.HistPainter.prototype.DrawGrids = function() {
+   JSROOT.THistPainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
       if (this.first) return;
 
@@ -3548,11 +3555,11 @@
       }
    }
 
-   JSROOTPainter.HistPainter.prototype.DrawBins = function() {
+   JSROOT.THistPainter.prototype.DrawBins = function() {
       alert("HistPainter.DrawBins not implemented");
    }
 
-   JSROOTPainter.HistPainter.prototype.AxisAsText = function(axis, value)
+   JSROOT.THistPainter.prototype.AxisAsText = function(axis, value)
    {
       if (axis=="x") {
          // this is indication
@@ -3577,7 +3584,7 @@
       return value.toPrecision(4);
    }
 
-   JSROOTPainter.HistPainter.prototype.DrawAxes = function() {
+   JSROOT.THistPainter.prototype.DrawAxes = function() {
       // axes can be drawn only for main (first) histogram
 
       if (this.first) return;
@@ -3876,7 +3883,7 @@
    }
 
 
-   JSROOTPainter.HistPainter.prototype.DrawTitle = function() {
+   JSROOT.THistPainter.prototype.DrawTitle = function() {
       var w = Number(this.vis.attr("width")), h = Number(this.vis.attr("height"));
       var font_size = Math.round(0.050 * h);
       var l_title = JSROOTPainter.translateLaTeX(this.histo['fTitle']);
@@ -3912,7 +3919,7 @@
       }
    }
 
-   JSROOTPainter.HistPainter.prototype.ToggleStat = function() {
+   JSROOT.THistPainter.prototype.ToggleStat = function() {
 
       var stat = this.FindStat();
 
@@ -3939,7 +3946,7 @@
       statpainter.Redraw();
    }
 
-   JSROOTPainter.HistPainter.prototype.GetSelectIndex = function(axis,size,add) {
+   JSROOT.THistPainter.prototype.GetSelectIndex = function(axis,size,add) {
       // be aware - here index starts from 0
       var indx = 0;
       var obj = this.first;
@@ -3980,7 +3987,7 @@
       return indx;
    }
 
-   JSROOTPainter.HistPainter.prototype.FindStat = function() {
+   JSROOT.THistPainter.prototype.FindStat = function() {
 
       if ('fFunctions' in this.histo)
          for (var i in this.histo.fFunctions.arr) {
@@ -3997,7 +4004,7 @@
       return null;
    }
 
-   JSROOTPainter.HistPainter.prototype.CreateStat = function() {
+   JSROOT.THistPainter.prototype.CreateStat = function() {
 
       if (!this.draw_content) return null;
       if (this.FindStat() != null) return null;
@@ -4063,7 +4070,7 @@
       return stats;
    }
 
-   JSROOTPainter.HistPainter.prototype.FindPalette = function() {
+   JSROOT.THistPainter.prototype.FindPalette = function() {
 
       if ('fFunctions' in this.histo)
          for (var i in this.histo.fFunctions.arr) {
@@ -4075,7 +4082,7 @@
    }
 
 
-   JSROOTPainter.HistPainter.prototype.DrawFunctions = function() {
+   JSROOT.THistPainter.prototype.DrawFunctions = function() {
 
       // draw statistics box & other TPaveTexts, which are belongs to histogram
       // should be called once to create all painters, which are than updated separately
@@ -4136,7 +4143,7 @@
       }
    }
 
-   JSROOTPainter.HistPainter.prototype.Redraw = function() {
+   JSROOT.THistPainter.prototype.Redraw = function() {
       this.CreateXY();
       this.CountStat();
       this.DrawAxes();
@@ -4146,7 +4153,7 @@
       this.DrawFunctions();
    }
 
-   JSROOTPainter.HistPainter.prototype.AddInteractive = function() {
+   JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the main pad
       if (this.first) return;
 
@@ -4652,9 +4659,9 @@
 
    }
 
-   JSROOTPainter.HistPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.THistPainter.prototype.FillContextMenu = function(menu)
    {
-      JSROOTPainter.ObjectPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
       if (this.options) {
          if (this.options.Logx > 0)
             this.AddMenuItem(menu,"Linear X","linx");
@@ -4669,7 +4676,7 @@
          this.AddMenuItem(menu,"Toggle stat","togstat");
    }
 
-   JSROOTPainter.HistPainter.prototype.ExeContextMenu = function(cmd) {
+   JSROOT.THistPainter.prototype.ExeContextMenu = function(cmd) {
       if (cmd == "togstat") {
          this.ToggleStat();
          return;
@@ -4699,21 +4706,21 @@
          return;
       }
 
-      JSROOTPainter.ObjectPainter.prototype.ExeContextMenu.call(this, cmd);
+      JSROOT.TBasePainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
 
    // ======= TH1 painter =======================================================
 
-   JSROOTPainter.Hist1DPainter = function(histo) {
-      JSROOTPainter.HistPainter.call(this, histo);
+   JSROOT.TH1Painter = function(histo) {
+      JSROOT.THistPainter.call(this, histo);
       this.draw_bins = null;
    }
 
-   JSROOTPainter.Hist1DPainter.prototype = Object.create( JSROOTPainter.HistPainter.prototype );
+   JSROOT.TH1Painter.prototype = Object.create( JSROOT.THistPainter.prototype );
 
 
-   JSROOTPainter.Hist1DPainter.prototype.ScanContent = function() {
+   JSROOT.TH1Painter.prototype.ScanContent = function() {
 
       // from here we analyze object content
       // therefore code will be moved
@@ -4786,7 +4793,7 @@
          this.draw_content = false;
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.CountStat = function()
+   JSROOT.TH1Painter.prototype.CountStat = function()
    {
       this.stat_sum0 = 0;
       this.stat_sum1 = 0;
@@ -4806,7 +4813,7 @@
       }
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.FillStatistic = function(stat, dostat)
+   JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat)
    {
       if (!this.histo) return false;
 
@@ -4873,7 +4880,7 @@
       return true;
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.CreateDrawBins = function()
+   JSROOT.TH1Painter.prototype.CreateDrawBins = function()
    {
       // method is called directly before bins must be drawn
 
@@ -4946,7 +4953,7 @@
    }
 
 
-   JSROOTPainter.Hist1DPainter.prototype.DrawErrors = function()
+   JSROOT.TH1Painter.prototype.DrawErrors = function()
    {
       var w = Number(this.svg_frame.attr("width")), h = Number(this.svg_frame.attr("height"));
       /* Add a panel for each data point */
@@ -5055,7 +5062,7 @@
    }
 
 
-   JSROOTPainter.Hist1DPainter.prototype.DrawBins = function() {
+   JSROOT.TH1Painter.prototype.DrawBins = function() {
 
       // TODO: limit number of drawn by number of visible pixels
       // one could select every second bin, for instance
@@ -5139,7 +5146,7 @@
       }
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.ProvideTooltip = function(tip)
+   JSROOT.TH1Painter.prototype.ProvideTooltip = function(tip)
    {
       if (!this.draw_content) return;
 
@@ -5175,23 +5182,23 @@
    }
 
 
-   JSROOTPainter.Hist1DPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TH1Painter.prototype.FillContextMenu = function(menu)
    {
-      JSROOTPainter.HistPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
          this.AddMenuItem(menu,"Auto zoom-in","autozoom");
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.ExeContextMenu = function(cmd) {
+   JSROOT.TH1Painter.prototype.ExeContextMenu = function(cmd) {
       if (cmd == "autozoom") {
          this.AutoZoom();
          return;
       }
 
-      JSROOTPainter.HistPainter.prototype.ExeContextMenu.call(this, cmd);
+      JSROOT.THistPainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
-   JSROOTPainter.Hist1DPainter.prototype.AutoZoom = function()
+   JSROOT.TH1Painter.prototype.AutoZoom = function()
    {
       var left = this.GetSelectIndex("x","left",-1);
       var right = this.GetSelectIndex("x","right",1);
@@ -5218,7 +5225,7 @@
    JSROOTPainter.drawHistogram1D = function(vis, histo, opt) {
 
       // create painter and add it to canvas
-      var painter = new JSROOTPainter.Hist1DPainter(histo);
+      var painter = new JSROOT.TH1Painter(histo);
 
       var hadframe = (vis['ROOT:frame'] != null);
 
@@ -5250,17 +5257,17 @@
 
    // ==================== painter for TH2 histograms ==============================
 
-   JSROOTPainter.Hist2DPainter = function(histo) {
-      JSROOTPainter.HistPainter.call(this, histo);
+   JSROOT.TH2Painter = function(histo) {
+      JSROOT.THistPainter.call(this, histo);
       this.paletteColors = [];
    }
 
-   JSROOTPainter.Hist2DPainter.prototype = Object.create( JSROOTPainter.HistPainter.prototype );
+   JSROOT.TH2Painter.prototype = Object.create( JSROOT.THistPainter.prototype );
 
 
-   JSROOTPainter.Hist2DPainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TH2Painter.prototype.FillContextMenu = function(menu)
    {
-      JSROOTPainter.HistPainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       this.AddMenuItem(menu,"Auto zoom-in","autozoom");
       this.AddMenuItem(menu,"Draw in 3D","draw3d");
       this.AddMenuItem(menu,"Toggle col","col");
@@ -5269,7 +5276,7 @@
          this.AddMenuItem(menu,"Toggle colz","colz");
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.ExeContextMenu = function(cmd) {
+   JSROOT.TH2Painter.prototype.ExeContextMenu = function(cmd) {
 
       if (cmd == "draw3d") {
          this.Draw3D();
@@ -5304,10 +5311,10 @@
          return;
       }
 
-      JSROOTPainter.HistPainter.prototype.ExeContextMenu.call(this, cmd);
+      JSROOT.THistPainter.prototype.ExeContextMenu.call(this, cmd);
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.AutoZoom = function()
+   JSROOT.TH2Painter.prototype.AutoZoom = function()
    {
       var i1 = this.GetSelectIndex("x","left",-1);
       var i2 = this.GetSelectIndex("x","right",1);
@@ -5351,7 +5358,7 @@
    }
 
 
-   JSROOTPainter.Hist2DPainter.prototype.CreatePalette = function(rel_width)
+   JSROOT.TH2Painter.prototype.CreatePalette = function(rel_width)
    {
       if (this.FindPalette() != null) return null;
 
@@ -5419,7 +5426,7 @@
    }
 
 
-   JSROOTPainter.Hist2DPainter.prototype.ScanContent = function()
+   JSROOT.TH2Painter.prototype.ScanContent = function()
    {
       this.fillcolor = JSROOTPainter.root_colors[this.histo['fFillColor']];
       this.linecolor = JSROOTPainter.root_colors[this.histo['fLineColor']];
@@ -5456,7 +5463,7 @@
       this.draw_content = this.maxbin>0;
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.CountStat = function()
+   JSROOT.TH2Painter.prototype.CountStat = function()
    {
       this.stat_matrix = new Array();
       for (var n=0;n<9;n++) this.stat_matrix.push(0);
@@ -5504,7 +5511,7 @@
       }
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.FillStatistic = function(stat, dostat)
+   JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat)
    {
       if (!this.histo) return false;
 
@@ -5580,7 +5587,7 @@
    }
 
 
-   JSROOTPainter.Hist2DPainter.prototype.getValueColor = function(zc) {
+   JSROOT.TH2Painter.prototype.getValueColor = function(zc) {
       var wmin = this.minbin, wmax = this.maxbin;
       var wlmin = wmin, wlmax = wmax;
       var ndivz = this.histo['fContour'].length;
@@ -5615,7 +5622,7 @@
       return this.paletteColors[icol];
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.CreateDrawBins = function(w,h,coordinates_kind,tipkind)
+   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w,h,coordinates_kind,tipkind)
    {
       var i1 = this.GetSelectIndex("x","left",0);
       var i2 = this.GetSelectIndex("x","right",0);
@@ -5706,7 +5713,7 @@
       return local_bins;
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.DrawBins = function()
+   JSROOT.TH2Painter.prototype.DrawBins = function()
    {
       this.RemoveDraw();
 
@@ -5809,7 +5816,7 @@
       local_bins = null;
    }
 
-   JSROOTPainter.Hist2DPainter.prototype.ProvideTooltip = function(tip)
+   JSROOT.TH2Painter.prototype.ProvideTooltip = function(tip)
    {
       var i = Math.round((tip.x - this.binwidthx/2 - this.xmin) / this.binwidthx);
       var j = Math.round((tip.y - this.binwidthy/2 - this.ymin) / this.binwidthy);
@@ -5836,48 +5843,7 @@
       // range.x1 .. range.x2, range.y1 .. range.y2
    }
 
-
-   JSROOTPainter.drawHistogram2D = function(vis, histo, opt)
-   {
-
-      // create painter and add it to canvas
-      var painter = new JSROOTPainter.Hist2DPainter(histo);
-
-      var hadframe = (vis['ROOT:frame'] != null);
-
-      painter.SetFrame(vis, opt);
-
-      painter.ScanContent();
-
-      // check if we need to create palette
-      if ((painter.FindPalette() == null) && !hadframe && (painter.options.Zscale>0)) {
-         JSROOTPainter.shrinkFrame(vis, 0.08);
-         painter.CreatePalette(0.08);
-      }
-
-      // check if we need to create statbox
-      if (JSROOTPainter.gStyle.AutoStat && !hadframe) painter.CreateStat();
-
-      painter.CreateXY();
-
-      painter.CountStat();
-
-      painter.DrawAxes();
-
-      painter.DrawGrids();
-
-      painter.DrawBins();
-
-      painter.DrawTitle();
-
-      painter.DrawFunctions();
-
-      painter.AddInteractive();
-
-      return painter;
-   }
-
-   JSROOTPainter.Hist2DPainter.prototype.Draw3D = function()
+   JSROOT.TH2Painter.prototype.Draw3D = function()
    {
       var vis = this.vis;
       var frame = this.frame;
@@ -6135,7 +6101,46 @@
 
       JSROOTPainter.add3DInteraction(renderer, scene, camera, toplevel);
    })}
+   
+   JSROOTPainter.drawHistogram2D = function(vis, histo, opt)
+   {
 
+      // create painter and add it to canvas
+      var painter = new JSROOT.TH2Painter(histo);
+
+      var hadframe = (vis['ROOT:frame'] != null);
+
+      painter.SetFrame(vis, opt);
+
+      painter.ScanContent();
+
+      // check if we need to create palette
+      if ((painter.FindPalette() == null) && !hadframe && (painter.options.Zscale>0)) {
+         JSROOTPainter.shrinkFrame(vis, 0.08);
+         painter.CreatePalette(0.08);
+      }
+
+      // check if we need to create statbox
+      if (JSROOTPainter.gStyle.AutoStat && !hadframe) painter.CreateStat();
+
+      painter.CreateXY();
+
+      painter.CountStat();
+
+      painter.DrawAxes();
+
+      painter.DrawGrids();
+
+      painter.DrawBins();
+
+      painter.DrawTitle();
+
+      painter.DrawFunctions();
+
+      painter.AddInteractive();
+
+      return painter;
+   }
 
    JSROOTPainter.drawHistogram3D = function(vis, histo, dopt)
    {
@@ -7259,7 +7264,7 @@
       return null;
    }
    
-   JSROOTPainter.HPainter = function(name,frameid) {
+   JSROOT.HPainter = function(name,frameid) {
       JSROOTPainter.AddHList(name, this);
       this.name = name;
       this.frameid = frameid;
@@ -7269,13 +7274,13 @@
       this.maxnodeid = -1;
    }
    
-   JSROOTPainter.HPainter.prototype.GlobalName = function(suffix) {
+   JSROOT.HPainter.prototype.GlobalName = function(suffix) {
       var res = "JSROOTPainter.H(\'" + this.name + "\')";
       if (suffix!=null) res+=suffix;
       return res;
    }
    
-   JSROOTPainter.HPainter.prototype.ListHierarchy = function(folder, lst) {
+   JSROOT.HPainter.prototype.ListHierarchy = function(folder, lst) {
 
       folder['_childs'] = [];
       
@@ -7292,7 +7297,7 @@
       }
    }
 
-   JSROOTPainter.HPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
+   JSROOT.HPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
 
       folder['_childs'] = [];
       
@@ -7327,7 +7332,7 @@
       }
    }
    
-   JSROOTPainter.HPainter.prototype.TreeHierarchy = function(node, obj)
+   JSROOT.HPainter.prototype.TreeHierarchy = function(node, obj)
    {
       node._childs = [];
       
@@ -7362,7 +7367,7 @@
       }
    }
 
-   JSROOTPainter.HPainter.prototype.KeysHierarchy = function(folder, keys, file) {
+   JSROOT.HPainter.prototype.KeysHierarchy = function(folder, keys, file) {
 
       folder['_childs'] = [];
       
@@ -7418,7 +7423,7 @@
    }
   
    
-   JSROOTPainter.HPainter.prototype.FileHierarchy = function(file)
+   JSROOT.HPainter.prototype.FileHierarchy = function(file)
    {
       var painter = this;
       
@@ -7449,7 +7454,7 @@
       return folder;
    }
 
-   JSROOTPainter.HPainter.prototype.Find = function(fullname, top, replace) {
+   JSROOT.HPainter.prototype.Find = function(fullname, top, replace) {
 
       if (!top) top = this.h;
       
@@ -7477,7 +7482,7 @@
       return null;
    }
 
-   JSROOTPainter.HPainter.prototype.itemFullName = function(node, uptoparent)
+   JSROOT.HPainter.prototype.itemFullName = function(node, uptoparent)
    {
       var res = ""; 
          
@@ -7491,7 +7496,7 @@
       return res;  
    }
    
-   JSROOTPainter.HPainter.prototype.CheckCanDo = function(node, cando) 
+   JSROOT.HPainter.prototype.CheckCanDo = function(node, cando) 
    {
       var kind = node["_kind"];
       if (kind == null) kind = "";
@@ -7515,7 +7520,7 @@
       if ((kind.indexOf("ROOT.")==0) && JSROOTPainter.canDrawObject(kind.slice(5))) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
    }
    
-   JSROOTPainter.HPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
+   JSROOT.HPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
    {
       if (lvl == null) lvl = 0;
       if (maxlvl == null) maxlvl = -1;
@@ -7586,7 +7591,7 @@
       return nodeid;
    }
 
-   JSROOTPainter.HPainter.prototype.RefreshHtml = function(force)
+   JSROOT.HPainter.prototype.RefreshHtml = function(force)
    {
       if (this.frameid == null) return;
       var elem = document.getElementById(this.frameid);
@@ -7625,7 +7630,7 @@
       elem.innerHTML = content;
    }
    
-   JSROOTPainter.HPainter.prototype.get = function(itemname, callback)
+   JSROOT.HPainter.prototype.get = function(itemname, callback)
    {
       var item = this.Find(itemname);
 
@@ -7645,7 +7650,7 @@
          if (typeof callback == 'function') callback(item, null);
    }
 
-   JSROOTPainter.HPainter.prototype.display = function(itemname)
+   JSROOT.HPainter.prototype.display = function(itemname)
    {
       var pthis = this;
       
@@ -7659,12 +7664,12 @@
       });
    }
    
-   JSROOTPainter.HPainter.prototype.reload = function()
+   JSROOT.HPainter.prototype.reload = function()
    {
       if (this.url!=null) this.OpenOnline(this.url);
    }
    
-   JSROOTPainter.HPainter.prototype.ExpandDtree = function(node)
+   JSROOT.HPainter.prototype.ExpandDtree = function(node)
    {
       var itemname = this.itemFullName(node);
       
@@ -7681,7 +7686,7 @@
       // this.dtree.o(node._nodeid);
    }
    
-   JSROOTPainter.HPainter.prototype.expand = function(itemname)
+   JSROOT.HPainter.prototype.expand = function(itemname)
    {
       var painter = this;
       
@@ -7702,7 +7707,7 @@
       });
    }
    
-   JSROOTPainter.HPainter.prototype.OpenRootFile = function(url)
+   JSROOT.HPainter.prototype.OpenRootFile = function(url)
    {
       var pthis = this;
       
@@ -7715,7 +7720,7 @@
       });
    }
    
-   JSROOTPainter.HPainter.prototype.AddOnlineMethods = function(h)
+   JSROOT.HPainter.prototype.AddOnlineMethods = function(h)
    {
       if (typeof h != 'object') return;
       
@@ -7751,7 +7756,7 @@
    }
    
 
-   JSROOTPainter.HPainter.prototype.OpenOnline = function(url)
+   JSROOT.HPainter.prototype.OpenOnline = function(url)
    {
       this.url = url; // remember url to be able reload id 
       
@@ -7772,20 +7777,20 @@
    }
 
    
-   JSROOTPainter.HPainter.prototype.ShowStreamerInfo = function(sinfo)
+   JSROOT.HPainter.prototype.ShowStreamerInfo = function(sinfo)
    {
       this.h = { _name : "StreamerInfo" };
       this.StreamerInfoHierarchy(this.h, sinfo);
       this.RefreshHtml();
    }
    
-   JSROOTPainter.HPainter.prototype.Adopt = function(h)
+   JSROOT.HPainter.prototype.Adopt = function(h)
    {
       this.h = h;
       this.RefreshHtml();
    }
    
-   JSROOTPainter.HPainter.prototype.CreateSingleOnlineElement = function()
+   JSROOT.HPainter.prototype.CreateSingleOnlineElement = function()
    {
       this.h = {
          _name : ""   
@@ -7793,7 +7798,7 @@
       this.AddOnlineMethods(this.h);
    }
    
-   JSROOTPainter.HPainter.prototype.menuitem = function(d,txt,func)
+   JSROOT.HPainter.prototype.menuitem = function(d,txt,func)
    {
       var p = document.createElement('p');
       d.appendChild(p);
@@ -7802,7 +7807,7 @@
       p.innerHTML = txt;
    }
    
-   JSROOTPainter.HPainter.prototype.contextmenu = function(element, event, itemname)
+   JSROOT.HPainter.prototype.contextmenu = function(element, event, itemname)
    {
       var xMousePosition = event.clientX + window.pageXOffset;
       var yMousePosition = event.clientY + window.pageYOffset;

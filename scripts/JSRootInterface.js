@@ -74,7 +74,7 @@ function CollapsibleDisplay(itemname, obj) {
    $('#'+hid).empty();
 
    if (issinfo) {
-      var painter = new JSROOTPainter.HPainter('sinfo', hid);
+      var painter = new JSROOT.HPainter('sinfo', hid);
       painter.ShowStreamerInfo(obj);
    } else {
       
@@ -141,7 +141,7 @@ function ReadFile(filename) {
    }
    if (filename.length == 0) return;
    
-   var painter = new JSROOTPainter.HPainter("root", "status");
+   var painter = new JSROOT.HPainter("root", "status");
    
    painter['ondisplay'] = CollapsibleDisplay;
    painter['clear'] = ResetReport;
@@ -206,7 +206,7 @@ function BuildDrawGUI()
       }
    }
    
-   var hpainter = new JSROOTPainter.HPainter("single");
+   var hpainter = new JSROOT.HPainter("single");
    
    hpainter.CreateSingleOnlineElement();
    
@@ -252,7 +252,7 @@ function BuildOnlineGUI() {
    
    $('#onlineGUI').append(guiCode);
 
-   var hpainter = new JSROOTPainter.HPainter("root", "status");
+   var hpainter = new JSROOT.HPainter("root", "status");
    
    hpainter['ondisplay'] = CollapsibleDisplay;
    hpainter['clear'] = ResetReport;
