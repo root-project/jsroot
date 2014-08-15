@@ -1806,6 +1806,14 @@
          
          var menu = JSROOT.Painter.createmenu(e.originalEvent);
 
+         
+         var item = JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip";
+         
+         JSROOT.Painter.menuitem(menu, item, function() {
+            JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
+            tooltip.hide();
+         });
+         
          if ('painters' in vis)
             JSROOT.Painter.menuitem(menu,"Switch to 2D", function() {
                $( vis[0][0] ).show().parent().find( renderer.domElement ).remove();
@@ -4120,7 +4128,10 @@
 
          // ignore context menu when touches zooming is ongoing
          if (zoom_kind>100) return;
-         
+
+         // suppress any running zomming
+         closeAllExtras();
+
          var menu = JSROOT.Painter.createmenu(d3.event, 'root_ctx_menu');
          
          menu['painter'] = pthis;
@@ -4135,6 +4146,13 @@
 
          // in case when zooming was started, block any other kind of events
          if (zoom_kind!=0)  {
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            return;
+         }
+         
+         if (document.getElementById('root_ctx_menu')!=null) {
+            // ignore any zooming when context is visible
             d3.event.preventDefault();
             d3.event.stopPropagation();
             return;
@@ -5507,7 +5525,7 @@
 
       // this.ClearFrame();
       
-      var w = Number(frame.attr("width")), h = Number(frame.attr("height")), size = 100;
+      var w = Number(vis.attr("width")), h = Number(vis.attr("height")), size = 100;
 
       var xmin = this.xmin, xmax = this.xmax;
       if (this.zoom_xmin != this.zoom_xmax) { xmin = this.zoom_xmin; xmax = this.zoom_xmax; }
