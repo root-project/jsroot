@@ -360,7 +360,6 @@
          '$$$style/jquery-ui.css;' +
          '$$$scripts/jquery-ui.min.js;' +
          '$$$scripts/d3.v3.min.js;' +
-         '$$$scripts/dtree.js;' +
          '$$$scripts/JSRootPainter.js;' +
          '$$$style/JSRootPainter.css';
       

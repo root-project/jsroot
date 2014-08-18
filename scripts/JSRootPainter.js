@@ -4151,13 +4151,6 @@
             return;
          }
          
-         if (document.getElementById('root_ctx_menu')!=null) {
-            // ignore any zooming when context is visible
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
-            return;
-         }
-
          e = this;
          // var t = d3.event.changedTouches;
          var arr = d3.touches(e);
@@ -6938,8 +6931,6 @@
       this.frameid = frameid;
       this.h = null;    // hierarchy
       this.url = null;  // url of online server 
-      this.dtree = null;
-      this.maxnodeid = -1;
    }
    
    JSROOT.THierarchyPainter.prototype.GlobalName = function(suffix) {
@@ -7188,16 +7179,13 @@
       if ((kind.indexOf("ROOT.")==0) && JSROOT.Painter.canDrawObject(kind.slice(5))) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
    }
    
-   JSROOT.THierarchyPainter.prototype.createNode = function(nodeid, parentid, node, fullname, lvl, maxlvl) 
+   JSROOT.THierarchyPainter.prototype.createNode = function(node, fullname, last_sibling) 
    {
-      if (lvl == null) lvl = 0;
-      if (maxlvl == null) maxlvl = -1;
-      
       var nodename = node._name;
       
       var nodefullname = "";
       
-      if (parentid>=0) {
+      if (node != this.h) {
          nodefullname = nodename;
          if (fullname.length>0) nodefullname = fullname+ "/" + nodename;   
       }
@@ -7229,34 +7217,35 @@
          } else
          if (cando.open) 
             cando.html = nodefullname;
-      } else 
-      if ((maxlvl >= 0) && (lvl >= maxlvl)) {
-         cando.html = "javascript: " + this.GlobalName() + ".expand(\'"+nodefullname+"\');";
-         if (cando.img1.length == 0) {
-            cando.img1 = JSROOT.source_dir+'img/folder.gif'; 
-            cando.img2 = JSROOT.source_dir+'img/folderopen.gif';
-         }
-         cando.scan = false;
       } 
       
       if (cando.img2 == "") cando.img2 = cando.img1;
       
-      // console.log("add nodeid " + nodeid + ":" + parentid + "  name = " + nodefullname );
-      this.dtree.add(nodeid, parentid, nodename, cando.html, nodename, "", cando.img1, cando.img2);
-      
-      node['_nodeid'] = nodeid;
+      node['_d'] = {
+        name : nodename,
+        url : cando.html,
+        title : nodename,
+        fullname: nodefullname,
+        icon : cando.img1,
+        iconOpen :  cando.img2,
+        _id : 0,      // id used in html
+        _io : false,  // is open
+        _is : false,  // is selected 
+        _ls : last_sibling,  // last sibling
+        _hc : false,  // has childs
+        _ai : 0,
+        _p : null
+      };
 
       // allow context menu only for objects which can be displayed
-      if (cando.display)
-         this.dtree.aNodes[nodeid]['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'"+nodefullname+"\')"; 
+      if (cando.display) 
+         node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'"+nodefullname+"\')";
 
-      nodeid++;
-      
-      if (cando.scan) 
-         for (var i in node._childs)
-            nodeid = this.createNode(nodeid, node['_nodeid'], node._childs[i], nodefullname, lvl+1, maxlvl);
-      
-      return nodeid;
+      if (cando.scan && ('_childs' in node)) {
+         node['_d']._hc = true;
+         for (var i in node._childs) 
+            this.createNode(node._childs[i], nodefullname, (i==node._childs.length-1));
+      }
    }
 
    JSROOT.THierarchyPainter.prototype.RefreshHtml = function(force)
@@ -7270,33 +7259,179 @@
          return;
       }
       
-      if (force && this.dtree!= null) {
-         delete this.dtree;
-         this.dtree = null;
+      if (force && this.h._d!= null) {
+         delete this.h._d;
+         this.h._d = null;
       }
       
-      if (this.dtree == null) {
-         this.dtree = new dTree(this.GlobalName('.dtree'));
-         this.dtree.config.useCookies = false;
-      
-         var maxlvl = -1; //this.CountElements(top, 0);
-      
-         this.maxnodeid = this.createNode(0, -1, this.h, "", 0, maxlvl);
-      }
+      if (this.h._d == null) 
+         this.createNode(this.h, "", false);
 
       var content = "<p>";
-      content += "<a href=\"javascript: " + this.GlobalName() + ".dtree.openAll();\">open all</a>";
-      content += "| <a href=\"javascript: " + this.GlobalName() + ".dtree.closeAll();\">close all</a>";
+      content += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
+      content += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
       if (this.url!=null)
          content += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";                           
       if (typeof this['clear'] == 'function')
          content += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";                           
                   
       content+="</p>";
-      content += this.dtree;
+      
+      content += this.BuildHtml();
       
       elem.innerHTML = content;
    }
+   
+   JSROOT.THierarchyPainter.prototype.BuildHtml = function()
+   {
+      if (this.icon==null)
+         this.icon = {
+            root           : JSROOT.source_dir+'img/base.gif',
+            folder         : JSROOT.source_dir+'img/folder.gif',
+            folderOpen     : JSROOT.source_dir+'img/folderopen.gif',
+            node           : JSROOT.source_dir+'img/page.gif',
+            empty          : JSROOT.source_dir+'img/empty.gif',
+            line           : JSROOT.source_dir+'img/line.gif',
+            join           : JSROOT.source_dir+'img/join.gif',
+            joinBottom     : JSROOT.source_dir+'img/joinbottom.gif',
+            plus           : JSROOT.source_dir+'img/plus.gif',
+            plusBottom     : JSROOT.source_dir+'img/plusbottom.gif',
+            minus          : JSROOT.source_dir+'img/minus.gif',
+            minusBottom    : JSROOT.source_dir+'img/minusbottom.gif',
+            nlPlus         : JSROOT.source_dir+'img/nolines_plus.gif',
+            nlMinus        : JSROOT.source_dir+'img/nolines_minus.gif'
+         };
+
+      var indent = new Array;
+      
+      var painter = this;
+      
+      var str = '';
+      var idcnt = 0;
+      
+      var itemHtml = function(hitem) {
+         var isroot = (hitem == painter.h);
+         
+         str += '<div class="dTreeNode">';
+         
+         var node = hitem._d;
+         node._id = idcnt++;
+         var idname = painter.name + "_id_" + node._id; 
+
+         // make indent
+         for (var n=0; n<indent.length; n++)
+            str += '<img src="' + ( (indent[n] == 1) ? painter.icon.line : painter.icon.empty ) + '" alt="" />';
+         
+         var opencode = painter.GlobalName() + ".open(\'"+node.fullname+"\')";
+         
+         if (isroot) {
+            // for root node no indent 
+         } else
+         if (node._hc) {
+            str += '<a href="javascript: ' + opencode + '"><img id="j' + idname + '" src="';
+            str += ( (node._io) ? (node._ls ? painter.icon.minusBottom : painter.icon.minus) : (node._ls ? painter.icon.plusBottom : painter.icon.plus ) );
+            str += '" alt="" /></a>';
+         } else {
+            str += '<img src="' + ((node._ls ? painter.icon.joinBottom : painter.icon.join)) + '" alt="" />';
+         }
+         
+         // make node icon
+         if (!node.icon) node.icon = isroot ? painter.icon.root : ((node._hc) ? painter.icon.folder : painter.icon.node);
+         if (!node.iconOpen) node.iconOpen = (node._hc) ? painter.icon.folderOpen : painter.icon.node;
+         if (isroot) {
+            node.icon = painter.icon.root;
+            node.iconOpen = painter.icon.root;
+         }
+         str += '<img id="i' + idname + '" src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt="" />';
+
+         if (node.url) {
+            str += '<a id="s' + idname + '" class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
+            if (node.title) str += ' title="' + node.title + '"';
+            if (node.target) str += ' target="' + node.target + '"';
+            if (node.ctxt) str += ' oncontextmenu="' + node.ctxt + '"';
+            str += '>' + node.name + '</a>';
+         } else 
+         if (node._hc && !isroot) {
+            str += '<a href="javascript: ' + opencode + '" class="node">';
+            str += node.name;
+            str += '</a>';
+         } else {
+            str += node.name;
+         }
+
+         str += '</div>';
+         
+         if (node._hc) {
+            if (!isroot) indent.push(node._ls ? 0 : 1);  
+
+            str += '<div id="d' + idname + '" class="clip" style="display:' + ((isroot || node._io) ? 'block' : 'none') + ';">';
+            
+            for (var i in hitem._childs)
+               itemHtml(hitem._childs[i]);
+            
+            str += '</div>';
+            
+            if (!isroot) indent.pop();
+         }
+      }
+      
+      str += '<div class="dtree">'
+      
+      itemHtml(this.h);
+      
+      str += '</div>';
+      
+      return str;
+   }
+   
+   JSROOT.THierarchyPainter.prototype.open = function(itemname)
+   {
+      var item = this.Find(itemname);
+      if (item==null) return;
+      
+      this.setDNodeOpenStatus(item, !item._d._io);
+   }
+   
+   JSROOT.THierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status)
+   {
+      if (hitem==null) return;
+      
+      var node = hitem._d;
+      var idname = this.name + "_id_" + node._id;
+
+      node._io = status;
+      
+      var eDiv  = document.getElementById('d' + idname);
+      var eJoin = document.getElementById('j' + idname);
+      var eIcon = document.getElementById('i' + idname);
+
+      if (eIcon) eIcon.src = node._io ? node.iconOpen : node.icon;
+      if (eJoin) eJoin.src = node._io ? (node._ls?this.icon.minusBottom:this.icon.minus) : (node._ls?this.icon.plusBottom:this.icon.plus);
+      if (eDiv) eDiv.style.display = node._io ? 'block': 'none';
+      
+   }
+   
+   JSROOT.THierarchyPainter.prototype.toggle = function(status)
+   {
+      var painter = this;
+      
+      var toggleItem = function(hitem) {
+
+         if (!hitem._d._hc) return;
+         
+         // first toggle childs
+         for (var i in hitem._childs)
+            toggleItem(hitem._childs[i]);
+         
+         // than toggle parent
+         
+         if (hitem != painter.h)
+            painter.setDNodeOpenStatus(hitem, status);
+      }
+      
+      toggleItem(this.h);
+   }
+   
    
    JSROOT.THierarchyPainter.prototype.get = function(itemname, callback)
    {
@@ -7342,16 +7477,14 @@
       var itemname = this.itemFullName(node);
       
       for (var i in node._childs)
-         this.maxnodeid = this.createNode(this.maxnodeid, node._nodeid, node._childs[i], itemname);
+         this.createNode(node._childs[i], itemname, (i == node._childs.length-1));
       
-      this.dtree.aNodes[node._nodeid]._io = true;
-      this.dtree.aNodes[node._nodeid].url = "";
-      this.dtree.aNodes[node._nodeid].name = node._name;
+      node._d._hc = true;
+      node._d._io = true;
+      node._d.url = "";
+      node._d.name = node._name;
       
       this.RefreshHtml();
-
-      // this should be done on the drawn element, 
-      // this.dtree.o(node._nodeid);
    }
    
    JSROOT.THierarchyPainter.prototype.expand = function(itemname)

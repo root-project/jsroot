@@ -9,8 +9,6 @@
 | Updated: 17.04.2003                               |
 |--------------------------------------------------*/
 
-// The "source_dir" variable is defined in JSRootCore.js
-
 // Node object
 function Node(id, pid, name, url, title, target, icon, iconOpen, open) {
    this.id = id;
@@ -269,10 +267,10 @@ dTree.prototype.closeAllChildren = function(node) {
 
 // Change the status of a node(open or closed)
 dTree.prototype.nodeStatus = function(status, id, bottom) {
-   eDiv  = document.getElementById('d' + this.obj + id);
-   eJoin = document.getElementById('j' + this.obj + id);
+   var eDiv  = document.getElementById('d' + this.obj + id);
+   var eJoin = document.getElementById('j' + this.obj + id);
    if (this.config.useIcons) {
-      eIcon = document.getElementById('i' + this.obj + id);
+      var eIcon = document.getElementById('i' + this.obj + id);
       eIcon.src = (status) ? this.aNodes[id].iconOpen : this.aNodes[id].icon;
    }
    eJoin.src = (this.config.useLines)?

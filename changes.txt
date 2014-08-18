@@ -38,6 +38,8 @@ August 2014:
 15.Remove 'JSROOTIO.' prefix from _typename. Now real class name is used.   
 16.Use in all scripts JSROOT as central 'namespace'
 17.Introduce context menu in 3D, use it for switch between 2D/3D modes
+18.Use own code to generate hierarchical structure in HTML, replace dtree.js which is 
+   extremely slow for complex hierarchies.
      
 
 July 2014:
