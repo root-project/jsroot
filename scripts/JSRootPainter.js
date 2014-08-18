@@ -7232,10 +7232,10 @@
         _io : false,  // is open
         _is : false,  // is selected 
         _ls : last_sibling,  // last sibling
-        _hc : false,  // has childs
-        _ai : 0,
-        _p : null
+        _hc : false  // has childs
       };
+      
+      node['_d']._id = this.grid++;
 
       // allow context menu only for objects which can be displayed
       if (cando.display) 
@@ -7264,8 +7264,10 @@
          this.h._d = null;
       }
       
-      if (this.h._d == null) 
+      if (this.h._d == null) {
+         this.grid = 0;
          this.createNode(this.h, "", false);
+      }
 
       var content = "<p>";
       content += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
@@ -7302,30 +7304,24 @@
             nlMinus        : JSROOT.source_dir+'img/nolines_minus.gif'
          };
 
-      var indent = new Array;
-      
       var painter = this;
       
       var str = '';
-      var idcnt = 0;
       
-      var itemHtml = function(hitem) {
+      var itemHtml = function(hitem, sindent) {
          var isroot = (hitem == painter.h);
          
          str += '<div class="dTreeNode">';
          
          var node = hitem._d;
-         node._id = idcnt++;
          var idname = painter.name + "_id_" + node._id; 
 
-         // make indent
-         for (var n=0; n<indent.length; n++)
-            str += '<img src="' + ( (indent[n] == 1) ? painter.icon.line : painter.icon.empty ) + '" alt="" />';
+         str += sindent;
          
          var opencode = painter.GlobalName() + ".open(\'"+node.fullname+"\')";
          
          if (isroot) {
-            // for root node no indent 
+            // for root node no extra code 
          } else
          if (node._hc) {
             str += '<a href="javascript: ' + opencode + '"><img id="j' + idname + '" src="';
@@ -7342,7 +7338,8 @@
             node.icon = painter.icon.root;
             node.iconOpen = painter.icon.root;
          }
-         str += '<img id="i' + idname + '" src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt="" />';
+         
+         str += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" id="i' + idname + '" alt=""/>';
 
          if (node.url) {
             str += '<a id="s' + idname + '" class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
@@ -7362,22 +7359,22 @@
          str += '</div>';
          
          if (node._hc) {
-            if (!isroot) indent.push(node._ls ? 0 : 1);  
+            if (!isroot) 
+               sindent+='<img src="' + (!node._ls ? painter.icon.line : painter.icon.empty ) + '" alt="" />'; 
 
             str += '<div id="d' + idname + '" class="clip" style="display:' + ((isroot || node._io) ? 'block' : 'none') + ';">';
-            
-            for (var i in hitem._childs)
-               itemHtml(hitem._childs[i]);
+
+            // if (isroot || node._io)
+               for (var i in hitem._childs)
+                  itemHtml(hitem._childs[i], sindent);
             
             str += '</div>';
-            
-            if (!isroot) indent.pop();
          }
       }
       
       str += '<div class="dtree">'
       
-      itemHtml(this.h);
+      itemHtml(this.h, "");
       
       str += '</div>';
       
