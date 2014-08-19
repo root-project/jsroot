@@ -7292,7 +7292,7 @@
       elem.innerHTML = this['html'];
    }
    
-   JSROOT.THierarchyPainter.prototype.addItemHtml = function(hitem)
+   JSROOT.THierarchyPainter.prototype.addItemHtml = function(hitem, onlyitem)
    {
       if (this.icon==null)
          this.icon = {
@@ -7313,12 +7313,11 @@
          };
       
       var isroot = (hitem == this.h);
-      
-      this['html'] += '<div class="dTreeNode">';
-      
+
       var node = hitem._d;
       var idname = this.name + "_id_" + node._id; 
       
+      if (!onlyitem) this['html'] += '<div class="dTreeNode" id="z' + idname + '">';
       
       // build indent
       var sindent = "";
@@ -7335,7 +7334,7 @@
          // for root node no extra code 
       } else
       if (node._hc) {
-         this['html'] += '<a href="javascript: ' + opencode + '"><img id="j' + idname + '" src="';
+         this['html'] += '<a href="javascript: ' + opencode + '"><img src="';
          this['html'] += ( (node._io) ? (node._ls ? this.icon.minusBottom : this.icon.minus) : (node._ls ? this.icon.plusBottom : this.icon.plus ) );
          this['html'] += '" alt="" /></a>';
       } else {
@@ -7350,10 +7349,10 @@
          node.iconOpen = this.icon.root;
       }
       
-      this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" id="i' + idname + '" alt=""/>';
+      this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt=""/>';
 
       if (node.url) {
-         this['html'] += '<a id="s' + idname + '" class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
+         this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
          if (node.title) this['html'] += ' title="' + node.title + '"';
          if (node.target) this['html'] += ' target="' + node.target + '"';
          if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
@@ -7367,16 +7366,18 @@
          this['html'] += node.name;
       }
 
+      if (onlyitem) return; 
+         
       this['html'] += '</div>';
       
       var childs_display = node._hc && (isroot || node._io);   
 
+      // place for childs
+      
       this['html'] += '<div id="d' + idname + '" class="clip" style="display:' + (childs_display ? 'block' : 'none') + ';">';
-
       if (childs_display) 
          for (var i in hitem._childs)
             this.addItemHtml(hitem._childs[i]);
-      
       this['html'] += '</div>';
    }
    
@@ -7397,22 +7398,25 @@
       var idname = this.name + "_id_" + node._id;
 
       node._io = status;
+
+      var zDiv = document.getElementById('z' + idname);
+      var dDiv = document.getElementById('d' + idname);
       
-      var eDiv  = document.getElementById('d' + idname);
-      var eJoin = document.getElementById('j' + idname);
-      var eIcon = document.getElementById('i' + idname);
-      
-      if (node._io && node._hc && (force || (eDiv.childNodes.length==0))) {
+      if (zDiv) {
          this['html'] = '';
-         for (var i in hitem._childs)
-            this.addItemHtml(hitem._childs[i]);
-         eDiv.innerHTML = this['html']; 
+         this.addItemHtml(hitem, true);
+         zDiv.innerHTML = this['html'];
+      } 
+
+      if (dDiv) {
+         if (node._io && node._hc && (force || (dDiv.childNodes.length==0))) {
+            this['html'] = '';
+            for (var i in hitem._childs)
+               this.addItemHtml(hitem._childs[i]);
+            dDiv.innerHTML = this['html']; 
+         }
+         dDiv.style.display = node._io ? 'block': 'none';
       }
-      
-      if (eIcon) eIcon.src = node._io ? node.iconOpen : node.icon;
-      if (eJoin) eJoin.src = node._io ? (node._ls?this.icon.minusBottom:this.icon.minus) : (node._ls?this.icon.plusBottom:this.icon.plus);
-      
-      if (eDiv) eDiv.style.display = node._io ? 'block': 'none';
       
    }
    
@@ -7488,8 +7492,6 @@
       node._d.name = node._name;
       
       this.setDNodeOpenStatus(node, true, true);
-      
-      // this.RefreshHtml();
    }
    
    JSROOT.THierarchyPainter.prototype.expand = function(itemname)
