@@ -7236,7 +7236,7 @@
         _hc : false  // has childs
       };
       
-      if (parent && (parent._childs[parent._childs.length-1] == node))
+      if (parent && parent._childs && (parent._childs[parent._childs.length-1] == node))
          node['_d']._ls = true;
       
       node['_d']._id = this.grid++;
@@ -7319,15 +7319,14 @@
       var node = hitem._d;
       var idname = this.name + "_id_" + node._id; 
       
+      
+      // build indent
       var sindent = "";
-      if (!isroot && hitem._parent != this.h) {
-         var prnt = hitem._parent;
-         while ((prnt!=null) && (prnt['_parent'] != null)) {
-            prnt = prnt._parent;
-            sindent = '<img src="' + (!prnt._d._ls ? this.icon.line : this.icon.empty ) + '" alt="" />' + sindent; 
-         }
+      var prnt = isroot ? null : hitem._parent;
+      while ((prnt!=null) && (prnt!=this.h)) {
+         sindent = '<img src="' + (!prnt._d._ls ? this.icon.line : this.icon.empty ) + '" alt="" />' + sindent;
+         prnt = prnt._parent;
       }
-
       this['html'] += sindent;
       
       var opencode = this.GlobalName() + ".open(\'"+node.fullname+"\')";
@@ -7370,28 +7369,27 @@
 
       this['html'] += '</div>';
       
-      if (node._hc) {
+      var childs_display = node._hc && (isroot || node._io);   
 
-         this['html'] += '<div id="d' + idname + '" class="clip" style="display:' + ((isroot || node._io) ? 'block' : 'none') + ';">';
+      this['html'] += '<div id="d' + idname + '" class="clip" style="display:' + (childs_display ? 'block' : 'none') + ';">';
 
-         // if (isroot || node._io)
+      if (childs_display) 
          for (var i in hitem._childs)
             this.addItemHtml(hitem._childs[i]);
-         
-         this['html'] += '</div>';
-      }
+      
+      this['html'] += '</div>';
    }
    
    
    JSROOT.THierarchyPainter.prototype.open = function(itemname)
    {
-      var item = this.Find(itemname);
-      if (item==null) return;
+      var hitem = this.Find(itemname);
+      if (hitem==null) return;
       
-      this.setDNodeOpenStatus(item, !item._d._io);
+      this.setDNodeOpenStatus(hitem, !hitem._d._io);
    }
    
-   JSROOT.THierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status)
+   JSROOT.THierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status, force)
    {
       if (hitem==null) return;
       
@@ -7403,9 +7401,17 @@
       var eDiv  = document.getElementById('d' + idname);
       var eJoin = document.getElementById('j' + idname);
       var eIcon = document.getElementById('i' + idname);
-
+      
+      if (node._io && node._hc && (force || (eDiv.childNodes.length==0))) {
+         this['html'] = '';
+         for (var i in hitem._childs)
+            this.addItemHtml(hitem._childs[i]);
+         eDiv.innerHTML = this['html']; 
+      }
+      
       if (eIcon) eIcon.src = node._io ? node.iconOpen : node.icon;
       if (eJoin) eJoin.src = node._io ? (node._ls?this.icon.minusBottom:this.icon.minus) : (node._ls?this.icon.plusBottom:this.icon.plus);
+      
       if (eDiv) eDiv.style.display = node._io ? 'block': 'none';
       
    }
@@ -7416,19 +7422,17 @@
       
       var toggleItem = function(hitem) {
 
-         if (!hitem._d._hc) return;
-         
-         // first toggle childs
-         for (var i in hitem._childs)
-            toggleItem(hitem._childs[i]);
-         
-         // than toggle parent
-         
          if (hitem != painter.h)
-            painter.setDNodeOpenStatus(hitem, status);
+            hitem._d._io = status;
+         
+         if ('_childs' in hitem)
+            for (var i in hitem._childs)
+               toggleItem(hitem._childs[i]);
       }
       
       toggleItem(this.h);
+
+      this.RefreshHtml();
    }
    
    
@@ -7483,7 +7487,9 @@
       node._d.url = "";
       node._d.name = node._name;
       
-      this.RefreshHtml();
+      this.setDNodeOpenStatus(node, true, true);
+      
+      // this.RefreshHtml();
    }
    
    JSROOT.THierarchyPainter.prototype.expand = function(itemname)
