@@ -7034,6 +7034,7 @@
    
       for (var i in keys) {
          var key = keys[i];
+         
          var item = { 
                _name : key['fName'] + ";" + key['fCycle'],  
                _kind : "ROOT." + key['fClassName'],
@@ -7041,6 +7042,9 @@
                _keyname : key['fName'],
                _readobj : null
          };
+         
+         if ('fRealName' in key) 
+            item['_realname'] = key['fRealName'] + ";" + key['fCycle'];
          
          // console.log("key class = " + key['fClassName']);
 
@@ -7228,7 +7232,6 @@
         name : nodename,
         url : cando.html,
         title : "",
-        fullname: nodefullname,
         icon : cando.img1,
         iconOpen :  cando.img2,
         _id : 0,      // id used in html
@@ -7238,15 +7241,17 @@
         _hc : false  // has childs
       };
 
+      if ('_realname' in node)
+         node['_d']['name'] = node['_realname'];
       
       if ('_title' in node)
          node['_d']['title'] = node['_title'];
       
-      if ('_realname' in node)
-         node['_d']['title'] += (" real name: " + node['_realname']);
+      if ('_fullname' in node)
+         node['_d']['title'] += ("  fullname: " + node['_fullname']);
       
       if (node['_d']['title'].length == 0)
-         node['_d']['title'] = nodename;
+         node['_d']['title'] = node['_d']['name'];
       
       if (parent && parent._childs && (parent._childs[parent._childs.length-1] == node))
          node['_d']._ls = true;
@@ -7340,7 +7345,7 @@
       }
       this['html'] += sindent;
       
-      var opencode = this.GlobalName() + ".open(\'"+node.fullname+"\')";
+      var opencode = this.GlobalName() + ".open(\'"+this.itemFullName(hitem)+"\')";
       
       if (isroot) {
          // for root node no extra code 
@@ -7409,6 +7414,8 @@
       var idname = this.name + "_id_" + node._id;
 
       node._io = status;
+      
+      console.log("set for " + hitem._name + " status  " + status);
 
       var zDiv = document.getElementById('z' + idname);
       var dDiv = document.getElementById('d' + idname);

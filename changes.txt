@@ -42,6 +42,8 @@ August 2014:
    extremely slow for complex hierarchies. Dramatically improve performance for
    structures with large (~1000) number of items. 
 19.Deliver to the server title of the objects, display it as hint in the browser.
+20.Better handling of special characters in the hierarchies - allows to display
+   symbols like ' or " in the file structure. 
 
 
 July 2014:

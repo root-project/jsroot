@@ -1342,7 +1342,12 @@
       key['fName'] = buf.ReadTString(); 
       key['fTitle'] = buf.ReadTString(); 
       
-      key['fName'] = key['fName'].replace(/['"]/g,''); // get rid of quotes
+      var name = key['fName'].replace(/['"]/g,'');
+      
+      if (name != key['fName']) {
+         key['fRealName'] = key['fName'];
+         key['fName'] = name;
+      }
 
       return key;
    };
