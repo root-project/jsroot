@@ -7037,6 +7037,7 @@
          var item = { 
                _name : key['fName'] + ";" + key['fCycle'],  
                _kind : "ROOT." + key['fClassName'],
+               _title : key['fTitle'],
                _keyname : key['fName'],
                _readobj : null
          };
@@ -7062,6 +7063,7 @@
          if ((key['fClassName'] == 'TList') && (key['fName']=='StreamerInfo') && (file!=null)) {
             item['_name'] = 'StreamerInfo';
             item['_kind'] = "ROOT.TStreamerInfoList";
+            item['_title'] = "List of streamer infos for binary I/O";
             item['_readobj'] = file.fStreamerInfos;
             item['_expand'] = function(node, obj) {
                painter.StreamerInfoHierarchy(node, obj);
@@ -7225,7 +7227,7 @@
       node['_d'] = {
         name : nodename,
         url : cando.html,
-        title : nodename,
+        title : "",
         fullname: nodefullname,
         icon : cando.img1,
         iconOpen :  cando.img2,
@@ -7235,6 +7237,16 @@
         _ls : false,  // last sibling
         _hc : false  // has childs
       };
+
+      
+      if ('_title' in node)
+         node['_d']['title'] = node['_title'];
+      
+      if ('_realname' in node)
+         node['_d']['title'] += (" real name: " + node['_realname']);
+      
+      if (node['_d']['title'].length == 0)
+         node['_d']['title'] = nodename;
       
       if (parent && parent._childs && (parent._childs[parent._childs.length-1] == node))
          node['_d']._ls = true;
@@ -7354,14 +7366,13 @@
       if (node.url) {
          this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
          if (node.title) this['html'] += ' title="' + node.title + '"';
-         if (node.target) this['html'] += ' target="' + node.target + '"';
          if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
          this['html'] += '>' + node.name + '</a>';
       } else 
       if (node._hc && !isroot) {
-         this['html'] += '<a href="javascript: ' + opencode + '" class="node">';
-         this['html'] += node.name;
-         this['html'] += '</a>';
+         this['html'] += '<a href="javascript: ' + opencode + '" class="node"';
+         if (node.title) this['html'] += ' title="' + node.title + '"';
+         this['html'] += '>' + node.name + '</a>';
       } else {
          this['html'] += node.name;
       }

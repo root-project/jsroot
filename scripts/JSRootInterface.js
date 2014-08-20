@@ -242,7 +242,7 @@ function BuildOnlineGUI() {
 
    guiCode += '<div id="main" class="column"><br/>'
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
-            + '  Hierarchy in <a href="h.xml">xml</a> and <a href="h.json">json</a> format<br/><br/>'
+            + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
             + '  <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring<br/>'
             + '<div id="status"></div>'
             + '</div>'

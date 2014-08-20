@@ -1468,7 +1468,9 @@
 
       buf.MapObject(1, lst);
       buf.ClassStreamer(lst, 'TList');
-
+      
+      lst['_typename'] = "TStreamerInfoList";
+      
       this.fStreamerInfos = lst;
    }
    

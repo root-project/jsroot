@@ -41,6 +41,8 @@ August 2014:
 18.Use own code to generate hierarchical structure in HTML, replace dtree.js which is 
    extremely slow for complex hierarchies. Dramatically improve performance for
    structures with large (~1000) number of items. 
+19.Deliver to the server title of the objects, display it as hint in the browser.
+
 
 July 2014:
 1. Migration to d3.v3.js and jQuery v2.1.1
