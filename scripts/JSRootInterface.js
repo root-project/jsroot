@@ -87,7 +87,7 @@ function CollapsibleDisplay(itemname, obj) {
       
       document.getElementById(hid).setAttribute("style", "height:"+height+"px");
       document.getElementById(hid).style.height=""+height+'px';
-
+      
       var hpainter = JSROOT.draw(hid, obj);
       
       document.getElementById(uid)['hpainter'] = hpainter;
@@ -171,6 +171,51 @@ function UpdateOnline() {
             hpainter.RedrawFrame(); 
       });
    });
+}
+
+var myInterval = null;
+var myCounter = -1;
+
+function ResizeTimer()
+{
+   if (myCounter<0) return;
+   myCounter += 1;
+   if (myCounter < 3) return;
+
+   if (myInterval!=null) {
+      clearInterval(myInterval);
+      myInterval = null;
+   }
+   
+   myCounter = -1;
+   
+   $('#report').children().each(function() {
+      
+      if (! ('hpainter' in this)) return;
+
+      var hpainter = this['hpainter'];
+      if (hpainter == null) return;
+
+      // update only visible histograms
+      if ($(this).is(":hidden")) return;
+
+      hpainter.CheckResize();
+   });
+
+}
+
+function ProcessResize(fast)
+{  
+   if (fast!=null) {
+      myCounter = 1000;
+      ResizeTimer();
+   } else {
+      if (myInterval==null)
+         myInterval = setInterval(ResizeTimer, 500);
+      myCounter = 0;
+   }
+   
+   // console.log('process resize');   
 }
 
 function BuildDrawGUI()
@@ -299,8 +344,54 @@ function BuildSimpleGUI() {
       +'<br/>'
       +'<div id="status"></div>'
       +'</div>'
+      +'<div id="separator" class="column"></div>'
       +'<div id="reportHolder" class="column">'
       +'<div id="report" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset"> </div>'
       +'</div>';
    $('#simpleGUI').append(guiCode);
+   
+   
+   var render_to = "#separator";
+
+   var drag_sum = 0;
+   
+   var drag_move = d3.behavior.drag()
+      .origin(Object)
+      .on("dragstart", function() {
+          d3.event.sourceEvent.preventDefault();
+          // console.log("start drag");
+          drag_sum = 0;
+       })
+      .on("drag", function() {
+         d3.event.sourceEvent.preventDefault();
+         drag_sum += d3.event.dx;
+         // console.log("dx = " + d3.event.dx);
+         d3.event.sourceEvent.stopPropagation();
+      })
+      .on("dragend", function() {
+         d3.event.sourceEvent.preventDefault();
+         // console.log("stop drag " + drag_sum);
+         
+         var left = d3.select("#separator").style('left');
+         var right = d3.select("#separator").style('right');
+         
+         // console.log("old left right = " + left + " , " + right);
+         
+         left = (parseInt(left.substr(0, left.length - 2)) + Number(drag_sum)).toString() + "px"; 
+         right = (parseInt(right.substr(0, right.length - 2)) - Number(drag_sum)).toString() + "px"; 
+
+         // console.log("new left right = " + left + " , " + right);
+         
+         d3.select("#separator").style('left',left);
+         d3.select("#separator").style('right',right);
+         
+         d3.select("#main").style('right', right);
+         d3.select("#reportHolder").style('left', left);
+         
+         ProcessResize(true);
+      });
+   
+     d3.select(render_to).call(drag_move);
+     
+     window.addEventListener('resize', ProcessResize);
 }

@@ -6,6 +6,13 @@ project of Bertrand Bellenot, but provides similar functionality.
 Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment. 
 
+September 2014:
+1. First try to handle resize of canvas in the browser, for the 
+   moment works only with collapsible layout
+2. Also first try to interactively move separation line between
+   browser and drawing field.
+3. Small fix of minor ticks drawing on the axis
+
 August 2014:
 1. All communication between server and browser done with JSON format.
 2. Fix small error in dtree.js - one should always set 

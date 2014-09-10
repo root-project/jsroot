@@ -1226,6 +1226,25 @@
    JSROOT.TBasePainter.prototype.IsObject = function(obj) {
       return false;
    }
+   
+   JSROOT.TBasePainter.prototype.CheckResize = function() {
+      
+      // only first painter should react on resize event
+      if ((this.vis==null) || (this.first!=null)) return;
+      
+      // see in JSROOT.draw
+      
+      var render_to = this.vis['render_to'];
+
+      if ((this.last_width == $(render_to).width()) &&
+         (this.last_height == $(render_to).height())) return;
+      
+      this.vis.attr("width", $(render_to).width())
+              .attr("height", $(render_to).height())
+              .attr("viewBox", "0 0 " + $(render_to).width() + " " + $(render_to).height())
+
+      this.RedrawFrame(null, true);
+   }
 
    JSROOT.TBasePainter.prototype.RemoveDraw = function()
    {
@@ -1274,6 +1293,9 @@
                this['zoom_ymax'] = Math.exp(this['zoom_ymax']*Math.log(10));
             }
          }
+         
+         this.last_width = vis.attr("width");
+         this.last_height = vis.attr("height");
 
       } else {
          this.first = vis['painters'][0];
@@ -1293,7 +1315,7 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.RedrawFrame = function(selobj) {
+   JSROOT.TBasePainter.prototype.RedrawFrame = function(selobj, resize) {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
 
@@ -1306,7 +1328,7 @@
 
          if ((selobj!=null) && !painter.IsObject(selobj)) continue;
 
-         painter.Redraw();
+         painter.Redraw(resize);
       }
    }
 
@@ -1331,7 +1353,6 @@
 
       while (vis.lastChild) {
          vis.removeChild(vis.lastChild);
-         console.log("remove child");
      }
       
       vis.selectAll("*").remove();
@@ -1884,41 +1905,45 @@
       if (typeof(framecolor) == 'undefined')
          framecolor = 'white';
 
-      var hframe = vis.append("svg:g")
-            .attr("x", lm)
+      // this is svg:g object - container for every other items belonging to frame
+      var hframe = vis['ROOT:frame'];
+      if (hframe == null) {
+         hframe = vis.append("svg:g");
+         vis['ROOT:frame'] = hframe;
+      }
+
+      hframe.attr("x", lm)
             .attr("y", tm)
             .attr("width", w)
             .attr("height", h)
             .attr("transform", "translate(" + lm + "," + tm + ")");
 
-      var top_rect = hframe.append("svg:rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", w)
-            .attr("height", h)
-            .attr("fill", framecolor)
-            .style("stroke", linecolor)
-            .style("stroke-width", linewidth);
+      
+      var top_rect = vis['ROOT:top_rect'];
+      if (top_rect==null) {
+         top_rect = hframe.append("svg:rect");
+         vis['ROOT:top_rect'] = top_rect;
+      }
 
-      var svg_frame = hframe.append("svg")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", w)
-            .attr("height", h)
-            .attr("viewBox", "0 0 "+w+" "+h);
+      top_rect.attr("x", 0)
+              .attr("y", 0)
+              .attr("width", w)
+              .attr("height", h)
+              .attr("fill", framecolor)
+              .style("stroke", linecolor)
+              .style("stroke-width", linewidth);
 
-      // this is svg:g object - container for every other items belonging to frame
-      vis['ROOT:frame'] = hframe;
-
-      // this is alredy graphical object, corrseponding to the TFrame
-      vis['ROOT:svg_frame'] = svg_frame;
-
-      vis['ROOT:top_rect'] = top_rect;
-
-      // it is ROOT TPad object
-      vis['ROOT:pad'] = pad;
-
-      return hframe;
+      var svg_frame = vis['ROOT:svg_frame'];
+      if (svg_frame == null) {
+         svg_frame = hframe.append("svg");
+         vis['ROOT:svg_frame'] = svg_frame;
+      }
+      
+      svg_frame.attr("x", 0)
+               .attr("y", 0)
+               .attr("width", w)
+               .attr("height", h)
+               .attr("viewBox", "0 0 "+w+" "+h);
    }
 
    JSROOT.Painter.shrinkFrame = function(vis, fact)
@@ -4088,7 +4113,10 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.Redraw = function() {
+   JSROOT.THistPainter.prototype.Redraw = function(resize) {
+      
+      if (resize) JSROOT.Painter.createFrame(this.vis);
+      
       this.CreateXY();
       this.CountStat();
       this.DrawAxes();
@@ -6815,7 +6843,7 @@
 
    JSROOT.Painter.drawObjectInFrame = function(vis, obj, opt)
    {
-      // ignore objects without type information - for instance, TList
+      // ignore objects without type information
       if ((typeof obj != 'object') || (!('_typename' in obj))) return;
 
       var classname = obj['_typename'];
@@ -6884,7 +6912,7 @@
       var fillcolor = 'white';
 
       d3.select(render_to).style("background-color", fillcolor);
-
+      
       var svg = d3.select(render_to)
                    .append("svg")
 //                   .attr({"width": "100%", "height": "100%"})
@@ -6895,6 +6923,8 @@
                    .attr("preserveAspectRatio", "xMidYMid meet")
                    .attr("pointer-events", "all");
                    // .call(d3.behavior.zoom().on("zoom", JSROOT.Painter.redraw));
+      
+      svg['render_to'] = render_to; 
 
       return JSROOT.Painter.drawObjectInFrame(svg, obj, opt);
    }
