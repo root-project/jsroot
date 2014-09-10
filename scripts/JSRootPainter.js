@@ -3556,7 +3556,7 @@
       this['y_nticks'] = ndivy%100; // used also to draw grids
       var n2ay = (ndivy%10000 - this.y_nticks)/100;
       var n3ay = ndivy/10000;
-
+      
       /* X-axis label */
       var label = JSROOT.Painter.translateLaTeX(this.histo['fXaxis']['fTitle']);
       var xAxisTitleFontSize = this.histo['fXaxis']['fTitleSize'] * h;
@@ -3741,24 +3741,25 @@
       }
 
       // this is additional ticks, required in d3.v3
-      if (true && (n2ax>0) && !this.options.Logx)
+      if ((n2ax>0) && !this.options.Logx)
         this['x_axis_sub'] = d3.svg.axis()
          .scale(this.x)
          .orient("bottom")
          .tickPadding(xAxisLabelOffset)
          .innerTickSize(-xDivLength/2)
          .tickFormat(function(d) { return; })
-         .ticks(this.x_nticks*n2ax);
+         .ticks(this.x.ticks(this.x_nticks).length*n2ax);
 
       // this is additional ticks, required in d3.v3
-      if (true && (n2ay>0) && !this.options.Logy)
+      if ((n2ay>0) && !this.options.Logy) {
          this['y_axis_sub'] = d3.svg.axis()
           .scale(this.y)
           .orient("left")
           .tickPadding(yAxisLabelOffset)
           .innerTickSize(-yDivLength/2)
           .tickFormat(function(d) { return; })
-          .ticks(this.y_nticks*n2ay);
+          .ticks(this.y.ticks(this.y_nticks).length*n2ay);
+      }
 
 
       if ('xax' in this) this['xax'].remove();
@@ -3770,8 +3771,7 @@
                    .attr("transform", "translate(0," + h + ")")
                    .call(this.x_axis);
 
-      // aditional frame, required in d3.v3
-      if (true && this['x_axis_sub'])
+      if (this['x_axis_sub'])
          this['xaxsub'] =
             this.frame.append("svg:g")
                       .attr("class", "xaxis")
@@ -3782,9 +3782,8 @@
       if ('yaxsub' in this) this['yaxsub'].remove();
 
       this['yax'] = this.frame.append("svg:g").attr("class", "yaxis").call(this.y_axis);
-
-      // aditional frame, required in d3.v3
-      if (true && this['y_axis_sub'])
+      
+      if (this['y_axis_sub'])
          this['yaxsub'] = this.frame.append("svg:g").attr("class", "yaxis").call(this.y_axis_sub);
 
       var xAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont']);
@@ -7414,8 +7413,6 @@
       var idname = this.name + "_id_" + node._id;
 
       node._io = status;
-      
-      console.log("set for " + hitem._name + " status  " + status);
 
       var zDiv = document.getElementById('z' + idname);
       var dDiv = document.getElementById('d' + idname);
