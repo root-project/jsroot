@@ -26,13 +26,13 @@ textarea { font-size: 100%;}
 
 p { margin-top: 6px; padding: 0 10px 1em; }
 
-#main { left: 3px; right: 70%; margin-right: 1px; overflow: auto; }
+#main { left: 2px; width: 400px; margin-right: 1px; overflow: auto; }
 
-#separator { left: 30%; right: 70%; width: 2px; cursor: ew-resize } 
+#separator { left: 404px; width: 4px; width: 2px; background-color: white; cursor: ew-resize } 
 
 #reportHolder {
-   left: 30%;
-   right: 3px;
+   left: 410px;
+   right: 2px;
    margin-left: 1px;
    overflow: auto;
    overflow-y: scroll;

@@ -372,21 +372,16 @@ function BuildSimpleGUI() {
          d3.event.sourceEvent.preventDefault();
          // console.log("stop drag " + drag_sum);
          
+         var width = d3.select("#main").style('width');
+         width = (parseInt(width.substr(0, width.length - 2)) + Number(drag_sum)).toString() + "px";
+         d3.select("#main").style('width', width);
+         
          var left = d3.select("#separator").style('left');
-         var right = d3.select("#separator").style('right');
+         left = parseInt(left.substr(0, left.length - 2)) + Number(drag_sum);
+         d3.select("#separator").style('left',left.toString() + "px");
+         d3.select("#reportHolder").style('left',(left+6).toString() + "px");
          
-         // console.log("old left right = " + left + " , " + right);
-         
-         left = (parseInt(left.substr(0, left.length - 2)) + Number(drag_sum)).toString() + "px"; 
-         right = (parseInt(right.substr(0, right.length - 2)) - Number(drag_sum)).toString() + "px"; 
-
-         // console.log("new left right = " + left + " , " + right);
-         
-         d3.select("#separator").style('left',left);
-         d3.select("#separator").style('right',right);
-         
-         d3.select("#main").style('right', right);
-         d3.select("#reportHolder").style('left', left);
+         left = d3.select("#separator").style('right');
          
          ProcessResize(true);
       });
