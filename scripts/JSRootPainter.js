@@ -4600,16 +4600,16 @@
       
       for (var i=left;i<right;i++) {
          xx = this.xmin + (i+0.5)*this.binwidthx;
-         yy = this.histo.getBinContent(i+1);
          
          if (profile) {
             w  = this.histo.fBinEntries[i+1];
             this.stat_sumw += w;
             this.stat_sumwx += w*xx;
             this.stat_sumwx2 += w*xx*xx;
-            this.stat_sumwy += yy;
+            this.stat_sumwy += this.histo.fArray[i+1];
             this.stat_sumwy2 += this.histo.fSumw2[i+1];  
          } else {
+            yy = this.histo.getBinContent(i+1);
             this.stat_sum0 += yy;
             this.stat_sum1 += xx * yy;
             this.stat_sum2 += xx * xx * yy;
