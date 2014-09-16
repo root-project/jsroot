@@ -2,7 +2,7 @@ This is further development of JSRootIO, original version was download from
 https://root.cern.ch/svn/root/trunk/js
 
 At its current state code is very differ from original
-project of Bertrand Bellenot, but provides similar functionality.
+project of Bertrand Bellenot, but provides at most similar functionality.
 Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment. 
 
@@ -14,6 +14,7 @@ September 2014:
 3. Small fix of minor ticks drawing on the axis
 4. Introduce display class for MDI drawing. Provide two implementations - 
    'collapsible' for old kind and 'tabs' for new kinds.  
+5. Adjust size of color palette drawing when labels would take more place as provided. 
 
 August 2014:
 1. All communication between server and browser done with JSON format.

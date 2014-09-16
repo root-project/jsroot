@@ -1842,21 +1842,28 @@
          JSROOT.Painter.menuitem(menu,"Close", function() { });
          
       });
-      
    };
 
-   JSROOT.Painter.createFrame = function(vis, frame) {
-      var w = Number(vis.attr("width")), h = Number(vis.attr("height"));
-      var width = w, height = h;
-      var lm = w*0.12, rm = w*0.05, tm = h*0.12, bm = h*0.12;
+   JSROOT.Painter.createFrame = function(vis, frame, shrink_right) {
+      var width = Number(vis.attr("width")), height = Number(vis.attr("height"));
+      var w = width, h = height;
+      
+      if (! ('NDC' in vis)) vis['NDC'] = { x1: 0.12, y1: 0.12, x2: 0.95, y2: 0.88 };
 
+      if (shrink_right==null) shrink_right = 0.;
+
+      var lm = width * vis['NDC'].x1;
+      var rm = width * (1 - vis['NDC'].x2 + shrink_right);
+      var tm = height * vis['NDC'].y1;
+      var bm = height * (1-vis['NDC'].y2);
+      
       var pad = vis['ROOT:pad'];
 
       var framecolor = 'white', bordermode = 0,
           bordersize = 0, linecolor = 'black',
           linestyle = 0, linewidth = 1;
 
-      if (frame) {
+      if (frame!=null) {
          bordermode = frame['fBorderMode'];
          bordersize = frame['fBorderSize'];
          linecolor = JSROOT.Painter.root_colors[frame['fLineColor']];
@@ -1885,7 +1892,7 @@
             lm = frame['fX1'] * width;
             tm = frame['fY1'] * height;
             bm = (1.0 - frame['fY2']) * height;
-            rm = (1.0 - frame['fX2']) * width;
+            rm = (1.0 - frame['fX2'] + shrink_right) * width;
             w -= (lm + rm);
             h -= (tm + bm);
          }
@@ -1911,13 +1918,15 @@
          hframe = vis.append("svg:g");
          vis['ROOT:frame'] = hframe;
       }
+      
+      // calculate actual NDC coordinates, use them to properly locate PALETTE 
+      vis['NDC'] = { x1: lm / width, x2: (lm+w) / width, y1: tm / height, y2: (tm+h) / height }; 
 
       hframe.attr("x", lm)
             .attr("y", tm)
             .attr("width", w)
             .attr("height", h)
             .attr("transform", "translate(" + lm + "," + tm + ")");
-
       
       var top_rect = vis['ROOT:top_rect'];
       if (top_rect==null) {
@@ -1949,23 +1958,8 @@
    JSROOT.Painter.shrinkFrame = function(vis, fact)
    {
       if (vis == null) return 0;
-
-      var width = vis['ROOT:frame'].attr('width');
-
-      var height = vis['ROOT:frame'].attr('height');
-
-      var shrink = width*fact;
-      width -= shrink;
-
-      vis['ROOT:frame'].attr('width', width);
-
-      vis['ROOT:svg_frame']
-           .attr('width', width)
-           .attr("viewBox", "0 0 "+width+" "+height);
-
-      vis['ROOT:top_rect'].attr('width', width);
-
-      return shrink;
+      
+      JSROOT.Painter.createFrame(vis, null, fact);
    }
 
    // =========================================================================
@@ -3187,16 +3181,35 @@
    JSROOT.TColzPalettePainter.prototype.DrawPalette = function() {
       var palette  = this.palette;
       var vis = this.vis;
+      var axis = palette['fAxis'];
 
       var minbin = this.first.minbin;
       var maxbin = this.first.maxbin;
+      var ndiv = axis['fNdiv'];
 
       var width = Number(vis.attr("width")), height = Number(vis.attr("height"));
+      
+      var s_height = Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height;
+
+      var axisOffset = axis['fLabelOffset'] * width;
+      var tickSize = axis['fTickSize'] * width;
+      
+      var nbr1 = Math.max(ndiv % 100, 1);
+      // var nbr2 = Math.max(Math.round((ndiv % 10000) / 100), 1);
+      // var nbr3 = Math.max(Math.round(ndiv / 10000), 1);
+
+      var z = d3.scale.linear().clamp(true)
+               .domain([minbin, maxbin])
+               .range([s_height, 0])
+               .nice();
+
+      var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
+      var axisLabelFontSize = axis['fLabelSize'] * height;
 
       var pos_x = palette['fX1NDC'] * width;
       var pos_y = height - palette['fY1NDC'] * height;
+      
       var s_width = Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width;
-      var s_height = Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height;
       pos_y -= s_height;
 
       // Draw palette pad
@@ -3205,7 +3218,6 @@
             .attr("width", s_width)
             .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-      var axis = palette['fAxis'];
 
       var paletteColors = this.first.paletteColors;
 
@@ -3225,21 +3237,10 @@
       /*
        * Build and draw axes
        */
-      var nbr1 = 8;//Math.max((ndiv % 10000) % 100, 1);
-      var nbr2 = 0;//Math.max(Math.round((ndiv % 10000) / 100), 1);
-      var nbr3 = 0;//Math.max(Math.round(ndiv / 10000), 1);
 
-      var z = d3.scale.linear().clamp(true)
-               .domain([minbin, maxbin])
-               .range([s_height, 0])
-               .nice();
-
-      var axisOffset = axis['fLabelOffset'] * width;
-      var tickSize = axis['fTickSize'] * width;
       var z_axis = d3.svg.axis()
                   .scale(z)
                   .orient("right")
-                  .tickSubdivide(nbr2)
                   .tickPadding(axisOffset)
                   .tickSize(-tickSize, -tickSize/2, 0)
                   .ticks(nbr1);
@@ -3249,8 +3250,6 @@
                .attr("transform", "translate(" + s_width + ", 0)")
                .call(z_axis);
 
-      var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
-      var axisLabelFontSize = axis['fLabelSize'] * height;
       zax.selectAll("text")
          .attr("font-size", axisLabelFontSize)
          .attr("font-weight", axisFontDetails['weight'])
@@ -3693,7 +3692,6 @@
             .scale(this.x)
             .orient("bottom")
             .tickPadding(xAxisLabelOffset)
-            .tickSubdivide(n2ax-1)
             .tickSize(-xDivLength, -xDivLength/2, -xDivLength/4)
             .tickFormat(function(d) {
                 // avoid rounding problems around 0
@@ -3755,7 +3753,6 @@
            .scale(this.y)
            .orient("left")
            .tickPadding(yAxisLabelOffset)
-           .tickSubdivide(n2ay-1)
            .tickSize(-yDivLength, -yDivLength/2, -yDivLength/4)
            .tickFormat(function(d) {
               if ((Math.abs(d)<1e-14) && (Math.abs(yrange)>1e-5)) d = 0;
@@ -5024,10 +5021,9 @@
 
    JSROOT.TH2Painter.prototype.ToggleColz = function() 
    {
-
       if (this.FindPalette()==null) {
-         JSROOT.Painter.shrinkFrame(this.vis, 0.08);
-         this.CreatePalette(0.08);
+         var shrink = this.CreatePalette(0.04);
+         JSROOT.Painter.shrinkFrame(this.vis, shrink);
          this.options.Zscale = 1;
       } else {
          if (this.options.Zscale>0) this.options.Zscale = 0;
@@ -5083,20 +5079,20 @@
 
    JSROOT.TH2Painter.prototype.CreatePalette = function(rel_width)
    {
-      if (this.FindPalette() != null) return null;
+      if (this.FindPalette() != null) return 0.;
 
-      if (!rel_width) rel_width = 0.08;
+      if (!rel_width || rel_width<=0) rel_width = 0.04;
 
       var pal = {};
       pal['_typename'] = 'TPaletteAxis';
       pal['fName'] = 'palette';
 
       pal['_AutoCreated'] = true;
-
-      pal['fX1NDC'] = 0.98 - rel_width;
-      pal['fY1NDC'] = 0.1;
-      pal['fX2NDC'] = 0.98 - rel_width/2; // use half of the width for labels
-      pal['fY2NDC'] = 0.9;
+      
+      pal['fX1NDC'] = this.vis['NDC'].x2 - rel_width;
+      pal['fY1NDC'] = this.vis['NDC'].y1;
+      pal['fX2NDC'] = this.vis['NDC'].x2; 
+      pal['fY2NDC'] = this.vis['NDC'].y2;
       pal['fInit'] = 1;
       pal['fShadowColor'] = 1;
       pal['fCorenerRadius'] = 0;
@@ -5118,7 +5114,7 @@
       axis['fLabelSize'] =   0.035;
       axis['fTitleOffset'] = 1;
       axis['fTitleSize'] =   0.035;
-      axis['fNdiv'] =        0;
+      axis['fNdiv'] =        8;
       axis['fLabelColor'] =  1;
       axis['fLabelFont'] =   42;
       axis['fChopt'] =       "";
@@ -5144,8 +5140,40 @@
 
       // place colz in the beginning, that stat box is always drawn on the top
       this.histo.fFunctions.arr.unshift(pal);
+      
+      
+      // and at the end try to check how much place will be used by the labels in the palette
+      
+      var width = Number(this.vis.attr("width")), height = Number(this.vis.attr("height"));
+      
+      var axisOffset = axis['fLabelOffset'] * width;
+      var tickSize = axis['fTickSize'] * width;
+      var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
+      var axisLabelFontSize = axis['fLabelSize'] * height;
+      
+      var ticks = d3.scale.linear().clamp(true)
+                   .domain([this.minbin, this.maxbin])
+                   .range([height, 0])
+                   .nice().ticks(axis['fNdiv'] % 100);
 
-      return pal;
+      var maxlen = 0;
+      for (var i in ticks) {
+         len = JSROOT.Painter.stringWidth(this.vis, ticks[i], axisLabelFontSize, axisFontDetails);
+         if (len > maxlen) maxlen = len;
+      }
+
+      var rel = (maxlen + axisOffset)/width;
+      
+      if (pal['fX2NDC'] + rel > 0.98) {
+         var shift = pal['fX2NDC'] + rel - 0.98;   
+
+         console.log("Text will overflow pad shift = " + shift);
+         pal['fX1NDC']-=shift;
+         pal['fX2NDC']-=shift;
+         rel_width += shift;
+      }
+      
+      return rel_width + 0.01;
    }
 
 
@@ -5811,8 +5839,9 @@
 
       // check if we need to create palette
       if ((painter.FindPalette() == null) && !hadframe && (painter.options.Zscale>0)) {
-         JSROOT.Painter.shrinkFrame(vis, 0.08);
-         painter.CreatePalette(0.08);
+         // create pallette
+         var shrink = painter.CreatePalette(0.04);
+         JSROOT.Painter.shrinkFrame(vis, shrink);
       }
 
       // check if we need to create statbox
