@@ -4,9 +4,15 @@
 //
 
 
-//var guiLayout = 'tabs';
-var guiLayout = 'collapsible';
-
+function guiLayout() {
+   var res = 'collapsible';
+   var selects = document.getElementById("display-kind");
+   if (selects) {
+      res = selects.options[selects.selectedIndex].text;
+      // $("#display-kind").disable();
+   }
+   return res;
+}
 
 function ResetUI() {
    if (JSROOT.H('root') != null) {
@@ -44,7 +50,7 @@ function ReadFile(filename) {
    
    var painter = new JSROOT.HierarchyPainter('root', 'browser');
    
-   painter.SetDisplay(guiLayout, 'right-div');
+   painter.SetDisplay(guiLayout(), 'right-div');
    
    painter.OpenRootFile(filename);
 }
@@ -201,7 +207,10 @@ function BuildOnlineGUI() {
    guiCode += '<div id="left-div" class="column"><br/>'
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
             + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
-            + '  <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring<br/>'
+            + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
+            +'  <select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
+            +'    <option>collapsible</option><option>tabs</option>'
+            +'  </select>' 
             + '<div id="browser"></div>'
             + '</div>'
             + '<div id="separator-div" class="column"></div>'
@@ -211,7 +220,7 @@ function BuildOnlineGUI() {
 
    var hpainter = new JSROOT.HierarchyPainter("root", "browser");
 
-   hpainter.SetDisplay(guiLayout, 'right-div');
+   hpainter.SetDisplay(guiLayout(), 'right-div');
    
    hpainter.OpenOnline("h.json?compact=3");
    
@@ -253,6 +262,9 @@ function BuildSimpleGUI() {
       +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
+      +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
+      +'  <option>collapsible</option><option>tabs</option>'
+      +'</select>' 
       +'</form>'
       +'<br/>'
       +'<div id="browser"></div>'
@@ -260,6 +272,7 @@ function BuildSimpleGUI() {
       +'<div id="separator-div" class="column"></div>'
       +'<div id="right-div" class="column"></div>';
    $('#simpleGUI').append(guiCode);
+   // $("#display-kind").selectmenu();
    
    AddInteractions();
 }

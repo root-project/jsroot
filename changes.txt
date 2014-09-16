@@ -15,7 +15,8 @@ September 2014:
 4. Introduce display class for MDI drawing. Provide two implementations - 
    'collapsible' for old kind and 'tabs' for new kinds.  
 5. Adjust size of color palette drawing when labels would take more place as provided.
-6. Add correct filling of statistic for TProfile
+6. Add correct filling of statistic for TProfile, fix small problem with underflow/overflow bins.
+7. Provide way to select display kind ('collapsible', 'tabs') in the simple GUI.
  
 
 August 2014:
