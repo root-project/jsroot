@@ -4525,6 +4525,12 @@
          if (value > hmax) hmax = value;
       }
 
+      // account overflow/underflow bins
+      if (profile)
+         hsum += this.histo.fBinEntries[0] + this.histo.fBinEntries[this.nbinsx+1];
+      else
+         hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx+1);
+
       this.stat_entries = hsum;
 
       // if (('fBuffer' in this.histo) && (this.histo['fBuffer'].length>0)) this.stat_entries = this.histo['fBuffer'][0];
