@@ -4641,12 +4641,12 @@
             stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
 
          var meanx = 0, meany = 0;
+         if (this.stat_sumw > 0) {
+            meanx = this.stat_sumwx/this.stat_sumw;
+            meany = this.stat_sumwy/this.stat_sumw;
+         }
 
          if (print_mean > 0) {
-            if (this.stat_sumw > 0) {
-               meanx = this.stat_sumwx/this.stat_sumw;
-               meany = this.stat_sumwy/this.stat_sumw;
-            }
             stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(meanx));
             stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(meany));
          }
