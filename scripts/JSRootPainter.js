@@ -4496,6 +4496,9 @@
 
    JSROOT.TH1Painter.prototype = Object.create( JSROOT.THistPainter.prototype );
 
+   JSROOT.TH1Painter.prototype.IsTProfile = function() {
+      return this.histo && this.histo['_typename'] == 'TProfile';
+   }
 
    JSROOT.TH1Painter.prototype.ScanContent = function() {
 
@@ -4509,12 +4512,14 @@
 
       var hmin = 0, hmax = 0, hsum = 0;
       // this.stat_entries = d3.sum(this.histo['fArray']);
+      
+      var profile = this.IsTProfile();
 
       this.nbinsx = this.histo['fXaxis']['fNbins'];
       
       for (var i=0;i<this.nbinsx;++i) {
          var value = this.histo.getBinContent(i+1);
-         hsum += value;
+         hsum += profile ? this.histo.fBinEntries[i+1] : value;
          if (i==0) { hmin = hmax = value; }
          if (value < hmin) hmin = value; else
          if (value > hmax) hmax = value;
@@ -4572,21 +4577,43 @@
 
    JSROOT.TH1Painter.prototype.CountStat = function()
    {
-      this.stat_sum0 = 0;
-      this.stat_sum1 = 0;
-      this.stat_sum2 = 0;
+      var profile = this.IsTProfile();
+      
+      if (profile) {
+         this.stat_sumw = 0;
+         this.stat_sumwx = 0;
+         this.stat_sumwx2 = 0;
+         this.stat_sumwy = 0;
+         this.stat_sumwy2 = 0;
+      } else {
+         this.stat_sum0 = 0;
+         this.stat_sum1 = 0;
+         this.stat_sum2 = 0;
+      }
+      
 
       var left = this.GetSelectIndex("x","left");
       var right = this.GetSelectIndex("x","right");
 
+      var xx = 0, yy = 0, w = 0;
       // console.log("  xleft = " + left + " xright = " + right);
-
+      
       for (var i=left;i<right;i++) {
-         var xx = this.xmin + (i+0.5)*this.binwidthx;
-         var yy = this.histo.getBinContent(i+1);
-         this.stat_sum0 += yy;
-         this.stat_sum1 += xx * yy;
-         this.stat_sum2 += xx * xx * yy;
+         xx = this.xmin + (i+0.5)*this.binwidthx;
+         yy = this.histo.getBinContent(i+1);
+         
+         if (profile) {
+            w  = this.histo.fBinEntries[i+1];
+            this.stat_sumw += w;
+            this.stat_sumwx += w*xx;
+            this.stat_sumwx2 += w*xx*xx;
+            this.stat_sumwy += yy;
+            this.stat_sumwy2 += this.histo.fSumw2[i+1];  
+         } else {
+            this.stat_sum0 += yy;
+            this.stat_sum1 += xx * yy;
+            this.stat_sum2 += xx * xx * yy;
+         }
       }
    }
 
@@ -4607,43 +4634,73 @@
       if (print_name > 0)
          stat.AddLine(this.histo['fName']);
 
-      if (print_entries > 0)
-         stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+      
+      if (this.IsTProfile()) {
 
-      if (print_mean > 0) {
-         var res = 0;
-         if (this.stat_sum0 > 0) res = this.stat_sum1/this.stat_sum0;
-         stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(res));
+         if (print_entries > 0)
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+
+         var meanx = 0, meany = 0;
+
+         if (print_mean > 0) {
+            if (this.stat_sumw > 0) {
+               meanx = this.stat_sumwx/this.stat_sumw;
+               meany = this.stat_sumwy/this.stat_sumw;
+            }
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(meanx));
+            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(meany));
+         }
+
+         if (print_rms > 0) {
+            var rmsx = 0, rmsy = 0;
+            if (this.stat_sumw > 0) {
+               rmsx = Math.sqrt(this.stat_sumwx2/this.stat_sumw - meanx*meanx);
+               rmsy = Math.sqrt(this.stat_sumwy2/this.stat_sumw - meany*meany);
+            }
+            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(rmsx));
+            stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(rmsy));
+         }
+         
+      } else {
+
+         if (print_entries > 0)
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+
+         if (print_mean > 0) {
+            var res = 0;
+            if (this.stat_sum0 > 0) res = this.stat_sum1/this.stat_sum0;
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(res));
+         }
+
+         if (print_rms > 0) {
+            var res = 0;
+            if (this.stat_sum0 > 0)
+               res = Math.sqrt(this.stat_sum2/this.stat_sum0 - Math.pow(this.stat_sum1/this.stat_sum0, 2));
+            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(res));
+         }
+
+         if (print_under > 0) {
+            var res = 0;
+            if (this.histo['fArray'].length > 0) res = this.histo['fArray'][0];
+            stat.AddLine("Underflow = " + JSROOT.gStyle.StatFormat(res));
+         }
+
+         if (print_over > 0) {
+            var res = 0;
+            if (this.histo['fArray'].length > 0) res = this.histo['fArray'][this.histo['fArray'].length-1];
+            stat.AddLine("Overflow = " + JSROOT.gStyle.StatFormat(res));
+         }
+
+         if (print_integral > 0) {
+            stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(this.stat_sum0));
+         }
+
+         if (print_skew> 0)
+            stat.AddLine("Skew = not avail");
+
+         if (print_kurt> 0)
+            stat.AddLine("Kurt = not avail");
       }
-
-      if (print_rms > 0) {
-         var res = 0;
-         if (this.stat_sum0 > 0)
-            res = Math.sqrt(this.stat_sum2/this.stat_sum0 - Math.pow(this.stat_sum1/this.stat_sum0, 2));
-         stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(res));
-      }
-
-      if (print_under > 0) {
-         var res = 0;
-         if (this.histo['fArray'].length > 0) res = this.histo['fArray'][0];
-         stat.AddLine("Underflow = " + JSROOT.gStyle.StatFormat(res));
-      }
-
-      if (print_over > 0) {
-         var res = 0;
-         if (this.histo['fArray'].length > 0) res = this.histo['fArray'][this.histo['fArray'].length-1];
-         stat.AddLine("Overflow = " + JSROOT.gStyle.StatFormat(res));
-      }
-
-      if (print_integral > 0) {
-         stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(this.stat_sum0));
-      }
-
-      if (print_skew> 0)
-         stat.AddLine("Skew = not avail");
-
-      if (print_kurt> 0)
-         stat.AddLine("Kurt = not avail");
 
       // adjust the size of the stats box with the number of lines
       var nlines = stat.pavetext['fLines'].arr.length;
@@ -5776,13 +5833,14 @@
 
       for (var i = 0; i < local_bins.length; ++i ) {
          hh = local_bins[i];
+         wei = tz(hh.z);
 
          bin = THREE.SceneUtils.createMultiMaterialObject(
-            new THREE.CubeGeometry( 2*size/painter.nbinsx, hh.z, 2*size/painter.nbinsy ),
+            new THREE.CubeGeometry( 2*size/painter.nbinsx, wei, 2*size/painter.nbinsy ),
             [ new THREE.MeshLambertMaterial( { color: fillcolor.getHex(), shading: THREE.NoShading } ),
               wireMaterial ] );
          bin.position.x = tx(hh.x);
-         bin.position.y = hh.z/2;
+         bin.position.y = wei/2;
          bin.position.z = -(ty(hh.y));
 
          if (JSROOT.gStyle.Tooltip) bin.name = hh.tip;
