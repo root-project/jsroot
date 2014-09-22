@@ -13,7 +13,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.x 11.09.2014";
+   JSROOT.version = "3.x 22.09.2014";
    
    JSROOT.source_dir = null;
    

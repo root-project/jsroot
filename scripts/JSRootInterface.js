@@ -263,7 +263,7 @@ function BuildSimpleGUI() {
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
       +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
-      +'  <option>collapsible</option><option>tabs</option>'
+      +'  <option>grid</option><option>tabs</option><option>collapsible</option>'
       +'</select>' 
       +'</form>'
       +'<br/>'

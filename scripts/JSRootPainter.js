@@ -7072,8 +7072,6 @@
                _kind : "ROOT." + obj['_typename'],
                _readobj: obj
          };
-
-  
          folder._childs.push(item);
       }
    }
@@ -7767,10 +7765,13 @@
    JSROOT.HierarchyPainter.prototype.SetDisplay = function(kind, frameid)
    {
       if (kind == "collapsible") kind = new JSROOT.CollapsibleDisplay(frameid); else
-      if (kind == "tabs") kind = new JSROOT.TabsDisplay(frameid);
+      if (kind == "tabs") kind = new JSROOT.TabsDisplay(frameid); else
+      if (kind == "grid") kind = new JSROOT.GridDisplay(frameid, 3); 
       
       this['disp'] = kind;
    }
+   
+   // ================================================================ 
 
    
    // JSROOT.MDIDisplay - class to manage multiple document interface for frawings 
@@ -7791,6 +7792,10 @@
       });
       
       return found_frame;
+   }
+   
+   JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
+      // do nothing by default
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj) {
@@ -7967,7 +7972,6 @@
    }
 
    JSROOT.TabsDisplay.prototype.CreateFrame = function(itemname) {
-
       var topid = this.frameid + '_tabs';
 
       var hid = topid + "_sub" + this.cnt++;
@@ -7976,7 +7980,7 @@
       var cont = '<div id="' + hid + '"></div>';
 
       if (document.getElementById(topid) == null) {
-         $("#right-div").append(
+         $("#"+this.frameid).append(
            '<div id="'+topid+'">' +
            ' <ul>' + li +
            ' </ul>'+ cont +
@@ -7999,12 +8003,82 @@
          $("#" + topid).tabs("refresh");
          $("#" + topid).tabs( "option", "active", -1 );
       }
-      
       document.getElementById(hid)['itemname'] = itemname;
+      return $('#'+hid);
+   }
+   
+   // ================================================
+   
+   JSROOT.GridDisplay = function(frameid, size) {
+      JSROOT.MDIDisplay.call(this, frameid);
+      this.cnt = 0;
+      if (!size) size = 3;
+      this.size = size;
+   }
+   
+   JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.GridDisplay.prototype.ForEach = function(userfunc, only_visible) {
+      var topid  = this.frameid + '_grid';
+      
+      if (document.getElementById(topid)==null) return;
+      
+      if (typeof userfunc != 'function') return;
+      
+      for (var cnt=0;cnt<this.size*this.size;cnt++) {
+         var hid = topid + "_" + cnt;
+         
+         var elem = document.getElementById(hid);
+         
+         if ((elem==null) || !('itemname' in elem)) continue;
+         
+         userfunc($("#"+hid), elem['itemname'], elem['painter']);
+      }
+   }
+
+   JSROOT.GridDisplay.prototype.CreateFrame = function(itemname) {
+
+      var topid = this.frameid + '_grid';
+      
+      if (document.getElementById(topid) == null) {
+         
+         var precx = 100./this.size;
+         var precy = 100./this.size;
+         
+         var content = "<table id='" + topid + "' width='100%' height='100%'>";
+         var cnt = 0;
+         for (var i = 0; i < this.size; i ++)
+         {
+            content += "<tr height='"+precy+"%'>";
+            for (var j = 0; j < this.size; j ++) {
+               content += "<td id='"+ topid + "_" + cnt + "' width='" + precx 
+                             + "%'>" + i + "," + j + "</td>";
+               cnt++;
+            }
+            content += "</tr>";
+         }
+         content += "</table>";
+         
+         $("#"+this.frameid).empty();
+         $("#"+this.frameid).append(content);
+      } 
+      
+      var hid = topid + "_" + this.cnt;
+      if (++this.cnt >= this.size*this.size) this.cnt = 0;
+      
+      $("#"+hid).empty();
+      document.getElementById(hid)['itemname'] = itemname;
+      document.getElementById(hid)['painter'] = null;
       
       return $('#'+hid);
    }
+   
+   JSROOT.GridDisplay.prototype.Reset = function() {
+      JSROOT.MDIDisplay.prototype.Reset.call(this);
+      this.cnt = 0;
+   }
 
+   
 })();
 
 

@@ -17,6 +17,7 @@ September 2014:
 5. Adjust size of color palette drawing when labels would take more place as provided.
 6. Add correct filling of statistic for TProfile, fix small problem with underflow/overflow bins.
 7. Provide way to select display kind ('collapsible', 'tabs') in the simple GUI.
+8. Implement 'grid' display. 
  
 
 August 2014:
