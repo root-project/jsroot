@@ -7525,11 +7525,6 @@
       this.setDNodeOpenStatus(hitem, !hitem._d._io);
    }
    
-   JSROOT.HierarchyPainter.prototype.clear = function()
-   {
-      if ('disp' in this) this['disp'].Reset();
-   }
-   
    JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status, force)
    {
       if (hitem==null) return;
@@ -7603,14 +7598,10 @@
    {
       var pthis = this;
       
-      // console.log("try display  " + itemname);
-      
-      this.get(itemname, function(item, obj) {
-         // if (obj!=null) console.log("get object " + itemname + " for the drawing");
-         
-         if (('disp' in pthis) && (typeof pthis['disp']['Draw'] == 'function'))
+      if (this.CreateDisplay())
+         this.get(itemname, function(item, obj) {
             pthis['disp'].Draw(itemname, obj);
-      });
+         });
    }
    
    JSROOT.HierarchyPainter.prototype.reload = function()
@@ -7762,17 +7753,39 @@
       return false;
    }
    
-   JSROOT.HierarchyPainter.prototype.SetDisplay = function(kind, frameid)
-   {
-      if (kind == "collapsible") kind = new JSROOT.CollapsibleDisplay(frameid); else
-      if (kind == "tabs") kind = new JSROOT.TabsDisplay(frameid); else
-      if (kind == "grid") kind = new JSROOT.GridDisplay(frameid, 3); 
-      
-      this['disp'] = kind;
+   
+   JSROOT.HierarchyPainter.prototype.SetDisplay = function(kind, frameid) {
+      this['disp_kind'] = kind;
+      this['disp_frameid'] = frameid;
    }
    
-   // ================================================================ 
+   JSROOT.HierarchyPainter.prototype.clear = function()
+   {
+      if ('disp' in this) this['disp'].Reset();
+   }
 
+   JSROOT.HierarchyPainter.prototype.CreateDisplay = function(force) {
+      if ('disp' in this) {
+         if (!force && this['disp'].NumDraw()>0) return true; 
+         this['disp'].Reset();
+         delete this['disp'];
+      }
+      
+      // check that we can found frame where drawing should be done
+      if (document.getElementById(this['disp_frameid']) == null) return false;
+
+      if (this['disp_kind'] == "tabs") 
+         this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']); 
+      else 
+      if (this['disp_kind'].search("grid") == 0) 
+         this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']); 
+      else
+         this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
+      
+      return true;
+   }
+
+   // ================================================================ 
    
    // JSROOT.MDIDisplay - class to manage multiple document interface for frawings 
    
@@ -7782,6 +7795,12 @@
    
    JSROOT.MDIDisplay.prototype.ForEach = function(userfunc, only_visible) {
       alert("ForEach not implemented");
+   }
+   
+   JSROOT.MDIDisplay.prototype.NumDraw = function() {
+      var cnt = 0;
+      this.ForEach(function() { cnt++; });
+      return cnt;
    }
 
    JSROOT.MDIDisplay.prototype.FindFrame = function(searchitemname) {
@@ -8009,11 +8028,37 @@
    
    // ================================================
    
-   JSROOT.GridDisplay = function(frameid, size) {
+   JSROOT.GridDisplay = function(frameid, sizex, sizey) {
+      // create grid display object
+      // one could use followinf arguments
+      //   new JSROOT.GridDisplay('yourframeid','4x4');
+      //   new JSROOT.GridDisplay('yourframeid','3x2');
+      //   new JSROOT.GridDisplay('yourframeid', 3, 4);
+      
       JSROOT.MDIDisplay.call(this, frameid);
       this.cnt = 0;
-      if (!size) size = 3;
-      this.size = size;
+      if (typeof sizex == "string") {
+         if (sizex.search("grid")==0)
+            sizex = sizex.slice(4).trim();
+         
+         var separ = sizex.search("x");
+         
+         if (separ>0) {
+            sizey = parseInt(sizex.slice(separ+1));
+            sizex = parseInt(sizex.slice(0, separ));
+         } else {
+            sizex = parseInt(sizex);
+            sizey = sizex;
+         }
+         
+         if (sizex == NaN) sizex = 3;
+         if (sizey == NaN) sizey = 3;
+      }
+      
+      if (!sizex) sizex = 3;
+      if (!sizey) sizey = sizex;
+      this.sizex = sizex;
+      this.sizey = sizey;
    }
    
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
@@ -8025,7 +8070,7 @@
       
       if (typeof userfunc != 'function') return;
       
-      for (var cnt=0;cnt<this.size*this.size;cnt++) {
+      for (var cnt=0;cnt<this.sizex*this.sizey;cnt++) {
          var hid = topid + "_" + cnt;
          
          var elem = document.getElementById(hid);
@@ -8042,19 +8087,15 @@
       
       if (document.getElementById(topid) == null) {
          
-         var precx = 100./this.size;
-         var precy = 100./this.size;
+         var precx = 100./this.sizex;
+         var precy = 100./this.sizey;
          
          var content = "<table id='" + topid + "' width='100%' height='100%'>";
          var cnt = 0;
-         for (var i = 0; i < this.size; i ++)
-         {
+         for (var i = 0; i < this.sizey; i ++) {
             content += "<tr height='"+precy+"%'>";
-            for (var j = 0; j < this.size; j ++) {
-               content += "<td id='"+ topid + "_" + cnt + "' width='" + precx 
-                             + "%'>" + i + "," + j + "</td>";
-               cnt++;
-            }
+            for (var j = 0; j < this.sizex; j ++)
+               content += "<td id='"+ topid + "_" + cnt++ + "' width='" + precx + "%'></td>";
             content += "</tr>";
          }
          content += "</table>";
@@ -8064,7 +8105,7 @@
       } 
       
       var hid = topid + "_" + this.cnt;
-      if (++this.cnt >= this.size*this.size) this.cnt = 0;
+      if (++this.cnt >= this.sizex*this.sizey) this.cnt = 0;
       
       $("#"+hid).empty();
       document.getElementById(hid)['itemname'] = itemname;

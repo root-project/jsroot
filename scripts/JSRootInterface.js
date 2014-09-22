@@ -4,16 +4,6 @@
 //
 
 
-function guiLayout() {
-   var res = 'collapsible';
-   var selects = document.getElementById("display-kind");
-   if (selects) {
-      res = selects.options[selects.selectedIndex].text;
-      // $("#display-kind").disable();
-   }
-   return res;
-}
-
 function ResetUI() {
    if (JSROOT.H('root') != null) {
       JSROOT.H('root').clear();
@@ -87,9 +77,8 @@ function ResizeTimer()
    
    myCounter = -1;
 
-   if (! ('disp' in JSROOT.H('root'))) return;
-   
-   JSROOT.H('root')['disp'].CheckResize();
+   if ('disp' in JSROOT.H('root'))
+      JSROOT.H('root')['disp'].CheckResize();
 }
 
 function ProcessResize(fast)
@@ -157,6 +146,16 @@ function BuildDrawGUI()
       setInterval(drawfunction, monitor);
 }
 
+function guiLayout() {
+   var res = 'collapsible';
+   var selects = document.getElementById("display-kind");
+   if (selects) {
+      res = selects.options[selects.selectedIndex].text;
+      // $("#display-kind").disable();
+   }
+   return res;
+}
+
 function AddInteractions() {
    var drag_sum = 0;
    
@@ -192,6 +191,13 @@ function AddInteractions() {
    d3.select("#separator-div").call(drag_move);
      
    window.addEventListener('resize', ProcessResize);
+
+   // specify display kind every time selection done
+   // will be actually used only for first drawing or after reset
+   document.getElementById("display-kind").onchange = function() {
+      if (JSROOT.H('root'))
+         JSROOT.H('root').SetDisplay(guiLayout(), "right-div");
+   }
 }
 
 
@@ -208,10 +214,10 @@ function BuildOnlineGUI() {
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
             + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
-            +'  <select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
-            +'    <option>collapsible</option><option>tabs</option>'
-            +'  </select>' 
-            + '<div id="browser"></div>'
+            + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
+            + '   <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+            + ' </select>' 
+            + ' <div id="browser"></div>'
             + '</div>'
             + '<div id="separator-div" class="column"></div>'
             + '<div id="right-div" class="column"></div>';
@@ -263,7 +269,7 @@ function BuildSimpleGUI() {
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
       +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
-      +'  <option>grid</option><option>tabs</option><option>collapsible</option>'
+      +'  <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
       +'</select>' 
       +'</form>'
       +'<br/>'
