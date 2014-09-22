@@ -3354,6 +3354,10 @@
    JSROOT.THistPainter.prototype.IsObject = function(obj) {
       return this.histo === obj;
    }
+   
+   JSROOT.THistPainter.prototype.IsTProfile = function() {
+      return this.histo && this.histo['_typename'] == 'TProfile';
+   }
 
    JSROOT.THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
@@ -3420,6 +3424,11 @@
       this.histo['fXaxis']['fXmax'] = obj['fXaxis']['fXmax'];
       this.histo['fYaxis']['fXmin'] = obj['fYaxis']['fXmin'];
       this.histo['fYaxis']['fXmax'] = obj['fYaxis']['fXmax'];
+      
+      if (this.IsTProfile()) {
+         this.histo['fBinEntries'] = obj['fBinEntries'];
+         this.histo['fSumw2'] = obj['fSumw2'];
+      }
 
       this.ScanContent();
 
@@ -4495,10 +4504,6 @@
    }
 
    JSROOT.TH1Painter.prototype = Object.create( JSROOT.THistPainter.prototype );
-
-   JSROOT.TH1Painter.prototype.IsTProfile = function() {
-      return this.histo && this.histo['_typename'] == 'TProfile';
-   }
 
    JSROOT.TH1Painter.prototype.ScanContent = function() {
 
