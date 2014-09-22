@@ -357,12 +357,12 @@
          '$$$scripts/JSRootPainter.js;' +
          '$$$style/JSRootPainter.css';
       
-      var minimal = ((kind!=null) && (kind.indexOf('2d')>=0));
+      var minimal = (typeof kind == 'string') && (kind.indexOf('2d')>=0);
       
-      if (!minimal || ((kind!=null) && (kind.indexOf('io')>=0)))
+      if (!minimal || ((typeof kind == 'string') && (kind.indexOf('io')>=0)))
          allfiles += ";$$$scripts/rawinflate.js;$$$scripts/JSRootIOEvolution.js"; 
       
-      if ((kind!=null) && (kind.indexOf("3d")>=0))
+      if ((typeof kind == 'string') && (kind.indexOf("3d")>=0))
          allfiles += ";$$$scripts/jquery.mousewheel.js;$$$scripts/three.min.js;$$$scripts/helvetiker_regular.typeface.js;$$$scripts/helvetiker_bold.typeface.js";
       
       JSROOT.loadScript(allfiles, andThan); 
