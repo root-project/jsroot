@@ -1235,15 +1235,20 @@
       // see in JSROOT.draw
       
       var render_to = this.vis['render_to'];
+      
+      console.log("check resize last_width = " + this.last_width + "  now = " + $(render_to).width());
 
       if ((this.last_width == $(render_to).width()) &&
          (this.last_height == $(render_to).height())) return;
+      
+      this.last_width = $(render_to).width();
+      this.last_height = $(render_to).height();
       
       this.vis.attr("width", $(render_to).width())
               .attr("height", $(render_to).height())
               .attr("viewBox", "0 0 " + $(render_to).width() + " " + $(render_to).height())
 
-      this.RedrawFrame(null, true);
+      this.RedrawFrame(true);
    }
 
    JSROOT.TBasePainter.prototype.RemoveDraw = function()
@@ -1315,18 +1320,16 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.RedrawFrame = function(selobj, resize) {
+   JSROOT.TBasePainter.prototype.RedrawFrame = function(resize) {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
 
       if (!this.vis) return;
       if (! 'painters' in this.vis) return;
 
-      for (var n=0;n<this.vis['painters'].length;n++) {
+      for (var n in this.vis['painters']) {
 
          var painter = this.vis['painters'][n];
-
-         if ((selobj!=null) && !painter.IsObject(selobj)) continue;
 
          painter.Redraw(resize);
       }
@@ -1626,7 +1629,6 @@
    }
 
    JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
-      alert("JSROOT.TBasePainter.UpdateObject not implemented");
       return false;
    }
 
@@ -3165,6 +3167,54 @@
 
    // ===========================================================================
 
+   JSROOT.TCanvasPainter = function(can) {
+      JSROOT.TBasePainter.call(this);
+      this.can = can;
+   }
+
+   JSROOT.TCanvasPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+
+   
+   JSROOT.TCanvasPainter.prototype.UpdateObject = function(obj) {
+      
+      if ((obj==null) || (this.vis == null)) return false;
+      
+      if (obj.fPrimitives.arr.length != this.can.fPrimitives.arr.length) return false;
+      
+      var isany = false;
+      var cnt = 0;
+      
+      for (var n in obj.fPrimitives.arr) {
+         var sub = obj.fPrimitives.arr[n];
+         // workaround for the TFrame, one need special handling for other classes 
+         if (sub._typename=="TFrame") continue; 
+
+         if (cnt < this.vis['painters'].length) 
+            if (this.vis['painters'][cnt].UpdateObject(sub)) isany = true;
+         cnt++;
+      }
+      
+      return isany;
+   }
+   
+   JSROOT.Painter.drawCanvas = function(vis, can, opt)
+   {
+      vis['ROOT:canvas'] = can;
+      vis['ROOT:pad'] = can;
+      
+      var painter = new JSROOT.TCanvasPainter(can);
+      
+      painter.vis = vis; // we kept frame, but not add painter to painters list
+      
+      for (var i in can.fPrimitives.arr)
+         JSROOT.Painter.drawObjectInFrame(vis, can.fPrimitives.arr[i], can.fPrimitives.opt[i]);
+      
+      return painter;
+   }
+
+   
+   // ===========================================================================
+   
    JSROOT.TColzPalettePainter = function(palette) {
       JSROOT.TBasePainter.call(this);
       this.palette = palette;
@@ -3172,7 +3222,6 @@
    }
 
    JSROOT.TColzPalettePainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
-
 
    JSROOT.TColzPalettePainter.prototype.IsObject = function(obj) {
       return this.palette === obj;
@@ -3399,8 +3448,6 @@
 
       alert("HistPainter.prototype.ScanContent not implemented");
    }
-
-
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj)
    {
@@ -6735,6 +6782,7 @@
           classname.match(/\RooCurve/) ||
           classname == 'TF1' ||
           classname == 'TCanvas' ||
+          classname == 'TPad' ||
           classname == 'THStack' ||
           classname == 'TProfile') return true;
 
@@ -6936,9 +6984,8 @@
          .attr("text-anchor", align)
          .attr("fill", tcolor)
          .text(string);
-   };
-
-
+   }
+   
    JSROOT.Painter.drawObjectInFrame = function(vis, obj, opt)
    {
       // ignore objects without type information
@@ -6946,15 +6993,8 @@
 
       var classname = obj['_typename'];
 
-      if (classname == 'TCanvas') {
-         vis['ROOT:canvas'] = obj;
-         vis['ROOT:pad'] = obj;
-         for (var i=0; i<obj.fPrimitives.arr.length; ++i) {
-            // console.log("Draw canvas primitive " + obj.fPrimitives.arr[i]._typename + " opt = " + obj.fPrimitives.opt[i]);
-            JSROOT.Painter.drawObjectInFrame(vis, obj.fPrimitives.arr[i], obj.fPrimitives.opt[i]);
-         }
-         return;
-      }
+      if (classname == 'TCanvas')
+         return JSROOT.Painter.drawCanvas(vis, obj, opt);
 
       if (classname == 'TFrame')
          return JSROOT.Painter.createFrame(vis, obj);
@@ -7018,7 +7058,7 @@
                    .attr("height", $(render_to).height())
                    .style("background-color", fillcolor)
                    .attr("viewBox", "0 0 " + $(render_to).width() + " " + $(render_to).height())
-                   .attr("preserveAspectRatio", "xMidYMid meet")
+                   //.attr("preserveAspectRatio", "xMidYMid meet")
                    .attr("pointer-events", "all");
                    // .call(d3.behavior.zoom().on("zoom", JSROOT.Painter.redraw));
       
@@ -7839,15 +7879,14 @@
       var hid = $(frame).attr('id');
 
       if (issinfo) {
+         $(frame).css({overflow : 'auto'});
          var painter = new JSROOT.HierarchyPainter('sinfo', hid);
          painter.ShowStreamerInfo(obj);
       } else {
-         
-         // set aspect ratio for the place, where object will be drawn
-         var height = $(frame).width() * 0.66;
-         
-         document.getElementById(hid).setAttribute("style", "height:"+height+"px");
-         document.getElementById(hid).style.height=""+height+'px';
+         if ($(frame).height() < 10) {
+            // set aspect ratio for the place, where object will be drawn
+            $(frame).height($(frame).width() * 0.66);
+         }
          
          document.getElementById(hid)['painter'] = JSROOT.draw(hid, obj);
       }
@@ -8094,19 +8133,29 @@
          
          var precx = 100./this.sizex;
          var precy = 100./this.sizey;
+         var h = $("#" + this.frameid).height() / this.sizey;
+         var w = $("#" + this.frameid).width() / this.sizex;
          
-         var content = "<table id='" + topid + "' width='100%' height='100%'>";
+         var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
          var cnt = 0;
          for (var i = 0; i < this.sizey; i ++) {
-            content += "<tr height='"+precy+"%'>";
+            content += "<tr>";
             for (var j = 0; j < this.sizex; j ++)
-               content += "<td id='"+ topid + "_" + cnt++ + "' width='" + precx + "%'></td>";
+               content += "<td><div id='"+ topid + "_" + cnt++ + "'></div></td>";
             content += "</tr>";
          }
          content += "</table>";
          
          $("#"+this.frameid).empty();
          $("#"+this.frameid).append(content);
+         //for (var cnt=0;cnt<this.sizex*this.sizey;cnt++) {
+         //   $("#" + this.frameid + "_grid_"+cnt).height(h);
+         //   $("#" + this.frameid + "_grid_"+cnt).width(w)
+         //}
+         
+         //var set = $("[id^=" + this.frameid + "_grid_]");
+         $("[id^=" + this.frameid + "_grid_]").height(h);
+         $("[id^=" + this.frameid + "_grid_]").width(w);
       } 
       
       var hid = topid + "_" + this.cnt;
@@ -8122,6 +8171,24 @@
    JSROOT.GridDisplay.prototype.Reset = function() {
       JSROOT.MDIDisplay.prototype.Reset.call(this);
       this.cnt = 0;
+   }
+   
+   JSROOT.GridDisplay.prototype.CheckResize = function() {
+      var h = $("#" + this.frameid).height() / this.sizey;
+      var w = $("#" + this.frameid).width() / this.sizex;
+      
+      console.log("big width = " + $("#" + this.frameid).width() + " height = " + $("#" + this.frameid).height());
+
+      // set height for all table cells, it is not done automatically by browser
+      //for (var cnt=0;cnt<this.sizex*this.sizey;cnt++) 
+       //  $("#" + this.frameid + "_grid_"+cnt).height(h);
+      
+      // $("[id^=" + this.frameid + "_grid_]").height(h).width(w);
+
+      $("[id^=" + this.frameid + "_grid_]").height(h);
+      $("[id^=" + this.frameid + "_grid_]").width(w);
+
+      JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
 
    

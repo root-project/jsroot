@@ -104,7 +104,7 @@ function BuildDrawGUI()
          var p2 = document.URL.indexOf("&", p1);
          if (p2<0) p2 = document.URL.length;
          drawopt = document.URL.substr(p1, p2-p1);
-         //console.log("draw opt = " + drawopt);
+         // console.log("draw opt = " + drawopt);
       }
       p1 = document.URL.indexOf("monitor");
       if (p1>0) {

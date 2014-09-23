@@ -7,19 +7,22 @@ Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment. 
 
 September 2014:
-1. First try to handle resize of canvas in the browser, for the 
-   moment works only with collapsible layout
+1. First try to handle resize of the browser, 
+   for the moment works only with collapsible layout
 2. Also first try to interactively move separation line between
    browser and drawing field.
 3. Small fix of minor ticks drawing on the axis
 4. Introduce display class for MDI drawing. Provide two implementations - 
    'collapsible' for old kind and 'tabs' for new kinds.  
 5. Adjust size of color palette drawing when labels would take more place as provided.
-6. Add correct filling of statistic for TProfile, fix small problem with underflow/overflow bins.
+6. Add correct filling of statistic for TProfile, 
+   fix small problem with underflow/overflow bins.
 7. Provide way to select display kind ('collapsible', 'tabs') in the simple GUI.
-8. Implement 'grid' display, one could specify 'grid 3x3' or 'grid 4x2'.
-   Display object created at the moment when first draw is performed.   
- 
+8. Implement 'grid' display, one could specify any number of devision like
+   'grid 3x3' or 'grid 4x2'. 
+9. MDI display object created at the moment when first draw is performed.   
+10.Introduce painter class for TCanvas, support resize and update of canvas drawing
+11.Resize almost works for all layouts and all objects kinds  
 
 August 2014:
 1. All communication between server and browser done with JSON format.
