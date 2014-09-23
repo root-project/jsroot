@@ -55,7 +55,9 @@ function UpdateOnline() {
       if (painter==null) return;
       JSROOT.H('root').get(itemname, function(item, obj) {
          if (painter.UpdateObject(obj)) {
+            document.body.style.cursor = 'wait';
             painter.RedrawFrame();
+            document.body.style.cursor = 'auto';
          }
       });
    } , true); // update only visible objects
@@ -77,8 +79,11 @@ function ResizeTimer()
    
    myCounter = -1;
 
-   if ('disp' in JSROOT.H('root'))
-      JSROOT.H('root')['disp'].CheckResize();
+   if (!('disp' in JSROOT.H('root'))) return;
+   
+   document.body.style.cursor = 'wait';
+   JSROOT.H('root')['disp'].CheckResize();
+   document.body.style.cursor = 'auto';
 }
 
 function ProcessResize(fast)

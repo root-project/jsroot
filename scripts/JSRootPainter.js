@@ -8180,7 +8180,7 @@
       var h = $("#" + this.frameid).height() / this.sizey;
       var w = $("#" + this.frameid).width() / this.sizex;
       
-      console.log("big width = " + $("#" + this.frameid).width() + " height = " + $("#" + this.frameid).height());
+      // console.log("big width = " + $("#" + this.frameid).width() + " height = " + $("#" + this.frameid).height());
 
       // set height for all table cells, it is not done automatically by browser
       //for (var cnt=0;cnt<this.sizex*this.sizey;cnt++) 

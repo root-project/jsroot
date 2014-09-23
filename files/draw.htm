@@ -25,7 +25,11 @@
         }
         myCounter = -1;
         
-        if (objpainter) objpainter.CheckResize();
+        if (!objpainter) return;
+        
+        document.body.style.cursor = 'wait';
+        objpainter.CheckResize();
+        document.body.style.cursor = 'auto';
       }
 
       function ProcessResize() {  
@@ -68,12 +72,15 @@
                 var obj = JSROOT.parse(itemres);
                 if (!obj) return;
                 
+                document.body.style.cursor = 'wait';
                 if (!objpainter) {
                    objpainter = JSROOT.draw('drawing', obj, drawopt); 
                 } else {
                    objpainter.UpdateObject(obj);   
                    objpainter.RedrawFrame();
                 }
+                document.body.style.cursor = 'auto';
+                
             });
             
             req.send(null);
