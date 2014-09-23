@@ -93,59 +93,6 @@ function ProcessResize(fast)
    }
 }
 
-function BuildDrawGUI()
-{
-   var pos = document.URL.indexOf("?");
-   var drawopt = "", monitor = -1;
-   if (pos>0) {
-      var p1 = document.URL.indexOf("opt=", pos);
-      if (p1>0) {
-         p1+=4;
-         var p2 = document.URL.indexOf("&", p1);
-         if (p2<0) p2 = document.URL.length;
-         drawopt = document.URL.substr(p1, p2-p1);
-         // console.log("draw opt = " + drawopt);
-      }
-      p1 = document.URL.indexOf("monitor");
-      if (p1>0) {
-         monitor = 3000;
-         p1+=7;
-         if (document.URL.charAt(p1) == "=") {
-            p1++;
-            var p2 = document.URL.indexOf("&", p1);
-            if (p2<0) p2 = document.URL.length;
-            monitor = parseInt(document.URL.substr(p1, p2-p1));
-            if (typeof monitor== 'undefined') monitor = 3000; 
-         }
-        // console.log("monitor = " + monitor);
-      }
-   }
-   
-   var hpainter = new JSROOT.HierarchyPainter("single");
-   
-   hpainter.CreateSingleOnlineElement();
-   
-   var objpainter = null;
-   
-   var drawfunction = function() {
-      hpainter.get("", function(item, obj) {
-         if (!obj) return;
-         
-         if (!objpainter) {
-            objpainter = JSROOT.draw('drawGUI', obj, drawopt); 
-         } else {
-            objpainter.UpdateObject(obj);   
-            objpainter.RedrawFrame();
-         }
-      });
-   }
-   
-   drawfunction();
-   
-   if (monitor>0)
-      setInterval(drawfunction, monitor);
-}
-
 function guiLayout() {
    var res = 'collapsible';
    var selects = document.getElementById("display-kind");
@@ -238,7 +185,6 @@ function BuildOnlineGUI() {
 function BuildSimpleGUI() {
    
    if (document.getElementById('onlineGUI')) return BuildOnlineGUI();  
-   if (document.getElementById('drawGUI')) return BuildDrawGUI();  
    
    var myDiv = $('#simpleGUI');
    if (!myDiv) return;

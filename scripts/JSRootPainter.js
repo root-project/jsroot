@@ -1227,16 +1227,16 @@
       return false;
    }
    
-   JSROOT.TBasePainter.prototype.CheckResize = function() {
+   JSROOT.TBasePainter.prototype.CheckResize = function(force) {
       
       // only first painter should react on resize event
-      if ((this.vis==null) || (this.first!=null)) return;
+      if ((this.vis==null) || ((this.first!=null) && !force)) return;
       
       // see in JSROOT.draw
       
       var render_to = this.vis['render_to'];
       
-      console.log("check resize last_width = " + this.last_width + "  now = " + $(render_to).width());
+      // console.log("check resize last_width = " + this.last_width + "  now = " + $(render_to).width());
 
       if ((this.last_width == $(render_to).width()) &&
          (this.last_height == $(render_to).height())) return;
@@ -2198,7 +2198,11 @@
       return this.graph === obj;
    }
 
-   JSROOT.TGraphPainter.prototype.Redraw = function()
+   JSROOT.TGraphPainter.prototype.CheckResize = function() {
+      JSROOT.TBasePainter.prototype.CheckResize.call(this, true);
+   }
+   
+   JSROOT.TGraphPainter.prototype.Redraw = function(resize)
    {
       this.DrawBins();
    }
@@ -2207,7 +2211,6 @@
    {
       JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
    }
-
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.logx = false;
@@ -2814,8 +2817,8 @@
       var ownhisto = false;
       if (!('painters' in vis)) {
          if (!('fHistogram' in graph)) {
-            alert("drawing first graphs without fHistogram field not (yet) supported");
-            return -1;
+            alert("drawing first graph without fHistogram field, not (yet) supported");
+            return null;
          } else {
             JSROOT.Painter.drawHistogram1D(vis, graph['fHistogram']);
             ownhisto = true;

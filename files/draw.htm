@@ -8,8 +8,89 @@
       <script type="text/javascript" src="/jsrootsys/scripts/JSRootCore.js"></script>
    </head>
 
-   <body onload="JSROOT.BuildSimpleGUI('2d')">
-      <div id="drawGUI" style="position:absolute; left:5px; top:5px; bottom:5px; right:5px"></div>
+   <script type='text/javascript'>
+   
+      var myInterval = null;
+      var myCounter = -1;
+      var objpainter = null;
+
+      function ResizeTimer() {
+        if (myCounter<0) return;
+        myCounter += 1;
+        if (myCounter < 3) return;
+
+        if (myInterval!=null) {
+           clearInterval(myInterval);
+           myInterval = null;
+        }
+        myCounter = -1;
+        
+        if (objpainter) objpainter.CheckResize();
+      }
+
+      function ProcessResize() {  
+        if ((objpainter!=null) && (myInterval==null)) {
+           myInterval = setInterval(ResizeTimer, 500);
+        }
+        myCounter = 0;
+      }
+   
+      function CreateDrawGui() {
+         var pos = document.URL.indexOf("?");
+         var drawopt = "", monitor = -1;
+         if (pos>0) {
+           var p1 = document.URL.indexOf("opt=", pos);
+           if (p1>0) {
+              p1+=4;
+              var p2 = document.URL.indexOf("&", p1);
+              if (p2<0) p2 = document.URL.length;
+              drawopt = document.URL.substr(p1, p2-p1);
+              // console.log("draw opt = " + drawopt);
+           }
+           p1 = document.URL.indexOf("monitor");
+           if (p1>0) {
+             monitor = 3000;
+             p1+=7;
+             if (document.URL.charAt(p1) == "=") {
+                p1++;
+                var p2 = document.URL.indexOf("&", p1);
+                if (p2<0) p2 = document.URL.length;
+                monitor = parseInt(document.URL.substr(p1, p2-p1));
+                if (typeof monitor== 'undefined') monitor = 3000; 
+             }
+            // console.log("monitor = " + monitor);
+          }
+         }
+   
+         var drawfunction = function() {
+           
+            var req = JSROOT.NewHttpRequest("root.json.gz?compact=3", 'text', function(itemres) {
+                var obj = JSROOT.parse(itemres);
+                if (!obj) return;
+                
+                if (!objpainter) {
+                   objpainter = JSROOT.draw('drawing', obj, drawopt); 
+                } else {
+                   objpainter.UpdateObject(obj);   
+                   objpainter.RedrawFrame();
+                }
+            });
+            
+            req.send(null);
+         }
+   
+         drawfunction();
+   
+         if (monitor>0)
+            setInterval(drawfunction, monitor);
+   
+         window.addEventListener('resize', ProcessResize);
+      }
+   
+   </script>
+
+   <body onload="JSROOT.AssertPrerequisites('2d', CreateDrawGui)">
+      <div id="drawing" style="position:absolute; left:2px; top:2px; bottom:2px; right:2px"></div>
    </body>
 
 </html>
