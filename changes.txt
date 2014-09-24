@@ -25,9 +25,9 @@ September 2014:
 11.Resize almost works for all layouts and all objects kinds.
 12.Implement JSROOT.GetUrlOption to extract options from document URL. 
 13.Provide example fileitem.htm how read and display item from ROOT file.
-14.In default item.htm page one could specify file to load and item to display like
-      http://root.cern.ch/js/3.0/index.htm?file=files/hsimple.root&item=hpx;1
-15.Support direct reading of objects from subdirectories.
+14.In default item.htm page one could specify 'file', 'layout', 'item' and 'items' parameters like:
+      http://root.cern.ch/js/3.0/index.htm?file=files/hsimple.root&layout=grid5x5&item=hpx;1
+15.Support direct reading of objects from sub-sub-directories.
 
 August 2014:
 1. All communication between server and browser done with JSON format.

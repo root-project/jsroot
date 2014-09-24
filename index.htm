@@ -3,11 +3,36 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
    <head>
-      <title>Read a ROOT file in Javascript (Demonstration)</title>
+      <title>Read a ROOT file</title>
       <meta http-equiv="X-UA-Compatible" content="IE=Edge; text/html">
       <script type="text/javascript" src="scripts/JSRootCore.js"></script>
    </head>
    <body onload="JSROOT.BuildSimpleGUI()">
-   <div id="simpleGUI" files="files/ct.root;files/exclusion.root;files/fillrandom.root;files/glbox.root;files/graph.root;files/hsimple.root;files/legends.root;files/rf107.root;files/stacks.root;files/zdemo.root"></div>
+      <div id="simpleGUI" files="files/ct.root;files/exclusion.root;files/fillrandom.root;files/glbox.root;files/graph.root;files/hsimple.root;files/legends.root;files/rf107.root;files/stacks.root;files/zdemo.root"></div>
    </body>
 </html>
+
+<!-- 
+
+This is main page of JSROOT project, which aims to display content of ROOT files.
+Several parameters could be specified when opening page:
+  file - name of the file, which will be automatically loaded with page loading
+  item - object name in the file to display
+  items - array of objects to display like ['hpx;1', 'hpxpy;1']
+  layout - can be 'collapsible', 'tabs' or gridNxM where N and M are integer values
+Example:  
+   http:///web-docs.gsi.de/~linev/js/3.0/index.htm?file=files/hsimple.root&layout=grid5x5&items=["hpx;1", "hpxpy;1"]
+
+Page can be used to open files from other web servers like:
+
+       http:///web-docs.gsi.de/~linev/js/3.0/index.htm?file=http://root.cern.ch/js/files/hsimple.root
+
+But one should be aware about Cross-Origin Request blocking. 
+Read https://developer.mozilla.org/en/http_access_control for more details.
+
+To avoid problem at all, one could copy only index.htm on the web server where data files are located.
+Than one should specify proper location of JSRootCore.js like
+   <script type="text/javascript" src="http:///web-docs.gsi.de/~linev/js/3.0/scripts/JSRootCore.js"></script>
+This approach will work in all supported browsers with default settings.
+      
+-->

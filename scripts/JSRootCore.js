@@ -13,7 +13,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.x 23.09.2014";
+   JSROOT.version = "3.x 24.09.2014";
    
    JSROOT.source_dir = null;
    
@@ -411,7 +411,7 @@
          andThen = requirements; requirements = null;
       } 
       
-      JSROOT.AssertPrerequisites(requirements, function(){
+      JSROOT.AssertPrerequisites(requirements, function() {
          JSROOT.loadScript('$$$scripts/JSRootInterface.js;$$$style/JSRootInterface.css', function() { 
             
             if (typeof BuildSimpleGUI != 'function') {

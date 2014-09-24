@@ -40,18 +40,31 @@ function ReadFile(filename, checkitem) {
    }
    if (filename.length == 0) return;
    
-   
-   
    var itemname = null;
-   if (checkitem) itemname = JSROOT.GetUrlOption("item");
+   var layout = null;
+   var items = null;
+   if (checkitem) {
+      itemname = JSROOT.GetUrlOption("item");
+      items = JSROOT.GetUrlOption("items");
+      if (items!=null)
+         items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+      layout = JSROOT.GetUrlOption("layout");
+      if (layout=="") layout = null;
+   }
+   
+   if (layout==null) layout = guiLayout();
    
    var painter = new JSROOT.HierarchyPainter('root', 'browser');
    
-   painter.SetDisplay(guiLayout(), 'right-div');
+   painter.SetDisplay(layout, 'right-div');
    
    painter.OpenRootFile(filename, function() {
       if ((typeof itemname == 'string') && (itemname.length>0))
          JSROOT.H('root').display(itemname);
+      
+      if (items!=null)
+         for (var i in items)
+            JSROOT.H('root').display(items[i]);
    });
 }
 
