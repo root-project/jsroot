@@ -7100,7 +7100,6 @@
       this.name = name;
       this.frameid = frameid;
       this.h = null;    // hierarchy
-      this.url = null;  // url of online server 
    }
    
    JSROOT.HierarchyPainter.prototype.GlobalName = function(suffix) {
@@ -7461,7 +7460,7 @@
       this['html'] = "<p>";
       this['html'] += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
       this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
-      if (this.url!=null)
+      if ('_online' in this.h)
          this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";                           
       this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";                           
                   
@@ -7654,7 +7653,7 @@
    
    JSROOT.HierarchyPainter.prototype.reload = function()
    {
-      if (this.url!=null) this.OpenOnline(this.url);
+      if ('_online' in this.h) this.OpenOnline(this.h['_online']);
    }
    
    JSROOT.HierarchyPainter.prototype.ExpandDtree = function(node)
@@ -7693,11 +7692,11 @@
       });
    }
    
-   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(url)
+   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath)
    {
       var pthis = this;
       
-      var f = new JSROOT.TFile(url, function(file) {
+      var f = new JSROOT.TFile(filepath, function(file) {
          if (file==null) return;
          // for the moment file is the only entry
          pthis.h = pthis.FileHierarchy(file);
@@ -7705,6 +7704,24 @@
          pthis.RefreshHtml();
       });
    }
+   
+   JSROOT.HierarchyPainter.prototype.GetFileProp = function(itemname)
+   {
+      var item = this.Find(itemname);
+      if (item==null) return null;
+      
+      var subname = item._name;
+      while (item._parent != null) {
+         item = item._parent;
+         if ('_file' in item) {
+           return { fileurl : item._file.fURL, itemname: subname }; 
+         } 
+         subname = item._name + "/" + subname;
+      }
+      
+      return null;
+   }
+
    
    JSROOT.HierarchyPainter.prototype.AddOnlineMethods = function(h)
    {
@@ -7742,17 +7759,20 @@
    }
    
 
-   JSROOT.HierarchyPainter.prototype.OpenOnline = function(url)
+   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address)
    {
-      this.url = url; // remember url to be able reload id 
+      if (!server_address) server_address = "";
       
       var painter = this;
       
-      var req = JSROOT.NewHttpRequest(url, 'text', function(arg) {
-          if (arg==null) return;
+      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'text', function(result) {
+          painter.h = JSON.parse(result);
           
-          painter.h = JSON.parse(arg);
-          
+          if (painter.h==null) return;
+
+          // mark top hierarchy as online data and 
+          painter.h['_online'] = server_address;
+
           painter.AddOnlineMethods(painter.h);
           
           if (painter.h!=null) painter.RefreshHtml(true);
@@ -7761,8 +7781,25 @@
       
       req.send(null);
    }
-
    
+   JSROOT.HierarchyPainter.prototype.GetOnlineProp = function(itemname)
+   {
+      var item = this.Find(itemname);
+      if (item==null) return null;
+      
+      var subname = item._name;
+      while (item._parent != null) {
+         item = item._parent;
+         
+         if ('_online' in item) {
+           return { server : item['_online'], itemname: subname }; 
+         } 
+         subname = item._name + "/" + subname;
+      }
+      
+      return null;
+   }
+
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo)
    {
       this.h = { _name : "StreamerInfo" };
@@ -7783,19 +7820,39 @@
       }
       this.AddOnlineMethods(this.h);
    }
-
    
    JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event, itemname)
    {
       event.preventDefault();
-
+      
+      var onlineprop = this.GetOnlineProp(itemname);
+      var fileprop = this.GetFileProp(itemname);
+      
       var menu = JSROOT.Painter.createmenu(event);
+      
+      function qualifyURL(url) {
+         function escapeHTML(s) {
+            return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
+         }
+         var el= document.createElement('div');
+         el.innerHTML= '<a href="'+escapeHTML(url)+'">x</a>';
+         return el.firstChild.href;
+      }
 
       var painter = this;
       
       JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
-      JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(itemname+"/draw.htm"); });
-      JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(itemname+"/root.png?w=400&h=300&opt=colz"); });
+      
+      if (onlineprop!=null) {
+         JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(onlineprop.server + onlineprop.itemname + "/draw.htm"); });
+         JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300"); });
+      } else
+      if (fileprop!=null) {
+         var filepath = qualifyURL(fileprop.fileurl);
+         if (filepath.indexOf(JSROOT.source_dir+"files/")==0) filepath = filepath.slice(JSROOT.source_dir.length+6); else
+         if (filepath.indexOf(JSROOT.source_dir)==0) filepath = "../" + filepath.slice(JSROOT.source_dir.length);
+         JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(JSROOT.source_dir + "files/file.htm?file=" + filepath + "&item="+fileprop.itemname); });
+      }
       JSROOT.Painter.menuitem(menu,"Close", function() { });
       
       return false;

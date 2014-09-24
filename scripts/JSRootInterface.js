@@ -156,7 +156,7 @@ function BuildOnlineGUI() {
 
    hpainter.SetDisplay(guiLayout(), 'right-div');
    
-   hpainter.OpenOnline("h.json?compact=3");
+   hpainter.OpenOnline();
    
    setInterval(UpdateOnline, 3000);
    
