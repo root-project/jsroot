@@ -12,7 +12,7 @@ function ResetUI() {
    $('#browser').get(0).innerHTML = '';
 };
 
-function ReadFile(filename) {
+function ReadFile(filename, checkitem) {
    var navigator_version = navigator.appVersion;
    if (typeof ActiveXObject == "function") { // Windows
       // detect obsolete browsers
@@ -40,11 +40,19 @@ function ReadFile(filename) {
    }
    if (filename.length == 0) return;
    
+   
+   
+   var itemname = null;
+   if (checkitem) itemname = JSROOT.GetUrlOption("item");
+   
    var painter = new JSROOT.HierarchyPainter('root', 'browser');
    
    painter.SetDisplay(guiLayout(), 'right-div');
    
-   painter.OpenRootFile(filename);
+   painter.OpenRootFile(filename, function() {
+      if ((typeof itemname == 'string') && (itemname.length>0))
+         JSROOT.H('root').display(itemname);
+   });
 }
 
 function UpdateOnline() {
@@ -212,5 +220,6 @@ function BuildSimpleGUI() {
    AddInteractions();
    
    var filename = JSROOT.GetUrlOption("file");
-   if ((typeof filename == 'string') && (filename.length>0)) ReadFile(filename);
+   if ((typeof filename == 'string') && (filename.length>0)) 
+      ReadFile(filename, true);
 }

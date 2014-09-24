@@ -7692,7 +7692,7 @@
       });
    }
    
-   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath)
+   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, andThan)
    {
       var pthis = this;
       
@@ -7702,6 +7702,8 @@
          pthis.h = pthis.FileHierarchy(file);
          
          pthis.RefreshHtml();
+         
+         if (typeof andThan == 'function') andThan();
       });
    }
    
