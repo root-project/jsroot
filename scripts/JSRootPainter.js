@@ -7851,7 +7851,7 @@
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir+"files/")==0) filepath = filepath.slice(JSROOT.source_dir.length+6); else
          if (filepath.indexOf(JSROOT.source_dir)==0) filepath = "../" + filepath.slice(JSROOT.source_dir.length);
-         JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(JSROOT.source_dir + "files/file.htm?file=" + filepath + "&item="+fileprop.itemname); });
+         JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(JSROOT.source_dir + "files/fileitem.htm?file=" + filepath + "&item="+fileprop.itemname); });
       }
       JSROOT.Painter.menuitem(menu,"Close", function() { });
       

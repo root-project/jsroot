@@ -35,6 +35,8 @@ function ReadFile(filename) {
    if (filename==null) {
       filename = $("#urlToLoad").val();
       filename.trim();
+   } else {
+      $("#urlToLoad").val(filename);
    }
    if (filename.length == 0) return;
    
@@ -208,4 +210,7 @@ function BuildSimpleGUI() {
    // $("#display-kind").selectmenu();
    
    AddInteractions();
+   
+   var filename = JSROOT.GetUrlOption("file");
+   if ((typeof filename == 'string') && (filename.length>0)) ReadFile(filename);
 }

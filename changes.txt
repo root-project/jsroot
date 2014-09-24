@@ -24,7 +24,8 @@ September 2014:
 10.Introduce painter class for TCanvas, support resize and update of canvas drawing
 11.Resize almost works for all layouts and all objects kinds.
 12.Implement JSROOT.GetUrlOption to extract options from document URL. 
-13.Provide example file.htm how read and display item from ROOT file.  
+13.Provide example fileitem.htm how read and display item from ROOT file.
+14.In default item.htm file one could specify file to load.   
 
 August 2014:
 1. All communication between server and browser done with JSON format.
