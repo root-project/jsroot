@@ -8193,6 +8193,50 @@
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
+   
+   JSROOT.RegisterForResize = function(handle, delay) {
+      // function used to react on browser window resize event
+      // While many resize events could come in short time,
+      // resize will be handled with delay after last resize event 
+      // handle can be function or object with CheckResize function
+      // one could specify delay after which resize event will be handled  
+      
+      var myInterval = null;
+      var myCounter = -1;
+      var myPeriod = delay ? delay / 2.5 : 100; 
+      if (myPeriod < 20) myPeriod = 20;
+
+      function ResizeTimer() {
+        if (myCounter<0) return;
+        myCounter += 1;
+        if (myCounter < 3) return;
+
+        if (myInterval!=null) {
+           clearInterval(myInterval);
+           myInterval = null;
+        }
+        myCounter = -1;
+        
+        document.body.style.cursor = 'wait';
+        
+        if (typeof handle == 'function') 
+           handle();
+        else
+        if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function'))
+           handle.CheckResize();
+           
+        document.body.style.cursor = 'auto';
+      }
+
+      function ProcessResize() {  
+        if (myInterval==null) {
+           myInterval = setInterval(ResizeTimer, myPeriod);
+        }
+        myCounter = 0;
+      }
+      
+      window.addEventListener('resize', ProcessResize);
+   }
 
    
 })();

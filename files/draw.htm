@@ -10,34 +10,7 @@
 
    <script type='text/javascript'>
    
-      var myInterval = null;
-      var myCounter = -1;
       var objpainter = null;
-
-      function ResizeTimer() {
-        if (myCounter<0) return;
-        myCounter += 1;
-        if (myCounter < 3) return;
-
-        if (myInterval!=null) {
-           clearInterval(myInterval);
-           myInterval = null;
-        }
-        myCounter = -1;
-        
-        if (!objpainter) return;
-        
-        document.body.style.cursor = 'wait';
-        objpainter.CheckResize();
-        document.body.style.cursor = 'auto';
-      }
-
-      function ProcessResize() {  
-        if ((objpainter!=null) && (myInterval==null)) {
-           myInterval = setInterval(ResizeTimer, 500);
-        }
-        myCounter = 0;
-      }
    
       function CreateDrawGui() {
          var pos = document.URL.indexOf("?");
@@ -91,7 +64,7 @@
          if (monitor>0)
             setInterval(drawfunction, monitor);
    
-         window.addEventListener('resize', ProcessResize);
+         JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
    
    </script>

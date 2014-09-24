@@ -63,39 +63,15 @@ function UpdateOnline() {
    } , true); // update only visible objects
 }
 
-var myInterval = null;
-var myCounter = -1;
-
-function ResizeTimer()
-{
-   if (myCounter<0) return;
-   myCounter += 1;
-   if (myCounter < 3) return;
-
-   if (myInterval!=null) {
-      clearInterval(myInterval);
-      myInterval = null;
-   }
-   
-   myCounter = -1;
-
-   if (!('disp' in JSROOT.H('root'))) return;
-   
-   document.body.style.cursor = 'wait';
-   JSROOT.H('root')['disp'].CheckResize();
-   document.body.style.cursor = 'auto';
-}
-
-function ProcessResize(fast)
+function ProcessResize(direct)
 {  
-   if (fast!=null) {
-      myCounter = 1000;
-      ResizeTimer();
-   } else {
-      if (myInterval==null)
-         myInterval = setInterval(ResizeTimer, 500);
-      myCounter = 0;
-   }
+   if (JSROOT.H('root')['disp']==null) return;
+   
+   if (direct) document.body.style.cursor = 'wait';
+   
+   JSROOT.H('root')['disp'].CheckResize();
+   
+   if (direct) document.body.style.cursor = 'auto';
 }
 
 function guiLayout() {
@@ -142,7 +118,7 @@ function AddInteractions() {
    
    d3.select("#separator-div").call(drag_move);
      
-   window.addEventListener('resize', ProcessResize);
+   JSROOT.RegisterForResize(ProcessResize);
 
    // specify display kind every time selection done
    // will be actually used only for first drawing or after reset

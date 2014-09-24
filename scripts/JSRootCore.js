@@ -118,7 +118,15 @@
 	}
 	
 	JSROOT.NewHttpRequest = function(url, kind, callback) {
-      // kind can be "text", "xml", "bin" or "head"
+	   // Create asynchronous XMLHttpRequest object.
+	   // One should call req.send() to submit request
+      // kind of the request can be:
+	   //  "bin" - abstract binary data (default)
+	   //  "text" - returns req.responseText
+	   //  "xml" - returns res.responseXML
+	   //  "head" - returns request itself, uses "HEAD" method
+      // Result will be returned to the callback functions
+	   // If failed, request returns null
       var xhr = new XMLHttpRequest();
       
 //      if (typeof ActiveXObject == "function") {
