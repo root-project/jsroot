@@ -1069,12 +1069,15 @@
    };
 
 
-   JSROOT.TDirectory.prototype.GetKey = function(keyname, cycle) {
+   JSROOT.TDirectory.prototype.GetKey = function(keyname, cycle, call_back) {
       // retrieve a key by its name and cycle in the list of keys
-      for (var i=0; i<this.fKeys.length; ++i) {
-         if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle)
+      for (var i in this.fKeys) {
+         if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle) {
+            if (typeof call_back == 'function') call_back(this.fKeys[i]);
             return this.fKeys[i];
+         }
       }
+      if (typeof call_back == 'function') call_back(null);
       return null;
    }
 
@@ -1353,6 +1356,7 @@
    };
 
    JSROOT.TFile.prototype.GetDir = function(dirname, cycle) {
+      // check first that directory with such name exists
       for (var j in this.fDirectories) {
          var dir = this.fDirectories[j]; 
          if (dir['dir_name'] != dirname) continue;
@@ -1362,21 +1366,37 @@
       return null;
    }
 
-   JSROOT.TFile.prototype.GetKey = function(keyname, cycle) {
-
+   JSROOT.TFile.prototype.GetKey = function(keyname, cycle, getkey_callback) {
       // retrieve a key by its name and cycle in the list of keys
-      for (var i=0; i<this.fKeys.length; ++i) {
-         if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle)
+      // one should call_back when keys must be read first from the directory
+      for (var i in this.fKeys) {
+         if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle) {
+            if (typeof getkey_callback == 'function') getkey_callback(this.fKeys[i]);
             return this.fKeys[i];
+         }
       }
       
       var pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         var dir = this.GetDir(keyname.substr(0, pos));
-         if (dir!=null) return dir.GetKey(keyname.substr(pos+1), cycle);
+         var dirname = keyname.substr(0, pos);
+         var subname = keyname.substr(pos+1);
+
+         var dir = this.GetDir(dirname);
+         if (dir!=null) return dir.GetKey(subname, cycle, getkey_callback);
+         
+         var dirkey = this.GetKey(dirname, 1);
+         if ((dirkey!=null) && (typeof getkey_callback == 'function')) {
+            this.ReadObject(dirname, 1, function(newdir) {
+               if (newdir) newdir.GetKey(subname, cycle, getkey_callback);
+            });
+            return null;
+         }
+         
          pos = keyname.lastIndexOf("/", pos-1);
       }
+
+      if (typeof call_back == 'function') call_back(this.fKeys[i]);
       return null;
    };
 
@@ -1389,13 +1409,13 @@
             buf = new JSROOT.TBuffer(buffer, 0, file);
          } else {
             var hdrsize = JSROOT.R__unzip_header(buffer, 0);
-            if (hdrsize<0) return;
+            if (hdrsize<0) return callback(null);
             var objbuf = JSROOT.R__unzip(hdrsize, buffer, 0);
             buf = new JSROOT.TBuffer(objbuf, 0, file);
          }
 
          buf.fTagOffset = key.fKeylen;
-         callback(file, buf);
+         callback(buf);
          delete buf;
       };
 
@@ -1413,55 +1433,57 @@
       }
       
       if ((typeof cycle != 'number') || (cycle<0)) cycle = 1;
-
-      var key = this.GetKey(obj_name, cycle);
-      if (key == null) {
-         if (typeof user_call_back == 'function') user_call_back(null);
-         return;
-      }
       
-      var isdir = false;
-      if ((key['fClassName'] == 'TDirectory' || key['fClassName'] == 'TDirectoryFile')) {
-         isdir = true;
-         var dir = this.GetDir(obj_name, cycle);
-         if (dir!=null) {
-            if (typeof callback == 'user_call_back') user_call_back(dir);
-            return dir;
-         }
-      }
+      var file = this;
 
-      var callback = function(file, buf) {
-         if (!buf) {
+      // we use callback version while in some cases we need to 
+      // read sub-directory to get list of keys
+      // in such situation calls are asynchrone
+      this.GetKey(obj_name, cycle, function(key) {
+         
+         if (key == null) {
             if (typeof user_call_back == 'function') user_call_back(null);
             return;
          }
 
-         if (isdir) {
-            var dir = new JSROOT.TDirectory(file, obj_name, cycle);
-            dir.StreamHeader(buf);
-            if (dir.fSeekKeys) {
-               dir.ReadKeys(user_call_back);
-            } else {
-               if (typeof user_call_back == 'function') user_call_back(dir);
+         var isdir = false;
+         if ((key['fClassName'] == 'TDirectory' || key['fClassName'] == 'TDirectoryFile')) {
+            isdir = true;
+            var dir = file.GetDir(obj_name, cycle);
+            if (dir!=null) {
+               if (typeof callback == 'user_call_back') user_call_back(dir);
+               return dir;
             }
-            
-            return;
          }
-
          
-         var obj = {};
-         obj['_typename'] = key['fClassName'];
+         file.ReadObjBuffer(key, function(buf) {
+            if (!buf) {
+               if (typeof user_call_back == 'function') user_call_back(null);
+               return;
+            }
 
-         buf.MapObject(1, obj); // tag object itself with id==1
-         buf.ClassStreamer(obj, key['fClassName']);
+            if (isdir) {
+               var dir = new JSROOT.TDirectory(file, obj_name, cycle);
+               dir.StreamHeader(buf);
+               if (dir.fSeekKeys) {
+                  dir.ReadKeys(user_call_back);
+               } else {
+                  if (typeof user_call_back == 'function') user_call_back(dir);
+               }
 
-         if (typeof user_call_back == 'function') {
-            user_call_back(obj);
-            return;
-         }
-      };
+               return;
+            }
 
-      this.ReadObjBuffer(key, callback);
+
+            var obj = {};
+            obj['_typename'] = key['fClassName'];
+
+            buf.MapObject(1, obj); // tag object itself with id==1
+            buf.ClassStreamer(obj, key['fClassName']);
+
+            if (typeof user_call_back == 'function') user_call_back(obj);
+         }); // end of ReadObjBuffer callback
+      }); // end of GetKey callback
    };
 
    JSROOT.TFile.prototype.ExtractStreamerInfos = function(buf)
@@ -1488,25 +1510,25 @@
          });
    }
 
-   JSROOT.TFile.prototype.ReadStreamerInfos = function(si_callback) {
-
+   JSROOT.TFile.prototype.ReadStreamerInfos = function(si_callback) 
+   {
       if (this.fSeekInfo == 0 || this.fNbytesInfo == 0) return;
       this.Seek(this.fSeekInfo, this.ERelativeTo.kBeg);
+      
+      var file = this;
+      
       var callback1 = function(file, _buffer) {
          var buf = new JSROOT.TBuffer(_buffer, 0, file);
          var key = file.ReadKey(buf);
          if (key == null) return;
          file.fKeys.push(key);
-         var callback2 = function(file, buf) {
-
+         
+         file.ReadObjBuffer(key, function(buf) {
             file.ExtractStreamerInfos(buf);
-            
             file.ReadFormulas();
-
             if (typeof(si_callback) == 'function')
                si_callback(file);
-         };
-         file.ReadObjBuffer(key, callback2);
+         });
       };
       this.ReadBuffer(this.fNbytesInfo, callback1);
    };

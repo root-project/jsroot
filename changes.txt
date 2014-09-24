@@ -2,7 +2,7 @@ This is further development of JSRootIO, original version was download from
 https://root.cern.ch/svn/root/trunk/js
 
 At its current state code is very differ from original
-project of Bertrand Bellenot, but provides at most similar functionality.
+project of Bertrand Bellenot, but provides same functionality in default mode.
 Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment. 
 
@@ -25,9 +25,9 @@ September 2014:
 11.Resize almost works for all layouts and all objects kinds.
 12.Implement JSROOT.GetUrlOption to extract options from document URL. 
 13.Provide example fileitem.htm how read and display item from ROOT file.
-14.In default item.htm file one could specify file to load and item to display like
-      http://root.cern.ch/js/3.0/index.htm&file=files/hsimple.root&item=hpx;1
-
+14.In default item.htm page one could specify file to load and item to display like
+      http://root.cern.ch/js/3.0/index.htm?file=files/hsimple.root&item=hpx;1
+15.Support direct reading of objects from subdirectories.
 
 August 2014:
 1. All communication between server and browser done with JSON format.
@@ -77,9 +77,11 @@ July 2014:
 5. Example with direct usage of JSRootIO graphics
 6. Example of inserting ROOT graphics from THttpServer into <iframe></iframe> 
 
+
 May 2014:
 1. This JSRootIO code together with THttpServer class included
    in ROOT repository 
+
 
 March 2014:
 1. Introduce JSROOT.TBuffer class, which plays similar role 
@@ -101,10 +103,3 @@ March 2014:
    basic data types, arrays of basic data types, TString, TArray classes. 
    Also any object as data member can be streamed.
 8. TRootSniffer do not creates sublevels for base classes
-   
-    
-To do:
-1. Redraw of canvas do not work at all.    
-3. In JSROOT.R__unzip buffers bigger than 16 MB (0xfffffff) are not 
-   treated correctly. In TKey.cxx, lines 259-275, big raw buffer cutted on blocks of 16MB.
-    
