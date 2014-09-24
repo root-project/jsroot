@@ -10,9 +10,8 @@
 
    <script type='text/javascript'>
    
-      var objpainter = null;
-   
       function CreateDrawGui() {
+         // analyze URL options
          var pos = document.URL.indexOf("?");
          var drawopt = "", monitor = -1;
          if (pos>0) {
@@ -38,11 +37,13 @@
             // console.log("monitor = " + monitor);
           }
          }
+         
+         var objpainter = null;
    
-         var drawfunction = function() {
+         function drawfunction() {
            
-            var req = JSROOT.NewHttpRequest("root.json.gz?compact=3", 'text', function(itemres) {
-                var obj = JSROOT.parse(itemres);
+            var req = JSROOT.NewHttpRequest("root.json.gz?compact=3", 'text', function(result) {
+                var obj = JSROOT.parse(result);
                 if (!obj) return;
                 
                 document.body.style.cursor = 'wait';
@@ -55,7 +56,8 @@
                 document.body.style.cursor = 'auto';
                 
             });
-            
+           
+            // sumbit request 
             req.send(null);
          }
    
@@ -70,7 +72,7 @@
    </script>
 
    <body onload="JSROOT.AssertPrerequisites('2d', CreateDrawGui)">
-      <div id="drawing" style="position:absolute; left:2px; top:2px; bottom:2px; right:2px"></div>
+      <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
    </body>
 
 </html>
