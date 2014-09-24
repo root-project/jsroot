@@ -117,6 +117,39 @@
 	   return obj;
 	}
 	
+	JSROOT.GetUrlOption = function(opt, url) {
+	   // analyzes document.URL and extracts options after '?' mark
+	   // following options supported ?opt1&opt2=3
+	   // In case of opt1 empty string will be returned, in case of opt2 '3'
+	   // If option not found, null is returned
+
+	   if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return null;
+	   
+	   if (!url) url = document.URL;
+	   
+	   var pos = url.indexOf("?");
+	   if (pos<0) return null;
+	   url = url.slice(pos+1);
+	   
+	   while (url.length>0) {
+
+         if (url==opt) return "";
+         
+         pos = url.indexOf("&");
+         if (pos < 0) pos = url.length;
+         
+         if (url.indexOf(opt) == 0) {
+            if (url.charAt(opt.length)=="&") return "";
+            
+            if (url.charAt(opt.length)=="=")
+               return url.slice(opt.length+1, pos);
+         }
+
+         url = url.slice(pos+1);
+      } 
+	   return null;
+	}
+	
 	JSROOT.NewHttpRequest = function(url, kind, callback) {
 	   // Create asynchronous XMLHttpRequest object.
 	   // One should call req.send() to submit request
@@ -248,8 +281,7 @@
       
       
       if ((urllist==null) || (urllist.length==0)) {
-         completeLoad();
-         return;
+         return completeLoad();
       }
       
       var filename = urllist;
@@ -278,8 +310,7 @@
 
             if (href.indexOf(filename)>=0) {
                console.log("style "+  filename + " already loaded");
-               completeLoad();
-               return;
+               return completeLoad();
             }
          }
          
@@ -304,8 +335,7 @@
 
             if (src.indexOf(filename)>=0) {
                console.log("script "+  filename + " already loaded");
-               completeLoad();
-               return;
+               return completeLoad();
             }
          }
       }
