@@ -7920,7 +7920,7 @@
       // do nothing by default
    }
 
-   JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj) {
+   JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj, drawopt) {
       if (!obj) return;
       
       var frame = this.FindFrame(itemname);
@@ -7946,7 +7946,7 @@
             $(frame).height($(frame).width() * 0.66);
          }
          
-         document.getElementById(hid)['painter'] = JSROOT.draw(hid, obj);
+         document.getElementById(hid)['painter'] = JSROOT.draw(hid, obj, drawopt);
       }
       
       this.ActivateFrame(frame);

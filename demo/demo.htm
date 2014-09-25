@@ -11,8 +11,10 @@
    <script type='text/javascript'>
 
       var painter = null;
+      var mdi = null;
       var cnt = 0;
       var drawopt = null;
+      var addr = null;
    
       function updateGUI() {
       
@@ -24,14 +26,18 @@
          
          var request_addr = "root" + (cnt%20) + ".json?dummy=" + cnt;
          cnt++;
-         // console.log("addr = " + request_addr); 
+         
+         if (addr!=null) request_addr = addr; 
       
          var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
             if (!histo) {
-               if (!painter) $('#drawing').append("<h3>Can not get " + request_addr + " from the server</h3>"); 
+               if (!painter && !mdi) $('#drawing').append("<h3>Can not get " + request_addr + " from the server</h3>"); 
                return;
             }
-         
+            
+            if (mdi!=null) {
+               mdi.Draw('unique_name_' + cnt, histo, drawopt); 
+            } else 
             if (painter==null) {
                painter = JSROOT.draw('drawing', histo, drawopt);
             } else {   
@@ -49,10 +55,20 @@
             monitor = 1000;
          else
             monitor = parseInt(monitor);
-         drawopt = JSROOT.GetUrlOption("opt");   
+            
+         drawopt = JSROOT.GetUrlOption("opt");
+         
+         addr = JSROOT.GetUrlOption("addr");
+         
+         var layout = JSROOT.GetUrlOption("layout");
+         if (layout!=null) mdi = new JSROOT.GridDisplay('drawing', layout);   
       
          setInterval(updateGUI, monitor);
+         
+         JSROOT.RegisterForResize(function() { if (painter) painter.CheckResize(); if (mdi) mdi.CheckResize(); });
       }
+      
+      
       
    </script>
 
