@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+   <meta http-equiv="X-UA-Compatible" content="IE=Edge; text/html">
+
+   <title>Demonstrator of online usage of JSROOT</title>
+   
+   <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
+   
+   <script type='text/javascript'>
+
+      var painter = null;
+      var cnt = 0;
+      var drawopt = null;
+   
+      function updateGUI() {
+      
+         // here set of generated json files are used
+         // One could specify addres of running THttpServer like http://localhost:8080/Canvases/c1/root.json.gz?compact=3
+         // Or one can create root.json file in the application and place it on the webserver 
+         // "dummy=xxxx" parameter used to prevent browser cashing
+         // To run demo, one should generate rootXX.json files using demo.C macro
+         
+         var request_addr = "root" + (cnt%20) + ".json?dummy=" + cnt;
+         cnt++;
+         // console.log("addr = " + request_addr); 
+      
+         var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
+            if (!histo) {
+               if (!painter) $('#drawing').append("<h3>Can not get " + request_addr + " from the server</h3>"); 
+               return;
+            }
+         
+            if (painter==null) {
+               painter = JSROOT.draw('drawing', histo, drawopt);
+            } else {   
+               painter.UpdateObject(histo);   
+               painter.RedrawFrame();
+            }
+          });
+          
+          req.send(null); 
+      }
+      
+      function startGUI() {
+         var monitor = JSROOT.GetUrlOption("monitoring");
+         if ((monitor == "") || (monitor==null)) 
+            monitor = 1000;
+         else
+            monitor = parseInt(monitor);
+         drawopt = JSROOT.GetUrlOption("opt");   
+      
+         setInterval(updateGUI, monitor);
+      }
+      
+   </script>
+
+   
+</head>
+
+<body onload="JSROOT.AssertPrerequisites('2d', startGUI)">
+   <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
+</body>
+</html>
+

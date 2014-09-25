@@ -156,6 +156,7 @@
       // kind of the request can be:
 	   //  "bin" - abstract binary data (default)
 	   //  "text" - returns req.responseText
+      //  "object" - returns JSROOT.parse(req.responseText)
 	   //  "xml" - returns res.responseXML
 	   //  "head" - returns request itself, uses "HEAD" method
       // Result will be returned to the callback functions
@@ -172,18 +173,16 @@
             
             if (xhr.status != 200 && xhr.status != 206) {
                // error
-               callback(null); return;
+               return callback(null);
             }
             
-            if (kind == "xml") {
-               callback(xhr.responseXML); return;
-            } 
-            if (kind == "text") {
-               callback(xhr.responseText); return;
-            } 
-            if (kind == "head") {
-               callback(xhr); return;
-            } 
+            if (kind == "xml") return callback(xhr.responseXML);
+            
+            if (kind == "text") return callback(xhr.responseText);
+
+            if (kind == "object") return callback(JSROOT.parse(xhr.responseText));
+
+            if (kind == "head") return callback(xhr);
             
             var filecontent = new String("");
             var array = new VBArray(xhr.responseBody).toArray();
@@ -203,17 +202,12 @@
             if (xhr.readyState != 4) return;
             
             if (xhr.status != 0 && xhr.status != 200 && xhr.status != 206) {
-               callback(null); return;
+               return callback(null);
             }
-            if (kind == "xml") {
-               callback(xhr.responseXML); return;
-            }  
-            if (kind == "text") {
-               callback(xhr.responseText); return;
-            }  
-            if (kind == "head") {
-               callback(xhr); return;
-            }
+            if (kind == "xml") return callback(xhr.responseXML);
+            if (kind == "text") return callback(xhr.responseText);
+            if (kind == "object") return callback(JSROOT.parse(xhr.responseText));
+            if (kind == "head") return callback(xhr);
             
             var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
             var Buf, filecontent;

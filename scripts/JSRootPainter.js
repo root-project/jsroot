@@ -7738,10 +7738,7 @@
          
          itemname += ('_more' in item) ? "h.json?compact=3" : "root.json.gz?compact=3";
          
-         var itemreq = JSROOT.NewHttpRequest(itemname, 'text', function(itemres) {
-
-            var obj = JSROOT.parse(itemres);
-             
+         var itemreq = JSROOT.NewHttpRequest(itemname, 'object', function(obj) {
             if (typeof callback == 'function') callback(item, obj);
          });
          
@@ -7767,9 +7764,8 @@
       
       var painter = this;
       
-      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'text', function(result) {
-          painter.h = JSON.parse(result);
-          
+      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', function(result) {
+          painter.h = result;
           if (painter.h==null) return;
 
           // mark top hierarchy as online data and 
