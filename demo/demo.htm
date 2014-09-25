@@ -36,7 +36,7 @@
             }
             
             if (mdi!=null) {
-               mdi.Draw('unique_name_' + cnt, histo, drawopt); 
+               mdi.Draw('abstract_item_name_' + cnt, histo, drawopt); 
             } else 
             if (painter==null) {
                painter = JSROOT.draw('drawing', histo, drawopt);
@@ -67,11 +67,7 @@
          
          JSROOT.RegisterForResize(function() { if (painter) painter.CheckResize(); if (mdi) mdi.CheckResize(); });
       }
-      
-      
-      
    </script>
-
    
 </head>
 
