@@ -264,19 +264,16 @@
       // This location can be set by JSROOT.source_dir or it will be detected automatically
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
-
       
-      var completeLoad = function() {
+      function completeLoad() {
          if ((urllist!=null) && (urllist.length>0))
             JSROOT.loadScript(urllist, callback);
          else
             if (typeof callback == 'function') callback();
       }
       
-      
-      if ((urllist==null) || (urllist.length==0)) {
+      if ((urllist==null) || (urllist.length==0)) 
          return completeLoad();
-      }
       
       var filename = urllist;
       var separ = filename.indexOf(";");

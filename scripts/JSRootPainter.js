@@ -1212,22 +1212,40 @@
       return w;
    }
 
+   
+   JSROOT.TBasePainter = function() {
+   }
+   
+   JSROOT.TBasePainter.prototype.Cleanup = function() {
+      // generic method to cleanup painter
+   }
+   
+   JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
+      return false;
+   }
+   
+   JSROOT.TBasePainter.prototype.RedrawFrame = function(resize) {
+   }
+
+
 
    // ==============================================================================
 
-   JSROOT.TBasePainter = function()
-   {
+   JSROOT.TObjectPainter = function() {
+      JSROOT.TBasePainter.call(this);
       this.vis   = null;  // canvas where object is drawn
       this.first = null;  // pointer on first painter
       this.draw_g = null;  // container for all draw objects
       this.original_view_changed = false;  // indicate that original zoom changed and one should recalculate statistic
    }
+   
+   JSROOT.TObjectPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
-   JSROOT.TBasePainter.prototype.IsObject = function(obj) {
+   JSROOT.TObjectPainter.prototype.IsObject = function(obj) {
       return false;
    }
    
-   JSROOT.TBasePainter.prototype.CheckResize = function(force) {
+   JSROOT.TObjectPainter.prototype.CheckResize = function(force) {
       
       // only first painter should react on resize event
       if ((this.vis==null) || ((this.first!=null) && !force)) return;
@@ -1251,7 +1269,7 @@
       this.RedrawFrame(true);
    }
 
-   JSROOT.TBasePainter.prototype.RemoveDraw = function()
+   JSROOT.TObjectPainter.prototype.RemoveDraw = function()
    {
       // generic method to delete all graphical elements, associated with painter
       // may not work for all cases
@@ -1262,7 +1280,7 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.SetFrame = function(vis, check_not_first) {
+   JSROOT.TObjectPainter.prototype.SetFrame = function(vis, check_not_first) {
 
       this.frame = vis['ROOT:frame'];
       this.svg_frame = vis['ROOT:svg_frame'];
@@ -1319,8 +1337,13 @@
          return;
       }
    }
+   
+   JSROOT.TObjectPainter.prototype.Cleanup = function() {
+      // generic method to cleanup painters
+      this.ClearFrame();
+   }
 
-   JSROOT.TBasePainter.prototype.RedrawFrame = function(resize) {
+   JSROOT.TObjectPainter.prototype.RedrawFrame = function(resize) {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
 
@@ -1335,7 +1358,7 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.ClearFrame = function() {
+   JSROOT.TObjectPainter.prototype.ClearFrame = function() {
 
       var vis = this.vis; 
 
@@ -1363,20 +1386,17 @@
       vis.id = "cleanup_id";
       
       $("#cleanup_id").empty();
-
    }
 
-
-   JSROOT.TBasePainter.prototype.RemoveDrag = function(id)
+   JSROOT.TObjectPainter.prototype.RemoveDrag = function(id)
    {
       var drag_rect_name = id + "_drag_rect";
       var resize_rect_name = id + "_resize_rect";
       if (this[drag_rect_name]) { this[drag_rect_name].remove(); this[drag_rect_name] = null; }
       if (this[resize_rect_name]) { this[resize_rect_name].remove(); this[resize_rect_name] = null; }
    }
-
-   JSROOT.TBasePainter.prototype.AddDrag = function(id, main_rect, callback) {
-
+   
+   JSROOT.TObjectPainter.prototype.AddDrag = function(id, main_rect, callback) {
       var pthis = this;
 
       var drag_rect_name = id + "_drag_rect";
@@ -1539,7 +1559,7 @@
    }
 
 
-   JSROOT.TBasePainter.prototype.FindPainterFor = function(selobj)
+   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj)
    {
       // try to find painter for sepcified object
       // can be used to find painter for some special objects, registered as histogram functions
@@ -1555,7 +1575,7 @@
       return null;
    }
 
-   JSROOT.TBasePainter.prototype.PlacePainterAfterMe = function(next) {
+   JSROOT.TObjectPainter.prototype.PlacePainterAfterMe = function(next) {
       if (!this.vis) return;
 
       var arr = this.vis['painters'];
@@ -1571,13 +1591,13 @@
 
    }
 
-   JSROOT.TBasePainter.prototype.Redraw = function() {
+   JSROOT.TObjectPainter.prototype.Redraw = function() {
       // basic method, should be reimplemented in all derived objects
       // for the case when drawing should be repeated, probably with different options
    }
 
 
-   JSROOT.TBasePainter.prototype.FillContextMenu = function(menu)
+   JSROOT.TObjectPainter.prototype.FillContextMenu = function(menu)
    {
       JSROOT.Painter.menuitem(menu,"Unzoom X", function() { menu['painter'].Unzoom(true, false); } );
       JSROOT.Painter.menuitem(menu,"Unzoom Y", function() { menu['painter'].Unzoom(false, true); } );
@@ -1590,7 +1610,7 @@
             });
    }
 
-   JSROOT.TBasePainter.prototype.Unzoom = function(dox,doy) {
+   JSROOT.TObjectPainter.prototype.Unzoom = function(dox,doy) {
       var obj = this.first;
       if (!obj) obj = this;
 
@@ -1613,7 +1633,7 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
+   JSROOT.TObjectPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
       var obj = this.first;
       if (!obj) obj = this;
       if (xmin!=xmax) {
@@ -1626,10 +1646,6 @@
       }
       obj.original_view_changed = true;
       this.RedrawFrame();
-   }
-
-   JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
-      return false;
    }
 
 
@@ -1967,11 +1983,11 @@
    // =========================================================================
 
    JSROOT.TF1Painter = function(tf1) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.tf1 = tf1;
    }
 
-   JSROOT.TF1Painter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TF1Painter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TF1Painter.prototype.IsObject = function(obj) {
       return this.tf1 === obj;
@@ -1984,7 +2000,7 @@
 
    JSROOT.TF1Painter.prototype.FillContextMenu = function(menu)
    {
-      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TObjectPainter.prototype.FillContextMenu.call(this, menu);
    }
 
    JSROOT.TF1Painter.prototype.Eval = function(x)
@@ -2188,18 +2204,18 @@
    // =======================================================================
 
    JSROOT.TGraphPainter = function(graph) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.graph = graph;
    }
 
-   JSROOT.TGraphPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TGraphPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TGraphPainter.prototype.IsObject = function(obj) {
       return this.graph === obj;
    }
 
    JSROOT.TGraphPainter.prototype.CheckResize = function() {
-      JSROOT.TBasePainter.prototype.CheckResize.call(this, true);
+      JSROOT.TObjectPainter.prototype.CheckResize.call(this, true);
    }
    
    JSROOT.TGraphPainter.prototype.Redraw = function(resize)
@@ -2209,7 +2225,7 @@
 
    JSROOT.TGraphPainter.prototype.FillContextMenu = function(menu)
    {
-      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TObjectPainter.prototype.FillContextMenu.call(this, menu);
    }
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
@@ -2843,7 +2859,7 @@
    // ============================================================
 
    JSROOT.TPavePainter = function(pave) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.pavetext = pave;
       this.Enabled = true;
       this.main_rect = null;
@@ -2851,7 +2867,7 @@
       this.resize_rect = null;
    }
 
-   JSROOT.TPavePainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TPavePainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
 
    JSROOT.TPavePainter.prototype.IsObject = function(obj) {
@@ -3171,11 +3187,11 @@
    // ===========================================================================
 
    JSROOT.TCanvasPainter = function(can) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.can = can;
    }
 
-   JSROOT.TCanvasPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TCanvasPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    
    JSROOT.TCanvasPainter.prototype.UpdateObject = function(obj) {
@@ -3219,12 +3235,12 @@
    // ===========================================================================
    
    JSROOT.TColzPalettePainter = function(palette) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.palette = palette;
       this.Enabled = true;
    }
 
-   JSROOT.TColzPalettePainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TColzPalettePainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TColzPalettePainter.prototype.IsObject = function(obj) {
       return this.palette === obj;
@@ -3396,11 +3412,11 @@
    // =============================================================
 
    JSROOT.THistPainter = function(histo) {
-      JSROOT.TBasePainter.call(this);
+      JSROOT.TObjectPainter.call(this);
       this.histo = histo;
    }
 
-   JSROOT.THistPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.THistPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
 
    JSROOT.THistPainter.prototype.IsObject = function(obj) {
@@ -3422,7 +3438,7 @@
       if (vis['ROOT:frame']==null)
          JSROOT.Painter.createFrame(vis);
 
-      JSROOT.TBasePainter.prototype.SetFrame.call(this, vis, false)
+      JSROOT.TObjectPainter.prototype.SetFrame.call(this, vis, false)
 
       if (vis['ROOT:svg_frame']==null) {
          alert("missing svg_frame");
@@ -4522,7 +4538,7 @@
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu)
    {
-      JSROOT.TBasePainter.prototype.FillContextMenu.call(this, menu);
+      JSROOT.TObjectPainter.prototype.FillContextMenu.call(this, menu);
       if (this.options) {
          
          var item =  this.options.Logx > 0 ? "Linear X" : "Log X";  
@@ -6770,13 +6786,17 @@
    };
 
 
-   JSROOT.Painter.canDrawObject = function(classname)
+   JSROOT.Painter.canDrawObject = function(classname, drawopt)
    {
+      if (drawopt == "streamerinfos") return true;
+
+      if (this.fUserPainters) {
+         var usertype = classname ? classname : drawopt;
+         if (typeof(usertype)==='string' && typeof(this.fUserPainters[usertype]) === 'function') return true;
+      }
+      
       if (!classname) return false;
-
-      if ((this.fUserPainters != null) &&
-          (typeof(this.fUserPainters[classname]) === 'function')) return true;
-
+      
       if (classname.match(/\bTH1/) ||
           classname.match(/\bTH2/) ||
           classname.match(/\bTH3/) ||
@@ -6787,7 +6807,8 @@
           classname == 'TCanvas' ||
           classname == 'TPad' ||
           classname == 'THStack' ||
-          classname == 'TProfile') return true;
+          classname == 'TProfile' ||
+          classname == 'TStreamerInfoList') return true;
 
       return false;
    }
@@ -7039,16 +7060,31 @@
 
       if (classname == 'TMultiGraph')
          return JSROOT.Painter.drawMultiGraph(vis, obj, opt);
-
-      if ((this.fUserPainters != null) && typeof(this.fUserPainters[classname]) === 'function')
-         return this.fUserPainters[classname](vis, obj, opt);
    }
 
    JSROOT.draw = function(divid, obj, opt)
    {
-      if ((typeof obj != 'object') || (!('_typename' in obj))) return;
-
       var render_to = "#" + divid;
+
+      if (this.fUserPainters) {
+          var usertype = ('_typename' in obj) ? obj['_typename'] : opt;
+          if ((typeof(usertype)==='string') && typeof(this.fUserPainters[usertype]) === 'function')
+             return this.fUserPainters[usertype](divid, obj, opt);
+      }
+      
+      if ((typeof obj != 'object') || !('_typename' in obj)) return;
+      
+      if (obj['_typename'] == 'TStreamerInfoList') {
+         $(render_to).css({overflow : 'auto'});
+         var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+         painter.ShowStreamerInfo(obj);
+         return painter;
+      }
+
+      if ($(render_to).height() < 10) {
+         // set aspect ratio for the place, where object will be drawn
+         $(render_to).height($(render_to).width() * 0.66);
+      }
 
       var fillcolor = 'white';
 
@@ -7096,10 +7132,17 @@
    }
    
    JSROOT.HierarchyPainter = function(name,frameid) {
+      JSROOT.TBasePainter.call(this);
       JSROOT.AddHList(name, this);
       this.name = name;
       this.frameid = frameid;
       this.h = null;    // hierarchy
+   }
+   
+   JSROOT.HierarchyPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   
+   JSROOT.HierarchyPainter.prototype.Cleanup = function() {
+      JSROOT.DelHList(this.name);
    }
    
    JSROOT.HierarchyPainter.prototype.GlobalName = function(suffix) {
@@ -7328,8 +7371,18 @@
       return res;  
    }
    
-   JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node, cando) 
+   JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) 
    {
+      var cando = {
+         expand : false,
+         display : false,
+         scan : true,
+         open : false,
+         img1 : "",
+         img2 : "",
+         html : ""
+      };
+      
       var kind = node["_kind"];
       if (kind == null) kind = "";
       
@@ -7350,6 +7403,8 @@
       if (kind.match(/\bROOT.TLeaf/)) cando.img1 = JSROOT.source_dir+'img/leaf.png'; else
       if (kind == "ROOT.TStreamerInfoList") { cando.img1 = JSROOT.source_dir+'img/question.gif'; cando.expand = false; cando.display = true; } else
       if ((kind.indexOf("ROOT.")==0) && JSROOT.Painter.canDrawObject(kind.slice(5))) { cando.img1 = JSROOT.source_dir+'img/histo.png'; cando.scan = false; cando.display = true; }
+      
+      return cando;
    }
    
    JSROOT.HierarchyPainter.prototype.createNode = function(node, fullname, parent) 
@@ -7364,17 +7419,7 @@
          node['_parent'] = parent;
       }
       
-      var cando = {
-         expand : false,
-         display : false,
-         scan : true,
-         open : false,
-         img1 : "",
-         img2 : "",
-         html : ""
-      };
-      
-      this.CheckCanDo(node, cando);
+      var cando = this.CheckCanDo(node);
       
       // console.log("add kind = " + kind + "  name = " + node._name);  
 
@@ -7621,7 +7666,7 @@
    }
    
    
-   JSROOT.HierarchyPainter.prototype.get = function(itemname, callback)
+   JSROOT.HierarchyPainter.prototype.get = function(itemname, callback, options)
    {
       var item = this.Find(itemname);
 
@@ -7636,19 +7681,21 @@
       
       if(('_get' in this) && (typeof this._get == 'function')) {
          // process get in central method - if exists
-         this._get(item, callback);
-      } else
+         this._get(item, callback, options);
+      } else {
          if (typeof callback == 'function') callback(item, null);
+      }
    }
-
-   JSROOT.HierarchyPainter.prototype.display = function(itemname)
+   
+   JSROOT.HierarchyPainter.prototype.display = function(itemname, options)
    {
-      var pthis = this;
-      
-      if (this.CreateDisplay())
+      if (this.CreateDisplay()) {
+         var mdi = this['disp']; 
+         
          this.get(itemname, function(item, obj) {
-            pthis['disp'].Draw(itemname, obj);
+            mdi.Draw(itemname, obj, options);
          });
+      }
    }
    
    JSROOT.HierarchyPainter.prototype.reload = function()
@@ -7732,13 +7779,16 @@
       var painter = this;
       
       h['_get'] = function (item, callback) {
-         var itemname = painter.itemFullName(item);
          
-         if ((itemname.length>0) && (itemname.lastIndexOf("/") != itemname.length-1)) itemname+="/";
+         var url = painter.itemFullName(item);
+         if (url.length>0) url+="/";
+         if ('_more' in item) url += 'h.json?compact=3';
+                        else  url += 'root.json.gz?compact=3';
          
-         itemname += ('_more' in item) ? "h.json?compact=3" : "root.json.gz?compact=3";
-         
-         var itemreq = JSROOT.NewHttpRequest(itemname, 'object', function(obj) {
+         var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
+            if ((obj!=null) && (item._name === "StreamerInfo") && (obj['_typename'] === 'TList'))
+               obj['_typename'] = 'TStreamerInfoList';
+            
             if (typeof callback == 'function') callback(item, obj);
          });
          
@@ -7890,7 +7940,7 @@
 
    // ================================================================ 
    
-   // JSROOT.MDIDisplay - class to manage multiple document interface for frawings 
+   // JSROOT.MDIDisplay - class to manage multiple document interface for drawings 
    
    JSROOT.MDIDisplay = function(frameid) {
       this.frameid = frameid;
@@ -7915,6 +7965,12 @@
       
       return found_frame;
    }
+
+   JSROOT.MDIDisplay.prototype.FindPainter = function(searchitemname) {
+      var frame = this.FindFrame(searchitemname);
+      if (frame!=null) return $(frame)['painter'];
+      return null;
+   }
    
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
       // do nothing by default
@@ -7929,26 +7985,18 @@
          return;
       }
       
-      var issinfo = itemname.lastIndexOf("StreamerInfo") >= 0;
-      if (!issinfo && !JSROOT.Painter.canDrawObject(obj['_typename'])) return;
-      
+      if (!JSROOT.Painter.canDrawObject(obj['_typename'],drawopt)) return;
+
       frame = this.CreateFrame(itemname);
       
-      var hid = $(frame).attr('id');
-
-      if (issinfo) {
-         $(frame).css({overflow : 'auto'});
-         var painter = new JSROOT.HierarchyPainter('sinfo', hid);
-         painter.ShowStreamerInfo(obj);
-      } else {
-         if ($(frame).height() < 10) {
-            // set aspect ratio for the place, where object will be drawn
-            $(frame).height($(frame).width() * 0.66);
-         }
-         
-         document.getElementById(hid)['painter'] = JSROOT.draw(hid, obj, drawopt);
-      }
+      var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
       
+      this.SetPainterForFrame(frame, painter);
+   }
+   
+   JSROOT.MDIDisplay.prototype.SetPainterForFrame = function(frame, painter) {
+      var hid = $(frame).attr('id');
+      document.getElementById(hid)['painter'] = painter;
       this.ActivateFrame(frame);
    }
    
@@ -7959,8 +8007,11 @@
    }
    
    JSROOT.MDIDisplay.prototype.Reset = function() {
+      this.ForEach(function(panel, itemname, painter) {
+         if ((painter!=null) && (typeof painter['Clenaup'] == 'function')) painter.Clenaup();
+      });   
+      
       document.getElementById(this.frameid).innerHTML = '';
-      JSROOT.DelHList('sinfo');
    }
 
    // ==================================================
@@ -8312,12 +8363,12 @@
       obj[prop] = buf.ReadTString();
    }
 
-   Amore_Painter = function(vis, obj, opt) {
+   Amore_Painter = function(div, obj, opt) {
       // custom draw function.
 
       console.log("Draw user type " + obj['_typename']);
 
-      JSROOT.Painter.drawObjectInFrame(vis, obj['fVal'], opt);
+      return JSROOT.draw(div, obj['fVal'], opt);
    }
 
    JSROOT.addUserStreamer("amore::core::String_t", Amore_String_Streamer);

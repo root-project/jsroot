@@ -173,6 +173,7 @@ function BuildOnlineGUI() {
             + '<div id="separator-div" class="column"></div>'
             + '<div id="right-div" class="column"></div>';
    
+   $('#onlineGUI').empty();
    $('#onlineGUI').append(guiCode);
 
    var hpainter = new JSROOT.HierarchyPainter("root", "browser");
@@ -227,6 +228,8 @@ function BuildSimpleGUI() {
       +'</div>'
       +'<div id="separator-div" class="column"></div>'
       +'<div id="right-div" class="column"></div>';
+   
+   $('#simpleGUI').empty();
    $('#simpleGUI').append(guiCode);
    // $("#display-kind").selectmenu();
    
