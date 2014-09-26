@@ -7506,8 +7506,9 @@
       this['html'] += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
       this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
       if ('_online' in this.h)
-         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";                           
-      this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";                           
+         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";
+      if ('disp_kind' in this)
+         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";                           
                   
       this['html']+="</p>";
 
@@ -7808,7 +7809,7 @@
    }
    
 
-   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address)
+   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback)
    {
       if (!server_address) server_address = "";
       
@@ -7824,6 +7825,8 @@
           painter.AddOnlineMethods(painter.h);
           
           if (painter.h!=null) painter.RefreshHtml(true);
+          
+          if (typeof user_callback == 'function') user_callback(painter);
       
       });
       

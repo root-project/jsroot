@@ -32,7 +32,7 @@ September 2014:
 16.Introduce demo.htm, which demonstrates online usage of JSROOT.
 17.One could use demo.htm directly with THttpServer providing address like:
      http://localhost:8080/jsrootsys/demo/demo.htm?addr=../../Files/job1.root/hpx/root.json.gz&layout=3x3
-
+18.Also for online server process url options like 'item', 'items', 'layout'
 
 August 2014:
 1. All communication between server and browser done with JSON format.

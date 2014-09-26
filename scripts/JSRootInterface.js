@@ -177,10 +177,27 @@ function BuildOnlineGUI() {
    $('#onlineGUI').append(guiCode);
 
    var hpainter = new JSROOT.HierarchyPainter("root", "browser");
-
-   hpainter.SetDisplay(guiLayout(), 'right-div');
    
-   hpainter.OpenOnline();
+   
+   var layout = JSROOT.GetUrlOption("layout");
+   if ((layout=="") || (layout==null)) layout = guiLayout(); 
+   
+   var itemname = JSROOT.GetUrlOption("item");
+   var items = JSROOT.GetUrlOption("items");
+   if (items!=null)
+      items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+   
+
+   hpainter.SetDisplay(layout, 'right-div');
+   
+   hpainter.OpenOnline("", function() {
+      if ((typeof itemname == 'string') && (itemname.length>0))
+         JSROOT.H('root').display(itemname);
+      
+      if (items!=null)
+         for (var i in items)
+            JSROOT.H('root').display(items[i]);
+   });
    
    setInterval(UpdateOnline, 3000);
    
