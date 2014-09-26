@@ -40,14 +40,16 @@ function ReadFile(filename, checkitem) {
    }
    if (filename.length == 0) return;
    
-   var itemname = null;
    var layout = null;
-   var items = null;
+   var itemsarr = [];
    if (checkitem) {
-      itemname = JSROOT.GetUrlOption("item");
-      items = JSROOT.GetUrlOption("items");
-      if (items!=null)
+      var itemname = JSROOT.GetUrlOption("item");
+      if (itemname) itemsarr.push(itemname);
+      var items = JSROOT.GetUrlOption("items");
+      if (items!=null) {
          items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+         for (var i in items) itemsarr.push(items[i]);
+      }
       layout = JSROOT.GetUrlOption("layout");
       if (layout=="") layout = null;
    }
@@ -59,12 +61,7 @@ function ReadFile(filename, checkitem) {
    painter.SetDisplay(layout, 'right-div');
    
    painter.OpenRootFile(filename, function() {
-      if ((typeof itemname == 'string') && (itemname.length>0))
-         JSROOT.H('root').display(itemname);
-      
-      if (items!=null)
-         for (var i in items)
-            JSROOT.H('root').display(items[i]);
+      painter.displayAll(itemsarr);
    });
 }
 
@@ -176,27 +173,24 @@ function BuildOnlineGUI() {
    $('#onlineGUI').empty();
    $('#onlineGUI').append(guiCode);
 
-   var hpainter = new JSROOT.HierarchyPainter("root", "browser");
-   
-   
    var layout = JSROOT.GetUrlOption("layout");
    if ((layout=="") || (layout==null)) layout = guiLayout(); 
    
+   var itemsarr = [];
    var itemname = JSROOT.GetUrlOption("item");
+   if (itemname) itemsarr.push(itemname);
    var items = JSROOT.GetUrlOption("items");
-   if (items!=null)
+   if (items!=null) {
       items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
-   
+      for (var i in items) itemsarr.push(items[i]);
+   }
+
+   var hpainter = new JSROOT.HierarchyPainter("root", "browser");
 
    hpainter.SetDisplay(layout, 'right-div');
    
    hpainter.OpenOnline("", function() {
-      if ((typeof itemname == 'string') && (itemname.length>0))
-         JSROOT.H('root').display(itemname);
-      
-      if (items!=null)
-         for (var i in items)
-            JSROOT.H('root').display(items[i]);
+      hpainter.displayAll(itemsarr);
    });
    
    setInterval(UpdateOnline, 3000);

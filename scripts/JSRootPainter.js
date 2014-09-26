@@ -7703,6 +7703,20 @@
       }
    }
    
+   JSROOT.HierarchyPainter.prototype.displayAll = function(items)
+   {
+      if ((items==null) || (items.length==0)) return;
+      if (!this.CreateDisplay()) return;
+      
+      var mdi = this['disp'];
+
+      // first create dummy frames for each item
+      for (var i in items) mdi.CreateFrame(items[i]); 
+
+      // than display items
+      for (var i in items) this.display(items[i]);
+   }
+   
    JSROOT.HierarchyPainter.prototype.reload = function()
    {
       if ('_online' in this.h) this.OpenOnline(this.h['_online']);
@@ -8021,14 +8035,14 @@
       if (!obj) return;
       
       var frame = this.FindFrame(itemname);
-      if (frame!=null) {
+      if ((frame!=null) && (frame['painter']!=null)) {
          this.ActivateFrame(frame);
          return;
       }
       
       if (!JSROOT.Painter.canDrawObject(obj['_typename'],drawopt)) return;
 
-      frame = this.CreateFrame(itemname);
+      if (frame==null) frame = this.CreateFrame(itemname);
       
       var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
       
