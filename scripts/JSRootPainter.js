@@ -7470,8 +7470,8 @@
       
       node['_d']._id = this.grid++;
 
-      // allow context menu only for objects which can be displayed
-      if (cando.display) 
+      // allow context menu only for objects which can be displayed or for top-level item
+      if (cando.display || (node==this.h)) 
          node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'"+nodefullname+"\')";
 
       if (cando.scan && ('_childs' in node)) {
@@ -7589,9 +7589,13 @@
       if (node._hc && !isroot) {
          this['html'] += '<a href="javascript: ' + opencode + '" class="node"';
          if (node.title) this['html'] += ' title="' + node.title + '"';
+         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
          this['html'] += '>' + node.name + '</a>';
       } else {
-         this['html'] += node.name;
+         this['html'] += '<a';
+         if (node.title) this['html'] += ' title="' + node.title + '"';
+         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
+         this['html'] += '>' + node.name + '</a>';
       }
 
       if (onlyitem) return; 
@@ -7892,18 +7896,52 @@
 
       var painter = this;
       
-      JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
-      
+      if (itemname=="") {
+         var addr = "";
+         if ('_online' in this.h) {
+            addr = "/?";
+         } else 
+         if ('_file' in this.h) {
+            addr = JSROOT.source_dir + "index.htm?";
+            addr += "file="+this.h['_file'].fURL;
+         }
+
+         if (this['disp_kind']) {
+            if (addr.length>2) addr+="&";
+            addr += "layout=" + this['disp_kind']; 
+         }
+         
+         var items = [];
+         
+         if (this['disp'] != null)
+            this['disp'].ForEach(function(panel, itemname, painter) {
+               items.push(itemname);
+            });
+
+         if (items.length==1) {
+            if (addr.length>2) addr+="&";
+            addr += "item=" + items[0];
+         } else
+         if (items.length>1) {
+            if (addr.length>2) addr+="&";
+            addr += "items=" + JSON.stringify(items);
+         }
+         
+         JSROOT.Painter.menuitem(menu,"Direct link", function() { window.open(addr); });
+      } else
       if (onlineprop!=null) {
+         JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
          JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(onlineprop.server + onlineprop.itemname + "/draw.htm"); });
          JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300"); });
       } else
       if (fileprop!=null) {
+         JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir+"files/")==0) filepath = filepath.slice(JSROOT.source_dir.length+6); else
          if (filepath.indexOf(JSROOT.source_dir)==0) filepath = "../" + filepath.slice(JSROOT.source_dir.length);
          JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(JSROOT.source_dir + "files/fileitem.htm?file=" + filepath + "&item="+fileprop.itemname); });
       }
+      
       JSROOT.Painter.menuitem(menu,"Close", function() { });
       
       return false;
