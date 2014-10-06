@@ -10,7 +10,30 @@ function ResetUI() {
       JSROOT.DelHList('root');
    }
    $('#browser').get(0).innerHTML = '';
-};
+}
+
+function guiLayout() {
+   var res = 'collapsible';
+   var selects = document.getElementById("layout");
+   if (selects)
+      res = selects.options[selects.selectedIndex].text;
+   return res;
+}
+
+function setGuiLayout(value) {
+   var selects = document.getElementById("layout");
+   if (!selects) return;
+   
+   for (var i in selects.options) {
+      var s = selects.options[i].text;
+      if (typeof s == 'undefined') continue;
+      if ((s == value) || (s.replace(/ /g,"") == value)) {
+         selects.selectedIndex = i;
+         break;
+      }
+   }
+}
+
 
 function ReadFile(filename, checkitem) {
    var navigator_version = navigator.appVersion;
@@ -50,11 +73,15 @@ function ReadFile(filename, checkitem) {
          items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
          for (var i in items) itemsarr.push(items[i]);
       }
+      
       layout = JSROOT.GetUrlOption("layout");
       if (layout=="") layout = null;
    }
    
-   if (layout==null) layout = guiLayout();
+   if (layout==null) 
+      layout = guiLayout();
+   else
+      setGuiLayout(layout);
    
    var painter = new JSROOT.HierarchyPainter('root', 'browser');
    
@@ -92,16 +119,6 @@ function ProcessResize(direct)
    JSROOT.H('root')['disp'].CheckResize();
    
    if (direct) document.body.style.cursor = 'auto';
-}
-
-function guiLayout() {
-   var res = 'collapsible';
-   var selects = document.getElementById("display-kind");
-   if (selects) {
-      res = selects.options[selects.selectedIndex].text;
-      // $("#display-kind").disable();
-   }
-   return res;
 }
 
 function AddInteractions() {
@@ -142,7 +159,7 @@ function AddInteractions() {
 
    // specify display kind every time selection done
    // will be actually used only for first drawing or after reset
-   document.getElementById("display-kind").onchange = function() {
+   document.getElementById("layout").onchange = function() {
       if (JSROOT.H('root'))
          JSROOT.H('root').SetDisplay(guiLayout(), "right-div");
    }
@@ -156,13 +173,13 @@ function BuildOnlineGUI() {
       return;
    }
    
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOT.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version: " + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += '<div id="left-div" class="column"><br/>'
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
             + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
-            + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
+            + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">' 
             + '   <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
             + ' </select>' 
             + ' <div id="browser"></div>'
@@ -174,7 +191,10 @@ function BuildOnlineGUI() {
    $('#onlineGUI').append(guiCode);
 
    var layout = JSROOT.GetUrlOption("layout");
-   if ((layout=="") || (layout==null)) layout = guiLayout(); 
+   if ((layout=="") || (layout==null)) 
+      layout = guiLayout();
+   else
+      setGuiLayout(layout);
    
    var itemsarr = [];
    var itemname = JSROOT.GetUrlOption("item");
@@ -209,7 +229,7 @@ function BuildSimpleGUI() {
    if (!files) files = "file/hsimple.root";
    var arrFiles = files.split(';');
 
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version:" + JSROOT.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version: " + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += "<div id='left-div' class='column'>\n"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>\n"
@@ -230,7 +250,7 @@ function BuildSimpleGUI() {
       +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
-      +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="display-kind" name="display-kind">' 
+      +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">' 
       +'  <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
       +'</select>' 
       +'</form>'
@@ -242,7 +262,7 @@ function BuildSimpleGUI() {
    
    $('#simpleGUI').empty();
    $('#simpleGUI').append(guiCode);
-   // $("#display-kind").selectmenu();
+   // $("#layout").selectmenu();
    
    AddInteractions();
    

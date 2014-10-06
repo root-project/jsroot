@@ -8045,7 +8045,7 @@
       
       var frame = this.FindFrame(itemname);
       
-      if (this.FindPainter(itemname)) {
+      if ((frame!=null) && this.FindPainter(itemname)) {
          this.ActivateFrame(frame);
          return;
       }
@@ -8053,6 +8053,8 @@
       if (!JSROOT.Painter.canDrawObject(obj['_typename'],drawopt)) return;
 
       if (frame == null) frame = this.CreateFrame(itemname);
+      
+      this.ActivateFrame(frame);
       
       var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
       
@@ -8240,6 +8242,7 @@
          $("#" + topid).tabs("refresh");
          $("#" + topid).tabs( "option", "active", -1 );
       }
+      $('#'+hid).empty();
       document.getElementById(hid)['itemname'] = itemname;
       return $('#'+hid);
    }
