@@ -6788,8 +6788,6 @@
 
    JSROOT.Painter.canDrawObject = function(classname, drawopt)
    {
-      if (drawopt == "streamerinfos") return true;
-
       if (this.fUserPainters) {
          var usertype = classname ? classname : drawopt;
          if (typeof(usertype)==='string' && typeof(this.fUserPainters[usertype]) === 'function') return true;
@@ -7306,7 +7304,8 @@
             _name : file.fFileName, 
             _kind : "ROOT.TFile", 
             _file : file,
-            _get : function(item, callback) {
+            // this is normal get method, where item name is used
+            _get : function(item, callback) {  
                if ((this._file == null) || (item._readobj != null)) {
                   if (typeof callback == 'function') callback(item, item._readobj);
                   return;
@@ -7321,7 +7320,13 @@
                   if ('_expand' in item) item._name = item._keyname; // remove cycle number for objects supporting expand
                   if (typeof callback == 'function') callback(item, obj);
                });
-            }
+            },
+            // this is alternative get method, where items may not exists (due to missing/not-read subfolder)
+            _getdirect : function(itemname, callback) {
+               this._file.ReadObject(itemname, -1, function(obj) {
+                  if (typeof callback == 'function') callback(itemname, obj);
+               });
+            }  
       };
       
       this.KeysHierarchy(folder, file.fKeys, file);
@@ -7674,33 +7679,31 @@
    JSROOT.HierarchyPainter.prototype.get = function(itemname, callback, options)
    {
       var item = this.Find(itemname);
+      
+      // process get in central method of hierarchy item (if exists)
+      if ((item==null) && ('_getdirect' in this.h))
+         return this.h._getdirect(itemname, callback);
 
+      // normally search _get method in the parent items 
       var curr = item;
       while (curr != null) {
-         if (('_get' in curr) && (typeof(curr._get)=='function')) {
-            curr._get(item, callback);
-            return;
-         }
+         if (('_get' in curr) && (typeof(curr._get)=='function')) 
+            return curr._get(item, callback);
          curr = ('_parent' in curr) ? curr['_parent'] : null;
       }
       
-      if(('_get' in this) && (typeof this._get == 'function')) {
-         // process get in central method - if exists
-         this._get(item, callback, options);
-      } else {
-         if (typeof callback == 'function') callback(item, null);
-      }
+      if (typeof callback == 'function') callback(item, null);
    }
    
    JSROOT.HierarchyPainter.prototype.display = function(itemname, options)
    {
-      if (this.CreateDisplay()) {
-         var mdi = this['disp']; 
+      if (!this.CreateDisplay()) return;
          
-         this.get(itemname, function(item, obj) {
-            mdi.Draw(itemname, obj, options);
-         });
-      }
+      var mdi = this['disp']; 
+         
+      this.get(itemname, function(item, obj) {
+         mdi.Draw(itemname, obj, options);
+      });
    }
    
    JSROOT.HierarchyPainter.prototype.displayAll = function(items)
@@ -7712,18 +7715,14 @@
       
       // first of all check that items are exists
       for (var i in items)
-        if (!this.Find(items[i])) {
-           if (this.Find(items[i]+";1")) items[i] += ";1";
-                                    else items[i] = "";
-        }
+        if (!this.Find(items[i]) && this.Find(items[i]+";1")) 
+           items[i] += ";1";
 
       // first create dummy frames for each item
-      for (var i in items) 
-        if (items[i]!="") mdi.CreateFrame(items[i]); 
+      for (var i in items) mdi.CreateFrame(items[i]); 
 
       // than display items
-      for (var i in items) 
-         if (items[i]!="") this.display(items[i]);
+      for (var i in items) this.display(items[i]);
    }
    
    JSROOT.HierarchyPainter.prototype.reload = function()

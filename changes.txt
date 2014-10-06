@@ -6,6 +6,10 @@ project of Bertrand Bellenot, but provides same functionality in default mode.
 Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment. 
 
+October 2014:
+1. Add "shortcut icon"
+
+
 September 2014:
 1. First try to handle resize of the browser, 
    for the moment works only with collapsible layout

@@ -31,33 +31,39 @@
             if (objpainter == null)
                $('#drawing').append("<h4>" + str + "</h4>"); 
          }
+         
+         function draw_object(obj) {
+            document.body.style.cursor = 'wait';
+            if (!objpainter) {
+               $('#drawing').empty();
+               objpainter = JSROOT.draw('drawing', obj, drawopt); 
+            } else {
+               objpainter.UpdateObject(obj);   
+               objpainter.RedrawFrame();
+            }
+            document.body.style.cursor = 'auto';
+         }
    
-         function drawfunction() {
+         function read_object() {
          
             var f = new JSROOT.TFile(filename, function(file) {
                if (file==null) return file_error("file " + filename + " cannot be opened");
+
+               if (itemname=="StreamerInfo")
+                  return draw_object(file.fStreamerInfos);
                 
                file.ReadObject(itemname, -1, function(obj) {
                   if (obj==null) return file_error("object " + itemname + " not found in " + filename);
 
-                  document.body.style.cursor = 'wait';
-                  if (!objpainter) {
-                     $('#drawing').empty();
-                     objpainter = JSROOT.draw('drawing', obj, drawopt); 
-                  } else {
-                     objpainter.UpdateObject(obj);   
-                     objpainter.RedrawFrame();
-                  }
-                  document.body.style.cursor = 'auto';
-                  
+                  draw_object(obj);
                });
             });
          }
    
-         drawfunction();
+         read_object();
    
          if (monitor>0)
-            setInterval(drawfunction, monitor);
+            setInterval(read_object, monitor);
    
          JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }

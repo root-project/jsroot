@@ -1465,7 +1465,7 @@
       if ((typeof cycle != 'number') || (cycle<0)) cycle = 1;
       
       var file = this;
-
+      
       // we use callback version while in some cases we need to 
       // read sub-directory to get list of keys
       // in such situation calls are asynchrone
@@ -1481,8 +1481,8 @@
             isdir = true;
             var dir = file.GetDir(obj_name, cycle);
             if (dir!=null) {
-               if (typeof callback == 'user_call_back') user_call_back(dir);
-               return dir;
+               if (typeof user_call_back == 'function') user_call_back(dir);
+               return;
             }
          }
          
@@ -1503,7 +1503,6 @@
 
                return;
             }
-
 
             var obj = {};
             obj['_typename'] = key['fClassName'];
