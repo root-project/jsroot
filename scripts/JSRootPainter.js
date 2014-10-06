@@ -7709,12 +7709,21 @@
       if (!this.CreateDisplay()) return;
       
       var mdi = this['disp'];
+      
+      // first of all check that items are exists
+      for (var i in items)
+        if (!this.Find(items[i])) {
+           if (this.Find(items[i]+";1")) items[i] += ";1";
+                                    else items[i] = "";
+        }
 
       // first create dummy frames for each item
-      for (var i in items) mdi.CreateFrame(items[i]); 
+      for (var i in items) 
+        if (items[i]!="") mdi.CreateFrame(items[i]); 
 
       // than display items
-      for (var i in items) this.display(items[i]);
+      for (var i in items) 
+         if (items[i]!="") this.display(items[i]);
    }
    
    JSROOT.HierarchyPainter.prototype.reload = function()
@@ -8023,8 +8032,8 @@
 
    JSROOT.MDIDisplay.prototype.FindPainter = function(searchitemname) {
       var frame = this.FindFrame(searchitemname);
-      if (frame!=null) return $(frame)['painter'];
-      return null;
+      if (frame==null) return null; 
+      return document.getElementById($(frame).attr('id'))['painter'];
    }
    
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
@@ -8035,14 +8044,15 @@
       if (!obj) return;
       
       var frame = this.FindFrame(itemname);
-      if ((frame!=null) && (frame['painter']!=null)) {
+      
+      if (this.FindPainter(itemname)) {
          this.ActivateFrame(frame);
          return;
       }
       
       if (!JSROOT.Painter.canDrawObject(obj['_typename'],drawopt)) return;
 
-      if (frame==null) frame = this.CreateFrame(itemname);
+      if (frame == null) frame = this.CreateFrame(itemname);
       
       var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
       
