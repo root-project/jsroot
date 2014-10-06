@@ -1,5 +1,6 @@
 // macro used to generate several JSON files,
 // used to demonstrate online features of JSROOT
+// Files used in demo.htm page.
 // In real application JSON data could be produced by THttpServer on-the-fly
 
 void demo() {

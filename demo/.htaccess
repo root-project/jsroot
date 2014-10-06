@@ -1,0 +1,11 @@
+# Or, compress certain file types by extension:
+AddEncoding gzip .gz
+<FilesMatch "\.json.gz">
+ForceType application/json
+</FilesMatch>
+<FilesMatch "\.json">
+ForceType application/json
+</FilesMatch>
+<FilesMatch "\.xml">
+ForceType text/xml
+</FilesMatch>

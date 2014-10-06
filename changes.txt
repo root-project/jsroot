@@ -8,6 +8,8 @@ make JavaScript code more flexible and applicable for online environment.
 
 October 2014:
 1. Add "shortcut icon"
+2. Add demo of online THttpServer - shell script copies data from  
+   running httpserver.C macro on Apache webserver 
 
 
 September 2014:
