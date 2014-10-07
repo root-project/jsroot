@@ -4249,6 +4249,10 @@
             return;
          }
          
+         // update frame dimensions while frame could be resized 
+         width = Number(pthis.frame.attr("width"));
+         height = Number(pthis.frame.attr("height"));
+         
          e = this;
          // var t = d3.event.changedTouches;
          var arr = d3.touches(e);
@@ -4325,7 +4329,6 @@
          d3.event.stopPropagation();
       }
 
-
       function moveTouchSel() {
 
          if (zoom_kind<100) return;
@@ -4359,7 +4362,7 @@
              .attr("height", origin[1] - curr[1]);
 
          d3.event.stopPropagation();
-      };
+      }
 
       function endTouchSel() {
 
@@ -4402,6 +4405,10 @@
          if (zoom_kind>100) return;
 
          d3.event.preventDefault();
+         
+         // update frame dimensions while frame could be resized 
+         width = Number(pthis.frame.attr("width"));
+         height = Number(pthis.frame.attr("height"));
 
          closeAllExtras();
 
