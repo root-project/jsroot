@@ -1226,8 +1226,9 @@
    
    JSROOT.TBasePainter.prototype.RedrawFrame = function(resize) {
    }
-
-
+   
+   JSROOT.TBasePainter.prototype.CheckResize = function(force) {
+   }
 
    // ==============================================================================
 
@@ -2214,7 +2215,7 @@
       return this.graph === obj;
    }
 
-   JSROOT.TGraphPainter.prototype.CheckResize = function() {
+   JSROOT.TGraphPainter.prototype.CheckResize = function(force) {
       JSROOT.TObjectPainter.prototype.CheckResize.call(this, true);
    }
    
