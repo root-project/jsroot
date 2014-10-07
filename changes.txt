@@ -13,6 +13,7 @@ October 2014:
 3. Evaluate 'monitoring' parameter for online server like:
       http://localhost:8080/?monitoring=1000. 
    Parameter defines how often displayed objects should be updated.  
+4. Implement 'opt' and 'opts' URL parameters for main page.   
 
 
 September 2014:

@@ -65,6 +65,7 @@ function ReadFile(filename, checkitem) {
    
    var layout = null;
    var itemsarr = [];
+   var optionsarr = [];
    if (checkitem) {
       var itemname = JSROOT.GetUrlOption("item");
       if (itemname) itemsarr.push(itemname);
@@ -76,7 +77,16 @@ function ReadFile(filename, checkitem) {
       
       layout = JSROOT.GetUrlOption("layout");
       if (layout=="") layout = null;
+      
+      var opt = JSROOT.GetUrlOption("opt");
+      if (opt) optionsarr.push(opt);
+      var opts = JSROOT.GetUrlOption("opts");
+      if (opts!=null) {
+         opts = JSON.parse(opts.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+         for (var i in opts) optionsarr.push(opts[i]);
+      }
    }
+   
    
    if (layout==null) 
       layout = guiLayout();
@@ -88,7 +98,7 @@ function ReadFile(filename, checkitem) {
    painter.SetDisplay(layout, 'right-div');
    
    painter.OpenRootFile(filename, function() {
-      painter.displayAll(itemsarr);
+      painter.displayAll(itemsarr, optionsarr);
    });
 }
 

@@ -3931,21 +3931,21 @@
       var font_size = Math.round(0.050 * h);
       var l_title = JSROOT.Painter.translateLaTeX(this.histo['fTitle']);
 
-      if (!this.pad || typeof(this.pad) == 'undefined') {
+      // seems to be, this is check for canvas drawing, where title is separate object 
+      // TODO: one should treat canvas and histogram drawing in the same way 
+      if (typeof(this.pad) != 'undefined') return;
+         
+      var pthis = this;
 
-         if (!('draw_title' in this))
-            this['draw_title'] =
-               this.vis.append("text")
-                .attr("class", "title")
-                .attr("text-anchor", "middle")
-                .attr("x", w/2)
-                .attr("y", 1 + font_size /* 0.07*h */)
-                .attr("font-family", "Arial")
-                .attr("font-size", font_size);
-
-         this.draw_title.text(l_title);
-
-         var pthis = this;
+      if (!('draw_title' in this)) {
+         this['draw_title'] =
+            this.vis.append("text")
+            .attr("class", "title")
+            .attr("text-anchor", "middle")
+            .attr("x", w/2)
+            .attr("y", 1 + font_size /* 0.07*h */)
+            .attr("font-family", "Arial")
+            .attr("font-size", font_size);
 
          this.AddDrag("title", this.draw_title, {
             move: function(x, y) {
@@ -3956,8 +3956,9 @@
                pthis.draw_title.attr("font-size", font_size);
             }
          });
-
       }
+
+      this.draw_title.text(l_title);
    }
 
    JSROOT.THistPainter.prototype.ToggleStat = function() {
@@ -7712,10 +7713,12 @@
       });
    }
    
-   JSROOT.HierarchyPainter.prototype.displayAll = function(items)
+   JSROOT.HierarchyPainter.prototype.displayAll = function(items, options)
    {
       if ((items==null) || (items.length==0)) return;
       if (!this.CreateDisplay()) return;
+      if (options==null) options = [];
+      while (options.length < items.length) options.push("");
       
       var mdi = this['disp'];
       
@@ -7728,7 +7731,7 @@
       for (var i in items) mdi.CreateFrame(items[i]); 
 
       // than display items
-      for (var i in items) this.display(items[i]);
+      for (var i in items) this.display(items[i], options[i]);
    }
    
    JSROOT.HierarchyPainter.prototype.reload = function()
