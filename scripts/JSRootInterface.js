@@ -112,11 +112,9 @@ function UpdateOnline() {
 
 function ProcessResize(direct)
 {  
-   if (JSROOT.H('root')['disp']==null) return;
-   
    if (direct) document.body.style.cursor = 'wait';
    
-   JSROOT.H('root')['disp'].CheckResize();
+   JSROOT.H('root').CheckResize();
    
    if (direct) document.body.style.cursor = 'auto';
 }

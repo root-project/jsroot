@@ -7870,12 +7870,20 @@
          item = item._parent;
          
          if ('_online' in item) {
-           return { server : item['_online'], itemname: subname }; 
+            return { 
+               server : item['_online'], 
+               itemname: subname 
+            }; 
          } 
          subname = item._name + "/" + subname;
       }
       
       return null;
+   }
+   
+   JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
+      JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(onlineprop.server + onlineprop.itemname + "/draw.htm"); });
+      JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300"); });
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo)
@@ -7954,8 +7962,7 @@
       } else
       if (onlineprop!=null) {
          JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
-         JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(onlineprop.server + onlineprop.itemname + "/draw.htm"); });
-         JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300"); });
+         this.FillOnlineMenu(menu, onlineprop, itemname);
       } else
       if (fileprop!=null) {
          JSROOT.Painter.menuitem(menu,"Draw", function() { painter.display(itemname); });
@@ -7969,7 +7976,6 @@
       
       return false;
    }
-   
    
    JSROOT.HierarchyPainter.prototype.SetDisplay = function(kind, frameid) {
       this['disp_kind'] = kind;
@@ -8000,6 +8006,11 @@
          this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
       
       return true;
+   }
+   
+   JSROOT.HierarchyPainter.prototype.CheckResize = function(force) {
+      if ('disp' in this)
+         this['disp'].CheckResize();
    }
 
    // ================================================================ 
