@@ -10,6 +10,9 @@ October 2014:
 1. Add "shortcut icon"
 2. Add demo of online THttpServer - shell script copies data from  
    running httpserver.C macro on Apache webserver 
+3. Evaluate 'monitoring' parameter for online server like:
+      http://localhost:8080/?monitoring=1000. 
+   Parameter defines how often displayed objects should be updated.  
 
 
 September 2014:

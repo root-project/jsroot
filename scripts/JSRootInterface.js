@@ -94,20 +94,22 @@ function ReadFile(filename, checkitem) {
 
 function UpdateOnline() {
    var chkbox = document.getElementById("monitoring");
-   if (!chkbox || !chkbox.checked) return;
    
-   if (! ('disp' in JSROOT.H('root'))) return;
+   var h = JSROOT.H('root');
    
-   JSROOT.H('root')['disp'].ForEach(function(panel, itemname, painter) {
-      if (painter==null) return;
-      JSROOT.H('root').get(itemname, function(item, obj) {
+   h['_monitoring_on'] = chkbox && chkbox.checked;
+   
+   if (h['_monitoring_on'] && ('disp' in h))
+     h['disp'].ForEach(function(panel, itemname, painter) {
+       if (painter==null) return;
+       h.get(itemname, function(item, obj) {
          if (painter.UpdateObject(obj)) {
             document.body.style.cursor = 'wait';
             painter.RedrawFrame();
             document.body.style.cursor = 'auto';
          }
       });
-   } , true); // update only visible objects
+     } , true); // update only visible objects
 }
 
 function ProcessResize(direct)
@@ -194,6 +196,19 @@ function BuildOnlineGUI() {
    else
       setGuiLayout(layout);
    
+   var monitor = JSROOT.GetUrlOption("monitoring");
+   if (monitor == "") monitor = 3000; else
+   if (monitor != null) {
+      monitor = parseInt(monitor);
+      if ((monitor == NaN) || (monitor<=0)) monitor = null;
+   }
+   
+   if (monitor!=null)
+      document.getElementById("monitoring").checked = true;
+   else
+      monitor = 3000;
+      
+   
    var itemsarr = [];
    var itemname = JSROOT.GetUrlOption("item");
    if (itemname) itemsarr.push(itemname);
@@ -203,15 +218,17 @@ function BuildOnlineGUI() {
       for (var i in items) itemsarr.push(items[i]);
    }
 
-   var hpainter = new JSROOT.HierarchyPainter("root", "browser");
+   var h = new JSROOT.HierarchyPainter("root", "browser");
 
-   hpainter.SetDisplay(layout, 'right-div');
+   h.SetDisplay(layout, 'right-div');
    
-   hpainter.OpenOnline("", function() {
-      hpainter.displayAll(itemsarr);
+   h['_monitoring_interval'] = monitor;
+   
+   h.OpenOnline("", function() {
+      h.displayAll(itemsarr);
    });
    
-   setInterval(UpdateOnline, 3000);
+   setInterval(UpdateOnline, monitor);
    
    AddInteractions();
 }

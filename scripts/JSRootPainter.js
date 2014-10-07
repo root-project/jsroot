@@ -3945,8 +3945,6 @@
 
          this.draw_title.text(l_title);
 
-         // console.log("title height = " + this.draw_title.node().getBBox().height + "  font size = " + font_size);
-
          var pthis = this;
 
          this.AddDrag("title", this.draw_title, {
@@ -7931,6 +7929,8 @@
          var addr = "";
          if ('_online' in this.h) {
             addr = "/?";
+            if (this['_monitoring_on'])
+               addr+="monitoring=" + this['_monitoring_interval'];
          } else 
          if ('_file' in this.h) {
             addr = JSROOT.source_dir + "index.htm?";
@@ -7939,7 +7939,7 @@
 
          if (this['disp_kind']) {
             if (addr.length>2) addr+="&";
-            addr += "layout=" + this['disp_kind']; 
+            addr += "layout=" + this['disp_kind'].replace(/ /g,""); 
          }
          
          var items = [];
