@@ -4111,18 +4111,7 @@
 
       return stats;
    }
-
-   JSROOT.THistPainter.prototype.FindPalette = function() {
-
-      if ('fFunctions' in this.histo)
-         for (var i in this.histo.fFunctions.arr) {
-            var func = this.histo.fFunctions.arr[i];
-            if (func['_typename'] == 'TPaletteAxis') return func;
-         }
-
-      return null;
-   }
-
+   
 
    JSROOT.THistPainter.prototype.DrawFunctions = function() {
 
@@ -5159,6 +5148,22 @@
             menu['painter'].ToggleColz();
          });
    }
+   
+   JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
+      if ('fFunctions' in this.histo)
+         for (var i in this.histo.fFunctions.arr) {
+            var func = this.histo.fFunctions.arr[i];
+            if (func['_typename'] != 'TPaletteAxis') continue;
+            if (remove) {
+               this.histo.fFunctions.arr.splice(i,1);
+               return null;
+            }
+            
+            return func;
+         }
+
+      return null;
+   }
 
    JSROOT.TH2Painter.prototype.ToggleColz = function() 
    {
@@ -5308,7 +5313,6 @@
       if (pal['fX2NDC'] + rel > 0.98) {
          var shift = pal['fX2NDC'] + rel - 0.98;   
 
-         console.log("Text will overflow pad shift = " + shift);
          pal['fX1NDC']-=shift;
          pal['fX2NDC']-=shift;
          rel_width += shift;
@@ -5984,6 +5988,10 @@
          // create pallette
          var shrink = painter.CreatePalette(0.04);
          JSROOT.Painter.shrinkFrame(vis, shrink);
+      } else 
+      if (painter.options.Zscale == 0) {
+         // delete palette - it may appear there due to previous draw options 
+         painter.FindPalette(true);
       }
 
       // check if we need to create statbox
