@@ -3287,7 +3287,6 @@
             .attr("width", s_width)
             .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-
       var paletteColors = this.first.paletteColors;
 
       // Draw palette
@@ -3382,8 +3381,6 @@
             pthis.DrawPalette();
          }
       });
-
-
    }
 
    JSROOT.TColzPalettePainter.prototype.Redraw = function() {
@@ -5321,7 +5318,6 @@
       return rel_width + 0.01;
    }
 
-
    JSROOT.TH2Painter.prototype.ScanContent = function()
    {
       this.fillcolor = JSROOT.Painter.root_colors[this.histo['fFillColor']];
@@ -5345,18 +5341,18 @@
       this.binwidthy = (this.ymax - this.ymin);
       if (this.nbinsy>0) this.binwidthy = this.binwidthy / this.nbinsy
 
-      this.maxbin = 0;
-      this.minbin = 0;
+      this.gmaxbin = 0; // global min/max
+      this.gminbin = 0;
       for (var i=0; i<this.nbinsx; ++i) {
          for (var j=0; j<this.nbinsy; ++j) {
             var bin_content = this.histo.getBinContent(i+1, j+1);
-            if (bin_content < this.minbin) this.minbin = bin_content; 
-            if (bin_content > this.maxbin) this.maxbin = bin_content;
+            if (bin_content < this.gminbin) this.gminbin = bin_content; 
+            if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
          }
       }
 
       // used to enable/disable stat box
-      this.draw_content = this.maxbin>0;
+      this.draw_content = this.gmaxbin>0;
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function()
@@ -5370,6 +5366,8 @@
       this.stat_sumx2 = 0;
       this.stat_sumy2 = 0;
       this.stat_sumxy2 = 0;
+      this.maxbin = 0;  // min/max in selected range
+      this.minbin = 0;
 
       var xleft = this.GetSelectIndex("x","left");
       var xright = this.GetSelectIndex("x","right");
@@ -5395,6 +5393,14 @@
             this.stat_matrix[yside*3 + xside]+=zz;
 
             if ((xside==1) && (yside==1)) {
+               
+               if (this.stat_sum0==0) {
+                  this.maxbin = zz;
+                  this.minbin = zz;
+               } else
+               if (zz > this.maxbin) this.maxbin = zz; else
+               if (zz < this.minbin) this.minbin = zz;
+               
                this.stat_sum0   += zz;
                this.stat_sumx1  += xx * zz;
                this.stat_sumy1  += yy * zz;
@@ -5403,7 +5409,6 @@
                this.stat_sumxy2 += xx * yy * zz;
             }
          }
-
       }
    }
 
