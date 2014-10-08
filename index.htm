@@ -26,18 +26,20 @@ Several parameters could be specified when opening page:
   opts - array of options ['any', 'colz']
   layout - can be 'collapsible', 'tabs' or gridNxM where N and M are integer values
 Example:  
-   http:///web-docs.gsi.de/~linev/js/3.0/index.htm?file=files/hsimple.root&layout=grid5x5&items=["hpx;1", "hpxpy;1"]
+   http://web-docs.gsi.de/~linev/js/3.0/index.htm?file=files/hsimple.root&layout=grid3x4&items=["hpx;1", "hpxpy;1"]
 
 Page can be used to open files from other web servers like:
 
-       http:///web-docs.gsi.de/~linev/js/3.0/index.htm?file=http://root.cern.ch/js/files/hsimple.root
+   http://web-docs.gsi.de/~linev/js/3.0/index.htm?file=http://root.cern.ch/js/files/hsimple.root
 
 But one should be aware about Cross-Origin Request blocking. 
 Read https://developer.mozilla.org/en/http_access_control for more details.
 
-To avoid problem at all, one could copy only index.htm on the web server where data files are located.
-Than one should specify proper location of JSRootCore.js like
-   <script type="text/javascript" src="http:///web-docs.gsi.de/~linev/js/3.0/scripts/JSRootCore.js"></script>
-This approach will work in all supported browsers with default settings.
+To avoid problem at all, one can copy only index.htm on the web server where data files are located.
+And specify full path to the JSRootCore.js script like
+   <script type="text/javascript" src="http://web-docs.gsi.de/~linev/js/3.0/scripts/JSRootCore.js"></script>
+
+If necessary, complete JSROOT can be installed on the web server.
+Sources can be found in ROOT repository, etc/http/ subdirectory.   
       
 -->

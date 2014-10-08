@@ -183,7 +183,7 @@ function BuildOnlineGUI() {
       return;
    }
    
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version: " + JSROOT.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += '<div id="left-div" class="column"><br/>'
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
@@ -254,7 +254,7 @@ function BuildSimpleGUI() {
    if (!files) files = "file/hsimple.root";
    var arrFiles = files.split(';');
 
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version: " + JSROOT.version + "&nbsp</font></div>"
+   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += "<div id='left-div' class='column'>\n"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>\n"
