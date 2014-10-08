@@ -7903,7 +7903,11 @@
    }
    
    JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
-      JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(onlineprop.server + onlineprop.itemname + "/draw.htm"); });
+      var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
+      if (this['_monitoring_on'])
+         drawurl+="?monitoring=" + this['_monitoring_interval'];
+      
+      JSROOT.Painter.menuitem(menu,"Draw in new window", function() { window.open(drawurl); });
       JSROOT.Painter.menuitem(menu,"Draw as png", function() { window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300"); });
    }
 
