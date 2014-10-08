@@ -70,8 +70,10 @@
    
    </script>
 
-   <body onload="JSROOT.AssertPrerequisites('io', CreateGui)">
-      <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
+   <body onload="JSROOT.AssertPrerequisites('io', CreateGui, 'drawing')">
+      <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px">
+         loading scripts...
+      </div>
    </body>
 
 </html>

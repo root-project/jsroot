@@ -256,7 +256,7 @@
       return xhr;
    }
 	
-   JSROOT.loadScript = function(urllist, callback) {
+   JSROOT.loadScript = function(urllist, callback, debugout) {
       // dynamic script loader using callback
       // (as loading scripts may be asynchronous)
       // one could specify list of scripts or style files, separated by semicolon ';'
@@ -264,12 +264,22 @@
       // This location can be set by JSROOT.source_dir or it will be detected automatically
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
+
+      function debug(str) {
+         if (debugout) 
+            document.getElementById(debugout).innerHTML = str;
+         else
+            console.log(str);
+      }
       
       function completeLoad() {
          if ((urllist!=null) && (urllist.length>0))
-            JSROOT.loadScript(urllist, callback);
-         else
-            if (typeof callback == 'function') callback();
+            return JSROOT.loadScript(urllist, callback, debugout);
+         
+         if (debugout) 
+            document.getElementById(debugout).innerHTML = "";
+         
+         if (typeof callback == 'function') callback();
       }
       
       if ((urllist==null) || (urllist.length==0)) 
@@ -320,12 +330,12 @@
                var pos = src.indexOf("scripts/JSRootCore.js");
                if (pos>=0) {
                   JSROOT.source_dir = src.substr(0, pos);
-                  console.log("Set JSROOT.source_dir to " + JSROOT.source_dir);
+                  debug("Set JSROOT.source_dir to " + JSROOT.source_dir);
                }
             }
 
             if (src.indexOf(filename)>=0) {
-               console.log("script "+  filename + " already loaded");
+               debug("script "+  filename + " already loaded");
                return completeLoad();
             }
          }
@@ -334,18 +344,15 @@
       if (isrootjs && (JSROOT.source_dir!=null)) filename = JSROOT.source_dir + filename;   
       
       var element = null;
-      
+
+      debug("loading " + filename + " ..."); 
+
       if (isstyle) {
-         
-         console.log("loading style " + filename);
-         
          element = document.createElement("link");
          element.setAttribute("rel", "stylesheet");
          element.setAttribute("type", "text/css");
          element.setAttribute("href", filename);
       } else {
-         console.log("loading script " + filename);
-
          element = document.createElement("script");
          element.setAttribute('type', "text/javascript");
          element.setAttribute('src', filename);//+ "?r=" + rnd;
@@ -353,8 +360,7 @@
       
       if (element.readyState) { // Internet Explorer specific
          element.onreadystatechange = function() {
-            if (element.readyState == "loaded" ||
-                  element.readyState == "complete") {
+            if (element.readyState == "loaded" || element.readyState == "complete") {
                element.onreadystatechange = null;
                completeLoad();
             }
@@ -369,7 +375,7 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   JSROOT.AssertPrerequisites = function(kind, andThan) {
+   JSROOT.AssertPrerequisites = function(kind, andThan, debugout) {
       // one could specify kind of requirements
       // 'io' for I/O functionality (default)
       // '2d' only for 2d graphic
@@ -394,13 +400,18 @@
       if ((typeof kind == 'string') && (kind.indexOf("3d")>=0))
          allfiles += ";$$$scripts/jquery.mousewheel.js;$$$scripts/three.min.js;$$$scripts/helvetiker_regular.typeface.js;$$$scripts/helvetiker_bold.typeface.js";
       
-      JSROOT.loadScript(allfiles, andThan); 
+      JSROOT.loadScript(allfiles, andThan, debugout); 
    }
    
    JSROOT.BuildSimpleGUI = function(requirements, andThen) {
       if (typeof requirements == 'function') {
          andThen = requirements; requirements = null;
-      } 
+      }
+      var debugout = null;
+      
+      if (document.getElementById('onlineGUI')) debugout = 'onlineGUI'; else
+      if (document.getElementById('simpleGUI')) debugout = 'simpleGUI';
+         
       
       JSROOT.AssertPrerequisites(requirements, function() {
          JSROOT.loadScript('$$$scripts/JSRootInterface.js;$$$style/JSRootInterface.css', function() { 
@@ -413,8 +424,8 @@
             BuildSimpleGUI();
             
             if (typeof andThen == 'function') andThen();
-         });
-      });
+         }, debugout);
+      }, debugout);
    }
 
    JSROOT.addFormula = function(obj) {
