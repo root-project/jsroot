@@ -3523,7 +3523,7 @@
       if (this.options.Logx) {
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
          if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax)) this.scale_xmin = this.scale_xmax * 0.0001;
-         this['x'] = d3.scale.log().domain([this.scale_xmin, this.scale_xmax]).range([0, w]).clamp(true);
+         this['x'] = d3.scale.log().domain([this.scale_xmin, this.scale_xmax]).range([0, w]); //.clamp(true);
       } else {
          this['x'] = d3.scale.linear().domain([this.scale_xmin, this.scale_xmax]).range([0, w]);
       }
@@ -3545,7 +3545,7 @@
       if (this.options.Logy) {
          if (this.scale_ymax<=0) this.scale_ymax = 1;
          if ((this.scale_ymin<=0) || (this.scale_ymin>=this.scale_ymax)) this.scale_ymin = 0.0001 * this.scale_ymax;
-         this['y'] = d3.scale.log().domain([this.scale_ymin, this.scale_ymax]).range([h, 0]).clamp(true);
+         this['y'] = d3.scale.log().domain([this.scale_ymin, this.scale_ymax]).range([h, 0]); //.clamp(true);
       } else {
          this['y'] = d3.scale.linear().domain([this.scale_ymin, this.scale_ymax]).range([h, 0]);
       }
