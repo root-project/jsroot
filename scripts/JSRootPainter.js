@@ -7335,7 +7335,7 @@
                // var pos = fullname.lastIndexOf(";");
                // if (pos>0) fullname = fullname.slice(0, pos);
                
-               this._file.ReadObject(fullname, -1, function(obj) {
+               this._file.ReadObject(fullname, function(obj) {
                   item._readobj = obj;
                   if ('_expand' in item) item._name = item._keyname; // remove cycle number for objects supporting expand
                   if (typeof callback == 'function') callback(item, obj);
@@ -7343,7 +7343,7 @@
             },
             // this is alternative get method, where items may not exists (due to missing/not-read subfolder)
             _getdirect : function(itemname, callback) {
-               this._file.ReadObject(itemname, -1, function(obj) {
+               this._file.ReadObject(itemname, function(obj) {
                   if (typeof callback == 'function') callback(itemname, obj);
                });
             }  

@@ -52,7 +52,7 @@
                if (itemname=="StreamerInfo")
                   return draw_object(file.fStreamerInfos);
                 
-               file.ReadObject(itemname, -1, function(obj) {
+               file.ReadObject(itemname, function(obj) {
                   if (obj==null) return file_error("object " + itemname + " not found in " + filename);
 
                   draw_object(obj);

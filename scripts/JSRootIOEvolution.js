@@ -1413,7 +1413,7 @@
          if ((dirkey!=null) && (typeof getkey_callback == 'function') &&
              (dirkey['fClassName'].indexOf("TDirectory")==0)) {
             
-            this.ReadObject(dirname, 1, function(newdir) {
+            this.ReadObject(dirname, function(newdir) {
                if (newdir) newdir.GetKey(subname, cycle, getkey_callback);
             });
             return null;
@@ -1454,8 +1454,12 @@
    };
 
    JSROOT.TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
-      // read any object from a root file
+      // Read any object from a root file
+      // One could specify cycle number in the object name or as separate argument
+      // Last argument should be callback function, while data reading from file is asynchron 
 
+      if (typeof cycle == 'function') { user_call_back = cycle; cycle = 1; }
+      
       var pos = obj_name.lastIndexOf(";");
       if (pos>0) {
          cycle = parseInt(obj_name.slice(pos+1));
