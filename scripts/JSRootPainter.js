@@ -7101,7 +7101,16 @@
 
       if ($(render_to).height() < 10) {
          // set aspect ratio for the place, where object will be drawn
-         $(render_to).height($(render_to).width() * 0.66);
+         
+         var factor = 0.66;
+         
+         // for TCanvas and TPad reconstruct ratio between width and height
+         if (('fAbsHNDC' in obj) && ('fAbsWNDC' in obj) && (obj['fAbsWNDC']>0)) { 
+            factor = obj['fAbsHNDC'] / obj['fAbsWNDC'];
+            if ((factor<0.1) || (factor>10)) factor = 1; 
+         }
+         
+         $(render_to).height($(render_to).width() * factor);
       }
 
       var fillcolor = 'white';
