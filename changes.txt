@@ -15,7 +15,8 @@ October 2014:
    Parameter defines how often displayed objects should be updated.  
 4. Implement 'opt' and 'opts' URL parameters for main page.   
 5. Show progress with scripts loading in the browser window 
- 
+6. When one appends "+" to the filename, its content read completely with first I/O operation.
+   
 
 September 2014:
 1. First try to handle resize of the browser, 

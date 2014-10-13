@@ -1214,10 +1214,9 @@
 
       this._typename = "TFile";
       this.fOffset = 0;
-      this.fArchiveOffset = 0;
       this.fEND = 0;
       this.fURL = url;
-      this.fAcceptRanges = true;
+      this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fFullFileContent = ""; // this can be full content of the file (if ranges are not supported)
 
       this.ERelativeTo = {
@@ -1235,27 +1234,36 @@
       this.fFileName = "";  
       this.fStreamers = new Array;
 
-      if (this.fURL) {
+      if (typeof this.fURL == 'string') {
+         if (this.fURL.charAt(this.fURL.length-1) == "+") {
+            this.fURL = this.fURL.substr(0, this.fURL.length-1);
+            this.fAcceptRanges = false;
+         }
+         
          var pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
          if (pos>=0) this.fFileName = this.fURL.substr(pos+1); 
          
-         var file = this;
+         if (!this.fAcceptRanges) {
+            this.ReadKeys(newfile_callback);
+         } else {
+            var file = this;
          
-         var xhr = JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
-             if (res==null) {
-                if (typeof newfile_callback == 'function')
-                   newfile_callback(null); 
-                return; 
-             } 
-             
-             var accept_ranges = res.getResponseHeader("Accept-Ranges");
-             if (!accept_ranges) file.fAcceptRanges = false;
-             file.fEND = parseInt(res.getResponseHeader("Content-Length"));
-             file.ReadKeys(newfile_callback);
-         });
-         
-         xhr.send(null);
-         xhr = null;
+            var xhr = JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
+               if (res==null) {
+                  if (typeof newfile_callback == 'function')
+                     newfile_callback(null); 
+                  return; 
+               } 
+
+               var accept_ranges = res.getResponseHeader("Accept-Ranges");
+               if (!accept_ranges) file.fAcceptRanges = false;
+               file.fEND = parseInt(res.getResponseHeader("Content-Length"));
+               file.ReadKeys(newfile_callback);
+            });
+
+            xhr.send(null);
+            xhr = null;
+         }
          
       }
 
@@ -1265,26 +1273,24 @@
 
    JSROOT.TFile.prototype.ReadBuffer = function(len, callback) {
 
-      if (!this.fAcceptRanges && (this.fFullFileContent.length>0)) {
+      if (!this.fAcceptRanges && (this.fFullFileContent.length>0))
          return callback(this.fFullFileContent.substr(this.fOffset, len));
-      }
       
       var file = this;
-      var xhrcallback = function(res) {
-         
-         if ((res!=null) && !file.fAcceptRanges && 
-             (res.length != len) && (file.fEND == res.length)) {
-            // special case - local file reading will not accept ranges
+
+      var xhr = JSROOT.NewHttpRequest(this.fURL, "bin", function(res) {
+         if ((res!=null) && !file.fAcceptRanges && (file.fFullFileContent.length == 0)) {  
+            // special case - read content all at once
             file.fFullFileContent = res;
+            file.fEND = res.length;
             res = file.fFullFileContent.substr(file.fOffset, len);
          }
 
          callback(res);
-      }
+      });
 
-      var xhr = JSROOT.NewHttpRequest(this.fURL, "bin", xhrcallback);
-
-      xhr.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len));
+      if (this.fAcceptRanges)
+         xhr.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len));
       xhr.setRequestHeader("If-Modified-Since", "Wed, 31 Dec 1980 00:00:00 GMT");
       xhr.send(null);
    };
@@ -1293,16 +1299,16 @@
       // Set position from where to start reading.
       switch (pos) {
          case this.ERelativeTo.kBeg:
-            this.fOffset = offset + this.fArchiveOffset;
+            this.fOffset = offset;
             break;
          case this.ERelativeTo.kCur:
             this.fOffset += offset;
             break;
          case this.ERelativeTo.kEnd:
             // this option is not used currently in the ROOT code
-            if (this.fArchiveOffset)
-               throw  "Seek : seeking from end in archive is not (yet) supported";
-            this.fOffset = this.fEND - offset;  // is fEND really EOF or logical EOF?
+            if (this.fEND == 0)
+               throw  "Seek : seeking from end in file with fEND==0 is not supported";
+            this.fOffset = this.fEND - offset;
             break;
          default:
             throw  "Seek : unknown seek option (" + pos + ")";
