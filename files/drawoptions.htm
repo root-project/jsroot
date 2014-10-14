@@ -60,8 +60,14 @@
             if (file==null) return file_error("hsimple.root cannot be opened");
             
             draw_item_options(file, "hpx;1", "h1_draw", "");
-            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ");
+            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;LEGO");
             draw_item_options(file, "hprof;1", "prof_draw", ";E1");
+         });
+
+         new JSROOT.TFile("glbox.root+", function(file) {
+            if (file==null) return file_error("glbox.root cannot be opened");
+            
+            draw_item_options(file, "h31;1", "h3_draw", "");
          });
          
          new JSROOT.TFile("graph.root+", function(file) {
@@ -81,7 +87,7 @@
             
             draw_item_options(file, "rf107_plotstyles;1", "can_draw", "");
          });
-         
+
    
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
@@ -100,6 +106,10 @@
   <h1>TH2 class</h1> 
 
   <div id="h2_draw"></div>
+
+  <h1>TH3 class</h1> 
+
+  <div id="h3_draw"></div>
 
   <h1>TProfile class</h1> 
 

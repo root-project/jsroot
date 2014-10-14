@@ -3141,11 +3141,12 @@
       var option = { 'Axis': 0, 'Bar': 0, 'Curve': 0, 'Error': 0, 'Hist': 0,
          'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Scat': 0, 'Func' : 0,
          'Star': 0, 'Arrow': 0, 'Box': 0, 'Text': 0, 'Char': 0, 'Color': 0,
-         'Contour': 0, 'Logx': 0, 'Logy': 0, 'Logz': 0, 'Lego': 0, 'Surf': 0,
+         'Contour': 0, 'Lego': 0, 'Surf': 0,
          'Off': 0, 'Tri': 0, 'Proj': 0, 'AxisPos': 0, 'Spec': 0, 'Pie': 0,
-         'List': 0, 'Zscale': 0, 'FrontBox': 1, 'BackBox': 1, 'System': JSROOT.Painter.Coord.kCARTESIAN,
+         'List': 0, 'Zscale': 0, 'FrontBox': 1, 'BackBox': 1, 
+         'System': JSROOT.Painter.Coord.kCARTESIAN,
          'HighRes': 0, 'Zero': 0, 
-         'Logx' : false, 'Logy' : false, 'Logz' : false, 'Gridx' : false, 'Gridy' : false
+         'Logx' : 0, 'Logy' : 0, 'Logz' : 0, 'Gridx' : 0, 'Gridy' : 0
       };
       //check for graphical cuts
       var chopt = opt.toUpperCase();
@@ -5614,7 +5615,7 @@
    JSROOT.TH2Painter.prototype.DrawBins = function()
    {
       this.RemoveDraw();
-
+      
       this.draw_g = this.svg_frame.append("svg:g");
 
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
@@ -5624,7 +5625,6 @@
 
       var draw_markers = (this.options.Scat > 0 && this.histo['fMarkerStyle'] > 1);
       var normal_coordinates = (this.options.Color > 0) || draw_markers;
-
 
       var tipkind = 0;
       if (JSROOT.gStyle.Tooltip) tipkind = draw_markers ? 2 : 1;
@@ -6002,18 +6002,22 @@
       painter.CreateXY();
 
       painter.CountStat();
+      
+      if (painter.options.Lego>0) {
+         painter.Draw3D();
+      } else {
+         painter.DrawAxes();
 
-      painter.DrawAxes();
+         painter.DrawGrids();
 
-      painter.DrawGrids();
+         painter.DrawBins();
 
-      painter.DrawBins();
+         painter.DrawTitle();
+ 
+         painter.DrawFunctions();
 
-      painter.DrawTitle();
-
-      painter.DrawFunctions();
-
-      painter.AddInteractive();
+         painter.AddInteractive();
+      }
 
       return painter;
    }
