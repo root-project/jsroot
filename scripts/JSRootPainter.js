@@ -301,309 +301,6 @@
       return chopt;
    };
 
-   JSROOT.Painter.decodeOptions = function(opt, histo, pad) {
-      /* decode string 'opt' and fill the option structure */
-      var hdim = 1; // histo['fDimension'];
-      if (histo['_typename'].match(/\bTH2/)) hdim = 2;
-      if (histo['_typename'].match(/\bTH3/)) hdim = 3;
-      var nch = opt.length;
-      var option = { 'Axis': 0, 'Bar': 0, 'Curve': 0, 'Error': 0, 'Hist': 0,
-         'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Func': 0, 'Scat': 0,
-         'Star': 0, 'Arrow': 0, 'Box': 0, 'Text': 0, 'Char': 0, 'Color': 0,
-         'Contour': 0, 'Logx': 0, 'Logy': 0, 'Logz': 0, 'Lego': 0, 'Surf': 0,
-         'Off': 0, 'Tri': 0, 'Proj': 0, 'AxisPos': 0, 'Spec': 0, 'Pie': 0,
-         'List': 0, 'Zscale': 0, 'FrontBox': 1, 'BackBox': 1, 'System': JSROOT.Painter.Coord.kCARTESIAN,
-         'HighRes': 0, 'Zero': 0
-      };
-      //check for graphical cuts
-      var chopt = opt.toUpperCase();
-      chopt = JSROOT.Painter.clearCuts(chopt);
-      if (hdim > 1) option.Scat = 1;
-      if (!nch) option.Hist = 1;
-      if (('fFunctions' in histo) && (histo.fFunctions.arr.length > 0)) option.Func = 2;
-      if (('fSumw2' in histo) && (histo.fSumw2.length > 0) && (hdim == 1)) option.Error = 2;
-
-      var l = chopt.indexOf('SPEC');
-      if (l != -1) {
-         option.Scat = 0;
-         chopt = chopt.replace('SPEC', '    ');
-         var bs = 0;
-         l = chopt.indexOf('BF(');
-         if (l != -1) {
-            bs = parseInt(chopt)
-         }
-         option.Spec = Math.max(1600, bs);
-         return option;
-      }
-      l = chopt.indexOf('GL');
-      if (l != -1) {
-         chopt = chopt.replace('GL', '  ');
-      }
-      l = chopt.indexOf('X+');
-      if (l != -1) {
-         option.AxisPos = 10;
-         chopt = chopt.replace('X+', '  ');
-      }
-      l = chopt.indexOf('Y+');
-      if (l != -1) {
-         option.AxisPos += 1;
-         chopt = chopt.replace('Y+', '  ');
-      }
-      if ((option.AxisPos == 10 || option.AxisPos == 1) && (nch == 2)) option.Hist = 1;
-      if (option.AxisPos == 11 && nch == 4) option.Hist = 1;
-      l = chopt.indexOf('SAMES');
-      if (l != -1) {
-         if (nch == 5) option.Hist = 1;
-         option.Same = 2;
-         chopt = chopt.replace('SAMES', '     ');
-      }
-      l = chopt.indexOf('SAME');
-      if (l != -1) {
-         if (nch == 4) option.Hist = 1;
-         option.Same = 1;
-         chopt = chopt.replace('SAME', '    ');
-      }
-      l = chopt.indexOf('PIE');
-      if (l != -1) {
-         option.Pie = 1;
-         chopt = chopt.replace('PIE', '   ');
-      }
-      l = chopt.indexOf('LEGO');
-      if (l != -1) {
-         option.Scat = 0;
-         option.Lego = 1;
-         chopt = chopt.replace('LEGO', '    ');
-         if (chopt[l+4] == '1') { option.Lego = 11; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '2') { option.Lego = 12; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '3') { option.Lego = 13; chopt[l+4] = ' '; }
-         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
-         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0;  chopt = chopt.replace('BB', '  '); }
-         l = chopt.indexOf('0'); if (l != -1) { option.Zero = 1;  chopt = chopt.replace('0', ' '); }
-      }
-      l = chopt.indexOf('SURF');
-      if (l != -1) {
-         option.Scat = 0;
-         option.Surf = 1; chopt = chopt.replace('SURF', '    ');
-         if (chopt[l+4] == '1') { option.Surf = 11; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '2') { option.Surf = 12; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '3') { option.Surf = 13; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '4') { option.Surf = 14; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '5') { option.Surf = 15; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '6') { option.Surf = 16; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '7') { option.Surf = 17; chopt[l+4] = ' '; }
-         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
-         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
-      }
-      l = chopt.indexOf('TF3');
-      if (l != -1) {
-         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
-         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
-      }
-      l = chopt.indexOf('ISO');
-      if (l != -1) {
-         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
-         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
-      }
-      l = chopt.indexOf('LIST'); if (l != -1) { option.List = 1; chopt = chopt.replace('LIST', '  '); }
-      l = chopt.indexOf('CONT');
-      if (l != -1) {
-         chopt = chopt.replace('CONT', '    ');
-         if (hdim > 1) {
-            option.Scat = 0;
-            option.Contour = 1;
-            if (chopt[l+4] == '1') { option.Contour = 11; chopt[l+4] = ' '; }
-            if (chopt[l+4] == '2') { option.Contour = 12; chopt[l+4] = ' '; }
-            if (chopt[l+4] == '3') { option.Contour = 13; chopt[l+4] = ' '; }
-            if (chopt[l+4] == '4') { option.Contour = 14; chopt[l+4] = ' '; }
-            if (chopt[l+4] == '5') { option.Contour = 15; chopt[l+4] = ' '; }
-         } else {
-            option.Hist = 1;
-         }
-      }
-      l = chopt.indexOf('HBAR');
-      if (l != -1) {
-         option.Hist = 0;
-         option.Bar = 20; chopt = chopt.replace('HBAR', '    ');
-         if (chopt[l+4] == '1') { option.Bar = 21; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '2') { option.Bar = 22; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '3') { option.Bar = 23; chopt[l+4] = ' '; }
-         if (chopt[l+4] == '4') { option.Bar = 24; chopt[l+4] = ' '; }
-      }
-      l = chopt.indexOf('BAR');
-      if (l != -1) {
-         option.Hist = 0;
-         option.Bar = 10; chopt = chopt.replace('BAR', '   ');
-         if (chopt[l+3] == '1') { option.Bar = 11; chopt[l+3] = ' '; }
-         if (chopt[l+3] == '2') { option.Bar = 12; chopt[l+3] = ' '; }
-         if (chopt[l+3] == '3') { option.Bar = 13; chopt[l+3] = ' '; }
-         if (chopt[l+3] == '4') { option.Bar = 14; chopt[l+3] = ' '; }
-      }
-      l = chopt.indexOf('ARR' );
-      if (l != -1) {
-         chopt = chopt.replace('ARR', '   ');
-         if (hdim > 1) {
-            option.Arrow  = 1;
-            option.Scat = 0;
-         } else {
-            option.Hist = 1;
-         }
-      }
-      l = chopt.indexOf('BOX' );
-      if (l != -1) {
-         chopt = chopt.replace('BOX', '   ');
-         if (hdim>1) {
-            Hoption.Scat = 0;
-            Hoption.Box  = 1;
-            if (chopt[l+3] == '1') { option.Box = 11; chopt[l+3] = ' '; }
-         } else {
-            option.Hist = 1;
-         }
-      }
-      l = chopt.indexOf('COLZ');
-      if (l != -1) {
-         chopt = chopt.replace('COLZ', '');
-         if (hdim>1) {
-            option.Color  = 2;
-            option.Scat   = 0;
-            option.Zscale = 1;
-         } else {
-            option.Hist = 1;
-         }
-      }
-      l = chopt.indexOf('COL' );
-      if (l != -1) {
-         chopt = chopt.replace('COL', '   ');
-         if (hdim>1) {
-            option.Color = 1;
-            option.Scat  = 0;
-         } else {
-            option.Hist = 1;
-         }
-      }
-      l = chopt.indexOf('CHAR'); if (l != -1) { option.Char = 1; chopt = chopt.replace('CHAR', '    '); option.Scat = 0; }
-      l = chopt.indexOf('FUNC'); if (l != -1) { option.Func = 2; chopt = chopt.replace('FUNC', '    '); option.Hist = 0; }
-      l = chopt.indexOf('HIST'); if (l != -1) { option.Hist = 2; chopt = chopt.replace('HIST', '    '); option.Func = 0; option.Error = 0; }
-      l = chopt.indexOf('AXIS'); if (l != -1) { option.Axis = 1; chopt = chopt.replace('AXIS', '    '); }
-      l = chopt.indexOf('AXIG'); if (l != -1) { option.Axis = 2; chopt = chopt.replace('AXIG', '    '); }
-      l = chopt.indexOf('SCAT'); if (l != -1) { option.Scat = 1; chopt = chopt.replace('SCAT', '    '); }
-      l = chopt.indexOf('TEXT');
-      if (l != -1) {
-         var angle = parseInt(chopt);
-         if (!isNaN(angle)) {
-            if (angle < 0)  angle = 0;
-            if (angle > 90) angle = 90;
-            option.Text = 1000 + angle;
-         }
-         else {
-            option.Text = 1;
-         }
-         chopt = chopt.replace('TEXT', '    ');
-         l = chopt.indexOf('N');
-         if (l != -1 && histo['_typename'].match(/\bTH2Poly/)) option.Text += 3000;
-         option.Scat = 0;
-      }
-      l = chopt.indexOf('POL');  if (l != -1) { option.System = JSROOT.Painter.Coord.kPOLAR;       chopt = chopt.replace('POL', '   '); }
-      l = chopt.indexOf('CYL');  if (l != -1) { option.System = JSROOT.Painter.Coord.kCYLINDRICAL; chopt = chopt.replace('CYL', '   '); }
-      l = chopt.indexOf('SPH');  if (l != -1) { option.System = JSROOT.Painter.Coord.kSPHERICAL;   chopt = chopt.replace('SPH', '   '); }
-      l = chopt.indexOf('PSR');  if (l != -1) { option.System = JSROOT.Painter.Coord.kRAPIDITY;    chopt = chopt.replace('PSR', '   '); }
-      l = chopt.indexOf('TRI');
-      if (l != -1) {
-         option.Scat = 0;
-         option.Color  = 0;
-         option.Tri = 1; chopt = chopt.replace('TRI', '   ');
-         l = chopt.indexOf('FB');   if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
-         l = chopt.indexOf('BB');   if (l != -1) { option.BackBox = 0;  chopt = chopt.replace('BB', '  '); }
-         l = chopt.indexOf('ERR');  if (l != -1) chopt = chopt.replace('ERR', '   ');
-      }
-      l = chopt.indexOf('AITOFF');
-      if (l != -1) {
-         Hoption.Proj = 1; chopt = chopt.replace('AITOFF', '      ');  // Aitoff projection
-      }
-      l = chopt.indexOf('MERCATOR');
-      if (l != -1) {
-         option.Proj = 2; chopt = chopt.replace('MERCATOR', '        ');  // Mercator projection
-      }
-      l = chopt.indexOf('SINUSOIDAL');
-      if (l != -1) {
-         option.Proj = 3; chopt = chopt.replace('SINUSOIDAL', '         ');  // Sinusoidal projection
-      }
-      l = chopt.indexOf('PARABOLIC');
-      if (l != -1) {
-         option.Proj = 4; chopt = chopt.replace('PARABOLIC', '         ');  // Parabolic projection
-      }
-      if (option.Proj > 0) {
-         option.Scat = 0;
-         option.Contour = 14;
-      }
-      if (chopt.indexOf('A') != -1)    option.Axis = -1;
-      if (chopt.indexOf('B') != -1)    option.Bar  = 1;
-      if (chopt.indexOf('C') != -1)  { option.Curve =1; option.Hist = -1; }
-      if (chopt.indexOf('F') != -1)    option.Fill =1;
-      if (chopt.indexOf('][') != -1) { option.Off  =1; option.Hist =1; }
-      if (chopt.indexOf('F2') != -1)   option.Fill =2;
-      if (chopt.indexOf('L') != -1)  { option.Line =1; option.Hist = -1; }
-      if (chopt.indexOf('P') != -1)  { option.Mark =1; option.Hist = -1; }
-      if (chopt.indexOf('Z') != -1)    option.Zscale =1;
-      if (chopt.indexOf('*') != -1)    option.Star =1;
-      if (chopt.indexOf('H') != -1)    option.Hist =2;
-      if (chopt.indexOf('P0') != -1)   option.Mark =10;
-      if (histo['_typename'].match(/\bTH2Poly/)) {
-         if (option.Fill + option.Line + option.Mark != 0 ) option.Scat = 0;
-      }
-
-      if (chopt.indexOf('E') != -1) {
-         if (hdim == 1) {
-            option.Error = 1;
-            if (chopt.indexOf('E0') != -1)  option.Error = 10;
-            if (chopt.indexOf('E1') != -1)  option.Error = 11;
-            if (chopt.indexOf('E2') != -1)  option.Error = 12;
-            if (chopt.indexOf('E3') != -1)  option.Error = 13;
-            if (chopt.indexOf('E4') != -1)  option.Error = 14;
-            if (chopt.indexOf('E5') != -1)  option.Error = 15;
-            if (chopt.indexOf('E6') != -1)  option.Error = 16;
-            if (chopt.indexOf('X0') != -1) {
-               if (option.Error == 1)  option.Error += 20;
-               option.Error += 10;
-            }
-            if (option.Text && histo['_typename'].match(/\bTProfile/)) {
-               option.Text += 2000;
-               option.Error = 0;
-            }
-         } else {
-            if (option.Error == 0) {
-               option.Error = 100;
-               option.Scat  = 0;
-            }
-            if (option.Text) {
-               option.Text += 2000;
-               option.Error = 0;
-            }
-         }
-      }
-      if (chopt.indexOf('9') != -1)  option.HighRes = 1;
-      if (option.Surf == 15) {
-         if (option.System == JSROOT.Painter.Coord.kPOLAR || 
-             option.System == JSROOT.Painter.Coord.kCARTESIAN) {
-            option.Surf = 13;
-            //Warning('MakeChopt','option SURF5 is not supported in Cartesian and Polar modes');
-         }
-      }
-      if (pad && typeof(pad) != 'undefined') {
-         // Copy options from current pad
-         option.Logx = pad['fLogx'];
-         option.Logy = pad['fLogy'];
-         option.Logz = pad['fLogz'];
-      } else {
-         option.Logx = false;
-         option.Logy = false;
-         option.Logz = false;
-      }
-      //  Check options incompatibilities
-      if (option.Bar == 1) option.Hist = -1;
-
-      return option;
-   };
-   
    JSROOT.Painter.root_fonts = new Array('Arial', 'Times New Roman',
       'bold Times New Roman', 'bold italic Times New Roman',
       'Arial', 'oblique Arial', 'bold Arial', 'bold oblique Arial',
@@ -3424,11 +3121,318 @@
    JSROOT.THistPainter.prototype.IsTProfile = function() {
       return this.histo && this.histo['_typename'] == 'TProfile';
    }
+   
+   JSROOT.THistPainter.prototype.IsTH2Poly = function() {  
+      return this.histo && this.histo['_typename'].match(/\bTH2Poly/);
+   }
 
    JSROOT.THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
-      return this.histo['fDimension'];
+      if ('fDimension' in this.histo) return this.histo['fDimension'];
+      if (this.histo['_typename'].match(/\bTH2/)) return 2;
+      if (this.histo['_typename'].match(/\bTH3/)) return 3;
+      return 1;
    }
+   
+   JSROOT.THistPainter.prototype.DecodeOptions = function(opt, pad) {
+      /* decode string 'opt' and fill the option structure */
+      var hdim = this.Dimension(); 
+      var nch = opt.length;
+      var option = { 'Axis': 0, 'Bar': 0, 'Curve': 0, 'Error': 0, 'Hist': 0,
+         'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Scat': 0,
+         'Star': 0, 'Arrow': 0, 'Box': 0, 'Text': 0, 'Char': 0, 'Color': 0,
+         'Contour': 0, 'Logx': 0, 'Logy': 0, 'Logz': 0, 'Lego': 0, 'Surf': 0,
+         'Off': 0, 'Tri': 0, 'Proj': 0, 'AxisPos': 0, 'Spec': 0, 'Pie': 0,
+         'List': 0, 'Zscale': 0, 'FrontBox': 1, 'BackBox': 1, 'System': JSROOT.Painter.Coord.kCARTESIAN,
+         'HighRes': 0, 'Zero': 0, 
+         'Logx' : false, 'Logy' : false, 'Logz' : false, 'Gridx' : false, 'Gridy' : false
+      };
+      //check for graphical cuts
+      var chopt = opt.toUpperCase();
+      chopt = JSROOT.Painter.clearCuts(chopt);
+      if (hdim > 1) option.Scat = 1;
+      if (!nch) option.Hist = 1;
+      if (this.IsTProfile()) option.Error = 2;
+
+      var l = chopt.indexOf('SPEC');
+      if (l != -1) {
+         option.Scat = 0;
+         chopt = chopt.replace('SPEC', '    ');
+         var bs = 0;
+         l = chopt.indexOf('BF(');
+         if (l != -1) {
+            bs = parseInt(chopt)
+         }
+         option.Spec = Math.max(1600, bs);
+         return option;
+      }
+      l = chopt.indexOf('GL');
+      if (l != -1) {
+         chopt = chopt.replace('GL', '  ');
+      }
+      l = chopt.indexOf('X+');
+      if (l != -1) {
+         option.AxisPos = 10;
+         chopt = chopt.replace('X+', '  ');
+      }
+      l = chopt.indexOf('Y+');
+      if (l != -1) {
+         option.AxisPos += 1;
+         chopt = chopt.replace('Y+', '  ');
+      }
+      if ((option.AxisPos == 10 || option.AxisPos == 1) && (nch == 2)) option.Hist = 1;
+      if (option.AxisPos == 11 && nch == 4) option.Hist = 1;
+      l = chopt.indexOf('SAMES');
+      if (l != -1) {
+         if (nch == 5) option.Hist = 1;
+         option.Same = 2;
+         chopt = chopt.replace('SAMES', '     ');
+      }
+      l = chopt.indexOf('SAME');
+      if (l != -1) {
+         if (nch == 4) option.Hist = 1;
+         option.Same = 1;
+         chopt = chopt.replace('SAME', '    ');
+      }
+      l = chopt.indexOf('PIE');
+      if (l != -1) {
+         option.Pie = 1;
+         chopt = chopt.replace('PIE', '   ');
+      }
+      l = chopt.indexOf('LEGO');
+      if (l != -1) {
+         option.Scat = 0;
+         option.Lego = 1;
+         chopt = chopt.replace('LEGO', '    ');
+         if (chopt[l+4] == '1') { option.Lego = 11; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '2') { option.Lego = 12; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '3') { option.Lego = 13; chopt[l+4] = ' '; }
+         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
+         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0;  chopt = chopt.replace('BB', '  '); }
+         l = chopt.indexOf('0'); if (l != -1) { option.Zero = 1;  chopt = chopt.replace('0', ' '); }
+      }
+      l = chopt.indexOf('SURF');
+      if (l != -1) {
+         option.Scat = 0;
+         option.Surf = 1; chopt = chopt.replace('SURF', '    ');
+         if (chopt[l+4] == '1') { option.Surf = 11; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '2') { option.Surf = 12; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '3') { option.Surf = 13; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '4') { option.Surf = 14; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '5') { option.Surf = 15; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '6') { option.Surf = 16; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '7') { option.Surf = 17; chopt[l+4] = ' '; }
+         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
+         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
+      }
+      l = chopt.indexOf('TF3');
+      if (l != -1) {
+         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
+         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
+      }
+      l = chopt.indexOf('ISO');
+      if (l != -1) {
+         l = chopt.indexOf('FB'); if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
+         l = chopt.indexOf('BB'); if (l != -1) { option.BackBox = 0; chopt = chopt.replace('BB', '  '); }
+      }
+      l = chopt.indexOf('LIST'); if (l != -1) { option.List = 1; chopt = chopt.replace('LIST', '  '); }
+      l = chopt.indexOf('CONT');
+      if (l != -1) {
+         chopt = chopt.replace('CONT', '    ');
+         if (hdim > 1) {
+            option.Scat = 0;
+            option.Contour = 1;
+            if (chopt[l+4] == '1') { option.Contour = 11; chopt[l+4] = ' '; }
+            if (chopt[l+4] == '2') { option.Contour = 12; chopt[l+4] = ' '; }
+            if (chopt[l+4] == '3') { option.Contour = 13; chopt[l+4] = ' '; }
+            if (chopt[l+4] == '4') { option.Contour = 14; chopt[l+4] = ' '; }
+            if (chopt[l+4] == '5') { option.Contour = 15; chopt[l+4] = ' '; }
+         } else {
+            option.Hist = 1;
+         }
+      }
+      l = chopt.indexOf('HBAR');
+      if (l != -1) {
+         option.Hist = 0;
+         option.Bar = 20; chopt = chopt.replace('HBAR', '    ');
+         if (chopt[l+4] == '1') { option.Bar = 21; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '2') { option.Bar = 22; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '3') { option.Bar = 23; chopt[l+4] = ' '; }
+         if (chopt[l+4] == '4') { option.Bar = 24; chopt[l+4] = ' '; }
+      }
+      l = chopt.indexOf('BAR');
+      if (l != -1) {
+         option.Hist = 0;
+         option.Bar = 10; chopt = chopt.replace('BAR', '   ');
+         if (chopt[l+3] == '1') { option.Bar = 11; chopt[l+3] = ' '; }
+         if (chopt[l+3] == '2') { option.Bar = 12; chopt[l+3] = ' '; }
+         if (chopt[l+3] == '3') { option.Bar = 13; chopt[l+3] = ' '; }
+         if (chopt[l+3] == '4') { option.Bar = 14; chopt[l+3] = ' '; }
+      }
+      l = chopt.indexOf('ARR' );
+      if (l != -1) {
+         chopt = chopt.replace('ARR', '   ');
+         if (hdim > 1) {
+            option.Arrow  = 1;
+            option.Scat = 0;
+         } else {
+            option.Hist = 1;
+         }
+      }
+      l = chopt.indexOf('BOX' );
+      if (l != -1) {
+         chopt = chopt.replace('BOX', '   ');
+         if (hdim>1) {
+            Hoption.Scat = 0;
+            Hoption.Box  = 1;
+            if (chopt[l+3] == '1') { option.Box = 11; chopt[l+3] = ' '; }
+         } else {
+            option.Hist = 1;
+         }
+      }
+      l = chopt.indexOf('COLZ');
+      if (l != -1) {
+         chopt = chopt.replace('COLZ', '');
+         if (hdim>1) {
+            option.Color  = 2;
+            option.Scat   = 0;
+            option.Zscale = 1;
+         } else {
+            option.Hist = 1;
+         }
+      }
+      l = chopt.indexOf('COL' );
+      if (l != -1) {
+         chopt = chopt.replace('COL', '   ');
+         if (hdim>1) {
+            option.Color = 1;
+            option.Scat  = 0;
+         } else {
+            option.Hist = 1;
+         }
+      }
+      l = chopt.indexOf('CHAR'); if (l != -1) { option.Char = 1; chopt = chopt.replace('CHAR', '    '); option.Scat = 0; }
+      l = chopt.indexOf('FUNC'); if (l != -1) { option.Func = 2; chopt = chopt.replace('FUNC', '    '); option.Hist = 0; }
+      l = chopt.indexOf('HIST'); if (l != -1) { option.Hist = 2; chopt = chopt.replace('HIST', '    '); option.Func = 0; option.Error = 0; }
+      l = chopt.indexOf('AXIS'); if (l != -1) { option.Axis = 1; chopt = chopt.replace('AXIS', '    '); }
+      l = chopt.indexOf('AXIG'); if (l != -1) { option.Axis = 2; chopt = chopt.replace('AXIG', '    '); }
+      l = chopt.indexOf('SCAT'); if (l != -1) { option.Scat = 1; chopt = chopt.replace('SCAT', '    '); }
+      l = chopt.indexOf('TEXT');
+      if (l != -1) {
+         var angle = parseInt(chopt);
+         if (!isNaN(angle)) {
+            if (angle < 0)  angle = 0;
+            if (angle > 90) angle = 90;
+            option.Text = 1000 + angle;
+         }
+         else {
+            option.Text = 1;
+         }
+         chopt = chopt.replace('TEXT', '    ');
+         l = chopt.indexOf('N');
+         if (l != -1 && this.IsTH2Poly()) option.Text += 3000;
+         option.Scat = 0;
+      }
+      l = chopt.indexOf('POL');  if (l != -1) { option.System = JSROOT.Painter.Coord.kPOLAR;       chopt = chopt.replace('POL', '   '); }
+      l = chopt.indexOf('CYL');  if (l != -1) { option.System = JSROOT.Painter.Coord.kCYLINDRICAL; chopt = chopt.replace('CYL', '   '); }
+      l = chopt.indexOf('SPH');  if (l != -1) { option.System = JSROOT.Painter.Coord.kSPHERICAL;   chopt = chopt.replace('SPH', '   '); }
+      l = chopt.indexOf('PSR');  if (l != -1) { option.System = JSROOT.Painter.Coord.kRAPIDITY;    chopt = chopt.replace('PSR', '   '); }
+      l = chopt.indexOf('TRI');
+      if (l != -1) {
+         option.Scat = 0;
+         option.Color  = 0;
+         option.Tri = 1; chopt = chopt.replace('TRI', '   ');
+         l = chopt.indexOf('FB');   if (l != -1) { option.FrontBox = 0; chopt = chopt.replace('FB', '  '); }
+         l = chopt.indexOf('BB');   if (l != -1) { option.BackBox = 0;  chopt = chopt.replace('BB', '  '); }
+         l = chopt.indexOf('ERR');  if (l != -1) chopt = chopt.replace('ERR', '   ');
+      }
+      l = chopt.indexOf('AITOFF');
+      if (l != -1) {
+         Hoption.Proj = 1; chopt = chopt.replace('AITOFF', '      ');  // Aitoff projection
+      }
+      l = chopt.indexOf('MERCATOR');
+      if (l != -1) {
+         option.Proj = 2; chopt = chopt.replace('MERCATOR', '        ');  // Mercator projection
+      }
+      l = chopt.indexOf('SINUSOIDAL');
+      if (l != -1) {
+         option.Proj = 3; chopt = chopt.replace('SINUSOIDAL', '         ');  // Sinusoidal projection
+      }
+      l = chopt.indexOf('PARABOLIC');
+      if (l != -1) {
+         option.Proj = 4; chopt = chopt.replace('PARABOLIC', '         ');  // Parabolic projection
+      }
+      if (option.Proj > 0) {
+         option.Scat = 0;
+         option.Contour = 14;
+      }
+      if (chopt.indexOf('A') != -1)    option.Axis = -1;
+      if (chopt.indexOf('B') != -1)    option.Bar  = 1;
+      if (chopt.indexOf('C') != -1)  { option.Curve =1; option.Hist = -1; }
+      if (chopt.indexOf('F') != -1)    option.Fill =1;
+      if (chopt.indexOf('][') != -1) { option.Off  =1; option.Hist =1; }
+      if (chopt.indexOf('F2') != -1)   option.Fill =2;
+      if (chopt.indexOf('L') != -1)  { option.Line =1; option.Hist = -1; }
+      if (chopt.indexOf('P') != -1)  { option.Mark =1; option.Hist = -1; }
+      if (chopt.indexOf('Z') != -1)    option.Zscale =1;
+      if (chopt.indexOf('*') != -1)    option.Star =1;
+      if (chopt.indexOf('H') != -1)    option.Hist =2;
+      if (chopt.indexOf('P0') != -1)   option.Mark =10;
+      if (this.IsTH2Poly()) {
+         if (option.Fill + option.Line + option.Mark != 0 ) option.Scat = 0;
+      }
+
+      if (chopt.indexOf('E') != -1) {
+         if (hdim == 1) {
+            option.Error = 1;
+            if (chopt.indexOf('E0') != -1)  option.Error = 10;
+            if (chopt.indexOf('E1') != -1)  option.Error = 11;
+            if (chopt.indexOf('E2') != -1)  option.Error = 12;
+            if (chopt.indexOf('E3') != -1)  option.Error = 13;
+            if (chopt.indexOf('E4') != -1)  option.Error = 14;
+            if (chopt.indexOf('E5') != -1)  option.Error = 15;
+            if (chopt.indexOf('E6') != -1)  option.Error = 16;
+            if (chopt.indexOf('X0') != -1) {
+               if (option.Error == 1)  option.Error += 20;
+               option.Error += 10;
+            }
+            if (option.Text && this.IsTProfile()) {
+               option.Text += 2000;
+               option.Error = 0;
+            }
+         } else {
+            if (option.Error == 0) {
+               option.Error = 100;
+               option.Scat  = 0;
+            }
+            if (option.Text) {
+               option.Text += 2000;
+               option.Error = 0;
+            }
+         }
+      }
+      if (chopt.indexOf('9') != -1)  option.HighRes = 1;
+      if (option.Surf == 15) {
+         if (option.System == JSROOT.Painter.Coord.kPOLAR || 
+             option.System == JSROOT.Painter.Coord.kCARTESIAN) {
+            option.Surf = 13;
+            //Warning('MakeChopt','option SURF5 is not supported in Cartesian and Polar modes');
+         }
+      }
+      if (this.pad && typeof(this.pad) != 'undefined') {
+         // Copy options from current pad
+         option.Logx = this.pad['fLogx'];
+         option.Logy = this.pad['fLogy'];
+         option.Logz = this.pad['fLogz'];
+         option.Gridx = this.pad['fGridx'];
+         option.Gridy = this.pad['fGridy'];
+      }
+      //  Check options incompatibilities
+      if (option.Bar == 1) option.Hist = -1;
+
+      return option;
+   }
+   
 
    JSROOT.THistPainter.prototype.SetFrame = function(vis, opt) {
       this.draw_content = false;
@@ -3446,16 +3450,7 @@
       if ((opt==null) || (opt=="")) opt = this.histo['fOption'];
 
       // here we deciding how histogram will look like and how will be shown
-      this.options = JSROOT.Painter.decodeOptions(opt, this.histo, this.pad);
-//      if (this.histo['_typename'] == "TProfile")
-//         this.options.Error = 11;
-
-      this.show_gridx = false;
-      this.show_gridy = false;
-      if (this.pad && typeof(this.pad) != 'undefined') {
-         this.show_gridx = this.pad['fGridx'];
-         this.show_gridy = this.pad['fGridy'];
-      }
+      this.options = this.DecodeOptions(opt);
    }
 
    JSROOT.THistPainter.prototype.ScanContent = function() {
@@ -3564,7 +3559,7 @@
       /* add a grid on x axis, if the option is set */
 
       // add a grid on x axis, if the option is set
-      if (this.show_gridx) {
+      if (this.options.Gridx) {
 
          this.frame.selectAll("gridLine")
          .data(this.x.ticks(this.x_nticks))
@@ -3581,7 +3576,7 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (this.show_gridy) {
+      if (this.options.Gridy) {
 
          this.frame.selectAll("gridLine")
          .data(this.y.ticks(this.y_nticks))
@@ -4981,7 +4976,7 @@
 
       this.draw_g = this.svg_frame.append("svg:g");
 
-      if (this.options.Error > 0) { this.DrawErrors(); return; }
+      if (this.options.Error > 0) return this.DrawErrors();
 
       var width = Number(this.svg_frame.attr("width")), height = Number(this.svg_frame.attr("height"));
 
