@@ -559,11 +559,16 @@
       obj['fCatt'] = {};
       obj['_typename'] = "TAttCanvas";
       this.ClassStreamer(obj['fCatt'], "TAttCanvas");
+      this.ntou1(); // ignore b << TestBit(kMoveOpaque);      
+      this.ntou1(); // ignore b << TestBit(kResizeOpaque);    
+      obj['fHighLightColor'] = this.ntoi2();
+      obj['fBatch'] = this.ntou1()!=0;     
+      this.ntou1();   // ignore b << TestBit(kShowEventStatus); 
+      this.ntou1();   // ignore b << TestBit(kAutoExec);
+      this.ntou1();   // ignore b << TestBit(kMenuBar); 
       
-      // still some attributes missing, do it later
-      
-      // we repair here correct position - no warning to outside
-      return this.CheckBytecount(ver);
+      // now TCanvas streamer should be complete - verify that bytecount is correct
+      return this.CheckBytecount(ver, "TCanvas");
    }
 
 

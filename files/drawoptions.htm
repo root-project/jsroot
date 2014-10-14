@@ -35,6 +35,8 @@
          
          $("#" + divid).append(html);
          
+         if (JSROOT.GetUrlOption("minimal")!=null) return;
+         
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
          
@@ -73,6 +75,12 @@
             
             draw_item_options(file, "sqroot;1", "f1_draw", "");
          });
+
+         new JSROOT.TFile("rf107.root+", function(file) {
+            if (file==null) return file_error("fillrandom.root cannot be opened");
+            
+            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "");
+         });
          
    
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
@@ -97,13 +105,17 @@
 
   <div id="prof_draw"></div>
 
-  <h1>TGraph Class</h1> 
+  <h1>TGraph class</h1> 
 
   <div id="gr_draw"></div>
 
-  <h1>TF1 Class</h1> 
+  <h1>TF1 class</h1> 
 
   <div id="f1_draw"></div>
+
+  <h1>TCanvas class</h1> 
+
+  <div id="can_draw"></div>
 
   
 </body>
