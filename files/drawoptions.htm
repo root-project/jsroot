@@ -20,6 +20,35 @@
             JSROOT.draw(divid, obj, drawopt); 
          });
       }
+      
+      function draw_item_options(file, itemname, divid, options) {
+         var arr = options.split(";");
+
+         var html = "Supported options: ";
+         for (var i in arr) {
+            if (i>0) html += ", ";
+            html += '<a href="fileitem.htm?file=' + file.fURL + '&item=' + itemname + '&opt=' + arr[i] + '" target="_blank">';
+            if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
+            html += '</a>'; 
+         }
+         html += "<br/><br/>";
+         
+         $("#" + divid).append(html);
+         
+         var w = JSROOT.GetUrlOption("w", null, "800");
+         var h = JSROOT.GetUrlOption("h", null, "600");
+         
+         for (var i in arr) {
+            var subid = divid + "_" + arr[i];
+            
+            var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
+            $("#" + divid).append(html);
+            
+            draw_item(file, itemname, subid, arr[i]);
+            
+            if (JSROOT.GetUrlOption("all")==null) return;
+         }
+      }
    
       function CreateGui() {
 
@@ -28,20 +57,22 @@
          new JSROOT.TFile("hsimple.root+", function(file) {
             if (file==null) return file_error("hsimple.root cannot be opened");
             
-            draw_item(file, "hpx;1", "h1_dflt", "");
-            draw_item(file, "hpxpy;1", "h2_dflt", "");
-            draw_item(file, "hpxpy;1", "h2_col", "col");
-            draw_item(file, "hpxpy;1", "h2_colz", "colz");
-            draw_item(file, "hprof;1", "prof_dflt", "");
+            draw_item_options(file, "hpx;1", "h1_draw", "");
+            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ");
+            draw_item_options(file, "hprof;1", "prof_draw", ";E1");
          });
          
          new JSROOT.TFile("graph.root+", function(file) {
             if (file==null) return file_error("graph.root cannot be opened");
             
-            draw_item(file, "Graph;1", "gr_dflt", "");
-            draw_item(file, "Graph;1", "gr_p", "P");
-            draw_item(file, "Graph;1", "gr_l", "L");
-          });
+            draw_item_options(file, "Graph;1", "gr_draw", ";L;P");
+         });
+
+         new JSROOT.TFile("fillrandom.root+", function(file) {
+            if (file==null) return file_error("fillrandom.root cannot be opened");
+            
+            draw_item_options(file, "sqroot;1", "f1_draw", "");
+         });
          
    
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
@@ -50,62 +81,29 @@
    
 </head>
 
-<body onload="JSROOT.AssertPrerequisites('io', CreateGui, 'debug')">
+<body onload="JSROOT.AssertPrerequisites('2d;io', CreateGui, 'debug')">
 
   <div id="debug">loading...</div>
 
-  <h1>TH1 Class</h1> 
+  <h1>TH1 class</h1> 
 
-  <h3>TH1 - default draw options</h3> 
-   
-  <div id="h1_dflt" style="width: 800px; height:600px"></div>
-  
-  <a href="fileitem.htm?file=hsimple.root&item=hpx;1">External link</a>
-  
+  <div id="h1_draw"></div>
 
-  <h1>TH2 Class</h1> 
+  <h1>TH2 class</h1> 
 
-  <div id="h2_dflt" style="width: 800px; height:600px"></div>
+  <div id="h2_draw"></div>
 
-  <a href="fileitem.htm?file=hsimple.root&item=hpxpy;1">External link</a>
+  <h1>TProfile class</h1> 
 
-  <h3>TH2 - "COL" draw options</h3> 
-
-  <div id="h2_col" style="width: 800px; height:600px"></div>
-
-  <a href="fileitem.htm?file=hsimple.root&item=hpxpy;1&opt=col">External link</a>
-
-  <h3>TH2 - "COLZ" draw options</h3> 
-
-  <div id="h2_colz" style="width: 800px; height:600px"></div>
-
-  <a href="fileitem.htm?file=hsimple.root&item=hpxpy;1&opt=colz">External link</a>
-
-
-  <h1>TProfile Class</h1> 
-
-  <div id="prof_dflt" style="width: 800px; height:600px"></div>
-
-  <a href="fileitem.htm?file=hsimple.root&item=hprof;1">External link</a>
-
+  <div id="prof_draw"></div>
 
   <h1>TGraph Class</h1> 
 
-  <div id="gr_dflt" style="width: 800px; height:600px"></div>
+  <div id="gr_draw"></div>
 
-  <a href="fileitem.htm?file=graph.root&item=Graph;1">External link</a>
+  <h1>TF1 Class</h1> 
 
-  <h3>TH2 - "L" draw options</h3> 
-
-  <div id="gr_l" style="width: 800px; height:600px"></div>
-  
-  <a href="fileitem.htm?file=graph.root&item=Graph;1&opt=l">External link</a>
-
-  <h3>TH2 - "P" draw options</h3> 
-
-  <div id="gr_p" style="width: 800px; height:600px"></div>
-  
-  <a href="fileitem.htm?file=graph.root&item=Graph;1&opt=p">External link</a>
+  <div id="f1_draw"></div>
 
   
 </body>

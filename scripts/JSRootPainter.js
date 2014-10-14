@@ -3134,12 +3134,12 @@
       return 1;
    }
    
-   JSROOT.THistPainter.prototype.DecodeOptions = function(opt, pad) {
+   JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
       /* decode string 'opt' and fill the option structure */
       var hdim = this.Dimension(); 
       var nch = opt.length;
       var option = { 'Axis': 0, 'Bar': 0, 'Curve': 0, 'Error': 0, 'Hist': 0,
-         'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Scat': 0,
+         'Line': 0, 'Mark': 0, 'Fill': 0, 'Same': 0, 'Scat': 0, 'Func' : 0,
          'Star': 0, 'Arrow': 0, 'Box': 0, 'Text': 0, 'Char': 0, 'Color': 0,
          'Contour': 0, 'Logx': 0, 'Logy': 0, 'Logz': 0, 'Lego': 0, 'Surf': 0,
          'Off': 0, 'Tri': 0, 'Proj': 0, 'AxisPos': 0, 'Spec': 0, 'Pie': 0,
@@ -3153,6 +3153,7 @@
       if (hdim > 1) option.Scat = 1;
       if (!nch) option.Hist = 1;
       if (this.IsTProfile()) option.Error = 2;
+      if ('fFunctions' in this.histo) option.Func = 1;
 
       var l = chopt.indexOf('SPEC');
       if (l != -1) {
@@ -4111,6 +4112,7 @@
       // should be called once to create all painters, which are than updated separately
 
       if (!('fFunctions' in this.histo)) return;
+      // if (this.options.Func == 0) return; // in some cases on need to disable functions drawing
 
       var lastpainter = this;
       
@@ -4153,7 +4155,7 @@
             }
          }
 
-         if (func['_typename'] == 'TPaletteAxis' && funcpainter) {
+         if ((func['_typename'] == 'TPaletteAxis') && funcpainter) {
             funcpainter.Enabled = (this.options.Zscale > 0) && (this.options.Color>0);
          }
 
@@ -7099,9 +7101,9 @@
          
          var factor = 0.66;
          
-         // for TCanvas and TPad reconstruct ratio between width and height
-         if (('fAbsHNDC' in obj) && ('fAbsWNDC' in obj) && (obj['fAbsWNDC']>0)) { 
-            factor = obj['fAbsHNDC'] / obj['fAbsWNDC'];
+         // for TCanvas reconstruct ratio between width and height
+         if (('fCw' in obj) && ('fCh' in obj) && (obj['fCw']>0)) { 
+            factor = obj['fCh'] / obj['fCw'];
             if ((factor<0.1) || (factor>10)) factor = 1; 
          }
          

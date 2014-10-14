@@ -117,13 +117,13 @@
 	   return obj;
 	}
 	
-	JSROOT.GetUrlOption = function(opt, url) {
+	JSROOT.GetUrlOption = function(opt, url, dflt) {
 	   // analyzes document.URL and extracts options after '?' mark
 	   // following options supported ?opt1&opt2=3
 	   // In case of opt1 empty string will be returned, in case of opt2 '3'
-	   // If option not found, null is returned
+	   // If option not found, null is returned (or provided default value)
 
-	   if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return null;
+	   if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
 	   
 	   if (!url) url = document.URL;
 	   
@@ -147,7 +147,7 @@
 
          url = url.slice(pos+1);
       } 
-	   return null;
+	   return dflt;
 	}
 	
 	JSROOT.NewHttpRequest = function(url, kind, callback) {
@@ -378,53 +378,55 @@
    JSROOT.AssertPrerequisites = function(kind, andThan, debugout) {
       // one could specify kind of requirements
       // 'io' for I/O functionality (default)
-      // '2d' only for 2d graphic
+      // '2d' for 2d graphic
       // '3d' for 3d graphic
       
-      if (typeof kind == 'function') { andThan = kind; kind = null; } 
+      if (typeof kind == 'function') { andThan = kind; kind = null; }
+      
+      if (typeof kind != 'string') kind = "2d";
 
       // file names should be separated with ';' 
-      var allfiles = 
-         '$$$scripts/jquery.min.js;'+
-         '$$$style/jquery-ui.css;' +
-         '$$$scripts/jquery-ui.min.js;' +
-         '$$$scripts/d3.v3.min.js;' +
-         '$$$scripts/JSRootPainter.js;' +
-         '$$$style/JSRootPainter.css';
+      var allfiles = '$$$scripts/jquery.min.js';
       
-      var minimal = (typeof kind == 'string') && (kind.indexOf('2d')>=0);
+      if (kind.indexOf('io')>=0)
+         allfiles += ";$$$scripts/rawinflate.js" + 
+                     ";$$$scripts/JSRootIOEvolution.js"; 
+
+      if (kind.indexOf('2d')>=0)
+         allfiles += ';$$$style/jquery-ui.css' +
+                     ';$$$scripts/jquery-ui.min.js' +
+                     ';$$$scripts/d3.v3.min.js' +
+                     ';$$$scripts/JSRootPainter.js' +
+                     ';$$$style/JSRootPainter.css';
       
-      if (!minimal || ((typeof kind == 'string') && (kind.indexOf('io')>=0)))
-         allfiles += ";$$$scripts/rawinflate.js;$$$scripts/JSRootIOEvolution.js"; 
-      
-      if ((typeof kind == 'string') && (kind.indexOf("3d")>=0))
-         allfiles += ";$$$scripts/jquery.mousewheel.js;$$$scripts/three.min.js;$$$scripts/helvetiker_regular.typeface.js;$$$scripts/helvetiker_bold.typeface.js";
+      if (kind.indexOf("3d")>=0)
+         allfiles += ";$$$scripts/jquery.mousewheel.js" + 
+                     ";$$$scripts/three.min.js" +
+                     ";$$$scripts/helvetiker_regular.typeface.js" + 
+                     ";$$$scripts/helvetiker_bold.typeface.js";
+
+      if (kind.indexOf("simple")>=0)
+         allfiles += ';$$$scripts/JSRootInterface.js' +
+                     ';$$$style/JSRootInterface.css';
       
       JSROOT.loadScript(allfiles, andThan, debugout); 
    }
    
-   JSROOT.BuildSimpleGUI = function(requirements, andThen) {
+   JSROOT.BuildSimpleGUI = function(andThen) {
       if (typeof requirements == 'function') {
          andThen = requirements; requirements = null;
       }
       var debugout = null;
       
-      if (document.getElementById('onlineGUI')) debugout = 'onlineGUI'; else
-      if (document.getElementById('simpleGUI')) debugout = 'simpleGUI';
-         
+      var requirements = "2d;io;simple";
+      
+      if (document.getElementById('simpleGUI')) debugout = 'simpleGUI'; else
+      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple"; } 
       
       JSROOT.AssertPrerequisites(requirements, function() {
-         JSROOT.loadScript('$$$scripts/JSRootInterface.js;$$$style/JSRootInterface.css', function() { 
-            
-            if (typeof BuildSimpleGUI != 'function') {
-               alert('BuildSimpleGUI function not found');
-               return;
-            }
-            
-            BuildSimpleGUI();
-            
-            if (typeof andThen == 'function') andThen();
-         }, debugout);
+         if (typeof BuildSimpleGUI == 'function') BuildSimpleGUI();
+
+         if (typeof andThen == 'function') andThen();
       }, debugout);
    }
 

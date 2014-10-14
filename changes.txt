@@ -16,6 +16,7 @@ October 2014:
 4. Implement 'opt' and 'opts' URL parameters for main page.   
 5. Show progress with scripts loading in the browser window 
 6. When one appends "+" to the filename, its content read completely with first I/O operation.
+7. Implement JS custom streamer for TCanvas, restore aspect ratio when drawing
    
 
 September 2014:

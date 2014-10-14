@@ -444,7 +444,7 @@
       this.ReadTObject(tobj);
       tobj['fString'] = this.ReadTString();
       return this.CheckBytecount(ver, "ReadTObjString");
-   };
+   }
 
    JSROOT.TBuffer.prototype.ReadTList = function(list) {
       // stream all objects in the list from the I/O buffer
@@ -468,7 +468,7 @@
       }
 
       return this.CheckBytecount(ver);
-   };
+   }
 
    JSROOT.TBuffer.prototype.ReadTObjArray = function(list) {
       list['_typename'] = "TObjArray";
@@ -517,7 +517,7 @@
          list['arr'].push(obj);
       }
       return this.CheckBytecount(ver, "ReadTClonesArray");
-   };
+   }
 
    JSROOT.TBuffer.prototype.ReadTCollection = function(list, str, o) {
       list['_typename'] = "TCollection";
@@ -534,7 +534,38 @@
          list['arr'].push(null);
       }
       return this.CheckBytecount(ver,"ReadTCollection");
-   };
+   }
+   
+   JSROOT.TBuffer.prototype.ReadTCanvas = function(obj) {
+      // stream all objects in the list from the I/O buffer
+      var ver = this.ReadVersion();
+      
+      this.ClassStreamer(obj, "TPad");
+      
+      obj['fDISPLAY'] = this.ReadTString();
+      obj['fDoubleBuffer'] = this.ntoi4();
+      obj['fRetained'] = this.ntou1()!=0;
+      obj['fXsizeUser'] = this.ntoi4();
+      obj['fYsizeUser'] = this.ntoi4();
+      obj['fXsizeReal'] = this.ntoi4();
+      obj['fYsizeReal'] = this.ntoi4();
+      obj['fWindowTopX'] = this.ntoi4(); 
+      obj['fWindowTopY'] = this.ntoi4();
+      obj['fWindowWidth'] = this.ntoi4();
+      obj['fWindowHeight'] = this.ntoi4();
+      obj['fCw'] = this.ntou4();
+      obj['fCh'] = this.ntou4();
+      
+      obj['fCatt'] = {};
+      obj['_typename'] = "TAttCanvas";
+      this.ClassStreamer(obj['fCatt'], "TAttCanvas");
+      
+      // still some attributes missing, do it later
+      
+      // we repair here correct position - no warning to outside
+      return this.CheckBytecount(ver);
+   }
+
 
    JSROOT.TBuffer.prototype.ReadTStreamerInfo = function(streamerinfo) {
       // stream an object of class TStreamerInfo from the I/O buffer
@@ -732,10 +763,7 @@
          alert("Trying to read TCollection - wrong!!!");
       }
       else if (classname == 'TCanvas') {
-         var ver = this.ReadVersion();
-         this.ClassStreamer(obj, "TPad");
-         // we repair here correct position - no warning to outside
-         this.CheckBytecount(ver);
+         this.ReadTCanvas(obj);
       }
       else if (classname == "TStreamerInfo") {
          this.ReadTStreamerInfo(obj);
