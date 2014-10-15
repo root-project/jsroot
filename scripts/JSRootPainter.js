@@ -3654,8 +3654,8 @@
          this.frame.append("svg:g")
             .attr("class", "yaxis_container");
       
-      this['y_axis_sub'] = null;
-
+      var x_axis = null, y_axis = null;
+      
 
       var ndivx = this.histo['fXaxis']['fNdivisions'];
       this['x_nticks'] = ndivx%100; // used also to draw grids
@@ -3734,7 +3734,7 @@
 
          this['dfx'] = d3.time.format(timeformatx);
 
-         this['x_axis'] = d3.svg.axis()
+         x_axis = d3.svg.axis()
              .scale(this.x)
              .orient("bottom")
              .tickPadding(xAxisLabelOffset)
@@ -3743,7 +3743,7 @@
              .ticks(this.x_nticks);
       }
       else if (this.options.Logx) {
-         this['x_axis'] = d3.svg.axis()
+         x_axis = d3.svg.axis()
             .scale(this.x)
             .orient("bottom")
             .tickPadding(xAxisLabelOffset)
@@ -3768,7 +3768,7 @@
              });
       }
       else {
-         this['x_axis'] = d3.svg.axis()
+         x_axis = d3.svg.axis()
             .scale(this.x)
             .orient("bottom")
             .tickPadding(xAxisLabelOffset)
@@ -3795,7 +3795,7 @@
 
          this['dfy'] = d3.time.format(timeformaty);
 
-         this['y_axis'] = d3.svg.axis()
+         y_axis = d3.svg.axis()
                .scale(this.y)
                .orient("left")
                .tickPadding(yAxisLabelOffset)
@@ -3804,7 +3804,7 @@
                .ticks(this.y_nticks);
       }
       else if (this.options.Logy) {
-         this['y_axis'] = d3.svg.axis()
+         y_axis = d3.svg.axis()
             .scale(this.y)
             .orient("left")
             .tickPadding(yAxisLabelOffset)
@@ -3829,7 +3829,7 @@
       }
       else {
          if (this.y_nticks >= 10) this.y_nticks -= 2;
-         this['y_axis'] = d3.svg.axis()
+         y_axis = d3.svg.axis()
            .scale(this.y)
            .orient("left")
            .tickPadding(yAxisLabelOffset)
@@ -3844,7 +3844,7 @@
 
       xax_g.append("svg:g")
              .attr("class", "xaxis")
-             .call(this.x_axis);
+             .call(x_axis);
 
       // this is additional ticks, required in d3.v3
       if ((n2ax>0) && !this.options.Logx) {
@@ -3860,11 +3860,10 @@
              .attr("class", "xaxis")
              .call(x_axis_sub);
       }
-      
 
       yax_g.append("svg:g")
            .attr("class", "yaxis")
-           .call(this.y_axis);
+           .call(y_axis);
 
       // this is additional ticks, required in d3.v3
       if ((n2ay>0) && !this.options.Logy) {
