@@ -1,7 +1,5 @@
-// JSRootIOEvolution.js
-//
-// core methods for JavaScript ROOT I/O.
-//
+/// @file JSRootIOEvolution.js
+/// I/O methods of JavaScript ROOT
 
 (function(){
 
@@ -164,7 +162,7 @@
 
    JSROOT.TBuffer.prototype.ntou4 = function() {
       // convert (read) four bytes of buffer b into a UInt_t
-      var n  = ((this.b.charCodeAt(this.o)   & 0xff) << 24) >>> 0;
+      var n  = ((this.b.charCodeAt(this.o) & 0xff) << 24) >>> 0;
       n += ((this.b.charCodeAt(this.o+1) & 0xff) << 16) >>> 0;
       n += ((this.b.charCodeAt(this.o+2) & 0xff) << 8)  >>> 0;
       n +=  (this.b.charCodeAt(this.o+3) & 0xff) >>> 0;
@@ -200,10 +198,10 @@
 
    JSROOT.TBuffer.prototype.ntoi4 = function() {
       // convert (read) four bytes of buffer b into a Int_t
-      var n  = (this.b.charCodeAt(this.o)   & 0xff) << 24;
-      n += (this.b.charCodeAt(this.o+1) & 0xff) << 16;
-      n += (this.b.charCodeAt(this.o+2) & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o+3) & 0xff);
+      var n  = ((this.b.charCodeAt(this.o) & 0xff) << 24) + 
+               ((this.b.charCodeAt(this.o+1) & 0xff) << 16) +
+               ((this.b.charCodeAt(this.o+2) & 0xff) << 8) +
+               ((this.b.charCodeAt(this.o+3) & 0xff));
       this.o += 4;
       return n;
    };

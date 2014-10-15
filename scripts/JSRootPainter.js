@@ -1,7 +1,5 @@
-// JSRootPainter.js
-//
-// JavaScript ROOT Graphics, using d3.v3.js.
-//
+/// @file JSRootPainter.js
+/// JavaScript ROOT graphics
 
 (function(){
 
@@ -51,9 +49,13 @@
       'StatEntriesFormat'  : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); }
    };
 
+   
+   /** @class JSROOT.Painter 
+    * Holder of different functions and classes for drawing */
    JSROOT.Painter = {};
 
-   
+   /** @fn menu JSROOT.Painter.createmenu(event, menuname)
+    * Creates popup menu */
    JSROOT.Painter.createmenu = function(event, menuname) {
       
       if (!menuname) menuname = "root_ctx_menu";
@@ -85,7 +87,9 @@
       
       return d;
    }
-   
+
+   /** @fn void JSROOT.Painter.menuitem(menu, txt, func)
+     * Add item into popup menu */
    JSROOT.Painter.menuitem = function(menu,txt,func) {
       var p = document.createElement('p');
       menu.appendChild(p);
@@ -231,13 +235,12 @@
       'fcross');
 
 
-   /** Function that returns the SVG symbol type identifier for a given root matker
+   /** Function returns the SVG symbol type identifier for a given root matker
     * The result is an array with 3 elements:
     *    the first is the identifier of the root marker in the SVG symbols
     *    the second is true if the shape is filled and false if it is open
     *    the third is true if the shape should be rotated
-    * The identifier will be 6 if the shape is a star or 7 if it is '*'
-    */
+    * The identifier will be 6 if the shape is a star or 7 if it is '*' */
    JSROOT.Painter.getRootMarker = function(i) {
       var marker = JSROOT.Painter.root_markers[i];
       var shape = 0;
@@ -299,7 +302,7 @@
       if (nch < 2) return chopt;
       for (var i=0;i<=nch;i++) chopt[left+i] = ' ';
       return chopt;
-   };
+   }
 
    JSROOT.Painter.root_fonts = new Array('Arial', 'Times New Roman',
       'bold Times New Roman', 'bold italic Times New Roman',
@@ -309,7 +312,7 @@
       'Wingdings', 'Symbol');
    
    JSROOT.Painter.getFontDetails = function(fontIndex) {
-   
+      
       var fontName = JSROOT.Painter.root_fonts[Math.floor(fontIndex/10)];
    
       var weight = "";
@@ -340,7 +343,7 @@
          'style'  : style,
          'name'   : fontName
       };
-   };
+   }
 
    JSROOT.Painter.createFillPattern = function (svg, pattern, color) {
       // create fill pattern - only if they don't exists yet
@@ -503,13 +506,13 @@
       // Convert x from pad to X.
       if (pad['fLogx'] && x < 50) return Math.exp(2.302585092994 * x);
       return x;
-   };
+   }
 
    JSROOT.Painter.padtoY = function(pad, y) {
       // Convert y from pad to Y.
       if (pad['fLogy'] && y < 50) return Math.exp(2.302585092994 * y);
       return y;
-   };
+   }
 
    JSROOT.Painter.xtoPad = function(x, pad) {
       if (pad['fLogx']) {
@@ -6997,14 +7000,14 @@
             break;
       }
       var font_size = Math.round(text['fTextSize'] * 0.7 * h);
+      var pos_x = 0, pos_y = 0;
       if (text.TestBit(kTextNDC)) {
-         var pos_x = pad['fX1'] + text['fX']*(pad['fX2'] - pad['fX1']);
-         var pos_y = pad['fY1'] + text['fY']*(pad['fY2'] - pad['fY1']);
-      }
-      else {
+         pos_x = pad['fX1'] + text['fX']*(pad['fX2'] - pad['fX1']);
+         pos_y = pad['fY1'] + text['fY']*(pad['fY2'] - pad['fY1']);
+      } else {
          font_size = Math.round(text['fTextSize'] * h);
-         var pos_x = this.xtoPad(text['fX'], pad);
-         var pos_y = this.ytoPad(text['fY'], pad);
+         pos_x = this.xtoPad(text['fX'], pad);
+         pos_y = this.ytoPad(text['fY'], pad);
       }
       pos_x = ((Math.abs(pad['fX1'])+pos_x)/(pad['fX2'] - pad['fX1']))*w;
       pos_y = (1-((Math.abs(pad['fY1'])+pos_y)/(pad['fY2'] - pad['fY1'])))*h;
@@ -7081,6 +7084,8 @@
          return JSROOT.Painter.drawMultiGraph(vis, obj, opt);
    }
 
+   /** @fn painter JSROOT.draw(divid, obj, opt)
+    * Draw object in specified HTML element with given draw options */
    JSROOT.draw = function(divid, obj, opt)
    {
       var render_to = "#" + divid;
@@ -7108,7 +7113,7 @@
          // for TCanvas reconstruct ratio between width and height
          if (('fCw' in obj) && ('fCh' in obj) && (obj['fCw']>0)) { 
             factor = obj['fCh'] / obj['fCw'];
-            if ((factor<0.1) || (factor>10)) factor = 1; 
+            if ((factor<0.1) || (factor>10)) factor = 0.66; 
          }
          
          $(render_to).height($(render_to).width() * factor);

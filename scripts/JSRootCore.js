@@ -1,7 +1,9 @@
-// JSROOTCore.js
-//
-// core methods for JavaScript ROOT.
-//
+/// @file JSRootCore.js
+/// Core methods of JavaScript ROOT
+
+/// @namespace JSROOT
+/// Holder of all JSROOT functions and classes
+
 
 (function(){
 
