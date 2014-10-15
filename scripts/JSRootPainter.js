@@ -3634,17 +3634,28 @@
 
       if (this.first) return;
 
-      this['x_axis_sub'] = null;
-      this['y_axis_sub'] = null;
-
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
       var noexpx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
       var noexpy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
       var moreloglabelsx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
       var moreloglabelsy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
-
       if (this.histo['fXaxis']['fXmax'] < 100 && this.histo['fXaxis']['fXmax']/this.histo['fXaxis']['fXmin'] < 100) noexpx = true;
       if (this.histo['fYaxis']['fXmax'] < 100 && this.histo['fYaxis']['fXmax']/this.histo['fYaxis']['fXmin'] < 100) noexpy = true;
+
+      this.frame.selectAll(".xaxis_container").remove();
+      this.frame.selectAll(".yaxis_container").remove();
+      
+      var xax_g = 
+         this.frame.append("svg:g")
+            .attr("class", "xaxis_container")
+            .attr("transform", "translate(0," + h + ")");
+
+      var yax_g = 
+         this.frame.append("svg:g")
+            .attr("class", "yaxis_container");
+      
+      this['y_axis_sub'] = null;
+
 
       var ndivx = this.histo['fXaxis']['fNdivisions'];
       this['x_nticks'] = ndivx%100; // used also to draw grids
@@ -3664,13 +3675,11 @@
       var xAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont']);
 
       if (label.length > 0) {
-         if (!('x_axis_label' in this))
-            this['x_axis_label'] =
-               this.frame.append("text").attr("class", "x_axis_label");
-
-         this.x_axis_label
+         
+         xax_g.append("text")
+         .attr("class", "x_axis_label")
          .attr("x", w)
-         .attr("y", h)
+         .attr("y", 0)
          .attr("text-anchor", "end")
          .attr("font-family", xAxisFontDetails['name'])
          .attr("font-weight", xAxisFontDetails['weight'])
@@ -3687,23 +3696,19 @@
       var yAxisLabelFontSize = this.histo['fYaxis']['fLabelSize'] * h;
       var yAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont']);
 
-      if (label.length > 0) {
-         if (!('y_axis_label' in this))
-            this['y_axis_label'] =
-               this.frame.append("text").attr("class", "y_axis_label");
-
-         this.y_axis_label
-         .attr("x", 0)
-         .attr("y", -yAxisLabelFontSize - yAxisTitleFontSize - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
-         .attr("font-family", yAxisFontDetails['name'])
-         .attr("font-size", yAxisTitleFontSize)
-         .attr("font-weight", yAxisFontDetails['weight'])
-         .attr("font-style", yAxisFontDetails['style'])
-         .attr("fill", "black")
-         .attr("text-anchor", "end")
-         .text(label)
-         .attr("transform", "rotate(270, 0, 0)");
-      }
+      if (label.length > 0) 
+         yax_g.append("text")
+           .attr("class", "y_axis_label")
+           .attr("x", 0)
+           .attr("y", -yAxisLabelFontSize - yAxisTitleFontSize - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
+           .attr("font-family", yAxisFontDetails['name'])
+           .attr("font-size", yAxisTitleFontSize)
+           .attr("font-weight", yAxisFontDetails['weight'])
+           .attr("font-style", yAxisFontDetails['style'])
+           .attr("fill", "black")
+           .attr("text-anchor", "end")
+           .text(label)
+           .attr("transform", "rotate(270, 0, 0)");
 
       var xAxisColor = this.histo['fXaxis']['fAxisColor'];
       var xDivLength = this.histo['fXaxis']['fTickLength'] * h;
@@ -3837,91 +3842,75 @@
 
       }
 
+      xax_g.append("svg:g")
+             .attr("class", "xaxis")
+             .call(this.x_axis);
+
       // this is additional ticks, required in d3.v3
-      if ((n2ax>0) && !this.options.Logx)
-        this['x_axis_sub'] = d3.svg.axis()
+      if ((n2ax>0) && !this.options.Logx) {
+        var x_axis_sub = d3.svg.axis()
          .scale(this.x)
          .orient("bottom")
          .tickPadding(xAxisLabelOffset)
          .innerTickSize(-xDivLength/2)
          .tickFormat(function(d) { return; })
          .ticks(this.x.ticks(this.x_nticks).length*n2ax);
+        
+        xax_g.append("svg:g")
+             .attr("class", "xaxis")
+             .call(x_axis_sub);
+      }
+      
+
+      yax_g.append("svg:g")
+           .attr("class", "yaxis")
+           .call(this.y_axis);
 
       // this is additional ticks, required in d3.v3
       if ((n2ay>0) && !this.options.Logy) {
-         this['y_axis_sub'] = d3.svg.axis()
+         var y_axis_sub = d3.svg.axis()
           .scale(this.y)
           .orient("left")
           .tickPadding(yAxisLabelOffset)
           .innerTickSize(-yDivLength/2)
           .tickFormat(function(d) { return; })
           .ticks(this.y.ticks(this.y_nticks).length*n2ay);
+         
+         yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
-
-
-      if ('xax' in this) this['xax'].remove();
-      if ('xaxsub' in this) this['xaxsub'].remove();
-
-      this['xax'] =
-         this.frame.append("svg:g")
-                   .attr("class", "xaxis")
-                   .attr("transform", "translate(0," + h + ")")
-                   .call(this.x_axis);
-
-      if (this['x_axis_sub'])
-         this['xaxsub'] =
-            this.frame.append("svg:g")
-                      .attr("class", "xaxis")
-                      .attr("transform", "translate(0," + h + ")")
-                      .call(this.x_axis_sub);
-
-      if ('yax' in this) this['yax'].remove();
-      if ('yaxsub' in this) this['yaxsub'].remove();
-
-      this['yax'] = this.frame.append("svg:g").attr("class", "yaxis").call(this.y_axis);
-      
-      if (this['y_axis_sub'])
-         this['yaxsub'] = this.frame.append("svg:g").attr("class", "yaxis").call(this.y_axis_sub);
 
       var xAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont']);
       var yAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont']);
 
-      this.xax.selectAll("text")
+      xax_g.selectAll("text")
         .attr("font-family", xAxisLabelFontDetails['name'])
         .attr("font-size", xAxisLabelFontSize)
         .attr("font-weight", xAxisLabelFontDetails['weight'])
         .attr("font-style", xAxisLabelFontDetails['style']);
-      this.yax.selectAll("text")
+      
+      yax_g.selectAll("text")
         .attr("font-family", yAxisLabelFontDetails['name'])
         .attr("font-size", yAxisLabelFontSize)
         .attr("font-weight", yAxisLabelFontDetails['weight'])
         .attr("font-style", yAxisLabelFontDetails['style']);
 
-      if ('xax_zoom_rect' in this)
-         this.xax_zoom_rect.remove();
+      // we will use such rect for zoom selection
+      xax_g.append("svg:rect")
+             .attr("class", "xaxis_zoom")
+             .attr("x", 0)
+             .attr("y", 0)
+             .attr("width", w)
+             .attr("height", xAxisLabelFontSize + 3)
+             .style('opacity', 0);
 
       // we will use such rect for zoom selection
-      this['xax_zoom_rect'] =
-         this.frame.append("svg:rect")
-                   .attr("class", "xaxis_zoom")
-                   .attr("x", 0)
-                   .attr("y", h)
-                   .attr("width", w)
-                   .attr("height", xAxisLabelFontSize + 3)
-                   .style('opacity', 0);
-
-      if ('yax_zoom_rect' in this)
-         this.yax_zoom_rect.remove();
-
-      // we will use such rect for zoom selection
-      this['yax_zoom_rect'] =
-         this.frame.append("svg:rect")
-                   .attr("class", "yaxis_zoom")
-                   .attr("x", - 2 * yAxisLabelFontSize - 3)
-                   .attr("y", 0)
-                   .attr("width", 2 * yAxisLabelFontSize + 3)
-                   .attr("height", h)
-                   .style('opacity', 0);
+      yax_g.append("svg:rect")
+               .attr("class", "yaxis_zoom")
+               .attr("x", - 2 * yAxisLabelFontSize - 3)
+               .attr("y", 0)
+               .attr("width", 2 * yAxisLabelFontSize + 3)
+               .attr("height", h)
+               .style('opacity', 0);
    }
 
 
