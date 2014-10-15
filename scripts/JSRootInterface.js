@@ -71,7 +71,7 @@ function ReadFile(filename, checkitem) {
       if (itemname) itemsarr.push(itemname);
       var items = JSROOT.GetUrlOption("items");
       if (items!=null) {
-         items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+         items = JSON.parse(items);
          for (var i in items) itemsarr.push(items[i]);
       }
       
@@ -82,7 +82,7 @@ function ReadFile(filename, checkitem) {
       if (opt) optionsarr.push(opt);
       var opts = JSROOT.GetUrlOption("opts");
       if (opts!=null) {
-         opts = JSON.parse(opts.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+         opts = JSON.parse(opts);
          for (var i in opts) optionsarr.push(opts[i]);
       }
    }
@@ -224,7 +224,7 @@ function BuildOnlineGUI() {
    if (itemname) itemsarr.push(itemname);
    var items = JSROOT.GetUrlOption("items");
    if (items!=null) {
-      items = JSON.parse(items.replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' '));
+      items = JSON.parse(items);
       for (var i in items) itemsarr.push(items[i]);
    }
 

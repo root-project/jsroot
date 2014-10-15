@@ -21,7 +21,7 @@
          });
       }
       
-      function draw_item_options(file, itemname, divid, options) {
+      function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
          var html = "Supported options: ";
@@ -39,6 +39,7 @@
          
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
+         if (factor!=null) h = w * factor;
          
          for (var i in arr) {
             var subid = divid + "_" + arr[i];
@@ -88,6 +89,24 @@
             draw_item_options(file, "rf107_plotstyles;1", "can_draw", "");
          });
 
+         new JSROOT.TFile("ct.root+", function(file) {
+            if (file==null) return file_error("ct.root cannot be opened");
+            
+            draw_item_options(file, "ct;1", "can2_draw", "", 1.5);
+         });
+
+         new JSROOT.TFile("zdemo.root+", function(file) {
+            if (file==null) return file_error("zdemo.root cannot be opened");
+            
+            draw_item_options(file, "zdemo;1", "can3_draw", "", 0.8);
+         });
+
+         new JSROOT.TFile("JPsi_evolution.root", function(file) {
+            if (file==null) return file_error("JPsi_evolution.root cannot be opened");
+            
+            draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.8);
+         });
+
    
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
@@ -126,6 +145,9 @@
   <h1>TCanvas class</h1> 
 
   <div id="can_draw"></div>
+  <div id="can2_draw"></div>
+  <div id="can3_draw"></div>
+  <div id="can4_draw"></div>
 
   
 </body>

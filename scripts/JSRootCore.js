@@ -142,9 +142,10 @@
          
          if (url.indexOf(opt) == 0) {
             if (url.charAt(opt.length)=="&") return "";
-            
+
+            // replace several symbols which are known to make a problem
             if (url.charAt(opt.length)=="=")
-               return url.slice(opt.length+1, pos);
+               return url.slice(opt.length+1, pos).replace(/%27/g, "'").replace(/%22/g, '"').replace(/%20/g, ' ').replace(/%3C/g, '<').replace(/%3E/g, '>');
          }
 
          url = url.slice(pos+1);
