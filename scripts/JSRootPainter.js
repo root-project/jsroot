@@ -970,7 +970,7 @@
       this.RedrawFrame(true);
    }
 
-   JSROOT.TObjectPainter.prototype.RemoveDraw = function()
+   JSROOT.TObjectPainter.prototype.RemoveDrawG = function()
    {
       // generic method to delete all graphical elements, associated with painter
       // may not work for all cases
@@ -981,10 +981,25 @@
       }
    }
 
+   JSROOT.TObjectPainter.prototype.RecreateDrawG = function() {
+      this.RemoveDrawG();
+      
+      var w = this.frame.attr("width");
+      var h = this.frame.attr("height");
+      
+      this.draw_g = 
+         this.frame.append("svg")
+                 .attr("x", 0)
+                 .attr("y", 0)
+                 .attr("width", w)
+                 .attr("height", h)
+                 .attr("viewBox", "0 0 "+w+" "+h);
+   }
+   
+
    JSROOT.TObjectPainter.prototype.SetFrame = function(vis, check_not_first) {
 
       this.frame = vis['ROOT:frame'];
-      this.svg_frame = vis['ROOT:svg_frame'];
       this.pad = vis['ROOT:pad'];
 
       if (!('painters' in vis) || (vis['painters']==null)) {
@@ -1069,7 +1084,7 @@
 
          var painter = vis['painters'][n];
          
-         painter.RemoveDraw();
+         painter.RemoveDrawG();
          painter.vis = null;
          painter.frame = null;
          painter.pad = null;
@@ -1660,18 +1675,13 @@
               .attr("fill", framecolor)
               .style("stroke", linecolor)
               .style("stroke-width", linewidth);
-
-      var svg_frame = vis['ROOT:svg_frame'];
-      if (svg_frame == null) {
-         svg_frame = hframe.append("svg");
-         vis['ROOT:svg_frame'] = svg_frame;
-      }
       
-      svg_frame.attr("x", 0)
-               .attr("y", 0)
-               .attr("width", w)
-               .attr("height", h)
-               .attr("viewBox", "0 0 "+w+" "+h);
+      if (this.draw_g)
+         this.draw_g.attr("x", 0)
+                    .attr("y", 0)
+                    .attr("width", w)
+                    .attr("height", h)
+                    .attr("viewBox", "0 0 "+w+" "+h);
    }
 
    JSROOT.Painter.shrinkFrame = function(vis, fact)
@@ -1813,10 +1823,8 @@
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
 
-      this.RemoveDraw();
-
-      this.draw_g = this.first.svg_frame.append("svg:g");
-
+      this.RecreateDrawG();
+      
       var pthis = this;
       var x = this.first.x;
       var y = this.first.y;
@@ -2297,8 +2305,7 @@
    {
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
 
-      this.RemoveDraw();
-      this.draw_g = this.first.svg_frame.append("svg:g");
+      this.RecreateDrawG();
 
       var pthis = this;
 
@@ -2659,7 +2666,7 @@
             pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width/Number(pthis.vis.attr("width"));
             pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height/Number(pthis.vis.attr("height"));
 
-            pthis.RemoveDraw();
+            pthis.RemoveDrawG();
             pthis.DrawPaveText();
          }
       });
@@ -2847,7 +2854,7 @@
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
 
-      this.RemoveDraw();
+      this.RemoveDrawG();
 
       // if pavetext artificially disabled, do not redraw it
       if (!this.Enabled) {
@@ -3077,7 +3084,7 @@
             pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width/Number(pthis.vis.attr("width"));
             pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height/Number(pthis.vis.attr("height"));
 
-            pthis.RemoveDraw();
+            pthis.RemoveDrawG();
             pthis.DrawPalette();
          }
       });
@@ -3085,7 +3092,7 @@
 
    JSROOT.TColzPalettePainter.prototype.Redraw = function() {
 
-      this.RemoveDraw();
+      this.RemoveDrawG();
 
       // if palette artificially disabled, do not redraw it
       if (!this.Enabled) {
@@ -3446,11 +3453,6 @@
          JSROOT.Painter.createFrame(vis);
 
       JSROOT.TObjectPainter.prototype.SetFrame.call(this, vis, false)
-
-      if (vis['ROOT:svg_frame']==null) {
-         alert("missing svg_frame");
-         return;
-      }
 
       if ((opt==null) || (opt=="")) opt = this.histo['fOption'];
 
@@ -4791,7 +4793,7 @@
 
       var left = this.GetSelectIndex("x","left",-1);
       var right = this.GetSelectIndex("x","right",2);
-      var width = Number(this.svg_frame.attr("width"));
+      var width = Number(this.frame.attr("width"));
       var stepi = 1;
 
       this.draw_bins = new Array;
@@ -4860,7 +4862,8 @@
 
    JSROOT.TH1Painter.prototype.DrawErrors = function()
    {
-      var w = Number(this.svg_frame.attr("width")), h = Number(this.svg_frame.attr("height"));
+      var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
+      
       /* Add a panel for each data point */
       var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
       var shape = info_marker['shape'], filled = info_marker['toFill'],
@@ -4972,19 +4975,19 @@
       // TODO: limit number of drawn by number of visible pixels
       // one could select every second bin, for instance
 
-      this.RemoveDraw();
+      this.RemoveDrawG();
 
       delete this.draw_bins; this.draw_bins = null;
 
       if (!this.draw_content) return;
 
       this.CreateDrawBins();
-
-      this.draw_g = this.svg_frame.append("svg:g");
+      
+      this.RecreateDrawG();
 
       if (this.options.Error > 0) return this.DrawErrors();
 
-      var width = Number(this.svg_frame.attr("width")), height = Number(this.svg_frame.attr("height"));
+      var width = Number(this.frame.attr("width")), height = Number(this.frame.attr("height"));
 
       var pthis = this;
 
@@ -5617,9 +5620,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function()
    {
-      this.RemoveDraw();
-      
-      this.draw_g = this.svg_frame.append("svg:g");
+      this.RecreateDrawG();
 
       var w = Number(this.frame.attr("width")), h = Number(this.frame.attr("height"));
 
