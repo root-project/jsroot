@@ -3525,7 +3525,7 @@
       if (this.options.Logx) {
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
          if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax)) this.scale_xmin = this.scale_xmax * 0.0001;
-         this['x'] = d3.scale.log().domain([this.scale_xmin, this.scale_xmax]).range([0, w]); //.clamp(true);
+         this['x'] = d3.scale.log().domain([this.scale_xmin, this.scale_xmax]).range([0, w]); // .clamp(true);
       } else {
          this['x'] = d3.scale.linear().domain([this.scale_xmin, this.scale_xmax]).range([0, w]);
       }
@@ -4794,6 +4794,7 @@
       var left = this.GetSelectIndex("x","left",-1);
       var right = this.GetSelectIndex("x","right",2);
       var width = Number(this.frame.attr("width"));
+      var height = Number(this.frame.attr("height"));
       var stepi = 1;
 
       this.draw_bins = new Array;
@@ -4813,8 +4814,11 @@
          // if interval wider than specified range, make it shorter
          if ((stepi>1) && (i+stepi>right)) stepi = (right-i);
          x1 = x2; x2 += stepi*this.binwidthx;
+         
+         if (this.options.Logx && (x1<=0)) continue;
 
-         grx1 = grx2; grx2 = this.x(x2);
+         grx1 = grx2; 
+         grx2 = this.x(x2); 
          if (grx1 < 0) grx1 = this.x(x1);
 
          var pmax = i, cont = this.histo.getBinContent(i+1);
@@ -4823,8 +4827,11 @@
             var ccc = this.histo.getBinContent(i+ii+1);
             if (ccc>cont) { cont = ccc; pmax = i + ii; }
          }
-
-         gry = this.y(cont);
+         
+         if (this.options.Logy && (cont < this.scale_ymin)) 
+            gry = height+10;
+         else
+            gry = this.y(cont);
 
          point = { x: grx1, y: gry };
 
