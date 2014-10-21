@@ -234,42 +234,28 @@
     */
    JSROOT.Painter.getRootMarker = function(i) {
       var marker = JSROOT.Painter.root_markers[i];
-      var shape = 0;
-      var toFill = true;
-      var toRotate = false;
-
+      
+      var res = { shape: 0, toFill: true, toRotate: false };
+      
       if (typeof (marker) != 'undefined') {
-         var fst = marker.charAt(0);
-         switch (fst) {
-         case 'd':
-            shape = 7;
-            return {
-               'shape' : shape
-            };
-         case 'o':
-            toFill = false;
-            break;
-         case 'g':
-            toRotate = true;
+         switch (marker.charAt(0)) {
+            case 'd': res.shape = 7; return res;
+            case 'o': res.toFill = false; break;
+            case 'g': res.toRotate = true; break;
          }
 
-         var type = marker.substr(1, marker.length);
-         switch (type) {
-           case "circle":  shape = 0; break;
-           case "cross":   shape = 1; break;
-           case "diamond": shape = 2; break;
-           case "square":  shape = 3; break;
-           case "triangle-up": shape = 4; break;
-           case "triangle-down": shape = 5; break;
-           case "star":    shape = 6; break; 
+         switch (marker.substr(1)) {
+           case "circle":  res.shape = 0; break;
+           case "cross":   res.shape = 1; break;
+           case "diamond": res.shape = 2; break;
+           case "square":  res.shape = 3; break;
+           case "triangle-up": res.shape = 4; break;
+           case "triangle-down": res.shape = 5; break;
+           case "star":    res.shape = 6; break; 
          }
       }
-      return {
-         'shape' : shape,
-         'toFill' : toFill,
-         'toRotate' : toRotate
-      };
-   };
+      return res;
+   }
 
    JSROOT.Painter.clearCuts = function(chopt) {
       /* decode string "chopt" and remove graphical cuts */
@@ -1582,7 +1568,6 @@
    }
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
-      console.log("TGraphPainter.prototype.Redraw");
       this.DrawBins();
    }
 
@@ -1637,8 +1622,7 @@
          this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionCurve
-            + this.optionStar + this.optionMark + this.optionBar + this.optionE == 0) {
+      if (this.optionLine + this.optionFill + this.optionCurve + this.optionStar + this.optionMark + this.optionBar + this.optionE == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
          else {
@@ -1682,18 +1666,17 @@
             this.draw_errors = false;
       }
       this.seriesType = 'scatter';
-      if (this.optionBar == 1)
-         this.seriesType = 'bar';
+      if (this.optionBar == 1) this.seriesType = 'bar';
       this.showMarker = false;
-      if (this.optionMark == 1 || this.optionStar == 1)
-         this.showMarker = true;
+      if (this.optionMark == 1 || this.optionStar == 1) this.showMarker = true;
 
       if (this.optionLine == 1 || this.optionCurve == 1 || this.optionFill == 1)
          this.seriesType = 'line';
 
       if (this.optionBar == 1) {
-         this.binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] - this.graph['fHistogram']['fXaxis']['fXmin'])
-               / (this.graph['fNpoints'] - 1);
+         this.binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] - 
+                           this.graph['fHistogram']['fXaxis']['fXmin'])
+                            / (this.graph['fNpoints'] - 1);
       }
    }
 
@@ -1788,8 +1771,7 @@
       yf[0] = yo[0];
       nf = 0;
       for (i = 1; i < n; i++) {
-         if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])
-            continue;
+         if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
          nf++;
          xf[nf] = xo[i];
          if (xf[i] == xf[i - 1])
@@ -2018,8 +2000,7 @@
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
-         if (typeof (fillcolor) == 'undefined')
-            fillcolor = "rgb(204, 204, 204)";
+         if (typeof (fillcolor) == 'undefined') fillcolor = "rgb(204, 204, 204)";
          /* filled bar graph */
          var xdom = this.main_painter().x.domain();
          var xfactor = xdom[1] - xdom[0];
@@ -2155,57 +2136,44 @@
 
       if (this.showMarker) {
          /* Add markers */
-         var filled = false;
-         if ((this.graph['fMarkerStyle'] == 8)
-               || (this.graph['fMarkerStyle'] > 19 && this.graph['fMarkerStyle'] < 24)
-               || (this.graph['fMarkerStyle'] == 29))
-            filled = true;
-
          var info_marker = JSROOT.Painter.getRootMarker(this.graph['fMarkerStyle']);
 
-         var shape = info_marker['shape'];
-         var filled = info_marker['toFill'];
-         var toRotate = info_marker['toRotate'];
          var markerSize = this.graph['fMarkerSize'];
-         var markerScale = (shape == 0) ? 32 : 64;
-         if (this.graph['fMarkerStyle'] == 1)
-            markerScale = 1;
+         var markerScale = (info_marker.shape == 0) ? 32 : 64;
+         var marker_color = JSROOT.Painter.root_colors[this.graph['fMarkerColor']]; 
+         if (this.graph['fMarkerStyle'] == 1) markerScale = 1;
 
-         switch (shape) {
-         case 6:
-            var marker = "M " + (-4 * markerSize) + " " + (-1 * markerSize)
-                  + " L " + 4 * markerSize + " " + (-1 * markerSize) + " L "
-                  + (-2.4 * markerSize) + " " + 4 * markerSize + " L 0 "
-                  + (-4 * markerSize) + " L " + 2.8 * markerSize + " " + 4
-                  * markerSize + " z";
-            break;
-         case 7:
-            var marker = "M " + (-4 * markerSize) + " " + (-4 * markerSize)
-                  + " L " + 4 * markerSize + " " + 4 * markerSize + " M 0 "
-                  + (-4 * markerSize) + " 0 " + 4 * markerSize + " M "
-                  + 4 * markerSize + " " + (-4 * markerSize) + " L "
-                  + (-4 * markerSize) + " " + 4 * markerSize + " M "
-                  + (-4 * markerSize) + " 0 L " + 4 * markerSize + " 0";
-            break;
-         default:
-            var marker = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(
-                  markerSize * markerScale);
-            break;
+         var marker;
+         
+         switch (info_marker.shape) {
+            case 6:
+               marker = "M " + (-4 * markerSize) + " " + (-1 * markerSize) + 
+                       " L " + 4 * markerSize + " " + (-1 * markerSize) + 
+                       " L " + (-2.4 * markerSize) + " " + 4 * markerSize + 
+                       " L 0 " + (-4 * markerSize) + 
+                       " L " + 2.8 * markerSize + " " + 4  * markerSize + " z";
+               break;
+            case 7:
+               marker = "M " + (-4 * markerSize) + " " + (-4 * markerSize) +
+                      " L " + 4 * markerSize + " " + 4 * markerSize + 
+                      " M 0 " + (-4 * markerSize) + " 0 " + 4 * markerSize + 
+                      " M "  + 4 * markerSize + " " + (-4 * markerSize) + 
+                      " L " + (-4 * markerSize) + " " + 4 * markerSize + 
+                      " M " + (-4 * markerSize) + " 0 L " + 4 * markerSize + " 0";
+               break;
+            default:
+               marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(markerSize * markerScale);
+               break;
          }
-
+         
          var markers = this.draw_g
                .selectAll("markers")
                .data(this.bins)
                .enter()
                .append("svg:path")
-               .attr("transform", function(d) {
-                  return "translate(" + x(d.x) + " , " + y(d.y) + ")"
-               })
-               .style(
-                     "fill",
-                     filled ? JSROOT.Painter.root_colors[this.graph['fMarkerColor']]
-                           : "none").style("stroke",
-                     JSROOT.Painter.root_colors[this.graph['fMarkerColor']])
+               .attr("transform", function(d) { return "translate(" + x(d.x) + " , " + y(d.y) + ")"; })
+               .style("fill", info_marker['toFill'] ? marker_color  : "none")
+               .style("stroke", marker_color)
                .attr("d", marker);
 
          if (JSROOT.gStyle.Tooltip)
@@ -4964,104 +4932,93 @@
 
       /* Add a panel for each data point */
       var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
-      var shape = info_marker['shape'], filled = info_marker['toFill'], toRotate = info_marker['toRotate'], marker_size = this.histo['fMarkerSize'] * 32;
+      var marker_size = this.histo['fMarkerSize'] * 32;
 
       var line_width = this.histo['fLineWidth'];
       var line_color = JSROOT.Painter.root_colors[this.histo['fLineColor']];
       var marker_color = JSROOT.Painter.root_colors[this.histo['fMarkerColor']];
 
-      if (this.histo['fMarkerStyle'] == 1)
-         marker_size = 1;
+      if (this.histo['fMarkerStyle'] == 1) marker_size = 1;
 
-      var marker = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(
-            marker_size);
+      var marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(marker_size);
 
       var pthis = this;
 
-      function TooltipText(d) {
-         return d.tip;
-      }
-
       /* Draw x-error indicators */
-      var xerr = this.draw_g.selectAll("error_x").data(this.draw_bins).enter()
-            .append("svg:line").attr("x1", function(d) {
-               return d.x - d.xerr;
-            }).attr("y1", function(d) {
-               return d.y;
-            }).attr("x2", function(d) {
-               return d.x + d.xerr;
-            }).attr("y2", function(d) {
-               return d.y;
-            }).style("stroke", line_color).style("stroke-width", line_width);
+      var xerr = this.draw_g.selectAll("error_x")
+                 .data(this.draw_bins).enter()
+                 .append("svg:line")
+                 .attr("x1", function(d) { return d.x - d.xerr; })
+                 .attr("y1", function(d) { return d.y; })
+                 .attr("x2", function(d) { return d.x + d.xerr; })
+                 .attr("y2", function(d) { return d.y; })
+                 .style("stroke", line_color)
+                 .style("stroke-width", line_width);
 
       if (this.options.Error == 11) {
-         this.draw_g.selectAll("e1_x").data(this.draw_bins).enter().append(
-               "svg:line").attr("y1", function(d) {
-            return d.y - 3;
-         }).attr("x1", function(d) {
-            return d.x - d.xerr;
-         }).attr("y2", function(d) {
-            return d.y + 3;
-         }).attr("x2", function(d) {
-            return d.x - d.xerr;
-         }).style("stroke", line_color).style("stroke-width", line_width);
-         this.draw_g.selectAll("e1_x").data(this.draw_bins).enter().append(
-               "svg:line").attr("y1", function(d) {
-            return d.y - 3;
-         }).attr("x1", function(d) {
-            return d.x + d.xerr;
-         }).attr("y2", function(d) {
-            return d.y + 3;
-         }).attr("x2", function(d) {
-            return d.x + d.xerr;
-         }).style("stroke", line_color).style("stroke-width", line_width);
+         this.draw_g.selectAll("e1_x")
+            .data(this.draw_bins).enter()
+            .append("svg:line")
+            .attr("y1", function(d) { return d.y - 3; })
+            .attr("x1", function(d) { return d.x - d.xerr; })
+            .attr("y2", function(d) { return d.y + 3; })
+            .attr("x2", function(d) { return d.x - d.xerr; })
+            .style("stroke", line_color)
+            .style("stroke-width", line_width);
+         this.draw_g.selectAll("e1_x")
+            .data(this.draw_bins).enter()
+            .append("svg:line")
+            .attr("y1", function(d) { return d.y - 3; })
+            .attr("x1", function(d) { return d.x + d.xerr; })
+            .attr("y2", function(d) { return d.y + 3; })
+            .attr("x2", function(d) { return d.x + d.xerr; })
+            .style("stroke", line_color)
+            .style("stroke-width", line_width);
       }
 
       /* Draw y-error indicators */
-      var yerr = this.draw_g.selectAll("error_y").data(this.draw_bins).enter()
-            .append("svg:line").attr("x1", function(d) {
-               return d.x;
-            }).attr("y1", function(d) {
-               return d.y - d.yerr;
-            }).attr("x2", function(d) {
-               return d.x;
-            }).attr("y2", function(d) {
-               return d.y + d.yerr;
-            }).style("stroke", line_color).style("stroke-width", line_width);
+      var yerr = this.draw_g.selectAll("error_y")
+                   .data(this.draw_bins).enter()
+                   .append("svg:line")
+                   .attr("x1", function(d) { return d.x; })
+                   .attr("y1", function(d) { return d.y - d.yerr; })
+                   .attr("x2", function(d) { return d.x; })
+                   .attr("y2", function(d) { return d.y + d.yerr; })
+                   .style("stroke", line_color).style("stroke-width", line_width);
 
       if (this.options.Error == 11) {
-         this.draw_g.selectAll("e1_y").data(this.draw_bins).enter().append(
-               "svg:line").attr("x1", function(d) {
-            return d.x - 3;
-         }).attr("y1", function(d) {
-            return d.y - d.yerr;
-         }).attr("x2", function(d) {
-            return d.x + 3;
-         }).attr("y2", function(d) {
-            return d.y - d.yerr;
-         }).style("stroke", line_color).style("stroke-width", line_width);
-         this.draw_g.selectAll("e1_y").data(this.draw_bins).enter().append(
-               "svg:line").attr("x1", function(d) {
-            return d.x - 3;
-         }).attr("y1", function(d) {
-            return d.y + d.yerr;
-         }).attr("x2", function(d) {
-            return d.x + 3;
-         }).attr("y2", function(d) {
-            return d.y + d.yerr;
-         }).style("stroke", line_color).style("stroke-width", line_width);
+         this.draw_g.selectAll("e1_y")
+             .data(this.draw_bins).enter()
+             .append("svg:line")
+             .attr("x1", function(d) { return d.x - 3; })
+             .attr("y1", function(d) { return d.y - d.yerr; })
+             .attr("x2", function(d) { return d.x + 3; })
+             .attr("y2", function(d) { return d.y - d.yerr; })
+             .style("stroke", line_color)
+             .style("stroke-width", line_width);
+         this.draw_g.selectAll("e1_y")
+              .data(this.draw_bins).enter()
+              .append("svg:line")
+              .attr("x1", function(d) { return d.x - 3; })
+              .attr("y1", function(d) { return d.y + d.yerr; })
+              .attr("x2", function(d) { return d.x + 3; })
+              .attr("y2", function(d) { return d.y + d.yerr; })
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
       }
-      var marks = this.draw_g.selectAll("markers").data(this.draw_bins).enter()
-            .append("svg:path").attr("class", "marker").attr("transform",
-                  function(d) {
-                     return "translate(" + d.x + "," + d.y + ")";
-                  }).style("fill", marker_color).style("stroke", marker_color)
-            .attr("d", marker);
+      var marks = this.draw_g.selectAll("markers")
+                    .data(this.draw_bins).enter()
+                    .append("svg:path")
+                    .attr("class", "marker")
+                    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+                    .style("fill", marker_color)
+                    .style("stroke", marker_color)
+                    .attr("d", marker);
 
       if (JSROOT.gStyle.Tooltip) {
-         marks.append("svg:title").text(TooltipText);
-         xerr.append("svg:title").text(TooltipText);
-         yerr.append("svg:title").text(TooltipText);
+         marks.append("svg:title").text(function(d) { return d.tip; });
+         xerr.append("svg:title").text(function(d) { return d.tip; });
+         yerr.append("svg:title").text(function(d) { return d.tip; });
       }
    }
 
@@ -5737,24 +5694,14 @@
       if (draw_markers) {
 
          // Add markers
-         // TODO: fill is not used
-         var filled = false;
-         if ((this.histo['fMarkerStyle'] == 8)
-               || (this.histo['fMarkerStyle'] > 19 && this.histo['fMarkerStyle'] < 24)
-               || (this.histo['fMarkerStyle'] == 29)) filled = true;
-
          var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
-
-         var shape = info_marker['shape'];
-         var filled = info_marker['toFill'];
-         var toRotate = info_marker['toRotate'];
          var markerSize = this.histo['fMarkerSize'];
-         var markerScale = (shape == 0) ? 32 : 64;
+         var markerScale = (info_marker.shape == 0) ? 32 : 64;
          if (this.histo['fMarkerStyle'] == 1) markerScale = 1;
 
          var marker = null;
 
-         switch (shape) {
+         switch (info_marker.shape) {
          case 6:
             marker = "M " + (-4 * markerSize) + " " + (-1 * markerSize) + " L "
                   + 4 * markerSize + " " + (-1 * markerSize) + " L "
@@ -5771,8 +5718,7 @@
                   + (-4 * markerSize) + " 0 L " + 4 * markerSize + " 0";
             break;
          default:
-            marker = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(
-                  markerSize * markerScale);
+            marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(markerSize * markerScale);
             break;
          }
          var markers = 
@@ -6249,28 +6195,22 @@
             var line_length = (0.7 * pave['fMargin']) * w;
             var pos_x = tpos_x / 2;
 
-            var filled = false;
-            if ((marker_style == 8) || (marker_style > 19 && marker_style < 24)
-                  || (marker_style == 29)) filled = true;
-
             var info_marker = JSROOT.Painter.getRootMarker(marker_style);
-
-            var shape = info_marker['shape'];
-            var filled = info_marker['toFill'];
-            var toRotate = info_marker['toRotate'];
             var markerScale = 65;
             if (marker_style == 1) markerScale = 1;
 
-            switch (shape) {
+            var marker;
+            
+            switch (info_marker.shape) {
             case 6:
-               var marker = "M " + (-4 * marker_size) + " "
+               marker = "M " + (-4 * marker_size) + " "
                      + (-1 * marker_size) + " L " + 4 * marker_size + " "
                      + (-1 * marker_size) + " L " + (-2.4 * marker_size) + " "
                      + 4 * marker_size + " L 0 " + (-4 * marker_size) + " L "
                      + 2.8 * marker_size + " " + 4 * marker_size + " z";
                break;
             case 7:
-               var marker = "M " + (-4 * marker_size) + " "
+               marker = "M " + (-4 * marker_size) + " "
                      + (-4 * marker_size) + " L " + 4 * marker_size + " "
                      + 4 * marker_size + " M 0 " + (-4 * marker_size) + " 0 "
                      + 4 * marker_size + " M " + 4 * marker_size + " "
@@ -6279,14 +6219,13 @@
                      + 4 * marker_size + " 0";
                break;
             default:
-               var marker = d3.svg.symbol().type(d3.svg.symbolTypes[shape])
-                     .size(marker_size * markerScale);
+               marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(marker_size * markerScale);
                break;
             }
-            p.append("svg:path").attr("transform", function(d) {
-               return "translate(" + pos_x + "," + pos_y + ")";
-            }).style("fill", filled ? marker_color : "none")
-              .style("stroke", marker_color).attr("d", marker);
+            p.append("svg:path")
+                .attr("transform", function(d) { return "translate(" + pos_x + "," + pos_y + ")"; })
+                .style("fill", info_marker['toFill'] ? marker_color : "none")
+                .style("stroke", marker_color).attr("d", marker);
          }
       }
       if (lwidth && lwidth > 1) {

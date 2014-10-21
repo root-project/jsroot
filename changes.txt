@@ -18,8 +18,10 @@ October 2014:
 6. When one appends "+" to the filename, its content read completely with first I/O operation.
 7. Implement JS custom streamer for TCanvas, restore aspect ratio when drawing
 8. Major redesign of drawing classes. Resize and update of TCanvas are implemented.
-   All major draw functions working with element id as argument.
-9. Extract 3D drawings into separate JSRoot3DPainter.js script    
+   All major draw functions working with HTML element id as first argument.
+9. Extract 3D drawings into separate JSRoot3DPainter.js script
+10.Use newest three.min.js (r68) for 3D drawings, solves problem with Firefox.
+    
 
 September 2014:
 1. First try to handle resize of the browser, 
