@@ -891,8 +891,9 @@
 
    // ==============================================================================
 
-   JSROOT.TObjectPainter = function() {
+   JSROOT.TObjectPainter = function(obj) {
       JSROOT.TBasePainter.call(this);
+      this.obj_typename = (obj!=null) && ('_typename' in obj) ? obj['_typename'] : ""; 
       this.draw_g = null; // container for all draw objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad 
@@ -982,7 +983,7 @@
       return this == this.main_painter();
    }
 
-   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main, obj_class) {
+   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main) {
       // assign all basic graphic elements like canvas, pad, frame
       // create canvas and frame if required
       // is_main - -1 - not add to painters list, 
@@ -1005,8 +1006,8 @@
       } 
       
       if (svg_c == null) {
-         if (obj_class!="TCanvas") 
-            console.log("Canvas not exists when trying to draw " + obj_class);
+         if ((this.obj_typename!="TCanvas") && (is_main>=0))
+            console.log("Canvas not exists when trying to draw " + this.obj_typename);
          return false;
       }
 
@@ -1469,7 +1470,7 @@
    // ===========================================================
 
    JSROOT.TFramePainter = function(tframe) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, tframe);
       this.tframe = tframe;
    }
 
@@ -1593,7 +1594,7 @@
    // =========================================================================
 
    JSROOT.TF1Painter = function(tf1) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, tf1);
       this.tf1 = tf1;
    }
 
@@ -1789,7 +1790,9 @@
    JSROOT.Painter.drawFunction = function(divid, tf1) {
       var painter = new JSROOT.TF1Painter(tf1);
 
-      if (d3.select("#" + divid + " .root_frame").node() == null) {
+      painter.SetDivId(divid, -1);
+      
+      if (painter.main_painter() == null) {
          var histo = painter.CreateDummyHisto();
          JSROOT.Painter.drawHistogram1D(divid, histo);
       }
@@ -1806,7 +1809,7 @@
    // =======================================================================
 
    JSROOT.TGraphPainter = function(graph) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, graph);
       this.graph = graph;
       this.ownhisto = false; // indicate if graph histogram was drawn for axes 
    }
@@ -2493,7 +2496,7 @@
    // ============================================================
 
    JSROOT.TPavePainter = function(pave) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, pave);
       this.pavetext = pave;
       this.Enabled = true;
       this.main_rect = null;
@@ -2775,13 +2778,13 @@
    }
 
    JSROOT.Painter.DrawPaveText = function(divid, pavetext) {
-      if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 || pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0) {
-         return;
-      }
+      if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 || 
+          pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0) 
+         return null;
 
       var painter = new JSROOT.TPavePainter(pavetext);
 
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, 0, "TPave");
 
       // refill statistic in any case
       // if ('_AutoCreated' in pavetext)
@@ -2795,7 +2798,8 @@
    // ===========================================================================
 
    JSROOT.TPadPainter = function(pad, iscan) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, pad);
+      if (this.obj_typename=="") this.obj_typename = iscan ? "TCanvas" : "TPad";
       this.pad = pad;
       this.iscan = iscan; // indicate if workign with canvas 
       this.painters = new Array; // complete list of all painters in the pad
@@ -2956,7 +2960,7 @@
 
    JSROOT.Painter.drawCanvas = function(divid, can) {
       var painter = new JSROOT.TPadPainter(can, true);
-      painter.SetDivId(divid, 0, "TCanvas");
+      painter.SetDivId(divid);
       painter.CreateCanvasSvg();
 
       if (can==null)
@@ -2970,7 +2974,7 @@
    JSROOT.Painter.drawPad = function(divid, pad) {
 
       var painter = new JSROOT.TPadPainter(pad, false);
-      painter.SetDivId(divid, 0, "TPad"); // pad painter will be registered in the canvas painters list 
+      painter.SetDivId(divid); // pad painter will be registered in the canvas painters list 
 
       painter.CreatePadSvg();
 
@@ -2991,13 +2995,12 @@
    // ===========================================================================
 
    JSROOT.TColzPalettePainter = function(palette) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, palette);
       this.palette = palette;
       this.Enabled = true;
    }
 
-   JSROOT.TColzPalettePainter.prototype = Object
-         .create(JSROOT.TObjectPainter.prototype);
+   JSROOT.TColzPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TColzPalettePainter.prototype.IsObject = function(obj) {
       return this.palette === obj;
@@ -3009,22 +3012,18 @@
 
       var minbin = this.main_painter().minbin;
       var maxbin = this.main_painter().maxbin;
-      var ndiv = axis['fNdiv'];
+      var nbr1 = axis['fNdiv'] % 100;
+      if (nbr1<=0) nbr1 = 8;
 
-      var width = Number(this.svg_pad(true).attr("width")), height = Number(this
-            .svg_pad(true).attr("height"));
+      var width = Number(this.svg_pad(true).attr("width")), 
+          height = Number(this.svg_pad(true).attr("height"));
 
       var s_height = Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height;
 
       var axisOffset = axis['fLabelOffset'] * width;
       var tickSize = axis['fTickSize'] * width;
 
-      var nbr1 = Math.max(ndiv % 100, 1);
-      // var nbr2 = Math.max(Math.round((ndiv % 10000) / 100), 1);
-      // var nbr3 = Math.max(Math.round(ndiv / 10000), 1);
-
-      var z = d3.scale.linear().clamp(true).domain([ minbin, maxbin ]).range(
-            [ s_height, 0 ]).nice();
+      var z = d3.scale.linear().clamp(true).domain([ minbin, maxbin ]).range( [ s_height, 0 ]).nice();
 
       var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
       var axisLabelFontSize = axis['fLabelSize'] * height;
@@ -3036,39 +3035,48 @@
       pos_y -= s_height;
 
       // Draw palette pad
-      this.draw_g = this.svg_pad(true).append("svg:g").attr("height", s_height)
-            .attr("width", s_width).attr("transform",
-                  "translate(" + pos_x + ", " + pos_y + ")");
+      this.draw_g = this.svg_pad(true)
+                     .append("svg:g")
+                     .attr("height", s_height)
+                     .attr("width", s_width)
+                     .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
       var paletteColors = this.main_painter().paletteColors;
 
       // Draw palette
       var rectHeight = s_height / paletteColors.length;
-      this.draw_g.selectAll("colorRect").data(paletteColors).enter().append(
-            "svg:rect").attr("class", "colorRect").attr("x", 0).attr("y",
-            function(d, i) {
-               return s_height - (i + 1) * rectHeight;
-            }).attr("width", s_width).attr("height", rectHeight).attr("fill",
-            function(d) {
-               return d;
-            }).attr("stroke", function(d) {
-         return d;
-      });
+      this.draw_g.selectAll("colorRect")
+                 .data(paletteColors)
+                 .enter()
+                 .append("svg:rect")
+                 .attr("class", "colorRect")
+                 .attr("x", 0)
+                 .attr("y",  function(d, i) { return s_height - (i + 1) * rectHeight; })
+                 .attr("width", s_width)
+                 .attr("height", rectHeight)
+                 .attr("fill", function(d) { return d; })
+                 .attr("stroke", function(d) { return d; });
       /*
        * Build and draw axes
        */
 
-      var z_axis = d3.svg.axis().scale(z).orient("right").tickPadding(
-            axisOffset).tickSize(-tickSize, -tickSize / 2, 0).ticks(nbr1);
+      var z_axis = d3.svg.axis().scale(z)
+                    .orient("right")
+                    .tickPadding(axisOffset)
+                    .tickSize(-tickSize, -tickSize / 2, 0)
+                    .ticks(nbr1);
 
-      var zax = this.draw_g.append("svg:g").attr("class", "zaxis").attr(
-            "transform", "translate(" + s_width + ", 0)").call(z_axis);
+      var zax = this.draw_g.append("svg:g")
+                   .attr("class", "zaxis")
+                   .attr("transform", "translate(" + s_width + ", 0)")
+                   .call(z_axis);
 
-      zax.selectAll("text").attr("font-size", axisLabelFontSize).attr(
-            "font-weight", axisFontDetails['weight']).attr("font-style",
-            axisFontDetails['style']).attr("font-family",
-            axisFontDetails['name']).attr("fill",
-            JSROOT.Painter.root_colors[axis['fLabelColor']]);
+      zax.selectAll("text")
+              .attr("font-size", axisLabelFontSize)
+              .attr("font-weight", axisFontDetails['weight'])
+              .attr("font-style", axisFontDetails['style'])
+              .attr("font-family", axisFontDetails['name'])
+              .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
 
       /*
        * Add palette axis title
@@ -3077,18 +3085,21 @@
       if (title != "" && typeof (axis['fTitleFont']) != 'undefined') {
          axisFontDetails = JSROOT.Painter.getFontDetails(axis['fTitleFont']);
          var axisTitleFontSize = axis['fTitleSize'] * height;
-         this.draw_g.append("text").attr("class", "Z axis label").attr("x",
-               s_width + axisLabelFontSize).attr("y", s_height).attr(
-               "text-anchor", "end").attr("font-family",
-               axisFontDetails['name']).attr("font-weight",
-               axisFontDetails['weight']).attr("font-style",
-               axisFontDetails['style']).attr("font-size", axisTitleFontSize)
-               .text(title);
+         this.draw_g.append("text")
+                .attr("class", "Z axis label")
+                .attr("x", s_width + axisLabelFontSize)
+                .attr("y", s_height)
+                .attr("text-anchor", "end")
+                .attr("font-family",  axisFontDetails['name'])
+                .attr("font-weight",  axisFontDetails['weight'])
+                .attr("font-style", axisFontDetails['style'])
+                .attr("font-size", axisTitleFontSize).text(title);
       }
 
       if (this.main_rect == null) {
-         this.main_rect = this.svg_pad(true).append("rect").attr("id",
-               "colz_move_rect").style("opacity", "0");
+         this.main_rect = this.svg_pad(true)
+                           .append("rect")
+                           .attr("id", "colz_move_rect").style("opacity", "0");
       } else {
          // ensure that all color drawing inserted before move rect
          var prnt = this.main_rect.node().parentNode;
@@ -3096,8 +3107,10 @@
          prnt.insertBefore(this.draw_g.node(), this.main_rect.node());
       }
 
-      this.main_rect.attr("x", pos_x).attr("y", pos_y).attr("width", s_width)
-            .attr("height", s_height);
+      this.main_rect.attr("x", pos_x)
+                    .attr("y", pos_y)
+                    .attr("width", s_width)
+                    .attr("height", s_height);
 
       var pthis = this;
 
@@ -3106,20 +3119,14 @@
 
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pthis.palette['fX1NDC'] += dx
-                  / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fX2NDC'] += dx
-                  / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fY1NDC'] -= dy
-                  / Number(pthis.svg_pad(true).attr("height"));
-            pthis.palette['fY2NDC'] -= dy
-                  / Number(pthis.svg_pad(true).attr("height"));
+            pthis.palette['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pthis.palette['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pthis.palette['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pthis.palette['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
          },
          resize : function(width, height) {
-            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width
-                  / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height
-                  / Number(pthis.svg_pad(true).attr("height"));
+            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / Number(pthis.svg_pad(true).attr("width"));
+            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
 
             pthis.RemoveDrawG();
             pthis.DrawPalette();
@@ -3157,7 +3164,7 @@
    // =============================================================
 
    JSROOT.THistPainter = function(histo) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
    }
 
@@ -5423,7 +5430,7 @@
 
       // create painter and add it to canvas
       var painter = new JSROOT.TH1Painter(histo);
-      var create_canvas = painter.SetDivId(divid, 1);
+      var create_canvas = painter.SetDivId(divid, 1,"TH1");
       
       painter.CheckZoomSelection();
 
@@ -6413,7 +6420,7 @@
 
       // create painter and add it to canvas
       var painter = new JSROOT.TH2Painter(histo);
-      var create_canvas = painter.SetDivId(divid, 1);
+      var create_canvas = painter.SetDivId(divid, 1,"TH1");
       
       painter.CheckZoomSelection();
 
@@ -6810,7 +6817,7 @@
    // ====================================================================
    
    JSROOT.THStackPainter = function(stack) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, stack);
       this.stack = stack;
       this.nostack = false;
       this.firstpainter = null;
@@ -6963,7 +6970,7 @@
       if (stack['fHists'].arr.length == 0) return;
 
       var painter = new JSROOT.THStackPainter(stack);
-      painter.SetDivId(divid);
+      painter.SetDivId(divid,0,"THStack");
       
       painter.drawStack(opt);
       
@@ -6973,7 +6980,7 @@
    // ==============================================================================
    
    JSROOT.TLegendPainter = function(legend) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, legend);
       this.legend = legend;
    }
 
@@ -7235,7 +7242,7 @@
    // =============================================================
    
    JSROOT.TMultiGraphPainter = function(mgraph) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, mgraph);
       this.mgraph = mgraph;
       this.firstpainter = null;
       this.painters = new Array; // keep painters to be able update objects
@@ -7440,7 +7447,7 @@
    // =====================================================================================
    
    JSROOT.TTextPainter = function(text) {
-      JSROOT.TObjectPainter.call(this);
+      JSROOT.TObjectPainter.call(this, text);
       this.text = text;
    }
 
