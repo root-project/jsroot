@@ -6366,7 +6366,7 @@
       return painter;
    }
 
-   JSROOT.Painter.drawHistogram3D = function(divid, histo, dopt) {
+   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
     JSROOT.AssertPrerequisites('3d', function() {
 
        var logx = false, logy = false, logz = false, gridx = false, gridy = false, gridz = false;
@@ -6374,7 +6374,13 @@
        var painter = new JSROOT.TObjectPainter();
        painter.SetDivId(divid, -1);
        var pad = painter.root_pad();
-
+       
+       var render_to;
+       if (painter.svg_pad())
+          render_to = $(painter.svg_pad()).hide().parent();
+       else
+          render_to = $("#" + divid);
+       
        var opt = histo['fOption'].toLowerCase();
        // if (opt=="") opt = "colz";
 
@@ -6398,12 +6404,9 @@
        var nbinsx = histo['fXaxis']['fNbins'];
        var nbinsy = histo['fYaxis']['fNbins'];
        var nbinsz = histo['fZaxis']['fNbins'];
-       var scalex = (histo['fXaxis']['fXmax'] - histo['fXaxis']['fXmin'])
-       / histo['fXaxis']['fNbins'];
-       var scaley = (histo['fYaxis']['fXmax'] - histo['fYaxis']['fXmin'])
-       / histo['fYaxis']['fNbins'];
-       var scalez = (histo['fZaxis']['fXmax'] - histo['fZaxis']['fXmin'])
-       / histo['fZaxis']['fNbins'];
+       var scalex = (histo['fXaxis']['fXmax'] - histo['fXaxis']['fXmin']) / histo['fXaxis']['fNbins'];
+       var scaley = (histo['fYaxis']['fXmax'] - histo['fYaxis']['fXmin']) / histo['fYaxis']['fNbins'];
+       var scalez = (histo['fZaxis']['fXmax'] - histo['fZaxis']['fXmin']) / histo['fZaxis']['fNbins'];
        var maxbin = -1e32, minbin = 1e32;
        maxbin = d3.max(histo['fArray']);
        minbin = d3.min(histo['fArray']);
@@ -6424,56 +6427,29 @@
              }
           }
        }
-       var w = Number(painter.svg_pad(true).attr("width")), 
-           h = Number(painter.svg_pad(true).attr("height")), size = 100;
+       var w = render_to.width(), h = render_to.height(), size = 100;
+       if (h<10) { render_to.height(0.66*w); h = render_to.height(); }
+       
        if (logx) {
           var tx = d3.scale.log().domain([ histo['fXaxis']['fXmin'],  histo['fXaxis']['fXmax'] ]).range( [ -size, size ]);
           var utx = d3.scale.log().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]); 
        } else {
-          var tx = d3.scale.linear().domain(
-                [ histo['fXaxis']['fXmin'],
-                  histo['fXaxis']['fXmax'] ]).range(
-                        [ -size, size ]);
-          var utx = d3.scale.linear().domain([ -size, size ])
-          .range(
-                [ histo['fXaxis']['fXmin'],
-                  histo['fXaxis']['fXmax'] ]);
+          var tx = d3.scale.linear().domain( [ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]).range( [ -size, size ]);
+          var utx = d3.scale.linear().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]); 
        }
        if (logy) {
-          var ty = d3.scale.log().domain(
-                [ histo['fYaxis']['fXmin'],
-                  histo['fYaxis']['fXmax'] ]).range(
-                        [ -size, size ]);
-          var uty = d3.scale.log().domain([ size, -size ]).range(
-                [ histo['fYaxis']['fXmin'],
-                  histo['fYaxis']['fXmax'] ]);
+          var ty = d3.scale.log().domain([ histo['fYaxis']['fXmin'], histo['fYaxis']['fXmax'] ]).range( [ -size, size ]);
+          var uty = d3.scale.log().domain([ size, -size ]).range([ histo['fYaxis']['fXmin'], histo['fYaxis']['fXmax'] ]);
        } else {
-          var ty = d3.scale.linear().domain(
-                [ histo['fYaxis']['fXmin'],
-                  histo['fYaxis']['fXmax'] ]).range(
-                        [ -size, size ]);
-          var uty = d3.scale.linear().domain([ size, -size ])
-          .range(
-                [ histo['fYaxis']['fXmin'],
-                  histo['fYaxis']['fXmax'] ]);
+          var ty = d3.scale.linear().domain( [ histo['fYaxis']['fXmin'], histo['fYaxis']['fXmax'] ]).range([ -size, size ]);
+          var uty = d3.scale.linear().domain([ size, -size ]).range([ histo['fYaxis']['fXmin'], histo['fYaxis']['fXmax'] ]);
        }
        if (logz) {
-          var tz = d3.scale.log().domain(
-                [ histo['fZaxis']['fXmin'],
-                  histo['fZaxis']['fXmax'] ]).range(
-                        [ -size, size ]);
-          var utz = d3.scale.log().domain([ -size, size ]).range(
-                [ histo['fZaxis']['fXmin'],
-                  histo['fZaxis']['fXmax'] ]);
+          var tz = d3.scale.log().domain([ histo['fZaxis']['fXmin'], histo['fZaxis']['fXmax'] ]).range([ -size, size ]);
+          var utz = d3.scale.log().domain([ -size, size ]).range([ histo['fZaxis']['fXmin'], histo['fZaxis']['fXmax'] ]);
        } else {
-          var tz = d3.scale.linear().domain(
-                [ histo['fZaxis']['fXmin'],
-                  histo['fZaxis']['fXmax'] ]).range(
-                        [ -size, size ]);
-          var utz = d3.scale.linear().domain([ -size, size ])
-          .range(
-                [ histo['fZaxis']['fXmin'],
-                  histo['fZaxis']['fXmax'] ]);
+          var tz = d3.scale.linear().domain([ histo['fZaxis']['fXmin'], histo['fZaxis']['fXmax'] ]).range([ -size, size ]);
+          var utz = d3.scale.linear().domain([ -size, size ]).range([ histo['fZaxis']['fXmin'], histo['fZaxis']['fXmax'] ]);
        }
 
        // three.js 3D drawing
@@ -6492,15 +6468,12 @@
        });
 
        // create a new mesh with cube geometry
-       var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2,
-             size * 2, size * 2), wireMaterial);
+       var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2, size * 2, size * 2), wireMaterial);
 
        // add the cube to the scene
        toplevel.add(cube);
 
-       var textMaterial = new THREE.MeshBasicMaterial({
-          color : 0x000000
-       });
+       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
 
        // add the calibration vectors and texts
        var geometry = new THREE.Geometry();
@@ -6509,43 +6482,31 @@
        var xmajors = tx.ticks(5);
        var xminors = tx.ticks(25);
        for (var i = -size, j = 0, k = 0; i <= size; ++i) {
-          var is_major = (utx(i) <= xmajors[j] && utx(i + 1) > xmajors[j]) ? true
-                : false;
-          var is_minor = (utx(i) <= xminors[k] && utx(i + 1) > xminors[k]) ? true
-                : false;
+          var is_major = (utx(i) <= xmajors[j] && utx(i + 1) > xmajors[j]) ? true : false;
+          var is_minor = (utx(i) <= xminors[k] && utx(i + 1) > xminors[k]) ? true : false;
           plen = (is_major ? len + 2 : len) * sin45;
           if (is_major) {
-             text3d = new THREE.TextGeometry(xmajors[j], {
-                size : 7,
-                height : 0,
-                curveSegments : 10
-             });
+             text3d = new THREE.TextGeometry(xmajors[j], { size : 7, height : 0, curveSegments : 10 });
              ++j;
 
              text3d.computeBoundingBox();
              var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
              text = new THREE.Mesh(text3d, textMaterial);
-             text.position.set(i - centerOffset, -size - 13, size
-                   + plen);
+             text.position.set(i - centerOffset, -size - 13, size + plen);
              toplevel.add(text);
 
              text = new THREE.Mesh(text3d, textMaterial);
-             text.position.set(i + centerOffset, -size - 13,
-                   -size - plen);
+             text.position.set(i + centerOffset, -size - 13, -size - plen);
              text.rotation.y = Math.PI;
              toplevel.add(text);
           }
           if (is_major || is_minor) {
              ++k;
-             geometry.vertices.push(new THREE.Vector3(i, -size,
-                   size));
-             geometry.vertices.push(new THREE.Vector3(i, -size
-                   - plen, size + plen));
-             geometry.vertices.push(new THREE.Vector3(i, -size,
-                   -size));
-             geometry.vertices.push(new THREE.Vector3(i, -size
-                   - plen, -size - plen));
+             geometry.vertices.push(new THREE.Vector3(i, -size, size));
+             geometry.vertices.push(new THREE.Vector3(i, -size - plen, size + plen));
+             geometry.vertices.push(new THREE.Vector3(i, -size, -size));
+             geometry.vertices.push(new THREE.Vector3(i, -size - plen, -size - plen));
           }
        }
        var ymajors = ty.ticks(5);
@@ -6649,10 +6610,7 @@
           } else {
              bin = THREE.SceneUtils.createMultiMaterialObject(
                    new THREE.CubeGeometry(wei * constx, wei * constz, wei * consty), 
-                   [ new THREE.MeshLambertMaterial({
-                       color : fillcolor.getHex(),
-                       shading : THREE.NoShading
-                    }), wireMaterial ]);
+                   [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
           }
           bin.position.x = tx(bins[i].x - (scalex / 2));
           bin.position.y = tz(bins[i].z - (scalez / 2));
@@ -6703,7 +6661,7 @@
                         new THREE.WebGLRenderer({ antialias : true }) : 
                         new THREE.CanvasRenderer({antialias : true });
        renderer.setSize(w, h);
-       $(painter.svg_pad(true)[0][0]).hide().parent().append(renderer.domElement);
+       render_to.append(renderer.domElement);
        renderer.render(scene, camera);
 
        JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, null);
