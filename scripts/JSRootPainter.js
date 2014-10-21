@@ -595,19 +595,13 @@
       _exp = _exp.replace('@', '');
       var u, size = _exp.length;
       for (var j = 0; j < size; ++j) {
-         var c = _exp.charAt(j);
-         if (c == '+')
-            u = '\u207A';
-         else if (c == '-')
-            u = '\u207B'
-         else {
+         var u, c  = _exp.charAt(j);
+         if (c == '+') u = '\u207A'; else
+         if (c == '-') u = '\u207B'; else {
             var e = parseInt(c);
-            if (e == 1)
-               u = String.fromCharCode(0xB9);
-            else if (e > 1 && e < 4)
-               u = String.fromCharCode(0xB0 + e);
-            else
-               u = String.fromCharCode(0x2070 + e);
+            if (e == 1) u = String.fromCharCode(0xB9); else 
+            if (e > 1 && e < 4) u = String.fromCharCode(0xB0 + e); else
+                                u = String.fromCharCode(0x2070 + e);
          }
          _exp = _exp.replace(c, u);
       }
@@ -626,13 +620,10 @@
             var size = symbol.length;
             for (var j = 0; j < size; ++j) {
                var c = symbol.charAt(j);
-               var e = parseInt(c);
-               if (e == 1)
-                  u = String.fromCharCode(0xB9);
-               else if (e > 1 && e < 4)
-                  u = String.fromCharCode(0xB0 + e);
-               else
-                  u = String.fromCharCode(0x2070 + e);
+               var u, e = parseInt(c);
+               if (e == 1) u = String.fromCharCode(0xB9);
+               else if (e > 1 && e < 4) u = String.fromCharCode(0xB0 + e);
+               else u = String.fromCharCode(0x2070 + e);
                symbol = symbol.replace(c, u);
             }
             str = str.replace(lstr[i], symbol);
@@ -6051,8 +6042,8 @@
 
       var max_len = 0, mul = 1.4;
       for (var j = 0; j < nlines; ++j) {
-         line = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
-         lw = tpos_x  + JSROOT.Painter.stringWidth(svg, line, font_size, fontDetails);
+         var line = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
+         var lw = tpos_x  + JSROOT.Painter.stringWidth(svg, line, font_size, fontDetails);
          if (lw > max_len) max_len = lw;
       }
       if (max_len > w) {
