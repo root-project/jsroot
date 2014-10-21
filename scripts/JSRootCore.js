@@ -406,7 +406,8 @@
          allfiles += ";$$$scripts/jquery.mousewheel.js" + 
                      ";$$$scripts/three.min.js" +
                      ";$$$scripts/helvetiker_regular.typeface.js" + 
-                     ";$$$scripts/helvetiker_bold.typeface.js";
+                     ";$$$scripts/helvetiker_bold.typeface.js" + 
+                     ";$$$scripts/JSRoot3DPainter.js";
 
       if (kind.indexOf("simple")>=0)
          allfiles += ';$$$scripts/JSRootInterface.js' +
