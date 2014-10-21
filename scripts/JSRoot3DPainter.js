@@ -241,6 +241,7 @@
          if (painter)
             JSROOT.Painter.menuitem(menu, "Switch to 2D", function() {
                $(painter.svg_pad()).show().parent().find(renderer.domElement).remove();
+               tooltip.hide();
                painter.Draw2D();
             });
          JSROOT.Painter.menuitem(menu, "Close", function() { });
@@ -312,7 +313,7 @@
       });
 
       // create a new mesh with cube geometry
-      var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2, size * 2, size * 2), wireMaterial);
+      var cube = new THREE.Mesh(new THREE.BoxGeometry(size * 2, size * 2, size * 2), wireMaterial);
       cube.position.y = size;
 
       // add the cube to the scene
@@ -448,7 +449,7 @@
          wei = tz(hh.z);
 
          bin = THREE.SceneUtils.createMultiMaterialObject(
-               new THREE.CubeGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy), 
+               new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy), 
                [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
          bin.position.x = tx(hh.x);
          bin.position.y = wei / 2;
@@ -603,7 +604,7 @@
       });
 
       // create a new mesh with cube geometry
-      var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2, size * 2, size * 2), wireMaterial);
+      var cube = new THREE.Mesh(new THREE.BoxGeometry(size * 2, size * 2, size * 2), wireMaterial);
 
       // add the cube to the scene
       toplevel.add(cube);
@@ -744,7 +745,7 @@
                   new THREE.MeshPhongMaterial({  color : fillcolor.getHex(), specular : 0xbfbfbf/* , shading: THREE.NoShading */}));
          } else {
             bin = THREE.SceneUtils.createMultiMaterialObject(
-                  new THREE.CubeGeometry(wei * constx, wei * constz, wei * consty), 
+                  new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty), 
                   [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
          }
          bin.position.x = tx(bins[i].x - (scalex / 2));

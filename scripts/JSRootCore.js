@@ -338,7 +338,7 @@
             }
 
             if (src.indexOf(filename)>=0) {
-               debug("script "+  filename + " already loaded");
+               // debug("script "+  filename + " already loaded");
                return completeLoad();
             }
          }
