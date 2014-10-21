@@ -22,12 +22,10 @@
    }
 
    // list of user painters, called with arguments painter(vis, obj, opt)
-   JSROOT.fUserPainters = null;
+   JSROOT.fDrawFunc = new Array;
 
-   JSROOT.addUserPainter = function(class_name, user_painter) {
-      if (JSROOT.fUserPainters == null)
-         JSROOT.fUserPainters = {};
-      JSROOT.fUserPainters[class_name] = user_painter;
+   JSROOT.addDrawFunc = function(_name, _func) {
+      JSROOT.fDrawFunc.push({ name:_name, func:_func });
    }
 
    JSROOT.gStyle = {
@@ -51,8 +49,7 @@
    };
 
    /**
-    * @class JSROOT.Painter Holder of different functions and classes for
-    *        drawing
+    * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
    JSROOT.Painter = {};
 
@@ -1702,7 +1699,7 @@
                      eyhigh : pthis.graph['fEY'][p]
                   };
                } else if (pthis.graph['_typename'] == 'TGraphAsymmErrors'
-                     || pthis.graph['_typename'].match(/\bRooHist/)) {
+                     || pthis.graph['_typename'].match(/^RooHist/)) {
                   return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p],
@@ -1942,12 +1939,7 @@
             yf[i] = ymin;
       }
 
-      this.excl = d3.range(nf).map(function(p) {
-         return {
-            x : xf[p],
-            y : yf[p]
-         };
-      });
+      this.excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
 
       this.excl_ec = ec;
       this.excl_ff = ff;
@@ -1990,13 +1982,9 @@
       
       var x = this.main_painter().x;
       var y = this.main_painter().y;
-      var line = null;
-
-      if (this.seriesType == 'line') 
-         /* contour lines only */
-         line = d3.svg.line()
-                 .x(function(d) { return x(d.x); })
-                 .y(function(d) { return y(d.y); });
+      var line = d3.svg.line()
+                  .x(function(d) { return x(d.x); })             
+                  .y(function(d) { return y(d.y); });
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
@@ -2016,10 +2004,7 @@
                   .style("fill", fillcolor);
 
          if (JSROOT.gStyle.Tooltip)
-            nodes.append("svg:title").text(
-              function(d) {
-                 return "x = " + d.x.toPrecision(4) + " \nentries = " + d.y.toPrecision(4);
-              });
+            nodes.append("svg:title").text(function(d) { return "x = " + d.x.toPrecision(4) + " \nentries = " + d.y.toPrecision(4); });
       }
       if (this.exclusionGraph) {
          /* first draw exclusion area, and then the line */
@@ -2055,13 +2040,14 @@
                        .append("svg:circle")
                        .attr("cx", function(d) { return x(d.x); })
                        .attr("cy", function(d) { return y(d.y); })
-                       .attr("r", 3).attr("opacity", 0)
+                       .attr("r", 3)
+                       .attr("opacity", 0)
                        .append("svg:title")
                        .text(TooltipText);
 
       }
       if ((this.graph['_typename'] == 'TGraphErrors'
-            || this.graph['_typename'] == 'TGraphAsymmErrors' || this.graph['_typename'].match(/\bRooHist/))
+            || this.graph['_typename'] == 'TGraphAsymmErrors' || this.graph['_typename'].match(/^RooHist/))
             && this.draw_errors && !this.optionBar) {
 
          // here are up to five elements are collected, try to group them
@@ -2506,7 +2492,7 @@
       this.DrawPaveText();
    }
 
-   JSROOT.Painter.DrawPaveText = function(divid, pavetext) {
+   JSROOT.Painter.drawPaveText = function(divid, pavetext) {
       if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 || 
           pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0) 
          return null;
@@ -2642,7 +2628,7 @@
    JSROOT.TPadPainter.prototype.DrawPrimitives = function() {
       if (this.pad==null) return;   
       for ( var i in this.pad.fPrimitives.arr) {
-         var pp = JSROOT.Painter.drawObjectInFrame(this.divid, this.pad.fPrimitives.arr[i],  this.pad.fPrimitives.opt[i]);
+         var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[i],  this.pad.fPrimitives.opt[i]);
          this.primitive_painters.push(pp);
       }
    }
@@ -2908,14 +2894,14 @@
    }
 
    JSROOT.THistPainter.prototype.IsTH2Poly = function() {
-      return this.histo && this.histo['_typename'].match(/\bTH2Poly/);
+      return this.histo && this.histo['_typename'].match(/^TH2Poly/);
    }
 
    JSROOT.THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
       if ('fDimension' in this.histo) return this.histo['fDimension'];
-      if (this.histo['_typename'].match(/\bTH2/)) return 2;
-      if (this.histo['_typename'].match(/\bTH3/)) return 3;
+      if (this.histo['_typename'].match(/^TH2/)) return 2;
+      if (this.histo['_typename'].match(/^TH3/)) return 3;
       return 1;
    }
 
@@ -4044,7 +4030,7 @@
       stats['fY1NDC'] = JSROOT.gStyle.StatY;
       stats['fX2NDC'] = JSROOT.gStyle.StatX + JSROOT.gStyle.StatW;
       stats['fY2NDC'] = JSROOT.gStyle.StatY + JSROOT.gStyle.StatH;
-      if (this.histo['_typename'] && (this.histo['_typename'].match(/\bTProfile/) || this.histo['_typename'].match(/\bTH2/)))
+      if (this.histo['_typename'] && (this.histo['_typename'].match(/^TProfile/) || this.histo['_typename'].match(/^TH2/)))
          stats['fY1NDC'] = 0.67;
 
       stats['fOptFit'] = 0;
@@ -4136,7 +4122,7 @@
          if (funcpainter == null) {
 
             if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-               funcpainter = JSROOT.Painter.DrawPaveText(this.divid, func);
+               funcpainter = JSROOT.Painter.drawPaveText(this.divid, func);
             }
 
             if (func['_typename'] == 'TF1') {
@@ -5938,10 +5924,10 @@
          if ((opt != "") && (hopt.indexOf(opt) == -1))
             hopt += opt;
 
-         if (histo['_typename'].match(/\bTH1/)) 
+         if (histo['_typename'].match(/^TH1/)) 
             this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo, hopt);
          else 
-         if (histo['_typename'].match(/\bTH2/)) 
+         if (histo['_typename'].match(/^TH2/)) 
             this.firstpainter = JSROOT.Painter.drawHistogram2D(this.divid, histo, hopt);
          
       }
@@ -5955,7 +5941,7 @@
          if ((opt != "") && (hopt.indexOf(opt) == -1)) hopt += opt;
          hopt += "same";
 
-         if (h['_typename'].match(/\bTH1/)) {
+         if (h['_typename'].match(/^TH1/)) {
             var subpainter = JSROOT.Painter.drawHistogram1D(this.divid, h, hopt);
             this.painters.push(subpainter);
          }
@@ -6432,36 +6418,6 @@
       return painter;
    }
    
-   // ============================================================================
-
-   JSROOT.Painter.canDrawObject = function(classname, drawopt) {
-      if (this.fUserPainters) {
-         var usertype = classname ? classname : drawopt;
-         if (typeof (usertype) === 'string'
-               && typeof (this.fUserPainters[usertype]) === 'function')
-            return true;
-      }
-
-      if (!classname)
-         return false;
-
-      if (classname.match(/\bTH1/) || 
-          classname.match(/\bTH2/) || 
-          classname.match(/\bTH3/) || 
-          classname.match(/\bTGraph/) || 
-          classname.match(/\bRooHist/) || 
-          classname.match(/\RooCurve/) || 
-          classname == 'TF1' || 
-          classname == 'TCanvas' || 
-          classname == 'TPad' || 
-          classname == 'THStack' || 
-          classname == 'TProfile' || 
-          classname == 'TStreamerInfoList')
-         return true;
-
-      return false;
-   }
-   
    // =====================================================================================
    
    JSROOT.TTextPainter = function(text) {
@@ -6638,80 +6594,61 @@
       return painter;
    }
 
-   JSROOT.Painter.drawObjectInFrame = function(divid, obj, opt) {
-      // ignore objects without type information
-      if ((typeof obj != 'object') || (!('_typename' in obj)))
-         return;
+   JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
+      $("#" + divid).css({ overflow : 'auto' });
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+      painter.ShowStreamerInfo(obj);
+      return painter;
+   }
+   
+   JSROOT.addDrawFunc("TCanvas", JSROOT.Painter.drawCanvas);
+   JSROOT.addDrawFunc("TPad", JSROOT.Painter.drawPad);
+   JSROOT.addDrawFunc("TFrame", JSROOT.Painter.drawFrame);
+   JSROOT.addDrawFunc("TLegend", JSROOT.Painter.drawLegend);
+   JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
+   JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D);
+   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D);
+   JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D);
+   JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
+   JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
+   JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
+   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
+   JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
+   
+   /** @fn painter JSROOT.draw(divid, obj, opt) 
+    * Draw object in specified HTML element with given draw options  */
 
-      var classname = obj['_typename'];
+   JSROOT.drawFunc = function(classname) {
+      if (typeof classname != 'string') return null;
 
-      console.log("Drawing class " + classname);
-
-      if (classname == 'TCanvas')
-         return JSROOT.Painter.drawCanvas(divid, obj);
-
-      if (classname == 'TPad')
-         return JSROOT.Painter.drawPad(divid, obj);
-
-      if (classname == 'TFrame')
-         return JSROOT.Painter.drawFrame(divid, obj);
-
-      if (classname == 'TLegend')
-         return JSROOT.Painter.drawLegend(divid, obj, opt);
-
-      if (classname == 'TPaveText')
-         return JSROOT.Painter.DrawPaveText(divid, obj);
-
-      if ((classname == 'TLatex') || (classname == 'TText') || (classname == 'TPaveLabel'))
-         return JSROOT.Painter.drawText(divid, obj);
-
-      if (classname.match(/\bTH1/) || (classname == "TProfile"))
-         return JSROOT.Painter.drawHistogram1D(divid, obj, opt);
-
-      if (classname.match(/\bTH2/))
-         return JSROOT.Painter.drawHistogram2D(divid, obj, opt);
-
-      if (classname.match(/\bTH3/))
-         return JSROOT.Painter.drawHistogram3D(divid, obj, opt);
-
-      if (classname == 'THStack')
-         return JSROOT.Painter.drawHStack(divid, obj, opt);
-
-      if (classname == 'TF1')
-         return JSROOT.Painter.drawFunction(divid, obj);
-
-      if (classname.match(/\bTGraph/) || classname.match(/\bRooHist/)
-            || classname.match(/\RooCurve/))
-         return JSROOT.Painter.drawGraph(divid, obj, opt);
-
-      if (classname == 'TMultiGraph')
-         return JSROOT.Painter.drawMultiGraph(divid, obj, opt);
+      for (var i in JSROOT.fDrawFunc) {
+         if ((typeof JSROOT.fDrawFunc[i].name) === "string") {
+            if (JSROOT.fDrawFunc[i].name == classname) return JSROOT.fDrawFunc[i].func;
+         } else {
+            if (classname.match(JSROOT.fDrawFunc[i].name)) return JSROOT.fDrawFunc[i].func;
+         }
+      }
+      return null;
    }
 
-   /**
-    * @fn painter JSROOT.draw(divid, obj, opt) Draw object in specified HTML
-    *     element with given draw options
-    */
+   JSROOT.canDraw = function(classname) {
+      return JSROOT.drawFunc(classname) != null;
+   }
+   
    JSROOT.draw = function(divid, obj, opt) {
-      var render_to = "#" + divid;
+      if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
 
-      if (this.fUserPainters) {
-         var usertype = ('_typename' in obj) ? obj['_typename'] : opt;
-         if ((typeof (usertype) === 'string')
-               && typeof (this.fUserPainters[usertype]) === 'function')
-            return this.fUserPainters[usertype](divid, obj, opt);
-      }
+      var draw_func = JSROOT.drawFunc(obj['_typename']);
 
-      if ((typeof obj != 'object') || !('_typename' in obj)) return;
+      if (draw_func==null) return null;
 
-      if (obj['_typename'] == 'TStreamerInfoList') {
-         $(render_to).css({ overflow : 'auto' });
-         var painter = new JSROOT.HierarchyPainter('sinfo', divid);
-         painter.ShowStreamerInfo(obj);
-         return painter;
-      }
-
-      return JSROOT.Painter.drawObjectInFrame(divid, obj, opt);
+      return draw_func(divid, obj, opt);
    }
 
    // =========== painter of hierarchical structures =================================
@@ -7019,33 +6956,25 @@
    }
 
    JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
-      var cando = {
-         expand : false,
-         display : false,
-         scan : true,
-         open : false,
-         img1 : "",
-         img2 : "",
-         html : ""
-      };
+      var cando = { expand : false, display : false, scan : true, open : false, 
+                    img1 : "", img2 : "", html : "" };
 
       var kind = node["_kind"];
-      if (kind == null)
-         kind = "";
+      if (kind == null) kind = "";
 
       cando.expand = ('_more' in node);
 
       if (kind == "ROOT.Session")
          cando.img1 = JSROOT.source_dir + 'img/globe.gif';
-      else if (kind.match(/\bROOT.TH1/)) {
+      else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = JSROOT.source_dir + 'img/histo.png';
          cando.scan = false;
          cando.display = true;
-      } else if (kind.match(/\bROOT.TH2/)) {
+      } else if (kind.match(/^ROOT.TH2/)) {
          cando.img1 = JSROOT.source_dir + 'img/histo2d.png';
          cando.scan = false;
          cando.display = true;
-      } else if (kind.match(/\bROOT.TH3/)) {
+      } else if (kind.match(/^ROOT.TH3/)) {
          cando.img1 = JSROOT.source_dir + 'img/histo3d.png';
          cando.scan = false;
          cando.display = true;
@@ -7055,7 +6984,7 @@
       } else if (kind == "ROOT.TProfile") {
          cando.img1 = JSROOT.source_dir + 'img/profile.png';
          cando.display = true;
-      } else if (kind.match(/\bROOT.TGraph/)) {
+      } else if (kind.match(/^ROOT.TGraph/)) {
          cando.img1 = JSROOT.source_dir + 'img/graph.png';
          cando.display = true;
       } else if (kind == "ROOT.TF1") {
@@ -7070,14 +6999,13 @@
          cando.img1 = JSROOT.source_dir + 'img/tree.png';
       else if (kind == "ROOT.TBranch")
          cando.img1 = JSROOT.source_dir + 'img/branch.png';
-      else if (kind.match(/\bROOT.TLeaf/))
+      else if (kind.match(/^ROOT.TLeaf/))
          cando.img1 = JSROOT.source_dir + 'img/leaf.png';
       else if (kind == "ROOT.TStreamerInfoList") {
          cando.img1 = JSROOT.source_dir + 'img/question.gif';
          cando.expand = false;
          cando.display = true;
-      } else if ((kind.indexOf("ROOT.") == 0)
-            && JSROOT.Painter.canDrawObject(kind.slice(5))) {
+      } else if ((kind.indexOf("ROOT.") == 0) && JSROOT.canDraw(kind.slice(5))) {
          cando.img1 = JSROOT.source_dir + 'img/histo.png';
          cando.scan = false;
          cando.display = true;
@@ -7802,8 +7730,7 @@
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj, drawopt) {
-      if (!obj)
-         return;
+      if (!obj) return;
 
       var frame = this.FindFrame(itemname);
 
@@ -7812,8 +7739,7 @@
          return;
       }
 
-      if (!JSROOT.Painter.canDrawObject(obj['_typename'], drawopt))
-         return;
+      if (!JSROOT.canDraw(obj['_typename'], drawopt)) return;
 
       if (frame == null)
          frame = this.CreateFrame(itemname);
@@ -7834,7 +7760,7 @@
    JSROOT.MDIDisplay.prototype.CheckResize = function() {
       this.ForEach(function(panel, itemname, painter) {
          if ((painter != null) && (typeof painter['CheckResize'] == 'function'))
-                  painter.CheckResize();
+             painter.CheckResize();
       });
    }
 
@@ -8199,10 +8125,8 @@
 
          document.body.style.cursor = 'wait';
 
-         if (typeof handle == 'function')
-            handle();
-         else if ((typeof handle == 'object')
-               && (typeof handle['CheckResize'] == 'function'))
+         if (typeof handle == 'function') handle();
+         else if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function'))
             handle.CheckResize();
 
          document.body.style.cursor = 'auto';
@@ -8225,26 +8149,23 @@
 // example of user code for streamer and painter
 
 /*
- * (function(){
- * 
- * Amore_String_Streamer = function(buf, obj, prop, streamer) {
- * 
- *    console.log("read property " + prop + " of typename " + streamer[prop]['typename']);
- * 
- *    obj[prop] = buf.ReadTString(); 
- * }
- * 
- * Amore_Painter = function(divid, obj, opt) { // custom draw function.
- * 
- *    console.log("Draw user type " + obj['_typename']);
- * 
- *    return JSROOT.draw(divid, obj['fVal'], opt); 
- * }
- * 
- * JSROOT.addUserStreamer("amore::core::String_t", Amore_String_Streamer);
- * 
- * JSROOT.addUserPainter("amore::core::MonitorObjectHisto<TH1F>", Amore_Painter);
- * 
- * })();
- */
+  
+ (function(){
+ 
+ Amore_String_Streamer = function(buf, obj, prop, streamer) {
+    console.log("read property " + prop + " of typename " + streamer[prop]['typename']);
+    obj[prop] = buf.ReadTString(); 
+ }
+ 
+ Amore_Draw = function(divid, obj, opt) { // custom draw function.
+    return JSROOT.draw(divid, obj['fVal'], opt); 
+ }
+
+ JSROOT.addUserStreamer("amore::core::String_t", Amore_String_Streamer);
+ 
+ JSROOT.addDrawFunc("amore::core::MonitorObjectHisto<TH1F>", Amore_Draw);
+ 
+})();
+
+*/ 
 

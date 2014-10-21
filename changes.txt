@@ -21,7 +21,9 @@ October 2014:
    All major draw functions working with HTML element id as first argument.
 9. Extract 3D drawings into separate JSRoot3DPainter.js script
 10.Use newest three.min.js (r68) for 3D drawings, solves problem with Firefox.
-    
+11.Introduce generic list of draw functions for all supported classes.
+   
+
 
 September 2014:
 1. First try to handle resize of the browser, 
