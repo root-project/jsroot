@@ -10,13 +10,13 @@
 
    <script type='text/javascript'>
 
-      function file_error(str) {
-         $('#debug').append("<h4>" + str + "</h4>"); 
+      function file_error(divid, str) {
+         $('#'+divid).append("<h4>" + str + "</h4>"); 
       }
       
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
-            if (obj==null) return file_error(itemname + " cannot be find");
+            if (obj==null) return file_error(divid, "In file " + file.fURL + " item " + itemname + " cannot be find");
             JSROOT.draw(divid, obj, drawopt); 
          });
       }
@@ -58,7 +58,7 @@
          $('#debug').empty();
 
          new JSROOT.TFile("hsimple.root+", function(file) {
-            if (file==null) return file_error("hsimple.root cannot be opened");
+            if (file==null) return file_error("h1_draw", "hsimple.root cannot be opened");
             
             draw_item_options(file, "hpx;1", "h1_draw", "");
             draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;LEGO");
@@ -66,55 +66,60 @@
          });
 
          new JSROOT.TFile("glbox.root+", function(file) {
-            if (file==null) return file_error("glbox.root cannot be opened");
+            if (file==null) return file_error("h3_draw", "glbox.root cannot be opened");
             
             draw_item_options(file, "h31;1", "h3_draw", "");
          });
          
          new JSROOT.TFile("graph.root+", function(file) {
-            if (file==null) return file_error("graph.root cannot be opened");
+            if (file==null) return file_error("gr_draw", "graph.root cannot be opened");
             
             draw_item_options(file, "Graph;1", "gr_draw", ";L;P");
          });
 
          new JSROOT.TFile("fillrandom.root+", function(file) {
-            if (file==null) return file_error("fillrandom.root cannot be opened");
+            if (file==null) return file_error("f1_draw", "fillrandom.root cannot be opened");
             
             draw_item_options(file, "sqroot;1", "f1_draw", "");
          });
 
          new JSROOT.TFile("rf107.root+", function(file) {
-            if (file==null) return file_error("fillrandom.root cannot be opened");
+            if (file==null) return file_error("can_draw", "fillrandom.root cannot be opened");
             
-            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "");
+            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", 0.);
          });
 
          new JSROOT.TFile("ct.root+", function(file) {
-            if (file==null) return file_error("ct.root cannot be opened");
+            if (file==null) return file_error("can2_draw", "ct.root cannot be opened");
             
-            draw_item_options(file, "ct;1", "can2_draw", "", 1.5);
+            draw_item_options(file, "ct;1", "can2_draw", "", 0.);
          });
 
          new JSROOT.TFile("zdemo.root+", function(file) {
-            if (file==null) return file_error("zdemo.root cannot be opened");
+            if (file==null) return file_error("can3_draw", "zdemo.root cannot be opened");
             
-            draw_item_options(file, "zdemo;1", "can3_draw", "", 0.8);
+            draw_item_options(file, "zdemo;1", "can3_draw", "", 0.);
          });
 
          new JSROOT.TFile("JPsi_evolution.root", function(file) {
-            if (file==null) return file_error("JPsi_evolution.root cannot be opened");
+            if (file==null) return file_error("can4_draw", "JPsi_evolution.root cannot be opened");
             
-            draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.8);
+            draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
          });
-
-   
+         
+         new JSROOT.TFile("stacks.root+", function(file) {
+            if (file==null) return file_error("can5_draw", "stacks.root cannot be opened");
+            
+            draw_item_options(file, "stacks;1", "can5_draw", "", 0.);
+         });
+         
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
    </script>
    
 </head>
 
-<body onload="JSROOT.AssertPrerequisites('2d;io', CreateGui, 'debug')">
+<body onload="JSROOT.AssertPrerequisites('2d;3d;io', CreateGui, 'debug')">
 
   <div id="debug">loading...</div>
 
@@ -148,6 +153,7 @@
   <div id="can2_draw"></div>
   <div id="can3_draw"></div>
   <div id="can4_draw"></div>
+  <div id="can5_draw"></div>
 
   
 </body>
