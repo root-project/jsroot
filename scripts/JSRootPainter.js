@@ -994,7 +994,7 @@
 
       if (is_main == null) is_main = 0;
 
-      var create_canvas = false;
+      this['create_canvas'] = false;
 
       // SVG element where canvas is drawn
       var svg_c = this.svg_canvas();
@@ -1002,19 +1002,19 @@
       if ((svg_c==null) && (is_main>0)) {
          JSROOT.Painter.drawCanvas(divid, null);
          svg_c = this.svg_canvas();
-         create_canvas = true;
+         this['create_canvas'] = true;
       } 
       
       if (svg_c == null) {
          if ((this.obj_typename!="TCanvas") && (is_main>=0))
             console.log("Canvas not exists when trying to draw " + this.obj_typename);
-         return false;
+         return;
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
       this.pad_name = svg_c['current_pad'];
 
-      if (is_main < 0) return create_canvas;
+      if (is_main < 0) return;
 
       var svg_p = this.svg_pad();
       svg_p['pad_painter'].painters.push(this);
@@ -1022,8 +1022,6 @@
       if ((is_main > 0) && (svg_p['mainpainter']==null))
          // when this is first main painter in the pad
          svg_p['mainpainter'] = this;
-
-      return create_canvas;
    }
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
@@ -1230,13 +1228,10 @@
       // options
    }
 
-   JSROOT.Painter.add3DInteraction = function(renderer, scene, camera, toplevel, vis) {
+   JSROOT.Painter.add3DInteraction = function(renderer, scene, camera, toplevel, painter) {
       // add 3D mouse interactive functions
       var mouseX, mouseY, mouseDowned = false;
-      var mouse = {
-         x : 0,
-         y : 0
-      }, INTERSECTED;
+      var mouse = {  x : 0, y : 0 }, INTERSECTED;
 
       var tooltip = function() {
          var id = 'tt';
@@ -1282,15 +1277,11 @@
                // if (tt.offsetWidth > maxw) { tt.style.width = maxw + 'px'; }
                h = parseInt(tt.offsetHeight) + top;
                clearInterval(tt.timer);
-               tt.timer = setInterval(function() {
-                  tooltip.fade(1)
-               }, timer);
+               tt.timer = setInterval(function() { tooltip.fade(1) }, timer);
             },
             pos : function(e) {
-               var u = ie ? event.clientY + document.documentElement.scrollTop
-                     : e.pageY;
-               var l = ie ? event.clientX + document.documentElement.scrollLeft
-                     : e.pageX;
+               var u = ie ? event.clientY + document.documentElement.scrollTop : e.pageY;
+               var l = ie ? event.clientX + document.documentElement.scrollLeft : e.pageX;
                tt.style.top = u + 15 + 'px';// (u - h) + 'px';
                tt.style.left = (l + left) + 'px';
             },
@@ -1421,10 +1412,8 @@
             mouseY = touch.pageY;
          } else {
             e.preventDefault();
-            var mouse_x = 'offsetX' in e.originalEvent ? e.originalEvent.offsetX
-                  : e.originalEvent.layerX;
-            var mouse_y = 'offsetY' in e.originalEvent ? e.originalEvent.offsetY
-                  : e.originalEvent.layerY;
+            var mouse_x = 'offsetX' in e.originalEvent ? e.originalEvent.offsetX : e.originalEvent.layerX;
+            var mouse_y = 'offsetY' in e.originalEvent ? e.originalEvent.offsetY : e.originalEvent.layerY;
             mouse.x = (mouse_x / renderer.domElement.width) * 2 - 1;
             mouse.y = -(mouse_y / renderer.domElement.height) * 2 + 1;
             // enable picking once tootips are available...
@@ -1445,8 +1434,7 @@
 
          e.preventDefault();
 
-         if (JSROOT.gStyle.Tooltip)
-            tooltip.hide();
+         if (JSROOT.gStyle.Tooltip) tooltip.hide();
 
          var menu = JSROOT.Painter.createmenu(e.originalEvent);
 
@@ -1457,10 +1445,10 @@
             tooltip.hide();
          });
 
-         if ('painters' in vis)
+         if (painter)
             JSROOT.Painter.menuitem(menu, "Switch to 2D", function() {
-               $(vis[0][0]).show().parent().find(renderer.domElement)
-               .remove();
+               $(painter.svg_pad()).show().parent().find(renderer.domElement).remove();
+               painter.Draw2D();
             });
          JSROOT.Painter.menuitem(menu, "Close", function() { });
 
@@ -2784,7 +2772,7 @@
 
       var painter = new JSROOT.TPavePainter(pavetext);
 
-      painter.SetDivId(divid, 0, "TPave");
+      painter.SetDivId(divid);
 
       // refill statistic in any case
       // if ('_AutoCreated' in pavetext)
@@ -3696,16 +3684,6 @@
          }
       }
 
-      var pad = this.root_pad();
-
-      if (pad) {
-         // Copy options from current pad
-         option.Logx = pad['fLogx'];
-         option.Logy = pad['fLogy'];
-         option.Logz = pad['fLogz'];
-         option.Gridx = pad['fGridx'];
-         option.Gridy = pad['fGridy'];
-      }
       // Check options incompatibilities
       if (option.Bar == 1)
          option.Hist = -1;
@@ -3721,8 +3699,19 @@
       alert("HistPainter.prototype.ScanContent not implemented");
    }
    
-   JSROOT.THistPainter.prototype.CheckZoomSelection = function() {
+   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
+      var pad = this.root_pad();
+      
+      if (pad!=null) {
+         // Copy options from current pad
+         this.options.Logx = pad['fLogx'];
+         this.options.Logy = pad['fLogy'];
+         this.options.Logz = pad['fLogz'];
+         this.options.Gridx = pad['fGridx'];
+         this.options.Gridy = pad['fGridy'];
+      }
+      
       if (this.main_painter() !== this) return;
       
       this['zoom_xmin'] = 0;
@@ -3732,8 +3721,6 @@
       this['zoom_ymin'] = 0;
       this['zoom_ymax'] = 0;
       this['zoom_ypad'] = true; // indicate that zooming specified from pad
-
-      var pad = this.root_pad();
 
       if ((pad!=null) && ('fUxmin' in pad)) {
          this['zoom_xmin'] = pad.fUxmin;
@@ -5430,12 +5417,12 @@
 
       // create painter and add it to canvas
       var painter = new JSROOT.TH1Painter(histo);
-      var create_canvas = painter.SetDivId(divid, 1,"TH1");
-      
-      painter.CheckZoomSelection();
+      painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
+
+      painter.CheckPadOptions();
 
       painter.ScanContent();
 
@@ -5451,7 +5438,7 @@
 
       painter.DrawTitle();
 
-      if (JSROOT.gStyle.AutoStat && create_canvas) painter.CreateStat();
+      if (JSROOT.gStyle.AutoStat && painter.create_canvas) painter.CreateStat();
 
       painter.DrawFunctions();
 
@@ -5472,21 +5459,15 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() {
-         menu['painter'].AutoZoom();
-      });
-      JSROOT.Painter.menuitem(menu, "Draw in 3D", function() {
-         menu['painter'].Draw3D();
-      });
+      JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
+      JSROOT.Painter.menuitem(menu, "Draw in 3D", function() { menu['painter'].Draw3D(); });
       JSROOT.Painter.menuitem(menu, "Toggle col", function() {
          menu['painter'].options.Color = 1 - menu['painter'].options.Color;
          menu['painter'].RedrawPad();
       });
 
       if (this.options.Color > 0)
-         JSROOT.Painter.menuitem(menu, "Toggle colz", function() {
-            menu['painter'].ToggleColz();
-         });
+         JSROOT.Painter.menuitem(menu, "Toggle colz", function() { menu['painter'].ToggleColz(); });
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
@@ -5708,8 +5689,7 @@
 
    JSROOT.TH2Painter.prototype.CountStat = function() {
       this.stat_matrix = new Array();
-      for (var n = 0; n < 9; n++)
-         this.stat_matrix.push(0);
+      for (var n = 0; n < 9; n++) this.stat_matrix.push(0);
       this.stat_entries = 0;
       this.stat_sum0 = 0;
       this.stat_sumx1 = 0;
@@ -5858,22 +5838,18 @@
             this.paletteColors.push(rgbval);
          }
       }
-      if (this.options.Logz)
-         zc = Math.log(zc) / Math.log(10);
-      if (zc < wlmin)
-         zc = wlmin;
+      if (this.options.Logz) zc = Math.log(zc) / Math.log(10);
+      if (zc < wlmin) zc = wlmin;
       var ncolors = this.paletteColors.length;
       var color = Math.round(0.01 + (zc - wlmin) * scale);
       var theColor = Math.round((color + 0.99) * ncolors / ndivz) - 1;
       var icol = theColor % ncolors;
-      if (icol < 0)
-         icol = 0;
+      if (icol < 0) icol = 0;
 
       return this.paletteColors[icol];
    }
 
-   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h,
-         coordinates_kind, tipkind) {
+   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
       var i1 = this.GetSelectIndex("x", "left", 0);
       var i2 = this.GetSelectIndex("x", "right", 0);
       var j1 = this.GetSelectIndex("y", "left", 0);
@@ -5895,12 +5871,10 @@
          x1 = x2;
          x2 += this.binwidthx;
 
-         if (this.options.Logx && (x1 <= 0))
-            continue;
+         if (this.options.Logx && (x1 <= 0)) continue;
 
          grx1 = grx2;
-         if (grx1 < 0)
-            grx1 = this.x(x1);
+         if (grx1 < 0) grx1 = this.x(x1);
          grx2 = this.x(x2);
 
          y2 = this.ymin + j1 * this.binwidthy;
@@ -5908,15 +5882,12 @@
          for (var j = j1; j < j2; j++) {
             y1 = y2;
             y2 += this.binwidthy;
-            if (this.options.Logy && (y1 <= 0))
-               continue;
+            if (this.options.Logy && (y1 <= 0)) continue;
             gry1 = gry2;
-            if (gry1 < 0)
-               gry1 = this.y(y1);
+            if (gry1 < 0) gry1 = this.y(y1);
             gry2 = this.y(y2);
             binz = this.histo.getBinContent(i + 1, j + 1);
-            if (binz <= this.minbin)
-               continue;
+            if (binz <= this.minbin) continue;
 
             switch (coordinates_kind) {
             case 0:
@@ -5973,6 +5944,7 @@
    }
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
+      
       this.RecreateDrawG();
 
       var w = Number(this.svg_frame(true).attr("width")), 
@@ -5985,8 +5957,7 @@
       var normal_coordinates = (this.options.Color > 0) || draw_markers;
 
       var tipkind = 0;
-      if (JSROOT.gStyle.Tooltip)
-         tipkind = draw_markers ? 2 : 1;
+      if (JSROOT.gStyle.Tooltip) tipkind = draw_markers ? 2 : 1;
 
       var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
 
@@ -5997,19 +5968,16 @@
          var filled = false;
          if ((this.histo['fMarkerStyle'] == 8)
                || (this.histo['fMarkerStyle'] > 19 && this.histo['fMarkerStyle'] < 24)
-               || (this.histo['fMarkerStyle'] == 29))
-            filled = true;
+               || (this.histo['fMarkerStyle'] == 29)) filled = true;
 
-         var info_marker = JSROOT.Painter
-               .getRootMarker(this.histo['fMarkerStyle']);
+         var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
 
          var shape = info_marker['shape'];
          var filled = info_marker['toFill'];
          var toRotate = info_marker['toRotate'];
          var markerSize = this.histo['fMarkerSize'];
          var markerScale = (shape == 0) ? 32 : 64;
-         if (this.histo['fMarkerStyle'] == 1)
-            markerScale = 1;
+         if (this.histo['fMarkerStyle'] == 1) markerScale = 1;
 
          var marker = null;
 
@@ -6034,436 +6002,366 @@
                   markerSize * markerScale);
             break;
          }
-         var markers = this.draw_g.selectAll(".marker").data(local_bins)
-               .enter().append("svg:path").attr("class", "marker").attr(
-                     "transform", function(d) {
-                        return "translate(" + d.x + "," + d.y + ")"
-                     }).style("fill",
-                     JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
-               .style("stroke",
-                     JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
-               .attr("d", marker);
+         var markers = 
+            this.draw_g.selectAll(".marker")
+                  .data(local_bins)
+                  .enter().append("svg:path")
+                  .attr("class", "marker")
+                  .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")" })
+                  .style("fill", JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
+                  .style("stroke", JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
+                  .attr("d", marker);
 
          if (JSROOT.gStyle.Tooltip)
-            markers.append("svg:title").text(function(d) {
-               return d.tip;
-            });
+            markers.append("svg:title").text(function(d) { return d.tip; });
       } else {
-         var drawn_bins = this.draw_g.selectAll(".bins").data(local_bins)
-               .enter().append("svg:rect").attr("class", "bins").attr("x",
-                     function(d) {
-                        return d.x;
-                     }).attr("y", function(d) {
-                  return d.y;
-               }).attr("width", function(d) {
-                  return d.width;
-               }).attr("height", function(d) {
-                  return d.height;
-               }).style("stroke", function(d) {
-                  return d.stroke;
-               }).style("fill", function(d) {
-                  this['f0'] = d.fill;
-                  this['f1'] = d.tipcolor;
-                  return d.fill;
-               });
+         var drawn_bins = this.draw_g.selectAll(".bins")
+                           .data(local_bins).enter()
+                           .append("svg:rect")
+                           .attr("class", "bins")
+                           .attr("x", function(d) { return d.x; })
+                           .attr("y", function(d) { return d.y; })
+                           .attr("width", function(d) { return d.width; })
+                           .attr("height", function(d) { return d.height; })
+                           .style("stroke", function(d) { return d.stroke; })
+                           .style("fill", function(d) { 
+                               this['f0'] = d.fill;
+                               this['f1'] = d.tipcolor;
+                               return d.fill;
+                            });
 
          if (JSROOT.gStyle.Tooltip)
-            drawn_bins.on(
-                  'mouseover',
-                  function() {
-                     d3.select(this).transition().duration(100).style("fill",
-                           this['f1']);
-                  }).on(
-                  'mouseout',
-                  function() {
-                     d3.select(this).transition().duration(100).style("fill",
-                           this['f0']);
-                  }).append("svg:title").text(function(d) {
-               return d.tip;
-            });
+            drawn_bins.on('mouseover', function() {
+                     d3.select(this).transition().duration(100).style("fill", this['f1']);
+                   }).on( 'mouseout', function() {
+                     d3.select(this).transition().duration(100).style("fill", this['f0']);
+                   }).append("svg:title").text(function(d) { return d.tip; });
       }
 
       delete local_bins;
       local_bins = null;
    }
+   
+   JSROOT.TH2Painter.prototype.Draw2D = function() {
+
+      if (this.options.Lego>0) this.options.Lego = 0;
+      
+      if (this['done2d']) return;
+
+      // check if we need to create palette
+      if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
+         // create pallette
+         var shrink = this.CreatePalette(0.04);
+         this.svg_frame()['frame_painter'].Shrink(shrink);
+         this.svg_frame()['frame_painter'].Redraw();
+      } else if (this.options.Zscale == 0) {
+         // delete palette - it may appear there due to previous draw options
+         this.FindPalette(true);
+      }
+
+      // check if we need to create statbox
+      if (JSROOT.gStyle.AutoStat && this.create_canvas)
+         this.CreateStat();
+
+      this.DrawAxes();
+
+      this.DrawGrids();
+
+      this.DrawBins();
+
+      this.DrawTitle();
+
+      this.DrawFunctions();
+
+      this.AddInteractive();
+      
+      
+      this['done2d'] = true; // indicate that 2d drawing was once done
+   }
 
    JSROOT.TH2Painter.prototype.Draw3D = function() {
-      var w = Number(this.svg_pad(true).attr("width")), h = Number(this
-            .svg_pad(true).attr("height")), size = 100;
 
-      var xmin = this.xmin, xmax = this.xmax;
-      if (this.zoom_xmin != this.zoom_xmax) {
-         xmin = this.zoom_xmin;
-         xmax = this.zoom_xmax;
+      var painter = this;
+      
+      if (painter.options.Lego<=0) painter.options.Lego = 1;
+      
+      var w = Number(painter.svg_pad(true).attr("width")), 
+          h = Number(painter.svg_pad(true).attr("height")), size = 100;
+
+      var xmin = painter.xmin, xmax = painter.xmax;
+      if (painter.zoom_xmin != painter.zoom_xmax) {
+         xmin = painter.zoom_xmin;
+         xmax = painter.zoom_xmax;
       }
-      var ymin = this.ymin, ymax = this.ymax;
-      if (this.zoom_ymin != this.zoom_ymax) {
-         ymin = this.zoom_ymin;
-         ymax = this.zoom_ymax;
+      var ymin = painter.ymin, ymax = painter.ymax;
+      if (painter.zoom_ymin != painter.zoom_ymax) {
+         ymin = painter.zoom_ymin;
+         ymax = painter.zoom_ymax;
       }
 
       var tx, utx, ty, uty, tz, utz;
 
-      if (this.options.Logx) {
+      if (painter.options.Logx) {
          tx = d3.scale.log().domain([ xmin, xmax ]).range([ -size, size ]);
          utx = d3.scale.log().domain([ -size, size ]).range([ xmin, xmax ]);
       } else {
          tx = d3.scale.linear().domain([ xmin, xmax ]).range([ -size, size ]);
          utx = d3.scale.linear().domain([ -size, size ]).range([ xmin, xmax ]);
       }
-      if (this.options.Logy) {
+      if (painter.options.Logy) {
          ty = d3.scale.log().domain([ ymin, ymax ]).range([ -size, size ]);
          uty = d3.scale.log().domain([ size, -size ]).range([ ymin, ymax ]);
       } else {
          ty = d3.scale.linear().domain([ ymin, ymax ]).range([ -size, size ]);
          uty = d3.scale.linear().domain([ size, -size ]).range([ ymin, ymax ]);
       }
-      if (this.options.Logz) {
-         tz = d3.scale.log().domain(
-               [ this.minbin, Math.ceil(this.maxbin / 10) * 10 ]).range(
-               [ 0, size * 2 ]);
-         utz = d3.scale.log().domain([ 0, size * 2 ]).range(
-               [ this.minbin, Math.ceil(this.maxbin / 10) * 10 ]);
+      if (painter.options.Logz) {
+         tz = d3.scale.log().domain([ painter.minbin, Math.ceil(painter.maxbin / 10) * 10 ]).range([ 0, size * 2 ]);
+         utz = d3.scale.log().domain([ 0, size * 2 ]).range([ painter.minbin, Math.ceil(painter.maxbin / 10) * 10 ]);
       } else {
-         tz = d3.scale.linear().domain(
-               [ this.minbin, Math.ceil(this.maxbin / 10) * 10 ]).range(
-               [ 0, size * 2 ]);
-         utz = d3.scale.linear().domain([ 0, size * 2 ]).range(
-               [ this.minbin, Math.ceil(this.maxbin / 10) * 10 ]);
+         tz = d3.scale.linear().domain([ painter.minbin, Math.ceil(painter.maxbin / 10) * 10 ]).range( [ 0, size * 2 ]);
+         utz = d3.scale.linear().domain([ 0, size * 2 ]).range( [ painter.minbin, Math.ceil(painter.maxbin / 10) * 10 ]);
       }
 
-      var constx = (size * 2 / this.nbinsx) / this.maxbin;
-      var consty = (size * 2 / this.nbinsy) / this.maxbin;
+      var constx = (size * 2 / painter.nbinsx) / painter.maxbin;
+      var consty = (size * 2 / painter.nbinsy) / painter.maxbin;
 
-      var colorFlag = (this.options.Color > 0);
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+      var colorFlag = (painter.options.Color > 0);
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[painter.histo['fFillColor']]);
 
-      var local_bins = this.CreateDrawBins(100, 100, 2,
-            (JSROOT.gStyle.Tooltip ? 1 : 0));
+      var local_bins = painter.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
 
-      var painter = this;
+      JSROOT.AssertPrerequisites('3d', function() {
+      
+         // three.js 3D drawing
+         var scene = new THREE.Scene();
 
-      JSROOT
-            .AssertPrerequisites(
-                  '3d',
-                  function() {
+         var toplevel = new THREE.Object3D();
+         toplevel.rotation.x = 30 * Math.PI / 180;
+         toplevel.rotation.y = 30 * Math.PI / 180;
+         scene.add(toplevel);
 
-                     // three.js 3D drawing
-                     var scene = new THREE.Scene();
+         var wireMaterial = new THREE.MeshBasicMaterial({
+            color : 0x000000,
+            wireframe : true,
+            wireframeLinewidth : 0.5,
+            side : THREE.DoubleSide
+         });
 
-                     var toplevel = new THREE.Object3D();
-                     toplevel.rotation.x = 30 * Math.PI / 180;
-                     toplevel.rotation.y = 30 * Math.PI / 180;
-                     scene.add(toplevel);
+         // create a new mesh with cube geometry
+         var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2, size * 2, size * 2), wireMaterial);
+         cube.position.y = size;
 
-                     var wireMaterial = new THREE.MeshBasicMaterial({
-                        color : 0x000000,
-                        wireframe : true,
-                        wireframeLinewidth : 0.5,
-                        side : THREE.DoubleSide
-                     });
+         // add the cube to the scene
+         toplevel.add(cube);
 
-                     // create a new mesh with cube geometry
-                     var cube = new THREE.Mesh(new THREE.CubeGeometry(size * 2,
-                           size * 2, size * 2), wireMaterial);
-                     cube.position.y = size;
+         var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
 
-                     // add the cube to the scene
-                     toplevel.add(cube);
+         // add the calibration vectors and texts
+         var geometry = new THREE.Geometry();
+         var imax, istep, len = 3, plen, sin45 = Math.sin(45);
+         var text3d, text;
+         var xmajors = tx.ticks(8);
+         var xminors = tx.ticks(50);
+         for (var i = -size, j = 0, k = 0; i < size; ++i) {
+            var is_major = (utx(i) <= xmajors[j] && utx(i + 1) > xmajors[j]) ? true : false;
+            var is_minor = (utx(i) <= xminors[k] && utx(i + 1) > xminors[k]) ? true : false;
+            plen = (is_major ? len + 2 : len) * sin45;
+            if (is_major) {
+               text3d = new THREE.TextGeometry(xmajors[j], { size : 7, height : 0, curveSegments : 10 });
+               ++j;
 
-                     var textMaterial = new THREE.MeshBasicMaterial({
-                        color : 0x000000
-                     });
+               text3d.computeBoundingBox();
+               var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
-                     // add the calibration vectors and texts
-                     var geometry = new THREE.Geometry();
-                     var imax, istep, len = 3, plen, sin45 = Math.sin(45);
-                     var text3d, text;
-                     var xmajors = tx.ticks(8);
-                     var xminors = tx.ticks(50);
-                     for (var i = -size, j = 0, k = 0; i < size; ++i) {
-                        var is_major = (utx(i) <= xmajors[j] && utx(i + 1) > xmajors[j]) ? true
-                              : false;
-                        var is_minor = (utx(i) <= xminors[k] && utx(i + 1) > xminors[k]) ? true
-                              : false;
-                        plen = (is_major ? len + 2 : len) * sin45;
-                        if (is_major) {
-                           text3d = new THREE.TextGeometry(xmajors[j], {
-                              size : 7,
-                              height : 0,
-                              curveSegments : 10
-                           });
-                           ++j;
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(i - centerOffset, -13, size + plen);
+               toplevel.add(text);
 
-                           text3d.computeBoundingBox();
-                           var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(i + centerOffset, -13, -size - plen);
+               text.rotation.y = Math.PI;
+               toplevel.add(text);
+            }
+            if (is_major || is_minor) {
+               ++k;
+               geometry.vertices.push(new THREE.Vector3(i, 0, size));
+               geometry.vertices.push(new THREE.Vector3(i, -plen, size + plen));
+               geometry.vertices.push(new THREE.Vector3(i, 0, -size));
+               geometry.vertices.push(new THREE.Vector3(i, -plen, -size - plen));
+            }
+         }
+         var ymajors = ty.ticks(8);
+         var yminors = ty.ticks(50);
+         for (var i = size, j = 0, k = 0; i > -size; --i) {
+            var is_major = (uty(i) <= ymajors[j] && uty(i - 1) > ymajors[j]) ? true : false;
+            var is_minor = (uty(i) <= yminors[k] && uty(i - 1) > yminors[k]) ? true : false;
+            plen = (is_major ? len + 2 : len) * sin45;
+            if (is_major) {
+               text3d = new THREE.TextGeometry(ymajors[j], { size : 7, height : 0, curveSegments : 10 });
+               ++j;
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position
-                                 .set(i - centerOffset, -13, size + plen);
-                           toplevel.add(text);
+               text3d.computeBoundingBox();
+               var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(i + centerOffset, -13, -size
-                                 - plen);
-                           text.rotation.y = Math.PI;
-                           toplevel.add(text);
-                        }
-                        if (is_major || is_minor) {
-                           ++k;
-                           geometry.vertices
-                                 .push(new THREE.Vector3(i, 0, size));
-                           geometry.vertices.push(new THREE.Vector3(i, -plen,
-                                 size + plen));
-                           geometry.vertices
-                                 .push(new THREE.Vector3(i, 0, -size));
-                           geometry.vertices.push(new THREE.Vector3(i, -plen,
-                                 -size - plen));
-                        }
-                     }
-                     var ymajors = ty.ticks(8);
-                     var yminors = ty.ticks(50);
-                     for (var i = size, j = 0, k = 0; i > -size; --i) {
-                        var is_major = (uty(i) <= ymajors[j] && uty(i - 1) > ymajors[j]) ? true
-                              : false;
-                        var is_minor = (uty(i) <= yminors[k] && uty(i - 1) > yminors[k]) ? true
-                              : false;
-                        plen = (is_major ? len + 2 : len) * sin45;
-                        if (is_major) {
-                           text3d = new THREE.TextGeometry(ymajors[j], {
-                              size : 7,
-                              height : 0,
-                              curveSegments : 10
-                           });
-                           ++j;
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(size + plen, -13, i + centerOffset);
+               text.rotation.y = Math.PI / 2;
+               toplevel.add(text);
 
-                           text3d.computeBoundingBox();
-                           var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(-size - plen, -13, i - centerOffset);
+               text.rotation.y = -Math.PI / 2;
+               toplevel.add(text);
+            }
+            if (is_major || is_minor) {
+               ++k;
+               geometry.vertices.push(new THREE.Vector3(size, 0, i));
+               geometry.vertices.push(new THREE.Vector3(size + plen, -plen, i));
+               geometry.vertices.push(new THREE.Vector3(-size, 0, i));
+               geometry.vertices.push(new THREE.Vector3(-size - plen, -plen, i));
+            }
+         }
+         var zmajors = tz.ticks(8);
+         var zminors = tz.ticks(50);
+         for (var i = 0, j = 0, k = 0; i < (size * 2); ++i) {
+            var is_major = (utz(i) <= zmajors[j] && utz(i + 1) > zmajors[j]) ? true : false;
+            var is_minor = (utz(i) <= zminors[k] && utz(i + 1) > zminors[k]) ? true : false;
+            plen = (is_major ? len + 2 : len) * sin45;
+            if (is_major) {
+               text3d = new THREE.TextGeometry(zmajors[j], { size : 7, height : 0, curveSegments : 10 });
+               ++j;
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position
-                                 .set(size + plen, -13, i + centerOffset);
-                           text.rotation.y = Math.PI / 2;
-                           toplevel.add(text);
+               text3d.computeBoundingBox();
+               var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(-size - plen, -13, i
-                                 - centerOffset);
-                           text.rotation.y = -Math.PI / 2;
-                           toplevel.add(text);
-                        }
-                        if (is_major || is_minor) {
-                           ++k;
-                           geometry.vertices
-                                 .push(new THREE.Vector3(size, 0, i));
-                           geometry.vertices.push(new THREE.Vector3(
-                                 size + plen, -plen, i));
-                           geometry.vertices
-                                 .push(new THREE.Vector3(-size, 0, i));
-                           geometry.vertices.push(new THREE.Vector3(-size
-                                 - plen, -plen, i));
-                        }
-                     }
-                     var zmajors = tz.ticks(8);
-                     var zminors = tz.ticks(50);
-                     for (var i = 0, j = 0, k = 0; i < (size * 2); ++i) {
-                        var is_major = (utz(i) <= zmajors[j] && utz(i + 1) > zmajors[j]) ? true
-                              : false;
-                        var is_minor = (utz(i) <= zminors[k] && utz(i + 1) > zminors[k]) ? true
-                              : false;
-                        plen = (is_major ? len + 2 : len) * sin45;
-                        if (is_major) {
-                           text3d = new THREE.TextGeometry(zmajors[j], {
-                              size : 7,
-                              height : 0,
-                              curveSegments : 10
-                           });
-                           ++j;
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(size + offset + 5, i - 2.5, size + offset + 5);
+               text.rotation.y = Math.PI * 3 / 4;
+               toplevel.add(text);
 
-                           text3d.computeBoundingBox();
-                           var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(size + offset + 5, i - 2.5, -size - offset - 5);
+               text.rotation.y = -Math.PI * 3 / 4;
+               toplevel.add(text);
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(size + offset + 5, i - 2.5, size
-                                 + offset + 5);
-                           text.rotation.y = Math.PI * 3 / 4;
-                           toplevel.add(text);
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(-size - offset - 5, i - 2.5, size + offset + 5);
+               text.rotation.y = Math.PI / 4;
+               toplevel.add(text);
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(size + offset + 5, i - 2.5, -size
-                                 - offset - 5);
-                           text.rotation.y = -Math.PI * 3 / 4;
-                           toplevel.add(text);
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(-size - offset - 5, i - 2.5, -size - offset - 5);
+               text.rotation.y = -Math.PI / 4;
+               toplevel.add(text);
+            }
+            if (is_major || is_minor) {
+               ++k;
+               geometry.vertices.push(new THREE.Vector3(size, i, size));
+               geometry.vertices.push(new THREE.Vector3(size + plen, i, size + plen));
+               geometry.vertices.push(new THREE.Vector3(size, i, -size));
+               geometry.vertices.push(new THREE.Vector3(size + plen, i, -size - plen));
+               geometry.vertices.push(new THREE.Vector3(-size, i, size));
+               geometry.vertices.push(new THREE.Vector3(-size - plen, i, size + plen));
+               geometry.vertices.push(new THREE.Vector3(-size, i, -size));
+               geometry.vertices.push(new THREE.Vector3(-size - plen, i, -size - plen));
+            }
+         }
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(-size - offset - 5, i - 2.5, size
-                                 + offset + 5);
-                           text.rotation.y = Math.PI / 4;
-                           toplevel.add(text);
+         // add the calibration lines
+         var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
+         var line = new THREE.Line(geometry, lineMaterial);
+         line.type = THREE.LinePieces;
+         toplevel.add(line);
 
-                           text = new THREE.Mesh(text3d, textMaterial);
-                           text.position.set(-size - offset - 5, i - 2.5, -size
-                                 - offset - 5);
-                           text.rotation.y = -Math.PI / 4;
-                           toplevel.add(text);
-                        }
-                        if (is_major || is_minor) {
-                           ++k;
-                           geometry.vertices.push(new THREE.Vector3(size, i,
-                                 size));
-                           geometry.vertices.push(new THREE.Vector3(
-                                 size + plen, i, size + plen));
-                           geometry.vertices.push(new THREE.Vector3(size, i,
-                                 -size));
-                           geometry.vertices.push(new THREE.Vector3(
-                                 size + plen, i, -size - plen));
-                           geometry.vertices.push(new THREE.Vector3(-size, i,
-                                 size));
-                           geometry.vertices.push(new THREE.Vector3(-size
-                                 - plen, i, size + plen));
-                           geometry.vertices.push(new THREE.Vector3(-size, i,
-                                 -size));
-                           geometry.vertices.push(new THREE.Vector3(-size
-                                 - plen, i, -size - plen));
-                        }
-                     }
+         // create the bin cubes
 
-                     // add the calibration lines
-                     var lineMaterial = new THREE.LineBasicMaterial({
-                        color : 0x000000
-                     });
-                     var line = new THREE.Line(geometry, lineMaterial);
-                     line.type = THREE.LinePieces;
-                     toplevel.add(line);
+         var fillcolor = new THREE.Color(0xDDDDDD);
+         fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
+         var bin, wei, hh;
 
-                     // create the bin cubes
+         for (var i = 0; i < local_bins.length; ++i) {
+            hh = local_bins[i];
+            wei = tz(hh.z);
 
-                     var fillcolor = new THREE.Color(0xDDDDDD);
-                     fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,
-                           fcolor.b / 255);
-                     var bin, wei, hh;
+            bin = THREE.SceneUtils.createMultiMaterialObject(
+                  new THREE.CubeGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy), 
+                  [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
+            bin.position.x = tx(hh.x);
+            bin.position.y = wei / 2;
+            bin.position.z = -(ty(hh.y));
 
-                     for (var i = 0; i < local_bins.length; ++i) {
-                        hh = local_bins[i];
-                        wei = tz(hh.z);
+            if (JSROOT.gStyle.Tooltip)
+               bin.name = hh.tip;
+            toplevel.add(bin);
+         }
 
-                        bin = THREE.SceneUtils.createMultiMaterialObject(
-                              new THREE.CubeGeometry(2 * size / painter.nbinsx,
-                                    wei, 2 * size / painter.nbinsy), [
-                                    new THREE.MeshLambertMaterial({
-                                       color : fillcolor.getHex(),
-                                       shading : THREE.NoShading
-                                    }), wireMaterial ]);
-                        bin.position.x = tx(hh.x);
-                        bin.position.y = wei / 2;
-                        bin.position.z = -(ty(hh.y));
+         delete local_bins;
+         local_bins = null;
 
-                        if (JSROOT.gStyle.Tooltip)
-                           bin.name = hh.tip;
-                        toplevel.add(bin);
-                     }
+         // create a point light
+         var pointLight = new THREE.PointLight(0xcfcfcf);
+         pointLight.position.set(0, 50, 250);
+         scene.add(pointLight);
 
-                     delete local_bins;
-                     local_bins = null;
+         // var directionalLight = new THREE.DirectionalLight(
+               // 0x7f7f7f );
+         // directionalLight.position.set( 0, -70, 100
+         // ).normalize();
+         // scene.add( directionalLight );
 
-                     // create a point light
-                     var pointLight = new THREE.PointLight(0xcfcfcf);
-                     pointLight.position.set(0, 50, 250);
-                     scene.add(pointLight);
+         var camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
+         camera.position.set(0, size / 2, 500);
+         camera.lookat = cube;
 
-                     // var directionalLight = new THREE.DirectionalLight(
-                     // 0x7f7f7f );
-                     // directionalLight.position.set( 0, -70, 100
-                     // ).normalize();
-                     // scene.add( directionalLight );
+         /**
+          * @author alteredq / http://alteredqualia.com/
+          * @author mr.doob / http://mrdoob.com/
+          */
+         var Detector = { 
+               canvas : !!window.CanvasRenderingContext2D,
+               webgl : (function() { try {
+                     return !!window.WebGLRenderingContext && !!document.createElement('canvas').getContext('experimental-webgl');
+                  } catch (e) {
+                     return false;
+                  }
+               })(),
+               workers : !!window.Worker,
+               fileapi : window.File && window.FileReader && window.FileList && window.Blob
+         };
 
-                     var camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
-                     camera.position.set(0, size / 2, 500);
-                     camera.lookat = cube;
+         var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) : 
+                                         new THREE.CanvasRenderer({ antialias : true });
+         renderer.setSize(w, h);
+         $(painter.svg_pad()).hide().parent().append(renderer.domElement);
+         renderer.render(scene, camera);
 
-                     /**
-                      * @author alteredq / http://alteredqualia.com/
-                      * @author mr.doob / http://mrdoob.com/
-                      */
-                     var Detector = {
-                        canvas : !!window.CanvasRenderingContext2D,
-                        webgl : (function() {
-                           try {
-                              return !!window.WebGLRenderingContext
-                                    && !!document.createElement('canvas')
-                                          .getContext('experimental-webgl');
-                           } catch (e) {
-                              return false;
-                           }
-                        })(),
-                        workers : !!window.Worker,
-                        fileapi : window.File && window.FileReader
-                              && window.FileList && window.Blob
-                     };
-
-                     var renderer = Detector.webgl ? new THREE.WebGLRenderer({
-                        antialias : true
-                     }) : new THREE.CanvasRenderer({
-                        antialias : true
-                     });
-                     renderer.setSize(w, h);
-                     $(painter.svg_pad(true)[0][0]).hide().parent().append(
-                           renderer.domElement);
-                     renderer.render(scene, camera);
-
-                     JSROOT.Painter.add3DInteraction(renderer, scene, camera,
-                           toplevel, painter.svg_pad(true));
-                  })
+         JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, painter);
+      })
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
 
       // create painter and add it to canvas
       var painter = new JSROOT.TH2Painter(histo);
-      var create_canvas = painter.SetDivId(divid, 1,"TH1");
       
-      painter.CheckZoomSelection();
+      painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
-      
+
+      painter.CheckPadOptions();
+
       painter.ScanContent();
 
-      // check if we need to create palette
-      if ((painter.FindPalette() == null) && create_canvas && (painter.options.Zscale > 0)) {
-         // create pallette
-         var shrink = painter.CreatePalette(0.04);
-         painter.svg_frame()['frame_painter'].Shrink(shrink);
-         painter.svg_frame()['frame_painter'].Redraw();
-      } else if (painter.options.Zscale == 0) {
-         // delete palette - it may appear there due to previous draw options
-         painter.FindPalette(true);
-      }
-
-      // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && create_canvas)
-         painter.CreateStat();
-
+      painter.CountStat();
+      
       painter.CreateXY();
 
-      painter.CountStat();
-
-      if (painter.options.Lego > 0) {
+      if (painter.options.Lego > 0)
          painter.Draw3D();
-      } else {
-         
-         painter.DrawAxes();
-
-         painter.DrawGrids();
-
-         painter.DrawBins();
-
-         painter.DrawTitle();
-
-         painter.DrawFunctions();
-
-         painter.AddInteractive();
-      }
+      else
+         painter.Draw2D();
 
       return painter;
    }
@@ -6805,12 +6703,10 @@
                         new THREE.WebGLRenderer({ antialias : true }) : 
                         new THREE.CanvasRenderer({antialias : true });
        renderer.setSize(w, h);
-       $(painter.svg_pad(true)[0][0]).hide().parent().append(
-             renderer.domElement);
+       $(painter.svg_pad(true)[0][0]).hide().parent().append(renderer.domElement);
        renderer.render(scene, camera);
 
-       JSROOT.Painter.add3DInteraction(renderer, scene, camera,
-             toplevel, painter.svg_pad(true));
+       JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, null);
     })
    }
    
@@ -6970,7 +6866,7 @@
       if (stack['fHists'].arr.length == 0) return;
 
       var painter = new JSROOT.THStackPainter(stack);
-      painter.SetDivId(divid,0,"THStack");
+      painter.SetDivId(divid);
       
       painter.drawStack(opt);
       
