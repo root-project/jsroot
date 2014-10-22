@@ -25,7 +25,7 @@ October 2014:
 12.Add possibility to 'expand' normal objects in the hierarchy browser.
    For instance, this gives access to single elements of canvas, 
    when whole canvas cannot be drawn.   
-
+13.Correctly use colors map, provided with TCanvas.
 
 September 2014:
 1. First try to handle resize of the browser, 

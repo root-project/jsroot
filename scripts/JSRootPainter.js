@@ -208,6 +208,28 @@
       }
       return colorMap;
    }();
+   
+   JSROOT.Painter.adoptRootColors = function(objarr) {
+      if (!objarr || !objarr.arr) return;
+      
+      for (var n in objarr.arr) {
+         var col = objarr.arr[n];
+         if (col['_typename'] != 'TColor') continue;
+         
+         var num = col.fNumber;
+         if ((num<0) || (num>4096)) continue;
+         
+         var rgb = "rgb(" + (col.fRed*255).toFixed(0) + ", " + (col.fGreen*255).toFixed(0) + ", " + (col.fBlue*255).toFixed(0) + ")";
+         
+         while (num>JSROOT.Painter.root_colors.length)
+            JSROOT.Painter.root_colors.push(rgb);
+         
+         if (JSROOT.Painter.root_colors[num] != rgb) {
+             console.log("Replace color "+ num + " " + rgb);  
+            JSROOT.Painter.root_colors[num] = rgb;
+         }
+      }
+   }
 
    JSROOT.Painter.root_line_styles = new Array("", "", "3, 3", "1, 2",
          "3, 4, 1, 4", "5, 3, 1, 3", "5, 3, 1, 3, 1, 3, 1, 3", "5, 5",
@@ -2615,15 +2637,28 @@
               .style("stroke", border_color);
    }
    
+   JSROOT.TPadPainter.prototype.CheckColors = function() {
+      if (this.pad==null) return; 
+      for (var i in this.pad.fPrimitives.arr) {
+         var obj = this.pad.fPrimitives.arr[i];
+         if (obj==null) continue;
+         if ((obj._typename=="TObjArray") && (obj.name == "ListOfColors")) {
+            JSROOT.Painter.adoptRootColors(obj);
+            this.pad.fPrimitives.arr.splice(i,1);
+            this.pad.fPrimitives.opt.splice(i,1);
+            return;
+         }
+      }
+   }
    
    JSROOT.TPadPainter.prototype.DrawPrimitives = function() {
-      if (this.pad==null) return;   
-      for ( var i in this.pad.fPrimitives.arr) {
+      if (this.pad==null) return; 
+      
+      for (var i in this.pad.fPrimitives.arr) {
          var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[i],  this.pad.fPrimitives.opt[i]);
          this.primitive_painters.push(pp);
       }
    }
-
    
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
       // TODO - this is due to resize, while there loop over painters implemented
@@ -2671,8 +2706,10 @@
 
       if (can==null)
          JSROOT.Painter.drawFrame(divid, null);
-      else
+      else {
+         painter.CheckColors();
          painter.DrawPrimitives();
+      }
 
       return painter;
    }
