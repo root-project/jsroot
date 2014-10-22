@@ -10,7 +10,6 @@
    
    <script type='text/javascript'>
 
-      painter = null;
       cnt = 0;
    
       function updateGUI() {
@@ -33,13 +32,9 @@
             
          cnt++;
          
-         if (painter==null) {
-            painter = JSROOT.draw('object_draw', histo, "colz");
-            setInterval(updateGUI, 3000);
-         } else {   
-            painter.UpdateObject(histo);   
-            painter.RedrawFrame();
-         } 
+         JSROOT.redraw('object_draw', histo, "colz");
+         
+         if (cnt==1) setInterval(updateGUI, 3000);
       }
       
    </script>

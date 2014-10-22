@@ -115,7 +115,7 @@ function UpdateOnline() {
        h.get(itemname, function(item, obj) {
          if (painter.UpdateObject(obj)) {
             document.body.style.cursor = 'wait';
-            painter.RedrawFrame();
+            painter.RedrawPad();
             document.body.style.cursor = 'auto';
          }
       });

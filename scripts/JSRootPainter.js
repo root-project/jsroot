@@ -871,6 +871,10 @@
       // generic method to cleanup painter
    }
 
+   JSROOT.TBasePainter.prototype.GetObject = function() {
+      return null;
+   }
+
    JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
       return false;
    }
@@ -878,7 +882,13 @@
    JSROOT.TBasePainter.prototype.RedrawPad = function(resize) {
    }
    
+   JSROOT.TBasePainter.prototype.RedrawObject = function(obj) {
+      if (this.UpdateObject(obj))
+         this.RedrawPad();
+   }
+   
    JSROOT.TBasePainter.prototype.RedrawFrame = function() {
+      // obsolete, should not be used
       this.RedrawPad();
    }
 
@@ -896,10 +906,6 @@
    }
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
-
-   JSROOT.TObjectPainter.prototype.IsObject = function(obj) {
-      return false;
-   }
 
    JSROOT.TObjectPainter.prototype.CheckResize = function(force) {
       // no canvas - no resize
@@ -1209,10 +1215,10 @@
       // histogram functions
 
       var painters = this.svg_pad() ? this.svg_pad().pad_painter.painters : null; 
-      if (painters == null) return null;
+      if ((painters == null) || (selobj==null)) return null;
 
       for (var n in painters)
-         if (painters[n].IsObject(selobj))
+         if (painters[n].GetObject() === selobj)
             return painters[n];
 
       return null;
@@ -1233,8 +1239,8 @@
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TFramePainter.prototype.IsObject = function(obj) {
-      return this.tframe === obj;
+   JSROOT.TFramePainter.prototype.GetObject = function() {
+      return this.tframe;
    }
    
    JSROOT.TFramePainter.prototype.Shrink = function(shrink_right) {
@@ -1358,8 +1364,8 @@
 
    JSROOT.TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TF1Painter.prototype.IsObject = function(obj) {
-      return this.tf1 === obj;
+   JSROOT.TF1Painter.prototype.GetObject = function() {
+      return this.tf1;
    }
 
    JSROOT.TF1Painter.prototype.Redraw = function() {
@@ -1574,8 +1580,8 @@
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TGraphPainter.prototype.IsObject = function(obj) {
-      return this.graph == obj;
+   JSROOT.TGraphPainter.prototype.GetObject = function() {
+      return this.graph;
    }
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
@@ -2235,8 +2241,8 @@
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPavePainter.prototype.IsObject = function(obj) {
-      return this.pavetext === obj;
+   JSROOT.TPavePainter.prototype.GetObject = function() {
+      return this.pavetext;
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveText = function() {
@@ -2685,8 +2691,6 @@
    }
    
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
-      // TODO - this is due to resize, while there loop over painters implemented
-      
       if (resize && !this.iscan) this.CreatePadSvg(true);
       
       // at the moment canvas painter donot redraw its subitems
@@ -2774,8 +2778,8 @@
 
    JSROOT.TColzPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TColzPalettePainter.prototype.IsObject = function(obj) {
-      return this.palette === obj;
+   JSROOT.TColzPalettePainter.prototype.GetObject = function() {
+      return this.palette;
    }
 
    JSROOT.TColzPalettePainter.prototype.DrawPalette = function() {
@@ -2942,8 +2946,8 @@
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.THistPainter.prototype.IsObject = function(obj) {
-      return this.histo === obj;
+   JSROOT.THistPainter.prototype.GetObject = function() {
+      return this.histo;
    }
 
    JSROOT.THistPainter.prototype.IsTProfile = function() {
@@ -4169,14 +4173,14 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.Redraw = function(resize) {
+   JSROOT.THistPainter.prototype.Redraw = function() {
       this.CreateXY();
       this.CountStat();
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
       if (this.create_canvas) this.DrawTitle();
-      this.DrawFunctions();
+      // this.DrawFunctions();
    }
    
    JSROOT.THistPainter.prototype.Unzoom = function(dox, doy) {
@@ -5835,8 +5839,8 @@
 
    JSROOT.THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
    
-   JSROOT.THStackPainter.prototype.IsObject = function(obj) {
-      return this.stack === obj;
+   JSROOT.THStackPainter.prototype.GetObject = function() {
+      return this.stack;
    }
    
    JSROOT.THStackPainter.prototype.drawStack = function(opt) {
@@ -5995,8 +5999,8 @@
 
    JSROOT.TLegendPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
    
-   JSROOT.TLegendPainter.prototype.IsObject = function(obj) {
-      return obj == this.legend;
+   JSROOT.TLegendPainter.prototype.GetObject = function() {
+      return this.legend;
    }
    
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
@@ -6252,8 +6256,8 @@
 
    JSROOT.TMultiGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
    
-   JSROOT.TMultiGraphPainter.prototype.IsObject = function(obj) {
-      return this.mgraph === obj;
+   JSROOT.TMultiGraphPainter.prototype.GetObject = function() {
+      return this.mgraph;
    }
    
    JSROOT.TMultiGraphPainter.prototype.UpdateObject = function(obj) {
@@ -6425,8 +6429,8 @@
 
    JSROOT.TTextPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
    
-   JSROOT.TTextPainter.prototype.IsObject = function(obj) {
-      return obj == this.text;
+   JSROOT.TTextPainter.prototype.GetObject = function() {
+      return this.text;
    }
    
    JSROOT.TTextPainter.prototype.drawPaveLabel = function() {
@@ -6631,10 +6635,7 @@
    JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
    JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
    
-   /** @fn painter JSROOT.draw(divid, obj, opt) 
-    * Draw object in specified HTML element with given draw options  */
-
-   JSROOT.drawFunc = function(classname) {
+   JSROOT.getDrawFunc = function(classname) {
       if (typeof classname != 'string') return null;
 
       for (var i in JSROOT.fDrawFunc) {
@@ -6648,18 +6649,57 @@
    }
 
    JSROOT.canDraw = function(classname) {
-      return JSROOT.drawFunc(classname) != null;
+      return JSROOT.getDrawFunc(classname) != null;
    }
-   
+
+   /** @fn JSROOT.draw(divid, obj, opt) 
+    * Draw object in specified HTML element with given draw options  */
+
    JSROOT.draw = function(divid, obj, opt) {
       if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
 
-      var draw_func = JSROOT.drawFunc(obj['_typename']);
+      var draw_func = JSROOT.getDrawFunc(obj['_typename']);
 
       if (draw_func==null) return null;
 
       return draw_func(divid, obj, opt);
    }
+
+   /** @fn JSROOT.draw(divid, obj, opt) 
+    * Redraw object in specified HTML element with given draw options  
+    * If drawing was not exists, it will be performed with JSROOT.draw.
+    * If drawing was already done, that content will be updated */
+
+   
+   JSROOT.redraw = function(divid, obj, opt) {
+      if (obj==null) return;
+      
+      var can = d3.select("#" + divid + " .root_canvas");
+      var can_painter = can.node() ? can.node()['pad_painter'] : null;
+      if (can_painter == null) {
+         $("#"+divid).empty();
+         return JSROOT.draw(divid, obj, opt);
+      }
+      
+      if (obj._typename=="TCanvas") {
+         can_painter.RedrawObject(obj);
+         return can_painter;
+      }
+      
+      for (var i in can_painter.painters) {
+         var obj0 = can_painter.painters[i].GetObject();
+         
+         if ((obj0 != null) && (obj0._typename == obj._typename)) 
+            if (can_painter.painters[i].UpdateObject(obj)) {
+               can_painter.RedrawPad();
+               return can_painter.painters[i];
+            } 
+      }
+      
+      console.log("Cannot find painter to update object of type " + obj._typename);
+      return null;
+   }
+
 
    // =========== painter of hierarchical structures =================================
 

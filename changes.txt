@@ -26,6 +26,7 @@ October 2014:
    For instance, this gives access to single elements of canvas, 
    when whole canvas cannot be drawn.   
 13.Correct usage of colors map, provided with TCanvas.
+14.Introduce JSROOT.redraw() function which is capable to create or update object drawing.
 
 September 2014:
 1. First try to handle resize of the browser, 

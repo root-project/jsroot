@@ -34,13 +34,7 @@
          
          function draw_object(obj) {
             document.body.style.cursor = 'wait';
-            if (!objpainter) {
-               $('#drawing').empty();
-               objpainter = JSROOT.draw('drawing', obj, drawopt); 
-            } else {
-               objpainter.UpdateObject(obj);   
-               objpainter.RedrawFrame();
-            }
+            objpainter = JSROOT.redraw('drawing', obj, drawopt); 
             document.body.style.cursor = 'auto';
          }
    
