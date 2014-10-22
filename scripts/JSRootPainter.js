@@ -225,7 +225,7 @@
             JSROOT.Painter.root_colors.push(rgb);
          
          if (JSROOT.Painter.root_colors[num] != rgb) {
-             console.log("Replace color "+ num + " " + rgb);  
+             // console.log("Replace color "+ num + " " + rgb);  
             JSROOT.Painter.root_colors[num] = rgb;
          }
       }
@@ -1346,6 +1346,7 @@
       var p = new JSROOT.TFramePainter(obj);
       p.SetDivId(divid);
       p.DrawFrameSvg();
+      return p;
    }
 
    // =========================================================================
@@ -2485,6 +2486,12 @@
          this.main_painter().FillStatistic(this, dostat);
       }
    }
+   
+   JSROOT.TPavePainter.prototype.UpdateObject = function(obj) {
+      if (obj._typename != 'TPaveText') return false;
+      this.pavetext['fLines'] = JSROOT.clone(obj['fLines']);
+      return true;
+   }
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
 
@@ -2637,15 +2644,15 @@
               .style("stroke", border_color);
    }
    
-   JSROOT.TPadPainter.prototype.CheckColors = function() {
-      if (this.pad==null) return; 
-      for (var i in this.pad.fPrimitives.arr) {
-         var obj = this.pad.fPrimitives.arr[i];
+   JSROOT.TPadPainter.prototype.CheckColors = function(can) {
+      if (can==null) return; 
+      for (var i in can.fPrimitives.arr) {
+         var obj = can.fPrimitives.arr[i];
          if (obj==null) continue;
          if ((obj._typename=="TObjArray") && (obj.name == "ListOfColors")) {
             JSROOT.Painter.adoptRootColors(obj);
-            this.pad.fPrimitives.arr.splice(i,1);
-            this.pad.fPrimitives.opt.splice(i,1);
+            can.fPrimitives.arr.splice(i,1);
+            can.fPrimitives.opt.splice(i,1);
             return;
          }
       }
@@ -2682,18 +2689,23 @@
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
 
       if ((obj == null) || !('fPrimitives' in obj)) return false;
+      
+      if (this.iscan) this.CheckColors(obj);
 
       if (obj.fPrimitives.arr.length != this.pad.fPrimitives.arr.length) return false;
 
       var isany = false;
       var cnt = 0;
 
-      for ( var n in obj.fPrimitives.arr) {
+      for (var n in obj.fPrimitives.arr) {
          var sub = obj.fPrimitives.arr[n];
+         
+         if ((n >= this.primitive_painters.length) || (this.primitive_painters[n]==null)) {
+            console.log("No paintrer for object " + sub._typename);
+            continue;  
+         }
 
-         if (n < this.primitive_painters.length)
-            if (this.primitive_painters[n].UpdateObject(sub))
-               isany = true;
+         if (this.primitive_painters[n].UpdateObject(sub)) isany = true;
       }
 
       return isany;
@@ -2704,10 +2716,10 @@
       painter.SetDivId(divid);
       painter.CreateCanvasSvg();
 
-      if (can==null)
+      if (can==null) {
          JSROOT.Painter.drawFrame(divid, null);
-      else {
-         painter.CheckColors();
+      } else {
+         painter.CheckColors(can);
          painter.DrawPrimitives();
       }
 
@@ -3903,14 +3915,10 @@
    }
 
    JSROOT.THistPainter.prototype.DrawTitle = function() {
-      var w = Number(this.svg_pad(true).attr("width")), h = Number(this
-            .svg_pad(true).attr("height"));
+      var w = Number(this.svg_pad(true).attr("width")), 
+          h = Number(this.svg_pad(true).attr("height"));
       var font_size = Math.round(0.050 * h);
       var l_title = JSROOT.Painter.translateLaTeX(this.histo['fTitle']);
-
-      // seems to be, this is check for canvas drawing, where title is separate object
-      // TODO: one should treat canvas and histogram drawing in the same way
-      if (this.root_pad()) return;
 
       var pthis = this;
 
@@ -4150,7 +4158,7 @@
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
-      this.DrawTitle();
+      if (this.create_canvas) this.DrawTitle();
       this.DrawFunctions();
    }
    
@@ -5125,7 +5133,7 @@
 
       painter.DrawBins();
 
-      painter.DrawTitle();
+      if (painter.create_canvas) painter.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas) painter.CreateStat();
 
@@ -5747,7 +5755,7 @@
 
       this.DrawBins();
 
-      this.DrawTitle();
+      if (this.create_canvas) this.DrawTitle();
 
       this.DrawFunctions();
 
@@ -6552,6 +6560,18 @@
               .attr("fill", tcolor)
               .text(string);
    }
+   
+   JSROOT.TTextPainter.prototype.UpdateObject = function(obj) {
+      if (this.text['_typename'] != obj['_typename']) return false;
+      if (this.text['_typename'] == 'TPaveLabel') {
+         this.text['fLabel'] = obj['fLabel'];
+      } else {
+         this.text['fTitle'] = obj['fTitle'];
+      }
+      
+      return true;
+   }
+
    
    JSROOT.TTextPainter.prototype.Redraw = function() {
       if (this.text['_typename'] == 'TPaveLabel')
