@@ -214,7 +214,7 @@
       
       for (var n in objarr.arr) {
          var col = objarr.arr[n];
-         if (col['_typename'] != 'TColor') continue;
+         if ((col==null) || (col['_typename'] != 'TColor')) continue;
          
          var num = col.fNumber;
          if ((num<0) || (num>4096)) continue;
@@ -2358,6 +2358,7 @@
               .attr("text-anchor", align)
               .attr("x",lmargin)
               .attr("y", (height / 2) + (font_size / 3))
+              .attr("xml:space","preserve")
               .attr("font-family", fontDetails['name'])
               .attr("font-weight", fontDetails['weight'])
               .attr("font-style", fontDetails['style'])
@@ -2368,8 +2369,7 @@
 
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
-            if (pavetext['fLines'].arr[j]['fTextColor'] == 0)
-               jcolor = tcolor;
+            if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
             var posy = j * stepy + font_size;
 
             if (pavetext['_typename'] == 'TPaveStats') {
@@ -2380,6 +2380,7 @@
                            .attr("text-anchor", "middle")
                            .attr("x", width * (n + 0.5) / num_cols)
                            .attr("y", posy)
+                           .attr("xml:space","preserve")
                            .attr("font-family", fontDetails['name'])
                            .attr("font-weight", fontDetails['weight'])
                            .attr("font-style", fontDetails['style'])
@@ -2391,6 +2392,7 @@
                         .attr("text-anchor", (j == 0) ? "middle" : "start")
                         .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width))
                         .attr("y", posy)
+                        .attr("xml:space","preserve")
                         .attr("font-family", fontDetails['name'])
                         .attr("font-weight", fontDetails['weight'])
                         .attr("font-style", fontDetails['style'])
@@ -2404,6 +2406,7 @@
                             .attr("text-anchor", (n == 0) ? "start" : "end")
                             .attr("x", (n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width)
                             .attr("y", posy)
+                            .attr("xml:space","preserve")
                             .attr("font-family", fontDetails['name'])
                             .attr("font-weight", fontDetails['weight'])
                             .attr("font-style", fontDetails['style'])
@@ -2412,36 +2415,50 @@
                             .text(parts[n]);
                }
             } else {
-               this.draw_g.append("text").attr("text-anchor", "start").attr(
-                     "x", lmargin).attr("y", posy).attr("font-family",
-                     fontDetails['name']).attr("font-weight",
-                     fontDetails['weight']).attr("font-style",
-                     fontDetails['style']).attr("font-size", font_size).attr(
-                     "fill", jcolor).text(lines[j]);
+               this.draw_g.append("text")
+                      .attr("text-anchor", "start")
+                      .attr("x", lmargin)
+                      .attr("y", posy)
+                      .attr("xml:space","preserve")
+                      .attr("font-family", fontDetails['name'])
+                      .attr("font-weight", fontDetails['weight'])
+                      .attr("font-style", fontDetails['style'])
+                      .attr("font-size", font_size)
+                      .attr("fill", jcolor)
+                      .text(lines[j]);
             }
          }
       }
 
       if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
-         this.draw_g.append("svg:line").attr("class", "pavedraw").attr("x1", 0)
-               .attr("y1", stepy).attr("x2", width).attr("y2", stepy).style(
-                     "stroke", lcolor).style("stroke-width",
-                     lwidth ? 1 : 'none');
+         this.draw_g.append("svg:line")
+                    .attr("class", "pavedraw")
+                    .attr("x1", 0)
+                    .attr("y1", stepy)
+                    .attr("x2", width)
+                    .attr("y2", stepy)
+                    .style("stroke", lcolor)
+                    .style("stroke-width", lwidth ? 1 : 'none');
       }
 
       if ((first_stat > 0) && (num_cols > 1)) {
          for (var nrow = first_stat; nrow < nlines; nrow++)
-            this.draw_g.append("svg:line").attr("x1", 0).attr("y1",
-                  nrow * stepy).attr("x2", width).attr("y2", nrow * stepy)
-                  .style("stroke", lcolor).style("stroke-width",
-                        lwidth ? 1 : 'none');
+            this.draw_g.append("svg:line")
+                       .attr("x1", 0)
+                       .attr("y1", nrow * stepy)
+                       .attr("x2", width)
+                       .attr("y2", nrow * stepy)
+                       .style("stroke", lcolor)
+                       .style("stroke-width", lwidth ? 1 : 'none');
 
          for (var ncol = 0; ncol < num_cols - 1; ncol++)
-            this.draw_g.append("svg:line").attr("x1",
-                  width / num_cols * (ncol + 1)).attr("y1", first_stat * stepy)
-                  .attr("x2", width / num_cols * (ncol + 1)).attr("y2", height)
-                  .style("stroke", lcolor).style("stroke-width",
-                        lwidth ? 1 : 'none');
+            this.draw_g.append("svg:line")
+                        .attr("x1", width / num_cols * (ncol + 1))
+                        .attr("y1", first_stat * stepy)
+                        .attr("x2", width / num_cols * (ncol + 1))
+                        .attr("y2", height) 
+                        .style("stroke", lcolor)
+                        .style("stroke-width", lwidth ? 1 : 'none');
       }
 
       if (lwidth && lwidth > 1) {
