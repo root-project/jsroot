@@ -11,38 +11,49 @@ server=http://localhost:8080
 
 rm -rf index.htm h.xml h.json StreamerInfo Canvases Files
 
+#  par1 - 0 - only hierarchy, 1 - only drawing, 2 - both
+#  par2 - path
+
+function grab {
+   sedarg='s/\/jsrootsys/..'
+   number=$(grep -o "\/" <<< "$2" | wc -l)
+   for (( i=0; i<=$number; i++ ))
+   do 
+      sedarg+='\/..'
+   done
+   sedarg+='/g'
+
+   mkdir -p $2
+
+   if [ "$1" != "1" ]; then
+      sed $sedarg ../files/online.htm > $2/index.htm
+      wget -nv $server/$2/h.json -O $2/h.json
+      wget -nv $server/$2/h.xml -O $2/h.xml
+   fi 
+   
+   if [ "$1" != "0" ]; then 
+      wget -nv $server/$2/root.json.gz?compact=3 -O $2/root.json.gz
+      wget -nv "$server/$2/root.png?w=400&h=300" -O $2/root.png
+      sed $sedarg ../files/draw.htm > $2/draw.htm
+   fi
+   
+}
+
 sed 's/\/jsrootsys/../g' ../files/online.htm > index.htm
 wget -nv $server/h.xml -O h.xml
 wget -nv $server/h.json -O h.json
 mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
-mkdir -p Canvases 
-sed 's/\/jsrootsys/..\/../g' ../files/online.htm > Canvases/index.htm
-wget -nv $server/Canvases/h.json -O Canvases/h.json
-wget -nv $server/Canvases/h.xml -O Canvases/h.xml
-mkdir -p Canvases/c1 
-wget -nv $server/Canvases/c1/root.json.gz?compact=3 -O Canvases/c1/root.json.gz
-wget -nv -O Canvases/c1/root.png "$server/Canvases/c1/root.png?w=400&h=300"
-sed 's/\/jsrootsys/..\/..\/../g' ../files/draw.htm > Canvases/c1/draw.htm
-mkdir -p Files
-sed 's/\/jsrootsys/..\/../g' ../files/online.htm > Files/index.htm
-wget -nv $server/Files/h.json -O Files/h.json
-wget -nv $server/Files/h.xml -O Files/h.xml
-mkdir -p Files/job1.root
-sed 's/\/jsrootsys/..\/..\/../g' ../files/online.htm > Files/job1.root/index.htm
-wget -nv $server/Files/job1.root/h.json -O Files/job1.root/h.json
-wget -nv $server/Files/job1.root/h.xml -O Files/job1.root/h.xml
-mkdir -p Files/job1.root/hpx
-wget -nv $server/Files/job1.root/hpx/root.json.gz?compact=3 -O Files/job1.root/hpx/root.json.gz
-wget -nv -O Files/job1.root/hpx/root.png "$server/Files/job1.root/hpx/root.png?w=400&h=300"
-sed 's/\/jsrootsys/..\/..\/..\/../g' ../files/draw.htm > Files/job1.root/hpx/draw.htm
-mkdir -p Files/job1.root/hpxpy 
-wget -nv $server/Files/job1.root/hpxpy/root.json.gz?compact=3 -O Files/job1.root/hpxpy/root.json.gz
-wget -nv -O Files/job1.root/hpxpy/root.png "$server/Files/job1.root/hpxpy/root.png?w=400&h=300"
-sed 's/\/jsrootsys/..\/..\/..\/../g' ../files/draw.htm > Files/job1.root/hpxpy/draw.htm
-mkdir -p Files/job1.root/hprof 
-wget -nv $server/Files/job1.root/hprof/root.json.gz?compact=3 -O Files/job1.root/hprof/root.json.gz
-wget -nv -O Files/job1.root/hprof/root.png "$server/Files/job1.root/hprof/root.png?w=400&h=300" 
-sed 's/\/jsrootsys/..\/..\/..\/../g' ../files/draw.htm > Files/job1.root/hprof/draw.htm
+
+grab 0 Files
+grab 0 Files/job1.root 
+grab 2 Files/job1.root/hpx
+grab 2 Files/job1.root/hpxpy
+grab 2 Files/job1.root/hprof
+
+grab 0 Canvases
+grab 2 Canvases/c1
+grab 0 Canvases/c1/fPrimitives
+grab 2 Canvases/c1/fPrimitives/hpx
 
 # copy all files to web server
 cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.0/demo
