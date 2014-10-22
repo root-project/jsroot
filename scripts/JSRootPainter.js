@@ -4782,7 +4782,7 @@
       
       // console.log("left " + left + " right " + right + " step " + stepi);
 
-      var point;
+      var point = null;
 
       for (var i = left; i < right; i += stepi) {
          // if interval wider than specified range, make it shorter
@@ -4840,9 +4840,8 @@
          this.draw_bins.push(point);
       }
 
-      // if we need to draw line or area, we need extra point for correct
-      // drawing
-      if ((right == this.nbinsx) && (this.options.Error == 0)) {
+      // if we need to draw line or area, we need extra point for correct drawing
+      if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
          var extrapoint = jQuery.extend(true, {}, point);
          extrapoint.x = grx2;
          this.draw_bins.push(extrapoint);
@@ -7262,8 +7261,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, options) {
-      if (!this.CreateDisplay())
-         return;
+      if (!this.CreateDisplay()) return;
 
       var mdi = this['disp'];
 
@@ -7319,47 +7317,44 @@
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname) {
       var painter = this;
+      
+      var item0 = this.Find(itemname);
+      if (item0==null) return;
+      item0['_doing_expand'] = true;
 
-      this.get(itemname,
-            function(item, obj) {
-               // if (obj!=null) console.log("get object for the drawing");
+      this.get(itemname, function(item, obj) {
+         delete item0['_doing_expand'];
+         if ((item == null) || (obj == null)) return;
 
-               if ((item == null) || (obj == null))
-                  return;
-
-               var curr = item;
-               while (curr != null) {
-                  if (('_expand' in curr)
-                        && (typeof (curr['_expand']) == 'function')) {
-                     if (curr['_expand'](item, obj))
-                        painter.ExpandDtree(item);
-                     return;
-                  }
-                  curr = ('_parent' in curr) ? curr['_parent'] : null;
-               }
-            });
+         var curr = item;
+         while (curr != null) {
+            if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
+                if (curr['_expand'](item, obj))
+                   painter.ExpandDtree(item);
+                return;
+            }
+            curr = ('_parent' in curr) ? curr['_parent'] : null;
+         }
+      });
    }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, andThan) {
       var pthis = this;
 
       var f = new JSROOT.TFile(filepath, function(file) {
-         if (file == null)
-            return;
+         if (file == null) return;
          // for the moment file is the only entry
          pthis.h = pthis.FileHierarchy(file);
 
          pthis.RefreshHtml();
 
-         if (typeof andThan == 'function')
-            andThan();
+         if (typeof andThan == 'function') andThan();
       });
    }
 
    JSROOT.HierarchyPainter.prototype.GetFileProp = function(itemname) {
       var item = this.Find(itemname);
-      if (item == null)
-         return null;
+      if (item == null) return null;
 
       var subname = item._name;
       while (item._parent != null) {
@@ -7385,15 +7380,12 @@
       h['_get'] = function(item, callback) {
 
          var url = painter.itemFullName(item);
-         if (url.length > 0)
-            url += "/";
-         if ('_more' in item)
-            url += 'h.json?compact=3';
-         else
-            url += 'root.json.gz?compact=3';
+         if (url.length > 0) url += "/";
+         var h_get = ('_more' in item) || ('_doing_expand' in item);  
+         url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';
 
          var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
-            if ((obj != null) && (item._name === "StreamerInfo")
+            if ((obj != null) && !h_get && (item._name === "StreamerInfo")
                   && (obj['_typename'] === 'TList'))
                obj['_typename'] = 'TStreamerInfoList';
 
@@ -7501,8 +7493,7 @@
       this.AddOnlineMethods(this.h);
    }
 
-   JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event,
-         itemname) {
+   JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event, itemname) {
       event.preventDefault();
 
       var onlineprop = this.GetOnlineProp(itemname);
@@ -7560,9 +7551,8 @@
             window.open(addr);
          });
       } else if (onlineprop != null) {
-         JSROOT.Painter.menuitem(menu, "Draw", function() {
-            painter.display(itemname);
-         });
+         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
+         JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
          this.FillOnlineMenu(menu, onlineprop, itemname);
       } else if (fileprop != null) {
          JSROOT.Painter.menuitem(menu, "Draw", function() {

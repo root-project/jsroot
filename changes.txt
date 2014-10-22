@@ -22,7 +22,9 @@ October 2014:
 9. Extract 3D drawings into separate JSRoot3DPainter.js script
 10.Use newest three.min.js (r68) for 3D drawings, solves problem with Firefox.
 11.Introduce generic list of draw functions for all supported classes.
-   
+12.Add possibility to 'expand' normal objects in the hierarchy browser.
+   For instance, this gives access to single elements of canvas, 
+   when whole canvas cannot be drawn.   
 
 
 September 2014:
