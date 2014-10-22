@@ -2914,14 +2914,10 @@
       // check for graphical cuts
       var chopt = opt.toUpperCase();
       chopt = JSROOT.Painter.clearCuts(chopt);
-      if (hdim > 1)
-         option.Scat = 1;
-      if (!nch)
-         option.Hist = 1;
-      if (this.IsTProfile())
-         option.Error = 2;
-      if ('fFunctions' in this.histo)
-         option.Func = 1;
+      if (hdim > 1) option.Scat = 1;
+      if (!nch) option.Hist = 1;
+      if (this.IsTProfile()) option.Error = 2;
+      if ('fFunctions' in this.histo) option.Func = 1;
 
       var l = chopt.indexOf('SPEC');
       if (l != -1) {
@@ -2929,16 +2925,12 @@
          chopt = chopt.replace('SPEC', '    ');
          var bs = 0;
          l = chopt.indexOf('BF(');
-         if (l != -1) {
-            bs = parseInt(chopt)
-         }
+         if (l != -1) bs = parseInt(chopt)
          option.Spec = Math.max(1600, bs);
          return option;
       }
       l = chopt.indexOf('GL');
-      if (l != -1) {
-         chopt = chopt.replace('GL', '  ');
-      }
+      if (l != -1)  chopt = chopt.replace('GL', '  ');
       l = chopt.indexOf('X+');
       if (l != -1) {
          option.AxisPos = 10;
@@ -2955,15 +2947,13 @@
          option.Hist = 1;
       l = chopt.indexOf('SAMES');
       if (l != -1) {
-         if (nch == 5)
-            option.Hist = 1;
+         if (nch == 5) option.Hist = 1;
          option.Same = 2;
          chopt = chopt.replace('SAMES', '     ');
       }
       l = chopt.indexOf('SAME');
       if (l != -1) {
-         if (nch == 4)
-            option.Hist = 1;
+         if (nch == 4) option.Hist = 1;
          option.Same = 1;
          chopt = chopt.replace('SAME', '    ');
       }
@@ -3331,8 +3321,7 @@
          option.Off = 1;
          option.Hist = 1;
       }
-      if (chopt.indexOf('F2') != -1)
-         option.Fill = 2;
+      if (chopt.indexOf('F2') != -1) option.Fill = 2;
       if (chopt.indexOf('L') != -1) {
          option.Line = 1;
          option.Hist = -1;
@@ -3341,39 +3330,26 @@
          option.Mark = 1;
          option.Hist = -1;
       }
-      if (chopt.indexOf('Z') != -1)
-         option.Zscale = 1;
-      if (chopt.indexOf('*') != -1)
-         option.Star = 1;
-      if (chopt.indexOf('H') != -1)
-         option.Hist = 2;
-      if (chopt.indexOf('P0') != -1)
-         option.Mark = 10;
+      if (chopt.indexOf('Z') != -1) option.Zscale = 1;
+      if (chopt.indexOf('*') != -1) option.Star = 1;
+      if (chopt.indexOf('H') != -1) option.Hist = 2;
+      if (chopt.indexOf('P0') != -1) option.Mark = 10;
       if (this.IsTH2Poly()) {
-         if (option.Fill + option.Line + option.Mark != 0)
-            option.Scat = 0;
+         if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
       }
 
       if (chopt.indexOf('E') != -1) {
          if (hdim == 1) {
             option.Error = 1;
-            if (chopt.indexOf('E0') != -1)
-               option.Error = 10;
-            if (chopt.indexOf('E1') != -1)
-               option.Error = 11;
-            if (chopt.indexOf('E2') != -1)
-               option.Error = 12;
-            if (chopt.indexOf('E3') != -1)
-               option.Error = 13;
-            if (chopt.indexOf('E4') != -1)
-               option.Error = 14;
-            if (chopt.indexOf('E5') != -1)
-               option.Error = 15;
-            if (chopt.indexOf('E6') != -1)
-               option.Error = 16;
+            if (chopt.indexOf('E0') != -1) option.Error = 10;
+            if (chopt.indexOf('E1') != -1) option.Error = 11;
+            if (chopt.indexOf('E2') != -1) option.Error = 12;
+            if (chopt.indexOf('E3') != -1) option.Error = 13;
+            if (chopt.indexOf('E4') != -1) option.Error = 14;
+            if (chopt.indexOf('E5') != -1) option.Error = 15;
+            if (chopt.indexOf('E6') != -1) option.Error = 16;
             if (chopt.indexOf('X0') != -1) {
-               if (option.Error == 1)
-                  option.Error += 20;
+               if (option.Error == 1) option.Error += 20;
                option.Error += 10;
             }
             if (option.Text && this.IsTProfile()) {
@@ -3391,8 +3367,7 @@
             }
          }
       }
-      if (chopt.indexOf('9') != -1)
-         option.HighRes = 1;
+      if (chopt.indexOf('9') != -1) option.HighRes = 1;
       if (option.Surf == 15) {
          if (option.System == JSROOT.Painter.Coord.kPOLAR
                || option.System == JSROOT.Painter.Coord.kCARTESIAN) {
@@ -3403,8 +3378,7 @@
       }
 
       // Check options incompatibilities
-      if (option.Bar == 1)
-         option.Hist = -1;
+      if (option.Bar == 1) option.Hist = -1;
 
       return option;
    }
@@ -4585,22 +4559,16 @@
       for (var i = 0; i < this.nbinsx; ++i) {
          var value = this.histo.getBinContent(i + 1);
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
-         if (i == 0) {
-            hmin = hmax = value;
-         }
-         if (value < hmin)
-            hmin = value;
-         else if (value > hmax)
-            hmax = value;
+         if (i == 0) hmin = hmax = value;
+         if (value < hmin) hmin = value; else 
+         if (value > hmax) hmax = value;
       }
 
       // account overflow/underflow bins
       if (profile)
-         hsum += this.histo.fBinEntries[0]
-               + this.histo.fBinEntries[this.nbinsx + 1];
+         hsum += this.histo.fBinEntries[0] + this.histo.fBinEntries[this.nbinsx + 1];
       else
-         hsum += this.histo.getBinContent(0)
-               + this.histo.getBinContent(this.nbinsx + 1);
+         hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
 
@@ -4625,41 +4593,25 @@
       // console.log("hmin = " + hmin + " hmax = " + hmax + " " + (typeof
       // hmax));
 
-      if ((this.nbinsx == 0)
-            || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
-         if (this.histo['fMinimum'] != -1111)
-            this.ymin = this.histo['fMinimum'];
-         if (this.histo['fMaximum'] != -1111)
-            this.ymax = this.histo['fMaximum'];
+      if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
+         if (this.histo['fMinimum'] != -1111) this.ymin = this.histo['fMinimum'];
+         if (this.histo['fMaximum'] != -1111) this.ymax = this.histo['fMaximum'];
          this.draw_content = false;
       } else {
-         if (this.histo['fMinimum'] != -1111)
-            hmin = this.histo['fMinimum'];
-         if (this.histo['fMaximum'] != -1111)
-            hmax = this.histo['fMaximum'];
+         if (this.histo['fMinimum'] != -1111) hmin = this.histo['fMinimum'];
+         if (this.histo['fMaximum'] != -1111) hmax = this.histo['fMaximum'];
          if (hmin >= hmax) {
-            if (hmin == 0) {
-               this.ymax = 0;
-               this.ymax = 1;
-            } else if (hmin < 0) {
-               this.ymin = 2 * hmin;
-               this.ymax = 0;
-            } else {
-               this.ymin = 0;
-               this.ymax = hmin * 2;
-            }
+            if (hmin == 0) { this.ymax = 0; this.ymax = 1; } else 
+            if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; } 
+                     else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
             var dy = (hmax - hmin) * 0.1;
             this.ymin = hmin - dy;
-            if ((this.ymin < 0) && (hmin >= 0))
-               this.ymin = 0;
+            if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
          }
          this.draw_content = true;
       }
-      // console.log("xmin = " + this.xmin + " xmax = " + this.xmax + " nbins =
-      // " + this.nbinsx);
-      // console.log("ymin = " + this.ymin + " ymax = " + this.ymax);
 
       // If no any draw options specified, do not try draw histogram
       if (this.options.Bar == 0 && this.options.Hist == 0
@@ -4689,11 +4641,10 @@
       var right = this.GetSelectIndex("x", "right");
 
       var xx = 0, yy = 0, w = 0;
-      // console.log(" xleft = " + left + " xright = " + right);
-
+      
       for (var i = left; i < right; i++) {
          xx = this.xmin + (i + 0.5) * this.binwidthx;
-
+         
          if (profile) {
             w = this.histo.fBinEntries[i + 1];
             this.stat_sumw += w;
@@ -4729,8 +4680,7 @@
       if (this.IsTProfile()) {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = "
-                  + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
 
          var meanx = 0, meany = 0;
          if (this.stat_sumw > 0) {
@@ -4823,34 +4773,31 @@
 
       // reduce number of drawn points - we define interval where two points
       // will be selected - max and min
-      if ((this.nbinsx > 10000)
-            || (JSROOT.gStyle.OptimizeDraw && (right - left > width)))
-         while ((right - left) / stepi > width)
-            stepi++;
+      if ((this.nbinsx > 10000) || (JSROOT.gStyle.OptimizeDraw && (right - left > width)))
+         while ((right - left) / stepi > width) stepi++;
 
       var x1, x2 = this.xmin + left * this.binwidthx;
       var grx1 = -1111, grx2 = -1111, gry;
-
+      var profile = this.IsTProfile();
+      
       // console.log("left " + left + " right " + right + " step " + stepi);
 
       var point;
 
       for (var i = left; i < right; i += stepi) {
          // if interval wider than specified range, make it shorter
-         if ((stepi > 1) && (i + stepi > right))
-            stepi = (right - i);
+         if ((stepi > 1) && (i + stepi > right)) stepi = (right - i);
          x1 = x2;
          x2 += stepi * this.binwidthx;
 
-         if (this.options.Logx && (x1 <= 0))
-            continue;
+         if (this.options.Logx && (x1 <= 0)) continue;
 
          grx1 = grx2;
          grx2 = this.x(x2);
          if (grx1 < 0) grx1 = this.x(x1);
 
          var pmax = i, cont = this.histo.getBinContent(i + 1);
-
+         
          for (var ii = 1; ii < stepi; ii++) {
             var ccc = this.histo.getBinContent(i + ii + 1);
             if (ccc > cont) {
@@ -4858,21 +4805,20 @@
                pmax = i + ii;
             }
          }
+         
+         // exclude zero bins from profile drawings
+         if (profile && (cont==0)) continue;
 
          if (this.options.Logy && (cont < this.scale_ymin))
             gry = height + 10;
          else
             gry = this.y(cont);
 
-         point = {
-            x : grx1,
-            y : gry
-         };
+         point = { x : grx1, y : gry };
 
          if (this.options.Error > 0) {
             point['xerr'] = (grx2 - grx1) / 2;
-            point['yerr'] = gry
-                  - this.y(cont + this.histo.getBinError(pmax + 1));
+            point['yerr'] = gry - this.y(cont + this.histo.getBinError(pmax + 1));
          }
 
          if (JSROOT.gStyle.Tooltip) {
