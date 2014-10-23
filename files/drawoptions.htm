@@ -27,7 +27,7 @@
          var html = "Supported options: ";
          for (var i in arr) {
             if (i>0) html += ", ";
-            html += '<a href="fileitem.htm?file=' + file.fURL + '&item=' + itemname + '&opt=' + arr[i] + '" target="_blank">';
+            html += '<a href="../index.htm?nobrowser&file=files/' + file.fURL + '&item=' + itemname + '&opt=' + arr[i] + '" target="_blank">';
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }

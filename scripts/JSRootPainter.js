@@ -7504,8 +7504,7 @@
          }
 
          if (this['disp_kind']) {
-            if (addr.length > 2)
-               addr += "&";
+            if (addr.length > 2) addr += "&";
             addr += "layout=" + this['disp_kind'].replace(/ /g, "");
          }
 
@@ -7517,18 +7516,15 @@
             });
 
          if (items.length == 1) {
-            if (addr.length > 2)
-               addr += "&";
+            if (addr.length > 2) addr += "&";
             addr += "item=" + items[0];
          } else if (items.length > 1) {
-            if (addr.length > 2)
-               addr += "&";
+            if (addr.length > 2) addr += "&";
             addr += "items=" + JSON.stringify(items);
          }
 
-         JSROOT.Painter.menuitem(menu, "Direct link", function() {
-            window.open(addr);
-         });
+         JSROOT.Painter.menuitem(menu, "Direct link", function() { window.open(addr); });
+         JSROOT.Painter.menuitem(menu, "Only items", function() { window.open(addr + "&nobrowser"); });
       } else if (onlineprop != null) {
          JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
          JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
@@ -7538,13 +7534,10 @@
             painter.display(itemname);
          });
          var filepath = qualifyURL(fileprop.fileurl);
-         if (filepath.indexOf(JSROOT.source_dir + "files/") == 0)
-            filepath = filepath.slice(JSROOT.source_dir.length + 6);
-         else if (filepath.indexOf(JSROOT.source_dir) == 0)
-            filepath = "../" + filepath.slice(JSROOT.source_dir.length);
+         if (filepath.indexOf(JSROOT.source_dir) == 0)
+            filepath = filepath.slice(JSROOT.source_dir.length);
          JSROOT.Painter.menuitem(menu, "Draw in new window", function() {
-            window.open(JSROOT.source_dir + "files/fileitem.htm?file="
-                  + filepath + "&item=" + fileprop.itemname);
+            window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname);
          });
       }
 
@@ -7607,9 +7600,7 @@
 
    JSROOT.MDIDisplay.prototype.NumDraw = function() {
       var cnt = 0;
-      this.ForEach(function() {
-         cnt++;
-      });
+      this.ForEach(function() { cnt++; });
       return cnt;
    }
 
@@ -7626,8 +7617,9 @@
 
    JSROOT.MDIDisplay.prototype.FindPainter = function(searchitemname) {
       var frame = this.FindFrame(searchitemname);
-      if (frame == null) return null;
-      return document.getElementById($(frame).attr('id'))['painter'];
+      //if (frame == null) return null;
+      //return document.getElementById($(frame).attr('id'))['painter'];
+      return frame ? $(frame).prop('painter') : null;
    }
 
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
@@ -7657,8 +7649,9 @@
    }
 
    JSROOT.MDIDisplay.prototype.SetPainterForFrame = function(frame, painter) {
-      var hid = $(frame).attr('id');
-      document.getElementById(hid)['painter'] = painter;
+      //var hid = $(frame).attr('id');
+      //document.getElementById(hid)['painter'] = painter;
+      $(frame).prop('painter', painter);
       this.ActivateFrame(frame);
    }
 
@@ -7696,41 +7689,31 @@
       this.cnt = 0; // use to count newly created frames
    }
 
-   JSROOT.CollapsibleDisplay.prototype = Object
-         .create(JSROOT.MDIDisplay.prototype);
+   JSROOT.CollapsibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.CollapsibleDisplay.prototype.ForEach = function(userfunc,
-         only_visible) {
+   JSROOT.CollapsibleDisplay.prototype.ForEach = function(userfunc,  only_visible) {
       var topid = this.frameid + '_collapsible';
 
-      if (document.getElementById(topid) == null)
-         return;
+      if (document.getElementById(topid) == null) return;
 
-      if (typeof userfunc != 'function')
-         return;
+      if (typeof userfunc != 'function') return;
 
       $('#' + topid).children().each(function() {
 
-         if (!('itemname' in this))
-            return;
+         if (!('itemname' in this)) return;
 
          // check if only visible specified
-         if (only_visible && $(this).is(":hidden"))
-            return;
+         if (only_visible && this.is(":hidden")) return;
 
-         userfunc(this, this['itemname'], this['painter']);
+         userfunc(this, this['itemname'], $(this).prop('painter'));
       });
    }
 
    JSROOT.CollapsibleDisplay.prototype.ActivateFrame = function(frame) {
       if ($(frame).is(":hidden")) {
-         $(frame)
-               .prev()
-               .toggleClass(
-                     "ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-               .find("> .ui-icon").toggleClass(
-                     "ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
-               .toggleClass("ui-accordion-content-active").slideDown(0);
+         $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                 .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end()
+                 .next().toggleClass("ui-accordion-content-active").slideDown(0);
       }
       $(frame).prev()[0].scrollIntoView();
    }
@@ -7809,24 +7792,20 @@
    JSROOT.TabsDisplay.prototype.ForEach = function(userfunc, only_visible) {
       var topid = this.frameid + '_tabs';
 
-      if (document.getElementById(topid) == null)
-         return;
+      if (document.getElementById(topid) == null) return;
 
-      if (typeof userfunc != 'function')
-         return;
+      if (typeof userfunc != 'function') return;
 
       var cnt = -1;
       var active = $('#' + topid).tabs("option", "active");
 
       $('#' + topid).children().each(function() {
          // check if only_visible specified
-         if (only_visible && (cnt++ != active))
-            return;
+         if (only_visible && (cnt++ != active)) return;
 
-         if (!('itemname' in this))
-            return;
+         if (!('itemname' in this)) return;
 
-         userfunc(this, this['itemname'], this['painter']);
+         userfunc(this, this['itemname'], $(this).prop('painter'));
       });
    }
 
@@ -7919,19 +7898,16 @@
    JSROOT.GridDisplay.prototype.ForEach = function(userfunc, only_visible) {
       var topid = this.frameid + '_grid';
 
-      if (document.getElementById(topid) == null)
-         return;
+      if (document.getElementById(topid) == null) return;
 
-      if (typeof userfunc != 'function')
-         return;
+      if (typeof userfunc != 'function') return;
 
       for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
          var hid = topid + "_" + cnt;
 
          var elem = document.getElementById(hid);
 
-         if ((elem == null) || !('itemname' in elem))
-            continue;
+         if ((elem == null) || !('itemname' in elem)) continue;
 
          userfunc($("#" + hid), elem['itemname'], elem['painter']);
       }
@@ -7960,19 +7936,13 @@
 
          $("#" + this.frameid).empty();
          $("#" + this.frameid).append(content);
-         // for (var cnt=0;cnt<this.sizex*this.sizey;cnt++) {
-         // $("#" + this.frameid + "_grid_"+cnt).height(h);
-         // $("#" + this.frameid + "_grid_"+cnt).width(w)
-         // }
-
-         // var set = $("[id^=" + this.frameid + "_grid_]");
+         
          $("[id^=" + this.frameid + "_grid_]").height(h);
          $("[id^=" + this.frameid + "_grid_]").width(w);
       }
 
       var hid = topid + "_" + this.cnt;
-      if (++this.cnt >= this.sizex * this.sizey)
-         this.cnt = 0;
+      if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
 
       $("#" + hid).empty();
       document.getElementById(hid)['itemname'] = itemname;

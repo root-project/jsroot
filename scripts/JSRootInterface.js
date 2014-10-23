@@ -93,6 +93,11 @@ function BuildNoBrowserGUI() {
       return file_error('itemname not specified');
    }
    
+   var title = "File: " + filename;
+   if (itemsarr.length == 1) title += " item: " + itemsarr[0];
+                        else title += " items: " + itemsarr.toString();
+   document.title = title;
+      
    function draw_object(itemname, obj, opt) {
       document.body.style.cursor = 'wait';
       if (mdi) {
