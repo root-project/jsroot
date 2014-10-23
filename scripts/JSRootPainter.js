@@ -5753,6 +5753,7 @@
          var shrink = this.CreatePalette(0.04);
          this.svg_frame()['frame_painter'].Shrink(shrink);
          this.svg_frame()['frame_painter'].Redraw();
+         this.CreateXY();
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
          this.FindPalette(true);
