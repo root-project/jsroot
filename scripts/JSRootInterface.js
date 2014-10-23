@@ -35,13 +35,99 @@ function setGuiLayout(value) {
 }
 
 
+function BuildNoBrowserGUI() {
+   var itemsarr = [];
+   var optionsarr = [];
+
+   var filename = JSROOT.GetUrlOption("file");
+
+   var itemname = JSROOT.GetUrlOption("item");
+   if (itemname) itemsarr.push(itemname);
+   var opt = JSROOT.GetUrlOption("opt");
+   if (opt) optionsarr.push(opt);
+   
+   var items = JSROOT.GetUrlOption("items");
+   if (items != null) {
+      items = JSON.parse(items);
+      for (var i in items) itemsarr.push(items[i]);
+   }
+   
+   var opts = JSROOT.GetUrlOption("opts");
+   if (opts!=null) {
+      opts = JSON.parse(opts);
+      for (var i in opts) optionsarr.push(opts[i]);
+   }
+
+      
+   var layout = JSROOT.GetUrlOption("layout");
+   if (layout=="") layout = null;
+   
+   var monitor = JSROOT.GetUrlOption("monitoring");
+   if (monitor == "") monitor = 3000; else
+   if (monitor != null) monitor = parseInt(monitor);  
+
+   $('#simpleGUI').empty();
+
+   $('html').css('height','100%');
+   $('body').css('min-height','100%').css('margin','0px');
+   
+   $('#simpleGUI').css("position", "absolute")
+                  .css("left", "1px")
+                  .css("top", "1px")
+                  .css("bottom", "1px")
+                  .css("right", "1px");
+
+   var objpainter = null;
+   function file_error(str) {
+      if (objpainter == null)
+         $('#simpleGUI').append("<h4>" + str + "</h4>"); 
+   }
+   
+   if (filename == null) {
+      return file_error('filename not specified');
+   }
+   
+   if (itemsarr.length == 0) {
+      return file_error('itemname not specified');
+   }
+   
+   function draw_object(obj) {
+      document.body.style.cursor = 'wait';
+      objpainter = JSROOT.redraw('simpleGUI', obj, opt); 
+      document.body.style.cursor = 'auto';
+   }
+
+   function read_object() {
+   
+      var f = new JSROOT.TFile(filename, function(file) {
+         if (file==null) return file_error("file " + filename + " cannot be opened");
+
+         if (itemname=="StreamerInfo")
+            return draw_object(file.fStreamerInfos);
+          
+         file.ReadObject(itemname, function(obj) {
+            if (obj==null) return file_error("object " + itemname + " not found in " + filename);
+
+            draw_object(obj);
+         });
+      });
+   }
+
+   read_object();
+
+   if (monitor>0)
+      setInterval(read_object, monitor);
+
+   JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
+}
+
 function ReadFile(filename, checkitem) {
    var navigator_version = navigator.appVersion;
    if (typeof ActiveXObject == "function") { // Windows
       // detect obsolete browsers
       if ((navigator_version.indexOf("MSIE 8") != -1) ||
           (navigator_version.indexOf("MSIE 7") != -1))  {
-         alert("You need at least MS Internet Explorer version 9.0. Note you can also use any other web browser (excepted Opera)");
+         alert("You need at least MS Internet Explorer version 9.0. Note you can also use any other web browser");
          return;
       }
    }
@@ -50,7 +136,7 @@ function ReadFile(filename, checkitem) {
       if ((navigator_version.indexOf("Windows NT") == -1) &&
           (navigator_version.indexOf("Safari") != -1) &&
           (navigator_version.indexOf("Version/5.1.7") != -1)) {
-         alert("There are know issues with Safari 5.1.7 on MacOS X. It may become unresponsive or even hangs. You can use any other web browser (excepted Opera)");
+         alert("There are know issues with Safari 5.1.7 on MacOS X. It may become unresponsive or even hangs. You can use any other web browser");
          return;
       }
    }
@@ -86,7 +172,6 @@ function ReadFile(filename, checkitem) {
          for (var i in opts) optionsarr.push(opts[i]);
       }
    }
-   
    
    if (layout==null) 
       layout = guiLayout();
@@ -246,9 +331,13 @@ function BuildOnlineGUI() {
 function BuildSimpleGUI() {
    
    if (document.getElementById('onlineGUI')) return BuildOnlineGUI();  
-   
+
    var myDiv = $('#simpleGUI');
    if (!myDiv) return;
+   
+   if (JSROOT.GetUrlOption("nobrowser")!=null)
+      return BuildNoBrowserGUI();
+   
    
    var files = myDiv.attr("files");
    if (!files) files = "file/hsimple.root";

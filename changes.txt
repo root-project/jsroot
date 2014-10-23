@@ -27,6 +27,8 @@ October 2014:
    when whole canvas cannot be drawn.   
 13.Correct usage of colors map, provided with TCanvas.
 14.Introduce JSROOT.redraw() function which is capable to create or update object drawing.
+15.In main index.htm page browser can be disabled (nobrowser parameter) and
+   page can be used to display only specified items from the file
 
 September 2014:
 1. First try to handle resize of the browser, 

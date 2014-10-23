@@ -356,76 +356,67 @@
             .append('svg:rect')
                .attr("x", 0).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke",line_color)
             .append('svg:rect')
-               .attr("x", 2).attr("y", 0)
-               .attr("width", 1).attr("height", 1)
-               .style("stroke", line_color)
+               .attr("x", 2).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
             .append('svg:rect')
-               .attr("x", 1).attr("y", 1)
-               .attr("width", 1).attr("height", 1)
-               .style("stroke", line_color);
+               .attr("x", 1).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
          break;
       case 3002:
          svg.append('svg:pattern')
-               .attr("id", id)
-               .attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "4px")
-               .attr("height", "2px")
-               .style("stroke", line_color)
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "2px").style("stroke", line_color)
             .append('svg:rect')
-               .attr("x", 1)
-               .attr("y", 0)
-               .attr("width", 1)
-               .attr("height", 1)
-               .style("stroke", line_color)
+               .attr("x", 1).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
             .append('svg:rect')
-               .attr("x", 3)
-               .attr("y", 1)
-               .attr("width", 1)
-               .attr("height", 1)
-               .style("stroke", line_color);
+               .attr("x", 3).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
          break;
       case 3003:
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "4px").attr("height", "4px")
-               .style("stroke", line_color).append('svg:rect').attr("x", 2)
-               .attr("y", 1).attr("width", 1).attr("height", 1).style("stroke",
-                     line_color).append('svg:rect').attr("x", 0).attr("y", 3)
-               .attr("width", 1).attr("height", 1).style("stroke", line_color);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 2).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 0).attr("y", 3).attr("width", 1).attr("height", 1).style("stroke", line_color);
          break;
       case 3004:
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "8px").attr("height", "8px")
-               .style("stroke", line_color).append("svg:line").attr("x1", 8)
-               .attr("y1", 0).attr("x2", 0).attr("y2", 8).style("stroke",
-                     line_color).style("stroke-width", 1);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
          break;
       case 3005:
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "8px").attr("height", "8px")
-               .style("stroke", line_color).append("svg:line").attr("x1", 0)
-               .attr("y1", 0).attr("x2", 8).attr("y2", 8).style("stroke",
-                     line_color).style("stroke-width", 1);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
          break;
       case 3006:
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "4px").attr("height", "4px")
-               .style("stroke", line_color).append("svg:line").attr("x1", 1)
-               .attr("y1", 0).attr("x2", 1).attr("y2", 3).style("stroke",
-                     line_color).style("stroke-width", 1);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3)
+               .style("stroke",line_color).style("stroke-width", 1);
          break;
       case 3007:
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "4px").attr("height", "4px")
-               .style("stroke", line_color).append("svg:line").attr("x1", 0)
-               .attr("y1", 1).attr("x2", 3).attr("y2", 1).style("stroke",
-                     line_color).style("stroke-width", 1);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits","userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1)
+               .style("stroke",line_color).style("stroke-width", 1);
          break;
       default: /* == 3004 */
-         svg.append('svg:pattern').attr("id", id).attr("patternUnits",
-               "userSpaceOnUse").attr("width", "8px").attr("height", "8px")
-               .style("stroke", line_color).append("svg:line").attr("x1", 8)
-               .attr("y1", 0).attr("x2", 0).attr("y2", 8).style("stroke",
-                     line_color).style("stroke-width", 1);
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits","userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
          break;
       }
       return "url(#" + id + ")";
@@ -6614,92 +6605,6 @@
       painter.ShowStreamerInfo(obj);
       return painter;
    }
-   
-   JSROOT.addDrawFunc("TCanvas", JSROOT.Painter.drawCanvas);
-   JSROOT.addDrawFunc("TPad", JSROOT.Painter.drawPad);
-   JSROOT.addDrawFunc("TFrame", JSROOT.Painter.drawFrame);
-   JSROOT.addDrawFunc("TLegend", JSROOT.Painter.drawLegend);
-   JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
-   JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D);
-   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D);
-   JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D);
-   JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
-   JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
-   JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
-   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
-   JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
-   
-   JSROOT.getDrawFunc = function(classname) {
-      if (typeof classname != 'string') return null;
-
-      for (var i in JSROOT.fDrawFunc) {
-         if ((typeof JSROOT.fDrawFunc[i].name) === "string") {
-            if (JSROOT.fDrawFunc[i].name == classname) return JSROOT.fDrawFunc[i].func;
-         } else {
-            if (classname.match(JSROOT.fDrawFunc[i].name)) return JSROOT.fDrawFunc[i].func;
-         }
-      }
-      return null;
-   }
-
-   JSROOT.canDraw = function(classname) {
-      return JSROOT.getDrawFunc(classname) != null;
-   }
-
-   /** @fn JSROOT.draw(divid, obj, opt) 
-    * Draw object in specified HTML element with given draw options  */
-
-   JSROOT.draw = function(divid, obj, opt) {
-      if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
-
-      var draw_func = JSROOT.getDrawFunc(obj['_typename']);
-
-      if (draw_func==null) return null;
-
-      return draw_func(divid, obj, opt);
-   }
-
-   /** @fn JSROOT.draw(divid, obj, opt) 
-    * Redraw object in specified HTML element with given draw options  
-    * If drawing was not exists, it will be performed with JSROOT.draw.
-    * If drawing was already done, that content will be updated */
-
-   
-   JSROOT.redraw = function(divid, obj, opt) {
-      if (obj==null) return;
-      
-      var can = d3.select("#" + divid + " .root_canvas");
-      var can_painter = can.node() ? can.node()['pad_painter'] : null;
-      if (can_painter == null) {
-         $("#"+divid).empty();
-         return JSROOT.draw(divid, obj, opt);
-      }
-      
-      if (obj._typename=="TCanvas") {
-         can_painter.RedrawObject(obj);
-         return can_painter;
-      }
-      
-      for (var i in can_painter.painters) {
-         var obj0 = can_painter.painters[i].GetObject();
-         
-         if ((obj0 != null) && (obj0._typename == obj._typename)) 
-            if (can_painter.painters[i].UpdateObject(obj)) {
-               can_painter.RedrawPad();
-               return can_painter.painters[i];
-            } 
-      }
-      
-      console.log("Cannot find painter to update object of type " + obj._typename);
-      return null;
-   }
-
 
    // =========== painter of hierarchical structures =================================
 
@@ -8182,6 +8087,95 @@
 
       window.addEventListener('resize', ProcessResize);
    }
+   
+   JSROOT.addDrawFunc("TCanvas", JSROOT.Painter.drawCanvas);
+   JSROOT.addDrawFunc("TPad", JSROOT.Painter.drawPad);
+   JSROOT.addDrawFunc("TFrame", JSROOT.Painter.drawFrame);
+   JSROOT.addDrawFunc("TLegend", JSROOT.Painter.drawLegend);
+   JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
+   JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D);
+   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D);
+   JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D);
+   JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
+   JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
+   JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
+   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
+   JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
+   
+   JSROOT.getDrawFunc = function(classname) {
+      if (typeof classname != 'string') return null;
+
+      for (var i in JSROOT.fDrawFunc) {
+         if ((typeof JSROOT.fDrawFunc[i].name) === "string") {
+            if (JSROOT.fDrawFunc[i].name == classname) return JSROOT.fDrawFunc[i].func;
+         } else {
+            if (classname.match(JSROOT.fDrawFunc[i].name)) return JSROOT.fDrawFunc[i].func;
+         }
+      }
+      return null;
+   }
+
+   JSROOT.canDraw = function(classname) {
+      return JSROOT.getDrawFunc(classname) != null;
+   }
+
+   /** @fn JSROOT.draw(divid, obj, opt) 
+    * Draw object in specified HTML element with given draw options  */
+
+   JSROOT.draw = function(divid, obj, opt) {
+      if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
+
+      var draw_func = JSROOT.getDrawFunc(obj['_typename']);
+
+      if (draw_func==null) return null;
+
+      return draw_func(divid, obj, opt);
+   }
+
+   /** @fn JSROOT.redraw(divid, obj, opt) 
+    * Redraw object in specified HTML element with given draw options  
+    * If drawing was not exists, it will be performed with JSROOT.draw.
+    * If drawing was already done, that content will be updated */
+
+   
+   JSROOT.redraw = function(divid, obj, opt) {
+      if (obj==null) return;
+      
+      var can = d3.select("#" + divid + " .root_canvas");
+      var can_painter = can.node() ? can.node()['pad_painter'] : null;
+
+      
+      if (can_painter != null) {
+         if (obj._typename=="TCanvas") {
+            can_painter.RedrawObject(obj);
+           return can_painter;
+         }
+      
+         for (var i in can_painter.painters) {
+            var obj0 = can_painter.painters[i].GetObject();
+         
+            if ((obj0 != null) && (obj0._typename == obj._typename)) 
+               if (can_painter.painters[i].UpdateObject(obj)) {
+                  can_painter.RedrawPad();
+                  return can_painter.painters[i];
+               } 
+         }
+      }
+
+      if (can_painter)
+          console.log("Cannot find painter to update object of type " + obj._typename);
+      
+      $("#"+divid).empty();
+      return JSROOT.draw(divid, obj, opt);
+   }
+
+
 
 })();
 
