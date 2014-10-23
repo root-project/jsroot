@@ -918,22 +918,28 @@
    }
 
    JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad) {
-      this.RemoveDrawG();
+      //this.RemoveDrawG();
+      
+      if (this.draw_g)
+         this.draw_g.selectAll("*").remove();
       
       if (take_pad) {
-         this.draw_g = this.svg_pad(true).append("svg:g");
+         if (!this.draw_g)
+            this.draw_g = this.svg_pad(true).append("svg:g");
       } else {
          var frame = this.svg_frame(true);
 
          var w = frame.attr("width");
          var h = frame.attr("height");
 
-         this.draw_g = frame.append("svg")
-                         .attr("x", 0)
-                         .attr("y", 0)
-                         .attr("width",w)
-                         .attr("height", h)
-                         .attr("viewBox", "0 0 " + w + " " + h);
+         if (!this.draw_g)
+            this.draw_g = frame.append("svg");
+         
+         this.draw_g.attr("x", 0)
+                    .attr("y", 0)
+                    .attr("width",w)
+                    .attr("height", h)
+                    .attr("viewBox", "0 0 " + w + " " + h);
       }
    }
 
@@ -4338,9 +4344,7 @@
       }
 
       function moveTouchSel() {
-
-         if (zoom_kind < 100)
-            return;
+         if (zoom_kind < 100) return;
 
          d3.event.preventDefault();
 
@@ -4448,29 +4452,25 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         rect = pthis.svg_frame(true).append("rect").attr("class", "zoom")
-               .attr("id", "zoomRect");
+         rect = pthis.svg_frame(true)
+                .append("rect")
+                .attr("class", "zoom")
+                .attr("id", "zoomRect");
 
          pthis.svg_frame(true).on("dblclick", unZoom);
 
-         d3.select(window).on("mousemove.zoomRect", moveRectSel).on(
-               "mouseup.zoomRect", endRectSel, true);
+         d3.select(window).on("mousemove.zoomRect", moveRectSel)
+                          .on("mouseup.zoomRect", endRectSel, true);
 
          d3.event.stopPropagation();
       }
 
       function unZoom() {
          d3.event.preventDefault();
-
          var m = d3.mouse(e);
-
          closeAllExtras();
-
-         if (m[0] < 0)
-            pthis.Unzoom(false, true);
-         else if (m[1] > height)
-            pthis.Unzoom(true, false);
-         else {
+         if (m[0] < 0) pthis.Unzoom(false, true); else 
+         if (m[1] > height) pthis.Unzoom(true, false); else {
             pthis.Unzoom(true, true);
             pthis.svg_frame(true).on("dblclick", null);
          }
@@ -5006,12 +5006,13 @@
       // TODO: limit number of drawn by number of visible pixels
       // one could select every second bin, for instance
 
-      this.RemoveDrawG();
-
       delete this.draw_bins;
       this.draw_bins = null;
 
-      if (!this.draw_content) return;
+      if (!this.draw_content) {
+         this.RemoveDrawG();
+         return;
+      }
 
       this.CreateDrawBins();
 
@@ -7703,7 +7704,7 @@
          if (!('itemname' in this)) return;
 
          // check if only visible specified
-         if (only_visible && this.is(":hidden")) return;
+         if (only_visible && $(this).is(":hidden")) return;
 
          userfunc(this, this['itemname'], $(this).prop('painter'));
       });

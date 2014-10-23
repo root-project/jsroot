@@ -15,13 +15,13 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.0 22/10/2014";
+   JSROOT.version = "3.0 23/10/2014";
    
    JSROOT.source_dir = null;
    
    JSROOT.clone = function(obj) {
       return jQuery.extend(true, {}, obj);
-   };
+   }
    
    JSROOT.id_counter = 0;
    
