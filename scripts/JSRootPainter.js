@@ -6643,8 +6643,7 @@
       this.h = null; // hierarchy
    }
 
-   JSROOT.HierarchyPainter.prototype = Object
-         .create(JSROOT.TBasePainter.prototype);
+   JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       JSROOT.DelHList(this.name);
@@ -6652,15 +6651,12 @@
 
    JSROOT.HierarchyPainter.prototype.GlobalName = function(suffix) {
       var res = "JSROOT.H(\'" + this.name + "\')";
-      if (suffix != null)
-         res += suffix;
+      if (suffix != null) res += suffix;
       return res;
    }
 
    JSROOT.HierarchyPainter.prototype.ListHierarchy = function(folder, lst) {
-
       folder['_childs'] = [];
-
       for ( var i in lst.arr) {
          var obj = lst.arr[i];
          var item = {
@@ -6672,17 +6668,14 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.StreamerInfoHierarchy = function(folder,
-         lst) {
-
+   JSROOT.HierarchyPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
       folder['_childs'] = [];
 
       for ( var i in lst.arr) {
          var entry = lst.arr[i]
 
          if (typeof (entry['fName']) == 'undefined') {
-            console.log("strange element in StreamerInfo with name "
-                  + entry['fName']);
+            console.log("strange element in StreamerInfo with name " + entry['fName']);
             continue;
          }
 
@@ -6694,28 +6687,16 @@
 
          folder._childs.push(item);
 
-         item._childs.push({
-            _name : 'Checksum: ' + entry['fCheckSum']
-         });
-         item._childs.push({
-            _name : 'Class version: ' + entry['fClassVersion']
-         });
-         if (entry['fTitle'] != '')
-            item._childs.push({
-               _name : 'Title: ' + entry['fTitle']
-            });
-         if (typeof entry['fElements'] == 'undefined')
-            continue;
+         item._childs.push({ _name : 'Checksum: ' + entry['fCheckSum'] });
+         item._childs.push({ _name : 'Class version: ' + entry['fClassVersion'] });
+         if (entry['fTitle'] != '') item._childs.push({ _name : 'Title: ' + entry['fTitle'] });
+         if (typeof entry['fElements'] == 'undefined') continue;
          for ( var l in entry['fElements']['arr']) {
             var elem = entry['fElements']['arr'][l];
-            if ((elem == null) || (typeof (elem['fName']) == 'undefined'))
-               continue;
+            if ((elem == null) || (typeof (elem['fName']) == 'undefined')) continue;
             var info = elem['fTypeName'] + " " + elem['fName'] + ";";
-            if (elem['fTitle'] != '')
-               info += " // " + elem['fTitle'];
-            item._childs.push({
-               _name : info
-            });
+            if (elem['fTitle'] != '') info += " // " + elem['fTitle'];
+            item._childs.push({ _name : info });
          }
       }
    }
@@ -6728,13 +6709,7 @@
          var nb_leaves = branch['fLeaves'].arr.length;
 
          // display branch with only leaf as leaf
-         if (nb_leaves == 1
-               && branch['fLeaves'].arr[0]['fName'] == branch['fName']) {
-            nb_leaves = 0;
-         }
-
-         // console.log("name = " + branch['fName'] + " numleavs = " +
-         // nb_leaves);
+         if (nb_leaves == 1 && branch['fLeaves'].arr[0]['fName'] == branch['fName']) nb_leaves = 0;
 
          var subitem = {
             _name : branch['fName'],
@@ -6756,14 +6731,11 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys,
-         file) {
-
+   JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file) {
       folder['_childs'] = [];
 
       var painter = this;
-
-      for ( var i in keys) {
+      for (var i in keys) {
          var key = keys[i];
 
          var item = {
@@ -6786,16 +6758,14 @@
                painter.TreeHierarchy(node, obj);
                return true;
             }
-         } else if (key['fClassName'] == 'TDirectory'
-               || key['fClassName'] == 'TDirectoryFile') {
+         } else if (key['fClassName'] == 'TDirectory'  || key['fClassName'] == 'TDirectoryFile') {
             item["_more"] = true;
             item["_isdir"] = true;
             item['_expand'] = function(node, obj) {
                painter.KeysHierarchy(node, obj.fKeys);
                return true;
             }
-         } else if ((key['fClassName'] == 'TList')
-               && (key['fName'] == 'StreamerInfo') && (file != null)) {
+         } else if ((key['fClassName'] == 'TList') && (key['fName'] == 'StreamerInfo') && (file != null)) {
             item['_name'] = 'StreamerInfo';
             item['_kind'] = "ROOT.TStreamerInfoList";
             item['_title'] = "List of streamer infos for binary I/O";
@@ -6808,11 +6778,11 @@
          } else if (key['fClassName'] == 'TList'
                || key['fClassName'] == 'TObjArray'
                || key['fClassName'] == 'TClonesArray') {
-            item["_more"] = true;
-            item['_expand'] = function(node, obj) {
-               painter.ListHierarchy(node, obj);
-               return true;
-            }
+                item["_more"] = true;
+                item['_expand'] = function(node, obj) {
+                   painter.ListHierarchy(node, obj);
+                   return true;
+                }
          }
 
          folder._childs.push(item);
@@ -6863,12 +6833,9 @@
    }
 
    JSROOT.HierarchyPainter.prototype.Find = function(fullname, top, replace) {
+      if (!top) top = this.h;
 
-      if (!top)
-         top = this.h;
-
-      if (fullname.length == 0)
-         return top;
+      if (fullname.length == 0) return top;
 
       var pos = -1;
 
@@ -6899,12 +6866,10 @@
       var res = "";
 
       while ('_parent' in node) {
-         if (res.length > 0)
-            res = "/" + res;
+         if (res.length > 0) res = "/" + res;
          res = node._name + res;
          node = node._parent;
-         if ((uptoparent != null) && (node == uptoparent))
-            break;
+         if ((uptoparent != null) && (node == uptoparent)) break;
       }
 
       return res;
@@ -6969,8 +6934,7 @@
       return cando;
    }
 
-   JSROOT.HierarchyPainter.prototype.createNode = function(node, fullname,
-         parent) {
+   JSROOT.HierarchyPainter.prototype.createNode = function(node, fullname, parent) {
       var nodename = node._name;
 
       var nodefullname = "";
@@ -7290,27 +7254,23 @@
    }
 
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options) {
-      if ((items == null) || (items.length == 0))
-         return;
-      if (!this.CreateDisplay())
-         return;
-      if (options == null)
-         options = [];
+      if ((items == null) || (items.length == 0)) return;
+      if (!this.CreateDisplay()) return;
+      if (options == null) options = [];
       while (options.length < items.length)
          options.push("");
 
       var mdi = this['disp'];
 
-      // first of all check that items are exists
-      for ( var i in items)
-         if (!this.Find(items[i]) && this.Find(items[i] + ";1"))
-            items[i] += ";1";
+      // First of all check that items are exists, look for cycle extension
+      for (var i in items)
+         if (!this.Find(items[i]) && this.Find(items[i] + ";1")) items[i] += ";1";
 
-      // first create dummy frames for each item
-      for ( var i in items)
+      // Than create empty frames for each item
+      for (var i in items)
          mdi.CreateFrame(items[i]);
 
-      // than display items
+      // Display items
       for ( var i in items)
          this.display(items[i], options[i]);
    }
@@ -7666,8 +7626,7 @@
 
    JSROOT.MDIDisplay.prototype.FindPainter = function(searchitemname) {
       var frame = this.FindFrame(searchitemname);
-      if (frame == null)
-         return null;
+      if (frame == null) return null;
       return document.getElementById($(frame).attr('id'))['painter'];
    }
 
@@ -8142,14 +8101,12 @@
     * Redraw object in specified HTML element with given draw options  
     * If drawing was not exists, it will be performed with JSROOT.draw.
     * If drawing was already done, that content will be updated */
-
    
    JSROOT.redraw = function(divid, obj, opt) {
       if (obj==null) return;
       
       var can = d3.select("#" + divid + " .root_canvas");
       var can_painter = can.node() ? can.node()['pad_painter'] : null;
-
       
       if (can_painter != null) {
          if (obj._typename=="TCanvas") {
@@ -8174,8 +8131,6 @@
       $("#"+divid).empty();
       return JSROOT.draw(divid, obj, opt);
    }
-
-
 
 })();
 

@@ -69,7 +69,7 @@ function BuildNoBrowserGUI() {
    $('#simpleGUI').empty();
 
    $('html').css('height','100%');
-   $('body').css('min-height','100%').css('margin','0px');
+   $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
    
    $('#simpleGUI').css("position", "absolute")
                   .css("left", "1px")
@@ -78,8 +78,10 @@ function BuildNoBrowserGUI() {
                   .css("right", "1px");
 
    var objpainter = null;
+   var mdi = null;
+   
    function file_error(str) {
-      if (objpainter == null)
+      if ((objpainter == null) && (mdi==null))
          $('#simpleGUI').append("<h4>" + str + "</h4>"); 
    }
    
@@ -91,34 +93,67 @@ function BuildNoBrowserGUI() {
       return file_error('itemname not specified');
    }
    
-   function draw_object(obj) {
+   function draw_object(itemname, obj, opt) {
       document.body.style.cursor = 'wait';
-      objpainter = JSROOT.redraw('simpleGUI', obj, opt); 
+      if (mdi) {
+         var p = mdi.FindPainter(itemname);
+         if (p==null) {
+            mdi.Draw(itemname, obj, opt);
+         } else {
+            if (p.UpdateObject(obj)) p.RedrawPad();
+         }
+      } else {
+         objpainter = JSROOT.redraw('simpleGUI', obj, opt);
+      }
       document.body.style.cursor = 'auto';
    }
 
-   function read_object() {
-   
-      var f = new JSROOT.TFile(filename, function(file) {
+   function read_all_objects() {
+      
+      new JSROOT.TFile(filename, function(file) {
          if (file==null) return file_error("file " + filename + " cannot be opened");
 
-         if (itemname=="StreamerInfo")
-            return draw_object(file.fStreamerInfos);
-          
-         file.ReadObject(itemname, function(obj) {
-            if (obj==null) return file_error("object " + itemname + " not found in " + filename);
-
-            draw_object(obj);
-         });
+         for (var i in itemsarr) {
+            if (itemsarr[i]=="StreamerInfo") {
+               draw_object(itemsarr[i], file.fStreamerInfos);
+            } else { 
+               var _name = itemsarr[i];
+               var _opt = optionsarr[i]; 
+               file.ReadObject(_name, function(obj) {
+                  if (obj==null) return file_error("object " + _name + " not found in " + filename);
+                  draw_object(_name, obj, _opt);
+               });
+            }
+         }
       });
    }
 
-   read_object();
+   
+   if (itemsarr.length > 1) {
+      if ((layout==null) || (layout=='collapsible') || (layout == "")) {
+         var divx = 2; divy = 1;
+         while (divx*divy < itemsarr.length) {
+            if (divy<divx) divy++; else divx++;
+         }
+         layout = 'grid' + divx + 'x' + divy;
+      }
+      
+      if (layout=='tabs') 
+         mdi = new JSROOT.TabsDisplay('simpleGUI');
+      else
+         mdi = new JSROOT.GridDisplay('simpleGUI', layout);
+      
+      // Than create empty frames for each item
+      for (var i in itemsarr)
+         mdi.CreateFrame(itemsarr[i]);
+   }
 
+   read_all_objects();
+      
    if (monitor>0)
-      setInterval(read_object, monitor);
+      setInterval(read_all_objects, monitor);
 
-   JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
+   JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); if (mdi) mdi.CheckResize(); });
 }
 
 function ReadFile(filename, checkitem) {

@@ -37,19 +37,18 @@
             
             if (mdi!=null) {
                mdi.Draw('abstract_item_name_' + cnt, histo, drawopt); 
-            } else 
-            if (painter==null) {
-               painter = JSROOT.draw('drawing', histo, drawopt);
-            } else {   
-               painter.UpdateObject(histo);   
-               painter.RedrawFrame();
-            }
+            } else { 
+               painter = JSROOT.redraw('drawing', histo, drawopt);
+            } 
           });
           
           req.send(null); 
       }
       
       function startGUI() {
+         $('html').css('height','100%');
+         $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
+      
          var monitor = JSROOT.GetUrlOption("monitoring");
          if ((monitor == "") || (monitor==null)) 
             monitor = 1000;
