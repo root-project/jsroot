@@ -4228,6 +4228,8 @@
       var lasttouch = new Date(0);
 
       var zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
+      
+      var was_tooltip = JSROOT.gStyle.Tooltip;
 
       // var zoom = d3.behavior.zoom().x(this.x).y(this.y);
 
@@ -4330,16 +4332,22 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         rect = pthis.svg_frame(true).append("rect").attr("class", "zoom")
-               .attr("id", "zoomRect").attr("x", curr[0]).attr("y", curr[1])
-               .attr("width", origin[0] - curr[0]).attr("height",
-                     origin[1] - curr[1]);
+         was_tooltip = JSROOT.gStyle.Tooltip;
+         JSROOT.gStyle.Tooltip = false;
+         
+         rect = pthis.svg_frame(true).append("rect")
+               .attr("class", "zoom")
+               .attr("id", "zoomRect")
+               .attr("x", curr[0])
+               .attr("y", curr[1])
+               .attr("width", origin[0] - curr[0])
+               .attr("height", origin[1] - curr[1]);
 
          // pthis.svg_frame(true).on("dblclick", unZoom);
 
-         d3.select(window).on("touchmove.zoomRect", moveTouchSel).on(
-               "touchcancel.zoomRect", endTouchSel).on("touchend.zoomRect",
-               endTouchSel, true);
+         d3.select(window).on("touchmove.zoomRect", moveTouchSel)
+                          .on("touchcancel.zoomRect", endTouchSel)
+                          .on("touchend.zoomRect", endTouchSel, true);
          d3.event.stopPropagation();
       }
 
@@ -4369,8 +4377,10 @@
             origin[1] = Math.max(pnt1[1], pnt2[1]);
          }
 
-         rect.attr("x", curr[0]).attr("y", curr[1]).attr("width",
-               origin[0] - curr[0]).attr("height", origin[1] - curr[1]);
+         rect.attr("x", curr[0])
+             .attr("y", curr[1])
+             .attr("width", origin[0] - curr[0])
+             .attr("height", origin[1] - curr[1]);
 
          d3.event.stopPropagation();
       }
@@ -4380,8 +4390,9 @@
          if (zoom_kind < 100) return;
 
          d3.event.preventDefault();
-         d3.select(window).on("touchmove.zoomRect", null).on(
-               "touchend.zoomRect", null).on("touchcancel.zoomRect", null);
+         d3.select(window).on("touchmove.zoomRect", null)
+                          .on("touchend.zoomRect", null)
+                          .on("touchcancel.zoomRect", null);
          d3.select("body").classed("noselect", false);
 
          var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
@@ -4401,6 +4412,8 @@
          }
 
          d3.select("body").style("-webkit-user-select", "auto");
+
+         JSROOT.gStyle.Tooltip = was_tooltip;
 
          rect.remove();
          rect = null;
@@ -4452,6 +4465,9 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
+         was_tooltip = JSROOT.gStyle.Tooltip;
+         JSROOT.gStyle.Tooltip = false;
+         
          rect = pthis.svg_frame(true)
                 .append("rect")
                 .attr("class", "zoom")
@@ -4504,8 +4520,8 @@
          d3.event.preventDefault();
          // d3.select(window).on("touchmove.zoomRect",
          // null).on("touchend.zoomRect", null);
-         d3.select(window).on("mousemove.zoomRect", null).on(
-               "mouseup.zoomRect", null);
+         d3.select(window).on("mousemove.zoomRect", null)
+                          .on("mouseup.zoomRect", null);
          d3.select("body").classed("noselect", false);
 
          var m = d3.mouse(e);
@@ -4536,6 +4552,8 @@
          }
 
          d3.select("body").style("-webkit-user-select", "auto");
+
+         JSROOT.gStyle.Tooltip = was_tooltip;
 
          rect.remove();
          rect = null;
@@ -5061,31 +5079,24 @@
 
       if (JSROOT.gStyle.Tooltip) {
          // TODO: limit number of tooltips by number of visible pixels
-         this.draw_g.selectAll("selections").data(this.draw_bins).enter()
-               .append("svg:line").attr("x1", function(d) {
-                  return d.x + d.width / 2;
-               }).attr("y1", function(d) {
-                  return Math.max(0, d.y);
-               }).attr("x2", function(d) {
-                  return d.x + d.width / 2;
-               }).attr("y2", function(d) {
-                  return height;
-               }).attr("opacity", 0).style("stroke", "#4572A7").style(
-                     "stroke-width", function(d) {
-                        return d.width;
-                     }).on(
-                     'mouseover',
-                     function() {
-                        d3.select(this).transition().duration(100).style(
-                              "opacity", 0.3)
-                     }).on(
-                     'mouseout',
-                     function() {
-                        d3.select(this).transition().duration(100).style(
-                              "opacity", 0)
-                     }).append("svg:title").text(function(d) {
-                  return d.tip;
-               });
+         this.draw_g.selectAll("selections")
+                    .data(this.draw_bins).enter()
+                    .append("svg:line")
+                    .attr("x1", function(d) { return d.x + d.width / 2; })
+                    .attr("y1", function(d) { return Math.max(0, d.y); })
+                    .attr("x2", function(d) { return d.x + d.width / 2; })
+                    .attr("y2", function(d) { return height; })
+                    .attr("opacity", 0)
+                    .style("stroke", "#4572A7")
+                    .style("stroke-width", function(d) { return d.width; })
+                    .on('mouseover', function() {
+                        if (JSROOT.gStyle.Tooltip)
+                           d3.select(this).transition().duration(100).style("opacity", 0.3)
+                     })
+                     .on('mouseout', function() {
+                        d3.select(this).transition().duration(100).style("opacity", 0)
+                     })
+                     .append("svg:title").text(function(d) { return d.tip; });
       }
    }
 
@@ -5730,11 +5741,15 @@
                             });
 
          if (JSROOT.gStyle.Tooltip)
-            drawn_bins.on('mouseover', function() {
-                     d3.select(this).transition().duration(100).style("fill", this['f1']);
-                   }).on( 'mouseout', function() {
-                     d3.select(this).transition().duration(100).style("fill", this['f0']);
-                   }).append("svg:title").text(function(d) { return d.tip; });
+            drawn_bins
+              .on('mouseover', function() {
+                   if (JSROOT.gStyle.Tooltip)
+                      d3.select(this).transition().duration(100).style("fill", this['f1']);
+              })
+              .on( 'mouseout', function() {
+                   d3.select(this).transition().duration(100).style("fill", this['f0']);
+              })
+              .append("svg:title").text(function(d) { return d.tip; });
       }
 
       delete local_bins;
