@@ -5209,6 +5209,8 @@
          var shrink = this.CreatePalette(0.04);
          this.svg_frame()['frame_painter'].Shrink(shrink);
          this.options.Zscale = 1;
+         // one should draw palette
+         JSROOT.Painter.drawPaletteAxis(this.divid, this.FindPalette());
       } else {
          if (this.options.Zscale > 0)
             this.options.Zscale = 0;
