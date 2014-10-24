@@ -2770,7 +2770,6 @@
    JSROOT.TColzPalettePainter = function(palette) {
       JSROOT.TObjectPainter.call(this, palette);
       this.palette = palette;
-      this.Enabled = true;
    }
 
    JSROOT.TColzPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2808,11 +2807,11 @@
       pos_y -= s_height;
 
       // Draw palette pad
-      this.draw_g = this.svg_pad(true)
-                     .append("svg:g")
-                     .attr("height", s_height)
-                     .attr("width", s_width)
-                     .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
+      this.RecreateDrawG(true);
+      
+      this.draw_g.attr("height", s_height)
+                 .attr("width", s_width)
+                 .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
       var paletteColors = this.main_painter().paletteColors;
 
@@ -2909,19 +2908,22 @@
 
    JSROOT.TColzPalettePainter.prototype.Redraw = function() {
 
-      this.RemoveDrawG();
+      var enabled = true;
+      
+      if ('options' in this.main_painter())
+         enabled = (this.main_painter().options.Zscale > 0) && (this.main_painter().options.Color > 0);
 
-      // if palette artificially disabled, do not redraw it
-      if (!this.Enabled) {
+      if (enabled) {
+         this.DrawPalette();
+      } else {
+         // if palette artificially disabled, do not redraw it
+         this.RemoveDrawG();
          this.RemoveDrag("colz");
          if (this.main_rect) {
             this.main_rect.remove();
             this.main_rect = null;
          }
-         return;
       }
-
-      this.DrawPalette();
    }
 
    JSROOT.Painter.drawPaletteAxis = function(divid, palette) {
@@ -4137,8 +4139,6 @@
          kInvalidObject : JSROOT.BIT(13)  // if object ctor succeeded but object should not be used
       }
 
-      var is_pad = this.root_pad() != null;
-
       for ( var i in this.histo.fFunctions.arr) {
 
          var func = this.histo.fFunctions.arr[i];
@@ -4147,25 +4147,21 @@
 
          // no need to do something if painter for object was already done
          // object will be redraw automatically
-         if (funcpainter == null) {
+         if (funcpainter != null) continue;
 
-            if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-               funcpainter = JSROOT.Painter.drawPaveText(this.divid, func);
-            }
+         if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
+            funcpainter = JSROOT.Painter.drawPaveText(this.divid, func);
+         } else
 
-            if (func['_typename'] == 'TF1') {
-               if ((!is_pad && !func.TestBit(kNotDraw))
-                     || (is_pad && func.TestBit(EStatusBits.kObjInCanvas)))
-                  funcpainter = JSROOT.Painter.drawFunction(this.divid, func);
-            }
+         if (func['_typename'] == 'TF1') {
+            var is_pad = this.root_pad() != null;
+            if ((!is_pad && !func.TestBit(kNotDraw))
+                  || (is_pad && func.TestBit(EStatusBits.kObjInCanvas)))
+               funcpainter = JSROOT.Painter.drawFunction(this.divid, func);
+         } else
 
-            if (func['_typename'] == 'TPaletteAxis') {
-               funcpainter = JSROOT.Painter.drawPaletteAxis(this.divid, func);
-            }
-         }
-
-         if ((func['_typename'] == 'TPaletteAxis') && funcpainter) {
-            funcpainter.Enabled = (this.options.Zscale > 0) && (this.options.Color > 0);
+         if (func['_typename'] == 'TPaletteAxis') {
+            funcpainter = JSROOT.Painter.drawPaletteAxis(this.divid, func);
          }
       }
    }
@@ -5229,8 +5225,7 @@
       var j1 = this.GetSelectIndex("y", "left", -1);
       var j2 = this.GetSelectIndex("y", "right", 1);
 
-      if ((i1 == i2) || (j1 == j2))
-         return;
+      if ((i1 == i2) || (j1 == j2)) return;
 
       var min = this.histo.getBinContent(i1 + 1, j1 + 1);
 
@@ -5245,14 +5240,10 @@
       for (var i = i1; i < i2; i++)
          for (var j = j1; j < j2; j++)
             if (this.histo.getBinContent(i + 1, j + 1) > min) {
-               if (i < ileft)
-                  ileft = i;
-               if (i >= iright)
-                  iright = i + 1;
-               if (j < jleft)
-                  jleft = j;
-               if (j >= jright)
-                  jright = j + 1;
+               if (i < ileft) ileft = i;
+               if (i >= iright) iright = i + 1;
+               if (j < jleft) jleft = j;
+               if (j >= jright) jright = j + 1;
             }
 
       var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
