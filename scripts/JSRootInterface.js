@@ -101,16 +101,18 @@ function BuildNoBrowserGUI() {
    function draw_object(itemname, obj, opt) {
       document.body.style.cursor = 'wait';
       if (mdi) {
-         var p = mdi.FindPainter(itemname);
-         if (p==null) {
-            mdi.Draw(itemname, obj, opt);
-         } else {
-            if (p.UpdateObject(obj)) p.RedrawPad();
-         }
+         mdi.Redraw(itemname, obj, opt);
       } else {
          objpainter = JSROOT.redraw('simpleGUI', obj, opt);
       }
       document.body.style.cursor = 'auto';
+   }
+   
+   function read_object(file, itemname, opt) {
+      file.ReadObject(itemname, function(obj) {
+         if (obj==null) return file_error("object " + itemname + " not found in " + filename);
+         draw_object(itemname, obj, opt);
+      });
    }
 
    function read_all_objects() {
@@ -119,20 +121,13 @@ function BuildNoBrowserGUI() {
          if (file==null) return file_error("file " + filename + " cannot be opened");
 
          for (var i in itemsarr) {
-            if (itemsarr[i]=="StreamerInfo") {
+            if (itemsarr[i]=="StreamerInfo") 
                draw_object(itemsarr[i], file.fStreamerInfos);
-            } else { 
-               var _name = itemsarr[i];
-               var _opt = optionsarr[i]; 
-               file.ReadObject(_name, function(obj) {
-                  if (obj==null) return file_error("object " + _name + " not found in " + filename);
-                  draw_object(_name, obj, _opt);
-               });
-            }
+            else
+               read_object(file, itemsarr[i], optionsarr[i]);
          }
       });
    }
-
    
    if (itemsarr.length > 1) {
       if ((layout==null) || (layout=='collapsible') || (layout == "")) {

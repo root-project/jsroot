@@ -2618,10 +2618,10 @@
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
       var width = Number(this.svg_canvas(true).attr("width")), 
           height = Number(this.svg_canvas(true).attr("height"));
-      var x = this.pad['fAbsXlowNDC'] * width;
-      var y = height - this.pad['fAbsYlowNDC'] * height;
-      var w = this.pad['fAbsWNDC'] * width;
-      var h = this.pad['fAbsHNDC'] * height;
+      var x = Math.round(this.pad['fAbsXlowNDC'] * width);
+      var y = Math.round(height - this.pad['fAbsYlowNDC'] * height);
+      var w = Math.round(this.pad['fAbsWNDC'] * width);
+      var h = Math.round(this.pad['fAbsHNDC'] * height);
       y -= h;
 
       var fillcolor = JSROOT.Painter.root_colors[this.pad['fFillColor']];
@@ -2640,7 +2640,7 @@
       if (only_resize) 
          svg_pad = this.svg_pad(true);
       else
-         svg_pad = this.svg_canvas(true).append("svg")
+         svg_pad = this.svg_canvas(true).append("g")
              .attr("class", "root_pad")
              .attr("pad", this.pad['fName']) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
@@ -2648,6 +2648,7 @@
       
       svg_pad.attr("width", w)
              .attr("height", h)
+             .attr("viewBox", x + " " + y + " " + (x+w) + " " + (y+h))
              .attr("transform", "translate(" + x + "," + y + ")");
 
       if (only_resize)
@@ -3504,7 +3505,7 @@
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
       if (obj['_typename'] != this.histo['_typename']) {
-         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj['_typename']);
+         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj['_typename'] + " expected " + this.histo['_typename']);
          return false;
       }
 
@@ -7637,6 +7638,7 @@
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj, drawopt) {
+      // draw object with specified options 
       if (!obj) return;
 
       var frame = this.FindFrame(itemname);
@@ -7656,7 +7658,24 @@
       var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
 
       this.SetPainterForFrame(frame, painter);
+      
+      return painter;
    }
+   
+   JSROOT.MDIDisplay.prototype.Redraw = function(itemname, obj, drawopt) {
+      // (re)draw object with specified options
+      // if object was not drawn before, normal draw will be performed
+
+      var p = this.FindPainter(itemname);
+      if (p==null) {
+         p = this.Draw(itemname, obj, drawopt);
+      } else {
+         if (p.UpdateObject(obj)) p.RedrawPad();
+      }
+      
+      return p;
+   }
+   
 
    JSROOT.MDIDisplay.prototype.SetPainterForFrame = function(frame, painter) {
       //var hid = $(frame).attr('id');
