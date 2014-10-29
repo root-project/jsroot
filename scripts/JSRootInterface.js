@@ -227,8 +227,6 @@ function UpdateOnline() {
    
    var h = JSROOT.H('root');
    
-   h['_monitoring_on'] = chkbox && chkbox.checked;
-   
    if (h['_monitoring_on'] && ('disp' in h))
      h['disp'].ForEach(function(panel, itemname, painter) {
        if (painter==null) return;
@@ -337,9 +335,8 @@ function BuildOnlineGUI() {
       document.getElementById("monitoring").checked = true;
    else
       monitor = 3000;
-      
-   
-   var itemsarr = [];
+     
+   var itemsarr = [], optionsarr = [];
    var itemname = JSROOT.GetUrlOption("item");
    if (itemname) itemsarr.push(itemname);
    var items = JSROOT.GetUrlOption("items");
@@ -347,20 +344,31 @@ function BuildOnlineGUI() {
       items = JSON.parse(items);
       for (var i in items) itemsarr.push(items[i]);
    }
+   
+   var opt = JSROOT.GetUrlOption("opt");
+   if (opt) optionsarr.push(opt);
+   var opts = JSROOT.GetUrlOption("opts");
+   if (opts!=null) {
+      opts = JSON.parse(opts);
+      for (var i in opts) optionsarr.push(opts[i]);
+   }
 
    var h = new JSROOT.HierarchyPainter("root", "browser");
 
    h.SetDisplay(layout, 'right-div');
    
    h['_monitoring_interval'] = monitor;
+   h['_monitoring_on'] = (monitor!=null);
    
    h.OpenOnline("", function() {
-      h.displayAll(itemsarr);
+      h.displayAll(itemsarr, optionsarr);
    });
    
    setInterval(UpdateOnline, monitor);
    
    AddInteractions();
+   
+   $("#monitoring").click(function() { h['_monitoring_on'] = this.checked; }); 
 }
 
 function BuildSimpleGUI() {
