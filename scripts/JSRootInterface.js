@@ -223,19 +223,24 @@ function ReadFile(filename, checkitem) {
 }
 
 function UpdateOnline() {
-   var chkbox = document.getElementById("monitoring");
-   
    var h = JSROOT.H('root');
    
    if (h['_monitoring_on'] && ('disp' in h))
      h['disp'].ForEach(function(panel, itemname, painter) {
        if (painter==null) return;
+       
+       // prevent to update item if previous not completed
+       if ('_doing_update' in painter)  return;
+       
+       painter['_doing_update'] = true;
+       
        h.get(itemname, function(item, obj) {
          if (painter.UpdateObject(obj)) {
             document.body.style.cursor = 'wait';
             painter.RedrawPad();
             document.body.style.cursor = 'auto';
          }
+         delete painter['_doing_update'];
       });
      } , true); // update only visible objects
 }
@@ -368,7 +373,10 @@ function BuildOnlineGUI() {
    
    AddInteractions();
    
-   $("#monitoring").click(function() { h['_monitoring_on'] = this.checked; }); 
+   $("#monitoring").click(function() { 
+      h['_monitoring_on'] = this.checked;
+      if (h['_monitoring_on']) UpdateOnline();
+   }); 
 }
 
 function BuildSimpleGUI() {
