@@ -34,12 +34,13 @@ function setGuiLayout(value) {
    }
 }
 
-
-function BuildNoBrowserGUI() {
+function BuildNoBrowserGUI(online) {
    var itemsarr = [];
    var optionsarr = [];
+   var running_request = {};
 
-   var filename = JSROOT.GetUrlOption("file");
+   var filename = null;
+   if (!online) filename = JSROOT.GetUrlOption("file");
 
    var itemname = JSROOT.GetUrlOption("item");
    if (itemname) itemsarr.push(itemname);
@@ -66,26 +67,28 @@ function BuildNoBrowserGUI() {
    if (monitor == "") monitor = 3000; else
    if (monitor != null) monitor = parseInt(monitor);  
 
-   $('#simpleGUI').empty();
+   var divid = online ? "onlineGUI" : "simpleGUI"; 
+   
+   $('#'+divid).empty();
 
    $('html').css('height','100%');
    $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
    
-   $('#simpleGUI').css("position", "absolute")
-                  .css("left", "1px")
-                  .css("top", "1px")
-                  .css("bottom", "1px")
-                  .css("right", "1px");
+   $('#'+divid).css("position", "absolute")
+               .css("left", "1px")
+               .css("top", "1px")
+               .css("bottom", "1px")
+               .css("right", "1px");
 
    var objpainter = null;
    var mdi = null;
    
    function file_error(str) {
       if ((objpainter == null) && (mdi==null))
-         $('#simpleGUI').append("<h4>" + str + "</h4>"); 
+         $('#'+divid).append("<h4>" + str + "</h4>"); 
    }
    
-   if (filename == null) {
+   if ((filename == null) && !online) {
       return file_error('filename not specified');
    }
    
@@ -93,38 +96,74 @@ function BuildNoBrowserGUI() {
       return file_error('itemname not specified');
    }
    
-   var title = "File: " + filename;
+   var title = online ? "Online"  : ("File: " + filename);
    if (itemsarr.length == 1) title += " item: " + itemsarr[0];
                         else title += " items: " + itemsarr.toString();
    document.title = title;
       
-   function draw_object(itemname, obj, opt) {
+   function draw_object(indx, obj) {
       document.body.style.cursor = 'wait';
+      if (obj==null)  {
+         file_error("object " + itemsarr[indx] + " not found");
+      } else
       if (mdi) {
-         mdi.Redraw(itemname, obj, opt);
+         mdi.Redraw(itemsarr[indx], obj, optionsarr[indx]);
       } else {
-         objpainter = JSROOT.redraw('simpleGUI', obj, opt);
+         objpainter = JSROOT.redraw(divid, obj, optionsarr[indx]);
       }
       document.body.style.cursor = 'auto';
+      running_request[indx] = false;
    }
    
-   function read_object(file, itemname, opt) {
-      file.ReadObject(itemname, function(obj) {
-         if (obj==null) return file_error("object " + itemname + " not found in " + filename);
-         draw_object(itemname, obj, opt);
+   function read_object(file, indx) {
+      
+      if (itemsarr[indx]=="StreamerInfo") 
+         draw_object(indx, file.fStreamerInfos);
+      
+      file.ReadObject(itemsarr[indx], function(obj) {
+         draw_object(indx, obj);
       });
+   }
+   
+   function request_object(indx) {
+
+      if (running_request[indx]) return;
+      
+      running_request[indx] = true;
+      
+      var url = itemsarr[indx] + "/root.json.gz?compact=3";
+      
+      var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
+         if ((obj != null) &&  (itemsarr[indx] === "StreamerInfo")
+               && (obj['_typename'] === 'TList'))
+            obj['_typename'] = 'TStreamerInfoList';
+         
+         draw_object(indx, obj);
+      });
+      
+      itemreq.send(null);
    }
 
    function read_all_objects() {
+      
+      if (online) {
+         for (var i in itemsarr) 
+            request_object(i);
+         return;
+      }
+      
+      for (var i in itemsarr) 
+         if (running_request[i]) {
+            console.log("Request for item " + itemsarr[i] + " still running");
+            return;
+         }
       
       new JSROOT.TFile(filename, function(file) {
          if (file==null) return file_error("file " + filename + " cannot be opened");
 
          for (var i in itemsarr) {
-            if (itemsarr[i]=="StreamerInfo") 
-               draw_object(itemsarr[i], file.fStreamerInfos);
-            else
-               read_object(file, itemsarr[i], optionsarr[i]);
+            running_request[i] = true;
+            read_object(file, i);
          }
       });
    }
@@ -139,9 +178,9 @@ function BuildNoBrowserGUI() {
       }
       
       if (layout=='tabs') 
-         mdi = new JSROOT.TabsDisplay('simpleGUI');
+         mdi = new JSROOT.TabsDisplay(divid);
       else
-         mdi = new JSROOT.GridDisplay('simpleGUI', layout);
+         mdi = new JSROOT.GridDisplay(divid, layout);
       
       // Than create empty frames for each item
       for (var i in itemsarr)
@@ -306,6 +345,9 @@ function BuildOnlineGUI() {
       return;
    }
    
+   if (JSROOT.GetUrlOption("nobrowser")!=null)
+      return BuildNoBrowserGUI(true);
+   
    var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
 
    guiCode += '<div id="left-div" class="column"><br/>'
@@ -387,7 +429,7 @@ function BuildSimpleGUI() {
    if (!myDiv) return;
    
    if (JSROOT.GetUrlOption("nobrowser")!=null)
-      return BuildNoBrowserGUI();
+      return BuildNoBrowserGUI(false);
    
    
    var files = myDiv.attr("files");
