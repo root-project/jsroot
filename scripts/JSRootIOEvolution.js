@@ -121,10 +121,8 @@
 
       var obj = {};
       
-      obj['_typename'] = class_name;
       buf = new JSROOT.TBuffer(obj_rawdata, 0, file);
       buf.MapObject(obj, 1);
-
       buf.ClassStreamer(obj, class_name);
       
       return obj;
@@ -516,6 +514,27 @@
       }
       return this.CheckBytecount(ver, "ReadTClonesArray");
    }
+   
+   JSROOT.TBuffer.prototype.ReadTPolyMarker3D = function(marker) {
+      var ver = this.ReadVersion();
+      
+      this.ReadTObject(marker);
+      
+      this.ClassStreamer(marker, "TAttMarker");
+      
+      marker['fN'] = this.ntoi4();
+      
+      marker['fP'] = this.ReadFastArray(marker['fN']*3, 'F');
+      
+      marker['fOption'] = this.ReadTString();
+      
+      if (ver['val'] > 1)
+         marker['fName'] = this.ReadTString();
+      else
+         marker['fName'] = "TPolyMarker3D";
+
+      return this.CheckBytecount(ver, "ReadTPolyMarker3D");
+   }
 
    JSROOT.TBuffer.prototype.ReadTCollection = function(list, str, o) {
       list['_typename'] = "TCollection";
@@ -555,7 +574,6 @@
       obj['fCh'] = this.ntou4();
       
       obj['fCatt'] = {};
-      obj['_typename'] = "TAttCanvas";
       this.ClassStreamer(obj['fCatt'], "TAttCanvas");
       this.ntou1(); // ignore b << TestBit(kMoveOpaque);      
       this.ntou1(); // ignore b << TestBit(kResizeOpaque);    
@@ -743,6 +761,8 @@
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
       // console.log("Start streaming of class " + classname);
 
+      if (! ('_typename' in obj))  obj['_typename'] = classname;
+      
       if (classname == 'TObject' || classname == 'TMethodCall') {
          this.ReadTObject(obj);
       }
@@ -768,6 +788,9 @@
       else if (classname == 'TCanvas') {
          this.ReadTCanvas(obj);
       }
+      else if (classname == 'TPolyMarker3D') {
+         this.ReadTPolyMarker3D(obj);
+      }
       else if (classname == "TStreamerInfo") {
          this.ReadTStreamerInfo(obj);
       }
@@ -791,12 +814,12 @@
          var streamer = this.fFile.GetStreamer(classname);
          if (streamer != null)
             streamer.Stream(obj, this);
-         else
-            console.log("Did not found streamer for class " + classname);
+         else {
+            console.log("Did not found streamer for class " + classname + " try to skip data");
+            var ver = this.ReadVersion();
+            this.CheckBytecount(ver);
+         }
       }
-
-      // TODO: check how typename set
-      obj['_typename'] = classname;
 
       JSROOT.addMethods(obj);
    }
@@ -1546,8 +1569,6 @@
             }
 
             var obj = {};
-            obj['_typename'] = key['fClassName'];
-
             buf.MapObject(1, obj); // tag object itself with id==1
             buf.ClassStreamer(obj, key['fClassName']);
 
@@ -1561,8 +1582,6 @@
       if (!buf) return;
 
       var lst = {};
-      lst['_typename'] = "TList";
-
       buf.MapObject(1, lst);
       buf.ClassStreamer(lst, 'TList');
       
