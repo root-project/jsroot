@@ -6963,17 +6963,17 @@
 
       if (!node._childs || !cando.scan) {
          if (cando.expand) {
-            cando.html = "javascript: " + this.GlobalName() + ".expand(\'"
-                  + nodefullname + "\');";
+            cando.html = "javascript: " + this.GlobalName() + ".expand(\'" + nodefullname + "\');";
             if (cando.img1.length == 0) {
                cando.img1 = JSROOT.source_dir + 'img/folder.gif';
                cando.img2 = JSROOT.source_dir + 'img/folderopen.gif';
             }
-         } else if (cando.display) {
-            cando.html = "javascript: " + this.GlobalName() + ".display(\'"
-                  + nodefullname + "\');";
-         } else if (cando.open)
-            cando.html = nodefullname;
+         } else 
+         if (cando.display) {
+            cando.html = "javascript: " + this.GlobalName() + ".display(\'" + nodefullname + "\');";
+         } else 
+         if (cando.open && (cando.html.length == 0))
+            cando.html = nodefullname + "/";
       }
 
       if (cando.img2 == "")
@@ -7005,8 +7005,7 @@
       if (node['_d']['title'].length == 0)
          node['_d']['title'] = node['_d']['name'];
 
-      if (parent && parent._childs
-            && (parent._childs[parent._childs.length - 1] == node))
+      if (parent && parent._childs && (parent._childs[parent._childs.length - 1] == node))
          node['_d']._ls = true;
 
       node['_d']._id = this.grid++;
@@ -7014,8 +7013,7 @@
       // allow context menu only for objects which can be displayed or for
       // top-level item
       if (cando.display || (node == this.h))
-         node['_d']['ctxt'] = this.GlobalName()
-               + ".contextmenu(this, event, \'" + nodefullname + "\')";
+         node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'" + nodefullname + "\')";
 
       if (cando.scan && ('_childs' in node)) {
          node['_d']._hc = true;
@@ -7025,16 +7023,11 @@
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(force) {
-      if (this.frameid == null)
-         return;
+      if (this.frameid == null) return;
       var elem = document.getElementById(this.frameid);
-      if (elem == null)
-         return;
+      if (elem == null) return;
 
-      if (this.h == null) {
-         elem.innerHTML = "<h2>null</h2>";
-         return;
-      }
+      if (this.h == null) { elem.innerHTML = "<h2>null</h2>"; return; }
 
       if (force && this.h._d != null) {
          delete this.h._d;
@@ -7047,25 +7040,18 @@
       }
 
       this['html'] = "<p>";
-      this['html'] += "<a href=\"javascript: " + this.GlobalName()
-            + ".toggle(true);\">open all</a>";
-      this['html'] += "| <a href=\"javascript: " + this.GlobalName()
-            + ".toggle(false);\">close all</a>";
-      if ('_online' in this.h)
-         this['html'] += "| <a href=\"javascript: " + this.GlobalName()
-               + ".reload();\">reload</a>";
+      this['html'] += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
+      this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
+      if ('_online' in this.h) 
+         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";
       if ('disp_kind' in this)
-         this['html'] += "| <a href=\"javascript: " + this.GlobalName()
-               + ".clear();\">clear</a>";
+         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";
 
       this['html'] += "</p>";
-
       this['html'] += '<div class="dtree">'
 
       this.addItemHtml(this.h);
-
       this['html'] += '</div>';
-
       elem.innerHTML = this['html'];
    }
 
@@ -7100,34 +7086,27 @@
       var sindent = "";
       var prnt = isroot ? null : hitem._parent;
       while ((prnt != null) && (prnt != this.h)) {
-         sindent = '<img src="'
-               + (!prnt._d._ls ? this.icon.line : this.icon.empty)
-               + '" alt="" />' + sindent;
+         sindent = '<img src="' + (!prnt._d._ls ? this.icon.line : this.icon.empty) + '" alt="" />' + sindent;
          prnt = prnt._parent;
       }
       this['html'] += sindent;
 
-      var opencode = this.GlobalName() + ".open(\'" + this.itemFullName(hitem)
-            + "\')";
+      var opencode = this.GlobalName() + ".open(\'" + this.itemFullName(hitem) + "\')";
 
       if (isroot) {
          // for root node no extra code
       } else if (node._hc) {
          this['html'] += '<a href="javascript: ' + opencode + '"><img src="';
-         this['html'] += ((node._io) ? (node._ls ? this.icon.minusBottom
-               : this.icon.minus) : (node._ls ? this.icon.plusBottom
-               : this.icon.plus));
+         this['html'] += ((node._io) ? (node._ls ? this.icon.minusBottom : this.icon.minus) 
+                                     : (node._ls ? this.icon.plusBottom : this.icon.plus));
          this['html'] += '" alt="" /></a>';
       } else {
-         this['html'] += '<img src="'
-               + ((node._ls ? this.icon.joinBottom : this.icon.join))
-               + '" alt="" />';
+         this['html'] += '<img src="' + ((node._ls ? this.icon.joinBottom : this.icon.join)) + '" alt="" />';
       }
 
       // make node icon
       if (!node.icon)
-         node.icon = isroot ? this.icon.root : ((node._hc) ? this.icon.folder
-               : this.icon.node);
+         node.icon = isroot ? this.icon.root : ((node._hc) ? this.icon.folder : this.icon.node);
       if (!node.iconOpen)
          node.iconOpen = (node._hc) ? this.icon.folderOpen : this.icon.node;
       if (isroot) {
@@ -7135,35 +7114,26 @@
          node.iconOpen = this.icon.root;
       }
 
-      this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon)
-            + '" alt=""/>';
+      this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt=""/>';
 
       if (node.url) {
-         this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node')
-               + '" href="' + node.url + '"';
-         if (node.title)
-            this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt)
-            this['html'] += ' oncontextmenu="' + node.ctxt + '"';
+         this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
+         if (node.title) this['html'] += ' title="' + node.title + '"';
+         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
          this['html'] += '>' + node.name + '</a>';
       } else if (node._hc && !isroot) {
          this['html'] += '<a href="javascript: ' + opencode + '" class="node"';
-         if (node.title)
-            this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt)
-            this['html'] += ' oncontextmenu="' + node.ctxt + '"';
+         if (node.title) this['html'] += ' title="' + node.title + '"';
+         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
          this['html'] += '>' + node.name + '</a>';
       } else {
          this['html'] += '<a';
-         if (node.title)
-            this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt)
-            this['html'] += ' oncontextmenu="' + node.ctxt + '"';
+         if (node.title) this['html'] += ' title="' + node.title + '"';
+         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
          this['html'] += '>' + node.name + '</a>';
       }
 
-      if (onlyitem)
-         return;
+      if (onlyitem) return;
 
       this['html'] += '</div>';
 
@@ -7171,8 +7141,7 @@
 
       // place for childs
 
-      this['html'] += '<div id="d' + idname + '" class="clip" style="display:'
-            + (childs_display ? 'block' : 'none') + ';">';
+      this['html'] += '<div id="d' + idname + '" class="clip" style="display:' + (childs_display ? 'block' : 'none') + ';">';
       if (childs_display)
          for ( var i in hitem._childs)
             this.addItemHtml(hitem._childs[i]);
@@ -7181,16 +7150,12 @@
 
    JSROOT.HierarchyPainter.prototype.open = function(itemname) {
       var hitem = this.Find(itemname);
-      if (hitem == null)
-         return;
-
+      if (hitem == null) return;
       this.setDNodeOpenStatus(hitem, !hitem._d._io);
    }
 
-   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(hitem,
-         status, force) {
-      if (hitem == null)
-         return;
+   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status, force) {
+      if (hitem == null) return;
 
       var node = hitem._d;
       var idname = this.name + "_id_" + node._id;
