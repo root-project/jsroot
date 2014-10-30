@@ -371,17 +371,13 @@ function BuildOnlineGUI() {
    else
       setGuiLayout(layout);
    
+   var interval = 3000;
    var monitor = JSROOT.GetUrlOption("monitoring");
-   if (monitor == "") monitor = 3000; else
    if (monitor != null) {
-      monitor = parseInt(monitor);
-      if ((monitor == NaN) || (monitor<=0)) monitor = null;
-   }
-   
-   if (monitor!=null)
       document.getElementById("monitoring").checked = true;
-   else
-      monitor = 3000;
+      if (monitor!="") interval = parseInt(monitor);
+      if ((interval == NaN) || (interval<=0)) interval = 3000;
+   }
      
    var itemsarr = [], optionsarr = [];
    var itemname = JSROOT.GetUrlOption("item");
@@ -404,14 +400,14 @@ function BuildOnlineGUI() {
 
    h.SetDisplay(layout, 'right-div');
    
-   h['_monitoring_interval'] = monitor;
+   h['_monitoring_interval'] = interval;
    h['_monitoring_on'] = (monitor!=null);
    
    h.OpenOnline("", function() {
       h.displayAll(itemsarr, optionsarr);
    });
    
-   setInterval(UpdateOnline, monitor);
+   setInterval(UpdateOnline, interval);
    
    AddInteractions();
    
