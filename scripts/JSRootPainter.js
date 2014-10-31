@@ -6888,16 +6888,18 @@
 
    JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
       var cando = { expand : false, display : false, scan : true, open : false, 
-                    img1 : "", img2 : "", html : "" };
+                    img1 : "", img2 : "", html : "", ctxt : false };
 
       var kind = node["_kind"];
       if (kind == null) kind = "";
 
       cando.expand = ('_more' in node);
-
-      if (kind == "ROOT.Session")
+ 
+      if (node == this.h) {
+         cando.ctxt = true;        
+      } else if (kind == "ROOT.Session") {
          cando.img1 = JSROOT.source_dir + 'img/globe.gif';
-      else if (kind.match(/^ROOT.TH1/)) {
+      } else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = JSROOT.source_dir + 'img/histo.png';
          cando.scan = false;
          cando.display = true;
@@ -7010,9 +7012,8 @@
 
       node['_d']._id = this.grid++;
 
-      // allow context menu only for objects which can be displayed or for
-      // top-level item
-      if (cando.display || (node == this.h))
+      // allow context menu only for objects which can be displayed or for top-level item
+      if (cando.display || cando.ctxt)
          node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'" + nodefullname + "\')";
 
       if (cando.scan && ('_childs' in node)) {
@@ -7394,8 +7395,7 @@
 
    JSROOT.HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
       var item = this.Find(itemname);
-      if (item == null)
-         return null;
+      if (item == null) return null;
 
       var subname = item._name;
       while (item._parent != null) {
@@ -7413,25 +7413,22 @@
       return null;
    }
 
-   JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu,
-         onlineprop, itemname) {
+   JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
+      
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       if (this['_monitoring_on'])
          drawurl += "?monitoring=" + this['_monitoring_interval'];
 
-      JSROOT.Painter.menuitem(menu, "Draw in new window", function() {
-         window.open(drawurl);
-      });
+      JSROOT.Painter.menuitem(menu, "Draw in new window", function() { 
+         window.open(drawurl); 
+       });
       JSROOT.Painter.menuitem(menu, "Draw as png", function() {
-         window.open(onlineprop.server + onlineprop.itemname
-               + "/root.png?w=400&h=300");
+         window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300");
       });
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo) {
-      this.h = {
-         _name : "StreamerInfo"
-      };
+      this.h = { _name : "StreamerInfo" };
       this.StreamerInfoHierarchy(this.h, sinfo);
       this.RefreshHtml();
    }
