@@ -77,6 +77,7 @@
             draw_item_options(file, "Graph;1", "gr_draw", ";L;P");
          });
 
+
          new JSROOT.TFile("fillrandom.root+", function(file) {
             if (file==null) return file_error("f1_draw", "fillrandom.root cannot be opened");
             
@@ -112,6 +113,19 @@
             
             draw_item_options(file, "stacks;1", "can5_draw", "", 0.);
          });
+
+         new JSROOT.TFile("legends.root+", function(file) {
+            if (file==null) return file_error("can6_draw", "legends.root cannot be opened");
+            
+            draw_item_options(file, "legends;1", "can6_draw", "", 0.);
+         });
+
+         new JSROOT.TFile("exclusion.root+", function(file) {
+            if (file==null) return file_error("can7_draw", "exclusion.root cannot be opened");
+            
+            draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
+         });
+
          
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
@@ -154,6 +168,8 @@
   <div id="can3_draw"></div>
   <div id="can4_draw"></div>
   <div id="can5_draw"></div>
+  <div id="can6_draw"></div>
+  <div id="can7_draw"></div>
 
   
 </body>

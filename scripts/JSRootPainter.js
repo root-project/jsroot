@@ -6150,7 +6150,7 @@
             pos_y = pos_y - (hh / 2);
             var pos_x = (tpos_x / 2) - (ww / 2);
             
-            var fill_color = JSROOT.Painter.createFillPattern(painter.svg_canvas(true), fill_style, fill_color);
+            var fill_color = JSROOT.Painter.createFillPattern(this.svg_canvas(true), fill_style, fill_color);
 
             p.append("svg:rect")
                    .attr("x", pos_x)
@@ -6991,8 +6991,7 @@
          _io : false, // is open
          _is : false, // is selected
          _ls : false, // last sibling
-         _hc : false
-      // has childs
+         _hc : false  // has childs
       };
 
       if ('_realname' in node)
@@ -7455,8 +7454,7 @@
 
       function qualifyURL(url) {
          function escapeHTML(s) {
-            return s.split('&').join('&amp;').split('<').join('&lt;')
-                  .split('"').join('&quot;');
+            return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
          }
          var el = document.createElement('div');
          el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
@@ -7514,8 +7512,7 @@
          });
       }
 
-      JSROOT.Painter.menuitem(menu, "Close", function() {
-      });
+      JSROOT.Painter.menuitem(menu, "Close", function() {});
 
       return false;
    }
@@ -7532,21 +7529,19 @@
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(force) {
       if ('disp' in this) {
-         if (!force && this['disp'].NumDraw() > 0)
-            return true;
+         if (!force && this['disp'].NumDraw() > 0) return true;
          this['disp'].Reset();
          delete this['disp'];
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this['disp_frameid']) == null)
-         return false;
+      if (document.getElementById(this['disp_frameid']) == null) return false;
 
       if (this['disp_kind'] == "tabs")
          this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
-      else if (this['disp_kind'].search("grid") == 0)
-         this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'],
-               this['disp_kind']);
+      else 
+      if (this['disp_kind'].search("grid") == 0)
+         this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']);
       else
          this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
 
