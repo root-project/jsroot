@@ -2359,11 +2359,8 @@
             num_cols = parts.length;
       }
       
-      if (maxlw > width) {
-         var old_size = font_size; 
-         font_size = Math.round(font_size * (width / maxlw));
-         if (font_size >= old_size) font_size = old_size - 1;  
-      }
+      if (maxlw > width)
+         font_size = Math.floor(font_size * (width / maxlw));
 
       var stepy = height / nlines;
 
@@ -6074,7 +6071,7 @@
          if (lw > max_len) max_len = lw;
       }
       if (max_len > w) {
-         font_size *= 0.85 * (w / max_len);
+         font_size = Math.floor(font_size * 0.95 * (w / max_len));
          mul *= 0.95 * (max_len / w);
       }
       var x1 = pave['fX1NDC'];
@@ -6507,7 +6504,7 @@
       var line = JSROOT.Painter.translateLaTeX(pavelabel['fLabel']);
 
       var lw = JSROOT.Painter.stringWidth(this.svg_pad(true), line, font_size, fontDetails);
-      if (lw > width) font_size *= 0.98 * (width / lw);
+      if (lw > width) font_size = Math.floor(font_size * (width / lw));
 
       pave.append("text")
              .attr("class", "text")
