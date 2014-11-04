@@ -4226,7 +4226,7 @@
 
       var zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       
-      var was_tooltip = JSROOT.gStyle.Tooltip;
+      var disable_tooltip = false;
 
       // var zoom = d3.behavior.zoom().x(this.x).y(this.y);
 
@@ -4329,9 +4329,6 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         was_tooltip = JSROOT.gStyle.Tooltip;
-         JSROOT.gStyle.Tooltip = false;
-         
          rect = pthis.svg_frame(true).append("rect")
                .attr("class", "zoom")
                .attr("id", "zoomRect")
@@ -4378,6 +4375,11 @@
              .attr("y", curr[1])
              .attr("width", origin[0] - curr[0])
              .attr("height", origin[1] - curr[1]);
+         
+         if (JSROOT.gStyle.Tooltip && ((origin[0] - curr[0]>10) || (origin[1] - curr[1]>10))) {
+            JSROOT.gStyle.Tooltip = false;
+            disable_tooltip = true;
+         }
 
          d3.event.stopPropagation();
       }
@@ -4410,7 +4412,8 @@
 
          d3.select("body").style("-webkit-user-select", "auto");
 
-         JSROOT.gStyle.Tooltip = was_tooltip;
+         if (disable_tooltip)
+            JSROOT.gStyle.Tooltip = true;
 
          rect.remove();
          rect = null;
@@ -4420,12 +4423,21 @@
 
          d3.event.stopPropagation();
       }
+      
+      function detectLeftButton(event) {
+         if ('buttons' in event) return event.buttons === 1;
+         else if ('which' in event) return event.which === 1;
+         else return event.button === 1;
+       }
 
       function startRectSel() {
 
+         // use only left button
+         // if (!detectLeftButton(d3.event)) return;
+         
          // ignore when touch selection is actiavated
          if (zoom_kind > 100) return;
-
+         
          d3.event.preventDefault();
 
          // update frame dimensions while frame could be resized
@@ -4462,9 +4474,6 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         was_tooltip = JSROOT.gStyle.Tooltip;
-         JSROOT.gStyle.Tooltip = false;
-         
          rect = pthis.svg_frame(true)
                 .append("rect")
                 .attr("class", "zoom")
@@ -4509,6 +4518,11 @@
              .attr("y", Math.min(origin[1], curr[1]))
              .attr("width", Math.abs(curr[0] - origin[0]))
              .attr("height", Math.abs(curr[1] - origin[1]));
+         
+         if (JSROOT.gStyle.Tooltip && ((Math.abs(curr[0] - origin[0])>10) || (Math.abs(curr[1] - origin[1])>10))) {
+            JSROOT.gStyle.Tooltip = false;
+            disable_tooltip = true;
+         }
       }
 
       function endRectSel() {
@@ -4550,7 +4564,8 @@
 
          d3.select("body").style("-webkit-user-select", "auto");
 
-         JSROOT.gStyle.Tooltip = was_tooltip;
+         if (disable_tooltip)
+            JSROOT.gStyle.Tooltip = true;
 
          rect.remove();
          rect = null;
@@ -4893,20 +4908,18 @@
             point['yerr'] = gry - this.y(cont + this.histo.getBinError(pmax + 1));
          }
 
-         if (JSROOT.gStyle.Tooltip) {
-            if (this.options.Error > 0) {
-               point['x'] = (grx1 + grx2) / 2;
-               point['tip'] = "x = " + this.AxisAsText("x", x1) + " \ny = "
-                     + this.AxisAsText("y", cont) + " \nerror x = "
-                     + ((x2 - x1) / 2).toPrecision(4) + " \nerror y = "
-                     + this.histo.getBinError(pmax + 1).toPrecision(4);
-            } else {
-               point['width'] = grx2 - grx1;
+         if (this.options.Error > 0) {
+            point['x'] = (grx1 + grx2) / 2;
+            point['tip'] = "x = " + this.AxisAsText("x", x1) + 
+                        " \ny = " + this.AxisAsText("y", cont) + 
+                        " \nerror x = " + ((x2 - x1) / 2).toPrecision(4) + 
+                        " \nerror y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
+         } else {
+            point['width'] = grx2 - grx1;
 
-               point['tip'] = "bin = " + (pmax + 1) + "\n" + "x = ["
-                     + this.AxisAsText("x", x1) + ", "
-                     + this.AxisAsText("x", x2) + "]\n" + "entries = " + cont;
-            }
+            point['tip'] = "bin = " + (pmax + 1) + "\n" + 
+                           "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" + 
+                           "entries = " + cont;
          }
 
          this.draw_bins.push(point);
@@ -5088,7 +5101,7 @@
                     .style("stroke-width", function(d) { return d.width; })
                     .on('mouseover', function() {
                         if (JSROOT.gStyle.Tooltip)
-                           d3.select(this).transition().duration(100).style("opacity", 0.3)
+                          d3.select(this).transition().duration(100).style("opacity", 0.3)
                      })
                      .on('mouseout', function() {
                         d3.select(this).transition().duration(100).style("opacity", 0)
@@ -5100,9 +5113,7 @@
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
-         JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() {
-            menu['painter'].AutoZoom();
-         });
+         JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function() {
@@ -6987,7 +6998,7 @@
          title : "",
          icon : cando.img1,
          iconOpen : cando.img2,
-         _id : 0, // id used in html
+         _id : 0,     // id used in html
          _io : false, // is open
          _is : false, // is selected
          _ls : false, // last sibling
@@ -7095,7 +7106,8 @@
 
       if (isroot) {
          // for root node no extra code
-      } else if (node._hc) {
+      } else 
+      if (node._hc) {
          this['html'] += '<a href="javascript: ' + opencode + '"><img src="';
          this['html'] += ((node._io) ? (node._ls ? this.icon.minusBottom : this.icon.minus) 
                                      : (node._ls ? this.icon.plusBottom : this.icon.plus));
@@ -7118,20 +7130,16 @@
 
       if (node.url) {
          this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
-         if (node.title) this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
-         this['html'] += '>' + node.name + '</a>';
-      } else if (node._hc && !isroot) {
+      } else 
+      if (node._hc && !isroot) {
          this['html'] += '<a href="javascript: ' + opencode + '" class="node"';
-         if (node.title) this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
-         this['html'] += '>' + node.name + '</a>';
       } else {
          this['html'] += '<a';
-         if (node.title) this['html'] += ' title="' + node.title + '"';
-         if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
-         this['html'] += '>' + node.name + '</a>';
       }
+
+      if (node.title) this['html'] += ' title="' + node.title + '"';
+      if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
+      this['html'] += '>' + node.name + '</a>';
 
       if (onlyitem) return;
 
@@ -7414,15 +7422,18 @@
 
    JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
       
+      var painter = this;
+      
+      JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
+      JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
+      
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       if (this['_monitoring_on'])
          drawurl += "?monitoring=" + this['_monitoring_interval'];
 
-      JSROOT.Painter.menuitem(menu, "Draw in new window", function() { 
-         window.open(drawurl); 
-       });
+      JSROOT.Painter.menuitem(menu, "Draw in new window", function() { window.open(drawurl); });
       JSROOT.Painter.menuitem(menu, "Draw as png", function() {
-         window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300");
+         window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
       });
    }
 
@@ -7496,19 +7507,17 @@
 
          JSROOT.Painter.menuitem(menu, "Direct link", function() { window.open(addr); });
          JSROOT.Painter.menuitem(menu, "Only items", function() { window.open(addr + "&nobrowser"); });
-      } else if (onlineprop != null) {
-         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
-         JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
+      } else 
+      if (onlineprop != null) {
          this.FillOnlineMenu(menu, onlineprop, itemname);
-      } else if (fileprop != null) {
-         JSROOT.Painter.menuitem(menu, "Draw", function() {
-            painter.display(itemname);
-         });
+      } else 
+      if (fileprop != null) {
+         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir) == 0)
             filepath = filepath.slice(JSROOT.source_dir.length);
          JSROOT.Painter.menuitem(menu, "Draw in new window", function() {
-            window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname);
+             window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname);
          });
       }
 
