@@ -1210,17 +1210,22 @@
             .attr("height", 20);
    }
 
-   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj) {
+   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
       // try to find painter for sepcified object
       // can be used to find painter for some special objects, registered as
       // histogram functions
 
       var painters = this.svg_pad() ? this.svg_pad().pad_painter.painters : null; 
-      if ((painters == null) || (selobj==null)) return null;
+      if (painters == null) return null;
 
-      for (var n in painters)
-         if (painters[n].GetObject() === selobj)
-            return painters[n];
+      for (var n in painters) {
+         var pobj = painters[n].GetObject();
+         if (pobj==null) continue;
+         
+         if (selobj && (pobj === selobj)) return painters[n];
+         
+         if (selname && ('fName' in pobj) && (pobj['fName']==selname)) return painters[n];
+      }
 
       return null;
    }
@@ -2487,7 +2492,8 @@
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
-      this.pavetext['fLines'].arr.push({'fTitle' : txt, "fTextColor" : 1 });
+      this.pavetext.AddText(txt);
+      //this.pavetext['fLines'].arr.push({'fTitle' : txt, "fTextColor" : 1 });
    }
 
    JSROOT.TPavePainter.prototype.IsStats = function() {
@@ -3937,33 +3943,26 @@
            .attr("height", h)
            .style('opacity', "0");
    }
-
+   
    JSROOT.THistPainter.prototype.DrawTitle = function() {
-      var w = Number(this.svg_pad(true).attr("width")), 
-          h = Number(this.svg_pad(true).attr("height"));
-      var font_size = Math.round(0.050 * h);
-      var l_title = JSROOT.Painter.translateLaTeX(this.histo['fTitle']);
-
-      var pthis = this;
-
-      if (!('draw_title' in this)) {
-         this['draw_title'] = this.svg_pad(true).append("text").attr("class",
-               "title").attr("text-anchor", "middle").attr("x", w / 2).attr(
-               "y", 1 + font_size /* 0.07*h */).attr("font-family", "Arial")
-               .attr("font-size", font_size);
-
-         this.AddDrag("title", this.draw_title, {
-            move : function(x, y) {
-               // pthis.draw_title.attr("x",x).attr("y", y);
-            },
-            resize : function(width, height) {
-               font_size = height * 0.8;
-               pthis.draw_title.attr("font-size", font_size);
-            }
-         });
+      
+      var painter = this.FindPainterFor(null,"title");
+      
+      if (painter!=null) {
+         painter.pavetext.Clear();
+         painter.pavetext.AddText(this.histo['fTitle']);
+      } else {
+      
+         var pavetext = JSROOT.CreateTPaveText();
+         pavetext["fName"] = "title";
+         pavetext["fX1NDC"] = 0.2809483;
+         pavetext["fY1NDC"] = 0.9339831;
+         pavetext["fX2NDC"] = 0.7190517;
+         pavetext["fY2NDC"] = 0.995;
+         pavetext.AddText(this.histo['fTitle']);
+      
+         painter = JSROOT.Painter.drawPaveText(this.divid, pavetext);
       }
-
-      this.draw_title.text(l_title);
    }
 
    JSROOT.THistPainter.prototype.ToggleStat = function() {
@@ -4042,7 +4041,6 @@
             var func = this.histo.fFunctions.arr[i];
 
             if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-
                return func;
             }
          }
@@ -4099,17 +4097,10 @@
       stats['fTextFont'] = JSROOT.gStyle.StatFont;
 
       stats['fLines'] = JSROOT.CreateTList();
+      
+      JSROOT.addMethods(stats);
 
-      stats['fLines'].arr.push({
-         'fTitle' : "hname",
-         "fTextColor" : 1
-      });
-      // stats['fLines'].arr.push({'fTitle': "Entries = 4075", "fTextColor":
-      // 1});
-      // stats['fLines'].arr.push({'fTitle': "Mean = 2000", "fTextColor": 1});
-      // stats['fLines'].arr.push({'fTitle': "RMS = 3000", "fTextColor": 1});
-
-      stats['fLines'].arr[0]['fTitle'] = this.histo['fName'];
+      stats.AddText(this.histo['fName']);
 
       if (!'fFunctions' in this.histo)
          this.histo['fFunctions'] = JSROOT.CreateTList();
@@ -7434,17 +7425,26 @@
       
       var painter = this;
       
-      JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
-      JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
+      var node = this.Find(itemname);
+      var cando = this.CheckCanDo(node);
+      
+      if (cando.display) 
+         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
+      
+      if (cando.expand || cando.display)
+         JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
       
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       if (this['_monitoring_on'])
          drawurl += "?monitoring=" + this['_monitoring_interval'];
 
-      JSROOT.Painter.menuitem(menu, "Draw in new window", function() { window.open(drawurl); });
-      JSROOT.Painter.menuitem(menu, "Draw as png", function() {
-         window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
-      });
+      if (cando.display)
+         JSROOT.Painter.menuitem(menu, "Draw in new window", function() { window.open(drawurl); });
+      
+      if (cando.display)
+         JSROOT.Painter.menuitem(menu, "Draw as png", function() {
+            window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
+         });
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo) {
