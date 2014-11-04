@@ -846,6 +846,7 @@
       /* compute the bounding box of a string by using temporary svg:text */
       var text = svg.append("svg:text")
                 .attr("class", "temp_text")
+                .attr("xml:space","preserve")
                 .attr("font-family", fontDetails['name'])
                 .attr("font-weight", fontDetails['weight'])
                 .attr("font-style", fontDetails['style'])
@@ -2283,11 +2284,12 @@
       else if (valign == 2) baseline = 'middle';
       else if (valign == 3) baseline = 'top';
 
+      var h_margin = Math.round(pavetext['fMargin'] * width); // horizontal margin
       var lmargin = 0;
       switch (halign) {
-         case 1: lmargin = pavetext['fMargin'] * width; break;
+         case 1: lmargin = h_margin; break;
          case 2: lmargin = width / 2; break;
-         case 3: lmargin = width - (pavetext['fMargin'] * width); break;
+         case 3: lmargin = width - h_margin; break;
       }
 
       // for now ignore all align parameters, draw as is
@@ -2347,21 +2349,21 @@
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
          var line = JSROOT.Painter.translateLaTeX(pavetext['fLines'].arr[j]['fTitle']);
-
          lines.push(line);
-
-         var lw = lmargin + JSROOT.Painter.stringWidth(this.svg_pad(true), line, font_size, fontDetails);
+         var lw = lmargin + JSROOT.Painter.stringWidth(this.svg_pad(true), line, font_size, fontDetails) + h_margin;
          if (lw > maxlw) maxlw = lw;
-
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
          var parts = line.split("|");
          if (parts.length > num_cols)
             num_cols = parts.length;
       }
-
-      if (maxlw > width)
-         font_size = font_size * (width / maxlw);
+      
+      if (maxlw > width) {
+         var old_size = font_size; 
+         font_size = Math.round(font_size * (width / maxlw));
+         if (font_size >= old_size) font_size = old_size - 1;  
+      }
 
       var stepy = height / nlines;
 
@@ -2382,7 +2384,7 @@
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
-            var posy = j * stepy + font_size;
+            var posy = j * stepy + font_size - 1;
 
             if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat > 0) && (j >= first_stat)) {
@@ -6132,6 +6134,7 @@
               .attr("text-anchor", "start")
               .attr("x", tpos_x)
               .attr("y", tpos_y)
+              .attr("xml:space","preserve")
               .attr("font-weight", fontDetails['weight'])
               .attr("font-style", fontDetails['style'])
               .attr("font-family", fontDetails['name'])
@@ -6511,6 +6514,7 @@
              .attr("text-anchor", align)
              .attr("x", lmargin)
              .attr("y", (height / 2) + (font_size / 3))
+             .attr("xml:space","preserve")
              .attr("font-weight", fontDetails['weight'])
              .attr("font-style", fontDetails['style'])
              .attr("font-family", fontDetails['name'])
