@@ -302,8 +302,8 @@
 
       var fontName = JSROOT.Painter.root_fonts[Math.floor(fontIndex / 10)];
 
-      var weight = "";
-      var style = "";
+      var weight = null;
+      var style = null;
       var name = "Arial";
 
       if (fontName == null)
@@ -323,8 +323,8 @@
          fontName = fontName.substring(8, fontName.length);
       }
       if (name == 'Symbol') {
-         weight = "";
-         style = "";
+         weight = null;
+         style = null;
       }
       return {
          'weight' : weight,
@@ -844,10 +844,14 @@
 
    JSROOT.Painter.stringWidth = function(svg, line, font_size, fontDetails) {
       /* compute the bounding box of a string by using temporary svg:text */
-      var text = svg.append("svg:text").attr("class", "temp_text").attr(
-            "font-family", fontDetails['name']).attr("font-weight",
-            fontDetails['weight']).attr("font-style", fontDetails['style'])
-            .attr("font-size", font_size).style("opacity", 0).text(line);
+      var text = svg.append("svg:text")
+                .attr("class", "temp_text")
+                .attr("font-family", fontDetails['name'])
+                .attr("font-weight", fontDetails['weight'])
+                .attr("font-style", fontDetails['style'])
+                .attr("font-size", font_size)
+                .style("opacity", 0)
+                .text(line);
       var w = text.node().getBBox().width;
       text.remove();
       return w;
@@ -2863,8 +2867,8 @@
                 .attr("x", s_width + axisLabelFontSize)
                 .attr("y", s_height)
                 .attr("text-anchor", "end")
-                .attr("font-family",  axisFontDetails['name'])
-                .attr("font-weight",  axisFontDetails['weight'])
+                .attr("font-family", axisFontDetails['name'])
+                .attr("font-weight", axisFontDetails['weight'])
                 .attr("font-style", axisFontDetails['style'])
                 .attr("font-size", axisTitleFontSize).text(title);
       }
@@ -2872,7 +2876,7 @@
       if (this.main_rect == null) {
          this.main_rect = this.svg_pad(true)
                            .append("rect")
-                           .attr("id", "colz_move_rect").style("opacity", "0");
+                           .style("opacity", "0");
       } else {
          // ensure that all color drawing inserted before move rect
          var prnt = this.main_rect.node().parentNode;
@@ -3722,11 +3726,7 @@
                .attr("font-style", xAxisFontDetails['style'])
                .attr("font-size", xAxisTitleFontSize)
                .text(label)
-               .attr("transform",
-                     "translate(0,"
-                           + (xAxisLabelFontSize + xAxisLabelOffset
-                                 * this.histo['fXaxis']['fTitleOffset'] + xAxisTitleFontSize)
-                           + ")");
+               .attr("transform", "translate(0," + (xAxisLabelFontSize + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xAxisTitleFontSize) + ")");
       }
 
       /* Y-axis label */
@@ -3734,8 +3734,7 @@
       var yAxisTitleFontSize = this.histo['fYaxis']['fTitleSize'] * h;
       var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
       var yAxisLabelFontSize = this.histo['fYaxis']['fLabelSize'] * h;
-      var yAxisFontDetails = JSROOT.Painter
-            .getFontDetails(this.histo['fYaxis']['fTitleFont']);
+      var yAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont']);
 
       if (label.length > 0)
          yax_g.append("text")
@@ -3899,40 +3898,44 @@
       if ((n2ay > 0) && !this.options.Logy) {
          var y_axis_sub = d3.svg.axis().scale(this.y).orient("left")
                .tickPadding(yAxisLabelOffset).innerTickSize(-yDivLength / 2)
-               .tickFormat(function(d) {
-                  return;
-               }).ticks(this.y.ticks(this.y_nticks).length * n2ay);
+               .tickFormat(function(d) {  return; })
+               .ticks(this.y.ticks(this.y_nticks).length * n2ay);
 
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-      var xAxisLabelFontDetails = JSROOT.Painter
-            .getFontDetails(this.histo['fXaxis']['fLabelFont']);
-      var yAxisLabelFontDetails = JSROOT.Painter
-            .getFontDetails(this.histo['fYaxis']['fLabelFont']);
+      var xAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont']);
+      var yAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont']);
 
       xax_g.selectAll("text")
-            .attr("font-family", xAxisLabelFontDetails['name']).attr(
-                  "font-size", xAxisLabelFontSize).attr("font-weight",
-                  xAxisLabelFontDetails['weight']).attr("font-style",
-                  xAxisLabelFontDetails['style']);
+            .attr("font-family", xAxisLabelFontDetails['name'])
+            .attr("font-size", xAxisLabelFontSize)
+            .attr("font-weight", xAxisLabelFontDetails['weight'])
+            .attr("font-style", xAxisLabelFontDetails['style']);
 
       yax_g.selectAll("text")
-            .attr("font-family", yAxisLabelFontDetails['name']).attr(
-                  "font-size", yAxisLabelFontSize).attr("font-weight",
-                  yAxisLabelFontDetails['weight']).attr("font-style",
-                  yAxisLabelFontDetails['style']);
+            .attr("font-family", yAxisLabelFontDetails['name'])
+            .attr("font-size", yAxisLabelFontSize)
+            .attr("font-weight", yAxisLabelFontDetails['weight'])
+            .attr("font-style",  yAxisLabelFontDetails['style']);
 
       // we will use such rect for zoom selection
-      xax_g.append("svg:rect").attr("class", "xaxis_zoom").attr("x", 0).attr(
-            "y", 0).attr("width", w).attr("height", xAxisLabelFontSize + 3)
-            .style('opacity', 0);
+      xax_g.append("svg:rect")
+           .attr("class", "xaxis_zoom")
+           .attr("x", 0)
+           .attr("y", 0)
+           .attr("width", w)
+           .attr("height", xAxisLabelFontSize + 3)
+           .style('opacity', "0");
 
       // we will use such rect for zoom selection
-      yax_g.append("svg:rect").attr("class", "yaxis_zoom").attr("x",
-            -2 * yAxisLabelFontSize - 3).attr("y", 0).attr("width",
-            2 * yAxisLabelFontSize + 3).attr("height", h).style('opacity', 0);
-      
+      yax_g.append("svg:rect")
+           .attr("class", "yaxis_zoom")
+           .attr("x",-2 * yAxisLabelFontSize - 3)
+           .attr("y", 0)
+           .attr("width", 2 * yAxisLabelFontSize + 3)
+           .attr("height", h)
+           .style('opacity', "0");
    }
 
    JSROOT.THistPainter.prototype.DrawTitle = function() {
@@ -4237,6 +4240,10 @@
          if (x) x.parentNode.removeChild(x);
          if (rect != null) { rect.remove(); rect = null; }
          zoom_kind = 0;
+         if (disable_tooltip) {
+            JSROOT.gStyle.Tooltip = true;
+            disable_tooltip = false;
+         }
       }
 
       function showContextMenu() {
@@ -4564,8 +4571,10 @@
 
          d3.select("body").style("-webkit-user-select", "auto");
 
-         if (disable_tooltip)
+         if (disable_tooltip) {
             JSROOT.gStyle.Tooltip = true;
+            disable_tooltip = false;
+         }
 
          rect.remove();
          rect = null;
@@ -4593,6 +4602,7 @@
 
       JSROOT.Painter.menuitem(menu, JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
+         console.log("Change tooltip " + JSROOT.gStyle.Tooltip);
          menu['painter'].RedrawPad();
       });
 
@@ -5100,11 +5110,11 @@
                     .style("stroke", "#4572A7")
                     .style("stroke-width", function(d) { return d.width; })
                     .on('mouseover', function() {
-                        if (JSROOT.gStyle.Tooltip)
-                          d3.select(this).transition().duration(100).style("opacity", 0.3)
+                        if (JSROOT.gStyle.Tooltip && (d3.select(this).style("opacity")=="0"))
+                          d3.select(this).transition().duration(100).style("opacity", "0.3");
                      })
                      .on('mouseout', function() {
-                        d3.select(this).transition().duration(100).style("opacity", 0)
+                        d3.select(this).transition().duration(100).style("opacity", "0");
                      })
                      .append("svg:title").text(function(d) { return d.tip; });
       }
