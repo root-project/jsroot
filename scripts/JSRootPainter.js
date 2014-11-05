@@ -1326,7 +1326,6 @@
       if (typeof (framecolor) == 'undefined')
          framecolor = 'white';
 
-
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
 
@@ -1344,8 +1343,12 @@
       // simple workaround to access painter via frame container
       frame_g.node()['frame_painter'] = this;
 
-      frame_g.attr("x", lm).attr("y", tm).attr("width", w).attr("height", h)
-            .attr("transform", "translate(" + lm + "," + tm + ")");
+      lm = Math.round(lm); tm = Math.round(tm);
+      w = Math.round(w); h = Math.round(h);
+      
+      frame_g.attr("x", lm).attr("y", tm)
+             .attr("width", w).attr("height", h)
+             .attr("transform", "translate(" + lm + "," + tm + ")");
 
       var top_rect = frame_g.select("rect");
       if (top_rect.node() == null)
@@ -2017,8 +2020,8 @@
       var x = this.main_painter().x;
       var y = this.main_painter().y;
       var line = d3.svg.line()
-                  .x(function(d) { return x(d.x); })
-                  .y(function(d) { return y(d.y); });
+                  .x(function(d) { return Math.round(x(d.x)); })
+                  .y(function(d) { return Math.round(y(d.y)); });
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
@@ -2068,12 +2071,13 @@
                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.graph['fLineStyle']])
                .style("fill", (pthis.optionFill == 1) ? JSROOT.Painter.root_colors[pthis.graph['fFillColor']] : "none");
 
-         if (JSROOT.gStyle.Tooltip)
+         // do not add tooltip for line, when we wants to add markers
+         if (JSROOT.gStyle.Tooltip && !this.showMarker)
             this.draw_g.selectAll("draw_line")
                        .data(pthis.bins).enter()
                        .append("svg:circle")
-                       .attr("cx", function(d) { return x(d.x); })
-                       .attr("cy", function(d) { return y(d.y); })
+                       .attr("cx", function(d) { return Math.round(x(d.x)); })
+                       .attr("cy", function(d) { return Math.round(y(d.y)); })
                        .attr("r", 3)
                        .attr("opacity", 0)
                        .append("svg:title")
@@ -2191,7 +2195,7 @@
                .data(this.bins)
                .enter()
                .append("svg:path")
-               .attr("transform", function(d) { return "translate(" + x(d.x) + " , " + y(d.y) + ")"; })
+               .attr("transform", function(d) { return "translate(" + Math.round(x(d.x)) + " , " + Math.round(y(d.y)) + ")"; })
                .style("fill", info_marker['toFill'] ? marker_color  : "none")
                .style("stroke", marker_color)
                .attr("d", marker);
@@ -2263,10 +2267,10 @@
       var w = Number(this.svg_pad(true).attr("width")),
           h = Number(this.svg_pad(true).attr("height"));
 
-      var pos_x = pavetext['fX1NDC'] * w;
-      var pos_y = (1.0 - pavetext['fY1NDC']) * h;
-      var width = Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w;
-      var height = Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h;
+      var pos_x = Math.round(pavetext['fX1NDC'] * w);
+      var pos_y = Math.round((1.0 - pavetext['fY1NDC']) * h);
+      var width = Math.round(Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w);
+      var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
       var font_size = Math.round(height / (nlines * 1.2));
@@ -3682,7 +3686,7 @@
    }
 
    JSROOT.THistPainter.prototype.DrawAxes = function() {
-      // axes can be drawn only for main (first) histogram
+      // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
 
@@ -3695,17 +3699,16 @@
       if (this.histo['fXaxis']['fXmax'] < 100 && this.histo['fXaxis']['fXmax'] / this.histo['fXaxis']['fXmin'] < 100) noexpx = true;
       if (this.histo['fYaxis']['fXmax'] < 100 && this.histo['fYaxis']['fXmax'] / this.histo['fYaxis']['fXmin'] < 100) noexpy = true;
 
-      this.svg_frame(true).selectAll(".xaxis_container").remove();
-      this.svg_frame(true).selectAll(".yaxis_container").remove();
-
-      var xax_g = this.svg_frame(true)
-                  .append("svg:g")
-                    .attr("class","xaxis_container")
-                    .attr("transform", "translate(0," + h + ")");
-
-      var yax_g = this.svg_frame(true)
-                  .append("svg:g")
-                  .attr("class", "yaxis_container");
+      var xax_g = this.svg_frame(true).selectAll(".xaxis_container");
+      if (xax_g.node()==null) 
+         xax_g = this.svg_frame(true).append("svg:g").attr("class","xaxis_container");
+      
+      xax_g.selectAll("*").remove();
+      xax_g.attr("transform", "translate(0," + h + ")");
+      
+      var yax_g = this.svg_frame(true).selectAll(".yaxis_container");
+      if (yax_g.node()==null)yax_g = this.svg_frame(true).append("svg:g").attr("class", "yaxis_container");
+      yax_g.selectAll("*").remove();
 
       var x_axis = null, y_axis = null;
 
@@ -3721,37 +3724,37 @@
 
       /* X-axis label */
       var label = JSROOT.Painter.translateLaTeX(this.histo['fXaxis']['fTitle']);
-      var xAxisTitleFontSize = this.histo['fXaxis']['fTitleSize'] * h;
       var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
-      var xAxisLabelFontSize = this.histo['fXaxis']['fLabelSize'] * h;
-      var xAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont']);
-
+      var xAxisLabelFontSize = Math.round(this.histo['fXaxis']['fLabelSize'] * h);
+      
       if (label.length > 0) {
+         var xAxisTitleFontSize = Math.round(this.histo['fXaxis']['fTitleSize'] * h);
+         var xAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont']);
          xax_g.append("text")
                .attr("class", "x_axis_label")
                .attr("x", w)
-               .attr("y", 0)
+               .attr("y", xAxisLabelFontSize + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xAxisTitleFontSize)
                .attr("text-anchor", "end")
                .attr("font-family", xAxisFontDetails['name'])
                .attr("font-weight", xAxisFontDetails['weight'])
                .attr("font-style", xAxisFontDetails['style'])
                .attr("font-size", xAxisTitleFontSize)
-               .text(label)
-               .attr("transform", "translate(0," + (xAxisLabelFontSize + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xAxisTitleFontSize) + ")");
+               .text(label);
       }
 
       /* Y-axis label */
       label = JSROOT.Painter.translateLaTeX(this.histo['fYaxis']['fTitle']);
-      var yAxisTitleFontSize = this.histo['fYaxis']['fTitleSize'] * h;
+      
       var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
-      var yAxisLabelFontSize = this.histo['fYaxis']['fLabelSize'] * h;
-      var yAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont']);
+      var yAxisLabelFontSize = Math.round(this.histo['fYaxis']['fLabelSize'] * h);
 
-      if (label.length > 0)
+      if (label.length > 0) {
+         var yAxisTitleFontSize = Math.round(this.histo['fYaxis']['fTitleSize'] * h);
+         var yAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont']);
          yax_g.append("text")
                 .attr("class", "y_axis_label")
                 .attr("x", 0)
-                .attr("y", -yAxisLabelFontSize - yAxisTitleFontSize - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
+                .attr("y", - yAxisLabelFontSize - yAxisTitleFontSize - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
                 .attr("font-family", yAxisFontDetails['name'])
                 .attr("font-size", yAxisTitleFontSize)
                 .attr("font-weight", yAxisFontDetails['weight'])
@@ -3759,6 +3762,7 @@
                 .attr("text-anchor", "end")
                 .text(label)
                 .attr("transform", "rotate(270, 0, 0)");
+      }
 
       var xAxisColor = this.histo['fXaxis']['fAxisColor'];
       var xDivLength = this.histo['fXaxis']['fTickLength'] * h;
@@ -3786,35 +3790,36 @@
 
          this['dfx'] = d3.time.format(timeformatx);
 
-         x_axis = d3.svg.axis().scale(this.x).orient("bottom").tickPadding(
-               xAxisLabelOffset).tickSize(-xDivLength, -xDivLength / 2,
-               -xDivLength / 4).tickFormat(function(d) {
-            return pthis.dfx(new Date(pthis.timeoffsetx + d * 1000));
+         x_axis = d3.svg.axis().scale(this.x).orient("bottom") 
+                    .tickPadding(xAxisLabelOffset)
+                    .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
+                    .tickFormat(function(d) { return pthis.dfx(new Date(pthis.timeoffsetx + d * 1000));
          }).ticks(this.x_nticks);
       } else if (this.options.Logx) {
-         x_axis = d3.svg.axis().scale(this.x).orient("bottom").tickPadding(
-               xAxisLabelOffset).tickSize(-xDivLength, -xDivLength / 2,
-               -xDivLength / 4).tickFormat(function(d) {
-            var val = parseFloat(d);
-            var vlog = Math.abs(JSROOT.Math.log10(val));
-            if (moreloglabelsx) {
-               if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
-                  if (noexpx)
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
-            } else {
-               if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
-                  if (noexpx)
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
-            }
-         });
+         x_axis = d3.svg.axis().scale(this.x).orient("bottom")
+                     .tickPadding(xAxisLabelOffset)
+                     .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
+                     .tickFormat(function(d) { 
+                        var val = parseFloat(d);
+                        var vlog = Math.abs(JSROOT.Math.log10(val));
+                        if (moreloglabelsx) {
+                           if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
+                              if (noexpx)
+                                 return val.toFixed();
+                              else
+                                 return JSROOT.Painter.formatExp(val.toExponential(0));
+                           } else
+                              return null;
+                        } else {
+                           if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
+                              if (noexpx)
+                                 return val.toFixed();
+                              else
+                                 return JSROOT.Painter.formatExp(val.toExponential(0));
+                           } else
+                              return null;
+                        }
+                     });
       } else {
          x_axis = d3.svg.axis()
                     .scale(this.x)
@@ -3823,8 +3828,8 @@
                     .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
                     .tickFormat(function(d) {
                        // avoid rounding problems around 0
-                       if ((Math.abs(d) < 1e-14) && (Math.abs(xrange) > 1e-5)) d = 0;
-                       return parseFloat(d.toPrecision(12)); })
+                        if ((Math.abs(d) < 1e-14) && (Math.abs(xrange) > 1e-5)) d = 0;
+                        return parseFloat(d.toPrecision(12)); })
                      .ticks(this.x_nticks);
       }
 
@@ -5619,30 +5624,28 @@
             switch (coordinates_kind) {
             case 0:
                point = {
-                  x : grx1,
-                  y : gry2,
-                  width : grx2 - grx1 + 1,
-                  height : gry1 - gry2 + 1,
+                  x : Math.round(grx1),
+                  y : Math.round(gry2),
+                  width : Math.round(grx2) - Math.round(grx1) + 1,
+                  height : Math.round(gry1) - Math.round(gry2) + 1,
                   stroke : "none",
                   fill : this.getValueColor(binz)
                }
-               point['tipcolor'] = (point['fill'] == "black") ? "grey"
-                     : "black";
+               point['tipcolor'] = (point['fill'] == "black") ? "grey" : "black";
                break;
 
             case 1:
                shrx = xfactor * (this.maxbin - binz);
                shry = yfactor * (this.maxbin - binz);
                point = {
-                  x : grx1 + shrx,
-                  y : gry2 + shry,
-                  width : grx2 - grx1 - 2 * shrx,
-                  height : gry1 - gry2 - 2 * shry,
+                  x : Math.round(grx1 + shrx),
+                  y : Math.round(gry2 + shry),
+                  width : Math.round(grx2 - grx1 - 2 * shrx),
+                  height : Math.round(gry1 - gry2 - 2 * shry),
                   stroke : this.linecolor,
                   fill : this.fillcolor
                }
-               point['tipcolor'] = (point['fill'] == "black") ? "grey"
-                     : "black";
+               point['tipcolor'] = (point['fill'] == "black") ? "grey" : "black";
                break;
 
             case 2:
