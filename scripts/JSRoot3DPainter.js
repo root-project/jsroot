@@ -20,7 +20,7 @@
       e1.source = 'JSRoot3DPainter.js';
       throw e1;
    }
-   
+
    JSROOT.Painter.add3DInteraction = function(renderer, scene, camera, toplevel, painter) {
       // add 3D mouse interactive functions
       var mouseX, mouseY, mouseDowned = false;
@@ -251,7 +251,7 @@
 
    JSROOT.Painter.real_drawHistogram2D = function(painter) {
 
-      var w = Number(painter.svg_pad(true).attr("width")), 
+      var w = Number(painter.svg_pad(true).attr("width")),
           h = Number(painter.svg_pad(true).attr("height")), size = 100;
 
       var xmin = painter.xmin, xmax = painter.xmax;
@@ -314,10 +314,17 @@
 
       // create a new mesh with cube geometry
       var cube = new THREE.Mesh(new THREE.BoxGeometry(size * 2, size * 2, size * 2), wireMaterial);
-      cube.position.y = size;
+      //cube.position.y = size;
+
+      var helper = new THREE.BoxHelper(cube);
+      helper.material.color.set(0x000000);
+
+      var box = new THREE.Object3D();
+      box.add(helper);
+      box.position.y = size;
 
       // add the cube to the scene
-      toplevel.add(cube);
+      toplevel.add(box);
 
       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
 
@@ -449,7 +456,7 @@
          wei = tz(hh.z);
 
          bin = THREE.SceneUtils.createMultiMaterialObject(
-               new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy), 
+               new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy),
                [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
          bin.position.x = tx(hh.x);
          bin.position.y = wei / 2;
@@ -482,7 +489,7 @@
        * @author alteredq / http://alteredqualia.com/
        * @author mr.doob / http://mrdoob.com/
        */
-      var Detector = { 
+      var Detector = {
             canvas : !!window.CanvasRenderingContext2D,
             webgl : (function() { try {
                   return !!window.WebGLRenderingContext && !!document.createElement('canvas').getContext('experimental-webgl');
@@ -494,8 +501,9 @@
             fileapi : window.File && window.FileReader && window.FileList && window.Blob
       };
 
-      var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) : 
+      var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) :
                                       new THREE.CanvasRenderer({ antialias : true });
+      renderer.setClearColor(0xffffff, 1);
       renderer.setSize(w, h);
       $(painter.svg_pad()).hide().parent().append(renderer.domElement);
       renderer.render(scene, camera);
@@ -510,13 +518,13 @@
       var painter = new JSROOT.TObjectPainter();
       painter.SetDivId(divid, -1);
       var pad = painter.root_pad();
-      
+
       var render_to;
       if (painter.svg_pad())
          render_to = $(painter.svg_pad()).hide().parent();
       else
          render_to = $("#" + divid);
-      
+
       var opt = histo['fOption'].toLowerCase();
       // if (opt=="") opt = "colz";
 
@@ -565,13 +573,13 @@
       }
       var w = render_to.width(), h = render_to.height(), size = 100;
       if (h<10) { render_to.height(0.66*w); h = render_to.height(); }
-      
+
       if (logx) {
          var tx = d3.scale.log().domain([ histo['fXaxis']['fXmin'],  histo['fXaxis']['fXmax'] ]).range( [ -size, size ]);
-         var utx = d3.scale.log().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]); 
+         var utx = d3.scale.log().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]);
       } else {
          var tx = d3.scale.linear().domain( [ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]).range( [ -size, size ]);
-         var utx = d3.scale.linear().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]); 
+         var utx = d3.scale.linear().domain([ -size, size ]).range([ histo['fXaxis']['fXmin'], histo['fXaxis']['fXmax'] ]);
       }
       if (logy) {
          var ty = d3.scale.log().domain([ histo['fYaxis']['fXmin'], histo['fYaxis']['fXmax'] ]).range( [ -size, size ]);
@@ -606,8 +614,11 @@
       // create a new mesh with cube geometry
       var cube = new THREE.Mesh(new THREE.BoxGeometry(size * 2, size * 2, size * 2), wireMaterial);
 
+      var helper = new THREE.BoxHelper(cube);
+      helper.material.color.set(0x000000);
+
       // add the cube to the scene
-      toplevel.add(cube);
+      toplevel.add(helper);
 
       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
 
@@ -745,7 +756,7 @@
                   new THREE.MeshPhongMaterial({  color : fillcolor.getHex(), specular : 0xbfbfbf/* , shading: THREE.NoShading */}));
          } else {
             bin = THREE.SceneUtils.createMultiMaterialObject(
-                  new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty), 
+                  new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
                   [ new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }), wireMaterial ]);
          }
          bin.position.x = tx(bins[i].x - (scalex / 2));
@@ -793,9 +804,10 @@
             && window.FileList && window.Blob
       };
 
-      var renderer = Detector.webgl ? 
-                       new THREE.WebGLRenderer({ antialias : true }) : 
+      var renderer = Detector.webgl ?
+                       new THREE.WebGLRenderer({ antialias : true }) :
                        new THREE.CanvasRenderer({antialias : true });
+      renderer.setClearColor(0xffffff, 1);
       renderer.setSize(w, h);
       render_to.append(renderer.domElement);
       renderer.render(scene, camera);
@@ -804,4 +816,4 @@
    }
 
 })();
-   
+
