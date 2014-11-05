@@ -126,6 +126,12 @@
             draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
          });
 
+         new JSROOT.TFile("can4.root+", function(file) {
+            if (file==null) return file_error("can8_draw", "can4.root cannot be opened");
+            
+            draw_item_options(file, "c1;1", "can8_draw", "", 0.);
+         });
+
          
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
@@ -170,6 +176,7 @@
   <div id="can5_draw"></div>
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
+  <div id="can8_draw"></div>
 
   
 </body>
