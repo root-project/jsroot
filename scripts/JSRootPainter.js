@@ -1020,6 +1020,13 @@
 
       if (is_main < 0) return;
 
+      // create TFrame element if not exists when 
+      if ((is_main > 0) && (this.svg_frame()==null)) {
+         JSROOT.Painter.drawFrame(divid, null);
+         if (this.svg_frame()==null) return alert("Fail to draw dummy TFrame");
+         this['create_canvas'] = true;
+      }
+
       var svg_p = this.svg_pad();
       svg_p['pad_painter'].painters.push(this);
       
@@ -2382,7 +2389,7 @@
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
             var posy = j * stepy + font_size - 1;
-
+            
             if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat > 0) && (j >= first_stat)) {
                   var parts = lines[j].split("|");
@@ -3493,7 +3500,7 @@
       this['zoom_ymax'] = 0;
       this['zoom_ypad'] = true; // indicate that zooming specified from pad
 
-      if ((pad!=null) && ('fUxmin' in pad)) {
+      if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
          this['zoom_xmin'] = pad.fUxmin;
          this['zoom_xmax'] = pad.fUxmax;
          this['zoom_ymin'] = pad.fUymin;
@@ -4167,7 +4174,6 @@
       this.DrawGrids();
       this.DrawBins();
       if (this.create_canvas) this.DrawTitle();
-      // this.DrawFunctions();
    }
    
    JSROOT.THistPainter.prototype.Unzoom = function(dox, doy) {
@@ -5132,14 +5138,11 @@
          if (this.histo.getBinContent(indx + 1) < min)
             min = this.histo.getBinContent(indx + 1);
 
-      while ((left < right) && (this.histo.getBinContent(left + 1) <= min))
-         left++;
-      while ((left < right) && (this.histo.getBinContent(right) <= min))
-         right--;
+      while ((left < right) && (this.histo.getBinContent(left + 1) <= min)) left++;
+      while ((left < right) && (this.histo.getBinContent(right) <= min)) right--;
 
       if ((right - left < dist) && (left < right))
-         this.Zoom(this.xmin + left * this.binwidthx, this.xmin + right
-               * this.binwidthx, 0, 0);
+         this.Zoom(this.xmin + left * this.binwidthx, this.xmin + right * this.binwidthx, 0, 0);
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -5147,7 +5150,7 @@
       // create painter and add it to canvas
       var painter = new JSROOT.TH1Painter(histo);
       painter.SetDivId(divid, 1);
-
+      
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
 
@@ -5176,8 +5179,7 @@
       return painter;
    }
 
-   // ==================== painter for TH2 histograms
-   // ==============================
+   // ==================== painter for TH2 histograms ==============================
 
    JSROOT.TH2Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
