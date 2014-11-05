@@ -2249,8 +2249,6 @@
       this.pavetext = pave;
       this.Enabled = true;
       this.main_rect = null;
-      this.drag_rect = null;
-      this.resize_rect = null;
    }
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2311,9 +2309,9 @@
       } else {
          // force main rect of the stat box be last item in the primitives to
          // kept it on the top
-         var prnt = this.main_rect.node().parentNode;
-         prnt.removeChild(this.main_rect.node());
-         prnt.appendChild(this.main_rect.node());
+         //var prnt = this.main_rect.node().parentNode;
+         //prnt.removeChild(this.main_rect.node());
+         //prnt.appendChild(this.main_rect.node());
       }
 
       this.main_rect
@@ -2340,14 +2338,15 @@
             pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
             pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
 
-            pthis.RemoveDrawG();
             pthis.DrawPaveText();
          }
       });
+      
 
-      // container to just to recalculate coordinates
-      this.draw_g = this.svg_pad(true).append("svg:g")
-                      .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+      // container used to recalculate coordinates
+      this.RecreateDrawG(true);
+
+      this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
       var first_stat = 0, num_cols = 0;
       var maxlw = 0;
@@ -2388,7 +2387,7 @@
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
-            var posy = j * stepy + font_size - 1;
+            var posy = (j+0.5)*stepy + font_size*0.5 - 1;
 
             if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat > 0) && (j >= first_stat)) {
