@@ -2090,7 +2090,12 @@
 
          // here are up to five elements are collected, try to group them
 
-         var nodes = this.draw_g.selectAll("g.node").data(this.bins).enter().append("svg:g");
+         var nodes = this.draw_g.selectAll("g.node")
+                         .data(this.bins)
+                         .enter()
+                         .append("svg:g")
+                         .filter(function(d) { return (x(d.x) >= 0) && (x(d.x) <= w); });
+                         
 
          // Add x-error indicators
 
@@ -2195,6 +2200,7 @@
                .data(this.bins)
                .enter()
                .append("svg:path")
+               .filter(function(d) { return (x(d.x) >= 0) && (x(d.x) <= w); })
                .attr("transform", function(d) { return "translate(" + Math.round(x(d.x)) + " , " + Math.round(y(d.y)) + ")"; })
                .style("fill", info_marker['toFill'] ? marker_color  : "none")
                .style("stroke", marker_color)
@@ -4203,16 +4209,21 @@
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
       var obj = this.main_painter();
       if (!obj) obj = this;
+      
+      var isany = false;
 
-      if (xmin != xmax) {
+      if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*0.1)) {
          obj['zoom_xmin'] = xmin;
          obj['zoom_xmax'] = xmax;
+         isany = true;
       }
-      if (ymin != ymax) {
+      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*0.1) : Math.abs(obj.ymax-obj.ymin)*1e-6))) { 
          obj['zoom_ymin'] = ymin;
          obj['zoom_ymax'] = ymax;
+         isany = true;
       }
-      this.RedrawPad();
+      
+      if (isany) this.RedrawPad();
    }
 
 
@@ -4684,11 +4695,6 @@
 
       this.ymin = this.histo['fYaxis']['fXmin'];
       this.ymax = this.histo['fYaxis']['fXmax'];
-
-      // console.log("histo fMinimum = " + this.histo['fMinimum'] + " fMaximum =
-      // " + this.histo['fMaximum']);
-      // console.log("hmin = " + hmin + " hmax = " + hmax + " " + (typeof
-      // hmax));
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
          if (this.histo['fMinimum'] != -1111) this.ymin = this.histo['fMinimum'];
