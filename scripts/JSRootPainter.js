@@ -1995,12 +1995,15 @@
       xf = null;
       yf = null;
    }
-
+   
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
+      
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
 
       this.RecreateDrawG();
+      
+      delete this.draw_bins; // delete draw bins (used for markers and errors)
 
       var pthis = this;
 
@@ -2062,8 +2065,7 @@
          }
       }
       if (this.seriesType == 'line') {
-         this.draw_g
-               .append("svg:path")
+         this.draw_g.append("svg:path")
                .attr("d", line(pthis.bins))
                .attr("class", "draw_line")
                .style("stroke", (pthis.optionLine == 1) ? JSROOT.Painter.root_colors[pthis.graph['fLineColor']] : "none")
@@ -2084,84 +2086,89 @@
                        .text(TooltipText);
 
       }
-      if ((this.graph['_typename'] == 'TGraphErrors'
-            || this.graph['_typename'] == 'TGraphAsymmErrors' || this.graph['_typename'].match(/^RooHist/))
-            && this.draw_errors && !this.optionBar) {
+      
+      if (this.draw_errors) 
+         this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' || 
+                             this.graph['_typename'] == 'TGraphAsymmErrors' || 
+                             this.graph['_typename'].match(/^RooHist/)) && !this.optionBar;
 
+      var nodes = null;
+      
+      if (this.draw_errors || this.showMarker) {
+         var draw_bins = new Array;
+         for (var i in this.bins) {
+            var pntx = x(this.bins[i].x);
+            var pnty = y(this.bins[i].y);
+            if ((pntx>=0) && (pntx<=w) && (pnty>=0) && (pnty<=h)) draw_bins.push(this.bins[i]);
+         }
          // here are up to five elements are collected, try to group them
+         nodes = this.draw_g.selectAll("g.node")
+                     .data(draw_bins)
+                     .enter()
+                     .append("svg:g");
+      } 
 
-         var nodes = this.draw_g.selectAll("g.node")
-                         .data(this.bins)
-                         .enter()
-                         .append("svg:g")
-                         .filter(function(d) { return (x(d.x) >= 0) && (x(d.x) <= w); });
-                         
-
-         // Add x-error indicators
-
+      if (this.draw_errors) {
          // than doing filer append error bars
-         var xerr = nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
-                         .append("svg:line")
-                         .attr("x1", function(d) { return x(d.x - d.exlow) })
-                         .attr("y1", function(d) { return y(d.y) })
-                         .attr("x2", function(d) { return x(d.x + d.exhigh) })
-                         .attr("y2", function(d) { return y(d.y) })
-                         .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-                         .style("stroke-width", this.graph['fLineWidth']);
+         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
+              .append("svg:line")
+              .attr("x1", function(d) { return Math.round(x(d.x - d.exlow)); })
+              .attr("y1", function(d) { return Math.round(y(d.y)); })
+              .attr("x2", function(d) { return Math.round(x(d.x + d.exhigh)); })
+              .attr("y2", function(d) { return Math.round(y(d.y)); })
+              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
+              .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.exlow > 0); })
               .append("svg:line")
-              .attr("y1", function(d) { return y(d.y) - 3 })
-              .attr("x1", function(d) { return x(d.x - d.exlow) })
-              .attr("y2", function(d) { return y(d.y) + 3 })
-              .attr("x2", function(d) { return x(d.x - d.exlow) })
+              .attr("y1", function(d) { return Math.round(y(d.y)) - 3; })
+              .attr("x1", function(d) { return Math.round(x(d.x - d.exlow)); })
+              .attr("y2", function(d) { return Math.round(y(d.y) + 3); })
+              .attr("x2", function(d) { return Math.round(x(d.x - d.exlow)); })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.exhigh > 0); })
               .append("svg:line")
-              .attr("y1", function(d) { return y(d.y) - 3 })
-              .attr("x1", function(d) { return x(d.x + d.exhigh) })
-              .attr("y2", function(d) { return y(d.y) + 3 })
-              .attr("x2", function(d) { return x(d.x + d.exhigh) })
+              .attr("y1", function(d) { return Math.round(y(d.y)) - 3; })
+              .attr("x1", function(d) { return Math.round(x(d.x + d.exhigh)); })
+              .attr("y2", function(d) { return Math.round(y(d.y)) + 3; })
+              .attr("x2", function(d) { return Math.round(x(d.x + d.exhigh)); })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style( "stroke-width", this.graph['fLineWidth']);
 
          // Add y-error indicators
 
-         var yerr = nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
-                     .append("svg:line")
-                     .attr("x1", function(d) { return x(d.x) })
-                     .attr("y1", function(d) { return y(d.y - d.eylow) })
-                     .attr("x2", function(d) { return x(d.x) })
-                     .attr("y2", function(d) { return y(d.y + d.eyhigh) })
-                     .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-                     .style("stroke-width", this.graph['fLineWidth']);
+         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
+              .append("svg:line")
+              .attr("x1", function(d) { return Math.round(x(d.x)); })
+              .attr("y1", function(d) { return Math.round(y(d.y - d.eylow)); })
+              .attr("x2", function(d) { return Math.round(x(d.x)); })
+              .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
+              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
+              .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.eylow > 0); })
-                   .append("svg:line")
-                   .attr("x1", function(d) { return x(d.x) - 3; })
-                   .attr("y1", function(d) { return y(d.y - d.eylow); })
-                   .attr("x2", function(d) { return x(d.x) + 3; })
-                   .attr("y2", function(d) { return y(d.y - d.eylow) })
-                   .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-                   .style("stroke-width", this.graph['fLineWidth']);
+              .append("svg:line")
+              .attr("x1", function(d) { return Math.round(x(d.x)) - 3; })
+              .attr("y1", function(d) { return Math.round(y(d.y - d.eylow)); })
+              .attr("x2", function(d) { return Math.round(x(d.x)) + 3; })
+              .attr("y2", function(d) { return Math.round(y(d.y - d.eylow)); })
+              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
+              .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.eyhigh > 0); })
-                 .append("svg:line")
-                 .attr("x1", function(d) { return x(d.x) - 3; })
-                 .attr("y1", function(d) { return y(d.y + d.eyhigh); })
-                 .attr("x2", function(d) { return x(d.x) + 3; })
-                 .attr("y2", function(d) { return y(d.y + d.eyhigh) })
-                 .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-                 .style("stroke-width", this.graph['fLineWidth']);
-
-         if (JSROOT.gStyle.Tooltip) {
-            xerr.append("svg:title").text(TooltipText);
-            yerr.append("svg:title").text(TooltipText);
-         }
-      } else
-         this.draw_errors = false;
+              .append("svg:line")
+              .attr("x1", function(d) { return Math.round(x(d.x)) - 3; })
+              .attr("y1", function(d) { return Math.round(y(d.y + d.eyhigh)); })
+              .attr("x2", function(d) { return Math.round(x(d.x)) + 3; })
+              .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
+              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
+              .style("stroke-width", this.graph['fLineWidth']);
+         
+         if (JSROOT.gStyle.Tooltip)
+            nodes.append("svg:title").text(TooltipText);
+      } 
 
       if (this.showMarker) {
          /* Add markers */
@@ -2195,20 +2202,16 @@
                break;
          }
 
-         var markers = this.draw_g
-               .selectAll("markers")
-               .data(this.bins)
-               .enter()
-               .append("svg:path")
-               .filter(function(d) { return (x(d.x) >= 0) && (x(d.x) <= w); })
-               .attr("transform", function(d) { return "translate(" + Math.round(x(d.x)) + " , " + Math.round(y(d.y)) + ")"; })
-               .style("fill", info_marker['toFill'] ? marker_color  : "none")
-               .style("stroke", marker_color)
-               .attr("d", marker);
+         nodes.append("svg:path")
+              .attr("transform", function(d) { return "translate(" + Math.round(x(d.x)) + " , " + Math.round(y(d.y)) + ")"; })
+              .style("fill", info_marker['toFill'] ? marker_color  : "none")
+              .style("stroke", marker_color)
+              .attr("d", marker);
 
          if (JSROOT.gStyle.Tooltip)
-            markers.append("svg:title").text(TooltipText);
+            nodes.append("svg:title").text(TooltipText);
       }
+      
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
@@ -4212,12 +4215,12 @@
       
       var isany = false;
 
-      if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*0.1)) {
+      if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*2.0)) {
          obj['zoom_xmin'] = xmin;
          obj['zoom_xmax'] = xmax;
          isany = true;
       }
-      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*0.1) : Math.abs(obj.ymax-obj.ymin)*1e-6))) { 
+      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*2.0) : Math.abs(obj.ymax-obj.ymin)*1e-6))) { 
          obj['zoom_ymin'] = ymin;
          obj['zoom_ymax'] = ymax;
          isany = true;
