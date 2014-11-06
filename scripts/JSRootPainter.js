@@ -4938,10 +4938,10 @@
 
          if (this.options.Error > 0) {
             point['x'] = (grx1 + grx2) / 2;
-            point['tip'] = "x = " + this.AxisAsText("x", x1) +
-                        " \ny = " + this.AxisAsText("y", cont) +
-                        " \nerror x = " + ((x2 - x1) / 2).toPrecision(4) +
-                        " \nerror y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
+            point['tip'] = "x = " + this.AxisAsText("x", (x1 + x2)/2 ) + "\n" +
+                           "y = " + this.AxisAsText("y", cont) + "\n" + 
+                           "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" + 
+                           "error y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
          } else {
             point['width'] = grx2 - grx1;
 
@@ -6586,13 +6586,12 @@
          case 2: lmargin = w / 2; break;
          case 3: lmargin = w - (this.text['fMargin'] * w); break;
       }
-      var font_size = Math.round(this.text['fTextSize'] * 0.7 * h);
+      var font_size = Math.round(this.text['fTextSize'] * Math.min(w,h));
       var pos_x = 0, pos_y = 0;
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pad['fX1'] + this.text['fX'] * (pad['fX2'] - pad['fX1']);
          pos_y = pad['fY1'] + this.text['fY'] * (pad['fY2'] - pad['fY1']);
       } else {
-         font_size = Math.round(this.text['fTextSize'] * h);
          pos_x = JSROOT.Painter.xtoPad(this.text['fX'], pad);
          pos_y = JSROOT.Painter.ytoPad(this.text['fY'], pad);
       }
@@ -8089,6 +8088,8 @@
       if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
 
       var draw_func = JSROOT.getDrawFunc(obj['_typename']);
+      
+      console.log("Drawing " + obj['_typename']);
 
       if (draw_func==null) return null;
 
