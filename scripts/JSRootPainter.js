@@ -1390,7 +1390,6 @@
    }
 
    JSROOT.TF1Painter.prototype.Eval = function(x) {
-      // return (x-5)*(x-5);
       return this.tf1.evalPar(x);
    }
 
@@ -1423,8 +1422,7 @@
          var left = -1, right = -1;
          for (var i = 0; i < nb_points; ++i) {
             var h = this.Eval(xmin + (i * binwidthx));
-            if (isNaN(h))
-               continue;
+            if (isNaN(h)) continue;
 
             if (left < 0) {
                left = i;
@@ -1494,8 +1492,7 @@
          this['bins'] = d3.range(nb_points).map(function(p) {
             var xx = xmin + (p * binwidthx);
             var yy = pthis.Eval(xx);
-            if (isNaN(yy))
-               yy = 0;
+            if (isNaN(yy)) yy = 0;
             return {
                x : xx,
                y : yy
@@ -1521,14 +1518,14 @@
       var fillcolor = JSROOT.Painter.createFillPattern(this.svg_canvas(true), this.tf1['fFillStyle'], this.tf1['fFillColor']);
 
       var line = d3.svg.line()
-                   .x(function(d) { return x(d.x); })
-                   .y(function(d) { return y(d.y); })
+                   .x(function(d) { return Math.round(x(d.x)); })
+                   .y(function(d) { return Math.round(y(d.y)); })
                    .interpolate(this.interpolate_method);
 
       var area = d3.svg.area()
-                  .x(function(d) { return x(d.x); })
+                  .x(function(d) { return Math.round(x(d.x)); })
                   .y1(h)
-                  .y0(function(d) { return y(d.y); });
+                  .y0(function(d) { return Math.round(y(d.y)); });
 
       if (linecolor != "none")
          this.draw_g.append("svg:path")
@@ -1549,7 +1546,7 @@
 
       // add tooltips
       if (JSROOT.gStyle.Tooltip)
-         this.draw_g.selectAll("line")
+         this.draw_g.selectAll()
                    .data(this.bins).enter()
                    .append("svg:circle")
                    .attr("cx", function(d) { return x(d.x); })
@@ -2065,13 +2062,28 @@
          }
       }
       if (this.seriesType == 'line') {
-         this.draw_g.append("svg:path")
-               .attr("d", line(pthis.bins))
-               .attr("class", "draw_line")
-               .style("stroke", (pthis.optionLine == 1) ? JSROOT.Painter.root_colors[pthis.graph['fLineColor']] : "none")
-               .style("stroke-width", pthis.bins_lw)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.graph['fLineStyle']])
-               .style("fill", (pthis.optionFill == 1) ? JSROOT.Painter.root_colors[pthis.graph['fFillColor']] : "none");
+         
+         if ((this.optionLine == 1) && (this.optionFill == 0)) {
+            var polyline = "";
+            for (var i in this.bins) 
+               polyline += " " + Math.round(x(this.bins[i].x)) + "," + Math.round(y(this.bins[i].y)); 
+            
+            this.draw_g.append("polyline")
+                       .attr("class", "draw_line")
+                       .attr("points", polyline)
+                       .style("stroke", JSROOT.Painter.root_colors[pthis.graph['fLineColor']])
+                       .style("stroke-width", pthis.bins_lw)
+                       .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.graph['fLineStyle']])
+                       .style("fill", "none").style("fill-opacity", "none");
+         } else {
+            this.draw_g.append("svg:path")
+                  .attr("d", line(pthis.bins))
+                  .attr("class", "draw_line")
+                  .style("stroke", (pthis.optionLine == 1) ? JSROOT.Painter.root_colors[pthis.graph['fLineColor']] : "none")
+                  .style("stroke-width", pthis.bins_lw)
+                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.graph['fLineStyle']])
+                  .style("fill", (pthis.optionFill == 1) ? JSROOT.Painter.root_colors[pthis.graph['fFillColor']] : "none");
+         }
 
          // do not add tooltip for line, when we wants to add markers
          if (JSROOT.gStyle.Tooltip && !this.showMarker)
@@ -2165,9 +2177,6 @@
               .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
-         
-         if (JSROOT.gStyle.Tooltip)
-            nodes.append("svg:title").text(TooltipText);
       } 
 
       if (this.showMarker) {
@@ -2208,10 +2217,10 @@
               .style("stroke", marker_color)
               .attr("d", marker);
 
-         if (JSROOT.gStyle.Tooltip)
-            nodes.append("svg:title").text(TooltipText);
       }
-      
+
+      if (JSROOT.gStyle.Tooltip && nodes)
+         nodes.append("svg:title").text(TooltipText);
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
