@@ -1078,10 +1078,16 @@
             y -= rect_height();
          return y;
       }
+      
+      var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
 
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
             d3.event.sourceEvent.preventDefault();
+
+            acc_x = 0; acc_y = 0;
+            pad_w = Number(pthis.svg_pad(true).attr("width")) - rect_width();
+            pad_h = Number(pthis.svg_pad(true).attr("height")) - rect_height();
 
             pthis[drag_rect_name] =
                pthis.svg_pad(true)
@@ -1095,12 +1101,23 @@
                  .style("cursor", "move");
           }).on("drag", function() {
                d3.event.sourceEvent.preventDefault();
-               pthis[drag_rect_name].attr("x", Number(pthis[drag_rect_name].attr("x")) + d3.event.dx);
-               pthis[drag_rect_name].attr("y", Number(pthis[drag_rect_name].attr("y")) + d3.event.dy);
+               
+               var x = Number(pthis[drag_rect_name].attr("x"));
+               var y = Number(pthis[drag_rect_name].attr("y"));
+               var dx = d3.event.dx, dy = d3.event.dy;
+               
+               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x += dx; dx = 0; } 
+               if (((acc_y<0) && (dy>0)) || ((acc_y>0) && (dy<0))) { acc_y += dy; dy = 0; }
+               
+               if ((x + dx < 0) || (x +dx > pad_w)) acc_x += dx; else x+=dx; 
+               if ((y+dy < 0) || (y+dy > pad_h)) acc_y += dy; else y += dy; 
+               
+               pthis[drag_rect_name].attr("x", x);
+               pthis[drag_rect_name].attr("y", y);
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
                d3.event.sourceEvent.preventDefault();
-
+               
                pthis[drag_rect_name].style("cursor", "auto");
 
                var x = Number(pthis[drag_rect_name].attr("x"));
@@ -1133,6 +1150,9 @@
       var drag_resize = d3.behavior.drag().origin(Object)
         .on( "dragstart", function() {
            d3.event.sourceEvent.preventDefault();
+           acc_x = 0; acc_y = 0;
+           pad_w = Number(pthis.svg_pad(true).attr("width")) - rect_x();
+           pad_h = Number(pthis.svg_pad(true).attr("height")) - rect_y();
            pthis[drag_rect_name] =
               pthis.svg_pad(true)
                 .append("rect")
@@ -1146,8 +1166,16 @@
            // main_rect.style("cursor", "move");
          }).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
-            pthis[drag_rect_name].attr("width", Number(pthis[drag_rect_name].attr("width")) + d3.event.dx);
-            pthis[drag_rect_name].attr("height", Number(pthis[drag_rect_name].attr("height")) + d3.event.dy);
+            
+            var w = Number(pthis[drag_rect_name].attr("width"));
+            var h = Number(pthis[drag_rect_name].attr("height"));
+            var dx = d3.event.dx, dy = d3.event.dy;
+            if ((acc_x>0) && (dx<0)) { acc_x += dx; dx = 0; } 
+            if ((acc_y>0) && (dy<0)) { acc_y += dy; dy = 0; }
+            if (w+dx > pad_w) acc_x += dx; else w+=dx; 
+            if (h+dy > pad_h) acc_y += dy; else h+=dy; 
+            pthis[drag_rect_name].attr("width", w);
+            pthis[drag_rect_name].attr("height", h);
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
             d3.event.sourceEvent.preventDefault();
