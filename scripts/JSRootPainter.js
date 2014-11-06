@@ -2311,15 +2311,8 @@
       var fontDetails = JSROOT.Painter.getFontDetails(pavetext['fTextFont']);
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
 
-      if (this.main_rect == null) {
+      if (this.main_rect == null) 
          this.main_rect = this.svg_pad(true).append("rect");
-      } else {
-         // force main rect of the stat box be last item in the primitives to
-         // kept it on the top
-         //var prnt = this.main_rect.node().parentNode;
-         //prnt.removeChild(this.main_rect.node());
-         //prnt.appendChild(this.main_rect.node());
-      }
 
       this.main_rect
              .attr("x", pos_x)
@@ -2375,7 +2368,8 @@
       if (maxlw > width)
          font_size = Math.floor(font_size * (width / maxlw));
 
-      var stepy = height / nlines;
+      // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line  
+      var stepy = (height - 0.2*font_size) / nlines;
 
       if (nlines == 1) {
          this.draw_g.append("text")
@@ -3966,7 +3960,7 @@
          var shrink = 0.;
          
          if (position < 0) {
-            shrink = -position/w + 0.01;
+            shrink = -position/w + 0.001;
             this.shrink_frame_left += shrink;
          } else 
          if ((this.shrink_frame_left > 0) && (position/w > this.shrink_frame_left)) {
