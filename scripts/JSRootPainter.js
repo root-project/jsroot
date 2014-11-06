@@ -475,16 +475,11 @@
          r = g = b = l; // achromatic
       } else {
          function hue2rgb(p, q, t) {
-            if (t < 0)
-               t += 1;
-            if (t > 1)
-               t -= 1;
-            if (t < 1 / 6)
-               return p + (q - p) * 6 * t;
-            if (t < 1 / 2)
-               return q;
-            if (t < 2 / 3)
-               return p + (q - p) * (2 / 3 - t) * 6;
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
             return p;
          }
          var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
@@ -493,13 +488,11 @@
          g = hue2rgb(p, q, h);
          b = hue2rgb(p, q, h - 1 / 3);
       }
-      return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', '
-            + Math.round(b * 255) + ')';
+      return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
    }
 
    JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
-      if (nticks < 1)
-         nticks = 1;
+      if (nticks < 1) nticks = 1;
       var awidth = range / nticks;
       var reasformat = 0;
 
@@ -509,27 +502,21 @@
          reasformat = 1;
          // width in minutes ?
          if (awidth >= 30) {
-            awidth /= 60;
-            reasformat = 2;
+            awidth /= 60;  reasformat = 2;
             // width in hours ?
             if (awidth >= 30) {
-               awidth /= 60;
-               reasformat = 3;
+               awidth /= 60;   reasformat = 3;
                // width in days ?
                if (awidth >= 12) {
-                  awidth /= 24;
-                  reasformat = 4;
+                  awidth /= 24; reasformat = 4;
                   // width in months ?
                   if (awidth >= 15.218425) {
-                     awidth /= 30.43685;
-                     reasformat = 5;
+                     awidth /= 30.43685; reasformat = 5;
                      // width in years ?
                      if (awidth >= 6) {
-                        awidth /= 12;
-                        reasformat = 6;
+                        awidth /= 12; reasformat = 6;
                         if (awidth >= 2) {
-                           awidth /= 12;
-                           reasformat = 7;
+                           awidth /= 12; reasformat = 7;
                         }
                      }
                   }
@@ -539,22 +526,14 @@
       }
 
       switch (reasformat) {
-      case 0:
-         return "%S";
-      case 1:
-         return "%Mm%S";
-      case 2:
-         return "%Hh%M";
-      case 3:
-         return "%d-%Hh";
-      case 4:
-         return "%d/%m";
-      case 5:
-         return "%d/%m/%y";
-      case 6:
-         return "%d/%m/%y";
-      case 7:
-         return "%m/%y";
+        case 0: return "%S";
+        case 1: return "%Mm%S";
+        case 2: return "%Hh%M";
+        case 3: return "%d-%Hh";
+        case 4: return "%d/%m";
+        case 5: return "%d/%m/%y";
+        case 6: return "%d/%m/%y";
+        case 7: return "%m/%y";
       }
 
       return "%Y";
@@ -1257,9 +1236,12 @@
       return this.tframe;
    }
 
-   JSROOT.TFramePainter.prototype.Shrink = function(shrink_right) {
+   JSROOT.TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       var ndc = this.svg_frame() ? this.svg_frame()['NDC'] : null;
-      if (ndc) ndc.x2 -= shrink_right;
+      if (ndc) {
+         ndc.x1 += shrink_left;
+         ndc.x2 -= shrink_right;
+      }
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
@@ -2005,16 +1987,19 @@
       var pthis = this;
 
       function TooltipText(d) {
-         if (pthis.draw_errors && ('exlow' in d))
-            return "x = " + pthis.main_painter().AxisAsText("x", d.x) + " \ny = "
-                          + pthis.main_painter().AxisAsText("y", d.y) + "\nerror x = -"
-                          + pthis.main_painter().AxisAsText("x", d.exlow) + "/+"
-                          + pthis.main_painter().AxisAsText("x", d.exhigh) + "\nerror y = -"
-                          + pthis.main_painter().AxisAsText("y", d.eylow) + "/+"
-                          + pthis.main_painter().AxisAsText("y", d.eyhigh);
-         else
-            return "x = " + pthis.main_painter().AxisAsText("x", d.x) + " \ny = "
-                          + pthis.main_painter().AxisAsText("y", d.y);
+         
+         var res = "x = " + pthis.main_painter().AxisAsText("x", d.x) + "\n" + 
+                   "y = " + pthis.main_painter().AxisAsText("y", d.y);
+         
+         if (pthis.draw_errors  && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+            res += "\nerror x = -" + pthis.main_painter().AxisAsText("x", d.exlow) + 
+                              "/+" + pthis.main_painter().AxisAsText("x", d.exhigh);
+         
+         if (pthis.draw_errors  && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+            res += "\nerror y = -" + pthis.main_painter().AxisAsText("y", d.eylow) + 
+                              "/+" + pthis.main_painter().AxisAsText("y", d.eyhigh); 
+         
+         return res;
       }
 
       var x = this.main_painter().x;
@@ -3703,7 +3688,7 @@
       return value.toPrecision(4);
    }
 
-   JSROOT.THistPainter.prototype.DrawAxes = function() {
+   JSROOT.THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
@@ -3794,25 +3779,25 @@
        */
       var xrange = this.xmax - this.xmin;
       if (this.histo['fXaxis']['fTimeDisplay']) {
-         if (this.x_nticks > 8)
-            this.x_nticks = 8;
+         if (this.x_nticks > 8) this.x_nticks = 8;
+         
          var timeformatx = JSROOT.Painter.getTimeFormat(this.histo['fXaxis']);
 
-         this['timeoffsetx'] = JSROOT.Painter
-               .getTimeOffset(this.histo['fXaxis']);
+         this['timeoffsetx'] = JSROOT.Painter.getTimeOffset(this.histo['fXaxis']);
 
          var scale_xrange = this.scale_xmax - this.scale_xmin;
 
-         if ((timeformatx.length == 0) || (scale_xrange < 0.1 * xrange))
+         if ((timeformatx.length == 0) || (scale_xrange < 0.1 * xrange)) {
             timeformatx = JSROOT.Painter.chooseTimeFormat(scale_xrange, this.x_nticks);
+         }
 
          this['dfx'] = d3.time.format(timeformatx);
 
          x_axis = d3.svg.axis().scale(this.x).orient("bottom") 
                     .tickPadding(xAxisLabelOffset)
                     .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
-                    .tickFormat(function(d) { return pthis.dfx(new Date(pthis.timeoffsetx + d * 1000));
-         }).ticks(this.x_nticks);
+                    .tickFormat(function(d) { return pthis.dfx(new Date(pthis.timeoffsetx + d * 1000)); })
+                    .ticks(this.x_nticks);
       } else if (this.options.Logx) {
          x_axis = d3.svg.axis().scale(this.x).orient("bottom")
                      .tickPadding(xAxisLabelOffset)
@@ -3970,6 +3955,20 @@
            .attr("width", 2 * yAxisLabelFontSize + 3)
            .attr("height", h)
            .style('opacity', "0");
+
+      if ((shrink_forbidden==null) && typeof yax_g.node()['getBoundingClientRect'] == 'function') {
+         
+         var rect1 = yax_g.node().getBoundingClientRect();
+         var rect2 = this.svg_pad().getBoundingClientRect();
+         var position = rect1.left - rect2.left;
+
+         if (position < 0) {
+            this.svg_frame()['frame_painter'].Shrink(-position/w + 0.01, 0);
+            this.svg_frame()['frame_painter'].Redraw();
+            this.CreateXY();
+            this.DrawAxes(true);
+         }
+      }
    }
 
    JSROOT.THistPainter.prototype.DrawTitle = function() {
@@ -5243,7 +5242,7 @@
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
       if (this.FindPalette() == null) {
          var shrink = this.CreatePalette(0.04);
-         this.svg_frame()['frame_painter'].Shrink(shrink);
+         this.svg_frame()['frame_painter'].Shrink(0, shrink);
          this.options.Zscale = 1;
          // one should draw palette
          JSROOT.Painter.drawPaletteAxis(this.divid, this.FindPalette());
@@ -5793,7 +5792,7 @@
       if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
          // create pallette
          var shrink = this.CreatePalette(0.04);
-         this.svg_frame()['frame_painter'].Shrink(shrink);
+         this.svg_frame()['frame_painter'].Shrink(0, shrink);
          this.svg_frame()['frame_painter'].Redraw();
          this.CreateXY();
       } else if (this.options.Zscale == 0) {
@@ -8089,7 +8088,7 @@
 
       var draw_func = JSROOT.getDrawFunc(obj['_typename']);
       
-      console.log("Drawing " + obj['_typename']);
+//      console.log("Drawing " + obj['_typename']);
 
       if (draw_func==null) return null;
 
