@@ -2964,6 +2964,7 @@
    JSROOT.THistPainter = function(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
+      this.shrink_frame_left = 0.;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3962,8 +3963,19 @@
          var rect2 = this.svg_pad().getBoundingClientRect();
          var position = rect1.left - rect2.left;
 
+         var shrink = 0.;
+         
          if (position < 0) {
-            this.svg_frame()['frame_painter'].Shrink(-position/w + 0.01, 0);
+            shrink = -position/w + 0.01;
+            this.shrink_frame_left += shrink;
+         } else 
+         if ((this.shrink_frame_left > 0) && (position/w > this.shrink_frame_left)) {
+            shrink = -this.shrink_frame_left;
+            this.shrink_frame_left = 0.;
+         }   
+            
+         if (shrink != 0) {
+            this.svg_frame()['frame_painter'].Shrink(shrink, 0);
             this.svg_frame()['frame_painter'].Redraw();
             this.CreateXY();
             this.DrawAxes(true);
