@@ -444,7 +444,15 @@
             x = pad['fUxmin'];
       }
       return x;
-   };
+   }
+   
+   JSROOT.Painter.moveChildToEnd = function(child) {
+      if (!child) return;
+      var prnt = child.node().parentNode;
+      prnt.removeChild(child.node());
+      prnt.appendChild(child.node());
+   }
+
 
    JSROOT.Painter.ytoPad = function(y, pad) {
       if (pad['fLogy']) {
@@ -1114,6 +1122,9 @@
                
                pthis[drag_rect_name].attr("x", x);
                pthis[drag_rect_name].attr("y", y);
+               
+               JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
+               
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
                d3.event.sourceEvent.preventDefault();
@@ -1176,6 +1187,9 @@
             if (h+dy > pad_h) acc_y += dy; else h+=dy; 
             pthis[drag_rect_name].attr("width", w);
             pthis[drag_rect_name].attr("height", h);
+            
+            JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
+            
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
             d3.event.sourceEvent.preventDefault();
@@ -2339,8 +2353,15 @@
       var fontDetails = JSROOT.Painter.getFontDetails(pavetext['fTextFont']);
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
 
-      if (this.main_rect == null) 
+      var pthis = this;
+
+      if (this.main_rect == null) {
          this.main_rect = this.svg_pad(true).append("rect");
+      } else {
+         // force main rect of the stat box be last item in the primitives to
+         // kept it on the top - for instance when colz is created 
+         JSROOT.Painter.moveChildToEnd(this.main_rect);
+      }
 
       this.main_rect
              .attr("x", pos_x)
@@ -2350,8 +2371,6 @@
              .attr("fill", fcolor)
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor);
-
-      var pthis = this;
 
       this.AddDrag("stat", this.main_rect, {
          move : function(x, y, dx, dy) {
