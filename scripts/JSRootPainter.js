@@ -7446,31 +7446,27 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address,
-         user_callback) {
-      if (!server_address)
-         server_address = "";
+   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
+      if (!server_address) server_address = "";
 
       var painter = this;
 
-      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3",
-            'object', function(result) {
-               painter.h = result;
-               if (painter.h == null)
-                  return;
+      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', function(result) {
+         painter.h = result;
+         if (painter.h == null) return;
 
-               // mark top hierarchy as online data and
-               painter.h['_online'] = server_address;
+         // mark top hierarchy as online data and
+         painter.h['_online'] = server_address;
 
-               painter.AddOnlineMethods(painter.h);
+         painter.AddOnlineMethods(painter.h);
 
-               if (painter.h != null)
-                  painter.RefreshHtml(true);
+         if (painter.h != null)
+            painter.RefreshHtml(true);
 
-               if (typeof user_callback == 'function')
-                  user_callback(painter);
+         if (typeof user_callback == 'function')
+            user_callback(painter);
 
-            });
+      });
 
       req.send(null);
    }
