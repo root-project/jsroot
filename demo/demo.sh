@@ -56,4 +56,4 @@ grab 0 Canvases/c1/fPrimitives
 grab 2 Canvases/c1/fPrimitives/hpx
 
 # copy all files to web server
-cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.0/demo
+cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.1/demo
