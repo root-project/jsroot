@@ -445,7 +445,7 @@
       }
       return x;
    }
-   
+
    JSROOT.Painter.moveChildToEnd = function(child) {
       if (!child) return;
       var prnt = child.node().parentNode;
@@ -1086,7 +1086,7 @@
             y -= rect_height();
          return y;
       }
-      
+
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
 
       var drag_move = d3.behavior.drag().origin(Object)
@@ -1109,26 +1109,26 @@
                  .style("cursor", "move");
           }).on("drag", function() {
                d3.event.sourceEvent.preventDefault();
-               
+
                var x = Number(pthis[drag_rect_name].attr("x"));
                var y = Number(pthis[drag_rect_name].attr("y"));
                var dx = d3.event.dx, dy = d3.event.dy;
-               
-               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x += dx; dx = 0; } 
+
+               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x += dx; dx = 0; }
                if (((acc_y<0) && (dy>0)) || ((acc_y>0) && (dy<0))) { acc_y += dy; dy = 0; }
-               
-               if ((x + dx < 0) || (x +dx > pad_w)) acc_x += dx; else x+=dx; 
-               if ((y+dy < 0) || (y+dy > pad_h)) acc_y += dy; else y += dy; 
-               
+
+               if ((x + dx < 0) || (x +dx > pad_w)) acc_x += dx; else x+=dx;
+               if ((y+dy < 0) || (y+dy > pad_h)) acc_y += dy; else y += dy;
+
                pthis[drag_rect_name].attr("x", x);
                pthis[drag_rect_name].attr("y", y);
-               
+
                JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
-               
+
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
                d3.event.sourceEvent.preventDefault();
-               
+
                pthis[drag_rect_name].style("cursor", "auto");
 
                var x = Number(pthis[drag_rect_name].attr("x"));
@@ -1177,19 +1177,19 @@
            // main_rect.style("cursor", "move");
          }).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
-            
+
             var w = Number(pthis[drag_rect_name].attr("width"));
             var h = Number(pthis[drag_rect_name].attr("height"));
             var dx = d3.event.dx, dy = d3.event.dy;
-            if ((acc_x>0) && (dx<0)) { acc_x += dx; dx = 0; } 
+            if ((acc_x>0) && (dx<0)) { acc_x += dx; dx = 0; }
             if ((acc_y>0) && (dy<0)) { acc_y += dy; dy = 0; }
-            if (w+dx > pad_w) acc_x += dx; else w+=dx; 
-            if (h+dy > pad_h) acc_y += dy; else h+=dy; 
+            if (w+dx > pad_w) acc_x += dx; else w+=dx;
+            if (h+dy > pad_h) acc_y += dy; else h+=dy;
             pthis[drag_rect_name].attr("width", w);
             pthis[drag_rect_name].attr("height", h);
-            
+
             JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
-            
+
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
             d3.event.sourceEvent.preventDefault();
@@ -1369,7 +1369,7 @@
 
       lm = Math.round(lm); tm = Math.round(tm);
       w = Math.round(w); h = Math.round(h);
-      
+
       frame_g.attr("x", lm).attr("y", tm)
              .attr("width", w).attr("height", h)
              .attr("transform", "translate(" + lm + "," + tm + ")");
@@ -2016,31 +2016,31 @@
       xf = null;
       yf = null;
    }
-   
+
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
-      
+
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
 
       this.RecreateDrawG();
-      
+
       delete this.draw_bins; // delete draw bins (used for markers and errors)
 
       var pthis = this;
 
       function TooltipText(d) {
-         
-         var res = "x = " + pthis.main_painter().AxisAsText("x", d.x) + "\n" + 
+
+         var res = "x = " + pthis.main_painter().AxisAsText("x", d.x) + "\n" +
                    "y = " + pthis.main_painter().AxisAsText("y", d.y);
-         
+
          if (pthis.draw_errors  && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-            res += "\nerror x = -" + pthis.main_painter().AxisAsText("x", d.exlow) + 
+            res += "\nerror x = -" + pthis.main_painter().AxisAsText("x", d.exlow) +
                               "/+" + pthis.main_painter().AxisAsText("x", d.exhigh);
-         
+
          if (pthis.draw_errors  && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
-            res += "\nerror y = -" + pthis.main_painter().AxisAsText("y", d.eylow) + 
-                              "/+" + pthis.main_painter().AxisAsText("y", d.eyhigh); 
-         
+            res += "\nerror y = -" + pthis.main_painter().AxisAsText("y", d.eylow) +
+                              "/+" + pthis.main_painter().AxisAsText("y", d.eyhigh);
+
          return res;
       }
 
@@ -2089,12 +2089,12 @@
          }
       }
       if (this.seriesType == 'line') {
-         
+
          if ((this.optionLine == 1) && (this.optionFill == 0)) {
             var polyline = "";
-            for (var i in this.bins) 
-               polyline += " " + Math.round(x(this.bins[i].x)) + "," + Math.round(y(this.bins[i].y)); 
-            
+            for (var i in this.bins)
+               polyline += " " + Math.round(x(this.bins[i].x)) + "," + Math.round(y(this.bins[i].y));
+
             this.draw_g.append("polyline")
                        .attr("class", "draw_line")
                        .attr("points", polyline)
@@ -2125,14 +2125,14 @@
                        .text(TooltipText);
 
       }
-      
-      if (this.draw_errors) 
-         this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' || 
-                             this.graph['_typename'] == 'TGraphAsymmErrors' || 
+
+      if (this.draw_errors)
+         this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
+                             this.graph['_typename'] == 'TGraphAsymmErrors' ||
                              this.graph['_typename'].match(/^RooHist/)) && !this.optionBar;
 
       var nodes = null;
-      
+
       if (this.draw_errors || this.showMarker) {
          var draw_bins = new Array;
          for (var i in this.bins) {
@@ -2145,7 +2145,7 @@
                      .data(draw_bins)
                      .enter()
                      .append("svg:g");
-      } 
+      }
 
       if (this.draw_errors) {
          // than doing filer append error bars
@@ -2204,7 +2204,7 @@
               .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
-      } 
+      }
 
       if (this.showMarker) {
          /* Add markers */
@@ -2355,13 +2355,8 @@
 
       var pthis = this;
 
-      if (this.main_rect == null) {
+      if (this.main_rect == null)
          this.main_rect = this.svg_pad(true).append("rect");
-      } else {
-         // force main rect of the stat box be last item in the primitives to
-         // kept it on the top - for instance when colz is created 
-         JSROOT.Painter.moveChildToEnd(this.main_rect);
-      }
 
       this.main_rect
              .attr("x", pos_x)
@@ -2371,24 +2366,6 @@
              .attr("fill", fcolor)
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor);
-
-      this.AddDrag("stat", this.main_rect, {
-         move : function(x, y, dx, dy) {
-            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
-
-            pthis.pavetext['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
-            pthis.pavetext['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
-         },
-         resize : function(width, height) {
-            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
-
-            pthis.DrawPaveText();
-         }
-      });
-      
 
       // container used to recalculate coordinates
       this.RecreateDrawG(true);
@@ -2415,7 +2392,7 @@
       if (maxlw > width)
          font_size = Math.floor(font_size * (width / maxlw));
 
-      // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line  
+      // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       var stepy = (height - 0.2*font_size) / nlines;
 
       if (nlines == 1) {
@@ -2542,6 +2519,28 @@
                     .style("stroke", lcolor)
                     .style("stroke-width", lwidth);
       }
+      
+      // force main rect of the stat box be last item in the primitives to
+      // kept it on the top - for instance when colz is created 
+      JSROOT.Painter.moveChildToEnd(this.main_rect);
+      JSROOT.Painter.moveChildToEnd(this.draw_g);
+
+      this.AddDrag("stat", this.main_rect, {
+         move : function(x, y, dx, dy) {
+            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
+
+            pthis.pavetext['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pthis.pavetext['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pthis.pavetext['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pthis.pavetext['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+         },
+         resize : function(width, height) {
+            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
+            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
+
+            pthis.DrawPaveText();
+         }
+      });
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
@@ -3745,12 +3744,12 @@
       if (this.histo['fYaxis']['fXmax'] < 100 && this.histo['fYaxis']['fXmax'] / this.histo['fYaxis']['fXmin'] < 100) noexpy = true;
 
       var xax_g = this.svg_frame(true).selectAll(".xaxis_container");
-      if (xax_g.node()==null) 
+      if (xax_g.node()==null)
          xax_g = this.svg_frame(true).append("svg:g").attr("class","xaxis_container");
-      
+
       xax_g.selectAll("*").remove();
       xax_g.attr("transform", "translate(0," + h + ")");
-      
+
       var yax_g = this.svg_frame(true).selectAll(".yaxis_container");
       if (yax_g.node()==null)yax_g = this.svg_frame(true).append("svg:g").attr("class", "yaxis_container");
       yax_g.selectAll("*").remove();
@@ -3771,7 +3770,7 @@
       var label = JSROOT.Painter.translateLaTeX(this.histo['fXaxis']['fTitle']);
       var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
       var xAxisLabelFontSize = Math.round(this.histo['fXaxis']['fLabelSize'] * h);
-      
+
       if (label.length > 0) {
          var xAxisTitleFontSize = Math.round(this.histo['fXaxis']['fTitleSize'] * h);
          var xAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont']);
@@ -3789,7 +3788,7 @@
 
       /* Y-axis label */
       label = JSROOT.Painter.translateLaTeX(this.histo['fYaxis']['fTitle']);
-      
+
       var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
       var yAxisLabelFontSize = Math.round(this.histo['fYaxis']['fLabelSize'] * h);
 
@@ -3822,7 +3821,7 @@
       var xrange = this.xmax - this.xmin;
       if (this.histo['fXaxis']['fTimeDisplay']) {
          if (this.x_nticks > 8) this.x_nticks = 8;
-         
+
          var timeformatx = JSROOT.Painter.getTimeFormat(this.histo['fXaxis']);
 
          this['timeoffsetx'] = JSROOT.Painter.getTimeOffset(this.histo['fXaxis']);
@@ -3835,7 +3834,7 @@
 
          this['dfx'] = d3.time.format(timeformatx);
 
-         x_axis = d3.svg.axis().scale(this.x).orient("bottom") 
+         x_axis = d3.svg.axis().scale(this.x).orient("bottom")
                     .tickPadding(xAxisLabelOffset)
                     .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
                     .tickFormat(function(d) { return pthis.dfx(new Date(pthis.timeoffsetx + d * 1000)); })
@@ -3844,7 +3843,7 @@
          x_axis = d3.svg.axis().scale(this.x).orient("bottom")
                      .tickPadding(xAxisLabelOffset)
                      .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
-                     .tickFormat(function(d) { 
+                     .tickFormat(function(d) {
                         var val = parseFloat(d);
                         var vlog = Math.abs(JSROOT.Math.log10(val));
                         if (moreloglabelsx) {
@@ -3999,22 +3998,22 @@
            .style('opacity', "0");
 
       if ((shrink_forbidden==null) && typeof yax_g.node()['getBoundingClientRect'] == 'function') {
-         
+
          var rect1 = yax_g.node().getBoundingClientRect();
          var rect2 = this.svg_pad().getBoundingClientRect();
          var position = rect1.left - rect2.left;
 
          var shrink = 0.;
-         
+
          if (position < 0) {
             shrink = -position/w + 0.001;
             this.shrink_frame_left += shrink;
-         } else 
+         } else
          if ((this.shrink_frame_left > 0) && (position/w > this.shrink_frame_left)) {
             shrink = -this.shrink_frame_left;
             this.shrink_frame_left = 0.;
-         }   
-            
+         }
+
          if (shrink != 0) {
             this.svg_frame()['frame_painter'].Shrink(shrink, 0);
             this.svg_frame()['frame_painter'].Redraw();
@@ -4273,7 +4272,7 @@
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
       var obj = this.main_painter();
       if (!obj) obj = this;
-      
+
       var isany = false;
 
       if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*2.0)) {
@@ -4281,15 +4280,14 @@
          obj['zoom_xmax'] = xmax;
          isany = true;
       }
-      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*2.0) : Math.abs(obj.ymax-obj.ymin)*1e-6))) { 
+      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*2.0) : Math.abs(obj.ymax-obj.ymin)*1e-6))) {
          obj['zoom_ymin'] = ymin;
          obj['zoom_ymax'] = ymax;
          isany = true;
       }
-      
+
       if (isany) this.RedrawPad();
    }
-
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the main pad
@@ -4991,8 +4989,8 @@
          if (this.options.Error > 0) {
             point['x'] = (grx1 + grx2) / 2;
             point['tip'] = "x = " + this.AxisAsText("x", (x1 + x2)/2 ) + "\n" +
-                           "y = " + this.AxisAsText("y", cont) + "\n" + 
-                           "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" + 
+                           "y = " + this.AxisAsText("y", cont) + "\n" +
+                           "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" +
                            "error y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
          } else {
             point['width'] = grx2 - grx1;
@@ -5544,6 +5542,7 @@
             }
          }
       }
+      this.maxbin *= 1.05;
    }
 
    JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat) {
@@ -8136,7 +8135,7 @@
       if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
 
       var draw_func = JSROOT.getDrawFunc(obj['_typename']);
-      
+
 //      console.log("Drawing " + obj['_typename']);
 
       if (draw_func==null) return null;
