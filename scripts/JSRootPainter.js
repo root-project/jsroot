@@ -2519,9 +2519,9 @@
                     .style("stroke", lcolor)
                     .style("stroke-width", lwidth);
       }
-      
+
       // force main rect of the stat box be last item in the primitives to
-      // kept it on the top - for instance when colz is created 
+      // kept it on the top - for instance when colz is created
       JSROOT.Painter.moveChildToEnd(this.main_rect);
       JSROOT.Painter.moveChildToEnd(this.draw_g);
 
@@ -5542,7 +5542,6 @@
             }
          }
       }
-      this.maxbin *= 1.05;
    }
 
    JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat) {
