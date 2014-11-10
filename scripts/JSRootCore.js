@@ -15,7 +15,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.1 dev 7/11/2014";
+   JSROOT.version = "3.1 dev 10/11/2014";
 
    JSROOT.source_dir = null;
 
@@ -164,11 +164,11 @@
       //  "head" - returns request itself, uses "HEAD" method
       // Result will be returned to the callback functions
       // If failed, request returns null
-      
+
       function callback(res) {
          if (typeof user_call_back == 'function') user_call_back(res);
       }
-      
+
       var xhr = new XMLHttpRequest();
 
 //      if (typeof ActiveXObject == "function") {

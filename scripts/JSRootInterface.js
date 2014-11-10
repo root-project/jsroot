@@ -429,7 +429,9 @@ function BuildSimpleGUI() {
 
 
    var files = myDiv.attr("files");
-   if (!files) files = "file/hsimple.root";
+   var filesdir = myDiv.attr("filesdir");
+   if (!files) files = "files/hsimple.root";
+   if (!filesdir) filesdir = "";
    var arrFiles = files.split(';');
 
    var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
@@ -440,12 +442,12 @@ function BuildSimpleGUI() {
       +'<small><sub>*: Other URLs might not work because of cross site scripting protection, see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org/http_access_control</a> on how to avoid it.</sub></small></p>'
       +'<form name="ex">'
       +'<div style="margin-left:10px;">'
-      +'<input type="text" name="state" value="" size="30" id="urlToLoad"/><br/>'
+      + '<input type="text" name="state" value="" size="30" id="urlToLoad"/><br/>'
       +'<select name="s" size="1" '
       +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
       +'<option value = " " selected = "selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
    for (var i=0; i<arrFiles.length; i++) {
-      guiCode += '<option value = "' + arrFiles[i] + '">' + arrFiles[i] + '</option>';
+      guiCode += '<option value = "' + filesdir + arrFiles[i] + '">' + arrFiles[i] + '</option>';
    }
    guiCode += '</select>'
       +'</div>'
