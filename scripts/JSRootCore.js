@@ -454,12 +454,12 @@
       }
       JSROOT.function_list.push(sig);
    }
-   
+
    JSROOT.Create = function(typename, target) {
       var obj = target;
       if (obj == null)
          obj = { _typename: typename }; 
-      
+
       if (typename == 'TObject')
          jQuery.extend(obj, { fUniqueID: 0, fBits: 0x3000008 });
       else
@@ -486,6 +486,9 @@
       if (typename == 'TAttFill') {
          jQuery.extend(obj, { fFillColor: 0, fFillStyle : 0 } );
       } else
+      if (typename == 'TAttMarker') {
+         jQuery.extend(obj, { fMarkerColor: 1, fMarkerStyle : 1, fMarkerSize : 1. });
+      } else
       if (typename == 'TBox') {
          JSROOT.Create("TObject", obj);
          JSROOT.Create("TAttLine", obj);
@@ -497,7 +500,6 @@
          jQuery.extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
                               fBorderSize: 0, fInit: 1, fShadowColor: 1, 
                               fCornerRadius: 0, fOption: "blNDC", fName: "title" });
-
       } else
       if (typename == 'TAttText') {
          jQuery.extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
@@ -510,8 +512,37 @@
       if (typename == 'TPaveStats') {
          JSROOT.Create("TPaveText", obj);
          jQuery.extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
-      }
-   
+      } else 
+      if (typename == 'TH1') {
+         JSROOT.Create("TNamed", obj);
+         JSROOT.Create("TAttLine", obj);
+         JSROOT.Create("TAttFill", obj);
+         JSROOT.Create("TAttMarker", obj);
+         
+         jQuery.extend(obj, { 
+            fNcells : 0,
+            fXaxis: JSROOT.Create("TAxis"),
+            fYaxis: JSROOT.Create("TAxis"),
+            fZaxis: JSROOT.Create("TAxis"),
+            fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,         
+            fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0., 
+            fMaximum : -1111., fMinimum : -1111, fNormFactor : 0., fContour : [],
+            fSumw2 : [], fOption : "",
+            fFunctions : JSROOT.Create("TList"),
+            fBufferSize : 0, fBuffer : [], fBinStatErrOpt : 0 });
+      } else 
+      if (typename == 'TH1I' || typename == 'TH1F' || typename == 'TH1D' || typename == 'TH1S' || typename == 'TH1C') {
+         JSROOT.Create("TH1", obj);
+         jQuery.extend(obj, { fN : 0, fArray: [] });
+      } else
+      if (typename == 'TH2') {
+         JSROOT.Create("TH1", obj);
+         jQuery.extend(obj, { fScalefactor: 1., fTsumwy: 0. fTsumwy2: 0, fTsumwxy : 0});
+      } else
+      if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
+         JSROOT.Create("TH2", obj);
+         jQuery.extend(obj, { fN : 0, fArray: [] });
+      } 
       
       JSROOT.addMethods(obj, typename);
       return obj;
@@ -522,78 +553,27 @@
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
    JSROOT.CreateTH1 = function(nbinsx) {
-      var histo = {};
-      histo['_typename'] = "TH1I";
-      histo['fBits'] = 0x3000008;
-      histo['fName'] = "dummy_histo_" + this.id_counter++;
-      histo['fTitle'] = "dummytitle";
-      histo['fMinimum'] = -1111;
-      histo['fMaximum'] = -1111;
-      histo['fOption'] = "";
-      histo['fFillColor'] = 0;
-      histo['fLineColor'] = 0;
-      histo['fLineWidth'] = 1;
-      histo['fBinStatErrOpt'] = 0;
-      histo['fNcells'] = 0;
-      histo['fN'] = 0;
-      histo['fArray'] = new Array;
-      histo['fSumw2'] = new Array;
-      histo['fFunctions'] = JSROOT.Create("TList");
-
-      histo['fXaxis'] = JSROOT.Create("TAxis");
-      histo['fYaxis'] = JSROOT.Create("TAxis");
+      var histo = JSROOT.Create("TH1I");
+      jQuery.extend(histo, { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
       if (nbinsx!=null) {
-         histo['fNcells'] = nbinsx+2;
+         histo['fN'] = histo['fNcells'] = nbinsx+2;
          for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
-         histo['fXaxis']['fNbins'] = nbinsx;
-         histo['fXaxis']['fXmin'] = 0;
-         histo['fXaxis']['fXmax'] = nbinsx;
+         jQuery.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
       }
-
-      JSROOT.addMethods(histo);
-
       return histo;
    }
 
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
-      var histo = {};
-      histo['_typename'] = "TH2I";
-      histo['fBits'] = 0x3000008;
-      histo['fName'] = "dummy_histo_" + this.id_counter++;
-      histo['fTitle'] = "dummytitle";
-      histo['fMinimum'] = -1111;
-      histo['fMaximum'] = -1111;
-      histo['fOption'] = "";
-      histo['fFillColor'] = 0;
-      histo['fLineColor'] = 0;
-      histo['fLineWidth'] = 1;
-      histo['fBinStatErrOpt'] = 0;
-      histo['fNcells'] = 0;
-      histo['fN'] = 0;
-      histo['fArray'] = new Array;
-      histo['fSumw2'] = new Array;
-      histo['fFunctions'] = JSROOT.Create("TList");
-      histo['fContour'] = new Array;
-
-      histo['fXaxis'] = JSROOT.Create("TAxis");
-      histo['fYaxis'] = JSROOT.Create("TAxis");
-      histo['fZaxis'] = JSROOT.Create("TAxis");
-
+      var histo = JSROOT.Create("TH2I");
+      jQuery.extend(histo, { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+      
       if ((nbinsx!=null) && (nbinsy!=null)) {
-         histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
+         histo['fN'] = histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
          for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
-         histo['fXaxis']['fNbins'] = nbinsx;
-         histo['fYaxis']['fNbins'] = nbinsy;
-
-         histo['fXaxis']['fXmin'] = 0;
-         histo['fXaxis']['fXmax'] = nbinsx;
-         histo['fYaxis']['fXmin'] = 0;
-         histo['fYaxis']['fXmax'] = nbinsy;
+         jQuery.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
+         jQuery.extend(histo['YXaxis'], { fNbins: nbinsy, fXmin: 0,  fXmax: nbinsy });
       }
-
-      JSROOT.addMethods(histo);
-
       return histo;
    }
 

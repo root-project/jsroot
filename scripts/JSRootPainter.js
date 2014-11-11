@@ -1470,12 +1470,10 @@
          }
       }
 
-      if (ymax > 0.0)
-         ymax *= 1.05;
-      if (ymin < 0.0)
-         ymin *= 1.05;
+      if (ymax > 0.0) ymax *= 1.05;
+      if (ymin < 0.0) ymin *= 1.05;
 
-      var histo = JSROOT.CreateTH1();
+      var histo = JSROOT.Create("TH1I");
 
       histo['fName'] = this.tf1['fName'] + "_hist";
       histo['fTitle'] = this.tf1['fTitle'];
@@ -4133,8 +4131,6 @@
       if (!this.draw_content) return null;
       if (this.FindStat() != null) return null;
       
-      console.log("CreateStat!!!")
-
       var stats = JSROOT.Create('TPaveStats');
       jQuery.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
@@ -5952,7 +5948,7 @@
          themin = this.stack['fMinimum'];
       if (!('fHistogram' in this.stack)) {
          h = this.stack['fHists'].arr[0];
-         this.stack['fHistogram'] = JSROOT.CreateTH1();
+         this.stack['fHistogram'] = JSROOT.Create("TH1I");
          this.stack['fHistogram']['fName'] = "unnamed";
          this.stack['fHistogram']['fXaxis'] = JSROOT.clone(h['fXaxis']);
          this.stack['fHistogram']['fYaxis'] = JSROOT.clone(h['fYaxis']);
@@ -6456,7 +6452,7 @@
 
       // Create a temporary histogram to draw the axis (if necessary)
       if (!histo) {
-         histo = JSROOT.CreateTH1();
+         histo = JSROOT.Create("TH1I");
          histo['fXaxis']['fXmin'] = rwxmin;
          histo['fXaxis']['fXmax'] = rwxmax;
          histo['fYaxis']['fXmin'] = rwymin;

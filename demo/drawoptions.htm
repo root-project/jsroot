@@ -60,7 +60,8 @@
       function LoadFile(filename, filecallback) {
 
          var dir = JSROOT.GetUrlOption("path");
-         if (dir==null) dir = "http://root.cern.ch/js/files/";   
+         //if (dir==null) dir = "http://root.cern.ch/js/files/";
+         if (dir==null) dir = "files/";   
 
          // do not read file when not required - create only fake instance
          if (JSROOT.GetUrlOption("minimal") || 
