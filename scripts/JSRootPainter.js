@@ -34,7 +34,7 @@
                               // optimized to exclude too-many points
       'AutoStat' : true,
       'OptStat' : 1111,
-      'StatNDC' : { fX1NFC : 0.78, fY1NDC: 0:75, fX2NDC: 0.98, fY2NDC: 0.91 },
+      'StatNDC' : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
       'StatText': { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
       'StatFill': { fFillColor: 0, fFillStyle: 1001 },
       'TimeOffset' : 788918400000, // UTC time at 01/01/95
@@ -4129,7 +4129,7 @@
       jQuery.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
                              fOptStat: JSROOT.gStyle.OptStat,
-                             fBorderSize : 1);
+                             fBorderSize : 1} );
       jQuery.extend(stats, JSROOT.gStyle.StatNDC);
       jQuery.extend(stats, JSROOT.gStyle.StatText);
       jQuery.extend(stats, JSROOT.gStyle.StatFill);

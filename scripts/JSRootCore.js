@@ -537,7 +537,7 @@
       } else
       if (typename == 'TH2') {
          JSROOT.Create("TH1", obj);
-         jQuery.extend(obj, { fScalefactor: 1., fTsumwy: 0. fTsumwy2: 0, fTsumwxy : 0});
+         jQuery.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy : 0});
       } else
       if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
          JSROOT.Create("TH2", obj);
