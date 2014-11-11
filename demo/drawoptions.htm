@@ -59,7 +59,7 @@
       
       function LoadFile(filename, filecallback) {
 
-         var dir = JSROOT.GetUrlOption("dir");
+         var dir = JSROOT.GetUrlOption("path");
          if (dir==null) dir = "http://root.cern.ch/js/files/";   
 
          // do not read file when not required - create only fake instance
@@ -76,6 +76,8 @@
       function CreateGui() {
 
          $('#debug').empty();
+         
+         $('#debug').append("<h2>JavaSript ROOT version " + JSROOT.version + "</h2>"); 
 
          LoadFile("hsimple.root", function(file) {
             draw_item_options(file, "hpx;1", "h1_draw", "");
