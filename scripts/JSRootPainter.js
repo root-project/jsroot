@@ -2314,6 +2314,7 @@
           h = Number(this.svg_pad(true).attr("height"));
 
       var pos_x = Math.round(pavetext['fX1NDC'] * w);
+
       var pos_y = Math.round((1.0 - pavetext['fY1NDC']) * h);
       var width = Math.round(Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w);
       var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
@@ -2362,8 +2363,8 @@
       this.main_rect
              .attr("x", pos_x)
              .attr("y", pos_y)
-             .attr("height", height)
              .attr("width", width)
+             .attr("height", height)
              .attr("fill", fcolor)
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor);
@@ -4033,12 +4034,11 @@
          painter.pavetext.AddText(this.histo['fTitle']);
       } else {
 
-         var pavetext = JSROOT.CreateTPaveText();
-         pavetext["fName"] = "title";
-         pavetext["fX1NDC"] = 0.2809483;
-         pavetext["fY1NDC"] = 0.9339831;
-         pavetext["fX2NDC"] = 0.7190517;
-         pavetext["fY2NDC"] = 0.995;
+         var pavetext = JSROOT.Create("TPaveText");
+         
+         jQuery.extend(pavetext, { fName: "title", 
+                                   fX1NDC: 0.2809483, fY1NDC: 0.9339831,
+                                   fX2NDC: 0.7190517, fY2NDC: 0.995});
          pavetext.AddText(this.histo['fTitle']);
 
          painter = JSROOT.Painter.drawPaveText(this.divid, pavetext);
@@ -4132,58 +4132,34 @@
 
       if (!this.draw_content) return null;
       if (this.FindStat() != null) return null;
+      
+      console.log("CreateStat!!!")
 
-      var stats = {};
-      stats['_typename'] = 'TPaveStats';
-      stats['fName'] = 'stats';
-
-      stats['_AutoCreated'] = true;
-      stats['fX1NDC'] = JSROOT.gStyle.StatX;
-      stats['fY1NDC'] = JSROOT.gStyle.StatY;
-      stats['fX2NDC'] = JSROOT.gStyle.StatX + JSROOT.gStyle.StatW;
-      stats['fY2NDC'] = JSROOT.gStyle.StatY + JSROOT.gStyle.StatH;
+      var stats = JSROOT.Create('TPaveStats');
+      jQuery.extend(stats, { _AutoCreated: true,
+                             fName : 'stats',
+                             fX1NDC: JSROOT.gStyle.StatX,
+                             fY1NDC: JSROOT.gStyle.StatY,
+                             fX2NDC: JSROOT.gStyle.StatX + JSROOT.gStyle.StatW,
+                             fY2NDC: JSROOT.gStyle.StatY + JSROOT.gStyle.StatH,
+                             fOptStat: JSROOT.gStyle.OptStat,
+                             fBorderSize : 1,
+                             fFillColor: JSROOT.gStyle.StatColor,
+                             fFillStyle: JSROOT.gStyle.StatStyle,
+                             fTextAngle: 0,
+                             fTextSize: JSROOT.gStyle.StatFontSize,
+                             fTextAlign: 12,
+                             fTextColor: JSROOT.gStyle.StatTextColor,
+                             fTextFont: JSROOT.gStyle.StatFont } );
+                             
+                             
       if (this.histo['_typename'] && (this.histo['_typename'].match(/^TProfile/) || this.histo['_typename'].match(/^TH2/)))
          stats['fY1NDC'] = 0.67;
-
-      stats['fOptFit'] = 0;
-      stats['fOptStat'] = JSROOT.gStyle.OptStat;
-      stats['fLongest'] = 17;
-      stats['fMargin'] = 0.05;
-
-      stats['fBorderSize'] = 1;
-      stats['fInit'] = 1;
-      stats['fShadowColor'] = 1;
-      stats['fCornerRadius'] = 0;
-
-      stats['fX1'] = 1;
-      stats['fY1'] = 100;
-      stats['fX2'] = 1;
-      stats['fY2'] = 100;
-
-      stats['fResizing'] = false;
-      stats['fUniqueID'] = 0;
-      stats['fBits'] = 0x03000009;
-      stats['fLineColor'] = 1;
-      stats['fLineStyle'] = 1;
-      stats['fLineWidth'] = 1;
-
-      stats['fFillColor'] = JSROOT.gStyle.StatColor;
-      stats['fFillStyle'] = JSROOT.gStyle.StatStyle;
-
-      stats['fTextAngle'] = 0;
-      stats['fTextSize'] = JSROOT.gStyle.StatFontSize;
-      stats['fTextAlign'] = 12;
-      stats['fTextColor'] = JSROOT.gStyle.StatTextColor;
-      stats['fTextFont'] = JSROOT.gStyle.StatFont;
-
-      stats['fLines'] = JSROOT.CreateTList();
-
-      JSROOT.addMethods(stats);
 
       stats.AddText(this.histo['fName']);
 
       if (!'fFunctions' in this.histo)
-         this.histo['fFunctions'] = JSROOT.CreateTList();
+         this.histo['fFunctions'] = JSROOT.Create("TList");
 
       this.histo.fFunctions.arr.push(stats);
 
@@ -5408,7 +5384,7 @@
       pal['fAxis'] = axis;
 
       if (!'fFunctions' in this.histo)
-         this.histo['fFunctions'] = JSROOT.CreateTList();
+         this.histo['fFunctions'] = JSROOT.Create("TList");
 
       // place colz in the beginning, that stat box is always drawn on the top
       this.histo.fFunctions.arr.unshift(pal);
@@ -8096,6 +8072,7 @@
    JSROOT.addDrawFunc("TFrame", JSROOT.Painter.drawFrame);
    JSROOT.addDrawFunc("TLegend", JSROOT.Painter.drawLegend);
    JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
+   JSROOT.addDrawFunc("TPaveStats", JSROOT.Painter.drawPaveText);
    JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
