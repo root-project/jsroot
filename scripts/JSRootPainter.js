@@ -2647,7 +2647,7 @@
           .append("svg")
           .attr("class", "root_canvas")
           .style("background-color", fillcolor)
-          // .attr("pointer-events", "all")   // comment out while it hides mouse events 
+          // .attr("pointer-events", "all")   // comment out while it hides mouse events
           .property('pad_painter', this) // this is custom property
           .property('mainpainter', null) // this is custom property
           .property('current_pad', "") // this is custom property

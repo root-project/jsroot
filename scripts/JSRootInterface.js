@@ -1,6 +1,6 @@
 // JSRootInterface.js
 //
-// user interface for JavaScript ROOT Web Page.
+// default user interface for JavaScript ROOT Web Page.
 //
 
 
@@ -40,7 +40,11 @@ function BuildNoBrowserGUI(online) {
    var running_request = {};
 
    var filename = null;
-   if (!online) filename = JSROOT.GetUrlOption("file");
+   if (!online) {
+      filename = JSROOT.GetUrlOption("file");
+      var filesdir = JSROOT.GetUrlOption("path");
+      if (filesdir!=null) filename = filesdir + filename; 
+   }
 
    var itemname = JSROOT.GetUrlOption("item");
    if (itemname) itemsarr.push(itemname);
@@ -427,11 +431,13 @@ function BuildSimpleGUI() {
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return BuildNoBrowserGUI(false);
 
-
-   var files = myDiv.attr("files");
-   var filesdir = myDiv.attr("filesdir");
-   if (!files) files = "files/hsimple.root";
-   if (!filesdir) filesdir = "";
+   var files = JSROOT.GetUrlOption("files");
+   if (files==null) files = myDiv.attr("files");
+   var filesdir = JSROOT.GetUrlOption("path");
+   if (filesdir==null) filesdir = myDiv.attr("path");
+   
+   if (files==null) files = "files/hsimple.root";
+   if (filesdir==null) filesdir = "";
    var arrFiles = files.split(';');
 
    var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
