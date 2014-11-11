@@ -34,15 +34,9 @@
                               // optimized to exclude too-many points
       'AutoStat' : true,
       'OptStat' : 1111,
-      'StatX' : 0.78,
-      'StatY' : 0.75,
-      'StatW' : 0.2,
-      'StatH' : 0.16,
-      'StatColor' : 0,
-      'StatStyle' : 1001,
-      'StatFont' : 42,
-      'StatFontSize' : 9,
-      'StatTextColor' : 1,
+      'StatNDC' : { fX1NFC : 0.78, fY1NDC: 0:75, fX2NDC: 0.98, fY2NDC: 0.91 },
+      'StatText': { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
+      'StatFill': { fFillColor: 0, fFillStyle: 1001 },
       'TimeOffset' : 788918400000, // UTC time at 01/01/95
       'StatFormat' : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
       'StatEntriesFormat' : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); }
@@ -1737,10 +1731,10 @@
 
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
       var pthis = this;
-      
+
       var npoints = this.graph['fNpoints'];
       if ((this.graph._typename=="TCutG") && (npoints>3)) npoints--;
-      
+
       this.bins = d3.range(npoints).map(
             function(p) {
                if (pthis.optionBar == 1) {
@@ -2089,16 +2083,16 @@
                    .style("fill", pthis.excl_ec);
          }
       }
-      
+
       if (this.seriesType == 'line') {
-         
+
          var close_symbol = "";
-         if (this.graph._typename=="TCutG") close_symbol = " Z"; 
-         
-         var line_color = "none", line_style = "none", fill_color = "none";  
-         
+         if (this.graph._typename=="TCutG") close_symbol = " Z";
+
+         var line_color = "none", line_style = "none", fill_color = "none";
+
          if (this.optionLine == 1) {
-            line_color = JSROOT.Painter.root_colors[this.graph['fLineColor']]; 
+            line_color = JSROOT.Painter.root_colors[this.graph['fLineColor']];
             line_style = JSROOT.Painter.root_line_styles[this.graph['fLineStyle']];
          }
          if (this.optionFill == 1)
@@ -4033,8 +4027,8 @@
       } else {
 
          var pavetext = JSROOT.Create("TPaveText");
-         
-         jQuery.extend(pavetext, { fName: "title", 
+
+         jQuery.extend(pavetext, { fName: "title",
                                    fX1NDC: 0.2809483, fY1NDC: 0.9339831,
                                    fX2NDC: 0.7190517, fY2NDC: 0.995});
          pavetext.AddText(this.histo['fTitle']);
@@ -4130,25 +4124,16 @@
 
       if (!this.draw_content) return null;
       if (this.FindStat() != null) return null;
-      
+
       var stats = JSROOT.Create('TPaveStats');
       jQuery.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
-                             fX1NDC: JSROOT.gStyle.StatX,
-                             fY1NDC: JSROOT.gStyle.StatY,
-                             fX2NDC: JSROOT.gStyle.StatX + JSROOT.gStyle.StatW,
-                             fY2NDC: JSROOT.gStyle.StatY + JSROOT.gStyle.StatH,
                              fOptStat: JSROOT.gStyle.OptStat,
-                             fBorderSize : 1,
-                             fFillColor: JSROOT.gStyle.StatColor,
-                             fFillStyle: JSROOT.gStyle.StatStyle,
-                             fTextAngle: 0,
-                             fTextSize: JSROOT.gStyle.StatFontSize,
-                             fTextAlign: 12,
-                             fTextColor: JSROOT.gStyle.StatTextColor,
-                             fTextFont: JSROOT.gStyle.StatFont } );
-                             
-                             
+                             fBorderSize : 1);
+      jQuery.extend(stats, JSROOT.gStyle.StatNDC);
+      jQuery.extend(stats, JSROOT.gStyle.StatText);
+      jQuery.extend(stats, JSROOT.gStyle.StatFill);
+
       if (this.histo['_typename'] && (this.histo['_typename'].match(/^TProfile/) || this.histo['_typename'].match(/^TH2/)))
          stats['fY1NDC'] = 0.67;
 
@@ -5667,7 +5652,7 @@
                point = {
                   x : grx1,
                   y : gry2,
-                  width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins 
+                  width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins
                   height : gry1 - gry2 + 1,
                   stroke : "none",
                   fill : this.getValueColor(binz)
@@ -5699,12 +5684,12 @@
             }
 
             if (tipkind == 1)
-               point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" + 
-                              "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n" + 
+               point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" +
+                              "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n" +
                               "entries = " + binz;
             else if (tipkind == 2)
-               point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n" + 
-                              "y = " + this.AxisAsText("y", y1) + "\n" + 
+               point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n" +
+                              "y = " + this.AxisAsText("y", y1) + "\n" +
                               "entries = " + binz;
 
             local_bins.push(point);
@@ -6423,17 +6408,12 @@
       }
       if (uxmax > 0 && rwxmax <= 0) {
          if (logx) uxmax = 1.1 * rwxmax;
-         // else uxmax = 0;
       }
       if (minimum < 0 && rwymin >= 0) {
-         if (logy)
-            minimum = 0.9 * rwymin;
-         // else minimum = 0;
+         if (logy) minimum = 0.9 * rwymin;
       }
       if (maximum > 0 && rwymax <= 0) {
-         if (logy)
-            maximum = 1.1 * rwymax;
-         // else maximum = 0;
+         if (logy) maximum = 1.1 * rwymax;
       }
       if (minimum <= 0 && logy)
          minimum = 0.001 * maximum;
@@ -6470,12 +6450,9 @@
    }
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
-
       var painter = new JSROOT.TMultiGraphPainter(mgraph);
       painter.SetDivId(divid);
       painter.drawMultiGraph(opt);
-
-
       return painter;
    }
 
@@ -8109,8 +8086,6 @@
       if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
 
       var draw_func = JSROOT.getDrawFunc(obj['_typename']);
-
-//      console.log("Drawing " + obj['_typename']);
 
       if (draw_func==null) return null;
 

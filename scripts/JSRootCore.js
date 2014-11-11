@@ -458,7 +458,7 @@
    JSROOT.Create = function(typename, target) {
       var obj = target;
       if (obj == null)
-         obj = { _typename: typename }; 
+         obj = { _typename: typename };
 
       if (typename == 'TObject')
          jQuery.extend(obj, { fUniqueID: 0, fBits: 0x3000008 });
@@ -466,9 +466,9 @@
       if (typename == 'TNamed')
          jQuery.extend(obj, { fUniqueID: 0, fBits: 0x3000008, fName: "", fTitle: "" });
       else
-      if (typename == 'TList') 
+      if (typename == 'TList')
          jQuery.extend(obj, { name: "TList", arr : [], opt : [] });
-      else 
+      else
       if (typename == 'TAttAxis') {
          jQuery.extend(obj, { fNdivisions: 510, fAxisColor: 1,
             fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.05, fLabelSize: 0.035, fTickLength: 0.03,
@@ -498,7 +498,7 @@
       if (typename == 'TPave') {
          JSROOT.Create("TBox", obj);
          jQuery.extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
-                              fBorderSize: 0, fInit: 1, fShadowColor: 1, 
+                              fBorderSize: 0, fInit: 1, fShadowColor: 1,
                               fCornerRadius: 0, fOption: "blNDC", fName: "title" });
       } else
       if (typename == 'TAttText') {
@@ -512,25 +512,25 @@
       if (typename == 'TPaveStats') {
          JSROOT.Create("TPaveText", obj);
          jQuery.extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
-      } else 
+      } else
       if (typename == 'TH1') {
          JSROOT.Create("TNamed", obj);
          JSROOT.Create("TAttLine", obj);
          JSROOT.Create("TAttFill", obj);
          JSROOT.Create("TAttMarker", obj);
-         
-         jQuery.extend(obj, { 
+
+         jQuery.extend(obj, {
             fNcells : 0,
             fXaxis: JSROOT.Create("TAxis"),
             fYaxis: JSROOT.Create("TAxis"),
             fZaxis: JSROOT.Create("TAxis"),
-            fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,         
-            fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0., 
+            fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,
+            fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0.,
             fMaximum : -1111., fMinimum : -1111, fNormFactor : 0., fContour : [],
             fSumw2 : [], fOption : "",
             fFunctions : JSROOT.Create("TList"),
             fBufferSize : 0, fBuffer : [], fBinStatErrOpt : 0 });
-      } else 
+      } else
       if (typename == 'TH1I' || typename == 'TH1F' || typename == 'TH1D' || typename == 'TH1S' || typename == 'TH1C') {
          JSROOT.Create("TH1", obj);
          jQuery.extend(obj, { fN : 0, fArray: [] });
@@ -542,13 +542,13 @@
       if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
          JSROOT.Create("TH2", obj);
          jQuery.extend(obj, { fN : 0, fArray: [] });
-      } 
-      
+      }
+
       JSROOT.addMethods(obj, typename);
       return obj;
    }
 
-   // obsolete functions, can be removed by next JSROOT release 
+   // obsolete functions, can be removed by next JSROOT release
    JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
@@ -567,7 +567,7 @@
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
       var histo = JSROOT.Create("TH2I");
       jQuery.extend(histo, { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
-      
+
       if ((nbinsx!=null) && (nbinsy!=null)) {
          histo['fN'] = histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
          for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
@@ -646,7 +646,7 @@
             return ((obj['fBits'] & f) != 0);
          };
       }
-      
+
       if (!obj_typename) {
          if (!('_typename' in obj)) return;
          obj_typename = obj['_typename'];
