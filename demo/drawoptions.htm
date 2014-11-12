@@ -14,6 +14,9 @@
          $('#debug').append("<h4>" + str + "</h4>"); 
       }
       
+      var global_dir = "http://root.cern.ch/js/files/";
+      // var global_dir = "files/"; // for testing   
+      
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
             if (obj==null) return file_error("In file " + file.fURL + " item " + itemname + " cannot be find");
@@ -60,8 +63,7 @@
       function LoadFile(filename, filecallback) {
 
          var dir = JSROOT.GetUrlOption("path");
-         //if (dir==null) dir = "http://root.cern.ch/js/files/";
-         if (dir==null) dir = "files/";   
+         if (dir==null) dir = global_dir;
 
          // do not read file when not required - create only fake instance
          if (JSROOT.GetUrlOption("minimal") || 
@@ -111,9 +113,10 @@
             draw_item_options(file, "zdemo;1", "can3_draw", "", 0.);
          });
 
-         LoadFile("JPsi_evolution.root", function(file) {
-            draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
-         });
+         if (global_dir.indexOf("root.cern.ch")<0)
+            LoadFile("JPsi_evolution.root", function(file) {
+               draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
+            });
          
          LoadFile("stacks.root", function(file) {
             draw_item_options(file, "stacks;1", "can5_draw", "", 0.);
@@ -127,9 +130,10 @@
             draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
          });
 
-         LoadFile("can4.root", function(file) {
-            draw_item_options(file, "c1;1", "can8_draw", "", 0.);
-         });
+         if (global_dir.indexOf("root.cern.ch")<0)
+            LoadFile("can4.root", function(file) {
+               draw_item_options(file, "c1;1", "can8_draw", "", 0.);
+            });
          
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }

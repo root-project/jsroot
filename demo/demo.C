@@ -12,7 +12,7 @@ void demo() {
 
    for (int n=0;n<20;n++) {
       double ampl1 = 15000 + 10000 * cos(n/20.*2.*TMath::Pi());
-      double ampl2 = 15000 + 10000 * sin(n/20.*2.*TMath::Pi());
+      double ampl2 = 15000 + 10000 * cos((n+10)/20.*2.*TMath::Pi());
 
       h1->Reset();
 
