@@ -4065,7 +4065,7 @@
    }
 
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
-      // be aware - here index starts from 0
+      // be aware - here indexs starts from 0
       var indx = 0;
       var obj = this.main_painter();
       if (obj == null) obj = this;
@@ -4782,6 +4782,18 @@
             this.stat_sum2 += xx * xx * yy;
          }
       }
+      
+      this.meanx = 0; this.meany = 0;
+      this.rmsx = 0; this.rmsy = 0;
+      
+      if (profile) {
+         if (this.stat_sumw > 0) {
+            meanx = this.stat_sumwx / this.stat_sumw;
+            meany = this.stat_sumwy / this.stat_sumw;
+         }
+      } else {
+         if (this.stat_sum0 > 0) this.meanx = this.stat_sum1 / this.stat_sum0;
+      }
    }
 
    JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat) {
@@ -4805,22 +4817,16 @@
          if (print_entries > 0)
             stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
 
-         var meanx = 0, meany = 0;
-         if (this.stat_sumw > 0) {
-            meanx = this.stat_sumwx / this.stat_sumw;
-            meany = this.stat_sumwy / this.stat_sumw;
-         }
-
          if (print_mean > 0) {
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(meanx));
-            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(meany));
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(this.meanx));
+            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(this.meany));
          }
 
          if (print_rms > 0) {
             var rmsx = 0, rmsy = 0;
             if (this.stat_sumw > 0) {
-               rmsx = Math.sqrt(this.stat_sumwx2 / this.stat_sumw - meanx * meanx);
-               rmsy = Math.sqrt(this.stat_sumwy2 / this.stat_sumw - meany * meany);
+               rmsx = Math.sqrt(this.stat_sumwx2 / this.stat_sumw - this.meanx * this.meanx);
+               rmsy = Math.sqrt(this.stat_sumwy2 / this.stat_sumw - this.meany * this.meany);
             }
             stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(rmsx));
             stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(rmsy));
@@ -4829,13 +4835,10 @@
       } else {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = "
-                  + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
 
          if (print_mean > 0) {
-            var res = 0;
-            if (this.stat_sum0 > 0) res = this.stat_sum1 / this.stat_sum0;
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(res));
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(this.meanx));
          }
 
          if (print_rms > 0) {
@@ -4860,8 +4863,7 @@
          }
 
          if (print_integral > 0) {
-            stat.AddLine("Integral = "
-                  + JSROOT.gStyle.StatEntriesFormat(this.stat_sum0));
+            stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(this.stat_sum0));
          }
 
          if (print_skew > 0)
