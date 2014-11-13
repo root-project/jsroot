@@ -7358,42 +7358,12 @@
 
       return null;
    }
-
-   JSROOT.HierarchyPainter.prototype.AddOnlineMethods = function(h) {
-      if (typeof h != 'object')
-         return;
-
-      var painter = this;
-
-      h['_get'] = function(item, callback) {
-
-         var url = painter.itemFullName(item);
-         if (url.length > 0) url += "/";
-         var h_get = ('_more' in item) || ('_doing_expand' in item);
-         url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';
-
-         var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
-            if ((obj != null) && !h_get && (item._name === "StreamerInfo")
-                  && (obj['_typename'] === 'TList'))
-               obj['_typename'] = 'TStreamerInfoList';
-
-            if (typeof callback == 'function')
-               callback(item, obj);
-         });
-
-         itemreq.send(null);
-      }
-
-      h['_expand'] = function(node, obj) {
-         // central function for all expand
-
-         if ((obj != null) && (node != null) && ('_childs' in obj)) {
-            node._childs = obj._childs;
-            obj._childs = null;
-            return true;
-         }
-         return false;
-      }
+   
+   JSROOT.HierarchyPainter.prototype.CompleteOnline = function(ready_callback) {
+      // method called at the moment when new description (h.json) is loaded
+      // and before any graphical element is created
+      // one can load extra scripts here or assign draw functions  
+      ready_callback();
    }
 
    JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
@@ -7407,15 +7377,44 @@
 
          // mark top hierarchy as online data and
          painter.h['_online'] = server_address;
+         
+         painter.h['_get'] = function(item, callback) {
 
-         painter.AddOnlineMethods(painter.h);
+            var url = painter.itemFullName(item);
+            if (url.length > 0) url += "/";
+            var h_get = ('_more' in item) || ('_doing_expand' in item);
+            url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';
 
-         if (painter.h != null)
-            painter.RefreshHtml(true);
+            var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
+               if ((obj != null) && !h_get && (item._name === "StreamerInfo")
+                     && (obj['_typename'] === 'TList'))
+                  obj['_typename'] = 'TStreamerInfoList';
 
-         if (typeof user_callback == 'function')
-            user_callback(painter);
+               if (typeof callback == 'function')
+                  callback(item, obj);
+            });
 
+            itemreq.send(null);
+         }
+
+         painter.h['_expand'] = function(node, obj) {
+            // central function for all expand
+
+            if ((obj != null) && (node != null) && ('_childs' in obj)) {
+               node._childs = obj._childs;
+               obj._childs = null;
+               return true;
+            }
+            return false;
+         }
+         
+         painter.CompleteOnline(function() {
+            if (painter.h != null)
+               painter.RefreshHtml(true);
+
+            if (typeof user_callback == 'function')
+               user_callback(painter);
+         });
       });
 
       req.send(null);
@@ -7476,13 +7475,6 @@
    JSROOT.HierarchyPainter.prototype.Adopt = function(h) {
       this.h = h;
       this.RefreshHtml();
-   }
-
-   JSROOT.HierarchyPainter.prototype.CreateSingleOnlineElement = function() {
-      this.h = {
-         _name : ""
-      }
-      this.AddOnlineMethods(this.h);
    }
 
    JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event, itemname) {
