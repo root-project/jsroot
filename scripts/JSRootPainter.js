@@ -2999,6 +2999,7 @@
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
       this.shrink_frame_left = 0.;
+      this.draw_content = true;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -4662,7 +4663,6 @@
 
    JSROOT.TH1Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
-      this.draw_bins = null;
    }
 
    JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -4885,16 +4885,14 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.CreateDrawBins = function() {
+   JSROOT.TH1Painter.prototype.CreateDrawBins = function(width, height) {
       // method is called directly before bins must be drawn
 
       var left = this.GetSelectIndex("x", "left", -1);
       var right = this.GetSelectIndex("x", "right", 2);
-      var width = Number(this.svg_frame(true).attr("width"));
-      var height = Number(this.svg_frame(true).attr("height"));
       var stepi = 1;
 
-      this.draw_bins = new Array;
+      var draw_bins = new Array;
 
       // reduce number of drawn points - we define interval where two points
       // will be selected - max and min
@@ -4904,8 +4902,6 @@
       var x1, x2 = this.xmin + left * this.binwidthx;
       var grx1 = -1111, grx2 = -1111, gry;
       var profile = this.IsTProfile();
-
-      // console.log("left " + left + " right " + right + " step " + stepi);
 
       var point = null;
 
@@ -4960,18 +4956,20 @@
                            "entries = " + cont;
          }
 
-         this.draw_bins.push(point);
+         draw_bins.push(point);
       }
 
       // if we need to draw line or area, we need extra point for correct drawing
       if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
          var extrapoint = jQuery.extend(true, {}, point);
          extrapoint.x = grx2;
-         this.draw_bins.push(extrapoint);
+         draw_bins.push(extrapoint);
       }
+      
+      return draw_bins;
    }
 
-   JSROOT.TH1Painter.prototype.DrawErrors = function() {
+   JSROOT.TH1Painter.prototype.DrawErrors = function(draw_bins) {
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
 
@@ -4991,7 +4989,7 @@
 
       /* Draw x-error indicators */
       var xerr = this.draw_g.selectAll("error_x")
-                 .data(this.draw_bins).enter()
+                 .data(draw_bins).enter()
                  .append("svg:line")
                  .attr("x1", function(d) { return d.x - d.xerr; })
                  .attr("y1", function(d) { return d.y; })
@@ -5002,7 +5000,7 @@
 
       if (this.options.Error == 11) {
          this.draw_g.selectAll("e1_x")
-            .data(this.draw_bins).enter()
+            .data(draw_bins).enter()
             .append("svg:line")
             .attr("y1", function(d) { return d.y - 3; })
             .attr("x1", function(d) { return d.x - d.xerr; })
@@ -5011,7 +5009,7 @@
             .style("stroke", line_color)
             .style("stroke-width", line_width);
          this.draw_g.selectAll("e1_x")
-            .data(this.draw_bins).enter()
+            .data(draw_bins).enter()
             .append("svg:line")
             .attr("y1", function(d) { return d.y - 3; })
             .attr("x1", function(d) { return d.x + d.xerr; })
@@ -5023,7 +5021,7 @@
 
       /* Draw y-error indicators */
       var yerr = this.draw_g.selectAll("error_y")
-                   .data(this.draw_bins).enter()
+                   .data(draw_bins).enter()
                    .append("svg:line")
                    .attr("x1", function(d) { return d.x; })
                    .attr("y1", function(d) { return d.y - d.yerr; })
@@ -5033,7 +5031,7 @@
 
       if (this.options.Error == 11) {
          this.draw_g.selectAll("e1_y")
-             .data(this.draw_bins).enter()
+             .data(draw_bins).enter()
              .append("svg:line")
              .attr("x1", function(d) { return d.x - 3; })
              .attr("y1", function(d) { return d.y - d.yerr; })
@@ -5042,7 +5040,7 @@
              .style("stroke", line_color)
              .style("stroke-width", line_width);
          this.draw_g.selectAll("e1_y")
-              .data(this.draw_bins).enter()
+              .data(draw_bins).enter()
               .append("svg:line")
               .attr("x1", function(d) { return d.x - 3; })
               .attr("y1", function(d) { return d.y + d.yerr; })
@@ -5052,7 +5050,7 @@
               .style("stroke-width", line_width);
       }
       var marks = this.draw_g.selectAll("markers")
-                    .data(this.draw_bins).enter()
+                    .data(draw_bins).enter()
                     .append("svg:path")
                     .attr("class", "marker")
                     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
@@ -5069,26 +5067,20 @@
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
-      // TODO: limit number of drawn by number of visible pixels
-      // one could select every second bin, for instance
-
-      delete this.draw_bins;
-      this.draw_bins = null;
-
-      if (!this.draw_content) {
+      var width = Number(this.svg_frame(true).attr("width")),
+          height = Number(this.svg_frame(true).attr("height"));
+      
+      if (!this.draw_content || (width<=0) || (height<=0)) {
          this.RemoveDrawG();
          return;
       }
 
-      this.CreateDrawBins();
+      var draw_bins = this.CreateDrawBins(width, height);
 
       this.RecreateDrawG();
 
       if (this.options.Error > 0)
-         return this.DrawErrors();
-
-      var width = Number(this.svg_frame(true).attr("width")),
-          height = Number(this.svg_frame(true).attr("height"));
+         return this.DrawErrors(draw_bins);
 
       var pthis = this;
 
@@ -5102,7 +5094,7 @@
                     .interpolate("step-after");
 
          this.draw_g.append("svg:path")
-                    .attr("d", area(this.draw_bins))
+                    .attr("d", area(draw_bins))
                     .style("stroke", this.linecolor)
                     .style("stroke-width", this.histo['fLineWidth'])
                     .style("fill", this.fillcolor)
@@ -5116,7 +5108,7 @@
 
          this.draw_g
                .append("svg:path")
-               .attr("d", line(this.draw_bins))
+               .attr("d", line(draw_bins))
                // to draw one bar, one need two points
                .style("stroke", this.linecolor)
                .style("stroke-width", this.histo['fLineWidth'])
@@ -5128,7 +5120,7 @@
       if (JSROOT.gStyle.Tooltip) {
          // TODO: limit number of tooltips by number of visible pixels
          this.draw_g.selectAll("selections")
-                    .data(this.draw_bins).enter()
+                    .data(draw_bins).enter()
                     .append("svg:line")
                     .attr("x1", function(d) { return d.x + d.width / 2; })
                     .attr("y1", function(d) { return Math.max(0, d.y); })
@@ -5790,7 +5782,6 @@
       }
 
       delete local_bins;
-      local_bins = null;
    }
 
    JSROOT.TH2Painter.prototype.Draw2D = function() {
