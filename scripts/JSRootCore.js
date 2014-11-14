@@ -388,53 +388,67 @@
       // 'io' for I/O functionality (default)
       // '2d' for 2d graphic
       // '3d' for 3d graphic
+      // 'simple' for basic user interface
+      // 'user:' list of user-specific scripts at the end of kind string
 
       if (typeof kind == 'function') { andThan = kind; kind = null; }
 
       if (typeof kind != 'string') kind = "2d";
+      if (kind.charAt(kind.length-1)!=";") kind+=";";
 
       // file names should be separated with ';'
       var allfiles = '$$$scripts/jquery.min.js';
 
-      if (kind.indexOf('io')>=0)
+      if (kind.indexOf('io;')>=0)
          allfiles += ";$$$scripts/rawinflate.js" +
                      ";$$$scripts/JSRootIOEvolution.js";
 
-      if (kind.indexOf('2d')>=0)
+      if (kind.indexOf('2d;')>=0)
          allfiles += ';$$$style/jquery-ui.css' +
                      ';$$$scripts/jquery-ui.min.js' +
                      ';$$$scripts/d3.v3.min.js' +
                      ';$$$scripts/JSRootPainter.js' +
                      ';$$$style/JSRootPainter.css';
 
-      if (kind.indexOf("3d")>=0)
+      if (kind.indexOf("3d;")>=0)
          allfiles += ";$$$scripts/jquery.mousewheel.js" +
                      ";$$$scripts/three.min.js" +
                      ";$$$scripts/helvetiker_regular.typeface.js" +
                      ";$$$scripts/helvetiker_bold.typeface.js" +
                      ";$$$scripts/JSRoot3DPainter.js";
 
-      if (kind.indexOf("simple")>=0)
+      if (kind.indexOf("simple;")>=0)
          allfiles += ';$$$scripts/JSRootInterface.js' +
                      ';$$$style/JSRootInterface.css';
 
+      var pos = kind.indexOf("user:");
+      if (pos>0)
+         allfiles += ";" + kind.slice(pos+5);
+      
       JSROOT.loadScript(allfiles, andThan, debugout);
    }
 
-   JSROOT.BuildSimpleGUI = function(andThen) {
-      if (typeof requirements == 'function') {
-         andThen = requirements; requirements = null;
-      }
+   JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
+      if (typeof user_scripts == 'function') {
+         andThen = user_scripts;
+         user_scripts = null;
+      } 
+      
       var debugout = null;
 
       var requirements = "2d;io;simple";
 
       if (document.getElementById('simpleGUI')) debugout = 'simpleGUI'; else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple"; }
-
+      
+      if (user_scripts == null)
+         user_scripts = JSROOT.GetUrlOption("autoload");
+      
+      if (user_scripts != null)
+         requirements += ";user:" + user_scripts; 
+      
       JSROOT.AssertPrerequisites(requirements, function() {
          if (typeof BuildSimpleGUI == 'function') BuildSimpleGUI();
-
          if (typeof andThen == 'function') andThen();
       }, debugout);
    }

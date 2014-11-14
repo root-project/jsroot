@@ -3646,10 +3646,6 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.CountStat = function() {
-      alert("CountStat not implemented");
-   }
-
    JSROOT.THistPainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
@@ -4201,7 +4197,6 @@
 
    JSROOT.THistPainter.prototype.Redraw = function() {
       this.CreateXY();
-      this.CountStat();
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
@@ -4678,7 +4673,6 @@
       if (this.histo['fLineColor'] == 0) this.linecolor = '#4572A7';
 
       var hmin = 0, hmax = 0, hsum = 0;
-      // this.stat_entries = d3.sum(this.histo['fArray']);
 
       var profile = this.IsTProfile();
 
@@ -4699,11 +4693,6 @@
          hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
-
-      // if (('fBuffer' in this.histo) && (this.histo['fBuffer'].length>0))
-      // this.stat_entries = this.histo['fBuffer'][0];
-      // if ((this.stat_entries == 0) && ('fEntries' in this.histo))
-      // this.stat_entries = this.histo['fEntries'];
 
       // used in CreateXY and tooltip providing
       this.xmin = this.histo['fXaxis']['fXmin'];
@@ -4748,17 +4737,8 @@
    JSROOT.TH1Painter.prototype.CountStat = function() {
       var profile = this.IsTProfile();
 
-      if (profile) {
-         this.stat_sumw = 0;
-         this.stat_sumwx = 0;
-         this.stat_sumwx2 = 0;
-         this.stat_sumwy = 0;
-         this.stat_sumwy2 = 0;
-      } else {
-         this.stat_sum0 = 0;
-         this.stat_sum1 = 0;
-         this.stat_sum2 = 0;
-      }
+      var stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0;
+      var stat_sum0 = 0, stat_sum1 = 0, stat_sum2 = 0;
 
       var left = this.GetSelectIndex("x", "left");
       var right = this.GetSelectIndex("x", "right");
@@ -4770,35 +4750,45 @@
 
          if (profile) {
             w = this.histo.fBinEntries[i + 1];
-            this.stat_sumw += w;
-            this.stat_sumwx += w * xx;
-            this.stat_sumwx2 += w * xx * xx;
-            this.stat_sumwy += this.histo.fArray[i + 1];
-            this.stat_sumwy2 += this.histo.fSumw2[i + 1];
+            stat_sumw += w;
+            stat_sumwx += w * xx;
+            stat_sumwx2 += w * xx * xx;
+            stat_sumwy += this.histo.fArray[i + 1];
+            stat_sumwy2 += this.histo.fSumw2[i + 1];
          } else {
             yy = this.histo.getBinContent(i + 1);
-            this.stat_sum0 += yy;
-            this.stat_sum1 += xx * yy;
-            this.stat_sum2 += xx * xx * yy;
+            stat_sum0 += yy;
+            stat_sum1 += xx * yy;
+            stat_sum2 += xx * xx * yy;
          }
       }
       
-      this.meanx = 0; this.meany = 0;
-      this.rmsx = 0; this.rmsy = 0;
+      var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries };
       
       if (profile) {
-         if (this.stat_sumw > 0) {
-            meanx = this.stat_sumwx / this.stat_sumw;
-            meany = this.stat_sumwy / this.stat_sumw;
+         res.integral = stat_sumw;
+         if (stat_sumw > 0) {
+            res.meanx = stat_sumwx / stat_sumw;
+            res.meany = stat_sumwy / stat_sumw;
+            res.rmsx = Math.sqrt(stat_sumwx2 / stat_sumw - res.meanx * res.meanx);
+            res.rmsy = Math.sqrt(stat_sumwy2 / stat_sumw - res.meany * res.meany);
          }
       } else {
-         if (this.stat_sum0 > 0) this.meanx = this.stat_sum1 / this.stat_sum0;
+         res.integral = stat_sum0;
+         if (stat_sum0 > 0) { 
+            res.meanx = stat_sum1 / stat_sum0;
+            res.rmsx = Math.sqrt(stat_sum2 / stat_sum0 - res.meanx * res.meanx);
+         }
       }
+      
+      return res;
    }
 
    JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat) {
       if (!this.histo) return false;
 
+      var data = this.CountStat();
+      
       var print_name = Math.floor(dostat % 10);
       var print_entries = Math.floor(dostat / 10) % 10;
       var print_mean = Math.floor(dostat / 100) % 10;
@@ -4815,37 +4805,29 @@
       if (this.IsTProfile()) {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
 
          if (print_mean > 0) {
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(this.meanx));
-            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(this.meany));
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(data.meanx));
+            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(data.meany));
          }
 
          if (print_rms > 0) {
-            var rmsx = 0, rmsy = 0;
-            if (this.stat_sumw > 0) {
-               rmsx = Math.sqrt(this.stat_sumwx2 / this.stat_sumw - this.meanx * this.meanx);
-               rmsy = Math.sqrt(this.stat_sumwy2 / this.stat_sumw - this.meany * this.meany);
-            }
-            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(rmsx));
-            stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(rmsy));
+            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(data.rmsx));
+            stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
+            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
 
          if (print_mean > 0) {
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(this.meanx));
+            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(data.meanx));
          }
 
          if (print_rms > 0) {
-            var res = 0;
-            if (this.stat_sum0 > 0)
-               res = Math.sqrt(this.stat_sum2 / this.stat_sum0 - Math.pow(this.stat_sum1 / this.stat_sum0, 2));
-            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(res));
+            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(data.rmsx));
          }
 
          if (print_under > 0) {
@@ -4863,7 +4845,7 @@
          }
 
          if (print_integral > 0) {
-            stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(this.stat_sum0));
+            stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(data.integral));
          }
 
          if (print_skew > 0)
@@ -5184,8 +5166,6 @@
 
       painter.CreateXY();
 
-      painter.CountStat();
-
       painter.DrawAxes();
 
       painter.DrawGrids();
@@ -5423,15 +5403,13 @@
       if (this.nbinsy > 0)
          this.binwidthy = this.binwidthy / this.nbinsy
 
-      this.gmaxbin = 0; // global min/max
-      this.gminbin = 0;
+      this.gmaxbin = this.histo.getBinContent(1, 1);
+      this.gminbin = this.gmaxbin; // global min/max, used at the moment in 3D drawing
       for (var i = 0; i < this.nbinsx; ++i) {
          for (var j = 0; j < this.nbinsy; ++j) {
             var bin_content = this.histo.getBinContent(i + 1, j + 1);
-            if (bin_content < this.gminbin)
-               this.gminbin = bin_content;
-            if (bin_content > this.gmaxbin)
-               this.gmaxbin = bin_content;
+            if (bin_content < this.gminbin) this.gminbin = bin_content; else
+            if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
          }
       }
 
@@ -5440,26 +5418,16 @@
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function() {
-      this.stat_matrix = new Array();
-      for (var n = 0; n < 9; n++) this.stat_matrix.push(0);
-      this.stat_entries = 0;
-      this.stat_sum0 = 0;
-      this.stat_sumx1 = 0;
-      this.stat_sumy1 = 0;
-      this.stat_sumx2 = 0;
-      this.stat_sumy2 = 0;
-      this.stat_sumxy2 = 0;
-      this.maxbin = 0; // min/max in selected range
-      this.minbin = 0;
+      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy2 = 0;
+      
+      var res = { entries: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [] }; 
+      for (var n = 0; n < 9; n++) res.matrix.push(0);
 
       var xleft = this.GetSelectIndex("x", "left");
       var xright = this.GetSelectIndex("x", "right");
 
       var yleft = this.GetSelectIndex("y", "left");
       var yright = this.GetSelectIndex("y", "right");
-
-      // console.log(" xleft = " + xleft + " xright = " + xright);
-      // console.log(" yleft = " + yleft + " yright = " + yright);
 
       for (var xi = 0; xi <= this.nbinsx + 1; xi++) {
          var xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
@@ -5471,34 +5439,36 @@
 
             var zz = this.histo.getBinContent(xi, yi);
 
-            this.stat_entries += zz;
+            res.entries += zz;
 
-            this.stat_matrix[yside * 3 + xside] += zz;
+            res.matrix[yside * 3 + xside] += zz;
 
             if ((xside == 1) && (yside == 1)) {
-
-               if (this.stat_sum0 == 0) {
-                  this.maxbin = zz;
-                  this.minbin = zz;
-               } else if (zz > this.maxbin)
-                  this.maxbin = zz;
-               else if (zz < this.minbin)
-                  this.minbin = zz;
-
-               this.stat_sum0 += zz;
-               this.stat_sumx1 += xx * zz;
-               this.stat_sumy1 += yy * zz;
-               this.stat_sumx2 += xx * xx * zz;
-               this.stat_sumy2 += yy * yy * zz;
-               this.stat_sumxy2 += xx * yy * zz;
+               stat_sum0 += zz;
+               stat_sumx1 += xx * zz;
+               stat_sumy1 += yy * zz;
+               stat_sumx2 += xx * xx * zz;
+               stat_sumy2 += yy * yy * zz;
+               stat_sumxy2 += xx * yy * zz;
             }
          }
       }
+
+      if (stat_sum0 > 0) {
+         res.meanx = stat_sumx1 / stat_sum0;
+         res.meany = stat_sumy1 / stat_sum0;
+         res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
+         res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
+      }
+      
+      return res;
    }
 
    JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat) {
       if (!this.histo) return false;
 
+      var data = this.CountStat();
+      
       var print_name = Math.floor(dostat % 10);
       var print_entries = Math.floor(dostat / 10) % 10;
       var print_mean = Math.floor(dostat / 100) % 10;
@@ -5513,32 +5483,20 @@
          stat.AddLine(this.histo['fName']);
 
       if (print_entries > 0)
-         stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(this.stat_entries));
-
-      var meanx = 0, meany = 0;
-      if (this.stat_sum0 > 0) {
-         meanx = this.stat_sumx1 / this.stat_sum0;
-         meany = this.stat_sumy1 / this.stat_sum0;
-      }
+         stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
 
       if (print_mean > 0) {
-         stat.AddLine("Mean x = " + JSROOT.gStyle.StatFormat(meanx));
-         stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(meany));
-      }
-
-      var rmsx = 0, rmsy = 0;
-      if (this.stat_sum0 > 0) {
-         rmsx = Math.sqrt(this.stat_sumx2 / this.stat_sum0 - meanx * meanx);
-         rmsy = Math.sqrt(this.stat_sumy2 / this.stat_sum0 - meany * meany);
+         stat.AddLine("Mean x = " + JSROOT.gStyle.StatFormat(data.meanx));
+         stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(data.meany));
       }
 
       if (print_rms > 0) {
-         stat.AddLine("RMS x = " + JSROOT.gStyle.StatFormat(rmsx));
-         stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(rmsy));
+         stat.AddLine("RMS x = " + JSROOT.gStyle.StatFormat(data.rmsx));
+         stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(data.rmsy));
       }
 
       if (print_integral > 0) {
-         stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(this.stat_matrix[4]));
+         stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(data.matrix[4]));
       }
 
       if (print_skew > 0) {
@@ -5550,7 +5508,7 @@
          stat.AddLine("Kurt = <undef>");
 
       if ((print_under > 0) || (print_over > 0)) {
-         var m = this.stat_matrix;
+         var m = data.matrix;
 
          stat.AddLine("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
          stat.AddLine("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
@@ -5607,13 +5565,23 @@
       var j1 = this.GetSelectIndex("y", "left", 0);
       var j2 = this.GetSelectIndex("y", "right", 0);
 
+      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy;
+
+      // first found min/max values in selected range
+      this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
+      for (var i = i1; i < i2; i++) {
+         for (var j = j1; j < j2; j++) {
+            binz = this.histo.getBinContent(i + 1, j + 1);
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+      
       var xfactor = 1, yfactor = 1;
       if (coordinates_kind == 1) {
          xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
          yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
       }
-
-      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy;
 
       var local_bins = new Array;
 
@@ -5844,8 +5812,6 @@
       painter.CheckPadOptions();
 
       painter.ScanContent();
-
-      painter.CountStat();
 
       painter.CreateXY();
 
