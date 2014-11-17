@@ -737,7 +737,7 @@
             return ret;
          };
       }
-      if (obj_typename.indexOf("TGraph") == 0) {
+      if ((obj_typename.indexOf("TGraph") == 0) || (obj_typename == "TCutG")) {
          obj['computeRange'] = function() {
             // Compute the x/y range of the points in this graph
             var i, xmin = 0, xmax = 0, ymin = 0, ymax = 0;
@@ -757,6 +757,23 @@
                ymin: ymin,
                ymax: ymax
             };
+         };
+         // check if point inside figure specified by the TGrpah
+         obj['IsInside'] = function(xp,yp) {
+            var j = this['fNpoints'] - 1 ;
+            var x = this['fX'], y = this['fY'];
+            var oddNodes = false;
+
+            for (var i=0; i<this['fNpoints']; i++) {
+               if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
+                  if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
+                     oddNodes = !oddNodes;
+                  }
+               }
+               j=i;
+            }
+
+            return oddNodes;
          };
       }
       if (obj_typename.indexOf("TH1") == 0 ||

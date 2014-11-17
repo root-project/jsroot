@@ -4734,51 +4734,48 @@
          this.draw_content = false;
    }
 
-   JSROOT.TH1Painter.prototype.CountStat = function() {
+   JSROOT.TH1Painter.prototype.CountStat = function(cond) {
       var profile = this.IsTProfile();
 
       var stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0;
-      var stat_sum0 = 0, stat_sum1 = 0, stat_sum2 = 0;
 
       var left = this.GetSelectIndex("x", "left");
       var right = this.GetSelectIndex("x", "right");
 
-      var xx = 0, yy = 0, w = 0;
+      var xx = 0, w = 0, xmax = null, wmax = null;
 
       for (var i = left; i < right; i++) {
          xx = this.xmin + (i + 0.5) * this.binwidthx;
 
+         if ((cond!=null) && !cond(xx)) continue;
+         
          if (profile) {
             w = this.histo.fBinEntries[i + 1];
-            stat_sumw += w;
-            stat_sumwx += w * xx;
-            stat_sumwx2 += w * xx * xx;
             stat_sumwy += this.histo.fArray[i + 1];
             stat_sumwy2 += this.histo.fSumw2[i + 1];
          } else {
-            yy = this.histo.getBinContent(i + 1);
-            stat_sum0 += yy;
-            stat_sum1 += xx * yy;
-            stat_sum2 += xx * xx * yy;
+            w = this.histo.getBinContent(i + 1);
          }
+         
+         if ((xmax==null) || (w>wmax)) { xmax = xx; wmax = w; }
+         
+         stat_sumw += w;
+         stat_sumwx += w * xx;
+         stat_sumwx2 += w * xx * xx;
       }
       
-      var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries };
+      var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
       
-      if (profile) {
-         res.integral = stat_sumw;
-         if (stat_sumw > 0) {
-            res.meanx = stat_sumwx / stat_sumw;
-            res.meany = stat_sumwy / stat_sumw;
-            res.rmsx = Math.sqrt(stat_sumwx2 / stat_sumw - res.meanx * res.meanx);
-            res.rmsy = Math.sqrt(stat_sumwy2 / stat_sumw - res.meany * res.meany);
-         }
-      } else {
-         res.integral = stat_sum0;
-         if (stat_sum0 > 0) { 
-            res.meanx = stat_sum1 / stat_sum0;
-            res.rmsx = Math.sqrt(stat_sum2 / stat_sum0 - res.meanx * res.meanx);
-         }
+      if (stat_sumw > 0) {
+         res.meanx = stat_sumwx / stat_sumw;
+         res.meany = stat_sumwy / stat_sumw;
+         res.rmsx = Math.sqrt(stat_sumwx2 / stat_sumw - res.meanx * res.meanx);
+         res.rmsy = Math.sqrt(stat_sumwy2 / stat_sumw - res.meany * res.meany);
+      }
+      
+      if (xmax!=null) {
+         res.xmax = xmax;
+         res.wmax = wmax;
       }
       
       return res;
@@ -5417,10 +5414,10 @@
       this.draw_content = this.gmaxbin > 0;
    }
 
-   JSROOT.TH2Painter.prototype.CountStat = function() {
+   JSROOT.TH2Painter.prototype.CountStat = function(cond) {
       var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy2 = 0;
       
-      var res = { entries: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [] }; 
+      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null }; 
       for (var n = 0; n < 9; n++) res.matrix.push(0);
 
       var xleft = this.GetSelectIndex("x", "left");
@@ -5443,14 +5440,18 @@
 
             res.matrix[yside * 3 + xside] += zz;
 
-            if ((xside == 1) && (yside == 1)) {
-               stat_sum0 += zz;
-               stat_sumx1 += xx * zz;
-               stat_sumy1 += yy * zz;
-               stat_sumx2 += xx * xx * zz;
-               stat_sumy2 += yy * yy * zz;
-               stat_sumxy2 += xx * yy * zz;
-            }
+            if ((xside != 1) || (yside != 1)) continue;
+            
+            if ((cond!=null) && !cond(xx,yy)) continue;
+            
+            if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+
+            stat_sum0 += zz;
+            stat_sumx1 += xx * zz;
+            stat_sumy1 += yy * zz;
+            stat_sumx2 += xx * xx * zz;
+            stat_sumy2 += yy * yy * zz;
+            stat_sumxy2 += xx * yy * zz;
          }
       }
 
@@ -5460,6 +5461,9 @@
          res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
          res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
       }
+      
+      if (res.wmax==null) res.wmax = 0;
+      res.integral = stat_sum0;
       
       return res;
    }
@@ -7209,13 +7213,14 @@
          callback(item, null);
    }
 
-   JSROOT.HierarchyPainter.prototype.display = function(itemname, options) {
+   JSROOT.HierarchyPainter.prototype.display = function(itemname, options, call_back) {
       if (!this.CreateDisplay()) return;
 
       var mdi = this['disp'];
 
       this.get(itemname, function(item, obj) {
-         mdi.Draw(itemname, obj, options);
+         var painter = mdi.Draw(itemname, obj, options);
+         if (typeof call_back == 'function') call_back(painter);
       });
    }
 
