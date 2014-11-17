@@ -15,10 +15,27 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.1 dev 14/11/2014";
+   JSROOT.version = "3.1 dev 17/11/2014";
 
-   JSROOT.source_dir = null;
+   JSROOT.source_dir  = function(){
+      var scripts = document.getElementsByTagName('script');
 
+      for (var n in scripts) {
+         if (scripts[n]['type'] != 'text/javascript') continue;
+
+         var src = scripts[n]['src'];
+         if ((src == null) || (src.length == 0)) continue;
+
+         var pos = src.indexOf("scripts/JSRootCore.js");
+         if (pos<0) continue;
+         
+         console.log("Set JSROOT.source_dir to " + src.substr(0, pos));
+         return src.substr(0, pos);
+      }
+      return "";
+   }(); 
+
+   // TODO: all jQuery-related functions should go into extra script 
    JSROOT.clone = function(obj) {
       return jQuery.extend(true, {}, obj);
    }
@@ -331,16 +348,6 @@
 
             var src = scripts[n]['src'];
             if ((src == null) || (src.length == 0)) continue;
-
-            // try to detect place where source for our scripts should be situated
-            if (JSROOT.source_dir == null) {
-
-               var pos = src.indexOf("scripts/JSRootCore.js");
-               if (pos>=0) {
-                  JSROOT.source_dir = src.substr(0, pos);
-                  debug("Set JSROOT.source_dir to " + JSROOT.source_dir);
-               }
-            }
 
             if (src.indexOf(filename)>=0) {
                // debug("script "+  filename + " already loaded");
