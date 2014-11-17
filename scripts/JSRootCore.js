@@ -436,16 +436,16 @@
       
       var debugout = null;
 
-      var requirements = "2d;io;simple";
+      var requirements = "2d;io;simple;";
 
       if (document.getElementById('simpleGUI')) debugout = 'simpleGUI'; else
-      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple"; }
+      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple;"; }
       
       if (user_scripts == null)
          user_scripts = JSROOT.GetUrlOption("autoload");
       
       if (user_scripts != null)
-         requirements += ";user:" + user_scripts; 
+         requirements += "user:" + user_scripts + ";"; 
       
       JSROOT.AssertPrerequisites(requirements, function() {
          if (typeof BuildSimpleGUI == 'function') BuildSimpleGUI();
@@ -584,9 +584,10 @@
 
       if ((nbinsx!=null) && (nbinsy!=null)) {
          histo['fN'] = histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
+         console.log("fN = " + histo['fN'])
          for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
-         jQuery.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
-         jQuery.extend(histo['YXaxis'], { fNbins: nbinsy, fXmin: 0,  fXmax: nbinsy });
+         jQuery.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+         jQuery.extend(histo['fYaxis'], { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
       }
       return histo;
    }
