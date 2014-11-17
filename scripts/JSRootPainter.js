@@ -4748,7 +4748,7 @@
          xx = this.xmin + (i + 0.5) * this.binwidthx;
 
          if ((cond!=null) && !cond(xx)) continue;
-         
+
          if (profile) {
             w = this.histo.fBinEntries[i + 1];
             stat_sumwy += this.histo.fArray[i + 1];
@@ -4756,28 +4756,28 @@
          } else {
             w = this.histo.getBinContent(i + 1);
          }
-         
+
          if ((xmax==null) || (w>wmax)) { xmax = xx; wmax = w; }
-         
+
          stat_sumw += w;
          stat_sumwx += w * xx;
          stat_sumwx2 += w * xx * xx;
       }
-      
+
       var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
-      
+
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
          res.rmsx = Math.sqrt(stat_sumwx2 / stat_sumw - res.meanx * res.meanx);
          res.rmsy = Math.sqrt(stat_sumwy2 / stat_sumw - res.meany * res.meany);
       }
-      
+
       if (xmax!=null) {
          res.xmax = xmax;
          res.wmax = wmax;
       }
-      
+
       return res;
    }
 
@@ -4785,7 +4785,7 @@
       if (!this.histo) return false;
 
       var data = this.CountStat();
-      
+
       var print_name = Math.floor(dostat % 10);
       var print_entries = Math.floor(dostat / 10) % 10;
       var print_mean = Math.floor(dostat / 100) % 10;
@@ -4944,7 +4944,7 @@
          extrapoint.x = grx2;
          draw_bins.push(extrapoint);
       }
-      
+
       return draw_bins;
    }
 
@@ -5048,7 +5048,7 @@
 
       var width = Number(this.svg_frame(true).attr("width")),
           height = Number(this.svg_frame(true).attr("height"));
-      
+
       if (!this.draw_content || (width<=0) || (height<=0)) {
          this.RemoveDrawG();
          return;
@@ -5416,8 +5416,8 @@
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
       var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy2 = 0;
-      
-      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null }; 
+
+      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null };
       for (var n = 0; n < 9; n++) res.matrix.push(0);
 
       var xleft = this.GetSelectIndex("x", "left");
@@ -5441,9 +5441,9 @@
             res.matrix[yside * 3 + xside] += zz;
 
             if ((xside != 1) || (yside != 1)) continue;
-            
+
             if ((cond!=null) && !cond(xx,yy)) continue;
-            
+
             if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
             stat_sum0 += zz;
@@ -5461,10 +5461,10 @@
          res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
          res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
       }
-      
+
       if (res.wmax==null) res.wmax = 0;
       res.integral = stat_sum0;
-      
+
       return res;
    }
 
@@ -5472,7 +5472,7 @@
       if (!this.histo) return false;
 
       var data = this.CountStat();
-      
+
       var print_name = Math.floor(dostat % 10);
       var print_entries = Math.floor(dostat / 10) % 10;
       var print_mean = Math.floor(dostat / 100) % 10;
@@ -5580,7 +5580,7 @@
             if (binz<this.minbin) this.minbin = binz;
          }
       }
-      
+
       var xfactor = 1, yfactor = 1;
       if (coordinates_kind == 1) {
          xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
@@ -7303,11 +7303,11 @@
 
       return null;
    }
-   
+
    JSROOT.HierarchyPainter.prototype.CompleteOnline = function(ready_callback) {
       // method called at the moment when new description (h.json) is loaded
       // and before any graphical element is created
-      // one can load extra scripts here or assign draw functions  
+      // one can load extra scripts here or assign draw functions
       ready_callback();
    }
 
@@ -7322,7 +7322,7 @@
 
          // mark top hierarchy as online data and
          painter.h['_online'] = server_address;
-         
+
          painter.h['_get'] = function(item, callback) {
 
             var url = painter.itemFullName(item);
@@ -7352,7 +7352,7 @@
             }
             return false;
          }
-         
+
          painter.CompleteOnline(function() {
             if (painter.h != null)
                painter.RefreshHtml(true);

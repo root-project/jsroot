@@ -28,14 +28,14 @@
 
          var pos = src.indexOf("scripts/JSRootCore.js");
          if (pos<0) continue;
-         
+
          console.log("Set JSROOT.source_dir to " + src.substr(0, pos));
          return src.substr(0, pos);
       }
       return "";
-   }(); 
+   }();
 
-   // TODO: all jQuery-related functions should go into extra script 
+   // TODO: all jQuery-related functions should go into extra script
    JSROOT.clone = function(obj) {
       return jQuery.extend(true, {}, obj);
    }
@@ -431,7 +431,7 @@
       var pos = kind.indexOf("user:");
       if (pos>0)
          allfiles += ";" + kind.slice(pos+5);
-      
+
       JSROOT.loadScript(allfiles, andThan, debugout);
    }
 
@@ -439,21 +439,21 @@
       if (typeof user_scripts == 'function') {
          andThen = user_scripts;
          user_scripts = null;
-      } 
-      
+      }
+
       var debugout = null;
 
       var requirements = "2d;io;simple;";
 
       if (document.getElementById('simpleGUI')) debugout = 'simpleGUI'; else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple;"; }
-      
+
       if (user_scripts == null)
          user_scripts = JSROOT.GetUrlOption("autoload");
-      
+
       if (user_scripts != null)
-         requirements += "user:" + user_scripts + ";"; 
-      
+         requirements += "user:" + user_scripts + ";";
+
       JSROOT.AssertPrerequisites(requirements, function() {
          if (typeof BuildSimpleGUI == 'function') BuildSimpleGUI();
          if (typeof andThen == 'function') andThen();
@@ -569,7 +569,7 @@
          JSROOT.Create("TAttLine", obj);
          JSROOT.Create("TAttFill", obj);
          JSROOT.Create("TAttMarker", obj);
-         jQuery.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: JSROOT.CreateTH1(), 
+         jQuery.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: JSROOT.CreateTH1(),
                               fMaxSize: 0, fMaximum:0, fMinimum:0, fNpoints: 0, fX: [], fY: [] });
       }
 
