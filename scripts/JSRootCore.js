@@ -556,6 +556,14 @@
       if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
          JSROOT.Create("TH2", obj);
          jQuery.extend(obj, { fN : 0, fArray: [] });
+      } else
+      if (typename == 'TGraph') {
+         JSROOT.Create("TNamed", obj);
+         JSROOT.Create("TAttLine", obj);
+         JSROOT.Create("TAttFill", obj);
+         JSROOT.Create("TAttMarker", obj);
+         jQuery.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: JSROOT.CreateTH1(), 
+                              fMaxSize: 0, fMaximum:0, fMinimum:0, fNpoints: 0, fX: [], fY: [] });
       }
 
       JSROOT.addMethods(obj, typename);
@@ -584,7 +592,6 @@
 
       if ((nbinsx!=null) && (nbinsy!=null)) {
          histo['fN'] = histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
-         console.log("fN = " + histo['fN'])
          for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
          jQuery.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
          jQuery.extend(histo['fYaxis'], { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
@@ -593,32 +600,11 @@
    }
 
    JSROOT.CreateTGraph = function(npoints) {
-      var graph = {};
-      graph['_typename'] = "TGraph";
-      graph['fBits'] = 0x3000408;
-      graph['fName'] = "dummy_graph_" + this.id_counter++;
-      graph['fTitle'] = "dummytitle";
-      graph['fMinimum'] = -1111;
-      graph['fMaximum'] = -1111;
-      graph['fOption'] = "";
-      graph['fFillColor'] = 0;
-      graph['fFillStyle'] = 1001;
-      graph['fLineColor'] = 2;
-      graph['fLineStyle'] = 1;
-      graph['fLineWidth'] = 2;
-      graph['fMarkerColor'] = 4;
-      graph['fMarkerStyle'] = 21;
-      graph['fMarkerSize'] = 1;
-      graph['fMaxSize'] = 0;
-      graph['fNpoints'] = 0;
-      graph['fX'] = new Array;
-      graph['fY'] = new Array;
-      graph['fFunctions'] = JSROOT.Create("TList");
-      graph['fHistogram'] = JSROOT.CreateTH1();
+      var graph = JSROOT.Create("TGraph");
+      jQuery.extend(graph, { fBits: 0x3000408, fName: "dummy_graph_" + this.id_counter++, fTitle: "dummytitle" });
 
       if (npoints>0) {
-         graph['fMaxSize'] = npoints;
-         graph['fNpoints'] = npoints;
+         graph['fMaxSize'] = graph['fNpoints'] = npoints;
          for (var i=0;i<npoints;i++) {
             graph['fX'].push(i);
             graph['fY'].push(i);
@@ -626,7 +612,6 @@
          JSROOT.AdjustTGraphRanges(graph);
       }
 
-      JSROOT.addMethods(graph);
       return graph;
    }
 
@@ -644,8 +629,6 @@
       }
 
       if (miny==maxy) maxy = miny + 1;
-
-      // console.log("search minx = " + minx + " maxx = " + maxx);
 
       graph['fHistogram']['fXaxis']['fXmin'] = minx;
       graph['fHistogram']['fXaxis']['fXmax'] = maxx;
