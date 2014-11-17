@@ -738,25 +738,20 @@
          };
       }
       if ((obj_typename.indexOf("TGraph") == 0) || (obj_typename == "TCutG")) {
-         obj['computeRange'] = function() {
+         obj['ComputeRange'] = function() {
             // Compute the x/y range of the points in this graph
-            var i, xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+            var res = { xmin: 0, xmax: 0, ymin: 0, ymax: 0 };
             if (this['fNpoints'] > 0) {
-               xmin = xmax = this['fX'][0];
-               ymin = ymax = this['fY'][0];
-               for (i=1; i<this['fNpoints']; i++) {
-                  if (this['fX'][i] < xmin) xmin = this['fX'][i];
-                  if (this['fX'][i] > xmax) xmax = this['fX'][i];
-                  if (this['fY'][i] < ymin) ymin = this['fY'][i];
-                  if (this['fY'][i] > ymax) ymax = this['fY'][i];
+               res.xmin = res.xmax = this['fX'][0];
+               res.ymin = res.ymax = this['fY'][0];
+               for (var i=1; i<this['fNpoints']; i++) {
+                  if (this['fX'][i] < res.xmin) res.xmin = this['fX'][i];
+                  if (this['fX'][i] > res.xmax) res.xmax = this['fX'][i];
+                  if (this['fY'][i] < res.ymin) res.ymin = this['fY'][i];
+                  if (this['fY'][i] > res.ymax) res.ymax = this['fY'][i];
                }
             }
-            return {
-               xmin: xmin,
-               xmax: xmax,
-               ymin: ymin,
-               ymax: ymax
-            };
+            return res;
          };
          // check if point inside figure specified by the TGrpah
          obj['IsInside'] = function(xp,yp) {

@@ -6288,7 +6288,6 @@
 
    JSROOT.TMultiGraphPainter.prototype.drawMultiGraph = function(opt) {
       var maximum, minimum, rwxmin = 0, rwxmax = 0, rwymin = 0, rwymax = 0, uxmin = 0, uxmax = 0, dx, dy;
-      var npt = 100;
       var histo = this.mgraph['fHistogram'];
       var graphs = this.mgraph['fGraphs'];
       var scalex = 1, scaley = 1;
@@ -6316,28 +6315,12 @@
             uxmax = JSROOT.Painter.padtoX(pad, rwxmax);
          }
       } else {
-         var g = graphs.arr[0];
-         if (g) {
-            var r = g.computeRange();
-            rwxmin = r['xmin'];
-            rwymin = r['ymin'];
-            rwxmax = r['xmax'];
-            rwymax = r['ymax'];
-         }
-         for (var i = 1; i < graphs.arr.length; ++i) {
-            var rx1, ry1, rx2, ry2;
-            g = graphs.arr[i];
-            var r = g.computeRange();
-            rx1 = r['xmin'];
-            ry1 = r['ymin'];
-            rx2 = r['xmax'];
-            ry2 = r['ymax'];
-            if (rx1 < rwxmin) rwxmin = rx1;
-            if (ry1 < rwymin) rwymin = ry1;
-            if (rx2 > rwxmax) rwxmax = rx2;
-            if (ry2 > rwymax) rwymax = ry2;
-            if (g['fNpoints'] > npt)
-               npt = g['fNpoints'];
+         for (var i = 0; i < graphs.arr.length; ++i) {
+            var r = graphs.arr[i].ComputeRange();
+            if ((i==0) || (r.xmin < rwxmin)) rwxmin = r.xmin;
+            if ((i==0) || (r.ymin < rwymin)) rwymin = r.ymin;
+            if ((i==0) || (r.xmax > rwxmax)) rwxmax = r.xmax;
+            if ((i==0) || (r.ymax > rwymax)) rwymax = r.ymax;
          }
          if (rwxmin == rwxmax)
             rwxmax += 1.;
