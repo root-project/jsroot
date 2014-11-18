@@ -7286,9 +7286,7 @@
 
       // first collect items
       mdi.ForEachPainter(function(p) {
-         if (! ('_hitemname' in p)) return;
-         var name = p['_hitemname'];
-         if ((name.length > 0) && (allitems.indexOf(name)<0)) allitems.push(name);
+         if (('_hitemname' in p) && (allitems.indexOf(p['_hitemname'])<0)) allitems.push(p['_hitemname']);
       }, true); // only visible panels are considered
 
       // than call display with update
@@ -7889,15 +7887,27 @@
    }
 
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+   
+   JSROOT.GridDisplay.prototype.IsSingle = function() {
+      return (this.sizex <= 1) && (this.sizey <= 1);
+   }
 
    JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+      if (typeof userfunc != 'function') return;
+      
+      if (this.IsSingle()) {
+         var elem = $("#"+this.frameid);
+         if (elem.prop('title')!=null)
+            userfunc(elem);
+         return;
+      }
+      
       var topid = this.frameid + '_grid';
 
       if (document.getElementById(topid) == null) return;
 
-      if (typeof userfunc != 'function') return;
-
       for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
+         
          var elem = $( "#" + topid + "_" + cnt);
 
          if (elem.prop('title')!="")
@@ -7907,34 +7917,37 @@
 
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
 
-      var topid = this.frameid + '_grid';
+      var hid = this.frameid;
+      
+      if (!this.IsSingle()) {
+         var topid = this.frameid + '_grid';
+         if (document.getElementById(topid) == null) {
 
-      if (document.getElementById(topid) == null) {
+            var precx = 100. / this.sizex;
+            var precy = 100. / this.sizey;
+            var h = $("#" + this.frameid).height() / this.sizey;
+            var w = $("#" + this.frameid).width() / this.sizex;
 
-         var precx = 100. / this.sizex;
-         var precy = 100. / this.sizey;
-         var h = $("#" + this.frameid).height() / this.sizey;
-         var w = $("#" + this.frameid).width() / this.sizex;
+            var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
+            var cnt = 0;
+            for (var i = 0; i < this.sizey; i++) {
+               content += "<tr>";
+               for (var j = 0; j < this.sizex; j++)
+                  content += "<td><div id='" + topid + "_" + cnt++ + "'></div></td>";
+               content += "</tr>";
+            }
+            content += "</table>";
 
-         var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
-         var cnt = 0;
-         for (var i = 0; i < this.sizey; i++) {
-            content += "<tr>";
-            for (var j = 0; j < this.sizex; j++)
-               content += "<td><div id='" + topid + "_" + cnt++ + "'></div></td>";
-            content += "</tr>";
+            $("#" + this.frameid).empty();
+            $("#" + this.frameid).append(content);
+
+            $("[id^=" + this.frameid + "_grid_]").height(h);
+            $("[id^=" + this.frameid + "_grid_]").width(w);
          }
-         content += "</table>";
 
-         $("#" + this.frameid).empty();
-         $("#" + this.frameid).append(content);
-
-         $("[id^=" + this.frameid + "_grid_]").height(h);
-         $("[id^=" + this.frameid + "_grid_]").width(w);
+         hid = topid + "_" + this.cnt;
+         if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
       }
-
-      var hid = topid + "_" + this.cnt;
-      if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
 
       $("#" + hid).empty();
       $("#" + hid).prop('title', title);
@@ -7944,6 +7957,8 @@
 
    JSROOT.GridDisplay.prototype.Reset = function() {
       JSROOT.MDIDisplay.prototype.Reset.call(this);
+      if (this.IsSingle())
+         $("#" + this.frameid).prop('title', null);
       this.cnt = 0;
    }
 
