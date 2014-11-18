@@ -6845,34 +6845,46 @@
 
       return folder;
    }
-
-   JSROOT.HierarchyPainter.prototype.Find = function(fullname, top, replace) {
-      if (!top) top = this.h;
-
-      if (fullname.length == 0) return top;
-
-      var pos = -1;
-
-      do {
-         // we try to find element with slashes inside
-         pos = fullname.indexOf("/", pos + 1);
-
-         var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
-
-         for ( var i in top._childs)
-            if (top._childs[i]._name == localname) {
+   
+   JSROOT.HierarchyPainter.prototype.Find = function(itemname, force) {
+      
+      function find_in_hierarchy(top, fullname) {
+         
+         if (fullname.length == 0) return top;
+         
+         var pos = -1;
+      
+         function process_child(child) {
             // set parent pointer when searching child
-               top._childs[i]['_parent'] = top; 
-               if ((pos + 1 == fullname.length) || (pos < 0)) {
-                  if (replace != null)
-                     top._childs[i] = replace;
-                  return top._childs[i];
-               }
+            child['_parent'] = top; 
+            if ((pos + 1 == fullname.length) || (pos < 0)) return child;
 
-               return this.Find(fullname.substr(pos + 1), top._childs[i],  replace);
+            return find_in_hierarchy(child, fullname.substr(pos + 1));
+         }
+         
+         do {
+            // we try to find element with slashes inside
+            pos = fullname.indexOf("/", pos + 1);
+
+            var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
+
+            for (var i in top._childs)
+               if (top._childs[i]._name == localname) 
+                  return process_child(top._childs[i]);
+            
+            if (force) {
+               // if didnot found element with given name we just generate it 
+               if (! ('_childs' in top)) top['_childs'] = [];
+               var child = { _name: localname };
+               top['_childs'].push(child);
+               return process_child(child);
             }
-      } while (pos > 0);
-      return null;
+         } while (pos > 0);
+
+         return null;
+      }
+
+      return find_in_hierarchy(this.h, itemname);
    }
 
    JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent) {
