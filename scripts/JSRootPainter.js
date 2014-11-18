@@ -7502,8 +7502,8 @@
          JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
 
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
-      if (this['_monitoring_on'])
-         drawurl += "?monitoring=" + this['_monitoring_interval'];
+      if (this.IsMonitoring())
+         drawurl += "?monitoring=" + this.MonitoringInterval();
 
       if (cando.display)
          JSROOT.Painter.menuitem(menu, "Draw in new window", function() { window.open(drawurl); });
@@ -7523,6 +7523,27 @@
    JSROOT.HierarchyPainter.prototype.Adopt = function(h) {
       this.h = h;
       this.RefreshHtml();
+   }
+   
+   JSROOT.HierarchyPainter.prototype.MonitoringInterval = function() {
+      // returns interval 
+      var monitor = this['_monitoring_interval'];
+      if (monitor == null) {
+         monitor = JSROOT.GetUrlOption("monitoring");
+         if ((monitor == "") || (monitor==null)) monitor = 3000; 
+                                            else monitor = parseInt(monitor);
+         if ((monitor == NaN) || (monitor<=0)) monitor = 3000;
+         this['_monitoring_interval'] = monitor;
+      }
+      return monitor;
+   }
+   
+   JSROOT.HierarchyPainter.prototype.EnableMonitoring = function(on) {
+      this['_monitoring_on'] = on;
+   }
+
+   JSROOT.HierarchyPainter.prototype.IsMonitoring = function() {
+      return this['_monitoring_on'];
    }
 
    JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event, itemname) {
@@ -7548,8 +7569,8 @@
          var addr = "";
          if ('_online' in this.h) {
             addr = "/?";
-            if (this['_monitoring_on'])
-               addr += "monitoring=" + this['_monitoring_interval'];
+            if (this.IsMonitoring())
+               addr += "monitoring=" + this.MonitoringInterval();
          } else if ('_file' in this.h) {
             addr = JSROOT.source_dir + "index.htm?";
             addr += "file=" + this.h['_file'].fURL;
