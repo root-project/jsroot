@@ -6861,16 +6861,15 @@
 
          for ( var i in top._childs)
             if (top._childs[i]._name == localname) {
-               top._childs[i]['_parent'] = top; // set parent pointer when
-                                                // searching child
+            // set parent pointer when searching child
+               top._childs[i]['_parent'] = top; 
                if ((pos + 1 == fullname.length) || (pos < 0)) {
                   if (replace != null)
                      top._childs[i] = replace;
                   return top._childs[i];
                }
 
-               return this.Find(fullname.substr(pos + 1), top._childs[i],
-                     replace);
+               return this.Find(fullname.substr(pos + 1), top._childs[i],  replace);
             }
       } while (pos > 0);
       return null;
@@ -7225,7 +7224,12 @@
    }
    
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
-      if (!this.CreateDisplay()) return;
+      
+      function do_call_back(res) {
+         if (typeof call_back=='function') call_back(res);
+      }
+      
+      if (!this.CreateDisplay()) return do_call_back(null);
 
       var h = this;
       
@@ -7235,14 +7239,14 @@
       
       if (updating) {
          var item = h.Find(itemname);
-         if ((item==null) || ('_doing_update' in item)) return;
+         if ((item==null) || ('_doing_update' in item)) return do_call_back(null);
          item['_doing_update'] = true;
       }
 
       h.get(itemname, function(item, obj) {
          
          if (updating) delete item['_doing_update'];
-         if (obj==null) return;
+         if (obj==null) return do_call_back(null);
          
          var painter = null;
          
@@ -7263,16 +7267,16 @@
          if (painter==null) {
             if (updating) {
                console.log("something went wrong - did not found painter when doing update of " + itemname);
+            } else {
+               var frame = mdi.FindFrame(itemname, true);
+               painter = h.draw($(frame).attr("id"), obj, drawopt);
+               mdi.ActivateFrame(frame);
             }
-            
-            var frame = mdi.FindFrame(itemname, true);
-            painter = h.draw($(frame).attr("id"), obj, drawopt);
-            mdi.ActivateFrame(frame);
          }
          
          if (painter) painter['_hitemname'] = itemname; // mark painter as created from hierarchy
          
-         if (typeof call_back == 'function') call_back(painter);
+         do_call_back(painter);
       });
    }
    
