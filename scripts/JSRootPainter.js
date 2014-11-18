@@ -862,16 +862,24 @@
    }
 
    JSROOT.TBasePainter.prototype.RedrawObject = function(obj) {
-      if (this.UpdateObject(obj))
+      if (this.UpdateObject(obj)) {
+         var current = document.body.style.cursor;
+         document.body.style.cursor = 'wait';
          this.RedrawPad();
-   }
-
-   JSROOT.TBasePainter.prototype.RedrawFrame = function() {
-      // obsolete, should not be used
-      this.RedrawPad();
+         document.body.style.cursor = current;
+      }
    }
 
    JSROOT.TBasePainter.prototype.CheckResize = function(force) {
+   }
+   
+   JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
+      // base painter does not creates canvas or frames
+      // it registered in the first child element  
+      
+      this['divid'] = divid;
+      
+      $("#" + divid).children().eq(0).prop('painter', this);
    }
 
    // ==============================================================================
@@ -971,11 +979,12 @@
    }
 
    JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main) {
-      // assign all basic graphic elements like canvas, pad, frame
-      // create canvas and frame if required
+      // Assigns id of top element (normally <div></div> where drawing is done
       // is_main - -1 - not add to painters list,
       //            0 - normal painter,
       //            1 - major objects like TH1/TH2
+      // In some situations canvas may not exists - for instance object drawn as html, not as svg. 
+      // In such case the only painter will be assigned to the first element 
 
       this['divid'] = divid;
 
@@ -993,8 +1002,10 @@
       }
 
       if (svg_c == null) {
-         if ((this.obj_typename!="TCanvas") && (is_main>=0))
-            console.log("Canvas not exists when trying to draw " + this.obj_typename);
+         if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
+         
+         console.log("Special case for " + this.obj_typename + " assign painter to first DOM element");
+         $("#" + divid).children().eq(0).prop('painter', this);
          return;
       }
 
@@ -1016,6 +1027,18 @@
       if ((is_main > 0) && (svg_p['mainpainter']==null))
          // when this is first main painter in the pad
          svg_p['mainpainter'] = this;
+   }
+   
+   JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
+      // Iterate over all known painters 
+      var svg_c = this.svg_canvas();
+      if (svg_c!=null) {
+         var painters = svg_c['pad_painter'].painters;
+         for (var k in painters) userfunc(painters[k]);
+      } else {
+         var painter = $("#" + this.divid).children().eq(0).prop('painter');
+         if (painter!=null) userfunc(painter);
+      }
    }
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
@@ -7196,17 +7219,83 @@
          callback(item, null);
    }
 
-   JSROOT.HierarchyPainter.prototype.display = function(itemname, options, call_back) {
+   JSROOT.HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
+      // just envelope, one should be able to redefine it for sub-classes
+      return JSROOT.draw(divid, obj, drawopt);
+   }
+   
+   JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       if (!this.CreateDisplay()) return;
 
-      var mdi = this['disp'];
+      var h = this;
+      
+      var mdi = h['disp'];
+      
+      var updating = drawopt=="update";
+      
+      if (updating) {
+         var item = h.Find(itemname);
+         if ((item==null) || ('_doing_update' in item)) return;
+         item['_doing_update'] = true;
+      }
 
-      this.get(itemname, function(item, obj) {
-         var painter = mdi.Draw(itemname, obj, options);
+      h.get(itemname, function(item, obj) {
+         
+         if (updating) delete item['_doing_update'];
+         if (obj==null) return;
+         
+         var painter = null;
+         
+         var pos = drawopt ? drawopt.indexOf("divid:") : -1;
+         if (pos>=0) {
+            var divid = drawopt.slice(pos+6);
+            drawopt = drawopt.slice(0, pos);
+            console.log("draw opts = " + drawopt  + "  divid = " + divid);
+            painter = h.draw(divid, obj, drawopt);
+         } else
+         mdi.ForEachPainter(function(p, frame) {
+            if (p['_hitemname'] != itemname) return;
+            painter = p;
+            mdi.ActivateFrame(frame);
+            painter.RedrawObject(obj);
+         });
+         
+         if (painter==null) {
+            if (updating) {
+               console.log("something went wrong - did not found painter when doing update of " + itemname);
+            }
+            
+            var frame = mdi.FindFrame(itemname, true);
+            painter = h.draw($(frame).attr("id"), obj, drawopt);
+            mdi.ActivateFrame(frame);
+         }
+         
+         if (painter) painter['_hitemname'] = itemname; // mark painter as created from hierarchy
+         
          if (typeof call_back == 'function') call_back(painter);
       });
    }
+   
+   JSROOT.HierarchyPainter.prototype.updateAll = function() {
+      // method can be used to fetch new objects and update all existing drawings
+      
+      var mdi = this['disp'];
+      if (mdi == null) return;
+      
+      var allitems = [];
 
+      // first collect items
+      mdi.ForEachPainter(function(p) {
+         if (! ('_hitemname' in p)) return;
+         var name = p['_hitemname'];
+         if ((name.length > 0) && (allitems.indexOf(name)<0)) allitems.push(name);
+      }, true); // only visible panels are considered
+
+      // than call display with update
+      for (var cnt in allitems) 
+         this.display(allitems[cnt], "update");
+   }
+   
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options) {
       if ((items == null) || (items.length == 0)) return;
       if (!this.CreateDisplay()) return;
@@ -7225,7 +7314,7 @@
          mdi.CreateFrame(items[i]);
 
       // Display items
-      for ( var i in items)
+      for (var i in items)
          this.display(items[i], options[i]);
    }
 
@@ -7460,8 +7549,9 @@
          var items = [];
 
          if (this['disp'] != null)
-            this['disp'].ForEach(function(panel, itemname, painter) {
-               items.push(itemname);
+            this['disp'].ForEachPainter(function(painter) {
+               if ('_hitemname' in painter)
+                  items.push(painter['_hitemname']);
             });
 
          if (items.length == 1) {
@@ -7531,30 +7621,46 @@
 
    // ================================================================
 
-   // JSROOT.MDIDisplay - class to manage multiple document interface for
-   // drawings
+   // JSROOT.MDIDisplay - class to manage multiple document interface for drawings
 
    JSROOT.MDIDisplay = function(frameid) {
       this.frameid = frameid;
    }
 
-   JSROOT.MDIDisplay.prototype.ForEach = function(userfunc, only_visible) {
-      alert("ForEach not implemented");
+   JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+      // method dedicated to iterate over existing panles
+      // provided userfunc is called with arguemnts (frame)
+
+      alert("ForEachFrame not implemented");
+   }
+   
+   JSROOT.MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
+      // method dedicated to iterate over existing panles
+      // provided userfunc is called with arguemnts (painter, frame)
+
+      this.ForEachFrame(function(frame) { 
+         var dummy = new JSROOT.TObjectPainter();
+         dummy.SetDivId($(frame).attr('id'), -1);
+         dummy.ForEachPainter(function(painter) { userfunc(painter, frame); });
+      }, only_visible); 
    }
 
    JSROOT.MDIDisplay.prototype.NumDraw = function() {
       var cnt = 0;
-      this.ForEach(function() { cnt++; });
+      this.ForEachFrame(function() { cnt++; });
       return cnt;
    }
 
-   JSROOT.MDIDisplay.prototype.FindFrame = function(searchitemname) {
+   JSROOT.MDIDisplay.prototype.FindFrame = function(searchtitle, force) {
       var found_frame = null;
 
-      this.ForEach(function(frame, itemname) {
-         if (itemname == searchitemname)
+      this.ForEachFrame(function(frame) {
+         if (frame.prop('title') == searchtitle)
             found_frame = frame;
       });
+      
+      if ((found_frame == null) && force) 
+         found_frame = this.CreateFrame(searchtitle);
 
       return found_frame;
    }
@@ -7570,63 +7676,16 @@
       // do nothing by default
    }
 
-   JSROOT.MDIDisplay.prototype.Draw = function(itemname, obj, drawopt) {
-      // draw object with specified options
-      if (!obj) return;
-
-      var frame = this.FindFrame(itemname);
-
-      if ((frame != null) && this.FindPainter(itemname)) {
-         this.ActivateFrame(frame);
-         return;
-      }
-
-      if (!JSROOT.canDraw(obj['_typename'], drawopt)) return;
-
-      if (frame == null)
-         frame = this.CreateFrame(itemname);
-
-      this.ActivateFrame(frame);
-
-      var painter = JSROOT.draw($(frame).attr("id"), obj, drawopt);
-
-      this.SetPainterForFrame(frame, painter);
-
-      return painter;
-   }
-
-   JSROOT.MDIDisplay.prototype.Redraw = function(itemname, obj, drawopt) {
-      // (re)draw object with specified options
-      // if object was not drawn before, normal draw will be performed
-
-      var p = this.FindPainter(itemname);
-      if (p==null) {
-         p = this.Draw(itemname, obj, drawopt);
-      } else {
-         if (p.UpdateObject(obj)) p.RedrawPad();
-      }
-
-      return p;
-   }
-
-
-   JSROOT.MDIDisplay.prototype.SetPainterForFrame = function(frame, painter) {
-      //var hid = $(frame).attr('id');
-      //document.getElementById(hid)['painter'] = painter;
-      $(frame).prop('painter', painter);
-      this.ActivateFrame(frame);
-   }
-
    JSROOT.MDIDisplay.prototype.CheckResize = function() {
-      this.ForEach(function(panel, itemname, painter) {
-         if ((painter != null) && (typeof painter['CheckResize'] == 'function'))
+      this.ForEachPainter(function(painter) {
+         if (('_hitemname' in painter) && (typeof painter['CheckResize'] == 'function'))
              painter.CheckResize();
       });
    }
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
-      this.ForEach(function(panel, itemname, painter) {
-         if ((painter != null) && (typeof painter['Clenaup'] == 'function'))
+      this.ForEachPainter(function(painter) {
+         if (('_hitemname' in painter) && (typeof painter['Clenaup'] == 'function'))
             painter.Clenaup();
       });
 
@@ -7653,21 +7712,19 @@
 
    JSROOT.CollapsibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.CollapsibleDisplay.prototype.ForEach = function(userfunc,  only_visible) {
+   JSROOT.CollapsibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null) return;
 
       if (typeof userfunc != 'function') return;
 
-      $('#' + topid).children().each(function() {
-
-         if (!('itemname' in this)) return;
+      $('#' + topid + ' .collapsible_draw').each(function() {
 
          // check if only visible specified
          if (only_visible && $(this).is(":hidden")) return;
 
-         userfunc(this, this['itemname'], $(this).prop('painter'));
+         userfunc($(this));
       });
    }
 
@@ -7680,64 +7737,44 @@
       $(frame).prev()[0].scrollIntoView();
    }
 
-   JSROOT.CollapsibleDisplay.prototype.CreateFrame = function(itemname) {
+   JSROOT.CollapsibleDisplay.prototype.CreateFrame = function(title) {
 
       var topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null)
-         $("#right-div")
-               .append(
-                     '<div id="'
-                           + topid
-                           + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%"></div>');
+         $("#right-div").append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%"></div>');
 
       var hid = topid + "_sub" + this.cnt++;
       var uid = hid + "h";
 
-      var entryInfo = "<h5 id=\"" + uid + "\"><a> " + itemname
-            + "</a>&nbsp; </h5>\n";
-      entryInfo += "<div id='" + hid + "'></div>\n";
+      var entryInfo = "<h5 id=\"" + uid + "\"><a> " + title + "</a>&nbsp; </h5>\n";
+      entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
       $("#" + topid).append(entryInfo);
 
-      document.getElementById(hid)['itemname'] = itemname;
-
       $('#' + uid)
-            .addClass(
-                  "ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
-            .hover(function() {
-               $(this).toggleClass("ui-state-hover");
-            })
+            .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
+            .hover(function() { $(this).toggleClass("ui-state-hover"); })
             .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
-            .append(
-                  '<button type="button" class="closeButton" title="close canvas" onclick="JSROOT.CloseCollapsible(event, \'#'
-                        + uid
-                        + '\')"><img src="'
-                        + JSROOT.source_dir
-                        + '/img/remove.gif"/></button>')
-            .click(
-                  function() {
-                     $(this)
-                           .toggleClass(
-                                 "ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-                           .find("> .ui-icon").toggleClass(
-                                 "ui-icon-triangle-1-e ui-icon-triangle-1-s")
-                           .end().next().toggleClass(
-                                 "ui-accordion-content-active").slideToggle(0);
+            .append('<button type="button" class="closeButton" title="close canvas" onclick="JSROOT.CloseCollapsible(event, \'#'
+                        + uid + '\')"><img src="' + JSROOT.source_dir + '/img/remove.gif"/></button>')
+            .click( function() {
+                     $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                           .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
+                           .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
                      return false;
                   })
             .next()
-            .addClass(
-                  "ui-accordion-content  ui-helper-reset ui-widget-content ui-corner-bottom")
+            .addClass("ui-accordion-content  ui-helper-reset ui-widget-content ui-corner-bottom")
             .hide();
 
       $('#' + uid)
-            .toggleClass(
-                  "ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
-            .find("> .ui-icon").toggleClass(
-                  "ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
+            .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
       // $('#'+uid)[0].scrollIntoView();
+
+      $("#" + hid).prop('title', title);
 
       return $("#" + hid);
    }
@@ -7751,7 +7788,7 @@
 
    JSROOT.TabsDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.TabsDisplay.prototype.ForEach = function(userfunc, only_visible) {
+   JSROOT.TabsDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
       var topid = this.frameid + '_tabs';
 
       if (document.getElementById(topid) == null) return;
@@ -7761,36 +7798,32 @@
       var cnt = -1;
       var active = $('#' + topid).tabs("option", "active");
 
-      $('#' + topid).children().each(function() {
+      $('#' + topid + ' .tabs_draw').each(function() {
          // check if only_visible specified
          if (only_visible && (cnt++ != active)) return;
 
-         if (!('itemname' in this)) return;
-
-         userfunc(this, this['itemname'], $(this).prop('painter'));
+         userfunc($(this));
       });
    }
 
    JSROOT.TabsDisplay.prototype.ActivateFrame = function(frame) {
       var cnt = 0, id = -1;
-      this.ForEach(function(fr) {
-         if (fr === frame)
-            id = cnt;
+      this.ForEachFrame(function(fr) {
+         if ($(fr).attr('id') == frame.attr('id'))  id = cnt;
          cnt++;
       });
 
       $('#' + this.frameid + "_tabs").tabs("option", "active", id);
    }
 
-   JSROOT.TabsDisplay.prototype.CreateFrame = function(itemname) {
+   JSROOT.TabsDisplay.prototype.CreateFrame = function(title) {
       var topid = this.frameid + '_tabs';
 
       var hid = topid + "_sub" + this.cnt++;
 
-      var li = '<li><a href="#' + hid + '">'
-            + itemname
+      var li = '<li><a href="#' + hid + '">' + title
             + '</a><span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>';
-      var cont = '<div id="' + hid + '"></div>';
+      var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
@@ -7812,7 +7845,7 @@
          $("#" + topid).tabs("option", "active", -1);
       }
       $('#' + hid).empty();
-      document.getElementById(hid)['itemname'] = itemname;
+      $('#' + hid).prop('title', title);
       return $('#' + hid);
    }
 
@@ -7857,7 +7890,7 @@
 
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.GridDisplay.prototype.ForEach = function(userfunc, only_visible) {
+   JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
       var topid = this.frameid + '_grid';
 
       if (document.getElementById(topid) == null) return;
@@ -7865,17 +7898,14 @@
       if (typeof userfunc != 'function') return;
 
       for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
-         var hid = topid + "_" + cnt;
+         var elem = $( "#" + topid + "_" + cnt);
 
-         var elem = document.getElementById(hid);
-
-         if ((elem == null) || !('itemname' in elem)) continue;
-
-         userfunc($("#" + hid), elem['itemname'], elem['painter']);
+         if (elem.prop('title')!="")
+            userfunc(elem);
       }
    }
 
-   JSROOT.GridDisplay.prototype.CreateFrame = function(itemname) {
+   JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
 
       var topid = this.frameid + '_grid';
 
@@ -7907,8 +7937,7 @@
       if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
 
       $("#" + hid).empty();
-      document.getElementById(hid)['itemname'] = itemname;
-      document.getElementById(hid)['painter'] = null;
+      $("#" + hid).prop('title', title);
 
       return $('#' + hid);
    }
@@ -8045,7 +8074,7 @@
       if (can_painter != null) {
          if (obj._typename=="TCanvas") {
             can_painter.RedrawObject(obj);
-           return can_painter;
+            return can_painter;
          }
 
          for (var i in can_painter.painters) {

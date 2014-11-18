@@ -110,7 +110,9 @@ function BuildNoBrowserGUI(online) {
          file_error("object " + itemsarr[indx] + " not found");
       } else
       if (mdi) {
-         mdi.Redraw(itemsarr[indx], obj, optionsarr[indx]);
+         var frame = mdi.FindFrame(itemsarr[indx], true);
+         mdi.ActivateFrame(frame);
+         JSROOT.redraw($(frame).attr('id'), obj, optionsarr[indx]);
       } else {
          objpainter = JSROOT.redraw(divid, obj, optionsarr[indx]);
       }
@@ -267,24 +269,7 @@ function ReadFile(filename, checkitem) {
 function UpdateOnline() {
    var h = JSROOT.H('root');
 
-   if (h['_monitoring_on'] && ('disp' in h))
-     h['disp'].ForEach(function(panel, itemname, painter) {
-       if (painter==null) return;
-
-       // prevent to update item if previous not completed
-       if ('_doing_update' in painter)  return;
-
-       painter['_doing_update'] = true;
-
-       h.get(itemname, function(item, obj) {
-         if (painter.UpdateObject(obj)) {
-            document.body.style.cursor = 'wait';
-            painter.RedrawPad();
-            document.body.style.cursor = 'auto';
-         }
-         delete painter['_doing_update'];
-      });
-     } , true); // update only visible objects
+   if (h['_monitoring_on']) h.updateAll();
 }
 
 function ProcessResize(direct)

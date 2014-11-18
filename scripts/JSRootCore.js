@@ -130,7 +130,7 @@
    }
 
    JSROOT.parse = function(arg) {
-      if (arg==null) return null;
+      if ((arg==null) || (arg=="")) return null;
       var obj = JSON.parse(arg);
       if (obj!=null) obj = JSROOT.JSONR_unref(obj)
       return obj;
