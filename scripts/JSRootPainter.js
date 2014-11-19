@@ -6938,9 +6938,9 @@
       } else if (kind == "ROOT.TF1") {
          cando.img1 = "img_graph";
          cando.display = true;
-      } else if (kind == "ROOT.TTree")
+      } else if (kind == "ROOT.TTree") {
          cando.img1 = "img_tree";
-      else if (kind == "ROOT.TFolder") {
+      } else if (kind == "ROOT.TFolder") {
          cando.img1 = "img_folder";
          cando.img2 = "img_folderopen";
       } else if (kind == "ROOT.TNtuple")
@@ -7074,10 +7074,10 @@
       
       elem.find(".dTreeItem").on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
       
-      elem.find("a").first().click(function() { console.log("click open all"); h.toggle(true); return false; })
-                    .next().click(function() { console.log("click close all"); h.toggle(false); return false; })
-                    .next().click(function() { console.log("click reload"); h.reload(); return false; })
-                    .next().click(function() { console.log("click clear"); h.clear(); return false; });
+      elem.find("a").first().click(function() { h.toggle(true); return false; })
+                    .next().click(function() { h.toggle(false); return false; })
+                    .next().click(function() { h.reload(); return false; })
+                    .next().click(function() { h.clear(); return false; });
       
 //      $("#" + this.frameid + " .dTreeNode")
 //         .click(function() { h.opennew($(this)); });
@@ -7160,7 +7160,7 @@
 
       var itemname = node.attr('item');
       
-      console.log("click " + itemname);
+      // console.log("click " + itemname);
 
       if (itemname==null) return;
 
@@ -7197,15 +7197,17 @@
       
       var newname =  hitem._d._io ? hitem._d.iconOpen : hitem._d.icon;
       var oldname =  hitem._d._io ? hitem._d.icon : hitem._d.iconOpen;
-      
+
       var img = node.find("img:last");
       
-      if (newname.indexOf("img_")==0)
-         img.switchClass(oldname, newname);
-      else
+      if (newname.indexOf("img_")<0)
          img.attr("src", newname);
-      
-      img.prev().switchClass(old_class, new_class);
+      else
+      if (newname!=oldname)
+         img.switchClass(oldname, newname);
+
+      if (old_class != new_class)
+         img.prev().switchClass(old_class, new_class);
 
       var dnode = node.next();
       if (dnode.hasClass("dTreeSub")) dnode.remove();
@@ -7395,16 +7397,9 @@
       if (item0==null) return;
       item0['_doing_expand'] = true;
       
-      console.log("item0._name " + item0._name);
-
       this.get(itemname, function(item, obj) {
          delete item0['_doing_expand'];
          if ((item == null) || (obj == null)) return;
-
-         console.log("item._name " + item._name);
-         console.log("item._d.name " + item._d.name);
-         console.log("obj._name " + obj._name);
-         console.log("item == item0 " + (item === item0));
 
          var curr = item;
          while (curr != null) {
