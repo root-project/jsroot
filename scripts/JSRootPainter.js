@@ -6941,8 +6941,8 @@
       } else if (kind == "ROOT.TTree")
          cando.img1 = JSROOT.source_dir + 'img/tree.png';
       else if (kind == "ROOT.TFolder") {
-         cando.img1 = JSROOT.source_dir + 'img/folder.gif';
-         cando.img2 = JSROOT.source_dir + 'img/folderopen.gif';
+         cando.img1 = "img_folder";
+         cando.img2 = "img_folderopen";
       } else if (kind == "ROOT.TNtuple")
          cando.img1 = JSROOT.source_dir + 'img/tree.png';
       else if (kind == "ROOT.TBranch")
@@ -6984,8 +6984,8 @@
          if (cando.expand) {
             can_click = true;
             if (cando.img1.length == 0) {
-               cando.img1 = JSROOT.source_dir + 'img/folder.gif';
-               cando.img2 = JSROOT.source_dir + 'img/folderopen.gif';
+               cando.img1 = 'img_folder';
+               cando.img2 = 'img_folderopen';
             }
          } else
          if (cando.display) {
@@ -7088,24 +7088,6 @@
    }
 
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem) {
-      if (this.icon == null)
-         this.icon = {
-            root : JSROOT.source_dir + 'img/base.gif', // not used
-            folder : JSROOT.source_dir + 'img/folder.gif', // not used
-            folderOpen : JSROOT.source_dir + 'img/folderopen.gif', // not used
-            node : JSROOT.source_dir + 'img/page.gif', // not used
-            empty : JSROOT.source_dir + 'img/empty.gif', // not used
-            line : JSROOT.source_dir + 'img/line.gif', // not used
-            join : JSROOT.source_dir + 'img/join.gif', // not used
-            joinBottom : JSROOT.source_dir + 'img/joinbottom.gif', // not used
-            plus : JSROOT.source_dir + 'img/plus.gif',  // not used
-            plusBottom : JSROOT.source_dir + 'img/plusbottom.gif', // not used
-            minus : JSROOT.source_dir + 'img/minus.gif',  // not used
-            minusBottom : JSROOT.source_dir + 'img/minusbottom.gif', // not used
-            nlPlus : JSROOT.source_dir + 'img/nolines_plus.gif', // not used
-            nlMinus : JSROOT.source_dir + 'img/nolines_minus.gif' // not used
-         };
-
       var isroot = (hitem == this.h);
 
       var node = hitem._d;
