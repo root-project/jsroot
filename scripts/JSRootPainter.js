@@ -6977,19 +6977,20 @@
 
       // console.log("add kind = " + kind + " name = " + node._name);
 
+      can_click = false;
+      
       if (!node._childs || !cando.scan) {
          if (cando.expand) {
-            cando.html = "javascript: " + this.GlobalName() + ".expand(\'" + nodefullname + "\');";
+            can_click = true;
             if (cando.img1.length == 0) {
                cando.img1 = JSROOT.source_dir + 'img/folder.gif';
                cando.img2 = JSROOT.source_dir + 'img/folderopen.gif';
             }
          } else
          if (cando.display) {
-            cando.html = "javascript: " + this.GlobalName() + ".display(\'" + nodefullname + "\');";
+            can_click = true;
          } else
-         if (cando.open && (cando.html.length == 0))
-            cando.html = nodefullname + "/";
+         if (cando.html.length > 0) can_click = true;
       }
 
       if (cando.img2 == "")
@@ -6997,7 +6998,7 @@
 
       node['_d'] = {
          name : nodename,
-         url : cando.html,
+         _click : can_click,
          title : "",
          icon : cando.img1,
          iconOpen : cando.img2,
@@ -7021,10 +7022,6 @@
 
       if (parent && parent._childs && (parent._childs[parent._childs.length - 1] == node))
          node['_d']._ls = true;
-
-      // allow context menu only for objects which can be displayed or for top-level item
-      if (cando.display || cando.ctxt)
-         node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'" + nodefullname + "\')";
 
       if (cando.scan && ('_childs' in node)) {
          node['_d']._hc = true;
@@ -7050,13 +7047,18 @@
 
       this['html'] = "<p>";
       
-      
-      this['html'] += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
-      this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
+      this['html'] += "<a href='#open_all'>open all</a>";
+      this['html'] += "| <a href='#close_all'>close all</a>";
+      // this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
       if ('_online' in this.h)
-         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".reload();\">reload</a>";
+         this['html'] += "| <a href='#reload'>reload</a>";
+      else
+         this['html'] += "<a/>"
+         
       if ('disp_kind' in this)
-         this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";
+         this['html'] += "| <a href='#clear'>clear</a>";
+      else
+         this['html'] += "<a/>"
 
       this['html'] += "</p>";
 
@@ -7069,14 +7071,14 @@
       var h = this;
      
       elem.html(this['html'])
-          .find(".dTreeNode").click(function() { h.click_dtree_node($(this)); });
+          .find(".dTreeNode").click(function() { h.dtree_click($(this)); });
       
-      // $("#" + this.frameid + " .newelement").css('cursor','pointer');
+      elem.find(".dTreeItem").on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
       
-      $("#" + this.frameid + " .newelement").click(function() {
-         console.log("click " + $(this).attr('item'));
-      }).draggable({ revert: true, helper: "clone", appendTo: "body" });
-      
+      elem.find("a").first().click(function() { console.log("click open all"); h.toggle(true); return false; })
+                    .next().click(function() { console.log("click close all"); h.toggle(false); return false; })
+                    .next().click(function() { console.log("click reload"); h.reload(); return false; })
+                    .next().click(function() { console.log("click clear"); h.clear(); return false; });
       
 //      $("#" + this.frameid + " .dTreeNode")
 //         .click(function() { h.opennew($(this)); });
@@ -7158,10 +7160,10 @@
 //         this['html'] += '<a';
 //      }
 
-      this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '"';
+      this['html'] += '<a';
+      if (node._click || node._hc) this['html'] +=' class="dTreeItem"';
       
       if (node.title) this['html'] += ' title="' + node.title + '"';
-      if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
       this['html'] += '>' + node.name + '</a>';
 
       if (onlyitem) return;
@@ -7179,7 +7181,7 @@
       this['html'] += '</div>';
    }
    
-   JSROOT.HierarchyPainter.prototype.click_dtree_node = function(node) {
+   JSROOT.HierarchyPainter.prototype.dtree_click = function(node) {
 
       var itemname = node.attr('item');
       
@@ -7199,16 +7201,15 @@
          return this.display(itemname);
       
       if (cando.open && (cando.html.length>0)) 
-         return window.open(cando.html);         
+         return window.open(cando.html);
+      
+      if (!hitem._d._hc) return;
       
       this.setDNodeOpenStatus(node, hitem, !hitem._d._io);
-
    }
 
    JSROOT.HierarchyPainter.prototype.open = function(itemname) {
-      //var hitem = this.Find(itemname);
-      //if (hitem == null) return;
-      //this.setDNodeOpenStatus(hitem, !hitem._d._io);
+      console.log("open() no longer available");
    }
 
    JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(node, hitem, openstatus, force) {
@@ -7232,7 +7233,7 @@
       var h = this;
       dnode.html(this['html'])
            .find(".dTreeNode")
-           .click(function() { h.click_dtree_node($(this)); });
+           .click(function() { h.dtree_click($(this)); });
       
       dnode.css('display', hitem._d._io ? 'block' : 'none');
    }
@@ -7593,8 +7594,20 @@
       return this['_monitoring_on'];
    }
 
-   JSROOT.HierarchyPainter.prototype.contextmenu = function(element, event, itemname) {
-      event.preventDefault();
+   JSROOT.HierarchyPainter.prototype.dtree_contextmenu = function(node, event) {
+      event.preventDefault();;
+      
+      var itemname = node.parent().attr('item');
+      
+      console.log("context menu " + itemname);
+      
+      var hitem = this.Find(itemname);
+      if (hitem==null) return;
+      
+      var cando = this.CheckCanDo(hitem);
+      
+      if (!cando.display && !cando.ctxt && (itemname!="")) return;
+      
 
       var onlineprop = this.GetOnlineProp(itemname);
       var fileprop = this.GetFileProp(itemname);
