@@ -6615,7 +6615,7 @@
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
       $("#" + divid).css({ overflow : 'auto' });
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid, true);
       painter.ShowStreamerInfo(obj);
       return painter;
    }
@@ -6649,18 +6649,19 @@
       return null;
    }
 
-   JSROOT.HierarchyPainter = function(name, frameid) {
+   JSROOT.HierarchyPainter = function(name, frameid, local) {
       JSROOT.TBasePainter.call(this);
-      JSROOT.AddHList(name, this);
       this.name = name;
       this.frameid = frameid;
       this.h = null; // hierarchy
+      this.local = local;
+      if (!this.local) JSROOT.AddHList(name, this);
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
-      JSROOT.DelHList(this.name);
+      if (!this.local) JSROOT.DelHList(this.name);
    }
 
    JSROOT.HierarchyPainter.prototype.GlobalName = function(suffix) {
@@ -7048,7 +7049,6 @@
       
       this['html'] += "<a href='#open_all'>open all</a>";
       this['html'] += "| <a href='#close_all'>close all</a>";
-      // this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
       if ('_online' in this.h)
          this['html'] += "| <a href='#reload'>reload</a>";
       else
@@ -7123,8 +7123,6 @@
       }
       this['html'] += sindent;
       
-      var opencode = this.GlobalName() + ".open(\'" + itemname + "\')";
-
       if (isroot) {
          // for root node no extra code
       } else
@@ -7188,7 +7186,7 @@
       if (cando.open && (cando.html.length>0)) 
          return window.open(cando.html);
       
-      if (!hitem._d._hc) return;
+      if ((!hitem._d._hc) || (hitem === this.h)) return;
       
       this.setDNodeOpenStatus(node, hitem, !hitem._d._io);
    }
