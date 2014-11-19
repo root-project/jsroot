@@ -20,20 +20,19 @@
    color: #333;
    text-decoration: none;
 }
-.dtree a.dTreeItem, .dtree a.dTreeSel {
+.dtree a.dTreeItem {
 	cursor: pointer;
    white-space: nowrap;
    padding: 1px 2px 1px 2px;
 }
-.dtree a.dTreeItem:hover, .dtree a.dTreeSel:hover {
+.dtree a.dTreeItem:hover {
    color: #333;
    text-decoration: underline;
 }
-.dtree a.dTreeSel {
-   background-color: #c0d2ec;
-}
+
 .dtree .dTreeSub {
    overflow: hidden;
+   display: block;
 }
 
 /*--------------------------------------------------|
