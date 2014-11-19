@@ -7003,7 +7003,6 @@
          icon : cando.img1,
          iconOpen : cando.img2,
          _io : false, // is open
-         _is : false, // is selected
          _ls : false, // last sibling
          _hc : false  // has childs
       };
@@ -7149,16 +7148,6 @@
       }
 
       this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt=""/>';
-
-//      if (node.url) {
-//         this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '" href="' + node.url + '"';
-//      } else
-//      if (node._hc && !isroot) {
-//         this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '"';
-//      } else {
-//         this['html'] += '<a';
-//      }
-
       this['html'] += '<a';
       if (node._click || node._hc) this['html'] +=' class="dTreeItem"';
       
@@ -7168,11 +7157,10 @@
       this['html'] += '</div>';
 
       var childs_display = node._hc && (isroot || node._io);
+      
       if (!childs_display) return;
       
-      // place for childs
-
-      this['html'] += '<div class="dTreeSub" style="display:block">';
+      this['html'] += '<div class="dTreeSub">';
       for (var i in hitem._childs)
          this.addItemHtml(hitem._childs[i]);
       this['html'] += '</div>';
@@ -7191,7 +7179,7 @@
       
       var cando = this.CheckCanDo(hitem);
       
-      if (cando.expand) 
+      if (cando.expand && (hitem['_childs'] == null)) 
          return this.expand(itemname, hitem, node);
 
       if (cando.display) 
@@ -7391,9 +7379,9 @@
 
       hitem._d._hc = true;
       hitem._d._io = true;
-      hitem._d.url = "";
-      hitem._d.name = node._name;
-
+      hitem._d._click = false;
+      hitem._d.name = hitem._name;
+      
       this.setDNodeOpenStatus(node, hitem, true, true);
    }
 
@@ -7406,10 +7394,17 @@
       if (item0==null) item0 = this.Find(itemname);
       if (item0==null) return;
       item0['_doing_expand'] = true;
+      
+      console.log("item0._name " + item0._name);
 
       this.get(itemname, function(item, obj) {
          delete item0['_doing_expand'];
          if ((item == null) || (obj == null)) return;
+
+         console.log("item._name " + item._name);
+         console.log("item._d.name " + item._d.name);
+         console.log("obj._name " + obj._name);
+         console.log("item == item0 " + (item === item0));
 
          var curr = item;
          while (curr != null) {
