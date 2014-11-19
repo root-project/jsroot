@@ -7235,6 +7235,9 @@
            .find(".dTreeNode")
            .click(function() { h.dtree_click($(this)); });
       
+      dnode.find(".dTreeItem").on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
+
+      
       dnode.css('display', hitem._d._io ? 'block' : 'none');
    }
 
