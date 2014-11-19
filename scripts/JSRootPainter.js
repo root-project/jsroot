@@ -7001,7 +7001,6 @@
          title : "",
          icon : cando.img1,
          iconOpen : cando.img2,
-         _id : 0,     // id used in html
          _io : false, // is open
          _is : false, // is selected
          _ls : false, // last sibling
@@ -7023,8 +7022,6 @@
       if (parent && parent._childs && (parent._childs[parent._childs.length - 1] == node))
          node['_d']._ls = true;
 
-      node['_d']._id = this.grid++;
-
       // allow context menu only for objects which can be displayed or for top-level item
       if (cando.display || cando.ctxt)
          node['_d']['ctxt'] = this.GlobalName() + ".contextmenu(this, event, \'" + nodefullname + "\')";
@@ -7038,22 +7035,22 @@
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(force) {
       if (this.frameid == null) return;
-      var elem = document.getElementById(this.frameid);
-      if (elem == null) return;
+      var elem = $("#" + this.frameid);
+      if (elem.length == 0) return;
 
-      if (this.h == null) { elem.innerHTML = "<h2>null</h2>"; return; }
+      if (this.h == null) return elem.html("<h2>null</h2>");
 
       if (force && this.h._d != null) {
          delete this.h._d;
          this.h._d = null;
       }
 
-      if (this.h._d == null) {
-         this.grid = 0;
+      if (this.h._d == null) 
          this.createNode(this.h, "", null);
-      }
 
       this['html'] = "<p>";
+      
+      
       this['html'] += "<a href=\"javascript: " + this.GlobalName() + ".toggle(true);\">open all</a>";
       this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".toggle(false);\">close all</a>";
       if ('_online' in this.h)
@@ -7062,11 +7059,31 @@
          this['html'] += "| <a href=\"javascript: " + this.GlobalName() + ".clear();\">clear</a>";
 
       this['html'] += "</p>";
-      this['html'] += '<div class="dtree">'
 
+      this['html'] += '<div class="dtree">'
       this.addItemHtml(this.h);
       this['html'] += '</div>';
-      elem.innerHTML = this['html'];
+      
+      console.log("html length " + this['html'].length);
+      
+      var h = this;
+     
+      elem.html(this['html'])
+          .find(".dTreeNode").click(function() { h.click_dtree_node($(this)); });
+      
+      // $("#" + this.frameid + " .newelement").css('cursor','pointer');
+      
+      $("#" + this.frameid + " .newelement").click(function() {
+         console.log("click " + $(this).attr('item'));
+      }).draggable({ revert: true, helper: "clone", appendTo: "body" });
+      
+      
+//      $("#" + this.frameid + " .dTreeNode")
+//         .click(function() { h.opennew($(this)); });
+//         .draggable({ revert: true, helper: "clone", appendTo: "body" });
+      
+//      elem.find(".dTreeItem")
+//         .draggable({ revert: true, helper: "clone", appendTo: "body" });
    }
 
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, onlyitem) {
@@ -7091,10 +7108,11 @@
       var isroot = (hitem == this.h);
 
       var node = hitem._d;
-      var idname = this.name + "_id_" + node._id;
+
+      var itemname = this.itemFullName(hitem);
 
       if (!onlyitem)
-         this['html'] += '<div class="dTreeNode" id="z' + idname + '">';
+         this['html'] += '<div class="dTreeNode" item="' + itemname + '">';
 
       // build indent
       var sindent = "";
@@ -7104,17 +7122,17 @@
          prnt = prnt._parent;
       }
       this['html'] += sindent;
-
-      var opencode = this.GlobalName() + ".open(\'" + this.itemFullName(hitem) + "\')";
+      
+      var opencode = this.GlobalName() + ".open(\'" + itemname + "\')";
 
       if (isroot) {
          // for root node no extra code
       } else
       if (node._hc) {
-         this['html'] += '<a href="javascript: ' + opencode + '"><img src="';
+         this['html'] += '<img src="';
          this['html'] += ((node._io) ? (node._ls ? this.icon.minusBottom : this.icon.minus)
                                      : (node._ls ? this.icon.plusBottom : this.icon.plus));
-         this['html'] += '" alt="" /></a>';
+         this['html'] += '" alt="" style="cursor:pointer"/>';
       } else {
          this['html'] += '<img src="' + ((node._ls ? this.icon.joinBottom : this.icon.join)) + '" alt="" />';
       }
@@ -7131,15 +7149,17 @@
 
       this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt=""/>';
 
-      if (node.url) {
-         this['html'] += '<a class="' + (node._is ? 'nodeSel' : 'node') + '" href="' + node.url + '"';
-      } else
-      if (node._hc && !isroot) {
-         this['html'] += '<a href="javascript: ' + opencode + '" class="node"';
-      } else {
-         this['html'] += '<a';
-      }
+//      if (node.url) {
+//         this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '" href="' + node.url + '"';
+//      } else
+//      if (node._hc && !isroot) {
+//         this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '"';
+//      } else {
+//         this['html'] += '<a';
+//      }
 
+      this['html'] += '<a class="' + (node._is ? 'dTreeSel' : 'dTreeItem') + '"';
+      
       if (node.title) this['html'] += ' title="' + node.title + '"';
       if (node.ctxt) this['html'] += ' oncontextmenu="' + node.ctxt + '"';
       this['html'] += '>' + node.name + '</a>';
@@ -7152,45 +7172,69 @@
 
       // place for childs
 
-      this['html'] += '<div id="d' + idname + '" class="clip" style="display:' + (childs_display ? 'block' : 'none') + ';">';
+      this['html'] += '<div class="dTreeSub" style="display:' + (childs_display ? 'block' : 'none') + ';">';
       if (childs_display)
          for ( var i in hitem._childs)
             this.addItemHtml(hitem._childs[i]);
       this['html'] += '</div>';
    }
+   
+   JSROOT.HierarchyPainter.prototype.click_dtree_node = function(node) {
 
-   JSROOT.HierarchyPainter.prototype.open = function(itemname) {
+      var itemname = node.attr('item');
+      
+      console.log("click " + itemname);
+
+      if (itemname==null) return;
+
       var hitem = this.Find(itemname);
-      if (hitem == null) return;
-      this.setDNodeOpenStatus(hitem, !hitem._d._io);
+      if (hitem==null) return;
+      
+      var cando = this.CheckCanDo(hitem);
+      
+      if (cando.expand) 
+         return this.expand(itemname, hitem, node);
+
+      if (cando.display) 
+         return this.display(itemname);
+      
+      if (cando.open && (cando.html.length>0)) 
+         return window.open(cando.html);         
+      
+      this.setDNodeOpenStatus(node, hitem, !hitem._d._io);
+
    }
 
-   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(hitem, status, force) {
-      if (hitem == null) return;
+   JSROOT.HierarchyPainter.prototype.open = function(itemname) {
+      //var hitem = this.Find(itemname);
+      //if (hitem == null) return;
+      //this.setDNodeOpenStatus(hitem, !hitem._d._io);
+   }
 
-      var node = hitem._d;
-      var idname = this.name + "_id_" + node._id;
-
-      node._io = status;
-
-      var zDiv = document.getElementById('z' + idname);
-      var dDiv = document.getElementById('d' + idname);
-
-      if (zDiv) {
-         this['html'] = '';
-         this.addItemHtml(hitem, true);
-         zDiv.innerHTML = this['html'];
+   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(node, hitem, openstatus, force) {
+      
+      var dnode = node.next();
+      
+      hitem._d._io = openstatus;
+      
+      var icon2 = hitem._d._io ? (hitem._d._ls ? this.icon.minusBottom : this.icon.minus)
+                               : (hitem._d._ls ? this.icon.plusBottom : this.icon.plus);
+      
+      node.find("img:last").attr("src", hitem._d._io ? hitem._d.iconOpen : hitem._d.icon)
+                    .prev().attr("src", icon2);
+      
+      this['html'] = '';
+      if (hitem._d._io && hitem._d._hc && (force || (dnode.children().length == 0))) {
+         for (var i in hitem._childs)
+            this.addItemHtml(hitem._childs[i]);
       }
-
-      if (dDiv) {
-         if (node._io && node._hc && (force || (dDiv.childNodes.length == 0))) {
-            this['html'] = '';
-            for ( var i in hitem._childs)
-               this.addItemHtml(hitem._childs[i]);
-            dDiv.innerHTML = this['html'];
-         }
-         dDiv.style.display = node._io ? 'block' : 'none';
-      }
+      
+      var h = this;
+      dnode.html(this['html'])
+           .find(".dTreeNode")
+           .click(function() { h.click_dtree_node($(this)); });
+      
+      dnode.css('display', hitem._d._io ? 'block' : 'none');
    }
 
    JSROOT.HierarchyPainter.prototype.toggle = function(status) {
@@ -7337,24 +7381,27 @@
          this.OpenOnline(this.h['_online']);
    }
 
-   JSROOT.HierarchyPainter.prototype.ExpandDtree = function(node) {
-      var itemname = this.itemFullName(node);
+   JSROOT.HierarchyPainter.prototype.ExpandDtree = function(node, hitem) {
+      var itemname = this.itemFullName(hitem);
 
-      for ( var i in node._childs)
-         this.createNode(node._childs[i], itemname, node);
+      for (var i in hitem._childs)
+         this.createNode(hitem._childs[i], itemname, hitem);
 
-      node._d._hc = true;
-      node._d._io = true;
-      node._d.url = "";
-      node._d.name = node._name;
+      hitem._d._hc = true;
+      hitem._d._io = true;
+      hitem._d.url = "";
+      hitem._d.name = node._name;
 
-      this.setDNodeOpenStatus(node, true, true);
+      this.setDNodeOpenStatus(node, hitem, true, true);
    }
 
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname) {
+   JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
       var painter = this;
 
-      var item0 = this.Find(itemname);
+      if (node==null)
+         return console.log("Not yet implemented - one need to specify correct dtree node");
+      
+      if (item0==null) item0 = this.Find(itemname);
       if (item0==null) return;
       item0['_doing_expand'] = true;
 
@@ -7366,7 +7413,7 @@
          while (curr != null) {
             if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
                 if (curr['_expand'](item, obj))
-                   painter.ExpandDtree(item);
+                   painter.ExpandDtree(node, item);
                 return;
             }
             curr = ('_parent' in curr) ? curr['_parent'] : null;
@@ -7960,10 +8007,8 @@
          var topid = this.frameid + '_grid';
          if (document.getElementById(topid) == null) {
 
-            var precx = 100. / this.sizex;
-            var precy = 100. / this.sizey;
-            var h = $("#" + this.frameid).height() / this.sizey;
-            var w = $("#" + this.frameid).width() / this.sizex;
+            var h = Math.floor($("#" + this.frameid).height() / this.sizey);
+            var w = Math.floor($("#" + this.frameid).width() / this.sizex);
 
             var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
             var cnt = 0;
@@ -7978,8 +8023,8 @@
             $("#" + this.frameid).empty();
             $("#" + this.frameid).append(content);
 
-            $("[id^=" + this.frameid + "_grid_]").height(h);
-            $("[id^=" + this.frameid + "_grid_]").width(w);
+            $("[id^=" + this.frameid + "_grid_]")
+              .width(w).height(h).droppable({ accepted: ".dTreeNode", drop: function(event, ui) { console.log("drop!"); } });;
          }
 
          hid = topid + "_" + this.cnt;
