@@ -7060,7 +7060,7 @@
          this['html'] += "<a/>"
 
       this['html'] += "</p>";
-
+      
       this['html'] += '<div class="dtree">'
       this.addItemHtml(this.h);
       this['html'] += '</div>';
@@ -7098,12 +7098,12 @@
             line : JSROOT.source_dir + 'img/line.gif',
             join : JSROOT.source_dir + 'img/join.gif',
             joinBottom : JSROOT.source_dir + 'img/joinbottom.gif',
-            plus : JSROOT.source_dir + 'img/plus.gif',
-            plusBottom : JSROOT.source_dir + 'img/plusbottom.gif',
-            minus : JSROOT.source_dir + 'img/minus.gif',
-            minusBottom : JSROOT.source_dir + 'img/minusbottom.gif',
-            nlPlus : JSROOT.source_dir + 'img/nolines_plus.gif',
-            nlMinus : JSROOT.source_dir + 'img/nolines_minus.gif'
+            plus : JSROOT.source_dir + 'img/plus.gif',  // not used
+            plusBottom : JSROOT.source_dir + 'img/plusbottom.gif', // not used
+            minus : JSROOT.source_dir + 'img/minus.gif',  // not used
+            minusBottom : JSROOT.source_dir + 'img/minusbottom.gif', // not used
+            nlPlus : JSROOT.source_dir + 'img/nolines_plus.gif', // not used
+            nlMinus : JSROOT.source_dir + 'img/nolines_minus.gif' // not used
          };
 
       var isroot = (hitem == this.h);
@@ -7118,7 +7118,7 @@
       var sindent = "";
       var prnt = isroot ? null : hitem._parent;
       while ((prnt != null) && (prnt != this.h)) {
-         sindent = '<img src="' + (!prnt._d._ls ? this.icon.line : this.icon.empty) + '" alt="" />' + sindent;
+         sindent = '<img class="' + (prnt._d._ls ? "dtree_empty" : "dtree_line") + '" src="" alt=""/>' + sindent;
          prnt = prnt._parent;
       }
       this['html'] += sindent;
@@ -7127,10 +7127,9 @@
          // for root node no extra code
       } else
       if (node._hc) {
-         this['html'] += '<img src="';
-         this['html'] += ((node._io) ? (node._ls ? this.icon.minusBottom : this.icon.minus)
-                                     : (node._ls ? this.icon.plusBottom : this.icon.plus));
-         this['html'] += '" alt="" style="cursor:pointer"/>';
+         var icon_class = node._io ? "dtree_minus" : "dtree_plus";
+         if (node._ls) icon_class += "bottom";
+         this['html'] += '<img src="" alt="" class="' +icon_class+ '" style="cursor:pointer"/>';
       } else {
          this['html'] += '<img src="' + ((node._ls ? this.icon.joinBottom : this.icon.join)) + '" alt="" />';
       }
@@ -7199,11 +7198,12 @@
       
       hitem._d._io = openstatus;
       
-      var icon2 = hitem._d._io ? (hitem._d._ls ? this.icon.minusBottom : this.icon.minus)
-                               : (hitem._d._ls ? this.icon.plusBottom : this.icon.plus);
+      var new_class = hitem._d._io ? "dtree_minus" : "dtree_plus";
+      var old_class = hitem._d._io ? "dtree_plus" : "dtree_minus";
+      if (hitem._d._ls) { old_class+="bottom"; new_class += "bottom"; }
       
       node.find("img:last").attr("src", hitem._d._io ? hitem._d.iconOpen : hitem._d.icon)
-                    .prev().attr("src", icon2);
+                    .prev().switchClass(old_class, new_class);
 
       var dnode = node.next();
       if (dnode.hasClass("dTreeSub")) dnode.remove();
