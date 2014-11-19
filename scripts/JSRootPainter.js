@@ -6913,48 +6913,48 @@
       if (node == this.h) {
          cando.ctxt = true;
       } else if (kind == "ROOT.Session") {
-         cando.img1 = JSROOT.source_dir + 'img/globe.gif';
+         cando.img1 = "img_globe";
       } else if (kind.match(/^ROOT.TH1/)) {
-         cando.img1 = JSROOT.source_dir + 'img/histo.png';
+         cando.img1 = "img_histo1d";
          cando.scan = false;
          cando.display = true;
       } else if (kind.match(/^ROOT.TH2/)) {
-         cando.img1 = JSROOT.source_dir + 'img/histo2d.png';
+         cando.img1 = "img_histo2d";
          cando.scan = false;
          cando.display = true;
       } else if (kind.match(/^ROOT.TH3/)) {
-         cando.img1 = JSROOT.source_dir + 'img/histo3d.png';
+         cando.img1 = "img_histo3d";
          cando.scan = false;
          cando.display = true;
       } else if (kind == "ROOT.TCanvas") {
-         cando.img1 = JSROOT.source_dir + 'img/canvas.png';
+         cando.img1 = "img_canvas";
          cando.display = true;
       } else if (kind == "ROOT.TProfile") {
-         cando.img1 = JSROOT.source_dir + 'img/profile.png';
+         cando.img1 = "img_profile";
          cando.display = true;
       } else if (kind.match(/^ROOT.TGraph/) || (kind=="TCutG")) {
-         cando.img1 = JSROOT.source_dir + 'img/graph.png';
+         cando.img1 = "img_graph";
          cando.display = true;
       } else if (kind == "ROOT.TF1") {
-         cando.img1 = JSROOT.source_dir + 'img/graph.png';
+         cando.img1 = "img_graph";
          cando.display = true;
       } else if (kind == "ROOT.TTree")
-         cando.img1 = JSROOT.source_dir + 'img/tree.png';
+         cando.img1 = "img_tree";
       else if (kind == "ROOT.TFolder") {
          cando.img1 = "img_folder";
          cando.img2 = "img_folderopen";
       } else if (kind == "ROOT.TNtuple")
-         cando.img1 = JSROOT.source_dir + 'img/tree.png';
+         cando.img1 = "img_tree";
       else if (kind == "ROOT.TBranch")
-         cando.img1 = JSROOT.source_dir + 'img/branch.png';
+         cando.img1 = "img_branch";
       else if (kind.match(/^ROOT.TLeaf/))
-         cando.img1 = JSROOT.source_dir + 'img/leaf.png';
+         cando.img1 = "img_leaf";
       else if (kind == "ROOT.TStreamerInfoList") {
-         cando.img1 = JSROOT.source_dir + 'img/question.gif';
+         cando.img1 = 'img_question';
          cando.expand = false;
          cando.display = true;
       } else if ((kind.indexOf("ROOT.") == 0) && JSROOT.canDraw(kind.slice(5))) {
-         cando.img1 = JSROOT.source_dir + 'img/histo.png';
+         cando.img1 = "img_histo1d";
          cando.scan = false;
          cando.display = true;
       }
@@ -7847,7 +7847,7 @@
             .hover(function() { $(this).toggleClass("ui-state-hover"); })
             .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
             .append('<button type="button" class="closeButton" title="close canvas" onclick="JSROOT.CloseCollapsible(event, \'#'
-                        + uid + '\')"><img src="' + JSROOT.source_dir + '/img/remove.gif"/></button>')
+                        + uid + '\')"><img class="img_remove" src="" alt=""/></button>')
             .click( function() {
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
