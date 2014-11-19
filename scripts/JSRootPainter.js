@@ -7090,14 +7090,14 @@
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem) {
       if (this.icon == null)
          this.icon = {
-            root : JSROOT.source_dir + 'img/base.gif',
-            folder : JSROOT.source_dir + 'img/folder.gif',
-            folderOpen : JSROOT.source_dir + 'img/folderopen.gif',
-            node : JSROOT.source_dir + 'img/page.gif',
-            empty : JSROOT.source_dir + 'img/empty.gif',
-            line : JSROOT.source_dir + 'img/line.gif',
-            join : JSROOT.source_dir + 'img/join.gif',
-            joinBottom : JSROOT.source_dir + 'img/joinbottom.gif',
+            root : JSROOT.source_dir + 'img/base.gif', // not used
+            folder : JSROOT.source_dir + 'img/folder.gif', // not used
+            folderOpen : JSROOT.source_dir + 'img/folderopen.gif', // not used
+            node : JSROOT.source_dir + 'img/page.gif', // not used
+            empty : JSROOT.source_dir + 'img/empty.gif', // not used
+            line : JSROOT.source_dir + 'img/line.gif', // not used
+            join : JSROOT.source_dir + 'img/join.gif', // not used
+            joinBottom : JSROOT.source_dir + 'img/joinbottom.gif', // not used
             plus : JSROOT.source_dir + 'img/plus.gif',  // not used
             plusBottom : JSROOT.source_dir + 'img/plusbottom.gif', // not used
             minus : JSROOT.source_dir + 'img/minus.gif',  // not used
@@ -7118,33 +7118,44 @@
       var sindent = "";
       var prnt = isroot ? null : hitem._parent;
       while ((prnt != null) && (prnt != this.h)) {
-         sindent = '<img class="' + (prnt._d._ls ? "dtree_empty" : "dtree_line") + '" src="" alt=""/>' + sindent;
+         sindent = '<img class="' + (prnt._d._ls ? "img_empty" : "img_line") + '" src="" alt=""/>' + sindent;
          prnt = prnt._parent;
       }
       this['html'] += sindent;
+      
+      var icon_class = "";
       
       if (isroot) {
          // for root node no extra code
       } else
       if (node._hc) {
-         var icon_class = node._io ? "dtree_minus" : "dtree_plus";
+         icon_class = node._io ? "img_minus" : "img_plus";
+      } else {
+         icon_class = "img_join";
+      }
+      
+      if (icon_class.length > 0) {
          if (node._ls) icon_class += "bottom";
          this['html'] += '<img src="" alt="" class="' +icon_class+ '" style="cursor:pointer"/>';
-      } else {
-         this['html'] += '<img src="' + ((node._ls ? this.icon.joinBottom : this.icon.join)) + '" alt="" />';
       }
 
       // make node icon
       if (!node.icon)
-         node.icon = isroot ? this.icon.root : ((node._hc) ? this.icon.folder : this.icon.node);
+         node.icon = isroot ? "img_base" : ((node._hc) ? "img_folder" : "img_page");
       if (!node.iconOpen)
-         node.iconOpen = (node._hc) ? this.icon.folderOpen : this.icon.node;
+         node.iconOpen = (node._hc) ? "img_folderopen" : "img_page";
       if (isroot) {
-         node.icon = this.icon.root;
-         node.iconOpen = this.icon.root;
+         node.icon = "img_base";
+         node.iconOpen = "img_base";
       }
 
-      this['html'] += '<img src="' + ((node._io) ? node.iconOpen : node.icon) + '" alt=""/>';
+      var icon_name = node._io ? node.iconOpen : node.icon;
+      
+      if (icon_name.indexOf("img_")==0)
+         this['html'] += '<img class="' + icon_name + '" src="" alt=""/>';
+      else
+         this['html'] += '<img src="' + icon_name + '" alt=""/>';
+      
       this['html'] += '<a';
       if (node._click || node._hc) this['html'] +=' class="dTreeItem"';
       
@@ -7198,12 +7209,21 @@
       
       hitem._d._io = openstatus;
       
-      var new_class = hitem._d._io ? "dtree_minus" : "dtree_plus";
-      var old_class = hitem._d._io ? "dtree_plus" : "dtree_minus";
+      var new_class = hitem._d._io ? "img_minus" : "img_plus";
+      var old_class = hitem._d._io ? "img_plus" : "img_minus";
       if (hitem._d._ls) { old_class+="bottom"; new_class += "bottom"; }
       
-      node.find("img:last").attr("src", hitem._d._io ? hitem._d.iconOpen : hitem._d.icon)
-                    .prev().switchClass(old_class, new_class);
+      var newname =  hitem._d._io ? hitem._d.iconOpen : hitem._d.icon;
+      var oldname =  hitem._d._io ? hitem._d.icon : hitem._d.iconOpen;
+      
+      var img = node.find("img:last");
+      
+      if (newname.indexOf("img_")==0)
+         img.switchClass(oldname, newname);
+      else
+         img.attr("src", newname);
+      
+      img.prev().switchClass(old_class, new_class);
 
       var dnode = node.next();
       if (dnode.hasClass("dTreeSub")) dnode.remove();
