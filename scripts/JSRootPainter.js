@@ -7175,14 +7175,15 @@
       
       var cando = this.CheckCanDo(hitem);
       
+      if (cando.open && (cando.html.length>0)) 
+         return window.open(cando.html);
+      
       if (cando.expand && (hitem['_childs'] == null)) 
          return this.expand(itemname, hitem, node);
 
       if (cando.display) 
          return this.display(itemname);
       
-      if (cando.open && (cando.html.length>0)) 
-         return window.open(cando.html);
       
       if ((!hitem._d._hc) || (hitem === this.h)) return;
       
