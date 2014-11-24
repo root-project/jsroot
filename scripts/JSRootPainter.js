@@ -7100,7 +7100,7 @@
       var sindent = "";
       var prnt = isroot ? null : hitem._parent;
       while ((prnt != null) && (prnt != this.h)) {
-         sindent = '<img class="' + (prnt._d._ls ? "img_empty" : "img_line") + '" src="" alt=""/>' + sindent;
+         sindent = '<div class="' + (prnt._d._ls ? "img_empty" : "img_line") + '"/>' + sindent;
          prnt = prnt._parent;
       }
       this['html'] += sindent;
@@ -7118,7 +7118,7 @@
       
       if (icon_class.length > 0) {
          if (node._ls) icon_class += "bottom";
-         this['html'] += '<img src="" alt="" class="' +icon_class+ '" style="cursor:pointer"/>';
+         this['html'] += '<div class="' +icon_class+ '" style="cursor:pointer"/>';
       }
 
       // make node icon
@@ -7134,7 +7134,7 @@
       var icon_name = node._io ? node.iconOpen : node.icon;
       
       if (icon_name.indexOf("img_")==0)
-         this['html'] += '<img class="' + icon_name + '" src="" alt=""/>';
+         this['html'] += '<div class="' + icon_name + '"/>';
       else
          this['html'] += '<img src="' + icon_name + '" alt=""/>';
       

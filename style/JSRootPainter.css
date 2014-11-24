@@ -19,6 +19,7 @@
 .dtree a {
    color: #333;
    text-decoration: none;
+   vertical-align: top; 
 }
 .dtree a.dTreeItem {
 	cursor: pointer;
