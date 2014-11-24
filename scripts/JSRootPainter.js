@@ -7076,16 +7076,18 @@
       var h = this;
      
       elem.html(this['html'])
-          .find(".dTreeNode").click(function() { h.dtree_click($(this)); });
+          .find(".dTreeItem")
+          .click(function() { h.dtree_click($(this)); })
+          .on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
       
-      elem.find(".dTreeItem").on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
+      elem.find(".plus_minus").click(function() { h.dtree_click($(this),true); });
       
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
                     .next().click(function() { h.reload(); return false; })
                     .next().click(function() { h.clear(); return false; });
       
-//      $("#" + this.frameid + " .dTreeNode")
+//      $("#" + this.frameid + " .dTreeItem")
 //         .click(function() { h.opennew($(this)); });
 //         .draggable({ revert: true, helper: "clone", appendTo: "body" });
       
@@ -7100,7 +7102,7 @@
 
       var itemname = this.itemFullName(hitem);
 
-      this['html'] += '<div class="dTreeNode" item="' + itemname + '">';
+      this['html'] += '<div item="' + itemname + '">';
 
       // build indent
       var sindent = "";
@@ -7111,20 +7113,21 @@
       }
       this['html'] += sindent;
       
-      var icon_class = "";
+      var icon_class = "", plusminus = "";
       
       if (isroot) {
          // for root node no extra code
       } else
       if (node._hc) {
          icon_class = node._io ? "img_minus" : "img_plus";
+         plusminus = " plus_minus";
       } else {
          icon_class = "img_join";
       }
       
       if (icon_class.length > 0) {
          if (node._ls) icon_class += "bottom";
-         this['html'] += '<div class="' +icon_class+ '" style="cursor:pointer"/>';
+         this['html'] += '<div class="' + icon_class + plusminus + '" style="cursor:pointer"/>';
       }
 
       // make node icon
@@ -7162,9 +7165,9 @@
       this['html'] += '</div>';
    }
    
-   JSROOT.HierarchyPainter.prototype.dtree_click = function(node) {
+   JSROOT.HierarchyPainter.prototype.dtree_click = function(node, plusminus) {
 
-      var itemname = node.attr('item');
+      var itemname = node.parent().attr('item');
       
       // console.log("click " + itemname);
 
@@ -7173,21 +7176,22 @@
       var hitem = this.Find(itemname);
       if (hitem==null) return;
       
-      var cando = this.CheckCanDo(hitem);
-      
-      if (cando.open && (cando.html.length>0)) 
-         return window.open(cando.html);
-      
-      if (cando.expand && (hitem['_childs'] == null)) 
-         return this.expand(itemname, hitem, node);
+      if (!plusminus) {
+         var cando = this.CheckCanDo(hitem);
 
-      if (cando.display) 
-         return this.display(itemname);
+         if (cando.open && (cando.html.length>0)) 
+            return window.open(cando.html);
+
+         if (cando.expand && (hitem['_childs'] == null)) 
+            return this.expand(itemname, hitem, node.parent());
+
+         if (cando.display) 
+            return this.display(itemname);
+
+         if ((!hitem._d._hc) || (hitem === this.h)) return;
+      }
       
-      
-      if ((!hitem._d._hc) || (hitem === this.h)) return;
-      
-      this.setDNodeOpenStatus(node, hitem, !hitem._d._io);
+      this.setDNodeOpenStatus(node.parent(), hitem, !hitem._d._io);
    }
 
    JSROOT.HierarchyPainter.prototype.open = function(itemname) {
@@ -7205,13 +7209,16 @@
       var newname =  hitem._d._io ? hitem._d.iconOpen : hitem._d.icon;
       var oldname =  hitem._d._io ? hitem._d.icon : hitem._d.iconOpen;
 
-      var img = node.find("img:last");
+      var img;
       
-      if (newname.indexOf("img_")<0)
+      if (newname.indexOf("img_")<0) {
+         img = node.find("img:last");  
          img.attr("src", newname);
-      else
-      if (newname!=oldname)
-         img.switchClass(oldname, newname);
+      } else {
+         img = node.find("div:last");
+         if (newname!=oldname)
+            img.switchClass(oldname, newname);
+      }
 
       if (old_class != new_class)
          img.prev().switchClass(old_class, new_class);
@@ -7232,8 +7239,10 @@
       dnode = node.next();
          
       var h = this;
-      dnode.find(".dTreeNode").click(function() { h.dtree_click($(this)); });
-      dnode.find(".dTreeItem").on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });   
+      dnode.find(".dTreeItem")
+         .click(function() { h.dtree_click($(this)); })
+         .on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
+      dnode.find(".plus_minus").click(function() { h.dtree_click($(this), true); });
    }
 
    JSROOT.HierarchyPainter.prototype.toggle = function(status) {
@@ -7593,7 +7602,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.dtree_contextmenu = function(node, event) {
-      event.preventDefault();;
+      event.preventDefault();
       
       var itemname = node.parent().attr('item');
       
@@ -7758,13 +7767,14 @@
       return found_frame;
    }
 
-   JSROOT.MDIDisplay.prototype.FindPainter = function(searchitemname) {
-      var frame = this.FindFrame(searchitemname);
-      //if (frame == null) return null;
-      //return document.getElementById($(frame).attr('id'))['painter'];
-      return frame ? $(frame).prop('painter') : null;
+   JSROOT.MDIDisplay.prototype.FindPainter = function(title) {
+      var res = null;
+      this.ForEachPainter(function(p,f) {
+         if ((res==null) && (f.prop('title')==title)) res = p; 
+      });
+      return res;
    }
-
+   
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
       // do nothing by default
    }
@@ -7783,6 +7793,29 @@
       });
 
       document.getElementById(this.frameid).innerHTML = '';
+   }
+   
+   JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
+      // draw object with specified options
+      if (!obj) return;
+
+      var painter = this.FindPainter(title);
+      var frame = this.FindFrame(title);
+      
+      if (painter!=null) {
+         this.ActivateFrame(frame);
+         painter.RedrawObject(obj);
+         return painter;
+      }
+
+      if (!JSROOT.canDraw(obj['_typename'], drawopt)) return;
+
+      if (frame == null)
+         frame = this.CreateFrame(title);
+
+      this.ActivateFrame(frame);
+
+      return JSROOT.draw($(frame).attr("id"), obj, drawopt);
    }
 
    // ==================================================
@@ -8017,9 +8050,11 @@
       if (!this.IsSingle()) {
          var topid = this.frameid + '_grid';
          if (document.getElementById(topid) == null) {
+            
+            var main = $("#" + this.frameid);
 
-            var h = Math.floor($("#" + this.frameid).height() / this.sizey);
-            var w = Math.floor($("#" + this.frameid).width() / this.sizex);
+            var h = Math.floor(main.height() / this.sizey);
+            var w = Math.floor(main.width() / this.sizex);
 
             var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
             var cnt = 0;
@@ -8031,11 +8066,11 @@
             }
             content += "</table>";
 
-            $("#" + this.frameid).empty();
-            $("#" + this.frameid).append(content);
+            main.empty();
+            main.append(content);
 
-            $("[id^=" + this.frameid + "_grid_]")
-              .width(w).height(h).droppable({ accepted: ".dTreeNode", drop: function(event, ui) { console.log("drop!"); } });;
+            main.find("[id^=" + this.frameid + "_grid_]").width(w).height(h);
+//              .droppable({ accepted: ".dTreeItem", drop: function(event, ui) { console.log("drop!"); } });;
          }
 
          hid = topid + "_" + this.cnt;
@@ -8056,11 +8091,13 @@
    }
 
    JSROOT.GridDisplay.prototype.CheckResize = function() {
-      var h = $("#" + this.frameid).height() / this.sizey;
-      var w = $("#" + this.frameid).width() / this.sizex;
+      
+      var main = $("#" + this.frameid);
+      
+      var h = Math.floor(main.height() / this.sizey);
+      var w = Math.floor(main.width() / this.sizex);
 
-      // console.log("big width = " + $("#" + this.frameid).width() + " height =
-      // " + $("#" + this.frameid).height());
+      console.log("big width = " + main.width() + " height = " + main.height());
 
       // set height for all table cells, it is not done automatically by browser
       // for (var cnt=0;cnt<this.sizex*this.sizey;cnt++)
@@ -8068,8 +8105,7 @@
 
       // $("[id^=" + this.frameid + "_grid_]").height(h).width(w);
 
-      $("[id^=" + this.frameid + "_grid_]").height(h);
-      $("[id^=" + this.frameid + "_grid_]").width(w);
+      main.find("[id^=" + this.frameid + "_grid_]").height(h).width(w);
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
