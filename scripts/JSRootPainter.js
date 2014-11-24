@@ -273,16 +273,9 @@
    JSROOT.Painter.clearCuts = function(chopt) {
       /* decode string "chopt" and remove graphical cuts */
       var left = chopt.indexOf('[');
-      if (left == -1)
-         return chopt;
       var right = chopt.indexOf(']');
-      if (right == -1)
-         return chopt;
-      var nch = right - left;
-      if (nch < 2)
-         return chopt;
-      for (var i = 0; i <= nch; i++)
-         chopt[left + i] = ' ';
+      if ((left>=0) && (right>=0) && (left<right))
+          for (var i = left; i <= right; i++) chopt[i] = ' ';
       return chopt;
    }
 
@@ -3023,6 +3016,8 @@
       this.histo = histo;
       this.shrink_frame_left = 0.;
       this.draw_content = true;
+      this.nbinsx = 0;
+      this.nbinsy = 0;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3070,6 +3065,15 @@
       if (this.IsTProfile()) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
 
+      if (chopt.indexOf('LOGX') != -1) {
+         option.Logx = 1;
+         chopt = chopt.replace('LOGX', '');
+      }
+      if (chopt.indexOf('LOGY') != -1) {
+         option.Logy = 1;
+         chopt = chopt.replace('LOGY', '');
+      }
+      
       var l = chopt.indexOf('SPEC');
       if (l != -1) {
          option.Scat = 0;
@@ -3080,15 +3084,12 @@
          option.Spec = Math.max(1600, bs);
          return option;
       }
-      l = chopt.indexOf('GL');
-      if (l != -1)  chopt = chopt.replace('GL', '  ');
-      l = chopt.indexOf('X+');
-      if (l != -1) {
+      if (chopt.indexOf('GL') != -1)  chopt = chopt.replace('GL', '  ');
+      if (chopt.indexOf('X+') != -1) {
          option.AxisPos = 10;
          chopt = chopt.replace('X+', '  ');
       }
-      l = chopt.indexOf('Y+');
-      if (l != -1) {
+      if (chopt.indexOf('Y+') != -1) {
          option.AxisPos += 1;
          chopt = chopt.replace('Y+', '  ');
       }
@@ -3096,20 +3097,17 @@
          option.Hist = 1;
       if (option.AxisPos == 11 && nch == 4)
          option.Hist = 1;
-      l = chopt.indexOf('SAMES');
-      if (l != -1) {
+      if (chopt.indexOf('SAMES') != -1) {
          if (nch == 5) option.Hist = 1;
          option.Same = 2;
          chopt = chopt.replace('SAMES', '     ');
       }
-      l = chopt.indexOf('SAME');
-      if (l != -1) {
+      if (chopt.indexOf('SAME') != -1) {
          if (nch == 4) option.Hist = 1;
          option.Same = 1;
          chopt = chopt.replace('SAME', '    ');
       }
-      l = chopt.indexOf('PIE');
-      if (l != -1) {
+      if (chopt.indexOf('PIE') != -1) {
          option.Pie = 1;
          chopt = chopt.replace('PIE', '   ');
       }
@@ -3319,8 +3317,7 @@
             option.Hist = 1;
          }
       }
-      l = chopt.indexOf('COLZ');
-      if (l != -1) {
+      if (chopt.indexOf('COLZ') != -1) {
          chopt = chopt.replace('COLZ', '');
          if (hdim > 1) {
             option.Color = 2;
@@ -3330,8 +3327,7 @@
             option.Hist = 1;
          }
       }
-      l = chopt.indexOf('COL');
-      if (l != -1) {
+      if (chopt.indexOf('COL') != -1) {
          chopt = chopt.replace('COL', '   ');
          if (hdim > 1) {
             option.Color = 1;
@@ -3340,8 +3336,7 @@
             option.Hist = 1;
          }
       }
-      l = chopt.indexOf('CHAR');
-      if (l != -1) {
+      if (chopt.indexOf('CHAR') != -1) {
          option.Char = 1;
          chopt = chopt.replace('CHAR', '    ');
          option.Scat = 0;
@@ -3359,18 +3354,15 @@
          option.Func = 0;
          option.Error = 0;
       }
-      l = chopt.indexOf('AXIS');
-      if (l != -1) {
+      if (chopt.indexOf('AXIS') != -1) {
          option.Axis = 1;
          chopt = chopt.replace('AXIS', '    ');
       }
-      l = chopt.indexOf('AXIG');
-      if (l != -1) {
+      if (chopt.indexOf('AXIG') != -1) {
          option.Axis = 2;
          chopt = chopt.replace('AXIG', '    ');
       }
-      l = chopt.indexOf('SCAT');
-      if (l != -1) {
+      if (chopt.indexOf('SCAT') != -1) {
          option.Scat = 1;
          chopt = chopt.replace('SCAT', '    ');
       }
@@ -3392,18 +3384,15 @@
             option.Text += 3000;
          option.Scat = 0;
       }
-      l = chopt.indexOf('POL');
-      if (l != -1) {
+      if (chopt.indexOf('POL') != -1) {
          option.System = JSROOT.Painter.Coord.kPOLAR;
          chopt = chopt.replace('POL', '   ');
       }
-      l = chopt.indexOf('CYL');
-      if (l != -1) {
+      if (chopt.indexOf('CYL') != -1) {
          option.System = JSROOT.Painter.Coord.kCYLINDRICAL;
          chopt = chopt.replace('CYL', '   ');
       }
-      l = chopt.indexOf('SPH');
-      if (l != -1) {
+      if (chopt.indexOf('SPH') != -1) {
          option.System = JSROOT.Painter.Coord.kSPHERICAL;
          chopt = chopt.replace('SPH', '   ');
       }
@@ -3638,8 +3627,17 @@
 
       if (this.options.Logx) {
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
-         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
+
+         if ((this.scale_xmin <= 0) && (this.nbinsx>0)) 
+            for (var i=0;i<this.nbinsx;i++) {
+               var left = this.xmin + i*this.binwidthx;
+               if (left>0) { this.scale_xmin = left; break; } 
+            }
+         
+         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax)) {
             this.scale_xmin = this.scale_xmax * 0.0001;
+         }
+
          this['x'] = d3.scale.log().domain([ this.scale_xmin, this.scale_xmax ]).range([ 0, w ]); // .clamp(true);
       } else {
          this['x'] = d3.scale.linear().domain([ this.scale_xmin, this.scale_xmax ]).range([ 0, w ]);
@@ -3661,6 +3659,13 @@
 
       if (this.options.Logy) {
          if (this.scale_ymax <= 0) this.scale_ymax = 1;
+
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0)) 
+            for (var i=0;i<this.nbinsy;i++) {
+               var down = this.ymin + i*this.binwidthy;
+               if (down>0) { this.scale_ymin = down; break; } 
+            }
+         
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 0.0001 * this.scale_ymax;
          this['y'] = d3.scale.log().domain([ this.scale_ymin, this.scale_ymax ]).range([ h, 0 ]); // .clamp(true);
@@ -4753,8 +4758,9 @@
             && this.options.Error == 0 && this.options.Same == 0) {
          this.draw_content = false;
       }
-      if (this.options.Axis > 0) // Paint histogram axis only
+      if (this.options.Axis > 0) { // Paint histogram axis only
          this.draw_content = false;
+      }
    }
 
    JSROOT.TH1Painter.prototype.CountStat = function(cond) {
@@ -5076,7 +5082,7 @@
          this.RemoveDrawG();
          return;
       }
-
+      
       var draw_bins = this.CreateDrawBins(width, height);
 
       this.RecreateDrawG();
@@ -5191,7 +5197,7 @@
       painter.DrawGrids();
 
       painter.DrawBins();
-
+      
       if (painter.create_canvas) painter.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas) painter.CreateStat();
