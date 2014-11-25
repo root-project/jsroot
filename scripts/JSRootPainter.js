@@ -7009,7 +7009,6 @@
          title : "",
          icon : cando.img1,
          iconOpen : cando.img2,
-         _io : false, // is open
          _ls : false, // last sibling
       };
 
@@ -7111,22 +7110,24 @@
       }
       this['html'] += sindent;
       
-      var icon_class = "", plusminus = "";
+      var icon_class = "", plusminus = false;
       var has_childs = '_childs' in hitem;
       
       if (isroot) {
          // for root node no extra code
       } else
       if (has_childs) {
-         icon_class = node._io ? "img_minus" : "img_plus";
-         plusminus = " plus_minus";
+         icon_class = hitem._isopen ? "img_minus" : "img_plus";
+         plusminus = true;
       } else {
          icon_class = "img_join";
       }
       
       if (icon_class.length > 0) {
          if (node._ls) icon_class += "bottom";
-         this['html'] += '<div class="' + icon_class + plusminus + '" style="cursor:pointer"/>';
+         this['html'] += '<div class="' + icon_class;
+         if (plusminus) this['html'] += ' plus_minus" style="cursor:pointer';
+         this['html'] += '"/>';
       }
 
       // make node icon
@@ -7139,7 +7140,7 @@
          node.iconOpen = "img_base";
       }
 
-      var icon_name = node._io ? node.iconOpen : node.icon;
+      var icon_name = hitem._isopen ? node.iconOpen : node.icon;
       
       if (icon_name.indexOf("img_")==0)
          this['html'] += '<div class="' + icon_name + '"/>';
@@ -7154,7 +7155,7 @@
 
       this['html'] += '</div>';
 
-      var childs_display = has_childs && (isroot || node._io);
+      var childs_display = has_childs && (isroot || hitem._isopen);
       
       if (!childs_display) return;
       
@@ -7188,23 +7189,27 @@
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
       
-      this.setDNodeOpenStatus(node.parent(), hitem, !hitem._d._io);
+      if (hitem._isopen) 
+         delete hitem._isopen;
+      else
+         hitem._isopen = true;
+      
+      this.UpdateTreeNode(node.parent(), hitem);
    }
 
    JSROOT.HierarchyPainter.prototype.open = function(itemname) {
       console.log("open() no longer available");
    }
 
-   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(node, hitem, openstatus) {
+   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(node, hitem) {
+      var has_childs = '_childs' in hitem;
       
-      hitem._d._io = openstatus;
-      
-      var new_class = hitem._d._io ? "img_minus" : "img_plus";
-      var old_class = hitem._d._io ? "img_plus" : "img_minus";
+      var new_class = hitem._isopen ? "img_minus" : "img_plus";
+      var old_class = hitem._isopen ? "img_plus" : "img_minus";
       if (hitem._d._ls) { old_class+="bottom"; new_class += "bottom"; }
       
-      var newname =  hitem._d._io ? hitem._d.iconOpen : hitem._d.icon;
-      var oldname =  hitem._d._io ? hitem._d.icon : hitem._d.iconOpen;
+      var newname = hitem._isopen ? hitem._d.iconOpen : hitem._d.icon;
+      var oldname = hitem._isopen ? hitem._d.icon : hitem._d.iconOpen;
 
       var img;
       
@@ -7216,16 +7221,23 @@
          if (newname!=oldname)
             img.switchClass(oldname, newname);
       }
-
-      if (old_class != new_class)
-         img.prev().switchClass(old_class, new_class);
+      
+      img = img.prev();
+      
+      if (img.hasClass("plus_minus"))
+         img.switchClass(old_class, new_class);
+      else
+      if (has_childs) {
+         img.attr('class', new_class + " plus_minus");
+         img.css('cursor', 'pointer');
+         var h = this;
+         img.click(function() { h.dtree_click($(this),true); });
+      }   
 
       var dnode = node.next();
       if (dnode.hasClass("dTreeSub")) dnode.remove();
 
-      var childs_display = hitem._d._io && ('_childs' in hitem); 
-      
-      if (!childs_display) return;
+      if (!hitem._isopen || !has_childs) return; 
          
       this['html'] = '<div class="dTreeSub">';
       for (var i in hitem._childs)
@@ -7248,7 +7260,10 @@
       var toggleItem = function(hitem) {
 
          if (hitem != painter.h)
-            hitem._d._io = status;
+            if (status)
+               hitem._isopen = true;
+            else
+               delete hitem._isopen;
 
          if ('_childs' in hitem)
             for ( var i in hitem._childs)
@@ -7389,14 +7404,17 @@
    JSROOT.HierarchyPainter.prototype.ExpandDtree = function(node, hitem) {
       var itemname = this.itemFullName(hitem);
 
+      node.attr('item', itemname);
+      node.find("a").text(hitem._name);
+      
       for (var i in hitem._childs)
          this.createNode(hitem._childs[i], itemname, hitem);
 
-      hitem._d._io = true;
+      hitem._isopen = true;
       hitem._d._click = false;
       hitem._d.name = hitem._name;
       
-      this.setDNodeOpenStatus(node, hitem, true);
+      this.UpdateTreeNode(node, hitem);
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
