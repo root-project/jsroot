@@ -6991,7 +6991,7 @@
 
       this['html'] += "</p>";
 
-      this['html'] += '<div class="dtree">'
+      this['html'] += '<div class="h_tree">'
       this.addItemHtml(this.h, null);
       this['html'] += '</div>';
 
@@ -7000,22 +7000,22 @@
       var h = this;
 
       elem.html(this['html'])
-          .find(".dTreeItem")
-          .click(function() { h.dtree_click($(this)); })
-          .on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
+          .find(".h_item")
+          .click(function() { h.tree_click($(this)); })
+          .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
 
-      elem.find(".plus_minus").click(function() { h.dtree_click($(this),true); });
+      elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
                     .next().click(function() { h.reload(); return false; })
                     .next().click(function() { h.clear(); return false; });
 
-//      $("#" + this.frameid + " .dTreeItem")
+//      $("#" + this.frameid + " .h_item")
 //         .click(function() { h.opennew($(this)); });
 //         .draggable({ revert: true, helper: "clone", appendTo: "body" });
 
-//      elem.find(".dTreeItem")
+//      elem.find(".h_item")
 //         .draggable({ revert: true, helper: "clone", appendTo: "body" });
    }
 
@@ -7088,8 +7088,8 @@
       }
 
       if (icon_class.length > 0) {
-         if (this.isLastSibling(hitem)) icon_class += "bottom";
          this['html'] += '<div class="' + icon_class;
+         if (this.isLastSibling(hitem)) this['html'] += "bottom";
          if (plusminus) this['html'] += ' plus_minus" style="cursor:pointer';
          this['html'] += '"/>';
       }
@@ -7104,7 +7104,7 @@
          this['html'] += '<img src="' + icon_name + '" alt=""/>';
 
       this['html'] += '<a';
-      if (can_click || has_childs) this['html'] +=' class="dTreeItem"';
+      if (can_click || has_childs) this['html'] +=' class="h_item"';
 
       var element_name = hitem._name;
       
@@ -7122,19 +7122,17 @@
       this['html'] += ' title="' + element_title + '"';
       this['html'] += '>' + element_name + '</a>';
 
-      this['html'] += '</div>';
-
-      var childs_display = has_childs && (isroot || hitem._isopen);
-
-      if (!childs_display) return;
-
-      this['html'] += '<div class="dTreeSub">';
-      for (var i in hitem._childs)
-         this.addItemHtml(hitem._childs[i], hitem);
+      if (has_childs && (isroot || hitem._isopen)) {
+         this['html'] += '<div class="h_childs">';
+         for (var i in hitem._childs)
+            this.addItemHtml(hitem._childs[i], hitem);
+         this['html'] += '</div>';
+      }
+      
       this['html'] += '</div>';
    }
 
-   JSROOT.HierarchyPainter.prototype.dtree_click = function(node, plusminus) {
+   JSROOT.HierarchyPainter.prototype.tree_click = function(node, plusminus) {
 
       var itemname = node.parent().attr('item');
 
@@ -7173,54 +7171,51 @@
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(node, hitem) {
       var has_childs = '_childs' in hitem;
 
-      var new_class = hitem._isopen ? "img_minus" : "img_plus";
-      var old_class = hitem._isopen ? "img_plus" : "img_minus";
-      if (this.isLastSibling(hitem)) { old_class += "bottom"; new_class += "bottom"; }
-
       var newname = hitem._isopen ? hitem._icon2 : hitem._icon;
       var oldname = hitem._isopen ? hitem._icon : hitem._icon2;
 
-      var img;
+      var img = node.find("a").first().prev();
 
       if (newname.indexOf("img_")<0) {
-         img = node.find("img:last");
          img.attr("src", newname);
       } else {
-         img = node.find("div:last");
          if (newname!=oldname)
             img.switchClass(oldname, newname);
       }
 
       img = img.prev();
 
-      if (img.hasClass("plus_minus"))
-         img.switchClass(old_class, new_class);
-      else
+      var h = this;
+
+      var new_class = hitem._isopen ? "img_minus" : "img_plus";
+      if (this.isLastSibling(hitem)) new_class += "bottom";
+
+      if (img.hasClass("plus_minus")) {
+         img.attr('class', new_class + " plus_minus");
+      } else
       if (has_childs) {
          img.attr('class', new_class + " plus_minus");
          img.css('cursor', 'pointer');
-         var h = this;
-         img.click(function() { h.dtree_click($(this),true); });
+         img.click(function() { h.tree_click($(this), true); });
       }
 
-      var dnode = node.next();
-      if (dnode.hasClass("dTreeSub")) dnode.remove();
+      var childs = node.children().last();
+      if (childs.hasClass("h_childs")) childs.remove();
+      
+      var display_childs = has_childs && hitem._isopen;
+      if (!display_childs) return;
 
-      if (!hitem._isopen || !has_childs) return;
-
-      this['html'] = '<div class="dTreeSub">';
+      this['html'] = '<div class="h_childs">';
       for (var i in hitem._childs)
          this.addItemHtml(hitem._childs[i], hitem);
       this['html'] += '</div>';
-      node.after(this['html']);
+      node.append(this['html']);
+      childs = node.children().last();
 
-      dnode = node.next();
-
-      var h = this;
-      dnode.find(".dTreeItem")
-         .click(function() { h.dtree_click($(this)); })
-         .on('contextmenu', function(e) { h.dtree_contextmenu($(this), e); });
-      dnode.find(".plus_minus").click(function() { h.dtree_click($(this), true); });
+      childs.find(".h_item")
+         .click(function() { h.tree_click($(this)); })
+         .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
+      childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
 
    JSROOT.HierarchyPainter.prototype.toggle = function(status) {
@@ -7370,17 +7365,6 @@
          this.OpenOnline(this.h['_online']);
    }
 
-   JSROOT.HierarchyPainter.prototype.ExpandDtree = function(node, hitem) {
-      var itemname = this.itemFullName(hitem);
-
-      node.attr('item', itemname);
-      node.find("a").text(hitem._name);
-
-      hitem._isopen = true;
-
-      this.UpdateTreeNode(node, hitem);
-   }
-
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
       var painter = this;
 
@@ -7401,8 +7385,13 @@
          var curr = item;
          while (curr != null) {
             if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
-                if (curr['_expand'](item, obj))
-                   painter.ExpandDtree(node, item);
+                if (curr['_expand'](item, obj)) {
+                   var itemname = painter.itemFullName(item);
+                   node.attr('item', itemname);
+                   node.find("a").text(item._name);
+                   item._isopen = true;
+                   painter.UpdateTreeNode(node, item);
+                }
                 return;
             }
             curr = ('_parent' in curr) ? curr['_parent'] : null;
@@ -7582,7 +7571,7 @@
       return this['_monitoring_on'];
    }
 
-   JSROOT.HierarchyPainter.prototype.dtree_contextmenu = function(node, event) {
+   JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(node, event) {
       event.preventDefault();
 
       var itemname = node.parent().attr('item');
