@@ -418,23 +418,6 @@
       return x;
    }
 
-   JSROOT.Painter.padtoY = function(pad, y) {
-      // Convert y from pad to Y.
-      if (pad['fLogy'] && y < 50)
-         return Math.exp(2.302585092994 * y);
-      return y;
-   }
-
-   JSROOT.Painter.xtoPad = function(x, pad) {
-      if (pad['fLogx']) {
-         if (x > 0)
-            x = JSROOT.Math.log10(x);
-         else
-            x = pad['fUxmin'];
-      }
-      return x;
-   }
-
    JSROOT.Painter.moveChildToEnd = function(child) {
       if (!child) return;
       var prnt = child.node().parentNode;
@@ -6538,15 +6521,9 @@
       this.RecreateDrawG(true);
 
       var kTextNDC = JSROOT.BIT(14);
-
-      var pad = this.root_pad();
-      if (pad==null) {
-         alert("Cannot draw text with real TPad object");
-         return;
-      }
-
-      var i, w = Number(this.svg_pad(true).attr("width")),
-             h = Number(this.svg_pad(true).attr("height"));
+      
+      var w = Number(this.svg_pad(true).attr("width")),
+          h = Number(this.svg_pad(true).attr("height"));
       var align = 'start', halign = Math.round(this.text['fTextAlign'] / 10);
       var baseline = 'bottom', valign = this.text['fTextAlign'] % 10;
       if (halign == 1) align = 'start';
@@ -6562,16 +6539,30 @@
          case 3: lmargin = w - (this.text['fMargin'] * w); break;
       }
       var font_size = Math.round(this.text['fTextSize'] * Math.min(w,h));
-      var pos_x = 0, pos_y = 0;
+      var pos_x = this.text['fX'], pos_y = this.text['fY'];
       if (this.text.TestBit(kTextNDC)) {
-         pos_x = pad['fX1'] + this.text['fX'] * (pad['fX2'] - pad['fX1']);
-         pos_y = pad['fY1'] + this.text['fY'] * (pad['fY2'] - pad['fY1']);
+         pos_x = pos_x * w;
+         pos_y = (1 - pos_y) * h;
+      } else 
+      if (this.main_painter()!=null) {
+         pos_x = this.main_painter().x(pos_x);
+         pos_y = this.main_painter().y(pos_y);
+      } else
+      if (this.root_pad()!=null) {
+         var pad = this.root_pad(); 
+         if (pad['fLogx']) 
+            pos_x = (pos_x > 0) ? JSROOT.Math.log10(pos_x) : pad['fUxmin'];   
+         if (pad['fLogy']) 
+            pos_y = (pos_y > 0) ? JSROOT.Math.log10(pos_y) : pad['fUymin'];
+            
+         pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
+         pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
       } else {
-         pos_x = JSROOT.Painter.xtoPad(this.text['fX'], pad);
-         pos_y = JSROOT.Painter.ytoPad(this.text['fY'], pad);
+         alert("Cannot draw text at x/y coordinates without real TPad object");
+         pos_x = w/2;
+         pos_y = h/2;
       }
-      pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
-      pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
+      
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
       var fontDetails = JSROOT.Painter.getFontDetails(this.text['fTextFont']);
 
@@ -6582,8 +6573,8 @@
 
       this.draw_g.append("text")
               .attr("class", "text")
-              .attr("x", pos_x)
-              .attr("y", pos_y)
+              .attr("x", pos_x.toFixed(1))
+              .attr("y", pos_y.toFixed(1))
               .attr("font-family", fontDetails['name'])
               .attr("font-weight", fontDetails['weight'])
               .attr("font-style", fontDetails['style'])
@@ -8100,7 +8091,7 @@
       var h = Math.floor(main.height() / this.sizey);
       var w = Math.floor(main.width() / this.sizex);
 
-      console.log("big width = " + main.width() + " height = " + main.height());
+      // console.log("big width = " + main.width() + " height = " + main.height());
 
       // set height for all table cells, it is not done automatically by browser
       // for (var cnt=0;cnt<this.sizex*this.sizey;cnt++)
