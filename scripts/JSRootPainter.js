@@ -7002,8 +7002,9 @@
       elem.html(this['html'])
           .find(".h_item")
           .click(function() { h.tree_click($(this)); })
-          .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
-
+          .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+          .draggable({ revert: "invalid", appendTo: "body", helper: "clone" }); 
+      
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
@@ -7214,7 +7215,8 @@
 
       childs.find(".h_item")
          .click(function() { h.tree_click($(this)); })
-         .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
+         .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+         .draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
       childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
 
@@ -7281,7 +7283,7 @@
          var item = h.Find(itemname);
          if ((item==null) || ('_doing_update' in item)) return do_call_back(null);
          item['_doing_update'] = true;
-      }
+      } 
 
       h.get(itemname, function(item, obj) {
 
@@ -7294,7 +7296,6 @@
          if (pos>=0) {
             var divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
-            console.log("draw opts = " + drawopt  + "  divid = " + divid);
             painter = h.draw(divid, obj, drawopt);
          } else
          mdi.ForEachPainter(function(p, frame) {
@@ -7309,8 +7310,28 @@
                console.log("something went wrong - did not found painter when doing update of " + itemname);
             } else {
                var frame = mdi.FindFrame(itemname, true);
-               painter = h.draw($(frame).attr("id"), obj, drawopt);
+               frame.addClass("ui-state-default");
+               painter = h.draw(frame.attr("id"), obj, drawopt);
                mdi.ActivateFrame(frame);
+               
+               frame.droppable({ 
+                  hoverClass : "ui-state-active",
+                  accept: function(ui) {
+                     var dropname = ui.parent().attr('item');
+                     if (dropname == itemname) return false;
+                     
+                     var ditem = h.Find(dropname);
+                     if (ditem==null) return false;
+                     
+                     // console.log("accept " + dropname + "  kind = " + ditem._kind);
+                     return (ditem._kind.indexOf("ROOT.TH1")==0) || (ditem._kind == 'ROOT.TLatex'); 
+                  },
+                  drop: function(event, ui) {
+                     var dropname = ui.draggable.parent().attr('item');
+                     console.log("drop! " + dropname);  
+                     return h.dropitem(dropname, frame.attr("id")); 
+                  }   
+                  });
             }
          }
 
@@ -7319,6 +7340,21 @@
          do_call_back(painter);
       });
    }
+   
+   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid) {
+      var h = this;
+      var mdi = h['disp'];
+
+      h.get(itemname, function(item, obj) {
+         if (obj==null) return;
+         console.log("Draw same " + divid);
+         var painter = h.draw(divid, obj, "same");
+         if (painter) painter['_hitemname'] = itemname;
+      });
+
+      return true;
+   }
+   
 
    JSROOT.HierarchyPainter.prototype.updateAll = function() {
       // method can be used to fetch new objects and update all existing drawings
@@ -8037,7 +8073,7 @@
             main.append(content);
 
             main.find("[id^=" + this.frameid + "_grid_]").width(w).height(h);
-//              .droppable({ accepted: ".dTreeItem", drop: function(event, ui) { console.log("drop!"); } });;
+//              .droppable({ accepted: ".h_item", drop: function(event, ui) { console.log("drop!"); } });
          }
 
          hid = topid + "_" + this.cnt;
