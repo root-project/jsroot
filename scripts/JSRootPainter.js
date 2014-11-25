@@ -7008,8 +7008,7 @@
          _click : can_click,
          title : "",
          icon : cando.img1,
-         iconOpen : cando.img2,
-         _ls : false, // last sibling
+         iconOpen : cando.img2
       };
 
       if ('_realname' in node)
@@ -7023,9 +7022,6 @@
 
       if (node['_d']['title'].length == 0)
          node['_d']['title'] = node['_d']['name'];
-
-      if (parent && parent._childs && (parent._childs[parent._childs.length - 1] == node))
-         node['_d']._ls = true;
 
       if (cando.scan && ('_childs' in node)) {
          for ( var i in node._childs)
@@ -7091,6 +7087,11 @@
 //      elem.find(".dTreeItem")
 //         .draggable({ revert: true, helper: "clone", appendTo: "body" });
    }
+   
+   JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
+      return hitem && hitem._parent && hitem._parent._childs && 
+             (hitem._parent._childs.indexOf(hitem) == hitem._parent._childs.length-1);
+   }
 
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem) {
       var isroot = (hitem == this.h);
@@ -7105,7 +7106,7 @@
       var sindent = "";
       var prnt = isroot ? null : hitem._parent;
       while ((prnt != null) && (prnt != this.h)) {
-         sindent = '<div class="' + (prnt._d._ls ? "img_empty" : "img_line") + '"/>' + sindent;
+         sindent = '<div class="' + (this.isLastSibling(prnt) ? "img_empty" : "img_line") + '"/>' + sindent;
          prnt = prnt._parent;
       }
       this['html'] += sindent;
@@ -7124,7 +7125,7 @@
       }
       
       if (icon_class.length > 0) {
-         if (node._ls) icon_class += "bottom";
+         if (this.isLastSibling(hitem)) icon_class += "bottom";
          this['html'] += '<div class="' + icon_class;
          if (plusminus) this['html'] += ' plus_minus" style="cursor:pointer';
          this['html'] += '"/>';
@@ -7206,7 +7207,7 @@
       
       var new_class = hitem._isopen ? "img_minus" : "img_plus";
       var old_class = hitem._isopen ? "img_plus" : "img_minus";
-      if (hitem._d._ls) { old_class+="bottom"; new_class += "bottom"; }
+      if (this.isLastSibling(hitem)) { old_class += "bottom"; new_class += "bottom"; }
       
       var newname = hitem._isopen ? hitem._d.iconOpen : hitem._d.icon;
       var oldname = hitem._isopen ? hitem._d.icon : hitem._d.iconOpen;
