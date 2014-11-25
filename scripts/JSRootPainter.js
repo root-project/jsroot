@@ -7011,7 +7011,6 @@
          iconOpen : cando.img2,
          _io : false, // is open
          _ls : false, // last sibling
-         _hc : false  // has childs
       };
 
       if ('_realname' in node)
@@ -7030,7 +7029,6 @@
          node['_d']._ls = true;
 
       if (cando.scan && ('_childs' in node)) {
-         node['_d']._hc = true;
          for ( var i in node._childs)
             this.createNode(node._childs[i], nodefullname, node);
       }
@@ -7114,11 +7112,12 @@
       this['html'] += sindent;
       
       var icon_class = "", plusminus = "";
+      var has_childs = '_childs' in hitem;
       
       if (isroot) {
          // for root node no extra code
       } else
-      if (node._hc) {
+      if (has_childs) {
          icon_class = node._io ? "img_minus" : "img_plus";
          plusminus = " plus_minus";
       } else {
@@ -7132,9 +7131,9 @@
 
       // make node icon
       if (!node.icon)
-         node.icon = isroot ? "img_base" : ((node._hc) ? "img_folder" : "img_page");
+         node.icon = isroot ? "img_base" : (has_childs ? "img_folder" : "img_page");
       if (!node.iconOpen)
-         node.iconOpen = (node._hc) ? "img_folderopen" : "img_page";
+         node.iconOpen = has_childs ? "img_folderopen" : "img_page";
       if (isroot) {
          node.icon = "img_base";
          node.iconOpen = "img_base";
@@ -7148,14 +7147,14 @@
          this['html'] += '<img src="' + icon_name + '" alt=""/>';
       
       this['html'] += '<a';
-      if (node._click || node._hc) this['html'] +=' class="dTreeItem"';
+      if (node._click || has_childs) this['html'] +=' class="dTreeItem"';
       
       if (node.title) this['html'] += ' title="' + node.title + '"';
       this['html'] += '>' + node.name + '</a>';
 
       this['html'] += '</div>';
 
-      var childs_display = node._hc && (isroot || node._io);
+      var childs_display = has_childs && (isroot || node._io);
       
       if (!childs_display) return;
       
@@ -7169,8 +7168,6 @@
 
       var itemname = node.parent().attr('item');
       
-      // console.log("click " + itemname);
-
       if (itemname==null) return;
 
       var hitem = this.Find(itemname);
@@ -7188,7 +7185,7 @@
          if (cando.display) 
             return this.display(itemname);
 
-         if ((!hitem._d._hc) || (hitem === this.h)) return;
+         if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
       
       this.setDNodeOpenStatus(node.parent(), hitem, !hitem._d._io);
@@ -7198,7 +7195,7 @@
       console.log("open() no longer available");
    }
 
-   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(node, hitem, openstatus, force) {
+   JSROOT.HierarchyPainter.prototype.setDNodeOpenStatus = function(node, hitem, openstatus) {
       
       hitem._d._io = openstatus;
       
@@ -7226,7 +7223,7 @@
       var dnode = node.next();
       if (dnode.hasClass("dTreeSub")) dnode.remove();
 
-      var childs_display = (hitem._d._io && hitem._d._hc) || force; 
+      var childs_display = hitem._d._io && ('_childs' in hitem); 
       
       if (!childs_display) return;
          
@@ -7395,19 +7392,21 @@
       for (var i in hitem._childs)
          this.createNode(hitem._childs[i], itemname, hitem);
 
-      hitem._d._hc = true;
       hitem._d._io = true;
       hitem._d._click = false;
       hitem._d.name = hitem._name;
       
-      this.setDNodeOpenStatus(node, hitem, true, true);
+      this.setDNodeOpenStatus(node, hitem, true);
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
       var painter = this;
 
-      if (node==null)
-         return console.log("Not yet implemented - one need to specify correct dtree node");
+      if (node==null) 
+         node = $("#" + this.frameid).find("[item='" + itemname + "']");
+      
+      if (node.length==0)
+         return console.log("Did not found node with item = " + itemname);
       
       if (item0==null) item0 = this.Find(itemname);
       if (item0==null) return;
@@ -7606,15 +7605,12 @@
       
       var itemname = node.parent().attr('item');
       
-      console.log("context menu " + itemname);
-      
       var hitem = this.Find(itemname);
       if (hitem==null) return;
       
       var cando = this.CheckCanDo(hitem);
       
       if (!cando.display && !cando.ctxt && (itemname!="")) return;
-      
 
       var onlineprop = this.GetOnlineProp(itemname);
       var fileprop = this.GetFileProp(itemname);
