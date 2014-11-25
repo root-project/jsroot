@@ -896,8 +896,9 @@
          this.draw_g.selectAll("*").remove();
 
       if (take_pad) {
+         if (layer==null) layer = ".text_layer"
          if (!this.draw_g)
-            this.draw_g = this.svg_pad(true).append("svg:g");
+            this.draw_g = this.svg_pad(true).select(layer).append("svg:g");
       } else {
          var frame = this.svg_frame(true);
 
@@ -1214,13 +1215,15 @@
 
          this[resize_rect_name] =
              this.svg_pad(true).append("rect")
-                            .attr("id", resize_rect_name)
+                            .attr("class", resize_rect_name)
                             .style("opacity", "0")
                             .style("cursor", "se-resize")
                             .call(drag_resize);
+         
+         main_rect.node().parentNode.appendChild(this[resize_rect_name].node());
       } else {
          // ensure that small resize rect appears after large move rect
-         var prnt = this[resize_rect_name].node().parentNode;
+         var prnt = main_rect.node().parentNode;
 
          // first move small resize rec before main_rect
          prnt.removeChild(this[resize_rect_name].node());
@@ -1354,7 +1357,7 @@
       var top_rect = null;
 
       if (frame_g.empty()) {
-         frame_g = this.svg_pad(true).append("svg:g").attr("class", "root_frame");
+         frame_g = this.svg_pad(true).select(".frame_layer").append("svg:g").attr("class", "root_frame");
          
          top_rect = frame_g.append("svg:rect");
          
@@ -2364,7 +2367,7 @@
       var pthis = this;
 
       if (this.main_rect == null)
-         this.main_rect = this.svg_pad(true).append("rect");
+         this.main_rect = this.svg_pad(true).select(".stat_layer").append("rect");
 
       this.main_rect
              .attr("x", pos_x)
@@ -2376,7 +2379,7 @@
              .style("stroke", lcolor);
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true);
+      this.RecreateDrawG(true,".stat_layer");
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
@@ -2530,8 +2533,8 @@
 
       // force main rect of the stat box be last item in the primitives to
       // kept it on the top - for instance when colz is created
-      JSROOT.Painter.moveChildToEnd(this.main_rect);
-      JSROOT.Painter.moveChildToEnd(this.draw_g);
+      //JSROOT.Painter.moveChildToEnd(this.main_rect);
+      //JSROOT.Painter.moveChildToEnd(this.draw_g);
 
       this.AddDrag("stat", this.main_rect, {
          move : function(x, y, dx, dy) {
@@ -2673,6 +2676,10 @@
           .property('pad_painter', this) // this is custom property
           .property('mainpainter', null) // this is custom property
           .property('current_pad', "") // this is custom property
+          
+          svg.append("svg:g").attr("class","frame_layer");
+          svg.append("svg:g").attr("class","text_layer");
+          svg.append("svg:g").attr("class","stat_layer");
       }
 
       svg.attr("width", w)
@@ -2705,26 +2712,27 @@
          border_color = 'none';
       }
 
-      var svg_pad, svg_rect;
+      var svg_pad = null, svg_rect = null;
 
-      if (only_resize)
+      if (only_resize) {
          svg_pad = this.svg_pad(true);
-      else
+         svg_rect = svg_pad.select(".root_pad_border");
+      } else {
          svg_pad = this.svg_canvas(true).append("g")
              .attr("class", "root_pad")
              .attr("pad", this.pad['fName']) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
+         svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
+         svg_pad.append("svg:g").attr("class","frame_layer");
+         svg_pad.append("svg:g").attr("class","text_layer");
+         svg_pad.append("svg:g").attr("class","stat_layer");
+      }
 
       svg_pad.attr("width", w)
              .attr("height", h)
              .attr("viewBox", x + " " + y + " " + (x+w) + " " + (y+h))
              .attr("transform", "translate(" + x + "," + y + ")");
-
-      if (only_resize)
-         svg_rect = svg_pad.select(".root_pad_border");
-      else
-         svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
       svg_rect.attr("x", 0)
               .attr("y", 0)
@@ -2878,7 +2886,7 @@
       pos_y -= s_height;
 
       // Draw palette pad
-      this.RecreateDrawG(true);
+      this.RecreateDrawG(true, ".text_layer");
 
       this.draw_g.attr("height", s_height)
                  .attr("width", s_width)
@@ -2941,6 +2949,7 @@
 
       if (this.main_rect == null) {
          this.main_rect = this.svg_pad(true)
+                           .select(".text_layer")
                            .append("rect")
                            .style("opacity", "0");
       } else {
@@ -6037,7 +6046,7 @@
    }
 
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
-      this.RecreateDrawG(true);
+      this.RecreateDrawG(true, ".text_layer");
 
       var svg = this.svg_pad(true);
       var pave = this.legend;
@@ -6444,7 +6453,7 @@
 
    JSROOT.TTextPainter.prototype.drawPaveLabel = function() {
 
-      this.RecreateDrawG(true);
+      this.RecreateDrawG(true, ".text_layer");
 
       var pavelabel = this.text;
 
@@ -6533,7 +6542,7 @@
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
-      this.RecreateDrawG(true);
+      this.RecreateDrawG(true, ".text_layer");
 
       var kTextNDC = JSROOT.BIT(14);
       

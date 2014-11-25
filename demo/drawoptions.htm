@@ -84,8 +84,10 @@
          
          var arg = "&w=" + JSROOT.GetUrlOption("w", null, "800") + 
                    "&h=" + JSROOT.GetUrlOption("h", null, "600");
-         if (JSROOT.GetUrlOption("path")!=null)                   
-            arg += "&path=" + JSROOT.GetUrlOption("path");
+         if (JSROOT.GetUrlOption("path")!=null) {
+            global_dir = JSROOT.GetUrlOption("path");               
+            arg += "&path=" + global_dir;
+         }
 
          $('#debug').append("<a href='drawoptions.htm?minimal" + arg + "'>Minimal settings</a><br/>"); 
          $('#debug').append("<a href='drawoptions.htm?default" + arg + "'>Default options</a><br/>"); 
