@@ -63,7 +63,7 @@
                 ((str.charCodeAt(off+3) & 0xff) |
                  ((str.charCodeAt(off+4) & 0xff) << 8) |
                  ((str.charCodeAt(off+5) & 0xff) << 16));
-   };
+   }
 
    JSROOT.R__unzip = function(srcsize, str, off, noalert) {
 

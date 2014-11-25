@@ -4,7 +4,6 @@
 /// @namespace JSROOT
 /// Holder of all JSROOT functions and classes
 
-
 (function(){
 
    if (typeof JSROOT == "object") {

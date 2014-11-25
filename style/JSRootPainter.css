@@ -22,7 +22,7 @@
    vertical-align: top; 
 }
 .dtree a.dTreeItem {
-	cursor: pointer;
+   cursor: pointer;
    white-space: nowrap;
    padding: 1px 2px 1px 2px;
 }
@@ -37,28 +37,28 @@
 }
 
 .img_minus {
-	 display: inline-block;
+    display: inline-block;
     height: 18px;
     width: 18px;
     background-image: url("data:image/gif;base64, R0lGODlhEgASAJEDAIKCgoCAgAAAAP///yH5BAEAAAMALAAAAAASABIAAAInnD+By+2rnpyhWvsizE0zf4CIIpRlgiqaiDosa7zZdU22A9y6u98FADs=");
 }
 
 .img_minusbottom {
-	 display: inline-block;
+    display: inline-block;
     height: 18px;
     width: 18px;
     background-image: url("data:image/gif;base64, R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAImlC+Ay+2rnpygWvsizE0zf4CIEpRlgiqaiDosa7zZdU32jed6XgAAOw==");
 }
 
 .img_plus {
- 	 display: inline-block;
+    display: inline-block;
     height: 18px;
     width: 18px;
     background-image: url("data:image/gif;base64, R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIqlC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU06vfe8rysAADs=");
 }
 
 .img_plusbottom {
- 	 display: inline-block;
+    display: inline-block;
     height: 18px;
     width: 18px;
     background-image: url("data:image/gif;base64, R0lGODlhEgASAJECAICAgAAAAP///wAAACH5BAEAAAIALAAAAAASABIAAAIplC+Ay+2rnpygWvsizCcczWieAW7BeSaqookfZ4yqU5LZdU36zvd+XwAAOw==");
@@ -204,8 +204,6 @@
    background-image: url("data:image/gif;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAsSAAALEgHS3X78AAABZElEQVR42o1R22rCQBD1U/p//apCNtsHwRdfBaFIKbRoUVKMMTWBWIxVCq2b+07POrn4UKjDMpw9O2fm7G5vNBpJKe2/Qto4uEc2WMrBYEBEPaAky36UulwnlSRpUeZEBSGrpEiyHJVGAPVJqZvbO3ftv83Dle+vvPV4/LD0PGYAcKrSFJUsEOgHKoj3s9dFGH9uou3k8ekQKxyDQcYpBnYC7Hm9zBZmlL8BiIJDC0AWpa4FwhZJXoDCBgYAjgU5ToBt+k1tL14ssFNNvIEBAFwVljJlSDBfpwyg1ISnYoEsiHju5XLcd+T50q0tEQm7eaWKKNfUWgKApUsbPFY0lzY6DraEZm585Do/CLMzqLQWQnSC9k34lVa7PTsBs/zYOa4LB5ZlnQXCbif40Ra50jUwE6JtCcMlUiMQlugEQYisG8CWtGlRdQL+jmui/rjhcAhk/Reo6ff7RuB53vN1MZ1OIfgFQC1cuR3Y6lIAAAAASUVORK5CYII=");
 }
 
-
-    
 /*--------------------------------------------------|
 | tooltip style                                     |
 |--------------------------------------------------*/
@@ -301,5 +299,4 @@ svg:not(:root) { overflow: hidden; }
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff',
     endColorstr='#e6e6e6', GradientType=0);
 }
-
 
