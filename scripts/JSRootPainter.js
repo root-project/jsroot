@@ -889,7 +889,7 @@
       }
    }
 
-   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad) {
+   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
       //this.RemoveDrawG();
 
       if (this.draw_g)
@@ -904,14 +904,17 @@
          var w = frame.attr("width");
          var h = frame.attr("height");
 
-         if (!this.draw_g)
-            this.draw_g = frame.append("svg");
+         if (!this.draw_g) {
+            if (layer==null) layer = ".main_layer";
+            this.draw_g = frame.select(layer).append("svg");
+         }
 
          this.draw_g.attr("x", 0)
                     .attr("y", 0)
                     .attr("width",w)
                     .attr("height", h)
-                    .attr("viewBox", "0 0 " + w + " " + h);
+                    .attr("viewBox", "0 0 " + w + " " + h)
+                    .attr('overflow', 'hidden');
       }
    }
 
@@ -1347,9 +1350,20 @@
 
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
+      
+      var top_rect = null;
 
-      if (frame_g.node() == null)
+      if (frame_g.empty()) {
          frame_g = this.svg_pad(true).append("svg:g").attr("class", "root_frame");
+         
+         top_rect = frame_g.append("svg:rect");
+         
+         // append for the moment two layers - for drawing and axis
+         frame_g.append('svg:g').attr('class','main_layer');
+         frame_g.append('svg:g').attr('class','axis_layer');
+      } else {
+         top_rect = frame_g.select("rect");
+      }
 
       // calculate actual NDC coordinates, use them to properly locate PALETTE
       frame_g.node()['NDC'] = {
@@ -1365,19 +1379,20 @@
       lm = Math.round(lm); tm = Math.round(tm);
       w = Math.round(w); h = Math.round(h);
 
-      frame_g.attr("x", lm).attr("y", tm)
-             .attr("width", w).attr("height", h)
+      frame_g.attr("x", lm)
+             .attr("y", tm)
+             .attr("width", w)
+             .attr("height", h)
              .attr("transform", "translate(" + lm + "," + tm + ")");
 
-      var top_rect = frame_g.select("rect");
-      if (top_rect.node() == null)
-         top_rect = frame_g.append("svg:rect");
-
-      top_rect.attr("x", 0).attr("y", 0)
-              .attr("width", w).attr("height", h)
+      top_rect.attr("x", 0)
+              .attr("y", 0)
+              .attr("width", w)
+              .attr("height", h)
               .attr("fill", framecolor)
               .style("stroke", linecolor)
               .style("stroke-width", linewidth);
+              
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -3746,14 +3761,14 @@
       if (this.histo['fYaxis']['fXmax'] < 100 && this.histo['fYaxis']['fXmax'] / this.histo['fYaxis']['fXmin'] < 100) noexpy = true;
 
       var xax_g = this.svg_frame(true).selectAll(".xaxis_container");
-      if (xax_g.node()==null)
-         xax_g = this.svg_frame(true).append("svg:g").attr("class","xaxis_container");
+      if (xax_g.empty())
+         xax_g = this.svg_frame(true).select(".axis_layer").append("svg:g").attr("class","xaxis_container");
 
       xax_g.selectAll("*").remove();
       xax_g.attr("transform", "translate(0," + h + ")");
 
       var yax_g = this.svg_frame(true).selectAll(".yaxis_container");
-      if (yax_g.node()==null)yax_g = this.svg_frame(true).append("svg:g").attr("class", "yaxis_container");
+      if (yax_g.empty()) yax_g = this.svg_frame(true).select(".axis_layer").append("svg:g").attr("class", "yaxis_container");
       yax_g.selectAll("*").remove();
 
       var x_axis = null, y_axis = null;
