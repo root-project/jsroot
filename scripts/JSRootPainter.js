@@ -29,17 +29,16 @@
    }
 
    JSROOT.gStyle = {
-      'Tooltip' : true, // tooltip on/off
-      'OptimizeDraw' : false, // if true, drawing of 1-D histogram will be
-                              // optimized to exclude too-many points
-      'AutoStat' : true,
-      'OptStat' : 1111,
-      'StatNDC' : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
-      'StatText': { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
-      'StatFill': { fFillColor: 0, fFillStyle: 1001 },
-      'TimeOffset' : 788918400000, // UTC time at 01/01/95
-      'StatFormat' : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
-      'StatEntriesFormat' : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); }
+      Tooltip : true, // tooltip on/off
+      OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
+      AutoStat : true,
+      OptStat  : 1111,
+      StatNDC  : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
+      StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
+      StatFill : { fFillColor: 0, fFillStyle: 1001 },
+      TimeOffset : 788918400000, // UTC time at 01/01/95
+      StatFormat : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
+      StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); }
    };
 
    /**
@@ -3672,9 +3671,12 @@
                var down = this.ymin + i*this.binwidthy;
                if (down>0) { this.scale_ymin = down; break; }
             }
-
+         
+         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0))  
+            this.scale_ymin = 0.3*this.ymin_nz;
+         
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
-            this.scale_ymin = 0.0001 * this.scale_ymax;
+            this.scale_ymin = 0.000001 * this.scale_ymax;
          this['y'] = d3.scale.log().domain([ this.scale_ymin, this.scale_ymax ]).range([ h, 0 ]); // .clamp(true);
       } else {
          this['y'] = d3.scale.linear().domain([ this.scale_ymin, this.scale_ymax ]).range([ h, 0 ]);
@@ -4707,7 +4709,7 @@
       this.linecolor = JSROOT.Painter.root_colors[this.histo['fLineColor']];
       if (this.histo['fLineColor'] == 0) this.linecolor = '#4572A7';
 
-      var hmin = 0, hmax = 0, hsum = 0;
+      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
       var profile = this.IsTProfile();
 
@@ -4719,6 +4721,8 @@
          if (i == 0) hmin = hmax = value;
          if (value < hmin) hmin = value; else
          if (value > hmax) hmax = value;
+         if (value > 0)
+            if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
       }
 
       // account overflow/underflow bins
@@ -4739,6 +4743,7 @@
 
       this.ymin = this.histo['fYaxis']['fXmin'];
       this.ymax = this.histo['fYaxis']['fXmax'];
+      this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
          if (this.histo['fMinimum'] != -1111) this.ymin = this.histo['fMinimum'];
@@ -4908,17 +4913,20 @@
       var stepi = 1;
 
       var draw_bins = new Array;
+      
+      var can_optimize = ((JSROOT.gStyle.OptimizeDraw > 0) && (right-left > 5000)) || 
+                         ((JSROOT.gStyle.OptimizeDraw > 1) && (right-left > 2*width));
 
-      // reduce number of drawn points - we define interval where two points
-      // will be selected - max and min
-      if ((this.nbinsx > 10000) || (JSROOT.gStyle.OptimizeDraw && (right - left > width)))
-         while ((right - left) / stepi > width) stepi++;
+      // reduce number of drawn points - we define interval where two points will be selected - max and min
+      if (can_optimize && !this.options.Logx)
+         while ((right - left) / stepi > 2*width) stepi++;
 
       var x1, x2 = this.xmin + left * this.binwidthx;
       var grx1 = -1111, grx2 = -1111, gry;
       var profile = this.IsTProfile();
 
       var point = null;
+      var searchmax = false;
 
       for (var i = left; i < right; i += stepi) {
          // if interval wider than specified range, make it shorter
@@ -4934,12 +4942,37 @@
 
          var pmax = i, cont = this.histo.getBinContent(i + 1);
 
-         for (var ii = 1; ii < stepi; ii++) {
-            var ccc = this.histo.getBinContent(i + ii + 1);
-            if (ccc > cont) {
-               cont = ccc;
-               pmax = i + ii;
-            }
+         if (can_optimize) {
+            searchmax = !searchmax;
+
+            if (this.options.Logx) {
+               // in case of logarithmic case one should really check coordinates
+
+               var ii = 1; 
+               while (i+ii<right) {
+                  var grx = this.x(x2 + ii*this.binwidthx);
+                  // next point maximal 0.5 pixel away
+                  if (grx > grx2 + 0.5) break;
+                  var ccc = this.histo.getBinContent(i + ii + 1);
+                  if (searchmax ? ccc>cont : ccc<cont) {
+                     cont = ccc;
+                     pmax = i + ii;
+                  }
+                  ii++;
+               }
+               if (ii>1) {
+                  i += (ii-1);
+                  x2 += (ii-1)*this.binwidthx;
+                  grx2 = this.x(x2);
+               }
+            } else 
+               for (var ii = 1; ii < stepi; ii++) {
+                  var ccc = this.histo.getBinContent(i + ii + 1);
+                  if (searchmax ? ccc>cont : ccc<cont) {
+                     cont = ccc;
+                     pmax = i + ii;
+                  }
+               }
          }
 
          // exclude zero bins from profile drawings
@@ -4973,6 +5006,8 @@
 
          draw_bins.push(point);
       }
+      
+      console.log("Length = " + draw_bins.length);
 
       // if we need to draw line or area, we need extra point for correct drawing
       if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
@@ -5117,8 +5152,8 @@
       } else {
 
          var line = d3.svg.line()
-                          .x(function(d) { return d.x; })
-                          .y(function(d) { return d.y; })
+                          .x(function(d) { return d.x.toFixed(1); })
+                          .y(function(d) { return d.y.toFixed(1); })
                           .interpolate("step-after");
 
          this.draw_g
@@ -7014,11 +7049,13 @@
 
       var h = this;
 
-      elem.html(this['html'])
+      var items = elem.html(this['html'])
           .find(".h_item")
-          .click(function() { h.tree_click($(this)); })
-          .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
-          .draggable({ revert: "invalid", appendTo: "body", helper: "clone" }); 
+          .click(function() { h.tree_click($(this)); });
+      
+      if ('disp_kind' in h)
+         items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+              .draggable({ revert: "invalid", appendTo: "body", helper: "clone" }); 
       
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
@@ -7228,10 +7265,13 @@
       node.append(this['html']);
       childs = node.children().last();
 
-      childs.find(".h_item")
-         .click(function() { h.tree_click($(this)); })
-         .on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
-         .draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+      var items = childs.find(".h_item")
+                   .click(function() { h.tree_click($(this)); });
+      
+      if ('disp_kind' in h)
+         items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+              .draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+      
       childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
 

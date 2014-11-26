@@ -327,6 +327,12 @@ function BuildOnlineGUI() {
       return;
    }
 
+   var optimize = JSROOT.GetUrlOption("optimize", null, "2");
+   if (optimize!=null) { 
+      JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
+      if (JSROOT.gStyle.OptimizeDraw==NaN) JSROOT.gStyle.OptimizeDraw = 2;
+   }
+
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return BuildNoBrowserGUI(true);
 
@@ -399,6 +405,12 @@ function BuildSimpleGUI() {
 
    var myDiv = $('#simpleGUI');
    if (!myDiv) return;
+   
+   var optimize = JSROOT.GetUrlOption("optimize", null, "2");
+   if (optimize!=null) { 
+      JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
+      if (JSROOT.gStyle.OptimizeDraw==NaN) JSROOT.gStyle.OptimizeDraw = 2;
+   }
 
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return BuildNoBrowserGUI(false);
