@@ -30,9 +30,9 @@
 
    JSROOT.gStyle = {
       Tooltip : true, // tooltip on/off
-      ContextMenu : true, 
-      Zooming : true, 
-      MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz 
+      ContextMenu : true,
+      Zooming : true,
+      MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
       DragAndDrop : false,
       OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
       AutoStat : true,
@@ -60,10 +60,10 @@
 
       var inter = JSROOT.GetUrlOption("interactive", url);
       if ((inter=="") || (inter=="1")) inter = "11111"; else
-      if (inter=="0") inter = "00000";   
+      if (inter=="0") inter = "00000";
       if ((inter!=null) && (inter.length==5)) {
-         JSROOT.gStyle.Tooltip =     (inter.charAt(0) != '0'); 
-         JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0'); 
+         JSROOT.gStyle.Tooltip =     (inter.charAt(0) != '0');
+         JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0');
          JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
          JSROOT.gStyle.MoveResize =  (inter.charAt(3) != '0');
          JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
@@ -1076,7 +1076,7 @@
 
    JSROOT.TObjectPainter.prototype.AddDrag = function(id, draw_g, callback) {
       if (!JSROOT.gStyle.MoveResize) return;
-      
+
       var pthis = this;
 
       var drag_rect_name = id + "_drag_rect";
@@ -1139,9 +1139,9 @@
                pthis[drag_rect_name] = null;
 
                draw_g.attr("x", x).attr("y", y);
-               
+
                callback.move(x, y, dx, dy);
-               
+
                pthis[resize_rect_name]
                     .attr("x", rect_width() - 20)
                     .attr("y", rect_height() - 20);
@@ -1151,7 +1151,7 @@
         .on( "dragstart", function() {
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
-           
+
            acc_x = 0; acc_y = 0;
            pad_w = Number(pthis.svg_pad(true).attr("width")) - Number(draw_g.attr("x"));
            pad_h = Number(pthis.svg_pad(true).attr("height")) - Number(draw_g.attr("y"));
@@ -1189,7 +1189,7 @@
             var newheight = Number(pthis[drag_rect_name].attr("height"));
 
             draw_g.attr('width', newwidth).attr('height', newheight);
-            
+
             pthis[drag_rect_name].remove();
             pthis[drag_rect_name] = null;
 
@@ -1202,7 +1202,7 @@
          });
 
       draw_g.call(drag_move);
-      
+
       this[resize_rect_name] =
          draw_g.append("rect")
                   .attr("class", resize_rect_name)
@@ -1328,14 +1328,14 @@
 
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
-      
+
       var top_rect = null;
 
       if (frame_g.empty()) {
          frame_g = this.svg_pad(true).select(".frame_layer").append("svg:g").attr("class", "root_frame");
-         
+
          top_rect = frame_g.append("svg:rect");
-         
+
          // append for the moment two layers - for drawing and axis
          frame_g.append('svg:g').attr('class','main_layer');
          frame_g.append('svg:g').attr('class','axis_layer');
@@ -1370,7 +1370,7 @@
               .attr("fill", framecolor)
               .style("stroke", linecolor)
               .style("stroke-width", linewidth);
-              
+
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -2346,7 +2346,7 @@
 
       if (maxlw > width)
          font_size = Math.floor(font_size * (width / maxlw));
-      else 
+      else
       if ((nlines==1) && (lwidth==0) && (maxlw < width - 40))  {
          // adjust invisible size of the pave for comfort resizing
          var diff = width - maxlw;
@@ -2364,12 +2364,12 @@
             case 2: text_pos_x = width / 2; break;
             case 3: text_pos_x = width - h_margin; break;
          }
-      
+
       var pthis = this;
 
       // container used to recalculate coordinates
       this.RecreateDrawG(true,".stat_layer");
-      
+
       // position and size required only for drag functions
       this.draw_g
            .attr("x", pos_x)
@@ -2651,7 +2651,7 @@
           .property('pad_painter', this) // this is custom property
           .property('mainpainter', null) // this is custom property
           .property('current_pad', "") // this is custom property
-          
+
           svg.append("svg:g").attr("class","frame_layer");
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
@@ -2872,7 +2872,7 @@
 
       // Draw palette
       var rectHeight = 1. * s_height / paletteColors.length;
-      
+
       this.draw_g.selectAll("colorRect")
                  .data(paletteColors)
                  .enter()
@@ -3629,10 +3629,10 @@
                var down = this.ymin + i*this.binwidthy;
                if (down>0) { this.scale_ymin = down; break; }
             }
-         
-         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0))  
+
+         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0))
             this.scale_ymin = 0.3*this.ymin_nz;
-         
+
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 0.000001 * this.scale_ymax;
          this['y'] = d3.scale.log().domain([ this.scale_ymin, this.scale_ymax ]).range([ h, 0 ]); // .clamp(true);
@@ -4239,7 +4239,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
-      
+
       // only first painter in list allowed to add interactive functionality to the main pad
       if (!JSROOT.gStyle.Zooming || !this.is_main_painter()) return;
 
@@ -4872,8 +4872,8 @@
       var stepi = 1;
 
       var draw_bins = new Array;
-      
-      var can_optimize = ((JSROOT.gStyle.OptimizeDraw > 0) && (right-left > 5000)) || 
+
+      var can_optimize = ((JSROOT.gStyle.OptimizeDraw > 0) && (right-left > 5000)) ||
                          ((JSROOT.gStyle.OptimizeDraw > 1) && (right-left > 2*width));
 
       // reduce number of drawn points - we define interval where two points will be selected - max and min
@@ -4907,7 +4907,7 @@
             if (this.options.Logx) {
                // in case of logarithmic case one should really check coordinates
 
-               var ii = 1; 
+               var ii = 1;
                while (i+ii<right) {
                   var grx = this.x(x2 + ii*this.binwidthx);
                   // next point maximal 0.5 pixel away
@@ -4924,7 +4924,7 @@
                   x2 += (ii-1)*this.binwidthx;
                   grx2 = this.x(x2);
                }
-            } else 
+            } else
                for (var ii = 1; ii < stepi; ii++) {
                   var ccc = this.histo.getBinContent(i + ii + 1);
                   if (searchmax ? ccc>cont : ccc<cont) {
@@ -4965,7 +4965,7 @@
 
          draw_bins.push(point);
       }
-      
+
       // if we need to draw line or area, we need extra point for correct drawing
       if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
          var extrapoint = jQuery.extend(true, {}, point);
@@ -6537,7 +6537,7 @@
       this.RecreateDrawG(true, ".text_layer");
 
       var kTextNDC = JSROOT.BIT(14);
-      
+
       var w = Number(this.svg_pad(true).attr("width")),
           h = Number(this.svg_pad(true).attr("height"));
       var align = 'start', halign = Math.round(this.text['fTextAlign'] / 10);
@@ -6559,18 +6559,18 @@
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pos_x * w;
          pos_y = (1 - pos_y) * h;
-      } else 
+      } else
       if (this.main_painter()!=null) {
          pos_x = this.main_painter().x(pos_x);
          pos_y = this.main_painter().y(pos_y);
       } else
       if (this.root_pad()!=null) {
-         var pad = this.root_pad(); 
-         if (pad['fLogx']) 
-            pos_x = (pos_x > 0) ? JSROOT.Math.log10(pos_x) : pad['fUxmin'];   
-         if (pad['fLogy']) 
+         var pad = this.root_pad();
+         if (pad['fLogx'])
+            pos_x = (pos_x > 0) ? JSROOT.Math.log10(pos_x) : pad['fUxmin'];
+         if (pad['fLogy'])
             pos_y = (pos_y > 0) ? JSROOT.Math.log10(pos_y) : pad['fUymin'];
-            
+
          pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
          pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
       } else {
@@ -6578,7 +6578,7 @@
          pos_x = w/2;
          pos_y = h/2;
       }
-      
+
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
       var fontDetails = JSROOT.Painter.getFontDetails(this.text['fTextFont']);
 
@@ -7009,15 +7009,15 @@
       var items = elem.html(this['html'])
           .find(".h_item")
           .click(function() { h.tree_click($(this)); });
-      
+
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
             items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-         
+
          if (JSROOT.gStyle.ContextMenu)
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
       }
-      
+
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
@@ -7030,12 +7030,12 @@
       return hitem && hitem._parent && hitem._parent._childs &&
              (hitem._parent._childs.indexOf(hitem) == hitem._parent._childs.length-1);
    }
-   
+
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, parent) {
       var isroot = (parent == null);
       var has_childs = '_childs' in hitem;
       var cando = this.CheckCanDo(hitem);
-      
+
       if (!isroot) hitem._parent = parent;
 
       var can_click = false;
@@ -7053,22 +7053,22 @@
          } else
          if (cando.html.length > 0) can_click = true;
       }
-      
+
       if (!('_icon' in hitem)) hitem['_icon'] = cando.img1;
       if (!('_icon2' in hitem)) hitem['_icon2'] = cando.img2;
-      if (hitem['_icon2']=="") hitem['_icon2'] = hitem['_icon']; 
+      if (hitem['_icon2']=="") hitem['_icon2'] = hitem['_icon'];
 
       // assign node icons
 
       if (!hitem['_icon'])
          hitem['_icon'] = has_childs ? "img_folder" : "img_page";
-      
+
       if (!hitem['_icon2'])
          hitem['_icon2'] = has_childs ? "img_folderopen" : "img_page";
-      
-      if (isroot) 
+
+      if (isroot)
          hitem['_icon'] = hitem['_icon2'] = "img_base";
-      
+
       var itemname = this.itemFullName(hitem);
 
       this['html'] += '<div item="' + itemname + '">';
@@ -7114,18 +7114,18 @@
       if (can_click || has_childs) this['html'] +=' class="h_item"';
 
       var element_name = hitem._name;
-      
+
       if ('_realname' in hitem)
          element_name = hitem._realname;
 
       var element_title = "";
-      if ('_title' in hitem) element_title = hitem._title; 
-      
+      if ('_title' in hitem) element_title = hitem._title;
+
       if ('_fullname' in hitem)
          element_title += "  fullname: " + hitem['_fullname'];
 
       if (element_title.length == 0) element_title = element_name;
-      
+
       this['html'] += ' title="' + element_title + '"';
       this['html'] += '>' + element_name + '</a>';
 
@@ -7135,7 +7135,7 @@
             this.addItemHtml(hitem._childs[i], hitem);
          this['html'] += '</div>';
       }
-      
+
       this['html'] += '</div>';
    }
 
@@ -7208,7 +7208,7 @@
 
       var childs = node.children().last();
       if (childs.hasClass("h_childs")) childs.remove();
-      
+
       var display_childs = has_childs && hitem._isopen;
       if (!display_childs) return;
 
@@ -7221,15 +7221,15 @@
 
       var items = childs.find(".h_item")
                    .click(function() { h.tree_click($(this)); });
-      
+
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
             items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-         
+
          if (JSROOT.gStyle.ContextMenu)
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
       }
-      
+
       childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
 
@@ -7296,7 +7296,7 @@
          var item = h.Find(itemname);
          if ((item==null) || ('_doing_update' in item)) return do_call_back(null);
          item['_doing_update'] = true;
-      } 
+      }
 
       h.get(itemname, function(item, obj) {
 
@@ -7327,9 +7327,9 @@
                   frame.addClass("ui-state-default");
                painter = h.draw(frame.attr("id"), obj, drawopt);
                mdi.ActivateFrame(frame);
-               
+
                if (JSROOT.gStyle.DragAndDrop)
-                  frame.droppable({ 
+                  frame.droppable({
                      hoverClass : "ui-state-active",
                      accept: function(ui) {
                         var dropname = ui.parent().attr('item');
@@ -7338,13 +7338,13 @@
                         var ditem = h.Find(dropname);
                         if (ditem==null) return false;
 
-                        return ditem._kind.indexOf("ROOT.")==0; 
+                        return ditem._kind.indexOf("ROOT.")==0;
                      },
                      drop: function(event, ui) {
                         var dropname = ui.draggable.parent().attr('item');
-                        console.log("drop! " + dropname);  
-                        return h.dropitem(dropname, frame.attr("id")); 
-                     }   
+                        console.log("drop! " + dropname);
+                        return h.dropitem(dropname, frame.attr("id"));
+                     }
                   });
             }
          }
@@ -7354,7 +7354,7 @@
          do_call_back(painter);
       });
    }
-   
+
    JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid) {
       var h = this;
       var mdi = h['disp'];
@@ -7368,7 +7368,7 @@
 
       return true;
    }
-   
+
 
    JSROOT.HierarchyPainter.prototype.updateAll = function() {
       // method can be used to fetch new objects and update all existing drawings
@@ -7396,14 +7396,14 @@
          options.push("");
 
       var mdi = this['disp'];
-      
+
       var dropitems = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension
       for (var i in items) {
          if (this.Find(items[i])) continue;
          if (this.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
-         
+
          var pos = items[i].indexOf("+");
          if ((pos>0) && this.Find(items[i].slice(0,pos))) {
             dropitems[i] = items[i].slice(pos+1);
@@ -7416,7 +7416,7 @@
          mdi.CreateFrame(items[i]);
 
       var h = this;
-      
+
       // Display items
       for (var i in items)
          this.display(items[i], options[i], function(painter) {

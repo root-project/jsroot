@@ -326,7 +326,7 @@ function BuildOnlineGUI() {
       alert("You have to define a div with id='onlineGUI'!");
       return;
    }
-   
+
    JSROOT.Painter.readStyleFromURL();
 
    if (JSROOT.GetUrlOption("nobrowser")!=null)
@@ -401,7 +401,7 @@ function BuildSimpleGUI() {
 
    var myDiv = $('#simpleGUI');
    if (!myDiv) return;
-   
+
    JSROOT.Painter.readStyleFromURL();
 
    if (JSROOT.GetUrlOption("nobrowser")!=null)

@@ -1285,7 +1285,7 @@
       this.fStreamers = new Array;
 
       if (typeof this.fURL != 'string') return this;
-      
+
       if (this.fURL.charAt(this.fURL.length-1) == "+") {
          this.fURL = this.fURL.substr(0, this.fURL.length-1);
          this.fAcceptRanges = false;
