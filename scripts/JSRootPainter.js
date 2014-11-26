@@ -32,7 +32,7 @@
       Tooltip : true, // tooltip on/off
       ContextMenu : true, 
       Zooming : true, 
-      Resize : true, 
+      MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz 
       DragAndDrop : false,
       OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
       AutoStat : true,
@@ -65,7 +65,7 @@
          JSROOT.gStyle.Tooltip =     (inter.charAt(0) != '0'); 
          JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0'); 
          JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
-         JSROOT.gStyle.Resize =      (inter.charAt(3) != '0');
+         JSROOT.gStyle.MoveResize =  (inter.charAt(3) != '0');
          JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
       }
    }
@@ -1074,28 +1074,16 @@
       }
    }
 
-   JSROOT.TObjectPainter.prototype.AddDrag = function(id, main_rect, callback) {
+   JSROOT.TObjectPainter.prototype.AddDrag = function(id, draw_g, callback) {
+      if (!JSROOT.gStyle.MoveResize) return;
+      
       var pthis = this;
 
       var drag_rect_name = id + "_drag_rect";
       var resize_rect_name = id + "_resize_rect";
 
-      var rect_width = function() {
-         return Number(main_rect.attr("width"));
-      }
-
-      var rect_height = function() {
-         return Number(main_rect.attr("height"));
-      }
-
-      // we need coordinates relative to svg_pad
-      var rect_x = function() {
-         return Number(main_rect.attr("x"));
-      }
-
-      var rect_y = function() {
-         return Number(main_rect.attr("y"));
-      }
+      var rect_width = function() { return Number(draw_g.attr("width")); }
+      var rect_height = function() { return Number(draw_g.attr("height")); }
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
 
@@ -1112,8 +1100,8 @@
                  .append("rect")
                  .attr("class", "zoom")
                  .attr("id", drag_rect_name)
-                 .attr("x",  rect_x())
-                 .attr("y", rect_y())
+                 .attr("x",  draw_g.attr("x"))
+                 .attr("y", draw_g.attr("y"))
                  .attr("width", rect_width())
                  .attr("height", rect_height())
                  .style("cursor", "move");
@@ -1144,13 +1132,13 @@
                var x = Number(pthis[drag_rect_name].attr("x"));
                var y = Number(pthis[drag_rect_name].attr("y"));
 
-               var dx = x - rect_x();
-               var dy = y - rect_y();
+               var dx = x - Number(draw_g.attr("x"));
+               var dy = y - Number(draw_g.attr("y"));
 
                pthis[drag_rect_name].remove();
                pthis[drag_rect_name] = null;
 
-               main_rect.attr("x", x).attr("y", y);
+               draw_g.attr("x", x).attr("y", y);
                
                callback.move(x, y, dx, dy);
                
@@ -1165,19 +1153,18 @@
            d3.event.sourceEvent.preventDefault();
            
            acc_x = 0; acc_y = 0;
-           pad_w = Number(pthis.svg_pad(true).attr("width")) - rect_x();
-           pad_h = Number(pthis.svg_pad(true).attr("height")) - rect_y();
+           pad_w = Number(pthis.svg_pad(true).attr("width")) - Number(draw_g.attr("x"));
+           pad_h = Number(pthis.svg_pad(true).attr("height")) - Number(draw_g.attr("y"));
            pthis[drag_rect_name] =
               pthis.svg_pad(true)
                 .append("rect")
                 .attr("class", "zoom")
                 .attr("id", drag_rect_name)
-                .attr("x",  rect_x())
-                .attr("y", rect_y())
+                .attr("x",  draw_g.attr("x"))
+                .attr("y", draw_g.attr("y"))
                 .attr("width", rect_width())
                 .attr("height", rect_height())
                 .style("cursor", "se-resize");
-           // main_rect.style("cursor", "move");
          }).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
 
@@ -1201,7 +1188,7 @@
             var newwidth = Number(pthis[drag_rect_name].attr("width"));
             var newheight = Number(pthis[drag_rect_name].attr("height"));
 
-            main_rect.attr('width', newwidth).attr('height', newheight);
+            draw_g.attr('width', newwidth).attr('height', newheight);
             
             pthis[drag_rect_name].remove();
             pthis[drag_rect_name] = null;
@@ -1214,10 +1201,10 @@
               .attr("y", newheight - 20);
          });
 
-      main_rect.call(drag_move);
+      draw_g.call(drag_move);
       
       this[resize_rect_name] =
-         main_rect.append("rect")
+         draw_g.append("rect")
                   .attr("class", resize_rect_name)
                   .style("opacity", "0")
                   .style("cursor", "se-resize")
@@ -2407,7 +2394,7 @@
          this.draw_g.append("text")
               .attr("text-anchor", align)
               .attr("x", text_pos_x)
-              .attr("y", (height / 2) + (font_size / 3))
+              .attr("y", ((height / 2) + (font_size / 3)).toFixed(1))
               .attr("xml:space","preserve")
               .attr("font-family", fontDetails['name'])
               .attr("font-weight", fontDetails['weight'])
@@ -2428,8 +2415,8 @@
                   for (var n = 0; n < parts.length; n++)
                      this.draw_g.append("text")
                            .attr("text-anchor", "middle")
-                           .attr("x", width * (n + 0.5) / num_cols)
-                           .attr("y", posy)
+                           .attr("x", (width * (n + 0.5) / num_cols).toFixed(1))
+                           .attr("y", posy.toFixed(1))
                            .attr("xml:space","preserve")
                            .attr("font-family", fontDetails['name'])
                            .attr("font-weight", fontDetails['weight'])
@@ -2440,8 +2427,8 @@
                } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
                   this.draw_g.append("text")
                         .attr("text-anchor", (j == 0) ? "middle" : "start")
-                        .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width))
-                        .attr("y", posy)
+                        .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width).toFixed(1))
+                        .attr("y", posy.toFixed(1))
                         .attr("xml:space","preserve")
                         .attr("font-family", fontDetails['name'])
                         .attr("font-weight", fontDetails['weight'])
@@ -2454,8 +2441,8 @@
                   for (var n = 0; n < 2; n++)
                      this.draw_g.append("text")
                             .attr("text-anchor", (n == 0) ? "start" : "end")
-                            .attr("x", (n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width)
-                            .attr("y", posy)
+                            .attr("x", ((n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width).toFixed(1))
+                            .attr("y", posy.toFixed(1))
                             .attr("xml:space","preserve")
                             .attr("font-family", fontDetails['name'])
                             .attr("font-weight", fontDetails['weight'])
@@ -2467,8 +2454,8 @@
             } else {
                this.draw_g.append("text")
                       .attr("text-anchor", "start")
-                      .attr("x", text_pos_x)
-                      .attr("y", posy)
+                      .attr("x", text_pos_x.toFixed(1))
+                      .attr("y", posy.toFixed(1))
                       .attr("xml:space","preserve")
                       .attr("font-family", fontDetails['name'])
                       .attr("font-weight", fontDetails['weight'])
@@ -2857,7 +2844,7 @@
       var width = Number(this.svg_pad(true).attr("width")),
           height = Number(this.svg_pad(true).attr("height"));
 
-      var s_height = Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height;
+      var s_height = Math.round(Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height);
 
       var axisOffset = axis['fLabelOffset'] * width;
       var tickSize = axis['fTickSize'] * width;
@@ -2867,10 +2854,10 @@
       var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
       var axisLabelFontSize = axis['fLabelSize'] * height;
 
-      var pos_x = palette['fX1NDC'] * width;
-      var pos_y = height - palette['fY1NDC'] * height;
+      var pos_x = Math.round(palette['fX1NDC'] * width);
+      var pos_y = Math.round(height*(1 - palette['fY1NDC']));
 
-      var s_width = Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width;
+      var s_width = Math.round(Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width);
       pos_y -= s_height;
 
       // Draw palette pad
@@ -2884,18 +2871,20 @@
       var paletteColors = this.main_painter().paletteColors;
 
       // Draw palette
-      var rectHeight = s_height / paletteColors.length;
+      var rectHeight = 1. * s_height / paletteColors.length;
+      
       this.draw_g.selectAll("colorRect")
                  .data(paletteColors)
                  .enter()
                  .append("svg:rect")
                  .attr("class", "colorRect")
                  .attr("x", 0)
-                 .attr("y",  function(d, i) { return s_height - (i + 1) * rectHeight; })
+                 .attr("y",  function(d, i) { return (s_height - (i + 1) * rectHeight).toFixed(1); })
                  .attr("width", s_width)
-                 .attr("height", rectHeight)
+                 .attr("height", rectHeight.toFixed(1))
                  .attr("fill", function(d) { return d; })
                  .attr("stroke", function(d) { return d; });
+                 //.append("svg:title").text(function(d) { return "color" + d; });
       /*
        * Build and draw axes
        */
