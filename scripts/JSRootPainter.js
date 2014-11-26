@@ -30,6 +30,10 @@
 
    JSROOT.gStyle = {
       Tooltip : true, // tooltip on/off
+      ContextMenu : true, 
+      Zooming : true, 
+      Resize : true, 
+      DragAndDrop : false,
       OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
       AutoStat : true,
       OptStat  : 1111,
@@ -45,6 +49,27 @@
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
    JSROOT.Painter = {};
+
+   JSROOT.Painter.readStyleFromURL = function(url) {
+      var optimize = JSROOT.GetUrlOption("optimize", url);
+      if (optimize=="") JSROOT.gStyle.OptimizeDraw = 2; else
+      if (optimize!=null) {
+         JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
+         if (JSROOT.gStyle.OptimizeDraw==NaN) JSROOT.gStyle.OptimizeDraw = 2;
+      }
+
+      var inter = JSROOT.GetUrlOption("interactive", url);
+      if (inter=="") inter = "11111"; else
+      if (inter=="0") inter = "00000";   
+      if ((inter!=null) && (inter.length==5)) {
+         JSROOT.gStyle.Tooltip =     (inter.charAt(0) != '0'); 
+         JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0'); 
+         JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
+         JSROOT.gStyle.Resize =      (inter.charAt(3) != '0');
+         JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
+      }
+   }
+
 
    /**
     * @fn menu JSROOT.Painter.createmenu(event, menuname) Creates popup menu
@@ -5007,8 +5032,6 @@
          draw_bins.push(point);
       }
       
-      console.log("Length = " + draw_bins.length);
-
       // if we need to draw line or area, we need extra point for correct drawing
       if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
          var extrapoint = jQuery.extend(true, {}, point);
@@ -7053,9 +7076,13 @@
           .find(".h_item")
           .click(function() { h.tree_click($(this)); });
       
-      if ('disp_kind' in h)
-         items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
-              .draggable({ revert: "invalid", appendTo: "body", helper: "clone" }); 
+      if ('disp_kind' in h) {
+         if (JSROOT.gStyle.DragAndDrop)
+            items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+         
+         if (JSROOT.gStyle.ContextMenu)
+            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+      }
       
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
@@ -7063,13 +7090,6 @@
                     .next().click(function() { h.toggle(false); return false; })
                     .next().click(function() { h.reload(); return false; })
                     .next().click(function() { h.clear(); return false; });
-
-//      $("#" + this.frameid + " .h_item")
-//         .click(function() { h.opennew($(this)); });
-//         .draggable({ revert: true, helper: "clone", appendTo: "body" });
-
-//      elem.find(".h_item")
-//         .draggable({ revert: true, helper: "clone", appendTo: "body" });
    }
 
    JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
@@ -7268,9 +7288,13 @@
       var items = childs.find(".h_item")
                    .click(function() { h.tree_click($(this)); });
       
-      if ('disp_kind' in h)
-         items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
-              .draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+      if ('disp_kind' in h) {
+         if (JSROOT.gStyle.DragAndDrop)
+            items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+         
+         if (JSROOT.gStyle.ContextMenu)
+            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+      }
       
       childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
@@ -7365,27 +7389,28 @@
                console.log("something went wrong - did not found painter when doing update of " + itemname);
             } else {
                var frame = mdi.FindFrame(itemname, true);
-               frame.addClass("ui-state-default");
+               if (JSROOT.gStyle.DragAndDrop)
+                  frame.addClass("ui-state-default");
                painter = h.draw(frame.attr("id"), obj, drawopt);
                mdi.ActivateFrame(frame);
                
-               frame.droppable({ 
-                  hoverClass : "ui-state-active",
-                  accept: function(ui) {
-                     var dropname = ui.parent().attr('item');
-                     if (dropname == itemname) return false;
-                     
-                     var ditem = h.Find(dropname);
-                     if (ditem==null) return false;
-                     
-                     // console.log("accept " + dropname + "  kind = " + ditem._kind);
-                     return (ditem._kind.indexOf("ROOT.TH1")==0) || (ditem._kind == 'ROOT.TLatex'); 
-                  },
-                  drop: function(event, ui) {
-                     var dropname = ui.draggable.parent().attr('item');
-                     console.log("drop! " + dropname);  
-                     return h.dropitem(dropname, frame.attr("id")); 
-                  }   
+               if (JSROOT.gStyle.DragAndDrop)
+                  frame.droppable({ 
+                     hoverClass : "ui-state-active",
+                     accept: function(ui) {
+                        var dropname = ui.parent().attr('item');
+                        if (dropname == itemname) return false;
+
+                        var ditem = h.Find(dropname);
+                        if (ditem==null) return false;
+
+                        return ditem._kind.indexOf("ROOT.")==0; 
+                     },
+                     drop: function(event, ui) {
+                        var dropname = ui.draggable.parent().attr('item');
+                        console.log("drop! " + dropname);  
+                        return h.dropitem(dropname, frame.attr("id")); 
+                     }   
                   });
             }
          }
@@ -7437,18 +7462,34 @@
          options.push("");
 
       var mdi = this['disp'];
+      
+      var dropitems = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension
-      for (var i in items)
-         if (!this.Find(items[i]) && this.Find(items[i] + ";1")) items[i] += ";1";
+      for (var i in items) {
+         if (this.Find(items[i])) continue;
+         if (this.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
+         
+         var pos = items[i].indexOf("+");
+         if ((pos>0) && this.Find(items[i].slice(0,pos))) {
+            dropitems[i] = items[i].slice(pos+1);
+            items[i] = items[i].slice(0,pos);
+         }
+      }
 
       // Than create empty frames for each item
       for (var i in items)
          mdi.CreateFrame(items[i]);
 
+      var h = this;
+      
       // Display items
       for (var i in items)
-         this.display(items[i], options[i]);
+         this.display(items[i], options[i], function(painter) {
+            if ((painter==0) && (dropitems[i]==null)) return;
+            console.log("Drop item " + dropitems[i]);
+            h.dropitem(dropitems[i], painter.divid);
+         });
    }
 
    JSROOT.HierarchyPainter.prototype.reload = function() {
