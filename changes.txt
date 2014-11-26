@@ -15,6 +15,9 @@ Changes in 3.1
    and JSROOT.AssertPrerequisites, also with main index.htm
 5. Support of TCutG drawing
 6. Implement hierarchy display (former dtree) with jQuery
+7. Fix several problems in drawing optimization
+8. Implement dragging objects from hierarchy browser into existing canvas 
+   to superimpose several objects 
 
 
 Development of version 3.0
