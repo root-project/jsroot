@@ -3966,22 +3966,24 @@
             .attr("font-style",  yAxisLabelFontDetails['style']);
 
       // we will use such rect for zoom selection
-      xax_g.append("svg:rect")
-           .attr("class", "xaxis_zoom")
-           .attr("x", 0)
-           .attr("y", 0)
-           .attr("width", w)
-           .attr("height", xAxisLabelFontSize + 3)
-           .style('opacity', "0");
+      if (JSROOT.gStyle.Zooming) {
+         xax_g.append("svg:rect")
+            .attr("class", "xaxis_zoom")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", w)
+            .attr("height", xAxisLabelFontSize + 3)
+            .style('opacity', "0");
 
-      // we will use such rect for zoom selection
-      yax_g.append("svg:rect")
-           .attr("class", "yaxis_zoom")
-           .attr("x",-2 * yAxisLabelFontSize - 3)
-           .attr("y", 0)
-           .attr("width", 2 * yAxisLabelFontSize + 3)
-           .attr("height", h)
-           .style('opacity', "0");
+         // we will use such rect for zoom selection
+         yax_g.append("svg:rect")
+            .attr("class", "yaxis_zoom")
+            .attr("x",-2 * yAxisLabelFontSize - 3)
+            .attr("y", 0)
+            .attr("width", 2 * yAxisLabelFontSize + 3)
+            .attr("height", h)
+            .style('opacity', "0");
+      }
 
       if ((shrink_forbidden==null) && typeof yax_g.node()['getBoundingClientRect'] == 'function') {
 
@@ -4869,16 +4871,11 @@
 
       var left = this.GetSelectIndex("x", "left", -1);
       var right = this.GetSelectIndex("x", "right", 2);
-      var stepi = 1;
 
       var draw_bins = new Array;
 
       var can_optimize = ((JSROOT.gStyle.OptimizeDraw > 0) && (right-left > 5000)) ||
                          ((JSROOT.gStyle.OptimizeDraw > 1) && (right-left > 2*width));
-
-      // reduce number of drawn points - we define interval where two points will be selected - max and min
-      if (can_optimize && !this.options.Logx)
-         while ((right - left) / stepi > 2*width) stepi++;
 
       var x1, x2 = this.xmin + left * this.binwidthx;
       var grx1 = -1111, grx2 = -1111, gry;
@@ -4886,12 +4883,11 @@
 
       var point = null;
       var searchmax = false;
-
-      for (var i = left; i < right; i += stepi) {
+      
+      for (var i = left; i < right; i++) {
          // if interval wider than specified range, make it shorter
-         if ((stepi > 1) && (i + stepi > right)) stepi = (right - i);
          x1 = x2;
-         x2 += stepi * this.binwidthx;
+         x2 += this.binwidthx;
 
          if (this.options.Logx && (x1 <= 0)) continue;
 
@@ -4904,34 +4900,16 @@
          if (can_optimize) {
             searchmax = !searchmax;
 
-            if (this.options.Logx) {
-               // in case of logarithmic case one should really check coordinates
-
-               var ii = 1;
-               while (i+ii<right) {
-                  var grx = this.x(x2 + ii*this.binwidthx);
-                  // next point maximal 0.5 pixel away
-                  if (grx > grx2 + 0.5) break;
-                  var ccc = this.histo.getBinContent(i + ii + 1);
-                  if (searchmax ? ccc>cont : ccc<cont) {
-                     cont = ccc;
-                     pmax = i + ii;
-                  }
-                  ii++;
+            // consider all points which are not far than 0.5 pixel away
+            while ((i+1<right) && (this.x(x2 + this.binwidthx) < grx2 + 0.5)) {
+               i++; x2 += this.binwidthx;
+               var ccc = this.histo.getBinContent(i + 1);
+               if (searchmax ? ccc>cont : ccc<cont) {
+                  cont = ccc;
+                  pmax = i;
                }
-               if (ii>1) {
-                  i += (ii-1);
-                  x2 += (ii-1)*this.binwidthx;
-                  grx2 = this.x(x2);
-               }
-            } else
-               for (var ii = 1; ii < stepi; ii++) {
-                  var ccc = this.histo.getBinContent(i + ii + 1);
-                  if (searchmax ? ccc>cont : ccc<cont) {
-                     cont = ccc;
-                     pmax = i + ii;
-                  }
-               }
+            }
+            grx2 = this.x(x2);
          }
 
          // exclude zero bins from profile drawings
@@ -6864,7 +6842,7 @@
 
       function find_in_hierarchy(top, fullname) {
 
-         if (fullname.length == 0) return top;
+         if (!fullname || fullname.length == 0) return top;
 
          var pos = -1;
 
@@ -7420,7 +7398,7 @@
       // Display items
       for (var i in items)
          this.display(items[i], options[i], function(painter) {
-            if ((painter==0) && (dropitems[i]==null)) return;
+            if ((painter==0) || (dropitems[i]==null)) return;
             console.log("Drop item " + dropitems[i]);
             h.dropitem(dropitems[i], painter.divid);
          });
