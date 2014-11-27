@@ -35,6 +35,7 @@
       MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
       DragAndDrop : false,
       OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
+      DefaultCol : 1,  // default col option 1-svg, 2-canvas
       AutoStat : true,
       OptStat  : 1111,
       StatNDC  : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
@@ -68,8 +69,13 @@
          JSROOT.gStyle.MoveResize =  (inter.charAt(3) != '0');
          JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
       }
+      
+      var col = JSROOT.GetUrlOption("col", url);
+      if (col!=null) {
+         col = parseInt(col);
+         if ((col!=NaN) && (col>0) && (col<3)) JSROOT.gStyle.DefaultCol = col;
+      }
    }
-
 
    /**
     * @fn menu JSROOT.Painter.createmenu(event, menuname) Creates popup menu
@@ -3281,25 +3287,24 @@
             option.Hist = 1;
          }
       }
-      if (chopt.indexOf('COLZ') != -1) {
-         chopt = chopt.replace('COLZ', '');
-         if (hdim > 1) {
-            option.Color = 2;
-            option.Scat = 0;
-            option.Zscale = 1;
+      
+      l = chopt.indexOf('COL');
+      if (l!=-1) {
+         var name = 'COL';
+         
+         if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; l++; } else
+         if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; l++; } else
+            option.Color = JSROOT.gStyle.DefaultCol;
+         
+         if (chopt.charAt(l+4)=='Z') { option.Zscale = 1; name += 'Z'; }
+         chopt = chopt.replace(name, '');
+         if (hdim == 1) {
+            option.Hist = 1;   
          } else {
-            option.Hist = 1;
+            option.Scat = 0;
          }
       }
-      if (chopt.indexOf('COL') != -1) {
-         chopt = chopt.replace('COL', '   ');
-         if (hdim > 1) {
-            option.Color = 1;
-            option.Scat = 0;
-         } else {
-            option.Hist = 1;
-         }
-      }
+      
       if (chopt.indexOf('CHAR') != -1) {
          option.Char = 1;
          chopt = chopt.replace('CHAR', '    ');
@@ -5200,7 +5205,7 @@
       JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
       JSROOT.Painter.menuitem(menu, "Draw in 3D", function() { menu['painter'].Draw3D(); });
       JSROOT.Painter.menuitem(menu, "Toggle col", function() {
-         menu['painter'].options.Color = 1 - menu['painter'].options.Color;
+         menu['painter'].options.Color = -1 * menu['painter'].options.Color;
          menu['painter'].RedrawPad();
       });
 
@@ -5540,8 +5545,7 @@
       var wmin = this.minbin, wmax = this.maxbin;
       var wlmin = wmin, wlmax = wmax;
       var ndivz = this.histo['fContour'].length;
-      if (ndivz < 16)
-         ndivz = 16;
+      if (ndivz < 16) ndivz = 16;
       var scale = ndivz / (wlmax - wlmin);
       if (this.options.Logz) {
          if (wmin <= 0 && wmax > 0)
@@ -5667,8 +5671,60 @@
             local_bins.push(point);
          }
       }
+      
+      console.log("2d bins length = " + local_bins.length);
 
       return local_bins;
+   }
+   
+   JSROOT.TH2Painter.prototype.DrawOnCanvas = function(w,h) {
+      
+      var i1 = this.GetSelectIndex("x", "left", 0);
+      var i2 = this.GetSelectIndex("x", "right", 0);
+      var j1 = this.GetSelectIndex("y", "left", 0);
+      var j2 = this.GetSelectIndex("y", "right", 0);
+
+      this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
+      for (var i = i1; i < i2; i++) {
+         for (var j = j1; j < j2; j++) {
+            binz = this.histo.getBinContent(i + 1, j + 1);
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+
+      
+      var dx = i2-i1, dy = j2-j1;
+
+      var painter = this;
+      
+      var canvas = 
+         this.draw_g.append("foreignObject")
+                 .attr("width", w)
+                 .attr("height", h)
+                 .append("xhtml:canvas")
+                 .attr("width", dx)
+                 .attr("height", dy)
+                 .attr("style", "width: " + w + "px; height: "+ h + "px");
+
+      var context = canvas.node().getContext("2d");
+      var image = context.createImageData(dx, dy);
+
+      var p = -1;
+  
+      for (var j = j2-1; j >= j1; j--) {
+         for (var i = i1; i < i2; i++) {
+            var bin = painter.histo.getBinContent(i + 1, j + 1);
+            var col = bin>painter.minbin ? painter.getValueColor(bin) : 'white';
+            var c = d3.rgb(col);
+            image.data[++p] = c.r;
+            image.data[++p] = c.g;
+            image.data[++p] = c.b;
+            image.data[++p] = 255;
+         }
+      }
+  
+      context.putImageData(image, 0, 0);
    }
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
@@ -5677,6 +5733,9 @@
 
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
+      
+      if (this.options.Color==2)
+         return this.DrawOnCanvas(w,h);
 
       // this.options.Scat =1;
       // this.histo['fMarkerStyle'] = 2;
@@ -5753,7 +5812,7 @@
                    if (JSROOT.gStyle.Tooltip)
                       d3.select(this).transition().duration(100).style("fill", this['f1']);
               })
-              .on( 'mouseout', function() {
+              .on('mouseout', function() {
                    d3.select(this).transition().duration(100).style("fill", this['f0']);
               })
               .append("svg:title").text(function(d) { return d.tip; });
