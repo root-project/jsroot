@@ -14,8 +14,11 @@
          $('#debug').append("<h4>" + str + "</h4>"); 
       }
       
-      var global_dir = "http://root.cern.ch/js/files/";
-      // var global_dir = "files/"; // for testing   
+      var global_dir = "files/"; // for testing
+      
+      if (JSROOT.source_dir.indexOf("root.cern.ch")>0)
+         global_dir = "http://root.cern.ch/js/files/";
+         
       
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
@@ -27,13 +30,19 @@
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
+         var has_equal = false;
          var html = "Supported options: ";
          for (var i in arr) {
             if (i>0) html += ", ";
             html += '<a href="../index.htm?nobrowser&file='; 
             if (file.fURL.indexOf("http://")==0) html += file.fURL;
                                             else html += "demo/"+ file.fURL;   
-            html += '&item=' + itemname + '&opt=' + arr[i] + '" target="_blank">';
+            html += '&item=' + itemname + '&';
+             
+            if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
+                                  else { html += arr[i]; has_equal = true; } 
+            
+            html += '" target="_blank">';
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
@@ -43,6 +52,9 @@
 
          if (JSROOT.GetUrlOption("minimal") || 
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null))) return;
+             
+         // special case - do not draw on main page
+         if (has_equal) return;    
          
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
@@ -95,7 +107,7 @@
 
          LoadFile("hsimple.root", function(file) {
             draw_item_options(file, "hpx;1", "h1_draw", "");
-            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;LEGO");
+            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL2;COL3;LEGO");
             draw_item_options(file, "hprof;1", "prof_draw", ";E1");
          });
 
@@ -141,10 +153,17 @@
             draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
          });
 
-         if (global_dir.indexOf("root.cern.ch")<0)
+         if (global_dir.indexOf("root.cern.ch")<0) {
             LoadFile("can4.root", function(file) {
                draw_item_options(file, "c1;1", "can8_draw", "", 0.);
             });
+         }
+
+         LoadFile("higgs_c.root", function(file) {
+            draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3", 0.);
+         });
+
+
          
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
       }
@@ -190,6 +209,7 @@
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
+  <div id="can9_draw"></div>
   
 </body>
 
