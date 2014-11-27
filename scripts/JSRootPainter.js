@@ -73,7 +73,7 @@
       var col = JSROOT.GetUrlOption("col", url);
       if (col!=null) {
          col = parseInt(col);
-         if ((col!=NaN) && (col>0) && (col<3)) JSROOT.gStyle.DefaultCol = col;
+         if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
    }
 
@@ -3294,6 +3294,7 @@
          
          if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; l++; } else
          if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; l++; } else
+         if (chopt.charAt(l+3)=='3') { option.Color = 3; name += "3"; l++; } else
             option.Color = JSROOT.gStyle.DefaultCol;
          
          if (chopt.charAt(l+4)=='Z') { option.Zscale = 1; name += 'Z'; }
@@ -5671,13 +5672,11 @@
             local_bins.push(point);
          }
       }
-      
-      console.log("2d bins length = " + local_bins.length);
 
       return local_bins;
    }
    
-   JSROOT.TH2Painter.prototype.DrawOnCanvas = function(w,h) {
+   JSROOT.TH2Painter.prototype.DrawSimpleCanvas = function(w,h) {
       
       var i1 = this.GetSelectIndex("x", "left", 0);
       var i2 = this.GetSelectIndex("x", "right", 0);
@@ -5692,12 +5691,9 @@
             if (binz<this.minbin) this.minbin = binz;
          }
       }
-
       
       var dx = i2-i1, dy = j2-j1;
 
-      var painter = this;
-      
       var canvas = 
          this.draw_g.append("foreignObject")
                  .attr("width", w)
@@ -5714,8 +5710,8 @@
   
       for (var j = j2-1; j >= j1; j--) {
          for (var i = i1; i < i2; i++) {
-            var bin = painter.histo.getBinContent(i + 1, j + 1);
-            var col = bin>painter.minbin ? painter.getValueColor(bin) : 'white';
+            var bin = this.histo.getBinContent(i + 1, j + 1);
+            var col = bin>this.minbin ? this.getValueColor(bin) : 'white';
             var c = d3.rgb(col);
             image.data[++p] = c.r;
             image.data[++p] = c.g;
@@ -5726,6 +5722,30 @@
   
       context.putImageData(image, 0, 0);
    }
+   
+   JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
+      
+      var local_bins = this.CreateDrawBins(w, h, 0, 0);
+      
+      var canvas = 
+         this.draw_g.append("foreignObject")
+                 .attr("width", w)
+                 .attr("height", h)
+                 .append("xhtml:canvas")
+                 .attr("width", w)
+                 .attr("height", h)
+                 .attr("style", "width: " + w + "px; height: "+ h + "px");
+      
+      var ctx = canvas.node().getContext("2d");
+      for (var i in local_bins) {
+         var bin = local_bins[i];
+         ctx.fillStyle = bin.fill; 
+         ctx.fillRect(bin.x,bin.y,bin.width,bin.height);
+      }
+
+      ctx.stroke();
+   }
+
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
@@ -5735,8 +5755,12 @@
           h = Number(this.svg_frame(true).attr("height"));
       
       if (this.options.Color==2)
-         return this.DrawOnCanvas(w,h);
+         return this.DrawSimpleCanvas(w,h);
 
+      if (this.options.Color==3)
+         return this.DrawNormalCanvas(w,h);
+
+      
       // this.options.Scat =1;
       // this.histo['fMarkerStyle'] = 2;
 
