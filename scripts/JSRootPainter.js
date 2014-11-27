@@ -6126,6 +6126,8 @@
          fillcolor = 'none';
 
       var p = this.draw_g
+                 .attr("x", x)
+                 .attr("y", y)
                  .attr("width", w)
                  .attr("height", h)
                  .attr("transform", "translate(" + x + "," + y + ")");
@@ -6328,6 +6330,25 @@
             .style("stroke", lcolor)
             .style("stroke-width", lwidth);
       }
+      
+      var pthis = this;
+      
+      this.AddDrag('leg', this.draw_g, {
+         move : function(x, y, dx, dy) {
+            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
+
+            pave['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pave['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
+            pave['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pave['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+         },
+         resize : function(width, height) {
+            pave['fX2NDC'] = pave['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
+            pave['fY1NDC'] = pave['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
+
+            pthis.drawLegend();
+         }
+      });
    }
 
    JSROOT.TLegendPainter.prototype.Redraw = function() {

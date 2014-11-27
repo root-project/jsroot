@@ -18,6 +18,7 @@ Changes in 3.1
 7. Fix several problems in drawing optimization
 8. Implement dragging objects from hierarchy browser into existing canvas 
    to superimpose several objects 
+9. Implement col2 and col3 draw options, using html5 canvas
 
 
 Development of version 3.0
