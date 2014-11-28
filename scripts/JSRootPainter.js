@@ -2653,20 +2653,26 @@
          }
 
          var fillcolor = 'white';
-         d3.select(render_to).style("background-color", fillcolor);
+         
+         if (this.pad && 'fFillColor' in this.pad) {
+            fillcolor = JSROOT.Painter.root_colors[this.pad['fFillColor']];
+            if (this.pad['fFillStyle'] > 4000 && this.pad['fFillStyle'] < 4100)
+               fillcolor = 'none';
+         }
+         
          svg = d3.select(render_to)
-          .append("svg")
-          .attr("class", "root_canvas")
-          .style("background-color", fillcolor)
-          // .attr("pointer-events", "all")   // comment out while it hides mouse events
-          .property('pad_painter', this) // this is custom property
-          .property('mainpainter', null) // this is custom property
-          .property('current_pad', "") // this is custom property
+             .append("svg")
+             .attr("class", "root_canvas")
+             .style("background-color", fillcolor)
+             .property('pad_painter', this) // this is custom property
+             .property('mainpainter', null) // this is custom property
+             .property('current_pad', "") // this is custom property
 
           svg.append("svg:g").attr("class","frame_layer");
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
       }
+
 
       svg.attr("width", w)
          .attr("height", h)
