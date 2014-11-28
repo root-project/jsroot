@@ -134,24 +134,23 @@
 
    /** Function that generates all root colors */
    JSROOT.Painter.root_colors = function() {
-      var colorMap = new Array('rgb(255, 255, 255)', 'rgb(0, 0, 0)',
-            'rgb(255, 0, 0)', 'rgb(0, 255, 0)', 'rgb(0, 0, 255)',
-            'rgb(255, 255, 0)', 'rgb(255, 0, 255)', 'rgb(0, 255, 255)',
+      var colorMap = new Array('white', 'black', 'red', 'green', 'blue',
+            'rgb(255,255,0)', 'rgb(255,0,255)', 'rgb(0,255,255)',
             'rgb(89, 211, 84)', 'rgb(89, 84, 216)', 'rgb(254, 254, 254)',
-            'rgb(191, 181, 173)', 'rgb(76, 76, 76)', 'rgb(102, 102, 102)',
-            'rgb(127, 127, 127)', 'rgb(153, 153, 153)', 'rgb(178, 178, 178)',
-            'rgb(204, 204, 204)', 'rgb(229, 229, 229)', 'rgb(242, 242, 242)',
-            'rgb(204, 198, 170)', 'rgb(204, 198, 170)', 'rgb(193, 191, 168)',
-            'rgb(186, 181, 163)', 'rgb(178, 165, 150)', 'rgb(183, 163, 155)',
-            'rgb(173, 153, 140)', 'rgb(155, 142, 130)', 'rgb(135, 102, 86)',
-            'rgb(175, 206, 198)', 'rgb(132, 193, 163)', 'rgb(137, 168, 160)',
-            'rgb(130, 158, 140)', 'rgb(173, 188, 198)', 'rgb(122, 142, 153)',
-            'rgb(117, 137, 145)', 'rgb(104, 130, 150)', 'rgb(109, 122, 132)',
-            'rgb(124, 153, 209)', 'rgb(127, 127, 155)', 'rgb(170, 165, 191)',
-            'rgb(211, 206, 135)', 'rgb(221, 186, 135)', 'rgb(188, 158, 130)',
-            'rgb(198, 153, 124)', 'rgb(191, 130, 119)', 'rgb(206, 94, 96)',
-            'rgb(170, 142, 147)', 'rgb(165, 119, 122)', 'rgb(147, 104, 112)',
-            'rgb(211, 89, 84)');
+            'rgb(191,181, 173)', 'rgb(76, 76, 76)', 'rgb(102, 102, 102)',
+            'rgb(127,127, 127)', 'rgb(153, 153, 153)', 'rgb(178, 178, 178)',
+            'rgb(204,204, 204)', 'rgb(229, 229, 229)', 'rgb(242, 242, 242)',
+            'rgb(204,198, 170)', 'rgb(204, 198, 170)', 'rgb(193, 191, 168)',
+            'rgb(186,181, 163)', 'rgb(178, 165, 150)', 'rgb(183, 163, 155)',
+            'rgb(173,153, 140)', 'rgb(155, 142, 130)', 'rgb(135, 102, 86)',
+            'rgb(175,206, 198)', 'rgb(132, 193, 163)', 'rgb(137, 168, 160)',
+            'rgb(130,158, 140)', 'rgb(173, 188, 198)', 'rgb(122, 142, 153)',
+            'rgb(117,137, 145)', 'rgb(104, 130, 150)', 'rgb(109, 122, 132)',
+            'rgb(124,153, 209)', 'rgb(127, 127, 155)', 'rgb(170, 165, 191)',
+            'rgb(211,206, 135)', 'rgb(221, 186, 135)', 'rgb(188, 158, 130)',
+            'rgb(198,153, 124)', 'rgb(191, 130, 119)', 'rgb(206, 94, 96)',
+            'rgb(170,142, 147)', 'rgb(165, 119, 122)', 'rgb(147, 104, 112)',
+            'rgb(211,89, 84)');
 
       var circleColors = [ 632, 416, 600, 400, 616, 432 ];
 
@@ -159,28 +158,22 @@
 
       var set1 = [ 255, 204, 204, 255, 153, 153, 204, 153, 153, 255, 102, 102,
             204, 102, 102, 153, 102, 102, 255, 51, 51, 204, 51, 51, 153, 51,
-            51, 102, 51, 51, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0, 51, 0,
-            0 ];
+            51, 102, 51, 51, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0, 51, 0, 0 ];
       var set2 = [ 204, 255, 204, 153, 255, 153, 153, 204, 153, 102, 255, 102,
             102, 204, 102, 102, 153, 102, 51, 255, 51, 51, 204, 51, 51, 153,
-            51, 51, 102, 51, 0, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0, 51,
-            0 ];
+            51, 51, 102, 51, 0, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0, 51, 0 ];
       var set3 = [ 204, 204, 255, 153, 153, 255, 153, 153, 204, 102, 102, 255,
             102, 102, 204, 102, 102, 153, 51, 51, 255, 51, 51, 204, 51, 51,
-            153, 51, 51, 102, 0, 0, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0,
-            51 ];
+            153, 51, 51, 102, 0, 0, 255, 0, 0, 204, 0, 0, 153, 0, 0, 102, 0, 0, 51 ];
       var set4 = [ 255, 255, 204, 255, 255, 153, 204, 204, 153, 255, 255, 102,
             204, 204, 102, 153, 153, 102, 255, 255, 51, 204, 204, 51, 153, 153,
-            51, 102, 102, 51, 255, 255, 0, 204, 204, 0, 153, 153, 0, 102, 102,
-            0, 51, 51, 0 ];
+            51, 102, 102, 51, 255, 255, 0, 204, 204, 0, 153, 153, 0, 102, 102, 0, 51, 51, 0 ];
       var set5 = [ 255, 204, 255, 255, 153, 255, 204, 153, 204, 255, 102, 255,
             204, 102, 204, 153, 102, 153, 255, 51, 255, 204, 51, 204, 153, 51,
-            153, 102, 51, 102, 255, 0, 255, 204, 0, 204, 153, 0, 153, 102, 0,
-            102, 51, 0, 51 ];
+            153, 102, 51, 102, 255, 0, 255, 204, 0, 204, 153, 0, 153, 102, 0, 102, 51, 0, 51 ];
       var set6 = [ 204, 255, 255, 153, 255, 255, 153, 204, 204, 102, 255, 255,
-            102, 204, 204, 102, 153, 153, 51, 255, 255, 51, 204, 204, 51, 153,
-            153, 51, 102, 102, 0, 255, 255, 0, 204, 204, 0, 153, 153, 0, 102,
-            102, 0, 51, 51 ];
+            102, 204, 204, 102, 153, 153, 51, 255, 255, 51, 204, 204, 51, 153, 
+            153, 51, 102, 102, 0, 255, 255, 0, 204, 204, 0, 153, 153, 0, 102, 102, 0, 51, 51 ];
 
       var circleSets = new Array(set1, set2, set3, set4, set5, set6);
 
@@ -217,17 +210,12 @@
 
       var rectSets = new Array(set7, set8, set9, set10, set11, set12);
 
-      /*
-       * Define circle colors
-       */
       for (var i = 0; i < 6; i++) {
          for (var j = 0; j < 15; j++) {
             var colorn = circleColors[i] + j - 10;
-            colorMap[colorn] = 'rgb(' + circleSets[i][3 * j] + ', '
-                  + circleSets[i][3 * j + 1] + ', ' + circleSets[i][3 * j + 2] + ')';
+            colorMap[colorn] = 'rgb(' + circleSets[i][3 * j] + ',' + circleSets[i][3 * j + 1] + ',' + circleSets[i][3 * j + 2] + ')';
             colorn = rectangleColors[i] + j - 9;
-            colorMap[colorn] = 'rgb(' + rectSets[i][3 * j] + ', '
-                  + rectSets[i][3 * j + 1] + ', ' + rectSets[i][3 * j + 2] + ')';
+            colorMap[colorn] = 'rgb(' + rectSets[i][3 * j] + ',' + rectSets[i][3 * j + 1] + ',' + rectSets[i][3 * j + 2] + ')';
          }
       }
       return colorMap;
@@ -243,13 +231,14 @@
          var num = col.fNumber;
          if ((num<0) || (num>4096)) continue;
 
-         var rgb = "rgb(" + (col.fRed*255).toFixed(0) + ", " + (col.fGreen*255).toFixed(0) + ", " + (col.fBlue*255).toFixed(0) + ")";
+         var rgb = "rgb(" + (col.fRed*255).toFixed(0) + "," + (col.fGreen*255).toFixed(0) + "," + (col.fBlue*255).toFixed(0) + ")";
+         
+         if (rgb == 'rgb(255,255,255)') rgb = 'white';
 
          while (num>JSROOT.Painter.root_colors.length)
             JSROOT.Painter.root_colors.push(rgb);
 
          if (JSROOT.Painter.root_colors[num] != rgb) {
-             // console.log("Replace color "+ num + " " + rgb);
             JSROOT.Painter.root_colors[num] = rgb;
          }
       }
@@ -988,15 +977,13 @@
          return fill;
       }
       
-      
-      if ((pattern == 0) || (color==0) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
+      if ((pattern < 1001) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
+
+      fill.color = JSROOT.Painter.root_colors[color];
 
       var svg = this.svg_canvas(true);
       
-      if ((pattern < 3000) || (pattern>3025) || svg.empty()) {
-         fill.color = JSROOT.Painter.root_colors[color];
-         return fill;
-      }
+      if ((pattern < 3000) || (pattern>3025) || svg.empty()) return fill;
       
       var id = "pat_" + pattern + "_" + color;
       
@@ -1382,7 +1369,8 @@
 
          top_rect = frame_g.append("svg:rect");
 
-         // append for the moment two layers - for drawing and axis
+         // append for the moment three layers - for drawing and axis
+         frame_g.append('svg:g').attr('class','grid_layer');
          frame_g.append('svg:g').attr('class','main_layer');
          frame_g.append('svg:g').attr('class','axis_layer');
       } else {
@@ -1571,6 +1559,7 @@
       if ((this.tf1['fLineColor'] == 0) || (this.tf1['fLineWidth'] == 0)) linecolor = "none";
 
       var fill = this.createFillPattern(this.tf1);
+      if (fill.color == 'white') fill.color = 'none';
 
       var line = d3.svg.line()
                    .x(function(d) { return Math.round(x(d.x)); })
@@ -1606,7 +1595,7 @@
                    .attr("cx", function(d) { return x(d.x); })
                    .attr("cy", function(d) { return y(d.y); })
                    .attr("r", 4)
-                   .attr("opacity", 0)
+                   .style("opacity", 0)
                    .append("svg:title")
                    .text( function(d) { return "x = " + d.x.toPrecision(4) + " \ny = " + d.y.toPrecision(4); });
    }
@@ -1816,8 +1805,6 @@
 
       this.exclusionGraph = true;
 
-      var ec, ff = 1;
-
       var normx, normy;
       var n = this.graph['fNpoints'];
       var glw = this.graph['fLineWidth'],
@@ -1831,9 +1818,6 @@
       if (glw > 32767) glw = 65536 - glw;
       this.bins_lw = glw % 100; // line width
       if (this.bins_lw > 0) this.optionLine = 1;
-      ec = JSROOT.Painter.root_colors[this.graph['fFillColor']];
-      ec = ec.replace('rgb', 'rgba');
-      ec = ec.replace(')', ', 0.20)');
 
       var a, i, j, nf, wk = (glw / 100) * 0.005;
       if (this.graph['fLineWidth'] > 32767) wk *= -1;
@@ -2032,8 +2016,7 @@
 
       this.excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
 
-      this.excl_ec = ec;
-      this.excl_ff = ff;
+      this.excl_ff = 1;
 
       /* some clean-up */
       xo.splice(0, xo.length);
@@ -2085,7 +2068,7 @@
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
-         if (typeof (fillcolor) == 'undefined') fillcolor = "rgb(204, 204, 204)";
+         if (typeof (fillcolor) == 'undefined') fillcolor = "rgb(204,204,204)";
          /* filled bar graph */
          var xdom = this.main_painter().x.domain();
          var xfactor = xdom[1] - xdom[0];
@@ -2111,7 +2094,8 @@
                      .attr("d", line(pthis.excl))
                      .style("stroke", "none")
                      .style("stroke-width", pthis.excl_ff)
-                     .call(fill.func);
+                     .call(fill.func)
+                     .style('opacity', 0.75);
       }
 
       if (this.seriesType == 'line') {
@@ -2148,7 +2132,7 @@
                        .attr("cx", function(d) { return Math.round(x(d.x)); })
                        .attr("cy", function(d) { return Math.round(y(d.y)); })
                        .attr("r", 3)
-                       .attr("opacity", 0)
+                       .style("opacity", 0)
                        .append("svg:title")
                        .text(TooltipText);
       }
@@ -3672,43 +3656,49 @@
    JSROOT.THistPainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
+      
+      var layer = this.svg_frame(true).select(".grid_layer");
 
-      this.svg_frame(true).selectAll(".gridLine").remove();
+      layer.selectAll(".xgrid").remove();
+      layer.selectAll(".ygrid").remove();
       /* add a grid on x axis, if the option is set */
 
       // add a grid on x axis, if the option is set
       if (this.options.Gridx) {
 
          var h = Number(this.svg_frame(true).attr("height"));
+         
+         var xticks = this.x.ticks(this.x_nticks);
 
-         this.svg_frame(true).selectAll("gridLine")
-                .data(this.x.ticks(this.x_nticks)).enter()
+         layer.selectAll(".xgrid")
+                .data(xticks).enter()
                   .append("svg:line")
-                  .attr("class", "gridLine")
+                  .attr("class", "xgrid")
                   .attr("x1", this.x)
                   .attr("y1", h)
                   .attr("x2", this.x)
                   .attr("y2",0)
                   .style("stroke", "black")
-                  .style("stroke-width", this.histo['fLineWidth'])
+                  .style("stroke-width", 1)
                   .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
 
       // add a grid on y axis, if the option is set
       if (this.options.Gridy) {
-
          var w = Number(this.svg_frame(true).attr("width"));
 
-         this.svg_frame(true).selectAll("gridLine")
-               .data(this.y.ticks(this.y_nticks)).enter()
+         var yticks = this.y.ticks(this.y_nticks); 
+         
+         layer.selectAll('.ygrid')
+              .data(yticks).enter()
                  .append("svg:line")
-                 .attr("class", "gridLine")
+                 .attr("class", "ygrid")
                  .attr("x1", 0)
                  .attr("y1", this.y)
                  .attr("x2", w)
                  .attr("y2", this.y)
                  .style("stroke", "black")
-                 .style("stroke-width", this.histo['fLineWidth'])
+                 .style("stroke-width", 1)
                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
    }
@@ -4693,6 +4683,7 @@
       // from here we analyze object content
       // therefore code will be moved
       this.fill = this.createFillPattern(this.histo);
+      if (this.fill.color == 'white') this.fill.color = 'none';
 
       this.linecolor = JSROOT.Painter.root_colors[this.histo['fLineColor']];
       if (this.histo['fLineColor'] == 0) this.linecolor = '#4572A7';
@@ -5124,7 +5115,7 @@
                     .attr("y1", function(d) { return Math.max(0, d.y); })
                     .attr("x2", function(d) { return d.x + d.width / 2; })
                     .attr("y2", function(d) { return height; })
-                    .attr("opacity", 0)
+                    .style("opacity", 0)
                     .style("stroke", "#4572A7")
                     .style("stroke-width", function(d) { return d.width; })
                     .on('mouseover', function() {
@@ -5172,7 +5163,7 @@
       // create painter and add it to canvas
       var painter = new JSROOT.TH1Painter(histo);
       painter.SetDivId(divid, 1);
-
+      
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
 
