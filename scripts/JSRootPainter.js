@@ -268,35 +268,58 @@
          'otriangle-up', 'odiamond', 'ocross', 'fstar', 'ostar', 'dcross',
          'otriangle-down', 'fdiamond', 'fcross');
 
-   /**
-    * Function returns the SVG symbol type identifier for a given root matker
-    * The result is an array with 3 elements: the first is the identifier of the
-    * root marker in the SVG symbols the second is true if the shape is filled
-    * and false if it is open the third is true if the shape should be rotated
-    * The identifier will be 6 if the shape is a star or 7 if it is '*'
-    */
-   JSROOT.Painter.getRootMarker = function(i) {
-      var marker = JSROOT.Painter.root_markers[i];
+   /** Function returns the ready to use marker for drawing */
+   JSROOT.Painter.getRootMarker = function(attmarker) {
+      
+      var marker_name = JSROOT.Painter.root_markers[attmarker['fMarkerStyle']];
 
-      var res = { shape: 0, toFill: true, toRotate: false };
+      var info = { shape: 0, toFill: true, toRotate: false };
 
-      if (typeof (marker) != 'undefined') {
-         switch (marker.charAt(0)) {
-            case 'd': res.shape = 7; return res;
-            case 'o': res.toFill = false; break;
-            case 'g': res.toRotate = true; break;
+      if (typeof (marker_name) != 'undefined') {
+         switch (marker_name.charAt(0)) {
+            case 'd': info.shape = 7; break;
+            case 'o': info.toFill = false; break;
+            case 'g': info.toRotate = true; break;
          }
 
-         switch (marker.substr(1)) {
-           case "circle":  res.shape = 0; break;
-           case "cross":   res.shape = 1; break;
-           case "diamond": res.shape = 2; break;
-           case "square":  res.shape = 3; break;
-           case "triangle-up": res.shape = 4; break;
-           case "triangle-down": res.shape = 5; break;
-           case "star":    res.shape = 6; break;
+         switch (marker_name.substr(1)) {
+           case "circle":  info.shape = 0; break;
+           case "cross":   info.shape = 1; break;
+           case "diamond": info.shape = 2; break;
+           case "square":  info.shape = 3; break;
+           case "triangle-up": info.shape = 4; break;
+           case "triangle-down": info.shape = 5; break;
+           case "star":    info.shape = 6; break;
          }
       }
+      
+      var markerSize = attmarker['fMarkerSize'];
+      
+      var markerScale = (info.shape == 0) ? 32 : 64;
+      if (attmarker['fMarkerStyle'] == 1) markerScale = 1;
+      
+      var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
+      
+      var res = { stroke: marker_color, fill: marker_color, marker: "" };
+      if (!info.toFill) res['fill'] = 'none'; 
+
+      if (info.shape==6) 
+         res['marker'] = "M " + (-4*markerSize) + " " + (-1*markerSize) +
+                " L " + 4*markerSize + " " + (-1*markerSize) +
+                " L " + (-2.4*markerSize) + " " + 4*markerSize +
+                " L 0 " + (-4*markerSize) +
+                " L " + 2.8*markerSize + " " + 4*markerSize + " z";
+      else
+      if (info.shape==7)
+         res['marker'] = "M " + (-4*markerSize) + " " + (-4*markerSize) +
+                 " L " + 4*markerSize + " " + 4*markerSize +
+                 " M 0 " + (-4*markerSize) + " 0 " + 4*markerSize +
+                 " M "  + 4*markerSize + " " + (-4*markerSize) +
+                 " L " + (-4*markerSize) + " " + 4*markerSize +
+                 " M " + (-4*markerSize) + " 0 L " + 4*markerSize + " 0";
+      else
+         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[info.shape]).size(markerSize * markerScale);
+      
       return res;
    }
 
@@ -2127,43 +2150,58 @@
       if (this.draw_errors || this.showMarker) {
          var draw_bins = new Array;
          for (var i in this.bins) {
-            var pntx = x(this.bins[i].x);
-            var pnty = y(this.bins[i].y);
-            if ((pntx>=0) && (pntx<=w) && (pnty>=0) && (pnty<=h)) draw_bins.push(this.bins[i]);
+            var pnt = this.bins[i];
+            var grx = x(pnt.x);
+            var gry = y(pnt.y);
+            if ((grx<0) || (grx>w) || (gry<0) || (gry>h)) continue;
+            
+            // caluclate graphical coordinates
+            pnt['grx1'] = grx.toFixed(1);
+            pnt['gry1'] = gry.toFixed(1);
+            if (pnt.exlow > 0)  pnt['grx0'] = (x(pnt.x - pnt.exlow) - grx).toFixed(1);
+            if (pnt.exhigh > 0) pnt['grx2'] = (x(pnt.x + pnt.exhigh) - grx).toFixed(1);
+            if (pnt.eylow > 0)  pnt['gry0'] = (y(pnt.y - pnt.eylow) - gry).toFixed(1);
+            if (pnt.eyhigh > 0) pnt['gry2'] = (y(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+            
+            draw_bins.push(pnt);
          }
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll("g.node")
                      .data(draw_bins)
                      .enter()
-                     .append("svg:g");
+                     .append("svg:g")
+                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; })
       }
+      
+      if (JSROOT.gStyle.Tooltip && nodes)
+         nodes.append("svg:title").text(TooltipText);
 
       if (this.draw_errors) {
          // than doing filer append error bars
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
               .append("svg:line")
-              .attr("x1", function(d) { return Math.round(x(d.x - d.exlow)); })
-              .attr("y1", function(d) { return Math.round(y(d.y)); })
-              .attr("x2", function(d) { return Math.round(x(d.x + d.exhigh)); })
-              .attr("y2", function(d) { return Math.round(y(d.y)); })
+              .attr("x1", function(d) { return d.grx0; })
+              .attr("y1", 0)
+              .attr("x2", function(d) { return d.grx2; })
+              .attr("y2", 0)
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.exlow > 0); })
               .append("svg:line")
-              .attr("y1", function(d) { return Math.round(y(d.y)) - 3; })
-              .attr("x1", function(d) { return Math.round(x(d.x - d.exlow)); })
-              .attr("y2", function(d) { return Math.round(y(d.y) + 3); })
-              .attr("x2", function(d) { return Math.round(x(d.x - d.exlow)); })
+              .attr("y1", -3)
+              .attr("x1", function(d) { return d.grx0; })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return d.grx0; })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.exhigh > 0); })
               .append("svg:line")
-              .attr("y1", function(d) { return Math.round(y(d.y)) - 3; })
-              .attr("x1", function(d) { return Math.round(x(d.x + d.exhigh)); })
-              .attr("y2", function(d) { return Math.round(y(d.y)) + 3; })
-              .attr("x2", function(d) { return Math.round(x(d.x + d.exhigh)); })
+              .attr("y1", -3)
+              .attr("x1", function(d) { return d.grx2; })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return d.grx2; })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style( "stroke-width", this.graph['fLineWidth']);
 
@@ -2171,74 +2209,41 @@
 
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
               .append("svg:line")
-              .attr("x1", function(d) { return Math.round(x(d.x)); })
-              .attr("y1", function(d) { return Math.round(y(d.y - d.eylow)); })
-              .attr("x2", function(d) { return Math.round(x(d.x)); })
-              .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
+              .attr("x1", 0)
+              .attr("y1", function(d) { return d.gry0; })
+              .attr("x2", 0)
+              .attr("y2", function(d) { return d.gry2; })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.eylow > 0); })
               .append("svg:line")
-              .attr("x1", function(d) { return Math.round(x(d.x)) - 3; })
-              .attr("y1", function(d) { return Math.round(y(d.y - d.eylow)); })
-              .attr("x2", function(d) { return Math.round(x(d.x)) + 3; })
-              .attr("y2", function(d) { return Math.round(y(d.y - d.eylow)); })
+              .attr("x1", -3)
+              .attr("y1", function(d) { return d.gry0; })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return d.gry0; })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
 
          nodes.filter(function(d) { return (d.eyhigh > 0); })
               .append("svg:line")
-              .attr("x1", function(d) { return Math.round(x(d.x)) - 3; })
-              .attr("y1", function(d) { return Math.round(y(d.y + d.eyhigh)); })
-              .attr("x2", function(d) { return Math.round(x(d.x)) + 3; })
-              .attr("y2", function(d) { return Math.round(y(d.y + d.eyhigh)); })
+              .attr("x1", -3)
+              .attr("y1", function(d) { return d.gry2; })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return d.gry2; })
               .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
               .style("stroke-width", this.graph['fLineWidth']);
       }
 
       if (this.showMarker) {
          /* Add markers */
-         var info_marker = JSROOT.Painter.getRootMarker(this.graph['fMarkerStyle']);
-
-         var markerSize = this.graph['fMarkerSize'];
-         var markerScale = (info_marker.shape == 0) ? 32 : 64;
-         var marker_color = JSROOT.Painter.root_colors[this.graph['fMarkerColor']];
-         if (this.graph['fMarkerStyle'] == 1) markerScale = 1;
-
-         var marker;
-
-         switch (info_marker.shape) {
-            case 6:
-               marker = "M " + (-4 * markerSize) + " " + (-1 * markerSize) +
-                       " L " + 4 * markerSize + " " + (-1 * markerSize) +
-                       " L " + (-2.4 * markerSize) + " " + 4 * markerSize +
-                       " L 0 " + (-4 * markerSize) +
-                       " L " + 2.8 * markerSize + " " + 4  * markerSize + " z";
-               break;
-            case 7:
-               marker = "M " + (-4 * markerSize) + " " + (-4 * markerSize) +
-                      " L " + 4 * markerSize + " " + 4 * markerSize +
-                      " M 0 " + (-4 * markerSize) + " 0 " + 4 * markerSize +
-                      " M "  + 4 * markerSize + " " + (-4 * markerSize) +
-                      " L " + (-4 * markerSize) + " " + 4 * markerSize +
-                      " M " + (-4 * markerSize) + " 0 L " + 4 * markerSize + " 0";
-               break;
-            default:
-               marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(markerSize * markerScale);
-               break;
-         }
+         var marker = JSROOT.Painter.getRootMarker(this.graph);
 
          nodes.append("svg:path")
-              .attr("transform", function(d) { return "translate(" + Math.round(x(d.x)) + " , " + Math.round(y(d.y)) + ")"; })
-              .style("fill", info_marker['toFill'] ? marker_color  : "none")
-              .style("stroke", marker_color)
-              .attr("d", marker);
-
+              .style("fill", marker.fill)
+              .style("stroke", marker.stroke)
+              .attr("d", marker.marker);
       }
-
-      if (JSROOT.gStyle.Tooltip && nodes)
-         nodes.append("svg:title").text(TooltipText);
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
@@ -3019,13 +3024,13 @@
       var hdim = this.Dimension();
       var nch = opt.length;
       var option = {
-         'Axis' : 0, 'Bar' : 0, 'Curve' : 0, 'Error' : 0, 'Hist' : 0, 'Line' : 0,
-         'Mark' : 0, 'Fill' : 0, 'Same' : 0, 'Scat' : 0, 'Func' : 0, 'Star' : 0,
-         'Arrow' : 0, 'Box' : 0, 'Text' : 0, 'Char' : 0, 'Color' : 0, 'Contour' : 0,
-         'Lego' : 0, 'Surf' : 0, 'Off' : 0, 'Tri' : 0, 'Proj' : 0, 'AxisPos' : 0,
-         'Spec' : 0, 'Pie' : 0, 'List' : 0, 'Zscale' : 0, 'FrontBox' : 1, 'BackBox' : 1,
-         'System' : JSROOT.Painter.Coord.kCARTESIAN,
-         'HighRes' : 0, 'Zero' : 0, 'Logx' : 0, 'Logy' : 0, 'Logz' : 0, 'Gridx' : 0, 'Gridy' : 0
+         Axis: 0, Bar: 0, Curve: 0, Error: 0, Hist: 0, Line: 0,
+         Mark: 0, Fill: 0, Same: 0, Scat: 0, Func: 0, Star: 0,
+         Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
+         Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+         Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
+         System: JSROOT.Painter.Coord.kCARTESIAN,
+         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0
       };
       // check for graphical cuts
       var chopt = opt.toUpperCase();
@@ -4872,7 +4877,7 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.CreateDrawBins = function(width, height) {
+   JSROOT.TH1Painter.prototype.CreateDrawBins = function(width, height, exclude_zeros) {
       // method is called directly before bins must be drawn
 
       var left = this.GetSelectIndex("x", "left", -1);
@@ -4885,7 +4890,6 @@
 
       var x1, x2 = this.xmin + left * this.binwidthx;
       var grx1 = -1111, grx2 = -1111, gry;
-      var profile = this.IsTProfile();
 
       var point = null;
       var searchmax = false;
@@ -4919,7 +4923,7 @@
          }
 
          // exclude zero bins from profile drawings
-         if (profile && (cont==0)) continue;
+         if (exclude_zeros && (cont==0)) continue;
 
          if (this.options.Logy && (cont < this.scale_ymin))
             gry = height + 10;
@@ -4960,102 +4964,92 @@
       return draw_bins;
    }
 
-   JSROOT.TH1Painter.prototype.DrawErrors = function(draw_bins) {
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, w, h) {
 
       /* Add a panel for each data point */
-      var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
-      var marker_size = this.histo['fMarkerSize'] * 32;
-
+      
       var line_width = this.histo['fLineWidth'];
       var line_color = JSROOT.Painter.root_colors[this.histo['fLineColor']];
-      var marker_color = JSROOT.Painter.root_colors[this.histo['fMarkerColor']];
 
-      if (this.histo['fMarkerStyle'] == 1) marker_size = 1;
+      var draw_bins = this.CreateDrawBins(w, h, this.IsTProfile() || (this.Mark==10));
+      
+      // here are up to five elements are collected, try to group them
+      var nodes = this.draw_g.selectAll("g")
+                     .data(draw_bins)
+                     .enter()
+                     .append("svg:g")
+                     .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")";});
 
-      var marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(marker_size);
-
-      var pthis = this;
-
+      if (JSROOT.gStyle.Tooltip)
+         nodes.append("svg:title").text(function(d) { return d.tip; });
+      
+      var xerr = null, yerr = null;
+      
       /* Draw x-error indicators */
-      var xerr = this.draw_g.selectAll("error_x")
-                 .data(draw_bins).enter()
-                 .append("svg:line")
-                 .attr("x1", function(d) { return d.x - d.xerr; })
-                 .attr("y1", function(d) { return d.y; })
-                 .attr("x2", function(d) { return d.x + d.xerr; })
-                 .attr("y2", function(d) { return d.y; })
-                 .style("stroke", line_color)
-                 .style("stroke-width", line_width);
+      if (this.options.Error > 0)
+         nodes.append("svg:line")
+              .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
+              .attr("y1", 0)
+              .attr("x2", function(d) { return d.xerr.toFixed(1); })
+              .attr("y2", 0)
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
 
       if (this.options.Error == 11) {
-         this.draw_g.selectAll("e1_x")
-            .data(draw_bins).enter()
-            .append("svg:line")
-            .attr("y1", function(d) { return d.y - 3; })
-            .attr("x1", function(d) { return d.x - d.xerr; })
-            .attr("y2", function(d) { return d.y + 3; })
-            .attr("x2", function(d) { return d.x - d.xerr; })
-            .style("stroke", line_color)
-            .style("stroke-width", line_width);
-         this.draw_g.selectAll("e1_x")
-            .data(draw_bins).enter()
-            .append("svg:line")
-            .attr("y1", function(d) { return d.y - 3; })
-            .attr("x1", function(d) { return d.x + d.xerr; })
-            .attr("y2", function(d) { return d.y + 3; })
-            .attr("x2", function(d) { return d.x + d.xerr; })
-            .style("stroke", line_color)
-            .style("stroke-width", line_width);
-      }
-
-      /* Draw y-error indicators */
-      var yerr = this.draw_g.selectAll("error_y")
-                   .data(draw_bins).enter()
-                   .append("svg:line")
-                   .attr("x1", function(d) { return d.x; })
-                   .attr("y1", function(d) { return d.y - d.yerr; })
-                   .attr("x2", function(d) { return d.x; })
-                   .attr("y2", function(d) { return d.y + d.yerr; })
-                   .style("stroke", line_color).style("stroke-width", line_width);
-
-      if (this.options.Error == 11) {
-         this.draw_g.selectAll("e1_y")
-             .data(draw_bins).enter()
-             .append("svg:line")
-             .attr("x1", function(d) { return d.x - 3; })
-             .attr("y1", function(d) { return d.y - d.yerr; })
-             .attr("x2", function(d) { return d.x + 3; })
-             .attr("y2", function(d) { return d.y - d.yerr; })
-             .style("stroke", line_color)
-             .style("stroke-width", line_width);
-         this.draw_g.selectAll("e1_y")
-              .data(draw_bins).enter()
-              .append("svg:line")
-              .attr("x1", function(d) { return d.x - 3; })
-              .attr("y1", function(d) { return d.y + d.yerr; })
-              .attr("x2", function(d) { return d.x + 3; })
-              .attr("y2", function(d) { return d.y + d.yerr; })
+         nodes.append("svg:line")
+              .attr("y1", -3)
+              .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return (-d.xerr).toFixed(1); })
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
+         nodes.append("svg:line")
+              .attr("y1", -3)
+              .attr("x1", function(d) { return d.xerr.toFixed(1); })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return d.xerr.toFixed(1); })
               .style("stroke", line_color)
               .style("stroke-width", line_width);
       }
-      var marks = this.draw_g.selectAll("markers")
-                    .data(draw_bins).enter()
-                    .append("svg:path")
-                    .attr("class", "marker")
-                    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-                    .style("fill", marker_color)
-                    .style("stroke", marker_color)
-                    .attr("d", marker);
 
-      if (JSROOT.gStyle.Tooltip) {
-         marks.append("svg:title").text(function(d) { return d.tip; });
-         xerr.append("svg:title").text(function(d) { return d.tip; });
-         yerr.append("svg:title").text(function(d) { return d.tip; });
+      /* Draw y-error indicators */
+      if (this.options.Error > 0)
+         nodes.append("svg:line")
+              .attr("x1", 0)
+              .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
+              .attr("x2", 0)
+              .attr("y2", function(d) { return d.yerr.toFixed(1); })
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
+
+      if (this.options.Error == 11) {
+         nodes.append("svg:line")
+              .attr("x1", -3)
+              .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return (-d.yerr).toFixed(1); })
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
+         nodes.append("svg:line")
+              .attr("x1", -3)
+              .attr("y1", function(d) { return d.yerr.toFixed(1); })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return d.yerr.toFixed(1); })
+              .style("stroke", line_color)
+              .style("stroke-width", line_width);
       }
-   }
+      
+      // draw dot markers only when no error was drawn
+      if ((this.histo['fMarkerStyle'] == 1) && (this.options.Error > 0)) return;
 
+      var marker = JSROOT.Painter.getRootMarker(this.histo);
+      
+      nodes.append("svg:path")
+           .style("fill", marker.fill)
+           .style("stroke", marker.stroke)
+           .attr("d", marker.marker);
+   }
+   
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
       var width = Number(this.svg_frame(true).attr("width")),
@@ -5066,14 +5060,12 @@
          return;
       }
 
-      var draw_bins = this.CreateDrawBins(width, height);
-
       this.RecreateDrawG();
 
-      if (this.options.Error > 0)
-         return this.DrawErrors(draw_bins);
+      if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0)) 
+         return this.DrawAsMarkers(width, height);
 
-      var pthis = this;
+      var draw_bins = this.CreateDrawBins(width, height);
 
       if (this.fillcolor!='none') {
 
@@ -5773,44 +5765,18 @@
       var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
 
       if (draw_markers) {
-
          // Add markers
-         var info_marker = JSROOT.Painter.getRootMarker(this.histo['fMarkerStyle']);
-         var markerSize = this.histo['fMarkerSize'];
-         var markerScale = (info_marker.shape == 0) ? 32 : 64;
-         if (this.histo['fMarkerStyle'] == 1) markerScale = 1;
-
-         var marker = null;
-
-         switch (info_marker.shape) {
-         case 6:
-            marker = "M " + (-4 * markerSize) + " " + (-1 * markerSize) + " L "
-                  + 4 * markerSize + " " + (-1 * markerSize) + " L "
-                  + (-2.4 * markerSize) + " " + 4 * markerSize + " L 0 "
-                  + (-4 * markerSize) + " L " + 2.8 * markerSize + " " + 4
-                  * markerSize + " z";
-            break;
-         case 7:
-            marker = "M " + (-4 * markerSize) + " " + (-4 * markerSize) + " L "
-                  + 4 * markerSize + " " + 4 * markerSize + " M 0 "
-                  + (-4 * markerSize) + " 0 " + 4 * markerSize + " M "
-                  + 4 * markerSize + " " + (-4 * markerSize) + " L "
-                  + (-4 * markerSize) + " " + 4 * markerSize + " M "
-                  + (-4 * markerSize) + " 0 L " + 4 * markerSize + " 0";
-            break;
-         default:
-            marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(markerSize * markerScale);
-            break;
-         }
+         var marker = JSROOT.Painter.getRootMarker(this.histo);
+         
          var markers =
             this.draw_g.selectAll(".marker")
                   .data(local_bins)
                   .enter().append("svg:path")
                   .attr("class", "marker")
                   .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
-                  .style("fill", JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
-                  .style("stroke", JSROOT.Painter.root_colors[this.histo['fMarkerColor']])
-                  .attr("d", marker);
+                  .style("fill", marker.fill)
+                  .style("stroke", marker.stroke)
+                  .attr("d", marker.marker);
 
          if (JSROOT.gStyle.Tooltip)
             markers.append("svg:title").text(function(d) { return d.tip; });
@@ -6186,10 +6152,8 @@
 
          var fill_color = leg['fFillColor'];
          var fill_style = leg['fFillStyle'];
-
-         var marker_color = JSROOT.Painter.root_colors[leg['fMarkerColor']];
-         var marker_size = leg['fMarkerSize'];
-         var marker_style = leg['fMarkerStyle'];
+         
+         var attmarker = leg;
 
          var mo = leg['fObject'];
 
@@ -6204,9 +6168,7 @@
                fill_style = mo['fFillStyle'];
             }
             if ('fMarkerColor' in mo) {
-               marker_color = JSROOT.Painter.root_colors[mo['fMarkerColor']];
-               marker_size = mo['fMarkerSize'];
-               marker_style = mo['fMarkerStyle'];
+               attmarker = mo;
             }
          }
 
@@ -6281,37 +6243,12 @@
             var line_length = (0.7 * pave['fMargin']) * w;
             var pos_x = tpos_x / 2;
 
-            var info_marker = JSROOT.Painter.getRootMarker(marker_style);
-            var markerScale = 65;
-            if (marker_style == 1) markerScale = 1;
-
-            var marker;
-
-            switch (info_marker.shape) {
-            case 6:
-               marker = "M " + (-4 * marker_size) + " "
-                     + (-1 * marker_size) + " L " + 4 * marker_size + " "
-                     + (-1 * marker_size) + " L " + (-2.4 * marker_size) + " "
-                     + 4 * marker_size + " L 0 " + (-4 * marker_size) + " L "
-                     + 2.8 * marker_size + " " + 4 * marker_size + " z";
-               break;
-            case 7:
-               marker = "M " + (-4 * marker_size) + " "
-                     + (-4 * marker_size) + " L " + 4 * marker_size + " "
-                     + 4 * marker_size + " M 0 " + (-4 * marker_size) + " 0 "
-                     + 4 * marker_size + " M " + 4 * marker_size + " "
-                     + (-4 * marker_size) + " L " + (-4 * marker_size) + " "
-                     + 4 * marker_size + " M " + (-4 * marker_size) + " 0 L "
-                     + 4 * marker_size + " 0";
-               break;
-            default:
-               marker = d3.svg.symbol().type(d3.svg.symbolTypes[info_marker.shape]).size(marker_size * markerScale);
-               break;
-            }
+            var marker = JSROOT.Painter.getRootMarker(attmarker);
             p.append("svg:path")
                 .attr("transform", function(d) { return "translate(" + pos_x + "," + pos_y + ")"; })
-                .style("fill", info_marker['toFill'] ? marker_color : "none")
-                .style("stroke", marker_color).attr("d", marker);
+                .style("fill", marker.fill)
+                .style("stroke", marker.stroke)
+                .attr("d", marker.marker);
          }
       }
       if (lwidth && lwidth > 1) {
