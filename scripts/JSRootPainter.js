@@ -2624,9 +2624,9 @@
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(only_resize) {
 
-      var render_to  = "#" + this.divid;
+      var render_to  = $("#" + this.divid);
 
-      var w = $(render_to).width(), h = $(render_to).height();
+      var w = render_to.width(), h = render_to.height();
 
       var svg = null;
 
@@ -2649,7 +2649,7 @@
 
             h = w * factor;
 
-            $(render_to).height(h);
+            render_to.height(h);
          }
 
          var fillcolor = 'white';
@@ -2660,7 +2660,9 @@
                fillcolor = 'none';
          }
          
-         svg = d3.select(render_to)
+         render_to.css("background-color", fillcolor);
+         
+         svg = d3.select("#" + this.divid)
              .append("svg")
              .attr("class", "root_canvas")
              .style("background-color", fillcolor)

@@ -18,6 +18,8 @@
       
       if (JSROOT.source_dir.indexOf("root.cern.ch")>0)
          global_dir = "http://root.cern.ch/js/files/";
+      if (JSROOT.source_dir.indexOf("web-docs.gsi.de/~linev")>0)
+         global_dir = "http://web-docs.gsi.de/~linev/js/files/";
          
       
       function draw_item(file, itemname, divid, drawopt) {
@@ -106,7 +108,7 @@
          $('#debug').append("<a href='drawoptions.htm?all" + arg + "'>All options</a><br/>"); 
 
          LoadFile("hsimple.root", function(file) {
-            draw_item_options(file, "hpx;1", "h1_draw", "");
+            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0");
             draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL2;COL3;LEGO");
             draw_item_options(file, "hprof;1", "prof_draw", ";E1");
          });
