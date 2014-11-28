@@ -959,7 +959,39 @@
          svg_p['mainpainter'] = this;
    }
    
-   JSROOT.TObjectPainter.prototype.createFillPattern = function(attfill, pattern, color) {
+   JSROOT.TObjectPainter.prototype.createAttLine = function(attline) {
+      
+      var color = 0, _width = 0, style = 0;   
+
+      if (attline=='black') { color = 1; _width = 1; } else
+      if (attline=='none') { _width = 0; } else          
+      if (typeof attline == 'object') {
+         if ('fLineColor' in attline) color = attline['fLineColor'];
+         if ('fLineWidth' in attline) _width = attline['fLineWidth'];
+         if ('fLineStyle' in attline) style = attline['fLineStyle'];
+      }
+      
+      var line = { 
+          color: JSROOT.Painter.root_colors[color],
+          width: _width,
+          dash: JSROOT.Painter.root_line_styles[style]
+      };
+      
+      if ((_width==0) || (color==0)) line.color = 'none';
+      
+      line.SetLine = function(selection) {
+         selection.style('stroke', this.color);
+         if (this.color!='none') {
+            selection.style('stroke-width', this.width);
+            selection.style('stroke-dasharray', this.dash);
+         }
+      }
+      line.func = line.SetLine.bind(line);
+      
+      return line;
+   }
+   
+   JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
       
       if ((pattern==null) && attfill) pattern = attfill['fFillStyle'];
       if ((color==null) && attfill) color = attfill['fFillColor'];
@@ -1314,14 +1346,14 @@
       var tm = height * ndc.y1;
       var bm = height * (1 - ndc.y2);
 
-      var framecolor = null, bordermode = 0, bordersize = 0, linecolor = 'black', linestyle = 0, linewidth = 1;
+      var framecolor = this.createAttFill('white'), 
+          lineatt = this.createAttLine('black'),
+          bordermode = 0, bordersize = 0;
 
       if (this.tframe) {
          bordermode = this.tframe['fBorderMode'];
          bordersize = this.tframe['fBorderSize'];
-         linecolor = JSROOT.Painter.root_colors[this.tframe['fLineColor']];
-         linestyle = this.tframe['fLineStyle'];
-         linewidth = this.tframe['fLineWidth'];
+         lineatt = this.createAttLine(this.tframe);
          if (root_pad) {
             var xspan = width / Math.abs(root_pad['fX2'] - root_pad['fX1']);
             var yspan = height / Math.abs(root_pad['fY2'] - root_pad['fY1']);
@@ -1348,16 +1380,15 @@
             w -= (lm + rm);
             h -= (tm + bm);
          }
-         framecolor = this.createFillPattern(this.tframe);
+         framecolor = this.createAttFill(this.tframe);
       } else {
          if (root_pad) {
-            framecolor = this.createFillPattern(null, root_pad['fFrameFillStyle'], root_pad['fFrameFillColor']);
+            framecolor = this.createAttFill(null, root_pad['fFrameFillStyle'], root_pad['fFrameFillColor']);
          }
          w -= (lm + rm);
          h -= (tm + bm);
       }
-      if (framecolor == null)
-         framecolor = this.createFillPattern('white');
+         
 
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
@@ -1402,8 +1433,7 @@
               .attr("width", w)
               .attr("height", h)
               .call(framecolor.func)
-              .style("stroke", linecolor)
-              .style("stroke-width", linewidth);
+              .call(lineatt.func);
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -1555,30 +1585,26 @@
       var x = this.main_painter().x;
       var y = this.main_painter().y;
 
-      var linecolor = JSROOT.Painter.root_colors[this.tf1['fLineColor']];
-      if ((this.tf1['fLineColor'] == 0) || (this.tf1['fLineWidth'] == 0)) linecolor = "none";
-
-      var fill = this.createFillPattern(this.tf1);
+      var attline = this.createAttLine(this.tf1);
+      var fill = this.createAttFill(this.tf1);
       if (fill.color == 'white') fill.color = 'none';
 
       var line = d3.svg.line()
-                   .x(function(d) { return Math.round(x(d.x)); })
-                   .y(function(d) { return Math.round(y(d.y)); })
+                   .x(function(d) { return x(d.x).toFixed(1); })
+                   .y(function(d) { return y(d.y).toFixed(1); })
                    .interpolate(this.interpolate_method);
 
       var area = d3.svg.area()
-                  .x(function(d) { return Math.round(x(d.x)); })
+                  .x(function(d) { return x(d.x).toFixed(1); })
                   .y1(h)
-                  .y0(function(d) { return Math.round(y(d.y)); });
+                  .y0(function(d) { return y(d.y).toFixed(1); });
 
-      if (linecolor != "none")
+      if (attline.color != "none")
          this.draw_g.append("svg:path")
             .attr("class", "line")
             .attr("d",line(pthis.bins))
-            .style("stroke", linecolor)
-            .style("stroke-width", pthis.tf1['fLineWidth'])
-            .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.tf1['fLineStyle']])
-            .style("fill", "none");
+            .style("fill", "none")
+            .call(attline.func);
 
       if (fill.color != "none")
          this.draw_g.append("svg:path")
@@ -1592,8 +1618,8 @@
          this.draw_g.selectAll()
                    .data(this.bins).enter()
                    .append("svg:circle")
-                   .attr("cx", function(d) { return x(d.x); })
-                   .attr("cy", function(d) { return y(d.y); })
+                   .attr("cx", function(d) { return x(d.x).toFixed(1); })
+                   .attr("cy", function(d) { return y(d.y).toFixed(1); })
                    .attr("r", 4)
                    .style("opacity", 0)
                    .append("svg:title")
@@ -1759,6 +1785,8 @@
 
       var npoints = this.graph['fNpoints'];
       if ((this.graph._typename=="TCutG") && (npoints>3)) npoints--;
+      
+      this.lineatt = this.createAttLine(this.graph);
 
       this.bins = d3.range(npoints).map(
             function(p) {
@@ -1796,10 +1824,8 @@
                }
             });
 
-      this.bins_lw = this.graph['fLineWidth']; // line width
-
       this.exclusionGraph = false;
-      if (this.bins_lw <= 99) return;
+      if (this.lineatt.width <= 99) return;
 
       // special handling of exclusion graphs
 
@@ -1807,20 +1833,24 @@
 
       var normx, normy;
       var n = this.graph['fNpoints'];
-      var glw = this.graph['fLineWidth'],
-           xo = new Array(n + 2),
-           yo = new Array(n + 2),
-           xt = new Array(n + 2),
-           yt = new Array(n + 2),
-           xf = new Array(2 * n + 2),
+      var xo = new Array(n + 2),
+          yo = new Array(n + 2),
+          xt = new Array(n + 2),
+          yt = new Array(n + 2),
+          xf = new Array(2 * n + 2),
            yf = new Array(2 * n + 2);
       // negative value means another side of the line...
-      if (glw > 32767) glw = 65536 - glw;
-      this.bins_lw = glw % 100; // line width
-      if (this.bins_lw > 0) this.optionLine = 1;
 
-      var a, i, j, nf, wk = (glw / 100) * 0.005;
-      if (this.graph['fLineWidth'] > 32767) wk *= -1;
+
+
+      var a, i, j, nf, wk = 1;
+      if (this.lineatt.width > 32767) {
+         this.lineatt.width = 65536 - this.lineatt.width;
+         wk = -1;
+      }
+      wk *= (this.lineatt.width / 100) * 0.005;
+      this.lineatt.width = this.lineatt.width % 100; // line width
+      if (this.lineatt.width > 0) this.optionLine = 1;
 
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
@@ -2042,7 +2072,7 @@
 
       var pthis = this;
 
-      var fill = this.createFillPattern(this.graph);
+      var fill = this.createAttFill(this.graph);
       
       function TooltipText(d) {
 
@@ -2103,12 +2133,8 @@
          var close_symbol = "";
          if (this.graph._typename=="TCutG") close_symbol = " Z";
 
-         var line_color = "none", line_style = "none";
-
-         if (this.optionLine == 1) {
-            line_color = JSROOT.Painter.root_colors[this.graph['fLineColor']];
-            line_style = JSROOT.Painter.root_line_styles[this.graph['fLineStyle']];
-         }
+         var lineatt = this.lineatt; 
+         if (this.optionLine == 0) lineatt = this.createAttLine('none'); 
          
          if (this.optionFill == 1) {
             
@@ -2119,9 +2145,7 @@
          this.draw_g.append("svg:path")
                .attr("d", line(pthis.bins) + close_symbol)
                .attr("class", "draw_line")
-               .style("stroke", line_color)
-               .style("stroke-width", pthis.bins_lw)
-               .style("stroke-dasharray", line_style)
+               .call(lineatt.func)
                .call(fill.func);
 
          // do not add tooltip for line, when we wants to add markers
@@ -2181,8 +2205,8 @@
               .attr("y1", 0)
               .attr("x2", function(d) { return d.grx2; })
               .attr("y2", 0)
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style("stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
 
          nodes.filter(function(d) { return (d.exlow > 0); })
               .append("svg:line")
@@ -2190,8 +2214,8 @@
               .attr("x1", function(d) { return d.grx0; })
               .attr("y2", 3)
               .attr("x2", function(d) { return d.grx0; })
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style("stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
 
          nodes.filter(function(d) { return (d.exhigh > 0); })
               .append("svg:line")
@@ -2199,8 +2223,8 @@
               .attr("x1", function(d) { return d.grx2; })
               .attr("y2", 3)
               .attr("x2", function(d) { return d.grx2; })
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style( "stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style( "stroke-width", this.lineatt.width);
 
          // Add y-error indicators
 
@@ -2210,8 +2234,8 @@
               .attr("y1", function(d) { return d.gry0; })
               .attr("x2", 0)
               .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style("stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
 
          nodes.filter(function(d) { return (d.eylow > 0); })
               .append("svg:line")
@@ -2219,8 +2243,8 @@
               .attr("y1", function(d) { return d.gry0; })
               .attr("x2", 3)
               .attr("y2", function(d) { return d.gry0; })
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style("stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
 
          nodes.filter(function(d) { return (d.eyhigh > 0); })
               .append("svg:line")
@@ -2228,8 +2252,8 @@
               .attr("y1", function(d) { return d.gry2; })
               .attr("x2", 3)
               .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", JSROOT.Painter.root_colors[this.graph['fLineColor']])
-              .style("stroke-width", this.graph['fLineWidth']);
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
       }
 
       if (this.showMarker) {
@@ -2315,7 +2339,7 @@
       var lcolor = JSROOT.Painter.root_colors[pavetext['fLineColor']];
       var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavetext['fShadowColor']];
-      var fcolor = this.createFillPattern(pavetext);
+      var fcolor = this.createAttFill(pavetext);
       
       // align = 10*HorizontalAlign + VerticalAlign
       // 1=left adjusted, 2=centered, 3=right adjusted
@@ -2651,9 +2675,9 @@
          var fill = null;
          
          if (this.pad && 'fFillColor' in this.pad) 
-            fill = this.createFillPattern(this.pad);
+            fill = this.createAttFill(this.pad);
          else
-            fill = this.createFillPattern('white');
+            fill = this.createAttFill('white');
          
          render_to.css("background-color", fill.color);
          
@@ -2690,7 +2714,7 @@
       var h = Math.round(this.pad['fAbsHNDC'] * height);
       y -= h;
 
-      var fill = this.createFillPattern(this.pad);
+      var fill = this.createAttFill(this.pad);
 
       var border_width = this.pad['fLineWidth'];
       var border_color = JSROOT.Painter.root_colors[this.pad['fLineColor']];
@@ -4682,7 +4706,7 @@
 
       // from here we analyze object content
       // therefore code will be moved
-      this.fill = this.createFillPattern(this.histo);
+      this.fill = this.createAttFill(this.histo);
       if (this.fill.color == 'white') this.fill.color = 'none';
 
       this.linecolor = JSROOT.Painter.root_colors[this.histo['fLineColor']];
@@ -6093,7 +6117,7 @@
       y -= h;
       var lcolor = JSROOT.Painter.root_colors[pave['fLineColor']];
       var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
-      var fill = this.createFillPattern(pave);
+      var fill = this.createAttFill(pave);
 
       var p = this.draw_g
                  .attr("x", x)
@@ -6209,7 +6233,7 @@
             pos_y = pos_y - (hh / 2);
             var pos_x = (tpos_x / 2) - (ww / 2);
 
-            var fill = this.createFillPattern(attfill);
+            var fill = this.createAttFill(attfill);
 
             p.append("svg:rect")
                    .attr("x", pos_x)
@@ -6478,7 +6502,7 @@
       var height = Math.abs(pavelabel['fY2NDC'] - pavelabel['fY1NDC']) * h;
       pos_y -= height;
       var font_size = Math.round(height / 1.9);
-      var fcolor = this.createFillPattern(pavelabel);
+      var fcolor = this.createAttFill(pavelabel);
       var lcolor = JSROOT.Painter.root_colors[pavelabel['fLineColor']];
       var tcolor = JSROOT.Painter.root_colors[pavelabel['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavelabel['fShadowColor']];
