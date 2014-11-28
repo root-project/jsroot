@@ -972,8 +972,8 @@
    
    JSROOT.TObjectPainter.prototype.createFillPattern = function(attfill, pattern, color) {
       
-      if (pattern == null) pattern = attfill['fFillStyle'];
-      if (color == null) color = attfill['fFillColor'];
+      if ((pattern==null) && attfill) pattern = attfill['fFillStyle'];
+      if ((color==null) && attfill) color = attfill['fFillColor'];
 
       var fill = { color: "none" };
       fill.SetFill = function(selection) {
@@ -983,13 +983,20 @@
       }
       fill.func = fill.SetFill.bind(fill);
       
-      if ((pattern == 0) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
-
-      fill.color = JSROOT.Painter.root_colors[color];
+      if (typeof attfill == 'string') {
+         fill.color = attfill;
+         return fill;
+      }
+      
+      
+      if ((pattern == 0) || (color==0) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
 
       var svg = this.svg_canvas(true);
       
-      if ((pattern < 3000) || (pattern>3025) || svg.empty()) return fill;
+      if ((pattern < 3000) || (pattern>3025) || svg.empty()) {
+         fill.color = JSROOT.Painter.root_colors[color];
+         return fill;
+      }
       
       var id = "pat_" + pattern + "_" + color;
       
@@ -1363,7 +1370,7 @@
          h -= (tm + bm);
       }
       if (framecolor == null)
-         framecolor = this.createFillPattern(null, 1, 0);
+         framecolor = this.createFillPattern('white');
 
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
@@ -2662,7 +2669,7 @@
          if (this.pad && 'fFillColor' in this.pad) 
             fill = this.createFillPattern(this.pad);
          else
-            fill = this.createFillPattern(null, 1, 0);
+            fill = this.createFillPattern('white');
          
          render_to.css("background-color", fill.color);
          
@@ -2699,9 +2706,7 @@
       var h = Math.round(this.pad['fAbsHNDC'] * height);
       y -= h;
 
-      var fillcolor = JSROOT.Painter.root_colors[this.pad['fFillColor']];
-      if (this.pad['fFillStyle'] > 4000 && this.pad['fFillStyle'] < 4100)
-         fillcolor = 'none';
+      var fill = this.createFillPattern(this.pad);
 
       var border_width = this.pad['fLineWidth'];
       var border_color = JSROOT.Painter.root_colors[this.pad['fLineColor']];
@@ -2736,7 +2741,7 @@
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
-              .attr("fill", fillcolor)
+              .call(fill.func)
               .style("stroke-width", border_width)
               .style("stroke", border_color);
    }
@@ -5078,7 +5083,7 @@
 
       var draw_bins = this.CreateDrawBins(width, height);
 
-      if (this.fill.color!='none') {
+      if (this.fill.color != 'none') {
 
          // histogram filling
          var area = d3.svg.area()
@@ -6095,11 +6100,9 @@
          h = (pave['fY2NDC'] - pave['fY1NDC']) * Number(svg.attr("height"));
       }
       y -= h;
-      var fillcolor = JSROOT.Painter.root_colors[pave['fFillColor']];
       var lcolor = JSROOT.Painter.root_colors[pave['fLineColor']];
       var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
-      if (pave['fFillStyle'] > 4000 && pave['fFillStyle'] < 4100)
-         fillcolor = 'none';
+      var fill = this.createFillPattern(pave);
 
       var p = this.draw_g
                  .attr("x", x)
@@ -6113,7 +6116,7 @@
            .attr("y", 0)
            .attr("width", w)
            .attr("height", h)
-           .attr("fill", fillcolor)
+           .call(fill.func)
            .style("stroke-width", lwidth ? 1 : 0)
            .style("stroke", lcolor);
 
