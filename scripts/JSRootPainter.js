@@ -373,97 +373,6 @@
       };
    }
 
-   JSROOT.Painter.createFillPattern = function(svg, pattern, color) {
-      // create fill pattern - only if they don't exists yet
-
-      if ((pattern == 0) || (color == 0)) return "none";
-      if ((pattern >= 4000) && (pattern <= 4100)) return "none";
-
-      if ((pattern < 3000) || (pattern>3025)) return JSROOT.Painter.root_colors[color];
-
-      var id = "pat" + pattern + "_" + color;
-
-      if (svg.attr("id") != null)
-         id = svg.attr("id") + "_" + id;
-
-      if (document.getElementById(id) != null) return "url(#" + id + ")";
-
-      var line_color = JSROOT.Painter.root_colors[color];
-
-      switch (pattern) {
-      case 3001:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits","userSpaceOnUse")
-               .attr("width", "3px").attr("height", "2px").style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 0).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke",line_color)
-            .append('svg:rect')
-               .attr("x", 2).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 1).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
-         break;
-      case 3002:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "4px").attr("height", "2px").style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 1).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 3).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
-         break;
-      case 3003:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 2).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color)
-            .append('svg:rect')
-               .attr("x", 0).attr("y", 3).attr("width", 1).attr("height", 1).style("stroke", line_color);
-         break;
-      case 3004:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
-            .append("svg:line")
-               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
-               .style("stroke",line_color).style("stroke-width", 1);
-         break;
-      case 3005:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
-            .append("svg:line")
-               .attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8)
-               .style("stroke",line_color).style("stroke-width", 1);
-         break;
-      case 3006:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
-               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
-            .append("svg:line")
-               .attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3)
-               .style("stroke",line_color).style("stroke-width", 1);
-         break;
-      case 3007:
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits","userSpaceOnUse")
-               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
-            .append("svg:line")
-               .attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1)
-               .style("stroke",line_color).style("stroke-width", 1);
-         break;
-      default: /* == 3004 */
-         svg.append('svg:pattern')
-               .attr("id", id).attr("patternUnits","userSpaceOnUse")
-               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
-            .append("svg:line")
-               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
-               .style("stroke",line_color).style("stroke-width", 1);
-         break;
-      }
-      return "url(#" + id + ")";
-   }
-
    JSROOT.Painter.padtoX = function(pad, x) {
       // Convert x from pad to X.
       if (pad['fLogx'] && x < 50)
@@ -477,7 +386,6 @@
       prnt.removeChild(child.node());
       prnt.appendChild(child.node());
    }
-
 
    JSROOT.Painter.ytoPad = function(y, pad) {
       if (pad['fLogy']) {
@@ -1069,24 +977,19 @@
 
       var fill = { color: "none" };
       fill.SetFill = function(selection) {
-         if (this.color!='none') {
-            console.log("this.color = " + this.color);
-            selection.style('fill', this.color);
-            if ('antialias' in this)
-               selection.style('antialias', this.antialias);
-         }
+         selection.style('fill', this.color);
+         if ('antialias' in this)
+            selection.style('antialias', this.antialias);
       }
       fill.func = fill.SetFill.bind(fill);
       
-      if ((pattern == 0) || (color == 0)) return fill;
-      if ((pattern >= 4000) && (pattern <= 4100)) return fill;
-      
+      if ((pattern == 0) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
+
+      fill.color = JSROOT.Painter.root_colors[color];
+
       var svg = this.svg_canvas(true);
       
-      if ((pattern < 3000) || (pattern>3025) || svg.empty()) {
-         fill.color = JSROOT.Painter.root_colors[color];
-         return fill;
-      }
+      if ((pattern < 3000) || (pattern>3025) || svg.empty()) return fill;
       
       var id = "pat_" + pattern + "_" + color;
       
@@ -1417,7 +1320,7 @@
       var tm = height * ndc.y1;
       var bm = height * (1 - ndc.y2);
 
-      var framecolor = 'white', bordermode = 0, bordersize = 0, linecolor = 'black', linestyle = 0, linewidth = 1;
+      var framecolor = null, bordermode = 0, bordersize = 0, linecolor = 'black', linestyle = 0, linewidth = 1;
 
       if (this.tframe) {
          bordermode = this.tframe['fBorderMode'];
@@ -1451,20 +1354,16 @@
             w -= (lm + rm);
             h -= (tm + bm);
          }
-         framecolor = JSROOT.Painter.root_colors[this.tframe['fFillColor']];
-         if (this.tframe['fFillStyle'] > 4000 && this.tframe['fFillStyle'] < 4100)
-            framecolor = 'none';
+         framecolor = this.createFillPattern(this.tframe);
       } else {
          if (root_pad) {
-            framecolor = JSROOT.Painter.root_colors[root_pad['fFrameFillColor']];
-            if (root_pad['fFrameFillStyle'] > 4000 && root_pad['fFrameFillStyle'] < 4100)
-               framecolor = 'none';
+            framecolor = this.createFillPattern(null, root_pad['fFrameFillStyle'], root_pad['fFrameFillColor']);
          }
          w -= (lm + rm);
          h -= (tm + bm);
       }
-      if (typeof (framecolor) == 'undefined')
-         framecolor = 'white';
+      if (framecolor == null)
+         framecolor = this.createFillPattern(null, 1, 0);
 
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad(true).select(".root_frame");
@@ -1507,10 +1406,9 @@
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
-              .attr("fill", framecolor)
+              .call(framecolor.func)
               .style("stroke", linecolor)
               .style("stroke-width", linewidth);
-
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -1665,7 +1563,7 @@
       var linecolor = JSROOT.Painter.root_colors[this.tf1['fLineColor']];
       if ((this.tf1['fLineColor'] == 0) || (this.tf1['fLineWidth'] == 0)) linecolor = "none";
 
-      var fillcolor = JSROOT.Painter.createFillPattern(this.svg_canvas(true), this.tf1['fFillStyle'], this.tf1['fFillColor']);
+      var fill = this.createFillPattern(this.tf1);
 
       var line = d3.svg.line()
                    .x(function(d) { return Math.round(x(d.x)); })
@@ -1686,13 +1584,12 @@
             .style("stroke-dasharray", JSROOT.Painter.root_line_styles[pthis.tf1['fLineStyle']])
             .style("fill", "none");
 
-      if (fillcolor != "none")
+      if (fill.color != "none")
          this.draw_g.append("svg:path")
                 .attr("class", "area")
                 .attr("d",area(pthis.bins))
                 .style("stroke", "none")
-                .style("fill", fillcolor)
-                .style("antialias", "false");
+                .call(fill.func);
 
       // add tooltips
       if (JSROOT.gStyle.Tooltip)
@@ -2155,6 +2052,8 @@
 
       var pthis = this;
 
+      var fill = this.createFillPattern(this.graph);
+      
       function TooltipText(d) {
 
          var res = "x = " + pthis.main_painter().AxisAsText("x", d.x) + "\n" +
@@ -2201,7 +2100,6 @@
          /* first draw exclusion area, and then the line */
          this.showMarker = false;
          
-         var fill = this.createFillPattern(this.graph);
          this.draw_g.append("svg:path")
                      .attr("d", line(pthis.excl))
                      .style("stroke", "none")
@@ -2214,14 +2112,18 @@
          var close_symbol = "";
          if (this.graph._typename=="TCutG") close_symbol = " Z";
 
-         var line_color = "none", line_style = "none", fill_color = "none";
+         var line_color = "none", line_style = "none";
 
          if (this.optionLine == 1) {
             line_color = JSROOT.Painter.root_colors[this.graph['fLineColor']];
             line_style = JSROOT.Painter.root_line_styles[this.graph['fLineStyle']];
          }
-         if (this.optionFill == 1)
-            fill_color = JSROOT.Painter.createFillPattern(this.svg_canvas(true), this.graph['fFillStyle'], this.graph['fFillColor']);
+         
+         if (this.optionFill == 1) {
+            
+         } else {
+            fill.color = 'none';
+         }
 
          this.draw_g.append("svg:path")
                .attr("d", line(pthis.bins) + close_symbol)
@@ -2229,7 +2131,7 @@
                .style("stroke", line_color)
                .style("stroke-width", pthis.bins_lw)
                .style("stroke-dasharray", line_style)
-               .style("fill", fill_color);
+               .call(fill.func);
 
          // do not add tooltip for line, when we wants to add markers
          if (JSROOT.gStyle.Tooltip && !this.showMarker)
@@ -2419,16 +2321,15 @@
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
       var font_size = Math.round(height / (nlines * 1.2));
-      var fcolor = JSROOT.Painter.root_colors[pavetext['fFillColor']];
       var lcolor = JSROOT.Painter.root_colors[pavetext['fLineColor']];
       var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavetext['fShadowColor']];
-      if (pavetext['fFillStyle'] == 0) fcolor = 'none';
+      var fcolor = this.createFillPattern(pavetext);
+      
       // align = 10*HorizontalAlign + VerticalAlign
       // 1=left adjusted, 2=centered, 3=right adjusted
       // 1=bottom adjusted, 2=centered, 3=top adjusted
       // "middle", "start", "end"
-
       var align = 'start', halign = Math.round(pavetext['fTextAlign'] / 10);
       var baseline = 'bottom', valign = pavetext['fTextAlign'] % 10;
       if (halign == 1) align = 'start';
@@ -2498,7 +2399,7 @@
           .attr("y", 0)
           .attr("width", width)
           .attr("height", height)
-          .attr("fill", fcolor)
+          .call(fcolor.func)
           .style("stroke-width", lwidth ? 1 : 0)
           .style("stroke", lcolor);
 
@@ -2756,20 +2657,19 @@
             render_to.height(h);
          }
 
-         var fillcolor = 'white';
+         var fill = null;
          
-         if (this.pad && 'fFillColor' in this.pad) {
-            fillcolor = JSROOT.Painter.root_colors[this.pad['fFillColor']];
-            if (this.pad['fFillStyle'] > 4000 && this.pad['fFillStyle'] < 4100)
-               fillcolor = 'none';
-         }
+         if (this.pad && 'fFillColor' in this.pad) 
+            fill = this.createFillPattern(this.pad);
+         else
+            fill = this.createFillPattern(null, 1, 0);
          
-         render_to.css("background-color", fillcolor);
+         render_to.css("background-color", fill.color);
          
          svg = d3.select("#" + this.divid)
              .append("svg")
              .attr("class", "root_canvas")
-             .style("background-color", fillcolor)
+             .style("background-color", fill.color)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -4787,8 +4687,7 @@
 
       // from here we analyze object content
       // therefore code will be moved
-      this.fillcolor = JSROOT.Painter.createFillPattern(this.svg_canvas(true), this.histo['fFillStyle'], this.histo['fFillColor']);
-      if (this.histo['fFillStyle'] >= 4000 && this.histo['fFillStyle'] <= 4100) this.fillcolor = 'none';
+      this.fill = this.createFillPattern(this.histo);
 
       this.linecolor = JSROOT.Painter.root_colors[this.histo['fLineColor']];
       if (this.histo['fLineColor'] == 0) this.linecolor = '#4572A7';
@@ -5171,7 +5070,7 @@
          this.RemoveDrawG();
          return;
       }
-
+      
       this.RecreateDrawG();
 
       if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0)) 
@@ -5179,7 +5078,7 @@
 
       var draw_bins = this.CreateDrawBins(width, height);
 
-      if (this.fillcolor!='none') {
+      if (this.fill.color!='none') {
 
          // histogram filling
          var area = d3.svg.area()
@@ -5192,8 +5091,7 @@
                     .attr("d", area(draw_bins))
                     .style("stroke", this.linecolor)
                     .style("stroke-width", this.histo['fLineWidth'])
-                    .style("fill", this.fillcolor)
-                    .style("antialias", "false");
+                    .call(this.fill.func);
       } else {
 
          var line = d3.svg.line()
@@ -6262,9 +6160,7 @@
          var line_width = leg['fLineWidth'];
          var line_style = JSROOT.Painter.root_line_styles[leg['fLineStyle']];
 
-         var fill_color = leg['fFillColor'];
-         var fill_style = leg['fFillStyle'];
-         
+         var attfill = leg;
          var attmarker = leg;
 
          var mo = leg['fObject'];
@@ -6276,8 +6172,7 @@
                line_style = JSROOT.Painter.root_line_styles[mo['fLineStyle']];
             }
             if ('fFillColor' in mo) {
-               fill_color = mo['fFillColor'];
-               fill_style = mo['fFillStyle'];
+               attfill = mo;
             }
             if ('fMarkerColor' in mo) {
                attmarker = mo;
@@ -6320,16 +6215,16 @@
             pos_y = pos_y - (hh / 2);
             var pos_x = (tpos_x / 2) - (ww / 2);
 
-            var fill_color = JSROOT.Painter.createFillPattern(this.svg_canvas(true), fill_style, fill_color);
+            var fill = this.createFillPattern(attfill);
 
             p.append("svg:rect")
                    .attr("x", pos_x)
                    .attr("y", pos_y)
                    .attr("width", ww)
                    .attr("height", hh)
-                   .style("fill", fill_color)
                    .style("stroke-width", line_width)
-                   .style("stroke", line_color);
+                   .style("stroke", line_color)
+                   .call(fill.func);
          }
          // Draw line
          if (lopt.indexOf('l') != -1) {
@@ -6589,11 +6484,11 @@
       var height = Math.abs(pavelabel['fY2NDC'] - pavelabel['fY1NDC']) * h;
       pos_y -= height;
       var font_size = Math.round(height / 1.9);
-      var fcolor = JSROOT.Painter.root_colors[pavelabel['fFillColor']];
+      var fcolor = this.createFillPattern(pavelabel);
       var lcolor = JSROOT.Painter.root_colors[pavelabel['fLineColor']];
       var tcolor = JSROOT.Painter.root_colors[pavelabel['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavelabel['fShadowColor']];
-      if (pavelabel['fFillStyle'] == 0) fcolor = 'none';
+      
       // align = 10*HorizontalAlign + VerticalAlign
       // 1=left adjusted, 2=centered, 3=right adjusted
       // 1=bottom adjusted, 2=centered, 3=top adjusted
@@ -6624,7 +6519,7 @@
              .attr("y", 0)
              .attr("width", width)
              .attr("height", height)
-             .attr("fill", fcolor)
+             .call(fcolor.func)
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor);
 
