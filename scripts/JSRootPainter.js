@@ -1061,6 +1061,117 @@
          // when this is first main painter in the pad
          svg_p['mainpainter'] = this;
    }
+   
+   JSROOT.TObjectPainter.prototype.createFillPattern = function(attfill, pattern, color) {
+      
+      if (pattern == null) pattern = attfill['fFillStyle'];
+      if (color == null) color = attfill['fFillColor'];
+
+      var fill = { color: "none" };
+      fill.SetFill = function(selection) {
+         if (this.color!='none') {
+            console.log("this.color = " + this.color);
+            selection.style('fill', this.color);
+            if ('antialias' in this)
+               selection.style('antialias', this.antialias);
+         }
+      }
+      fill.func = fill.SetFill.bind(fill);
+      
+      if ((pattern == 0) || (color == 0)) return fill;
+      if ((pattern >= 4000) && (pattern <= 4100)) return fill;
+      
+      var svg = this.svg_canvas(true);
+      
+      if ((pattern < 3000) || (pattern>3025) || svg.empty()) {
+         fill.color = JSROOT.Painter.root_colors[color];
+         return fill;
+      }
+      
+      var id = "pat_" + pattern + "_" + color;
+      
+      fill.color = "url(#" + id + ")";
+      fill.antialias = false;
+
+      if (document.getElementById(id) != null) return fill;
+
+      var line_color = JSROOT.Painter.root_colors[color];
+
+      switch (pattern) {
+      case 3001:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits","userSpaceOnUse")
+               .attr("width", "3px").attr("height", "2px").style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 0).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke",line_color)
+            .append('svg:rect')
+               .attr("x", 2).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 1).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
+         break;
+      case 3002:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "2px").style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 1).attr("y", 0).attr("width", 1).attr("height", 1).style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 3).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color);
+         break;
+      case 3003:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 2).attr("y", 1).attr("width", 1).attr("height", 1).style("stroke", line_color)
+            .append('svg:rect')
+               .attr("x", 0).attr("y", 3).attr("width", 1).attr("height", 1).style("stroke", line_color);
+         break;
+      case 3004:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
+         break;
+      case 3005:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
+         break;
+      case 3006:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits", "userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3)
+               .style("stroke",line_color).style("stroke-width", 1);
+         break;
+      case 3007:
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits","userSpaceOnUse")
+               .attr("width", "4px").attr("height", "4px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1)
+               .style("stroke",line_color).style("stroke-width", 1);
+         break;
+      default: /* == 3004 */
+         svg.append('svg:pattern')
+               .attr("id", id).attr("patternUnits","userSpaceOnUse")
+               .attr("width", "8px").attr("height", "8px").style("stroke", line_color)
+            .append("svg:line")
+               .attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8)
+               .style("stroke",line_color).style("stroke-width", 1);
+         break;
+      }
+      
+      return fill;
+   }
+
 
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
@@ -2089,20 +2200,13 @@
       if (this.exclusionGraph) {
          /* first draw exclusion area, and then the line */
          this.showMarker = false;
-         if (this.graph['fFillStyle'] > 3000 && this.graph['fFillStyle'] <= 3025) {
-            this.draw_g.append("svg:path")
-                   .attr("d", line(pthis.excl))
-                   .style("stroke", "none")
-                   .style("stroke-width", pthis.excl_ff)
-                   .style("fill", JSROOT.Painter.createFillPattern(this.svg_canvas(true), this.graph['fFillStyle'], this.graph['fFillColor']))
-                   .style("antialias", "false");
-         } else {
-            this.draw_g.append("svg:path")
-                   .attr("d", line(pthis.excl))
-                   .style("stroke", "none")
-                   .style("stroke-width", pthis.excl_ff)
-                   .style("fill", pthis.excl_ec);
-         }
+         
+         var fill = this.createFillPattern(this.graph);
+         this.draw_g.append("svg:path")
+                     .attr("d", line(pthis.excl))
+                     .style("stroke", "none")
+                     .style("stroke-width", pthis.excl_ff)
+                     .call(fill.func);
       }
 
       if (this.seriesType == 'line') {
