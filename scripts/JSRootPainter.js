@@ -258,7 +258,7 @@
          'otriangle-down', 'fdiamond', 'fcross');
 
    /** Function returns the ready to use marker for drawing */
-   JSROOT.Painter.createAtMarker = function(attmarker) {
+   JSROOT.Painter.createAttMarker = function(attmarker) {
       
       var marker_name = JSROOT.Painter.root_markers[attmarker['fMarkerStyle']];
 
@@ -368,41 +368,66 @@
          'oblique Arial', 'bold Arial', 'bold oblique Arial', 'Courier New',
          'oblique Courier New', 'bold Courier New', 'bold oblique Courier New',
          'Symbol', 'Times New Roman', 'Wingdings', 'Symbol');
-
-   JSROOT.Painter.getFontDetails = function(fontIndex) {
+   
+   JSROOT.Painter.getFontDetails = function(fontIndex, size) {
 
       var fontName = JSROOT.Painter.root_fonts[Math.floor(fontIndex / 10)];
 
-      var weight = null;
-      var style = null;
-      var name = "Arial";
+      var res = { name: "Arial", size: 11, weight: null, style: null };
+      
+      if (size != null) res.size = Math.round(size);
 
       if (fontName == null)
          fontName = "";
 
       if (fontName.indexOf("bold") != -1) {
-         weight = "bold";
+         res.weight = "bold";
          // The first 5 characters are removed because "bold " is always first
          // when it occurs
          fontName = fontName.substring(5, fontName.length);
       }
       if (fontName.charAt(0) == 'i') {
-         style = "italic";
+         res.style = "italic";
          fontName = fontName.substring(7, fontName.length);
       } else if (fontName.charAt(0) == 'o') {
-         style = "oblique";
+         res.style = "oblique";
          fontName = fontName.substring(8, fontName.length);
       }
       if (name == 'Symbol') {
-         weight = null;
-         style = null;
+         res.weight = null;
+         res.style = null;
       }
-      return {
-         'weight' : weight,
-         'style' : style,
-         'name' : fontName
-      };
+      
+      res.name = fontName;
+      
+      res.SetFont = function(selection) {
+         selection.attr("font-family", this.name)
+                  .attr("font-size", this.size)
+                  .attr("xml:space","preserve");
+         if (this.weight!=null) 
+            selection.attr("font-weight", this.weight);
+         if (this.style!=null)
+            selection.attr("font-style", this.style);
+      }
+      
+      res.stringWidth = function(svg, line) {
+         /* compute the bounding box of a string by using temporary svg:text */
+         var text = svg.append("svg:text")
+                     .attr("class", "temp_text")
+                     .attr("xml:space","preserve")
+                     .style("opacity", 0)
+                     .text(line);
+         this.SetFont(text);
+         var w = text.node().getBBox().width;
+         text.remove();
+         return w;
+      }
+      
+      res.func = res.SetFont.bind(res);
+      
+      return res;
    }
+
 
    JSROOT.Painter.padtoX = function(pad, x) {
       // Convert x from pad to X.
@@ -791,22 +816,6 @@
             str = str.replace(x, JSROOT.Painter.symbols_map[x]);
       }
       return str;
-   }
-
-   JSROOT.Painter.stringWidth = function(svg, line, font_size, fontDetails) {
-      /* compute the bounding box of a string by using temporary svg:text */
-      var text = svg.append("svg:text")
-                .attr("class", "temp_text")
-                .attr("xml:space","preserve")
-                .attr("font-family", fontDetails['name'])
-                .attr("font-weight", fontDetails['weight'])
-                .attr("font-style", fontDetails['style'])
-                .attr("font-size", font_size)
-                .style("opacity", 0)
-                .text(line);
-      var w = text.node().getBBox().width;
-      text.remove();
-      return w;
    }
 
    // ==============================================================================
@@ -2268,7 +2277,7 @@
 
       if (this.showMarker) {
          /* Add markers */
-         var marker = JSROOT.Painter.createAtMarker(this.graph);
+         var marker = JSROOT.Painter.createAttMarker(this.graph);
 
          nodes.append("svg:path").call(marker.func);
       }
@@ -2342,7 +2351,6 @@
       var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
-      var font_size = Math.round(height / (nlines * 1.2));
       var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavetext['fShadowColor']];
       var fcolor = this.createAttFill(pavetext);
@@ -2362,7 +2370,8 @@
 
       var h_margin = Math.round(pavetext['fMargin'] * width); // horizontal margin
 
-      var fontDetails = JSROOT.Painter.getFontDetails(pavetext['fTextFont']);
+      var font = JSROOT.Painter.getFontDetails(pavetext['fTextFont'], height / (nlines * 1.2));
+
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
       var attline = JSROOT.Painter.createAttLine(pavetext, lwidth>0 ? 1 : 0);
 
@@ -2373,7 +2382,7 @@
       for (var j = 0; j < nlines; ++j) {
          var line = JSROOT.Painter.translateLaTeX(pavetext['fLines'].arr[j]['fTitle']);
          lines.push(line);
-         var lw = h_margin + JSROOT.Painter.stringWidth(this.svg_pad(true), line, font_size, fontDetails) + h_margin;
+         var lw = h_margin + font.stringWidth(this.svg_pad(true), line) + h_margin;
          if (lw > maxlw) maxlw = lw;
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
@@ -2383,7 +2392,7 @@
       }
 
       if (maxlw > width)
-         font_size = Math.floor(font_size * (width / maxlw));
+         font.size = Math.floor(font.size * (width / maxlw));
       else
       if ((nlines==1) && (lwidth==0) && (maxlw < width - 40))  {
          // adjust invisible size of the pave for comfort resizing
@@ -2425,18 +2434,14 @@
           .call(attline.func);
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-      var stepy = (height - 0.2*font_size) / nlines;
+      var stepy = (height - 0.2*font.size) / nlines;
 
       if (nlines == 1) {
          this.draw_g.append("text")
               .attr("text-anchor", align)
               .attr("x", text_pos_x)
-              .attr("y", ((height / 2) + (font_size / 3)).toFixed(1))
-              .attr("xml:space","preserve")
-              .attr("font-family", fontDetails['name'])
-              .attr("font-weight", fontDetails['weight'])
-              .attr("font-style", fontDetails['style'])
-              .attr("font-size", font_size)
+              .attr("y", ((height / 2) + (font.size / 3)).toFixed(1))
+              .call(font.func)
               .attr("fill", tcolor)
               .text(lines[0]);
       } else {
@@ -2444,7 +2449,7 @@
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
-            var posy = (j+0.5)*stepy + font_size*0.5 - 1;
+            var posy = (j+0.5)*stepy + font.size*0.5 - 1;
 
             if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat > 0) && (j >= first_stat)) {
@@ -2454,11 +2459,7 @@
                            .attr("text-anchor", "middle")
                            .attr("x", (width * (n + 0.5) / num_cols).toFixed(1))
                            .attr("y", posy.toFixed(1))
-                           .attr("xml:space","preserve")
-                           .attr("font-family", fontDetails['name'])
-                           .attr("font-weight", fontDetails['weight'])
-                           .attr("font-style", fontDetails['style'])
-                           .attr("font-size", font_size)
+                           .call(font.func)
                            .attr("fill", jcolor)
                            .text(parts[n]);
                } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
@@ -2466,11 +2467,7 @@
                         .attr("text-anchor", (j == 0) ? "middle" : "start")
                         .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width).toFixed(1))
                         .attr("y", posy.toFixed(1))
-                        .attr("xml:space","preserve")
-                        .attr("font-family", fontDetails['name'])
-                        .attr("font-weight", fontDetails['weight'])
-                        .attr("font-style", fontDetails['style'])
-                        .attr("font-size", font_size)
+                        .call(font.func)
                         .attr("fill", jcolor)
                         .text(lines[j]);
                } else {
@@ -2480,11 +2477,7 @@
                             .attr("text-anchor", (n == 0) ? "start" : "end")
                             .attr("x", ((n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width).toFixed(1))
                             .attr("y", posy.toFixed(1))
-                            .attr("xml:space","preserve")
-                            .attr("font-family", fontDetails['name'])
-                            .attr("font-weight", fontDetails['weight'])
-                            .attr("font-style", fontDetails['style'])
-                            .attr("font-size", font_size)
+                            .call(font.func)
                             .attr("fill", jcolor)
                             .text(parts[n]);
                }
@@ -2493,11 +2486,7 @@
                       .attr("text-anchor", "start")
                       .attr("x", text_pos_x.toFixed(1))
                       .attr("y", posy.toFixed(1))
-                      .attr("xml:space","preserve")
-                      .attr("font-family", fontDetails['name'])
-                      .attr("font-weight", fontDetails['weight'])
-                      .attr("font-style", fontDetails['style'])
-                      .attr("font-size", font_size)
+                      .call(font.func)
                       .attr("fill", jcolor)
                       .text(lines[j]);
             }
@@ -2884,8 +2873,7 @@
 
       var z = d3.scale.linear().clamp(true).domain([ minbin, maxbin ]).range( [ s_height, 0 ]).nice();
 
-      var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
-      var axisLabelFontSize = axis['fLabelSize'] * height;
+      var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
       var pos_x = Math.round(palette['fX1NDC'] * width);
       var pos_y = Math.round(height*(1 - palette['fY1NDC']));
@@ -2934,10 +2922,7 @@
                    .call(z_axis);
 
       zax.selectAll("text")
-              .attr("font-size", axisLabelFontSize)
-              .attr("font-weight", axisFontDetails['weight'])
-              .attr("font-style", axisFontDetails['style'])
-              .attr("font-family", axisFontDetails['name'])
+              .call(labelfont.func)
               .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
 
       /*
@@ -2945,17 +2930,13 @@
        */
       var title = axis['fTitle'];
       if (title != "" && typeof (axis['fTitleFont']) != 'undefined') {
-         axisFontDetails = JSROOT.Painter.getFontDetails(axis['fTitleFont']);
-         var axisTitleFontSize = axis['fTitleSize'] * height;
+         var titlefont = JSROOT.Painter.getFontDetails(axis['fTitleFont'], axis['fTitleSize'] * height);
          this.draw_g.append("text")
                 .attr("class", "Z axis label")
-                .attr("x", s_width + axisLabelFontSize)
+                .attr("x", s_width + labelfont.size)
                 .attr("y", s_height)
                 .attr("text-anchor", "end")
-                .attr("font-family", axisFontDetails['name'])
-                .attr("font-weight", axisFontDetails['weight'])
-                .attr("font-style", axisFontDetails['style'])
-                .attr("font-size", axisTitleFontSize).text(title);
+                .call(titlefont.func);
       }
 
       var pthis = this;
@@ -3794,20 +3775,19 @@
       /* X-axis label */
       var label = JSROOT.Painter.translateLaTeX(this.histo['fXaxis']['fTitle']);
       var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
-      var xAxisLabelFontSize = Math.round(this.histo['fXaxis']['fLabelSize'] * h);
-
+      
+      var xlabelfont = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont'], this.histo['fXaxis']['fLabelSize'] * h);
+         
+      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont'], this.histo['fYaxis']['fLabelSize'] * h);
+      
       if (label.length > 0) {
-         var xAxisTitleFontSize = Math.round(this.histo['fXaxis']['fTitleSize'] * h);
-         var xAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont']);
+         var xtitlefont = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h);
          xax_g.append("text")
                .attr("class", "x_axis_label")
                .attr("x", w)
-               .attr("y", xAxisLabelFontSize + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xAxisTitleFontSize)
+               .attr("y", xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xtitlefont.size)
                .attr("text-anchor", "end")
-               .attr("font-family", xAxisFontDetails['name'])
-               .attr("font-weight", xAxisFontDetails['weight'])
-               .attr("font-style", xAxisFontDetails['style'])
-               .attr("font-size", xAxisTitleFontSize)
+               .call(xtitlefont.func)
                .text(label);
       }
 
@@ -3815,19 +3795,14 @@
       label = JSROOT.Painter.translateLaTeX(this.histo['fYaxis']['fTitle']);
 
       var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
-      var yAxisLabelFontSize = Math.round(this.histo['fYaxis']['fLabelSize'] * h);
 
       if (label.length > 0) {
-         var yAxisTitleFontSize = Math.round(this.histo['fYaxis']['fTitleSize'] * h);
-         var yAxisFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont']);
+         var ytitlefont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h);
          yax_g.append("text")
                 .attr("class", "y_axis_label")
                 .attr("x", 0)
-                .attr("y", - yAxisLabelFontSize - yAxisTitleFontSize - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
-                .attr("font-family", yAxisFontDetails['name'])
-                .attr("font-size", yAxisTitleFontSize)
-                .attr("font-weight", yAxisFontDetails['weight'])
-                .attr("font-style", yAxisFontDetails['style']).attr("fill", "black")
+                .attr("y", - ylabelfont.size - ytitlefont.size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
+                .call(ytitlefont.func)
                 .attr("text-anchor", "end")
                 .text(label)
                 .attr("transform", "rotate(270, 0, 0)");
@@ -3989,20 +3964,9 @@
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-      var xAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont']);
-      var yAxisLabelFontDetails = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont']);
+      xax_g.selectAll("text").call(xlabelfont.func);
 
-      xax_g.selectAll("text")
-            .attr("font-family", xAxisLabelFontDetails['name'])
-            .attr("font-size", xAxisLabelFontSize)
-            .attr("font-weight", xAxisLabelFontDetails['weight'])
-            .attr("font-style", xAxisLabelFontDetails['style']);
-
-      yax_g.selectAll("text")
-            .attr("font-family", yAxisLabelFontDetails['name'])
-            .attr("font-size", yAxisLabelFontSize)
-            .attr("font-weight", yAxisLabelFontDetails['weight'])
-            .attr("font-style",  yAxisLabelFontDetails['style']);
+      yax_g.selectAll("text").call(ylabelfont.func);
 
       // we will use such rect for zoom selection
       if (JSROOT.gStyle.Zooming) {
@@ -4011,15 +3975,15 @@
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", w)
-            .attr("height", xAxisLabelFontSize + 3)
+            .attr("height", xlabelfont.size + 3)
             .style('opacity', "0");
 
          // we will use such rect for zoom selection
          yax_g.append("svg:rect")
             .attr("class", "yaxis_zoom")
-            .attr("x",-2 * yAxisLabelFontSize - 3)
+            .attr("x",-2 * ylabelfont.size - 3)
             .attr("y", 0)
-            .attr("width", 2 * yAxisLabelFontSize + 3)
+            .attr("width", 2 * ylabelfont.size + 3)
             .attr("height", h)
             .style('opacity', "0");
       }
@@ -5059,7 +5023,7 @@
       // draw dot markers only when no error was drawn
       if ((this.histo['fMarkerStyle'] == 1) && (this.options.Error > 0)) return;
 
-      var marker = JSROOT.Painter.createAtMarker(this.histo);
+      var marker = JSROOT.Painter.createAttMarker(this.histo);
       
       nodes.append("svg:path").call(marker.func);
    }
@@ -5359,10 +5323,9 @@
       var width = Number(this.svg_frame(true).attr("width")),
           height = Number(this.svg_frame(true).attr("height"));
 
-      var axisOffset = axis['fLabelOffset'] * width;
-      var tickSize = axis['fTickSize'] * width;
-      var axisFontDetails = JSROOT.Painter.getFontDetails(axis['fLabelFont']);
-      var axisLabelFontSize = axis['fLabelSize'] * height;
+      var axisOffset = Math.round(axis['fLabelOffset'] * width);
+      var tickSize = Math.round(axis['fTickSize'] * width);
+      var axisfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
       var ticks = d3.scale.linear().clamp(true)
                   .domain([ this.minbin, this.maxbin ])
@@ -5370,7 +5333,7 @@
 
       var maxlen = 0;
       for (var i in ticks) {
-         var len = JSROOT.Painter.stringWidth(this.svg_frame(true), ticks[i], axisLabelFontSize, axisFontDetails);
+         var len = axisfont.stringWidth(this.svg_frame(true), ticks[i]);
          if (len > maxlen) maxlen = len;
       }
 
@@ -5789,7 +5752,7 @@
 
       if (draw_markers) {
          // Add markers
-         var marker = JSROOT.Painter.createAtMarker(this.histo);
+         var marker = JSROOT.Painter.createAttMarker(this.histo);
          
          var markers =
             this.draw_g.selectAll(".marker")
@@ -6129,18 +6092,16 @@
       var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
       var tpos_x = pave['fMargin'] * w;
       var nlines = pave.fPrimitives.arr.length;
-      var font_size = Math.round(h / (nlines * 1.5));
-      // var font_size = Math.round(pave['fTextSize'] * svg.height());
-      var fontDetails = JSROOT.Painter.getFontDetails(pave['fTextFont']);
+      var font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.5));
 
       var max_len = 0, mul = 1.4;
       for (var j = 0; j < nlines; ++j) {
          var line = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
-         var lw = tpos_x  + JSROOT.Painter.stringWidth(svg, line, font_size, fontDetails);
+         var lw = tpos_x  + font.stringWidth(svg, line);
          if (lw > max_len) max_len = lw;
       }
       if (max_len > w) {
-         font_size = Math.floor(font_size * 0.95 * (w / max_len));
+         font.size = Math.floor(font.size * 0.95 * (w / max_len));
          mul *= 0.95 * (max_len / w);
       }
       var x1 = pave['fX1NDC'];
@@ -6158,10 +6119,10 @@
 
          var string = leg['fLabel'];
 
-         var pos_y = ((i + 1) * (font_size * mul)) - (font_size / 3);
-         var tpos_y = (i + 1) * (font_size * mul);
+         var pos_y = ((i + 1) * (font.size * mul)) - (font.size / 3);
+         var tpos_y = (i + 1) * (font.size * mul);
          if (nlines == 1) {
-            var pos_y = (h * 0.75) - (font_size / 3);
+            var pos_y = (h * 0.75) - (font.size / 3);
             var tpos_y = h * 0.75;
          }
 
@@ -6185,12 +6146,9 @@
               .attr("text-anchor", "start")
               .attr("x", tpos_x)
               .attr("y", tpos_y)
-              .attr("xml:space","preserve")
-              .attr("font-weight", fontDetails['weight'])
-              .attr("font-style", fontDetails['style'])
-              .attr("font-family", fontDetails['name'])
-              .attr("font-size", font_size)
-              .attr("fill", tcolor).text(string);
+              .call(font.func)
+              .attr("fill", tcolor)
+              .text(string);
 
          // Draw fill pattern (in a box)
          if (lopt.indexOf('f') != -1) {
@@ -6246,7 +6204,7 @@
             var line_length = (0.7 * pave['fMargin']) * w;
             var pos_x = tpos_x / 2;
 
-            var marker = JSROOT.Painter.createAtMarker(attmarker);
+            var marker = JSROOT.Painter.createAttMarker(attmarker);
             p.append("svg:path")
                 .attr("transform", function(d) { return "translate(" + pos_x + "," + pos_y + ")"; })
                 .call(marker.func);
@@ -6476,7 +6434,6 @@
       var width = Math.abs(pavelabel['fX2NDC'] - pavelabel['fX1NDC']) * w;
       var height = Math.abs(pavelabel['fY2NDC'] - pavelabel['fY1NDC']) * h;
       pos_y -= height;
-      var font_size = Math.round(height / 1.9);
       var fcolor = this.createAttFill(pavelabel);
       var tcolor = JSROOT.Painter.root_colors[pavelabel['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavelabel['fShadowColor']];
@@ -6499,7 +6456,7 @@
          case 3: lmargin = width - (pavelabel['fMargin'] * width); break;
       }
       var lwidth = pavelabel['fBorderSize'] ? pavelabel['fBorderSize'] : 0;
-      var fontDetails = JSROOT.Painter.getFontDetails(pavelabel['fTextFont']);
+      var font = JSROOT.Painter.getFontDetails(pavelabel['fTextFont'], height / 1.9);
       
       var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
 
@@ -6519,19 +6476,15 @@
 
       var line = JSROOT.Painter.translateLaTeX(pavelabel['fLabel']);
 
-      var lw = JSROOT.Painter.stringWidth(this.svg_pad(true), line, font_size, fontDetails);
-      if (lw > width) font_size = Math.floor(font_size * (width / lw));
+      var lw = font.stringWidth(this.svg_pad(true), line);
+      if (lw > width) font.size = Math.floor(font.size * (width / lw));
 
       pave.append("text")
              .attr("class", "text")
              .attr("text-anchor", align)
              .attr("x", lmargin)
-             .attr("y", (height / 2) + (font_size / 3))
-             .attr("xml:space","preserve")
-             .attr("font-weight", fontDetails['weight'])
-             .attr("font-style", fontDetails['style'])
-             .attr("font-family", fontDetails['name'])
-             .attr("font-size", font_size)
+             .attr("y", (height / 2) + (font.size / 3))
+             .call(font.func)
              .attr("fill", tcolor)
              .text(line);
 
@@ -6573,7 +6526,6 @@
          case 2: lmargin = w / 2; break;
          case 3: lmargin = w - (this.text['fMargin'] * w); break;
       }
-      var font_size = Math.round(this.text['fTextSize'] * Math.min(w,h));
       var pos_x = this.text['fX'], pos_y = this.text['fY'];
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pos_x * w;
@@ -6599,7 +6551,7 @@
       }
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
-      var fontDetails = JSROOT.Painter.getFontDetails(this.text['fTextFont']);
+      var font = JSROOT.Painter.getFontDetails(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h));
 
       var string = this.text['fTitle'];
       // translate the LaTeX symbols
@@ -6610,10 +6562,7 @@
               .attr("class", "text")
               .attr("x", pos_x.toFixed(1))
               .attr("y", pos_y.toFixed(1))
-              .attr("font-family", fontDetails['name'])
-              .attr("font-weight", fontDetails['weight'])
-              .attr("font-style", fontDetails['style'])
-              .attr("font-size", font_size)
+              .call(font.func)
               .attr("text-anchor", align)
               .attr("fill", tcolor)
               .text(string);

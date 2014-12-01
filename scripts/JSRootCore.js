@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.1 dev 28/11/2014";
+   JSROOT.version = "3.1 dev 1/12/2014";
 
    JSROOT.source_dir  = function(){
       var scripts = document.getElementsByTagName('script');
