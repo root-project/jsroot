@@ -5726,6 +5726,22 @@
       
       var local_bins = this.CreateDrawBins(w, h, 0, 0);
       
+      var foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject' );
+      // var body = document.createElement( 'body' ); 
+      
+      var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+      
+      $(canvas).attr('width', w).attr('height',h)
+      
+//      $(body).append(canvas);
+      
+      $(foreignObject).attr("width", w).attr("height", h).append(canvas);
+      
+      $(this.draw_g.node()).append(foreignObject);
+
+      var ctx = canvas.getContext("2d");
+      
+/*      
       var canvas = 
          this.draw_g.append("foreignObject")
                  .attr("width", w)
@@ -5734,14 +5750,14 @@
                  .attr("width", w)
                  .attr("height", h)
                  .attr("style", "width: " + w + "px; height: "+ h + "px");
-      
       var ctx = canvas.node().getContext("2d");
+*/
       for (var i in local_bins) {
          var bin = local_bins[i];
          ctx.fillStyle = bin.fill; 
          ctx.fillRect(bin.x,bin.y,bin.width,bin.height);
       }
-
+      
       ctx.stroke();
    }
 
