@@ -5170,7 +5170,10 @@
       JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
       JSROOT.Painter.menuitem(menu, "Draw in 3D", function() { menu['painter'].Draw3D(); });
       JSROOT.Painter.menuitem(menu, "Toggle col", function() {
-         menu['painter'].options.Color = -1 * menu['painter'].options.Color;
+         if (menu['painter'].options.Color == 0)
+            menu['painter'].options.Color = JSROOT.gStyle.DefaultCol;
+         else
+            menu['painter'].options.Color = -1 * menu['painter'].options.Color;
          menu['painter'].RedrawPad();
       });
 

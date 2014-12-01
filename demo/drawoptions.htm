@@ -32,19 +32,22 @@
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
+         var fname = (file.fURL.indexOf("http://")==0) ? fname : "demo/"+ file.fURL;   
+
          var has_equal = false;
-         var html = "Supported options: ";
+         
+         var html = 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
-            if (i>0) html += ", ";
-            html += '<a href="../index.htm?nobrowser&file='; 
-            if (file.fURL.indexOf("http://")==0) html += file.fURL;
-                                            else html += "demo/"+ file.fURL;   
+            if (i==0) html += " Item: "; else
+            if (i==1) html += " Options: "; else html += ", ";
+            html += '<a href="../index.htm?nobrowser&file=' + fname; 
             html += '&item=' + itemname + '&';
              
             if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
                                   else { html += arr[i]; has_equal = true; } 
             
             html += '" target="_blank">';
+            if (i==0) html += itemname; else
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
@@ -63,7 +66,7 @@
          if (factor!=null) h = w * factor;
          
          for (var i in arr) {
-            var subid = divid + "_" + arr[i];
+            var subid = divid + "_" + i;
             
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
             $("#" + divid).append(html);
@@ -159,12 +162,10 @@
             LoadFile("can4.root", function(file) {
                draw_item_options(file, "c1;1", "can8_draw", "", 0.);
             });
+            LoadFile("higgs_c.root", function(file) {
+               draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3", 0.);
+            });
          }
-
-         LoadFile("higgs_c.root", function(file) {
-            draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3", 0.);
-         });
-
 
          
          // JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); });
