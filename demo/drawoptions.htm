@@ -18,9 +18,8 @@
       
       if (JSROOT.source_dir.indexOf("root.cern.ch")>0)
          global_dir = "http://root.cern.ch/js/files/";
-      if (JSROOT.source_dir.indexOf("web-docs.gsi.de/~linev")>0)
+      if (JSROOT.source_dir.indexOf("web-docs.gsi.de")>0)
          global_dir = "http://web-docs.gsi.de/~linev/js/files/";
-         
       
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
@@ -32,7 +31,7 @@
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
-         var fname = (file.fURL.indexOf("http://")==0) ? fname : "demo/"+ file.fURL;   
+         var fname = (file.fURL.indexOf("http://")==0) ? file.fURL : "demo/"+ file.fURL;   
 
          var has_equal = false;
          
