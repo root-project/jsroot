@@ -10,6 +10,7 @@
 
 .h_tree {
    display: block;
+   white-space: nowrap;
 }
 
 .h_tree img {
@@ -210,7 +211,7 @@
 }
 
 /*--------------------------------------------------|
-| tooltip style for 3D painters                     |
+| tooltip style                                     |
 |--------------------------------------------------*/
 
 #tt {
@@ -238,31 +239,25 @@
    overflow:hidden;
 }
 
-/*--------------------------------------------------|
-| axis drawing                                      |
-|--------------------------------------------------*/
-
+/* from JSRootD3Painter */
 .xaxis path, .xaxis line, .yaxis path, .yaxis line, .zaxis path, .zaxis line {
    fill: none;
    stroke: #000;
    shape-rendering: crispEdges;
 }
 
-/*
 .brush .extent {
     stroke: #fff;
     fill-opacity: .125;
     shape-rendering: crispEdges;
 }
-*/
 
 rect.zoom {
     stroke: steelblue;
     fill-opacity: 0.1;
 }
-
 /* Correct overflow not hidden in IE9 */
-/* svg:not(:root) { overflow: hidden; } */
+svg:not(:root) { overflow: hidden; }
 
 
 /*--------------------------------------------------|

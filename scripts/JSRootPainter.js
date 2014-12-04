@@ -2788,7 +2788,7 @@
       if (this.iscan) this.CheckColors(obj);
 
       if (obj.fPrimitives.arr.length != this.pad.fPrimitives.arr.length) return false;
-      
+
       var isany = false, p = 0;
 
       for (var n in obj.fPrimitives.arr) {
@@ -2810,7 +2810,7 @@
       painter.SetDivId(divid, -1); // just assign id
       painter.CreateCanvasSvg();
       painter.SetDivId(divid);  // now add to painters list
-      
+
       if (can==null) {
          JSROOT.Painter.drawFrame(divid, null);
       } else {
@@ -4631,7 +4631,6 @@
 
       JSROOT.Painter.menuitem(menu, JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
-         console.log("Change tooltip " + JSROOT.gStyle.Tooltip);
          menu['painter'].RedrawPad();
       });
 
@@ -6749,8 +6748,6 @@
          if ('fRealName' in key)
             item['_realname'] = key['fRealName'] + ";" + key['fCycle'];
 
-         // console.log("key class = " + key['fClassName']);
-
          if ((key['fClassName'] == 'TTree' || key['fClassName'] == 'TNtuple')) {
             item["_more"] = true;
 
@@ -6973,8 +6970,6 @@
       this['html'] += '<div class="h_tree">'
       this.addItemHtml(this.h, null);
       this['html'] += '</div>';
-
-      console.log("html length " + this['html'].length);
 
       var h = this;
 
@@ -7298,8 +7293,7 @@
                if (JSROOT.gStyle.DragAndDrop)
                   frame.addClass("ui-state-default");
                painter = h.draw(frame.attr("id"), obj, drawopt);
-               console.log("painter = " + painter);
-               
+
                mdi.ActivateFrame(frame);
 
                if (JSROOT.gStyle.DragAndDrop)
@@ -7316,7 +7310,6 @@
                      },
                      drop: function(event, ui) {
                         var dropname = ui.draggable.parent().attr('item');
-                        console.log("drop! " + dropname);
                         return h.dropitem(dropname, frame.attr("id"));
                      }
                   });
@@ -7335,7 +7328,6 @@
 
       h.get(itemname, function(item, obj) {
          if (obj==null) return;
-         console.log("Draw same " + divid);
          var painter = h.draw(divid, obj, "same");
          if (painter) painter['_hitemname'] = itemname;
       });
@@ -7357,8 +7349,6 @@
          if (('_hitemname' in p) && (allitems.indexOf(p['_hitemname'])<0)) allitems.push(p['_hitemname']);
       }, true); // only visible panels are considered
 
-      console.log("update items " + allitems.length);
-      
       // than call display with update
       for (var cnt in allitems)
          this.display(allitems[cnt], "update");
@@ -7397,7 +7387,6 @@
       for (var i in items)
          this.display(items[i], options[i], function(painter) {
             if ((painter==0) || (dropitems[i]==null)) return;
-            console.log("Drop item " + dropitems[i]);
             h.dropitem(dropitems[i], painter.divid);
          });
    }
