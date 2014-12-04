@@ -26,7 +26,9 @@ function grab {
    mkdir -p $2
 
    if [ "$1" != "1" ]; then
-      sed $sedarg ../files/online.htm > $2/index.htm
+      wget -nv $server/$2/?nozip -O $2/index0.htm
+      sed $sedarg $2/index0.htm > $2/index.htm
+      rm -f $2/index0.htm
       wget -nv $server/$2/h.json -O $2/h.json
       wget -nv $server/$2/h.xml -O $2/h.xml
    fi 
@@ -39,7 +41,9 @@ function grab {
    
 }
 
-sed 's/\/jsrootsys/../g' ../files/online.htm > index.htm
+wget -nv $server/index.htm?nozip -O index0.htm
+sed 's/\/jsrootsys/../g' index0.htm > index.htm
+rm -f index0.htm
 wget -nv $server/h.xml -O h.xml
 wget -nv $server/h.json -O h.json
 mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
@@ -56,6 +60,6 @@ grab 0 Canvases/c1/fPrimitives
 grab 2 Canvases/c1/fPrimitives/hpx
 
 # copy all files to web server
-cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.1/demo
+cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.2/demo
 #rm demo.tar
 #tar chf demo.tar * .htaccess --exclude=*.sh --exclude=*.C --exclude=files
