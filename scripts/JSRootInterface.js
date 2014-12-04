@@ -385,9 +385,13 @@ function BuildOnlineGUI() {
          h.EnableMonitoring(this.checked);
          if (this.checked) h.updateAll();
       });
+   
+   var h0 = null;
+   if (typeof GetPrimaryHierarchy == 'function') h0 = GetPrimaryHierarchy();
+   if (typeof h0 != 'object') h0 = "";
 
-   h.OpenOnline("", function() {
-      h.displayAll(itemsarr, optionsarr);
+   h.OpenOnline(h0, function() {
+     h.displayAll(itemsarr, optionsarr);
    });
 
    setInterval(function() { if (h.IsMonitoring()) h.updateAll(); }, h.MonitoringInterval());
