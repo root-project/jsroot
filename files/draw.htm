@@ -9,7 +9,7 @@
    </head>
 
    <script type='text/javascript'>
-   
+
       function GetCashedObject() { return "$$$root.json$$$"; }
 
       function CreateDrawGui() {
@@ -21,7 +21,7 @@
          if (monitor != null) monitor = parseInt(monitor);
 
          var objpainter = null;
-         
+
          function draw_function(obj) {
             if (!obj) {
                 if (!objpainter) $('#drawing').append("<h3>Can not get object from the server</h3>");
@@ -31,15 +31,15 @@
              objpainter = JSROOT.redraw('drawing', obj, drawopt);
              document.body.style.cursor = 'auto';
          }
-         
+
          function get_function() {
             var req = JSROOT.NewHttpRequest("root.json.gz?compact=3", 'object', draw_function);
             // submit request
             req.send(null);
          }
-         
+
          var obj = GetCashedObject();
-         
+
          if (typeof obj =='object') {
             obj = JSROOT.JSONR_unref(obj);
             draw_function(obj);

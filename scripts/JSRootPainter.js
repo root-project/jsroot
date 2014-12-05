@@ -485,7 +485,7 @@
          g = hue2rgb(p, q, h);
          b = hue2rgb(p, q, h - 1 / 3);
       }
-      return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+      return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
    }
 
    JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
@@ -7521,15 +7521,15 @@
                user_callback(painter);
          });
       }
-      
+
       if (!server_address) server_address = "";
-      
+
       if (typeof server_address == 'object') {
          var h = server_address;
          server_address = "";
          AdoptHierarchy(h);
          return;
-      } 
+      }
 
       var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', AdoptHierarchy);
 

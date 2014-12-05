@@ -385,7 +385,7 @@ function BuildOnlineGUI() {
          h.EnableMonitoring(this.checked);
          if (this.checked) h.updateAll();
       });
-   
+
    var h0 = null;
    if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
    if (typeof h0 != 'object') h0 = "";

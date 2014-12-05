@@ -6,6 +6,10 @@ project of Bertrand Bellenot, but provides same functionality in default mode.
 Main motivation for changes - fix different errors,
 make JavaScript code more flexible and applicable for online environment.
 
+Changes in 3.2
+1. Support JSON objects embedding in html pages, produced by THttpServer
+
+
 Changes in 3.1
 1. Correctly show tooltips in case of overlapped objects
 2. Implement JSROOT.Create() method to create supported
