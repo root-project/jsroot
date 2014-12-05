@@ -387,7 +387,7 @@ function BuildOnlineGUI() {
       });
    
    var h0 = null;
-   if (typeof GetPrimaryHierarchy == 'function') h0 = GetPrimaryHierarchy();
+   if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
    if (typeof h0 != 'object') h0 = "";
 
    h.OpenOnline(h0, function() {

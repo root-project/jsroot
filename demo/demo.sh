@@ -36,7 +36,9 @@ function grab {
    if [ "$1" != "0" ]; then 
       wget -nv $server/$2/root.json.gz?compact=3 -O $2/root.json.gz
       wget -nv "$server/$2/root.png?w=400&h=300" -O $2/root.png
-      sed $sedarg ../files/draw.htm > $2/draw.htm
+      wget -nv $server/$2/draw.htm?nozip -O $2/draw0.htm
+      sed $sedarg $2/draw0.htm > $2/draw.htm
+      rm -f $2/draw0.htm
    fi
    
 }
