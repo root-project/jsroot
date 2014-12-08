@@ -2642,19 +2642,41 @@
 
       var render_to  = $("#" + this.divid);
 
-      var w = render_to.width(), h = render_to.height();
+      var w = render_to.width(), h = render_to.height(), factor = null;
 
       var svg = null;
 
       if (only_resize) {
          svg = this.svg_canvas(true);
-         if ((svg.property('last_width') == w) && (svg.property('last_height') == h)) return false;
+
+         if ((svg.attr('width')==w) && (svg.attr('height')==h)) return false;
+
+         var oldw = svg.property('last_width');
+         var oldh = svg.property('last_height');
+
+         if ((oldw == w) && (oldh == h)) return false;
+         
+         if ((oldw>0) && (oldh>0))
+            if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
+              // change view port without changing view box
+              // let SVG scale drawing itself 
+              svg.attr("width", w).attr("height", h);
+              return false;
+            }
+         
+         factor = svg.property('height_factor');
+         if (factor!=null) {
+            // if canvas was resize when created, resize now when very large changes come
+            h = Math.round(w * factor);
+            render_to.height(h);
+         }
+         
       } else {
 
          if (h < 10) {
             // set aspect ratio for the place, where object will be drawn
 
-            var factor = 0.66;
+            factor = 0.66;
 
             // for TCanvas reconstruct ratio between width and height
             if ((this.pad!=null) && ('fCw' in this.pad) && ('fCh' in this.pad) && (this.pad['fCw'] > 0)) {
@@ -2663,7 +2685,7 @@
                   factor = 0.66;
             }
 
-            h = w * factor;
+            h = Math.round(w * factor);
 
             render_to.height(h);
          }
@@ -2690,10 +2712,10 @@
           svg.append("svg:g").attr("class","stat_layer");
       }
 
-
-      svg.attr("width", w)
-         .attr("height", h)
+      svg.attr("width", w).attr("height", h)
          .attr("viewBox", "0 0 " + w + " " + h)
+         .attr("preserveAspectRatio", "none")  // we do not keep relative ratio
+         .property('height_factor', factor)
          .property('last_width', w)
          .property('last_height', h);
 
