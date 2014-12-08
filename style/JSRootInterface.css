@@ -19,8 +19,6 @@ body { margin: 1px; }
 
 textarea { font-size: 100%;}
 
-p { margin-top: 6px; padding: 0 10px 1em; }
-
 #left-div { left: 1px; width: 300px; padding: 5px; overflow: auto; }
 
 #separator-div { left: 305px; width: 4px; position: absolute; top: 1px; bottom: 1px; background-color: white; cursor: ew-resize }

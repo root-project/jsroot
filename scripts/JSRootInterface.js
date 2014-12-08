@@ -281,6 +281,7 @@ function AddInteractions() {
    
    function adjustSize(left) {
       var diff = $("#left-div").outerWidth() - $("#left-div").width();
+      $("#separator-div").css('left', left.toString() + "px");
       $("#left-div").width(left-diff-1);
       $("#right-div").css('left',(left+4).toString() + "px");
       ProcessResize(true);
@@ -288,13 +289,13 @@ function AddInteractions() {
    
    $("#separator-div").draggable({ 
       axis: "x" , zIndex: 100, cursor: "ew-resize",
-      stop: function( event, ui ) { adjustSize(ui.position.left); }
+      helper : function() { return $("#separator-div").clone().css('background-color','grey'); }, 
+      stop: function(event,ui) { adjustSize(ui.position.left); }
    });
    
    var w0 = Math.round($(window).width() * 0.2);
    if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5)); 
    
-   $("#separator-div").css('left', w0.toString() + "px");
    adjustSize(w0);
    
    JSROOT.RegisterForResize(ProcessResize);
@@ -409,21 +410,19 @@ function BuildSimpleGUI() {
 
    var guiCode = "<div id='left-div' class='column'>"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>"
-      +"<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version " + JSROOT.version + "</font>"
+      +"<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:blue'><b>" + JSROOT.version + "</b></span></font>"
       +"<p><b>Select a ROOT file to read, or enter a url (*): </b><br/>"
       +'<small><sub>*: Other URLs might not work because of cross site scripting protection, see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org/http_access_control</a> on how to avoid it.</sub></small></p>'
       +'<form name="ex">'
-      +'<div style="margin-left:5px;margin-right:5px">'
-      +'<input type="text" name="state" value="" style="width:100%" id="urlToLoad"/><br/>'
-      +'<select name="s" size="1" '
+      +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
+      +'<select name="s" style="width:65%; margin-top:5px;" '
       +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
-      +'<option value = " " selected = "selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
+      +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
    for (var i=0; i<arrFiles.length; i++) {
       guiCode += '<option value = "' + filesdir + arrFiles[i] + '">' + arrFiles[i] + '</option>';
    }
-   guiCode += '</select>'
-      +'</div>'
-      +'<input style="padding:2px; margin-left:10px; margin-top:5px;"'
+   guiCode += '</select><br/>'
+      +'<input style="padding:2px; margin-top:5px;"'
       +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
