@@ -7878,7 +7878,7 @@
       var topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null)
-         $("#right-div").append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%"></div>');
+         $("#right-div").append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
       var hid = topid + "_sub" + this.cnt++;
       var uid = hid + "h";
