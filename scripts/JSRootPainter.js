@@ -8063,10 +8063,11 @@
 
             var main = $("#" + this.frameid);
 
-            var h = Math.floor(main.height() / this.sizey);
-            var w = Math.floor(main.width() / this.sizex);
+            var h = Math.floor(main.height() / this.sizey) - 1;
+            var w = Math.floor(main.width() / this.sizex) - 1;
 
-            var content = "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed'>";
+            var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>"; 
+               content += "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed; border-collapse: collapse;'>";
             var cnt = 0;
             for (var i = 0; i < this.sizey; i++) {
                content += "<tr>";
@@ -8074,7 +8075,7 @@
                   content += "<td><div id='" + topid + "_" + cnt++ + "'></div></td>";
                content += "</tr>";
             }
-            content += "</table>";
+            content += "</table></div>";
 
             main.empty();
             main.append(content);
@@ -8104,16 +8105,8 @@
 
       var main = $("#" + this.frameid);
 
-      var h = Math.floor(main.height() / this.sizey);
-      var w = Math.floor(main.width() / this.sizex);
-
-      // console.log("big width = " + main.width() + " height = " + main.height());
-
-      // set height for all table cells, it is not done automatically by browser
-      // for (var cnt=0;cnt<this.sizex*this.sizey;cnt++)
-      // $("#" + this.frameid + "_grid_"+cnt).height(h);
-
-      // $("[id^=" + this.frameid + "_grid_]").height(h).width(w);
+      var h = Math.floor(main.height() / this.sizey) - 1;
+      var w = Math.floor(main.width() / this.sizex) - 1;
 
       main.find("[id^=" + this.frameid + "_grid_]").height(h).width(w);
 

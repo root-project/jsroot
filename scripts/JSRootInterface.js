@@ -321,10 +321,10 @@ function BuildOnlineGUI() {
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return BuildNoBrowserGUI(true);
 
-   var guiCode = '<div id="left-div" class="column"><br/>'
-            + "<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version " + JSROOT.version + "</font>"
-            + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
-            + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
+   var guiCode = '<div id="left-div" class="column">'
+            + '<h1><font face="Verdana" size="4">ROOT online server</font></h1>'
+            + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:blue'><b>" + JSROOT.version + "</b></span></font></p>"
+            + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
             + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
             + '   <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
@@ -409,10 +409,8 @@ function BuildSimpleGUI() {
    var arrFiles = files.split(';');
 
    var guiCode = "<div id='left-div' class='column'>"
-      +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>"
-      +"<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:blue'><b>" + JSROOT.version + "</b></span></font>"
-      +"<p><b>Select a ROOT file to read, or enter a url (*): </b><br/>"
-      +'<small><sub>*: Other URLs might not work because of cross site scripting protection, see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org/http_access_control</a> on how to avoid it.</sub></small></p>'
+      +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
+      +"<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:blue'><b>" + JSROOT.version + "</b></span></font></p>"
       +'<form name="ex">'
       +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
       +'<select name="s" style="width:65%; margin-top:5px;" '
@@ -422,15 +420,16 @@ function BuildSimpleGUI() {
       guiCode += '<option value = "' + filesdir + arrFiles[i] + '">' + arrFiles[i] + '</option>';
    }
    guiCode += '</select><br/>'
+      +'<p><small>Other URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
+      +'see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org</a> on how to avoid it.</small></p>'
       +'<input style="padding:2px; margin-top:5px;"'
       +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
       +'<input style="padding:2px; margin-left:10px;"'
       +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
-      +'<select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
+      +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
       +'  <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
-      +'</select>'
+      +'</select><br/>'
       +'</form>'
-      +'<br/>'
       +'<div id="browser"></div>'
       +'</div>'
       +'<div id="separator-div"></div>'
