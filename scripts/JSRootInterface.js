@@ -268,53 +268,41 @@ function ReadFile(filename, checkitem) {
 
 function ProcessResize(direct)
 {
+   if (JSROOT.H('root')==null) return;
+   
    if (direct) document.body.style.cursor = 'wait';
-
+   
    JSROOT.H('root').CheckResize();
 
    if (direct) document.body.style.cursor = 'auto';
 }
 
 function AddInteractions() {
-   var drag_sum = 0;
-
-   var drag_move = d3.behavior.drag()
-      .origin(Object)
-      .on("dragstart", function() {
-          d3.event.sourceEvent.preventDefault();
-          // console.log("start drag");
-          drag_sum = 0;
-       })
-      .on("drag", function() {
-         d3.event.sourceEvent.preventDefault();
-         drag_sum += d3.event.dx;
-         // console.log("dx = " + d3.event.dx);
-         d3.event.sourceEvent.stopPropagation();
-      })
-      .on("dragend", function() {
-         d3.event.sourceEvent.preventDefault();
-         // console.log("stop drag " + drag_sum);
-
-         var width = d3.select("#left-div").style('width');
-         width = (parseInt(width.substr(0, width.length - 2)) + Number(drag_sum)).toString() + "px";
-         d3.select("#left-div").style('width', width);
-
-         var left = d3.select("#separator-div").style('left');
-         left = parseInt(left.substr(0, left.length - 2)) + Number(drag_sum);
-         d3.select("#separator-div").style('left',left.toString() + "px");
-         d3.select("#right-div").style('left',(left+6).toString() + "px");
-
-         ProcessResize(true);
-      });
-
-   d3.select("#separator-div").call(drag_move);
-
+   
+   function adjustSize(left) {
+      var diff = $("#left-div").outerWidth() - $("#left-div").width();
+      $("#left-div").width(left-diff-1);
+      $("#right-div").css('left',(left+4).toString() + "px");
+      ProcessResize(true);
+   }
+   
+   $("#separator-div").draggable({ 
+      axis: "x" , zIndex: 100, cursor: "ew-resize",
+      stop: function( event, ui ) { adjustSize(ui.position.left); }
+   });
+   
+   var w0 = Math.round($(window).width() * 0.2);
+   if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5)); 
+   
+   $("#separator-div").css('left', w0.toString() + "px");
+   adjustSize(w0);
+   
    JSROOT.RegisterForResize(ProcessResize);
 
    // specify display kind every time selection done
    // will be actually used only for first drawing or after reset
    document.getElementById("layout").onchange = function() {
-      if (JSROOT.H('root'))
+      if (JSROOT.H('root')!=null)
          JSROOT.H('root').SetDisplay(guiLayout(), "right-div");
    }
 }
@@ -332,9 +320,8 @@ function BuildOnlineGUI() {
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return BuildNoBrowserGUI(true);
 
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
-
-   guiCode += '<div id="left-div" class="column"><br/>'
+   var guiCode = '<div id="left-div" class="column"><br/>'
+            + "<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version " + JSROOT.version + "</font>"
             + '  <h1><font face="Verdana" size="4">ROOT online server</font></h1>'
             + '  Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format<br/><br/>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
@@ -348,6 +335,8 @@ function BuildOnlineGUI() {
 
    $('#onlineGUI').empty();
    $('#onlineGUI').append(guiCode);
+
+   AddInteractions();
 
    var layout = JSROOT.GetUrlOption("layout");
    if ((layout=="") || (layout==null))
@@ -377,7 +366,7 @@ function BuildOnlineGUI() {
    var h = new JSROOT.HierarchyPainter("root", "browser");
 
    h.SetDisplay(layout, 'right-div');
-
+   
    h.EnableMonitoring(monitor!=null);
    $("#monitoring")
       .prop('checked', monitor!=null)
@@ -395,8 +384,6 @@ function BuildOnlineGUI() {
    });
 
    setInterval(function() { if (h.IsMonitoring()) h.updateAll(); }, h.MonitoringInterval());
-
-   AddInteractions();
 }
 
 function BuildSimpleGUI() {
@@ -420,15 +407,14 @@ function BuildSimpleGUI() {
    if (filesdir==null) filesdir = "";
    var arrFiles = files.split(';');
 
-   var guiCode = "<div id='overlay'><font face='Verdana' size='1px'>&nbspJSROOT version " + JSROOT.version + "&nbsp</font></div>"
-
-   guiCode += "<div id='left-div' class='column'>\n"
-      +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>\n"
-      +"<p><b>Select a ROOT file to read, or enter a url (*): </b><br/>\n"
+   var guiCode = "<div id='left-div' class='column'>"
+      +"<h1><font face='Verdana' size='4'>Read a ROOT file with Javascript</font></h1>"
+      +"<font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version " + JSROOT.version + "</font>"
+      +"<p><b>Select a ROOT file to read, or enter a url (*): </b><br/>"
       +'<small><sub>*: Other URLs might not work because of cross site scripting protection, see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org/http_access_control</a> on how to avoid it.</sub></small></p>'
       +'<form name="ex">'
-      +'<div style="margin-left:10px;">'
-      + '<input type="text" name="state" value="" size="30" id="urlToLoad"/><br/>'
+      +'<div style="margin-left:5px;margin-right:5px">'
+      +'<input type="text" name="state" value="" style="width:100%" id="urlToLoad"/><br/>'
       +'<select name="s" size="1" '
       +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
       +'<option value = " " selected = "selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
@@ -448,7 +434,7 @@ function BuildSimpleGUI() {
       +'<br/>'
       +'<div id="browser"></div>'
       +'</div>'
-      +'<div id="separator-div" class="column"></div>'
+      +'<div id="separator-div"></div>'
       +'<div id="right-div" class="column"></div>';
 
    $('#simpleGUI').empty();
