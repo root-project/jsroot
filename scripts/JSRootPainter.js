@@ -1141,7 +1141,7 @@
       $("#" + this.divid).empty();
    }
 
-   JSROOT.TObjectPainter.prototype.RedrawPad = function(resize) {
+   JSROOT.TObjectPainter.prototype.RedrawPad = function() {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
 
@@ -1149,7 +1149,7 @@
 
       var pad_painter = pad ? pad['pad_painter'] : null;
 
-      if (pad_painter) pad_painter.Redraw(true);
+      if (pad_painter) pad_painter.Redraw();
    }
 
    JSROOT.TObjectPainter.prototype.RemoveDrag = function(id) {
@@ -2638,38 +2638,40 @@
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(only_resize) {
+   JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
-      var render_to  = $("#" + this.divid);
+      var render_to = $("#" + this.divid);
 
       var w = render_to.width(), h = render_to.height(), factor = null;
 
       var svg = null;
 
-      if (only_resize) {
+      if (check_resize > 0) {
          svg = this.svg_canvas(true);
-
-         if ((svg.attr('width')==w) && (svg.attr('height')==h)) return false;
 
          var oldw = svg.property('last_width');
          var oldh = svg.property('last_height');
 
-         if ((oldw == w) && (oldh == h)) return false;
+         if (check_resize == 1) {
+            if ((svg.attr('width')==w) && (svg.attr('height')==h)) return false;
+            if ((oldw == w) && (oldh == h)) return false;
+         }
          
-         if ((oldw>0) && (oldh>0))
+         factor = svg.property('height_factor');
+
+         if (factor!=null) {
+            // if canvas was resize when created, resize height also now
+            h = Math.round(w * factor);
+            render_to.height(h);
+         }
+
+         if ((check_resize==1) && (oldw>0) && (oldh>0))
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
               // change view port without changing view box
               // let SVG scale drawing itself 
               svg.attr("width", w).attr("height", h);
               return false;
             }
-         
-         factor = svg.property('height_factor');
-         if (factor!=null) {
-            // if canvas was resize when created, resize now when very large changes come
-            h = Math.round(w * factor);
-            render_to.height(h);
-         }
          
       } else {
 
@@ -2789,22 +2791,27 @@
       }
    }
 
-   JSROOT.TPadPainter.prototype.Redraw = function(resize) {
-      if (resize && !this.iscan) this.CreatePadSvg(true);
-
+   JSROOT.TPadPainter.prototype.Redraw = function() {
+      if (this.iscan)
+         this.CreateCanvasSvg(2);
+      else         
+         this.CreatePadSvg(true);
+      
       // at the moment canvas painter donot redraw its subitems
       for (var i in this.painters)
-         this.painters[i].Redraw(resize);
+         this.painters[i].Redraw();
    }
-
 
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function() {
       if (!this.iscan) return;
 
-      var changed = this.CreateCanvasSvg(true);
-      if (changed) this.Redraw(true);
+      var changed = this.CreateCanvasSvg(1);
+      
+      // at the moment canvas painter donot redraw its subitems
+      if (changed) 
+         for (var i in this.painters)
+            this.painters[i].Redraw();
    }
-
 
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
 
@@ -2833,7 +2840,7 @@
    JSROOT.Painter.drawCanvas = function(divid, can) {
       var painter = new JSROOT.TPadPainter(can, true);
       painter.SetDivId(divid, -1); // just assign id
-      painter.CreateCanvasSvg();
+      painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
       if (can==null) {
@@ -7976,7 +7983,9 @@
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
 
-         var tabs = $("#" + topid).tabs({ heightStyle : "fill" });
+         var tabs = $("#" + topid)
+                       .css('overflow','hidden')
+                       .tabs({ heightStyle : "fill" });
 
          tabs.delegate("span.ui-icon-close", "click", function() {
             var panelId = $(this).closest("li").remove().attr("aria-controls");
