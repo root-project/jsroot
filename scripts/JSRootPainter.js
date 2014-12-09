@@ -6990,16 +6990,16 @@
       if ('_online' in this.h)
          this['html'] += "| <a href='#reload'>reload</a>";
       else
-         this['html'] += "<a/>"
+         this['html'] += "<a/>";
 
       if ('disp_kind' in this)
          this['html'] += "| <a href='#clear'>clear</a>";
       else
-         this['html'] += "<a/>"
+         this['html'] += "<a/>";
 
       this['html'] += "</p>";
 
-      this['html'] += '<div class="h_tree">'
+      this['html'] += '<div class="h_tree">';
       this.addItemHtml(this.h, null);
       this['html'] += '</div>';
 
@@ -7014,7 +7014,7 @@
             items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
 
          if (JSROOT.gStyle.ContextMenu)
-            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
+            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
       }
 
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });

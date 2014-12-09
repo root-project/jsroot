@@ -407,11 +407,13 @@ function BuildSimpleGUI() {
    if (filesdir==null) filesdir = "";
    var arrFiles = files.split(';');
 
+   var filename = JSROOT.GetUrlOption("file");
+   
    var guiCode = "<div id='left-div' class='column'>"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
       +"<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
    
-   if (JSROOT.GetUrlOption("noselect")==null) {
+   if ((JSROOT.GetUrlOption("noselect")==null) && (filename!=null)) {
      guiCode += '<form name="ex">'
       +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
       +'<select name="s" style="width:65%; margin-top:5px;" '
@@ -443,7 +445,6 @@ function BuildSimpleGUI() {
 
    AddInteractions();
 
-   var filename = JSROOT.GetUrlOption("file");
    if ((typeof filename == 'string') && (filename.length>0))
       ReadFile(filename, true);
 }
