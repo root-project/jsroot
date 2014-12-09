@@ -33,7 +33,7 @@
       ContextMenu : true,
       Zooming : true,
       MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
-      DragAndDrop : false,
+      DragAndDrop : true,  // enables drag and drop functionality
       OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
       DefaultCol : 1,  // default col option 1-svg, 2-canvas
       AutoStat : true,
