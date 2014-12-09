@@ -1335,7 +1335,7 @@
       var url = this.fURL;
       if (this.fAcceptRanges) {
          // only when server accept ranges we could also try to avoid cashing
-         if (url.indexOf('?')>0) url+="&stamp="; else url += "&stamp=";
+         if (url.indexOf('?')>0) url+="&stamp="; else url += "?stamp=";
          var d = new Date;
          url += d.getTime();
       }
