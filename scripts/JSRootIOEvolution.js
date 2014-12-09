@@ -1320,11 +1320,6 @@
       return this;
    }
    
-   JSROOT.TFile.prototype.MakeHttpRequest = function(kind, callback) {
-      
-      return JSROOT.NewHttpRequest(url, kind, callback);
-   }
-
    JSROOT.TFile.prototype.ReadBuffer = function(len, callback) {
 
       if (!this.fAcceptRanges && (this.fFullFileContent.length>0))
