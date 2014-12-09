@@ -7336,7 +7336,7 @@
                         if (dropname == itemname) return false;
 
                         var ditem = h.Find(dropname);
-                        if (ditem==null) return false;
+                        if ((ditem==null) || (!('_kind' in ditem))) return false;
 
                         return ditem._kind.indexOf("ROOT.")==0;
                      },
