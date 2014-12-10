@@ -2656,7 +2656,7 @@
             if ((svg.attr('width')==w) && (svg.attr('height')==h)) return false;
             if ((oldw == w) && (oldh == h)) return false;
          }
-         
+
          factor = svg.property('height_factor');
 
          if (factor!=null) {
@@ -2668,11 +2668,11 @@
          if ((check_resize==1) && (oldw>0) && (oldh>0))
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
               // change view port without changing view box
-              // let SVG scale drawing itself 
+              // let SVG scale drawing itself
               svg.attr("width", w).attr("height", h);
               return false;
             }
-         
+
       } else {
 
          if (h < 10) {
@@ -2794,9 +2794,9 @@
    JSROOT.TPadPainter.prototype.Redraw = function() {
       if (this.iscan)
          this.CreateCanvasSvg(2);
-      else         
+      else
          this.CreatePadSvg(true);
-      
+
       // at the moment canvas painter donot redraw its subitems
       for (var i in this.painters)
          this.painters[i].Redraw();
@@ -2806,9 +2806,9 @@
       if (!this.iscan) return;
 
       var changed = this.CreateCanvasSvg(1);
-      
+
       // at the moment canvas painter donot redraw its subitems
-      if (changed) 
+      if (changed)
          for (var i in this.painters)
             this.painters[i].Redraw();
    }
@@ -7909,7 +7909,7 @@
             .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
             .hover(function() { $(this).toggleClass("ui-state-hover"); })
             .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
-            .append('<button type="button" class="closeButton" title="close canvas" '+ 
+            .append('<button type="button" class="closeButton" title="close canvas" '+
                     'onclick="javascript: $(this).parent().next().andSelf().remove();">'+
                     '<img class="img_remove" src="" alt=""/></button>')
             .click( function() {
@@ -8087,7 +8087,7 @@
             var h = Math.floor(main.height() / this.sizey) - 1;
             var w = Math.floor(main.width() / this.sizex) - 1;
 
-            var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>"; 
+            var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>";
                content += "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed; border-collapse: collapse;'>";
             var cnt = 0;
             for (var i = 0; i < this.sizey; i++) {

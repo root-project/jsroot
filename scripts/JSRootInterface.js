@@ -269,16 +269,16 @@ function ReadFile(filename, checkitem) {
 function ProcessResize(direct)
 {
    if (JSROOT.H('root')==null) return;
-   
+
    if (direct) document.body.style.cursor = 'wait';
-   
+
    JSROOT.H('root').CheckResize();
 
    if (direct) document.body.style.cursor = 'auto';
 }
 
 function AddInteractions() {
-   
+
    function adjustSize(left) {
       var diff = $("#left-div").outerWidth() - $("#left-div").width();
       $("#separator-div").css('left', left.toString() + "px");
@@ -286,18 +286,18 @@ function AddInteractions() {
       $("#right-div").css('left',(left+4).toString() + "px");
       ProcessResize(true);
    }
-   
-   $("#separator-div").draggable({ 
+
+   $("#separator-div").draggable({
       axis: "x" , zIndex: 100, cursor: "ew-resize",
-      helper : function() { return $("#separator-div").clone().css('background-color','grey'); }, 
+      helper : function() { return $("#separator-div").clone().css('background-color','grey'); },
       stop: function(event,ui) { adjustSize(ui.position.left); }
    });
-   
+
    var w0 = Math.round($(window).width() * 0.2);
-   if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5)); 
-   
+   if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
+
    adjustSize(w0);
-   
+
    JSROOT.RegisterForResize(ProcessResize);
 
    // specify display kind every time selection done
@@ -366,7 +366,7 @@ function BuildOnlineGUI() {
    var h = new JSROOT.HierarchyPainter("root", "browser");
 
    h.SetDisplay(layout, 'right-div');
-   
+
    h.EnableMonitoring(monitor!=null);
    $("#monitoring")
       .prop('checked', monitor!=null)
@@ -408,11 +408,11 @@ function BuildSimpleGUI() {
    var arrFiles = files.split(';');
 
    var filename = JSROOT.GetUrlOption("file");
-   
+
    var guiCode = "<div id='left-div' class='column'>"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
       +"<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
-   
+
    if ((JSROOT.GetUrlOption("noselect")==null) && (filename!=null)) {
      guiCode += '<form name="ex">'
       +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
@@ -440,7 +440,7 @@ function BuildSimpleGUI() {
       +'<div id="right-div" class="column"></div>';
 
    $('#simpleGUI').empty().append(guiCode);
-   
+
    // $("#layout").selectmenu();
 
    AddInteractions();

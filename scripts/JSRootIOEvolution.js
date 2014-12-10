@@ -1097,9 +1097,7 @@
       buf.CheckBytecount(ver, "TStreamer.Stream");
 
       return buf.o;
-
-   };
-
+   }
 
 
    // ==============================================================================
@@ -1176,7 +1174,7 @@
          if (blob1==null) return readkeys_callback(null);
          var buf = new JSROOT.TBuffer(blob1, thisdir.fNbytesName, file);
 
-         thisdir.StreamHeader(buf);
+         JSROOT.StreamDirHeader(thisdir, buf);
 
          //*-*---------read TKey::FillBuffer info
          buf.locate(4); // Skip NBytes;
@@ -1217,19 +1215,19 @@
 
          delete buf;
       });
-   };
+   }
 
-   JSROOT.TDirectory.prototype.StreamHeader = function(buf) {
+   JSROOT.StreamDirHeader = function(dir, buf) {
       var version = buf.ntou2();
-      var versiondir = version%1000;
+      var versiondir = version % 1000;
       buf.shift(8); // skip fDatimeC and fDatimeM
-      this.fNbytesKeys = buf.ntou4();
-      this.fNbytesName = buf.ntou4();
-      this.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
-      this.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
-      this.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
+      dir.fNbytesKeys = buf.ntou4();
+      dir.fNbytesName = buf.ntou4();
+      dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
+      dir.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
+      dir.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
       if (versiondir > 2) buf.shift(18); // skip fUUID
-   };
+   }
 
 
    // ==============================================================================
@@ -1271,7 +1269,9 @@
       this.fEND = 0;
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
+      this.fUseStampPar = true;  // use additional stamp parameter for file name to avoid browser caching problem 
       this.fFullFileContent = ""; // this can be full content of the file (if ranges are not supported)
+      this.fPartFileContent = ""; // this is beggining part of file (1024 bytes)
 
       this.ERelativeTo = { kBeg : 0, kCur : 1, kEnd : 2 };
       this.fDirectories = new Array();
@@ -1319,39 +1319,52 @@
 
       return this;
    }
-   
+
    JSROOT.TFile.prototype.ReadBuffer = function(len, callback) {
 
       if (!this.fAcceptRanges && (this.fFullFileContent.length>0))
          return callback(this.fFullFileContent.substr(this.fOffset, len));
+      
+      if ((this.fPartFileContent.length > 0) && (this.fOffset+len <= this.fPartFileContent.length)) 
+         return callback(this.fPartFileContent.substr(this.fOffset, len));
 
       var file = this;
 
       var url = this.fURL;
-      if (this.fAcceptRanges) {
-         // only when server accept ranges we could also try to avoid cashing
+      if (this.fUseStampPar) {
+         // only when server accept ranges we could also try to avoid caching
          if (url.indexOf('?')>0) url+="&stamp="; else url += "?stamp=";
          var d = new Date;
          url += d.getTime();
       }
-
-      var xhr = JSROOT.NewHttpRequest(url, "bin", function(res) {
+      
+      function read_callback(res) {
+         if ((res==null) && file.fUseStampPar && (file.fOffset==0)) {
+            // if fail to read file with stamp parameter, try once to avoid it
+            file.fUseStampPar = false;
+            var xhr2 = JSROOT.NewHttpRequest(this.fURL, "bin", read_callback);
+            if (this.fAcceptRanges)
+               xhr2.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len - 1));
+            xhr2.send(null);
+            return;
+         } else 
          if ((res!=null) && !file.fAcceptRanges && (file.fFullFileContent.length == 0)) {
             // special case - read content all at once
             file.fFullFileContent = res;
             file.fEND = res.length;
             res = file.fFullFileContent.substr(file.fOffset, len);
-         }
-
+         } else 
+         if ((res!=null) && (file.fOffset==0) && (file.fPartFileContent.length==0))
+            file.fPartFileContent = res;
+         
          callback(res);
-      });
+      }
 
+      var xhr = JSROOT.NewHttpRequest(url, "bin", read_callback);
       if (this.fAcceptRanges)
          xhr.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len - 1));
-      // does not work when used with CORS requests
-      // xhr.setRequestHeader("If-Modified-Since", "Wed, 31 Dec 1980 00:00:00 GMT");
       xhr.send(null);
-   };
+   }
 
    JSROOT.TFile.prototype.Seek = function(offset, pos) {
       // Set position from where to start reading.
@@ -1372,7 +1385,7 @@
             throw  "Seek : unknown seek option (" + pos + ")";
             break;
       }
-   };
+   }
 
    JSROOT.TFile.prototype.ReadHeader = function(str) {
       // read the Root header file informations
@@ -1401,7 +1414,7 @@
       this.fSeekInfo = header['seekInfo'];
       this.fNbytesInfo = header['nbytesInfo'];
       return header;
-   };
+   }
 
    JSROOT.TFile.prototype.ReadKey = function(buf) {
       // read key from buffer
@@ -1562,7 +1575,7 @@
 
             if (isdir) {
                var dir = new JSROOT.TDirectory(file, obj_name, cycle);
-               dir.StreamHeader(buf);
+               JSROOT.StreamDirHeader(dir, buf);
                if (dir.fSeekKeys) {
                   dir.ReadKeys(user_call_back);
                } else {
@@ -1633,113 +1646,102 @@
 
       var file = this;
 
-      this.ReadBuffer(256, function(blob1) {
-         var header = file.ReadHeader(blob1);
-         if (header == null) return readkeys_callback(null);
+      // with the first readbuffer we read bigger amount to create header cache 
+      this.ReadBuffer(1024, function(blob1) {
+         if (blob1==null) return readkeys_callback(null);
+         
+         if (blob1.substring(0, 4)!='root') {
+            alert("NOT A ROOT FILE! " + file.fURL);
+            return readkeys_callback(null);
+         }
+         
+         var buf = new JSROOT.TBuffer(blob1, 4, file); // skip the "root" file identifier
+         file.fVersion = buf.ntou4();
+         file.fBEGIN = buf.ntou4();
+         if (file.fVersion < 1000000) { //small file
+            file.fEND = buf.ntou4();
+            file.fSeekFree = buf.ntou4();
+            file.fNbytesFree = buf.ntou4();
+            var nfree = buf.ntoi4();
+            file.fNbytesName = buf.ntou4();
+            file.fUnits = buf.ntou1();
+            file.fCompress = buf.ntou4();
+            file.fSeekInfo = buf.ntou4();
+            file.fNbytesInfo = buf.ntou4();
+         } else { // new format to support large files
+            file.fEND = buf.ntou8();
+            file.fSeekFree = buf.ntou8();
+            file.fNbytesFree = buf.ntou4();
+            var nfree = buf.ntou4();
+            file.fNbytesName = buf.ntou4();
+            file.fUnits = buf.ntou1();
+            file.fCompress = buf.ntou4();
+            file.fSeekInfo = buf.ntou8();
+            file.fNbytesInfo = buf.ntou4();
+         }
 
-         file.ReadBuffer(300, function(blob2) {
-            if (blob2==null) return readkeys_callback(null);
+         // empty file
+         if (!file.fSeekInfo && !file.fNbytesInfo) 
+            return readkeys_callback(null);
 
-            var buf = new JSROOT.TBuffer(blob2, 4, file); // skip the "root" file identifier
-            file.fVersion = buf.ntou4();
-            var headerLength = buf.ntou4();
-            file.fBEGIN = headerLength;
-            if (file.fVersion < 1000000) { //small file
-               file.fEND = buf.ntou4();
-               file.fSeekFree = buf.ntou4();
-               file.fNbytesFree = buf.ntou4();
-               var nfree = buf.ntoi4();
-               file.fNbytesName = buf.ntou4();
-               file.fUnits = buf.ntou1();
-               file.fCompress = buf.ntou4();
-               file.fSeekInfo = buf.ntou4();
-               file.fNbytesInfo = buf.ntou4();
-            } else { // new format to support large files
-               file.fEND = buf.ntou8();
-               file.fSeekFree = buf.ntou8();
-               file.fNbytesFree = buf.ntou4();
-               var nfree = buf.ntou4();
-               file.fNbytesName = buf.ntou4();
-               file.fUnits = buf.ntou1();
-               file.fCompress = buf.ntou4();
-               file.fSeekInfo = buf.ntou8();
-               file.fNbytesInfo = buf.ntou4();
+         //*-*-------------Read directory info
+         var nbytes = file.fNbytesName + 22;
+         nbytes += 4;  // fDatimeC.Sizeof();
+         nbytes += 4;  // fDatimeM.Sizeof();
+         nbytes += 18; // fUUID.Sizeof();
+         // assume that the file may be above 2 Gbytes if file version is > 4
+         if (file.fVersion >= 40000) nbytes += 12;
+
+         file.Seek(file.fBEGIN, file.ERelativeTo.kBeg);
+         
+         file.ReadBuffer(Math.max(300, nbytes), function(blob3) {
+            if (blob3==null) return readkeys_callback(null);
+
+            var buf3 = new JSROOT.TBuffer(blob3, file.fNbytesName, file);
+            
+            JSROOT.StreamDirHeader(file, buf3);
+
+            //*-*---------read TKey::FillBuffer info
+            buf3.o = 4; // Skip NBytes;
+            var keyversion = buf3.ntoi2();
+            // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
+            if (keyversion > 1000) buf3.shift(28); // Large files
+                              else buf3.shift(20);
+            buf3.ReadTString();
+            buf3.ReadTString();
+            file.fTitle = buf3.ReadTString();
+            if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
+               console.log("Init : cannot read directory info of file " + file.fURL);
+               return readkeys_callback(null);
             }
-            file.fSeekDir = file.fBEGIN;
+            //*-* -------------Read keys of the top directory
 
-            //*-*-------------Read directory info
+            if (file.fSeekKeys <= 0) {
+               console.log("Empty keys list - not supported" + file.fURL);
+               return readkeys_callback(null);
+            }
 
-            var nbytes = file.fNbytesName + 22;
-            nbytes += 4;  // fDatimeC.Sizeof();
-            nbytes += 4;  // fDatimeM.Sizeof();
-            nbytes += 18; // fUUID.Sizeof();
-            // assume that the file may be above 2 Gbytes if file version is > 4
-            if (file.fVersion >= 40000) nbytes += 12;
+            file.Seek(file.fSeekKeys, file.ERelativeTo.kBeg);
+            file.ReadBuffer(file.fNbytesKeys, function(blob4) {
+               if (blob4==null) return readkeys_callback(null);
 
-            file.Seek(file.fBEGIN, file.ERelativeTo.kBeg);
-            file.ReadBuffer(Math.max(300, nbytes), function(blob3) {
-               if (blob3==null) return readkeys_callback(null);
+               var buf4 = new JSROOT.TBuffer(blob4, 0, file);
 
-               var buf = new JSROOT.TBuffer(blob3, file.fNbytesName, file);
-               var version = buf.ntou2();
-               var versiondir = version%1000;
-               buf.shift(8); // skip fDatimeC and fDatimeM
-               file.fNbytesKeys = buf.ntou4();
-               file.fNbytesName = buf.ntou4();
-               if (version > 1000) {
-                  file.fSeekDir = buf.ntou8();
-                  file.fSeekParent = buf.ntou8();
-                  file.fSeekKeys = buf.ntou8();
-               } else {
-                  file.fSeekDir = buf.ntou4();
-                  file.fSeekParent = buf.ntou4();
-                  file.fSeekKeys = buf.ntou4();
+               var key = file.ReadKey(buf4);
+
+               var nkeys = buf4.ntoi4();
+               for (var i = 0; i < nkeys; i++) {
+                  key = file.ReadKey(buf4);
+                  file.fKeys.push(key);
                }
-               if (versiondir > 1) buf.o += 18; // skip fUUID
-
-               //*-*---------read TKey::FillBuffer info
-               buf.o = 4; // Skip NBytes;
-               var keyversion = buf.ntoi2();
-               // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
-               if (keyversion > 1000) buf.shift(28); // Large files
-                                 else buf.shift(20);
-               buf.ReadTString();
-               buf.ReadTString();
-               file.fTitle = buf.ReadTString();
-               if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
-                  console.log("Init : cannot read directory info of file " + file.fURL);
-                  return readkeys_callback(null);
-               }
-               //*-* -------------Read keys of the top directory
-
-               if (file.fSeekKeys <= 0) {
-                  console.log("Empty keys list - not supported" + file.fURL);
-                  return readkeys_callback(null);
-               }
-
-               file.Seek(file.fSeekKeys, file.ERelativeTo.kBeg);
-               file.ReadBuffer(file.fNbytesKeys, function(blob4) {
-                  if (blob4==null) return readkeys_callback(null);
-
-                  var buf = new JSROOT.TBuffer(blob4, 0, file);
-
-                  var key = file.ReadKey(buf);
-
-                  var nkeys = buf.ntoi4();
-                  for (var i = 0; i < nkeys; i++) {
-                     key = file.ReadKey(buf);
-                     file.fKeys.push(key);
-                  }
-                  file.ReadStreamerInfos(readkeys_callback);
-                  delete buf;
-               });
-               delete buf;
+               file.ReadStreamerInfos(readkeys_callback);
+               delete buf4;
             });
-            delete buf;
+            delete buf3;
          });
          delete buf;
       });
-   };
+   }
 
    JSROOT.TFile.prototype.ReadDirectory = function(dir_name, cycle, readdir_callback) {
       // read the directory content from  a root file
