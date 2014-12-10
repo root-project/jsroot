@@ -858,6 +858,18 @@
 
       $("#" + divid).children().eq(0).prop('painter', this);
    }
+   
+   JSROOT.TBasePainter.prototype.SetItemName = function(name) {
+      if (name==null) 
+         delete this['_hitemname'];
+      else
+         this['_hitemname'] = name;
+   }
+   
+   JSROOT.TBasePainter.prototype.GetItemName = function(name) {
+      return ('_hitemname' in this) ? this['_hitemname'] : null;  
+   }
+   
 
    // ==============================================================================
 
@@ -7311,7 +7323,7 @@
             painter = h.draw(divid, obj, drawopt);
          } else
          mdi.ForEachPainter(function(p, frame) {
-            if (p['_hitemname'] != itemname) return;
+            if (p.GetItemName() != itemname) return;
             painter = p;
             mdi.ActivateFrame(frame);
             painter.RedrawObject(obj);
@@ -7348,7 +7360,7 @@
             }
          }
 
-         if (painter) painter['_hitemname'] = itemname; // mark painter as created from hierarchy
+         if (painter) painter.SetItemName(itemname); // mark painter as created from hierarchy
 
          do_call_back(painter);
       });
@@ -7361,7 +7373,7 @@
       h.get(itemname, function(item, obj) {
          if (obj==null) return;
          var painter = h.draw(divid, obj, "same");
-         if (painter) painter['_hitemname'] = itemname;
+         if (painter) painter.SetItemName(itemname);
       });
 
       return true;
@@ -7378,7 +7390,7 @@
 
       // first collect items
       mdi.ForEachPainter(function(p) {
-         if (('_hitemname' in p) && (allitems.indexOf(p['_hitemname'])<0)) allitems.push(p['_hitemname']);
+         if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) allitems.push(p.GetItemName());
       }, true); // only visible panels are considered
 
       // than call display with update
@@ -7691,8 +7703,8 @@
 
          if (this['disp'] != null)
             this['disp'].ForEachPainter(function(painter) {
-               if ('_hitemname' in painter)
-                  items.push(painter['_hitemname']);
+               if (painter.GetItemName()!=null)
+                  items.push(painter.GetItemName());
             });
 
          if (items.length == 1) {
@@ -7820,14 +7832,14 @@
 
    JSROOT.MDIDisplay.prototype.CheckResize = function() {
       this.ForEachPainter(function(painter) {
-         if (('_hitemname' in painter) && (typeof painter['CheckResize'] == 'function'))
+         if ((painter.GetItemName()!=null) && (typeof painter['CheckResize'] == 'function'))
              painter.CheckResize();
       });
    }
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
       this.ForEachPainter(function(painter) {
-         if (('_hitemname' in painter) && (typeof painter['Clenaup'] == 'function'))
+         if ((painter.GetItemName()!=null) && (typeof painter['Clenaup'] == 'function'))
             painter.Clenaup();
       });
 
