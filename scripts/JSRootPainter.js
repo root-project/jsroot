@@ -7034,7 +7034,7 @@
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
                     .next().click(function() { h.reload(); return false; })
-                    .next().click(function() { h.clear(); return false; });
+                    .next().click(function() { h.clear(false); return false; });
    }
 
    JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
@@ -7741,9 +7741,15 @@
       this['disp_frameid'] = frameid;
    }
 
-   JSROOT.HierarchyPainter.prototype.clear = function() {
+   JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
       if ('disp' in this)
          this['disp'].Reset();
+      
+      if (withbrowser) {
+         delete this['disp'];
+         $("#" + this.frameid).empty();
+         delete this.h;
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(force) {
