@@ -253,10 +253,10 @@ function ReadFile(filename, checkitem) {
       layout = guiLayout();
    else
       setGuiLayout(layout);
-   
+
    if (hpainter==null) hpainter = new JSROOT.HierarchyPainter('root', 'browser');
    hpainter.SetDisplay(layout, 'right-div');
-   
+
    AddInteractions();
 
    hpainter.OpenRootFile(filename, function() {
@@ -278,7 +278,7 @@ function ProcessResize(direct)
 function AddInteractions() {
 
    JSROOT.ConfigureVSeparator(hpainter);
-   
+
    JSROOT.RegisterForResize(hpainter);
 
    // specify display kind every time selection done
@@ -344,7 +344,7 @@ function BuildOnlineGUI() {
 
    if (hpainter==null) hpainter = new JSROOT.HierarchyPainter("root", "browser");
    hpainter.SetDisplay(layout, 'right-div');
-   
+
    AddInteractions();
 
    hpainter.EnableMonitoring(monitor!=null);

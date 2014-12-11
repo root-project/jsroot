@@ -858,18 +858,18 @@
 
       $("#" + divid).children().eq(0).prop('painter', this);
    }
-   
+
    JSROOT.TBasePainter.prototype.SetItemName = function(name) {
-      if (name==null) 
+      if (name==null)
          delete this['_hitemname'];
       else
          this['_hitemname'] = name;
    }
-   
+
    JSROOT.TBasePainter.prototype.GetItemName = function(name) {
-      return ('_hitemname' in this) ? this['_hitemname'] : null;  
+      return ('_hitemname' in this) ? this['_hitemname'] : null;
    }
-   
+
 
    // ==============================================================================
 
@@ -7710,7 +7710,7 @@
    JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
       if ('disp' in this)
          this['disp'].Reset();
-      
+
       if (withbrowser) {
          delete this['disp'];
          $("#" + this.frameid).empty();
@@ -8117,22 +8117,22 @@
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
-   
+
    // =========================================================================
 
    JSROOT.ConfigureVSeparator = function(handle, leftdiv, separdiv, rightdiv) {
       if (!leftdiv) leftdiv = "left-div";
       if (!separdiv) separdiv = "separator-div";
-      if (!rightdiv) rightdiv = "right-div"; 
-      
+      if (!rightdiv) rightdiv = "right-div";
+
       function adjustSize(left, firsttime) {
          var diff = $("#"+leftdiv).outerWidth() - $("#"+leftdiv).width();
          $("#"+separdiv).css('left', left.toString() + "px");
          $("#"+leftdiv).width(left-diff-1);
          $("#"+rightdiv).css('left',(left+4).toString() + "px");
          if (firsttime || (handle==null)) return;
-         
-         if (typeof handle == 'function') handle(); else 
+
+         if (typeof handle == 'function') handle(); else
          if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
       }
 
@@ -8147,7 +8147,7 @@
 
       adjustSize(w0, true);
    }
-   
+
    JSROOT.RegisterForResize = function(handle, delay) {
       // function used to react on browser window resize event
       // While many resize events could come in short time,
@@ -8172,9 +8172,9 @@
          myCounter = -1;
 
          if (handle==null) return;
-         
+
          document.body.style.cursor = 'wait';
-         if (typeof handle == 'function') handle(); else 
+         if (typeof handle == 'function') handle(); else
          if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
          document.body.style.cursor = 'auto';
       }

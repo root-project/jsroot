@@ -1257,7 +1257,7 @@
       this.fEND = 0;
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = true;  // use additional stamp parameter for file name to avoid browser caching problem 
+      this.fUseStampPar = true;  // use additional stamp parameter for file name to avoid browser caching problem
       this.fFileContent = ""; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
 
       this.ERelativeTo = { kBeg : 0, kCur : 1, kEnd : 2 };
@@ -1311,7 +1311,7 @@
 
       if ((this.fFileContent.length>0) && (!this.fAcceptRanges || (this.fOffset+len <= this.fFileContent.length)))
          return callback(this.fFileContent.substr(this.fOffset, len));
-      
+
       var file = this;
 
       var url = this.fURL;
@@ -1321,7 +1321,7 @@
          var d = new Date;
          url += d.getTime();
       }
-      
+
       function read_callback(res) {
          if ((res==null) && file.fUseStampPar && (file.fOffset==0)) {
             // if fail to read file with stamp parameter, try once to avoid it
@@ -1331,7 +1331,7 @@
                xhr2.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len - 1));
             xhr2.send(null);
             return;
-         } else 
+         } else
          if ((res!=null) && (file.fOffset==0) && (file.fFileContent.length == 0)) {
             // special case - read content all at once
             file.fFileContent = res;
@@ -1340,7 +1340,7 @@
                res = file.fFileContent.substr(file.fOffset, len);
             }
          }
-         
+
          callback(res);
       }
 
@@ -1601,15 +1601,15 @@
 
       var file = this;
 
-      // with the first readbuffer we read bigger amount to create header cache 
+      // with the first readbuffer we read bigger amount to create header cache
       this.ReadBuffer(1024, function(blob1) {
          if (blob1==null) return readkeys_callback(null);
-         
+
          if (blob1.substring(0, 4)!='root') {
             alert("NOT A ROOT FILE! " + file.fURL);
             return readkeys_callback(null);
          }
-         
+
          var buf = new JSROOT.TBuffer(blob1, 4, file); // skip the "root" file identifier
          file.fVersion = buf.ntou4();
          file.fBEGIN = buf.ntou4();
@@ -1636,7 +1636,7 @@
          }
 
          // empty file
-         if (!file.fSeekInfo && !file.fNbytesInfo) 
+         if (!file.fSeekInfo && !file.fNbytesInfo)
             return readkeys_callback(null);
 
          //*-*-------------Read directory info
@@ -1648,12 +1648,12 @@
          if (file.fVersion >= 40000) nbytes += 12;
 
          file.Seek(file.fBEGIN, file.ERelativeTo.kBeg);
-         
+
          file.ReadBuffer(Math.max(300, nbytes), function(blob3) {
             if (blob3==null) return readkeys_callback(null);
 
             var buf3 = new JSROOT.TBuffer(blob3, file.fNbytesName, file);
-            
+
             // we call TDirectory method while TFile is just derived class
             JSROOT.TDirectory.prototype.StreamHeader.call(file, buf3);
 
