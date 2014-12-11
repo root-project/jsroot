@@ -255,8 +255,9 @@ function ReadFile(filename, checkitem) {
       setGuiLayout(layout);
    
    if (hpainter==null) hpainter = new JSROOT.HierarchyPainter('root', 'browser');
-
    hpainter.SetDisplay(layout, 'right-div');
+   
+   AddInteractions();
 
    hpainter.OpenRootFile(filename, function() {
       hpainter.displayAll(itemsarr, optionsarr);
@@ -276,25 +277,8 @@ function ProcessResize(direct)
 
 function AddInteractions() {
 
-   function adjustSize(left, firsttime) {
-      var diff = $("#left-div").outerWidth() - $("#left-div").width();
-      $("#separator-div").css('left', left.toString() + "px");
-      $("#left-div").width(left-diff-1);
-      $("#right-div").css('left',(left+4).toString() + "px");
-      if (!firsttime) ProcessResize(true);
-   }
-
-   $("#separator-div").draggable({
-      axis: "x" , zIndex: 100, cursor: "ew-resize",
-      helper : function() { return $("#separator-div").clone().css('background-color','grey'); },
-      stop: function(event,ui) { adjustSize(ui.position.left, false); }
-   });
-
-   var w0 = Math.round($(window).width() * 0.2);
-   if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
-
-   adjustSize(w0, true);
-
+   JSROOT.ConfigureVSeparator(hpainter);
+   
    JSROOT.RegisterForResize(hpainter);
 
    // specify display kind every time selection done
@@ -333,8 +317,6 @@ function BuildOnlineGUI() {
 
    $('#onlineGUI').empty().append(guiCode);
 
-   AddInteractions();
-
    var layout = JSROOT.GetUrlOption("layout");
    if ((layout=="") || (layout==null))
       layout = guiLayout();
@@ -360,15 +342,16 @@ function BuildOnlineGUI() {
       for (var i in opts) optionsarr.push(opts[i]);
    }
 
-   var h = new JSROOT.HierarchyPainter("root", "browser");
+   if (hpainter==null) hpainter = new JSROOT.HierarchyPainter("root", "browser");
+   hpainter.SetDisplay(layout, 'right-div');
+   
+   AddInteractions();
 
-   h.SetDisplay(layout, 'right-div');
-
-   h.EnableMonitoring(monitor!=null);
+   hpainter.EnableMonitoring(monitor!=null);
    $("#monitoring")
       .prop('checked', monitor!=null)
       .click(function() {
-         h.EnableMonitoring(this.checked);
+         hpainter.EnableMonitoring(this.checked);
          if (this.checked) h.updateAll();
       });
 
@@ -376,11 +359,11 @@ function BuildOnlineGUI() {
    if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
    if (typeof h0 != 'object') h0 = "";
 
-   h.OpenOnline(h0, function() {
-     h.displayAll(itemsarr, optionsarr);
+   hpainter.OpenOnline(h0, function() {
+       hpainter.displayAll(itemsarr, optionsarr);
    });
 
-   setInterval(function() { if (h.IsMonitoring()) h.updateAll(); }, h.MonitoringInterval());
+   setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
 }
 
 function BuildSimpleGUI() {

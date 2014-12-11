@@ -6643,59 +6643,25 @@
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
       $("#" + divid).css({ overflow : 'auto' });
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid, true);
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
       painter.ShowStreamerInfo(obj);
       return painter;
    }
 
    // =========== painter of hierarchical structures =================================
 
-   JSROOT.HList = [];
-
-   JSROOT.DelHList = function(_name) {
-      for ( var i in JSROOT.HList)
-         if (JSROOT.HList[i].name == _name) {
-            var old = JSROOT.HList[i];
-            JSROOT.HList.splice(i, 1);
-            delete old;
-            return true;
-         }
-   }
-
-   JSROOT.AddHList = function(_name, _h) {
-      JSROOT.DelHList(_name);
-      JSROOT.HList.push({
-         name : _name,
-         h : _h
-      });
-   }
-
-   JSROOT.H = function(name) {
-      for ( var i in JSROOT.HList)
-         if (JSROOT.HList[i].name == name)
-            return JSROOT.HList[i].h;
-      return null;
-   }
-
-   JSROOT.HierarchyPainter = function(name, frameid, local) {
+   JSROOT.HierarchyPainter = function(name, frameid) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.frameid = frameid;
       this.h = null; // hierarchy
-      this.local = local;
-      if (!this.local) JSROOT.AddHList(name, this);
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
-      if (!this.local) JSROOT.DelHList(this.name);
-   }
-
-   JSROOT.HierarchyPainter.prototype.GlobalName = function(suffix) {
-      var res = "JSROOT.H(\'" + this.name + "\')";
-      if (suffix != null) res += suffix;
-      return res;
+      // clear drawing and browser
+      this.clear(true);
    }
 
    JSROOT.HierarchyPainter.prototype.ListHierarchy = function(folder, lst) {
@@ -8151,7 +8117,37 @@
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
+   
+   // =========================================================================
 
+   JSROOT.ConfigureVSeparator = function(handle, leftdiv, separdiv, rightdiv) {
+      if (!leftdiv) leftdiv = "left-div";
+      if (!separdiv) separdiv = "separator-div";
+      if (!rightdiv) rightdiv = "right-div"; 
+      
+      function adjustSize(left, firsttime) {
+         var diff = $("#"+leftdiv).outerWidth() - $("#"+leftdiv).width();
+         $("#"+separdiv).css('left', left.toString() + "px");
+         $("#"+leftdiv).width(left-diff-1);
+         $("#"+rightdiv).css('left',(left+4).toString() + "px");
+         if (firsttime || (handle==null)) return;
+         
+         if (typeof handle == 'function') handle(); else 
+         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
+      }
+
+      $("#"+separdiv).draggable({
+         axis: "x" , zIndex: 100, cursor: "ew-resize",
+         helper : function() { return $("#"+separdiv).clone().css('background-color','grey'); },
+         stop: function(event,ui) { adjustSize(ui.position.left, false); }
+      });
+
+      var w0 = Math.round($(window).width() * 0.2);
+      if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
+
+      adjustSize(w0, true);
+   }
+   
    JSROOT.RegisterForResize = function(handle, delay) {
       // function used to react on browser window resize event
       // While many resize events could come in short time,
@@ -8175,12 +8171,11 @@
          }
          myCounter = -1;
 
+         if (handle==null) return;
+         
          document.body.style.cursor = 'wait';
-
-         if (typeof handle == 'function') handle();
-         else if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function'))
-            handle.CheckResize();
-
+         if (typeof handle == 'function') handle(); else 
+         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
          document.body.style.cursor = 'auto';
       }
 
