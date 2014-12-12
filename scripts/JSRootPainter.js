@@ -8113,9 +8113,11 @@
 
       function adjustSize(left, firsttime) {
          var diff = $("#"+leftdiv).outerWidth() - $("#"+leftdiv).width();
-         $("#"+separdiv).css('left', left.toString() + "px");
+         var w = JSROOT.touches ? 10 : 4;
+         
+         $("#"+separdiv).css('left', left.toString() + "px").width(w);
          $("#"+leftdiv).width(left-diff-1);
-         $("#"+rightdiv).css('left',(left+4).toString() + "px");
+         $("#"+rightdiv).css('left',(left+w).toString() + "px");
          if (firsttime || (handle==null)) return;
 
          if (typeof handle == 'function') handle(); else
