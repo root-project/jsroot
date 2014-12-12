@@ -7290,6 +7290,7 @@
          } else
          mdi.ForEachPainter(function(p, frame) {
             if (p.GetItemName() != itemname) return;
+            console.log("Find painter for " + itemname);
             painter = p;
             mdi.ActivateFrame(frame);
             painter.RedrawObject(obj);
@@ -7790,14 +7791,6 @@
       return found_frame;
    }
 
-   JSROOT.MDIDisplay.prototype.FindPainter = function(title) {
-      var res = null;
-      this.ForEachPainter(function(p,f) {
-         if ((res==null) && (f.prop('title')==title)) res = p;
-      });
-      return res;
-   }
-
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
       // do nothing by default
    }
@@ -7821,15 +7814,8 @@
    JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
       // draw object with specified options
       if (!obj) return;
-
-      var painter = this.FindPainter(title);
+      
       var frame = this.FindFrame(title);
-
-      if (painter!=null) {
-         this.ActivateFrame(frame);
-         painter.RedrawObject(obj);
-         return painter;
-      }
 
       if (!JSROOT.canDraw(obj['_typename'], drawopt)) return;
 
@@ -7838,7 +7824,7 @@
 
       this.ActivateFrame(frame);
 
-      return JSROOT.draw($(frame).attr("id"), obj, drawopt);
+      return JSROOT.redraw($(frame).attr("id"), obj, drawopt);
    }
 
    // ==================================================
