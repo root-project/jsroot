@@ -96,7 +96,7 @@
 
          $('#debug').empty();
          
-         $('#debug').append("<h2>JavaSript ROOT version " + JSROOT.version + "</h2>");
+         $('#debug').append("<h2>JavaScript ROOT version " + JSROOT.version + "</h2>");
          
          var arg = "&w=" + JSROOT.GetUrlOption("w", null, "800") + 
                    "&h=" + JSROOT.GetUrlOption("h", null, "600");
@@ -105,9 +105,9 @@
             arg += "&path=" + global_dir;
          }
 
-         $('#debug').append("<a href='drawoptions.htm?minimal" + arg + "'>Minimal settings</a><br/>"); 
-         $('#debug').append("<a href='drawoptions.htm?default" + arg + "'>Default options</a><br/>"); 
-         $('#debug').append("<a href='drawoptions.htm?all" + arg + "'>All options</a><br/>"); 
+         $('#debug').append("<a href='drawoptions.htm?minimal" + arg + "'>Only items/options list</a><br/>"); 
+         $('#debug').append("<a href='drawoptions.htm?default" + arg + "'>Drawings with default options</a><br/>"); 
+         $('#debug').append("<a href='drawoptions.htm?all" + arg + "'>Drawings for all supported options</a><br/>"); 
 
          LoadFile("hsimple.root", function(file) {
             draw_item_options(file, "hpx;1", "h1_draw", ";P;P0");
