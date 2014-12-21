@@ -3610,7 +3610,7 @@
       // this.histo = obj;
 
       this.histo['fArray'] = obj['fArray'];
-      this.histo['fN'] = obj['fN'];
+      this.histo['fNcells'] = obj['fNcells'];
       this.histo['fTitle'] = obj['fTitle'];
       this.histo['fXaxis']['fNbins'] = obj['fXaxis']['fNbins'];
       this.histo['fXaxis']['fXmin'] = obj['fXaxis']['fXmin'];
