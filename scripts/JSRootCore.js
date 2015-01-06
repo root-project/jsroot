@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.2 dev 21/12/2014";
+   JSROOT.version = "3.2 dev 6/01/2015";
 
    JSROOT.source_dir = function(){
       var scripts = document.getElementsByTagName('script');
@@ -40,7 +40,7 @@
    }
 
    JSROOT.id_counter = 0;
-   
+
    JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
 
    JSROOT.function_list = []; // do we really need it here?
@@ -418,7 +418,7 @@
                      ';$$$scripts/JSRootPainter.js' +
                      ';$$$style/JSRootPainter.css';
          if (JSROOT.touches)
-            allfiles += ';$$$scripts/touch-punch.min.js';         
+            allfiles += ';$$$scripts/touch-punch.min.js';
       }
 
       if (kind.indexOf("3d;")>=0)
