@@ -2176,7 +2176,7 @@
          if (this.optionFill != 1) {
             fill.color = 'none';
          }
-         
+
          this.draw_g.append("svg:path")
                .attr("d", line(pthis.bins) + close_symbol)
                .attr("class", "draw_line")
@@ -5083,7 +5083,7 @@
       }
 
       this.RecreateDrawG();
-      
+
       if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
