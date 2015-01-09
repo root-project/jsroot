@@ -5134,16 +5134,14 @@
       var right = this.GetSelectIndex("x", "right", 1);
 
       var dist = (right - left);
-
-      if (dist == 0)
-         return;
-
-      var min = this.histo.getBinContent(left + 1);
+      if (dist == 0) return;
 
       // first find minimum
+      var min = this.histo.getBinContent(left + 1);
       for (var indx = left; indx < right; indx++)
          if (this.histo.getBinContent(indx + 1) < min)
             min = this.histo.getBinContent(indx + 1);
+      if (min>0) return; // if all points positive, no chance for autoscale
 
       while ((left < right) && (this.histo.getBinContent(left + 1) <= min)) left++;
       while ((left < right) && (this.histo.getBinContent(right) <= min)) right--;
@@ -5251,14 +5249,14 @@
 
       if ((i1 == i2) || (j1 == j2)) return;
 
-      var min = this.histo.getBinContent(i1 + 1, j1 + 1);
-
       // first find minimum
+      var min = this.histo.getBinContent(i1 + 1, j1 + 1);
       for (var i = i1; i < i2; i++)
          for (var j = j1; j < j2; j++)
             if (this.histo.getBinContent(i + 1, j + 1) < min)
                min = this.histo.getBinContent(i + 1, j + 1);
-
+      if (min>0) return; // if all points positive, no chance for autoscale
+      
       var ileft = i2, iright = i1, jleft = j2, jright = j1;
 
       for (var i = i1; i < i2; i++)
