@@ -80,81 +80,38 @@
    JSROOT.createMenu = function(menuname) {
       if (!menuname) menuname = "root_ctx_menu";
 
-      $("#"+menuname).remove()
-
       var menu = { divid: menuname, code:"", funcs : {} };
       
       menu.add = function(name,func) {
-         this.code += "<li>"+name+"</li>"; 
-         this.funcs[name] = func; // keep call-back function 
+         if (func == 'header')
+            this.code += "<li class='ui-widget-header'>"+name+"</li>";
+         else
+            this.code += "<li>"+name+"</li>";
+         if (typeof func == 'function') this.funcs[name] = func; // keep call-back function 
       }
       
       menu.show = function(event) {
-         var xMousePosition = event.clientX + window.pageXOffset;
-         var yMousePosition = event.clientY + window.pageYOffset;
+         $("#"+menuname).remove()
 
          document.body.onclick = function(e) { $("#"+menuname).remove(); }
          
-         $(document.body).append('<ul id="' + menuname + '" class="ctxmenu">' + this.code + '</ul>');
+         $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
          
          $("#" + menuname)
-            .css('left', xMousePosition)
-            .css('top', yMousePosition)
+            .css('left', event.clientX + window.pageXOffset)
+            .css('top', event.clientY + window.pageYOffset)
+            .attr('class', 'ctxmenu')
             .menu({
-              select: function( event, ui ) {
-                 var func = menu.funcs[ui.item.text()];
-                 $("#"+menuname).remove();
-                 if (typeof func == 'function') func();
+               items: "> :not(.ui-widget-header)",
+               select: function( event, ui ) {
+                  var func = menu.funcs[ui.item.text()];
+                  $("#"+menuname).remove();
+                  if (typeof func == 'function') func();
               }
          });
       }
       
       return menu;
-   }
-   
-
-   JSROOT.Painter.createmenu = function(event, menuname) {
-
-      if (!menuname) menuname = "root_ctx_menu";
-
-      var xMousePosition = event.clientX + window.pageXOffset;
-      var yMousePosition = event.clientY + window.pageYOffset;
-
-      var x = document.getElementById(menuname);
-      if (x) x.parentNode.removeChild(x);
-
-      var d = document.createElement('div');
-      d.setAttribute('class', 'ctxmenu');
-      d.setAttribute('id', menuname);
-      document.body.appendChild(d);
-      d.style.left = xMousePosition + "px";
-      d.style.top = yMousePosition + "px";
-      d.onmouseover = function(e) {
-         this.style.cursor = 'pointer';
-      }
-      d.onclick = function(e) {
-         var x = document.getElementById(menuname);
-         if (x) x.parentNode.removeChild(x);
-      }
-
-      document.body.onclick = function(e) {
-         var x = document.getElementById(menuname);
-         if (x)
-            x.parentNode.removeChild(x);
-      }
-
-      return d;
-   }
-
-   /**
-    * @fn void JSROOT.Painter.menuitem(menu, txt, func) Add item into popup menu
-    */
-   JSROOT.Painter.menuitem = function(menu, txt, func) {
-      var p = document.createElement('p');
-      menu.appendChild(p);
-      p.onclick = func;
-      p.setAttribute('class', 'ctxline');
-      p.innerHTML = txt;
    }
 
    JSROOT.Painter.Coord = {
@@ -4362,14 +4319,15 @@
          // suppress any running zomming
          closeAllExtras();
 
-         var menu = JSROOT.Painter.createmenu(d3.event, 'root_ctx_menu');
+         var menu = JSROOT.createMenu();
 
          menu['painter'] = pthis;
 
-         JSROOT.Painter.menuitem(menu, pthis.histo['fName']);
-         JSROOT.Painter.menuitem(menu, "----------------");
+         menu.add(pthis.histo['fName'], 'header');
 
          pthis.FillContextMenu(menu);
+         
+         menu.show(d3.event)
       }
 
       function startTouchSel() {
@@ -4696,17 +4654,11 @@
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
-      JSROOT.Painter.menuitem(menu, "Unzoom X", function() {
-         menu['painter'].Unzoom(true, false);
-      });
-      JSROOT.Painter.menuitem(menu, "Unzoom Y", function() {
-         menu['painter'].Unzoom(false, true);
-      });
-      JSROOT.Painter.menuitem(menu, "Unzoom", function() {
-         menu['painter'].Unzoom(true, true);
-      });
+      menu.add("Unzoom X", function() { menu['painter'].Unzoom(true, false); });
+      menu.add("Unzoom Y", function() { menu['painter'].Unzoom(false, true); });
+      menu.add("Unzoom", function() { menu['painter'].Unzoom(true, true); });
 
-      JSROOT.Painter.menuitem(menu, JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
+      menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
          menu['painter'].RedrawPad();
       });
@@ -4715,21 +4667,19 @@
 
          var item = this.options.Logx > 0 ? "Linear X" : "Log X";
 
-         JSROOT.Painter.menuitem(menu, item, function() {
+         menu.add(item, function() {
             menu['painter'].options.Logx = 1 - menu['painter'].options.Logx;
             menu['painter'].RedrawPad();
          });
 
          var item = this.options.Logy > 0 ? "Linear Y" : "Log Y";
-         JSROOT.Painter.menuitem(menu, item, function() {
+         menu.add(item, function() {
             menu['painter'].options.Logy = 1 - menu['painter'].options.Logy;
             menu['painter'].RedrawPad();
          });
       }
       if (this.draw_content)
-         JSROOT.Painter.menuitem(menu, "Toggle stat", function() {
-            menu['painter'].ToggleStat();
-         });
+         menu.add("Toggle stat", function() { menu['painter'].ToggleStat(); });
    }
 
    // ======= TH1 painter================================================
@@ -5176,7 +5126,7 @@
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
-         JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
+         menu.add("Auto zoom-in", function() { menu['painter'].AutoZoom(); });
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function() {
@@ -5245,9 +5195,9 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      JSROOT.Painter.menuitem(menu, "Auto zoom-in", function() { menu['painter'].AutoZoom(); });
-      JSROOT.Painter.menuitem(menu, "Draw in 3D", function() { menu['painter'].Draw3D(); });
-      JSROOT.Painter.menuitem(menu, "Toggle col", function() {
+      menu.add("Auto zoom-in", function() { menu['painter'].AutoZoom(); });
+      menu.add("Draw in 3D", function() { menu['painter'].Draw3D(); });
+      menu.add("Toggle col", function() {
          if (menu['painter'].options.Color == 0)
             menu['painter'].options.Color = JSROOT.gStyle.DefaultCol;
          else
@@ -5256,7 +5206,7 @@
       });
 
       if (this.options.Color > 0)
-         JSROOT.Painter.menuitem(menu, "Toggle colz", function() { menu['painter'].ToggleColz(); });
+         menu.add("Toggle colz", function() { menu['painter'].ToggleColz(); });
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
