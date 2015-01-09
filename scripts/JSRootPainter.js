@@ -866,7 +866,7 @@
          this['_hitemname'] = name;
    }
 
-   JSROOT.TBasePainter.prototype.GetItemName = function(name) {
+   JSROOT.TBasePainter.prototype.GetItemName = function() {
       return ('_hitemname' in this) ? this['_hitemname'] : null;
    }
 
@@ -7291,7 +7291,6 @@
          } else
          mdi.ForEachPainter(function(p, frame) {
             if (p.GetItemName() != itemname) return;
-            console.log("Find painter for " + itemname);
             painter = p;
             mdi.ActivateFrame(frame);
             painter.RedrawObject(obj);
