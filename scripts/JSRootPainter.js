@@ -76,27 +76,27 @@
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
    }
-   
+
    JSROOT.createMenu = function(menuname) {
       if (!menuname) menuname = "root_ctx_menu";
 
       var menu = { divid: menuname, code:"", funcs : {} };
-      
+
       menu.add = function(name,func) {
          if (func == 'header')
             this.code += "<li class='ui-widget-header'>"+name+"</li>";
          else
             this.code += "<li>"+name+"</li>";
-         if (typeof func == 'function') this.funcs[name] = func; // keep call-back function 
+         if (typeof func == 'function') this.funcs[name] = func; // keep call-back function
       }
-      
+
       menu.show = function(event) {
          $("#"+menuname).remove()
 
          document.body.onclick = function(e) { $("#"+menuname).remove(); }
-         
+
          $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
-         
+
          $("#" + menuname)
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
@@ -110,7 +110,7 @@
               }
          });
       }
-      
+
       return menu;
    }
 
@@ -4326,7 +4326,7 @@
          menu.add(pthis.histo['fName'], 'header');
 
          pthis.FillContextMenu(menu);
-         
+
          menu.show(d3.event)
       }
 
@@ -5256,7 +5256,7 @@
             if (this.histo.getBinContent(i + 1, j + 1) < min)
                min = this.histo.getBinContent(i + 1, j + 1);
       if (min>0) return; // if all points positive, no chance for autoscale
-      
+
       var ileft = i2, iright = i1, jleft = j2, jright = j1;
 
       for (var i = i1; i < i2; i++)
@@ -7681,7 +7681,7 @@
       }
 
       menu.add("Close");
-      
+
       menu.show(event);
 
       return false;
