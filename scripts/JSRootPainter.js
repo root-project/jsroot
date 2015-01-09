@@ -76,10 +76,43 @@
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
    }
+   
+   JSROOT.createMenu = function(menuname) {
+      if (!menuname) menuname = "root_ctx_menu";
 
-   /**
-    * @fn menu JSROOT.Painter.createmenu(event, menuname) Creates popup menu
-    */
+      $("#"+menuname).remove()
+
+      var menu = { divid: menuname, code:"", funcs : {} };
+      
+      menu.add = function(name,func) {
+         this.code += "<li>"+name+"</li>"; 
+         this.funcs[name] = func; // keep call-back function 
+      }
+      
+      menu.show = function(event) {
+         var xMousePosition = event.clientX + window.pageXOffset;
+         var yMousePosition = event.clientY + window.pageYOffset;
+
+         document.body.onclick = function(e) { $("#"+menuname).remove(); }
+         
+         $(document.body).append('<ul id="' + menuname + '" class="ctxmenu">' + this.code + '</ul>');
+         
+         $("#" + menuname)
+            .css('left', xMousePosition)
+            .css('top', yMousePosition)
+            .menu({
+              select: function( event, ui ) {
+                 var func = menu.funcs[ui.item.text()];
+                 $("#"+menuname).remove();
+                 if (typeof func == 'function') func();
+              }
+         });
+      }
+      
+      return menu;
+   }
+   
+
    JSROOT.Painter.createmenu = function(event, menuname) {
 
       if (!menuname) menuname = "root_ctx_menu";
@@ -7573,20 +7606,20 @@
       var cando = this.CheckCanDo(node);
 
       if (cando.display)
-         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
+         menu.add("Draw", function() { painter.display(itemname); });
 
       if (cando.expand || cando.display)
-         JSROOT.Painter.menuitem(menu, "Expand", function() { painter.expand(itemname); });
+         menu.add("Expand", function() { painter.expand(itemname); });
 
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       if (this.IsMonitoring())
          drawurl += "?monitoring=" + this.MonitoringInterval();
 
       if (cando.display)
-         JSROOT.Painter.menuitem(menu, "Draw in new window", function() { window.open(drawurl); });
+         menu.add("Draw in new window", function() { window.open(drawurl); });
 
       if (cando.display)
-         JSROOT.Painter.menuitem(menu, "Draw as png", function() {
+         menu.add("Draw as png", function() {
             window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
          });
    }
@@ -7638,7 +7671,7 @@
       var onlineprop = this.GetOnlineProp(itemname);
       var fileprop = this.GetFileProp(itemname);
 
-      var menu = JSROOT.Painter.createmenu(event);
+      var menu = JSROOT.createMenu();
 
       function qualifyURL(url) {
          function escapeHTML(s) {
@@ -7683,23 +7716,25 @@
             addr += "items=" + JSON.stringify(items);
          }
 
-         JSROOT.Painter.menuitem(menu, "Direct link", function() { window.open(addr); });
-         JSROOT.Painter.menuitem(menu, "Only items", function() { window.open(addr + "&nobrowser"); });
+         menu.add("Direct link", function() { window.open(addr); });
+         menu.add("Only items", function() { window.open(addr + "&nobrowser"); });
       } else
       if (onlineprop != null) {
          this.FillOnlineMenu(menu, onlineprop, itemname);
       } else
       if (fileprop != null) {
-         JSROOT.Painter.menuitem(menu, "Draw", function() { painter.display(itemname); });
+         menu.add("Draw", function() { painter.display(itemname); });
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir) == 0)
             filepath = filepath.slice(JSROOT.source_dir.length);
-         JSROOT.Painter.menuitem(menu, "Draw in new window", function() {
+         menu.add("Draw in new window", function() {
              window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname);
          });
       }
 
-      JSROOT.Painter.menuitem(menu, "Close", function() {});
+      menu.add("Close");
+      
+      menu.show(event);
 
       return false;
    }

@@ -278,6 +278,7 @@ svg:not(:root) { overflow: hidden; }
   box-shadow: 2px 2px 2px #AAA;
   z-index:11;
   overflow: visible;
+  font-size: 11px;
 }
 .ctxline
 {
