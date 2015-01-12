@@ -103,6 +103,17 @@
          
          this.cnt++;
       }
+      
+      menu.addDrawMenu = function(menu_name, opts, call_back) {
+         if (opts==null) { opts = new Array; opts.push(""); }
+         for (var i=0;i<opts.length;i++) {
+            var name = opts[i];
+            if (i==0) name = (opts.length > 1) ? ("sub:" + menu_name) : menu_name;
+            if (name=="") name = '&lt;default&gt;';
+            this.add(name, opts[i], call_back);
+         }
+         if (opts.length > 1) this.add("endsub:");
+      }
 
       menu.show = function(event) {
          $("#"+menuname).remove()
@@ -7571,19 +7582,23 @@
 
       var node = this.Find(itemname);
       var cando = this.CheckCanDo(node);
+      var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
 
-      if (cando.display)
-         menu.add("Draw", function() { painter.display(itemname); });
+      if (cando.display) 
+         menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 
       if (cando.expand || cando.display)
          menu.add("Expand", function() { painter.expand(itemname); });
-
+      
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
-      if (this.IsMonitoring())
-         drawurl += "?monitoring=" + this.MonitoringInterval();
+      var separ = "?";
+      if (this.IsMonitoring()) {
+         drawurl += separ + "monitoring=" + this.MonitoringInterval();
+         separ = "&";
+      }
 
       if (cando.display)
-         menu.add("Draw in new window", function() { window.open(drawurl); });
+         menu.addDrawMenu("Draw in new window", opts, function(arg) { window.open(drawurl+separ+"opt=" +arg); });
 
       if (cando.display)
          menu.add("Draw as png", function() {
@@ -7691,32 +7706,17 @@
       } else
       if (fileprop != null) {
          
-         var opts = null;
-         if (cando.typename!='')
-            opts = JSROOT.getDrawOptions(cando.typename,'nosame');
-         if (opts==null) { opts = new Array; opts.push(""); }
+         var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
 
-         for (var i=0;i<opts.length;i++) {
-            var name = opts[i];
-            if (i==0) name = (opts.length > 1) ? "sub:Draw" : "Draw";
-            if (name=="") name = '&lt;default&gt;';
-            menu.add(name, opts[i], function(arg) { painter.display(itemname, arg); });
-         }
-         if (opts.length > 1) menu.add("endsub:");
+         menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
          
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir) == 0)
             filepath = filepath.slice(JSROOT.source_dir.length);
 
-         for (var i=0;i<opts.length;i++) {
-            var name = opts[i];
-            if (i==0) name = (opts.length > 1) ? "sub:Draw in new window" : "Draw in new window";
-            if (name=="") name = '&lt;default&gt;';
-            menu.add(name, opts[i], function(arg) { 
-               window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
-            });
-         }
-         if (opts.length > 1) menu.add("endsub:");
+         menu.addDrawMenu("Draw in new window", opts, function(arg) { 
+            window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
+         });
       }
 
       menu.add("Close");
@@ -8249,7 +8249,7 @@
    }
    
    JSROOT.getDrawOptions = function(classname, selector) {
-      if (typeof classname != 'string') return null;
+      if ((typeof classname != 'string') || (classname=="")) return null;
       
       var allopts = null, isany = false;
 
