@@ -105,14 +105,18 @@
       }
       
       menu.addDrawMenu = function(menu_name, opts, call_back) {
-         if (opts==null) { opts = new Array; opts.push(""); }
+         if (opts==null) opts = new Array; 
+         if (opts.length==0) opts.push("");
+         
+         this.add((opts.length > 1) ? ("sub:" + menu_name) : menu_name, opts[0], call_back);
+         if (opts.length<2) return;
+         
          for (var i=0;i<opts.length;i++) {
             var name = opts[i];
-            if (i==0) name = (opts.length > 1) ? ("sub:" + menu_name) : menu_name;
-            if (name=="") name = '&lt;default&gt;';
+            if (name=="") name = '&lt;dflt&gt;';
             this.add(name, opts[i], call_back);
          }
-         if (opts.length > 1) this.add("endsub:");
+         this.add("endsub:");
       }
 
       menu.show = function(event) {
@@ -131,7 +135,6 @@
                select: function( event, ui ) {
                   var arg = ui.item.attr('arg');
                   var cnt = ui.item.attr('cnt');
-                  console.log("select " + ui.item.text() + "  arg = " + arg);
                   var func = cnt ? menu.funcs[cnt] : null;
                   $("#"+menuname).remove();
                   if (typeof func == 'function') func(arg);
@@ -8210,15 +8213,15 @@
    JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;same");
-   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D);
+   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D, ";E1");
    JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D, ";COL;COLZ;COL3;LEGO;same");
    JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
    JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
    JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
-   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc("TCutG", JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph);
-   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph);
+   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph,";L;P");
+   JSROOT.addDrawFunc("TCutG", JSROOT.Painter.drawGraph,";L;P");
+   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph,";L;P");
+   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph,";L;P");
    JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
    JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
 
