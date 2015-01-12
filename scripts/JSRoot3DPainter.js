@@ -246,7 +246,7 @@
                painter.Draw2D();
             });
          menu.add("Close");
-         
+
          menu.show(e.originalEvent);
 
       });

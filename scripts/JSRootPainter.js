@@ -90,27 +90,27 @@
             this.code += "<li class='ui-widget-header'>"+name.substr(7)+"</li>";
             return;
          }
-         
+
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
          var close_tag = "</li>";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; }
-         
+
          if (typeof arg == 'function') { func = arg; arg = name; }
-         
+
          if ((arg==null) || (typeof arg != 'string')) arg = name;
          this.code += "<li cnt='" + this.cnt + "' arg='" + arg + "'>" + name + close_tag;
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
-         
+
          this.cnt++;
       }
-      
+
       menu.addDrawMenu = function(menu_name, opts, call_back) {
-         if (opts==null) opts = new Array; 
+         if (opts==null) opts = new Array;
          if (opts.length==0) opts.push("");
-         
+
          this.add((opts.length > 1) ? ("sub:" + menu_name) : menu_name, opts[0], call_back);
          if (opts.length<2) return;
-         
+
          for (var i=0;i<opts.length;i++) {
             var name = opts[i];
             if (name=="") name = '&lt;dflt&gt;';
@@ -6912,7 +6912,7 @@
 
       var kind = node["_kind"];
       if (kind == null) kind = "";
-      
+
       if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
 
       cando.expand = ('_more' in node);
@@ -7587,12 +7587,12 @@
       var cando = this.CheckCanDo(node);
       var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
 
-      if (cando.display) 
+      if (cando.display)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 
       if (cando.expand || cando.display)
          menu.add("Expand", function() { painter.expand(itemname); });
-      
+
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       var separ = "?";
       if (this.IsMonitoring()) {
@@ -7708,16 +7708,16 @@
          this.FillOnlineMenu(menu, onlineprop, itemname);
       } else
       if (fileprop != null) {
-         
+
          var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
 
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
-         
+
          var filepath = qualifyURL(fileprop.fileurl);
          if (filepath.indexOf(JSROOT.source_dir) == 0)
             filepath = filepath.slice(JSROOT.source_dir.length);
 
-         menu.addDrawMenu("Draw in new window", opts, function(arg) { 
+         menu.addDrawMenu("Draw in new window", opts, function(arg) {
             window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
          });
       }
@@ -8227,7 +8227,7 @@
 
    JSROOT.getDrawFunc = function(classname, drawopt) {
       if (typeof classname != 'string') return null;
-      
+
       var first_func = null;
 
       for (var i in JSROOT.fDrawFunc) {
@@ -8236,8 +8236,8 @@
          } else {
             if (!classname.match(JSROOT.fDrawFunc[i].name)) continue;
          }
-         if (first_func == null) first_func = JSROOT.fDrawFunc[i].func; 
-         
+         if (first_func == null) first_func = JSROOT.fDrawFunc[i].func;
+
          if ((typeof drawopt=='string') && (drawopt!="")) {
             // if drawoption specified, check it present in the list
             if (JSROOT.fDrawFunc[i].opt == null) continue;
@@ -8245,15 +8245,15 @@
             for (var j in opts) opts[j] = opts[j].toLowerCase();
             if (opts.indexOf(drawopt.toLowerCase())<0) continue;
          }
-         
+
          return JSROOT.fDrawFunc[i].func;
       }
       return first_func;
    }
-   
+
    JSROOT.getDrawOptions = function(classname, selector) {
       if ((typeof classname != 'string') || (classname=="")) return null;
-      
+
       var allopts = null, isany = false;
 
       for (var i in JSROOT.fDrawFunc) {
@@ -8268,17 +8268,17 @@
          for (var i in opts) {
             opts[i] = opts[i].toLowerCase();
             if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
-            
+
             if (allopts==null) allopts = new Array;
             if (allopts.indexOf(opts[i])<0) allopts.push(opts[i]);
          }
       }
-      
+
       if (isany && (allopts==null)) {
          allopts = new Array;
          allopts.push("");
       }
-      
+
       return allopts;
    }
 
