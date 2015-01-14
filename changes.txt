@@ -15,6 +15,7 @@ Changes in 3.2
    one able to get tooltip for underlying objects
 5. Use jquery-ui menu for context menu
 6. In context menu one could select options for drawing
+7. Provide user interface for executing TTree::Draw on THttpServer
 
 
 Changes in 3.1

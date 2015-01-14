@@ -36,11 +36,15 @@ function grab {
    if [ "$1" != "0" ]; then 
       wget -nv $server/$2/root.json.gz?compact=3 -O $2/root.json.gz
       wget -nv "$server/$2/root.png?w=400&h=300" -O $2/root.png
+      wget -nv "$server/$2/exe.json?method=GetTitle" -O $2/exe.json
       wget -nv $server/$2/draw.htm?nozip -O $2/draw0.htm
       sed $sedarg $2/draw0.htm > $2/draw.htm
       rm -f $2/draw0.htm
    fi
-   
+
+   if [ "$2" == "Files/job1.root/ntuple" ]; then
+      wget -nv "$server/Files/job1.root/ntuple/exe.json?method=Draw&prototype=%22Option_t*%22&opt=%22px:py%3E%3Eh_tree_draw%22&_ret_object_=h_tree_draw" -O $2/exe.json
+   fi
 }
 
 wget -nv $server/index.htm?nozip -O index0.htm
@@ -60,6 +64,9 @@ grab 0 Canvases
 grab 2 Canvases/c1
 grab 0 Canvases/c1/fPrimitives
 grab 2 Canvases/c1/fPrimitives/hpx
+
+#keep it at very end
+grab 0 Files/job1.root/ntuple 
 
 # copy all files to web server
 cp -rf index.htm h.xml h.json StreamerInfo Canvases Files ~/web-docs/js/3.2/demo

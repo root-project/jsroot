@@ -6746,6 +6746,10 @@
 
    JSROOT.TTreePlayer.prototype.CheckResize = function(force) {
       $("#" + this.drawid).width($("#" + this.divid).width());
+      var h = $("#" + this.divid).height();
+      var h0 = $("#" + this.divid +" .treedraw_buttons").height();
+      if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
+      
       if (this.hpainter) {
          this.hpainter.CheckResize(force);
       }
