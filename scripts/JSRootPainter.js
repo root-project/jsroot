@@ -103,6 +103,8 @@
 
          this.cnt++;
       }
+      
+      menu.size = function() { return this.cnt-1; }
 
       menu.addDrawMenu = function(menu_name, opts, call_back) {
          if (opts==null) opts = new Array;
@@ -118,11 +120,13 @@
          }
          this.add("endsub:");
       }
+      
+      menu.remove = function() { $("#"+menuname).remove(); }
 
       menu.show = function(event) {
-         $("#"+menuname).remove()
+         menu.remove();
 
-         document.body.onclick = function(e) { $("#"+menuname).remove(); }
+         document.body.onclick = function(e) { menu.remove(); }
 
          $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
 
@@ -136,7 +140,7 @@
                   var arg = ui.item.attr('arg');
                   var cnt = ui.item.attr('cnt');
                   var func = cnt ? menu.funcs[cnt] : null;
-                  $("#"+menuname).remove();
+                  menu.remove();
                   if (typeof func == 'function') func(arg);
               }
          });
@@ -6660,6 +6664,41 @@
       painter.ShowStreamerInfo(obj);
       return painter;
    }
+   
+   
+   
+   JSROOT.drawTreePlayer = function(hpainter, itemname) {
+      console.log("Tree player for item " + itemname);
+      
+      var mdi = hpainter.CreateDisplay();
+      if (mdi == null) return;
+
+      console.log("Create display");
+
+      var frame = mdi.CreateFrame(itemname);
+      if (frame==null) return;
+      
+      var divid = frame.attr('id');
+
+      console.log("Create frame " + divid);
+
+      frame.html("Here will be tree player for " + itemname + "<br/>" +
+                 "<button>Execute</button><br/>" +
+                 "<div id='" + divid + "_draw'></div>");
+      
+      frame.find('button').button().click(function() {
+         console.log("Click " + itemname);
+         var expr = itemname + '/exe.json?method=Draw&prototype="const char*,const char*,Option_t*"&varexp="px>>h1"&selection=""&_ret_object_=h1';
+         var req = JSROOT.NewHttpRequest(expr, 'object', function(res) {
+            if (res==0) return;
+            
+            console.log("Get object " + res._typename);
+            JSROOT.redraw(divid+"_draw", res)
+         });
+         req.send();
+      });
+      
+   }
 
    // =========== painter of hierarchical structures =================================
 
@@ -7607,6 +7646,12 @@
          menu.add("Draw as png", function() {
             window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
          });
+      
+      if ('_player' in node)
+         menu.add("Player", function(){ 
+            var func = JSROOT.findFunction(node._player);
+            if (func) func(painter, itemname);
+         });
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo) {
@@ -7651,7 +7696,7 @@
 
       var cando = this.CheckCanDo(hitem);
 
-      if (!cando.display && !cando.ctxt && (itemname!="")) return;
+      // if (!cando.display && !cando.ctxt && (itemname!="")) return;
 
       var onlineprop = this.GetOnlineProp(itemname);
       var fileprop = this.GetFileProp(itemname);
@@ -7722,9 +7767,10 @@
          });
       }
 
-      menu.add("Close");
-
-      menu.show(event);
+      if (menu.size()>0) {
+         menu.add("Close");
+         menu.show(event);
+      }  
 
       return false;
    }
@@ -7747,13 +7793,13 @@
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(force) {
       if ('disp' in this) {
-         if (!force && this['disp'].NumDraw() > 0) return true;
+         if (!force && this['disp'].NumDraw() > 0) return this['disp'];
          this['disp'].Reset();
          delete this['disp'];
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this['disp_frameid']) == null) return false;
+      if (document.getElementById(this['disp_frameid']) == null) return null;
 
       if (this['disp_kind'] == "tabs")
          this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
@@ -7763,7 +7809,7 @@
       else
          this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
 
-      return true;
+      return this['disp'];
    }
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(force) {
