@@ -103,7 +103,7 @@
 
          this.cnt++;
       }
-      
+
       menu.size = function() { return this.cnt-1; }
 
       menu.addDrawMenu = function(menu_name, opts, call_back) {
@@ -120,7 +120,7 @@
          }
          this.add("endsub:");
       }
-      
+
       menu.remove = function() { $("#"+menuname).remove(); }
 
       menu.show = function(event) {
@@ -1162,13 +1162,13 @@
 
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
-      
+
       var painter = $("#" + this.divid).children().eq(0).prop('painter');
       if (painter!=null) { userfunc(painter); return; }
-      
+
       var svg_c = this.svg_canvas();
       if (svg_c==null) return;
-      
+
       userfunc(svg_c['pad_painter']);
       var painters = svg_c['pad_painter'].painters;
       for (var k in painters) userfunc(painters[k]);
@@ -6665,10 +6665,10 @@
       painter.ShowStreamerInfo(obj);
       return painter;
    }
-   
+
    // ===========================================================
-   
-   
+
+
    JSROOT.TTreePlayer = function(itemname) {
       JSROOT.TBasePainter.call(this);
       this.SetItemName(itemname);
@@ -6679,8 +6679,8 @@
    JSROOT.TTreePlayer.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
    JSROOT.TTreePlayer.prototype.Show = function(divid) {
-      this.drawid = divid + "_draw"; 
-      
+      this.drawid = divid + "_draw";
+
       $("#" + divid)
         .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
             "<button class='treedraw_exe'>Draw</button>" +
@@ -6688,16 +6688,16 @@
             "<button class='treedraw_more'>More</button>" +
             "</div>" +
             "<div id='" + this.drawid + "' style='width:100%'></div>");
-      
+
       var player = this;
-      
+
       $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
       $("#" + divid).find('.treedraw_varexp')
            .val("px:py")
            .keyup(function(e){
-               if(e.keyCode == 13) player.PerformDraw(); 
+               if(e.keyCode == 13) player.PerformDraw();
             });
-            
+
       $("#" + divid).find('.treedraw_more').click(function() {
          $(this).remove();
          $("#" + divid).find(".treedraw_buttons")
@@ -6705,25 +6705,25 @@
                  " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
                  " Num:<input class='treedraw_number' style='width:7em'></input>" +
                  " First:<input class='treedraw_first' style='width:7em'></input>");
-         
+
          $("#" + divid +" .treedraw_opt").val("");
          $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
          $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
       });
-      
+
       this.CheckResize();
-      
+
       this.SetDivId(divid);
    }
-   
+
    JSROOT.TTreePlayer.prototype.PerformDraw = function() {
-      
+
       var frame = $("#" + this.divid);
-      
+
       var url = this.GetItemName() + '/exe.json?method=Draw';
       var expr = frame.find('.treedraw_varexp').val();
       var hname = "h_tree_draw";
-      
+
       var pos = expr.indexOf(">>");
       if (pos<0) {
          expr += ">>" + hname;
@@ -6733,21 +6733,21 @@
          var pos2 = hname.indexOf("(");
          if (pos2>0) hname = hname.substr(0, pos2);
       }
-      
+
       if (frame.find('.treedraw_more').length==0) {
          var cut = frame.find('.treedraw_cut').val();
          var option = frame.find('.treedraw_opt').val();
          var nentries = frame.find('.treedraw_number').val();
          var firstentry = frame.find('.treedraw_first').val();
-         
+
          url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
-         
+
          // if any of optional arguments specified, specify all of them
          if ((option!="") || (nentries!="") || (firstentry!="")) {
             if (nentries=="") nentries = "1000000000";
             if (firstentry=="") firstentry = "0";
-            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry; 
-         } 
+            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
+         }
       } else {
          url += '&prototype="Option_t*"&opt="' + expr + '"';
       }
@@ -6768,7 +6768,7 @@
       var h = $("#" + this.divid).height();
       var h0 = $("#" + this.divid +" .treedraw_buttons").height();
       if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
-      
+
       if (this.hpainter) {
          this.hpainter.CheckResize(force);
       }
@@ -7396,15 +7396,15 @@
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.draw(divid, obj, drawopt);
    }
-   
+
    JSROOT.HierarchyPainter.prototype.player = function(itemname, option, call_back) {
       var item = this.Find(itemname);
 
       var player_func = (item && ('_player' in item)) ?  JSROOT.findFunction(item._player) : null;
-      
+
       var res = null;
-      
-      if (player_func && this.CreateDisplay()) 
+
+      if (player_func && this.CreateDisplay())
          res = player_func(this, itemname, option);
 
       if (typeof call_back=='function') call_back(res);
@@ -7423,9 +7423,9 @@
       var mdi = h['disp'];
 
       var updating = drawopt=="update";
-      
+
       var item = h.Find(itemname);
-      
+
       if (item!=null) {
          var cando = this.CheckCanDo(item);
          if (!cando.display) return this.player(itemname, drawopt, call_back);
@@ -7753,7 +7753,7 @@
          menu.add("Draw as png", function() {
             window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
          });
-      
+
       if ('_player' in node)
          menu.add("Player", function() { painter.player(itemname); });
    }
@@ -7874,7 +7874,7 @@
       if (menu.size()>0) {
          menu.add("Close");
          menu.show(event);
-      }  
+      }
 
       return false;
    }
@@ -7974,7 +7974,7 @@
    JSROOT.MDIDisplay.prototype.CheckResize = function() {
       // perform resize for each frame
       var resized_frame = null;
-      
+
       this.ForEachPainter(function(painter, frame) {
          if ((painter.GetItemName()!=null) && (typeof painter['CheckResize'] == 'function')) {
             // do not call resize for many painters on the same frame

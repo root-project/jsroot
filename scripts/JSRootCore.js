@@ -168,12 +168,12 @@
       }
       return dflt;
    }
-   
+
    JSROOT.findFunction = function(name) {
       var func = window[name];
       if (typeof func == 'function') return func;
       var separ = name.indexOf(".");
-      if ((separ>0) && window[name.slice(0, separ)]) 
+      if ((separ>0) && window[name.slice(0, separ)])
          func = window[name.slice(0, separ)][name.slice(separ+1)];
       return (typeof func == 'function') ? func : null;
    }
