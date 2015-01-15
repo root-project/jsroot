@@ -6682,25 +6682,33 @@
       this.drawid = divid + "_draw"; 
       
       $("#" + divid)
-        .html("<div class='treedraw_buttons'>" +
+        .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
             "<button class='treedraw_exe'>Draw</button>" +
-            "Expr:<input class='treedraw_varexp'></input> " +
+            " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
             "<button class='treedraw_more'>More</button>" +
             "</div>" +
             "<div id='" + this.drawid + "' style='width:100%'></div>");
       
       var player = this;
       
-      $("#" + divid).find('.treedraw_exe').button().click(function() { player.PerformDraw(); });
+      $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
       $("#" + divid).find('.treedraw_varexp')
            .val("px:py")
            .keyup(function(e){
                if(e.keyCode == 13) player.PerformDraw(); 
             });
             
-      $("#" + divid).find('.treedraw_more').button().click(function() {
+      $("#" + divid).find('.treedraw_more').click(function() {
          $(this).remove();
-         $("#" + divid).find(".treedraw_buttons").append(" Cut:<input class='treedraw_cut'></input>");
+         $("#" + divid).find(".treedraw_buttons")
+         .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
+                 " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
+                 " Num:<input class='treedraw_number' style='width:7em'></input>" +
+                 " First:<input class='treedraw_first' style='width:7em'></input>");
+         
+         $("#" + divid +" .treedraw_opt").val("");
+         $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
+         $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
       });
       
       this.CheckResize();
@@ -6728,7 +6736,18 @@
       
       if (frame.find('.treedraw_more').length==0) {
          var cut = frame.find('.treedraw_cut').val();
-         url += '&prototype="const char*,const char*,Option_t*"&varexp="' + expr + '"&selection="' + cut + '"';
+         var option = frame.find('.treedraw_opt').val();
+         var nentries = frame.find('.treedraw_number').val();
+         var firstentry = frame.find('.treedraw_first').val();
+         
+         url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
+         
+         // if any of optional arguments specified, specify all of them
+         if ((option!="") || (nentries!="") || (firstentry!="")) {
+            if (nentries=="") nentries = "1000000000";
+            if (firstentry=="") firstentry = "0";
+            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry; 
+         } 
       } else {
          url += '&prototype="Option_t*"&opt="' + expr + '"';
       }
