@@ -14,51 +14,48 @@
          $('#debug').append("<h4>" + str + "</h4>"); 
       }
 
-      var global_dir = "files/"; // for testing
+      var global_dir = "files/"; // for local testing
 
-      if (JSROOT.source_dir.indexOf("root.cern.ch")>0)
-         global_dir = "https://root.cern.ch/js/files/";
-      if (JSROOT.source_dir.indexOf("web-docs.gsi.de")>0)
-         global_dir = "http://web-docs.gsi.de/~linev/js/files/";
-      
+      if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../files/";
+
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
             if (obj==null) return file_error("In file " + file.fURL + " item " + itemname + " cannot be find");
             JSROOT.draw(divid, obj, drawopt); 
          });
       }
-      
+
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
-         var fname = (file.fURL.indexOf("http://")==0) ? file.fURL : "demo/"+ file.fURL;   
+         var fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL : "demo/"+ file.fURL;
 
          var has_equal = false;
-         
+
          var html = 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
             html += '<a href="../index.htm?nobrowser&file=' + fname; 
             html += '&item=' + itemname + '&';
-             
+
             if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
                                   else { html += arr[i]; has_equal = true; } 
-            
+
             html += '" target="_blank">';
             if (i==0) html += itemname; else
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
          html += "<br/><br/>";
-         
+
          $("#" + divid).append(html);
 
          if (JSROOT.GetUrlOption("minimal") || 
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null))) return;
              
          // special case - do not draw on main page
-         if (has_equal) return;    
+         if (has_equal) { $("#" + divid).append("skip drawing on central page - use provided links"); return; }
          
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
@@ -140,7 +137,7 @@
             draw_item_options(file, "zdemo;1", "can3_draw", "", 0.);
          });
 
-         if (global_dir.indexOf("root.cern.ch")<0)
+         if (JSROOT.source_dir.indexOf("http")<0)
             LoadFile("JPsi_evolution.root", function(file) {
                draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
             });
@@ -157,7 +154,7 @@
             draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
          });
 
-         if (global_dir.indexOf("root.cern.ch")<0) {
+         if (JSROOT.source_dir.indexOf("http")<0) {
             LoadFile("can4.root", function(file) {
                draw_item_options(file, "c1;1", "can8_draw", "", 0.);
             });
