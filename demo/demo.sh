@@ -43,7 +43,7 @@ function grab {
    fi
 
    if [ "$2" == "Files/job1.root/ntuple" ]; then
-      wget -nv "$server/Files/job1.root/ntuple/exe.json?method=Draw&prototype=%22Option_t*%22&opt=%22px:py%3E%3Eh_tree_draw%22&_ret_object_=h_tree_draw" -O $2/exe.json
+      wget -nv "$server/Files/job1.root/ntuple/exe.json.gz?compact=3&method=Draw&prototype=%22Option_t*%22&opt=%22px:py%3E%3Eh_tree_draw%22&_ret_object_=h_tree_draw" -O $2/exe.json.gz
    fi
 }
 
