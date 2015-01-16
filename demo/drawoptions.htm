@@ -13,11 +13,11 @@
       function file_error(str) {
          $('#debug').append("<h4>" + str + "</h4>"); 
       }
-      
+
       var global_dir = "files/"; // for testing
-      
+
       if (JSROOT.source_dir.indexOf("root.cern.ch")>0)
-         global_dir = "http://root.cern.ch/js/files/";
+         global_dir = "https://root.cern.ch/js/files/";
       if (JSROOT.source_dir.indexOf("web-docs.gsi.de")>0)
          global_dir = "http://web-docs.gsi.de/~linev/js/files/";
       
