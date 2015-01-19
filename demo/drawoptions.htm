@@ -16,7 +16,7 @@
 
       var global_dir = "files/"; // for local testing
 
-      if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../files/";
+      if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
@@ -28,7 +28,7 @@
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
-         var fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL : "demo/"+ file.fURL;
+         var fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "demo/"+ file.fURL;
 
          var has_equal = false;
 
