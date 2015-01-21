@@ -7039,14 +7039,15 @@
 
       var kind = node["_kind"];
       if (kind == null) kind = "";
-
+      
       if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
 
       cando.expand = ('_more' in node);
 
-      if (node == this.h) {
-         cando.ctxt = true;
-      } else if (kind == "ROOT.Session") {
+      // enable context menu for top item
+      if (node === this.h) cando.ctxt = true; 
+
+      if (kind == "ROOT.Session") {
          cando.img1 = "img_globe";
       } else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = "img_histo1d";
@@ -7092,6 +7093,8 @@
          cando.scan = false;
          cando.display = true;
       }
+      
+      if ('_player' in node) cando.display = true;
 
       return cando;
    }
@@ -7276,8 +7279,9 @@
          if (cando.expand && (hitem['_childs'] == null))
             return this.expand(itemname, hitem, node.parent());
 
-         if (cando.display)
+         if (cando.display) {
             return this.display(itemname);
+         }
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
@@ -7428,7 +7432,7 @@
 
       if (item!=null) {
          var cando = this.CheckCanDo(item);
-         if (!cando.display) return this.player(itemname, drawopt, call_back);
+         if (!cando.display || ('_player' in item)) return this.player(itemname, drawopt, call_back);
       }
 
       if (updating) {
@@ -7800,6 +7804,8 @@
 
       var itemname = node.parent().attr('item');
 
+      console.log("tree_contextmenu " + itemname);
+      
       var hitem = this.Find(itemname);
       if (hitem==null) return;
 
