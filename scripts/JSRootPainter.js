@@ -6287,7 +6287,6 @@
             .attr("y1", h + (lwidth / 2))
             .attr("x2", w + lwidth - 1)
             .attr("y2", h + (lwidth / 2))
-            .style("stroke", lcolor)
             .call(lcolor.func);
       }
 
@@ -6565,7 +6564,6 @@
                .attr("y1", height + (lwidth / 2))
                .attr("x2", width + lwidth - 1)
                .attr("y2", height + (lwidth / 2))
-               .style("stroke", lcolor)
                .call(lcolor.func);
       }
    }
