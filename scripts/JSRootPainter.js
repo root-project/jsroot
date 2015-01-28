@@ -7037,13 +7037,13 @@
 
       var kind = node["_kind"];
       if (kind == null) kind = "";
-      
+
       if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
 
       cando.expand = ('_more' in node);
 
       // enable context menu for top item
-      if (node === this.h) cando.ctxt = true; 
+      if (node === this.h) cando.ctxt = true;
 
       if (kind == "ROOT.Session") {
          cando.img1 = "img_globe";
@@ -7091,7 +7091,7 @@
          cando.scan = false;
          cando.display = true;
       }
-      
+
       if ('_player' in node) cando.display = true;
 
       return cando;
@@ -7643,10 +7643,10 @@
       // one can load extra scripts here or assign draw functions
       ready_callback();
    }
-   
+
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, callback) {
       // method used to request object from the http server
-      
+
       var url = this.itemFullName(item);
       if (url.length > 0) url += "/";
       var h_get = ('_more' in item) || ('_doing_expand' in item);
@@ -7802,8 +7802,6 @@
 
       var itemname = node.parent().attr('item');
 
-      console.log("tree_contextmenu " + itemname);
-      
       var hitem = this.Find(itemname);
       if (hitem==null) return;
 
