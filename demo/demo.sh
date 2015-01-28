@@ -35,6 +35,7 @@ function grab {
    
    if [ "$1" != "0" ]; then 
       wget -nv $server/$2/root.json.gz?compact=3 -O $2/root.json.gz
+      wget -nv $server/$2/root.bin.gz -O $2/root.bin.gz
       wget -nv "$server/$2/root.png?w=400&h=300" -O $2/root.png
       wget -nv "$server/$2/exe.json?method=GetTitle" -O $2/exe.json
       wget -nv $server/$2/draw.htm?nozip -O $2/draw0.htm
