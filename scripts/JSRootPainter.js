@@ -3661,8 +3661,6 @@
          this['RevertX'] = function(grx) { return this.x.invert(grx); };
       }
       
-      this['GetBinX'] = function(bin) { return this.xmin+bin*this.binwidthx; };
-
       this['scale_xmin'] = this.xmin;
       this['scale_xmax'] = this.xmax;
       if (this.zoom_xmin != this.zoom_xmax) {
@@ -3724,9 +3722,6 @@
          this['ConvertY'] = function(y) { return y; };
          this['RevertY'] = function(gry) { return this.y.invert(gry); };
       }
-
-      // function return left bin edge coordinate on Y axis for 2D/3D histograms
-      this['GetBinY'] = function(bin) { return this.ymin+bin*this.binwidthy; };
       
       if (this.options.Logy) {
          if (this.scale_ymax <= 0) this.scale_ymax = 1;
@@ -4789,6 +4784,8 @@
       this.binwidthx = (this.xmax - this.xmin);
       if (this.nbinsx > 0)
          this.binwidthx = this.binwidthx / this.nbinsx;
+      
+      this['GetBinX'] = function(bin) { return this.xmin+bin*this.binwidthx; };
 
       this.ymin = this.histo['fYaxis']['fXmin'];
       this.ymax = this.histo['fYaxis']['fXmax'];
@@ -5457,10 +5454,14 @@
       this.binwidthx = (this.xmax - this.xmin);
       if (this.nbinsx > 0)
          this.binwidthx = this.binwidthx / this.nbinsx;
+      
+      this['GetBinX'] = function(bin) { return this.xmin+bin*this.binwidthx; };
 
       this.binwidthy = (this.ymax - this.ymin);
       if (this.nbinsy > 0)
          this.binwidthy = this.binwidthy / this.nbinsy
+         
+      this['GetBinY'] = function(bin) { return this.ymin+bin*this.binwidthy; };
 
       this.gmaxbin = this.histo.getBinContent(1, 1);
       this.gminbin = this.gmaxbin; // global min/max, used at the moment in 3D drawing
