@@ -2127,18 +2127,15 @@
          return res;
       }
 
-      // var x = this.main_painter().x;
-      var y = this.main_painter().y;
-      
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .y(function(d) { return Math.round(y(d.y)); });
+                  .y(function(d) { return Math.round(pmain.gry(d.y)); });
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
          if (typeof (fillcolor) == 'undefined') fillcolor = "rgb(204,204,204)";
          /* filled bar graph */
-         var xdom = x.domain();
+         var xdom = pmain.x.domain();
          var xfactor = xdom[1] - xdom[0];
          this.draw_errors = false;
 
@@ -2146,9 +2143,9 @@
                   .data(pthis.bins).enter()
                   .append("svg:rect")
                   .attr("x", function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .attr("y", function(d) { return y(d.y); })
-                  .attr("width", function(d) { return (w / (xdom[1] - xdom[0])) - 1 })
-                  .attr("height", function(d) { return y(d.y) - y(d.y + d.bh); })
+                  .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
+                  .attr("width", function(d) { return (w / (xdom[1] - xdom[0]))-1; })
+                  .attr("height", function(d) { return pmain.gry(d.y) - pmain.gry(d.y + d.bh); })
                   .style("fill", fillcolor);
 
          if (JSROOT.gStyle.Tooltip)
@@ -2191,7 +2188,7 @@
                        .data(pthis.bins).enter()
                        .append("svg:circle")
                        .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                       .attr("cy", function(d) { return Math.round(y(d.y)); })
+                       .attr("cy", function(d) { return Math.round(pmain.gry(d.y)); })
                        .attr("r", 3)
                        .style("opacity", 0)
                        .append("svg:title")
@@ -2210,7 +2207,7 @@
          for (var i in this.bins) {
             var pnt = this.bins[i];
             var grx = pmain.grx(pnt.x);
-            var gry = y(pnt.y);
+            var gry = pmain.gry(pnt.y);
             if ((grx<0) || (grx>w) || (gry<0) || (gry>h)) continue;
 
             // caluclate graphical coordinates
@@ -2218,8 +2215,8 @@
             pnt['gry1'] = gry.toFixed(1);
             if (pnt.exlow > 0)  pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
             if (pnt.exhigh > 0) pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
-            if (pnt.eylow > 0)  pnt['gry0'] = (y(pnt.y - pnt.eylow) - gry).toFixed(1);
-            if (pnt.eyhigh > 0) pnt['gry2'] = (y(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+            if (pnt.eylow > 0)  pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
+            if (pnt.eyhigh > 0) pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
 
             draw_bins.push(pnt);
          }
@@ -2228,7 +2225,7 @@
                      .data(draw_bins)
                      .enter()
                      .append("svg:g")
-                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; })
+                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
       if (JSROOT.gStyle.Tooltip && nodes)
@@ -3642,8 +3639,6 @@
       if (!this.is_main_painter()) {
          this['x'] = this.main_painter()['x'];
          this['y'] = this.main_painter()['y'];
-         this['grx'] = this.main_painter()['grx'];
-         this['gry'] = this.main_painter()['gry'];
          return;
       }
 
@@ -4967,6 +4962,7 @@
       
       var point = null;
       var searchmax = false;
+      var pmain = this.main_painter();
 
       for (var i = left; i < right; i++) {
          // if interval wider than specified range, make it shorter
@@ -4976,8 +4972,8 @@
          if (this.options.Logx && (x1 <= 0)) continue;
 
          grx1 = grx2;
-         grx2 = this.grx(x2);
-         if (grx1 < 0) grx1 = this.grx(x1);
+         grx2 = pmain.grx(x2);
+         if (grx1 < 0) grx1 = pmain.grx(x1);
 
          var pmax = i, cont = this.histo.getBinContent(i + 1);
 
@@ -4985,7 +4981,7 @@
             searchmax = !searchmax;
 
             // consider all points which are not far than 0.5 pixel away
-            while ((i+1<right) && (this.grx(this.GetBinX(i+2)) < grx2 + 0.5)) {
+            while ((i+1<right) && (pmain.grx(this.GetBinX(i+2)) < grx2 + 0.5)) {
                i++; x2 = this.GetBinX(i+1);
                var ccc = this.histo.getBinContent(i + 1);
                if (searchmax ? ccc>cont : ccc<cont) {
@@ -4993,7 +4989,7 @@
                   pmax = i;
                }
             }
-            grx2 = this.grx(x2);
+            grx2 = pmain.grx(x2);
          }
 
          // exclude zero bins from profile drawings
@@ -5002,13 +4998,13 @@
          if (this.options.Logy && (cont < this.scale_ymin))
             gry = height + 10;
          else
-            gry = this.y(cont);
+            gry = pmain.gry(cont);
 
          point = { x : grx1, y : gry };
 
          if (this.options.Error > 0) {
             point['xerr'] = (grx2 - grx1) / 2;
-            point['yerr'] = gry - this.y(cont + this.histo.getBinError(pmax + 1));
+            point['yerr'] = gry - pmain.gry(cont + this.histo.getBinError(pmax + 1));
          }
 
          if (this.options.Error > 0) {
