@@ -353,7 +353,7 @@ function BuildOnlineGUI() {
       .prop('checked', monitor!=null)
       .click(function() {
          hpainter.EnableMonitoring(this.checked);
-         if (this.checked) h.updateAll();
+         if (this.checked) hpainter.updateAll();
       });
 
    var h0 = null;
