@@ -11,7 +11,6 @@
    <script type='text/javascript'>
 
       var cnt = 0;
-
       function updateGUI() {
          // if getting histogram from THttpServer as JSON string, one should parse it like:
          // var histo = JSROOT.parse(your_json_string);
@@ -30,12 +29,12 @@
                histo.setBinContent(bin, val);
             }
 
-         cnt++;
-
          JSROOT.redraw('object_draw', histo, "colz");
-
-         if (cnt==1) setInterval(updateGUI, 3000);
+         
+         cnt++;
       }
+      
+      setInterval(updateGUI, 3000);
 
    </script>
 

@@ -342,7 +342,7 @@ function BuildOnlineGUI() {
       opts = JSON.parse(opts);
       for (var i in opts) optionsarr.push(opts[i]);
    }
-
+   
    if (hpainter==null) hpainter = new JSROOT.HierarchyPainter("root", "browser");
    hpainter.SetDisplay(layout, 'right-div');
 
