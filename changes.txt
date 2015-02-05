@@ -11,6 +11,7 @@ Changes in 3.3
 2. Within JSRootCore.js script URL one could specify JSROOT 
    functionality to be loaded: '2d', '3d', 'io', 'load', 'onload'. 
    Old method with JSROOT.AssertPrerequisites will also work.
+3. With THttpServer JSROOT provides simple control functionality.
 
 
 Changes in 3.2

@@ -7114,6 +7114,32 @@
 
       return cando;
    }
+   
+   JSROOT.HierarchyPainter.prototype.FindFastCommands = function() {
+      var hitem = this.Find("Control");
+      if (hitem==null) return null;
+
+      var arr = [];
+
+      for (var cnt in hitem._childs) {
+         if ('_fastcmd' in hitem._childs[cnt]) {
+            arr.push(hitem._childs[cnt]);
+            hitem._childs[cnt]['_parent'] = hitem; // fast workaround
+         }
+      }
+      
+      return arr.length > 0 ? arr : null;
+   }
+   
+   JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname) {
+      // execute item marked as 'Command' 
+      
+      var url = itemname + "/cmd.json";
+      var req = JSROOT.NewHttpRequest(url, 'text', function(res) {
+         console.log("Exec " + itemname + "  res=" + res);
+      });
+      req.send();
+   }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(force) {
       if (this.frameid == null) return;
@@ -7121,9 +7147,15 @@
       if (elem.length == 0) return;
 
       if (this.h == null) return elem.html("<h2>null</h2>");
+      
+      var factcmds = this.FindFastCommands();
 
-      this['html'] = "<p>";
-
+      this['html'] = "";
+      if (factcmds) {
+         for (var n in factcmds)
+            this['html'] += "<button class='fast_command'> </button>";
+      }
+      this['html'] += "<p>";
       this['html'] += "<a href='#open_all'>open all</a>";
       this['html'] += "| <a href='#close_all'>close all</a>";
       if ('_online' in this.h)
@@ -7162,6 +7194,16 @@
                     .next().click(function() { h.toggle(false); return false; })
                     .next().click(function() { h.reload(); return false; })
                     .next().click(function() { h.clear(false); return false; });
+      
+      if (factcmds)
+         elem.find('.fast_command').each(function(index) {
+            $(this).text("")
+                   .append('<img height="16" src="' + factcmds[index]['_fastcmd'] + '" width="16"/>')
+                   .button()
+                   .attr("item", h.itemFullName(factcmds[index]))
+                   .attr("title", factcmds[index]._title)
+                   .click(function(e) { h.ExecuteCommand($(this).attr("item")); });
+         });
    }
 
    JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
@@ -7175,7 +7217,7 @@
       var cando = this.CheckCanDo(hitem);
 
       if (!isroot) hitem._parent = parent;
-
+      
       var can_click = false;
 
       if (!has_childs || !cando.scan) {
