@@ -14,25 +14,9 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.3 dev 3/02/2015";
-
-   JSROOT.source_dir = function(){
-      var scripts = document.getElementsByTagName('script');
-
-      for (var n in scripts) {
-         if (scripts[n]['type'] != 'text/javascript') continue;
-
-         var src = scripts[n]['src'];
-         if ((src == null) || (src.length == 0)) continue;
-
-         var pos = src.indexOf("scripts/JSRootCore.js");
-         if (pos<0) continue;
-
-         console.log("Set JSROOT.source_dir to " + src.substr(0, pos));
-         return src.substr(0, pos);
-      }
-      return "";
-   }();
+   JSROOT.version = "3.3 dev 5/02/2015";
+   
+   JSROOT.source_dir = "";
 
    // TODO: all jQuery-related functions should go into extra script
    JSROOT.clone = function(obj) {
@@ -2038,6 +2022,39 @@
    JSROOT.Math.landaun = function(f, x, i) {
       return JSROOT.Math.Landau(x, f['fParams'][i+1],f['fParams'][i+2], true);
    };
+
+   
+   // it is important to run this function at the end when all other
+   // functions are available
+   (function() {
+      var scripts = document.getElementsByTagName('script');
+
+      for (var n in scripts) {
+         if (scripts[n]['type'] != 'text/javascript') continue;
+
+         var src = scripts[n]['src'];
+         if ((src == null) || (src.length == 0)) continue;
+
+         var pos = src.indexOf("scripts/JSRootCore.js");
+         if (pos<0) continue;
+
+         JSROOT.source_dir = src.substr(0, pos);
+         
+         console.log("Set JSROOT.source_dir to " + JSROOT.source_dir);
+
+         if (JSROOT.GetUrlOption('gui', src)!=null) return JSROOT.BuildSimpleGUI();
+         
+         var prereq = "";
+         if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
+         if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
+         if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
+
+         if (prereq.length>0) JSROOT.AssertPrerequisites(prereq);
+         
+         return;
+      }
+   })();
+
 
 })();
 

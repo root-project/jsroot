@@ -6,11 +6,11 @@
 
    <title>JSROOT drawing inside HTML page</title>
 
-   <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.js?2d" type="text/javascript"></script>
 
    <script type='text/javascript'>
 
-      cnt = 0;
+      var cnt = 0;
 
       function updateGUI() {
          // if getting histogram from THttpServer as JSON string, one should parse it like:
@@ -42,7 +42,7 @@
 
 </head>
 
-<body onload="JSROOT.AssertPrerequisites('2d', updateGUI, 'object_draw')">
+<body onload="updateGUI()">
   <h3>Text Before </h3>
 
   <div id="object_draw" style="width: 800px; height:600px"></div>

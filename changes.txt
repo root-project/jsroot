@@ -8,6 +8,9 @@ make JavaScript code more flexible and applicable for online environment.
 
 Changes in 3.3
 1. Use d3.time.scale for display of time scales 
+2. With JSRootCore.js script location one could specify JSROOT 
+   functionality to be loaded: '2d', '3d', 'io'. Old method with
+   JSROOT.AssertPrerequisites will also work.
 
 
 Changes in 3.2

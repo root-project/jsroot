@@ -6,7 +6,8 @@
 
    <title>Demonstrator of online usage of JSROOT</title>
    
-   <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
+   <!--  load JSROOT with 2D graphic -->
+   <script src="../scripts/JSRootCore.js?2d" type="text/javascript"></script>
    
    <script type='text/javascript'>
 
@@ -70,7 +71,7 @@
    
 </head>
 
-<body onload="JSROOT.AssertPrerequisites('2d', startGUI)">
+<body onload="startGUI()">
    <div id="drawing" style="position:absolute; left:1px; top:1px; bottom:1px; right:1px"></div>
 </body>
 </html>
