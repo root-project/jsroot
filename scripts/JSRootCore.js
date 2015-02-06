@@ -218,9 +218,10 @@
          xhr.onreadystatechange = function() {
             if (xhr.readyState != 4) return;
 
-            if (xhr.status != 0 && xhr.status != 200 && xhr.status != 206) {
+            if (xhr.status != 200 && xhr.status != 206) {
                return callback(null);
             }
+            
             if (kind == "xml") return callback(xhr.responseXML);
             if (kind == "text") return callback(xhr.responseText);
             if (kind == "object") return callback(JSROOT.parse(xhr.responseText));

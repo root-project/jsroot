@@ -6994,6 +6994,21 @@
 
       return folder;
    }
+   
+   JSROOT.HierarchyPainter.prototype.ForEach = function(callback) {
+      if ((this.h==null) || (typeof callback != 'function')) return;
+      
+      function each_item(item) {
+         callback(item);
+         if ('_childs' in item)
+            for (var n in item._childs) {
+               item._childs[n]._parent = item;
+               each_item(item._childs[n]);
+            }
+      }
+      
+      each_item(this.h);
+   }
 
    JSROOT.HierarchyPainter.prototype.Find = function(itemname, force) {
 
@@ -7069,7 +7084,6 @@
          cando.ctxt = true;
          cando.execute = true;
          cando.img1 = "img_execute";
-         if ('_fastcmd' in node) cando.img1 = node['_fastcmd'];  
       } else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = "img_histo1d";
          cando.scan = false;
@@ -7116,23 +7130,16 @@
       }
 
       if ('_player' in node) cando.display = true;
+      if ('_icon' in node) cando.img1 = node['_icon'];  
 
       return cando;
    }
    
    JSROOT.HierarchyPainter.prototype.FindFastCommands = function() {
-      var hitem = this.Find("Control");
-      if (hitem==null) return null;
-
       var arr = [];
-
-      for (var cnt in hitem._childs) {
-         if ('_fastcmd' in hitem._childs[cnt]) {
-            arr.push(hitem._childs[cnt]);
-            hitem._childs[cnt]['_parent'] = hitem; // fast workaround
-         }
-      }
       
+      this.ForEach(function(item) { if ('_fastcmd' in item) arr.push(item); });
+
       return arr.length > 0 ? arr : null;
    }
    
@@ -7212,9 +7219,9 @@
       
       if (factcmds)
          elem.find('.fast_command').each(function(index) {
-            $(this).text("")
-                   .append('<img height="16" src="' + factcmds[index]['_fastcmd'] + '" width="16"/>')
-                   .button()
+            if ('_icon' in factcmds[index])
+               $(this).text("").append('<img src="' + factcmds[index]['_icon'] + '"/>');
+            $(this).button()
                    .attr("item", h.itemFullName(factcmds[index]))
                    .attr("title", factcmds[index]._title)
                    .click(function() { h.ExecuteCommand($(this).attr("item"), $(this)); });
@@ -7222,13 +7229,21 @@
    }
 
    JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
-      return hitem && hitem._parent && hitem._parent._childs &&
-             (hitem._parent._childs.indexOf(hitem) == hitem._parent._childs.length-1);
+      if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
+      var chlds = hitem._parent._childs;
+      var indx = chlds.indexOf(hitem);
+      if (indx<0) return false;
+      while (++indx < chlds.length)
+         if (!('_hidden' in chlds[indx])) return false;
+      return true;
    }
 
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, parent) {
       var isroot = (parent == null);
       var has_childs = '_childs' in hitem;
+      
+      if ('_hidden' in hitem) return;
+      
       var cando = this.CheckCanDo(hitem);
 
       if (!isroot) hitem._parent = parent;

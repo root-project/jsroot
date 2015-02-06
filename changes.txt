@@ -12,6 +12,7 @@ Changes in 3.3
    functionality to be loaded: '2d', '3d', 'io', 'load', 'onload'. 
    Old method with JSROOT.AssertPrerequisites will also work.
 3. With THttpServer JSROOT provides simple control functionality.
+   One could publish commands, which can be executed from the browser
 
 
 Changes in 3.2
