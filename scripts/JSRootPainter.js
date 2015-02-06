@@ -7051,7 +7051,7 @@
 
    JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
       var cando = { expand : false, display : false, scan : true, open : false,
-                    img1 : "", img2 : "", html : "", ctxt : false, typename : "" };
+                    img1 : "", img2 : "", html : "", ctxt : false, typename : "", execute: false };
 
       var kind = node["_kind"];
       if (kind == null) kind = "";
@@ -7065,6 +7065,11 @@
 
       if (kind == "ROOT.Session") {
          cando.img1 = "img_globe";
+      } else if (kind=="Command") {
+         cando.ctxt = true;
+         cando.execute = true;
+         cando.img1 = "img_execute";
+         if ('_fastcmd' in node) cando.img1 = node['_fastcmd'];  
       } else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = "img_histo1d";
          cando.scan = false;
@@ -7132,10 +7137,21 @@
    }
    
    JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
-      // execute item marked as 'Command' 
+      // execute item marked as 'Command'
+      
+      var hitem = this.Find(itemname);
       var url = itemname + "/cmd.json";
+      if ((callback!=null) && (typeof callback == 'object')) {
+         callback.css('background','yellow');
+         if (hitem && hitem._title) callback.attr('title', "Executing " + hitem._title); 
+      }
       var req = JSROOT.NewHttpRequest(url, 'text', function(res) {
-         if (typeof callback=='function') callback(res);
+         if (typeof callback=='function') return callback(res); 
+         if ((callback!=null) && (typeof callback == 'object')) {
+            var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
+            if (hitem && hitem._title) callback.attr('title', hitem._title + " lastres=" + res); 
+            callback.animate({ backgroundColor: col}, 2000, function() { callback.css('background', ''); });
+         }
       });
       req.send();
    }
@@ -7200,18 +7216,8 @@
                    .append('<img height="16" src="' + factcmds[index]['_fastcmd'] + '" width="16"/>')
                    .button()
                    .attr("item", h.itemFullName(factcmds[index]))
-                   .attr("title0", factcmds[index]._title)
                    .attr("title", factcmds[index]._title)
-                   .click(function(e) { 
-                      var btn = $(this);
-                      btn.attr("title", "Executing " + btn.attr('title0'));
-                      btn.css('background', 'yellow'); 
-                      h.ExecuteCommand(btn.attr("item"), function(res) {
-                         var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
-                         btn.attr("title", btn.attr('title0') + " lastres=" + res);
-                         btn.animate({ backgroundColor: col}, 2000, function() { btn.css('background', ''); });
-                      }); 
-                    });
+                   .click(function() { h.ExecuteCommand($(this).attr("item"), $(this)); });
          });
    }
 
@@ -7237,7 +7243,7 @@
                cando.img2 = 'img_folderopen';
             }
          } else
-         if (cando.display) {
+         if (cando.display || cando.execute) {
             can_click = true;
          } else
          if (cando.html.length > 0) can_click = true;
@@ -7297,7 +7303,7 @@
       if (icon_name.indexOf("img_")==0)
          this['html'] += '<div class="' + icon_name + '"/>';
       else
-         this['html'] += '<img src="' + icon_name + '" alt=""/>';
+         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top"/>';
 
       this['html'] += '<a';
       if (can_click || has_childs) this['html'] +=' class="h_item"';
@@ -7346,9 +7352,11 @@
          if (cando.expand && (hitem['_childs'] == null))
             return this.expand(itemname, hitem, node.parent());
 
-         if (cando.display) {
+         if (cando.display) 
             return this.display(itemname);
-         }
+         
+         if (cando.execute)
+            return this.ExecuteCommand(itemname, node);
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
@@ -7814,6 +7822,9 @@
 
       if (cando.expand || cando.display)
          menu.add("Expand", function() { painter.expand(itemname); });
+      
+      if (cando.execute)
+         menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu['tree_node']); });
 
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       var separ = "?";
@@ -7948,6 +7959,7 @@
       }
 
       if (menu.size()>0) {
+         menu['tree_node'] = node; 
          menu.add("Close");
          menu.show(event);
       }
