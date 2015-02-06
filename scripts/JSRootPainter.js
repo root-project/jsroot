@@ -7131,12 +7131,11 @@
       return arr.length > 0 ? arr : null;
    }
    
-   JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname) {
+   JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
       // execute item marked as 'Command' 
-      
       var url = itemname + "/cmd.json";
       var req = JSROOT.NewHttpRequest(url, 'text', function(res) {
-         console.log("Exec " + itemname + "  res=" + res);
+         if (typeof callback=='function') callback(res);
       });
       req.send();
    }
@@ -7201,8 +7200,18 @@
                    .append('<img height="16" src="' + factcmds[index]['_fastcmd'] + '" width="16"/>')
                    .button()
                    .attr("item", h.itemFullName(factcmds[index]))
+                   .attr("title0", factcmds[index]._title)
                    .attr("title", factcmds[index]._title)
-                   .click(function(e) { h.ExecuteCommand($(this).attr("item")); });
+                   .click(function(e) { 
+                      var btn = $(this);
+                      btn.attr("title", "Executing " + btn.attr('title0'));
+                      btn.css('background', 'yellow'); 
+                      h.ExecuteCommand(btn.attr("item"), function(res) {
+                         var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
+                         btn.attr("title", btn.attr('title0') + " lastres=" + res);
+                         btn.animate({ backgroundColor: col}, 2000, function() { btn.css('background', ''); });
+                      }); 
+                    });
          });
    }
 
