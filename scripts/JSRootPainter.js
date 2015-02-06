@@ -4232,10 +4232,14 @@
 
       // draw statistics box & other TPaveTexts, which are belongs to histogram
       // should be called once to create all painters, which are than updated separately
+      // not drawn when no stats or
 
       if (!('fFunctions' in this.histo))  return;
       // if (this.options.Func == 0) return; // in some cases on need to disable
       // functions drawing
+
+      // do not draw functions when 'same' option was used of kNoStats bit is set 
+      if (this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.Same==1)) return;
 
       var lastpainter = this;
 
@@ -5225,7 +5229,10 @@
 
       if (painter.create_canvas) painter.DrawTitle();
 
-      if (JSROOT.gStyle.AutoStat && painter.create_canvas) painter.CreateStat();
+      if (JSROOT.gStyle.AutoStat && painter.create_canvas) {
+         console.log("Create Stat here");
+         painter.CreateStat();
+      }
 
       painter.DrawFunctions();
 
