@@ -278,7 +278,7 @@ function BuildOnlineGUI() {
             + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
             + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
-            + '   <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+            + '   <option>collapsible</option><option>simple</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
             + ' </select>'
             + ' <div id="browser"></div>'
             + '</div>'

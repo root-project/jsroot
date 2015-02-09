@@ -8179,12 +8179,20 @@
    JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      if (typeof userfunc == 'function')
+      if (typeof userfunc != 'function') return;
+      if ($("#"+this.frameid).prop('title')!='')
          userfunc($("#"+this.frameid));
    }
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
       return $("#"+this.frameid).empty().prop('title', title);
+   }
+
+   JSROOT.SimpleDisplay.prototype.Reset = function() {
+      JSROOT.MDIDisplay.prototype.Reset.call(this);
+      // try to remove different properties from the div
+      $("#"+this.frameid).prop('title','').css('background','')
+                         .removeClass('ui-droppable ui-state-default');
    }
 
    // ==================================================
