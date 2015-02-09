@@ -64,162 +64,6 @@ function CreateHPainter(nobrowser, rightdivid) {
 }
 
 
-function BuildNoBrowserGUI(online) {
-   var running_request = {};
-
-   var filesarr = [];
-   if (!online) {
-      filesarr = JSROOT.GetUrlOptionAsArray("file;files");
-      var filesdir = JSROOT.GetUrlOption("path");
-      if (filesdir!=null) 
-         for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
-   }
-
-   var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
-   
-   var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
-
-   var layout = JSROOT.GetUrlOption("layout");
-   if (layout=="") layout = null;
-
-   var monitor = JSROOT.GetUrlOption("monitoring");
-   if (monitor == "") monitor = 3000; else
-   if (monitor != null) monitor = parseInt(monitor);
-
-   var divid = online ? "onlineGUI" : "simpleGUI";
-
-   $('#'+divid).empty();
-
-   $('html').css('height','100%');
-   $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
-
-   $('#'+divid).css("position", "absolute")
-               .css("left", "1px")
-               .css("top", "1px")
-               .css("bottom", "1px")
-               .css("right", "1px");
-
-   var objpainter = null;
-   var mdi = null;
-
-   function file_error(str) {
-      if ((objpainter == null) && (mdi==null))
-         $('#'+divid).append("<h4>" + str + "</h4>");
-   }
-
-   if ((filesarr.length == null) && !online) {
-      return file_error('filename not specified');
-   }
-
-   if (itemsarr.length == 0) {
-      return file_error('itemname not specified');
-   }
-
-   var title = online ? "Online"  : ("File: " + filesarr.length>1 ? filesarr.toString : filesarr[0]);
-   if (itemsarr.length == 1) title += " item: " + itemsarr[0];
-                        else title += " items: " + itemsarr.toString();
-   document.title = title;
-
-   function draw_object(indx, obj) {
-      document.body.style.cursor = 'wait';
-      if (obj==null)  {
-         file_error("object " + itemsarr[indx] + " not found");
-      } else
-      if (mdi) {
-         var frame = mdi.FindFrame(itemsarr[indx], true);
-         mdi.ActivateFrame(frame);
-         JSROOT.redraw($(frame).attr('id'), obj, optionsarr[indx]);
-      } else {
-         objpainter = JSROOT.redraw(divid, obj, optionsarr[indx]);
-      }
-      document.body.style.cursor = 'auto';
-      running_request[indx] = false;
-   }
-
-   function read_object(file, indx) {
-
-      if (itemsarr[indx]=="StreamerInfo") {
-         draw_object(indx, file.fStreamerInfos);
-      } else {
-         file.ReadObject(itemsarr[indx], function(obj) {
-            draw_object(indx, obj);
-         });
-      }
-   }
-
-   function request_object(indx) {
-
-      if (running_request[indx]) return;
-
-      running_request[indx] = true;
-
-      var url = itemsarr[indx] + "/root.json.gz?compact=3";
-
-      var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
-         if ((obj != null) &&  (itemsarr[indx] === "StreamerInfo")
-               && (obj['_typename'] === 'TList'))
-            obj['_typename'] = 'TStreamerInfoList';
-
-         draw_object(indx, obj);
-      });
-
-      itemreq.send(null);
-   }
-
-   function read_all_objects() {
-
-      if (online) {
-         for (var i in itemsarr)
-            request_object(i);
-         return;
-      }
-
-      for (var i in itemsarr)
-         if (running_request[i]) {
-            console.log("Request for item " + itemsarr[i] + " still running");
-            return;
-         }
-
-      new JSROOT.TFile(filesarr[0], function(file) {
-         if (file==null) return file_error("file " + filesarr[0] + " cannot be opened");
-
-         for (var i in itemsarr) {
-            running_request[i] = true;
-            read_object(file, i);
-         }
-      });
-   }
-
-   if (itemsarr.length > 1) {
-      if ((layout==null) || (layout=='collapsible') || (layout == "")) {
-         var divx = 2; divy = 1;
-         while (divx*divy < itemsarr.length) {
-            if (divy<divx) divy++; else divx++;
-         }
-         layout = 'grid' + divx + 'x' + divy;
-      }
-
-      if (layout=='tabs')
-         mdi = new JSROOT.TabsDisplay(divid);
-      else
-         mdi = new JSROOT.GridDisplay(divid, layout);
-
-      // Than create empty frames for each item
-      for (var i in itemsarr)
-         mdi.CreateFrame(itemsarr[i]);
-   }
-
-   read_all_objects();
-
-   if (monitor>0)
-      setInterval(read_all_objects, monitor);
-
-   JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); if (mdi) mdi.CheckResize(); });
-}
-
-
-
-
 function ReadFile() {
    var navigator_version = navigator.appVersion;
    if (typeof ActiveXObject == "function") { // Windows
@@ -269,9 +113,8 @@ function BuildOnlineGUI() {
 
    JSROOT.Painter.readStyleFromURL();
 
-   if (JSROOT.GetUrlOption("nobrowser")!=null)
-      return BuildNoBrowserGUI(true);
-
+   var nobrowser = JSROOT.GetUrlOption("nobrowser") != null;
+   
    var guiCode = '<div id="left-div" class="column">'
             + '<h1><font face="Verdana" size="4">ROOT online server</font></h1>'
             + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
@@ -285,7 +128,23 @@ function BuildOnlineGUI() {
             + '<div id="separator-div" class="column"></div>'
             + '<div id="right-div" class="column"></div>';
 
-   $('#onlineGUI').empty().append(guiCode);
+   var drawDivId = 'right-div';
+   
+   if (nobrowser) {
+      guiCode = "";
+      $('html').css('height','100%');
+      $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
+      
+      drawDivId = 'onlineGUI';
+
+      myDiv.css("position", "absolute")
+           .css("left", "1px")
+           .css("top", "1px")
+           .css("bottom", "1px")
+           .css("right", "1px");
+   }
+   
+   myDiv.empty().append(guiCode);
 
    var monitor = JSROOT.GetUrlOption("monitoring");
 
@@ -293,10 +152,11 @@ function BuildOnlineGUI() {
    
    var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
    
-   CreateHPainter(false, "right-div");
+   CreateHPainter(nobrowser, drawDivId);
 
    hpainter.EnableMonitoring(monitor!=null);
-   $("#monitoring")
+   if (!nobrowser)
+     $("#monitoring")
       .prop('checked', monitor!=null)
       .click(function() {
          hpainter.EnableMonitoring(this.checked);
@@ -308,25 +168,22 @@ function BuildOnlineGUI() {
    if (typeof h0 != 'object') h0 = "";
 
    hpainter.OpenOnline(h0, function() {
-       hpainter.displayAll(itemsarr, optionsarr);
+      hpainter.displayAll(itemsarr, optionsarr);
    });
 
    setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
 }
 
 function BuildSimpleGUI() {
-
    if (document.getElementById('onlineGUI')) return BuildOnlineGUI();
 
    var myDiv = $('#simpleGUI');
    if (!myDiv) return;
-
+   
    JSROOT.Painter.readStyleFromURL();
 
    var nobrowser = JSROOT.GetUrlOption("nobrowser") != null;
    
-   // if (nobrowser) return BuildNoBrowserGUI(false);
-
    var files = myDiv.attr("files");
    var path = myDiv.attr("path");
 
