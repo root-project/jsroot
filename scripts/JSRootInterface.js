@@ -218,51 +218,19 @@ function ReadFile(filename, checkitem) {
       }
    }
 
-   if (filename==null) {
-      filename = $("#urlToLoad").val();
-      filename.trim();
-   } else {
-      $("#urlToLoad").val(filename);
-   }
+   var filename = $("#urlToLoad").val();
+   filename.trim();
    if (filename.length == 0) return;
 
-   var layout = null;
-   var itemsarr = [];
-   var optionsarr = [];
-   if (checkitem) {
-      var itemname = JSROOT.GetUrlOption("item");
-      if (itemname) itemsarr.push(itemname);
-      var items = JSROOT.GetUrlOption("items");
-      if (items!=null) {
-         items = JSON.parse(items);
-         for (var i in items) itemsarr.push(items[i]);
-      }
+   var layout = guiLayout();
 
-      layout = JSROOT.GetUrlOption("layout");
-      if (layout=="") layout = null;
-
-      var opt = JSROOT.GetUrlOption("opt");
-      if (opt) optionsarr.push(opt);
-      var opts = JSROOT.GetUrlOption("opts");
-      if (opts!=null) {
-         opts = JSON.parse(opts);
-         for (var i in opts) optionsarr.push(opts[i]);
-      }
+   if (hpainter==null) {
+      hpainter = new JSROOT.HierarchyPainter('root', 'browser');
+      AddInteractions();
    }
-
-   if (layout==null)
-      layout = guiLayout();
-   else
-      setGuiLayout(layout);
-
-   if (hpainter==null) hpainter = new JSROOT.HierarchyPainter('root', 'browser');
    hpainter.SetDisplay(layout, 'right-div');
 
-   AddInteractions();
-
-   hpainter.OpenRootFile(filename, function() {
-      hpainter.displayAll(itemsarr, optionsarr);
-   });
+   hpainter.OpenRootFile(filename);
 }
 
 function ProcessResize(direct)
@@ -284,9 +252,8 @@ function AddInteractions() {
 
    // specify display kind every time selection done
    // will be actually used only for first drawing or after reset
-   $("#layout").change( function() {
-      if (hpainter)
-         hpainter.SetDisplay(guiLayout(), "right-div");
+   $("#layout").change(function() {
+      if (hpainter) hpainter.SetDisplay(guiLayout(), "right-div");
    });
 }
 
@@ -343,10 +310,11 @@ function BuildOnlineGUI() {
       for (var i in opts) optionsarr.push(opts[i]);
    }
    
-   if (hpainter==null) hpainter = new JSROOT.HierarchyPainter("root", "browser");
+   if (hpainter==null) {
+      hpainter = new JSROOT.HierarchyPainter("root", "browser");
+      AddInteractions();
+   }
    hpainter.SetDisplay(layout, 'right-div');
-
-   AddInteractions();
 
    hpainter.EnableMonitoring(monitor!=null);
    $("#monitoring")
@@ -384,11 +352,9 @@ function BuildSimpleGUI() {
    var filesdir = JSROOT.GetUrlOption("path");
    if (filesdir==null) filesdir = myDiv.attr("path");
 
-   if (files==null) files = "files/hsimple.root";
+   if (files==null) files = "../files/hsimple.root";
    if (filesdir==null) filesdir = "";
    var arrFiles = files.split(';');
-
-   var filename = JSROOT.GetUrlOption("file");
 
    var guiCode = "<div id='left-div' class='column'>"
       +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
@@ -404,7 +370,7 @@ function BuildSimpleGUI() {
          guiCode += '<option value = "' + filesdir + arrFiles[i] + '">' + arrFiles[i] + '</option>';
       }
       guiCode += '</select><br/>'
-        +'<p><small>Other URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
+        +'<p><small>Other file URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
         +'see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org</a> on how to avoid it.</small></p>'
         +'<input style="padding:2px; margin-top:5px;"'
         +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
@@ -422,10 +388,40 @@ function BuildSimpleGUI() {
 
    $('#simpleGUI').empty().append(guiCode);
 
-   // $("#layout").selectmenu();
+   var filesarr = JSROOT.GetUrlOptionAsArray("file");
+   filesarr = filesarr.concat(JSROOT.GetUrlOptionAsArray("files"));
+   
+   if (filesarr.length==0) return;
+   
+   $("#urlToLoad").val(filesarr[0]);
+   
+   var itemsarr = JSROOT.GetUrlOptionAsArray("item");
+   itemsarr = itemsarr.concat(JSROOT.GetUrlOptionAsArray("items"));
+   
+   var optionsarr = JSROOT.GetUrlOptionAsArray("opt");
+   optionsarr = optionsarr.concat(JSROOT.GetUrlOptionAsArray("opts"));
+      
+   var layout = JSROOT.GetUrlOption("layout");
+   if (layout=="") layout = null;
 
-   AddInteractions();
+   if (layout==null)
+      layout = guiLayout();
+   else
+      setGuiLayout(layout);
 
-   if ((typeof filename == 'string') && (filename.length>0))
-      ReadFile(filename, true);
+   if (hpainter==null) {
+      hpainter = new JSROOT.HierarchyPainter('root', 'browser');
+      AddInteractions();
+   }
+   
+   hpainter.SetDisplay(layout, 'right-div');
+   
+   function OpenFiles() {
+      if (filesarr.length==0) 
+         hpainter.displayAll(itemsarr, optionsarr);
+      else
+         hpainter.OpenRootFile(filesarr.shift(), OpenFiles); 
+   }
+   
+   OpenFiles();
 }

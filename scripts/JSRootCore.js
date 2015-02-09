@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.3 dev 6/02/2015";
+   JSROOT.version = "3.3 dev 9/02/2015";
    
    JSROOT.source_dir = "";
 
@@ -152,6 +152,37 @@
       }
       return dflt;
    }
+   
+   JSROOT.GetUrlOptionAsArray = function(opt, url) {
+      // special handling of URL options to produce array
+      // if normal option is specified ...?opt=abc, than array with single element will be created
+      // one could specify normal JSON array ...?opt=['item1','item2']
+      // but also one could skip quotes ...?opt=[item1,item2]
+      
+      var val = this.GetUrlOption(opt, url, null);
+      if (val==null) return [];
+      val.trim();
+      if (val=="") return [];
+      
+      // return as array with single element 
+      if ((val[0]!='[') && (val[val.length-1]!=']')) return [ val ];
+      
+      // try to parse ourself
+      val = val.substr(1, val.length-2); // remove brackets
+      var res = [];
+      while (val.indexOf(',')>=0) {
+         var pos = val.indexOf(',');
+         var sub = val.substr(0, pos);
+         sub.trim();
+         if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
+            sub = sub.substr(1, sub.length-2);
+         res.push(sub);
+         val = val.substr(pos+1);
+      }
+      res.push(val);
+      return res;
+   }
+
 
    JSROOT.findFunction = function(name) {
       var func = window[name];

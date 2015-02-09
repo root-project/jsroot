@@ -13,6 +13,7 @@ Changes in 3.3
    Old method with JSROOT.AssertPrerequisites will also work.
 3. With THttpServer JSROOT now provides simple control functionality.
    One could publish commands and execute them from the browser
+4. One could open several ROOT files simultaneously 
 
 
 Changes in 3.2

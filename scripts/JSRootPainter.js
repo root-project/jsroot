@@ -5230,7 +5230,6 @@
       if (painter.create_canvas) painter.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas) {
-         console.log("Create Stat here");
          painter.CreateStat();
       }
 
@@ -7117,6 +7116,8 @@
          cando.display = true;
       } else if (kind == "ROOT.TTree") {
          cando.img1 = "img_tree";
+      } else if (kind == "ROOT.TFile") {
+         cando.img1 = "img_htmlfile";
       } else if (kind == "ROOT.TFolder") {
          cando.img1 = "img_folder";
          cando.img2 = "img_folderopen";
@@ -7138,6 +7139,7 @@
 
       if ('_player' in node) cando.display = true;
       if ('_icon' in node) cando.img1 = node['_icon'];  
+      if ('_icon2' in node) cando.img2 = node['_icon2'];  
 
       return cando;
    }
@@ -7271,20 +7273,20 @@
          if (cando.html.length > 0) can_click = true;
       }
 
-      if (!('_icon' in hitem)) hitem['_icon'] = cando.img1;
-      if (!('_icon2' in hitem)) hitem['_icon2'] = cando.img2;
-      if (hitem['_icon2']=="") hitem['_icon2'] = hitem['_icon'];
+      hitem['_img1'] = cando.img1;
+      hitem['_img2'] = cando.img2;
+      if (hitem['_img2']=="") hitem['_img2'] = hitem['_img1'];
 
       // assign node icons
 
-      if (!hitem['_icon'])
-         hitem['_icon'] = has_childs ? "img_folder" : "img_page";
+      if (!hitem['_img1'])
+         hitem['_img1'] = has_childs ? "img_folder" : "img_page";
 
-      if (!hitem['_icon2'])
-         hitem['_icon2'] = has_childs ? "img_folderopen" : "img_page";
+      if (!hitem['_img2'])
+         hitem['_img2'] = has_childs ? "img_folderopen" : "img_page";
 
       if (isroot)
-         hitem['_icon'] = hitem['_icon2'] = "img_base";
+         hitem['_img1'] = hitem['_img2'] = "img_base";
 
       var itemname = this.itemFullName(hitem);
 
@@ -7320,7 +7322,7 @@
 
       // make node icons
 
-      var icon_name = hitem._isopen ? hitem._icon2 : hitem._icon;
+      var icon_name = hitem._isopen ? hitem._img2 : hitem._img1;
 
       if (icon_name.indexOf("img_")==0)
          this['html'] += '<div class="' + icon_name + '"/>';
@@ -7398,8 +7400,8 @@
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(node, hitem) {
       var has_childs = '_childs' in hitem;
 
-      var newname = hitem._isopen ? hitem._icon2 : hitem._icon;
-      var oldname = hitem._isopen ? hitem._icon : hitem._icon2;
+      var newname = hitem._isopen ? hitem._img2 : hitem._img1;
+      var oldname = hitem._isopen ? hitem._img1 : hitem._img2;
 
       var img = node.find("a").first().prev();
 
@@ -7703,17 +7705,38 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, andThan) {
+   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
+
+      if (typeof call_back != 'function') call_back = function() {};
+      
+      // first check that file with such URL already opened
+      
+      if (this.h != null) {
+         if ((this.h._kind == 'ROOT.TFile') && (this.h._file.fURL == filepath)) return call_back();
+         if (this.h._name == "Files")
+            for (var n in this.h._childs) {
+               var f = this.h._childs[n];
+               if ((f._kind == 'ROOT.TFile') && (this.h._file.fURL == filepath)) return call_back();
+            }
+      }
+
       var pthis = this;
 
       var f = new JSROOT.TFile(filepath, function(file) {
-         if (file == null) return;
-         // for the moment file is the only entry
-         pthis.h = pthis.FileHierarchy(file);
+         if (file == null) return call_back();
+         var h1 = pthis.FileHierarchy(file);
+         h1._isopen = true;
+         if (pthis.h == null) pthis.h = h1; else
+         if (pthis.h._kind == "ROOT.TFile") {
+            var h0 = pthis.h;
+            pthis.h = { _name: "Files", _kind: 'ROOT.TFolder', _childs : [h0, h1]};
+         } else {
+            pthis.h._childs.push(h1);
+         }
 
          pthis.RefreshHtml();
 
-         if (typeof andThan == 'function') andThan();
+         call_back();
       });
    }
 
