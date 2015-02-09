@@ -15,6 +15,7 @@ Changes in 3.3
    One could publish commands and execute them from the browser
 4. One could open several ROOT files simultaneously 
 5. Add 'simple' layout - drawing uses full space on the right side
+6. Allow to open ROOT files in online session (via url parameter)
 
 
 Changes in 3.2

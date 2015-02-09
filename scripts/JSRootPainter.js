@@ -7727,21 +7727,30 @@
          }
       });
    }
+   
+   JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
+      if (typeof call_back!='function') return;
+      
+      if (this.h==null) return;
+      if ((this.h._kind == "ROOT.TFile") && (this.h._file!=null))
+         return call_back(this.h);
+      
+      if (this.h._childs!=null) 
+         for (var n in this.h._childs) {
+            var item = this.h._childs[n];
+            if ((item._kind == 'ROOT.TFile') && (item._file!=null)) call_back(item);
+         }
+   }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
 
       if (typeof call_back != 'function') call_back = function() {};
       
       // first check that file with such URL already opened
-      
-      if (this.h != null) {
-         if ((this.h._kind == 'ROOT.TFile') && (this.h._file.fURL == filepath)) return call_back();
-         if (this.h._name == "Files")
-            for (var n in this.h._childs) {
-               var f = this.h._childs[n];
-               if ((f._kind == 'ROOT.TFile') && (f._file.fURL == filepath)) return call_back();
-            }
-      }
+ 
+      var isfileopened = false;
+      this.ForEachRootFile(function(item) { if (item._file.fURL==filepath) isfileopened = true; });
+      if (isfileopened) return call_back();
 
       var pthis = this;
 
@@ -7750,11 +7759,10 @@
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) pthis.h = h1; else
-         if (pthis.h._kind == "ROOT.TFile") {
+         if ('_aggregation' in pthis.h) pthis.h._childs.push(h1); else {
             var h0 = pthis.h;
-            pthis.h = { _name: "Files", _kind: 'ROOT.TFolder', _childs : [h0, h1]};
-         } else {
-            pthis.h._childs.push(h1);
+            var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            pthis.h = { _name: topname, _kind: 'ROOT.TFolder', _childs : [h0, h1], _aggregation : true };
          }
 
          pthis.RefreshHtml();
@@ -7792,7 +7800,10 @@
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, callback) {
       // method used to request object from the http server
 
-      var url = this.itemFullName(item);
+      var top = item;
+      while ((top!=null) && (!('_online' in top))) top = top._parent;
+      
+      var url = this.itemFullName(item, top);
       if (url.length > 0) url += "/";
       var h_get = ('_more' in item) || ('_doing_expand' in item);
       url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';

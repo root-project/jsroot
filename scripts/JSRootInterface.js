@@ -92,17 +92,6 @@ function ReadFile() {
                   else hpainter.OpenRootFile(filename);
 }
 
-function ProcessResize(direct)
-{
-   if (hpainter==null) return;
-
-   if (direct) document.body.style.cursor = 'wait';
-
-   hpainter.CheckResize();
-
-   if (direct) document.body.style.cursor = 'auto';
-}
-
 
 function BuildOnlineGUI() {
    var myDiv = $('#onlineGUI');
@@ -121,7 +110,7 @@ function BuildOnlineGUI() {
             + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
             + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
-            + '   <option>collapsible</option><option>simple</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+            + '   <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
             + ' </select>'
             + ' <div id="browser"></div>'
             + '</div>'
@@ -175,50 +164,69 @@ function BuildOnlineGUI() {
 }
 
 function BuildSimpleGUI() {
-   if (document.getElementById('onlineGUI')) return BuildOnlineGUI();
-
+   
    var myDiv = $('#simpleGUI');
-   if (!myDiv) return;
+   var online = false;
+   
+   if (myDiv.length==0) {
+      myDiv = $('#onlineGUI');
+      if (myDiv.length==0) return alert('no div for simple gui found');
+      online = true;
+   }
    
    JSROOT.Painter.readStyleFromURL();
 
    var nobrowser = JSROOT.GetUrlOption("nobrowser") != null;
    
-   var files = myDiv.attr("files");
-   var path = myDiv.attr("path");
+   var guiCode = "<div id='left-div' class='column'>";
+   
+   if (online) {
+      guiCode += '<h1><font face="Verdana" size="4">ROOT online server</font></h1>'
+         + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
+         + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
+         + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
+         + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
+         + '   <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+         + ' </select>';
+   } else {
+      
+      var files = myDiv.attr("files");
+      var path = myDiv.attr("path");
 
-   if (files==null) files = "../files/hsimple.root";
-   if (path==null) path = "";
-   var arrFiles = files.split(';');
+      if (files==null) files = "../files/hsimple.root";
+      if (path==null) path = "";
+      var arrFiles = files.split(';');
 
-   var guiCode = "<div id='left-div' class='column'>"
-      +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
-      +"<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
+      var guiCode = "<div id='left-div' class='column'>"
+         +"<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
+         +"<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
 
-   if ((JSROOT.GetUrlOption("noselect")==null) || (filename==null)) {
-     guiCode += '<form name="ex">'
-      +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
-      +'<select name="s" style="width:65%; margin-top:5px;" '
-      +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
-      +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
-      for (var i in arrFiles)
-         guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
-      guiCode += '</select><br/>'
-        +'<p><small>Other file URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
-        +'see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org</a> on how to avoid it.</small></p>'
-        +'<input style="padding:2px; margin-top:5px;"'
-        +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
-        +'<input style="padding:2px; margin-left:10px;"'
-        +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
-        +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
-        +'  <option>collapsible</option><option>simple</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
-        +'</select><br/>'
-        +'</form>';
+      if (JSROOT.GetUrlOption("noselect")==null) {
+        guiCode += '<form name="ex">'
+           +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
+           +'<select name="s" style="width:65%; margin-top:5px;" '
+           +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
+           +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
+        for (var i in arrFiles)
+           guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
+        guiCode += '</select><br/>'
+           +'<p><small>Other file URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
+           +'see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org</a> on how to avoid it.</small></p>'
+           +'<input style="padding:2px; margin-top:5px;"'
+           +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
+           +'<input style="padding:2px; margin-left:10px;"'
+           +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
+           +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
+           +'  <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+           +'</select><br/>'
+           +'</form>';
+      }
    }
+   
    guiCode += '<div id="browser"></div>'
-      +'</div>'
-      +'<div id="separator-div"></div>'
-      +'<div id="right-div" class="column"></div>';
+           +'</div>'
+           +'<div id="separator-div"></div>'
+           +'<div id="right-div" class="column"></div>';
    
    var drawDivId = 'right-div';
    
@@ -227,7 +235,7 @@ function BuildSimpleGUI() {
       $('html').css('height','100%');
       $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
       
-      drawDivId = 'simpleGUI';
+      drawDivId = myDiv.attr('id');
 
       myDiv.css("position", "absolute")
            .css("left", "1px")
@@ -243,22 +251,48 @@ function BuildSimpleGUI() {
    if (filesdir!=null) 
       for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
    
-   if (filesarr.length==0) return;
    
-   $("#urlToLoad").val(filesarr[0]);
    
    var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
    
    var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
-      
+
+   var monitor = JSROOT.GetUrlOption("monitoring");
+
    CreateHPainter(nobrowser, drawDivId);
+
+   hpainter.EnableMonitoring(monitor!=null);
+
+   var h0 = null;
    
-   function OpenFiles() {
-      if (filesarr.length==0) 
-         hpainter.displayAll(itemsarr, optionsarr);
-      else
-         hpainter.OpenRootFile(filesarr.shift(), OpenFiles); 
+   if (online) {
+      if (!nobrowser)
+         $("#monitoring")
+          .prop('checked', monitor!=null)
+          .click(function() {
+             hpainter.EnableMonitoring(this.checked);
+             if (this.checked) hpainter.updateAll();
+          });
+
+       if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
+       if (typeof h0 != 'object') h0 = "";
+   } else {
+      if ((filesarr.length>0) && !nobrowser) 
+         $("#urlToLoad").val(filesarr[0]);
    }
    
-   OpenFiles();
+   function OpenAllSources() {
+      if (h0!=null) {
+         var hhh = h0; h0 = null;
+         hpainter.OpenOnline(hhh, OpenAllSources);
+      } else
+      if (filesarr.length>0)
+         hpainter.OpenRootFile(filesarr.shift(), OpenAllSources);
+      else 
+         hpainter.displayAll(itemsarr, optionsarr);
+   }
+   
+   OpenAllSources();
+   
+   setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
 }
