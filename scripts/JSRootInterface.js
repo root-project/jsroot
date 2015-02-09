@@ -177,7 +177,7 @@ function BuildSimpleGUI() {
       // specify display kind every time selection done
       // will be actually used only for first drawing or after reset
       $("#layout").change(function() {
-         if (hpainter) hpainter.SetDisplay(guiLayout(), rightdivid);
+         if (hpainter) hpainter.SetDisplay(guiLayout(), drawDivId);
       });
    }
    
