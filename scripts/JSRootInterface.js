@@ -156,7 +156,6 @@ function BuildSimpleGUI() {
 
    var monitor = JSROOT.GetUrlOption("monitoring");
 
-
    var layout = JSROOT.GetUrlOption("layout");
    if (layout=="") layout = null;
 
@@ -203,18 +202,15 @@ function BuildSimpleGUI() {
          $("#urlToLoad").val(filesarr[0]);
    }
    
-   function OpenAllSources() {
-      if (h0!=null) {
-         var hhh = h0; h0 = null;
-         hpainter.OpenOnline(hhh, OpenAllSources);
-      } else
+   function OpenAllFiles() {
       if (filesarr.length>0)
-         hpainter.OpenRootFile(filesarr.shift(), OpenAllSources);
+         hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
       else 
          hpainter.displayAll(itemsarr, optionsarr);
    }
    
-   OpenAllSources();
+   if (h0!=null) hpainter.OpenOnline(h0, OpenAllFiles);
+            else OpenAllFiles();
    
    setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
 }
