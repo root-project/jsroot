@@ -31,34 +31,53 @@ function setGuiLayout(value) {
    }
 }
 
+function CreateHPainter(nobrowser, rightdivid) {
+
+   if (hpainter!=null) return;
+
+   var layout = JSROOT.GetUrlOption("layout");
+   if (layout=="") layout = null;
+
+   hpainter = new JSROOT.HierarchyPainter('root', nobrowser ? null : 'browser');
+
+   JSROOT.RegisterForResize(hpainter);
+
+   if (nobrowser) {
+      if (layout==null) layout= "simple";
+   } else {
+      if (layout==null)
+         layout = guiLayout();
+      else
+         setGuiLayout(layout);
+   
+      JSROOT.ConfigureVSeparator(hpainter);
+
+      // specify display kind every time selection done
+      // will be actually used only for first drawing or after reset
+      $("#layout").change(function() {
+         if (hpainter) hpainter.SetDisplay(guiLayout(), rightdivid);
+      });
+
+   }
+   
+   hpainter.SetDisplay(layout, rightdivid);
+}
+
+
 function BuildNoBrowserGUI(online) {
-   var itemsarr = [];
-   var optionsarr = [];
    var running_request = {};
 
-   var filename = null;
+   var filesarr = [];
    if (!online) {
-      filename = JSROOT.GetUrlOption("file");
+      filesarr = JSROOT.GetUrlOptionAsArray("file;files");
       var filesdir = JSROOT.GetUrlOption("path");
-      if (filesdir!=null) filename = filesdir + filename;
+      if (filesdir!=null) 
+         for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
    }
 
-   var itemname = JSROOT.GetUrlOption("item");
-   if (itemname) itemsarr.push(itemname);
-   var opt = JSROOT.GetUrlOption("opt");
-   if (opt) optionsarr.push(opt);
-
-   var items = JSROOT.GetUrlOption("items");
-   if (items != null) {
-      items = JSON.parse(items);
-      for (var i in items) itemsarr.push(items[i]);
-   }
-
-   var opts = JSROOT.GetUrlOption("opts");
-   if (opts!=null) {
-      opts = JSON.parse(opts);
-      for (var i in opts) optionsarr.push(opts[i]);
-   }
+   var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
+   
+   var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
 
    var layout = JSROOT.GetUrlOption("layout");
    if (layout=="") layout = null;
@@ -88,7 +107,7 @@ function BuildNoBrowserGUI(online) {
          $('#'+divid).append("<h4>" + str + "</h4>");
    }
 
-   if ((filename == null) && !online) {
+   if ((filesarr.length == null) && !online) {
       return file_error('filename not specified');
    }
 
@@ -96,7 +115,7 @@ function BuildNoBrowserGUI(online) {
       return file_error('itemname not specified');
    }
 
-   var title = online ? "Online"  : ("File: " + filename);
+   var title = online ? "Online"  : ("File: " + filesarr.length>1 ? filesarr.toString : filesarr[0]);
    if (itemsarr.length == 1) title += " item: " + itemsarr[0];
                         else title += " items: " + itemsarr.toString();
    document.title = title;
@@ -161,8 +180,8 @@ function BuildNoBrowserGUI(online) {
             return;
          }
 
-      new JSROOT.TFile(filename, function(file) {
-         if (file==null) return file_error("file " + filename + " cannot be opened");
+      new JSROOT.TFile(filesarr[0], function(file) {
+         if (file==null) return file_error("file " + filesarr[0] + " cannot be opened");
 
          for (var i in itemsarr) {
             running_request[i] = true;
@@ -198,7 +217,10 @@ function BuildNoBrowserGUI(online) {
    JSROOT.RegisterForResize(function() { if (objpainter) objpainter.CheckResize(); if (mdi) mdi.CheckResize(); });
 }
 
-function ReadFile(filename, checkitem) {
+
+
+
+function ReadFile() {
    var navigator_version = navigator.appVersion;
    if (typeof ActiveXObject == "function") { // Windows
       // detect obsolete browsers
@@ -221,16 +243,9 @@ function ReadFile(filename, checkitem) {
    var filename = $("#urlToLoad").val();
    filename.trim();
    if (filename.length == 0) return;
-
-   var layout = guiLayout();
-
-   if (hpainter==null) {
-      hpainter = new JSROOT.HierarchyPainter('root', 'browser');
-      AddInteractions();
-   }
-   hpainter.SetDisplay(layout, 'right-div');
-
-   hpainter.OpenRootFile(filename);
+   
+   if (hpainter==null) alert("Hierarchy painter not initialized");
+                  else hpainter.OpenRootFile(filename);
 }
 
 function ProcessResize(direct)
@@ -242,19 +257,6 @@ function ProcessResize(direct)
    hpainter.CheckResize();
 
    if (direct) document.body.style.cursor = 'auto';
-}
-
-function AddInteractions() {
-
-   JSROOT.ConfigureVSeparator(hpainter);
-
-   JSROOT.RegisterForResize(hpainter);
-
-   // specify display kind every time selection done
-   // will be actually used only for first drawing or after reset
-   $("#layout").change(function() {
-      if (hpainter) hpainter.SetDisplay(guiLayout(), "right-div");
-   });
 }
 
 
@@ -285,36 +287,13 @@ function BuildOnlineGUI() {
 
    $('#onlineGUI').empty().append(guiCode);
 
-   var layout = JSROOT.GetUrlOption("layout");
-   if ((layout=="") || (layout==null))
-      layout = guiLayout();
-   else
-      setGuiLayout(layout);
-
    var monitor = JSROOT.GetUrlOption("monitoring");
 
-   var itemsarr = [], optionsarr = [];
-   var itemname = JSROOT.GetUrlOption("item");
-   if (itemname) itemsarr.push(itemname);
-   var items = JSROOT.GetUrlOption("items");
-   if (items!=null) {
-      items = JSON.parse(items);
-      for (var i in items) itemsarr.push(items[i]);
-   }
-
-   var opt = JSROOT.GetUrlOption("opt");
-   if (opt) optionsarr.push(opt);
-   var opts = JSROOT.GetUrlOption("opts");
-   if (opts!=null) {
-      opts = JSON.parse(opts);
-      for (var i in opts) optionsarr.push(opts[i]);
-   }
+   var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
    
-   if (hpainter==null) {
-      hpainter = new JSROOT.HierarchyPainter("root", "browser");
-      AddInteractions();
-   }
-   hpainter.SetDisplay(layout, 'right-div');
+   var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
+   
+   CreateHPainter(false, "right-div");
 
    hpainter.EnableMonitoring(monitor!=null);
    $("#monitoring")
@@ -344,16 +323,15 @@ function BuildSimpleGUI() {
 
    JSROOT.Painter.readStyleFromURL();
 
-   if (JSROOT.GetUrlOption("nobrowser")!=null)
-      return BuildNoBrowserGUI(false);
+   var nobrowser = JSROOT.GetUrlOption("nobrowser") != null;
+   
+   // if (nobrowser) return BuildNoBrowserGUI(false);
 
-   var files = JSROOT.GetUrlOption("files");
-   if (files==null) files = myDiv.attr("files");
-   var filesdir = JSROOT.GetUrlOption("path");
-   if (filesdir==null) filesdir = myDiv.attr("path");
+   var files = myDiv.attr("files");
+   var path = myDiv.attr("path");
 
    if (files==null) files = "../files/hsimple.root";
-   if (filesdir==null) filesdir = "";
+   if (path==null) path = "";
    var arrFiles = files.split(';');
 
    var guiCode = "<div id='left-div' class='column'>"
@@ -366,9 +344,8 @@ function BuildSimpleGUI() {
       +'<select name="s" style="width:65%; margin-top:5px;" '
       +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
       +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
-      for (var i=0; i<arrFiles.length; i++) {
-         guiCode += '<option value = "' + filesdir + arrFiles[i] + '">' + arrFiles[i] + '</option>';
-      }
+      for (var i in arrFiles)
+         guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
       guiCode += '</select><br/>'
         +'<p><small>Other file URLs might not work because of <a href="http://en.wikipedia.org/wiki/Same-origin_policy">same-origin security policy</a>, '
         +'see e.g. <a href="https://developer.mozilla.org/en/http_access_control">developer.mozilla.org</a> on how to avoid it.</small></p>'
@@ -377,7 +354,7 @@ function BuildSimpleGUI() {
         +'<input style="padding:2px; margin-left:10px;"'
         +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
         +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
-        +'  <option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+        +'  <option>collapsible</option><option>simple</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
         +'</select><br/>'
         +'</form>';
    }
@@ -385,36 +362,39 @@ function BuildSimpleGUI() {
       +'</div>'
       +'<div id="separator-div"></div>'
       +'<div id="right-div" class="column"></div>';
+   
+   var drawDivId = 'right-div';
+   
+   if (nobrowser) {
+      guiCode = "";
+      $('html').css('height','100%');
+      $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
+      
+      drawDivId = 'simpleGUI';
 
-   $('#simpleGUI').empty().append(guiCode);
+      myDiv.css("position", "absolute")
+           .css("left", "1px")
+           .css("top", "1px")
+           .css("bottom", "1px")
+           .css("right", "1px");
+   }
 
-   var filesarr = JSROOT.GetUrlOptionAsArray("file");
-   filesarr = filesarr.concat(JSROOT.GetUrlOptionAsArray("files"));
+   myDiv.empty().append(guiCode);
+
+   var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
+   var filesdir = JSROOT.GetUrlOption("path");
+   if (filesdir!=null) 
+      for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
    
    if (filesarr.length==0) return;
    
    $("#urlToLoad").val(filesarr[0]);
    
-   var itemsarr = JSROOT.GetUrlOptionAsArray("item");
-   itemsarr = itemsarr.concat(JSROOT.GetUrlOptionAsArray("items"));
+   var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
    
-   var optionsarr = JSROOT.GetUrlOptionAsArray("opt");
-   optionsarr = optionsarr.concat(JSROOT.GetUrlOptionAsArray("opts"));
+   var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
       
-   var layout = JSROOT.GetUrlOption("layout");
-   if (layout=="") layout = null;
-
-   if (layout==null)
-      layout = guiLayout();
-   else
-      setGuiLayout(layout);
-
-   if (hpainter==null) {
-      hpainter = new JSROOT.HierarchyPainter('root', 'browser');
-      AddInteractions();
-   }
-   
-   hpainter.SetDisplay(layout, 'right-div');
+   CreateHPainter(nobrowser, drawDivId);
    
    function OpenFiles() {
       if (filesarr.length==0) 

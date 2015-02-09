@@ -158,28 +158,39 @@
       // if normal option is specified ...?opt=abc, than array with single element will be created
       // one could specify normal JSON array ...?opt=['item1','item2']
       // but also one could skip quotes ...?opt=[item1,item2]
+      // one could collect values from several options, specifying 
+      // options names via semicolon like opt='item;items'
       
-      var val = this.GetUrlOption(opt, url, null);
-      if (val==null) return [];
-      val.trim();
-      if (val=="") return [];
-      
-      // return as array with single element 
-      if ((val[0]!='[') && (val[val.length-1]!=']')) return [ val ];
-      
-      // try to parse ourself
-      val = val.substr(1, val.length-2); // remove brackets
       var res = [];
-      while (val.indexOf(',')>=0) {
-         var pos = val.indexOf(',');
-         var sub = val.substr(0, pos);
-         sub.trim();
-         if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
-            sub = sub.substr(1, sub.length-2);
-         res.push(sub);
-         val = val.substr(pos+1);
+      
+      while (opt.length>0) {
+         var separ = opt.indexOf(";");
+         var part = separ>0 ? opt.substr(0, separ) : opt;
+         if (separ>0) opt = opt.substr(separ+1); else opt = "";
+         
+         var val = this.GetUrlOption(part, url, null);
+         if (val==null) continue;
+         val.trim();
+         if (val=="") continue;
+
+         // return as array with single element 
+         if ((val[0]!='[') && (val[val.length-1]!=']')) {
+            res.push(val); continue;
+         }
+
+         // try to parse ourself
+         val = val.substr(1, val.length-2); // remove brackets
+         while (val.indexOf(',')>=0) {
+            var pos = val.indexOf(',');
+            var sub = val.substr(0, pos);
+            sub.trim();
+            if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
+               sub = sub.substr(1, sub.length-2);
+            res.push(sub);
+            val = val.substr(pos+1);
+         }
+         res.push(val);
       }
-      res.push(val);
       return res;
    }
 

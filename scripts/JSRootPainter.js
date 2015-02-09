@@ -7016,7 +7016,10 @@
       each_item(this.h);
    }
 
-   JSROOT.HierarchyPainter.prototype.Find = function(itemname, force) {
+   JSROOT.HierarchyPainter.prototype.Find = function(itemname, force, last_exists) {
+      // search item in the hierarchy
+      // when force==true specified, elements will be crated
+      // when last_exists==true specified, return last parent element which still exists 
 
       function find_in_hierarchy(top, fullname) {
 
@@ -7051,7 +7054,7 @@
             }
          } while (pos > 0);
 
-         return null;
+         return last_exists ? top : null;
       }
 
       return find_in_hierarchy(this.h, itemname);
@@ -7479,9 +7482,29 @@
    JSROOT.HierarchyPainter.prototype.get = function(itemname, callback, options) {
       var item = this.Find(itemname);
 
-      // process get in central method of hierarchy item (if exists)
-      if ((item == null) && ('_getdirect' in this.h))
-         return this.h._getdirect(itemname, callback);
+      // if item not found, try to get object via central function
+      // implements not process get in central method of hierarchy item (if exists)
+      if (item == null) {
+         var last_parent = this.Find(itemname, false, true);
+         
+         while (last_parent!=null) {
+            if ('_getdirect' in last_parent) {
+               var parentname = this.itemFullName(last_parent);
+               // remove parent name with slash after it
+               if (parentname.length>0) 
+                  itemname = itemname.substr(parentname.length+1); 
+               break;
+            }
+            if (!('_parent' in last_parent)) { last_parent = null; break; }
+            last_parent = last_parent._parent;
+         }
+         
+         if (last_parent==null) last_parent = this.h;
+         
+         if ('_getdirect' in last_parent)
+            return last_parent._getdirect(itemname, callback);
+      }
+         
 
       // normally search _get method in the parent items
       var curr = item;
@@ -7716,7 +7739,7 @@
          if (this.h._name == "Files")
             for (var n in this.h._childs) {
                var f = this.h._childs[n];
-               if ((f._kind == 'ROOT.TFile') && (this.h._file.fURL == filepath)) return call_back();
+               if ((f._kind == 'ROOT.TFile') && (f._file.fURL == filepath)) return call_back();
             }
       }
 
@@ -8044,6 +8067,9 @@
       if (this['disp_kind'].search("grid") == 0)
          this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']);
       else
+      if (this['disp_kind'] == "simple")         
+         this['disp'] = new JSROOT.SimpleDisplay(this['disp_frameid']);
+      else
          this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
 
       return this['disp'];
@@ -8141,6 +8167,24 @@
       this.ActivateFrame(frame);
 
       return JSROOT.redraw($(frame).attr("id"), obj, drawopt);
+   }
+
+   
+   // ==================================================
+
+   JSROOT.SimpleDisplay = function(frameid) {
+      JSROOT.MDIDisplay.call(this, frameid);
+   }
+
+   JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      if (typeof userfunc == 'function')
+         userfunc($("#"+this.frameid));
+   }
+
+   JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
+      return $("#"+this.frameid).empty().prop('title', title);
    }
 
    // ==================================================

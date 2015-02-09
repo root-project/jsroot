@@ -1431,7 +1431,7 @@
             return this.fKeys[i];
          }
       }
-
+      
       var pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
@@ -1499,6 +1499,8 @@
       }
 
       if ((typeof cycle != 'number') || (cycle<0)) cycle = 1;
+      // remove leading slashes
+      while ((obj_name.length>0) && (obj_name[0] == "/")) obj_name = obj_name.substr(1); 
 
       var file = this;
 

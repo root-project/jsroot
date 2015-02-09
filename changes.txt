@@ -14,6 +14,7 @@ Changes in 3.3
 3. With THttpServer JSROOT now provides simple control functionality.
    One could publish commands and execute them from the browser
 4. One could open several ROOT files simultaneously 
+5. Add 'simple' layout - drawing uses full space on the right side
 
 
 Changes in 3.2
