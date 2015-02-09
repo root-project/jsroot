@@ -31,38 +31,6 @@ function setGuiLayout(value) {
    }
 }
 
-function CreateHPainter(nobrowser, rightdivid) {
-
-   if (hpainter!=null) return;
-
-   var layout = JSROOT.GetUrlOption("layout");
-   if (layout=="") layout = null;
-
-   hpainter = new JSROOT.HierarchyPainter('root', nobrowser ? null : 'browser');
-
-   JSROOT.RegisterForResize(hpainter);
-
-   if (nobrowser) {
-      if (layout==null) layout= "simple";
-   } else {
-      if (layout==null)
-         layout = guiLayout();
-      else
-         setGuiLayout(layout);
-   
-      JSROOT.ConfigureVSeparator(hpainter);
-
-      // specify display kind every time selection done
-      // will be actually used only for first drawing or after reset
-      $("#layout").change(function() {
-         if (hpainter) hpainter.SetDisplay(guiLayout(), rightdivid);
-      });
-
-   }
-   
-   hpainter.SetDisplay(layout, rightdivid);
-}
-
 
 function ReadFile() {
    var navigator_version = navigator.appVersion;
@@ -92,76 +60,6 @@ function ReadFile() {
                   else hpainter.OpenRootFile(filename);
 }
 
-
-function BuildOnlineGUI() {
-   var myDiv = $('#onlineGUI');
-   if (!myDiv) {
-      alert("You have to define a div with id='onlineGUI'!");
-      return;
-   }
-
-   JSROOT.Painter.readStyleFromURL();
-
-   var nobrowser = JSROOT.GetUrlOption("nobrowser") != null;
-   
-   var guiCode = '<div id="left-div" class="column">'
-            + '<h1><font face="Verdana" size="4">ROOT online server</font></h1>'
-            + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
-            + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
-            + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
-            + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
-            + '   <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
-            + ' </select>'
-            + ' <div id="browser"></div>'
-            + '</div>'
-            + '<div id="separator-div" class="column"></div>'
-            + '<div id="right-div" class="column"></div>';
-
-   var drawDivId = 'right-div';
-   
-   if (nobrowser) {
-      guiCode = "";
-      $('html').css('height','100%');
-      $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
-      
-      drawDivId = 'onlineGUI';
-
-      myDiv.css("position", "absolute")
-           .css("left", "1px")
-           .css("top", "1px")
-           .css("bottom", "1px")
-           .css("right", "1px");
-   }
-   
-   myDiv.empty().append(guiCode);
-
-   var monitor = JSROOT.GetUrlOption("monitoring");
-
-   var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
-   
-   var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
-   
-   CreateHPainter(nobrowser, drawDivId);
-
-   hpainter.EnableMonitoring(monitor!=null);
-   if (!nobrowser)
-     $("#monitoring")
-      .prop('checked', monitor!=null)
-      .click(function() {
-         hpainter.EnableMonitoring(this.checked);
-         if (this.checked) hpainter.updateAll();
-      });
-
-   var h0 = null;
-   if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
-   if (typeof h0 != 'object') h0 = "";
-
-   hpainter.OpenOnline(h0, function() {
-      hpainter.displayAll(itemsarr, optionsarr);
-   });
-
-   setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
-}
 
 function BuildSimpleGUI() {
    
@@ -252,14 +150,38 @@ function BuildSimpleGUI() {
       for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
    
    
-   
    var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
    
    var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
 
    var monitor = JSROOT.GetUrlOption("monitoring");
 
-   CreateHPainter(nobrowser, drawDivId);
+
+   var layout = JSROOT.GetUrlOption("layout");
+   if (layout=="") layout = null;
+
+   hpainter = new JSROOT.HierarchyPainter('root', nobrowser ? null : 'browser');
+
+   JSROOT.RegisterForResize(hpainter);
+
+   if (nobrowser) {
+      if (layout==null) layout= "simple";
+   } else {
+      if (layout==null)
+         layout = guiLayout();
+      else
+         setGuiLayout(layout);
+   
+      JSROOT.ConfigureVSeparator(hpainter);
+
+      // specify display kind every time selection done
+      // will be actually used only for first drawing or after reset
+      $("#layout").change(function() {
+         if (hpainter) hpainter.SetDisplay(guiLayout(), rightdivid);
+      });
+   }
+   
+   hpainter.SetDisplay(layout, drawDivId);
 
    hpainter.EnableMonitoring(monitor!=null);
 

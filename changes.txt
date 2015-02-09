@@ -16,6 +16,7 @@ Changes in 3.3
 4. One could open several ROOT files simultaneously 
 5. Add 'simple' layout - drawing uses full space on the right side
 6. Allow to open ROOT files in online session (via url parameter)
+7. One could monitor simultaneously objects from server and root files 
 
 
 Changes in 3.2

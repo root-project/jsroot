@@ -6965,26 +6965,47 @@
          _name : file.fFileName,
          _kind : "ROOT.TFile",
          _file : file,
-         // this is normal get method, where item name is used
+         _fileloopcnt : 0,
+         _readcnt : 0,
+         _fullurl : file.fFullURL,
+         // this is normal get method, where item is used
          _get : function(item, callback) {
-            if ((this._file == null) || (item._readobj != null)) {
+            
+            if ((item._readobj != null) && (item._readcnt == folder._readcnt) && (folder._readcnt ==  folder._fileloopcnt)) {
                if (typeof callback == 'function')
                   callback(item, item._readobj);
                return;
             }
 
-            var fullname = painter.itemFullName(item, this);
+            var fullname = painter.itemFullName(item, folder);
             // var pos = fullname.lastIndexOf(";");
             // if (pos>0) fullname = fullname.slice(0, pos);
-
-            this._file.ReadObject(fullname, function(obj) {
-               item._readobj = obj;
-               if ('_expand' in item)
-                  item._name = item._keyname; // remove cycle number for
+            
+            function ReadFileObject(file) {
+               if (folder._file==null) {
+                  folder._file = file;
+                  folder._readcnt = folder._fileloopcnt;
+               }
+               
+               file.ReadObject(fullname, function(obj) {
+                  item._readobj = obj;
+                  item._readcnt = folder._fileloopcnt;
+                  if ('_expand' in item)
+                     item._name = item._keyname; // remove cycle number for
                                                 // objects supporting expand
-               if (typeof callback == 'function')
-                  callback(item, obj);
-            });
+                  if (typeof callback == 'function')
+                     callback(item, obj);
+               });
+            }
+
+            if (folder._readcnt ==  folder._fileloopcnt) {
+               ReadFileObject(this._file);
+            } else {
+               // try to reopen ROOT file
+               // console.log("Try to reopen file " + folder._fullurl);
+               folder._file = null;
+               new JSROOT.TFile(folder._fullurl, ReadFileObject);
+            }            
          },
          // this is alternative get method, where items may not exists (due to
          // missing/not-read subfolder)
@@ -7647,6 +7668,9 @@
          if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) allitems.push(p.GetItemName());
       }, true); // only visible panels are considered
 
+      // force all items to read again
+      this.ForEachRootFile(function(item) { item._fileloopcnt++; });
+      
       // than call display with update
       for (var cnt in allitems)
          this.display(allitems[cnt], "update");
@@ -7826,6 +7850,8 @@
       var AdoptHierarchy = function(result) {
          painter.h = result;
          if (painter.h == null) return;
+         
+         result._isopen = true;
 
          // mark top hierarchy as online data and
          painter.h['_online'] = server_address;

@@ -1255,6 +1255,7 @@
       this._typename = "TFile";
       this.fOffset = 0;
       this.fEND = 0;
+      this.fFullURL = url;
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fUseStampPar = true;  // use additional stamp parameter for file name to avoid browser caching problem
