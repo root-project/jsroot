@@ -6903,7 +6903,7 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file) {
+   JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file, dirname) {
       folder['_childs'] = [];
 
       var painter = this;
@@ -6915,7 +6915,8 @@
             _kind : "ROOT." + key['fClassName'],
             _title : key['fTitle'],
             _keyname : key['fName'],
-            _readobj : null
+            _readobj : null,
+            _parent : folder
          };
 
          if ('fRealName' in key)
@@ -6929,11 +6930,19 @@
                return true;
             }
          } else if (key['fClassName'] == 'TDirectory'  || key['fClassName'] == 'TDirectoryFile') {
-            item["_more"] = true;
+            var dir = null;
+            if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key['fName']);
             item["_isdir"] = true;
-            item['_expand'] = function(node, obj) {
-               painter.KeysHierarchy(node, obj.fKeys);
-               return true;
+            if (dir==null) {
+               item["_more"] = true;
+               item['_expand'] = function(node, obj) {
+                  painter.KeysHierarchy(node, obj.fKeys);
+                  return true;
+               }
+            } else {
+               // remove cycle number - we have already directory
+               item['_name'] = key['fName'];
+               painter.KeysHierarchy(item, dir.fKeys, file, dirname + key['fName'] + "/");
             }
          } else if ((key['fClassName'] == 'TList') && (key['fName'] == 'StreamerInfo') && (file != null)) {
             item['_name'] = 'StreamerInfo';
@@ -6944,7 +6953,6 @@
                painter.StreamerInfoHierarchy(node, obj);
                return true;
             }
-
          } else if (key['fClassName'] == 'TList'
                || key['fClassName'] == 'TObjArray'
                || key['fClassName'] == 'TClonesArray') {
@@ -6969,6 +6977,7 @@
          _fileloopcnt : 0,
          _readcnt : 0,
          _fullurl : file.fFullURL,
+         _had_direct_read : false,
          // this is normal get method, where item is used
          _get : function(item, callback) {
             
@@ -6979,6 +6988,9 @@
             }
 
             var fullname = painter.itemFullName(item, folder);
+            
+            console.log("Try to read " + fullname);
+            
             // var pos = fullname.lastIndexOf(";");
             // if (pos>0) fullname = fullname.slice(0, pos);
             
@@ -7011,6 +7023,7 @@
          // this is alternative get method, where items may not exists (due to
          // missing/not-read subfolder)
          _getdirect : function(itemname, callback) {
+            this._had_direct_read = true;
             this._file.ReadObject(itemname, function(obj) {
                if (typeof callback == 'function')
                   callback(itemname, obj);
@@ -7018,7 +7031,7 @@
          }
       };
 
-      this.KeysHierarchy(folder, file.fKeys, file);
+      this.KeysHierarchy(folder, file.fKeys, file, "");
 
       return folder;
    }
@@ -7684,9 +7697,13 @@
          this.display(allitems[cnt], "update");
    }
 
-   JSROOT.HierarchyPainter.prototype.displayAll = function(items, options) {
-      if ((items == null) || (items.length == 0)) return;
-      if (!this.CreateDisplay()) return;
+   JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
+      
+      if ((items == null) || (items.length == 0) ||!this.CreateDisplay()) {
+         if (typeof call_back == 'function') call_back();
+         return;
+      }
+      
       if (options == null) options = [];
       while (options.length < items.length)
          options.push("");
@@ -7716,8 +7733,9 @@
       // Display items
       for (var i in items)
          this.display(items[i], options[i], function(painter) {
-            if ((painter==0) || (dropitems[i]==null)) return;
-            h.dropitem(dropitems[i], painter.divid);
+            if ((painter!=0) && (dropitems[i]!=null))
+               h.dropitem(dropitems[i], painter.divid);
+            if ((i==items.length-1) && (typeof call_back == 'function')) call_back();
          });
    }
 
@@ -7780,6 +7798,24 @@
             var item = this.h._childs[n];
             if ((item._kind == 'ROOT.TFile') && (item._file!=null)) call_back(item);
          }
+   }
+   
+   JSROOT.HierarchyPainter.prototype.UpdateRootFilesHierarchy = function() {
+      // function used to create items for subdirectories which are already in memory
+      
+      var changed = false;
+      
+      var hpainter = this;
+      
+      this.ForEachRootFile(function(item) {
+         if (!item._had_direct_read) return;
+         item._had_direct_read = false;
+         changed = true;
+         // recreate hierarchy with existing subfolders
+         hpainter.KeysHierarchy(item, item._file.fKeys, item._file, "");
+      });
+      
+      if (changed) this.RefreshHtml();
    }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
