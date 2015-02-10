@@ -3075,7 +3075,8 @@
          Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
-         System: JSROOT.Painter.Coord.kCARTESIAN,
+         System: JSROOT.Painter.Coord.kCARTESIAN, 
+         AutoColor : 0, NoStat : 0,
          HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0
       };
       // check for graphical cuts
@@ -3086,6 +3087,15 @@
       if (this.IsTProfile()) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
 
+      if (chopt.indexOf('AUTOCOL') != -1) {
+         option.AutoColor = 1;
+         option.Hist = 1;
+         chopt = chopt.replace('AUTOCOL', '');
+      }
+      if (chopt.indexOf('NOSTAT') != -1) {
+         option.NoStat = 1;
+         chopt = chopt.replace('NOSTAT', '');
+      }
       if (chopt.indexOf('LOGX') != -1) {
          option.Logx = 1;
          chopt = chopt.replace('LOGX', '');
@@ -3542,6 +3552,14 @@
       if (option.Bar == 1) option.Hist = -1;
 
       return option;
+   }
+   
+   JSROOT.THistPainter.prototype.GetAutoColor = function(col) {
+      if (this.options.AutoColor<=0) return col;
+      
+      var id = this.options.AutoColor;
+      this.options.AutoColor = id % 8 + 1;
+      return JSROOT.Painter.root_colors[id];
    }
 
    JSROOT.THistPainter.prototype.ScanContent = function() {
@@ -4239,7 +4257,7 @@
       // functions drawing
 
       // do not draw functions when 'same' option was used of kNoStats bit is set 
-      if (this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.Same==1)) return;
+      if (this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.Same==1) || (this.options.NoStat==1)) return;
 
       var lastpainter = this;
 
@@ -4751,6 +4769,8 @@
       if (this.fill.color == 'white') this.fill.color = 'none';
 
       this.attline = JSROOT.Painter.createAttLine(this.histo);
+      var main = this.main_painter();
+      if (main!=null) this.attline.color = main.GetAutoColor(this.attline.color);
 
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
@@ -4967,6 +4987,9 @@
       var point = null;
       var searchmax = false;
       var pmain = this.main_painter();
+      
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.histo.fName; 
 
       for (var i = left; i < right; i++) {
          // if interval wider than specified range, make it shorter
@@ -5013,14 +5036,16 @@
 
          if (this.options.Error > 0) {
             point['x'] = (grx1 + grx2) / 2;
-            point['tip'] = "x = " + this.AxisAsText("x", (x1 + x2)/2) + "\n" +
+            point['tip'] = name + "\n" + 
+                           "x = " + this.AxisAsText("x", (x1 + x2)/2) + "\n" +
                            "y = " + this.AxisAsText("y", cont) + "\n" +
                            "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" +
                            "error y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
          } else {
             point['width'] = grx2 - grx1;
             
-            point['tip'] = "bin = " + (pmax + 1) + "\n" +
+            point['tip'] = name + "\n" +
+                           "bin = " + (pmax + 1) + "\n" +
                            "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" +
                            "entries = " + cont;
          }
