@@ -7686,14 +7686,17 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid) {
+   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, call_back) {
       var h = this;
       var mdi = h['disp'];
 
       h.get(itemname, function(item, obj) {
-         if (obj==null) return;
-         var painter = h.draw(divid, obj, "same");
-         if (painter) painter.SetItemName(itemname);
+         if (obj!=null) {
+            var painter = h.draw(divid, obj, "same");
+            if (painter) painter.SetItemName(itemname);
+         }
+         
+         if (typeof call_back == 'function') call_back(); 
       });
 
       return true;
@@ -7762,14 +7765,16 @@
 
       var h = this;
       
-      // Display items
+      // Display and drop all items
       for (var i in items)
          this.display(items[i], options[i], function(painter) {
-            if ((painter!=0) && (dropitems[i]!=null))
-               for (var j in dropitems[i]) {
-                  h.dropitem(dropitems[i][j], painter.divid);
-               }
-            if ((i==items.length-1) && (typeof call_back == 'function')) call_back();
+            var islastitem = i==items.length-1; 
+            if ((painter!=0) && (dropitems[i]!=null)) {
+               for (var j in dropitems[i]) 
+                  h.dropitem(dropitems[i][j], painter.divid, islastitem && (j==dropitems[i].length-1) ? call_back : null);
+            } else {
+               if (islastitem && (typeof call_back == 'function')) call_back();
+            }
          });
    }
 
