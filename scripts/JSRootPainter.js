@@ -7013,9 +7013,6 @@
             }
 
             var fullname = painter.itemFullName(item, folder);
-            
-            console.log("Try to read " + fullname);
-            
             // var pos = fullname.lastIndexOf(";");
             // if (pos>0) fullname = fullname.slice(0, pos);
             

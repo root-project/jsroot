@@ -170,7 +170,7 @@
          
          var val = this.GetUrlOption(part, url, null);
          if (val==null) continue;
-         val.trim();
+         val = val.trim();
          if (val=="") continue;
 
          // return as array with single element 
@@ -179,17 +179,14 @@
          }
 
          // try to parse ourself
-         val = val.substr(1, val.length-2); // remove brackets
-         while (val.indexOf(',')>=0) {
-            var pos = val.indexOf(',');
-            var sub = val.substr(0, pos);
-            sub.trim();
+         var arr = val.substr(1, val.length-2).split(","); // remove brackets
+         
+         for (var i in arr) {
+            var sub = arr[i].trim();
             if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
                sub = sub.substr(1, sub.length-2);
             res.push(sub);
-            val = val.substr(pos+1);
          }
-         res.push(val);
       }
       return res;
    }
