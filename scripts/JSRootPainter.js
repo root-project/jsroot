@@ -6817,6 +6817,7 @@
       this.name = name;
       this.frameid = frameid;
       this.h = null; // hierarchy
+      this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
@@ -7668,8 +7669,9 @@
          if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) allitems.push(p.GetItemName());
       }, true); // only visible panels are considered
 
-      // force all items to read again
-      this.ForEachRootFile(function(item) { item._fileloopcnt++; });
+      // force all files to read again (only in non-browser mode)
+      if (this.files_monitoring)
+         this.ForEachRootFile(function(item) { item._fileloopcnt++; });
       
       // than call display with update
       for (var cnt in allitems)

@@ -149,7 +149,6 @@ function BuildSimpleGUI() {
    if (filesdir!=null) 
       for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
    
-   
    var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
    
    var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
@@ -160,6 +159,8 @@ function BuildSimpleGUI() {
    if (layout=="") layout = null;
 
    hpainter = new JSROOT.HierarchyPainter('root', nobrowser ? null : 'browser');
+   
+   if (JSROOT.GetUrlOption('files_monitoring')!=null) hpainter.files_monitoring = true;
 
    JSROOT.RegisterForResize(hpainter);
 
