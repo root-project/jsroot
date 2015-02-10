@@ -7111,6 +7111,8 @@
 
       if (kind == "ROOT.Session") {
          cando.img1 = "img_globe";
+      } else if (kind == "JSROOT.TopFolder") { 
+         cando.img1 = "img_base";
       } else if (kind=="Command") {
          cando.ctxt = true;
          cando.execute = true;
@@ -7141,7 +7143,7 @@
          cando.display = true;
       } else if (kind == "ROOT.TTree") {
          cando.img1 = "img_tree";
-      } else if (kind == "ROOT.TFile") {
+      } else if ((kind == "ROOT.TFile") || (kind == "ROOT.TMemFile")) {
          cando.img1 = "img_file";
       } else if (kind == "ROOT.TFolder") {
          cando.img1 = "img_folder";
@@ -7156,11 +7158,14 @@
          cando.img1 = 'img_question';
          cando.expand = false;
          cando.display = true;
-      } else if ((cando.typename != "") && JSROOT.canDraw(cando.typename)) {
+      } else 
+      if ((cando.typename != "") && JSROOT.canDraw(cando.typename)) {
          cando.img1 = "img_histo1d";
          cando.scan = false;
          cando.display = true;
       }
+      
+      if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";  
 
       if ('_player' in node) cando.display = true;
       if ('_icon' in node) cando.img1 = node['_icon'];  
@@ -7302,16 +7307,17 @@
       hitem['_img2'] = cando.img2;
       if (hitem['_img2']=="") hitem['_img2'] = hitem['_img1'];
 
+      // assign root icon
+      if (isroot && (hitem['_img1'].length==0))
+         hitem['_img1'] = hitem['_img2'] = "img_base";
+      
       // assign node icons
 
-      if (!hitem['_img1'])
+      if (hitem['_img1'].length==0)
          hitem['_img1'] = has_childs ? "img_folder" : "img_page";
 
-      if (!hitem['_img2'])
+      if (hitem['_img2'].length==0)
          hitem['_img2'] = has_childs ? "img_folderopen" : "img_page";
-
-      if (isroot)
-         hitem['_img1'] = hitem['_img2'] = "img_base";
 
       var itemname = this.itemFullName(hitem);
 
@@ -7753,6 +7759,14 @@
          }
       });
    }
+
+   JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function() {
+      if (this.h==null) return null;
+      if ('_online' in this.h) return this.h;
+      if ((this.h._childs!=null) && ('_online' in this.h._childs[0])) return this.h._childs[0];
+      return null;
+   }
+
    
    JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
       if (typeof call_back!='function') return;
@@ -7775,7 +7789,7 @@
       // first check that file with such URL already opened
  
       var isfileopened = false;
-      this.ForEachRootFile(function(item) { if (item._file.fURL==filepath) isfileopened = true; });
+      this.ForEachRootFile(function(item) { if (item._file.fFullURL==filepath) isfileopened = true; });
       if (isfileopened) return call_back();
 
       var pthis = this;
@@ -7785,10 +7799,10 @@
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) pthis.h = h1; else
-         if ('_aggregation' in pthis.h) pthis.h._childs.push(h1); else {
+         if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
             var h0 = pthis.h;
             var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-            pthis.h = { _name: topname, _kind: 'ROOT.TFolder', _childs : [h0, h1], _aggregation : true };
+            pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
          }
 
          pthis.RefreshHtml();
@@ -8013,20 +8027,26 @@
       var painter = this;
 
       if (itemname == "") {
-         var addr = "";
-         if ('_online' in this.h) {
-            addr = "/?";
-            if (this.IsMonitoring())
-               addr += "monitoring=" + this.MonitoringInterval();
-         } else if ('_file' in this.h) {
-            addr = JSROOT.source_dir + "index.htm?";
-            addr += "file=" + this.h['_file'].fURL;
-         }
+         var addr = "", cnt = 0;
+         function separ() { return cnt++ > 0 ? "&" : "?"; }
+         
+         var files = [];
+         this.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
 
-         if (this['disp_kind']) {
-            if (addr.length > 2) addr += "&";
-            addr += "layout=" + this['disp_kind'].replace(/ /g, "");
-         }
+         if (this.GetTopOnlineItem()==null)
+            addr = JSROOT.source_dir + "index.htm";
+         
+         if (this.IsMonitoring())
+            addr += separ() + "monitoring=" + this.MonitoringInterval();
+         
+         if (files.length==1)
+            addr += separ() + "file=" + files[0];
+         else
+         if (files.length>1)
+            addr += separ() + "files=" + JSON.stringify(files);
+
+         if (this['disp_kind']) 
+            addr += separ() + "layout=" + this['disp_kind'].replace(/ /g, "");
 
          var items = [];
 
@@ -8037,11 +8057,9 @@
             });
 
          if (items.length == 1) {
-            if (addr.length > 2) addr += "&";
-            addr += "item=" + items[0];
+            addr += separ() + "item=" + items[0];
          } else if (items.length > 1) {
-            if (addr.length > 2) addr += "&";
-            addr += "items=" + JSON.stringify(items);
+            addr += separ() + "items=" + JSON.stringify(items);
          }
 
          menu.add("Direct link", function() { window.open(addr); });
