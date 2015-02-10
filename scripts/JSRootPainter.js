@@ -7768,13 +7768,13 @@
             // one cannot use index i in callback - it is asynchron
             var indx = items.indexOf(itemname);
             if (indx<0) return console.log('did not found item ' + itemname);
-            
+
             items[indx] = "---"; // mark item as ready
-            
+
             function DropNextItem() {
                if ((painter!=null) && (dropitems[indx]!=null) && (dropitems[indx].length>0))
-                  h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem);
-               
+                  return h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem);
+
                var isany = false;
                for (var cnt in items)
                   if (items[cnt]!='---') isany = true;
@@ -7782,7 +7782,7 @@
                // only when items drawn and all sub-items dropped, one could call call-back
                if (!isany && (typeof call_back == 'function')) call_back();
             }
-            
+
             DropNextItem();
          });
    }
@@ -7890,7 +7890,7 @@
          }
 
          pthis.RefreshHtml();
-         
+
          call_back();
       });
    }
