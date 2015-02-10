@@ -7747,6 +7747,12 @@
          if (pos>0) {
             dropitems[i] = items[i].split("+");
             items[i] = dropitems[i].shift();
+            // allow to specify _same_ item in different file 
+            for (var j in dropitems[i]) {
+               var pos = dropitems[i][j].indexOf("_same_");
+               if ((pos>0) && (this.Find(dropitems[i][j])==null))
+                  dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
+            }
          }
       }
 
