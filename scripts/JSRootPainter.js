@@ -7142,7 +7142,7 @@
       } else if (kind == "ROOT.TTree") {
          cando.img1 = "img_tree";
       } else if (kind == "ROOT.TFile") {
-         cando.img1 = "img_htmlfile";
+         cando.img1 = "img_file";
       } else if (kind == "ROOT.TFolder") {
          cando.img1 = "img_folder";
          cando.img2 = "img_folderopen";
