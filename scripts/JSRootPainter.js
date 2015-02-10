@@ -7714,13 +7714,14 @@
 
       // First of all check that items are exists, look for cycle extension
       for (var i in items) {
+         dropitems[i] = null;
          if (this.Find(items[i])) continue;
          if (this.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
 
          var pos = items[i].indexOf("+");
-         if ((pos>0) && this.Find(items[i].slice(0,pos))) {
-            dropitems[i] = items[i].slice(pos+1);
-            items[i] = items[i].slice(0,pos);
+         if (pos>0) {
+            dropitems[i] = items[i].split("+");
+            items[i] = dropitems[i].shift();
          }
       }
 
@@ -7729,12 +7730,14 @@
          mdi.CreateFrame(items[i]);
 
       var h = this;
-
+      
       // Display items
       for (var i in items)
          this.display(items[i], options[i], function(painter) {
             if ((painter!=0) && (dropitems[i]!=null))
-               h.dropitem(dropitems[i], painter.divid);
+               for (var j in dropitems[i]) {
+                  h.dropitem(dropitems[i][j], painter.divid);
+               }
             if ((i==items.length-1) && (typeof call_back == 'function')) call_back();
          });
    }
