@@ -6974,6 +6974,7 @@
             item['_kind'] = "ROOT.TStreamerInfoList";
             item['_title'] = "List of streamer infos for binary I/O";
             item['_readobj'] = file.fStreamerInfos;
+            item['_permanent'] = true;
             item['_expand'] = function(node, obj) {
                painter.StreamerInfoHierarchy(node, obj);
                return true;
@@ -7005,10 +7006,9 @@
          _had_direct_read : false,
          // this is normal get method, where item is used
          _get : function(item, callback) {
-
-            if ((item._readobj != null) && (item._readcnt == folder._readcnt) && (folder._readcnt ==  folder._fileloopcnt)) {
-               if (typeof callback == 'function')
-                  callback(item, item._readobj);
+            if ((item._readobj != null) && (item._permanent || 
+                ((item._readcnt == folder._readcnt) && (folder._readcnt == folder._fileloopcnt)))) {
+               if (typeof callback == 'function') callback(item, item._readobj);
                return;
             }
 
