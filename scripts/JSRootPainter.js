@@ -6975,16 +6975,11 @@
                item['_name'] = key['fName'];
                painter.KeysHierarchy(item, dir.fKeys, file, dirname + key['fName'] + "/");
             }
-         } else if ((key['fClassName'] == 'TList') && (key['fName'] == 'StreamerInfo') && (file != null)) {
+         } else if ((key['fClassName'] == 'TList') && (key['fName'] == 'StreamerInfo')) {
             item['_name'] = 'StreamerInfo';
             item['_kind'] = "ROOT.TStreamerInfoList";
             item['_title'] = "List of streamer infos for binary I/O";
             item['_readobj'] = file.fStreamerInfos;
-            item['_permanent'] = true;
-            item['_expand'] = function(node, obj) {
-               painter.StreamerInfoHierarchy(node, obj);
-               return true;
-            }
          } else if (key['fClassName'] == 'TList'
                || key['fClassName'] == 'TObjArray'
                || key['fClassName'] == 'TClonesArray') {
@@ -7006,56 +7001,64 @@
          _name : file.fFileName,
          _kind : "ROOT.TFile",
          _file : file,
-         _fileloopcnt : 0,
-         _readcnt : 0,
          _fullurl : file.fFullURL,
          _had_direct_read : false,
-         // this is normal get method, where item is used
-         _get : function(item, callback) {
-            if ((item._readobj != null) && (item._permanent || 
-                ((item._readcnt == folder._readcnt) && (folder._readcnt == folder._fileloopcnt)))) {
-               if (typeof callback == 'function') callback(item, item._readobj);
-               return;
-            }
+         // this is central get method, item or itemname can be used
+         _get : function(item, itemname, callback) {
+            
+            var fff = this; // file item
+            
+            if ((item!=null) && (item._readobj != null)) 
+               return JSROOT.CallBack(callback, item, item._readobj);
 
-            var fullname = painter.itemFullName(item, folder);
+            if (item!=null) itemname = painter.itemFullName(item, fff);
             // var pos = fullname.lastIndexOf(";");
             // if (pos>0) fullname = fullname.slice(0, pos);
 
             function ReadFileObject(file) {
-               if (folder._file==null) {
-                  folder._file = file;
-                  folder._readcnt = folder._fileloopcnt;
-               }
+               if (fff._file==null) fff._file = file;
+               
+               if (file == null) return JSROOT.CallBack(callback, item, null);
 
-               file.ReadObject(fullname, function(obj) {
-                  item._readobj = obj;
-                  item._readcnt = folder._fileloopcnt;
-                  if ('_expand' in item)
-                     item._name = item._keyname; // remove cycle number for
-                                                // objects supporting expand
-                  if (typeof callback == 'function')
-                     callback(item, obj);
+               file.ReadObject(itemname, function(obj) {
+                  
+                  // if object was read even when item didnot exist try to reconstruct new hierarchy
+                  if ((item==null) && (obj!=null)) {
+                     // first try to found last read directory 
+                     var diritem = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
+                     if ((diritem!=null) && (diritem!=fff)) {
+                        // reconstruct only subdir hierarchy
+                        var dir = file.GetDir(painter.itemFullName(diritem, fff));
+                        if (dir) {
+                           diritem['_name'] = diritem['_keyname'];
+                           var dirname = painter.itemFullName(diritem, fff);
+                           // console.log("Expand hierarchy for dir " + dirname);
+                           painter.KeysHierarchy(diritem, dir.fKeys, file, dirname + "/");
+                        }
+                     } else {
+                        // reconstruct full file hierarchy 
+                        painter.KeysHierarchy(fff, file.fKeys, file, "");
+                     }
+                     item = painter.Find({name:itemname, top: fff});
+                  }
+
+                  if (item!=null) {
+                     item._readobj = obj;
+                     // remove cycle number for objects supporting expand
+                     if ('_expand' in item) item._name = item._keyname;
+                  }
+                  
+                  JSROOT.CallBack(callback, item, obj);
                });
             }
-
-            if (folder._readcnt ==  folder._fileloopcnt) {
-               ReadFileObject(this._file);
+            
+            if (fff._file != null) {
+               ReadFileObject(fff._file);
             } else {
                // try to reopen ROOT file
-               // console.log("Try to reopen file " + folder._fullurl);
-               folder._file = null;
-               new JSROOT.TFile(folder._fullurl, ReadFileObject);
+               // console.log("Try to reopen file " + fff._fullurl);
+               new JSROOT.TFile(fff._fullurl, ReadFileObject);
             }
-         },
-         // this is alternative get method, where items may not exists (due to
-         // missing/not-read subfolder)
-         _getdirect : function(itemname, callback) {
-            this._had_direct_read = true;
-            this._file.ReadObject(itemname, function(obj) {
-               if (typeof callback == 'function')
-                  callback(itemname, obj);
-            });
          }
       };
 
@@ -7064,9 +7067,10 @@
       return folder;
    }
 
-   JSROOT.HierarchyPainter.prototype.ForEach = function(callback) {
-      if ((this.h==null) || (typeof callback != 'function')) return;
-
+   JSROOT.HierarchyPainter.prototype.ForEach = function(callback, top) {
+      
+      if (top==null) top = this.h; 
+      if ((top==null) || (typeof callback != 'function')) return;
       function each_item(item) {
          callback(item);
          if ('_childs' in item)
@@ -7076,13 +7080,16 @@
             }
       }
 
-      each_item(this.h);
+      each_item(top);
    }
 
-   JSROOT.HierarchyPainter.prototype.Find = function(itemname, force, last_exists) {
+   JSROOT.HierarchyPainter.prototype.Find = function(arg) {
       // search item in the hierarchy
-      // when force==true specified, elements will be crated
-      // when last_exists==true specified, return last parent element which still exists
+      // One could specify simply item name or object with following arguments 
+      //   name:  item to search
+      //   force: specified elements will be created when not exists
+      //   last_exists: when specified last parent element will be returned
+      //   top:   element to start search from   
 
       function find_in_hierarchy(top, fullname) {
 
@@ -7104,11 +7111,19 @@
 
             var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
 
+            // first try to find direct matched item
             for (var i in top._childs)
                if (top._childs[i]._name == localname)
                   return process_child(top._childs[i]);
 
-            if (force) {
+            // if allowed, try to found item with key
+            if ('check_keys' in arg) 
+               for (var i in top._childs) {
+                  if (top._childs[i]._name.indexOf(localname + ";")==0)
+                     return process_child(top._childs[i]);
+               }
+            
+            if ('force' in arg) {
                // if didnot found element with given name we just generate it
                if (! ('_childs' in top)) top['_childs'] = [];
                var child = { _name: localname };
@@ -7117,10 +7132,17 @@
             }
          } while (pos > 0);
 
-         return last_exists ? top : null;
+         return ('last_exists' in arg) ? top : null;
       }
+      
+      var top = this.h;
+      var itemname = ""; 
+      
+      if (typeof arg == 'string') { itemname = arg; arg = {}; } else 
+      if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
+         return null;         
 
-      return find_in_hierarchy(this.h, itemname);
+      return find_in_hierarchy(top, itemname);
    }
 
    JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent) {
@@ -7549,15 +7571,17 @@
    }
 
    JSROOT.HierarchyPainter.prototype.get = function(itemname, callback, options) {
+      // get object item with specified name
+      
       var item = this.Find(itemname);
 
       // if item not found, try to get object via central function
       // implements not process get in central method of hierarchy item (if exists)
       if (item == null) {
-         var last_parent = this.Find(itemname, false, true);
+         var last_parent = this.Find({ name: itemname, last_exists: true});
 
          while (last_parent!=null) {
-            if ('_getdirect' in last_parent) {
+            if ('_get' in last_parent) {
                var parentname = this.itemFullName(last_parent);
                // remove parent name with slash after it
                if (parentname.length>0)
@@ -7570,8 +7594,8 @@
 
          if (last_parent==null) last_parent = this.h;
 
-         if ('_getdirect' in last_parent)
-            return last_parent._getdirect(itemname, callback);
+         if ('_get' in last_parent)
+            return last_parent._get(null, itemname, callback);
       }
 
 
@@ -7579,7 +7603,7 @@
       var curr = item;
       while (curr != null) {
          if (('_get' in curr) && (typeof (curr._get) == 'function'))
-            return curr._get(item, callback);
+            return curr._get(item, null, callback);
          curr = ('_parent' in curr) ? curr['_parent'] : null;
       }
 
@@ -7633,7 +7657,7 @@
 
       h.get(itemname, function(item, obj) {
 
-         if (updating) delete item['_doing_update'];
+         if (updating && item) delete item['_doing_update'];
          if (obj==null) return do_call_back(null);
 
          var painter = null;
@@ -7712,20 +7736,26 @@
       var mdi = this['disp'];
       if (mdi == null) return;
 
-      var allitems = [];
+      var allitems = [], options = [];
 
       // first collect items
       mdi.ForEachPainter(function(p) {
-         if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) allitems.push(p.GetItemName());
+         if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) {
+            allitems.push(p.GetItemName());
+            options.push("update");
+         }
       }, true); // only visible panels are considered
 
-      // force all files to read again (only in non-browser mode)
-      if (this.files_monitoring)
-         this.ForEachRootFile(function(item) { item._fileloopcnt++; });
+      var painter = this;
 
-      // than call display with update
-      for (var cnt in allitems)
-         this.display(allitems[cnt], "update");
+      // force all files to read again (normally in non-browser mode)
+      if (this.files_monitoring)
+         this.ForEachRootFile(function(item) {
+            painter.ForEach(function(fitem) { delete fitem['_readobj'] }, item);
+            delete item['_file'];  
+         });
+
+      this.displayAll(allitems, options);
    }
 
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
@@ -7764,7 +7794,8 @@
 
       // Than create empty frames for each item
       for (var i in items)
-         mdi.CreateFrame(items[i]);
+         if (options[i]!='update') 
+            mdi.CreateFrame(items[i]);
 
       var h = this;
 
@@ -7852,24 +7883,6 @@
             var item = this.h._childs[n];
             if ((item._kind == 'ROOT.TFile') && (item._file!=null)) call_back(item);
          }
-   }
-
-   JSROOT.HierarchyPainter.prototype.UpdateRootFilesHierarchy = function() {
-      // function used to create items for subdirectories which are already in memory
-
-      var changed = false;
-
-      var hpainter = this;
-
-      this.ForEachRootFile(function(item) {
-         if (!item._had_direct_read) return;
-         item._had_direct_read = false;
-         changed = true;
-         // recreate hierarchy with existing subfolders
-         hpainter.KeysHierarchy(item, item._file.fKeys, item._file, "");
-      });
-
-      if (changed) this.RefreshHtml();
    }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
@@ -7962,7 +7975,7 @@
          // mark top hierarchy as online data and
          painter.h['_online'] = server_address;
 
-         painter.h['_get'] = function(item, callback) {
+         painter.h['_get'] = function(item, itemname, callback) {
             painter.GetOnlineItem(item, callback);
          }
 
