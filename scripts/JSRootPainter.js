@@ -1754,7 +1754,6 @@
          this.opt = opt.toUpperCase();
          this.opt.replace('SAME', '');
       }
-
       if (this.opt.indexOf('L') != -1)
          this.optionLine = 1;
       if (this.opt.indexOf('A') != -1)
@@ -2129,7 +2128,7 @@
 
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .y(function(d) { return Math.round(pmain.gry(d.y)); });
+                  .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
       if (this.seriesType == 'bar') {
          var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
@@ -3706,7 +3705,10 @@
 
       if (this.x_time) {
          // we emulate scale functionality
-         this['grx'] = function(x) { return this.x(this.ConvertX(x)); }
+         this['grx'] = function(val) { return this.x(this.ConvertX(val)); }
+      } else 
+      if (this.options.Logx) {
+         this['grx'] = function(val) { return (val < this.scale_xmin) ? - 5 : this.x(val); }
       } else {
          this['grx'] = this.x;
       }
@@ -3747,7 +3749,7 @@
 
          if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0))
             this.scale_ymin = 0.3*this.ymin_nz;
-
+         
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 0.000001 * this.scale_ymax;
          this['y'] = d3.scale.log();
@@ -3758,11 +3760,15 @@
          this['y'] = d3.scale.linear()
       }
 
-      this['y'].domain([ this.scale_ymin, this.scale_ymax ]).range([ h, 0 ]);
+      this['y'].domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ]).range([ h, 0 ]);
 
       if (this.y_time) {
          // we emulate scale functionality
-         this['gry'] = function(y) { return this.y(this.ConvertY(y)); }
+         this['gry'] = function(val) { return this.y(this.ConvertY(val)); }
+      } else 
+      if (this.options.Logy) {
+         // make protecttion for log 
+         this['gry'] = function(val) { return (val < this.scale_ymin) ? h+5 : this.y(val); }
       } else {
          this['gry'] = this.y;
       }
