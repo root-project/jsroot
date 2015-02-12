@@ -1137,7 +1137,7 @@
          pos = keyname.lastIndexOf("/", pos-1);
       }
 
-      
+
       JSROOT.CallBack(call_back, null);
       return null;
    }
@@ -1285,7 +1285,7 @@
          var file = this;
 
          var xhr = JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
-            if (res==null) 
+            if (res==null)
                return JSROOT.CallBack(newfile_callback, null);
 
             var accept_ranges = res.getResponseHeader("Accept-Ranges");
@@ -1407,12 +1407,12 @@
 
    JSROOT.TFile.prototype.GetDir = function(dirname, cycle) {
       // check first that directory with such name exists
-      
+
       if ((cycle==null) && (typeof dirname == 'string')) {
          var pos = dirname.lastIndexOf(';');
          if (pos>0) { cycle = dirname.substr(pos+1); dirname = dirname.substr(0,pos); }
       }
-      
+
       for (var j in this.fDirectories) {
          var dir = this.fDirectories[j];
          if (dir['dir_name'] != dirname) continue;
@@ -1510,9 +1510,9 @@
       // in such situation calls are asynchrone
       this.GetKey(obj_name, cycle, function(key) {
 
-         if (key == null) 
+         if (key == null)
             return JSROOT.CallBack(user_call_back, null);
-         
+
          if ((obj_name=="StreamerInfo") && (key['fClassName']=="TList"))
             return file.fStreamerInfos;
 
@@ -1520,7 +1520,7 @@
          if ((key['fClassName'] == 'TDirectory' || key['fClassName'] == 'TDirectoryFile')) {
             isdir = true;
             var dir = file.GetDir(obj_name, cycle);
-            if (dir!=null) 
+            if (dir!=null)
                return JSROOT.CallBack(user_call_back, dir);
          }
 

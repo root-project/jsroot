@@ -190,7 +190,7 @@
       }
       return res;
    }
-   
+
    JSROOT.findFunction = function(name) {
       var func = window[name];
       if (typeof func == 'function') return func;
@@ -199,18 +199,18 @@
          func = window[name.slice(0, separ)][name.slice(separ+1)];
       return (typeof func == 'function') ? func : null;
    }
-   
+
    JSROOT.CallBack = function(func, arg1, arg2) {
       // generic method to invoke callback function
       // func either normal function or container like
       // { obj: _ object_pointer_, func: name of method to call }
       // arg1, arg2 are optional arguments of the callback
-      
+
       if (func==null) return;
-      
+
       if (typeof func=='function') return func(arg1,arg2);
-      
-      if (typeof func=='obj' && typeof func.obj == 'object' && 
+
+      if (typeof func=='obj' && typeof func.obj == 'object' &&
          typeof func.fun == 'string' && typeof func.obj[func.func] == 'function') return func.obj[func.func](arg1, arg2);
    }
 
