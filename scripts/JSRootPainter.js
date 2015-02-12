@@ -7607,8 +7607,7 @@
          curr = ('_parent' in curr) ? curr['_parent'] : null;
       }
 
-      if (typeof callback == 'function')
-         callback(item, null);
+      JSROOT.CallBack(callback, item, null);
    }
 
    JSROOT.HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
@@ -7626,16 +7625,12 @@
       if (player_func && this.CreateDisplay())
          res = player_func(this, itemname, option);
 
-      if (typeof call_back=='function') call_back(res);
+      JSROOT.CallBack(call_back, res);
    }
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
 
-      function do_call_back(res) {
-         if (typeof call_back=='function') call_back(res, itemname);
-      }
-
-      if (!this.CreateDisplay()) return do_call_back(null);
+      if (!this.CreateDisplay()) return JSROOT.CallBack(call_back, null, itemname);
 
       var h = this;
 
@@ -7647,18 +7642,19 @@
 
       if (item!=null) {
          var cando = this.CheckCanDo(item);
-         if (!cando.display || ('_player' in item)) return this.player(itemname, drawopt, do_call_back);
+         if (!cando.display || ('_player' in item)) 
+            return this.player(itemname, drawopt, function() { JSROOT.CallBack(call_back, null, itemname); });
       }
 
       if (updating) {
-         if ((item==null) || ('_doing_update' in item)) return do_call_back(null);
+         if ((item==null) || ('_doing_update' in item)) return JSROOT.CallBack(call_back, null, itemname);
          item['_doing_update'] = true;
       }
 
       h.get(itemname, function(item, obj) {
 
          if (updating && item) delete item['_doing_update'];
-         if (obj==null) return do_call_back(null);
+         if (obj==null) return JSROOT.CallBack(call_back, null, itemname);
 
          var painter = null;
 
@@ -7709,7 +7705,7 @@
 
          if (painter) painter.SetItemName(itemname); // mark painter as created from hierarchy
 
-         do_call_back(painter);
+         JSROOT.CallBack(call_back, painter, itemname);
       });
    }
 
@@ -7723,7 +7719,7 @@
             if (painter) painter.SetItemName(itemname);
          }
 
-         if (typeof call_back == 'function') call_back();
+         JSROOT.CallBack(call_back);
       });
 
       return true;
@@ -7760,10 +7756,8 @@
 
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
 
-      if ((items == null) || (items.length == 0) ||!this.CreateDisplay()) {
-         if (typeof call_back == 'function') call_back();
-         return;
-      }
+      if ((items == null) || (items.length == 0) ||!this.CreateDisplay()) 
+         return JSROOT.CallBack(call_back);
 
       if (options == null) options = [];
       while (options.length < items.length)
@@ -7816,8 +7810,8 @@
                for (var cnt in items)
                   if (items[cnt]!='---') isany = true;
 
-               // only when items drawn and all sub-items dropped, one could call call-back
-               if (!isany && (typeof call_back == 'function')) call_back();
+               // only when items drawn and all sub-items dropped, one could perform call-back
+               if (!isany) JSROOT.CallBack(call_back);
             }
 
             DropNextItem();
@@ -7872,33 +7866,31 @@
 
 
    JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
-      if (typeof call_back!='function') return;
 
       if (this.h==null) return;
       if ((this.h._kind == "ROOT.TFile") && (this.h._file!=null))
-         return call_back(this.h);
+         return JSROOT.CallBack(call_back, this.h);
 
       if (this.h._childs!=null)
          for (var n in this.h._childs) {
             var item = this.h._childs[n];
-            if ((item._kind == 'ROOT.TFile') && (item._file!=null)) call_back(item);
+            if ((item._kind == 'ROOT.TFile') && ('_fullurl' in item)) 
+               JSROOT.CallBack(call_back, item);
          }
    }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
 
-      if (typeof call_back != 'function') call_back = function() {};
-
       // first check that file with such URL already opened
 
       var isfileopened = false;
       this.ForEachRootFile(function(item) { if (item._file.fFullURL==filepath) isfileopened = true; });
-      if (isfileopened) return call_back();
+      if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
 
       var f = new JSROOT.TFile(filepath, function(file) {
-         if (file == null) return call_back();
+         if (file == null) return JSROOT.CallBack(call_back);
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) pthis.h = h1; else
@@ -7910,7 +7902,7 @@
 
          pthis.RefreshHtml();
 
-         call_back();
+         JSROOT.CallBack(call_back);
       });
    }
 
@@ -7937,7 +7929,7 @@
       // method called at the moment when new description (h.json) is loaded
       // and before any graphical element is created
       // one can load extra scripts here or assign draw functions
-      ready_callback();
+      JSROOT.CallBack(ready_callback);
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, callback) {
@@ -7956,8 +7948,7 @@
                && (obj['_typename'] === 'TList'))
             obj['_typename'] = 'TStreamerInfoList';
 
-         if (typeof callback == 'function')
-            callback(item, obj);
+         JSROOT.CallBack(callback,item, obj);
       });
 
       itemreq.send(null);
@@ -7994,8 +7985,7 @@
             if (painter.h != null)
                painter.RefreshHtml(true);
 
-            if (typeof user_callback == 'function')
-               user_callback(painter);
+            JSROOT.CallBack(user_callback,painter);
          });
       }
 

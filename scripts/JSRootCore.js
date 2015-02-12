@@ -204,7 +204,10 @@
       // generic method to invoke callback function
       // func either normal function or container like
       // { obj: _ object_pointer_, func: name of method to call }
-      // arg1, arg2 are optional arguments of the function
+      // arg1, arg2 are optional arguments of the callback
+      
+      if (func==null) return;
+      
       if (typeof func=='function') return func(arg1,arg2);
       
       if (typeof func=='obj' && typeof func.obj == 'object' && 
