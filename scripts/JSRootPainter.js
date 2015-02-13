@@ -7244,7 +7244,7 @@
    JSROOT.HierarchyPainter.prototype.FindFastCommands = function() {
       var arr = [];
 
-      this.ForEach(function(item) { if ('_fastcmd' in item) arr.push(item); });
+      this.ForEach(function(item) { if (('_fastcmd' in item) && (item._kind == 'Command')) arr.push(item); });
 
       return arr.length > 0 ? arr : null;
    }
@@ -7643,6 +7643,8 @@
       var updating = drawopt=="update";
 
       var item = h.Find(itemname);
+      
+      console.log("display in ROOT " + itemname + '  item=' + item);
 
       if (item!=null) {
          var cando = this.CheckCanDo(item);
