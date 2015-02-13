@@ -7643,8 +7643,6 @@
       var updating = drawopt=="update";
 
       var item = h.Find(itemname);
-      
-      console.log("display in ROOT " + itemname + '  item=' + item);
 
       if (item!=null) {
          var cando = this.CheckCanDo(item);
