@@ -7935,7 +7935,32 @@
       // method called at the moment when new description (h.json) is loaded
       // and before any graphical element is created
       // one can load extra scripts here or assign draw functions
-      JSROOT.CallBack(ready_callback);
+      // for example, try to open files
+      
+      if ('_monitoring' in this.h) {
+         var v = parseInt(this.h._monitoring);
+         if (v != NaN) {
+            this.EnableMonitoring(true);
+            this.MonitoringInterval(v);
+         } else {
+            this.EnableMonitoring(false);
+         }
+      }
+
+      var hpainter = this;
+      var _displ_item = this.h && ('_display' in this.h) ? this.h._display : null;  
+      
+      function _Display_Item() {
+         if (_displ_item != null)
+            return hpainter.display(_displ_item, "", ready_callback);
+         
+         return JSROOT.CallBack(ready_callback);
+      }
+      
+      if ((this.h!=null) && ('_loadfile' in this.h)) 
+         return this.OpenRootFile(this.h._loadfile, _Display_Item);
+      
+      _Display_Item();
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, callback) {
@@ -7991,7 +8016,7 @@
             if (painter.h != null)
                painter.RefreshHtml(true);
 
-            JSROOT.CallBack(user_callback,painter);
+            JSROOT.CallBack(user_callback, painter);
          });
       }
 
@@ -8076,8 +8101,9 @@
       this.RefreshHtml();
    }
 
-   JSROOT.HierarchyPainter.prototype.MonitoringInterval = function() {
+   JSROOT.HierarchyPainter.prototype.MonitoringInterval = function(val) {
       // returns interval
+      if (val!=null) this['_monitoring_interval'] = val;
       var monitor = this['_monitoring_interval'];
       if (monitor == null) {
          monitor = JSROOT.GetUrlOption("monitoring");
