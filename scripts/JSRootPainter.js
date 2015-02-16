@@ -7934,33 +7934,9 @@
    JSROOT.HierarchyPainter.prototype.CompleteOnline = function(ready_callback) {
       // method called at the moment when new description (h.json) is loaded
       // and before any graphical element is created
-      // one can load extra scripts here or assign draw functions
-      // for example, try to open files
-      
-      if ('_monitoring' in this.h) {
-         var v = parseInt(this.h._monitoring);
-         if (v != NaN) {
-            this.EnableMonitoring(true);
-            this.MonitoringInterval(v);
-         } else {
-            this.EnableMonitoring(false);
-         }
-      }
+      // one can load extra scripts here
 
-      var hpainter = this;
-      var _displ_item = this.h && ('_display' in this.h) ? this.h._display : null;  
-      
-      function _Display_Item() {
-         if (_displ_item != null)
-            return hpainter.display(_displ_item, "", ready_callback);
-         
-         return JSROOT.CallBack(ready_callback);
-      }
-      
-      if ((this.h!=null) && ('_loadfile' in this.h)) 
-         return this.OpenRootFile(this.h._loadfile, _Display_Item);
-      
-      _Display_Item();
+      return JSROOT.CallBack(ready_callback);
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, callback) {
