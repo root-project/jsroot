@@ -3107,7 +3107,7 @@
 
       if (!nch) option.Hist = 1;
 
-      
+
       var l = chopt.indexOf('SPEC');
       if (l != -1) {
          option.Scat = 0;
@@ -7892,7 +7892,7 @@
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
-      
+
       JSROOT.AssertPrerequisites('io', function() {
          new JSROOT.TFile(filepath, function(file) {
             if (file == null) return JSROOT.CallBack(call_back);

@@ -206,12 +206,10 @@ function BuildSimpleGUI() {
    function OpenAllFiles() {
       if (filesarr.length>0)
          hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
-      else {
-         if (online && !nobrowser) $("#monitoring").prop('checked', hpainter.IsMonitoring());
+      else
          hpainter.displayAll(itemsarr, optionsarr, function() { hpainter.RefreshHtml(); });
-      }
    }
-   
+
    function AfterOnlineOpened() {
       // check if server enables monitoring
       if ('_monitoring' in hpainter.h) {
@@ -222,8 +220,9 @@ function BuildSimpleGUI() {
             hpainter.EnableMonitoring(true);
             hpainter.MonitoringInterval(v);
          }
+         if (!nobrowser) $("#monitoring").prop('checked', hpainter.IsMonitoring());
       }
-      
+
       if ('_loadfile' in hpainter.h)
          filesarr.push(hpainter.h._loadfile);
 
