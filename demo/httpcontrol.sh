@@ -38,14 +38,6 @@ function grab {
 
    mkdir -p $2
 
-   if [ "$1" != "1" ]; then
-      wget -nv $server/$2/?nozip -O $2/index0.htm
-      sed $sedarg $2/index0.htm > $2/index.htm
-      rm -f $2/index0.htm
-      wget -nv $server/$2/h.json -O $2/h.json
-      wget -nv $server/$2/h.xml -O $2/h.xml
-   fi 
-   
    if [ "$1" != "0" ]; then 
       wget -nv $server/$2/root.json.gz?compact=3 -O $2/root.json.gz
       wget -nv $server/$2/root.bin.gz -O $2/root.bin.gz
@@ -54,6 +46,15 @@ function grab {
       sed $sedarg $2/draw0.htm > $2/draw.htm
       rm -f $2/draw0.htm
    fi
+
+   if [ "$1" != "1" ]; then
+      wget -nv $server/$2/?nozip -O $2/index0.htm
+      sed $sedarg $2/index0.htm > $2/index.htm
+      rm -f $2/index0.htm
+      wget -nv $server/$2/h.json -O $2/h.json
+      wget -nv $server/$2/h.xml -O $2/h.xml
+   fi 
+   
 }
 
 mkdir temp
