@@ -65,10 +65,10 @@ gethfile $server/h.json  h.json
 
 mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
 
-mkdir -p Start; echo "0" >> Start/cmd.json 
-mkdir -p Stop; echo "0" >> Stop/cmd.json 
-mkdir -p ResetHPX; echo "0" >> ResetHPX/cmd.json 
-mkdir -p ResetHPXPY; echo "0" >> ResetHPXPY/cmd.json 
+mkdir -p Start; echo "0" >> Start/cmd.json
+mkdir -p Stop; echo "0" >> Stop/cmd.json
+mkdir -p ResetHPX; echo "0" >> ResetHPX/cmd.json
+mkdir -p ResetHPXPY; echo "0" >> ResetHPXPY/cmd.json
 
 grab 2 hpx
 grab 2 hpxpy
