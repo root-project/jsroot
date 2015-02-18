@@ -7943,20 +7943,20 @@
       // method used to request object from the http server
 
       var url = itemname, h_get = false;
-      
+
       if (item != null) {
          var top = item;
          while ((top!=null) && (!('_online' in top))) top = top._parent;
          url = this.itemFullName(item, top);
          h_get = ('_doing_expand' in item);
-      } 
+      }
 
       if (url.length > 0) url += "/";
       url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';
 
       var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
-         
-         if ((item != null) && (obj != null) && !h_get && 
+
+         if ((item != null) && (obj != null) && !h_get &&
              (item._name === "StreamerInfo") && (obj['_typename'] === 'TList'))
             obj['_typename'] = 'TStreamerInfoList';
 
