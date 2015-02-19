@@ -6732,8 +6732,52 @@
       return painter;
    }
 
-   // ===========================================================
+   // ================= painer of raw text ========================================
+   
+   JSROOT.RawTextPainter = function(txt) {
+      JSROOT.TBasePainter.call(this);
+      this.txt = txt;
+      return this;
+   }
 
+   JSROOT.RawTextPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   
+   JSROOT.RawTextPainter.prototype.RedrawObject = function(obj) {
+      this.txt = obj;
+      this.Draw();
+      return true;
+   }
+   
+   JSROOT.RawTextPainter.prototype.Draw = function() {
+      var frame = $("#" + this.divid);
+      
+      var txt = this.txt.value;
+      if (txt==null) txt = "<undefined>"; 
+      
+      var arr = [];
+      while (txt.length > 0) {
+         var pos = txt.indexOf("\\n");
+         if (pos<0) break;
+         arr.push(txt.substr(0,pos));
+         txt = txt.substr(pos+2);
+      }
+      arr.push(txt); txt = "";
+      for (var i in arr) 
+         txt += "<pre>" + arr[i] + "</pre>";
+      
+      frame.html("<div>" + txt + "</div>");
+      // (re) set painter to first child element
+      this.SetDivId(this.divid);
+   }
+   
+   JSROOT.Painter.drawRawText = function(divid, txt, opt) {
+      var painter = new JSROOT.RawTextPainter(txt);
+      painter.SetDivId(divid);
+      painter.Draw();
+      return painter;
+   }
+
+   // ========== performs tree drawing on server ==================
 
    JSROOT.TTreePlayer = function(itemname) {
       JSROOT.TBasePainter.call(this);
@@ -7239,7 +7283,12 @@
          cando.img1 = "img_histo1d";
          cando.scan = false;
          cando.display = true;
-      }
+      } else 
+      if (JSROOT.canDraw('kind:' + kind)) {
+         cando.img1 = "img_leaf";
+         cando.scan = false;
+         cando.display = true;
+      }   
 
       if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
 
@@ -7956,17 +8005,22 @@
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback) {
       // method used to request object from the http server
 
-      var url = itemname, h_get = false;
+      var url = itemname, h_get = false, req = 'root.json.gz?compact=3';
 
       if (item != null) {
          var top = item;
          while ((top!=null) && (!('_online' in top))) top = top._parent;
          url = this.itemFullName(item, top);
-         h_get = ('_doing_expand' in item);
+         if ('_doing_expand' in item) {
+            h_get = true;
+            req  = 'h.json?compact=3';
+         } else 
+         if (item._kind.indexOf("ROOT.")!=0)
+            req = 'get.json?compact=3';
       }
 
       if (url.length > 0) url += "/";
-      url += h_get ? 'h.json?compact=3' : 'root.json.gz?compact=3';
+      url += req;
 
       var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
 
@@ -8743,6 +8797,7 @@
    JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph,";L;P");
    JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
    JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
+   JSROOT.addDrawFunc("kind:Text", JSROOT.Painter.drawRawText);
 
    JSROOT.getDrawFunc = function(classname, drawopt) {
       if (typeof classname != 'string') return null;
@@ -8810,9 +8865,11 @@
     * Draw object in specified HTML element with given draw options  */
 
    JSROOT.draw = function(divid, obj, opt) {
-      if ((typeof obj != 'object') || (!('_typename' in obj))) return null;
-
-      var draw_func = JSROOT.getDrawFunc(obj['_typename'], opt);
+      if (typeof obj != 'object') return null;
+      
+      var draw_func = null;
+      if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt); 
+      else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);
 
       if (draw_func==null) return null;
 
