@@ -3074,7 +3074,7 @@
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
          System: JSROOT.Painter.Coord.kCARTESIAN,
-         AutoColor : 0, NoStat : 0,
+         AutoColor : 0, NoStat : 0, AutoZoom : false,
          HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0
       };
       // check for graphical cuts
@@ -3088,6 +3088,11 @@
          option.AutoColor = 1;
          option.Hist = 1;
          chopt = chopt.replace('AUTOCOL', '');
+      }
+      if (chopt.indexOf('AUTOZOOM') != -1) {
+         option.AutoZoom = 1;
+         option.Hist = 1;
+         chopt = chopt.replace('AUTOZOOM', '');
       }
       if (chopt.indexOf('NOSTAT') != -1) {
          option.NoStat = 1;
@@ -5271,6 +5276,8 @@
       painter.DrawFunctions();
 
       painter.AddInteractive();
+      
+      if (painter.options.AutoZoom) painter.AutoZoom();
 
       return painter;
    }
@@ -5956,6 +5963,8 @@
       this.DrawFunctions();
 
       this.AddInteractive();
+      
+      if (this.options.AutoZoom) this.AutoZoom();
 
       this['done2d'] = true; // indicate that 2d drawing was once done
    }
