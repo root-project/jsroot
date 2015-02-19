@@ -474,6 +474,9 @@
                      ";$$$scripts/helvetiker_regular.typeface.js" +
                      ";$$$scripts/helvetiker_bold.typeface.js" +
                      ";$$$scripts/JSRoot3DPainter.js";
+      
+      if (kind.indexOf("mathjax;")>=0)
+         allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 
       if (kind.indexOf("simple;")>=0)
          allfiles += ';$$$scripts/JSRootInterface.js' +

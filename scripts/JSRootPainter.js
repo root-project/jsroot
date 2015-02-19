@@ -6752,22 +6752,38 @@
       var frame = $("#" + this.divid);
       
       var txt = this.txt.value;
-      if (txt==null) txt = "<undefined>"; 
+      if (txt==null) txt = "<undefined>";
       
-      var arr = [];
-      while (txt.length > 0) {
-         var pos = txt.indexOf("\\n");
-         if (pos<0) break;
-         arr.push(txt.substr(0,pos));
-         txt = txt.substr(pos+2);
+      var asis = true;
+      
+      if ('mathjax' in this.txt)
+         JSROOT.AssertPrerequisites('mathjax');
+      else
+      if (!('as_is' in this.txt)) {
+         asis = false;
+         var arr = [];
+         while (txt.length > 0) {
+            var pos = txt.indexOf("\\n");
+            if (pos<0) break;
+            arr.push(txt.substr(0,pos));
+            txt = txt.substr(pos+2);
+         }
+         arr.push(txt); txt = "";
+         for (var i in arr) 
+            txt += "<pre>" + arr[i] + "</pre>";
       }
-      arr.push(txt); txt = "";
-      for (var i in arr) 
-         txt += "<pre>" + arr[i] + "</pre>";
       
-      frame.html("<div>" + txt + "</div>");
+      // if (asis) txt = txt.replace("\\n","\n");
+      
+      frame.html("<div style='overflow:hidden'>" + txt + "</div>");
+      
       // (re) set painter to first child element
       this.SetDivId(this.divid);
+      
+      if (('mathjax' in this.txt) && (typeof MathJax == 'object')) {
+         var math = document.getElementById(this.divid);
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+      }
    }
    
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {
@@ -7761,7 +7777,7 @@
                         if (dropname==null) return false;
                         return h.dropitem(dropname, frame.attr("id"));
                      }
-                  });
+                  }).removeClass('ui-state-default');
             }
          }
 
