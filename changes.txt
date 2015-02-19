@@ -17,9 +17,10 @@ Changes in 3.3
 8. Implement 'autocol' draw option  - when superimposing histograms,
    their line colors will be automatically assigned
 9. Implement 'nostat' draw option - disabled stat drawing
-10.Using '_same_' identifier in item name, one can easily superimpose
-   same items from different files. Could be used in URL like:
-      &files=[file1.root,file2.root]&item=file1.root/hpx+file2.root/_same_
+10.Using '_same_' identifier in item name, one can easily draw or superimpose
+   similar items from different files. Could be used in URL like:
+      ...&files=[file1.root,file2.root]&items=[file1.root/hpx, file2.root/_same_]
+      ...&files=[file1.root,file2.root]&item=file1.root/hpx+file2.root/_same_
    Main limitation - file names should have similar length.   
 11.When 'autozoom' specified in draw options, histogram zoomed into
    non-empty content. Same command available via context menu. 

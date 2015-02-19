@@ -7797,6 +7797,11 @@
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
             }
          }
+         
+         // also check if subsequent items has _same_, than use name from first item
+         var pos = items[i].indexOf("_same_"); 
+         if ((pos>0) && !this.Find(items[i]) && (i>0))
+            items[i] = items[i].substr(0,pos) + items[0].substr(pos);
       }
 
       // Than create empty frames for each item
