@@ -6754,13 +6754,9 @@
       var txt = this.txt.value;
       if (txt==null) txt = "<undefined>";
       
-      var asis = true;
+      var mathjax = 'mathjax' in this.txt;
       
-      if ('mathjax' in this.txt)
-         JSROOT.AssertPrerequisites('mathjax');
-      else
-      if (!('as_is' in this.txt)) {
-         asis = false;
+      if (!mathjax && !('as_is' in this.txt)) {
          var arr = [];
          while (txt.length > 0) {
             var pos = txt.indexOf("\\n");
@@ -6773,17 +6769,17 @@
             txt += "<pre>" + arr[i] + "</pre>";
       }
       
-      // if (asis) txt = txt.replace("\\n","\n");
-      
       frame.html("<div style='overflow:hidden'>" + txt + "</div>");
       
       // (re) set painter to first child element
       this.SetDivId(this.divid);
       
-      if (('mathjax' in this.txt) && (typeof MathJax == 'object')) {
-         var math = document.getElementById(this.divid);
-         MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
-      }
+      if (mathjax) 
+         JSROOT.AssertPrerequisites('mathjax', function() {
+            if (typeof MathJax == 'object') {
+               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.get()]);
+            }
+         });
    }
    
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {

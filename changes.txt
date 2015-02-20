@@ -25,9 +25,8 @@ Changes in 3.3
 11.When 'autozoom' specified in draw options, histogram zoomed into
    non-empty content. Same command available via context menu. 
 12.One could create item of 'Text' kind, which will be displayed as 
-   plain text in the browser. 
-13.Introduce MathJax support - first in 'Text' item one should specify
-   property 'mathjax' to true.
+   plain text in the browser. If property 'mathjax' specified for such item,
+   MathJax library will be loaded and used for rendering.
    
 
 Changes in 3.2
