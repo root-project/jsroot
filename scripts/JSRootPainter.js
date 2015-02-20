@@ -7253,6 +7253,10 @@
          cando.ctxt = true;
          cando.execute = true;
          cando.img1 = "img_execute";
+      } else if (kind=="Text") {
+         cando.ctxt = true;
+         cando.display = true;
+         cando.img1 = "img_text";
       } else if (kind.match(/^ROOT.TH1/)) {
          cando.img1 = "img_histo1d";
          cando.scan = false;
