@@ -152,16 +152,16 @@
       }
       return dflt;
    }
-   
+
    JSROOT.ParseAsArray = function(val) {
-      // parse string value as array. 
+      // parse string value as array.
       // It could be just simple string:  "value"
       //  or array with or without string quotes:  [element], ['eleme1',elem2]
 
       var res = [];
-      
+
       if (typeof val != 'string') return res;
-      
+
       val = val.trim();
       if (val=="") return res;
 
@@ -221,7 +221,7 @@
       if (func==null) return;
 
       if (typeof func == 'string') func = JSROOT.findFunction(func);
-      
+
       if (typeof func == 'function') return func(arg1,arg2);
 
       if (typeof func == 'object' && typeof func.obj == 'object' &&
@@ -486,7 +486,7 @@
                      ";$$$scripts/helvetiker_regular.typeface.js" +
                      ";$$$scripts/helvetiker_bold.typeface.js" +
                      ";$$$scripts/JSRoot3DPainter.js";
-      
+
       if (kind.indexOf("mathjax;")>=0)
          allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 

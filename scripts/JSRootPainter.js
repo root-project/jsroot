@@ -5276,7 +5276,7 @@
       painter.DrawFunctions();
 
       painter.AddInteractive();
-      
+
       if (painter.options.AutoZoom) painter.AutoZoom();
 
       return painter;
@@ -5963,7 +5963,7 @@
       this.DrawFunctions();
 
       this.AddInteractive();
-      
+
       if (this.options.AutoZoom) this.AutoZoom();
 
       this['done2d'] = true; // indicate that 2d drawing was once done
@@ -6733,7 +6733,7 @@
    }
 
    // ================= painer of raw text ========================================
-   
+
    JSROOT.RawTextPainter = function(txt) {
       JSROOT.TBasePainter.call(this);
       this.txt = txt;
@@ -6741,21 +6741,21 @@
    }
 
    JSROOT.RawTextPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
-   
+
    JSROOT.RawTextPainter.prototype.RedrawObject = function(obj) {
       this.txt = obj;
       this.Draw();
       return true;
    }
-    
+
    JSROOT.RawTextPainter.prototype.Draw = function() {
       var frame = $("#" + this.divid);
-      
+
       var txt = this.txt.value;
       if (txt==null) txt = "<undefined>";
-      
+
       var mathjax = 'mathjax' in this.txt;
-      
+
       if (!mathjax && !('as_is' in this.txt)) {
          var arr = [];
          while (txt.length > 0) {
@@ -6765,23 +6765,23 @@
             txt = txt.substr(pos+2);
          }
          arr.push(txt); txt = "";
-         for (var i in arr) 
+         for (var i in arr)
             txt += "<pre>" + arr[i] + "</pre>";
       }
-      
+
       frame.html("<div style='overflow:hidden'>" + txt + "</div>");
-      
+
       // (re) set painter to first child element
       this.SetDivId(this.divid);
-      
-      if (mathjax) 
+
+      if (mathjax)
          JSROOT.AssertPrerequisites('mathjax', function() {
             if (typeof MathJax == 'object') {
                MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.get()]);
             }
          });
    }
-   
+
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {
       var painter = new JSROOT.RawTextPainter(txt);
       painter.SetDivId(divid);
@@ -7299,12 +7299,12 @@
          cando.img1 = "img_histo1d";
          cando.scan = false;
          cando.display = true;
-      } else 
+      } else
       if (JSROOT.canDraw('kind:' + kind)) {
          cando.img1 = "img_leaf";
          cando.scan = false;
          cando.display = true;
-      }   
+      }
 
       if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
 
@@ -7862,9 +7862,9 @@
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
             }
          }
-         
+
          // also check if subsequent items has _same_, than use name from first item
-         var pos = items[i].indexOf("_same_"); 
+         var pos = items[i].indexOf("_same_");
          if ((pos>0) && !this.Find(items[i]) && (i>0))
             items[i] = items[i].substr(0,pos) + items[0].substr(pos);
       }
@@ -8030,7 +8030,7 @@
          if ('_doing_expand' in item) {
             h_get = true;
             req  = 'h.json?compact=3';
-         } else 
+         } else
          if (item._kind.indexOf("ROOT.")!=0)
             req = 'get.json?compact=3';
       }
@@ -8166,18 +8166,21 @@
       this.RefreshHtml();
    }
 
+   JSROOT.HierarchyPainter.prototype.SetMonitoring = function(val) {
+      this['_monitoring_on'] = false;
+      this['_monitoring_interval'] = 3000;
+
+      if ((val!=null) && (val!='0')) {
+         this['_monitoring_on'] = true;
+         this['_monitoring_interval'] = parseInt(val);
+         if ((this['_monitoring_interval'] == NaN) || (this['_monitoring_interval']<100))
+            this['_monitoring_interval'] = 3000;
+      }
+   }
+
    JSROOT.HierarchyPainter.prototype.MonitoringInterval = function(val) {
       // returns interval
-      if (val!=null) this['_monitoring_interval'] = val;
-      var monitor = this['_monitoring_interval'];
-      if (monitor == null) {
-         monitor = JSROOT.GetUrlOption("monitoring");
-         if ((monitor == "") || (monitor==null)) monitor = 3000;
-                                            else monitor = parseInt(monitor);
-         if ((monitor == NaN) || (monitor<=0)) monitor = 3000;
-         this['_monitoring_interval'] = monitor;
-      }
-      return monitor;
+      return ('_monitoring_interval' in this) ? this['_monitoring_interval'] : 3000;
    }
 
    JSROOT.HierarchyPainter.prototype.EnableMonitoring = function(on) {
@@ -8882,9 +8885,9 @@
 
    JSROOT.draw = function(divid, obj, opt) {
       if (typeof obj != 'object') return null;
-      
+
       var draw_func = null;
-      if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt); 
+      if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt);
       else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);
 
       if (draw_func==null) return null;
