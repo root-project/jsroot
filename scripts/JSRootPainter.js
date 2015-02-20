@@ -6756,13 +6756,17 @@
 
       var mathjax = 'mathjax' in this.txt;
 
-      if (!mathjax && !('as_is' in this.txt)) {
-         var arr = txt.split("\n"); txt = "";
-         for (var i in arr)
-            txt += "<pre>" + arr[i] + "</pre>";
+      if ('load' in this.txt) {
+         frame.html("<div style='overflow:hidden'></div>");
+         frame.find('div').load(this.txt.load);
+      } else {
+         if (!mathjax && !('as_is' in this.txt)) {
+            var arr = txt.split("\n"); txt = "";
+            for (var i in arr)
+               txt += "<pre>" + arr[i] + "</pre>";
+         }
+         frame.html("<div style='overflow:hidden'>" + txt + "</div>");
       }
-
-      frame.html("<div style='overflow:hidden'>" + txt + "</div>");
 
       // (re) set painter to first child element
       this.SetDivId(this.divid);

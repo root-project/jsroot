@@ -72,7 +72,10 @@ mkdir -p Stop; echo "0" >> Stop/cmd.json
 mkdir -p ResetHPX; echo "0" >> ResetHPX/cmd.json
 mkdir -p ResetHPXPY; echo "0" >> ResetHPXPY/cmd.json
 
-mkdir -p Debug; wget -nv $server/Debug/get.json -O Debug/get.json
+mkdir -p Debug; wget -nv $server/Debug/get.json.gz -O Debug/get.json.gz
+wget -nv $server/Debug/draw.htm?nozip -O draw0.htm
+sed 's/\/jsrootsys/..\/../g' $sedarg draw0.htm > Debug/draw.htm
+rm -f draw0.htm
 
 grab 2 hpx
 grab 2 hpxpy
