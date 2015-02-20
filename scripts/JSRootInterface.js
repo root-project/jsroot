@@ -31,7 +31,6 @@ function setGuiLayout(value) {
    }
 }
 
-
 function ReadFile() {
    var navigator_version = navigator.appVersion;
    if (typeof ActiveXObject == "function") { // Windows
@@ -223,12 +222,19 @@ function BuildSimpleGUI() {
          if (!nobrowser) $("#monitoring").prop('checked', hpainter.IsMonitoring());
       }
 
-      if ('_loadfile' in hpainter.h)
-         filesarr.push(hpainter.h._loadfile);
+      if ('_layout' in hpainter.h) {
+         setGuiLayout(hpainter.h._layout);
+         hpainter.SetDisplay(hpainter.h._layout, drawDivId);
+      }
+      
+      if ('_loadfile' in hpainter.h) {
+         filesarr = filesarr.concat(JSROOT.ParseAsArray(hpainter.h._loadfile));
+      }
 
       if ('_drawitem' in hpainter.h) {
-         itemsarr.push(hpainter.h._drawitem);
-         optionsarr.push('_drawopt' in hpainter.h ? hpainter.h._drawopt : "");
+         itemsarr = itemsarr.concat(JSROOT.ParseAsArray(hpainter.h._drawitem));
+         if ('_drawopt' in hpainter.h)
+            optionsarr = optionsarr.concat(JSROOT.ParseAsArray(hpainter.h._drawopt));
       }
 
       OpenAllFiles();

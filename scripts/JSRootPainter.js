@@ -6747,7 +6747,7 @@
       this.Draw();
       return true;
    }
-   
+    
    JSROOT.RawTextPainter.prototype.Draw = function() {
       var frame = $("#" + this.divid);
       
