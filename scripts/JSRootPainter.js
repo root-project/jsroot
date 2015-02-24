@@ -433,6 +433,11 @@
          if (this.style!=null)
             selection.attr("font-style", this.style);
       }
+      
+      res.asStyle = function(sz) {
+         // return font name, which could be applied with d3.select().style('font')
+         return ((sz!=null) ? sz : this.size) + "px " + this.name;
+      }
 
       res.stringWidth = function(svg, line) {
          /* compute the bounding box of a string by using temporary svg:text */
@@ -6228,42 +6233,36 @@
            .style("stroke", lcolor.color);
 
       var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
-      var tpos_x = pave['fMargin'] * w;
+      var tpos_x = Math.round(pave['fMargin'] * w);
+      var padding_x = Math.round(0.05 * w);
+      var padding_y = Math.round(0.05 * h);
       var nlines = pave.fPrimitives.arr.length;
       var font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.5));
 
-      var max_len = 0, mul = 1.4;
+      var min_fact = 1.;
       for (var j = 0; j < nlines; ++j) {
-         var label = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
-         var lw = tpos_x  + font.stringWidth(svg, label);
-         if (lw > max_len) max_len = lw;
+         var leg = pave.fPrimitives.arr[j];
+         var lopt = leg['fOption'].toLowerCase();
+         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
+         var lw = font.stringWidth(svg, label);
+         var allowed = w - 2*padding_x;
+         if ((lopt.indexOf("h")<0) && (lopt.length>0)) allowed = w - tpos_x - padding_x;
+         var fact = lw > 5 ? allowed / lw : 1.;
+         if (fact < min_fact) min_fact = fact;
       }
-      if (max_len > w) {
-         font.size = Math.floor(font.size * 0.95 * (w / max_len));
-         mul *= 0.95 * (max_len / w);
-      }
-      var x1 = pave['fX1NDC'];
-      var x2 = pave['fX2NDC'];
-      var y1 = pave['fY1NDC'];
-      var y2 = pave['fY2NDC'];
-      var margin = pave['fMargin'] * (x2 - x1) / pave['fNColumns'];
-      var yspace = (y2 - y1) / nlines;
-      var ytext = y2 + 0.5 * yspace; // y-location of 0th entry
-      var boxw = margin * 0.35;
+      
+      if (min_fact<1) font.size = Math.floor(font.size * min_fact);
 
+      var step_y = (h - 2*padding_y)/nlines;
+      
       for (var i = 0; i < nlines; ++i) {
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
 
          var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
 
-         var pos_y = ((i + 1) * (font.size * mul)) - (font.size / 3);
-         var tpos_y = (i + 1) * (font.size * mul);
-         if (nlines == 1) {
-            var pos_y = (h * 0.75) - (font.size / 3);
-            var tpos_y = h * 0.75;
-         }
-
+         var pos_y = padding_y + (i+0.5)*step_y; // middle of each line 
+         
          var attfill = leg;
          var attmarker = leg;
          var attline = leg;
@@ -6279,57 +6278,24 @@
          var fill = this.createAttFill(attfill);
          var llll = JSROOT.Painter.createAttLine(attline);
 
-         p.append("text")
-              .attr("class", "text")
-              .attr("text-anchor", "start")
-              .attr("x", tpos_x)
-              .attr("y", tpos_y)
-              .call(font.func)
-              .attr("fill", tcolor)
-              .text(label);
-
          // Draw fill pattern (in a box)
          if (lopt.indexOf('f') != -1) {
             // box total height is yspace*0.7
             // define x,y as the center of the symbol for this entry
-            var xsym = margin / 2;
-            var ysym = ytext;
-            var xf = new Array(4), yf = new Array(4);
-            xf[0] = xsym - boxw;
-            yf[0] = ysym - yspace * 0.35;
-            xf[1] = xsym + boxw;
-            yf[1] = yf[0];
-            xf[2] = xf[1];
-            yf[2] = ysym + yspace * 0.35;
-            xf[3] = xf[0];
-            yf[3] = yf[2];
-            for (var j = 0; j < 4; j++) {
-               xf[j] = xf[j] * Number(svg.attr("width"));
-               yf[j] = yf[j] * Number(svg.attr("height"));
-            }
-            var ww = xf[1] - xf[0];
-            var hh = yf[2] - yf[0];
-            pos_y = pos_y - (hh / 2);
-            var pos_x = (tpos_x / 2) - (ww / 2);
-
             p.append("svg:rect")
-                   .attr("x", pos_x)
-                   .attr("y", pos_y)
-                   .attr("width", ww)
-                   .attr("height", hh)
+                   .attr("x", padding_x)
+                   .attr("y", pos_y-step_y/3)
+                   .attr("width", tpos_x - 2*padding_x)
+                   .attr("height", 2*step_y/3)
                    .call(llll.func)
                    .call(fill.func);
          }
          // Draw line
          if (lopt.indexOf('l') != -1) {
-
-            // line total length (in x) is margin*0.8
-            var line_length = (0.7 * pave['fMargin']) * w;
-            var pos_x = (tpos_x - line_length) / 2;
             p.append("svg:line")
-               .attr("x1", pos_x)
+               .attr("x1", padding_x)
                .attr("y1", pos_y)
-               .attr("x2", pos_x + line_length)
+               .attr("x2", tpos_x - padding_x)
                .attr("y2", pos_y)
                .call(llll.func);
          }
@@ -6338,15 +6304,65 @@
          }
          // Draw Polymarker
          if (lopt.indexOf('p') != -1) {
-
-            var line_length = (0.7 * pave['fMargin']) * w;
-            var pos_x = tpos_x / 2;
-
             var marker = JSROOT.Painter.createAttMarker(attmarker);
             p.append("svg:path")
-                .attr("transform", function(d) { return "translate(" + pos_x + "," + pos_y + ")"; })
+                .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + pos_y + ")"; })
                 .call(marker.func);
          }
+         
+         var pos_x = tpos_x;
+         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
+
+         if ((label.indexOf("#frac")<0) || JSROOT.browser.isIE) {
+           p.append("text")
+              .attr("class", "text")
+              .attr("text-anchor", "start")
+              .attr("dominant-baseline", "central")
+              .attr("x", pos_x)
+              .attr("y", pos_y /*+ font.size*0.3*/)
+              .call(font.func)
+              .attr("fill", tcolor)
+              .text(label);
+         } else {
+            
+            var fo_x = Math.round(pos_x);
+            var fo_y = Math.round(pos_y - 0.5*step_y);
+            var fo_w = Math.round(w - padding_x - pos_x);
+            var fo_h = Math.round(step_y);
+            
+            var fo = this.draw_g.append("foreignObject").attr("width", fo_w).attr("height", fo_h);
+            this.SetForeignObjectPosition(fo, fo_x, fo_y);
+
+            // this is just workaround, one need real parser to find all #frac and so on 
+            label = label.replace("#frac","\\(\\frac") + "\\)";
+            
+            var body = fo.append("xhtml:body")
+                         .style("display", "table")
+                         .append("xhtml:div")
+                         .style("display", "table-cell")
+                         .style('vertical-align', 'middle') // force to align in the center
+                         .style("font", font.asStyle())
+                         .html(label);
+
+            JSROOT.AssertPrerequisites('mathjax', function() {
+               if (typeof MathJax != 'object') return;
+               
+               // MathJax.Hub.Queue(["Typeset", MathJax.Hub, body.node()]);
+               
+               MathJax.Hub.Queue(function() {
+                  MathJax.Hub.Typeset(body.node());
+                  // rescale one again 
+                  var rect = body.node().getBoundingClientRect();
+                  var fact_x = parseInt(rect.right - rect.left) / fo_w;
+                  var fact_y = parseInt(rect.bottom - rect.top) / fo_h;
+                  if (Math.max(fact_x, fact_y) > 1) 
+                     body.style("font", font.asStyle(Math.round(font.size/Math.max(fact_x, fact_y))));
+               });
+            });
+
+            
+         }
+
       }
       if (lwidth && lwidth > 1) {
          p.append("svg:line")
