@@ -46,7 +46,8 @@
       StatFill : { fFillColor: 0, fFillStyle: 1001 },
       TimeOffset : 788918400000, // UTC time at 01/01/95
       StatFormat : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
-      StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); }
+      StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); },
+      MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always  
    };
 
    /**
@@ -77,6 +78,13 @@
       if (col!=null) {
          col = parseInt(col);
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
+      }
+      
+      var mathjax = JSROOT.GetUrlOption("mathjax", url);
+      if (mathjax == "") JSROOT.gStyle.MathJax = 1; else
+      if (mathjax != null) {
+         JSROOT.gStyle.MathJax = parseInt(mathjax);
+         if (JSROOT.gStyle.MathJax == NaN) JSROOT.gStyle.MathJax = 1;
       }
    }
 
@@ -6313,7 +6321,7 @@
          var pos_x = tpos_x;
          if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
 
-         if ((label.indexOf("#frac")<0) || JSROOT.browser.isIE) {
+         if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
            p.append("text")
               .attr("class", "text")
               .attr("text-anchor", "start")
@@ -6355,7 +6363,7 @@
                   var rect = body.node().getBoundingClientRect();
                   var fact_x = parseInt(rect.right - rect.left) / fo_w;
                   var fact_y = parseInt(rect.bottom - rect.top) / fo_h;
-                  if (Math.max(fact_x, fact_y) > 1) 
+                  if (Math.max(fact_x, fact_y) > 1)
                      body.style("font", font.asStyle(Math.round(font.size/Math.max(fact_x, fact_y))));
                });
             });
