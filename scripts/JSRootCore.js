@@ -30,12 +30,10 @@
    JSROOT.browser = {}; 
       
    JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-   // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
-   JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';   // Firefox 1.0+
+   JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
    JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   // At least Safari 3+: "[object HTMLElementConstructor]"
-   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;      // Chrome 1+
-   JSROOT.browser.isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;    
+   JSROOT.browser.isIE = false || !!document.documentMode;
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
    
    JSROOT.function_list = []; // do we really need it here?

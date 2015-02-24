@@ -6234,8 +6234,8 @@
 
       var max_len = 0, mul = 1.4;
       for (var j = 0; j < nlines; ++j) {
-         var line = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
-         var lw = tpos_x  + font.stringWidth(svg, line);
+         var label = JSROOT.Painter.translateLaTeX(pave.fPrimitives.arr[j]['fLabel']);
+         var lw = tpos_x  + font.stringWidth(svg, label);
          if (lw > max_len) max_len = lw;
       }
       if (max_len > w) {
@@ -6255,7 +6255,7 @@
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
 
-         var string = leg['fLabel'];
+         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
 
          var pos_y = ((i + 1) * (font.size * mul)) - (font.size / 3);
          var tpos_y = (i + 1) * (font.size * mul);
@@ -6286,7 +6286,7 @@
               .attr("y", tpos_y)
               .call(font.func)
               .attr("fill", tcolor)
-              .text(string);
+              .text(label);
 
          // Draw fill pattern (in a box)
          if (lopt.indexOf('f') != -1) {
