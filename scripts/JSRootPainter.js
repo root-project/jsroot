@@ -1046,6 +1046,28 @@
          // when this is first main painter in the pad
          svg_p['mainpainter'] = this;
    }
+   
+   JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, x, y) {
+      // method used to set absolute coordinates for foreignObject
+      // it is known problem of WebKit http://bit.ly/1wjqCQ9
+      
+      var sel = fo;
+      
+      if (JSROOT.browser.isWebKit) {
+         // force canvas redraw when foreign object used - it is not correctly scaled
+         this.svg_canvas(true).property('redraw_by_resize', true);  
+         while (sel && sel.attr('class') != 'root_canvas') {
+            if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
+              x += parseInt(sel.attr("x")); 
+              y += parseInt(sel.attr("y"));
+            }
+            sel = d3.select(sel.node().parentNode);
+         } 
+      }
+
+      fo.attr("x",x).attr("y",y);
+   }
+   
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
@@ -2662,7 +2684,7 @@
          var oldh = svg.property('last_height');
 
          if (check_resize == 1) {
-            if ((svg.attr('width')==w) && (svg.attr('height')==h)) return false;
+            if ((svg.attr('width') == w) && (svg.attr('height') == h)) return false;
             if ((oldw == w) && (oldh == h)) return false;
          }
 
@@ -2674,12 +2696,12 @@
             render_to.height(h);
          }
 
-         if ((check_resize==1) && (oldw>0) && (oldh>0))
+         if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
-              // change view port without changing view box
-              // let SVG scale drawing itself
-              svg.attr("width", w).attr("height", h);
-              return false;
+               // change view port without changing view box
+               // let SVG scale drawing itself
+               svg.attr("width", w).attr("height", h);
+               return false;
             }
 
       } else {
@@ -2728,7 +2750,8 @@
          .attr("preserveAspectRatio", "none")  // we do not keep relative ratio
          .property('height_factor', factor)
          .property('last_width', w)
-         .property('last_height', h);
+         .property('last_height', h)
+         .property('redraw_by_resize', false);
 
       return true;
    }
@@ -5791,14 +5814,12 @@
 
       var dx = i2-i1, dy = j2-j1;
 
-      var canvas =
-         this.draw_g.append("foreignObject")
-                 .attr("width", w)
-                 .attr("height", h)
-                 .append("xhtml:canvas")
-                 .attr("width", dx)
-                 .attr("height", dy)
-                 .attr("style", "width: " + w + "px; height: "+ h + "px");
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, 0, 0);
+      
+      var canvas = fo.append("xhtml:canvas")
+                     .attr("width", dx).attr("height", dy)
+                     .attr("style", "width: " + w + "px; height: "+ h + "px");
 
       var context = canvas.node().getContext("2d");
       var image = context.createImageData(dx, dy);
@@ -5823,33 +5844,14 @@
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
 
       var local_bins = this.CreateDrawBins(w, h, 0, 0);
-
-      var foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject' );
-      // var body = document.createElement( 'body' );
-
-      var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
-
-      $(canvas).attr('width', w).attr('height',h)
-
-//      $(body).append(canvas);
-
-      $(foreignObject).attr("width", w).attr("height", h).append(canvas);
-
-      $(this.draw_g.node()).append(foreignObject);
-
-      var ctx = canvas.getContext("2d");
-
-/*
-      var canvas =
-         this.draw_g.append("foreignObject")
-                 .attr("width", w)
-                 .attr("height", h)
-                 .append("xhtml:canvas")
-                 .attr("width", w)
-                 .attr("height", h)
-                 .attr("style", "width: " + w + "px; height: "+ h + "px");
+      
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, 0, 0);
+      
+      var canvas = fo.append("xhtml:canvas").attr("width", w).attr("height", h);
+      
       var ctx = canvas.node().getContext("2d");
-*/
+
       for (var i in local_bins) {
          var bin = local_bins[i];
          ctx.fillStyle = bin.fill;
@@ -5867,12 +5869,11 @@
       var w = Number(this.svg_frame(true).attr("width")),
           h = Number(this.svg_frame(true).attr("height"));
 
-      if (this.options.Color==2)
+      if ((this.options.Color==2) && !JSROOT.browser.isIE)
          return this.DrawSimpleCanvas(w,h);
 
-      if (this.options.Color==3)
+      if ((this.options.Color==3) && !JSROOT.browser.isIE)
          return this.DrawNormalCanvas(w,h);
-
 
       // this.options.Scat =1;
       // this.histo['fMarkerStyle'] = 2;

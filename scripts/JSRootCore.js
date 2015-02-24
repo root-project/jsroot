@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.3 dev 20/02/2015";
+   JSROOT.version = "3.3 dev 24/02/2015";
 
    JSROOT.source_dir = "";
 
@@ -27,6 +27,17 @@
 
    JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
 
+   JSROOT.browser = {}; 
+      
+   JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+   // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+   JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';   // Firefox 1.0+
+   JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+   // At least Safari 3+: "[object HTMLElementConstructor]"
+   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;      // Chrome 1+
+   JSROOT.browser.isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
+   
    JSROOT.function_list = []; // do we really need it here?
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -488,7 +499,7 @@
                      ";$$$scripts/JSRoot3DPainter.js";
 
       if (kind.indexOf("mathjax;")>=0)
-         allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+        allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 
       if (kind.indexOf("simple;")>=0)
          allfiles += ';$$$scripts/JSRootInterface.js' +

@@ -10,7 +10,7 @@
 
    <script type='text/javascript'>
 
-      function GetCashedObject() { return "$$$root.json$$$"; }
+      function GetCachedObject() { return "$$$root.json$$$"; }
 
       function CreateDrawGui() {
          // analyze URL options
@@ -39,8 +39,8 @@
             req.send(null);
          }
 
-         var obj = GetCashedObject();
-
+         var obj = GetCachedObject();
+         
          if (typeof obj != 'object') {
             get_function();
          } else
