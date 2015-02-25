@@ -17,6 +17,7 @@
    JSROOT.version = "3.4 dev 25/02/2015";
 
    JSROOT.source_dir = "";
+   JSROOT.source_min = false;
 
    // TODO: all jQuery-related functions should go into extra script
    JSROOT.clone = function(obj) {
@@ -471,37 +472,39 @@
 
       if (typeof kind != 'string') kind = "2d";
       if (kind.charAt(kind.length-1)!=";") kind+=";";
+      
+      var ext = JSROOT.source_min ? ".min" : "";
 
       // file names should be separated with ';'
       var allfiles = '$$$scripts/jquery.min.js';
 
       if (kind.indexOf('io;')>=0)
          allfiles += ";$$$scripts/rawinflate.js" +
-                     ";$$$scripts/JSRootIOEvolution.js";
+                     ";$$$scripts/JSRootIOEvolution" + ext + ".js";
 
       if (kind.indexOf('2d;')>=0) {
          allfiles += ';$$$style/jquery-ui.css' +
                      ';$$$scripts/jquery-ui.min.js' +
                      ';$$$scripts/d3.v3.min.js' +
-                     ';$$$scripts/JSRootPainter.js' +
-                     ';$$$style/JSRootPainter.css';
+                     ';$$$scripts/JSRootPainter' + ext + ".js" +
+                     ';$$$style/JSRootPainter' + ext + ".css";
          if (JSROOT.touches)
             allfiles += ';$$$scripts/touch-punch.min.js';
       }
 
       if (kind.indexOf("3d;")>=0)
-         allfiles += ";$$$scripts/jquery.mousewheel.js" +
+         allfiles += ";$$$scripts/jquery.mousewheel" + ext + ".js" + 
                      ";$$$scripts/three.min.js" +
                      ";$$$scripts/helvetiker_regular.typeface.js" +
                      ";$$$scripts/helvetiker_bold.typeface.js" +
-                     ";$$$scripts/JSRoot3DPainter.js";
+                     ";$$$scripts/JSRoot3DPainter" + ext + ".js";
 
       if (kind.indexOf("mathjax;")>=0)
         allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
 
       if (kind.indexOf("simple;")>=0)
-         allfiles += ';$$$scripts/JSRootInterface.js' +
-                     ';$$$style/JSRootInterface.css';
+         allfiles += ';$$$scripts/JSRootInterface' + ext + ".js" +
+                     ';$$$style/JSRootInterface' + ext + ".css";
 
       var pos = kind.indexOf("user:");
       if (pos<0) pos = kind.indexOf("load:");
@@ -2115,10 +2118,11 @@
          var src = scripts[n]['src'];
          if ((src == null) || (src.length == 0)) continue;
 
-         var pos = src.indexOf("scripts/JSRootCore.js");
+         var pos = src.indexOf("scripts/JSRootCore.");
          if (pos<0) continue;
 
          JSROOT.source_dir = src.substr(0, pos);
+         JSROOT.source_min = src.indexOf("JSRootCore.min.js")>0;
 
          console.log("Set JSROOT.source_dir to " + JSROOT.source_dir);
 

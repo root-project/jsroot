@@ -3,6 +3,11 @@
 This is further development of JSRootIO project of Bertrand Bellenot. 
 Many old problems and errors are fixed, new functions are provided.  
 
+## Changes in v 3.4
+1. Support usage of minimized versions of .js and .css files.
+   Minimized scripts used by default on web servers.  
+
+
 ## Changes in v 3.3
 1. Use d3.time.scale for display of time scales
 2. Within JSRootCore.js script URL one could specify JSROOT
