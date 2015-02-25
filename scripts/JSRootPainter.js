@@ -47,7 +47,7 @@
       TimeOffset : 788918400000, // UTC time at 01/01/95
       StatFormat : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
       StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); },
-      MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always  
+      MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
    };
 
    /**
@@ -79,7 +79,7 @@
          col = parseInt(col);
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
-      
+
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
       if (mathjax == "") JSROOT.gStyle.MathJax = 1; else
       if (mathjax != null) {
@@ -441,7 +441,7 @@
          if (this.style!=null)
             selection.attr("font-style", this.style);
       }
-      
+
       res.asStyle = function(sz) {
          // return font name, which could be applied with d3.select().style('font')
          return ((sz!=null) ? sz : this.size) + "px " + this.name;
@@ -1059,28 +1059,28 @@
          // when this is first main painter in the pad
          svg_p['mainpainter'] = this;
    }
-   
+
    JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, x, y) {
       // method used to set absolute coordinates for foreignObject
       // it is known problem of WebKit http://bit.ly/1wjqCQ9
-      
+
       var sel = fo;
-      
+
       if (JSROOT.browser.isWebKit) {
          // force canvas redraw when foreign object used - it is not correctly scaled
-         this.svg_canvas(true).property('redraw_by_resize', true);  
+         this.svg_canvas(true).property('redraw_by_resize', true);
          while (sel && sel.attr('class') != 'root_canvas') {
             if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
-              x += parseInt(sel.attr("x")); 
+              x += parseInt(sel.attr("x"));
               y += parseInt(sel.attr("y"));
             }
             sel = d3.select(sel.node().parentNode);
-         } 
+         }
       }
 
       fo.attr("x",x).attr("y",y);
    }
-   
+
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
@@ -5829,7 +5829,7 @@
 
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, 0, 0);
-      
+
       var canvas = fo.append("xhtml:canvas")
                      .attr("width", dx).attr("height", dy)
                      .attr("style", "width: " + w + "px; height: "+ h + "px");
@@ -5857,12 +5857,12 @@
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
 
       var local_bins = this.CreateDrawBins(w, h, 0, 0);
-      
+
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, 0, 0);
-      
+
       var canvas = fo.append("xhtml:canvas").attr("width", w).attr("height", h);
-      
+
       var ctx = canvas.node().getContext("2d");
 
       for (var i in local_bins) {
@@ -6258,19 +6258,19 @@
          var fact = lw > 5 ? allowed / lw : 1.;
          if (fact < min_fact) min_fact = fact;
       }
-      
+
       if (min_fact<1) font.size = Math.floor(font.size * min_fact);
 
       var step_y = (h - 2*padding_y)/nlines;
-      
+
       for (var i = 0; i < nlines; ++i) {
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
 
          var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
 
-         var pos_y = padding_y + (i+0.5)*step_y; // middle of each line 
-         
+         var pos_y = padding_y + (i+0.5)*step_y; // middle of each line
+
          var attfill = leg;
          var attmarker = leg;
          var attline = leg;
@@ -6317,7 +6317,7 @@
                 .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + pos_y + ")"; })
                 .call(marker.func);
          }
-         
+
          var pos_x = tpos_x;
          if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
 
@@ -6332,18 +6332,18 @@
               .attr("fill", tcolor)
               .text(label);
          } else {
-            
+
             var fo_x = Math.round(pos_x);
             var fo_y = Math.round(pos_y - 0.5*step_y);
             var fo_w = Math.round(w - padding_x - pos_x);
             var fo_h = Math.round(step_y);
-            
+
             var fo = this.draw_g.append("foreignObject").attr("width", fo_w).attr("height", fo_h);
             this.SetForeignObjectPosition(fo, fo_x, fo_y);
 
-            // this is just workaround, one need real parser to find all #frac and so on 
+            // this is just workaround, one need real parser to find all #frac and so on
             label = label.replace("#frac","\\(\\frac") + "\\)";
-            
+
             var body = fo.append("xhtml:body")
                          .style("display", "table")
                          .append("xhtml:div")
@@ -6354,12 +6354,12 @@
 
             JSROOT.AssertPrerequisites('mathjax', function() {
                if (typeof MathJax != 'object') return;
-               
+
                // MathJax.Hub.Queue(["Typeset", MathJax.Hub, body.node()]);
-               
+
                MathJax.Hub.Queue(function() {
                   MathJax.Hub.Typeset(body.node());
-                  // rescale one again 
+                  // rescale one again
                   var rect = body.node().getBoundingClientRect();
                   var fact_x = parseInt(rect.right - rect.left) / fo_w;
                   var fact_y = parseInt(rect.bottom - rect.top) / fo_h;
@@ -6368,7 +6368,7 @@
                });
             });
 
-            
+
          }
 
       }

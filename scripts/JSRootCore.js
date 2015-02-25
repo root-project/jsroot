@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.3 25/02/2015";
+   JSROOT.version = "3.4 dev 25/02/2015";
 
    JSROOT.source_dir = "";
 
@@ -27,15 +27,15 @@
 
    JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
 
-   JSROOT.browser = {}; 
-      
+   JSROOT.browser = {};
+
    JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
    JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
    JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;    
+   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
    JSROOT.browser.isIE = false || !!document.documentMode;
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
-   
+
    JSROOT.function_list = []; // do we really need it here?
 
    JSROOT.BIT = function(n) { return 1 << (n); }
