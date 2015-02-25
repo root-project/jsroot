@@ -54,6 +54,20 @@
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
    JSROOT.Painter = {};
+   
+   
+   JSROOT.Painter.createMenu = function(maincallback, menuname) {
+      // dummy functions, forward call to the jquery function
+      JSROOT.AssertPrerequisites('jq2d', function() {
+         JSROOT.Painter.createMenu(maincallback, menuname);
+      });
+   }
+   
+   JSROOT.Painter.closeMenu = function(menuname) {
+      if (!menuname) menuname = 'root_ctx_menu';
+      var x = document.getElementById(menuname);
+      if (x) x.parentNode.removeChild(x);
+   }
 
    JSROOT.Painter.readStyleFromURL = function(url) {
       var optimize = JSROOT.GetUrlOption("optimize", url);
@@ -86,75 +100,6 @@
          JSROOT.gStyle.MathJax = parseInt(mathjax);
          if (JSROOT.gStyle.MathJax == NaN) JSROOT.gStyle.MathJax = 1;
       }
-   }
-
-   JSROOT.createMenu = function(menuname) {
-      if (!menuname) menuname = "root_ctx_menu";
-
-      var menu = { divid: menuname, code:"", cnt: 1, funcs : {} };
-
-      menu.add = function(name, arg, func) {
-         if (name.indexOf("header:")==0) {
-            this.code += "<li class='ui-widget-header'>"+name.substr(7)+"</li>";
-            return;
-         }
-
-         if (name=="endsub:") { this.code += "</ul></li>"; return; }
-         var close_tag = "</li>";
-         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; }
-
-         if (typeof arg == 'function') { func = arg; arg = name; }
-
-         if ((arg==null) || (typeof arg != 'string')) arg = name;
-         this.code += "<li cnt='" + this.cnt + "' arg='" + arg + "'>" + name + close_tag;
-         if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
-
-         this.cnt++;
-      }
-
-      menu.size = function() { return this.cnt-1; }
-
-      menu.addDrawMenu = function(menu_name, opts, call_back) {
-         if (opts==null) opts = new Array;
-         if (opts.length==0) opts.push("");
-
-         this.add((opts.length > 1) ? ("sub:" + menu_name) : menu_name, opts[0], call_back);
-         if (opts.length<2) return;
-
-         for (var i=0;i<opts.length;i++) {
-            var name = opts[i];
-            if (name=="") name = '&lt;dflt&gt;';
-            this.add(name, opts[i], call_back);
-         }
-         this.add("endsub:");
-      }
-
-      menu.remove = function() { $("#"+menuname).remove(); }
-
-      menu.show = function(event) {
-         menu.remove();
-
-         document.body.onclick = function(e) { menu.remove(); }
-
-         $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
-
-         $("#" + menuname)
-            .css('left', event.clientX + window.pageXOffset)
-            .css('top', event.clientY + window.pageYOffset)
-            .attr('class', 'ctxmenu')
-            .menu({
-               items: "> :not(.ui-widget-header)",
-               select: function( event, ui ) {
-                  var arg = ui.item.attr('arg');
-                  var cnt = ui.item.attr('cnt');
-                  var func = cnt ? menu.funcs[cnt] : null;
-                  menu.remove();
-                  if (typeof func == 'function') func(arg);
-              }
-         });
-      }
-
-      return menu;
    }
 
    JSROOT.Painter.Coord = {
@@ -4421,8 +4366,7 @@
       var pthis = this;
 
       function closeAllExtras() {
-         var x = document.getElementById('root_ctx_menu');
-         if (x) x.parentNode.removeChild(x);
+         JSROOT.Painter.closeMenu();
          if (rect != null) { rect.remove(); rect = null; }
          zoom_kind = 0;
          if (disable_tooltip) {
@@ -4437,19 +4381,20 @@
 
          // ignore context menu when touches zooming is ongoing
          if (zoom_kind > 100) return;
+         
+         // one need to copy event, while after call back event may be changed 
+         var evnt = d3.event;
 
          // suppress any running zomming
          closeAllExtras();
 
-         var menu = JSROOT.createMenu();
+         JSROOT.Painter.createMenu(function(menu) {
+            menu['painter'] = pthis;
+            menu.add("header:"+ pthis.histo['fName']);
+            pthis.FillContextMenu(menu);
+            menu.show(evnt);
+         });
 
-         menu['painter'] = pthis;
-
-         menu.add("header:"+ pthis.histo['fName']);
-
-         pthis.FillContextMenu(menu);
-
-         menu.show(d3.event)
       }
 
       function startTouchSel() {
@@ -7364,7 +7309,7 @@
       });
       req.send();
    }
-
+   
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(force) {
       if (this.frameid == null) return;
       var elem = $("#" + this.frameid);
@@ -8220,16 +8165,16 @@
 
       var hitem = this.Find(itemname);
       if (hitem==null) return;
-
+      
       var cando = this.CheckCanDo(hitem);
 
       // if (!cando.display && !cando.ctxt && (itemname!="")) return;
 
-      var onlineprop = this.GetOnlineProp(itemname);
-      var fileprop = this.GetFileProp(itemname);
+      var painter = this;
 
-      var menu = JSROOT.createMenu();
-
+      var onlineprop = painter.GetOnlineProp(itemname);
+      var fileprop = painter.GetFileProp(itemname);
+      
       function qualifyURL(url) {
          function escapeHTML(s) {
             return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
@@ -8238,71 +8183,72 @@
          el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
          return el.firstChild.href;
       }
+      
+      JSROOT.Painter.createMenu(function(menu) {
 
-      var painter = this;
+         if (itemname == "") {
+            var addr = "", cnt = 0;
+            function separ() { return cnt++ > 0 ? "&" : "?"; }
 
-      if (itemname == "") {
-         var addr = "", cnt = 0;
-         function separ() { return cnt++ > 0 ? "&" : "?"; }
+            var files = [];
+            painter.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
 
-         var files = [];
-         this.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
+            if (painter.GetTopOnlineItem()==null)
+               addr = JSROOT.source_dir + "index.htm";
 
-         if (this.GetTopOnlineItem()==null)
-            addr = JSROOT.source_dir + "index.htm";
+            if (painter.IsMonitoring())
+               addr += separ() + "monitoring=" + painter.MonitoringInterval();
 
-         if (this.IsMonitoring())
-            addr += separ() + "monitoring=" + this.MonitoringInterval();
+            if (files.length==1)
+               addr += separ() + "file=" + files[0];
+            else
+               if (files.length>1)
+                  addr += separ() + "files=" + JSON.stringify(files);
 
-         if (files.length==1)
-            addr += separ() + "file=" + files[0];
-         else
-         if (files.length>1)
-            addr += separ() + "files=" + JSON.stringify(files);
+            if (painter['disp_kind'])
+               addr += separ() + "layout=" + painter['disp_kind'].replace(/ /g, "");
 
-         if (this['disp_kind'])
-            addr += separ() + "layout=" + this['disp_kind'].replace(/ /g, "");
+            var items = [];
 
-         var items = [];
+            if (painter['disp'] != null)
+               painter['disp'].ForEachPainter(function(p) {
+                  if (p.GetItemName()!=null)
+                     items.push(p.GetItemName());
+               });
 
-         if (this['disp'] != null)
-            this['disp'].ForEachPainter(function(painter) {
-               if (painter.GetItemName()!=null)
-                  items.push(painter.GetItemName());
+            if (items.length == 1) {
+               addr += separ() + "item=" + items[0];
+            } else if (items.length > 1) {
+               addr += separ() + "items=" + JSON.stringify(items);
+            }
+
+            menu.add("Direct link", function() { window.open(addr); });
+            menu.add("Only items", function() { window.open(addr + "&nobrowser"); });
+         } else
+         if (onlineprop != null) {
+            painter.FillOnlineMenu(menu, onlineprop, itemname);
+         } else
+         if (fileprop != null) {
+            var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
+
+            menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
+
+            var filepath = qualifyURL(fileprop.fileurl);
+            if (filepath.indexOf(JSROOT.source_dir) == 0)
+               filepath = filepath.slice(JSROOT.source_dir.length);
+
+            menu.addDrawMenu("Draw in new window", opts, function(arg) {
+               window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
             });
-
-         if (items.length == 1) {
-            addr += separ() + "item=" + items[0];
-         } else if (items.length > 1) {
-            addr += separ() + "items=" + JSON.stringify(items);
          }
 
-         menu.add("Direct link", function() { window.open(addr); });
-         menu.add("Only items", function() { window.open(addr + "&nobrowser"); });
-      } else
-      if (onlineprop != null) {
-         this.FillOnlineMenu(menu, onlineprop, itemname);
-      } else
-      if (fileprop != null) {
-
-         var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
-
-         menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
-
-         var filepath = qualifyURL(fileprop.fileurl);
-         if (filepath.indexOf(JSROOT.source_dir) == 0)
-            filepath = filepath.slice(JSROOT.source_dir.length);
-
-         menu.addDrawMenu("Draw in new window", opts, function(arg) {
-            window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
-         });
-      }
-
-      if (menu.size()>0) {
-         menu['tree_node'] = node;
-         menu.add("Close");
-         menu.show(event);
-      }
+         if (menu.size()>0) {
+            menu['tree_node'] = node;
+            menu.add("Close");
+            menu.show(event);
+         }
+      
+      }); // end menu creation
 
       return false;
    }

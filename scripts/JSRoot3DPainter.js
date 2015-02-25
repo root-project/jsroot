@@ -224,30 +224,29 @@
       });
 
       $(renderer.domElement).on('contextmenu', function(e) {
-
          e.preventDefault();
 
          if (JSROOT.gStyle.Tooltip) tooltip.hide();
 
-         var menu = JSROOT.createMenu();
+         JSROOT.Painter.createMenu(function(menu) {
+            if (painter)
+               menu.add("header:"+ painter.histo['fName']);
 
-         if (painter)
-            menu.add("header:"+ painter.histo['fName']);
-
-         menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
-            JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
-            tooltip.hide();
-         });
-
-         if (painter)
-            menu.add("Switch to 2D", function() {
-               $(painter.svg_pad()).show().parent().find(renderer.domElement).remove();
+            menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
+               JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
                tooltip.hide();
-               painter.Draw2D();
             });
-         menu.add("Close");
 
-         menu.show(e.originalEvent);
+            if (painter)
+               menu.add("Switch to 2D", function() {
+                  $(painter.svg_pad()).show().parent().find(renderer.domElement).remove();
+                  tooltip.hide();
+                  painter.Draw2D();
+               });
+            menu.add("Close");
+
+            menu.show(e.originalEvent);
+         });
 
       });
    }

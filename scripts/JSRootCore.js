@@ -33,7 +33,7 @@
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
 
    JSROOT.function_list = []; // do we really need it here?
-
+   
    JSROOT.BIT = function(n) { return 1 << (n); }
 
    // TH1 status bits
@@ -534,6 +534,10 @@
             allfiles += ';$$$scripts/touch-punch.min.js';
       }
 
+      if (kind.indexOf('jq2d;')>=0) {
+         allfiles += ';$$$scripts/JSRootPainter.jquery' + ext + ".js";
+      }
+      
       if (kind.indexOf("3d;")>=0)
          allfiles += ";$$$scripts/jquery.mousewheel" + ext + ".js" + 
                      ";$$$scripts/three.min.js" +
