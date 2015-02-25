@@ -4178,7 +4178,7 @@
 
          var pavetext = JSROOT.Create("TPaveText");
 
-         jQuery.extend(pavetext, { fName: "title",
+         JSROOT.extend(pavetext, { fName: "title",
                                    fX1NDC: 0.2809483, fY1NDC: 0.9339831,
                                    fX2NDC: 0.7190517, fY2NDC: 0.995});
          pavetext.AddText(this.histo['fTitle']);
@@ -4276,13 +4276,13 @@
       if (this.FindStat() != null) return null;
 
       var stats = JSROOT.Create('TPaveStats');
-      jQuery.extend(stats, { _AutoCreated: true,
+      JSROOT.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
                              fOptStat: JSROOT.gStyle.OptStat,
                              fBorderSize : 1} );
-      jQuery.extend(stats, JSROOT.gStyle.StatNDC);
-      jQuery.extend(stats, JSROOT.gStyle.StatText);
-      jQuery.extend(stats, JSROOT.gStyle.StatFill);
+      JSROOT.extend(stats, JSROOT.gStyle.StatNDC);
+      JSROOT.extend(stats, JSROOT.gStyle.StatText);
+      JSROOT.extend(stats, JSROOT.gStyle.StatFill);
 
       if (this.histo['_typename'] && (this.histo['_typename'].match(/^TProfile/) || this.histo['_typename'].match(/^TH2/)))
          stats['fY1NDC'] = 0.67;
@@ -5106,7 +5106,7 @@
 
       // if we need to draw line or area, we need extra point for correct drawing
       if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
-         var extrapoint = jQuery.extend(true, {}, point);
+         var extrapoint = JSROOT.extend({}, point);
          extrapoint.x = grx2;
          draw_bins.push(extrapoint);
       }
@@ -7370,7 +7370,7 @@
       var elem = $("#" + this.frameid);
       if (elem.length == 0) return;
 
-      if (this.h == null) return elem.html("<h2>null</h2>");
+      if (this.h == null) return elem.html("");
 
       var factcmds = this.FindFastCommands();
 
@@ -8907,7 +8907,7 @@
 
    JSROOT.draw = function(divid, obj, opt) {
       if (typeof obj != 'object') return null;
-
+      
       var draw_func = null;
       if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt);
       else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);

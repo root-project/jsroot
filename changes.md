@@ -6,7 +6,9 @@ Many old problems and errors are fixed, new functions are provided.
 ## Changes in v 3.4
 1. Support usage of minimized versions of .js and .css files.
    Minimized scripts used by default on web servers.  
-
+2. Implement JSROOT.extend instead of jQuery.extend, reduce
+   usage of jquery in core JSROOT classes
+    
 
 ## Changes in v 3.3
 1. Use d3.time.scale for display of time scales
