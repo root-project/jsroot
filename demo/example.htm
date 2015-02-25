@@ -6,11 +6,12 @@
 
    <title>JSROOT drawing inside HTML page</title>
 
-   <script src="../scripts/JSRootCore.js?2d" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.js?2d&onload=updateGUI" type="text/javascript"></script>
 
    <script type='text/javascript'>
 
       var cnt = 0;
+
       function updateGUI() {
          // if getting histogram from THttpServer as JSON string, one should parse it like:
          // var histo = JSROOT.parse(your_json_string);
@@ -30,18 +31,16 @@
             }
 
          JSROOT.redraw('object_draw', histo, "colz");
-         
-         cnt++;
+
+         if (cnt++ == 0) setInterval(updateGUI, 3000); 
       }
-      
-      setInterval(updateGUI, 3000);
 
    </script>
 
 
 </head>
 
-<body onload="updateGUI()">
+<body>
   <h3>Text Before </h3>
 
   <div id="object_draw" style="width: 800px; height:600px"></div>

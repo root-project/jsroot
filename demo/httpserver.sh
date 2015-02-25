@@ -9,7 +9,7 @@
 
 server=http://localhost:8080
 
-tgtdir=~/web-docs/js/3.3/httpserver.C
+tgtdir=~/web-docs/js/3.4/httpserver.C
 
 # rm -rf index.htm h.xml h.json StreamerInfo Canvases Files
 

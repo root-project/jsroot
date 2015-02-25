@@ -8054,7 +8054,7 @@
             req  = 'h.json?compact=3';
          } else
          if (item._kind.indexOf("ROOT.")!=0)
-            req = 'get.json?compact=3';
+            req = 'get.json.gz?compact=3';
       }
 
       if (url.length > 0) url += "/";

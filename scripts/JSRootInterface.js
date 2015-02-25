@@ -196,7 +196,7 @@ function BuildSimpleGUI() {
              if (this.checked) hpainter.updateAll();
           });
 
-       if (typeof GetCashedHierarchy == 'function') h0 = GetCashedHierarchy();
+       if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
        if (typeof h0 != 'object') h0 = "";
    } else {
       if ((filesarr.length>0) && !nobrowser)

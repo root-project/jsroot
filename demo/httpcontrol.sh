@@ -9,7 +9,7 @@
 
 server=http://localhost:8080
 
-tgtdir=~/web-docs/js/3.3/httpcontrol.C
+tgtdir=~/web-docs/js/3.4/httpcontrol.C
 
 # rm -rf index.htm h.xml h.json StreamerInfo Canvases Files
 
@@ -20,7 +20,7 @@ tgtdir=~/web-docs/js/3.3/httpcontrol.C
 function gethfile {
    wget -nv $1 -O file0.tmp
    sed 's/\/jsrootsys/../g' file0.tmp > file1.tmp
-   sed 's/\/rootsys\/icons/icons/g' file1.tmp > $2
+   sed 's/\\\/rootsys\\\/icons/icons/g' file1.tmp > $2
    rm -f file0.tmp file1.tmp
 }
 
