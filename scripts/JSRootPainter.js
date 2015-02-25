@@ -6242,8 +6242,8 @@
 
       var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
       var tpos_x = Math.round(pave['fMargin'] * w);
-      var padding_x = Math.round(0.05 * w);
-      var padding_y = Math.round(0.05 * h);
+      var padding_x = Math.round(0.03 * w);
+      var padding_y = Math.round(0.03 * h);
       var nlines = pave.fPrimitives.arr.length;
       var font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.5));
 
