@@ -2122,11 +2122,14 @@
          if (pos<0) continue;
 
          JSROOT.source_dir = src.substr(0, pos);
-         JSROOT.source_min = src.indexOf("JSRootCore.min.js")>0;
+         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js")>=0;
 
          console.log("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
-         if (JSROOT.GetUrlOption('gui', src)!=null) return JSROOT.BuildSimpleGUI();
+         if (JSROOT.GetUrlOption('gui', src)!=null) {
+            window.onload = function() { JSROOT.BuildSimpleGUI(); }
+            return;
+         }
 
          var prereq = "";
          if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
@@ -2135,10 +2138,14 @@
          var user = JSROOT.GetUrlOption('load', src);
          if ((user!=null) && (user.length>0)) prereq += "load:" + user;
          var onload = JSROOT.GetUrlOption('onload', src);
-         if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
-         if (onload!=null) {
-            onload = JSROOT.findFunction(onload);
-            if (typeof onload == 'function') onload();
+         
+         if ((prereq.length>0) || (onload!=null)) 
+            window.onload = function() {
+              if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
+              if (onload!=null) {
+                 onload = JSROOT.findFunction(onload);
+                 if (typeof onload == 'function') onload();
+              }
          }
 
          return;
