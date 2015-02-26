@@ -291,12 +291,14 @@
       // Result will be returned to the callback functions
       // If failed, request returns null
 
-      function callback(res) {
-         if (typeof user_call_back == 'function') user_call_back(res);
-      }
-
       var xhr = new XMLHttpRequest();
 
+      function callback(res) {
+         // we set pointer on request when calling callback
+         if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
+      }
+
+      
 //      if (typeof ActiveXObject == "function") {
       if (window.ActiveXObject) {
          // console.log(" Create IE request");

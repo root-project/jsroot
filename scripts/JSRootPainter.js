@@ -6747,12 +6747,17 @@
       // (re) set painter to first child element
       this.SetDivId(this.divid);
 
-      if (mathjax)
+      if (mathjax) {
+         if (this['loading_mathjax']) return;
+         this['loading_mathjax'] = true;
+         var painter = this;
          JSROOT.AssertPrerequisites('mathjax', function() {
+            painter['loading_mathjax'] = false;
             if (typeof MathJax == 'object') {
                MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
             }
          });
+      }
    }
 
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {

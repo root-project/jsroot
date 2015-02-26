@@ -7,11 +7,10 @@
    <title>Demonstrator of online usage of JSROOT</title>
 
    <!--  load JSROOT with 2D graphic -->
-   <script src="../scripts/JSRootCore.js?2d&onload=startGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.min.js?2d&onload=startGUI" type="text/javascript"></script>
 
    <script type='text/javascript'>
 
-      var painter = null;
       var mdi = null;
       var cnt = 0;
       var drawopt = null;
@@ -32,23 +31,23 @@
 
          var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
             if (!histo) {
-               if (!painter && !mdi) $('#drawing').append("<h3>Can not get " + request_addr + " from the server</h3>"); 
+               d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>"); 
                return;
             }
-
             if (mdi!=null) {
-               mdi.Draw('abstract_item_name_' + cnt, histo, drawopt); 
+               mdi.Draw('abstract_item_name_' + this['cnt'], histo, drawopt); 
             } else { 
-               painter = JSROOT.redraw('drawing', histo, drawopt);
+               JSROOT.redraw('drawing', histo, drawopt);
             } 
           });
 
+          req['cnt'] = cnt;
           req.send(null); 
       }
 
       function startGUI() {
-         $('html').css('height','100%');
-         $('body').css('min-height','100%').css('margin','0px').css("overflow", "hidden");
+         d3.select('html').style('height','100%');
+         d3.select('body').style({'min-height':'100%', 'margin':'0px', "overflow" :"hidden"});
 
          var monitor = JSROOT.GetUrlOption("monitoring");
          if ((monitor == "") || (monitor==null)) 
