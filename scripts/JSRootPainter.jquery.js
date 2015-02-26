@@ -702,6 +702,127 @@
       $('#' + hid).prop('title', title);
       return $('#' + hid).get(0);
    }
+   
+   // ========== performs tree drawing on server ==================
+
+   JSROOT.TTreePlayer = function(itemname) {
+      JSROOT.TBasePainter.call(this);
+      this.SetItemName(itemname);
+      this.hpainter = null;
+      return this;
+   }
+
+   JSROOT.TTreePlayer.prototype = Object.create( JSROOT.TBasePainter.prototype );
+
+   JSROOT.TTreePlayer.prototype.Show = function(divid) {
+      this.drawid = divid + "_draw";
+
+      $("#" + divid)
+        .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
+            "<button class='treedraw_exe'>Draw</button>" +
+            " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
+            "<button class='treedraw_more'>More</button>" +
+            "</div>" +
+            "<div id='" + this.drawid + "' style='width:100%'></div>");
+
+      var player = this;
+
+      $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
+      $("#" + divid).find('.treedraw_varexp')
+           .val("px:py")
+           .keyup(function(e){
+               if(e.keyCode == 13) player.PerformDraw();
+            });
+
+      $("#" + divid).find('.treedraw_more').click(function() {
+         $(this).remove();
+         $("#" + divid).find(".treedraw_buttons")
+         .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
+                 " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
+                 " Num:<input class='treedraw_number' style='width:7em'></input>" +
+                 " First:<input class='treedraw_first' style='width:7em'></input>");
+
+         $("#" + divid +" .treedraw_opt").val("");
+         $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
+         $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
+      });
+
+      this.CheckResize();
+
+      this.SetDivId(divid);
+   }
+
+   JSROOT.TTreePlayer.prototype.PerformDraw = function() {
+
+      var frame = $("#" + this.divid);
+
+      var url = this.GetItemName() + '/exe.json.gz?compact=3&method=Draw';
+      var expr = frame.find('.treedraw_varexp').val();
+      var hname = "h_tree_draw";
+
+      var pos = expr.indexOf(">>");
+      if (pos<0) {
+         expr += ">>" + hname;
+      } else {
+         hname = expr.substr(pos+2);
+         if (hname[0]=='+') hname = hname.substr(1);
+         var pos2 = hname.indexOf("(");
+         if (pos2>0) hname = hname.substr(0, pos2);
+      }
+
+      if (frame.find('.treedraw_more').length==0) {
+         var cut = frame.find('.treedraw_cut').val();
+         var option = frame.find('.treedraw_opt').val();
+         var nentries = frame.find('.treedraw_number').val();
+         var firstentry = frame.find('.treedraw_first').val();
+
+         url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
+
+         // if any of optional arguments specified, specify all of them
+         if ((option!="") || (nentries!="") || (firstentry!="")) {
+            if (nentries=="") nentries = "1000000000";
+            if (firstentry=="") firstentry = "0";
+            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
+         }
+      } else {
+         url += '&prototype="Option_t*"&opt="' + expr + '"';
+      }
+      url += '&_ret_object_=' + hname;
+
+      var player = this;
+
+      var req = JSROOT.NewHttpRequest(url, 'object', function(res) {
+         if (res==0) return;
+         $("#"+player.drawid).empty();
+         player.hpainter = JSROOT.draw(player.drawid, res)
+      });
+      req.send();
+   }
+
+   JSROOT.TTreePlayer.prototype.CheckResize = function(force) {
+      $("#" + this.drawid).width($("#" + this.divid).width());
+      var h = $("#" + this.divid).height();
+      var h0 = $("#" + this.divid +" .treedraw_buttons").height();
+      if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
+
+      if (this.hpainter) {
+         this.hpainter.CheckResize(force);
+      }
+   }
+
+   JSROOT.drawTreePlayer = function(hpainter, itemname) {
+      var mdi = hpainter.GetDisplay();
+      if (mdi == null) return null;
+
+      var frame = mdi.FindFrame(itemname, true);
+      if (frame==null) return null;
+
+      var divid = d3.select(frame).attr('id');
+
+      var player = new JSROOT.TTreePlayer(itemname);
+      player.Show(divid);
+      return player;
+   }
 
    // =======================================================================
    

@@ -28,7 +28,10 @@
    // one could specify supported options list, separated with ';'
    // One could specify several draw functions for different draw options
    JSROOT.addDrawFunc = function(_name, _func, _opt) {
-      JSROOT.fDrawFunc.push({ name:_name, func:_func, opt:_opt });
+      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) 
+         JSROOT.fDrawFunc.push(arguments[0]);
+      else
+         JSROOT.fDrawFunc.push({ name:_name, func:_func, opt:_opt });
    }
 
    JSROOT.gStyle = {
@@ -6759,127 +6762,6 @@
       return painter;
    }
 
-   // ========== performs tree drawing on server ==================
-
-   JSROOT.TTreePlayer = function(itemname) {
-      JSROOT.TBasePainter.call(this);
-      this.SetItemName(itemname);
-      this.hpainter = null;
-      return this;
-   }
-
-   JSROOT.TTreePlayer.prototype = Object.create( JSROOT.TBasePainter.prototype );
-
-   JSROOT.TTreePlayer.prototype.Show = function(divid) {
-      this.drawid = divid + "_draw";
-
-      $("#" + divid)
-        .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
-            "<button class='treedraw_exe'>Draw</button>" +
-            " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
-            "<button class='treedraw_more'>More</button>" +
-            "</div>" +
-            "<div id='" + this.drawid + "' style='width:100%'></div>");
-
-      var player = this;
-
-      $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
-      $("#" + divid).find('.treedraw_varexp')
-           .val("px:py")
-           .keyup(function(e){
-               if(e.keyCode == 13) player.PerformDraw();
-            });
-
-      $("#" + divid).find('.treedraw_more').click(function() {
-         $(this).remove();
-         $("#" + divid).find(".treedraw_buttons")
-         .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
-                 " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
-                 " Num:<input class='treedraw_number' style='width:7em'></input>" +
-                 " First:<input class='treedraw_first' style='width:7em'></input>");
-
-         $("#" + divid +" .treedraw_opt").val("");
-         $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-         $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-      });
-
-      this.CheckResize();
-
-      this.SetDivId(divid);
-   }
-
-   JSROOT.TTreePlayer.prototype.PerformDraw = function() {
-
-      var frame = $("#" + this.divid);
-
-      var url = this.GetItemName() + '/exe.json.gz?compact=3&method=Draw';
-      var expr = frame.find('.treedraw_varexp').val();
-      var hname = "h_tree_draw";
-
-      var pos = expr.indexOf(">>");
-      if (pos<0) {
-         expr += ">>" + hname;
-      } else {
-         hname = expr.substr(pos+2);
-         if (hname[0]=='+') hname = hname.substr(1);
-         var pos2 = hname.indexOf("(");
-         if (pos2>0) hname = hname.substr(0, pos2);
-      }
-
-      if (frame.find('.treedraw_more').length==0) {
-         var cut = frame.find('.treedraw_cut').val();
-         var option = frame.find('.treedraw_opt').val();
-         var nentries = frame.find('.treedraw_number').val();
-         var firstentry = frame.find('.treedraw_first').val();
-
-         url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
-
-         // if any of optional arguments specified, specify all of them
-         if ((option!="") || (nentries!="") || (firstentry!="")) {
-            if (nentries=="") nentries = "1000000000";
-            if (firstentry=="") firstentry = "0";
-            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
-         }
-      } else {
-         url += '&prototype="Option_t*"&opt="' + expr + '"';
-      }
-      url += '&_ret_object_=' + hname;
-
-      var player = this;
-
-      var req = JSROOT.NewHttpRequest(url, 'object', function(res) {
-         if (res==0) return;
-         $("#"+player.drawid).empty();
-         player.hpainter = JSROOT.draw(player.drawid, res)
-      });
-      req.send();
-   }
-
-   JSROOT.TTreePlayer.prototype.CheckResize = function(force) {
-      $("#" + this.drawid).width($("#" + this.divid).width());
-      var h = $("#" + this.divid).height();
-      var h0 = $("#" + this.divid +" .treedraw_buttons").height();
-      if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
-
-      if (this.hpainter) {
-         this.hpainter.CheckResize(force);
-      }
-   }
-
-   JSROOT.drawTreePlayer = function(hpainter, itemname) {
-      var mdi = hpainter.GetDisplay();
-      if (mdi == null) return null;
-
-      var frame = mdi.FindFrame(itemname, true);
-      if (frame==null) return null;
-
-      var divid = d3.select(frame).attr('id');
-
-      var player = new JSROOT.TTreePlayer(itemname);
-      player.Show(divid);
-      return player;
-   }
-
    // =========== painter of hierarchical structures =================================
 
    JSROOT.HierarchyPainter = function(name, frameid) {
@@ -7389,17 +7271,23 @@
 
    JSROOT.HierarchyPainter.prototype.player = function(itemname, option, call_back) {
       var item = this.Find(itemname);
-
-      var player_func = (item && ('_player' in item)) ?  JSROOT.findFunction(item._player) : null;
-
-      if (player_func == null) JSROOT.CallBack(call_back, null);
       
+      if (!item || !('_player' in item)) return JSROOT.CallBack(call_back, null);
+
       var hpainter = this;
+
+      var prereq = ('_prereq' in item) ? item['_prereq'] : '';
       
-      hpainter.CreateDisplay(function(mdi) {
-         var res = null;
-         if (mdi) res = player_func(hpainter, itemname, option);
-         JSROOT.CallBack(call_back, res);
+      JSROOT.AssertPrerequisites(prereq, function() {
+
+         var player_func = JSROOT.findFunction(item._player);
+         if (player_func == null) return JSROOT.CallBack(call_back, null);
+
+         hpainter.CreateDisplay(function(mdi) {
+            var res = null;
+            if (mdi) res = player_func(hpainter, itemname, option);
+            JSROOT.CallBack(call_back, res);
+         });
       });
    }
 
@@ -7481,7 +7369,6 @@
 
       return true;
    }
-
 
    JSROOT.HierarchyPainter.prototype.updateAll = function() {
       // method can be used to fetch new objects and update all existing drawings
@@ -7890,6 +7777,101 @@
    JSROOT.HierarchyPainter.prototype.CheckResize = function(force) {
       if ('disp' in this)
          this['disp'].CheckResize();
+   }
+   
+   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
+      var hpainter = this;
+      var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
+      var filesdir = JSROOT.GetUrlOption("path");
+      if (filesdir!=null)
+         for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
+
+      var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
+
+      var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
+
+      var monitor = JSROOT.GetUrlOption("monitoring");
+
+      var layout = JSROOT.GetUrlOption("layout");
+      if (!this['disp_kind'] || (layout!=null))
+         this['disp_kind'] = (layout && layout.length>0) ? layout : 'simple'; 
+
+      if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
+
+      JSROOT.RegisterForResize(this);
+
+      this.SetMonitoring(monitor);
+
+      function OpenAllFiles() {
+         if (filesarr.length>0)
+            hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
+         else
+            hpainter.displayAll(itemsarr, optionsarr, function() { 
+               hpainter.RefreshHtml();
+               
+               JSROOT.RegisterForResize(hpainter);
+               
+               setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
+
+               JSROOT.CallBack(call_back);
+            });
+      }
+
+      function AfterOnlineOpened() {
+         // check if server enables monitoring
+         if (('_monitoring' in hpainter.h) && (monitor==null)) {
+            hpainter.SetMonitoring(hpainter.h._monitoring);
+         }
+
+         if (('_layout' in hpainter.h) && (ilayout==null)) {
+            setGuiLayout(hpainter.h._layout);
+            hpainter.SetDisplay(hpainter.h._layout, drawDivId);
+         }
+
+         if (('_loadfile' in hpainter.h) && (filesarr.length==0)) {
+            filesarr = JSROOT.ParseAsArray(hpainter.h._loadfile);
+         }
+
+         if (('_drawitem' in hpainter.h) && (itemsarr.length==0)) {
+            itemsarr = JSROOT.ParseAsArray(hpainter.h._drawitem);
+            optionsarr = JSROOT.ParseAsArray(hpainter.h['_drawopt']);
+         }
+
+         OpenAllFiles();
+      }
+
+      if (h0!=null) hpainter.OpenOnline(h0, AfterOnlineOpened);
+               else OpenAllFiles();
+   }
+   
+   JSROOT.BuildNobrowserGUI = function() {
+      var myDiv = d3.select('#simpleGUI');
+      var online = false;
+
+      if (myDiv.empty()) {
+         myDiv = d3.select('#onlineGUI');
+         if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
+         online = true;
+      }
+
+      JSROOT.Painter.readStyleFromURL();
+
+      d3.select('html').style('height','100%');
+      d3.select('body').style({ 'min-height':'100%', 'margin':'0px', "overflow": "hidden"});
+
+      myDiv.style({"position":"absolute", "left":"1px", "top" :"1px", "bottom" :"1px", "right": "1px"});
+
+      var hpainter = new JSROOT.HierarchyPainter('root', null);
+      hpainter.SetDisplay('simple', myDiv.attr('id'));
+      
+      var h0 = null;
+      if (online) {
+         var func = JSROOT.findFunction('GetCachedHierarchy');
+         if (typeof func == 'function') h0 = func();
+         if (typeof h0 != 'object') h0 = "";
+      }
+      
+      hpainter.StartGUI(h0, function() {});
    }
 
    // ================================================================

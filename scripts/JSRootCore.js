@@ -163,7 +163,6 @@
       return JSROOT.extend(null, obj);
    }
 
-
    JSROOT.parse = function(arg) {
       if ((arg==null) || (arg=="")) return null;
       var obj = JSON.parse(arg);
@@ -512,49 +511,62 @@
 
       if (typeof kind == 'function') { andThan = kind; kind = null; }
 
-      if (typeof kind != 'string') kind = "2d";
+      if ((typeof kind != 'string') || (kind == '')) 
+         return JSROOT.CallBack(andThan); 
+         
       if (kind.charAt(kind.length-1)!=";") kind+=";";
-      
       var ext = JSROOT.source_min ? ".min" : "";
 
+      var need_jquery = false;
+      
       // file names should be separated with ';'
-      var allfiles = '$$$scripts/jquery.min.js';
+      var allfiles = '';
 
       if (kind.indexOf('io;')>=0)
-         allfiles += ";$$$scripts/rawinflate.js" +
-                     ";$$$scripts/JSRootIOEvolution" + ext + ".js";
+         allfiles += "$$$scripts/rawinflate" + ext + ".js;" +
+                     "$$$scripts/JSRootIOEvolution" + ext + ".js;";
 
       if (kind.indexOf('2d;')>=0) {
-         allfiles += ';$$$style/jquery-ui.css' +
-                     ';$$$scripts/jquery-ui.min.js' +
-                     ';$$$scripts/d3.v3.min.js' +
-                     ';$$$scripts/JSRootPainter' + ext + ".js" +
-                     ';$$$style/JSRootPainter' + ext + ".css";
-         if (JSROOT.touches)
-            allfiles += ';$$$scripts/touch-punch.min.js';
+         allfiles += '$$$scripts/d3.v3.min.js;' +
+                     '$$$scripts/JSRootPainter' + ext + ".js;" +
+                     '$$$style/JSRootPainter' + ext + ".css;";
       }
 
       if (kind.indexOf('jq2d;')>=0) {
-         allfiles += ';$$$scripts/JSRootPainter.jquery' + ext + ".js";
+         allfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
+         need_jquery = true;
       }
       
-      if (kind.indexOf("3d;")>=0)
-         allfiles += ";$$$scripts/jquery.mousewheel" + ext + ".js" + 
-                     ";$$$scripts/three.min.js" +
-                     ";$$$scripts/helvetiker_regular.typeface.js" +
-                     ";$$$scripts/helvetiker_bold.typeface.js" +
-                     ";$$$scripts/JSRoot3DPainter" + ext + ".js";
+      if (kind.indexOf("3d;")>=0) {
+         need_jquery = true;
+         allfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" + 
+                     "$$$scripts/three.min.js;" +
+                     "$$$scripts/helvetiker_regular.typeface.js;" +
+                     "$$$scripts/helvetiker_bold.typeface.js;" +
+                     "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+      }
 
       if (kind.indexOf("mathjax;")>=0)
-        allfiles += ";https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML;";
 
-      if (kind.indexOf("simple;")>=0)
-         allfiles += ';$$$scripts/JSRootInterface' + ext + ".js" +
-                     ';$$$style/JSRootInterface' + ext + ".css";
+      if (kind.indexOf("simple;")>=0) {
+         need_jquery = true;
+         allfiles += '$$$scripts/JSRootInterface' + ext + ".js;" +
+                     '$$$style/JSRootInterface' + ext + ".css;";
+      }
+      
+      if (need_jquery) {
+         allfiles = '$$$scripts/jquery.min.js;' + 
+                    '$$$style/jquery-ui.css;' +
+                    '$$$scripts/jquery-ui.min.js;' + 
+                    allfiles;
+         if (JSROOT.touches) 
+            allfiles += '$$$scripts/touch-punch.min.js;';
+      }
 
       var pos = kind.indexOf("user:");
       if (pos<0) pos = kind.indexOf("load:");
-      if (pos>=0) allfiles += ";" + kind.slice(pos+5);
+      if (pos>=0) allfiles += kind.slice(pos+5);
 
       JSROOT.loadScript(allfiles, andThan, debugout);
    }
@@ -566,11 +578,12 @@
       }
 
       var debugout = null;
-
-      var requirements = "io;2d;simple;";
-      if (document.getElementById('simpleGUI')) { debugout = 'simpleGUI'; } else
-      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple;"; }
-      if (JSROOT.GetUrlOption('nobrowser')==null) requirements+='jq2d;';
+      var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
+      var requirements = "io;2d;";
+      
+      if (document.getElementById('simpleGUI')) { debugout = 'simpleGUI'; requirements = "io;2d;" } else
+      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; }
+      if (!nobrowser) requirements+='jq2d;simple;';
             
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
@@ -579,8 +592,9 @@
          requirements += "load:" + user_scripts + ";";
 
       JSROOT.AssertPrerequisites(requirements, function() {
-         if (typeof BuildSimpleGUI == 'function') BuildSimpleGUI();
-         if (typeof andThen == 'function') andThen();
+         var func = JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
+         JSROOT.CallBack(func);
+         JSROOT.CallBack(andThen);
       }, debugout);
    }
 

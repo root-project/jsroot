@@ -7,7 +7,9 @@ Many old problems and errors are fixed, new functions are provided.
 1. Support usage of minimized versions of .js and .css files.
    Minimized scripts used by default on web servers.  
 2. Implement JSROOT.extend instead of jQuery.extend, reduce
-   usage of jquery in core JSROOT classes
+   usage of jquery.js in core JSROOT classes
+3. Implement main graphics without jquery at all,
+   such mode used in `nobrowser` mode.
     
 
 ## Changes in v 3.3
