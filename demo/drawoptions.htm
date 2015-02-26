@@ -5,7 +5,7 @@
    <meta http-equiv="X-UA-Compatible" content="IE=Edge; text/html">
 
    <title>Supported classes and options by JSROOT</title>
-   
+
    <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
 
    <script type='text/javascript'>
@@ -53,26 +53,23 @@
 
          if (JSROOT.GetUrlOption("minimal") || 
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null))) return;
-             
+
          // special case - do not draw on main page
          if (has_equal) { document.getElementById(divid).innerHTML += "skip drawing on central page - use provided links"; return; }
-         
+
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
          if (factor!=null) h = w * factor;
-         
+
          for (var i in arr) {
             var subid = divid + "_" + i;
-            
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
             document.getElementById(divid).innerHTML += html;
-            
             draw_item(file, itemname, subid, arr[i]);
-            
             if (JSROOT.GetUrlOption("all")==null) return;
          }
       }
-      
+
       function LoadFile(filename, filecallback) {
 
          var dir = JSROOT.GetUrlOption("path");
@@ -82,13 +79,13 @@
          if (JSROOT.GetUrlOption("minimal") || 
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null)))
                 return filecallback({ fURL: dir+filename });
-            
+
          new JSROOT.TFile(dir + filename + "+", function(file) {
             if (file==null) return file_error(dir+filename + " cannot be opened");
             filecallback(file);
-         });   
+         });
       }
-   
+
       function CreateGui() {
 
          document.getElementById('debug').innerHTML = '';

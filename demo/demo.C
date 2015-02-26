@@ -26,6 +26,7 @@ void demo() {
       c1->Modified();
       c1->Update();
 
+      h1->SetTitle(Form("Histogram loop %d",n));
       TString json = TBufferJSON::ConvertToJSON(h1);
 
       FILE* f = fopen(Form("root%d.json",n), "w");

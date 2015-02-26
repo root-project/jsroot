@@ -2,7 +2,7 @@
 
 # Script produce json files for demo
 
-tgtdir=~/web-docs/js/3.3/demo
+tgtdir=~/web-docs/js/3.4/demo
 
 rm -f *.json $tgtdir/*.json
 
