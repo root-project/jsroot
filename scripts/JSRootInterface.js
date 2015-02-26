@@ -159,7 +159,9 @@ function BuildSimpleGUI() {
                 if (this.checked) hpainter.updateAll();
              });
       } else {
-         $("#urlToLoad").val('filename');
+         var fname = "";
+         hpainter.ForEachRootFile(function(item) { if (fname=="") fname = item._fullurl; });
+         $("#urlToLoad").val(fname);
       }
    });
 }

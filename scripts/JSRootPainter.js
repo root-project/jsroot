@@ -7823,9 +7823,8 @@
             hpainter.SetMonitoring(hpainter.h._monitoring);
          }
 
-         if (('_layout' in hpainter.h) && (ilayout==null)) {
-            setGuiLayout(hpainter.h._layout);
-            hpainter.SetDisplay(hpainter.h._layout, drawDivId);
+         if (('_layout' in hpainter.h) && (layout==null)) {
+            hpainter['disp_kind'] = hpainter.h._layout;
          }
 
          if (('_loadfile' in hpainter.h) && (filesarr.length==0)) {
