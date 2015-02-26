@@ -703,5 +703,37 @@
       return $('#' + hid).get(0);
    }
 
+   // =======================================================================
+   
+   JSROOT.ConfigureVSeparator = function(handle, leftdiv, separdiv, rightdiv) {
+      if (!leftdiv) leftdiv = "left-div";
+      if (!separdiv) separdiv = "separator-div";
+      if (!rightdiv) rightdiv = "right-div";
+
+      function adjustSize(left, firsttime) {
+         var diff = $("#"+leftdiv).outerWidth() - $("#"+leftdiv).width();
+         var w = JSROOT.touches ? 10 : 4;
+
+         $("#"+separdiv).css('left', left.toString() + "px").width(w);
+         $("#"+leftdiv).width(left-diff-1);
+         $("#"+rightdiv).css('left',(left+w).toString() + "px");
+         if (firsttime || (handle==null)) return;
+
+         if (typeof handle == 'function') handle(); else
+         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
+      }
+
+      $("#"+separdiv).draggable({
+         axis: "x" , zIndex: 100, cursor: "ew-resize",
+         helper : function() { return $("#"+separdiv).clone().css('background-color','grey'); },
+         stop: function(event,ui) { event.stopPropagation(); adjustSize(ui.position.left, false); }
+      });
+
+      var w0 = Math.round($(window).width() * 0.2);
+      if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
+
+      adjustSize(w0, true);
+   }
+
    
 })();

@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.4 dev 25/02/2015";
+   JSROOT.version = "3.4 dev 26/02/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -2180,6 +2180,7 @@
          var prereq = "";
          if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
          if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
+         if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
          if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
          var user = JSROOT.GetUrlOption('load', src);
          if ((user!=null) && (user.length>0)) prereq += "load:" + user;

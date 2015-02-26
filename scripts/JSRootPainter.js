@@ -2635,9 +2635,10 @@
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
-      var render_to = $("#" + this.divid);
-
-      var w = render_to.width(), h = render_to.height(), factor = null;
+      var render_to = d3.select("#" + this.divid);
+      
+      var rect = render_to.node().getBoundingClientRect();
+      var w = rect.width, h = rect.height, factor = null;
 
       var svg = null;
 
@@ -2657,7 +2658,7 @@
          if (factor!=null) {
             // if canvas was resize when created, resize height also now
             h = Math.round(w * factor);
-            render_to.height(h);
+            render_to.style('height', h+'px');
          }
 
          if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
@@ -2684,7 +2685,7 @@
 
             h = Math.round(w * factor);
 
-            render_to.height(h);
+            render_to.style('height', h+'px');
          }
 
          var fill = null;
@@ -2694,7 +2695,7 @@
          else
             fill = this.createAttFill('white');
 
-         render_to.css("background-color", fill.color);
+         render_to.style("background-color", fill.color);
 
          svg = d3.select("#" + this.divid)
              .append("svg")
@@ -6703,7 +6704,7 @@
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
-      $("#" + divid).css({ overflow : 'auto' });
+      d3.select("#" + divid).style( 'overflow' , 'auto' );
       var painter = new JSROOT.HierarchyPainter('sinfo', divid);
       painter.ShowStreamerInfo(obj);
       return painter;
@@ -6726,24 +6727,19 @@
    }
 
    JSROOT.RawTextPainter.prototype.Draw = function() {
-      var frame = $("#" + this.divid);
+      var frame = d3.select("#" + this.divid);
 
       var txt = this.txt.value;
       if (txt==null) txt = "<undefined>";
 
       var mathjax = 'mathjax' in this.txt;
 
-      if ('load' in this.txt) {
-         frame.html("<div style='overflow:hidden'></div>");
-         frame.find('div').load(this.txt.load);
-      } else {
-         if (!mathjax && !('as_is' in this.txt)) {
-            var arr = txt.split("\n"); txt = "";
-            for (var i in arr)
-               txt += "<pre>" + arr[i] + "</pre>";
-         }
-         frame.html("<div style='overflow:hidden'>" + txt + "</div>");
+      if (!mathjax && !('as_is' in this.txt)) {
+         var arr = txt.split("\n"); txt = "";
+         for (var i in arr)
+            txt += "<pre>" + arr[i] + "</pre>";
       }
+      frame.html("<div style='overflow:hidden'>" + txt + "</div>");
 
       // (re) set painter to first child element
       this.SetDivId(this.divid);
@@ -6751,7 +6747,7 @@
       if (mathjax)
          JSROOT.AssertPrerequisites('mathjax', function() {
             if (typeof MathJax == 'object') {
-               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.get(0)]);
+               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
             }
          });
    }
@@ -7854,7 +7850,7 @@
       }
 
       if (withbrowser) {
-         $("#" + this.frameid).empty();
+         d3.select("#" + this.frameid).html("");
          delete this.h;
       }
    }
@@ -8117,36 +8113,6 @@
 
    // =========================================================================
 
-   JSROOT.ConfigureVSeparator = function(handle, leftdiv, separdiv, rightdiv) {
-      if (!leftdiv) leftdiv = "left-div";
-      if (!separdiv) separdiv = "separator-div";
-      if (!rightdiv) rightdiv = "right-div";
-
-      function adjustSize(left, firsttime) {
-         var diff = $("#"+leftdiv).outerWidth() - $("#"+leftdiv).width();
-         var w = JSROOT.touches ? 10 : 4;
-
-         $("#"+separdiv).css('left', left.toString() + "px").width(w);
-         $("#"+leftdiv).width(left-diff-1);
-         $("#"+rightdiv).css('left',(left+w).toString() + "px");
-         if (firsttime || (handle==null)) return;
-
-         if (typeof handle == 'function') handle(); else
-         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
-      }
-
-      $("#"+separdiv).draggable({
-         axis: "x" , zIndex: 100, cursor: "ew-resize",
-         helper : function() { return $("#"+separdiv).clone().css('background-color','grey'); },
-         stop: function(event,ui) { event.stopPropagation(); adjustSize(ui.position.left, false); }
-      });
-
-      var w0 = Math.round($(window).width() * 0.2);
-      if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
-
-      adjustSize(w0, true);
-   }
-
    JSROOT.RegisterForResize = function(handle, delay) {
       // function used to react on browser window resize event
       // While many resize events could come in short time,
@@ -8338,7 +8304,7 @@
       if (can_painter)
           console.log("Cannot find painter to update object of type " + obj._typename);
 
-      $("#"+divid).empty();
+      d3.select("#"+divid).html("");
       return JSROOT.draw(divid, obj, opt);
    }
 
