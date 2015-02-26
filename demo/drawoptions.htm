@@ -11,7 +11,7 @@
    <script type='text/javascript'>
 
       function file_error(str) {
-         $('#debug').append("<h4>" + str + "</h4>"); 
+         document.getElementById('debug').innerHTML += "<h4>" + str + "</h4>";
       }
 
       var global_dir = "files/"; // for local testing
@@ -49,13 +49,13 @@
          }
          html += "<br/><br/>";
 
-         $("#" + divid).append(html);
+         document.getElementById(divid).innerHTML += html;
 
          if (JSROOT.GetUrlOption("minimal") || 
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null))) return;
              
          // special case - do not draw on main page
-         if (has_equal) { $("#" + divid).append("skip drawing on central page - use provided links"); return; }
+         if (has_equal) { document.getElementById(divid).innerHTML += "skip drawing on central page - use provided links"; return; }
          
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
@@ -65,7 +65,7 @@
             var subid = divid + "_" + i;
             
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
-            $("#" + divid).append(html);
+            document.getElementById(divid).innerHTML += html;
             
             draw_item(file, itemname, subid, arr[i]);
             
@@ -91,9 +91,9 @@
    
       function CreateGui() {
 
-         $('#debug').empty();
+         document.getElementById('debug').innerHTML = '';
          
-         $('#debug').append("<h2>JavaScript ROOT version " + JSROOT.version + "</h2>");
+         document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
          
          var arg = "&w=" + JSROOT.GetUrlOption("w", null, "800") + 
                    "&h=" + JSROOT.GetUrlOption("h", null, "600");
@@ -102,9 +102,9 @@
             arg += "&path=" + global_dir;
          }
 
-         $('#debug').append("<a href='drawoptions.htm?minimal" + arg + "'>Only items/options list</a><br/>"); 
-         $('#debug').append("<a href='drawoptions.htm?default" + arg + "'>Drawings with default options</a><br/>"); 
-         $('#debug').append("<a href='drawoptions.htm?all" + arg + "'>Drawings for all supported options</a><br/>"); 
+         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?minimal" + arg + "'>Only items/options list</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?default" + arg + "'>Drawings with default options</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all" + arg + "'>Drawings for all supported options</a><br/>"; 
 
          LoadFile("hsimple.root", function(file) {
             draw_item_options(file, "hpx;1", "h1_draw", ";P;P0");
