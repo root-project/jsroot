@@ -556,7 +556,7 @@
          // check if only visible specified
          if (only_visible && $(this).is(":hidden")) return;
 
-         userfunc($(this));
+         userfunc($(this).get(0));
       });
    }
 
@@ -605,11 +605,9 @@
             .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
-      // $('#'+uid)[0].scrollIntoView();
-
       $("#" + hid).prop('title', title);
 
-      return $("#" + hid);
+      return $("#" + hid).get(0);
    }
 
    // ================================================
@@ -635,14 +633,14 @@
          // check if only_visible specified
          if (only_visible && (cnt++ != active)) return;
 
-         userfunc($(this));
+         userfunc($(this).get(0));
       });
    }
 
    JSROOT.TabsDisplay.prototype.ActivateFrame = function(frame) {
       var cnt = 0, id = -1;
       this.ForEachFrame(function(fr) {
-         if ($(fr).attr('id') == frame.attr('id'))  id = cnt;
+         if ($(fr).attr('id') == $(frame).attr('id')) id = cnt;
          cnt++;
       });
 
@@ -681,10 +679,8 @@
       }
       $('#' + hid).empty();
       $('#' + hid).prop('title', title);
-      return $('#' + hid);
+      return $('#' + hid).get(0);
    }
-
-
 
    
 })();

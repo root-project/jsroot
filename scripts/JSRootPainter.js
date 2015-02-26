@@ -6744,7 +6744,7 @@
       if (mathjax)
          JSROOT.AssertPrerequisites('mathjax', function() {
             if (typeof MathJax == 'object') {
-               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.get()]);
+               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.get(0)]);
             }
          });
    }
@@ -6870,7 +6870,7 @@
       var frame = mdi.FindFrame(itemname, true);
       if (frame==null) return null;
 
-      var divid = frame.attr('id');
+      var divid = d3.select(frame).attr('id');
 
       var player = new JSROOT.TTreePlayer(itemname);
       player.Show(divid);
@@ -7402,10 +7402,11 @@
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
+      
       h.CreateDisplay(function(mdi) { 
          if (!mdi) return JSROOT.CallBack(call_back, null, itemname);
-         
-         var updating = drawopt=="update";
+
+         var updating = (drawopt=="update");
 
          var item = h.Find(itemname);
 
@@ -7421,7 +7422,6 @@
          }
 
          h.get(itemname, function(item, obj) {
-
             if (updating && item) delete item['_doing_update'];
             if (obj==null) return JSROOT.CallBack(call_back, null, itemname);
 
@@ -7444,15 +7444,18 @@
                if (updating) {
                   console.log("something went wrong - did not found painter when doing update of " + itemname);
                } else {
+                  
                   var frame = mdi.FindFrame(itemname, true);
+
                   if (JSROOT.gStyle.DragAndDrop)
-                     frame.addClass("ui-state-default");
-                  painter = h.draw(frame.attr("id"), obj, drawopt);
+                     $(frame).addClass("ui-state-default");
+                  
+                  painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
 
                   mdi.ActivateFrame(frame);
 
                   if (JSROOT.gStyle.DragAndDrop)
-                     frame.droppable({
+                     $(frame).droppable({
                         hoverClass : "ui-state-active",
                         accept: function(ui) {
                            var dropname = ui.parent().attr('item');
@@ -7466,7 +7469,7 @@
                         drop: function(event, ui) {
                            var dropname = ui.draggable.parent().attr('item');
                            if (dropname==null) return false;
-                           return h.dropitem(dropname, frame.attr("id"));
+                           return h.dropitem(dropname, (this).attr("id"));
                         }
                      }).removeClass('ui-state-default');
                }
@@ -7927,7 +7930,7 @@
 
       this.ForEachFrame(function(frame) {
          var dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId($(frame).attr('id'), -1);
+         dummy.SetDivId(d3.select(frame).attr('id'), -1);
          dummy.ForEachPainter(function(painter) { userfunc(painter, frame); });
       }, only_visible);
    }
@@ -7942,7 +7945,7 @@
       var found_frame = null;
 
       this.ForEachFrame(function(frame) {
-         if (frame.prop('title') == searchtitle)
+         if (d3.select(frame).attr('title') == searchtitle)
             found_frame = frame;
       });
 
@@ -7983,16 +7986,13 @@
       // draw object with specified options
       if (!obj) return;
 
-      var frame = this.FindFrame(title);
-
       if (!JSROOT.canDraw(obj['_typename'], drawopt)) return;
 
-      if (frame == null)
-         frame = this.CreateFrame(title);
+      var frame = this.FindFrame(title, true);
 
       this.ActivateFrame(frame);
 
-      return JSROOT.redraw($(frame).attr("id"), obj, drawopt);
+      return JSROOT.redraw(d3.select(frame).attr("id"), obj, drawopt);
    }
 
 
@@ -8005,20 +8005,22 @@
    JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      if (typeof userfunc != 'function') return;
-      if ($("#"+this.frameid).prop('title')!='')
-         userfunc($("#"+this.frameid));
+      var node = d3.select("#"+this.frameid); 
+      if (node.property('title') != '')
+         JSROOT.CallBack(userfunc, node.node());
    }
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
-      return $("#"+this.frameid).empty().prop('title', title);
+      return d3.select("#"+this.frameid).html("").property('title', title).node();
    }
 
    JSROOT.SimpleDisplay.prototype.Reset = function() {
       JSROOT.MDIDisplay.prototype.Reset.call(this);
       // try to remove different properties from the div
-      $("#"+this.frameid).prop('title','').css('background','')
-                         .removeClass('ui-droppable ui-state-default');
+      d3.select("#"+this.frameid)
+              .property('title','')
+              .style('background','')
+              .classed({'ui-droppable':false, 'ui-state-default':false});
    }
 
    // ================================================
@@ -8046,16 +8048,12 @@
             sizey = sizex;
          }
 
-         if (sizex == NaN)
-            sizex = 3;
-         if (sizey == NaN)
-            sizey = 3;
+         if (sizex == NaN) sizex = 3;
+         if (sizey == NaN) sizey = 3;
       }
 
-      if (!sizex)
-         sizex = 3;
-      if (!sizey)
-         sizey = sizex;
+      if (!sizex) sizex = 3;
+      if (!sizey) sizey = sizex;
       this.sizex = sizex;
       this.sizey = sizey;
    }
@@ -8070,37 +8068,33 @@
       if (typeof userfunc != 'function') return;
 
       if (this.IsSingle()) {
-         var elem = $("#"+this.frameid);
-         if (elem.prop('title')!=null)
-            userfunc(elem);
+         var elem = d3.select("#"+this.frameid);
+         if (elem.property('title') != '')
+            userfunc(elem.node());
          return;
       }
 
-      var topid = this.frameid + '_grid';
-
-      if (document.getElementById(topid) == null) return;
-
       for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
 
-         var elem = $( "#" + topid + "_" + cnt);
+         var elem = d3.select("#" + this.frameid + "_grid_" + cnt);
 
-         if (elem.prop('title')!="")
-            userfunc(elem);
+         if (elem.property('title')!="")
+            userfunc(elem.node());
       }
    }
 
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
 
-      var hid = this.frameid;
-
+      var main = d3.select("#" + this.frameid);
+      if (main.empty()) return null;
+      
       if (!this.IsSingle()) {
          var topid = this.frameid + '_grid';
-         if (document.getElementById(topid) == null) {
-
-            var main = $("#" + this.frameid);
-
-            var h = Math.floor(main.height() / this.sizey) - 1;
-            var w = Math.floor(main.width() / this.sizex) - 1;
+         if (d3.select("#" + topid).empty()) {
+            var rect = main.node().getBoundingClientRect();
+            
+            var h = Math.floor(rect.height / this.sizey) - 1;
+            var w = Math.floor(rect.width / this.sizex) - 1;
 
             var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>";
                content += "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed; border-collapse: collapse;'>";
@@ -8108,43 +8102,40 @@
             for (var i = 0; i < this.sizey; i++) {
                content += "<tr>";
                for (var j = 0; j < this.sizex; j++)
-                  content += "<td><div id='" + topid + "_" + cnt++ + "'></div></td>";
+                  content += "<td><div id='" + topid + "_" + cnt++ + "' class='grid_cell'></div></td>";
                content += "</tr>";
             }
             content += "</table></div>";
 
-            main.empty();
-            main.append(content);
+            main.html(content);
 
-            main.find("[id^=" + this.frameid + "_grid_]").width(w).height(h);
-//              .droppable({ accepted: ".h_item", drop: function(event, ui) { console.log("drop!"); } });
+            main.selectAll('.grid_cell').style({ 'width':w, 'height':h });
+            // main.find("[id^=" + this.frameid + "_grid_]").width(w).height(h);
          }
 
-         hid = topid + "_" + this.cnt;
+         main = d3.select( "#" + topid + "_" + this.cnt);
          if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
       }
 
-      $("#" + hid).empty();
-      $("#" + hid).prop('title', title);
-
-      return $('#' + hid);
+      return main.html("").property('title', title).node();
    }
 
    JSROOT.GridDisplay.prototype.Reset = function() {
       JSROOT.MDIDisplay.prototype.Reset.call(this);
       if (this.IsSingle())
-         $("#" + this.frameid).prop('title', null);
+         d3.select("#" + this.frameid).property('title', null);
       this.cnt = 0;
    }
 
    JSROOT.GridDisplay.prototype.CheckResize = function() {
 
-      var main = $("#" + this.frameid);
-
-      var h = Math.floor(main.height() / this.sizey) - 1;
-      var w = Math.floor(main.width() / this.sizex) - 1;
-
-      main.find("[id^=" + this.frameid + "_grid_]").height(h).width(w);
+      if (!this.IsSingle()) {
+         var main = d3.select("#" + this.frameid);
+         var rect = main.node().getBoundingClientRect();
+         var h = Math.floor(rect.height / this.sizey) - 1;
+         var w = Math.floor(rect.width / this.sizex) - 1;
+         main.selectAll('.grid_cell').style({ 'width':w, 'height':h });
+      }
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
    }
@@ -8211,7 +8202,7 @@
          if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize(); else
          if (typeof handle == 'string') {
             var node = d3.select('#'+handle);
-            if (node.length > 0) {
+            if (!node.empty()) {
                var mdi = node.property('mdi');
                if (mdi) {
                   mdi.CheckResize(); 
