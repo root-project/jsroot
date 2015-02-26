@@ -895,7 +895,7 @@
          if (!this.draw_g)
             this.draw_g = this.svg_pad(true).select(layer).append("svg:g");
       } else {
-         var frame = this.svg_frame(true);
+         var frame = this.svg_frame();
 
          var w = frame.attr("width");
          var h = frame.attr("height");
@@ -935,9 +935,8 @@
    }
 
    /** This is SVG element with current frame */
-   JSROOT.TObjectPainter.prototype.svg_frame = function(asselect) {
-      var f = this.svg_pad(true).select(".root_frame");
-      return asselect ? f : f.node();
+   JSROOT.TObjectPainter.prototype.svg_frame = function() {
+      return this.svg_pad(true).select(".root_frame");
    }
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
@@ -975,7 +974,7 @@
          svg_c = this.svg_canvas();
          this['create_canvas'] = true;
       }
-
+      
       if (svg_c == null) {
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
@@ -990,9 +989,9 @@
       if (is_main < 0) return;
 
       // create TFrame element if not exists when
-      if ((is_main > 0) && (this.svg_frame()==null)) {
+      if ((is_main > 0) && this.svg_frame().empty()) {
          JSROOT.Painter.drawFrame(divid, null);
-         if (this.svg_frame()==null) return alert("Fail to draw dummy TFrame");
+         if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
          this['create_canvas'] = true;
       }
 
@@ -1363,7 +1362,7 @@
    }
 
    JSROOT.TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
-      var ndc = this.svg_frame() ? this.svg_frame()['NDC'] : null;
+      var ndc = this.svg_frame().property('NDC');
       if (ndc) {
          ndc.x1 += shrink_left;
          ndc.x2 -= shrink_right;
@@ -1375,7 +1374,7 @@
           height = Number(this.svg_pad(true).attr("height"));
       var w = width, h = height;
 
-      var ndc = this.svg_frame() ? this.svg_frame()['NDC'] : null;
+      var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
       if (ndc == null) ndc = { x1 : 0.07, y1 : 0.12, x2 : 0.95, y2 : 0.88 };
 
       var root_pad = this.root_pad();
@@ -1450,15 +1449,15 @@
       }
 
       // calculate actual NDC coordinates, use them to properly locate PALETTE
-      frame_g.node()['NDC'] = {
+      frame_g.property('NDC', {
          x1 : lm / width,
          x2 : (lm + w) / width,
          y1 : tm / height,
          y2 : (tm + h) / height
-      };
+      });
 
       // simple workaround to access painter via frame container
-      frame_g.node()['frame_painter'] = this;
+      frame_g.property('frame_painter', this);
 
       lm = Math.round(lm); tm = Math.round(tm);
       w = Math.round(w); h = Math.round(h);
@@ -1617,8 +1616,8 @@
    }
 
    JSROOT.TF1Painter.prototype.DrawBins = function() {
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
       this.RecreateDrawG();
 
@@ -1866,8 +1865,8 @@
       this.lineatt.width = this.lineatt.width % 100; // line width
       if (this.lineatt.width > 0) this.optionLine = 1;
 
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
       var ratio = w / h;
 
@@ -2080,8 +2079,8 @@
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
 
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
       this.RecreateDrawG();
 
@@ -3649,8 +3648,8 @@
          return;
       }
 
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
       if (this.histo['fXaxis']['fTimeDisplay']) {
          this.x_time = true;
@@ -3769,7 +3768,7 @@
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
 
-      var layer = this.svg_frame(true).select(".grid_layer");
+      var layer = this.svg_frame().select(".grid_layer");
 
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
@@ -3778,7 +3777,7 @@
       // add a grid on x axis, if the option is set
       if (this.options.Gridx) {
 
-         var h = Number(this.svg_frame(true).attr("height"));
+         var h = Number(this.svg_frame().attr("height"));
 
          var xticks = this.x.ticks(this.x_nticks);
 
@@ -3797,7 +3796,7 @@
 
       // add a grid on y axis, if the option is set
       if (this.options.Gridy) {
-         var w = Number(this.svg_frame(true).attr("width"));
+         var w = Number(this.svg_frame().attr("width"));
 
          var yticks = this.y.ticks(this.y_nticks);
 
@@ -3851,18 +3850,18 @@
 
       if (!this.is_main_painter()) return;
 
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
-      var xax_g = this.svg_frame(true).selectAll(".xaxis_container");
+      var xax_g = this.svg_frame().selectAll(".xaxis_container");
       if (xax_g.empty())
-         xax_g = this.svg_frame(true).select(".axis_layer").append("svg:g").attr("class","xaxis_container");
+         xax_g = this.svg_frame().select(".axis_layer").append("svg:g").attr("class","xaxis_container");
 
       xax_g.selectAll("*").remove();
       xax_g.attr("transform", "translate(0," + h + ")");
 
-      var yax_g = this.svg_frame(true).selectAll(".yaxis_container");
-      if (yax_g.empty()) yax_g = this.svg_frame(true).select(".axis_layer").append("svg:g").attr("class", "yaxis_container");
+      var yax_g = this.svg_frame().selectAll(".yaxis_container");
+      if (yax_g.empty()) yax_g = this.svg_frame().select(".axis_layer").append("svg:g").attr("class", "yaxis_container");
       yax_g.selectAll("*").remove();
 
       var ndivx = this.histo['fXaxis']['fNdivisions'];
@@ -4104,8 +4103,8 @@
          }
 
          if (shrink != 0) {
-            this.svg_frame()['frame_painter'].Shrink(shrink, 0);
-            this.svg_frame()['frame_painter'].Redraw();
+            this.svg_frame().property('frame_painter').Shrink(shrink, 0);
+            this.svg_frame().property('frame_painter').Redraw();
             this.CreateXY();
             this.DrawAxes(true);
          }
@@ -4352,8 +4351,8 @@
 
       // if (!this.draw_content) return;
 
-      var width = Number(this.svg_frame(true).attr("width")),
-          height = Number(this.svg_frame(true).attr("height"));
+      var width = Number(this.svg_frame().attr("width")),
+          height = Number(this.svg_frame().attr("height"));
       var e, origin, curr = null, rect = null;
       var lasttouch = new Date(0);
 
@@ -4407,8 +4406,8 @@
          }
 
          // update frame dimensions while frame could be resized
-         width = Number(pthis.svg_frame(true).attr("width"));
-         height = Number(pthis.svg_frame(true).attr("height"));
+         width = Number(pthis.svg_frame().attr("width"));
+         height = Number(pthis.svg_frame().attr("height"));
 
          e = this;
          // var t = d3.event.changedTouches;
@@ -4467,7 +4466,7 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         rect = pthis.svg_frame(true).append("rect")
+         rect = pthis.svg_frame().append("rect")
                .attr("class", "zoom")
                .attr("id", "zoomRect")
                .attr("x", curr[0])
@@ -4475,7 +4474,7 @@
                .attr("width", origin[0] - curr[0])
                .attr("height", origin[1] - curr[1]);
 
-         // pthis.svg_frame(true).on("dblclick", unZoom);
+         // pthis.svg_frame().on("dblclick", unZoom);
 
          d3.select(window).on("touchmove.zoomRect", moveTouchSel)
                           .on("touchcancel.zoomRect", endTouchSel)
@@ -4579,8 +4578,8 @@
          d3.event.preventDefault();
 
          // update frame dimensions while frame could be resized
-         width = Number(pthis.svg_frame(true).attr("width"));
-         height = Number(pthis.svg_frame(true).attr("height"));
+         width = Number(pthis.svg_frame().attr("width"));
+         height = Number(pthis.svg_frame().attr("height"));
 
          closeAllExtras();
 
@@ -4612,12 +4611,12 @@
          // d3.select("body").classed("noselect", true);
          // d3.select("body").style("-webkit-user-select", "none");
 
-         rect = pthis.svg_frame(true)
+         rect = pthis.svg_frame()
                 .append("rect")
                 .attr("class", "zoom")
                 .attr("id", "zoomRect");
 
-         pthis.svg_frame(true).on("dblclick", unZoom);
+         pthis.svg_frame().on("dblclick", unZoom);
 
          d3.select(window).on("mousemove.zoomRect", moveRectSel)
                           .on("mouseup.zoomRect", endRectSel, true);
@@ -4632,7 +4631,7 @@
          if (m[0] < 0) pthis.Unzoom(false, true); else
          if (m[1] > height) pthis.Unzoom(true, false); else {
             pthis.Unzoom(true, true);
-            pthis.svg_frame(true).on("dblclick", null);
+            pthis.svg_frame().on("dblclick", null);
          }
       }
 
@@ -4714,9 +4713,9 @@
          if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
       }
 
-      this.svg_frame(true).on("mousedown", startRectSel);
-      this.svg_frame(true).on("touchstart", startTouchSel);
-      this.svg_frame(true).on("contextmenu", showContextMenu);
+      this.svg_frame().on("mousedown", startRectSel);
+      this.svg_frame().on("touchstart", startTouchSel);
+      this.svg_frame().on("contextmenu", showContextMenu);
 
    }
 
@@ -5134,8 +5133,8 @@
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
-      var width = Number(this.svg_frame(true).attr("width")),
-          height = Number(this.svg_frame(true).attr("height"));
+      var width = Number(this.svg_frame().attr("width")),
+          height = Number(this.svg_frame().attr("height"));
 
       if (!this.draw_content || (width<=0) || (height<=0)) {
          this.RemoveDrawG();
@@ -5231,6 +5230,7 @@
 
       // create painter and add it to canvas
       var painter = new JSROOT.TH1Painter(histo);
+
       painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
@@ -5308,7 +5308,7 @@
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
       if (this.FindPalette() == null) {
          var shrink = this.CreatePalette(0.04);
-         this.svg_frame()['frame_painter'].Shrink(0, shrink);
+         this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.options.Zscale = 1;
          // one should draw palette
          JSROOT.Painter.drawPaletteAxis(this.divid, this.FindPalette());
@@ -5374,11 +5374,13 @@
       pal['fName'] = 'palette';
 
       pal['_AutoCreated'] = true;
+      
+      var ndc = this.svg_frame().property('NDC');
 
-      pal['fX1NDC'] = this.svg_frame()['NDC'].x2 - rel_width;
-      pal['fY1NDC'] = this.svg_frame()['NDC'].y1;
-      pal['fX2NDC'] = this.svg_frame()['NDC'].x2;
-      pal['fY2NDC'] = this.svg_frame()['NDC'].y2;
+      pal['fX1NDC'] = ndc.x2 - rel_width;
+      pal['fY1NDC'] = ndc.y1;
+      pal['fX2NDC'] = ndc.x2;
+      pal['fY2NDC'] = ndc.y2;
       pal['fInit'] = 1;
       pal['fShadowColor'] = 1;
       pal['fCorenerRadius'] = 0;
@@ -5430,8 +5432,8 @@
       // and at the end try to check how much place will be used by the labels
       // in the palette
 
-      var width = Number(this.svg_frame(true).attr("width")),
-          height = Number(this.svg_frame(true).attr("height"));
+      var width = Number(this.svg_frame().attr("width")),
+          height = Number(this.svg_frame().attr("height"));
 
       var axisOffset = Math.round(axis['fLabelOffset'] * width);
       var tickSize = Math.round(axis['fTickSize'] * width);
@@ -5443,7 +5445,7 @@
 
       var maxlen = 0;
       for (var i in ticks) {
-         var len = axisfont.stringWidth(this.svg_frame(true), ticks[i]);
+         var len = axisfont.stringWidth(this.svg_frame(), ticks[i]);
          if (len > maxlen) maxlen = len;
       }
 
@@ -5824,8 +5826,8 @@
 
       this.RecreateDrawG();
 
-      var w = Number(this.svg_frame(true).attr("width")),
-          h = Number(this.svg_frame(true).attr("height"));
+      var w = Number(this.svg_frame().attr("width")),
+          h = Number(this.svg_frame().attr("height"));
 
       if ((this.options.Color==2) && !JSROOT.browser.isIE)
          return this.DrawSimpleCanvas(w,h);
@@ -5899,8 +5901,8 @@
       if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
          // create pallette
          var shrink = this.CreatePalette(0.04);
-         this.svg_frame()['frame_painter'].Shrink(0, shrink);
-         this.svg_frame()['frame_painter'].Redraw();
+         this.svg_frame().property('frame_painter').Shrink(0, shrink);
+         this.svg_frame().property('frame_painter').Redraw();
          this.CreateXY();
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
@@ -6299,8 +6301,6 @@
 
             JSROOT.AssertPrerequisites('mathjax', function() {
                if (typeof MathJax != 'object') return;
-
-               // MathJax.Hub.Queue(["Typeset", MathJax.Hub, body.node()]);
 
                MathJax.Hub.Queue(function() {
                   MathJax.Hub.Typeset(body.node());
@@ -7987,7 +7987,7 @@
 
    JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var node = d3.select("#"+this.frameid); 
-      if (node.property('title') != '')
+      if (!node.empty() && node.property('title') != '')
          JSROOT.CallBack(userfunc, node.node());
    }
 
