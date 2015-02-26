@@ -98,6 +98,16 @@
       return menu;
    }
    
+   JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
+      if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
+      var chlds = hitem._parent._childs;
+      var indx = chlds.indexOf(hitem);
+      if (indx<0) return false;
+      while (++indx < chlds.length)
+         if (!('_hidden' in chlds[indx])) return false;
+      return true;
+   }
+   
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, parent) {
       var isroot = (parent == null);
       var has_childs = '_childs' in hitem;
@@ -498,5 +508,183 @@
          }
       });
    }
+   
+   JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
+      if ('disp' in this) {
+         if (this['disp'].NumDraw() > 0) return JSROOT.CallBack(callback, this['disp']);
+         this['disp'].Reset();
+         delete this['disp'];
+      }
+
+      // check that we can found frame where drawing should be done
+      if (document.getElementById(this['disp_frameid']) == null) 
+         return JSROOT.CallBack(callback, null);
+
+      if (this['disp_kind'] == "tabs")
+         this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
+      else
+      if (this['disp_kind'].search("grid") == 0)
+         this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']);
+      else
+      if (this['disp_kind'] == "simple")
+         this['disp'] = new JSROOT.SimpleDisplay(this['disp_frameid']);
+      else
+         this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
+
+      JSROOT.CallBack(callback, this['disp']);
+   }
+
+   
+   // ==================================================
+
+   JSROOT.CollapsibleDisplay = function(frameid) {
+      JSROOT.MDIDisplay.call(this, frameid);
+      this.cnt = 0; // use to count newly created frames
+   }
+
+   JSROOT.CollapsibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.CollapsibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      var topid = this.frameid + '_collapsible';
+
+      if (document.getElementById(topid) == null) return;
+
+      if (typeof userfunc != 'function') return;
+
+      $('#' + topid + ' .collapsible_draw').each(function() {
+
+         // check if only visible specified
+         if (only_visible && $(this).is(":hidden")) return;
+
+         userfunc($(this));
+      });
+   }
+
+   JSROOT.CollapsibleDisplay.prototype.ActivateFrame = function(frame) {
+      if ($(frame).is(":hidden")) {
+         $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                 .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end()
+                 .next().toggleClass("ui-accordion-content-active").slideDown(0);
+      }
+      $(frame).prev()[0].scrollIntoView();
+   }
+
+   JSROOT.CollapsibleDisplay.prototype.CreateFrame = function(title) {
+
+      var topid = this.frameid + '_collapsible';
+
+      if (document.getElementById(topid) == null)
+         $("#right-div").append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
+
+      var hid = topid + "_sub" + this.cnt++;
+      var uid = hid + "h";
+
+      var entryInfo = "<h5 id=\"" + uid + "\"><a> " + title + "</a>&nbsp; </h5>\n";
+      entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+      $("#" + topid).append(entryInfo);
+
+      $('#' + uid)
+            .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
+            .hover(function() { $(this).toggleClass("ui-state-hover"); })
+            .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
+            .append('<button type="button" class="closeButton" title="close canvas" '+
+                    'onclick="javascript: $(this).parent().next().andSelf().remove();">'+
+                    '<img class="img_remove" src="" alt=""/></button>')
+            .click( function() {
+                     $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+                           .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
+                           .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
+                     return false;
+                  })
+            .next()
+            .addClass("ui-accordion-content  ui-helper-reset ui-widget-content ui-corner-bottom")
+            .hide();
+
+      $('#' + uid)
+            .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
+            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
+            .toggleClass("ui-accordion-content-active").slideToggle(0);
+
+      // $('#'+uid)[0].scrollIntoView();
+
+      $("#" + hid).prop('title', title);
+
+      return $("#" + hid);
+   }
+
+   // ================================================
+
+   JSROOT.TabsDisplay = function(frameid) {
+      JSROOT.MDIDisplay.call(this, frameid);
+      this.cnt = 0;
+   }
+
+   JSROOT.TabsDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.TabsDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+      var topid = this.frameid + '_tabs';
+
+      if (document.getElementById(topid) == null) return;
+
+      if (typeof userfunc != 'function') return;
+
+      var cnt = -1;
+      var active = $('#' + topid).tabs("option", "active");
+
+      $('#' + topid + ' .tabs_draw').each(function() {
+         // check if only_visible specified
+         if (only_visible && (cnt++ != active)) return;
+
+         userfunc($(this));
+      });
+   }
+
+   JSROOT.TabsDisplay.prototype.ActivateFrame = function(frame) {
+      var cnt = 0, id = -1;
+      this.ForEachFrame(function(fr) {
+         if ($(fr).attr('id') == frame.attr('id'))  id = cnt;
+         cnt++;
+      });
+
+      $('#' + this.frameid + "_tabs").tabs("option", "active", id);
+   }
+
+   JSROOT.TabsDisplay.prototype.CreateFrame = function(title) {
+      var topid = this.frameid + '_tabs';
+
+      var hid = topid + "_sub" + this.cnt++;
+
+      var li = '<li><a href="#' + hid + '">' + title
+            + '</a><span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>';
+      var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
+
+      if (document.getElementById(topid) == null) {
+         $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
+
+         var tabs = $("#" + topid)
+                       .css('overflow','hidden')
+                       .tabs({ heightStyle : "fill" });
+
+         tabs.delegate("span.ui-icon-close", "click", function() {
+            var panelId = $(this).closest("li").remove().attr("aria-controls");
+            $("#" + panelId).remove();
+            tabs.tabs("refresh");
+         });
+      } else {
+
+         // var tabs = $("#tabs").tabs();
+
+         $("#" + topid).find(".ui-tabs-nav").append(li);
+         $("#" + topid).append(cont);
+         $("#" + topid).tabs("refresh");
+         $("#" + topid).tabs("option", "active", -1);
+      }
+      $('#' + hid).empty();
+      $('#' + hid).prop('title', title);
+      return $('#' + hid);
+   }
+
+
+
    
 })();

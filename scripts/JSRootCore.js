@@ -567,11 +567,11 @@
 
       var debugout = null;
 
-      var requirements = "2d;io;simple;";
-
-      if (document.getElementById('simpleGUI')) debugout = 'simpleGUI'; else
+      var requirements = "io;2d;simple;";
+      if (document.getElementById('simpleGUI')) { debugout = 'simpleGUI'; } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;simple;"; }
-
+      if (JSROOT.GetUrlOption('nobrowser')==null) requirements+='jq2d;';
+            
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
 
