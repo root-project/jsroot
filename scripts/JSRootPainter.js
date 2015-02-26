@@ -8078,7 +8078,7 @@
 
          var elem = d3.select("#" + this.frameid + "_grid_" + cnt);
 
-         if (elem.property('title')!="")
+         if (elem.property('title') != '')
             userfunc(elem.node());
       }
    }
@@ -8092,7 +8092,6 @@
          var topid = this.frameid + '_grid';
          if (d3.select("#" + topid).empty()) {
             var rect = main.node().getBoundingClientRect();
-            
             var h = Math.floor(rect.height / this.sizey) - 1;
             var w = Math.floor(rect.width / this.sizex) - 1;
 
@@ -8108,9 +8107,7 @@
             content += "</table></div>";
 
             main.html(content);
-
-            main.selectAll('.grid_cell').style({ 'width':w, 'height':h });
-            // main.find("[id^=" + this.frameid + "_grid_]").width(w).height(h);
+            main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px'});
          }
 
          main = d3.select( "#" + topid + "_" + this.cnt);
@@ -8134,7 +8131,7 @@
          var rect = main.node().getBoundingClientRect();
          var h = Math.floor(rect.height / this.sizey) - 1;
          var w = Math.floor(rect.width / this.sizex) - 1;
-         main.selectAll('.grid_cell').style({ 'width':w, 'height':h });
+         main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px'});
       }
 
       JSROOT.MDIDisplay.prototype.CheckResize.call(this);
