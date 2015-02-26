@@ -838,7 +838,9 @@
 
       this['divid'] = divid;
 
-      $("#" + divid).children().eq(0).prop('painter', this);
+      var main = d3.select("#" + divid);
+      if (main.node() && main.node().firstChild)
+         main.node().firstChild['painter'] = this;
    }
 
    JSROOT.TBasePainter.prototype.SetItemName = function(name) {
@@ -978,7 +980,9 @@
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
          console.log("Special case for " + this.obj_typename + " assign painter to first DOM element");
-         $("#" + divid).children().eq(0).prop('painter', this);
+         var main = d3.select("#" + divid);
+         if (main.node() && main.node().firstChild)
+            main.node().firstChild['painter'] = this;
          return;
       }
 
@@ -1142,7 +1146,8 @@
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
 
-      var painter = $("#" + this.divid).children().eq(0).prop('painter');
+      var main = d3.select("#" + this.divid);
+      var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null; 
       if (painter!=null) { userfunc(painter); return; }
 
       var svg_c = this.svg_canvas();
@@ -1155,7 +1160,7 @@
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
       // generic method to cleanup painters
-      $("#" + this.divid).empty();
+      d3.select("#" + this.divid).html("");
    }
 
    JSROOT.TObjectPainter.prototype.RedrawPad = function() {
