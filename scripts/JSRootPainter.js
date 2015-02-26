@@ -869,7 +869,7 @@
       // no canvas - no resize
       var can = this.svg_canvas();
 
-      var pad_painter = can ? can['pad_painter'] : null;
+      var pad_painter = can.empty() ? null : can.property('pad_painter');
 
       if (pad_painter) pad_painter.CheckCanvasResize();
    }
@@ -893,7 +893,7 @@
       if (take_pad) {
          if (layer==null) layer = ".text_layer"
          if (!this.draw_g)
-            this.draw_g = this.svg_pad(true).select(layer).append("svg:g");
+            this.draw_g = this.svg_pad().select(layer).append("svg:g");
       } else {
          var frame = this.svg_frame();
 
@@ -915,35 +915,34 @@
    }
 
    /** This is main graphical SVG element, where all Canvas drawing are performed */
-   JSROOT.TObjectPainter.prototype.svg_canvas = function(asselect) {
-      var res = d3.select("#" + this.divid + " .root_canvas");
-      return asselect ? res : res.node();
+   JSROOT.TObjectPainter.prototype.svg_canvas = function() {
+      return d3.select("#" + this.divid + " .root_canvas");
    }
 
    /** This is SVG element, correspondent to current pad */
-   JSROOT.TObjectPainter.prototype.svg_pad = function(asselect) {
-      var c = this.svg_canvas(true);
-      if (this.pad_name != '')
+   JSROOT.TObjectPainter.prototype.svg_pad = function() {
+      var c = this.svg_canvas();
+      if ((this.pad_name != '') && !c.empty())
          c = c.select("[pad=" + this.pad_name + ']');
-      return asselect ? c : c.node();
+      return c;
    }
 
    JSROOT.TObjectPainter.prototype.root_pad = function() {
       var p = this.svg_pad();
-      var pad_painter = p ? p['pad_painter'] : null;
+      var pad_painter = p.empty() ? null : p.property('pad_painter');
       return pad_painter ? pad_painter.pad : null;
    }
 
    /** This is SVG element with current frame */
    JSROOT.TObjectPainter.prototype.svg_frame = function() {
-      return this.svg_pad(true).select(".root_frame");
+      return this.svg_pad().select(".root_frame");
    }
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    JSROOT.TObjectPainter.prototype.main_painter = function() {
       if (!this.main) {
          var svg_p = this.svg_pad();
-         if (svg_p) this.main = svg_p['mainpainter'];
+         if (!svg_p.empty()) this.main = svg_p.property('mainpainter');
       }
       return this.main;
    }
@@ -969,13 +968,13 @@
       // SVG element where canvas is drawn
       var svg_c = this.svg_canvas();
 
-      if ((svg_c==null) && (is_main>0)) {
+      if (svg_c.empty() && (is_main>0)) {
          JSROOT.Painter.drawCanvas(divid, null);
          svg_c = this.svg_canvas();
          this['create_canvas'] = true;
       }
       
-      if (svg_c == null) {
+      if (svg_c.empty()) {
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
          console.log("Special case for " + this.obj_typename + " assign painter to first DOM element");
@@ -984,7 +983,7 @@
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
-      this.pad_name = svg_c['current_pad'];
+      this.pad_name = svg_c.property('current_pad');
 
       if (is_main < 0) return;
 
@@ -996,12 +995,14 @@
       }
 
       var svg_p = this.svg_pad();
-      if (svg_p['pad_painter'] != this)
-         svg_p['pad_painter'].painters.push(this);
+      if (svg_p.empty()) return;
+      
+      if (svg_p.property('pad_painter') != this)
+         svg_p.property('pad_painter').painters.push(this);
 
-      if ((is_main > 0) && (svg_p['mainpainter']==null))
+      if ((is_main > 0) && (svg_p.property('mainpainter')==null))
          // when this is first main painter in the pad
-         svg_p['mainpainter'] = this;
+         svg_p.property('mainpainter', this);
    }
 
    JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, x, y) {
@@ -1012,7 +1013,7 @@
 
       if (JSROOT.browser.isWebKit) {
          // force canvas redraw when foreign object used - it is not correctly scaled
-         this.svg_canvas(true).property('redraw_by_resize', true);
+         this.svg_canvas().property('redraw_by_resize', true);
          while (sel && sel.attr('class') != 'root_canvas') {
             if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
               x += parseInt(sel.attr("x"));
@@ -1049,7 +1050,7 @@
       fill.color = JSROOT.Painter.root_colors[color];
       if (typeof fill.color != 'string') fill.color = "none";
 
-      var svg = this.svg_canvas(true);
+      var svg = this.svg_canvas();
 
       if ((pattern < 3000) || (pattern>3025) || svg.empty()) return fill;
 
@@ -1145,10 +1146,10 @@
       if (painter!=null) { userfunc(painter); return; }
 
       var svg_c = this.svg_canvas();
-      if (svg_c==null) return;
+      if (svg_c.empty()) return;
 
-      userfunc(svg_c['pad_painter']);
-      var painters = svg_c['pad_painter'].painters;
+      userfunc(svg_c.property('pad_painter'));
+      var painters = svg_c.property('pad_painter').painters;
       for (var k in painters) userfunc(painters[k]);
    }
 
@@ -1163,7 +1164,7 @@
 
       var pad = this.svg_pad();
 
-      var pad_painter = pad ? pad['pad_painter'] : null;
+      var pad_painter = pad.empty() ? null : pad.property('pad_painter');
 
       if (pad_painter) pad_painter.Redraw();
    }
@@ -1199,11 +1200,11 @@
             d3.event.sourceEvent.preventDefault();
 
             acc_x = 0; acc_y = 0;
-            pad_w = Number(pthis.svg_pad(true).attr("width")) - rect_width();
-            pad_h = Number(pthis.svg_pad(true).attr("height")) - rect_height();
+            pad_w = Number(pthis.svg_pad().attr("width")) - rect_width();
+            pad_h = Number(pthis.svg_pad().attr("height")) - rect_height();
 
             pthis[drag_rect_name] =
-               pthis.svg_pad(true)
+               pthis.svg_pad()
                  .append("rect")
                  .attr("class", "zoom")
                  .attr("id", drag_rect_name)
@@ -1260,10 +1261,10 @@
            d3.event.sourceEvent.preventDefault();
 
            acc_x = 0; acc_y = 0;
-           pad_w = Number(pthis.svg_pad(true).attr("width")) - Number(draw_g.attr("x"));
-           pad_h = Number(pthis.svg_pad(true).attr("height")) - Number(draw_g.attr("y"));
+           pad_w = Number(pthis.svg_pad().attr("width")) - Number(draw_g.attr("x"));
+           pad_h = Number(pthis.svg_pad().attr("height")) - Number(draw_g.attr("y"));
            pthis[drag_rect_name] =
-              pthis.svg_pad(true)
+              pthis.svg_pad()
                 .append("rect")
                 .attr("class", "zoom")
                 .attr("id", drag_rect_name)
@@ -1327,7 +1328,8 @@
       // can be used to find painter for some special objects, registered as
       // histogram functions
 
-      var painters = this.svg_pad() ? this.svg_pad().pad_painter.painters : null;
+      var ppp = this.svg_pad();
+      var painters = ppp.empty() ? null : ppp.property('pad_painter').painters;
       if (painters == null) return null;
 
       for (var n in painters) {
@@ -1370,8 +1372,8 @@
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
-      var width = Number(this.svg_pad(true).attr("width")),
-          height = Number(this.svg_pad(true).attr("height"));
+      var width = Number(this.svg_pad().attr("width")),
+          height = Number(this.svg_pad().attr("height"));
       var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
@@ -1431,12 +1433,12 @@
       if (framecolor.color == 'none') framecolor.color = 'white';
 
       // this is svg:g object - container for every other items belonging to frame
-      var frame_g = this.svg_pad(true).select(".root_frame");
+      var frame_g = this.svg_pad().select(".root_frame");
 
       var top_rect = null;
 
       if (frame_g.empty()) {
-         frame_g = this.svg_pad(true).select(".frame_layer").append("svg:g").attr("class", "root_frame");
+         frame_g = this.svg_pad().select(".frame_layer").append("svg:g").attr("class", "root_frame");
 
          top_rect = frame_g.append("svg:rect");
 
@@ -2334,8 +2336,8 @@
    JSROOT.TPavePainter.prototype.DrawPaveText = function() {
       var pavetext = this.pavetext;
 
-      var w = Number(this.svg_pad(true).attr("width")),
-          h = Number(this.svg_pad(true).attr("height"));
+      var w = Number(this.svg_pad().attr("width")),
+          h = Number(this.svg_pad().attr("height"));
 
       var pos_x = Math.round(pavetext['fX1NDC'] * w);
 
@@ -2375,7 +2377,7 @@
       for (var j = 0; j < nlines; ++j) {
          var line = JSROOT.Painter.translateLaTeX(pavetext['fLines'].arr[j]['fTitle']);
          lines.push(line);
-         var lw = h_margin + font.stringWidth(this.svg_pad(true), line) + h_margin;
+         var lw = h_margin + font.stringWidth(this.svg_pad(), line) + h_margin;
          if (lw > maxlw) maxlw = lw;
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
@@ -2535,14 +2537,14 @@
          move : function(x, y, dx, dy) {
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pthis.pavetext['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
-            pthis.pavetext['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pthis.pavetext['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pthis.pavetext['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pthis.pavetext['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pthis.pavetext['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
          },
          resize : function(width, height) {
-            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
-            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
+            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad().attr("width"));
+            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
 
             pthis.DrawPaveText();
          }
@@ -2635,7 +2637,7 @@
       var svg = null;
 
       if (check_resize > 0) {
-         svg = this.svg_canvas(true);
+         svg = this.svg_canvas();
 
          var oldw = svg.property('last_width');
          var oldh = svg.property('last_height');
@@ -2715,8 +2717,8 @@
 
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
-      var width = Number(this.svg_canvas(true).attr("width")),
-          height = Number(this.svg_canvas(true).attr("height"));
+      var width = Number(this.svg_canvas().attr("width")),
+          height = Number(this.svg_canvas().attr("height"));
       var x = Math.round(this.pad['fAbsXlowNDC'] * width);
       var y = Math.round(height - this.pad['fAbsYlowNDC'] * height);
       var w = Math.round(this.pad['fAbsWNDC'] * width);
@@ -2730,10 +2732,10 @@
       var svg_pad = null, svg_rect = null;
 
       if (only_resize) {
-         svg_pad = this.svg_pad(true);
+         svg_pad = this.svg_pad();
          svg_rect = svg_pad.select(".root_pad_border");
       } else {
-         svg_pad = this.svg_canvas(true).append("g")
+         svg_pad = this.svg_canvas().append("g")
              .attr("class", "root_pad")
              .attr("pad", this.pad['fName']) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
@@ -2852,13 +2854,13 @@
       painter.pad_name = pad['fName'];
 
       // we select current pad, where all drawing is performed
-      var prev_name = painter.svg_canvas()['current_pad'];
-      painter.svg_canvas()['current_pad'] = pad['fName'];
+      var prev_name = painter.svg_canvas().property('current_pad');
+      painter.svg_canvas().property('current_pad', pad['fName']);
 
       painter.DrawPrimitives();
 
       // we restore previous pad name
-      painter.svg_canvas()['current_pad'] = prev_name;
+      painter.svg_canvas().property('current_pad', prev_name);
 
       return painter;
    }
@@ -2885,8 +2887,8 @@
       var nbr1 = axis['fNdiv'] % 100;
       if (nbr1<=0) nbr1 = 8;
 
-      var width = Number(this.svg_pad(true).attr("width")),
-          height = Number(this.svg_pad(true).attr("height"));
+      var width = Number(this.svg_pad().attr("width")),
+          height = Number(this.svg_pad().attr("height"));
 
       var s_height = Math.round(Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height);
 
@@ -2968,14 +2970,14 @@
 
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pthis.palette['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
-            pthis.palette['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pthis.palette['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pthis.palette['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pthis.palette['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pthis.palette['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
          },
          resize : function(width, height) {
-            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / Number(pthis.svg_pad(true).attr("width"));
-            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
+            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / Number(pthis.svg_pad().attr("width"));
+            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
 
             pthis.RemoveDrawG();
             pthis.DrawPalette();
@@ -4088,7 +4090,7 @@
       if ((shrink_forbidden==null) && typeof yax_g.node()['getBoundingClientRect'] == 'function') {
 
          var rect1 = yax_g.node().getBoundingClientRect();
-         var rect2 = this.svg_pad().getBoundingClientRect();
+         var rect2 = this.svg_pad().node().getBoundingClientRect();
          var position = rect1.left - rect2.left;
 
          var shrink = 0.;
@@ -6149,7 +6151,7 @@
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
       this.RecreateDrawG(true, ".text_layer");
 
-      var svg = this.svg_pad(true);
+      var svg = this.svg_pad();
       var pave = this.legend;
 
       var x = 0, y = 0, w = 0, h = 0;
@@ -6338,14 +6340,14 @@
          move : function(x, y, dx, dy) {
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pave['fX1NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pave['fX2NDC'] += dx / Number(pthis.svg_pad(true).attr("width"));
-            pave['fY1NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
-            pave['fY2NDC'] -= dy / Number(pthis.svg_pad(true).attr("height"));
+            pave['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pave['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
+            pave['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pave['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
          },
          resize : function(width, height) {
-            pave['fX2NDC'] = pave['fX1NDC'] + width  / Number(pthis.svg_pad(true).attr("width"));
-            pave['fY1NDC'] = pave['fY2NDC'] - height / Number(pthis.svg_pad(true).attr("height"));
+            pave['fX2NDC'] = pave['fX1NDC'] + width  / Number(pthis.svg_pad().attr("width"));
+            pave['fY1NDC'] = pave['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
 
             pthis.drawLegend();
          }
@@ -6528,8 +6530,8 @@
 
       var pavelabel = this.text;
 
-      var w = Number(this.svg_pad(true).attr("width")),
-          h = Number(this.svg_pad(true).attr("height"));
+      var w = Number(this.svg_pad().attr("width")),
+          h = Number(this.svg_pad().attr("height"));
 
       var pos_x = pavelabel['fX1NDC'] * w;
       var pos_y = (1.0 - pavelabel['fY1NDC']) * h;
@@ -6578,7 +6580,7 @@
 
       var line = JSROOT.Painter.translateLaTeX(pavelabel['fLabel']);
 
-      var lw = font.stringWidth(this.svg_pad(true), line);
+      var lw = font.stringWidth(this.svg_pad(), line);
       if (lw > width) font.size = Math.floor(font.size * (width / lw));
 
       pave.append("text")
@@ -6611,8 +6613,8 @@
 
       var kTextNDC = JSROOT.BIT(14);
 
-      var w = Number(this.svg_pad(true).attr("width")),
-          h = Number(this.svg_pad(true).attr("height"));
+      var w = Number(this.svg_pad().attr("width")),
+          h = Number(this.svg_pad().attr("height"));
       var align = 'start', halign = Math.round(this.text['fTextAlign'] / 10);
       var baseline = 'bottom', valign = this.text['fTextAlign'] % 10;
       if (halign == 1) align = 'start';
@@ -8309,7 +8311,7 @@
       if (obj==null) return;
 
       var can = d3.select("#" + divid + " .root_canvas");
-      var can_painter = can.node() ? can.node()['pad_painter'] : null;
+      var can_painter = can.empty() ? null : can.property('pad_painter');
 
       if (can_painter != null) {
          if (obj._typename=="TCanvas") {
