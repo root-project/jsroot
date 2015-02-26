@@ -7432,46 +7432,23 @@
                var divid = drawopt.slice(pos+6);
                drawopt = drawopt.slice(0, pos);
                painter = h.draw(divid, obj, drawopt);
-            } else
+            } else {
                mdi.ForEachPainter(function(p, frame) {
                   if (p.GetItemName() != itemname) return;
                   painter = p;
                   mdi.ActivateFrame(frame);
                   painter.RedrawObject(obj);
                });
+            }
 
             if (painter==null) {
                if (updating) {
                   console.log("something went wrong - did not found painter when doing update of " + itemname);
                } else {
-                  
                   var frame = mdi.FindFrame(itemname, true);
-
-                  if (JSROOT.gStyle.DragAndDrop)
-                     $(frame).addClass("ui-state-default");
-                  
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
-
                   mdi.ActivateFrame(frame);
-
-                  if (JSROOT.gStyle.DragAndDrop)
-                     $(frame).droppable({
-                        hoverClass : "ui-state-active",
-                        accept: function(ui) {
-                           var dropname = ui.parent().attr('item');
-                           if ((dropname == itemname) || (dropname==null)) return false;
-
-                           var ditem = h.Find(dropname);
-                           if ((ditem==null) || (!('_kind' in ditem))) return false;
-
-                           return ditem._kind.indexOf("ROOT.")==0;
-                        },
-                        drop: function(event, ui) {
-                           var dropname = ui.draggable.parent().attr('item');
-                           if (dropname==null) return false;
-                           return h.dropitem(dropname, (this).attr("id"));
-                        }
-                     }).removeClass('ui-state-default');
+                  h.enable_dropping(frame, itemname);
                }
             }
 
@@ -7480,6 +7457,10 @@
             JSROOT.CallBack(call_back, painter, itemname);
          });
       });
+   }
+   
+   JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
+      // here is not used - implemented with jquery
    }
 
    JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, call_back) {
@@ -8061,25 +8042,15 @@
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.GridDisplay.prototype.IsSingle = function() {
-      return (this.sizex <= 1) && (this.sizey <= 1);
+      return (this.sizex == 1) && (this.sizey == 1);
    }
 
    JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      if (typeof userfunc != 'function') return;
-
-      if (this.IsSingle()) {
-         var elem = d3.select("#"+this.frameid);
-         if (elem.property('title') != '')
-            userfunc(elem.node());
-         return;
-      }
-
       for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
+         var elem = this.IsSingle() ? d3.select("#"+this.frameid) : d3.select("#" + this.frameid + "_grid_" + cnt);
 
-         var elem = d3.select("#" + this.frameid + "_grid_" + cnt);
-
-         if (elem.property('title') != '')
-            userfunc(elem.node());
+         if (!elem.empty() && elem.property('title') != '')
+            JSROOT.CallBack(userfunc, elem.node());
       }
    }
 
@@ -8087,7 +8058,7 @@
 
       var main = d3.select("#" + this.frameid);
       if (main.empty()) return null;
-      
+
       if (!this.IsSingle()) {
          var topid = this.frameid + '_grid';
          if (d3.select("#" + topid).empty()) {

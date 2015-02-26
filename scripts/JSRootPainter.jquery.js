@@ -515,7 +515,7 @@
          this['disp'].Reset();
          delete this['disp'];
       }
-
+      
       // check that we can found frame where drawing should be done
       if (document.getElementById(this['disp_frameid']) == null) 
          return JSROOT.CallBack(callback, null);
@@ -534,6 +534,27 @@
       JSROOT.CallBack(callback, this['disp']);
    }
 
+   JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
+      var h = this;
+      if (JSROOT.gStyle.DragAndDrop)
+         $(frame).droppable({
+            hoverClass : "ui-state-active",
+            accept: function(ui) {
+               var dropname = ui.parent().attr('item');
+               if ((dropname == itemname) || (dropname==null)) return false;
+
+               var ditem = h.Find(dropname);
+               if ((ditem==null) || (!('_kind' in ditem))) return false;
+
+               return ditem._kind.indexOf("ROOT.")==0;
+            },
+            drop: function(event, ui) {
+               var dropname = ui.draggable.parent().attr('item');
+               if (dropname==null) return false;
+               return h.dropitem(dropname, $(this).attr("id"));
+            }
+         });
+   }
    
    // ==================================================
 
