@@ -65,7 +65,7 @@
 
          setInterval(updateGUI, monitor);
 
-         JSROOT.RegisterForResize(function() { if (painter) painter.CheckResize(); if (mdi) mdi.CheckResize(); });
+         JSROOT.RegisterForResize('drawing');
       }
    </script>
 

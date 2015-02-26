@@ -7857,11 +7857,12 @@
    }
 
    JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
-      if ('disp' in this)
+      if ('disp' in this) {
          this['disp'].Reset();
+         delete this['disp'];
+      }
 
       if (withbrowser) {
-         delete this['disp'];
          $("#" + this.frameid).empty();
          delete this.h;
       }
@@ -7910,10 +7911,11 @@
 
    JSROOT.MDIDisplay = function(frameid) {
       this.frameid = frameid;
+      d3.select("#"+this.frameid).property('mdi', this);
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      // method dedicated to iterate over existing panles
+      // method dedicated to iterate over existing panels
       // provided userfunc is called with arguemnts (frame)
 
       alert("ForEachFrame not implemented");
@@ -7974,7 +7976,7 @@
             painter.Clenaup();
       });
 
-      document.getElementById(this.frameid).innerHTML = '';
+      d3.select("#"+this.frameid).html('').property('mdi', null);
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
@@ -8206,7 +8208,26 @@
 
          document.body.style.cursor = 'wait';
          if (typeof handle == 'function') handle(); else
-         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize();
+         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize(); else
+         if (typeof handle == 'string') {
+            var node = d3.select('#'+handle);
+            if (node.length > 0) {
+               var mdi = node.property('mdi');
+               if (mdi) {
+                  mdi.CheckResize(); 
+               } else {
+                  var dummy = new JSROOT.TObjectPainter();
+                  var first = true;
+                  dummy.SetDivId(handle, -1);
+                  dummy.ForEachPainter(function(painter) {
+                     if (first && (typeof painter['CheckResize'] == 'function')) {
+                        first = false;
+                        painter.CheckResize();
+                     }
+                  });
+               }
+            }
+         }
          document.body.style.cursor = 'auto';
       }
 
