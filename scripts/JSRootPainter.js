@@ -1357,7 +1357,7 @@
               .attr("y", newheight - 20);
          });
 
-      draw_g.call(drag_move);
+      draw_g.style("cursor", "move").call(drag_move);
 
       this[resize_rect_name] =
          draw_g.append("rect")
@@ -1396,6 +1396,101 @@
       // basic method, should be reimplemented in all derived objects
       // for the case when drawing should be repeated, probably with different
       // options
+   }
+   
+      JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
+      // we need to preserve font to be able rescle at the end 
+      this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
+
+      this.draw_g.call(this.text_font.func);
+      
+      this.mathjax_cnt = 1; // one should wait until last finish call
+      this.text_factor = 0.;
+      this.max_text_width = 0; // keep maximal text width, use it later      
+   }
+   
+   JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value) {
+      // function used to remember maximal text scaling factor
+      if (value && (value>this.text_factor)) this.text_factor = value;
+   }
+
+   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry) {
+      if (entry != null) {
+         MathJax.Hub.Typeset(entry.node());
+         var prnt = entry.node().parentNode;
+         var rect = prnt.getBoundingClientRect();
+         var real_w = parseInt(rect.right) - parseInt(rect.left);
+         var real_h = parseInt(rect.bottom) - parseInt(rect.top);               
+         if (real_w > this.max_text_width) this.max_text_width = real_w;     
+         this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
+         this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
+      }
+      
+      if (--this.mathjax_cnt>0) return 0;
+
+      if (this.text_factor > 1) {
+         this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
+         this.draw_g.call(this.text_font.func);
+      }
+      
+      this.text_factor = 0.;
+      this.text_font = null;
+      this.mathjax_cnt = 0;      
+      
+      return this.max_text_width;
+   }
+   
+   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor) {
+      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
+         label = JSROOT.Painter.translateLaTeX(label);
+         
+         var pos_x = x.toFixed(1);
+         if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else
+         if (align=="end") pos_x = (x+w).toFixed(1);
+         
+         var txt = this.draw_g.append("text")
+                        .attr("text-anchor", align)
+                        .attr("dominant-baseline", "central")
+                        .attr("x", pos_x)
+                        .attr("y", (y + h*0.5).toFixed(1))
+                        .attr("fill", tcolor ? tcolor : "none")
+                        .text(label);
+         var real_w = parseInt(txt.node().getBBox().width);
+         var real_h = parseInt(txt.node().getBBox().height);               
+                   
+         if (real_w > this.max_text_width) this.max_text_width = real_w;
+         this.TextScaleFactor(real_w/w);
+         this.TextScaleFactor(real_h/h);
+                               
+         return real_w;
+      }                         
+
+      w = Math.round(w); h = Math.round(h);
+      x = Math.round(x); y = Math.round(y);
+
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, x, y);
+
+//    this is just workaround, one need real parser to find all #frac and so on
+      label = label.replace("#frac","\\(\\frac") + "\\)";
+
+      var entry = fo.append("xhtml:div")
+                    .style("width", w+"px")
+                    .style("height", h+"px")
+                    .style("display", "table")
+                    .append("xhtml:div")
+                    .style("display", "table-cell")
+                    .style('vertical-align', 'middle') // force to align in the center
+                    .style("fill", tcolor ? tcolor : null)
+                    .property("painter", this)
+                    .html(label);
+                    
+      this.mathjax_cnt++;
+
+      JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
+         if (typeof MathJax != 'object') return;
+         MathJax.Hub.Queue(["FinishTextDrawing", this.property('painter'), this]);
+      }});
    }
 
    // ===========================================================
@@ -2405,49 +2500,22 @@
       else if (valign == 2) baseline = 'middle';
       else if (valign == 3) baseline = 'top';
 
-      var h_margin = Math.round(pavetext['fMargin'] * width); // horizontal margin
-
-      var font = JSROOT.Painter.getFontDetails(pavetext['fTextFont'], height / (nlines * 1.2));
-
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
       var attline = JSROOT.Painter.createAttLine(pavetext, lwidth>0 ? 1 : 0);
 
-      var first_stat = 0, num_cols = 0, maxlw = 0;
+      var first_stat = 0, num_cols = 0;
       var lines = new Array;
 
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
-         var line = JSROOT.Painter.translateLaTeX(pavetext['fLines'].arr[j]['fTitle']);
+         var line = pavetext['fLines'].arr[j]['fTitle'];
          lines.push(line);
-         var lw = h_margin + font.stringWidth(this.svg_pad(), line) + h_margin;
-         if (lw > maxlw) maxlw = lw;
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
          var parts = line.split("|");
          if (parts.length > num_cols)
             num_cols = parts.length;
       }
-
-      if (maxlw > width)
-         font.size = Math.floor(font.size * (width / maxlw));
-      else
-      if ((nlines==1) && (lwidth==0) && (maxlw < width - 40))  {
-         // adjust invisible size of the pave for comfort resizing
-         var diff = width - maxlw;
-         width -= diff;
-         pos_x += diff/2;
-         pavetext['fX1NDC'] = pos_x / w;
-         pavetext['fX2NDC'] = (pos_x + width) / w;
-      }
-
-      var h_margin = Math.round(pavetext['fMargin'] * width); // horizontal margin again
-      var text_pos_x = h_margin / 2; // position of text inside <g> element
-      if (nlines == 1)
-         switch (halign) {
-            case 1: text_pos_x = h_margin; break;
-            case 2: text_pos_x = width / 2; break;
-            case 3: text_pos_x = width - h_margin; break;
-         }
 
       var pthis = this;
 
@@ -2460,10 +2528,9 @@
            .attr("y", pos_y)
            .attr("width", width)
            .attr("height", height)
-           .attr("transform", "translate(" + pos_x + "," + pos_y + ")")
-           .call(font.func);
+           .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
-      this.draw_g.append("rect")
+      var rect = this.draw_g.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", width)
@@ -2472,66 +2539,68 @@
           .call(attline.func);
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-      var stepy = (height - 0.2*font.size) / nlines;
+      var stepy = height / nlines;
+      var margin_x = pavetext['fMargin'] * width;
+
+      this.StartTextDrawing(pavetext['fTextFont'], height/(nlines * 1.2));
 
       if (nlines == 1) {
-         this.draw_g.append("text")
-              .attr("text-anchor", align)
-              .attr("x", text_pos_x)
-              .attr("y", ((height / 2) + (font.size / 3)).toFixed(1))
-              .attr("fill", tcolor)
-              .text(lines[0]);
+         this.DrawText(align, 0, 0, width, height, lines[0], tcolor); 
       } else {
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
-            var posy = (j+0.5)*stepy + font.size*0.5 - 1;
+            var posy = j*stepy;
 
             if (pavetext['_typename'] == 'TPaveStats') {
                if ((first_stat > 0) && (j >= first_stat)) {
                   var parts = lines[j].split("|");
                   for (var n = 0; n < parts.length; n++)
-                     this.draw_g.append("text")
-                           .attr("text-anchor", "middle")
-                           .attr("x", (width * (n + 0.5) / num_cols).toFixed(1))
-                           .attr("y", posy.toFixed(1))
-                           .attr("fill", jcolor)
-                           .text(parts[n]);
+                     this.DrawText("middle", 
+                                    width * n / num_cols, posy,
+                                    width/num_cols, stepy, parts[n], jcolor);   
                } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
-                  this.draw_g.append("text")
-                        .attr("text-anchor", (j == 0) ? "middle" : "start")
-                        .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width).toFixed(1))
-                        .attr("y", posy.toFixed(1))
-                        .attr("fill", jcolor)
-                        .text(lines[j]);
+                   this.DrawText((j == 0) ? "middle" : "start",
+                                 margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);  
                } else {
-                  var parts = lines[j].split("=");
+                  var parts = lines[j].split("="), sumw = 0;
                   for (var n = 0; n < 2; n++)
-                     this.draw_g.append("text")
-                            .attr("text-anchor", (n == 0) ? "start" : "end")
-                            .attr("x", ((n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width).toFixed(1))
-                            .attr("y", posy.toFixed(1))
-                            .attr("fill", jcolor)
-                            .text(parts[n]);
+                     sumw += this.DrawText((n == 0) ? "start" : "end",
+                                      margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
+                  this.TextScaleFactor(sumw/(width-2*margin_x));                        
                }
             } else {
-               this.draw_g.append("text")
-                      .attr("text-anchor", "start")
-                      .attr("x", text_pos_x.toFixed(1))
-                      .attr("y", posy.toFixed(1))
-                      .attr("fill", jcolor)
-                      .text(lines[j]);
+               this.DrawText("start", margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);    
             }
          }
       }
+      
+      var maxtw = this.FinishTextDrawing();
+      
+      /*
+      if ((nlines==1) && (lwidth==0) && (maxtw>0) && (maxtw < width - 40) && (align=='middle'))  {
+         // shrink invisible size of the pave for comfort resizing
+         
+         console.log('shrink pave from ' + width + " to " + maxtw);
+         
+         pos_x += Math.round((width - maxtw)/2);
+         width = maxtw;
+         pavetext['fX1NDC'] = pos_x / w;
+         pavetext['fX2NDC'] = (pos_x + width) / w;
+         rect.attr("width", width);
+         this.draw_g.attr("x", pos_x)
+                    .attr("width", width)
+                    .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+      }
+*/
 
       if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
          this.draw_g.append("svg:line")
                     .attr("class", "pavedraw")
                     .attr("x1", 0)
-                    .attr("y1", stepy)
+                    .attr("y1", stepy.toFixed(1))
                     .attr("x2", width)
-                    .attr("y2", stepy)
+                    .attr("y2", stepy.toFixed(1))
                     .call(attline.func);
       }
 
@@ -2539,16 +2608,16 @@
          for (var nrow = first_stat; nrow < nlines; nrow++)
             this.draw_g.append("svg:line")
                        .attr("x1", 0)
-                       .attr("y1", nrow * stepy)
+                       .attr("y1", (nrow * stepy).toFixed(1))
                        .attr("x2", width)
-                       .attr("y2", nrow * stepy)
+                       .attr("y2", (nrow * stepy).toFixed(1))
                        .call(attline.func);
 
          for (var ncol = 0; ncol < num_cols - 1; ncol++)
             this.draw_g.append("svg:line")
-                        .attr("x1", width / num_cols * (ncol + 1))
-                        .attr("y1", first_stat * stepy)
-                        .attr("x2", width / num_cols * (ncol + 1))
+                        .attr("x1", (width / num_cols * (ncol + 1)).toFixed(1))
+                        .attr("y1", (first_stat * stepy).toFixed(1))
+                        .attr("x2", (width / num_cols * (ncol + 1)).toFixed(1))
                         .attr("y2", height)
                         .call(attline.func);
       }
@@ -6177,81 +6246,6 @@
 
    JSROOT.TLegendPainter.prototype.GetObject = function() {
       return this.legend;
-   }
-
-   
-   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
-      // we need to preserve font to be able rescle at the end 
-      this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
-
-      this.draw_g.call(this.text_font.func);
-      
-      this.mathjax_cnt = 1; // one should wait until last finish call
-      this.text_factor = 0.;      
-   }
-
-   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry) {
-      if (entry != null) {
-         MathJax.Hub.Typeset(entry.node());
-         var prnt = entry.node().parentNode;
-         var rect = prnt.getBoundingClientRect();
-         var factor = Math.max((parseInt(rect.right) - parseInt(rect.left)) / parseInt(d3.select(prnt).attr('width')),
-                               (parseInt(rect.bottom) - parseInt(rect.top)) / parseInt(d3.select(prnt).attr('height')));
-         if (factor > this.text_factor) this.text_factor = factor;
-      }
-      
-      if (--this.mathjax_cnt>0) return;
-
-      if (this.text_factor > 1) {
-         this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
-         this.draw_g.call(this.text_font.func);
-      }
-      
-      this.text_factor = 0.;
-      this.text_font = null;
-      this.mathjax_cnt = 0;      
-   }
-
-   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor) {
-      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-         label = JSROOT.Painter.translateLaTeX(label);
-         var txt = this.draw_g.append("text")
-                        .attr("text-anchor", align)
-                        .attr("dominant-baseline", "central")
-                        .attr("x", x)
-                        .attr("y", y + h/2)
-                        .attr("fill", tcolor ? tcolor : "none")
-                        .text(label);
-         var factor = Math.max(txt.node().getBBox().width / w,
-                               txt.node().getBBox().height / h);
-                               
-         if (factor > this.text_factor) this.text_factor = factor;
-         return;
-      }                         
-
-      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo, x, y);
-
-//    this is just workaround, one need real parser to find all #frac and so on
-      label = label.replace("#frac","\\(\\frac") + "\\)";
-
-      var entry = fo.append("xhtml:div")
-                    .style("width", w+"px")
-                    .style("height", h+"px")
-                    .style("display", "table")
-                    .append("xhtml:div")
-                    .style("display", "table-cell")
-                    .style('vertical-align', 'middle') // force to align in the center
-                    .style("fill", tcolor ? tcolor : null)
-                    .property("painter", this)
-                    .html(label);
-                    
-      this.mathjax_cnt++;
-
-      JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
-         if (typeof MathJax != 'object') return;
-         MathJax.Hub.Queue(["FinishTextDrawing", this.property('painter'), this]);
-      }});
    }
 
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
