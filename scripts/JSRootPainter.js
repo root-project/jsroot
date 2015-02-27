@@ -2460,7 +2460,8 @@
            .attr("y", pos_y)
            .attr("width", width)
            .attr("height", height)
-           .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+           .attr("transform", "translate(" + pos_x + "," + pos_y + ")")
+           .call(font.func);
 
       this.draw_g.append("rect")
           .attr("x", 0)
@@ -2478,11 +2479,9 @@
               .attr("text-anchor", align)
               .attr("x", text_pos_x)
               .attr("y", ((height / 2) + (font.size / 3)).toFixed(1))
-              .call(font.func)
               .attr("fill", tcolor)
               .text(lines[0]);
       } else {
-
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
@@ -2496,7 +2495,6 @@
                            .attr("text-anchor", "middle")
                            .attr("x", (width * (n + 0.5) / num_cols).toFixed(1))
                            .attr("y", posy.toFixed(1))
-                           .call(font.func)
                            .attr("fill", jcolor)
                            .text(parts[n]);
                } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
@@ -2504,7 +2502,6 @@
                         .attr("text-anchor", (j == 0) ? "middle" : "start")
                         .attr("x", ((j == 0) ? width / 2 : pavetext['fMargin'] * width).toFixed(1))
                         .attr("y", posy.toFixed(1))
-                        .call(font.func)
                         .attr("fill", jcolor)
                         .text(lines[j]);
                } else {
@@ -2514,7 +2511,6 @@
                             .attr("text-anchor", (n == 0) ? "start" : "end")
                             .attr("x", ((n == 0) ? pavetext['fMargin'] * width  : (1 - pavetext['fMargin']) * width).toFixed(1))
                             .attr("y", posy.toFixed(1))
-                            .call(font.func)
                             .attr("fill", jcolor)
                             .text(parts[n]);
                }
@@ -2523,7 +2519,6 @@
                       .attr("text-anchor", "start")
                       .attr("x", text_pos_x.toFixed(1))
                       .attr("y", posy.toFixed(1))
-                      .call(font.func)
                       .attr("fill", jcolor)
                       .text(lines[j]);
             }
@@ -6184,14 +6179,89 @@
       return this.legend;
    }
 
+   
+   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
+      // we need to preserve font to be able rescle at the end 
+      this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
+
+      this.draw_g.call(this.text_font.func);
+      
+      this.mathjax_cnt = 0;
+      this.text_factor = 0.;      
+   }
+
+   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry) {
+      if (entry != null) {
+         MathJax.Hub.Typeset(entry.node());
+         var prnt = entry.node().parentNode;
+         var rect = prnt.getBoundingClientRect();
+         var factor = Math.max((parseInt(rect.right) - parseInt(rect.left)) / parseInt(d3.select(prnt).attr('width')),
+                               (parseInt(rect.bottom) - parseInt(rect.top)) / parseInt(d3.select(prnt).attr('height')));
+         if (factor > this.text_factor) this.text_factor = factor;
+         this.mathjax_cnt--;                      
+      }
+      
+      if (this.mathjax_cnt>0) return;
+
+      if (this.text_factor > 1) {
+         this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
+         this.draw_g.call(this.text_font.func);
+      }
+      
+      this.text_factor = 0.;
+      this.text_font = null;      
+   }
+
+   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor) {
+      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
+         var txt = this.draw_g.append("text")
+                        .attr("text-anchor", align)
+                        .attr("dominant-baseline", "central")
+                        .attr("x", x)
+                        .attr("y", y + h/2)
+                        .attr("fill", tcolor ? tcolor : "none")
+                        .text(label);
+         var factor = Math.max(txt.node().getBBox().width / w,
+                               txt.node().getBBox().height / h);
+                               
+         if (factor > this.text_factor) this.text_factor = factor;
+         return;
+      }                         
+
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, x, y);
+
+//    this is just workaround, one need real parser to find all #frac and so on
+      label = label.replace("#frac","\\(\\frac") + "\\)";
+
+      var entry = fo.append("xhtml:div")
+                    .style("width", w+"px")
+                    .style("height", h+"px")
+                    .style("display", "table")
+                    .append("xhtml:div")
+                    .style("display", "table-cell")
+                    .style('vertical-align', 'middle') // force to align in the center
+                    .style("fill", tcolor ? tcolor : null)
+                    .property("painter", this)
+                    .html(label);
+                    
+      this.mathjax_arr.push(entry);              
+
+      JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
+         if (typeof MathJax != 'object') return;
+         MathJax.Hub.Queue(["FinishTextDrawing", this.propery('painter'), this]);
+      }});
+   }
+   
+
    JSROOT.TLegendPainter.prototype.RescaleEntries = function(entry) {
       // after all entries shown, downscale all of them to fit into content
 
       if (entry!=null) {
          MathJax.Hub.Typeset(entry['_html'].node());
          var rect = entry['_html'].node().getBoundingClientRect();
-         entry['_factor'] = Math.max(parseInt(rect.right - rect.left) / entry['_maxw'],
-                                     parseInt(rect.bottom - rect.top) / entry['_maxh']);
+         entry['_factor'] = Math.max((parseInt(rect.right) - parseInt(rect.left)) / entry['_maxw'],
+                                     (parseInt(rect.bottom) - parseInt(rect.top)) / entry['_maxh']);
       }
       
       var nlines = this.legend.fPrimitives.arr.length;
@@ -6203,16 +6273,14 @@
          if (leg['_factor'] > max) max = leg['_factor'];
       }
 
-      if (max>1) this.font.size = Math.floor(this.font.size/max);
+      if (max>1) {
+         this.font.size = Math.floor(this.font.size/max);
+         this.draw_g.call(this.font.func);
+      }
 
       for (var i = 0; i < nlines; ++i) {
          var leg = this.legend.fPrimitives.arr[i];
-         if (max>1) {
-            if (leg['_svg']) leg['_svg'].call(this.font.func); else
-            if (leg['_html']) leg['_html'].style("font", this.font.asStyle());
-         }
          leg['_factor'] = 0; 
-         leg['_svg'] = null; 
          leg['_html'] = null;
       }
    }
@@ -6241,11 +6309,16 @@
       var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
       var fill = this.createAttFill(pave);
       var lcolor = JSROOT.Painter.createAttLine(pave, lwidth);
+      var nlines = pave.fPrimitives.arr.length;
+
+      // we need to preserve font to be able rescle at the end 
+      this.font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.2));
 
       this.draw_g.attr("x", x)
                  .attr("y", y)
                  .attr("width", w)
                  .attr("height", h)
+                 .call(this.font.func)
                  .attr("transform", "translate(" + x + "," + y + ")");
 
       this.draw_g
@@ -6262,10 +6335,6 @@
       var tpos_x = Math.round(pave['fMargin'] * w);
       var padding_x = Math.round(0.03 * w);
       var padding_y = Math.round(0.03 * h);
-      var nlines = pave.fPrimitives.arr.length;
-      
-      // we need to preserve font to be able rescle at the end 
-      this.font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.2));
 
       var leg_painter = this;
 
@@ -6325,7 +6394,6 @@
          }
 
          leg['_factor'] = 0; // mark entry not yet processed
-         leg['_svg'] = null; // keep reference on svg or html element, which should be modified later
          leg['_html'] = null;
          leg['_maxw'] = w - tpos_x - padding_x;
          leg['_maxh'] = step_y;
@@ -6339,17 +6407,16 @@
          var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
          
          if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-            leg['_svg'] = this.draw_g.append("text")
+            var txt = this.draw_g.append("text")
                            .attr("class", "text")
                            .attr("text-anchor", "start")
                            .attr("dominant-baseline", "central")
                            .attr("x", pos_x)
                            .attr("y", pos_y)
-                           .call(this.font.func)
                            .attr("fill", tcolor)
                            .text(label);
-            leg['_factor'] = Math.max(leg['_svg'].node().getBBox().width / leg['_maxw'],
-                                      leg['_svg'].node().getBBox().height / leg['_maxh']);
+            leg['_factor'] = Math.max(txt.node().getBBox().width / leg['_maxw'],
+                                      txt.node().getBBox().height / leg['_maxh']);
          } else {
 
             var fo_x = Math.round(pos_x);
@@ -6370,14 +6437,14 @@
                          .append("xhtml:div")
                          .style("display", "table-cell")
                          .style('vertical-align', 'middle') // force to align in the center
-                         .style("font", this.font.asStyle())
                          .style("fill", tcolor)
                          .html(label);
             
+            // when call-back will be called, leg will be set as this pointer
             JSROOT.AssertPrerequisites('mathjax', { _this:leg, func: function() {
                if (typeof MathJax != 'object') return;
                MathJax.Hub.Queue(["RescaleEntries", leg_painter, this]);
-            }} );
+            }});
          }
       }
       
