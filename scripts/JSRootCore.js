@@ -1041,7 +1041,7 @@
             // - Loop on bins (including underflows/overflows)
             var bin, binx, biny, binz;
             var cu, factor = 1;
-            if (Math.abs(h1['fNormFactor']) > 2e-308) factor = h1['fNormFactor'] / h1.getSumOfWeights();
+            if (Math.abs(h1['fNormFactor']) > Number.MIN_VALUE) factor = h1['fNormFactor'] / h1.getSumOfWeights();
             for (binz=0;binz<=nbinsz+1;binz++) {
                for (biny=0;biny<=nbinsy+1;biny++) {
                   for (binx=0;binx<=nbinsx+1;binx++) {
