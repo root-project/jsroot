@@ -10,6 +10,8 @@ Many old problems and errors are fixed, new functions are provided.
    usage of jquery.js in core JSROOT classes
 3. Implement main graphics without jquery at all,
    such mode used in `nobrowser` mode.
+4. Perform latex decoding in central place,
+   now one could implement generic MathJax support in JSROOT 
 
 
 ## Changes in v 3.3

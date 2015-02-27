@@ -3938,13 +3938,8 @@
 
       var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
 
-      console.log('xtitle = ' + this.histo['fXaxis']['fTitle']);
-
       if (this.histo['fXaxis']['fTitle'].length > 0) {
-          
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
-
-          
 
           var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + this.text_font.size, 
                                     0, 0, this.histo['fXaxis']['fTitle'], null, false, xax_g);
