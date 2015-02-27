@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.4 dev 26/02/2015";
+   JSROOT.version = "3.4 dev 27/02/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -289,6 +289,7 @@
       //  "xml" - returns res.responseXML
       //  "head" - returns request itself, uses "HEAD" method
       // Result will be returned to the callback functions
+      // Request will be set as this pointer in the callback 
       // If failed, request returns null
 
       var xhr = new XMLHttpRequest();
@@ -298,10 +299,7 @@
          if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
       }
 
-
-//      if (typeof ActiveXObject == "function") {
       if (window.ActiveXObject) {
-         // console.log(" Create IE request");
 
          xhr.onreadystatechange = function() {
             // console.log(" Ready IE request");

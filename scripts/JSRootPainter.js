@@ -1202,11 +1202,20 @@
       var rect_height = function() { return Number(draw_g.attr("height")); }
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
+      
+      function detectLeftButton(event) {
+         if ('buttons' in event) return event.buttons === 1;
+         else if ('which' in event) return event.which === 1;
+         else if ('button' in event) return event.button === 1;
+         return true;
+      }
 
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
+            if (!detectLeftButton(d3.event.sourceEvent)) return;
+            
             d3.event.sourceEvent.preventDefault();
-
+            
             acc_x = 0; acc_y = 0;
             pad_w = Number(pthis.svg_pad().attr("width")) - rect_width();
             pad_h = Number(pthis.svg_pad().attr("height")) - rect_height();
@@ -1222,6 +1231,8 @@
                  .attr("height", rect_height())
                  .style("cursor", "move");
           }).on("drag", function() {
+               if (pthis[drag_rect_name] == null) return;
+             
                d3.event.sourceEvent.preventDefault();
 
                var x = Number(pthis[drag_rect_name].attr("x"));
@@ -1241,6 +1252,8 @@
 
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
+               if (pthis[drag_rect_name]==null) return;
+             
                d3.event.sourceEvent.preventDefault();
 
                pthis[drag_rect_name].style("cursor", "auto");
@@ -1265,6 +1278,8 @@
 
       var drag_resize = d3.behavior.drag().origin(Object)
         .on( "dragstart", function() {
+           if (!detectLeftButton(d3.event.sourceEvent)) return;
+           
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
 
@@ -1282,6 +1297,8 @@
                 .attr("height", rect_height())
                 .style("cursor", "se-resize");
          }).on("drag", function() {
+            if (pthis[drag_rect_name] == null) return;
+            
             d3.event.sourceEvent.preventDefault();
 
             var w = Number(pthis[drag_rect_name].attr("width"));
@@ -1298,7 +1315,10 @@
 
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
+            if (pthis[drag_rect_name] == null) return;
+            
             d3.event.sourceEvent.preventDefault();
+            
             pthis[drag_rect_name].style("cursor", "auto");
 
             var newwidth = Number(pthis[drag_rect_name].attr("width"));
@@ -6182,14 +6202,14 @@
       var fill = this.createAttFill(pave);
       var lcolor = JSROOT.Painter.createAttLine(pave, lwidth);
 
-      var p = this.draw_g
-                 .attr("x", x)
+      this.draw_g.attr("x", x)
                  .attr("y", y)
                  .attr("width", w)
                  .attr("height", h)
                  .attr("transform", "translate(" + x + "," + y + ")");
 
-      p.append("svg:rect")
+      this.draw_g
+           .append("svg:rect")
            .attr("x", 0)
            .attr("y", 0)
            .attr("width", w)
@@ -6248,7 +6268,7 @@
          if (lopt.indexOf('f') != -1) {
             // box total height is yspace*0.7
             // define x,y as the center of the symbol for this entry
-            p.append("svg:rect")
+            this.draw_g.append("svg:rect")
                    .attr("x", padding_x)
                    .attr("y", pos_y-step_y/3)
                    .attr("width", tpos_x - 2*padding_x)
@@ -6258,7 +6278,7 @@
          }
          // Draw line
          if (lopt.indexOf('l') != -1) {
-            p.append("svg:line")
+            this.draw_g.append("svg:line")
                .attr("x1", padding_x)
                .attr("y1", pos_y)
                .attr("x2", tpos_x - padding_x)
@@ -6271,7 +6291,7 @@
          // Draw Polymarker
          if (lopt.indexOf('p') != -1) {
             var marker = JSROOT.Painter.createAttMarker(attmarker);
-            p.append("svg:path")
+            this.draw_g.append("svg:path")
                 .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + pos_y + ")"; })
                 .call(marker.func);
          }
@@ -6280,7 +6300,7 @@
          if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
 
          if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-           p.append("text")
+            this.draw_g.append("text")
               .attr("class", "text")
               .attr("text-anchor", "start")
               .attr("dominant-baseline", "central")
@@ -6302,7 +6322,9 @@
             // this is just workaround, one need real parser to find all #frac and so on
             label = label.replace("#frac","\\(\\frac") + "\\)";
 
-            var body = fo.append("xhtml:body")
+            var body = fo.append("xhtml:div")
+                         .style("width", fo_w+"px")
+                         .style("height", fo_h+"px")
                          .style("display", "table")
                          .append("xhtml:div")
                          .style("display", "table-cell")
@@ -6323,19 +6345,17 @@
                      body.style("font", font.asStyle(Math.round(font.size/Math.max(fact_x, fact_y))));
                });
             });
-
-
          }
-
       }
+      
       if (lwidth && lwidth > 1) {
-         p.append("svg:line")
+         this.draw_g.append("svg:line")
             .attr("x1", w + (lwidth / 2))
             .attr("y1", lwidth + 1)
             .attr("x2", w + (lwidth / 2))
             .attr("y2",  h + lwidth - 1)
             .call(lcolor.func);
-         p.append("svg:line")
+         this.draw_g.append("svg:line")
             .attr("x1", lwidth + 1)
             .attr("y1", h + (lwidth / 2))
             .attr("x2", w + lwidth - 1)
