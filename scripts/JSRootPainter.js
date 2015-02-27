@@ -6186,7 +6186,7 @@
 
       this.draw_g.call(this.text_font.func);
       
-      this.mathjax_cnt = 0;
+      this.mathjax_cnt = 1; // one should wait until last finish call
       this.text_factor = 0.;      
    }
 
@@ -6198,10 +6198,9 @@
          var factor = Math.max((parseInt(rect.right) - parseInt(rect.left)) / parseInt(d3.select(prnt).attr('width')),
                                (parseInt(rect.bottom) - parseInt(rect.top)) / parseInt(d3.select(prnt).attr('height')));
          if (factor > this.text_factor) this.text_factor = factor;
-         this.mathjax_cnt--;                      
       }
       
-      if (this.mathjax_cnt>0) return;
+      if (--this.mathjax_cnt>0) return;
 
       if (this.text_factor > 1) {
          this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
@@ -6209,11 +6208,13 @@
       }
       
       this.text_factor = 0.;
-      this.text_font = null;      
+      this.text_font = null;
+      this.mathjax_cnt = 0;      
    }
 
    JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor) {
       if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
+         label = JSROOT.Painter.translateLaTeX(label);
          var txt = this.draw_g.append("text")
                         .attr("text-anchor", align)
                         .attr("dominant-baseline", "central")
@@ -6245,46 +6246,14 @@
                     .property("painter", this)
                     .html(label);
                     
-      this.mathjax_arr.push(entry);              
+      this.mathjax_cnt++;
 
       JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
          if (typeof MathJax != 'object') return;
-         MathJax.Hub.Queue(["FinishTextDrawing", this.propery('painter'), this]);
+         MathJax.Hub.Queue(["FinishTextDrawing", this.property('painter'), this]);
       }});
    }
-   
 
-   JSROOT.TLegendPainter.prototype.RescaleEntries = function(entry) {
-      // after all entries shown, downscale all of them to fit into content
-
-      if (entry!=null) {
-         MathJax.Hub.Typeset(entry['_html'].node());
-         var rect = entry['_html'].node().getBoundingClientRect();
-         entry['_factor'] = Math.max((parseInt(rect.right) - parseInt(rect.left)) / entry['_maxw'],
-                                     (parseInt(rect.bottom) - parseInt(rect.top)) / entry['_maxh']);
-      }
-      
-      var nlines = this.legend.fPrimitives.arr.length;
-      
-      var max = 0;
-      for (var i = 0; i < nlines; ++i) {
-         var leg = this.legend.fPrimitives.arr[i];
-         if (!leg['_factor']) return;
-         if (leg['_factor'] > max) max = leg['_factor'];
-      }
-
-      if (max>1) {
-         this.font.size = Math.floor(this.font.size/max);
-         this.draw_g.call(this.font.func);
-      }
-
-      for (var i = 0; i < nlines; ++i) {
-         var leg = this.legend.fPrimitives.arr[i];
-         leg['_factor'] = 0; 
-         leg['_html'] = null;
-      }
-   }
-   
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
       this.RecreateDrawG(true, ".text_layer");
 
@@ -6311,15 +6280,13 @@
       var lcolor = JSROOT.Painter.createAttLine(pave, lwidth);
       var nlines = pave.fPrimitives.arr.length;
 
-      // we need to preserve font to be able rescle at the end 
-      this.font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.2));
-
       this.draw_g.attr("x", x)
                  .attr("y", y)
                  .attr("width", w)
                  .attr("height", h)
-                 .call(this.font.func)
                  .attr("transform", "translate(" + x + "," + y + ")");
+
+      this.StartTextDrawing(pave['fTextFont'], h / (nlines * 1.2));
 
       this.draw_g
            .append("svg:rect")
@@ -6344,7 +6311,8 @@
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
 
-         var pos_y = padding_y + (i+0.5)*step_y; // middle of each line
+         var pos_y = Math.round(padding_y + i*step_y); // top corner
+         var mid_y = Math.round(padding_y + (i+0.5)*step_y); // top corner
 
          var attfill = leg;
          var attmarker = leg;
@@ -6367,9 +6335,9 @@
             // define x,y as the center of the symbol for this entry
             this.draw_g.append("svg:rect")
                    .attr("x", padding_x)
-                   .attr("y", pos_y-step_y/3)
+                   .attr("y", Math.round(pos_y+step_y*0.1))
                    .attr("width", tpos_x - 2*padding_x)
-                   .attr("height", 2*step_y/3)
+                   .attr("height", Math.round(step_y*0.8))
                    .call(llll.func)
                    .call(fill.func);
          }
@@ -6377,9 +6345,9 @@
          if (lopt.indexOf('l') != -1) {
             this.draw_g.append("svg:line")
                .attr("x1", padding_x)
-               .attr("y1", pos_y)
+               .attr("y1", mid_y)
                .attr("x2", tpos_x - padding_x)
-               .attr("y2", pos_y)
+               .attr("y2", mid_y)
                .call(llll.func);
          }
          // Draw error only
@@ -6389,67 +6357,18 @@
          if (lopt.indexOf('p') != -1) {
             var marker = JSROOT.Painter.createAttMarker(attmarker);
             this.draw_g.append("svg:path")
-                .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + pos_y + ")"; })
+                .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + mid_y + ")"; })
                 .call(marker.func);
          }
 
-         leg['_factor'] = 0; // mark entry not yet processed
-         leg['_html'] = null;
-         leg['_maxw'] = w - tpos_x - padding_x;
-         leg['_maxh'] = step_y;
-
          var pos_x = tpos_x;
-         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) { 
-            pos_x = padding_x; 
-            leg['_maxw'] = w - padding_x; 
-         }
+         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
          
-         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
-         
-         if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-            var txt = this.draw_g.append("text")
-                           .attr("class", "text")
-                           .attr("text-anchor", "start")
-                           .attr("dominant-baseline", "central")
-                           .attr("x", pos_x)
-                           .attr("y", pos_y)
-                           .attr("fill", tcolor)
-                           .text(label);
-            leg['_factor'] = Math.max(txt.node().getBBox().width / leg['_maxw'],
-                                      txt.node().getBBox().height / leg['_maxh']);
-         } else {
-
-            var fo_x = Math.round(pos_x);
-            var fo_y = Math.round(pos_y - 0.5*step_y);
-            var fo_w = Math.round(w - padding_x - pos_x);
-            var fo_h = Math.round(step_y);
-
-            var fo = this.draw_g.append("foreignObject").attr("width", fo_w).attr("height", fo_h);
-            this.SetForeignObjectPosition(fo, fo_x, fo_y);
-
-            // this is just workaround, one need real parser to find all #frac and so on
-            label = label.replace("#frac","\\(\\frac") + "\\)";
-
-            leg['_html'] = fo.append("xhtml:div")
-                         .style("width", fo_w+"px")
-                         .style("height", fo_h+"px")
-                         .style("display", "table")
-                         .append("xhtml:div")
-                         .style("display", "table-cell")
-                         .style('vertical-align', 'middle') // force to align in the center
-                         .style("fill", tcolor)
-                         .html(label);
-            
-            // when call-back will be called, leg will be set as this pointer
-            JSROOT.AssertPrerequisites('mathjax', { _this:leg, func: function() {
-               if (typeof MathJax != 'object') return;
-               MathJax.Hub.Queue(["RescaleEntries", leg_painter, this]);
-            }});
-         }
+         this.DrawText("start", pos_x, pos_y, w-pos_x-padding_x, step_y, leg['fLabel'], tcolor); 
       }
       
       // rescale after all entries are shown
-      this.RescaleEntries();
+      this.FinishTextDrawing();
       
       if (lwidth && lwidth > 1) {
          this.draw_g.append("svg:line")
