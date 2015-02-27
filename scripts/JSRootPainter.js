@@ -423,13 +423,6 @@
       return x;
    }
 
-   JSROOT.Painter.moveChildToEnd = function(child) {
-      if (!child) return;
-      var prnt = child.node().parentNode;
-      prnt.removeChild(child.node());
-      prnt.appendChild(child.node());
-   }
-
    JSROOT.Painter.ytoPad = function(y, pad) {
       if (pad['fLogy']) {
          if (y > 0)
@@ -1264,8 +1257,6 @@
 
                drag_rect.attr("x", x).attr("y", y);
 
-               JSROOT.Painter.moveChildToEnd(drag_rect);
-
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
                if (drag_rect==null) return;
@@ -1329,8 +1320,6 @@
             if (h+dy > pad_h) acc_y += dy; else h+=dy;
             drag_rect.attr("width", w).attr("height", h);
 
-            JSROOT.Painter.moveChildToEnd(drag_rect);
-
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
             if (drag_rect == null) return;
@@ -1392,7 +1381,7 @@
       // options
    }
    
-      JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
+   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
       // we need to preserve font to be able rescle at the end 
       this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
 
@@ -1415,9 +1404,11 @@
          var rect = prnt.getBoundingClientRect();
          var real_w = parseInt(rect.right) - parseInt(rect.left);
          var real_h = parseInt(rect.bottom) - parseInt(rect.top);               
-         if (real_w > this.max_text_width) this.max_text_width = real_w;     
-         this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
-         this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
+         if (real_w > this.max_text_width) this.max_text_width = real_w;
+         if (entry.property('_scale')) {     
+            this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
+            this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
+         }
       }
       
       if (--this.mathjax_cnt>0) return 0;
@@ -1434,33 +1425,42 @@
       return this.max_text_width;
    }
    
-   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor) {
-      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-         label = JSROOT.Painter.translateLaTeX(label);
+   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor, no_latex) {
+      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0) || no_latex) {
+         if (!no_latex) label = JSROOT.Painter.translateLaTeX(label);
          
-         var pos_x = x.toFixed(1);
-         if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else
-         if (align=="end") pos_x = (x+w).toFixed(1);
+         var pos_x, pos_y;
+         
+         if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else    
+         if (align=="end") pos_x = (x+w).toFixed(1); else pos_x = x.toFixed(1);
          
          var txt = this.draw_g.append("text")
                         .attr("text-anchor", align)
-                        .attr("dominant-baseline", "central")
                         .attr("x", pos_x)
-                        .attr("y", (y + h*0.5).toFixed(1))
                         .attr("fill", tcolor ? tcolor : "none")
                         .text(label);
+         if (h==0) {
+            txt.attr("y", y.toFixed(1));
+         } else {
+            txt.attr("dominant-baseline", "central")
+               .attr("y", (y + h*0.5).toFixed(1));
+         }
+                        
          var real_w = parseInt(txt.node().getBBox().width);
          var real_h = parseInt(txt.node().getBBox().height);               
                    
          if (real_w > this.max_text_width) this.max_text_width = real_w;
-         this.TextScaleFactor(real_w/w);
-         this.TextScaleFactor(real_h/h);
+         if (w>0) this.TextScaleFactor(real_w/w);
+         if (h>0) this.TextScaleFactor(real_h/h);
                                
          return real_w;
       }                         
 
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
+      
+      var scale = (w>0) && (h>0);
+      if (!scale) { w = 200; h = 100; } // artifical values, not important for us
 
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
@@ -1471,20 +1471,23 @@
       var entry = fo.append("xhtml:div")
                     .style("width", w+"px")
                     .style("height", h+"px")
-                    .style("display", "table")
+                    .style("display", scale ? "table" : null)
                     .append("xhtml:div")
-                    .style("display", "table-cell")
-                    .style('vertical-align', 'middle') // force to align in the center
-                    .style("fill", tcolor ? tcolor : null)
-                    .property("painter", this)
+                    .style("display", scale ? "table-cell" : null)
+                    .style('vertical-align', scale ? 'middle' : null) // force to align in the center
+                    .style("fill", (tcolor && scale) ? tcolor : null)
+                    .property("_painter", this)
+                    .property("_scale", scale)
                     .html(label);
                     
       this.mathjax_cnt++;
 
       JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
          if (typeof MathJax != 'object') return;
-         MathJax.Hub.Queue(["FinishTextDrawing", this.property('painter'), this]);
+         MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
       }});
+      
+      return 0;
    }
 
    // ===========================================================
@@ -6588,20 +6591,6 @@
       var kTextNDC = JSROOT.BIT(14);
 
       var w = this.pad_width(), h = this.pad_height();
-      var align = 'start', halign = Math.round(this.text['fTextAlign'] / 10);
-      var baseline = 'bottom', valign = this.text['fTextAlign'] % 10;
-      if (halign == 1) align = 'start';
-      else if (halign == 2) align = 'middle';
-      else if (halign == 3) align = 'end';
-      if (valign == 1) baseline = 'bottom';
-      else if (valign == 2) baseline = 'middle';
-      else if (valign == 3) baseline = 'top';
-      var lmargin = 0;
-      switch (halign) {
-         case 1: lmargin = this.text['fMargin'] * w; break;
-         case 2: lmargin = w / 2; break;
-         case 3: lmargin = w - (this.text['fMargin'] * w); break;
-      }
       var pos_x = this.text['fX'], pos_y = this.text['fY'];
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pos_x * w;
@@ -6621,27 +6610,20 @@
          pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
          pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
       } else {
-         alert("Cannot draw text at x/y coordinates without real TPad object");
+         console.log("Cannot draw text at x/y coordinates without real TPad object");
          pos_x = w/2;
          pos_y = h/2;
       }
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
-      var font = JSROOT.Painter.getFontDetails(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h));
 
-      var string = this.text['fTitle'];
-      // translate the LaTeX symbols
-      if (this.text['_typename'] == 'TLatex')
-         string = JSROOT.Painter.translateLaTeX(string);
+      var no_latex = this.text['_typename'] != 'TLatex'; 
 
-      this.draw_g.append("text")
-              .attr("class", "text")
-              .attr("x", pos_x.toFixed(1))
-              .attr("y", pos_y.toFixed(1))
-              .call(font.func)
-              .attr("text-anchor", align)
-              .attr("fill", tcolor)
-              .text(string);
+      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h));
+
+      this.DrawText('start', pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
+
+      this.FinishTextDrawing();
    }
 
    JSROOT.TTextPainter.prototype.UpdateObject = function(obj) {
