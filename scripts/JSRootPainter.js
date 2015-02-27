@@ -6595,18 +6595,14 @@
       if (valign == 1) baseline = 'bottom';
       else if (valign == 2) baseline = 'middle';
       else if (valign == 3) baseline = 'top';
-      var lmargin = 0;
-      switch (halign) {
-         case 1: lmargin = pavelabel['fMargin'] * width; break;
-         case 2: lmargin = width / 2; break;
-         case 3: lmargin = width - (pavelabel['fMargin'] * width); break;
-      }
+      
       var lwidth = pavelabel['fBorderSize'] ? pavelabel['fBorderSize'] : 0;
-      var font = JSROOT.Painter.getFontDetails(pavelabel['fTextFont'], height / 1.9);
-
+      
       var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
 
       var pave = this.draw_g
+                   .attr("x", pos_x)
+                   .attr("y", pos_y)
                    .attr("width", width)
                    .attr("height", height)
                    .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
@@ -6620,19 +6616,11 @@
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor.color);
 
-      var line = JSROOT.Painter.translateLaTeX(pavelabel['fLabel']);
+      this.StartTextDrawing(pavelabel['fTextFont'], height / 1.2);
 
-      var lw = font.stringWidth(this.svg_pad(), line);
-      if (lw > width) font.size = Math.floor(font.size * (width / lw));
-
-      pave.append("text")
-             .attr("class", "text")
-             .attr("text-anchor", align)
-             .attr("x", lmargin)
-             .attr("y", (height / 2) + (font.size / 3))
-             .call(font.func)
-             .attr("fill", tcolor)
-             .text(line);
+      this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel['fLabel'], tcolor);
+      
+      this.FinishTextDrawing();
 
       if (lwidth && lwidth > 1) {
          pave.append("svg:line")
@@ -6648,6 +6636,26 @@
                .attr("y2", height + (lwidth / 2))
                .call(lcolor.func);
       }
+      
+      var pave_painter = this;
+      
+      this.AddDrag('pave', this.draw_g, {
+         move : function(x, y, dx, dy) {
+            pave_painter.draw_g.attr("transform", "translate(" + x + "," + y + ")");
+
+            pavelabel['fX1NDC'] += dx / pave_painter.pad_width();
+            pavelabel['fX2NDC'] += dx / pave_painter.pad_width();
+            pavelabel['fY1NDC'] -= dy / pave_painter.pad_height();
+            pavelabel['fY2NDC'] -= dy / pave_painter.pad_height();
+         },
+         resize : function(width, height) {
+            pavelabel['fX2NDC'] = pavelabel['fX1NDC'] + width  / pave_painter.pad_width();
+            pavelabel['fY1NDC'] = pavelabel['fY2NDC'] - height / pave_painter.pad_height();
+
+            pave_painter.drawPaveLabel();
+         }
+      });
+      
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
