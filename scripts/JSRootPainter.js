@@ -943,6 +943,26 @@
       return this.svg_pad().select(".root_frame");
    }
 
+   JSROOT.TObjectPainter.prototype.pad_width = function() {
+      var res = parseInt(this.svg_pad().attr("width"));
+      return (res==NaN) ? 0 : res;
+   }
+   
+   JSROOT.TObjectPainter.prototype.pad_height = function() {
+      var res = parseInt(this.svg_pad().attr("height"));
+      return (res==NaN) ? 0 : res;
+   }
+   
+   JSROOT.TObjectPainter.prototype.frame_width = function() {
+      var res = parseInt(this.svg_frame().attr("width"));
+      return (res==NaN) ? 0 : res;
+   }
+   
+   JSROOT.TObjectPainter.prototype.frame_height = function() {
+      var res = parseInt(this.svg_frame().attr("height"));
+      return (res==NaN) ? 0 : res;
+   }
+
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    JSROOT.TObjectPainter.prototype.main_painter = function() {
       if (!this.main) {
@@ -1217,8 +1237,8 @@
             d3.event.sourceEvent.preventDefault();
             
             acc_x = 0; acc_y = 0;
-            pad_w = Number(pthis.svg_pad().attr("width")) - rect_width();
-            pad_h = Number(pthis.svg_pad().attr("height")) - rect_height();
+            pad_w = pthis.pad_width() - rect_width();
+            pad_h = pthis.pad_height() - rect_height();
 
             pthis[drag_rect_name] =
                pthis.svg_pad()
@@ -1284,8 +1304,8 @@
            d3.event.sourceEvent.preventDefault();
 
            acc_x = 0; acc_y = 0;
-           pad_w = Number(pthis.svg_pad().attr("width")) - Number(draw_g.attr("x"));
-           pad_h = Number(pthis.svg_pad().attr("height")) - Number(draw_g.attr("y"));
+           pad_w = pthis.pad_width() - Number(draw_g.attr("x"));
+           pad_h = pthis.pad_height() - Number(draw_g.attr("y"));
            pthis[drag_rect_name] =
               pthis.svg_pad()
                 .append("rect")
@@ -1400,8 +1420,7 @@
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
-      var width = Number(this.svg_pad().attr("width")),
-          height = Number(this.svg_pad().attr("height"));
+      var width = this.pad_width(), height = this.pad_height();
       var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
@@ -1646,8 +1665,7 @@
    }
 
    JSROOT.TF1Painter.prototype.DrawBins = function() {
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       this.RecreateDrawG();
 
@@ -1895,8 +1913,7 @@
       this.lineatt.width = this.lineatt.width % 100; // line width
       if (this.lineatt.width > 0) this.optionLine = 1;
 
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       var ratio = w / h;
 
@@ -2108,9 +2125,7 @@
    }
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
-
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       this.RecreateDrawG();
 
@@ -2364,8 +2379,7 @@
    JSROOT.TPavePainter.prototype.DrawPaveText = function() {
       var pavetext = this.pavetext;
 
-      var w = Number(this.svg_pad().attr("width")),
-          h = Number(this.svg_pad().attr("height"));
+      var w = this.pad_width(), h = this.pad_height();
 
       var pos_x = Math.round(pavetext['fX1NDC'] * w);
 
@@ -2565,14 +2579,14 @@
          move : function(x, y, dx, dy) {
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pthis.pavetext['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pthis.pavetext['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pthis.pavetext['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
-            pthis.pavetext['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pthis.pavetext['fX1NDC'] += dx / pthis.pad_width();
+            pthis.pavetext['fX2NDC'] += dx / pthis.pad_width();
+            pthis.pavetext['fY1NDC'] -= dy / pthis.pad_height();
+            pthis.pavetext['fY2NDC'] -= dy / pthis.pad_height();
          },
          resize : function(width, height) {
-            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / Number(pthis.svg_pad().attr("width"));
-            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
+            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / pthis.pad_width();
+            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / pthis.pad_height();
 
             pthis.DrawPaveText();
          }
@@ -2916,8 +2930,7 @@
       var nbr1 = axis['fNdiv'] % 100;
       if (nbr1<=0) nbr1 = 8;
 
-      var width = Number(this.svg_pad().attr("width")),
-          height = Number(this.svg_pad().attr("height"));
+      var width = this.pad_width(), height = this.pad_height();
 
       var s_height = Math.round(Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height);
 
@@ -2999,14 +3012,14 @@
 
             pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pthis.palette['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pthis.palette['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pthis.palette['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
-            pthis.palette['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pthis.palette['fX1NDC'] += dx / pthis.pad_width();
+            pthis.palette['fX2NDC'] += dx / pthis.pad_width();
+            pthis.palette['fY1NDC'] -= dy / pthis.pad_height();
+            pthis.palette['fY2NDC'] -= dy / pthis.pad_height();
          },
          resize : function(width, height) {
-            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / Number(pthis.svg_pad().attr("width"));
-            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
+            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / pthis.pad_width();
+            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / pthis.pad_height();
 
             pthis.RemoveDrawG();
             pthis.DrawPalette();
@@ -3679,8 +3692,7 @@
          return;
       }
 
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       if (this.histo['fXaxis']['fTimeDisplay']) {
          this.x_time = true;
@@ -3808,7 +3820,7 @@
       // add a grid on x axis, if the option is set
       if (this.options.Gridx) {
 
-         var h = Number(this.svg_frame().attr("height"));
+         var h = this.frame_height();
 
          var xticks = this.x.ticks(this.x_nticks);
 
@@ -3827,7 +3839,7 @@
 
       // add a grid on y axis, if the option is set
       if (this.options.Gridy) {
-         var w = Number(this.svg_frame().attr("width"));
+         var w = this.frame_width();
 
          var yticks = this.y.ticks(this.y_nticks);
 
@@ -3881,8 +3893,7 @@
 
       if (!this.is_main_painter()) return;
 
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       var xax_g = this.svg_frame().selectAll(".xaxis_container");
       if (xax_g.empty())
@@ -4382,8 +4393,7 @@
 
       // if (!this.draw_content) return;
 
-      var width = Number(this.svg_frame().attr("width")),
-          height = Number(this.svg_frame().attr("height"));
+      var width = this.frame_width(), height = this.frame_height();
       var e, origin, curr = null, rect = null;
       var lasttouch = new Date(0);
 
@@ -5164,8 +5174,7 @@
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
-      var width = Number(this.svg_frame().attr("width")),
-          height = Number(this.svg_frame().attr("height"));
+      var width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0)) {
          this.RemoveDrawG();
@@ -5463,8 +5472,7 @@
       // and at the end try to check how much place will be used by the labels
       // in the palette
 
-      var width = Number(this.svg_frame().attr("width")),
-          height = Number(this.svg_frame().attr("height"));
+      var width = this.frame_width(), height = this.frame_height();
 
       var axisOffset = Math.round(axis['fLabelOffset'] * width);
       var tickSize = Math.round(axis['fTickSize'] * width);
@@ -5857,8 +5865,7 @@
 
       this.RecreateDrawG();
 
-      var w = Number(this.svg_frame().attr("width")),
-          h = Number(this.svg_frame().attr("height"));
+      var w = this.frame_width(), h = this.frame_height();
 
       if ((this.options.Color==2) && !JSROOT.browser.isIE)
          return this.DrawSimpleCanvas(w,h);
@@ -6177,6 +6184,39 @@
       return this.legend;
    }
 
+   JSROOT.TLegendPainter.prototype.RescaleEntries = function(entry) {
+      // after all entries shown, downscale all of them to fit into content
+
+      if (entry!=null) {
+         MathJax.Hub.Typeset(entry['_html'].node());
+         var rect = entry['_html'].node().getBoundingClientRect();
+         entry['_factor'] = Math.max(parseInt(rect.right - rect.left) / entry['_maxw'],
+                                     parseInt(rect.bottom - rect.top) / entry['_maxh']);
+      }
+      
+      var nlines = this.legend.fPrimitives.arr.length;
+      
+      var max = 0;
+      for (var i = 0; i < nlines; ++i) {
+         var leg = this.legend.fPrimitives.arr[i];
+         if (!leg['_factor']) return;
+         if (leg['_factor'] > max) max = leg['_factor'];
+      }
+
+      if (max>1) this.font.size = Math.floor(this.font.size/max);
+
+      for (var i = 0; i < nlines; ++i) {
+         var leg = this.legend.fPrimitives.arr[i];
+         if (max>1) {
+            if (leg['_svg']) leg['_svg'].call(this.font.func); else
+            if (leg['_html']) leg['_html'].style("font", this.font.asStyle());
+         }
+         leg['_factor'] = 0; 
+         leg['_svg'] = null; 
+         leg['_html'] = null;
+      }
+   }
+   
    JSROOT.TLegendPainter.prototype.drawLegend = function() {
       this.RecreateDrawG(true, ".text_layer");
 
@@ -6223,29 +6263,17 @@
       var padding_x = Math.round(0.03 * w);
       var padding_y = Math.round(0.03 * h);
       var nlines = pave.fPrimitives.arr.length;
-      var font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.5));
+      
+      // we need to preserve font to be able rescle at the end 
+      this.font = JSROOT.Painter.getFontDetails(pave['fTextFont'], h / (nlines * 1.2));
 
-      var min_fact = 1.;
-      for (var j = 0; j < nlines; ++j) {
-         var leg = pave.fPrimitives.arr[j];
-         var lopt = leg['fOption'].toLowerCase();
-         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
-         var lw = font.stringWidth(svg, label);
-         var allowed = w - 2*padding_x;
-         if ((lopt.indexOf("h")<0) && (lopt.length>0)) allowed = w - tpos_x - padding_x;
-         var fact = lw > 5 ? allowed / lw : 1.;
-         if (fact < min_fact) min_fact = fact;
-      }
-
-      if (min_fact<1) font.size = Math.floor(font.size * min_fact);
+      var leg_painter = this;
 
       var step_y = (h - 2*padding_y)/nlines;
 
       for (var i = 0; i < nlines; ++i) {
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
-
-         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
 
          var pos_y = padding_y + (i+0.5)*step_y; // middle of each line
 
@@ -6296,19 +6324,32 @@
                 .call(marker.func);
          }
 
-         var pos_x = tpos_x;
-         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
+         leg['_factor'] = 0; // mark entry not yet processed
+         leg['_svg'] = null; // keep reference on svg or html element, which should be modified later
+         leg['_html'] = null;
+         leg['_maxw'] = w - tpos_x - padding_x;
+         leg['_maxh'] = step_y;
 
+         var pos_x = tpos_x;
+         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) { 
+            pos_x = padding_x; 
+            leg['_maxw'] = w - padding_x; 
+         }
+         
+         var label = JSROOT.Painter.translateLaTeX(leg['fLabel']);
+         
          if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0)) {
-            this.draw_g.append("text")
-              .attr("class", "text")
-              .attr("text-anchor", "start")
-              .attr("dominant-baseline", "central")
-              .attr("x", pos_x)
-              .attr("y", pos_y /*+ font.size*0.3*/)
-              .call(font.func)
-              .attr("fill", tcolor)
-              .text(label);
+            leg['_svg'] = this.draw_g.append("text")
+                           .attr("class", "text")
+                           .attr("text-anchor", "start")
+                           .attr("dominant-baseline", "central")
+                           .attr("x", pos_x)
+                           .attr("y", pos_y)
+                           .call(this.font.func)
+                           .attr("fill", tcolor)
+                           .text(label);
+            leg['_factor'] = Math.max(leg['_svg'].node().getBBox().width / leg['_maxw'],
+                                      leg['_svg'].node().getBBox().height / leg['_maxh']);
          } else {
 
             var fo_x = Math.round(pos_x);
@@ -6322,31 +6363,26 @@
             // this is just workaround, one need real parser to find all #frac and so on
             label = label.replace("#frac","\\(\\frac") + "\\)";
 
-            var body = fo.append("xhtml:div")
+            leg['_html'] = fo.append("xhtml:div")
                          .style("width", fo_w+"px")
                          .style("height", fo_h+"px")
                          .style("display", "table")
                          .append("xhtml:div")
                          .style("display", "table-cell")
                          .style('vertical-align', 'middle') // force to align in the center
-                         .style("font", font.asStyle())
+                         .style("font", this.font.asStyle())
+                         .style("fill", tcolor)
                          .html(label);
-
-            JSROOT.AssertPrerequisites('mathjax', function() {
+            
+            JSROOT.AssertPrerequisites('mathjax', { _this:leg, func: function() {
                if (typeof MathJax != 'object') return;
-
-               MathJax.Hub.Queue(function() {
-                  MathJax.Hub.Typeset(body.node());
-                  // rescale one again
-                  var rect = body.node().getBoundingClientRect();
-                  var fact_x = parseInt(rect.right - rect.left) / fo_w;
-                  var fact_y = parseInt(rect.bottom - rect.top) / fo_h;
-                  if (Math.max(fact_x, fact_y) > 1)
-                     body.style("font", font.asStyle(Math.round(font.size/Math.max(fact_x, fact_y))));
-               });
-            });
+               MathJax.Hub.Queue(["RescaleEntries", leg_painter, this]);
+            }} );
          }
       }
+      
+      // rescale after all entries are shown
+      this.RescaleEntries();
       
       if (lwidth && lwidth > 1) {
          this.draw_g.append("svg:line")
@@ -6363,22 +6399,20 @@
             .call(lcolor.func);
       }
 
-      var pthis = this;
-
       this.AddDrag('leg', this.draw_g, {
          move : function(x, y, dx, dy) {
-            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
+            leg_painter.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-            pave['fX1NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pave['fX2NDC'] += dx / Number(pthis.svg_pad().attr("width"));
-            pave['fY1NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
-            pave['fY2NDC'] -= dy / Number(pthis.svg_pad().attr("height"));
+            pave['fX1NDC'] += dx / leg_painter.pad_width();
+            pave['fX2NDC'] += dx / leg_painter.pad_width();
+            pave['fY1NDC'] -= dy / leg_painter.pad_height();
+            pave['fY2NDC'] -= dy / leg_painter.pad_height();
          },
          resize : function(width, height) {
-            pave['fX2NDC'] = pave['fX1NDC'] + width  / Number(pthis.svg_pad().attr("width"));
-            pave['fY1NDC'] = pave['fY2NDC'] - height / Number(pthis.svg_pad().attr("height"));
+            pave['fX2NDC'] = pave['fX1NDC'] + width  / leg_painter.pad_width();
+            pave['fY1NDC'] = pave['fY2NDC'] - height / leg_painter.pad_height();
 
-            pthis.drawLegend();
+            leg_painter.drawLegend();
          }
       });
    }
@@ -6559,8 +6593,7 @@
 
       var pavelabel = this.text;
 
-      var w = Number(this.svg_pad().attr("width")),
-          h = Number(this.svg_pad().attr("height"));
+      var w = this.pad_width(), h = this.pad_height();
 
       var pos_x = pavelabel['fX1NDC'] * w;
       var pos_y = (1.0 - pavelabel['fY1NDC']) * h;
@@ -6642,8 +6675,7 @@
 
       var kTextNDC = JSROOT.BIT(14);
 
-      var w = Number(this.svg_pad().attr("width")),
-          h = Number(this.svg_pad().attr("height"));
+      var w = this.pad_width(), h = this.pad_height();
       var align = 'start', halign = Math.round(this.text['fTextAlign'] / 10);
       var baseline = 'bottom', valign = this.text['fTextAlign'] % 10;
       if (halign == 1) align = 'start';

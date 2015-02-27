@@ -266,17 +266,24 @@
    JSROOT.CallBack = function(func, arg1, arg2) {
       // generic method to invoke callback function
       // func either normal function or container like
-      // { obj: _ object_pointer_, func: name of method to call }
+      // { obj: object_pointer, func: name of method to call }
+      // { _this: object pointer, func: function to call }
       // arg1, arg2 are optional arguments of the callback
 
-      if (func==null) return;
+      if (func == null) return;
 
       if (typeof func == 'string') func = JSROOT.findFunction(func);
 
       if (typeof func == 'function') return func(arg1,arg2);
 
-      if (typeof func == 'object' && typeof func.obj == 'object' &&
-         typeof func.func == 'string' && typeof func.obj[func.func] == 'function') return func.obj[func.func](arg1, arg2);
+      if (typeof func != 'object') return;
+      
+      if (('obj' in func) && ('func' in func) &&
+         (typeof func.obj == 'object') && (typeof func.func == 'string') && 
+         (typeof func.obj[func.func] == 'function')) return func.obj[func.func](arg1, arg2);
+      
+      if (('_this' in func) && ('func' in func) &&
+         (typeof func.func == 'function')) return func.func.call(func._this, arg1, arg2);   
    }
 
    JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
@@ -444,10 +451,7 @@
             var href = styles[n]['href'];
             if ((href == null) || (href.length == 0)) continue;
 
-            if (href.indexOf(filename)>=0) {
-               console.log("style "+  filename + " already loaded");
-               return completeLoad();
-            }
+            if (href.indexOf(filename)>=0) return completeLoad();
          }
 
       } else {
@@ -461,7 +465,6 @@
 
             if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0)) {
                // avoid wrong decision when script name is specified as more argument
-               // debug("script "+  filename + " already loaded src = " + src);
                return completeLoad();
             }
          }
@@ -508,8 +511,6 @@
       // '3d' for 3d graphic
       // 'simple' for basic user interface
       // 'load:' list of user-specific scripts at the end of kind string
-
-      if (typeof kind == 'function') { andThan = kind; kind = null; }
 
       if ((typeof kind != 'string') || (kind == ''))
          return JSROOT.CallBack(andThan);
