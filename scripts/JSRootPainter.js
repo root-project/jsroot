@@ -61,7 +61,9 @@
 
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       // dummy functions, forward call to the jquery function
+      document.body.style.cursor = 'wait';
       JSROOT.AssertPrerequisites('jq2d', function() {
+         document.body.style.cursor = 'auto';
          JSROOT.Painter.createMenu(maincallback, menuname);
       });
    }
@@ -1197,29 +1199,13 @@
       if (pad_painter) pad_painter.Redraw();
    }
 
-   JSROOT.TObjectPainter.prototype.RemoveDrag = function(id) {
-      var drag_rect_name = id + "_drag_rect";
-      var resize_rect_name = id + "_resize_rect";
-      if (this[drag_rect_name]) {
-         this[drag_rect_name].remove();
-         this[drag_rect_name] = null;
-      }
-      if (this[resize_rect_name]) {
-         this[resize_rect_name].remove();
-         this[resize_rect_name] = null;
-      }
-   }
-
-   JSROOT.TObjectPainter.prototype.AddDrag = function(id, draw_g, callback) {
+   JSROOT.TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
       var pthis = this;
 
-      var drag_rect_name = id + "_drag_rect";
-      var resize_rect_name = id + "_resize_rect";
-
-      var rect_width = function() { return Number(draw_g.attr("width")); }
-      var rect_height = function() { return Number(draw_g.attr("height")); }
+      var rect_width = function() { return Number(pthis.draw_g.attr("width")); }
+      var rect_height = function() { return Number(pthis.draw_g.attr("height")); }
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
       
@@ -1229,7 +1215,18 @@
          else if ('button' in event) return event.button === 1;
          return true;
       }
-
+      
+      var resize_rect =
+         pthis.draw_g.append("rect")
+                  .style("opacity", "0")
+                  .style("cursor", "se-resize")
+                  .attr("x", rect_width() - 20)
+                  .attr("y", rect_height() - 20)
+                  .attr("width", 20)
+                  .attr("height", 20);
+                  
+      var drag_rect = null;            
+                  
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
             if (!detectLeftButton(d3.event.sourceEvent)) return;
@@ -1240,60 +1237,65 @@
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
 
-            pthis[drag_rect_name] =
-               pthis.svg_pad()
-                 .append("rect")
+            drag_rect = pthis.draw_g.append("rect")
                  .attr("class", "zoom")
-                 .attr("id", drag_rect_name)
-                 .attr("x",  draw_g.attr("x"))
-                 .attr("y", draw_g.attr("y"))
+                 .attr("x",  0)
+                 .attr("y", 0)
                  .attr("width", rect_width())
                  .attr("height", rect_height())
                  .style("cursor", "move");
           }).on("drag", function() {
-               if (pthis[drag_rect_name] == null) return;
+               if (drag_rect == null) return;
              
                d3.event.sourceEvent.preventDefault();
 
-               var x = Number(pthis[drag_rect_name].attr("x"));
-               var y = Number(pthis[drag_rect_name].attr("y"));
+               var x = Number(drag_rect.attr("x"));
+               var y = Number(drag_rect.attr("y"));
+               var real_x = Number(pthis.draw_g.attr("x")) + x;
+               var real_y = Number(pthis.draw_g.attr("y")) + y;
+               
                var dx = d3.event.dx, dy = d3.event.dy;
 
-               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x += dx; dx = 0; }
-               if (((acc_y<0) && (dy>0)) || ((acc_y>0) && (dy<0))) { acc_y += dy; dy = 0; }
+               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x+=dx; dx=0; }
+               if (((acc_y<0) && (dy>0)) || ((acc_y>0) && (dy<0))) { acc_y+=dy; dy=0; }
 
-               if ((x + dx < 0) || (x +dx > pad_w)) acc_x += dx; else x+=dx;
-               if ((y+dy < 0) || (y+dy > pad_h)) acc_y += dy; else y += dy;
+               if ((real_x+dx < 0) || (real_x+dx > pad_w)) acc_x+=dx; else x+=dx;
+               if ((real_y+dy < 0) || (real_y+dy > pad_h)) acc_y+=dy; else y+=dy;
 
-               pthis[drag_rect_name].attr("x", x);
-               pthis[drag_rect_name].attr("y", y);
+               drag_rect.attr("x", x).attr("y", y);
 
-               JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
+               JSROOT.Painter.moveChildToEnd(drag_rect);
 
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
-               if (pthis[drag_rect_name]==null) return;
+               if (drag_rect==null) return;
              
                d3.event.sourceEvent.preventDefault();
 
-               pthis[drag_rect_name].style("cursor", "auto");
+               drag_rect.style("cursor", "auto");
 
-               var x = Number(pthis[drag_rect_name].attr("x"));
-               var y = Number(pthis[drag_rect_name].attr("y"));
+               var dx = Number(drag_rect.attr("x"));
+               var dy = Number(drag_rect.attr("y"));
 
-               var dx = x - Number(draw_g.attr("x"));
-               var dy = y - Number(draw_g.attr("y"));
+               var x = Number(pthis.draw_g.attr("x")) + dx;
+               var y = Number(pthis.draw_g.attr("y")) + dy;
 
-               pthis[drag_rect_name].remove();
-               pthis[drag_rect_name] = null;
+               drag_rect.remove();
+               drag_rect = null;
 
-               draw_g.attr("x", x).attr("y", y);
+               pthis.draw_g.attr("x", x).attr("y", y);
+               pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
 
-               callback.move(x, y, dx, dy);
-
-               pthis[resize_rect_name]
-                    .attr("x", rect_width() - 20)
-                    .attr("y", rect_height() - 20);
+               resize_rect.attr("x", rect_width() - 20)
+                          .attr("y", rect_height() - 20);
+               
+               if ('move' in callback) callback.move(x, y, dx, dy);
+               else if ('obj' in callback) {
+                  callback.obj['fX1NDC'] += dx / pthis.pad_width();
+                  callback.obj['fX2NDC'] += dx / pthis.pad_width();
+                  callback.obj['fY1NDC'] -= dy / pthis.pad_height();
+                  callback.obj['fY2NDC'] -= dy / pthis.pad_height();
+               }   
             });
 
       var drag_resize = d3.behavior.drag().origin(Object)
@@ -1304,71 +1306,63 @@
            d3.event.sourceEvent.preventDefault();
 
            acc_x = 0; acc_y = 0;
-           pad_w = pthis.pad_width() - Number(draw_g.attr("x"));
-           pad_h = pthis.pad_height() - Number(draw_g.attr("y"));
-           pthis[drag_rect_name] =
-              pthis.svg_pad()
-                .append("rect")
+           pad_w = pthis.pad_width() - Number(pthis.draw_g.attr("x"));
+           pad_h = pthis.pad_height() - Number(pthis.draw_g.attr("y"));
+           drag_rect = pthis.draw_g.append("rect")
                 .attr("class", "zoom")
-                .attr("id", drag_rect_name)
-                .attr("x",  draw_g.attr("x"))
-                .attr("y", draw_g.attr("y"))
+                .attr("x",  0)
+                .attr("y", 0)
                 .attr("width", rect_width())
                 .attr("height", rect_height())
                 .style("cursor", "se-resize");
          }).on("drag", function() {
-            if (pthis[drag_rect_name] == null) return;
+            if (drag_rect == null) return;
             
             d3.event.sourceEvent.preventDefault();
 
-            var w = Number(pthis[drag_rect_name].attr("width"));
-            var h = Number(pthis[drag_rect_name].attr("height"));
+            var w = Number(drag_rect.attr("width"));
+            var h = Number(drag_rect.attr("height"));
             var dx = d3.event.dx, dy = d3.event.dy;
             if ((acc_x>0) && (dx<0)) { acc_x += dx; dx = 0; }
             if ((acc_y>0) && (dy<0)) { acc_y += dy; dy = 0; }
             if (w+dx > pad_w) acc_x += dx; else w+=dx;
             if (h+dy > pad_h) acc_y += dy; else h+=dy;
-            pthis[drag_rect_name].attr("width", w);
-            pthis[drag_rect_name].attr("height", h);
+            drag_rect.attr("width", w).attr("height", h);
 
-            JSROOT.Painter.moveChildToEnd(pthis[drag_rect_name]);
+            JSROOT.Painter.moveChildToEnd(drag_rect);
 
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
-            if (pthis[drag_rect_name] == null) return;
+            if (drag_rect == null) return;
             
             d3.event.sourceEvent.preventDefault();
             
-            pthis[drag_rect_name].style("cursor", "auto");
+            drag_rect.style("cursor", "auto");
 
-            var newwidth = Number(pthis[drag_rect_name].attr("width"));
-            var newheight = Number(pthis[drag_rect_name].attr("height"));
+            var newwidth = Number(drag_rect.attr("width"));
+            var newheight = Number(drag_rect.attr("height"));
 
-            draw_g.attr('width', newwidth).attr('height', newheight);
+            pthis.draw_g.attr('width', newwidth).attr('height', newheight);
 
-            pthis[drag_rect_name].remove();
-            pthis[drag_rect_name] = null;
+            drag_rect.remove();
+            drag_rect = null;
 
-            callback.resize(newwidth, newheight);
-
-            // do it after call-back - rectangle has correct coordinates
-            pthis[resize_rect_name]
-              .attr("x", newwidth - 20)
-              .attr("y", newheight - 20);
+            resize_rect.attr("x", newwidth - 20)
+                       .attr("y", newheight - 20);
+            
+            if ('resize' in callback) callback.resize(newwidth, newheight); else {
+                if ('obj' in callback) {
+                   callback.obj['fX2NDC'] = callback.obj['fX1NDC'] + newwidth  / pthis.pad_width();
+                   callback.obj['fY1NDC'] = callback.obj['fY2NDC'] - newheight / pthis.pad_height();
+                }
+                if (('redraw' in callback) && 
+                    (typeof pthis[callback.redraw] == 'function')) pthis[callback.redraw](); 
+            }
          });
 
-      draw_g.style("cursor", "move").call(drag_move);
-
-      this[resize_rect_name] =
-         draw_g.append("rect")
-                  .attr("class", resize_rect_name)
-                  .style("opacity", "0")
-                  .style("cursor", "se-resize")
-                  .attr("x", rect_width() - 20)
-                  .attr("y", rect_height() - 20)
-                  .attr("width", 20)
-                  .attr("height", 20)
-                  .call(drag_resize);
+      pthis.draw_g.style("cursor", "move").call(drag_move);
+      
+      resize_rect.call(drag_resize);
    }
 
    JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
@@ -2639,22 +2633,7 @@
                     .style("stroke-width", lwidth);
       }
 
-      this.AddDrag("stat", this.draw_g, {
-         move : function(x, y, dx, dy) {
-            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
-
-            pthis.pavetext['fX1NDC'] += dx / pthis.pad_width();
-            pthis.pavetext['fX2NDC'] += dx / pthis.pad_width();
-            pthis.pavetext['fY1NDC'] -= dy / pthis.pad_height();
-            pthis.pavetext['fY2NDC'] -= dy / pthis.pad_height();
-         },
-         resize : function(width, height) {
-            pthis.pavetext['fX2NDC'] = pthis.pavetext['fX1NDC'] + width  / pthis.pad_width();
-            pthis.pavetext['fY1NDC'] = pthis.pavetext['fY2NDC'] - height / pthis.pad_height();
-
-            pthis.DrawPaveText();
-         }
-      });
+      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
@@ -2691,17 +2670,13 @@
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
 
-      this.RemoveDrawG();
-
       // if pavetext artificially disabled, do not redraw it
-      if (!this.Enabled) {
-         this.RemoveDrag("stat");
-         return;
-      }
-
-      this.FillStatistic();
-
-      this.DrawPaveText();
+      if (this.Enabled) {
+         this.FillStatistic();
+         this.DrawPaveText();
+      } else {
+         this.RemoveDrawG();
+      } 
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
@@ -3069,26 +3044,7 @@
                 .call(titlefont.func);
       }
 
-      var pthis = this;
-
-      this.AddDrag("colz", this.draw_g, {
-         move : function(x, y, dx, dy) {
-
-            pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
-
-            pthis.palette['fX1NDC'] += dx / pthis.pad_width();
-            pthis.palette['fX2NDC'] += dx / pthis.pad_width();
-            pthis.palette['fY1NDC'] -= dy / pthis.pad_height();
-            pthis.palette['fY2NDC'] -= dy / pthis.pad_height();
-         },
-         resize : function(width, height) {
-            pthis.palette['fX2NDC'] = pthis.palette['fX1NDC'] + width / pthis.pad_width();
-            pthis.palette['fY1NDC'] = pthis.palette['fY2NDC'] - height / pthis.pad_height();
-
-            pthis.RemoveDrawG();
-            pthis.DrawPalette();
-         }
-      });
+      this.AddDrag({ obj: palette, redraw: 'DrawPalette' });
    }
 
    JSROOT.TColzPalettePainter.prototype.Redraw = function() {
@@ -3103,7 +3059,6 @@
       } else {
          // if palette artificially disabled, do not redraw it
          this.RemoveDrawG();
-         this.RemoveDrag("colz");
       }
    }
 
@@ -6379,22 +6334,7 @@
             .call(lcolor.func);
       }
 
-      this.AddDrag('leg', this.draw_g, {
-         move : function(x, y, dx, dy) {
-            leg_painter.draw_g.attr("transform", "translate(" + x + "," + y + ")");
-
-            pave['fX1NDC'] += dx / leg_painter.pad_width();
-            pave['fX2NDC'] += dx / leg_painter.pad_width();
-            pave['fY1NDC'] -= dy / leg_painter.pad_height();
-            pave['fY2NDC'] -= dy / leg_painter.pad_height();
-         },
-         resize : function(width, height) {
-            pave['fX2NDC'] = pave['fX1NDC'] + width  / leg_painter.pad_width();
-            pave['fY1NDC'] = pave['fY2NDC'] - height / leg_painter.pad_height();
-
-            leg_painter.drawLegend();
-         }
-      });
+      this.AddDrag({ obj:pave, redraw: 'drawLegend' });
    }
 
    JSROOT.TLegendPainter.prototype.Redraw = function() {
@@ -6639,24 +6579,8 @@
       
       var pave_painter = this;
       
-      this.AddDrag('pave', this.draw_g, {
-         move : function(x, y, dx, dy) {
-            pave_painter.draw_g.attr("transform", "translate(" + x + "," + y + ")");
-
-            pavelabel['fX1NDC'] += dx / pave_painter.pad_width();
-            pavelabel['fX2NDC'] += dx / pave_painter.pad_width();
-            pavelabel['fY1NDC'] -= dy / pave_painter.pad_height();
-            pavelabel['fY2NDC'] -= dy / pave_painter.pad_height();
-         },
-         resize : function(width, height) {
-            pavelabel['fX2NDC'] = pavelabel['fX1NDC'] + width  / pave_painter.pad_width();
-            pavelabel['fY1NDC'] = pavelabel['fY2NDC'] - height / pave_painter.pad_height();
-
-            pave_painter.drawPaveLabel();
-         }
-      });
-      
-   }
+      this.AddDrag({ obj : pavelabel, redraw:'drawPaveLabel' }); 
+   } 
 
    JSROOT.TTextPainter.prototype.drawText = function() {
       this.RecreateDrawG(true, ".text_layer");
