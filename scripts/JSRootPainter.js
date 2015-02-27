@@ -1381,11 +1381,14 @@
       // options
    }
    
-   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size) {
-      // we need to preserve font to be able rescle at the end 
+   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g) {
+      // we need to preserve font to be able rescle at the end
+      
+      if (!draw_g) draw_g = this.draw_g;
+       
       this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
 
-      this.draw_g.call(this.text_font.func);
+      draw_g.call(this.text_font.func);
       
       this.mathjax_cnt = 1; // one should wait until last finish call
       this.text_factor = 0.;
@@ -1397,7 +1400,7 @@
       if (value && (value>this.text_factor)) this.text_factor = value;
    }
 
-   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry) {
+   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
       if (entry != null) {
          MathJax.Hub.Typeset(entry.node());
          var prnt = entry.node().parentNode;
@@ -1405,17 +1408,18 @@
          var real_w = parseInt(rect.right) - parseInt(rect.left);
          var real_h = parseInt(rect.bottom) - parseInt(rect.top);               
          if (real_w > this.max_text_width) this.max_text_width = real_w;
-         if (entry.property('_scale')) {     
-            this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
-            this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
-         }
+         // no need to continue when scaling not performed
+         if (!entry.property('_scale')) return; 
+         this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
+         this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
       }
       
       if (--this.mathjax_cnt>0) return 0;
 
       if (this.text_factor > 1) {
+         if (!draw_g) draw_g = this.draw_g;
          this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
-         this.draw_g.call(this.text_font.func);
+         draw_g.call(this.text_font.func);
       }
       
       this.text_factor = 0.;
@@ -1425,33 +1429,40 @@
       return this.max_text_width;
    }
    
-   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor, no_latex) {
+   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor, no_latex, draw_g) {
+      if (!draw_g) draw_g = this.draw_g; 
+   
+      var scale = (w>0) && (h>0);
+
       if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0) || no_latex) {
          if (!no_latex) label = JSROOT.Painter.translateLaTeX(label);
          
-         var pos_x, pos_y;
+         var pos_x = x.toFixed(1);
          
-         if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else    
-         if (align=="end") pos_x = (x+w).toFixed(1); else pos_x = x.toFixed(1);
+         if (scale) {
+            if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else    
+            if (align=="end") pos_x = (x+w).toFixed(1);
+         }
          
-         var txt = this.draw_g.append("text")
-                        .attr("text-anchor", align)
-                        .attr("x", pos_x)
-                        .attr("fill", tcolor ? tcolor : "none")
-                        .text(label);
-         if (h==0) {
-            txt.attr("y", y.toFixed(1));
-         } else {
+         var txt = draw_g.append("text")
+                         .attr("text-anchor", align)
+                         .attr("x", pos_x)
+                         .attr("fill", tcolor ? tcolor : null)
+                         .text(label);
+         if (scale) {
             txt.attr("dominant-baseline", "central")
                .attr("y", (y + h*0.5).toFixed(1));
-         }
+         } else {
+            txt.attr("y", y.toFixed(1));
+            if (h==-270) txt.attr("transform", "rotate(270, 0, 0)");
+         } 
                         
          var real_w = parseInt(txt.node().getBBox().width);
          var real_h = parseInt(txt.node().getBBox().height);               
                    
          if (real_w > this.max_text_width) this.max_text_width = real_w;
-         if (w>0) this.TextScaleFactor(real_w/w);
-         if (h>0) this.TextScaleFactor(real_h/h);
+         if ((w>0) && scale) this.TextScaleFactor(real_w/w);
+         if ((h>0) && scale) this.TextScaleFactor(real_h/h);
                                
          return real_w;
       }                         
@@ -1459,10 +1470,9 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
       
-      var scale = (w>0) && (h>0);
       if (!scale) { w = 200; h = 100; } // artifical values, not important for us
 
-      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
 
 //    this is just workaround, one need real parser to find all #frac and so on
@@ -1470,15 +1480,17 @@
 
       var entry = fo.append("xhtml:div")
                     .style("width", w+"px")
-                    .style("height", h+"px")
-                    .style("display", scale ? "table" : null)
-                    .append("xhtml:div")
-                    .style("display", scale ? "table-cell" : null)
-                    .style('vertical-align', scale ? 'middle' : null) // force to align in the center
-                    .style("fill", (tcolor && scale) ? tcolor : null)
-                    .property("_painter", this)
-                    .property("_scale", scale)
-                    .html(label);
+                    .style("height", h+"px");
+      if (scale)
+         entry = entry.style("display", "table")
+                      .append("xhtml:div")
+                      .style("display", "table-cell")
+                      .style('vertical-align', 'middle') // force to align in the center
+                      .style("fill", tcolor ? tcolor : null);
+     
+     entry.property("_painter", this)
+          .property("_scale", scale)
+          .html(label);
                     
       this.mathjax_cnt++;
 
@@ -2573,23 +2585,6 @@
       }
       
       var maxtw = this.FinishTextDrawing();
-      
-      /*
-      if ((nlines==1) && (lwidth==0) && (maxtw>0) && (maxtw < width - 40) && (align=='middle'))  {
-         // shrink invisible size of the pave for comfort resizing
-         
-         console.log('shrink pave from ' + width + " to " + maxtw);
-         
-         pos_x += Math.round((width - maxtw)/2);
-         width = maxtw;
-         pavetext['fX1NDC'] = pos_x / w;
-         pavetext['fX2NDC'] = (pos_x + width) / w;
-         rect.attr("width", width);
-         this.draw_g.attr("x", pos_x)
-                    .attr("width", width)
-                    .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
-      }
-*/
 
       if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
          this.draw_g.append("svg:line")
@@ -3939,39 +3934,40 @@
       var n3ay = ndivy / 10000;
 
       /* X-axis label */
-      var label = JSROOT.Painter.translateLaTeX(this.histo['fXaxis']['fTitle']);
-      var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
-
       var xlabelfont = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont'], this.histo['fXaxis']['fLabelSize'] * h);
 
-      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont'], this.histo['fYaxis']['fLabelSize'] * h);
+      var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
 
-      if (label.length > 0) {
-         var xtitlefont = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h);
-         xax_g.append("text")
-               .attr("class", "x_axis_label")
-               .attr("x", w)
-               .attr("y", xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xtitlefont.size)
-               .attr("text-anchor", "end")
-               .call(xtitlefont.func)
-               .text(label);
+      console.log('xtitle = ' + this.histo['fXaxis']['fTitle']);
+
+      if (this.histo['fXaxis']['fTitle'].length > 0) {
+          
+          this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
+
+          
+
+          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + this.text_font.size, 
+                                    0, 0, this.histo['fXaxis']['fTitle'], null, false, xax_g);
+                                    
+          if (res<=0) shrink_forbidden = true;
+
+          this.FinishTextDrawing(null, xax_g);
       }
 
       /* Y-axis label */
-      label = JSROOT.Painter.translateLaTeX(this.histo['fYaxis']['fTitle']);
-
       var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
 
-      if (label.length > 0) {
-         var ytitlefont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h);
-         yax_g.append("text")
-                .attr("class", "y_axis_label")
-                .attr("x", 0)
-                .attr("y", - ylabelfont.size - ytitlefont.size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'])
-                .call(ytitlefont.func)
-                .attr("text-anchor", "end")
-                .text(label)
-                .attr("transform", "rotate(270, 0, 0)");
+      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont'], this.histo['fYaxis']['fLabelSize'] * h);
+
+      if (this.histo['fYaxis']['fTitle'].length > 0) {
+         this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
+      
+         var res = this.DrawText("end", 0, - ylabelfont.size - this.text_font.size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
+                                   0, -270, this.histo['fYaxis']['fTitle'], null, false, yax_g); 
+                                             
+         if (res<=0) shrink_forbidden = true;
+         
+         this.FinishTextDrawing(null, yax_g);
       }
 
       var xAxisColor = this.histo['fXaxis']['fAxisColor'];
@@ -4097,7 +4093,6 @@
 
       if ('formaty' in this)
          y_axis.tickFormat(function(d) { return pthis.formaty(d); });
-
 
 
       xax_g.append("svg:g").attr("class", "xaxis").call(x_axis);
