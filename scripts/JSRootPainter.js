@@ -28,7 +28,7 @@
    // one could specify supported options list, separated with ';'
    // One could specify several draw functions for different draw options
    JSROOT.addDrawFunc = function(_name, _func, _opt) {
-      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) 
+      if ((arguments.length == 1) && (typeof arguments[0] == 'object'))
          JSROOT.fDrawFunc.push(arguments[0]);
       else
          JSROOT.fDrawFunc.push({ name:_name, func:_func, opt:_opt });
@@ -57,15 +57,15 @@
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
    JSROOT.Painter = {};
-   
-   
+
+
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       // dummy functions, forward call to the jquery function
       JSROOT.AssertPrerequisites('jq2d', function() {
          JSROOT.Painter.createMenu(maincallback, menuname);
       });
    }
-   
+
    JSROOT.Painter.closeMenu = function(menuname) {
       if (!menuname) menuname = 'root_ctx_menu';
       var x = document.getElementById(menuname);
@@ -978,7 +978,7 @@
          svg_c = this.svg_canvas();
          this['create_canvas'] = true;
       }
-      
+
       if (svg_c.empty()) {
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
@@ -1003,7 +1003,7 @@
 
       var svg_p = this.svg_pad();
       if (svg_p.empty()) return;
-      
+
       if (svg_p.property('pad_painter') != this)
          svg_p.property('pad_painter').painters.push(this);
 
@@ -1150,7 +1150,7 @@
       // Iterate over all known painters
 
       var main = d3.select("#" + this.divid);
-      var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null; 
+      var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null;
       if (painter!=null) { userfunc(painter); return; }
 
       var svg_c = this.svg_canvas();
@@ -2639,7 +2639,7 @@
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
       var render_to = d3.select("#" + this.divid);
-      
+
       var rect = render_to.node().getBoundingClientRect();
       var w = rect.width, h = rect.height, factor = null;
 
@@ -4391,8 +4391,8 @@
 
          // ignore context menu when touches zooming is ongoing
          if (zoom_kind > 100) return;
-         
-         // one need to copy event, while after call back event may be changed 
+
+         // one need to copy event, while after call back event may be changed
          var evnt = d3.event;
 
          // suppress any running zomming
@@ -5385,7 +5385,7 @@
       pal['fName'] = 'palette';
 
       pal['_AutoCreated'] = true;
-      
+
       var ndc = this.svg_frame().property('NDC');
 
       pal['fX1NDC'] = ndc.x2 - rel_width;
@@ -7199,7 +7199,7 @@
       });
       req.send();
    }
-   
+
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
       if (this.frameid == null) return JSROOT.CallBack(callback);
       var hpainter = this;
@@ -7276,13 +7276,13 @@
 
    JSROOT.HierarchyPainter.prototype.player = function(itemname, option, call_back) {
       var item = this.Find(itemname);
-      
+
       if (!item || !('_player' in item)) return JSROOT.CallBack(call_back, null);
 
       var hpainter = this;
 
       var prereq = ('_prereq' in item) ? item['_prereq'] : '';
-      
+
       JSROOT.AssertPrerequisites(prereq, function() {
 
          var player_func = JSROOT.findFunction(item._player);
@@ -7298,8 +7298,8 @@
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
-      
-      h.CreateDisplay(function(mdi) { 
+
+      h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back, null, itemname);
 
          var updating = (drawopt=="update");
@@ -7354,7 +7354,7 @@
          });
       });
    }
-   
+
    JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
       // here is not used - implemented with jquery
    }
@@ -7405,10 +7405,10 @@
 
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
 
-      if ((items == null) || (items.length == 0)) return JSROOT.CallBack(call_back); 
-            
+      if ((items == null) || (items.length == 0)) return JSROOT.CallBack(call_back);
+
       var h = this;
-      
+
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back);
 
@@ -7619,7 +7619,7 @@
 
          painter.CompleteOnline(function() {
             painter.RefreshHtml(function() {
-               JSROOT.CallBack(user_callback, painter);   
+               JSROOT.CallBack(user_callback, painter);
             });
          });
       }
@@ -7746,15 +7746,15 @@
          delete this.h;
       }
    }
-   
+
    JSROOT.HierarchyPainter.prototype.GetDisplay = function() {
-      return ('disp' in this) ? this['disp'] : null; 
+      return ('disp' in this) ? this['disp'] : null;
    }
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
-      
+
       var h = this;
-      
+
       if ('disp' in this) {
          if (h['disp'].NumDraw() > 0) return JSROOT.CallBack(callback, h['disp']);
          h['disp'].Reset();
@@ -7762,7 +7762,7 @@
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this['disp_frameid']) == null) 
+      if (document.getElementById(this['disp_frameid']) == null)
          return JSROOT.CallBack(callback, null);
 
       if (h['disp_kind'] == "simple")
@@ -7770,10 +7770,10 @@
       else
       if (h['disp_kind'].search("grid") == 0)
          h['disp'] = new JSROOT.GridDisplay(h['disp_frameid'], h['disp_kind']);
-      
+
       if (h['disp'] != null)
          JSROOT.CallBack(callback, h['disp']);
-      else 
+      else
          JSROOT.AssertPrerequisites('jq2d', function() {
             h.CreateDisplay(callback);
          });
@@ -7783,7 +7783,7 @@
       if ('disp' in this)
          this['disp'].CheckResize();
    }
-   
+
    JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
       var hpainter = this;
       var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
@@ -7799,7 +7799,7 @@
 
       var layout = JSROOT.GetUrlOption("layout");
       if (!this['disp_kind'] || (layout!=null))
-         this['disp_kind'] = (layout && layout.length>0) ? layout : 'simple'; 
+         this['disp_kind'] = (layout && layout.length>0) ? layout : 'simple';
 
       if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
 
@@ -7811,11 +7811,11 @@
          if (filesarr.length>0)
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
          else
-            hpainter.displayAll(itemsarr, optionsarr, function() { 
+            hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
-               
+
                JSROOT.RegisterForResize(hpainter);
-               
+
                setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
 
                JSROOT.CallBack(call_back);
@@ -7847,7 +7847,7 @@
       if (h0!=null) hpainter.OpenOnline(h0, AfterOnlineOpened);
                else OpenAllFiles();
    }
-   
+
    JSROOT.BuildNobrowserGUI = function() {
       var myDiv = d3.select('#simpleGUI');
       var online = false;
@@ -7867,14 +7867,14 @@
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
       hpainter.SetDisplay('simple', myDiv.attr('id'));
-      
+
       var h0 = null;
       if (online) {
          var func = JSROOT.findFunction('GetCachedHierarchy');
          if (typeof func == 'function') h0 = func();
          if (typeof h0 != 'object') h0 = "";
       }
-      
+
       hpainter.StartGUI(h0, function() {});
    }
 
@@ -7975,7 +7975,7 @@
    JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var node = d3.select("#"+this.frameid); 
+      var node = d3.select("#"+this.frameid);
       if (!node.empty() && node.property('title') != '')
          JSROOT.CallBack(userfunc, node.node());
    }
@@ -8132,7 +8132,7 @@
             if (!node.empty()) {
                var mdi = node.property('mdi');
                if (mdi) {
-                  mdi.CheckResize(); 
+                  mdi.CheckResize();
                } else {
                   var dummy = new JSROOT.TObjectPainter();
                   var first = true;
@@ -8249,7 +8249,7 @@
 
    JSROOT.draw = function(divid, obj, opt) {
       if (typeof obj != 'object') return null;
-      
+
       var draw_func = null;
       if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt);
       else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);

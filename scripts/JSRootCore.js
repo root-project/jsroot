@@ -33,7 +33,7 @@
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
 
    JSROOT.function_list = []; // do we really need it here?
-   
+
    JSROOT.BIT = function(n) { return 1 << (n); }
 
    // TH1 status bits
@@ -116,38 +116,38 @@
 
       return value;
    }
-   
+
    // This should be similar to the jQuery.extend method
-   // Major complication - when same object appears N times in the source, 
-   // it should be cloned once and inserted N times in the target and not cloned N times 
+   // Major complication - when same object appears N times in the source,
+   // it should be cloned once and inserted N times in the target and not cloned N times
    JSROOT.extend = function(tgt, src, map) {
       if (!map) map = { obj:[], clones:[] };
-      
+
       if (typeof src != 'object') return src;
-         
+
       if (src == null) return null;
-      
+
       var i = map.obj.indexOf(src);
       if (i>=0) return map.clones[i];
-         
+
       // process array
       if (Object.prototype.toString.apply(src) === '[object Array]') {
-         if ((tgt==null) || (Object.prototype.toString.apply(tgt) != '[object Array]')) { 
-            tgt = []; 
-            map.obj.push(src); 
-            map.clones.push(tgt); 
+         if ((tgt==null) || (Object.prototype.toString.apply(tgt) != '[object Array]')) {
+            tgt = [];
+            map.obj.push(src);
+            map.clones.push(tgt);
          }
 
-         for (i = 0; i < src.length; i++) 
+         for (i = 0; i < src.length; i++)
             tgt.push(JSROOT.extend(null, src[i], map));
-               
+
          return tgt;
       }
-         
-      if ((tgt==null) || (typeof tgt != 'object')) { 
-         tgt = {}; 
-         map.obj.push(src); 
-         map.clones.push(tgt); 
+
+      if ((tgt==null) || (typeof tgt != 'object')) {
+         tgt = {};
+         map.obj.push(src);
+         map.clones.push(tgt);
       }
 
       var k, ks = Object.keys(src);
@@ -298,7 +298,7 @@
          if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
       }
 
-      
+
 //      if (typeof ActiveXObject == "function") {
       if (window.ActiveXObject) {
          // console.log(" Create IE request");
@@ -513,14 +513,14 @@
 
       if (typeof kind == 'function') { andThan = kind; kind = null; }
 
-      if ((typeof kind != 'string') || (kind == '')) 
-         return JSROOT.CallBack(andThan); 
-         
+      if ((typeof kind != 'string') || (kind == ''))
+         return JSROOT.CallBack(andThan);
+
       if (kind.charAt(kind.length-1)!=";") kind+=";";
       var ext = JSROOT.source_min ? ".min" : "";
 
       var need_jquery = false;
-      
+
       // file names should be separated with ';'
       var allfiles = '';
 
@@ -538,10 +538,10 @@
          allfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
          need_jquery = true;
       }
-      
+
       if (kind.indexOf("3d;")>=0) {
          need_jquery = true;
-         allfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" + 
+         allfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
                      "$$$scripts/three.min.js;" +
                      "$$$scripts/helvetiker_regular.typeface.js;" +
                      "$$$scripts/helvetiker_bold.typeface.js;" +
@@ -556,13 +556,13 @@
          allfiles += '$$$scripts/JSRootInterface' + ext + ".js;" +
                      '$$$style/JSRootInterface' + ext + ".css;";
       }
-      
+
       if (need_jquery) {
-         allfiles = '$$$scripts/jquery.min.js;' + 
+         allfiles = '$$$scripts/jquery.min.js;' +
                     '$$$style/jquery-ui.css;' +
-                    '$$$scripts/jquery-ui.min.js;' + 
+                    '$$$scripts/jquery-ui.min.js;' +
                     allfiles;
-         if (JSROOT.touches) 
+         if (JSROOT.touches)
             allfiles += '$$$scripts/touch-punch.min.js;';
       }
 
@@ -582,11 +582,11 @@
       var debugout = null;
       var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
       var requirements = "io;2d;";
-      
+
       if (document.getElementById('simpleGUI')) { debugout = 'simpleGUI'; requirements = "io;2d;" } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; }
       if (!nobrowser) requirements+='jq2d;simple;';
-            
+
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
 
@@ -2201,8 +2201,8 @@
          var user = JSROOT.GetUrlOption('load', src);
          if ((user!=null) && (user.length>0)) prereq += "load:" + user;
          var onload = JSROOT.GetUrlOption('onload', src);
-         
-         if ((prereq.length>0) || (onload!=null)) 
+
+         if ((prereq.length>0) || (onload!=null))
             window.onload = function() {
               if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
               if (onload!=null) {

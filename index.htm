@@ -15,7 +15,6 @@
    </body>
 </html>
 
-
 <!--
 
 This is JSROOT main page, which aims to display content of ROOT files.
@@ -25,14 +24,13 @@ Several URL parameters could be specified when opening page:
    opt       - draw option(s) for the item(s)
    layout    - can be 'collapsible', 'tabs' or gridNxM where N and M are integer values
    nobrowser - only file item(s) will be displayed, browser will be disabled
-   load      - name of JavaScript(s), automatically loaded at the beginning 
+   load      - name of JavaScript(s), automatically loaded at the beginning
 
 Example:
    https://root.cern.ch/js/3.4/?file=../files/hsimple.root&layout=grid2x2&item=[hpx;1,hpxpy;1]&opts=[,colz]
 
 Page can be used to open files from other web servers like:
-
-   https://web-docs.gsi.de/~linev/js/3.4/index.htm?file=https://root.cern.ch/js/files/hsimple.root
+   https://root.cern.ch/js/3.4/?file=https://web-docs.gsi.de/~linev/js/files/hsimple.root
 
 But one should be aware about Cross-Origin Request blocking.
 Read https://developer.mozilla.org/en/http_access_control for more details.
@@ -42,6 +40,6 @@ And specify full path to the JSRootCore.js script like
    <script type="text/javascript" src="https://root.cern.ch/js/3.4/scripts/JSRootCore.min.js?gui"></script>
 
 If necessary, complete JSROOT can be installed on the web server.
-Sources can be found in $ROOTSYS/etc/http/.
+All sources can be found in $ROOTSYS/etc/http/ directory.
 
 -->

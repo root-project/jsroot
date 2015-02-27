@@ -64,7 +64,7 @@ function BuildSimpleGUI() {
 
    if (JSROOT.GetUrlOption("nobrowser")!=null)
       return JSROOT.BuildNobrowserGUI();
-   
+
    var myDiv = $('#simpleGUI');
    var online = false;
 
@@ -138,9 +138,9 @@ function BuildSimpleGUI() {
    }
 
    hpainter = new JSROOT.HierarchyPainter('root', 'browser');
-   
+
    hpainter.SetDisplay(guiLayout(), drawDivId);
-   
+
    hpainter.StartGUI(h0, function() {
 
       JSROOT.ConfigureVSeparator(hpainter);
@@ -150,7 +150,7 @@ function BuildSimpleGUI() {
       $("#layout").change(function() {
          if (hpainter) hpainter.SetDisplay(guiLayout(), drawDivId);
       });
-      
+
       if (online) {
          $("#monitoring")
              .prop('checked', hpainter.IsMonitoring())
