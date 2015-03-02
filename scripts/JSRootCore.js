@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.4 dev 27/02/2015";
+   JSROOT.version = "3.4 dev 2/03/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -503,8 +503,10 @@
 
       document.getElementsByTagName("head")[0].appendChild(element);
    }
-
-   JSROOT.AssertPrerequisites = function(kind, andThan, debugout) {
+   
+   JSROOT.doing_assert = null; // array where all requests are collected
+   
+   JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
       // 'io' for I/O functionality (default)
       // '2d' for 2d graphic
@@ -513,9 +515,23 @@
       // 'load:' list of user-specific scripts at the end of kind string
 
       if ((typeof kind != 'string') || (kind == ''))
-         return JSROOT.CallBack(andThan);
+         return JSROOT.CallBack(callback);
+
+      if (kind=='shift') {
+         var req = JSROOT.doing_assert.shift();
+         kind = req._kind;
+         callback = req._callback;
+         debugout = req._debug;
+      } else
+      if (JSROOT.doing_assert != null) {
+         // if function already called, store request 
+         return JSROOT.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
+      } else {
+         JSROOT.doing_assert = [];
+      } 
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
+      
       var ext = JSROOT.source_min ? ".min" : "";
 
       var need_jquery = false;
@@ -569,7 +585,12 @@
       if (pos<0) pos = kind.indexOf("load:");
       if (pos>=0) allfiles += kind.slice(pos+5);
 
-      JSROOT.loadScript(allfiles, andThan, debugout);
+      JSROOT.loadScript(allfiles, function() {
+         if (JSROOT.doing_assert.length==0) JSROOT.doing_assert = null;
+         JSROOT.CallBack(callback);
+         if (JSROOT.doing_assert!=null)
+            JSROOT.AssertPrerequisites('shift');
+      }, debugout);
    }
 
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {

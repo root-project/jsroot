@@ -1202,11 +1202,11 @@
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
       
-      function detectLeftButton(event) {
-         if ('buttons' in event) return event.buttons === 1;
-         else if ('which' in event) return event.which === 1;
-         else if ('button' in event) return event.button === 1;
-         return true;
+      function detectRightButton(event) {
+         if ('buttons' in event) return event.buttons === 2;
+         else if ('which' in event) return event.which === 2;
+         else if ('button' in event) return event.button === 2;
+         return false;
       }
       
       var resize_rect =
@@ -1222,7 +1222,7 @@
                   
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
-            if (!detectLeftButton(d3.event.sourceEvent)) return;
+            if (detectRightButton(d3.event.sourceEvent)) return;
             
             d3.event.sourceEvent.preventDefault();
             
@@ -1291,7 +1291,7 @@
 
       var drag_resize = d3.behavior.drag().origin(Object)
         .on( "dragstart", function() {
-           if (!detectLeftButton(d3.event.sourceEvent)) return;
+           if (detectRightButton(d3.event.sourceEvent)) return;
            
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
@@ -4115,9 +4115,11 @@
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-      xax_g.selectAll("text").call(xlabelfont.func);
+      // xax_g.selectAll("text").call(xlabelfont.func);
+      // yax_g.selectAll("text").call(ylabelfont.func);
 
-      yax_g.selectAll("text").call(ylabelfont.func);
+      xax_g.call(xlabelfont.func);
+      yax_g.call(ylabelfont.func);
 
       // we will use such rect for zoom selection
       if (JSROOT.gStyle.Zooming) {
@@ -4614,16 +4616,7 @@
          d3.event.stopPropagation();
       }
 
-      function detectLeftButton(event) {
-         if ('buttons' in event) return event.buttons === 1;
-         else if ('which' in event) return event.which === 1;
-         else return event.button === 1;
-       }
-
       function startRectSel() {
-
-         // use only left button
-         // if (!detectLeftButton(d3.event)) return;
 
          // ignore when touch selection is actiavated
          if (zoom_kind > 100) return;
