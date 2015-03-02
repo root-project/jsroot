@@ -564,7 +564,7 @@
       }
 
       if (kind.indexOf("mathjax;")>=0)
-        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML;";
+        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML;";
 
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;

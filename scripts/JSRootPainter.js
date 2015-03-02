@@ -797,6 +797,52 @@
       }
       return str;
    }
+   
+   JSROOT.Painter.isAnyLatex = function(str) {
+      
+      return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0); 
+      
+      //var specials = "\\{}_()#";
+      //for (var i=0;i<str.length;i++) {
+      //   if (specials.indexOf(str[i])>=0) return true;
+      //}
+      //return false;
+      
+      //for ( var x in JSROOT.Painter.symbols_map) 
+      //   if (str.indexOf(x) >= 0) return true;
+   }
+   
+   JSROOT.Painter.translateMath = function(str) {
+      // function translate ROOT TLatex into MathJax format
+      
+      str = str.replace("#frac", "\\frac");
+
+      for ( var x in JSROOT.Painter.symbols_map) {
+         var y = "\\" + x.substr(1);
+         str = str.replace(x, y);
+      }
+      
+      var left = 0, right = str.length;
+      var specials = "\\{}_()#";
+      
+      for (var i=0;i<str.length;i++) {
+         if (specials.indexOf(str[i])>=0) break;
+         if (str[i]==" ") left = i;
+      }
+      for (var i=str.length-1;i>=0;i--) {
+         if (specials.indexOf(str[i])>=0) break;
+         if (str[i]==" ") right = i;
+      }
+      if (left>right) return "\\(" + str + "\\)"; 
+      
+      if (right < str.length) str = str.substr(0,right) + "\\)" + str.substr(right); 
+                         else str = str + "\\)";
+      
+      if (left>0) str = str.substr(0,left+1) + "\\(" + str.substr(left+1);
+             else str = "\\(" + str;
+      
+      return str;
+   }
 
    // ==============================================================================
 
@@ -1403,13 +1449,29 @@
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
       if (entry != null) {
          MathJax.Hub.Typeset(entry.node());
-         var prnt = entry.node().parentNode;
+         var scale = entry.property('_scale'); 
+         var prnt = entry.node();
+         if (scale) prnt = prnt.parentNode;
          var rect = prnt.getBoundingClientRect();
          var real_w = parseInt(rect.right) - parseInt(rect.left);
-         var real_h = parseInt(rect.bottom) - parseInt(rect.top);               
+         var real_h = parseInt(rect.bottom) - parseInt(rect.top);
          if (real_w > this.max_text_width) this.max_text_width = real_w;
-         // no need to continue when scaling not performed
-         if (!entry.property('_scale')) return; 
+         if (!scale) {
+            // only after drawing performed one could calculate size and adjust position           
+            var fo = entry.property('_fo');
+            var align = entry.property('_align');
+            var dx = 0, dy = 0;
+            if (align[1] == 'middle') dy = -real_h/2; else
+            if (align[1] == 'top') dy = -real_h;
+            if (align[0] == 'middle') dx = -real_w/2; else
+            if (align[0] == 'right') dx = -real_2;
+            
+            console.log("after " + entry.text() + "  dy = " + dy);
+            
+            if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
+            if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
+            return; // no need to continue when scaling not performed 
+         }
          this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
          this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
       }
@@ -1429,36 +1491,52 @@
       return this.max_text_width;
    }
    
-   JSROOT.TObjectPainter.prototype.DrawText = function(align, x, y, w, h, label, tcolor, no_latex, draw_g) {
-      if (!draw_g) draw_g = this.draw_g; 
+   JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, no_latex, draw_g) {
+      if (!draw_g) draw_g = this.draw_g;
+      
+      var align = align_arg.split(";");
+      if (align.length==1) align.push('middle');
    
       var scale = (w>0) && (h>0);
+      
+      if (!JSROOT.Painter.isAnyLatex(label)) no_latex = true;
 
-      if ((JSROOT.gStyle.MathJax < 1) || (label.indexOf("#frac")<0) || no_latex) {
+      if ((JSROOT.gStyle.MathJax < 1) || no_latex) {
          if (!no_latex) label = JSROOT.Painter.translateLaTeX(label);
          
          var pos_x = x.toFixed(1);
          
          if (scale) {
-            if (align=="middle") pos_x = (x+w*0.5).toFixed(1); else    
-            if (align=="end") pos_x = (x+w).toFixed(1);
+            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(1); else    
+            if (align[0]=="end") pos_x = (x+w).toFixed(1);
          }
          
          var txt = draw_g.append("text")
-                         .attr("text-anchor", align)
+                         .attr("text-anchor", align[0])
                          .attr("x", pos_x)
                          .attr("fill", tcolor ? tcolor : null)
                          .text(label);
+
+         if (align[1]=="middle") txt.attr("dominant-baseline", "middle");
+
          if (scale) {
-            txt.attr("dominant-baseline", "central")
-               .attr("y", (y + h*0.5).toFixed(1));
+            if (align[1]=="middle") txt.attr("y", (y + h*0.5).toFixed(1));
+                               else txt.attr("y", y.toFixed(1));
          } else {
             txt.attr("y", y.toFixed(1));
             if (h==-270) txt.attr("transform", "rotate(270, 0, 0)");
          } 
-                        
-         var real_w = parseInt(txt.node().getBBox().width);
-         var real_h = parseInt(txt.node().getBBox().height);               
+         
+         var box = txt.node().getBBox();
+         var real_w = parseInt(box.width), real_h = parseInt(box.height);
+         
+         if (!scale) {
+            // make adjustment after drawing
+            if (align[0]=="middle") txt.attr("x", (x + real_w/2).toFixed(1)); else
+            if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
+            // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else 
+            //if (align[1]=="bottom") txt.attr("y", (y-real_h).toFixed(1));
+         }
                    
          if (real_w > this.max_text_width) this.max_text_width = real_w;
          if ((w>0) && scale) this.TextScaleFactor(real_w/w);
@@ -1470,26 +1548,28 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
       
-      if (!scale) { w = 200; h = 100; } // artifical values, not important for us
+      if (!scale) { w = 400; h = 200; } // artifical values, big enough to see output
 
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
 
-//    this is just workaround, one need real parser to find all #frac and so on
-      label = label.replace("#frac","\\(\\frac") + "\\)";
+      label = JSROOT.Painter.translateMath(label);
 
-      var entry = fo.append("xhtml:div")
-                    .style("width", w+"px")
-                    .style("height", h+"px");
-      if (scale)
-         entry = entry.style("display", "table")
+      var entry = fo.append("xhtml:div");
+      if (scale)              
+         entry = entry.style("width", w+"px")
+                      .style("height", h+"px")
+                      .style("display", "table")
                       .append("xhtml:div")
                       .style("display", "table-cell")
-                      .style('vertical-align', 'middle') // force to align in the center
-                      .style("fill", tcolor ? tcolor : null);
+                      .style('vertical-align', align[1]); // force vertical alignment
+                      
+      entry.style("color", tcolor ? tcolor : null);
      
-     entry.property("_painter", this)
+      entry.property("_painter", this)
           .property("_scale", scale)
+          .property("_align", align) // keep align for the end
+          .property("_fo", fo) // keep align for the end
           .html(label);
                     
       this.mathjax_cnt++;
@@ -6542,7 +6622,7 @@
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor.color);
 
-      this.StartTextDrawing(pavelabel['fTextFont'], height / 1.2);
+      this.StartTextDrawing(pavelabel['fTextFont'], height / 1.7);
 
       this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel['fLabel'], tcolor);
       
@@ -6573,7 +6653,7 @@
 
       var kTextNDC = JSROOT.BIT(14);
 
-      var w = this.pad_width(), h = this.pad_height();
+      var w = this.pad_width(); h = this.pad_height();
       var pos_x = this.text['fX'], pos_y = this.text['fY'];
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pos_x * w;
@@ -6599,12 +6679,18 @@
       }
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
+      
+      var halign = 'start', valign = 'middle'
+      if (this.text.fTextAlign / 10 == 2) halign = 'middle'; else
+      if (this.text.fTextAlign / 10 == 3) halign = 'end'; 
+      if (this.text.fTextAlign % 10 == 1) valign = 'top'; else
+      if (this.text.fTextAlign % 10 == 3) valign = 'bottom'; 
 
       var no_latex = this.text['_typename'] != 'TLatex'; 
 
-      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h));
+      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * 0.9);
 
-      this.DrawText('start', pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
+      this.DrawText(halign + ";" + valign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
 
       this.FinishTextDrawing();
    }
