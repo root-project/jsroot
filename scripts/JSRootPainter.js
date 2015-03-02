@@ -815,13 +815,18 @@
    JSROOT.Painter.translateMath = function(str) {
       // function translate ROOT TLatex into MathJax format
       
-      str = str.replace("#frac", "\\frac");
-
       for ( var x in JSROOT.Painter.symbols_map) {
          var y = "\\" + x.substr(1);
-         str = str.replace(x, y);
+         str = str.replace(new RegExp(x,'g'), y);
       }
+
+      str = str.replace(/#frac/g, "\\frac");
+      str = str.replace(/#left/g, "\\left");
+      str = str.replace(/#right/g, "\\right");
+      // processing of #[] #{} should be done
+      str = str.replace(/#\[\]/g, "\\[]");
       
+
       var left = 0, right = str.length;
       var specials = "\\{}_()#";
       
@@ -1453,8 +1458,17 @@
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
          var rect = prnt.getBoundingClientRect();
-         var real_w = parseInt(rect.right) - parseInt(rect.left);
+         // real h works for DIV, but withd should be checked for childs
          var real_h = parseInt(rect.bottom) - parseInt(rect.top);
+         var real_w = 0; // var real_w = parseInt(rect.right) - parseInt(rect.left);
+         var chlds = prnt.childNodes;
+         for (var n in chlds) {
+            if (typeof chlds[n]['getBoundingClientRect'] != 'function') continue;
+            var rrr = chlds[n].getBoundingClientRect();
+            var www = parseInt(rrr.right) - parseInt(rrr.left);
+            if (www>real_w) real_w = www;
+         }
+         if (real_w==0) real_w = parseInt(rect.right) - parseInt(rect.left);
          if (real_w > this.max_text_width) this.max_text_width = real_w;
          if (!scale) {
             // only after drawing performed one could calculate size and adjust position           
@@ -1464,9 +1478,11 @@
             if (align[1] == 'middle') dy = -real_h/2; else
             if (align[1] == 'top') dy = -real_h;
             if (align[0] == 'middle') dx = -real_w/2; else
-            if (align[0] == 'right') dx = -real_2;
+            if (align[0] == 'right') dx = -real_w;
             
-            console.log("after " + entry.text() + "  dy = " + dy);
+            // console.log ("fo x = " + fo.attr('x') + " dx = " + dx + " alignx = " + align[0] + " realw " + real_w);
+            
+            // fo.attr("width", real_w+2).attr("height", real_h+2);
             
             if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
             if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
@@ -1548,7 +1564,7 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
       
-      if (!scale) { w = 400; h = 200; } // artifical values, big enough to see output
+      if (!scale) { w = this.pad_width(); h = this.pad_height(); } // artifical values, big enough to see output
 
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
@@ -6649,17 +6665,17 @@
    } 
 
    JSROOT.TTextPainter.prototype.drawText = function() {
-      this.RecreateDrawG(true, ".text_layer");
 
       var kTextNDC = JSROOT.BIT(14);
 
-      var w = this.pad_width(); h = this.pad_height();
+      var w = this.pad_width(), h = this.pad_height(), use_pad = true;
       var pos_x = this.text['fX'], pos_y = this.text['fY'];
       if (this.text.TestBit(kTextNDC)) {
          pos_x = pos_x * w;
          pos_y = (1 - pos_y) * h;
       } else
       if (this.main_painter()!=null) {
+         w = this.frame_width(); h = this.frame_height(); use_pad = false;
          pos_x = this.main_painter().grx(pos_x);
          pos_y = this.main_painter().gry(pos_y);
       } else
@@ -6678,13 +6694,15 @@
          pos_y = h/2;
       }
 
+      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".axis_layer");
+
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
-      
+
       var halign = 'start', valign = 'middle'
-      if (this.text.fTextAlign / 10 == 2) halign = 'middle'; else
-      if (this.text.fTextAlign / 10 == 3) halign = 'end'; 
-      if (this.text.fTextAlign % 10 == 1) valign = 'top'; else
-      if (this.text.fTextAlign % 10 == 3) valign = 'bottom'; 
+      if ((this.text.fTextAlign / 10) >= 3) halign = 'end'; else 
+      if ((this.text.fTextAlign / 10) >= 2) halign = 'middle';
+      if ((this.text.fTextAlign % 10) == 1) valign = 'top'; else
+      if ((this.text.fTextAlign % 10) == 3) valign = 'bottom'; 
 
       var no_latex = this.text['_typename'] != 'TLatex'; 
 

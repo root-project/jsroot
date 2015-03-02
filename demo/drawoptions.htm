@@ -122,6 +122,14 @@
             draw_item_options(file, "sqroot;1", "f1_draw", "");
          });
 
+         LoadFile("latex.root", function(file) {
+            draw_item_options(file, "lva;1", "lat1_draw", ";mathjax=1");
+            draw_item_options(file, "ex1;1", "lat2_draw", ";mathjax=1");
+            draw_item_options(file, "ex2;1", "lat3_draw", ";mathjax=1");
+         });
+
+
+
          LoadFile("rf107.root", function(file) {
             draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", 0.);
          });
@@ -191,6 +199,12 @@
   <h1>TF1 class</h1> 
 
   <div id="f1_draw"></div>
+
+  <h1>TLatex class</h1> 
+
+  <div id="lat1_draw"></div>
+  <div id="lat2_draw"></div>
+  <div id="lat3_draw"></div>
 
   <h1>TCanvas class</h1> 
 
