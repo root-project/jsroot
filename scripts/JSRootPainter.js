@@ -99,12 +99,7 @@
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
 
-      var mathjax = JSROOT.GetUrlOption("mathjax", url);
-      if (mathjax == "") JSROOT.gStyle.MathJax = 1; else
-      if (mathjax != null) {
-         JSROOT.gStyle.MathJax = parseInt(mathjax);
-         if (JSROOT.gStyle.MathJax == NaN) JSROOT.gStyle.MathJax = 1;
-      }
+      if (JSROOT.GetUrlOption("mathjax", url) != null) JSROOT.MathJax = 1;
    }
 
    JSROOT.Painter.Coord = {
@@ -1448,9 +1443,9 @@
 
          MathJax.Hub.Typeset(entry.node());
 
-         var scale = entry.property('_scale'); 
+         var scale = entry.property('_scale');
          var fo = entry.property('_fo'); entry.property('_fo', null);
-         var align = entry.property('_align'); 
+         var align = entry.property('_align');
 
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
@@ -1489,7 +1484,7 @@
                if (align[1] == 'middle') dy = -real_w/2; else
                if (align[1] == 'top') dy = -real_w;
                if (align[0] == 'middle') dx = -real_h/2; else
-               if (align[0] == 'end') dx = -real_h; 
+               if (align[0] == 'end') dx = -real_h;
             } else {
                if (align[1] == 'middle') dy = -real_h/2; else
                if (align[1] == 'top') dy = -real_h;
@@ -1540,7 +1535,7 @@
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      if (((JSROOT.gStyle.MathJax<1) && (latex_kind!=2)) || (latex_kind<1)) {
+      if (((JSROOT.MathJax<1) && (latex_kind!=2)) || (latex_kind<1)) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
 
          var pos_x = x.toFixed(1);
@@ -1575,9 +1570,9 @@
             // if (align[0]=="middle") txt.attr("x", (x + real_w/2).toFixed(1)); else
             // if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
             // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else
-            
+
             if ((align[1]=="bottom") && (h==0)) { txt.attr("y", (y-real_h).toFixed(1)); console.log('shift y due to vertical align'); }
-            
+
          }
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
@@ -1591,11 +1586,11 @@
       x = Math.round(x); y = Math.round(y);
 
       var rotate = false;
-      
-      if (!scale) { 
+
+      if (!scale) {
          if (h==-270) rotate = true;
          w = this.pad_width(); h = this.pad_height(); // artifical values, big enough to see output
-      } 
+      }
 
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
@@ -1622,7 +1617,7 @@
          }
          if (tr.length>0) entry.style('transform', tr);
       }
-      
+
 
       entry.style("color", tcolor ? tcolor : null);
 
@@ -4130,7 +4125,7 @@
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
 
-         var res = this.DrawText("end", 0, - yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size, 
+         var res = this.DrawText("end", 0, - yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
                                    0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;

@@ -34,6 +34,8 @@
 
    JSROOT.function_list = []; // do we really need it here?
 
+   JSROOT.MathJax = 0; // indicate usage of mathjax 0 - off, 1 - on
+
    JSROOT.BIT = function(n) { return 1 << (n); }
 
    // TH1 status bits
@@ -563,8 +565,10 @@
                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
       }
 
-      if (kind.indexOf("mathjax;")>=0)
-        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML;";
+      if (kind.indexOf("mathjax;")>=0) {
+         allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML;";
+         if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
+      }
 
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;
@@ -2218,6 +2222,7 @@
          if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
          if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
          if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
+         if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
          var user = JSROOT.GetUrlOption('load', src);
          if ((user!=null) && (user.length>0)) prereq += "load:" + user;
          var onload = JSROOT.GetUrlOption('onload', src);
