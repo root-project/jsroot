@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+   <meta http-equiv="X-UA-Compatible" content="IE=Edge; text/html">
+
+   <title>Supported classes and options by JSROOT</title>
+
+   <script src="../scripts/JSRootCore.js?2d&io&onload=CreateGui" type="text/javascript"></script>
+
+   <script type='text/javascript'>
+
+      function file_error(str) {
+         document.getElementById('debug').innerHTML += "<h4>" + str + "</h4>";
+      }
+
+      var global_dir = "files/"; // for local testing
+
+      function draw_item(file, itemname, divid, drawopt) {
+         file.ReadObject(itemname, function(obj) {
+            if (obj==null) return file_error("In file " + file.fURL + " item " + itemname + " cannot be find");
+            var w = JSROOT.GetUrlOption("w", null, "800");
+            var h = JSROOT.GetUrlOption("h", null, "400");
+            console.log("w = " + w);
+            d3.select("#"+divid).style('width',w+"px").style('height',h+"px");
+            JSROOT.draw(divid, obj, drawopt); 
+         });
+      }
+
+      function LoadFile(filename, filecallback) {
+
+         var dir = JSROOT.GetUrlOption("path");
+         if (dir==null) dir = global_dir;
+
+         new JSROOT.TFile(dir + filename + "+", function(file) {
+            if (file==null) return file_error(dir+filename + " cannot be opened");
+            filecallback(file);
+         });
+      }
+
+      function CreateGui() {
+
+         if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
+
+         document.getElementById('debug').innerHTML = '';
+         
+         document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
+         
+         JSROOT.Painter.readStyleFromURL();
+         
+         var arg = "&w=" + JSROOT.GetUrlOption("w", null, "800") + 
+                   "&h=" + JSROOT.GetUrlOption("h", null, "600");
+         if (JSROOT.GetUrlOption("path")!=null) {
+            global_dir = JSROOT.GetUrlOption("path");               
+            arg += "&path=" + global_dir;
+         }
+
+         LoadFile("latex.root", function(file) {
+            draw_item(file, "lva;1", "lat1_draw", "");
+            draw_item(file, "ex1;1", "lat2_draw", "");
+            draw_item(file, "ex2;1", "lat3_draw", "");
+            draw_item(file, "ex3;1", "lat4_draw", "");
+            draw_item(file, "math;1", "lat5_draw", "");
+         });
+
+      }
+   </script>
+   
+</head>
+
+<body>
+
+  <div id="debug">loading...</div>
+
+  <h3>Example from <a href="https://root.cern.ch/root/html/TLatex.html#L10">TLatex</a> docu</h3>
+  <div id="lat1_draw"></div>
+  <br/>
+  <br/>
+
+  <h3>Examples from <a href="https://root.cern.ch/root/html/TLatex.html#L11">TLatex</a> docu</h3>
+  <div id="lat2_draw"></div>
+  <br/>
+  <br/>
+  <div id="lat3_draw"></div>
+  <br/>
+  <br/>
+  <div id="lat4_draw"></div>
+
+  <h3>Example from <a href="https://root.cern.ch/root/html/TMathText.html">TMathText</a> docu</h3>
+  <div id="lat5_draw"></div>
+  
+</body>
+
+</html>
+

@@ -181,7 +181,7 @@
       if (!url) url = document.URL;
 
       var pos = url.indexOf("?");
-      if (pos<0) return null;
+      if (pos<0) return dflt;
       url = url.slice(pos+1);
 
       while (url.length>0) {
