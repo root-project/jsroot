@@ -812,43 +812,29 @@
       //   if (str.indexOf(x) >= 0) return true;
    }
    
-   JSROOT.Painter.translateMath = function(str) {
+   JSROOT.Painter.translateMath = function(str, kind) {
       // function translate ROOT TLatex into MathJax format
-      
-      for ( var x in JSROOT.Painter.symbols_map) {
-         var y = "\\" + x.substr(1);
-         str = str.replace(new RegExp(x,'g'), y);
-      }
 
-      str = str.replace(/#frac/g, "\\frac");
-      str = str.replace(/#left{/g, "\\left\\{");
-      str = str.replace(/#right}/g, "\\right\\}");
-      str = str.replace(/#left/g, "\\left");
-      str = str.replace(/#right/g, "\\right");
-      // processing of #[] #{} should be done
-      str = str.replace(/#\[\]/g, "\\[]");
+      if (kind!=2) {
       
+         for (var x in JSROOT.Painter.symbols_map) {
+            var y = "\\" + x.substr(1);
+            str = str.replace(new RegExp(x,'g'), y);
+         }
 
-      var left = 0, right = str.length;
-      var specials = "\\{}_()#";
-      
-      for (var i=0;i<str.length;i++) {
-         if (specials.indexOf(str[i])>=0) break;
-         if (str[i]==" ") left = i;
+         str = str.replace(/#frac/g, "\\frac");
+         str = str.replace(/#left{/g, "\\left\\{");
+         str = str.replace(/#right}/g, "\\right\\}");
+         str = str.replace(/#left/g, "\\left");
+         str = str.replace(/#right/g, "\\right");
+         // processing of #[] #{} should be done
+         str = str.replace(/#\[\]/g, "\\[]");
+      } else {
+         str = str.replace(/\\\^/g, "\\hat");
       }
-      for (var i=str.length-1;i>=0;i--) {
-         if (specials.indexOf(str[i])>=0) break;
-         if (str[i]==" ") right = i;
-      }
-      if (left>right) return "\\(" + str + "\\)"; 
       
-      if (right < str.length) str = str.substr(0,right) + "\\)" + str.substr(right); 
-                         else str = str + "\\)";
       
-      if (left>0) str = str.substr(0,left+1) + "\\(" + str.substr(left+1);
-             else str = "\\(" + str;
-      
-      return str;
+      return "\\(" + str + "\\)";
    }
 
    // ==============================================================================
@@ -1459,35 +1445,47 @@
       if (!draw_g) draw_g = this.draw_g;
 
       if (entry != null) {
+         
          MathJax.Hub.Typeset(entry.node());
          
-         var scale = entry.property('_scale'); entry.property('_scale', null); 
-         var fo = entry.property('_fo'); entry.property('_fo', null);
-         var align = entry.property('_align'); entry.property('_align', null);
+         var scale = entry.property('_scale'); 
+         entry.property('_scale', null);
+         var fo = entry.property('_fo'); 
+         entry.property('_fo', null);
+         var align = entry.property('_align'); 
+         entry.property('_align', null);
          
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
          // getBoundingClientRect do not work for div with width/height attributes, check childs
          // var rect = prnt.getBoundingClientRect();
-         var rect = null;
-         
          var chlds = prnt.childNodes;
-         for (var n in chlds) {
-            if (typeof chlds[n]['getBoundingClientRect'] != 'function') continue;
-            var rrr = chlds[n].getBoundingClientRect();
-            if (rect==null) { rect = rrr; continue; }
-            rect.left = Math.min(rrr.left,rect.left);
-            rect.right = Math.max(rrr.right,rect.right);
-            rect.top = Math.min(rrr.top,rect.top);
-            rect.bottom = Math.max(rrr.bottom,rect.bottom);
-         }
-         if (rect==null) rect = prnt.getBoundingClientRect();
-         
-         // console.log("childs width = " + real_w + "  real_h = " +real_h+ " scale = " + scale);
+         var left = 100000000, right = 0, top = 100000000, bottom = 0;
+         for (var n=0;n<chlds.length+1;n++) {
+            var rrr = null;
+            if (n<chlds.length) {
+               if (typeof chlds[n]['getBoundingClientRect'] != 'function') continue;
+               rrr = chlds[n].getBoundingClientRect();
+            } else {
+               if ((left<right) && (top<bottom)) continue;
+               rrr = prnt.getBoundingClientRect();
+            }
+            
+            if ((rrr.left==rrr.right) || (rrr.top==rrr.bottom)) continue;
+            
+            left = Math.min(left, parseInt(rrr.left));
+            right = Math.max(right, parseInt(rrr.right));
+            top = Math.min(top,parseInt(rrr.top));
+            bottom = Math.max(bottom, parseInt(rrr.bottom));
+            //console.log(n+ "  left = " + rrr.left + " right = " + rrr.right + " top = " + rrr.top + " bottom = " + rrr.bottom);
 
-         var real_w = parseInt(rect.right) - parseInt(rect.left);
-         var real_h = parseInt(rect.bottom) - parseInt(rect.top);
-         
+         }
+         var real_w = right - left;
+         var real_h = bottom - top;
+
+         //console.log("childs width = " + real_w + "  left = " +left + " right = " + right);
+         //console.log("childs height = " + real_h + " top = " + top + " bottom = " + bottom);
+
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if (!scale) {
             // only after drawing performed one could calculate size and adjust position           
@@ -1519,7 +1517,7 @@
       return draw_g.property('max_text_width');
    }
    
-   JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, no_latex, draw_g) {
+   JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g) {
       if (!draw_g) draw_g = this.draw_g;
       var align;
       
@@ -1536,10 +1534,12 @@
       
       var scale = (w>0) && (h>0);
       
-      if (!JSROOT.Painter.isAnyLatex(label)) no_latex = true;
+      if (latex_kind==null) latex_kind = 1;
+      if (latex_kind<2)
+         if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      if ((JSROOT.gStyle.MathJax < 1) || no_latex) {
-         if (!no_latex) label = JSROOT.Painter.translateLaTeX(label);
+      if (((JSROOT.gStyle.MathJax<1) && (latex_kind!=2)) || (latex_kind<1)) {
+         if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
          
          var pos_x = x.toFixed(1);
          
@@ -1590,7 +1590,7 @@
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
 
-      label = JSROOT.Painter.translateMath(label);
+      label = JSROOT.Painter.translateMath(label, latex_kind);
 
       var entry = fo.append("xhtml:div");
       if (scale) {
@@ -2790,7 +2790,7 @@
          
          this.StartTextDrawing(pavetext['fTextFont'], h*0.04/1.5, lbl_g);
          
-         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, false, lbl_g);    
+         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);    
 
          this.FinishTextDrawing(null, lbl_g);
       }
@@ -2842,12 +2842,6 @@
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
-      console.log('Draw ' + pavetext._typename + ' ndc ' + pavetext['fX1NDC'] + " " + pavetext['fX1'] + " opt = " + pavetext.fOption + " init = " + pavetext.fInit);
-      
-//      if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 ||
-//          pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0)
-//         return null;
-
       var painter = new JSROOT.TPavePainter(pavetext);
       
       painter.SetDivId(divid);
@@ -4108,7 +4102,7 @@
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
           var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xax_g.property('text_font').size, 
-                                    0, 0, this.histo['fXaxis']['fTitle'], null, false, xax_g);
+                                    0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
                                     
           if (res<=0) shrink_forbidden = true;
 
@@ -4124,7 +4118,7 @@
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
       
          var res = this.DrawText("end", 0, - ylabelfont.size - yax_g.property('text_font').size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
-                                   0, -270, this.histo['fYaxis']['fTitle'], null, false, yax_g); 
+                                   0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g); 
                                              
          if (res<=0) shrink_forbidden = true;
          
@@ -6767,12 +6761,14 @@
       this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".axis_layer");
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
+      
+      var latex_kind = 0, fact = 1.;
+      if (this.text['_typename'] == 'TLatex') { latex_kind = 1; fact = 0.9; } else
+      if (this.text['_typename'] == 'TMathText') { latex_kind = 2; fact = 0.8; } 
 
-      var no_latex = this.text['_typename'] != 'TLatex'; 
-
-      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * 0.9);
-
-      this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
+      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * fact);
+      
+      this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, latex_kind);
 
       this.FinishTextDrawing();
    }
@@ -8263,6 +8259,7 @@
    JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
    JSROOT.addDrawFunc("TPaveStats", JSROOT.Painter.drawPaveText);
    JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
+   JSROOT.addDrawFunc("TMathText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;same");
