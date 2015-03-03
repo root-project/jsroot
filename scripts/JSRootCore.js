@@ -277,13 +277,13 @@
       if (typeof func == 'function') return func(arg1,arg2);
 
       if (typeof func != 'object') return;
-      
+
       if (('obj' in func) && ('func' in func) &&
-         (typeof func.obj == 'object') && (typeof func.func == 'string') && 
+         (typeof func.obj == 'object') && (typeof func.func == 'string') &&
          (typeof func.obj[func.func] == 'function')) return func.obj[func.func](arg1, arg2);
-      
+
       if (('_this' in func) && ('func' in func) &&
-         (typeof func.func == 'function')) return func.func.call(func._this, arg1, arg2);   
+         (typeof func.func == 'function')) return func.func.call(func._this, arg1, arg2);
    }
 
    JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
@@ -296,7 +296,7 @@
       //  "xml" - returns res.responseXML
       //  "head" - returns request itself, uses "HEAD" method
       // Result will be returned to the callback functions
-      // Request will be set as this pointer in the callback 
+      // Request will be set as this pointer in the callback
       // If failed, request returns null
 
       var xhr = new XMLHttpRequest();
@@ -503,9 +503,9 @@
 
       document.getElementsByTagName("head")[0].appendChild(element);
    }
-   
+
    JSROOT.doing_assert = null; // array where all requests are collected
-   
+
    JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
       // 'io' for I/O functionality (default)
@@ -524,14 +524,14 @@
          debugout = req._debug;
       } else
       if (JSROOT.doing_assert != null) {
-         // if function already called, store request 
+         // if function already called, store request
          return JSROOT.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
       } else {
          JSROOT.doing_assert = [];
-      } 
+      }
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
-      
+
       var ext = JSROOT.source_min ? ".min" : "";
 
       var need_jquery = false;

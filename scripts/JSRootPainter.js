@@ -797,26 +797,26 @@
       }
       return str;
    }
-   
+
    JSROOT.Painter.isAnyLatex = function(str) {
-      
-      return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0); 
-      
+
+      return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
+
       //var specials = "\\{}_()#";
       //for (var i=0;i<str.length;i++) {
       //   if (specials.indexOf(str[i])>=0) return true;
       //}
       //return false;
-      
-      //for ( var x in JSROOT.Painter.symbols_map) 
+
+      //for ( var x in JSROOT.Painter.symbols_map)
       //   if (str.indexOf(x) >= 0) return true;
    }
-   
+
    JSROOT.Painter.translateMath = function(str, kind) {
       // function translate ROOT TLatex into MathJax format
 
       if (kind!=2) {
-      
+
          for (var x in JSROOT.Painter.symbols_map) {
             var y = "\\" + x.substr(1);
             str = str.replace(new RegExp(x,'g'), y);
@@ -832,8 +832,8 @@
       } else {
          str = str.replace(/\\\^/g, "\\hat");
       }
-      
-      
+
+
       return "\\(" + str + "\\)";
    }
 
@@ -981,17 +981,17 @@
       var res = parseInt(this.svg_pad().attr("width"));
       return (res==NaN) ? 0 : res;
    }
-   
+
    JSROOT.TObjectPainter.prototype.pad_height = function() {
       var res = parseInt(this.svg_pad().attr("height"));
       return (res==NaN) ? 0 : res;
    }
-   
+
    JSROOT.TObjectPainter.prototype.frame_width = function() {
       var res = parseInt(this.svg_frame().attr("width"));
       return (res==NaN) ? 0 : res;
    }
-   
+
    JSROOT.TObjectPainter.prototype.frame_height = function() {
       var res = parseInt(this.svg_frame().attr("height"));
       return (res==NaN) ? 0 : res;
@@ -1240,14 +1240,14 @@
       var rect_height = function() { return Number(pthis.draw_g.attr("height")); }
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
-      
+
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
          else if ('which' in event) return event.which === 2;
          else if ('button' in event) return event.button === 2;
          return false;
       }
-      
+
       var resize_rect =
          pthis.draw_g.append("rect")
                   .style("opacity", "0")
@@ -1256,15 +1256,15 @@
                   .attr("y", rect_height() - 20)
                   .attr("width", 20)
                   .attr("height", 20);
-                  
-      var drag_rect = null;            
-                  
+
+      var drag_rect = null;
+
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
-            
+
             d3.event.sourceEvent.preventDefault();
-            
+
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
@@ -1278,14 +1278,14 @@
                  .style("cursor", "move");
           }).on("drag", function() {
                if (drag_rect == null) return;
-             
+
                d3.event.sourceEvent.preventDefault();
 
                var x = Number(drag_rect.attr("x"));
                var y = Number(drag_rect.attr("y"));
                var real_x = Number(pthis.draw_g.attr("x")) + x;
                var real_y = Number(pthis.draw_g.attr("y")) + y;
-               
+
                var dx = d3.event.dx, dy = d3.event.dy;
 
                if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x+=dx; dx=0; }
@@ -1299,7 +1299,7 @@
                d3.event.sourceEvent.stopPropagation();
           }).on("dragend", function() {
                if (drag_rect==null) return;
-             
+
                d3.event.sourceEvent.preventDefault();
 
                drag_rect.style("cursor", "auto");
@@ -1318,20 +1318,20 @@
 
                resize_rect.attr("x", rect_width() - 20)
                           .attr("y", rect_height() - 20);
-               
+
                if ('move' in callback) callback.move(x, y, dx, dy);
                else if ('obj' in callback) {
                   callback.obj['fX1NDC'] += dx / pthis.pad_width();
                   callback.obj['fX2NDC'] += dx / pthis.pad_width();
                   callback.obj['fY1NDC'] -= dy / pthis.pad_height();
                   callback.obj['fY2NDC'] -= dy / pthis.pad_height();
-               }   
+               }
             });
 
       var drag_resize = d3.behavior.drag().origin(Object)
         .on( "dragstart", function() {
            if (detectRightButton(d3.event.sourceEvent)) return;
-           
+
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
 
@@ -1347,7 +1347,7 @@
                 .style("cursor", "se-resize");
          }).on("drag", function() {
             if (drag_rect == null) return;
-            
+
             d3.event.sourceEvent.preventDefault();
 
             var w = Number(drag_rect.attr("width"));
@@ -1362,9 +1362,9 @@
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
             if (drag_rect == null) return;
-            
+
             d3.event.sourceEvent.preventDefault();
-            
+
             drag_rect.style("cursor", "auto");
 
             var newwidth = Number(drag_rect.attr("width"));
@@ -1377,19 +1377,19 @@
 
             resize_rect.attr("x", newwidth - 20)
                        .attr("y", newheight - 20);
-            
+
             if ('resize' in callback) callback.resize(newwidth, newheight); else {
                 if ('obj' in callback) {
                    callback.obj['fX2NDC'] = callback.obj['fX1NDC'] + newwidth  / pthis.pad_width();
                    callback.obj['fY1NDC'] = callback.obj['fY2NDC'] - newheight / pthis.pad_height();
                 }
-                if (('redraw' in callback) && 
-                    (typeof pthis[callback.redraw] == 'function')) pthis[callback.redraw](); 
+                if (('redraw' in callback) &&
+                    (typeof pthis[callback.redraw] == 'function')) pthis[callback.redraw]();
             }
          });
 
       pthis.draw_g.style("cursor", "move").call(drag_move);
-      
+
       resize_rect.call(drag_resize);
    }
 
@@ -1419,22 +1419,22 @@
       // for the case when drawing should be repeated, probably with different
       // options
    }
-   
+
    JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g) {
       // we need to preserve font to be able rescle at the end
-      
+
       if (!draw_g) draw_g = this.draw_g;
-       
+
       var font = JSROOT.Painter.getFontDetails(font_face, font_size);
 
       draw_g.call(font.func);
-      
+
       draw_g.property('text_font', font);
       draw_g.property('mathjax_cnt', 1); // one should wait until last call
       draw_g.property('text_factor', 0.);
-      draw_g.property('max_text_width', 0); // keep maximal text width, use it later      
+      draw_g.property('max_text_width', 0); // keep maximal text width, use it later
    }
-   
+
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
       // function used to remember maximal text scaling factor
       if (!draw_g) draw_g = this.draw_g;
@@ -1445,16 +1445,16 @@
       if (!draw_g) draw_g = this.draw_g;
 
       if (entry != null) {
-         
+
          MathJax.Hub.Typeset(entry.node());
-         
-         var scale = entry.property('_scale'); 
+
+         var scale = entry.property('_scale');
          entry.property('_scale', null);
-         var fo = entry.property('_fo'); 
+         var fo = entry.property('_fo');
          entry.property('_fo', null);
-         var align = entry.property('_align'); 
+         var align = entry.property('_align');
          entry.property('_align', null);
-         
+
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
          // getBoundingClientRect do not work for div with width/height attributes, check childs
@@ -1470,9 +1470,9 @@
                if ((left<right) && (top<bottom)) continue;
                rrr = prnt.getBoundingClientRect();
             }
-            
+
             if ((rrr.left==rrr.right) || (rrr.top==rrr.bottom)) continue;
-            
+
             left = Math.min(left, parseInt(rrr.left));
             right = Math.max(right, parseInt(rrr.right));
             top = Math.min(top,parseInt(rrr.top));
@@ -1488,7 +1488,7 @@
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if (!scale) {
-            // only after drawing performed one could calculate size and adjust position           
+            // only after drawing performed one could calculate size and adjust position
             var dx = 0, dy = 0;
             if (align[1] == 'middle') dy = -real_h/2; else
             if (align[1] == 'top') dy = -real_h;
@@ -1496,9 +1496,9 @@
             if (align[0] == 'right') dx = -real_w;
             if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
             if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
-            return; // no need to continue when scaling not performed 
+            return; // no need to continue when scaling not performed
          }
-         
+
          this.TextScaleFactor(1.*real_w / parseInt(fo.attr('width')), draw_g);
          this.TextScaleFactor(1.*real_h / parseInt(fo.attr('height')), draw_g);
       }
@@ -1509,45 +1509,45 @@
 
       var f = draw_g.property('text_factor');
       var font = draw_g.property('text_font');
-      if ((f>0) && ((f<0.9) || (f>1.))) { 
+      if ((f>0) && ((f<0.9) || (f>1.))) {
          font.size = Math.floor(font.size/f);
          draw_g.call(font.func);
       }
-      
+
       return draw_g.property('max_text_width');
    }
-   
+
    JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g) {
       if (!draw_g) draw_g = this.draw_g;
       var align;
-      
+
       if (typeof align_arg == 'string') {
          align = align_arg.split(";");
          if (align.length==1) align.push('middle');
       } else {
          align = ['start', 'middle'];
-         if ((align_arg / 10) >= 3) align[0] = 'end'; else 
+         if ((align_arg / 10) >= 3) align[0] = 'end'; else
          if ((align_arg / 10) >= 2) align[0] = 'middle';
          if ((align_arg % 10) == 1) align[1] = 'top'; else
-         if ((align_arg % 10) == 3) align[1] = 'bottom'; 
+         if ((align_arg % 10) == 3) align[1] = 'bottom';
       }
-      
+
       var scale = (w>0) && (h>0);
-      
+
       if (latex_kind==null) latex_kind = 1;
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
       if (((JSROOT.gStyle.MathJax<1) && (latex_kind!=2)) || (latex_kind<1)) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
-         
+
          var pos_x = x.toFixed(1);
-         
+
          if (scale) {
-            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(1); else    
+            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(1); else
             if (align[0]=="end") pos_x = (x+w).toFixed(1);
          }
-         
+
          var txt = draw_g.append("text")
                          .attr("text-anchor", align[0])
                          .attr("x", pos_x)
@@ -1562,29 +1562,29 @@
          } else {
             txt.attr("y", y.toFixed(1));
             if (h==-270) txt.attr("transform", "rotate(270, 0, 0)");
-         } 
-         
+         }
+
          var box = txt.node().getBBox();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
-         
+
          if (!scale) {
             // make adjustment after drawing
             if (align[0]=="middle") txt.attr("x", (x + real_w/2).toFixed(1)); else
             if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
-            // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else 
+            // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else
             //if (align[1]=="bottom") txt.attr("y", (y-real_h).toFixed(1));
          }
-                   
+
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if ((w>0) && scale) this.TextScaleFactor(real_w / w, draw_g);
          if ((h>0) && scale) this.TextScaleFactor(real_h / h, draw_g);
-                               
+
          return real_w;
-      }                         
+      }
 
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
-      
+
       if (!scale) { w = this.pad_width(); h = this.pad_height(); } // artifical values, big enough to see output
 
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
@@ -1611,9 +1611,9 @@
          }
          if (tr.length>0) entry.style('transform', tr);
       }
-                      
+
       entry.style("color", tcolor ? tcolor : null);
-     
+
       entry.property("_painter", this)
           .property("_scale", scale)
           .property("_align", align) // keep align for the end
@@ -1621,13 +1621,13 @@
           .html(label);
 
       var cnt = draw_g.property('mathjax_cnt')+1;
-      draw_g.property('mathjax_cnt', cnt); 
+      draw_g.property('mathjax_cnt', cnt);
 
       JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
          if (typeof MathJax != 'object') return;
          MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
       }});
-      
+
       return 0;
    }
 
@@ -2613,7 +2613,7 @@
       var pavetext = this.pavetext;
 
       var w = this.pad_width(), h = this.pad_height();
-      
+
       if ((pavetext.fOption.indexOf("NDC")<0) && !pavetext.fInit) {
          pavetext.fInit = 1;
          var pad = this.root_pad();
@@ -2630,20 +2630,20 @@
             pavetext['fY1NDC'] = (pavetext.fY1-pad['fY1'])/(pad['fY2'] - pad['fY1']);
             pavetext['fX2NDC'] = (pavetext.fX2-pad['fX1'])/(pad['fX2'] - pad['fX1']);
             pavetext['fY2NDC'] = (pavetext.fY2-pad['fY1'])/(pad['fY2'] - pad['fY1']);
-            
+
          } else {
-            pavetext['fX1NDC'] = 0.1; 
+            pavetext['fX1NDC'] = 0.1;
             pavetext['fX2NDC'] = 0.9;
             pavetext['fY1NDC'] = 0.1;
             pavetext['fY2NDC'] = 0.9;
          }
       }
-      
+
       var pos_x = Math.round(pavetext['fX1NDC'] * w);
       var pos_y = Math.round((1.0 - pavetext['fY1NDC']) * h);
       var width = Math.round(Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w);
       var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
-      
+
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
       var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
@@ -2695,7 +2695,7 @@
       this.StartTextDrawing(pavetext['fTextFont'], height/(nlines * 1.2));
 
       if (nlines == 1) {
-         this.DrawText(pavetext['fTextAlign'], 0, 0, width, height, lines[0], tcolor); 
+         this.DrawText(pavetext['fTextAlign'], 0, 0, width, height, lines[0], tcolor);
       } else {
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
@@ -2706,25 +2706,25 @@
                if ((first_stat > 0) && (j >= first_stat)) {
                   var parts = lines[j].split("|");
                   for (var n = 0; n < parts.length; n++)
-                     this.DrawText("middle", 
+                     this.DrawText("middle",
                                     width * n / num_cols, posy,
-                                    width/num_cols, stepy, parts[n], jcolor);   
+                                    width/num_cols, stepy, parts[n], jcolor);
                } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
                    this.DrawText((j == 0) ? "middle" : "start",
-                                 margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);  
+                                 margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
                } else {
                   var parts = lines[j].split("="), sumw = 0;
                   for (var n = 0; n < 2; n++)
                      sumw += this.DrawText((n == 0) ? "start" : "end",
                                       margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
-                  this.TextScaleFactor(sumw/(width-2*margin_x), this.draw_g);                        
+                  this.TextScaleFactor(sumw/(width-2*margin_x), this.draw_g);
                }
             } else {
-               this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);    
+               this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
             }
          }
       }
-      
+
       var maxtw = this.FinishTextDrawing();
 
       if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
@@ -2771,7 +2771,7 @@
                     .style("stroke", attline.color)
                     .style("stroke-width", lwidth);
       }
-      
+
       if ((pavetext.fLabel.length>0) && !this.IsStats()) {
          var lbl_g = this.draw_g.append("svg:g")
                .attr("x", width*0.25)
@@ -2787,10 +2787,10 @@
                .attr("height", h*0.04)
                .call(fcolor.func)
                .call(attline.func);
-         
+
          this.StartTextDrawing(pavetext['fTextFont'], h*0.04/1.5, lbl_g);
-         
-         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);    
+
+         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);
 
          this.FinishTextDrawing(null, lbl_g);
       }
@@ -2838,12 +2838,12 @@
          this.DrawPaveText();
       } else {
          this.RemoveDrawG();
-      } 
+      }
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
       var painter = new JSROOT.TPavePainter(pavetext);
-      
+
       painter.SetDivId(divid);
 
       // refill statistic in any case
@@ -4101,9 +4101,9 @@
       if (this.histo['fXaxis']['fTitle'].length > 0) {
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
-          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xax_g.property('text_font').size, 
+          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xax_g.property('text_font').size,
                                     0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
-                                    
+
           if (res<=0) shrink_forbidden = true;
 
           this.FinishTextDrawing(null, xax_g);
@@ -4116,12 +4116,12 @@
 
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
-      
+
          var res = this.DrawText("end", 0, - ylabelfont.size - yax_g.property('text_font').size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
-                                   0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g); 
-                                             
+                                   0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
+
          if (res<=0) shrink_forbidden = true;
-         
+
          this.FinishTextDrawing(null, yax_g);
       }
 
@@ -6458,13 +6458,13 @@
 
          var pos_x = tpos_x;
          if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
-         
-         this.DrawText("start", pos_x, pos_y, w-pos_x-padding_x, step_y, leg['fLabel'], tcolor); 
+
+         this.DrawText("start", pos_x, pos_y, w-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
       }
-      
+
       // rescale after all entries are shown
       this.FinishTextDrawing();
-      
+
       if (lwidth && lwidth > 1) {
          this.draw_g.append("svg:line")
             .attr("x1", w + (lwidth / 2))
@@ -6681,9 +6681,9 @@
       if (valign == 1) baseline = 'bottom';
       else if (valign == 2) baseline = 'middle';
       else if (valign == 3) baseline = 'top';
-      
+
       var lwidth = pavelabel['fBorderSize'] ? pavelabel['fBorderSize'] : 0;
-      
+
       var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
 
       var pave = this.draw_g
@@ -6705,7 +6705,7 @@
       this.StartTextDrawing(pavelabel['fTextFont'], height / 1.7);
 
       this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel['fLabel'], tcolor);
-      
+
       this.FinishTextDrawing();
 
       if (lwidth && lwidth > 1) {
@@ -6722,11 +6722,11 @@
                .attr("y2", height + (lwidth / 2))
                .call(lcolor.func);
       }
-      
+
       var pave_painter = this;
-      
-      this.AddDrag({ obj : pavelabel, redraw:'drawPaveLabel' }); 
-   } 
+
+      this.AddDrag({ obj : pavelabel, redraw:'drawPaveLabel' });
+   }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
 
@@ -6761,13 +6761,13 @@
       this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".axis_layer");
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
-      
+
       var latex_kind = 0, fact = 1.;
       if (this.text['_typename'] == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-      if (this.text['_typename'] == 'TMathText') { latex_kind = 2; fact = 0.8; } 
+      if (this.text['_typename'] == 'TMathText') { latex_kind = 2; fact = 0.8; }
 
       this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * fact);
-      
+
       this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, latex_kind);
 
       this.FinishTextDrawing();
