@@ -1439,22 +1439,25 @@
       
       if (!draw_g) draw_g = this.draw_g;
        
-      this.text_font = JSROOT.Painter.getFontDetails(font_face, font_size);
+      var font = JSROOT.Painter.getFontDetails(font_face, font_size);
 
-      draw_g.call(this.text_font.func);
+      draw_g.call(font.func);
       
-      this.mathjax_cnt = 1; // one should wait until last finish call
-      this.text_factor = 0.;
-      this.max_text_width = 0; // keep maximal text width, use it later      
+      draw_g.property('text_font', font);
+      draw_g.property('mathjax_cnt', 1); // one should wait until last call
+      draw_g.property('text_factor', 0.);
+      draw_g.property('max_text_width', 0); // keep maximal text width, use it later      
    }
    
-   JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value) {
+   JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
       // function used to remember maximal text scaling factor
-      console.log("Next factor = " + value);
-      if (value && (value>this.text_factor)) this.text_factor = value;
+      if (!draw_g) draw_g = this.draw_g;
+      if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
    }
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
+      if (!draw_g) draw_g = this.draw_g;
+
       if (entry != null) {
          MathJax.Hub.Typeset(entry.node());
          
@@ -1485,7 +1488,7 @@
          var real_w = parseInt(rect.right) - parseInt(rect.left);
          var real_h = parseInt(rect.bottom) - parseInt(rect.top);
          
-         if (real_w > this.max_text_width) this.max_text_width = real_w;
+         if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if (!scale) {
             // only after drawing performed one could calculate size and adjust position           
             var dx = 0, dy = 0;
@@ -1493,37 +1496,27 @@
             if (align[1] == 'top') dy = -real_h;
             if (align[0] == 'middle') dx = -real_w/2; else
             if (align[0] == 'right') dx = -real_w;
-            
-            // console.log ("fo x = " + fo.attr('x') + " dx = " + dx + " alignx = " + align[0] + " realw " + real_w);
-            
-            // fo.attr("width", real_w+2).attr("height", real_h+2);
-            
             if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
             if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
             return; // no need to continue when scaling not performed 
          }
          
-         // console.log(' real_w = ' + real_w + "  prnt width = " + parseInt(fo.attr('width')));
-         this.TextScaleFactor((1.*real_w) / parseInt(fo.attr('width')));
-         // console.log(' real_h = ' + real_h + "  prnt height = " + parseInt(fo.attr('height')));
-         this.TextScaleFactor((1.*real_h) / parseInt(fo.attr('height')));
+         this.TextScaleFactor(1.*real_w / parseInt(fo.attr('width')), draw_g);
+         this.TextScaleFactor(1.*real_h / parseInt(fo.attr('height')), draw_g);
       }
 
-      // console.log("cnt = " + this.mathjax_cnt + " factor = " + this.text_factor);
+      var cnt = draw_g.property('mathjax_cnt') - 1;
+      draw_g.property('mathjax_cnt', cnt);
+      if (cnt > 0) return 0;
 
-      if (--this.mathjax_cnt>0) return 0;
-      
-      if ((this.text_factor>0) && ((this.text_factor<0.9) || (this.text_factor>1.))) { 
-         if (!draw_g) draw_g = this.draw_g;
-         this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
-         draw_g.call(this.text_font.func);
+      var f = draw_g.property('text_factor');
+      var font = draw_g.property('text_font');
+      if ((f>0) && ((f<0.9) || (f>1.))) { 
+         font.size = Math.floor(font.size/f);
+         draw_g.call(font.func);
       }
       
-      this.text_factor = 0.;
-      this.text_font = null;
-      this.mathjax_cnt = 0;      
-      
-      return this.max_text_width;
+      return draw_g.property('max_text_width');
    }
    
    JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, no_latex, draw_g) {
@@ -1582,9 +1575,9 @@
             //if (align[1]=="bottom") txt.attr("y", (y-real_h).toFixed(1));
          }
                    
-         if (real_w > this.max_text_width) this.max_text_width = real_w;
-         if ((w>0) && scale) this.TextScaleFactor(real_w/w);
-         if ((h>0) && scale) this.TextScaleFactor(real_h/h);
+         if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
+         if ((w>0) && scale) this.TextScaleFactor(real_w / w, draw_g);
+         if ((h>0) && scale) this.TextScaleFactor(real_h / h, draw_g);
                                
          return real_w;
       }                         
@@ -1626,8 +1619,9 @@
           .property("_align", align) // keep align for the end
           .property("_fo", fo) // keep foreign object till the end
           .html(label);
-                    
-      this.mathjax_cnt++;
+
+      var cnt = draw_g.property('mathjax_cnt')+1;
+      draw_g.property('mathjax_cnt', cnt); 
 
       JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
          if (typeof MathJax != 'object') return;
@@ -2723,7 +2717,7 @@
                   for (var n = 0; n < 2; n++)
                      sumw += this.DrawText((n == 0) ? "start" : "end",
                                       margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
-                  this.TextScaleFactor(sumw/(width-2*margin_x));                        
+                  this.TextScaleFactor(sumw/(width-2*margin_x), this.draw_g);                        
                }
             } else {
                this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);    
@@ -2776,6 +2770,29 @@
                     .attr("y2", height + (lwidth / 2))
                     .style("stroke", attline.color)
                     .style("stroke-width", lwidth);
+      }
+      
+      if ((pavetext.fLabel.length>0) && !this.IsStats()) {
+         var lbl_g = this.draw_g.append("svg:g")
+               .attr("x", width*0.25)
+               .attr("y", -h*0.02)
+               .attr("width", width*0.5)
+               .attr("height", h*0.04)
+               .attr("transform", "translate(" + width*0.25 + "," + -h*0.02 + ")");
+
+         var lbl_rect = lbl_g.append("rect")
+               .attr("x", 0)
+               .attr("y", 0)
+               .attr("width", width*0.5)
+               .attr("height", h*0.04)
+               .call(fcolor.func)
+               .call(attline.func);
+         
+         this.StartTextDrawing(pavetext['fTextFont'], h*0.04/1.5, lbl_g);
+         
+         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, false, lbl_g);    
+
+         this.FinishTextDrawing(null, lbl_g);
       }
 
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
@@ -4090,7 +4107,7 @@
       if (this.histo['fXaxis']['fTitle'].length > 0) {
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
-          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + this.text_font.size, 
+          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xax_g.property('text_font').size, 
                                     0, 0, this.histo['fXaxis']['fTitle'], null, false, xax_g);
                                     
           if (res<=0) shrink_forbidden = true;
@@ -4106,7 +4123,7 @@
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
       
-         var res = this.DrawText("end", 0, - ylabelfont.size - this.text_font.size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
+         var res = this.DrawText("end", 0, - ylabelfont.size - yax_g.property('text_font').size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
                                    0, -270, this.histo['fYaxis']['fTitle'], null, false, yax_g); 
                                              
          if (res<=0) shrink_forbidden = true;
