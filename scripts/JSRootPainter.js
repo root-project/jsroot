@@ -1448,12 +1448,9 @@
 
          MathJax.Hub.Typeset(entry.node());
 
-         var scale = entry.property('_scale');
-         entry.property('_scale', null);
-         var fo = entry.property('_fo');
-         entry.property('_fo', null);
-         var align = entry.property('_align');
-         entry.property('_align', null);
+         var scale = entry.property('_scale'); 
+         var fo = entry.property('_fo'); entry.property('_fo', null);
+         var align = entry.property('_align'); 
 
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
@@ -1478,22 +1475,27 @@
             top = Math.min(top,parseInt(rrr.top));
             bottom = Math.max(bottom, parseInt(rrr.bottom));
             //console.log(n+ "  left = " + rrr.left + " right = " + rrr.right + " top = " + rrr.top + " bottom = " + rrr.bottom);
-
          }
-         var real_w = right - left;
-         var real_h = bottom - top;
+         var real_w = right - left, real_h = bottom - top;
 
-         //console.log("childs width = " + real_w + "  left = " +left + " right = " + right);
-         //console.log("childs height = " + real_h + " top = " + top + " bottom = " + bottom);
+         // console.log("childs width = " + real_w + "  left = " +left + " right = " + right + " rotate = " + rotate);
+         // console.log("childs height = " + real_h + " top = " + top + " bottom = " + bottom);
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if (!scale) {
             // only after drawing performed one could calculate size and adjust position
             var dx = 0, dy = 0;
-            if (align[1] == 'middle') dy = -real_h/2; else
-            if (align[1] == 'top') dy = -real_h;
-            if (align[0] == 'middle') dx = -real_w/2; else
-            if (align[0] == 'right') dx = -real_w;
+            if (entry.property('_rotate')) {
+               if (align[1] == 'middle') dy = -real_w/2; else
+               if (align[1] == 'top') dy = -real_w;
+               if (align[0] == 'middle') dx = -real_h/2; else
+               if (align[0] == 'end') dx = -real_h; 
+            } else {
+               if (align[1] == 'middle') dy = -real_h/2; else
+               if (align[1] == 'top') dy = -real_h;
+               if (align[0] == 'middle') dx = -real_w/2; else
+               if (align[0] == 'end') dx = -real_w;
+            }
             if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
             if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
             return; // no need to continue when scaling not performed
@@ -1564,15 +1566,18 @@
             if (h==-270) txt.attr("transform", "rotate(270, 0, 0)");
          }
 
+         // console.log('text attr y = ' + txt.attr("y"));
          var box = txt.node().getBBox();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
 
          if (!scale) {
             // make adjustment after drawing
-            if (align[0]=="middle") txt.attr("x", (x + real_w/2).toFixed(1)); else
-            if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
+            // if (align[0]=="middle") txt.attr("x", (x + real_w/2).toFixed(1)); else
+            // if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
             // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else
-            //if (align[1]=="bottom") txt.attr("y", (y-real_h).toFixed(1));
+            
+            if ((align[1]=="bottom") && (h==0)) { txt.attr("y", (y-real_h).toFixed(1)); console.log('shift y due to vertical align'); }
+            
          }
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
@@ -1585,20 +1590,26 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
 
-      if (!scale) { w = this.pad_width(); h = this.pad_height(); } // artifical values, big enough to see output
+      var rotate = false;
+      
+      if (!scale) { 
+         if (h==-270) rotate = true;
+         w = this.pad_width(); h = this.pad_height(); // artifical values, big enough to see output
+      } 
 
       var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
+      if (rotate) fo.attr("transform", "rotate(270, 0, 0)");
 
       label = JSROOT.Painter.translateMath(label, latex_kind);
 
       var entry = fo.append("xhtml:div");
       if (scale) {
+         var tr = "";
          entry = entry.style("width", w+"px")
                       .style("height", h+"px")
                       .append("xhtml:div")
                       .style('position','absolute');
-         var tr = "";
          switch (align[0]) {
             case 'left' : entry.style('left','0%'); break;
             case 'middle' : entry.style('left','50%'); tr = "translateX(-50%) "; break;
@@ -1611,6 +1622,7 @@
          }
          if (tr.length>0) entry.style('transform', tr);
       }
+      
 
       entry.style("color", tcolor ? tcolor : null);
 
@@ -1618,6 +1630,7 @@
           .property("_scale", scale)
           .property("_align", align) // keep align for the end
           .property("_fo", fo) // keep foreign object till the end
+          .property("_rotate", rotate) // keep rotate attr the end
           .html(label);
 
       var cnt = draw_g.property('mathjax_cnt')+1;
@@ -4101,7 +4114,7 @@
       if (this.histo['fXaxis']['fTitle'].length > 0) {
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
-          var res = this.DrawText('end', w, xlabelfont.size + xAxisLabelOffset * this.histo['fXaxis']['fTitleOffset'] + xax_g.property('text_font').size,
+          var res = this.DrawText('end', w, xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset']),
                                     0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
 
           if (res<=0) shrink_forbidden = true;
@@ -4117,7 +4130,7 @@
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
 
-         var res = this.DrawText("end", 0, - ylabelfont.size - yax_g.property('text_font').size - yAxisLabelOffset * this.histo['fYaxis']['fTitleOffset'],
+         var res = this.DrawText("end", 0, - yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size, 
                                    0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;
@@ -4132,9 +4145,7 @@
 
       var pthis = this;
 
-      /*
-       * Define the scales, according to the information from the pad
-       */
+      /* Define the scales, according to the information from the pad */
 
       delete this['formatx'];
 

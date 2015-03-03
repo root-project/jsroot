@@ -32,7 +32,7 @@
 
          var has_equal = false;
 
-         var html = 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
+         var html = '<br/><br/>File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
@@ -55,8 +55,6 @@
              ((JSROOT.GetUrlOption("all")==null) && (JSROOT.GetUrlOption("default")==null))) return;
 
          // special case - do not draw on main page
-         if (has_equal) { document.getElementById(divid).innerHTML += "skip drawing on central page - use provided links"; return; }
-
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
          if (factor!=null) h = w * factor;
@@ -66,7 +64,7 @@
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
             document.getElementById(divid).innerHTML += html;
             draw_item(file, itemname, subid, arr[i]);
-            if (JSROOT.GetUrlOption("all")==null) return;
+            if (has_equal || (JSROOT.GetUrlOption("all")==null)) return;
          }
       }
 
@@ -123,11 +121,7 @@
          });
 
          LoadFile("latex.root", function(file) {
-            draw_item_options(file, "lva;1", "lat1_draw", ";mathjax=1");
-            draw_item_options(file, "ex1;1", "lat2_draw", ";mathjax=1");
-            draw_item_options(file, "ex2;1", "lat3_draw", ";mathjax=1");
-            draw_item_options(file, "ex3;1", "lat4_draw", ";mathjax=1");
-            draw_item_options(file, "math;1", "lat5_draw", ";mathjax=1");
+            draw_item_options(file, "ex3;1", "lat1_draw", ";mathjax=1");
          });
 
          LoadFile("rf107.root", function(file) {
@@ -200,13 +194,9 @@
 
   <div id="f1_draw"></div>
 
-  <h1>TLatex and TMathText classes</h1> 
+  <h1>TPaveText class</h1> 
 
   <div id="lat1_draw"></div>
-  <div id="lat2_draw"></div>
-  <div id="lat3_draw"></div>
-  <div id="lat4_draw"></div>
-  <div id="lat5_draw"></div>
 
   <h1>TCanvas class</h1> 
 
