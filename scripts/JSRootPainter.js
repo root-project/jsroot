@@ -821,6 +821,8 @@
       }
 
       str = str.replace(/#frac/g, "\\frac");
+      str = str.replace(/#left{/g, "\\left\\{");
+      str = str.replace(/#right}/g, "\\right\\}");
       str = str.replace(/#left/g, "\\left");
       str = str.replace(/#right/g, "\\right");
       // processing of #[] #{} should be done
@@ -1448,32 +1450,44 @@
    
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value) {
       // function used to remember maximal text scaling factor
+      console.log("Next factor = " + value);
       if (value && (value>this.text_factor)) this.text_factor = value;
    }
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
       if (entry != null) {
          MathJax.Hub.Typeset(entry.node());
-         var scale = entry.property('_scale'); 
+         
+         var scale = entry.property('_scale'); entry.property('_scale', null); 
+         var fo = entry.property('_fo'); entry.property('_fo', null);
+         var align = entry.property('_align'); entry.property('_align', null);
+         
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
-         var rect = prnt.getBoundingClientRect();
-         // real h works for DIV, but withd should be checked for childs
-         var real_h = parseInt(rect.bottom) - parseInt(rect.top);
-         var real_w = 0; // var real_w = parseInt(rect.right) - parseInt(rect.left);
+         // getBoundingClientRect do not work for div with width/height attributes, check childs
+         // var rect = prnt.getBoundingClientRect();
+         var rect = null;
+         
          var chlds = prnt.childNodes;
          for (var n in chlds) {
             if (typeof chlds[n]['getBoundingClientRect'] != 'function') continue;
             var rrr = chlds[n].getBoundingClientRect();
-            var www = parseInt(rrr.right) - parseInt(rrr.left);
-            if (www>real_w) real_w = www;
+            if (rect==null) { rect = rrr; continue; }
+            rect.left = Math.min(rrr.left,rect.left);
+            rect.right = Math.max(rrr.right,rect.right);
+            rect.top = Math.min(rrr.top,rect.top);
+            rect.bottom = Math.max(rrr.bottom,rect.bottom);
          }
-         if (real_w==0) real_w = parseInt(rect.right) - parseInt(rect.left);
+         if (rect==null) rect = prnt.getBoundingClientRect();
+         
+         // console.log("childs width = " + real_w + "  real_h = " +real_h+ " scale = " + scale);
+
+         var real_w = parseInt(rect.right) - parseInt(rect.left);
+         var real_h = parseInt(rect.bottom) - parseInt(rect.top);
+         
          if (real_w > this.max_text_width) this.max_text_width = real_w;
          if (!scale) {
             // only after drawing performed one could calculate size and adjust position           
-            var fo = entry.property('_fo');
-            var align = entry.property('_align');
             var dx = 0, dy = 0;
             if (align[1] == 'middle') dy = -real_h/2; else
             if (align[1] == 'top') dy = -real_h;
@@ -1488,13 +1502,18 @@
             if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
             return; // no need to continue when scaling not performed 
          }
-         this.TextScaleFactor(1.*real_w / parseInt(d3.select(prnt).attr('width')));
-         this.TextScaleFactor(1.*real_h / parseInt(d3.select(prnt).attr('height')));
+         
+         // console.log(' real_w = ' + real_w + "  prnt width = " + parseInt(fo.attr('width')));
+         this.TextScaleFactor((1.*real_w) / parseInt(fo.attr('width')));
+         // console.log(' real_h = ' + real_h + "  prnt height = " + parseInt(fo.attr('height')));
+         this.TextScaleFactor((1.*real_h) / parseInt(fo.attr('height')));
       }
-      
-      if (--this.mathjax_cnt>0) return 0;
 
-      if (this.text_factor > 1) {
+      // console.log("cnt = " + this.mathjax_cnt + " factor = " + this.text_factor);
+
+      if (--this.mathjax_cnt>0) return 0;
+      
+      if ((this.text_factor>0) && ((this.text_factor<0.9) || (this.text_factor>1.))) { 
          if (!draw_g) draw_g = this.draw_g;
          this.text_font.size = Math.floor(this.text_font.size/this.text_factor);
          draw_g.call(this.text_font.func);
@@ -1509,10 +1528,19 @@
    
    JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, no_latex, draw_g) {
       if (!draw_g) draw_g = this.draw_g;
+      var align;
       
-      var align = align_arg.split(";");
-      if (align.length==1) align.push('middle');
-   
+      if (typeof align_arg == 'string') {
+         align = align_arg.split(";");
+         if (align.length==1) align.push('middle');
+      } else {
+         align = ['start', 'middle'];
+         if ((align_arg / 10) >= 3) align[0] = 'end'; else 
+         if ((align_arg / 10) >= 2) align[0] = 'middle';
+         if ((align_arg % 10) == 1) align[1] = 'top'; else
+         if ((align_arg % 10) == 3) align[1] = 'bottom'; 
+      }
+      
       var scale = (w>0) && (h>0);
       
       if (!JSROOT.Painter.isAnyLatex(label)) no_latex = true;
@@ -1572,20 +1600,31 @@
       label = JSROOT.Painter.translateMath(label);
 
       var entry = fo.append("xhtml:div");
-      if (scale)              
+      if (scale) {
          entry = entry.style("width", w+"px")
                       .style("height", h+"px")
-                      .style("display", "table")
                       .append("xhtml:div")
-                      .style("display", "table-cell")
-                      .style('vertical-align', align[1]); // force vertical alignment
+                      .style('position','absolute');
+         var tr = "";
+         switch (align[0]) {
+            case 'left' : entry.style('left','0%'); break;
+            case 'middle' : entry.style('left','50%'); tr = "translateX(-50%) "; break;
+            case 'right' :  entry.style('left','100%'); tr = "translateX(-100%) "; break;
+         }
+         switch (align[1]) {
+            case 'top': entry.style('top','0%'); break;
+            case 'middle' : entry.style('top','50%'); tr+="translateY(-50%)"; break;
+            case 'bottom' :  entry.style('top','100%'); tr+="translateY(-100%)"; break;
+         }
+         if (tr.length>0) entry.style('transform', tr);
+      }
                       
       entry.style("color", tcolor ? tcolor : null);
      
       entry.property("_painter", this)
           .property("_scale", scale)
           .property("_align", align) // keep align for the end
-          .property("_fo", fo) // keep align for the end
+          .property("_fo", fo) // keep foreign object till the end
           .html(label);
                     
       this.mathjax_cnt++;
@@ -2580,30 +2619,42 @@
       var pavetext = this.pavetext;
 
       var w = this.pad_width(), h = this.pad_height();
-
+      
+      if ((pavetext.fOption.indexOf("NDC")<0) && !pavetext.fInit) {
+         pavetext.fInit = 1;
+         var pad = this.root_pad();
+         if (pad!=null) {
+            if (pad['fLogx']) {
+               if (pavetext.fX1 > 0) pavetext.fX1 = JSROOT.Math.log10(pavetext.fX1);
+               if (pavetext.fX2 > 0) pavetext.fX2 = JSROOT.Math.log10(pavetext.fX2);
+            }
+            if (pad['fLogy']) {
+               if (pavetext.fY1 > 0) pavetext.fY1 = JSROOT.Math.log10(pavetext.fY1);
+               if (pavetext.fY2 > 0) pavetext.fY2 = JSROOT.Math.log10(pavetext.fY2);
+            }
+            pavetext['fX1NDC'] = (pavetext.fX1-pad['fX1'])/(pad['fX2'] - pad['fX1']);
+            pavetext['fY1NDC'] = (pavetext.fY1-pad['fY1'])/(pad['fY2'] - pad['fY1']);
+            pavetext['fX2NDC'] = (pavetext.fX2-pad['fX1'])/(pad['fX2'] - pad['fX1']);
+            pavetext['fY2NDC'] = (pavetext.fY2-pad['fY1'])/(pad['fY2'] - pad['fY1']);
+            
+         } else {
+            pavetext['fX1NDC'] = 0.1; 
+            pavetext['fX2NDC'] = 0.9;
+            pavetext['fY1NDC'] = 0.1;
+            pavetext['fY2NDC'] = 0.9;
+         }
+      }
+      
       var pos_x = Math.round(pavetext['fX1NDC'] * w);
-
       var pos_y = Math.round((1.0 - pavetext['fY1NDC']) * h);
       var width = Math.round(Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w);
       var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
+      
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
       var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
       var scolor = JSROOT.Painter.root_colors[pavetext['fShadowColor']];
       var fcolor = this.createAttFill(pavetext);
-
-      // align = 10*HorizontalAlign + VerticalAlign
-      // 1=left adjusted, 2=centered, 3=right adjusted
-      // 1=bottom adjusted, 2=centered, 3=top adjusted
-      // "middle", "start", "end"
-      var align = 'start', halign = Math.round(pavetext['fTextAlign'] / 10);
-      var baseline = 'bottom', valign = pavetext['fTextAlign'] % 10;
-      if (halign == 1) align = 'start';
-      else if (halign == 2) align = 'middle';
-      else if (halign == 3) align = 'end';
-      if (valign == 1)  baseline = 'bottom';
-      else if (valign == 2) baseline = 'middle';
-      else if (valign == 3) baseline = 'top';
 
       var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
       var attline = JSROOT.Painter.createAttLine(pavetext, lwidth>0 ? 1 : 0);
@@ -2615,7 +2666,7 @@
       for (var j = 0; j < nlines; ++j) {
          var line = pavetext['fLines'].arr[j]['fTitle'];
          lines.push(line);
-         if ((j == 0) || (line.indexOf('|') < 0)) continue;
+         if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
          var parts = line.split("|");
          if (parts.length > num_cols)
@@ -2650,14 +2701,14 @@
       this.StartTextDrawing(pavetext['fTextFont'], height/(nlines * 1.2));
 
       if (nlines == 1) {
-         this.DrawText(align, 0, 0, width, height, lines[0], tcolor); 
+         this.DrawText(pavetext['fTextAlign'], 0, 0, width, height, lines[0], tcolor); 
       } else {
          for (var j = 0; j < nlines; ++j) {
             var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
             if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
             var posy = j*stepy;
 
-            if (pavetext['_typename'] == 'TPaveStats') {
+            if (this.IsStats()) {
                if ((first_stat > 0) && (j >= first_stat)) {
                   var parts = lines[j].split("|");
                   for (var n = 0; n < parts.length; n++)
@@ -2675,7 +2726,7 @@
                   this.TextScaleFactor(sumw/(width-2*margin_x));                        
                }
             } else {
-               this.DrawText("start", margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);    
+               this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);    
             }
          }
       }
@@ -2737,7 +2788,7 @@
 
    JSROOT.TPavePainter.prototype.IsStats = function() {
       if (!this.pavetext) return false;
-      return this.pavetext['fName'] == "stats";
+      return (this.pavetext['fName'] == "stats") && (this.pavetext['_typename'] == 'TPaveStats');
    }
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
@@ -2774,12 +2825,14 @@
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
-      if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 ||
-          pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0)
-         return null;
+      console.log('Draw ' + pavetext._typename + ' ndc ' + pavetext['fX1NDC'] + " " + pavetext['fX1'] + " opt = " + pavetext.fOption + " init = " + pavetext.fInit);
+      
+//      if (pavetext['fX1NDC'] < 0.0 || pavetext['fY1NDC'] < 0.0 ||
+//          pavetext['fX1NDC'] > 1.0 || pavetext['fY1NDC'] > 1.0)
+//         return null;
 
       var painter = new JSROOT.TPavePainter(pavetext);
-
+      
       painter.SetDivId(divid);
 
       // refill statistic in any case
@@ -6698,17 +6751,11 @@
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
 
-      var halign = 'start', valign = 'middle'
-      if ((this.text.fTextAlign / 10) >= 3) halign = 'end'; else 
-      if ((this.text.fTextAlign / 10) >= 2) halign = 'middle';
-      if ((this.text.fTextAlign % 10) == 1) valign = 'top'; else
-      if ((this.text.fTextAlign % 10) == 3) valign = 'bottom'; 
-
       var no_latex = this.text['_typename'] != 'TLatex'; 
 
       this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * 0.9);
 
-      this.DrawText(halign + ";" + valign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
+      this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, no_latex);
 
       this.FinishTextDrawing();
    }

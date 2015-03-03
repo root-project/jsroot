@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.4 dev 2/03/2015";
+   JSROOT.version = "3.4 dev 3/03/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -564,7 +564,7 @@
       }
 
       if (kind.indexOf("mathjax;")>=0)
-        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML;";
+        allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML;";
 
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;
