@@ -1441,36 +1441,37 @@
       if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
    }
 
-   JSROOT.TObjectPainter.prototype.AdjustSvgPosition = function(fo_g, scale) {
+   JSROOT.TObjectPainter.prototype.AdjustSvgPosition = function(fo_g) {
       var box = fo_g.node().getBBox();
       var real_w = parseInt(box.width), real_h = parseInt(box.height);
       var align = fo_g.property('_align');
       var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
       var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
       
-      //console.log('align = ' + align + "  real_w = " + real_w + "  real_h = " + real_h + "  need_w = " + fo_w + "  need_h = " + fo_h); 
-      //console.log('Before: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+//      if (fo_g.property('_rotate')) {
+//         console.log('align = ' + align + "  real_w = " + real_w + "  real_h = " + real_h + "  need_w = " + fo_w + "  need_h = " + fo_h); 
+//         console.log('Before: fo_x = ' + fo_x + "  fo_y = " + fo_y);
+//      }
       
-      if (!scale) { fo_w = 0; fo_h = 0; }
-      
-      if (scale) {
+      if (fo_g.property('_scale')) {
          if (align[0] == 'middle') fo_x += (fo_w - real_w)/2; else 
-         if (align[0] == 'right') fo_x +=  (fo_w - real_w); 
+         if (align[0] == 'end') fo_x +=  (fo_w - real_w); 
          if (align[1] == 'middle') fo_y += (fo_h - real_h)/2; else 
          if (align[1] == 'bottom') fo_y += (fo_h - real_h);
       } else {
          if (align[0] == 'middle') fo_x -= real_w/2; else 
-         if (align[0] == 'right') fo_x -= real_w;
+         if (align[0] == 'end') fo_x -= real_w;
          if (align[1] == 'middle') fo_y -= real_h/2; else 
          if (align[1] == 'top') fo_y -= real_h;
       }
 
-      // console.log('After: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+//      if (fo_g.property('_rotate'))
+//         console.log('After: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
 
-      fo_g.attr('x', null).attr('y', null)
+      fo_g.attr('x', fo_x).attr('y', fo_y)  // use x/y while transform used for rotation
           .attr('width', null).attr('height', null)
-          .attr('visibility',null)
-          .attr('transform','translate(' + fo_x + ','+ fo_y +')');
+          .attr('visibility',null);
+//          .attr('transform','translate(' + fo_x + ','+ fo_y +')');
    }
    
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
@@ -1503,7 +1504,7 @@
             this.TextScaleFactor(1.*real_w / parseInt(fo_g.attr('width')), draw_g);
             this.TextScaleFactor(1.*real_h / parseInt(fo_g.attr('height')), draw_g);
          } else {
-            this.AdjustSvgPosition(fo_g, false);
+            this.AdjustSvgPosition(fo_g);
          }
          
             /*         
@@ -1581,7 +1582,7 @@
       draw_g.selectAll(".svg_rescale_text").each(function() {
          var fo_g = d3.select(this); 
          // only direct parent 
-         if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g, true); 
+         if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g); 
       });
 
       return draw_g.property('max_text_width');
@@ -1670,8 +1671,11 @@
                        .attr('width',w).attr('height',h)
                        .attr('visibility','hidden')
                        .property('_scale', scale)
+                       .property('_rotate', rotate)
                        .property('_align', align);
-      
+
+      if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
+
       if (scale) fo_g.attr('class', 'svg_rescale_text');
       
       var element = document.createElement("div");
