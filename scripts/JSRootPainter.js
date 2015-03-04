@@ -752,7 +752,9 @@
       '#Box' : '',
       '#parallel' : '',
       '#perp' : '\u22A5',
-      '#odot' : ''
+      '#odot' : '',
+      '#left' : '',
+      '#right' : ''
    };
 
    JSROOT.Painter.translateLaTeX = function(string) {
@@ -811,12 +813,6 @@
       // function translate ROOT TLatex into MathJax format
 
       if (kind!=2) {
-
-         for (var x in JSROOT.Painter.symbols_map) {
-            var y = "\\" + x.substr(1);
-            str = str.replace(new RegExp(x,'g'), y);
-         }
-
          str = str.replace(/#frac/g, "\\frac");
          str = str.replace(/#left{/g, "\\left\\{");
          str = str.replace(/#right}/g, "\\right\\}");
@@ -824,6 +820,11 @@
          str = str.replace(/#right/g, "\\right");
          // processing of #[] #{} should be done
          str = str.replace(/#\[\]/g, "\\[]");
+
+         for (var x in JSROOT.Painter.symbols_map) {
+            var y = "\\" + x.substr(1);
+            str = str.replace(new RegExp(x,'g'), y);
+         }
       } else {
          str = str.replace(/\\\^/g, "\\hat");
       }
@@ -918,7 +919,7 @@
       }
    }
 
-   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
+   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer, normalg) {
       //this.RemoveDrawG();
 
       if (this.draw_g)
@@ -936,15 +937,19 @@
 
          if (!this.draw_g) {
             if (layer==null) layer = ".main_layer";
-            this.draw_g = frame.select(layer).append("svg");
+            if (normalg)
+               this.draw_g = frame.select(layer).append("g");
+            else
+               this.draw_g = frame.select(layer).append("svg");
          }
 
-         this.draw_g.attr("x", 0)
-                    .attr("y", 0)
-                    .attr("width",w)
-                    .attr("height", h)
-                    .attr("viewBox", "0 0 " + w + " " + h)
-                    .attr('overflow', 'hidden');
+         if (!normalg)
+            this.draw_g.attr("x", 0)
+                       .attr("y", 0)
+                       .attr("width",w)
+                       .attr("height", h)
+                       .attr("viewBox", "0 0 " + w + " " + h)
+                       .attr('overflow', 'hidden');
       }
    }
 
@@ -1446,7 +1451,18 @@
          var scale = entry.property('_scale');
          var fo = entry.property('_fo'); entry.property('_fo', null);
          var align = entry.property('_align');
+         var fo_g = d3.select(fo.node().parentNode);
 
+         var vvv = entry.select("svg");
+         console.log('math svg ' + vvv.empty() + "  width = " + vvv.attr('width'));
+         
+         if (false /*!vvv.empty()*/) {
+            vvv.remove();
+            
+            fo.remove();
+            fo_g.append(function() { return vvv.node(); });
+         } else {
+         
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
          // getBoundingClientRect do not work for div with width/height attributes, check childs
@@ -1498,6 +1514,7 @@
 
          this.TextScaleFactor(1.*real_w / parseInt(fo.attr('width')), draw_g);
          this.TextScaleFactor(1.*real_h / parseInt(fo.attr('height')), draw_g);
+         }
       }
 
       var cnt = draw_g.property('mathjax_cnt') - 1;
@@ -1525,6 +1542,7 @@
          align = ['start', 'middle'];
          if ((align_arg / 10) >= 3) align[0] = 'end'; else
          if ((align_arg / 10) >= 2) align[0] = 'middle';
+         if ((align_arg % 10) == 0) align[1] = 'top'; else
          if ((align_arg % 10) == 1) align[1] = 'top'; else
          if ((align_arg % 10) == 3) align[1] = 'bottom';
       }
@@ -1551,7 +1569,7 @@
                          .attr("fill", tcolor ? tcolor : null)
                          .text(label);
 
-         if (align[1]=="middle") txt.attr("dominant-baseline", "middle");
+         if (align[1]=="middle") txt.attr("dominant-baseline", "middle");   
 
          if (scale) {
             if (align[1]=="middle") txt.attr("y", (y + h*0.5).toFixed(1));
@@ -1571,8 +1589,7 @@
             // if (align[0]=="end") txt.attr("x", (x + real_w).toFixed(1));
             // if (align[1]=="middle") txt.attr("y", (y-real_h/2).toFixed(1)); else
 
-            if ((align[1]=="bottom") && (h==0)) { txt.attr("y", (y-real_h).toFixed(1)); console.log('shift y due to vertical align'); }
-
+            if ((align[1]=="bottom") && (h==0)) txt.attr("y", (y+real_h).toFixed(1));
          }
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
@@ -1592,7 +1609,8 @@
          w = this.pad_width(); h = this.pad_height(); // artifical values, big enough to see output
       }
 
-      var fo = draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      var fo_g = draw_g.append("svg:g");
+      var fo = fo_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
       if (rotate) fo.attr("transform", "rotate(270, 0, 0)");
 
@@ -1734,6 +1752,7 @@
          frame_g.append('svg:g').attr('class','grid_layer');
          frame_g.append('svg:g').attr('class','main_layer');
          frame_g.append('svg:g').attr('class','axis_layer');
+         frame_g.append('svg:g').attr('class','upper_layer');
       } else {
          top_rect = frame_g.select("rect");
       }
@@ -6764,7 +6783,7 @@
          pos_y = h/2;
       }
 
-      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".axis_layer");
+      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer", true);
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
 

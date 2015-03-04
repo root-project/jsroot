@@ -32,7 +32,9 @@
 
          var has_equal = false;
 
-         var html = '<br/><br/>File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
+         var html = "";
+         if (JSROOT.GetUrlOption("minimal")==null) html += '<br/><br/>';
+         html += 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
@@ -158,7 +160,7 @@
                draw_item_options(file, "c1;1", "can8_draw", "", 0.);
             });
             LoadFile("higgs_c.root", function(file) {
-               draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3", 0.);
+               draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3;mathjax=1", 0.);
             });
          }
       }

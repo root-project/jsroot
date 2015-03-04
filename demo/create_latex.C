@@ -68,7 +68,7 @@ void ex3() {
    TPaveText pt(.1,.1,.9,.9);
    pt.AddText("#frac{2s}{#pi#alpha^{2}}  #frac{d#sigma}{dcos#theta} (e^{+}e^{-} #rightarrow f#bar{f} ) = ");
    pt.AddText("#left| #frac{1}{1 - #Delta#alpha} #right|^{2} (1+cos^{2}#theta");
-   pt.AddText("+ 4 Re #left{ #frac{2}{1 - #Delta#alpha} #chi(s) #left[ #hat{g}_{#nu}^{e}#hat{g}_{#nu}^{f}"
+   pt.AddText("+ 4 Re #left{ #frac{2}{1 - #Delta #alpha} #chi(s) #left[ #hat{g}_{#nu}^{e}#hat{g}_{#nu}^{f}"
               "(1 + cos^{2}#theta) + 2 #hat{g}_{a}^{e}#hat{g}_{a}^{f} cos#theta) #right] #right}");
    pt.SetLabel("Born equation");
    pt.Draw();
