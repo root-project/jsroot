@@ -1441,22 +1441,31 @@
       if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
    }
 
-   JSROOT.TObjectPainter.prototype.AdjustSvgPosition = function(fo_g, sign) {
+   JSROOT.TObjectPainter.prototype.AdjustSvgPosition = function(fo_g, scale) {
       var box = fo_g.node().getBBox();
       var real_w = parseInt(box.width), real_h = parseInt(box.height);
       var align = fo_g.property('_align');
       var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
       var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
       
-      console.log('align = ' + align + "  real_w = " + real_w + "  real_h = " + real_h + "  need_w = " + fo_w + "  need_h = " + fo_h); 
-      console.log('Before: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+      //console.log('align = ' + align + "  real_w = " + real_w + "  real_h = " + real_h + "  need_w = " + fo_w + "  need_h = " + fo_h); 
+      //console.log('Before: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
       
-      if (align[0] == 'middle') fo_x += sign*(fo_w - real_w)/2; else 
-      if (align[0] == 'right') fo_x += sign*(fo_w - real_w); 
-      if (align[1] == 'middle') fo_y += sign*(fo_h - real_h)/2; else 
-      if (align[1] == 'bottom') fo_y += sign*(fo_h - real_w); 
+      if (!scale) { fo_w = 0; fo_h = 0; }
+      
+      if (scale) {
+         if (align[0] == 'middle') fo_x += (fo_w - real_w)/2; else 
+         if (align[0] == 'right') fo_x +=  (fo_w - real_w); 
+         if (align[1] == 'middle') fo_y += (fo_h - real_h)/2; else 
+         if (align[1] == 'bottom') fo_y += (fo_h - real_h);
+      } else {
+         if (align[0] == 'middle') fo_x -= real_w/2; else 
+         if (align[0] == 'right') fo_x -= real_w;
+         if (align[1] == 'middle') fo_y -= real_h/2; else 
+         if (align[1] == 'top') fo_y -= real_h;
+      }
 
-      console.log('After: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+      // console.log('After: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
 
       fo_g.attr('x', null).attr('y', null)
           .attr('width', null).attr('height', null)
@@ -1465,8 +1474,6 @@
    }
    
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
-      if (!draw_g) draw_g = this.draw_g;
-
       if (entry != null) {
          
          var fo_g = entry['_group']; entry['_group'] = null;
@@ -1480,6 +1487,9 @@
             console.log('MathJax SVG ouptut error');
             return;
          }
+         
+         draw_g = d3.select(fo_g.node().parentNode);
+         
          vvv.remove();
          document.body.removeChild(entry);
 
@@ -1487,13 +1497,13 @@
          
          var box = fo_g.node().getBBox();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
-         console.log("real_w = " + real_w + "  real_h = " + real_h + " scale = " + scale);
+         //console.log("real_w = " + real_w + "  real_h = " + real_h + " scale = " + scale);
          
          if (scale) {
             this.TextScaleFactor(1.*real_w / parseInt(fo_g.attr('width')), draw_g);
             this.TextScaleFactor(1.*real_h / parseInt(fo_g.attr('height')), draw_g);
          } else {
-            this.AdjustSvgPosition(fo_g, -1);
+            this.AdjustSvgPosition(fo_g, false);
          }
          
             /*         
@@ -1553,6 +1563,8 @@
 */         
       }
 
+      if (!draw_g) draw_g = this.draw_g;
+      
       var cnt = draw_g.property('mathjax_cnt') - 1;
       draw_g.property('mathjax_cnt', cnt);
       if (cnt > 0) return 0;
@@ -1569,7 +1581,7 @@
       draw_g.selectAll(".svg_rescale_text").each(function() {
          var fo_g = d3.select(this); 
          // only direct parent 
-         if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g, 1); 
+         if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g, true); 
       });
 
       return draw_g.property('max_text_width');
