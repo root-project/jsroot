@@ -1472,6 +1472,9 @@
           .attr('width', null).attr('height', null)
           .attr('visibility',null);
 //          .attr('transform','translate(' + fo_x + ','+ fo_y +')');
+      
+      if (JSROOT.browser.isWebKit)
+         fo_g.attr('width', real_w+10).attr('height', real_h+10);
    }
    
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
