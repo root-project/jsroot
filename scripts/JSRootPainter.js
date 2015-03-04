@@ -1441,28 +1441,63 @@
       if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
    }
 
+   JSROOT.TObjectPainter.prototype.AdjustSvgPosition = function(fo_g, sign) {
+      var box = fo_g.node().getBBox();
+      var real_w = parseInt(box.width), real_h = parseInt(box.height);
+      var align = fo_g.property('_align');
+      var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
+      var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
+      
+      console.log('align = ' + align + "  real_w = " + real_w + "  real_h = " + real_h + "  need_w = " + fo_w + "  need_h = " + fo_h); 
+      console.log('Before: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+      
+      if (align[0] == 'middle') fo_x += sign*(fo_w - real_w)/2; else 
+      if (align[0] == 'right') fo_x += sign*(fo_w - real_w); 
+      if (align[1] == 'middle') fo_y += sign*(fo_h - real_h)/2; else 
+      if (align[1] == 'bottom') fo_y += sign*(fo_h - real_w); 
+
+      console.log('After: fo_x = ' + fo_x + "  fo_y = " + fo_y); 
+
+      fo_g.attr('x', null).attr('y', null)
+          .attr('width', null).attr('height', null)
+          .attr('visibility',null)
+          .attr('transform','translate(' + fo_x + ','+ fo_y +')');
+   }
+   
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
       if (!draw_g) draw_g = this.draw_g;
 
       if (entry != null) {
-
-         MathJax.Hub.Typeset(entry.node());
-
-         var scale = entry.property('_scale');
-         var fo = entry.property('_fo'); entry.property('_fo', null);
-         var align = entry.property('_align');
-         var fo_g = d3.select(fo.node().parentNode);
-
-         var vvv = entry.select("svg");
-         console.log('math svg ' + vvv.empty() + "  width = " + vvv.attr('width'));
          
-         if (false /*!vvv.empty()*/) {
-            vvv.remove();
-            
-            fo.remove();
-            fo_g.append(function() { return vvv.node(); });
+         var fo_g = entry['_group']; entry['_group'] = null;
+
+         var scale = fo_g.property('_scale');
+         //var fo = entry.property('_fo'); entry.property('_fo', null);
+         //var align = entry.property('_align');
+
+         var vvv = d3.select(entry).select("svg");
+         if (vvv.empty()) {
+            console.log('MathJax SVG ouptut error');
+            return;
+         }
+         vvv.remove();
+         document.body.removeChild(entry);
+
+         fo_g.append(function() { return vvv.node(); });
+         
+         var box = fo_g.node().getBBox();
+         var real_w = parseInt(box.width), real_h = parseInt(box.height);
+         console.log("real_w = " + real_w + "  real_h = " + real_h + " scale = " + scale);
+         
+         if (scale) {
+            this.TextScaleFactor(1.*real_w / parseInt(fo_g.attr('width')), draw_g);
+            this.TextScaleFactor(1.*real_h / parseInt(fo_g.attr('height')), draw_g);
          } else {
+            this.AdjustSvgPosition(fo_g, -1);
+         }
          
+            /*         
+         } else {
          var prnt = entry.node();
          if (scale) prnt = prnt.parentNode;
          // getBoundingClientRect do not work for div with width/height attributes, check childs
@@ -1515,6 +1550,7 @@
          this.TextScaleFactor(1.*real_w / parseInt(fo.attr('width')), draw_g);
          this.TextScaleFactor(1.*real_h / parseInt(fo.attr('height')), draw_g);
          }
+*/         
       }
 
       var cnt = draw_g.property('mathjax_cnt') - 1;
@@ -1527,6 +1563,14 @@
          font.size = Math.floor(font.size/f);
          draw_g.call(font.func);
       }
+      
+      var painter = this;
+      
+      draw_g.selectAll(".svg_rescale_text").each(function() {
+         var fo_g = d3.select(this); 
+         // only direct parent 
+         if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g, 1); 
+      });
 
       return draw_g.property('max_text_width');
    }
@@ -1609,12 +1653,26 @@
          w = this.pad_width(); h = this.pad_height(); // artifical values, big enough to see output
       }
 
-      var fo_g = draw_g.append("svg:g");
+      var fo_g = draw_g.append("svg")
+                       .attr('x',x).attr('y',y)  // use x,y, width,height attribute to be able apply alignment later 
+                       .attr('width',w).attr('height',h)
+                       .attr('visibility','hidden')
+                       .property('_scale', scale)
+                       .property('_align', align);
+      
+      if (scale) fo_g.attr('class', 'svg_rescale_text');
+      
+      var element = document.createElement("div");
+      element.setAttribute("visibility", "hidden");
+      label = JSROOT.Painter.translateMath(label, latex_kind);
+      element.innerHTML = label; 
+      // document.body.insertBefore(element, document.body.firstChild);
+      document.body.appendChild(element)
+      /*
+      
       var fo = fo_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo, x, y);
       if (rotate) fo.attr("transform", "rotate(270, 0, 0)");
-
-      label = JSROOT.Painter.translateMath(label, latex_kind);
 
       var entry = fo.append("xhtml:div");
       if (scale) {
@@ -1645,13 +1703,21 @@
           .property("_fo", fo) // keep foreign object till the end
           .property("_rotate", rotate) // keep rotate attr the end
           .html(label);
+      */          
 
       var cnt = draw_g.property('mathjax_cnt')+1;
       draw_g.property('mathjax_cnt', cnt);
+      
+      //d3.select(element).style('font', draw_g.property('text_font').asStyle(20));
+      //fo_g.call(draw_g.property('text_font').func);
+      
+      element['_painter'] = this;
+      element['_group'] = fo_g;
 
-      JSROOT.AssertPrerequisites('mathjax', { _this:entry, func: function() {
+      JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
          if (typeof MathJax != 'object') return;
-         MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
+         MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]); // queue typeset and than finish drawing 
+         MathJax.Hub.Queue(["FinishTextDrawing", this['_painter'], this]);
       }});
 
       return 0;
