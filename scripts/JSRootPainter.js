@@ -1430,7 +1430,7 @@
       draw_g.call(font.func);
 
       draw_g.property('text_font', font);
-      draw_g.property('mathjax_cnt', 1); // one should wait until last call
+      draw_g.property('mathjax_cnt', 0); 
       draw_g.property('text_factor', 0.);
       draw_g.property('max_text_width', 0); // keep maximal text width, use it later
    }
@@ -1474,101 +1474,62 @@
 //          .attr('transform','translate(' + fo_x + ','+ fo_y +')');
    }
    
-   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(entry, draw_g) {
-      if (entry != null) {
+   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
+      
+      if (!draw_g) draw_g = this.draw_g;
+      
+      var svgs = null;
+      
+      if (draw_g.property('mathjax_cnt') > 0) {
+         draw_g.property('mathjax_cnt', 0);
+         draw_g.property('_painter', this);
+
+         var missing = false;
+         svgs = draw_g.selectAll(".math_svg");
          
-         var fo_g = entry['_group']; entry['_group'] = null;
+         svgs.each(function() {
+            var fo_g = d3.select(this);
+            if (fo_g.node().parentNode !== draw_g.node()) return;
+            var entry = fo_g.property('_element');
+            if (d3.select(entry).select("svg").empty()) missing = true;
+         });
 
-         var scale = fo_g.property('_scale');
-         //var fo = entry.property('_fo'); entry.property('_fo', null);
-         //var align = entry.property('_align');
+         // is any scg missing we shold wait until drawing is really finished
+         if (missing) 
+            return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
+               if (typeof MathJax != 'object') return;
+               MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
+            }});
+      }
+      
+      if (svgs==null) svgs = draw_g.selectAll(".math_svg");
 
+      var painter = this;
+
+      // first remove dummy divs and check scaling coefficient
+      svgs.each(function() {
+         var fo_g = d3.select(this);
+         if (fo_g.node().parentNode !== draw_g.node()) return;
+         var entry = fo_g.property('_element'); fo_g.property('_element', null);
+         
          var vvv = d3.select(entry).select("svg");
          if (vvv.empty()) {
             console.log('MathJax SVG ouptut error');
             return;
          }
-         
-         draw_g = d3.select(fo_g.node().parentNode);
-         
+
          vvv.remove();
          document.body.removeChild(entry);
 
          fo_g.append(function() { return vvv.node(); });
-         
-         var box = fo_g.node().getBBox();
-         var real_w = parseInt(box.width), real_h = parseInt(box.height);
-         //console.log("real_w = " + real_w + "  real_h = " + real_h + " scale = " + scale);
-         
-         if (scale) {
-            this.TextScaleFactor(1.*real_w / parseInt(fo_g.attr('width')), draw_g);
-            this.TextScaleFactor(1.*real_h / parseInt(fo_g.attr('height')), draw_g);
-         } else {
-            this.AdjustSvgPosition(fo_g);
+
+         if (fo_g.property('_scale')) {
+            var box = fo_g.node().getBBox();
+            var real_w = parseInt(box.width), real_h = parseInt(box.height);
+            painter.TextScaleFactor(1.*real_w / parseInt(fo_g.attr('width')), draw_g);
+            painter.TextScaleFactor(1.*real_h / parseInt(fo_g.attr('height')), draw_g);
          }
-         
-            /*         
-         } else {
-         var prnt = entry.node();
-         if (scale) prnt = prnt.parentNode;
-         // getBoundingClientRect do not work for div with width/height attributes, check childs
-         // var rect = prnt.getBoundingClientRect();
-         var chlds = prnt.childNodes;
-         var left = 100000000, right = 0, top = 100000000, bottom = 0;
-         for (var n=0;n<chlds.length+1;n++) {
-            var rrr = null;
-            if (n<chlds.length) {
-               if (typeof chlds[n]['getBoundingClientRect'] != 'function') continue;
-               rrr = chlds[n].getBoundingClientRect();
-            } else {
-               if ((left<right) && (top<bottom)) continue;
-               rrr = prnt.getBoundingClientRect();
-            }
-
-            if ((rrr.left==rrr.right) || (rrr.top==rrr.bottom)) continue;
-
-            left = Math.min(left, parseInt(rrr.left));
-            right = Math.max(right, parseInt(rrr.right));
-            top = Math.min(top,parseInt(rrr.top));
-            bottom = Math.max(bottom, parseInt(rrr.bottom));
-            //console.log(n+ "  left = " + rrr.left + " right = " + rrr.right + " top = " + rrr.top + " bottom = " + rrr.bottom);
-         }
-         var real_w = right - left, real_h = bottom - top;
-
-         // console.log("childs width = " + real_w + "  left = " +left + " right = " + right + " rotate = " + rotate);
-         // console.log("childs height = " + real_h + " top = " + top + " bottom = " + bottom);
-
-         if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
-         if (!scale) {
-            // only after drawing performed one could calculate size and adjust position
-            var dx = 0, dy = 0;
-            if (entry.property('_rotate')) {
-               if (align[1] == 'middle') dy = -real_w/2; else
-               if (align[1] == 'top') dy = -real_w;
-               if (align[0] == 'middle') dx = -real_h/2; else
-               if (align[0] == 'end') dx = -real_h;
-            } else {
-               if (align[1] == 'middle') dy = -real_h/2; else
-               if (align[1] == 'top') dy = -real_h;
-               if (align[0] == 'middle') dx = -real_w/2; else
-               if (align[0] == 'end') dx = -real_w;
-            }
-            if (dx != 0) { dx += parseInt(fo.attr('x')); fo.attr('x', dx); }
-            if (dy != 0) { dy += parseInt(fo.attr('y')); fo.attr('y', dy); }
-            return; // no need to continue when scaling not performed
-         }
-
-         this.TextScaleFactor(1.*real_w / parseInt(fo.attr('width')), draw_g);
-         this.TextScaleFactor(1.*real_h / parseInt(fo.attr('height')), draw_g);
-         }
-*/         
-      }
-
-      if (!draw_g) draw_g = this.draw_g;
-      
-      var cnt = draw_g.property('mathjax_cnt') - 1;
-      draw_g.property('mathjax_cnt', cnt);
-      if (cnt > 0) return 0;
+      });
 
       var f = draw_g.property('text_factor');
       var font = draw_g.property('text_font');
@@ -1577,9 +1538,7 @@
          draw_g.call(font.func);
       }
       
-      var painter = this;
-      
-      draw_g.selectAll(".svg_rescale_text").each(function() {
+      svgs.each(function() {
          var fo_g = d3.select(this); 
          // only direct parent 
          if (fo_g.node().parentNode === draw_g.node()) painter.AdjustSvgPosition(fo_g); 
@@ -1667,73 +1626,27 @@
       }
 
       var fo_g = draw_g.append("svg")
-                       .attr('x',x).attr('y',y)  // use x,y, width,height attribute to be able apply alignment later 
+                       .attr('x',x).attr('y',y)  // set x,y, width,height attribute to be able apply alignment later 
                        .attr('width',w).attr('height',h)
+                       .attr('class', 'math_svg')
                        .attr('visibility','hidden')
                        .property('_scale', scale)
                        .property('_rotate', rotate)
                        .property('_align', align);
 
       if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
-
-      if (scale) fo_g.attr('class', 'svg_rescale_text');
       
       var element = document.createElement("div");
       element.setAttribute("visibility", "hidden");
-      label = JSROOT.Painter.translateMath(label, latex_kind);
-      element.innerHTML = label; 
-      // document.body.insertBefore(element, document.body.firstChild);
+      element.innerHTML = JSROOT.Painter.translateMath(label, latex_kind); 
       document.body.appendChild(element)
-      /*
-      
-      var fo = fo_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo, x, y);
-      if (rotate) fo.attr("transform", "rotate(270, 0, 0)");
 
-      var entry = fo.append("xhtml:div");
-      if (scale) {
-         var tr = "";
-         entry = entry.style("width", w+"px")
-                      .style("height", h+"px")
-                      .append("xhtml:div")
-                      .style('position','absolute');
-         switch (align[0]) {
-            case 'left' : entry.style('left','0%'); break;
-            case 'middle' : entry.style('left','50%'); tr = "translateX(-50%) "; break;
-            case 'right' :  entry.style('left','100%'); tr = "translateX(-100%) "; break;
-         }
-         switch (align[1]) {
-            case 'top': entry.style('top','0%'); break;
-            case 'middle' : entry.style('top','50%'); tr+="translateY(-50%)"; break;
-            case 'bottom' :  entry.style('top','100%'); tr+="translateY(-100%)"; break;
-         }
-         if (tr.length>0) entry.style('transform', tr);
-      }
-
-
-      entry.style("color", tcolor ? tcolor : null);
-
-      entry.property("_painter", this)
-          .property("_scale", scale)
-          .property("_align", align) // keep align for the end
-          .property("_fo", fo) // keep foreign object till the end
-          .property("_rotate", rotate) // keep rotate attr the end
-          .html(label);
-      */          
-
-      var cnt = draw_g.property('mathjax_cnt')+1;
-      draw_g.property('mathjax_cnt', cnt);
-      
-      //d3.select(element).style('font', draw_g.property('text_font').asStyle(20));
-      //fo_g.call(draw_g.property('text_font').func);
-      
-      element['_painter'] = this;
-      element['_group'] = fo_g;
+      draw_g.property('mathjax_cnt', 1);  // one need to know that mathjax is used 
+      fo_g.property('_element', element);
 
       JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
          if (typeof MathJax != 'object') return;
          MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]); // queue typeset and than finish drawing 
-         MathJax.Hub.Queue(["FinishTextDrawing", this['_painter'], this]);
       }});
 
       return 0;
@@ -2901,7 +2814,7 @@
 
          this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);
 
-         this.FinishTextDrawing(null, lbl_g);
+         this.FinishTextDrawing(lbl_g);
       }
 
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
@@ -4215,7 +4128,7 @@
 
           if (res<=0) shrink_forbidden = true;
 
-          this.FinishTextDrawing(null, xax_g);
+          this.FinishTextDrawing(xax_g);
       }
 
       /* Y-axis label */
@@ -4231,7 +4144,7 @@
 
          if (res<=0) shrink_forbidden = true;
 
-         this.FinishTextDrawing(null, yax_g);
+         this.FinishTextDrawing(yax_g);
       }
 
       var xAxisColor = this.histo['fXaxis']['fAxisColor'];
