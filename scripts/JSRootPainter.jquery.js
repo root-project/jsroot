@@ -77,13 +77,11 @@
 
          $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
          
-         console.log('window size h:' + $(window).width() + " h:" + $(window).height());
-         console.log('event       x:' + event.clientX + " y:" + event.clientY);
-
          $("#" + menuname)
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
             .attr('class', 'ctxmenu')
+            .css('font-size', '80%')
             .menu({
                items: "> :not(.ui-widget-header)",
                select: function( event, ui ) {

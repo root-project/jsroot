@@ -7188,7 +7188,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
-      var cando = { expand : false, display : false, scan : true, open : false,
+      var cando = { expand : false, display : false, scan : true, open : false, monitor:null,
                     img1 : "", img2 : "", html : "", ctxt : false, typename : "", execute: false };
 
       var kind = node["_kind"];
@@ -7265,10 +7265,12 @@
          cando.scan = false;
          cando.display = true;
       }
+      
+      if (cando.monitor==null) cando.monitor = cando.display; 
 
       if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
 
-      if ('_player' in node) cando.display = true;
+      if ('_player' in node) { cando.display = true; cando.monitor = false; }
       if ('_icon' in node) cando.img1 = node['_icon'];
       if ('_icon2' in node) cando.img2 = node['_icon2'];
 
@@ -7484,14 +7486,17 @@
       var mdi = this['disp'];
       if (mdi == null) return;
 
-      var allitems = [], options = [];
+      var allitems = [], options = [], hpainter = this;
+      
 
       // first collect items
       mdi.ForEachPainter(function(p) {
-         if ((p.GetItemName()!=null) && (allitems.indexOf(p.GetItemName())<0)) {
-            allitems.push(p.GetItemName());
-            options.push("update");
-         }
+         var itemname = p.GetItemName(); 
+         if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
+         var item = hpainter.Find(itemname);
+         if ((item==null) || ('_not_monitor' in item) || !hpainter.CheckCanDo(item).monitor) return;
+         allitems.push(itemname);
+         options.push("update");
       }, true); // only visible panels are considered
 
       var painter = this;
@@ -7503,6 +7508,8 @@
             delete item['_file'];
          });
 
+      
+      
       this.displayAll(allitems, options);
    }
 
