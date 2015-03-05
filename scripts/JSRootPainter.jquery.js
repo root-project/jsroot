@@ -76,6 +76,9 @@
          document.body.onclick = function(e) { menu.remove(); }
 
          $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
+         
+         console.log('window size h:' + $(window).width() + " h:" + $(window).height());
+         console.log('event       x:' + event.clientX + " y:" + event.clientY);
 
          $("#" + menuname)
             .css('left', event.clientX + window.pageXOffset)
@@ -91,6 +94,14 @@
                   if (typeof func == 'function') func(arg);
               }
          });
+         
+         var newx = null, newy = null;
+         
+         if (event.clientX + $("#" + menuname).width() > $(window).width()) newx = $(window).width() - $("#" + menuname).width() - 20;  
+         if (event.clientY + $("#" + menuname).height() > $(window).height()) newy = $(window).height() - $("#" + menuname).height() - 20;  
+         
+         if (newx!=null) $("#" + menuname).css('left',(newx>0 ? newx : 0) + window.pageXOffset);
+         if (newy!=null) $("#" + menuname).css('top',(newy>0 ? newy : 0) + window.pageYOffset);
       }
 
       JSROOT.CallBack(maincallback, menu);
