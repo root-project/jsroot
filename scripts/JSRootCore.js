@@ -533,7 +533,7 @@
       }
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
-      
+
       var ext = JSROOT.source_min ? ".min" : "";
 
       var need_jquery = false;

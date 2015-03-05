@@ -1430,7 +1430,7 @@
       draw_g.call(font.func);
 
       draw_g.property('text_font', font);
-      draw_g.property('mathjax_cnt', 0); 
+      draw_g.property('mathjax_use', false);
       draw_g.property('text_factor', 0.);
       draw_g.property('max_text_width', 0); // keep maximal text width, use it later
    }
@@ -1442,18 +1442,18 @@
    }
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
-      
+
       if (!draw_g) draw_g = this.draw_g;
-      
+
       var svgs = null;
-      
-      if (draw_g.property('mathjax_cnt') > 0) {
-         draw_g.property('mathjax_cnt', 0);
+
+      if (draw_g.property('mathjax_use')) {
+         draw_g.property('mathjax_use', false);
          draw_g.property('_painter', this);
 
          var missing = false;
          svgs = draw_g.selectAll(".math_svg");
-         
+
          svgs.each(function() {
             var fo_g = d3.select(this);
             if (fo_g.node().parentNode !== draw_g.node()) return;
@@ -1462,13 +1462,13 @@
          });
 
          // is any svg missing we shold wait until drawing is really finished
-         if (missing) 
+         if (missing)
             return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
                if (typeof MathJax != 'object') return;
                MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
             }});
       }
-      
+
       if (svgs==null) svgs = draw_g.selectAll(".math_svg");
 
       var painter = this;
@@ -1478,7 +1478,7 @@
          var fo_g = d3.select(this);
          if (fo_g.node().parentNode !== draw_g.node()) return;
          var entry = fo_g.property('_element'); fo_g.property('_element', null);
-         
+
          var vvv = d3.select(entry).select("svg");
          if (vvv.empty()) {
             console.log('MathJax SVG ouptut error');
@@ -1504,32 +1504,32 @@
          font.size = Math.floor(font.size/f);
          draw_g.call(font.func);
       }
-      
+
       svgs.each(function() {
-         var fo_g = d3.select(this); 
-         // only direct parent 
+         var fo_g = d3.select(this);
+         // only direct parent
          if (fo_g.node().parentNode !== draw_g.node()) return;
          var box = fo_g.node().getBBox();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
          var align = fo_g.property('_align');
          var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
          var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
-         
+
          if (fo_g.property('_scale')) {
-            if (align[0] == 'middle') fo_x += (fo_w - real_w)/2; else 
-            if (align[0] == 'end') fo_x +=  (fo_w - real_w); 
-            if (align[1] == 'middle') fo_y += (fo_h - real_h)/2; else 
+            if (align[0] == 'middle') fo_x += (fo_w - real_w)/2; else
+            if (align[0] == 'end') fo_x +=  (fo_w - real_w);
+            if (align[1] == 'middle') fo_y += (fo_h - real_h)/2; else
             if (align[1] == 'bottom') fo_y += (fo_h - real_h);
          } else {
-            if (align[0] == 'middle') fo_x -= real_w/2; else 
+            if (align[0] == 'middle') fo_x -= real_w/2; else
             if (align[0] == 'end') fo_x -= real_w;
-            if (align[1] == 'middle') fo_y -= real_h/2; else 
+            if (align[1] == 'middle') fo_y -= real_h/2; else
             if (align[1] == 'top') fo_y -= real_h;
          }
 
          fo_g.attr('x', fo_x).attr('y', fo_y)  // use x/y while transform used for rotation
              .attr('width', real_w+10).attr('height', real_h+10)  // width and height required by Chrome
-             .attr('visibility', null); 
+             .attr('visibility', null);
       });
 
       return draw_g.property('max_text_width');
@@ -1573,7 +1573,7 @@
                          .attr("fill", tcolor ? tcolor : null)
                          .text(label);
 
-         if (align[1]=="middle") txt.attr("dominant-baseline", "middle");   
+         if (align[1]=="middle") txt.attr("dominant-baseline", "middle");
 
          if (scale) {
             if (align[1]=="middle") txt.attr("y", (y + h*0.5).toFixed(1));
@@ -1614,7 +1614,7 @@
       }
 
       var fo_g = draw_g.append("svg")
-                       .attr('x',x).attr('y',y)  // set x,y, width,height attribute to be able apply alignment later 
+                       .attr('x',x).attr('y',y)  // set x,y, width,height attribute to be able apply alignment later
                        .attr('width',w).attr('height',h)
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
@@ -1623,18 +1623,20 @@
                        .property('_align', align);
 
       if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
-      
+
       var element = document.createElement("div");
-      element.setAttribute("visibility", "hidden");
-      element.innerHTML = JSROOT.Painter.translateMath(label, latex_kind); 
+      d3.select(element).style("visibility", "hidden")
+                        .style("overflow", "hidden")
+                        .style("position", "absolute")
+                        .html(JSROOT.Painter.translateMath(label, latex_kind));
       document.body.appendChild(element)
 
-      draw_g.property('mathjax_cnt', 1);  // one need to know that mathjax is used 
+      draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
 
       JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
-         if (typeof MathJax != 'object') return;
-         MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]); // queue typeset and than finish drawing 
+         if (typeof MathJax == 'object')
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]);
       }});
 
       return 0;
