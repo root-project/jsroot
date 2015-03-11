@@ -6850,7 +6850,7 @@
          for (var i in arr)
             txt += "<pre>" + arr[i] + "</pre>";
       }
-      frame.html("<div style='overflow:hidden'>" + txt + "</div>");
+      frame.html("<div style='overflow:auto;max-height:" + frame.style('height') + "'>" + txt + "</div>");
 
       // (re) set painter to first child element
       this.SetDivId(this.divid);
