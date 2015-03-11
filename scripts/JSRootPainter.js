@@ -7736,9 +7736,14 @@
                if (!('_drawfunc' in item)) return;
                if (item._kind.indexOf('ROOT.')!=0) return;
                var typename = item._kind.slice(5);
-               if (JSROOT.canDraw(typename)) return;
+               var drawopt = item['_drawopt'];
+               if (JSROOT.canDraw(typename) && (drawopt==null)) return;
                var func = JSROOT.findFunction(item['_drawfunc']);
-               if (func) JSROOT.addDrawFunc(typename, func);
+               if (func) JSROOT.addDrawFunc(typename, func, drowopt);
+               
+               if (item['_drawscript'] != null)
+                  JSROOT.addDrawFunc(typename, { script:item['_drawscript'], func: item['_drawfunc']} , drawopt);
+               
             });
             
             JSROOT.CallBack(user_callback, painter);
