@@ -119,9 +119,10 @@
       return value;
    }
 
+   JSROOT.debug = 0;
+   
    // This should be similar to the jQuery.extend method
-   // Major complication - when same object appears N times in the source,
-   // it should be cloned once and inserted N times in the target and not cloned N times
+   // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src, map) {
       if (!map) map = { obj:[], clones:[] };
 
@@ -152,11 +153,9 @@
          map.clones.push(tgt);
       }
 
-      var k, ks = Object.keys(src);
-      for (i = 0; i < ks.length; i++) {
-         k = ks[i];
+      for (var k in src) 
          tgt[k] = JSROOT.extend(tgt[k], src[k], map);
-      }
+      
       return tgt;
    }
 
@@ -2206,7 +2205,6 @@
       return JSROOT.Math.Landau(x, f['fParams'][i+1],f['fParams'][i+2], true);
    };
 
-
    // it is important to run this function at the end when all other
    // functions are available
    (function() {
@@ -2253,7 +2251,6 @@
          return;
       }
    })();
-
 
 })();
 

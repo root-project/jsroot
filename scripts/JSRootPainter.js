@@ -842,6 +842,23 @@
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
    }
+   
+   JSROOT.TBasePainter.prototype.DrawingReady = function() {
+      // function should be called by the painter when first drawing is completed
+      this['_ready_called_'] = true;
+      if ('_ready_callback_' in this) {
+         JSROOT.CallBack(this['_ready_callback_'], this);
+         delete this['_ready_callback_'];
+         this['_ready_callback_'] = null;
+      }
+      return this;
+   }
+   
+   JSROOT.TBasePainter.prototype.WhenReady = function(callback) {
+      // call back will be called when painter ready with the drawing
+      if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
+      this['_ready_callback_'] = callback;
+   }
 
    JSROOT.TBasePainter.prototype.GetObject = function() {
       return null;
@@ -1779,7 +1796,7 @@
       var p = new JSROOT.TFramePainter(obj);
       p.SetDivId(divid);
       p.DrawFrameSvg();
-      return p;
+      return p.DrawingReady();
    }
 
    // =========================================================================
@@ -1970,21 +1987,15 @@
 
    JSROOT.Painter.drawFunction = function(divid, tf1) {
       var painter = new JSROOT.TF1Painter(tf1);
-
       painter.SetDivId(divid, -1);
-
       if (painter.main_painter() == null) {
          var histo = painter.CreateDummyHisto();
          JSROOT.Painter.drawHistogram1D(divid, histo);
       }
-
       painter.SetDivId(divid);
-
       painter.CreateBins();
-
       painter.DrawBins();
-
-      return painter;
+      return painter.DrawingReady(); 
    }
 
    // =======================================================================
@@ -2598,14 +2609,10 @@
       }
 
       painter.SetDivId(divid);
-
       painter.DecodeOptions(opt);
-
       painter.CreateBins();
-
       painter.DrawBins();
-
-      return painter;
+      return painter.DrawingReady();
    }
 
    // ============================================================
@@ -2856,16 +2863,13 @@
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
       var painter = new JSROOT.TPavePainter(pavetext);
-
       painter.SetDivId(divid);
 
       // refill statistic in any case
       // if ('_AutoCreated' in pavetext)
       painter.FillStatistic();
-
       painter.DrawPaveText();
-
-      return painter;
+      return painter.DrawingReady();
    }
 
    // ===========================================================================
@@ -3093,8 +3097,8 @@
          painter.CheckColors(can);
          painter.DrawPrimitives();
       }
-
-      return painter;
+      
+      return painter.DrawingReady();
    }
 
    JSROOT.Painter.drawPad = function(divid, pad) {
@@ -3115,7 +3119,7 @@
       // we restore previous pad name
       painter.svg_canvas().property('current_pad', prev_name);
 
-      return painter;
+      return painter.DrawingReady();
    }
 
    // ===========================================================================
@@ -5476,7 +5480,7 @@
 
       if (painter.options.AutoZoom) painter.AutoZoom();
 
-      return painter;
+      return painter.DrawingReady();
    }
 
    // ==================== painter for TH2 histograms ==============================
@@ -6175,13 +6179,15 @@
       else
          painter.Draw2D();
 
-      return painter;
+      return painter.DrawingReady();
    }
 
    JSROOT.Painter.drawHistogram3D = function(divid, obj, opt) {
+      var painter = new JSROOT.TObjectPainter;
       JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram3D(divid, obj, opt);
+         JSROOT.Painter.real_drawHistogram3D(divid, obj, opt, painter);
       });
+      return painter;
    }
 
    // ====================================================================
@@ -6341,10 +6347,8 @@
 
       var painter = new JSROOT.THStackPainter(stack);
       painter.SetDivId(divid);
-
       painter.drawStack(opt);
-
-      return painter
+      return painter.DrawingReady();
    }
 
    // ==============================================================================
@@ -6502,7 +6506,7 @@
       var painter = new JSROOT.TLegendPainter(obj);
       painter.SetDivId(divid);
       painter.Redraw();
-      return painter;
+      return painter.DrawingReady();
    }
 
    // =============================================================
@@ -6648,7 +6652,7 @@
       var painter = new JSROOT.TMultiGraphPainter(mgraph);
       painter.SetDivId(divid);
       painter.drawMultiGraph(opt);
-      return painter;
+      return painter.DrawingReady();
    }
 
    // =====================================================================================
@@ -6807,14 +6811,14 @@
       var painter = new JSROOT.TTextPainter(text);
       painter.SetDivId(divid);
       painter.Redraw();
-      return painter;
+      return painter.DrawingReady();
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
       d3.select("#" + divid).style( 'overflow' , 'auto' );
       var painter = new JSROOT.HierarchyPainter('sinfo', divid);
       painter.ShowStreamerInfo(obj);
-      return painter;
+      return painter.DrawingReady();
    }
 
    // ================= painer of raw text ========================================
@@ -6868,7 +6872,7 @@
       var painter = new JSROOT.RawTextPainter(txt);
       painter.SetDivId(divid);
       painter.Draw();
-      return painter;
+      return painter.DrawingReady();
    }
 
    // =========== painter of hierarchical structures =================================
@@ -8373,9 +8377,35 @@
       if ('_typename' in obj) draw_func = JSROOT.getDrawFunc(obj['_typename'], opt);
       else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);
 
-      if (draw_func==null) return null;
-
-      return draw_func(divid, obj, opt);
+      if (typeof draw_func == 'function') return draw_func(divid, obj, opt);
+      
+      if ((typeof draw_func == 'object') && 
+          (typeof draw_func['script']=='string') && 
+          (typeof draw_func['func']=='string')) {
+         // special case - function should be loaded from external script 
+         var func = JSROOT.findFunction(draw_func['func']);
+         if (func!=null) return func(divid, obj, opt);
+         
+         // we create dummy object, which should be completed in painter
+         var painter = new JSROOT.TBasePainter(); 
+         
+         JSROOT.AssertPrerequisites("user:" + draw_func['script'], function() {
+            func = JSROOT.findFunction(draw_func['func']);
+            if (func==null) {
+               alert('Fail to find function ' + draw_func['func'] + ' after loading script ' + draw_func['script']);
+               return null;
+            }
+            
+            var ppp = func(divid, obj, opt, painter);
+            
+            if (ppp !== painter) 
+               alert('Painter function ' + draw_func['func'] + ' do not follow rules of dynamic_loaded painters ');
+         });
+         
+         return painter;
+      }
+      
+      return null;
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
