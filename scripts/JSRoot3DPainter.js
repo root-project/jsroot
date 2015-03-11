@@ -813,7 +813,7 @@
       renderer.render(scene, camera);
 
       JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, null);
-      
+
       return painter.DrawingReady();
    }
 

@@ -120,7 +120,7 @@
    }
 
    JSROOT.debug = 0;
-   
+
    // This should be similar to the jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src, map) {
@@ -153,9 +153,9 @@
          map.clones.push(tgt);
       }
 
-      for (var k in src) 
+      for (var k in src)
          tgt[k] = JSROOT.extend(tgt[k], src[k], map);
-      
+
       return tgt;
    }
 

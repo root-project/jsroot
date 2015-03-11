@@ -842,7 +842,7 @@
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
    }
-   
+
    JSROOT.TBasePainter.prototype.DrawingReady = function() {
       // function should be called by the painter when first drawing is completed
       this['_ready_called_'] = true;
@@ -853,7 +853,7 @@
       }
       return this;
    }
-   
+
    JSROOT.TBasePainter.prototype.WhenReady = function(callback) {
       // call back will be called when painter ready with the drawing
       if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
@@ -1995,7 +1995,7 @@
       painter.SetDivId(divid);
       painter.CreateBins();
       painter.DrawBins();
-      return painter.DrawingReady(); 
+      return painter.DrawingReady();
    }
 
    // =======================================================================
@@ -3097,7 +3097,7 @@
          painter.CheckColors(can);
          painter.DrawPrimitives();
       }
-      
+
       return painter.DrawingReady();
    }
 
@@ -6878,14 +6878,14 @@
    // =========== painter of hierarchical structures =================================
 
    JSROOT.hpainter = null; // global pointer
-   
+
    JSROOT.HierarchyPainter = function(name, frameid) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.frameid = frameid;
       this.h = null; // hierarchy
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      
+
       JSROOT.hpainter = this;
    }
 
@@ -7274,8 +7274,8 @@
          cando.scan = false;
          cando.display = true;
       }
-      
-      if (cando.monitor==null) cando.monitor = cando.display; 
+
+      if (cando.monitor==null) cando.monitor = cando.display;
 
       if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
 
@@ -7488,11 +7488,11 @@
       if (mdi == null) return;
 
       var allitems = [], options = [], hpainter = this;
-      
+
 
       // first collect items
       mdi.ForEachPainter(function(p) {
-         var itemname = p.GetItemName(); 
+         var itemname = p.GetItemName();
          if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
          var item = hpainter.Find(itemname);
          if ((item==null) || ('_not_monitor' in item) || !hpainter.CheckCanDo(item).monitor) return;
@@ -7508,7 +7508,7 @@
             painter.ForEach(function(fitem) { delete fitem['_readobj'] }, item);
             delete item['_file'];
          });
-      
+
       this.displayAll(allitems, options);
    }
 
@@ -7717,7 +7717,7 @@
             }
             return false;
          }
-         
+
          var scripts = "";
 
          painter.ForEach(function(item) {
@@ -7726,12 +7726,12 @@
             for (var n in arr)
                if (scripts.indexOf(arr[n])<0) scripts += arr[n] + ";";
          });
-         
-         if (scripts.length > 0) scripts = "user:" + scripts; 
 
-         // use AssertPrerequisites, while it protect us from race conditions 
+         if (scripts.length > 0) scripts = "user:" + scripts;
+
+         // use AssertPrerequisites, while it protect us from race conditions
          JSROOT.AssertPrerequisites(scripts, function() {
-            
+
             painter.ForEach(function(item) {
                if (!('_drawfunc' in item)) return;
                if (item._kind.indexOf('ROOT.')!=0) return;
@@ -7740,12 +7740,12 @@
                if (JSROOT.canDraw(typename) && (drawopt==null)) return;
                var func = JSROOT.findFunction(item['_drawfunc']);
                if (func) JSROOT.addDrawFunc(typename, func, drowopt);
-               
+
                if (item['_drawscript'] != null)
                   JSROOT.addDrawFunc(typename, { script:item['_drawscript'], func: item['_drawfunc']} , drawopt);
-               
+
             });
-            
+
             JSROOT.CallBack(user_callback, painter);
          });
 
@@ -8383,33 +8383,33 @@
       else if ('_kind' in obj) draw_func = JSROOT.getDrawFunc('kind:' + obj['_kind'], opt);
 
       if (typeof draw_func == 'function') return draw_func(divid, obj, opt);
-      
-      if ((typeof draw_func == 'object') && 
-          (typeof draw_func['script']=='string') && 
+
+      if ((typeof draw_func == 'object') &&
+          (typeof draw_func['script']=='string') &&
           (typeof draw_func['func']=='string')) {
-         // special case - function should be loaded from external script 
+         // special case - function should be loaded from external script
          var func = JSROOT.findFunction(draw_func['func']);
          if (func!=null) return func(divid, obj, opt);
-         
+
          // we create dummy object, which should be completed in painter
-         var painter = new JSROOT.TBasePainter(); 
-         
+         var painter = new JSROOT.TBasePainter();
+
          JSROOT.AssertPrerequisites("user:" + draw_func['script'], function() {
             func = JSROOT.findFunction(draw_func['func']);
             if (func==null) {
                alert('Fail to find function ' + draw_func['func'] + ' after loading script ' + draw_func['script']);
                return null;
             }
-            
+
             var ppp = func(divid, obj, opt, painter);
-            
-            if (ppp !== painter) 
+
+            if (ppp !== painter)
                alert('Painter function ' + draw_func['func'] + ' do not follow rules of dynamic_loaded painters ');
          });
-         
+
          return painter;
       }
-      
+
       return null;
    }
 
