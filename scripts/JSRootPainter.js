@@ -820,6 +820,7 @@
          str = str.replace(/#right/g, "\\right");
          // processing of #[] #{} should be done
          str = str.replace(/#\[\]/g, "\\[]");
+         str = str.replace(/ /g, "\\;");
 
          for (var x in JSROOT.Painter.symbols_map) {
             var y = "\\" + x.substr(1);
@@ -6872,12 +6873,16 @@
 
    // =========== painter of hierarchical structures =================================
 
+   JSROOT.hpainter = null; // global pointer
+   
    JSROOT.HierarchyPainter = function(name, frameid) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.frameid = frameid;
       this.h = null; // hierarchy
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
+      
+      JSROOT.hpainter = this;
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
@@ -7277,14 +7282,6 @@
       return cando;
    }
 
-   JSROOT.HierarchyPainter.prototype.FindFastCommands = function() {
-      var arr = [];
-
-      this.ForEach(function(item) { if (('_fastcmd' in item) && (item._kind == 'Command')) arr.push(item); });
-
-      return arr.length > 0 ? arr : null;
-   }
-
    JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
       // execute item marked as 'Command'
 
@@ -7507,8 +7504,6 @@
             painter.ForEach(function(fitem) { delete fitem['_readobj'] }, item);
             delete item['_file'];
          });
-
-      
       
       this.displayAll(allitems, options);
    }
@@ -7660,14 +7655,6 @@
       return null;
    }
 
-   JSROOT.HierarchyPainter.prototype.CompleteOnline = function(ready_callback) {
-      // method called at the moment when new description (h.json) is loaded
-      // and before any graphical element is created
-      // one can load extra scripts here
-
-      return JSROOT.CallBack(ready_callback);
-   }
-
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback) {
       // method used to request object from the http server
 
@@ -7682,7 +7669,7 @@
             req  = 'h.json?compact=3';
          } else
          if (item._kind.indexOf("ROOT.")!=0)
-            req = 'get.json.gz?compact=3';
+            req = 'item.json.gz?compact=3';
       }
 
       if (url.length > 0) url += "/";
@@ -7726,12 +7713,33 @@
             }
             return false;
          }
+         
+         var scripts = "";
 
-         painter.CompleteOnline(function() {
-            painter.RefreshHtml(function() {
-               JSROOT.CallBack(user_callback, painter);
-            });
+         painter.ForEach(function(item) {
+            if (!('_autoload' in item)) return;
+            var arr = item['_autoload'].split(";");
+            for (var n in arr)
+               if (scripts.indexOf(arr[n])<0) scripts += arr[n] + ";";
          });
+         
+         if (scripts.length > 0) scripts = "user:" + scripts; 
+
+         // use AssertPrerequisites, while it protect us from race conditions 
+         JSROOT.AssertPrerequisites(scripts, function() {
+            
+            painter.ForEach(function(item) {
+               if (!('_drawfunc' in item)) return;
+               if (item._kind.indexOf('ROOT.')!=0) return;
+               var typename = item._kind.slice(5);
+               if (JSROOT.canDraw(typename)) return;
+               var func = JSROOT.findFunction(item['_drawfunc']);
+               if (func) JSROOT.addDrawFunc(typename, func);
+            });
+            
+            JSROOT.CallBack(user_callback, painter);
+         });
+
       }
 
       if (!server_address) server_address = "";

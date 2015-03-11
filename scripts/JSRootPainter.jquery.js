@@ -198,7 +198,7 @@
       if (icon_name.indexOf("img_")==0)
          this['html'] += '<div class="' + icon_name + '"/>';
       else
-         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top"/>';
+         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px"/>';
 
       this['html'] += '<a';
       if (can_click || has_childs) this['html'] +=' class="h_item"';
@@ -230,6 +230,7 @@
    }
    
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
+      
       if (this.frameid == null) return JSROOT.CallBack(callback);
       var elem = $("#" + this.frameid);
       if ((this.h == null) || (elem.length == 0)) { 
@@ -237,10 +238,14 @@
          return JSROOT.CallBack(callback);
       }
 
-      var factcmds = this.FindFastCommands();
+      var factcmds = [], status_item = null;
+      this.ForEach(function(item) { 
+         if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
+         if (('_status' in item) && (status_item==null)) status_item = item;
+      });
 
       this['html'] = "";
-      if (factcmds) {
+      if (factcmds.length>0) {
          for (var n in factcmds)
             this['html'] += "<button class='fast_command'> </button>";
       }
@@ -284,7 +289,7 @@
                     .next().click(function() { h.reload(); return false; })
                     .next().click(function() { h.clear(false); return false; });
 
-      if (factcmds)
+      if (factcmds.length>0)
          elem.find('.fast_command').each(function(index) {
             if ('_icon' in factcmds[index])
                $(this).text("").append('<img src="' + factcmds[index]['_icon'] + '"/>');
@@ -293,6 +298,15 @@
                    .attr("title", factcmds[index]._title)
                    .click(function() { h.ExecuteCommand($(this).attr("item"), $(this)); });
          });
+      
+      if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
+         var func = JSROOT.findFunction(status_item._status);
+         var hdiv = func==null ? null : JSROOT.Painter.ConfigureHSeparator(30);
+         if (hdiv != null) {
+            // painter.CreateStatus(28);
+            func(hdiv, this.itemFullName(status_item)); 
+         }
+      }
       
       JSROOT.CallBack(callback);
    }
@@ -901,8 +915,9 @@
    }
    
    JSROOT.Painter.ConfigureHSeparator = function(height, onlyleft) {
-      
-      if (JSROOT.Painter.separ == null) return;
+
+      if ((JSROOT.Painter.separ == null) || 
+          (JSROOT.Painter.horizontal != null)) return null;
       
       JSROOT.Painter.separ['horizontal'] = 'horizontal-separator-div';
       JSROOT.Painter.separ['bottom'] = 'bottom-div';
@@ -920,6 +935,8 @@
       });
       
       JSROOT.Painter.AdjustLayout(null, height, false);
+      
+      return JSROOT.Painter.separ.bottom; 
    }
 
    
