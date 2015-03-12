@@ -628,7 +628,7 @@
       $("#" + topid).append(entryInfo);
 
       var pthis = this;
-      
+
       $('#' + uid)
             .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
             .hover(function() { $(this).toggleClass("ui-state-hover"); })
@@ -640,7 +640,7 @@
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     pthis.CheckResize($(this).next().attr('id'));      
+                     pthis.CheckResize($(this).next().attr('id'));
                      return false;
                   })
             .next()
@@ -704,19 +704,19 @@
       var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
       var pthis = this;
-      
+
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
 
          var tabs = $("#" + topid)
                        .css('overflow','hidden')
-                       .tabs({ 
+                       .tabs({
                           heightStyle : "fill",
                           activate : function (event,ui) {
                              $(ui.newPanel).css('overflow', 'hidden');
                              pthis.CheckResize($(ui.newPanel).attr('id'));
-                             // console.log('activate element old ' + $(ui.oldPanel).attr('id'));     
-                             // console.log('activate element new ' + $(ui.newPanel).attr('id'));     
+                             // console.log('activate element old ' + $(ui.oldPanel).attr('id'));
+                             // console.log('activate element new ' + $(ui.newPanel).attr('id'));
                            }
                           });
 
@@ -738,7 +738,7 @@
          .empty()
          .css('overflow', 'hidden')
          .prop('title', title);
-      
+
       return $('#' + hid).get(0);
    }
 
@@ -921,8 +921,8 @@
       $("#separator-div").addClass("separator").draggable({
          axis: "x" , zIndex: 100, cursor: "ew-resize",
          helper : function() { return $("#separator-div").clone().attr('id','separator-clone').css('background-color','grey'); },
-         stop: function(event,ui) { 
-            event.stopPropagation(); 
+         stop: function(event,ui) {
+            event.stopPropagation();
             var left = ui.position.left;
             $("#separator-clone").remove();
             JSROOT.Painter.AdjustLayout(left, null, false);
@@ -952,11 +952,11 @@
       $("#horizontal-separator-div").addClass("separator").draggable({
          axis: "y" , zIndex: 100, cursor: "ns-resize",
          helper : function() { return $("#horizontal-separator-div").clone().attr('id','horizontal-separator-clone').css('background-color','grey'); },
-         stop: function(event,ui) { 
+         stop: function(event,ui) {
             event.stopPropagation();
             var top = $(window).height() - ui.position.top;
             $('#horizontal-separator-clone').remove();
-            JSROOT.Painter.AdjustLayout(null, top, false); 
+            JSROOT.Painter.AdjustLayout(null, top, false);
          }
       });
 

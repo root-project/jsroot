@@ -2974,32 +2974,32 @@
       var value = select.style(name);
       if (!value) return 0;
       value = parseFloat(value.replace("px",""));
-      return (value === NaN) ? 0 : value; 
+      return (value === NaN) ? 0 : value;
    }
-   
+
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
       var render_to = d3.select("#" + this.divid);
 
       var rect = render_to.node().getBoundingClientRect();
-      
+
       var w = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
-      var h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom')); 
+      var h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
       var factor = null;
-      
+
       var svg = null;
-      
+
       if (check_resize > 0) {
-         
+
          svg = this.svg_canvas();
 
          var oldw = svg.property('last_width');
          var oldh = svg.property('last_height');
-         
+
          if ((w<=0) && (h<=0)) {
             svg.attr("visibility", "hidden");
             return false;
-         } else { 
+         } else {
             svg.attr("visibility", "visible");
          }
 
@@ -7966,10 +7966,10 @@
       this['disp_kind'] = layout;
       this['disp_frameid'] = frameid;
    }
-   
+
    JSROOT.HierarchyPainter.prototype.GetLayout = function() {
       return this['disp_kind'];
-   } 
+   }
 
    JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
       if ('disp' in this) {
@@ -8170,9 +8170,9 @@
       var resized_frame = null;
 
       this.ForEachPainter(function(painter, frame) {
-         
-         if ((only_frame_id != null) && (d3.select(frame).attr('id') != only_frame_id)) return; 
-         
+
+         if ((only_frame_id != null) && (d3.select(frame).attr('id') != only_frame_id)) return;
+
          if ((painter.GetItemName()!=null) && (typeof painter['CheckResize'] == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
