@@ -8502,7 +8502,7 @@
 
       if (typeof draw_func == 'function') return draw_func(divid, obj, opt);
 
-      if ((typeof draw_func == 'object') &&
+      if ((draw_func!=null) && (typeof draw_func == 'object') &&
           (typeof draw_func['script']=='string') &&
           (typeof draw_func['func']=='string')) {
          // special case - function should be loaded from external script
