@@ -65,8 +65,6 @@ gethfile $server/index.htm?nozip index.htm
 gethfile $server/h.xml h.xml
 gethfile $server/h.json  h.json
 
-mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
-
 mkdir -p Start; echo "0" >> Start/cmd.json
 mkdir -p Stop; echo "0" >> Stop/cmd.json
 mkdir -p ResetHPX; echo "0" >> ResetHPX/cmd.json
@@ -79,6 +77,9 @@ rm -f draw0.htm
 
 grab 2 hpx
 grab 2 hpxpy
+
+# get streamer infos at the end - only than it will have full class list  
+mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
 
 # copy all files to web server
 rm -rf $tgtdir

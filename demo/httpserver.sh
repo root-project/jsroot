@@ -59,7 +59,6 @@ sed 's/\/jsrootsys/../g' index0.htm > index.htm
 rm -f index0.htm
 wget -nv $server/h.xml -O h.xml
 wget -nv $server/h.json -O h.json
-mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
 
 grab 0 Files
 grab 0 Files/job1.root 
@@ -71,6 +70,9 @@ grab 0 Canvases
 grab 2 Canvases/c1
 grab 0 Canvases/c1/fPrimitives
 grab 2 Canvases/c1/fPrimitives/hpx
+
+# get streamer infos at the end - only than it will have full class list  
+mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz
 
 #keep it at very end
 grab 0 Files/job1.root/ntuple 
