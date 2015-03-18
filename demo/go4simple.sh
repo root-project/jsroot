@@ -14,10 +14,10 @@ tgtdir=~/web-docs/js/3.4/Go4ExampleSimple
 # rm -rf index.htm h.xml h.json StreamerInfo Canvases Files
 
 function gethfile {
-   curl -s $1 | sed 's/\\\/go4sys/go4sys/g' | sed 's/\/jsrootsys/../g' | sed 's/\\\/rootsys\\\/icons/icons/g' > $2
+   wget -nv $1 -O- | sed 's/\\\/go4sys/go4sys/g' | sed 's/\/jsrootsys/../g' | sed 's/\\\/rootsys\\\/icons/icons/g' > $2
 }
 
-#  par1 - 0 - only hierarchy, 1 - item, 2 - drawing, 3 - command
+#  par1 - 0 - only hierarchy, 1 - item, 2 - drawing, 3 - command, 4 - parameter
 #  par2 - path
 
 function grab {
@@ -34,15 +34,14 @@ function grab {
 
    mkdir -p $2
 
-   curl -s $server/$2/?nozip | sed $sedarg0 | sed $sedarg > $2/index.htm
-   curl -s $server/$2/h.json | sed $sedarg > $2/h.json
-   curl -s $server/$2/h.xml > $2/h.xml
+   wget -nv $server/$2/?nozip -O- | sed $sedarg0 | sed $sedarg > $2/index.htm
+   wget -nv $server/$2/h.json -O- | sed $sedarg > $2/h.json
+   wget -nv $server/$2/h.xml -O $2/h.xml
 
    if [ "$1" == "0" ]; then return; fi 
 
    if [ "$1" == "1" ]; then  
-      curl -s $server/$2/item.json | sed $sedarg > $2/item.json
-      curl -s $server/$2/item.json.gz | sed $sedarg > $2/item.json.gz
+      wget -nv $server/$2/item.json.gz -O- | sed $sedarg > $2/item.json.gz
       return
    fi 
 
@@ -51,13 +50,14 @@ function grab {
       return
    fi 
 
-   curl -s  $server/$2/root.json.gz?compact=3 > $2/root.json.gz
-   curl -s $server/$2/root.bin.gz > $2/root.bin.gz
+
+   wget -nv $server/$2/root.json.gz?compact=3 -O- > $2/root.json.gz
+   wget -nv  $server/$2/root.bin.gz -O $2/root.bin.gz
    if [ "$3" != "" ]; then 
-      curl -s "$server/$2/root.png?w=600&h=400&opt=$3" > $2/root.png
+      wget -nv "$server/$2/root.png?w=600&h=400&opt=$3" -O $2/root.png
    fi
-   curl -s "$server/$2/exe.json?method=GetTitle" > $2/exe.json
-   curl -s $server/$2/draw.htm?nozip | sed $sedarg0 | sed $sedarg > $2/draw.htm
+   wget -nv "$server/$2/exe.json?method=GetTitle" -O $2/exe.json
+   wget -nv $server/$2/draw.htm?nozip -O- | sed $sedarg0 | sed $sedarg > $2/draw.htm
 }
 
 mkdir temp
@@ -76,12 +76,16 @@ wget -nv $server/go4sys/html/analysiseditor.htm -O go4sys/html/analysiseditor.ht
 wget -nv $server/go4sys/html/stepeditor.htm -O go4sys/html/stepeditor.htm
 wget -nv $server/go4sys/html/pareditor.js -O go4sys/html/pareditor.js
 wget -nv $server/go4sys/html/pareditor.htm -O go4sys/html/pareditor.htm
+
+wget -nv $server/go4sys/icons/go4logo2_small.png -O go4sys/icons/go4logo2_small.png
 wget -nv $server/go4sys/icons/start.png -O go4sys/icons/start.png
 wget -nv $server/go4sys/icons/restart.png -O go4sys/icons/restart.png
 wget -nv $server/go4sys/icons/Stop.png -O go4sys/icons/Stop.png
 wget -nv $server/go4sys/icons/clear.png -O go4sys/icons/clear.png
 wget -nv $server/go4sys/icons/control.png -O go4sys/icons/control.png
-wget -nv $server/go4sys/icons/go4logo2_small.png -O go4sys/icons/go4logo2_small.png
+wget -nv $server/go4sys/icons/parameter.png -O go4sys/icons/parameter.png
+wget -nv $server/go4sys/icons/condedit.png -O go4sys/icons/condedit.png
+wget -nv $server/go4sys/icons/eventobj.png -O go4sys/icons/eventobj.png
 
 gethfile $server/index.htm?nozip index.htm
 gethfile $server/h.xml h.xml
@@ -109,9 +113,16 @@ grab 0 Histograms/Crate1
 grab 0 Histograms/Crate2
 
 grab 0 Parameters
+grab 2 Parameters/Par1
+
 grab 0 Conditions
+grab 2 Conditions/cHis1
+grab 2 Conditions/cHis2
+grab 2 Conditions/polycon
 
 grab 0 Events
+grab 0 Events/MbsEvent101
+grab 0 Events/OutputEvent
 
 # get streamer infos at the end - only than it will have full class list  
 mkdir -p StreamerInfo; wget -nv $server/StreamerInfo/root.json.gz?compact=3 -O StreamerInfo/root.json.gz

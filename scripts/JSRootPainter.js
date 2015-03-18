@@ -3064,7 +3064,7 @@
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
       }
-      
+
       if ((w<=0) || (h<=0)) {
          svg.attr("visibility", "hidden");
          w = 200; h = 100; // just to complete drawing
@@ -3437,10 +3437,10 @@
       }
 
       chopt = chopt.trim();
+      while ((chopt.length>0) && (chopt[0]==',' || chopt[0]==';')) chopt = chopt.substr(1);
+
       var nch = chopt.length;
-
       if (!nch) option.Hist = 1;
-
 
       var l = chopt.indexOf('SPEC');
       if (l != -1) {
