@@ -1375,7 +1375,7 @@
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
-
+            
             drag_rect = pthis.draw_g.append("rect")
                  .attr("class", "zoom")
                  .attr("x",  0)
