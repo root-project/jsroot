@@ -520,31 +520,23 @@
    }
 
    JSROOT.Painter.getTimeOffset = function(axis) {
-      var timeFormat = axis['fTimeFormat'];
+      var idF = axis['fTimeFormat'].indexOf('%F');
+      if (idF < 0) return JSROOT.gStyle['TimeOffset'];
+      var sof = axis['fTimeFormat'].substr(idF + 2);
+      if (sof == '1995-01-01 00:00:00s0') return JSROOT.gStyle['TimeOffset'];
+      // special case, used from DABC painters
+      if ((sof == "0") || (sof == "")) return 0;
 
-      var idF = timeFormat.indexOf('%F');
-
-      if (idF >= 0) {
-         var lnF = timeFormat.length;
-         var stringtimeoffset = timeFormat.substr(idF + 2, lnF);
-         for (var i = 0; i < 3; ++i)
-            stringtimeoffset = stringtimeoffset.replace('-', '/');
-         // special case, used from DABC painters
-         if ((stringtimeoffset == "0") || (stringtimeoffset == "")) return 0;
-
-         var stimeoffset = new Date(stringtimeoffset);
-         var timeoffset = stimeoffset.getTime();
-         var ids = stringtimeoffset.indexOf('s');
-         if (ids >= 0) {
-            var lns = stringtimeoffset.length;
-            var sdp = stringtimeoffset.substr(ids + 1, lns);
-            var dp = parseFloat(sdp);
-            timeoffset += dp;
-         }
-         return timeoffset;
-      }
-
-      return JSROOT.gStyle['TimeOffset'];
+      // decode time from ROOT string
+      var dt = new Date(0);
+      var pos = sof.indexOf("-"); dt.setFullYear(sof.substr(0,pos)); sof = sof.substr(pos+1);
+      pos = sof.indexOf("-"); dt.setMonth(parseInt(sof.substr(0,pos))-1); sof = sof.substr(pos+1);
+      pos = sof.indexOf(" "); dt.setDate(sof.substr(0,pos)); sof = sof.substr(pos+1);
+      pos = sof.indexOf(":"); dt.setHours(sof.substr(0,pos)); sof = sof.substr(pos+1);
+      pos = sof.indexOf(":"); dt.setMinutes(sof.substr(0,pos)); sof = sof.substr(pos+1);
+      pos = sof.indexOf("s"); dt.setSeconds(sof.substr(0,pos)); 
+      if (pos>0) { sof = sof.substr(pos+1); dt.setMilliseconds(sof); }
+      return dt.getTime();
    }
 
    JSROOT.Painter.formatExp = function(label) {
@@ -2499,7 +2491,7 @@
 
          return res;
       }
-
+      
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
@@ -3931,11 +3923,9 @@
 
       this['zoom_xmin'] = 0;
       this['zoom_xmax'] = 0;
-      this['zoom_xpad'] = true; // indicate that zooming specified from pad
 
       this['zoom_ymin'] = 0;
       this['zoom_ymax'] = 0;
-      this['zoom_ypad'] = true; // indicate that zooming specified from pad
 
       if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
          this['zoom_xmin'] = pad.fUxmin;
@@ -3972,6 +3962,8 @@
       this.histo['fArray'] = obj['fArray'];
       this.histo['fNcells'] = obj['fNcells'];
       this.histo['fTitle'] = obj['fTitle'];
+      this.histo['fMinimum'] = obj['fMinimum'];
+      this.histo['fMaximum'] = obj['fMaximum'];
       this.histo['fXaxis']['fNbins'] = obj['fXaxis']['fNbins'];
       this.histo['fXaxis']['fXmin'] = obj['fXaxis']['fXmin'];
       this.histo['fXaxis']['fXmax'] = obj['fXaxis']['fXmax'];
@@ -4060,11 +4052,11 @@
       this['scale_ymin'] = this.ymin;
       this['scale_ymax'] = this.ymax;
 
-      if (this.zoom_ypad) {
-         if (this.histo.fMinimum != -1111) this.zoom_ymin = this.histo.fMinimum;
-         if (this.histo.fMaximum != -1111) this.zoom_ymax = this.histo.fMaximum;
-         this['zoom_ypad'] = false;
-      }
+      if ((this.Dimension()==1) && (this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
+         // only for 1D histogram use min.max for range selection
+         this['scale_ymin'] = this.histo.fMinimum;
+         this['scale_ymax'] = this.histo.fMaximum;
+      }  
 
       if (this.zoom_ymin != this.zoom_ymax) {
          this['scale_ymin'] = this.zoom_ymin;

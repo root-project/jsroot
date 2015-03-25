@@ -35,11 +35,6 @@ function grab {
    mkdir -p $2
 
 # special handling for analysis status - only root.json works 
-   if [ "$1" == "4" ]; then 
-      wget -nv $server/$2/root.json.gz?compact=3 -O- > $2/root.json.gz
-      return; 
-   fi
-
    wget -nv $server/$2/?nozip -O- | sed $sedarg0 | sed $sedarg > $2/index.htm
    wget -nv $server/$2/h.json -O- | sed $sedarg > $2/h.json
    wget -nv $server/$2/h.xml -O $2/h.xml
@@ -58,7 +53,6 @@ function grab {
 
 
    wget -nv $server/$2/root.json.gz?compact=3 -O- > $2/root.json.gz
-    
    wget -nv  $server/$2/root.bin.gz -O $2/root.bin.gz
    if [ "$3" != "" ]; then 
       wget -nv "$server/$2/root.png?w=600&h=400&opt=$3" -O $2/root.png
@@ -99,7 +93,7 @@ gethfile $server/h.xml h.xml
 gethfile $server/h.json h.json
 
 grab 0 Status
-grab 4 Status/Analysis
+grab 2 Status/Analysis
 grab 1 Status/State
 grab 1 Status/Message
 grab 1 Status/DebugOutput
