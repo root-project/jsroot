@@ -34,6 +34,12 @@ function grab {
 
    mkdir -p $2
 
+# special handling for analysis status - only root.json works 
+   if [ "$1" == "4" ]; then 
+      wget -nv $server/$2/root.json.gz?compact=3 -O- > $2/root.json.gz
+      return; 
+   fi
+
    wget -nv $server/$2/?nozip -O- | sed $sedarg0 | sed $sedarg > $2/index.htm
    wget -nv $server/$2/h.json -O- | sed $sedarg > $2/h.json
    wget -nv $server/$2/h.xml -O $2/h.xml
@@ -52,6 +58,7 @@ function grab {
 
 
    wget -nv $server/$2/root.json.gz?compact=3 -O- > $2/root.json.gz
+    
    wget -nv  $server/$2/root.bin.gz -O $2/root.bin.gz
    if [ "$3" != "" ]; then 
       wget -nv "$server/$2/root.png?w=600&h=400&opt=$3" -O $2/root.png
@@ -92,11 +99,11 @@ gethfile $server/h.xml h.xml
 gethfile $server/h.json h.json
 
 grab 0 Status
+grab 4 Status/Analysis
 grab 1 Status/State
 grab 1 Status/Message
 grab 1 Status/DebugOutput
 grab 2 Status/EventsRate ap
-# grab 2 Status/Analysis
 grab 3 Status/CmdClear
 grab 3 Status/CmdStart
 grab 3 Status/CmdStop
@@ -110,7 +117,23 @@ grab 2 Histograms/His1g hist
 grab 2 Histograms/His2g hist
 grab 2 Histograms/His3 hist
 grab 0 Histograms/Crate1
+grab 2 Histograms/Crate1/Cr1Ch01
+grab 2 Histograms/Crate1/Cr1Ch02
+grab 2 Histograms/Crate1/Cr1Ch03
+grab 2 Histograms/Crate1/Cr1Ch04
+grab 2 Histograms/Crate1/Cr1Ch05
+grab 2 Histograms/Crate1/Cr1Ch06
+grab 2 Histograms/Crate1/Cr1Ch07
+grab 2 Histograms/Crate1/Cr1Ch08
 grab 0 Histograms/Crate2
+grab 2 Histograms/Crate2/Cr2Ch01
+grab 2 Histograms/Crate2/Cr2Ch02
+grab 2 Histograms/Crate2/Cr2Ch03
+grab 2 Histograms/Crate2/Cr2Ch04
+grab 2 Histograms/Crate2/Cr2Ch05
+grab 2 Histograms/Crate2/Cr2Ch06
+grab 2 Histograms/Crate2/Cr2Ch07
+grab 2 Histograms/Crate2/Cr2Ch08
 
 grab 0 Parameters
 grab 2 Parameters/Par1
@@ -122,6 +145,9 @@ grab 2 Conditions/polycon
 
 grab 0 Events
 grab 0 Events/MbsEvent101
+grab 0 Events/MbsEvent101/fxSubEvArray
+grab 0 Events/MbsEvent101/fxSubEvArray/Go4Element
+grab 0 Events/MbsEvent101/fxSubEvArray/Go4Element_0
 grab 0 Events/OutputEvent
 
 # get streamer infos at the end - only than it will have full class list  

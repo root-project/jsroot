@@ -1375,7 +1375,7 @@
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
-            
+
             drag_rect = pthis.draw_g.append("rect")
                  .attr("class", "zoom")
                  .attr("x",  0)
@@ -1613,7 +1613,7 @@
          font.size = Math.floor(font.size/f);
          draw_g.call(font.func);
       }
-      
+
       svgs.each(function() {
          var fo_g = d3.select(this);
          // only direct parent
@@ -1641,8 +1641,8 @@
              .attr('visibility', null);
       });
 
-      draw_g.attr('opacity','1'); // now processing finished and text can be shown 
-      
+      draw_g.attr('opacity','1'); // now processing finished and text can be shown
+
       return draw_g.property('max_text_width');
    }
 
@@ -1677,22 +1677,22 @@
             // adjust x position when scale into specified rectangle
             if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(1); else
             if (align[0]=="end") pos_x = (x+w).toFixed(1);
-         } 
-         
+         }
+
          if (h>0) {
             if (align[1] == 'bottom') pos_y = (y + h).toFixed(1); else
             if (align[1] == 'top') pos_dy = ".8em"; else {
                pos_y = (y + h/2).toFixed(1);
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
-         } else 
+         } else
          if (h==0) {
             if (align[1] == 'top') pos_dy = ".8em"; else
             if (align[1] == 'middle') {
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
          }
-         
+
          var txt = draw_g.append("text")
                          .attr("text-anchor", align[0])
                          .attr("x", pos_x)
