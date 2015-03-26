@@ -1532,7 +1532,7 @@
       draw_g.property('mathjax_use', false);
       draw_g.property('text_factor', 0.);
       draw_g.property('max_text_width', 0); // keep maximal text width, use it later
-      draw_g.attr('opacity','0'); // hide elements until drawing is finished
+      // draw_g.attr('opacity','0'); 
    }
 
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
@@ -1633,7 +1633,8 @@
              .attr('visibility', null);
       });
 
-      draw_g.attr('opacity','1'); // now processing finished and text can be shown
+      // now hidden text after rescaling can be shown
+      draw_g.selectAll('.hidden_text').attr('opacity', '1').classed('hidden_text',false);
 
       return draw_g.property('max_text_width');
    }
@@ -1697,6 +1698,8 @@
 
          var box = txt.node().getBBox(); // .getBoundingClientRect();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
+         
+         if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
          if ((w>0) && scale) this.TextScaleFactor(real_w / w, draw_g);
