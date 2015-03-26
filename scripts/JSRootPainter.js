@@ -7795,9 +7795,11 @@
    JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
       var painter = this;
 
-      var AdoptHierarchy = function(result) {
+      function AdoptHierarchy(result) {
          painter.h = result;
          if (painter.h == null) return;
+         
+         if (('_title' in painter.h) && (painter.h._title!='')) document.title = painter.h._title; 
 
          result._isopen = true;
 
@@ -7844,12 +7846,10 @@
 
                if (item['_drawscript'] != null)
                   JSROOT.addDrawFunc(typename, { script:item['_drawscript'], func: item['_drawfunc']} , drawopt);
-
             });
 
             JSROOT.CallBack(user_callback, painter);
          });
-
       }
 
       if (!server_address) server_address = "";
@@ -7857,13 +7857,10 @@
       if (typeof server_address == 'object') {
          var h = server_address;
          server_address = "";
-         AdoptHierarchy(h);
-         return;
+         return AdoptHierarchy(h);
       }
 
-      var req = JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', AdoptHierarchy);
-
-      req.send(null);
+      JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', AdoptHierarchy).send(null);
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
