@@ -8010,6 +8010,21 @@
             h.CreateDisplay(callback);
          });
    }
+   
+   JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
+      // function should update object drawings for other painters
+      var mdi = this['disp'];
+      if (mdi==null) return false;
+
+      var isany = false;
+      mdi.ForEachPainter(function(p, frame) {
+         if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
+         mdi.ActivateFrame(frame);
+         p.RedrawObject(obj);
+         isany = true;
+      });
+      return isany;
+   }
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(force) {
       if ('disp' in this)

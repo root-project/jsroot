@@ -69,7 +69,6 @@ mkdir go4sys/html
 mkdir go4sys/icons
 
 wget -nv $server/go4sys/html/go4.js -O go4sys/html/go4.js
-wget -nv $server/go4sys/html/go4.css -O go4sys/html/go4.css
 wget -nv $server/go4sys/html/condition.js -O go4sys/html/condition.js
 wget -nv $server/go4sys/html/condeditor.htm -O go4sys/html/condeditor.htm
 wget -nv $server/go4sys/html/analysiseditor.js -O go4sys/html/analysiseditor.js
@@ -87,6 +86,12 @@ wget -nv $server/go4sys/icons/control.png -O go4sys/icons/control.png
 wget -nv $server/go4sys/icons/parameter.png -O go4sys/icons/parameter.png
 wget -nv $server/go4sys/icons/condedit.png -O go4sys/icons/condedit.png
 wget -nv $server/go4sys/icons/eventobj.png -O go4sys/icons/eventobj.png
+wget -nv $server/go4sys/icons/right.png -O go4sys/icons/right.png
+wget -nv $server/go4sys/icons/left.png -O go4sys/icons/left.png
+wget -nv $server/go4sys/icons/info1.png -O go4sys/icons/info1.png
+wget -nv $server/go4sys/icons/filesave.png -O go4sys/icons/filesave.png
+wget -nv $server/go4sys/icons/fileopen.png -O go4sys/icons/fileopen.png
+wget -nv $server/go4sys/icons/chart.png -O go4sys/icons/chart.png
 
 gethfile $server/index.htm?nozip index.htm
 gethfile $server/h.xml h.xml
