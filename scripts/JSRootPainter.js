@@ -1387,10 +1387,10 @@
                if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
                
                if (x+dx<0) { acc_x+=(x+dx); x=0; } else
-               if (x+dx>pad_w) { acc_x+=(x+dx-pad_w); x = pad_w; } else x+=dx;
+               if (x+dx>pad_w) { acc_x+=(x+dx-pad_w); x=pad_w; } else x+=dx;
 
                if (y+dy<0) { acc_y+=(y+dy); y = 0; } else
-               if (y+dy>pad_h) { acc_y+=(y+dy-pad_h); y = pad_y; } else y+=dy;
+               if (y+dy>pad_h) { acc_y+=(y+dy-pad_h); y=pad_h; } else y+=dy;
 
                drag_rect.attr("x", x).attr("y", y);
 
