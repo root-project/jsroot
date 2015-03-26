@@ -395,7 +395,6 @@
       res.stringWidth = function(svg, line) {
          /* compute the bounding box of a string by using temporary svg:text */
          var text = svg.append("svg:text")
-                     .attr("class", "temp_text")
                      .attr("xml:space","preserve")
                      .style("opacity", 0)
                      .text(line);
@@ -1363,15 +1362,14 @@
             if (detectRightButton(d3.event.sourceEvent)) return;
 
             d3.event.sourceEvent.preventDefault();
-
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
 
-            drag_rect = pthis.draw_g.append("rect")
-                 .attr("class", "zoom")
-                 .attr("x",  0)
-                 .attr("y", 0)
+            drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
+                 .classed("zoom", true)
+                 .attr("x",  pthis.draw_g.attr("x"))
+                 .attr("y", pthis.draw_g.attr("y"))
                  .attr("width", rect_width())
                  .attr("height", rect_height())
                  .style("cursor", "move");
@@ -1380,18 +1378,19 @@
 
                d3.event.sourceEvent.preventDefault();
 
-               var x = Number(drag_rect.attr("x"));
-               var y = Number(drag_rect.attr("y"));
-               var real_x = Number(pthis.draw_g.attr("x")) + x;
-               var real_y = Number(pthis.draw_g.attr("y")) + y;
-
+               var x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y"));
                var dx = d3.event.dx, dy = d3.event.dy;
+               
+               if ((acc_x<0) && (dx>0)) { acc_x+=dx; dx=0; if (acc_x>0) { dx=acc_x; acc_x=0; }}
+               if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
+               if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
+               if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
+               
+               if (x+dx<0) { acc_x+=(x+dx); x=0; } else
+               if (x+dx>pad_w) { acc_x+=(x+dx-pad_w); x = pad_w; } else x+=dx;
 
-               if (((acc_x<0) && (dx>0)) || ((acc_x>0) && (dx<0))) { acc_x+=dx; dx=0; }
-               if (((acc_y<0) && (dy>0)) || ((acc_y>0) && (dy<0))) { acc_y+=dy; dy=0; }
-
-               if ((real_x+dx < 0) || (real_x+dx > pad_w)) acc_x+=dx; else x+=dx;
-               if ((real_y+dy < 0) || (real_y+dy > pad_h)) acc_y+=dy; else y+=dy;
+               if (y+dy<0) { acc_y+=(y+dy); y = 0; } else
+               if (y+dy>pad_h) { acc_y+=(y+dy-pad_h); y = pad_y; } else y+=dy;
 
                drag_rect.attr("x", x).attr("y", y);
 
@@ -1403,17 +1402,14 @@
 
                drag_rect.style("cursor", "auto");
 
-               var dx = Number(drag_rect.attr("x"));
-               var dy = Number(drag_rect.attr("y"));
-
-               var x = Number(pthis.draw_g.attr("x")) + dx;
-               var y = Number(pthis.draw_g.attr("y")) + dy;
+               var x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y"));
+               var dx = x - Number(pthis.draw_g.attr("x")), dy = y - Number(pthis.draw_g.attr("y"));
 
                drag_rect.remove();
                drag_rect = null;
 
-               pthis.draw_g.attr("x", x).attr("y", y);
-               pthis.draw_g.attr("transform", "translate(" + x + "," + y + ")");
+               pthis.draw_g.attr("x", x).attr("y", y)
+                           .attr("transform", "translate(" + x + "," + y + ")");
 
                resize_rect.attr("x", rect_width() - 20)
                           .attr("y", rect_height() - 20);
@@ -1437,10 +1433,10 @@
            acc_x = 0; acc_y = 0;
            pad_w = pthis.pad_width() - Number(pthis.draw_g.attr("x"));
            pad_h = pthis.pad_height() - Number(pthis.draw_g.attr("y"));
-           drag_rect = pthis.draw_g.append("rect")
-                .attr("class", "zoom")
-                .attr("x",  0)
-                .attr("y", 0)
+           drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
+                .classed("zoom",true)
+                .attr("x",  pthis.draw_g.attr("x"))
+                .attr("y", pthis.draw_g.attr("y"))
                 .attr("width", rect_width())
                 .attr("height", rect_height())
                 .style("cursor", "se-resize");
@@ -1449,13 +1445,16 @@
 
             d3.event.sourceEvent.preventDefault();
 
-            var w = Number(drag_rect.attr("width"));
-            var h = Number(drag_rect.attr("height"));
+            var w = Number(drag_rect.attr("width")), h = Number(drag_rect.attr("height"));
             var dx = d3.event.dx, dy = d3.event.dy;
-            if ((acc_x>0) && (dx<0)) { acc_x += dx; dx = 0; }
-            if ((acc_y>0) && (dy<0)) { acc_y += dy; dy = 0; }
-            if (w+dx > pad_w) acc_x += dx; else w+=dx;
-            if (h+dy > pad_h) acc_y += dy; else h+=dy;
+            if ((acc_x<0) && (dx>0)) { acc_x+=dx; dx=0; if (acc_x>0) { dx=acc_x; acc_x=0; }}
+            if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
+            if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
+            if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
+            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w;} else 
+            if (w+dx<0) { acc_x += (w+dx); w=0;} else w+=dx;
+            if (h+dy>pad_h) { acc_y += (h+dy-pad_h); h=pad_h; } else 
+            if (h+dy<0) { acc_y += (h+dy); h=0; } else h+=dy;
             drag_rect.attr("width", w).attr("height", h);
 
             d3.event.sourceEvent.stopPropagation();
@@ -1532,7 +1531,6 @@
       draw_g.property('mathjax_use', false);
       draw_g.property('text_factor', 0.);
       draw_g.property('max_text_width', 0); // keep maximal text width, use it later
-      // draw_g.attr('opacity','0'); 
    }
 
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
@@ -2837,7 +2835,6 @@
 
       if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
          this.draw_g.append("svg:line")
-                    .attr("class", "pavedraw")
                     .attr("x1", 0)
                     .attr("y1", stepy.toFixed(1))
                     .attr("x2", width)
@@ -3298,11 +3295,8 @@
                  .attr("height", rectHeight.toFixed(1))
                  .attr("fill", function(d) { return d; })
                  .attr("stroke", function(d) { return d; });
-                 //.append("svg:title").text(function(d) { return "color" + d; });
-      /*
-       * Build and draw axes
-       */
 
+      // Build and draw axes
       var z_axis = d3.svg.axis().scale(z)
                     .orient("right")
                     .tickPadding(axisOffset)
@@ -4403,16 +4397,12 @@
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-      // xax_g.selectAll("text").call(xlabelfont.func);
-      // yax_g.selectAll("text").call(ylabelfont.func);
-
       xax_g.call(xlabelfont.func);
       yax_g.call(ylabelfont.func);
 
       // we will use such rect for zoom selection
       if (JSROOT.gStyle.Zooming) {
          xax_g.append("svg:rect")
-            .attr("class", "xaxis_zoom")
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", w)
@@ -4421,7 +4411,6 @@
 
          // we will use such rect for zoom selection
          yax_g.append("svg:rect")
-            .attr("class", "yaxis_zoom")
             .attr("x",-2 * ylabelfont.size - 3)
             .attr("y", 0)
             .attr("width", 2 * ylabelfont.size + 3)
@@ -4740,7 +4729,6 @@
       }
 
       function startTouchSel() {
-
          // in case when zooming was started, block any other kind of events
          if (zoom_kind != 0) {
             d3.event.preventDefault();
