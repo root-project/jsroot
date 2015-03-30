@@ -533,7 +533,7 @@
       pos = sof.indexOf(" "); dt.setDate(sof.substr(0,pos)); sof = sof.substr(pos+1);
       pos = sof.indexOf(":"); dt.setHours(sof.substr(0,pos)); sof = sof.substr(pos+1);
       pos = sof.indexOf(":"); dt.setMinutes(sof.substr(0,pos)); sof = sof.substr(pos+1);
-      pos = sof.indexOf("s"); dt.setSeconds(sof.substr(0,pos)); 
+      pos = sof.indexOf("s"); dt.setSeconds(sof.substr(0,pos));
       if (pos>0) { sof = sof.substr(pos+1); dt.setMilliseconds(sof); }
       return dt.getTime();
    }
@@ -1380,12 +1380,12 @@
 
                var x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y"));
                var dx = d3.event.dx, dy = d3.event.dy;
-               
+
                if ((acc_x<0) && (dx>0)) { acc_x+=dx; dx=0; if (acc_x>0) { dx=acc_x; acc_x=0; }}
                if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
                if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
                if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
-               
+
                if (x+dx<0) { acc_x+=(x+dx); x=0; } else
                if (x+dx>pad_w) { acc_x+=(x+dx-pad_w); x=pad_w; } else x+=dx;
 
@@ -1451,9 +1451,9 @@
             if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
             if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
             if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
-            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w;} else 
+            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w;} else
             if (w+dx<0) { acc_x += (w+dx); w=0;} else w+=dx;
-            if (h+dy>pad_h) { acc_y += (h+dy-pad_h); h=pad_h; } else 
+            if (h+dy>pad_h) { acc_y += (h+dy-pad_h); h=pad_h; } else
             if (h+dy<0) { acc_y += (h+dy); h=0; } else h+=dy;
             drag_rect.attr("width", w).attr("height", h);
 
@@ -1696,7 +1696,7 @@
 
          var box = txt.node().getBBox(); // .getBoundingClientRect();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
-         
+
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (real_w > draw_g.property('max_text_width')) draw_g.property('max_text_width', real_w);
@@ -2492,7 +2492,7 @@
 
          return res;
       }
-      
+
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
@@ -4053,7 +4053,7 @@
          // only for 1D histogram use min.max for range selection
          this['scale_ymin'] = this.histo.fMinimum;
          this['scale_ymax'] = this.histo.fMaximum;
-      }  
+      }
 
       if (this.zoom_ymin != this.zoom_ymax) {
          this['scale_ymin'] = this.zoom_ymin;
@@ -7798,8 +7798,8 @@
       function AdoptHierarchy(result) {
          painter.h = result;
          if (painter.h == null) return;
-         
-         if (('_title' in painter.h) && (painter.h._title!='')) document.title = painter.h._title; 
+
+         if (('_title' in painter.h) && (painter.h._title!='')) document.title = painter.h._title;
 
          result._isopen = true;
 
@@ -8007,7 +8007,7 @@
             h.CreateDisplay(callback);
          });
    }
-   
+
    JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
       // function should update object drawings for other painters
       var mdi = this['disp'];
