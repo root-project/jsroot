@@ -44,7 +44,13 @@
 
          document.getElementById('debug').innerHTML = '';
          
-         document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
+         if (JSROOT.GetUrlOption('mathjax')!=null)
+            document.getElementById('debug').innerHTML += "<h1>Drawing with <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
+         else
+            document.getElementById('debug').innerHTML += "<h1>Drawing without <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
+
+         document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
+         
          
          JSROOT.Painter.readStyleFromURL();
 
@@ -64,7 +70,7 @@
 <body>
 
   <div id="debug">loading...</div>
-  <span>Drawing <a href="latex.htm?mathjax">with</a> and <a href="latex.htm">without</a> MathJax</span> 
+  <br/>
 
   <h3>Example from <a href="https://root.cern.ch/root/html/TLatex.html#L10">TLatex</a> docu</h3>
   <div id="lat1_draw"></div>
