@@ -4584,7 +4584,7 @@
       // if (this.options.Func == 0) return; // in some cases on need to disable
       // functions drawing
 
-      // do not draw functions when 'same' option was used 
+      // do not draw functions when 'same' option was used
       if (this.options.Same) return;
       var nostat = this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.NoStat==1);
 
@@ -4606,7 +4606,7 @@
       for ( var i in this.histo.fFunctions.arr) {
 
          var func = this.histo.fFunctions.arr[i];
-         
+
          var funcpainter = this.FindPainterFor(func);
 
          // no need to do something if painter for object was already done
@@ -6240,7 +6240,7 @@
       this.DrawBins();
 
       if (this.create_canvas) this.DrawTitle();
-      
+
       this.DrawFunctions();
 
       this.AddInteractive();
