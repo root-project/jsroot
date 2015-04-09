@@ -19,7 +19,8 @@ Project [changelog](changes.md)
 
 # Documentation
 
-JavaScript ROOT [tutorial](docs/JSROOT.md)
+JavaScript ROOT [tutorial](docs/JSROOT.md) 
+
 THttpServer [tutorial](docs/HttpServer.md)
 
 ## Examples
@@ -28,4 +29,4 @@ THttpServer [tutorial](docs/HttpServer.md)
 
 Latex drawings [without](http://rawgit.com/linev/jsroot/master/docs/latex.htm) and [with](http://rawgit.com/linev/jsroot/master/docs/latex.htm?mathjax) MathJax.js support
 
-Standalone [example] of JSROOT usage(http://rawgit.com/linev/jsroot/master/docs/example.htm)
+Standalone [example](http://rawgit.com/linev/jsroot/master/docs/example.htm) of JSROOT usage
