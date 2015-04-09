@@ -16,4 +16,6 @@ user interface for THttpServer class.
 [List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm?minimal)
 
 Latex drawings [without](http://rawgit.com/linev/jsroot/master/docs/latex.htm) and [with](http://rawgit.com/linev/jsroot/master/docs/latex.htm?mathjax) MathJax.js support
+
+Standalone [example](http://rawgit.com/linev/jsroot/master/docs/example.htm)
  
