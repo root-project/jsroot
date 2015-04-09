@@ -1,11 +1,11 @@
 # JSROOT changelog
 
-## Changes in v 3.5
+## Changes in master (3.5 dev)
 1. Fix error in vertical text alignment
 2. Improve TPaletteAxis drawing - draw label, avoid too large ticks. 
 
 
-## Changes in v 3.4
+## Changes in 3.4
 1. Support usage of minimized versions of .js and .css files.
    Minimized scripts used by default on web servers.
 2. Implement JSROOT.extend instead of jQuery.extend, reduce
@@ -20,7 +20,7 @@
 6. Fix error with time axes - time offset was not correctly interpreted
 
 
-## Changes in v 3.3
+## Changes in 3.3
 1. Use d3.time.scale for display of time scales
 2. Within JSRootCore.js script URL one could specify JSROOT
    functionality to be loaded: '2d', '3d', 'io', 'load', 'onload'.
