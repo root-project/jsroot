@@ -1,7 +1,9 @@
-# JSROOT changelog {#jsroot_changes}
+# JSROOT changelog
 
-This is further development of JSRootIO project of Bertrand Bellenot.
-Many old problems and errors are fixed, new functions are provided.
+## Changes in v 3.5
+1. Fix error in vertical text alignment
+2. Improve TPaletteAxis drawing - draw label, avoid too large ticks. 
+
 
 ## Changes in v 3.4
 1. Support usage of minimized versions of .js and .css files.

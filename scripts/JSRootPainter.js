@@ -1611,19 +1611,22 @@
          var box = fo_g.node().getBBox(); // .getBoundingClientRect();
          var real_w = parseInt(box.width), real_h = parseInt(box.height);
          var align = fo_g.property('_align');
+         var rotate = fo_g.property('_rotate');
          var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
          var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
 
          if (fo_g.property('_scale')) {
             if (align[0] == 'middle') fo_x += (fo_w - real_w)/2; else
-            if (align[0] == 'end') fo_x +=  (fo_w - real_w);
+            if (align[0] == 'end')    fo_x += (fo_w - real_w);
             if (align[1] == 'middle') fo_y += (fo_h - real_h)/2; else
-            if (align[1] == 'bottom') fo_y += (fo_h - real_h);
+            if (align[1] == 'top' && !rotate) fo_y += (fo_h - real_h); else
+            if (align[1] == 'bottom' && rotate) fo_y += (fo_h - real_h);
          } else {
             if (align[0] == 'middle') fo_x -= real_w/2; else
-            if (align[0] == 'end') fo_x -= real_w;
+            if (align[0] == 'end')    fo_x -= real_w;
             if (align[1] == 'middle') fo_y -= real_h/2; else
-            if (align[1] == 'top') fo_y -= real_h;
+            if (align[1] == 'bottom' && !rotate) fo_y -= real_h; else
+            if (align[1] == 'top' && rotate) fo_y -= real_h;
          }
 
          fo_g.attr('x', fo_x).attr('y', fo_y)  // use x/y while transform used for rotation
@@ -1648,9 +1651,9 @@
          align = ['start', 'middle'];
          if ((align_arg / 10) >= 3) align[0] = 'end'; else
          if ((align_arg / 10) >= 2) align[0] = 'middle';
-         if ((align_arg % 10) == 0) align[1] = 'top'; else
-         if ((align_arg % 10) == 1) align[1] = 'top'; else
-         if ((align_arg % 10) == 3) align[1] = 'bottom';
+         if ((align_arg % 10) == 0) align[1] = 'bottom'; else
+         if ((align_arg % 10) == 1) align[1] = 'bottom'; else
+         if ((align_arg % 10) == 3) align[1] = 'top';
       }
 
       var scale = (w>0) && (h>0);
@@ -3270,6 +3273,7 @@
 
       var s_width = Math.round(Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width);
       pos_y -= s_height;
+      if (tickSize > s_width*0.8) tickSize = s_width*0.8;
 
       // Draw palette pad
       this.RecreateDrawG(true, ".text_layer");
@@ -3284,17 +3288,18 @@
       // Draw palette
       var rectHeight = 1. * s_height / paletteColors.length;
 
-      this.draw_g.selectAll("colorRect")
-                 .data(paletteColors)
-                 .enter()
-                 .append("svg:rect")
-                 .attr("class", "colorRect")
-                 .attr("x", 0)
-                 .attr("y",  function(d, i) { return (s_height - (i + 1) * rectHeight).toFixed(1); })
-                 .attr("width", s_width)
-                 .attr("height", rectHeight.toFixed(1))
-                 .attr("fill", function(d) { return d; })
-                 .attr("stroke", function(d) { return d; });
+      this.draw_g
+          .selectAll("colorRect")
+          .data(paletteColors)
+          .enter()
+          .append("svg:rect")
+          .attr("class", "colorRect")
+          .attr("x", 0)
+          .attr("y",  function(d, i) { return (s_height - (i + 1) * rectHeight).toFixed(1); })
+          .attr("width", s_width)
+          .attr("height", rectHeight.toFixed(1))
+          .attr("fill", function(d) { return d; })
+          .attr("stroke", function(d) { return d; });
 
       // Build and draw axes
       var z_axis = d3.svg.axis().scale(z)
@@ -3312,18 +3317,22 @@
               .call(labelfont.func)
               .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
 
-      /*
-       * Add palette axis title
-       */
-      var title = axis['fTitle'];
-      if (title != "" && typeof (axis['fTitleFont']) != 'undefined') {
-         var titlefont = JSROOT.Painter.getFontDetails(axis['fTitleFont'], axis['fTitleSize'] * height);
-         this.draw_g.append("text")
-                .attr("class", "Z axis label")
-                .attr("x", s_width + labelfont.size)
-                .attr("y", s_height)
-                .attr("text-anchor", "end")
-                .call(titlefont.func);
+      /** Add palette axis title */
+      if ((axis['fTitle'] != "") && (typeof axis['fTextFont'] != 'undefined')) {
+         // offest in width of colz drawings
+         var xoffset = axis['fTitleOffset'] * s_width;
+         if ('getBoundingClientRect' in this.draw_g.node()) {
+            var rect1 = this.draw_g.node().getBoundingClientRect();
+            // offset in portion of real text width produced by axis
+            xoffset = axis['fTitleOffset'] * (rect1.width-s_width);
+         }
+         // add font size
+         xoffset += s_width + axis['fTitleSize'] * height * 1.3;
+         if (pos_x + xoffset > width-3) xoffset = width - 3 - pos_x;
+         var tcolor = JSROOT.Painter.root_colors[axis['fTextColor']];
+         this.StartTextDrawing(axis['fTextFont'], axis['fTitleSize'] * height);
+         this.DrawText(33, 0, xoffset, 0, -270, axis['fTitle'], tcolor);
+         this.FinishTextDrawing();
       }
 
       this.AddDrag({ obj: palette, redraw: 'DrawPalette' });
