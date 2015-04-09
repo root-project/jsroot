@@ -10,4 +10,10 @@ user interface for THttpServer class.
 [GSI mirror](http://web-docs.gsi.de/~linev/js/)
 
 [Changelog](changes.md)
+
+[JSROOT user interface](http://rawgit.com/linev/jsroot/master/index.htm)
+ 
+[List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm?minimal)
+
+Latex drawings [without](http://rawgit.com/linev/jsroot/master/docs/latex.htm) and [with](http://rawgit.com/linev/jsroot/master/docs/latex.htm?mathjax) MathJax.js support
  
