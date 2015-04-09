@@ -1,4 +1,5 @@
 .gitattributes export-ignore
 .gitignore export-ignore
 /demo export-ignore
+/docs export-ignore
 .settings export-ignore
