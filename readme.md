@@ -11,7 +11,7 @@ user interface for THttpServer class.
 
 [Changelog](changes.md)
 
-[JSROOT user interface](http://rawgit.com/linev/jsroot/master/index.htm)
+[JSROOT user interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://web-docs.gsi.de/~linev/js/any/)
  
 [List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm?minimal)
 
