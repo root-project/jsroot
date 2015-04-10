@@ -3237,23 +3237,21 @@
 
    // ===========================================================================
 
-   JSROOT.TColzPalettePainter = function(palette) {
+   JSROOT.TPaletteAxisPainter = function(palette) {
       JSROOT.TObjectPainter.call(this, palette);
       this.palette = palette;
    }
 
-   JSROOT.TColzPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   JSROOT.TPaletteAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TColzPalettePainter.prototype.GetObject = function() {
+   JSROOT.TPaletteAxisPainter.prototype.GetObject = function() {
       return this.palette;
    }
 
-   JSROOT.TColzPalettePainter.prototype.DrawPalette = function() {
+   JSROOT.TPaletteAxisPainter.prototype.DrawPalette = function() {
       var palette = this.palette;
       var axis = palette['fAxis'];
 
-      var minbin = this.main_painter().minbin;
-      var maxbin = this.main_painter().maxbin;
       var nbr1 = axis['fNdiv'] % 100;
       if (nbr1<=0) nbr1 = 8;
 
@@ -3264,7 +3262,15 @@
       var axisOffset = axis['fLabelOffset'] * width;
       var tickSize = axis['fTickSize'] * width;
 
-      var z = d3.scale.linear().clamp(true).domain([ minbin, maxbin ]).range( [ s_height, 0 ]).nice();
+      // force creation of contour array if missing
+      if (this.main_painter().fContour==null) {
+         this.main_painter().getValueColor(this.main_painter().minbin);
+      }
+      var contour = this.main_painter().fContour;
+
+      console.log('here 2 ' + this.main_painter().maxbin + "  contour " + contour[contour.length-1]);
+
+      var z = d3.scale.linear().clamp(true).domain([contour[0], contour[contour.length-1]]).range([s_height,0]);
 
       var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
@@ -3283,23 +3289,21 @@
              .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
              .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-      var paletteColors = this.main_painter().paletteColors;
 
-      // Draw palette
-      var rectHeight = 1. * s_height / paletteColors.length;
-
-      this.draw_g
-          .selectAll("colorRect")
-          .data(paletteColors)
-          .enter()
-          .append("svg:rect")
-          .attr("class", "colorRect")
-          .attr("x", 0)
-          .attr("y",  function(d, i) { return (s_height - (i + 1) * rectHeight).toFixed(1); })
-          .attr("width", s_width)
-          .attr("height", rectHeight.toFixed(1))
-          .attr("fill", function(d) { return d; })
-          .attr("stroke", function(d) { return d; });
+      for (var i=0;i<contour.length-1;i++) {
+         var z0 = z(contour[i]);
+         var z1 = z(contour[i+1]);
+         var col = this.main_painter().getValueColor(contour[i]);
+         console.log('color for ' + contour[i] + " : " + contour[i+1] + " = " + col);
+         this.draw_g
+            .append("svg:rect")
+            .attr("x", 0)
+            .attr("y",  z1.toFixed(1))
+            .attr("width", s_width)
+            .attr("height", (z0-z1).toFixed(1))
+            .attr("fill", col)
+            .attr("stroke", col);
+      }
 
       // Build and draw axes
       var z_axis = d3.svg.axis().scale(z)
@@ -3338,7 +3342,7 @@
       this.AddDrag({ obj: palette, redraw: 'DrawPalette' });
    }
 
-   JSROOT.TColzPalettePainter.prototype.Redraw = function() {
+   JSROOT.TPaletteAxisPainter.prototype.Redraw = function() {
 
       var enabled = true;
 
@@ -3354,7 +3358,7 @@
    }
 
    JSROOT.Painter.drawPaletteAxis = function(divid, palette) {
-      var painter = new JSROOT.TColzPalettePainter(palette);
+      var painter = new JSROOT.TPaletteAxisPainter(palette);
 
       painter.SetDivId(divid);
 
@@ -5598,7 +5602,9 @@
 
    JSROOT.TH2Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
-      this.paletteColors = [];
+      this.paletteColors = []; // palette, should go yo gStyle
+      this.fContour = null; // contour levels
+      this.fUserContour = false; // are this user-defined levels
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -5951,17 +5957,47 @@
    }
 
    JSROOT.TH2Painter.prototype.getValueColor = function(zc) {
-      var wmin = this.minbin, wmax = this.maxbin;
-      var wlmin = wmin, wlmax = wmax;
-      var ndivz = this.histo['fContour'].length;
-      if (ndivz < 16) ndivz = 16;
-      var scale = ndivz / (wlmax - wlmin);
-      if (this.options.Logz) {
-         if (wmin <= 0 && wmax > 0)
-            wmin = Math.min(1.0, 0.001 * wmax);
-         wlmin = Math.log(wmin) / Math.log(10);
-         wlmax = Math.log(wmax) / Math.log(10);
+      if (this.fContour == null) {
+         // if not initialized, first create controur array
+         // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+         this.fUserContour = false;
+         if ((this.histo.fContour!=null) && (this.histo.fContour.length>0) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+            this.fContour = JSROOT.clone(this.histo.fContour);
+            this.fUserContour = true;
+         } else {
+            var nlevels = 50;
+            this.zmin = this.minbin;
+            this.zmax = this.maxbin;
+            if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+               this.zmax += 0.01*Math.abs(this.zmax);
+               this.zmin -= 0.01*Math.abs(this.zmin);
+            }
+            var dz = (this.zmax-this.zmin)/nlevels;
+            if (this.options.Logz) {
+               if (this.zmax <= 0) this.zmax = 1.;
+               if (this.zmin <= 0) this.zmin = 0.001*this.zmax;
+               this.zmin = Math.log(this.zmin)/Math.log(10);
+               this.zmax = Math.log(this.zmax)/Math.log(10);
+               dz = (this.zmax-this.zmin)/nlevels;
+            }
+
+            this.fContour = [];
+            for (var level=0; level<=nlevels; level++)
+               this.fContour.push(this.zmin + (this.zmax-this.zmin)*level/nlevels);
+         }
       }
+
+      var color = -1;
+      if (this.fUserContour) {
+         for (var k in this.fContour) {
+            if (z >= this.fContour[k]) color++;
+         }
+      } else {
+         color = Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+      }
+
+      // do not draw bin where color is negative
+      if (color<0) return null;
 
       if (this.paletteColors.length == 0) {
          var saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
@@ -5971,15 +6007,11 @@
             this.paletteColors.push(rgbval);
          }
       }
-      if (this.options.Logz) zc = Math.log(zc) / Math.log(10);
-      if (zc < wlmin) zc = wlmin;
-      var ncolors = this.paletteColors.length;
-      var color = Math.round(0.01 + (zc - wlmin) * scale);
-      var theColor = Math.round((color + 0.99) * ncolors / ndivz) - 1;
-      var icol = theColor % ncolors;
-      if (icol < 0) icol = 0;
 
-      return this.paletteColors[icol];
+      var theColor = Math.floor((color+0.99)*this.paletteColors.length/(this.fContour.length-1));
+      if (theColor > this.paletteColors.length-1) theColor = this.paletteColors.length-1;
+
+      return this.paletteColors[theColor];
    }
 
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
@@ -6005,6 +6037,9 @@
          xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
          yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
       }
+
+      this.fContour = null; // z-scale ranges when drawing with color
+      this.fUserContour = false;
 
       var local_bins = new Array;
 
@@ -6034,19 +6069,23 @@
             binz = this.histo.getBinContent(i + 1, j + 1);
             if ((binz == 0) || (binz < this.minbin)) continue;
 
-            switch (coordinates_kind) {
-            case 0:
-               point = {
-                  x : grx1,
-                  y : gry2,
-                  width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins
-                  height : gry1 - gry2 + 1,
-                  stroke : "none",
-                  fill : this.getValueColor(binz)
-               }
-               point['tipcolor'] = (point['fill'] == "black") ? "grey" : "black";
-               break;
+            point = null;
 
+            switch (coordinates_kind) {
+            case 0: {
+               fillcol = this.getValueColor(binz);
+               if (fillcol!=null)
+                 point = {
+                   x : grx1,
+                   y : gry2,
+                   width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins
+                   height : gry1 - gry2 + 1,
+                   stroke : "none",
+                   fill : fillcol,
+                   tipcolor: (fillcol == 'black') ? "grey" : "black"
+                 };
+               break;
+            }
             case 1:
                shrx = xfactor * (this.maxbin - binz);
                shry = yfactor * (this.maxbin - binz);
@@ -6069,6 +6108,8 @@
                }
                break;
             }
+
+            if (point==null) continue;
 
             if (tipkind == 1)
                point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" +

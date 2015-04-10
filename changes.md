@@ -2,7 +2,8 @@
 
 ## Changes in master (3.5 dev)
 1. Fix error in vertical text alignment
-2. Improve TPaletteAxis drawing - draw label, avoid too large ticks. 
+2. Many improvements in TPaletteAxis drawing - draw label, avoid too large ticks.
+3. Fix error with col drawing - bin with maximum value got wrong color  
 
 
 ## Changes in 3.4
