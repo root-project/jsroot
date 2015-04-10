@@ -29,7 +29,9 @@
       function draw_item_options(file, itemname, divid, options, factor) {
          var arr = options.split(";");
 
-         var fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "demo/"+ file.fURL;
+         var fname = file.fURL;
+         if (fname.indexOf("http")!=0)
+            fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "demo/"+ file.fURL;
 
          var has_equal = false;
 
