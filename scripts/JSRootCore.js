@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "3.5 dev 10/04/2015";
+   JSROOT.version = "dev 20/04/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -581,10 +581,18 @@
       }
 
       if (need_jquery) {
-         allfiles = '$$$scripts/jquery.min.js;' +
-                    '$$$style/jquery-ui.css;' +
-                    '$$$scripts/jquery-ui.min.js;' +
-                    allfiles;
+         var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
+
+         if (has_jq)
+            console.log('Use existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
+         else
+            lst_jq += "$$$scripts/jquery.min.js;";
+         if (has_jq && typeof $.ui != 'undefined')
+            console.log('Use existing jQuery-ui ' + $.ui.version + ", required 1.11");
+         else
+            lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
+
+         allfiles = lst_jq + allfiles;
          if (JSROOT.touches)
             allfiles += '$$$scripts/touch-punch.min.js;';
       }
