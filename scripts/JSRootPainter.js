@@ -3284,12 +3284,17 @@
       var tickSize = axis['fTickSize'] * width;
 
       // force creation of contour array if missing
-      if (this.main_painter().fContour==null) {
+      if (this.main_painter().fContour==null)
          this.main_painter().getValueColor(this.main_painter().minbin);
-      }
+
       var contour = this.main_painter().fContour;
 
-      var z = d3.scale.linear().clamp(true).domain([contour[0], contour[contour.length-1]]).range([s_height,0]);
+      var z = null;
+      if (this.main_painter().options.Logz)
+         z = d3.scale.log();
+      else
+         z = d3.scale.linear();
+      z.domain([contour[0], contour[contour.length-1]]).range([s_height,0]);
 
       var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
@@ -3313,7 +3318,7 @@
          var z0 = z(contour[i]);
          var z1 = z(contour[i+1]);
          var col = this.main_painter().getValueColor(contour[i]);
-         console.log('color for ' + contour[i] + " : " + contour[i+1] + " = " + col);
+         // console.log('color for ' + contour[i] + " : " + contour[i+1] + " = " + col);
          this.draw_g
             .append("svg:rect")
             .attr("x", 0)
@@ -3462,6 +3467,10 @@
       if (chopt.indexOf('LOGY') != -1) {
          option.Logy = 1;
          chopt = chopt.replace('LOGY', '');
+      }
+      if (chopt.indexOf('LOGZ') != -1) {
+         option.Logz = 1;
+         chopt = chopt.replace('LOGZ', '');
       }
 
       chopt = chopt.trim();
@@ -5983,32 +5992,36 @@
             this.fContour = JSROOT.clone(this.histo.fContour);
             this.fUserContour = true;
          } else {
-            var nlevels = 50;
+            var nlevels = 20;
+            this.fContour = [];
             this.zmin = this.minbin;
             this.zmax = this.maxbin;
-            if ((this.zmin == this.zmax) && (this.zmin != 0)) {
-               this.zmax += 0.01*Math.abs(this.zmax);
-               this.zmin -= 0.01*Math.abs(this.zmin);
-            }
-            var dz = (this.zmax-this.zmin)/nlevels;
             if (this.options.Logz) {
                if (this.zmax <= 0) this.zmax = 1.;
                if (this.zmin <= 0) this.zmin = 0.001*this.zmax;
-               this.zmin = Math.log(this.zmin)/Math.log(10);
-               this.zmax = Math.log(this.zmax)/Math.log(10);
-               dz = (this.zmax-this.zmin)/nlevels;
+               var logmin = Math.log(this.zmin)/Math.log(10);
+               var logmax = Math.log(this.zmax)/Math.log(10);
+               var dz = (logmax-logmin)/nlevels;
+               this.fContour.push(this.zmin);
+               for (var level=1; level<nlevels; level++)
+                  this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
+               this.fContour.push(this.zmax);
+            } else {
+               if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+                  this.zmax += 0.01*Math.abs(this.zmax);
+                  this.zmin -= 0.01*Math.abs(this.zmin);
+               }
+               var dz = (this.zmax-this.zmin)/nlevels;
+               for (var level=0; level<=nlevels; level++)
+                  this.fContour.push(this.zmin + dz*level);
             }
-
-            this.fContour = [];
-            for (var level=0; level<=nlevels; level++)
-               this.fContour.push(this.zmin + (this.zmax-this.zmin)*level/nlevels);
          }
       }
 
       var color = -1;
-      if (this.fUserContour) {
+      if (this.fUserContour || this.options.Logz) {
          for (var k in this.fContour) {
-            if (z >= this.fContour[k]) color++;
+            if (zc >= this.fContour[k]) color++;
          }
       } else {
          color = Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
