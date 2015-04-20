@@ -51,12 +51,68 @@
       StatFormat : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
       StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); },
       MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
+      Palette : null  // color palette, initialized first time when used
    };
 
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
    JSROOT.Painter = {};
+
+   /**
+    * Converts an HSL color value to RGB. Conversion formula adapted from
+    * http://en.wikipedia.org/wiki/HSL_color_space. Assumes h, s, and l are
+    * contained in the set [0, 1] and returns r, g, and b in the set [0, 255].
+    *
+    * @param Number
+    *           h The hue
+    * @param Number
+    *           s The saturation
+    * @param Number
+    *           l The lightness
+    * @return Array The RGB representation
+    */
+   JSROOT.Painter.HLStoRGB = function(h, l, s) {
+      var r, g, b;
+      if (s < 1e-300) {
+         r = g = b = l; // achromatic
+      } else {
+         function hue2rgb(p, q, t) {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+         }
+         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+         var p = 2 * l - q;
+         r = hue2rgb(p, q, h + 1 / 3);
+         g = hue2rgb(p, q, h);
+         b = hue2rgb(p, q, h - 1 / 3);
+      }
+      return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
+   }
+
+   JSROOT.gStyle.GetColorPalette = function(ncol) {
+      // return either full palette or only color specified
+
+      if (this.Palette == null) {
+         this.Palette = [];
+         var saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
+         for (var i = 0; i < maxPretty; i++) {
+            var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360.0;
+            var rgbval = JSROOT.Painter.HLStoRGB(hue, lightness, saturation);
+            this.Palette.push(rgbval);
+         }
+      }
+
+      if (ncol==null) return this.Palette;
+
+      if (ncol<0) return this.Palette[0];
+      if (ncol>=this.Palette.length) return this.Palette[this.Palette.length-1];
+      return this.Palette[ncol];
+   }
 
 
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
@@ -426,41 +482,6 @@
       }
       return y;
    };
-
-   /**
-    * Converts an HSL color value to RGB. Conversion formula adapted from
-    * http://en.wikipedia.org/wiki/HSL_color_space. Assumes h, s, and l are
-    * contained in the set [0, 1] and returns r, g, and b in the set [0, 255].
-    *
-    * @param Number
-    *           h The hue
-    * @param Number
-    *           s The saturation
-    * @param Number
-    *           l The lightness
-    * @return Array The RGB representation
-    */
-   JSROOT.Painter.HLStoRGB = function(h, l, s) {
-      var r, g, b;
-      if (s < 1e-300) {
-         r = g = b = l; // achromatic
-      } else {
-         function hue2rgb(p, q, t) {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1 / 6) return p + (q - p) * 6 * t;
-            if (t < 1 / 2) return q;
-            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-            return p;
-         }
-         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-         var p = 2 * l - q;
-         r = hue2rgb(p, q, h + 1 / 3);
-         g = hue2rgb(p, q, h);
-         b = hue2rgb(p, q, h - 1 / 3);
-      }
-      return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
-   }
 
    JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
       if (nticks < 1) nticks = 1;
@@ -3268,8 +3289,6 @@
       }
       var contour = this.main_painter().fContour;
 
-      console.log('here 2 ' + this.main_painter().maxbin + "  contour " + contour[contour.length-1]);
-
       var z = d3.scale.linear().clamp(true).domain([contour[0], contour[contour.length-1]]).range([s_height,0]);
 
       var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
@@ -5602,7 +5621,6 @@
 
    JSROOT.TH2Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
-      this.paletteColors = []; // palette, should go yo gStyle
       this.fContour = null; // contour levels
       this.fUserContour = false; // are this user-defined levels
    }
@@ -5999,19 +6017,10 @@
       // do not draw bin where color is negative
       if (color<0) return null;
 
-      if (this.paletteColors.length == 0) {
-         var saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
-         for (var i = 0; i < maxPretty; i++) {
-            var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360.0;
-            var rgbval = JSROOT.Painter.HLStoRGB(hue, lightness, saturation);
-            this.paletteColors.push(rgbval);
-         }
-      }
-
-      var theColor = Math.floor((color+0.99)*this.paletteColors.length/(this.fContour.length-1));
-      if (theColor > this.paletteColors.length-1) theColor = this.paletteColors.length-1;
-
-      return this.paletteColors[theColor];
+      var palette = JSROOT.gStyle.GetColorPalette();
+      var theColor = Math.floor((color+0.99)*palette.length/(this.fContour.length-1));
+      if (theColor > palette.length-1) theColor = palette.length-1;
+      return palette[theColor];
    }
 
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
