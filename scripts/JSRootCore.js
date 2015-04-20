@@ -547,8 +547,11 @@
                      "$$$scripts/JSRootIOEvolution" + ext + ".js;";
 
       if (kind.indexOf('2d;')>=0) {
-         allfiles += '$$$scripts/d3.v3.min.js;' +
-                     '$$$scripts/JSRootPainter' + ext + ".js;" +
+         if (typeof d3 != 'undefined')
+            console.log('Reuse existing d3.js ' + d3.version + ", required 3.4.10");
+         else
+            allfiles += '$$$scripts/d3.v3.min.js;';
+         allfiles += '$$$scripts/JSRootPainter' + ext + ".js;" +
                      '$$$style/JSRootPainter' + ext + ".css;";
       }
 
@@ -584,11 +587,11 @@
          var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
 
          if (has_jq)
-            console.log('Use existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
+            console.log('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
          else
             lst_jq += "$$$scripts/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
-            console.log('Use existing jQuery-ui ' + $.ui.version + ", required 1.11");
+            console.log('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11");
          else
             lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
 
