@@ -4533,6 +4533,14 @@
       statpainter.Redraw();
    }
 
+   JSROOT.THistPainter.prototype.IsAxisZoomed = function(axis) {
+      var obj = this.main_painter();
+      if (obj == null) obj = this;
+      if (axis == "x") return obj.zoom_xmin != obj.zoom_xmax;
+      if (axis == "y") return obj.zoom_ymin != obj.zoom_ymax;
+      return false;
+   }
+
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexs starts from 0
       var indx = 0;
@@ -5231,7 +5239,15 @@
          stat_sumwx2 += w * xx * xx;
       }
 
+      // when no range selection done, use original statistic from histogram
+      if (!this.IsAxisZoomed("x") && (this.histo.fTsumw>0)) {
+         stat_sumw = this.histo.fTsumw;
+         stat_sumwx = this.histo.fTsumwx;
+         stat_sumwx2 = this.histo.fTsumwx2;
+      }
+
       var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
+
 
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
