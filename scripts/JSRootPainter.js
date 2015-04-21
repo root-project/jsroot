@@ -3444,6 +3444,7 @@
       chopt = JSROOT.Painter.clearCuts(chopt);
       if (hdim > 1) option.Scat = 1;
       if (this.IsTProfile()) option.Error = 2;
+      if ((hdim==1) && (this.histo.fSumw2.length>0)) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
 
       if (chopt.indexOf('AUTOCOL') != -1) {
@@ -5140,11 +5141,12 @@
       for (var i = 0; i < this.nbinsx; ++i) {
          var value = this.histo.getBinContent(i + 1);
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
+         if (value > 0)
+            if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
+         if (this.options.Error > 0) value += this.histo.getBinError(i + 1);
          if (i == 0) hmin = hmax = value;
          if (value < hmin) hmin = value; else
          if (value > hmax) hmax = value;
-         if (value > 0)
-            if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
       }
 
       // account overflow/underflow bins
@@ -5437,58 +5439,61 @@
       if (JSROOT.gStyle.Tooltip)
          nodes.append("svg:title").text(function(d) { return d.tip; });
 
-      var xerr = null, yerr = null;
+      if (this.options.Error == 12) {
+         // draw as rectangles
 
-      /* Draw x-error indicators */
-      if (this.options.Error > 0)
-         nodes.append("svg:line")
+         nodes.append("svg:rect")
+            .attr("x", function(d) { return (-d.xerr).toFixed(1); })
+            .attr("y", function(d) { return (-d.yerr).toFixed(1); })
+            .attr("width", function(d) { return (2*d.xerr).toFixed(1); })
+            .attr("height", function(d) { return (2*d.yerr).toFixed(1); })
+            .call(this.attline.func).call(this.fill.func);
+      } else
+      if (this.options.Error > 0) {
+         /* Draw main error indicators */
+         nodes.append("svg:line") // x indicator
               .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
               .attr("y1", 0)
               .attr("x2", function(d) { return d.xerr.toFixed(1); })
               .attr("y2", 0)
               .call(this.attline.func);
-
-      if (this.options.Error == 11) {
-         nodes.append("svg:line")
-              .attr("y1", -3)
-              .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
-              .attr("y2", 3)
-              .attr("x2", function(d) { return (-d.xerr).toFixed(1); })
-              .call(this.attline.func);
-         nodes.append("svg:line")
-              .attr("y1", -3)
-              .attr("x1", function(d) { return d.xerr.toFixed(1); })
-              .attr("y2", 3)
-              .attr("x2", function(d) { return d.xerr.toFixed(1); })
-              .call(this.attline.func);
-      }
-
-      /* Draw y-error indicators */
-      if (this.options.Error > 0)
-         nodes.append("svg:line")
+         nodes.append("svg:line")  // y indicator
               .attr("x1", 0)
               .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
               .attr("x2", 0)
               .attr("y2", function(d) { return d.yerr.toFixed(1); })
               .call(this.attline.func);
+      }
 
       if (this.options.Error == 11) {
          nodes.append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return (-d.yerr).toFixed(1); })
-              .call(this.attline.func);
+                .attr("y1", -3)
+                .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
+                .attr("y2", 3)
+                .attr("x2", function(d) { return (-d.xerr).toFixed(1); })
+                .call(this.attline.func);
          nodes.append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return d.yerr.toFixed(1); })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return d.yerr.toFixed(1); })
-              .call(this.attline.func);
+                .attr("y1", -3)
+                .attr("x1", function(d) { return d.xerr.toFixed(1); })
+                .attr("y2", 3)
+                .attr("x2", function(d) { return d.xerr.toFixed(1); })
+                .call(this.attline.func);
+         nodes.append("svg:line")
+                .attr("x1", -3)
+                .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
+                .attr("x2", 3)
+                .attr("y2", function(d) { return (-d.yerr).toFixed(1); })
+                .call(this.attline.func);
+         nodes.append("svg:line")
+                 .attr("x1", -3)
+                 .attr("y1", function(d) { return d.yerr.toFixed(1); })
+                 .attr("x2", 3)
+                 .attr("y2", function(d) { return d.yerr.toFixed(1); })
+                 .call(this.attline.func);
       }
 
       // draw dot markers only when no error was drawn
-      if ((this.histo['fMarkerStyle'] == 1) && (this.options.Error > 0)) return;
+      if ((this.histo['fMarkerStyle'] == 1) && (this.options.Error != 12)) return;
 
       var marker = JSROOT.Painter.createAttMarker(this.histo);
 

@@ -6,6 +6,8 @@
 3. Fix error with col drawing - bin with maximum value got wrong color  
 4. Test for existing jquery.js, jquery-ui.js and d3.js libraries, reuse when provided 
 5. Fix several I/O problems; now one could read files, produced in Geant4
+6. Implement 'e2' drawing option for TH1 class, 
+   use by default 'e' option when TH1 has non-empty fSumw2
 
 
 ## Changes in 3.4
