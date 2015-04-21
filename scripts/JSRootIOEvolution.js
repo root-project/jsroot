@@ -549,6 +549,65 @@
       return this.CheckBytecount(ver,"ReadTCollection");
    }
 
+   JSROOT.TBuffer.prototype.ReadTKey = function(key) {
+      key['fNbytes'] = this.ntoi4();
+      key['fVersion'] = this.ntoi2();
+      key['fObjlen'] = this.ntou4();
+      var datime = this.ntou4();
+      key['fDatime'] = new Date();
+      key['fDatime'].setFullYear((datime >>> 26) + 1995);
+      key['fDatime'].setMonth((datime << 6) >>> 28);
+      key['fDatime'].setDate((datime << 10) >>> 27);
+      key['fDatime'].setHours((datime << 15) >>> 27);
+      key['fDatime'].setMinutes((datime << 20) >>> 26);
+      key['fDatime'].setSeconds((datime << 26) >>> 26);
+      key['fDatime'].setMilliseconds(0);
+      key['fKeylen'] = this.ntou2();
+      key['fCycle'] = this.ntou2();
+      if (key['fVersion'] > 1000) {
+         key['fSeekKey'] = this.ntou8();
+         this.shift(8); // skip seekPdir
+      } else {
+         key['fSeekKey'] = this.ntou4();
+         this.shift(4); // skip seekPdir
+      }
+      key['fClassName'] = this.ReadTString();
+      key['fName'] = this.ReadTString();
+      key['fTitle'] = this.ReadTString();
+
+      var name = key['fName'].replace(/['"]/g,'');
+
+      if (name != key['fName']) {
+         key['fRealName'] = key['fName'];
+         key['fName'] = name;
+      }
+
+      return true;
+   }
+
+   JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
+      this.ReadTKey(obj);
+      var ver = this.ReadVersion();
+      obj['fBufferSize'] = this.ntoi4();
+      obj['fNevBufSize'] = this.ntoi4();
+      obj['fNevBuf'] = this.ntoi4();
+      obj['fLast'] = this.ntoi4();
+      var flag = this.ntoi1();
+      // here we implement only data skipping, no real I/O for TBasket is performed
+      if ((flag % 10) != 2) {
+         var sz = this.ntoi4(); this.o += sz*4; // fEntryOffset
+         if (flag>40) { sz = this.ntoi4(); this.o += sz*4; } // fDisplacement
+      }
+
+      if (flag == 1 || flag > 10) {
+         var sz = obj['fLast'];
+         if (ver['val'] <=1) sz = this.ntoi4();
+         this.o += sz; // fBufferRef
+      }
+      return this.CheckBytecount(ver,"ReadTBasket");
+   }
+
+
    JSROOT.TBuffer.prototype.ReadTCanvas = function(obj) {
       // stream all objects in the list from the I/O buffer
       var ver = this.ReadVersion();
@@ -795,13 +854,18 @@
       }
       else if ((classname == "TStreamerBasicPointer") || (classname == "TStreamerLoop")) {
          this.ReadStreamerBasicPointer(obj);
-      } else if (classname == "TStreamerSTL") {
+      }
+      else if (classname == "TStreamerSTL") {
          this.ReadStreamerSTL(obj);
-      } else if (classname == "TStreamerObject" ||
+      }
+      else if (classname == "TStreamerObject" ||
             classname == "TStreamerObjectAny" ||
             classname == "TStreamerString" ||
             classname == "TStreamerObjectPointer" ) {
          this.ReadTStreamerObject(obj);
+      }
+      else if (classname == "TBasket") {
+         this.ReadTBasket(obj);
       }
       else {
          var streamer = this.fFile.GetStreamer(classname);
@@ -1371,39 +1435,7 @@
    JSROOT.TFile.prototype.ReadKey = function(buf) {
       // read key from buffer
       var key = {};
-
-      key['fNbytes'] = buf.ntoi4();
-      key['fVersion'] = buf.ntoi2();
-      key['fObjlen'] = buf.ntou4();
-      var datime = buf.ntou4();
-      key['fDatime'] = new Date();
-      key['fDatime'].setFullYear((datime >>> 26) + 1995);
-      key['fDatime'].setMonth((datime << 6) >>> 28);
-      key['fDatime'].setDate((datime << 10) >>> 27);
-      key['fDatime'].setHours((datime << 15) >>> 27);
-      key['fDatime'].setMinutes((datime << 20) >>> 26);
-      key['fDatime'].setSeconds((datime << 26) >>> 26);
-      key['fDatime'].setMilliseconds(0);
-      key['fKeylen'] = buf.ntou2();
-      key['fCycle'] = buf.ntou2();
-      if (key['fVersion'] > 1000) {
-         key['fSeekKey'] = buf.ntou8();
-         buf.shift(8); // skip seekPdir
-      } else {
-         key['fSeekKey'] = buf.ntou4();
-         buf.shift(4); // skip seekPdir
-      }
-      key['fClassName'] = buf.ReadTString();
-      key['fName'] = buf.ReadTString();
-      key['fTitle'] = buf.ReadTString();
-
-      var name = key['fName'].replace(/['"]/g,'');
-
-      if (name != key['fName']) {
-         key['fRealName'] = key['fName'];
-         key['fName'] = name;
-      }
-
+      buf.ReadTKey(key);
       return key;
    }
 
