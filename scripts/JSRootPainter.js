@@ -3364,6 +3364,93 @@
       }
 
       this.AddDrag({ obj: palette, redraw: 'DrawPalette' });
+
+      if (!JSROOT.gStyle.Zooming) return;
+
+      var pthis = this, e = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null, disable_tooltip = false;
+
+      function moveRectSel() {
+
+         if (!doing_zoom) return;
+
+         d3.event.preventDefault();
+         var m = d3.mouse(e);
+
+         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
+
+         zoom_rect.attr("y", sel1)
+                  .attr("height", Math.abs(sel2-sel1));
+
+         if (JSROOT.gStyle.Tooltip && (sel2-sel1>10)) {
+             JSROOT.gStyle.Tooltip = false;
+             disable_tooltip = true;
+         }
+      }
+
+      function endRectSel() {
+         if (!doing_zoom) return;
+
+         d3.event.preventDefault();
+         // d3.select(window).on("touchmove.zoomRect",
+         // null).on("touchend.zoomRect", null);
+         d3.select(window).on("mousemove.colzoomRect", null)
+                          .on("mouseup.colzoomRect", null);
+         d3.select("body").classed("noselect", false);
+
+         d3.select("body").style("-webkit-user-select", "auto");
+
+         if (disable_tooltip) {
+            JSROOT.gStyle.Tooltip = true;
+            disable_tooltip = false;
+         }
+
+         zoom_rect.remove();
+         zoom_rect = null;
+         doing_zoom = false;
+
+         var zmin = Math.min(z.invert(sel1), z.invert(sel2));
+         var zmax = Math.max(z.invert(sel1), z.invert(sel2));
+
+         pthis.main_painter().Zoom(0, 0, 0, 0, zmin, zmax);
+      }
+
+      function startRectSel() {
+
+         // ignore when touch selection is actiavated
+         if (doing_zoom) return;
+         doing_zoom = true;
+
+         d3.event.preventDefault();
+
+         e = this;
+         var origin = d3.mouse(e);
+
+         sel1 = sel2 = origin[1];
+
+         zoom_rect = pthis.draw_g
+                .append("svg:rect")
+                .attr("class", "zoom")
+                .attr("id", "colzoomRect")
+                .attr("x", "0")
+                .attr("width", s_width)
+                .attr("y", sel1)
+                .attr("height", 5);
+
+         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+                          .on("mouseup.colzoomRect", endRectSel, true);
+
+         d3.event.stopPropagation();
+      }
+
+
+      this.draw_g.append("svg:rect")
+                 .attr("x", s_width)
+                 .attr("y", 0)
+                 .attr("width", 20)
+                 .attr("height", s_height)
+                 .style('cursor', "zoom-in")
+                 .style('opacity', "0")
+                 .on("mousedown", startRectSel);
    }
 
    JSROOT.TPaletteAxisPainter.prototype.Redraw = function() {
@@ -3965,6 +4052,9 @@
 
       this['zoom_ymin'] = 0;
       this['zoom_ymax'] = 0;
+
+      this['zoom_zmin'] = 0;
+      this['zoom_zmax'] = 0;
 
       if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
          this['zoom_xmin'] = pad.fUxmin;
@@ -4688,7 +4778,7 @@
       if (this.create_canvas) this.DrawTitle();
    }
 
-   JSROOT.THistPainter.prototype.Unzoom = function(dox, doy) {
+   JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
       var obj = this.main_painter();
       if (!obj) obj = this;
 
@@ -4696,19 +4786,20 @@
 
       if (dox) {
          if (obj['zoom_xmin'] != obj['zoom_xmax']) changed = true;
-         obj['zoom_xmin'] = 0;
-         obj['zoom_xmax'] = 0;
+         obj['zoom_xmin'] = obj['zoom_xmax'] = 0;
       }
       if (doy) {
          if (obj['zoom_ymin'] != obj['zoom_ymax']) changed = true;
-         obj['zoom_ymin'] = 0;
-         obj['zoom_ymax'] = 0;
+         obj['zoom_ymin'] = obj['zoom_ymax'] = 0;
       }
-
+      if (doz) {
+         if (obj['zoom_zmin'] != obj['zoom_zmax']) changed = true;
+         obj['zoom_zmin'] = obj['zoom_zmax'] = 0;
+      }
       if (changed) this.RedrawPad();
    }
 
-   JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax) {
+   JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       var obj = this.main_painter();
       if (!obj) obj = this;
 
@@ -4722,6 +4813,11 @@
       if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*2.0) : Math.abs(obj.ymax-obj.ymin)*1e-6))) {
          obj['zoom_ymin'] = ymin;
          obj['zoom_ymax'] = ymax;
+         isany = true;
+      }
+      if ((zmin!=zmax) && (zmin!=null) && (zmax!=null)) {
+         obj['zoom_zmin'] = zmin;
+         obj['zoom_zmax'] = zmax;
          isany = true;
       }
 
@@ -4809,7 +4905,7 @@
                d3.event.stopPropagation();
 
                closeAllExtras();
-               pthis.Unzoom(true, true);
+               pthis.Unzoom(true, true, true);
             } else {
                lasttouch = now;
                curr = arr[0];
@@ -5001,9 +5097,9 @@
          d3.event.preventDefault();
          var m = d3.mouse(e);
          closeAllExtras();
-         if (m[0] < 0) pthis.Unzoom(false, true); else
-         if (m[1] > height) pthis.Unzoom(true, false); else {
-            pthis.Unzoom(true, true);
+         if (m[0] < 0) pthis.Unzoom(false, true, false); else
+         if (m[1] > height) pthis.Unzoom(true, false, false); else {
+            pthis.Unzoom(true, true, true);
             pthis.svg_frame().on("dblclick", null);
          }
       }
@@ -5093,9 +5189,14 @@
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
-      menu.add("Unzoom X", function() { menu['painter'].Unzoom(true, false); });
-      menu.add("Unzoom Y", function() { menu['painter'].Unzoom(false, true); });
-      menu.add("Unzoom", function() { menu['painter'].Unzoom(true, true); });
+
+      if (this.zoom_xmin!=this.zoom_xmax)
+         menu.add("Unzoom X", function() { menu['painter'].Unzoom(true, false, false); });
+      if (this.zoom_ymin!=this.zoom_ymax)
+         menu.add("Unzoom Y", function() { menu['painter'].Unzoom(false, true, false); });
+      if (this.zoom_zmin!=this.zoom_zmax)
+         menu.add("Unzoom Z", function() { menu['painter'].Unzoom(false, false, true); });
+      menu.add("Unzoom", function() { menu['painter'].Unzoom(true, true, true); });
 
       menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
@@ -5111,11 +5212,19 @@
             menu['painter'].RedrawPad();
          });
 
-         var item = this.options.Logy > 0 ? "Linear Y" : "Log Y";
+         item = this.options.Logy > 0 ? "Linear Y" : "Log Y";
          menu.add(item, function() {
             menu['painter'].options.Logy = 1 - menu['painter'].options.Logy;
             menu['painter'].RedrawPad();
          });
+
+         if (this.Dimension() == 2) {
+            item = this.options.Logz > 0 ? "Linear Z" : "Log Z";
+            menu.add(item, function() {
+               menu['painter'].options.Logz = 1 - menu['painter'].options.Logz;
+               menu['painter'].RedrawPad();
+            });
+         }
       }
       if (this.draw_content)
          menu.add("Toggle stat", function() { menu['painter'].ToggleStat(); });
@@ -6026,6 +6135,11 @@
             this.fContour = [];
             this.zmin = this.minbin;
             this.zmax = this.maxbin;
+            if (this.zoom_zmin != this.zoom_zmax) {
+               this.zmin = this.zoom_zmin;
+               this.zmax = this.zoom_zmax;
+            }
+
             if (this.options.Logz) {
                if (this.zmax <= 0) this.zmax = 1.;
                if (this.zmin <= 0) this.zmin = 0.001*this.zmax;
