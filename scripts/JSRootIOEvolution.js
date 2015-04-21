@@ -150,8 +150,8 @@
 
    JSROOT.TBuffer.prototype.ntou2 = function() {
       // convert (read) two bytes of buffer b into a UShort_t
-      var n  = ((this.b.charCodeAt(this.o)   & 0xff) << 8) >>> 0;
-      n +=  (this.b.charCodeAt(this.o+1) & 0xff) >>> 0;
+      var n = ((this.b.charCodeAt(this.o) & 0xff) << 8) >>> 0;
+      n += (this.b.charCodeAt(this.o+1) & 0xff) >>> 0;
       this.o += 2;
       return n;
    }
@@ -168,7 +168,7 @@
 
    JSROOT.TBuffer.prototype.ntou8 = function() {
       // convert (read) eight bytes of buffer b into a ULong_t
-      var n  = ((this.b.charCodeAt(this.o)   & 0xff) << 56) >>> 0;
+      var n = ((this.b.charCodeAt(this.o) & 0xff) << 56) >>> 0;
       n += ((this.b.charCodeAt(this.o+1) & 0xff) << 48) >>> 0;
       n += ((this.b.charCodeAt(this.o+2) & 0xff) << 40) >>> 0;
       n += ((this.b.charCodeAt(this.o+3) & 0xff) << 32) >>> 0;
@@ -176,7 +176,7 @@
       n += ((this.b.charCodeAt(this.o+5) & 0xff) << 16) >>> 0;
       n += ((this.b.charCodeAt(this.o+6) & 0xff) << 8) >>> 0;
       n +=  (this.b.charCodeAt(this.o+7) & 0xff) >>> 0;
-      this.op += 8;
+      this.o += 8;
       return n;
    }
 
@@ -204,7 +204,7 @@
 
    JSROOT.TBuffer.prototype.ntoi8 = function(b, o) {
       // convert (read) eight bytes of buffer b into a Long_t
-      var n  = (this.b.charCodeAt(this.o)   & 0xff) << 56;
+      var n = (this.b.charCodeAt(this.o) & 0xff) << 56;
       n += (this.b.charCodeAt(this.o+1) & 0xff) << 48;
       n += (this.b.charCodeAt(this.o+2) & 0xff) << 40;
       n += (this.b.charCodeAt(this.o+3) & 0xff) << 32;
@@ -394,6 +394,8 @@
       var bytecnt = this.ntou4(); // byte count
       if (bytecnt & JSROOT.IO.kByteCountMask)
          ver['bytecnt'] = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
+      else
+         this.o -= 4; // rollback read bytes, this is old buffer without bytecount
       ver['val'] = this.ntou2();
       ver['off'] = this.o;
       return ver;
@@ -672,7 +674,7 @@
       // stream an object of class TStreamerSTL
 
       var R__v = this.ReadVersion();
-      if (R__v['val'] > 2) {
+      if (R__v['val'] > 1) {
          this.ReadStreamerElement(streamerSTL);
          streamerSTL['stltype'] = this.ntou4();
          streamerSTL['ctype'] = this.ntou4();
