@@ -10,7 +10,7 @@
    use by default 'e' option when TH1 has non-empty fSumw2
 7. Reuse statistic from histogram itself, when no axis selection done 
 8. Support log/lin z scale for color drawing
-9. Implement z-scale selection on TPaletteAxis 
+9. Implement interactive z-scale selection on TPaletteAxis 
 
 
 ## Changes in 3.4

@@ -3318,15 +3318,23 @@
          var z0 = z(contour[i]);
          var z1 = z(contour[i+1]);
          var col = this.main_painter().getValueColor(contour[i]);
-         // console.log('color for ' + contour[i] + " : " + contour[i+1] + " = " + col);
-         this.draw_g
+         var r = this.draw_g
             .append("svg:rect")
             .attr("x", 0)
             .attr("y",  z1.toFixed(1))
             .attr("width", s_width)
             .attr("height", (z0-z1).toFixed(1))
             .attr("fill", col)
+            .property("fill0", col)
             .attr("stroke", col);
+
+         if (JSROOT.gStyle.Tooltip)
+            r.on('mouseover', function() {
+               if (JSROOT.gStyle.Tooltip)
+                  d3.select(this).transition().duration(100).style("fill", 'black');
+            }).on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", this['fill0']);
+            }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
       }
 
       // Build and draw axes
@@ -3367,24 +3375,19 @@
 
       if (!JSROOT.gStyle.Zooming) return;
 
-      var pthis = this, e = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null, disable_tooltip = false;
+      var pthis = this, evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
       function moveRectSel() {
 
          if (!doing_zoom) return;
 
          d3.event.preventDefault();
-         var m = d3.mouse(e);
+         var m = d3.mouse(evnt);
 
          if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
 
          zoom_rect.attr("y", sel1)
                   .attr("height", Math.abs(sel2-sel1));
-
-         if (JSROOT.gStyle.Tooltip && (sel2-sel1>10)) {
-             JSROOT.gStyle.Tooltip = false;
-             disable_tooltip = true;
-         }
       }
 
       function endRectSel() {
@@ -3395,15 +3398,8 @@
          // null).on("touchend.zoomRect", null);
          d3.select(window).on("mousemove.colzoomRect", null)
                           .on("mouseup.colzoomRect", null);
-         d3.select("body").classed("noselect", false);
-
-         d3.select("body").style("-webkit-user-select", "auto");
-
-         if (disable_tooltip) {
-            JSROOT.gStyle.Tooltip = true;
-            disable_tooltip = false;
-         }
-
+         // d3.select("body").classed("noselect", false);
+         // d3.select("body").style("-webkit-user-select", "auto");
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
@@ -3422,8 +3418,8 @@
 
          d3.event.preventDefault();
 
-         e = this;
-         var origin = d3.mouse(e);
+         evnt = this;
+         var origin = d3.mouse(evnt);
 
          sel1 = sel2 = origin[1];
 
