@@ -5889,7 +5889,7 @@
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
-      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy2 = 0;
+      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0;
 
       var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null };
       for (var n = 0; n < 9; n++) res.matrix.push(0);
@@ -5925,8 +5925,17 @@
             stat_sumy1 += yy * zz;
             stat_sumx2 += xx * xx * zz;
             stat_sumy2 += yy * yy * zz;
-            stat_sumxy2 += xx * yy * zz;
+            stat_sumxy += xx * yy * zz;
          }
+      }
+
+      if (!this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && (this.histo.fTsumw>0)) {
+         stat_sum0 = this.histo.fTsumw;
+         stat_sumx1 = this.histo.fTsumwx;
+         stat_sumx2 = this.histo.fTsumwx2;
+         stat_sumy1 = this.histo.fTsumwy;
+         stat_sumy2 = this.histo.fTsumwy2;
+         stat_sumxy = this.histo.fTsumwxy;
       }
 
       if (stat_sum0 > 0) {
@@ -8510,8 +8519,8 @@
    JSROOT.addDrawFunc("TMathText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
    JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;same");
-   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D, ";E1");
+   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;E;E1;E2;same");
+   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D, ";E1;E2");
    JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D, ";COL;COLZ;COL3;LEGO;same");
    JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
    JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
