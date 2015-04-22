@@ -6129,11 +6129,14 @@
          // if not initialized, first create controur array
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
          this.fUserContour = false;
+
          if ((this.histo.fContour!=null) && (this.histo.fContour.length>0) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
             this.fContour = JSROOT.clone(this.histo.fContour);
             this.fUserContour = true;
          } else {
             var nlevels = 20;
+            if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+            if (nlevels<1) nlevels = 20;
             this.fContour = [];
             this.zmin = this.minbin;
             this.zmax = this.maxbin;
