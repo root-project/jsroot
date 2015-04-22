@@ -1683,7 +1683,12 @@
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      if (((JSROOT.MathJax<1) && (latex_kind!=2)) || (latex_kind<1)) {
+      var use_normal_text = ((JSROOT.MathJax<1) && (latex_kind!=2)) || (latex_kind<1);
+
+      // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
+      if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
+
+      if (use_normal_text) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
 
          var pos_x = x.toFixed(1), pos_y = y.toFixed(1), pos_dy = null, middleline = false;
@@ -3438,14 +3443,13 @@
          d3.event.stopPropagation();
       }
 
-
       this.draw_g.append("svg:rect")
                  .attr("x", s_width)
                  .attr("y", 0)
                  .attr("width", 20)
                  .attr("height", s_height)
-                 .style('cursor', "zoom-in")
-                 .style('opacity', "0")
+                 .style("cursor", "crosshair")
+                 .style("opacity", "0")
                  .on("mousedown", startRectSel);
    }
 
@@ -4535,7 +4539,8 @@
             .attr("y", 0)
             .attr("width", w)
             .attr("height", xlabelfont.size + 3)
-            .style('opacity', "0");
+            .style('opacity', "0")
+            .style("cursor", "crosshair");
 
          // we will use such rect for zoom selection
          yax_g.append("svg:rect")
@@ -4543,7 +4548,8 @@
             .attr("y", 0)
             .attr("width", 2 * ylabelfont.size + 3)
             .attr("height", h)
-            .style('opacity', "0");
+            .style('opacity', "0")
+            .style("cursor", "crosshair");
       }
 
       if ((shrink_forbidden==null) && typeof yax_g.node()['getBoundingClientRect'] == 'function') {
