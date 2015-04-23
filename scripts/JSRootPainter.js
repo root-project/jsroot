@@ -155,7 +155,10 @@
          if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
 
-      if (JSROOT.GetUrlOption("mathjax", url) != null) JSROOT.MathJax = 1;
+      var mathjax = JSROOT.GetUrlOption("mathjax", url);
+      if ((mathjax!=null) && (mathjax!=0)) JSROOT.MathJax = 1;
+
+      if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
    }
 
    JSROOT.Painter.Coord = {
@@ -3336,7 +3339,7 @@
          if (JSROOT.gStyle.Tooltip)
             r.on('mouseover', function() {
                if (JSROOT.gStyle.Tooltip)
-                  d3.select(this).transition().duration(100).style("fill", 'black');
+                  d3.select(this).transition().duration(100).style("fill", 'grey');
             }).on('mouseout', function() {
                d3.select(this).transition().duration(100).style("fill", this['fill0']);
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
@@ -5186,8 +5189,8 @@
 
       this.svg_frame().on("mousedown", startRectSel);
       this.svg_frame().on("touchstart", startTouchSel);
-      this.svg_frame().on("contextmenu", showContextMenu);
-
+      if (JSROOT.gStyle.ContextMenu)
+         this.svg_frame().on("contextmenu", showContextMenu);
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
@@ -5574,7 +5577,20 @@
             .attr("y", function(d) { return (-d.yerr).toFixed(1); })
             .attr("width", function(d) { return (2*d.xerr).toFixed(1); })
             .attr("height", function(d) { return (2*d.yerr).toFixed(1); })
-            .call(this.attline.func).call(this.fill.func);
+            .call(this.attline.func)
+            .call(this.fill.func)
+            .style("pointer-events","visibleFill") // even when fill attribute not specified, get mouse events
+            .property("fill0", this.fill.color) // remember color
+            .on('mouseover', function() {
+               if (JSROOT.gStyle.Tooltip)
+                 d3.select(this).transition().duration(100).style("fill", "grey");
+            })
+            .on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", this['fill0']);
+            });
+
+
+            //.append("svg:title").text(function(d) { return d.tip; });
       } else
       if (this.options.Error > 0) {
          /* Draw main error indicators */
