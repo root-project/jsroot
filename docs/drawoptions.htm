@@ -141,7 +141,7 @@
             draw_item_options(file, "zdemo;1", "can3_draw", ";mathjax=1", 0.);
          });
 
-         if (JSROOT.source_dir.indexOf("http")<0)
+         if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null))
             LoadFile("JPsi_evolution.root", function(file) {
                draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
             });
@@ -158,7 +158,7 @@
             draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
          });
 
-         if (JSROOT.source_dir.indexOf("http")<0) {
+         if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null)) {
             LoadFile("can4.root", function(file) {
                draw_item_options(file, "c1;1", "can8_draw", "", 0.);
             });

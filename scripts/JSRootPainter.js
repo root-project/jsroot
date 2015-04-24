@@ -3533,7 +3533,6 @@
       var chopt = opt.toUpperCase();
       chopt = JSROOT.Painter.clearCuts(chopt);
       if (hdim > 1) option.Scat = 1;
-      if (this.IsTProfile()) option.Error = 2;
       if ((hdim==1) && (this.histo.fSumw2.length>0)) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
 
@@ -5635,12 +5634,11 @@
                  .call(this.attline.func);
       }
 
-      // draw dot markers only when no error was drawn
-      if ((this.histo['fMarkerStyle'] == 1) && (this.options.Error != 12)) return;
-
-      var marker = JSROOT.Painter.createAttMarker(this.histo);
-
-      nodes.append("svg:path").call(marker.func);
+      if ((this.options.Mark > 0) || (this.options.Error == 12)) {
+         // draw markers also when e2 option was specified
+         var marker = JSROOT.Painter.createAttMarker(this.histo);
+         nodes.append("svg:path").call(marker.func);
+      }
    }
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
