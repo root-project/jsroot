@@ -505,7 +505,7 @@
          node = $("#" + this.frameid).find("[item='" + itemname + "']");
 
       if (node.length==0)
-         return console.log("Did not found node with item = " + itemname);
+         return JSROOT.console("Did not found node with item = " + itemname);
 
       if (item0==null) item0 = this.Find(itemname);
       if (item0==null) return;

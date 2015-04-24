@@ -811,8 +811,6 @@
    }
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
-      // console.log("Start streaming of class " + classname);
-
       if (! ('_typename' in obj))  obj['_typename'] = classname;
 
       if (classname == 'TObject' || classname == 'TMethodCall') {
@@ -872,7 +870,7 @@
          if (streamer != null)
             streamer.Stream(obj, this);
          else {
-            console.log("Did not found streamer for class " + classname + " try to skip data");
+            JSROOT.console("Did not found streamer for class " + classname + " try to skip data");
             var ver = this.ReadVersion();
             this.CheckBytecount(ver);
          }
@@ -1237,7 +1235,7 @@
          buf.ReadTString();
          thisdir.fTitle = buf.ReadTString();
          if (thisdir.fNbytesName < 10 || thisdir.fNbytesName > 10000) {
-            console.log("Cannot read directory info of file " + file.fURL);
+            JSROOT.console("Cannot read directory info of file " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
          }
          //*-* -------------Read keys of the top directory
@@ -1697,13 +1695,13 @@
             buf3.ReadTString();
             file.fTitle = buf3.ReadTString();
             if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
-               console.log("Init : cannot read directory info of file " + file.fURL);
+               JSROOT.console("Init : cannot read directory info of file " + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
             }
             //*-* -------------Read keys of the top directory
 
             if (file.fSeekKeys <= 0) {
-               console.log("Empty keys list - not supported" + file.fURL);
+               JSROOT.console("Empty keys list - not supported" + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
             }
 

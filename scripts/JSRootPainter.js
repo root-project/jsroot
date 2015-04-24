@@ -1158,7 +1158,7 @@
       if (svg_c.empty()) {
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
-         console.log("Special case for " + this.obj_typename + " assign painter to first DOM element");
+         JSROOT.console("Special case for " + this.obj_typename + " assign painter to first DOM element");
          var main = d3.select("#" + divid);
          if (main.node() && main.node().firstChild)
             main.node().firstChild['painter'] = this;
@@ -1603,7 +1603,7 @@
 
          var vvv = d3.select(entry).select("svg");
          if (vvv.empty()) {
-            console.log('MathJax SVG ouptut error');
+            JSROOT.console('MathJax SVG ouptut error');
             return;
          }
 
@@ -7105,7 +7105,7 @@
          pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
          pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
       } else {
-         console.log("Cannot draw text at x/y coordinates without real TPad object");
+         JSROOT.console("Cannot draw text at x/y coordinates without real TPad object");
          pos_x = w/2;
          pos_y = h/2;
       }
@@ -7253,7 +7253,7 @@
          var entry = lst.arr[i]
 
          if (typeof (entry['fName']) == 'undefined') {
-            console.log("strange element in StreamerInfo with name " + entry['fName']);
+            JSROOT.console("strange element in StreamerInfo with name " + entry['fName']);
             continue;
          }
 
@@ -7407,7 +7407,6 @@
                         if (dir) {
                            diritem['_name'] = diritem['_keyname'];
                            var dirname = painter.itemFullName(diritem, fff);
-                           // console.log("Expand hierarchy for dir " + dirname);
                            painter.KeysHierarchy(diritem, dir.fKeys, file, dirname + "/");
                         }
                      } else {
@@ -7431,7 +7430,6 @@
                ReadFileObject(fff._file);
             } else {
                // try to reopen ROOT file
-               // console.log("Try to reopen file " + fff._fullurl);
                new JSROOT.TFile(fff._fullurl, ReadFileObject);
             }
          }
@@ -7782,7 +7780,7 @@
 
             if (painter==null) {
                if (updating) {
-                  console.log("something went wrong - did not found painter when doing update of " + itemname);
+                  JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
                } else {
                   var frame = mdi.FindFrame(itemname, true);
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
@@ -7898,7 +7896,7 @@
             h.display(items[i], options[i], function(painter, itemname) {
                // one cannot use index i in callback - it is asynchron
                var indx = items.indexOf(itemname);
-               if (indx<0) return console.log('did not found item ' + itemname);
+               if (indx<0) return JSROOT.console('did not found item ' + itemname);
 
                items[indx] = "---"; // mark item as ready
 
@@ -8798,7 +8796,7 @@
       }
 
       if (can_painter)
-          console.log("Cannot find painter to update object of type " + obj._typename);
+          JSROOT.console("Cannot find painter to update object of type " + obj._typename);
 
       d3.select("#"+divid).html("");
       return JSROOT.draw(divid, obj, opt);
@@ -8815,7 +8813,7 @@
  (function(){
 
  Amore_String_Streamer = function(buf, obj, prop, streamer) {
-    console.log("read property " + prop + " of typename " + streamer[prop]['typename']);
+    JSROOT.console("read property " + prop + " of typename " + streamer[prop]['typename']);
     obj[prop] = buf.ReadTString();
  }
 
