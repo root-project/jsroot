@@ -156,7 +156,7 @@
       }
 
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
-      if ((mathjax!=null) && (mathjax!=0)) JSROOT.MathJax = 1;
+      if ((mathjax!=null) && (mathjax!="0")) JSROOT.MathJax = 1;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
    }
