@@ -8554,7 +8554,7 @@
             content += "</table></div>";
 
             main.html(content);
-            main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px'});
+            main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px', 'overflow' : 'hidden'});
          }
 
          main = d3.select( "#" + topid + "_" + this.cnt);
