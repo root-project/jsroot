@@ -83,22 +83,6 @@ When starting THttpServer, one could specify:
 
     serv = new THttpServer("fastcgi:9000");
 
-An example of configuration file for lighttpd server is:
-
-    server.modules += ( "mod_fastcgi" )
-    fastcgi.server = (
-       "/remote_scripts/" =>
-         (( "host" => "192.168.1.11",
-            "port" => 9000,
-            "check-local" => "disable",
-            "docroot" => "/"
-         ))
-    )
-
-In this case, to access a running ROOT application, one should open the following address in the web browser:
-
-    http://lighttpd_hostname/remote_scripts/root.cgi/
-
 In fact, the FastCGI interface can run in parallel to http server. One can just call:
 
     serv = new THttpServer("http:8080");
@@ -109,6 +93,41 @@ One could specify a debug parameter to be able to adjust the FastCGI configurati
     serv->CreateEngine("fastcgi:9000?debug=1");
 
 All user access will be ruled by the main web server - for the moment one cannot restrict access with fastcgi engine.
+
+### Configure fastcgi with Apcahe2
+
+First of all, one should compile and install [mod_fastcgi](http://www.fastcgi.com) module.
+Than *mod_fastcgi* should be specified in httpd.conf to load it when Apache server is started.
+Finally in host configuration file one should have following lines:
+
+     <IfModule mod_fastcgi.c>
+        FastCgiExternalServer "/srv/www/htdocs/root.app" -host your_host_name:9000
+     </IfModule>
+
+Here is supposed that directory "/srv/www/htdocs" is root directory for web server.
+Than one should be able to open address  
+     
+     http://apache_host_name/root.app/ 
+  
+
+### Configure fastcgi with lighttpd
+
+An example of configuration file for *lighttpd* server is:
+
+    server.modules += ( "mod_fastcgi" )
+    fastcgi.server = (
+       "/root.app" =>
+         (( "host" => "192.168.1.11",
+            "port" => 9000,
+            "check-local" => "disable",
+            "docroot" => "/"
+         ))
+    )
+
+Be aware, that with *lighttpd* here one should specify IP address of the host, where ROOT application is running. Address of the ROOT application will be following:
+
+    http://lighttpd_hostname/root.app/
+
 
 
 ## Integration with existing applications
