@@ -8456,22 +8456,28 @@
    JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var node = d3.select("#"+this.frameid);
-      if (!node.empty() && node.property('title') != '')
+      var node = d3.select("#"+this.frameid + "_simple_display");
+      if (!node.empty())
          JSROOT.CallBack(userfunc, node.node());
    }
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
-      return d3.select("#"+this.frameid).html("").property('title', title).node();
+
+      return d3.select("#"+this.frameid)
+               .html("")
+               .append("div")
+               .attr("id", this.frameid + "_simple_display")
+               .style("width", "100%")
+               .style("height", "100%")
+               .style("overflow" ,"hidden")
+               .property("title", title)
+               .node();
    }
 
    JSROOT.SimpleDisplay.prototype.Reset = function() {
       JSROOT.MDIDisplay.prototype.Reset.call(this);
       // try to remove different properties from the div
-      d3.select("#"+this.frameid)
-              .property('title','')
-              .style('background','')
-              .classed({'ui-droppable':false, 'ui-state-default':false});
+      d3.select("#"+this.frameid).html("");
    }
 
    // ================================================
