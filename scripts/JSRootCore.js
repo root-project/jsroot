@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "dev 28/04/2015";
+   JSROOT.version = "3.5 28/04/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
