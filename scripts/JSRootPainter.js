@@ -998,15 +998,22 @@
          main.node().firstChild['painter'] = this;
    }
 
-   JSROOT.TBasePainter.prototype.SetItemName = function(name) {
-      if (name==null)
+   JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
+      if (name==null) {
          delete this['_hitemname'];
-      else
+         delete this['_hdrawopt'];
+      } else {
          this['_hitemname'] = name;
+         this['_hdrawopt'] = opt;
+      }
    }
 
    JSROOT.TBasePainter.prototype.GetItemName = function() {
       return ('_hitemname' in this) ? this['_hitemname'] : null;
+   }
+
+   JSROOT.TBasePainter.prototype.GetItemDrawOpt = function() {
+      return ('_hdrawopt' in this) ? this['_hdrawopt'] : null;
    }
 
 
@@ -7772,6 +7779,8 @@
             } else {
                mdi.ForEachPainter(function(p, frame) {
                   if (p.GetItemName() != itemname) return;
+                  // verify that object was drawn with same option as specified now (if any)
+                  if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                   painter = p;
                   mdi.ActivateFrame(frame);
                   painter.RedrawObject(obj);
@@ -7783,13 +7792,14 @@
                   JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
                } else {
                   var frame = mdi.FindFrame(itemname, true);
+                  d3.select(frame).html("");
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
                   mdi.ActivateFrame(frame);
                   h.enable_dropping(frame, itemname);
                }
             }
 
-            if (painter) painter.SetItemName(itemname); // mark painter as created from hierarchy
+            if (painter) painter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
 
             JSROOT.CallBack(call_back, painter, itemname);
          });
