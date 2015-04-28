@@ -44,15 +44,14 @@
          if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
          document.getElementById('debug').innerHTML = '';
-         
+
          if (JSROOT.GetUrlOption('mathjax')!=null)
             document.getElementById('debug').innerHTML += "<h1>Drawing with <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
          else
             document.getElementById('debug').innerHTML += "<h1>Drawing without <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
 
          document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
-         
-         
+
          JSROOT.Painter.readStyleFromURL();
 
          LoadFile("latex.root", function(file) {
@@ -65,7 +64,7 @@
 
       }
    </script>
-   
+
 </head>
 
 <body>
@@ -90,7 +89,7 @@
   <h3>Example from <a href="https://root.cern.ch/root/html/TMathText.html">TMathText</a> docu</h3>
   <span>Always drawn with MathJax</span>
   <div id="lat5_draw"></div>
-  
+
 </body>
 
 </html>
