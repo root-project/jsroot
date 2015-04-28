@@ -11,6 +11,9 @@
 7. Reuse statistic from histogram itself, when no axis selection done 
 8. Support log/lin z scale for color drawing
 9. Implement interactive z-scale selection on TPaletteAxis 
+10. Allow to redraw item with other draw options (before one should clear drawings)
+11. Several improvements in THttpServer user interface - repair hierarchy reload,
+    hide unsupported context menu entries, status line update 
 
 
 ## Changes in 3.4

@@ -301,11 +301,9 @@
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
          var func = JSROOT.findFunction(status_item._status);
-         var hdiv = func==null ? null : JSROOT.Painter.ConfigureHSeparator(30);
-         if (hdiv != null) {
-            // painter.CreateStatus(28);
+         var hdiv = (typeof func == 'function') ? JSROOT.Painter.ConfigureHSeparator(30) : null;
+         if (hdiv != null)
             func(hdiv, this.itemFullName(status_item));
-         }
       }
 
       JSROOT.CallBack(callback);
@@ -937,7 +935,7 @@
    JSROOT.Painter.ConfigureHSeparator = function(height, onlyleft) {
 
       if ((JSROOT.Painter.separ == null) ||
-          (JSROOT.Painter.horizontal != null)) return null;
+          (JSROOT.Painter.separ.horizontal != null)) return null;
 
       JSROOT.Painter.separ['horizontal'] = 'horizontal-separator-div';
       JSROOT.Painter.separ['bottom'] = 'bottom-div';
