@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 3.5
 1. Fix error in vertical text alignment
 2. Many improvements in TPaletteAxis drawing - draw label, avoid too large ticks.
 3. Fix error with col drawing - bin with maximum value got wrong color  
