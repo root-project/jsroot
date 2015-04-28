@@ -593,7 +593,7 @@
          else
             lst_jq += "$$$scripts/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
-            JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11");
+            JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
          else
             lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
 

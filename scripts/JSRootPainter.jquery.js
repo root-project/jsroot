@@ -389,6 +389,9 @@
          if (cando.display)
             return this.display(itemname);
 
+         if ('_player' in hitem)
+            return this.player(itemname);
+
          if (cando.execute)
             return this.ExecuteCommand(itemname, node);
 
@@ -412,8 +415,6 @@
       if (hitem==null) return;
 
       var cando = this.CheckCanDo(hitem);
-
-      // if (!cando.display && !cando.ctxt && (itemname!="")) return;
 
       var painter = this;
 

@@ -7621,7 +7621,7 @@
 
       if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
 
-      if ('_player' in node) { cando.display = true; cando.monitor = false; }
+      if ('_player' in node) cando.monitor = false;
       if ('_icon' in node) cando.img1 = node['_icon'];
       if ('_icon2' in node) cando.img2 = node['_icon2'];
 
@@ -7928,8 +7928,11 @@
    }
 
    JSROOT.HierarchyPainter.prototype.reload = function() {
+      var hpainter = this;
       if ('_online' in this.h)
-         this.OpenOnline(this.h['_online']);
+         this.OpenOnline(this.h['_online'], function() {
+            hpainter.RefreshHtml();
+         });
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname) {
@@ -8154,9 +8157,9 @@
       if (cando.display)
          menu.addDrawMenu("Draw in new window", opts, function(arg) { window.open(drawurl+separ+"opt=" +arg); });
 
-      if (cando.display)
-         menu.add("Draw as png", function() {
-            window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=");
+      if (cando.display && (opts!=null) && (opts.length > 0))
+         menu.addDrawMenu("Draw as png", opts, function(arg) {
+            window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=" + arg);
          });
 
       if ('_player' in node)
