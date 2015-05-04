@@ -12,7 +12,7 @@ To start the http server, at any time, create an instance of the [THttpServer](h
 
     serv = new THttpServer("http:8080");
 
-This will start a civetweb-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (IE9, Firefox, Chrome, Opera) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
+This will start a [civetweb](https://github.com/bel2125/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (IE9, Firefox, Chrome, Opera) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
 
 There is a [snapshot (frozen copy)](https://root.cern.ch/js/3.5/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://root.cern.ch/gitweb?p=root.git;a=blob_plain;f=tutorials/http/httpserver.C;hb=HEAD) macro from ROOT tutorial.
 
@@ -97,15 +97,15 @@ All user access will be ruled by the main web server - for the moment one cannot
 ### Configure fastcgi with Apcahe2
 
 First of all, one should compile and install [mod_fastcgi](http://www.fastcgi.com) module.
-Than *mod_fastcgi* should be specified in httpd.conf to load it when Apache server is started.
+Then *mod_fastcgi* should be specified in httpd.conf to load it when Apache server is started.
 Finally in host configuration file one should have following lines:
 
      <IfModule mod_fastcgi.c>
-        FastCgiExternalServer "/srv/www/htdocs/root.app" -host your_host_name:9000
+        FastCgiExternalServer "/srv/www/htdocs/root.app" -host rootapp_host_name:9000
      </IfModule>
 
 Here is supposed that directory "/srv/www/htdocs" is root directory for web server.
-Than one should be able to open address  
+Than one should be able to open address:  
      
      http://apache_host_name/root.app/ 
   
@@ -124,9 +124,9 @@ An example of configuration file for *lighttpd* server is:
          ))
     )
 
-Be aware, that with *lighttpd* here one should specify IP address of the host, where ROOT application is running. Address of the ROOT application will be following:
+Be aware, that with *lighttpd* one should specify IP address of the host, where ROOT application is running. Address of the ROOT application will be following:
 
-    http://lighttpd_hostname/root.app/
+    http://lighttpd_host_name/root.app/
 
 
 
@@ -204,39 +204,27 @@ If the access to the server is restricted with htdigest, it is recommended to us
     [shell] curl --user "accout:password" http://localhost:8080/Objects/subfolder/obj/root.json --digest -o root.json
 
 
-### Access to object data in JSON format
+### Objects data access in JSON format
 
-Request `root.json` implemented with [TBufferJSON](https://root.cern.ch/root/html/TBufferJSON.html) class.
-TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern.ch/js/) for drawing.
-`root.json` returns either complete object or just object member like:
+Request `root.json` implemented with [TBufferJSON](https://root.cern.ch/root/html/TBufferJSON.html) class. TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern.ch/js/) for drawing. `root.json` request returns either complete object or just object member like:
 
     [shell] wget http://localhost:8080/Objects/subfolder/obj/fTitle/root.json
 
 The result will be: "title".
 
-For the `root.json` request one could specify the 'compact' parameter,
-which allow to reduce the number of spaces and new lines without data lost.
-This parameter can have values from '0' (no compression) till '3' (no spaces and new lines at all).
+For the `root.json` request one could specify the 'compact' parameter, which allow to reduce the number of spaces and new lines without data lost. This parameter can have values from '0' (no compression) till '3' (no spaces and new lines at all).
 
-Usage of `root.json` request is about as efficient as binary `root.bin` request.
-Comparison of different request methods with TH1 object shown in the table:
+Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH1 object shown in the table:
 
-+-------------------------+------------+
-| Request                 |    Size    |
-+-------------------------+------------+
-| root.bin                | 1658 bytes |
-+-------------------------+------------+
-| root.bin.gz             |  782 bytes |
-+-------------------------+------------+
-| root.json               | 7555 bytes |
-+-------------------------+------------+
-| root.json?compact=3     | 5381 bytes |
-+-------------------------+------------+
-| root.json.gz?compact=3  | 1207 bytes |
-+-------------------------+------------+
+   | Request                 |    Size    |
+   |------------------------:|:-----------|
+   | root.bin                | 1658 bytes |
+   | root.bin.gz             |  782 bytes |
+   | root.json               | 7555 bytes |
+   | root.json?compact=3     | 5381 bytes |
+   | root.json.gz?compact=3  | 1207 bytes |
 
-One should remember that json always includes names of the data fields which are not present in the binary representation.
-Even then, the size difference is negligible.
+One should remember that JSON representation always includes names of the data fields which are not present in the binary representation. Even then the size difference is negligible.
 
 `root.json` used in JSROOT to request objects from THttpServer.
 
@@ -257,8 +245,7 @@ For all such requests one could specify following parameters:
 
 ### Methods execution
 
-By default THttpServer starts in monitoring (read-only) mode and therefore forbid any methods execution.
-One could specify read-write mode when server is started:
+By default THttpServer starts in monitoring (read-only) mode and therefore forbid any methods execution. One could specify read-write mode when server is started:
 
     serv = new THttpServer("http:8080;rw");
 
@@ -271,7 +258,7 @@ Or one could disable read-only mode with the call:
    - `method` - name of method to execute
    - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern.ch/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
    - `compact` - compact parameter, used to compress return value
-   - `_ret_object_` - name of the object which should be returned as result of method execution (used in TTree::Draw call)
+   - `_ret_object_` - name of the object which should be returned as result of method execution (used together with remote TTree::Draw call)
 
 Example of retrieving object title:
 
@@ -281,7 +268,7 @@ Example of TTree::Draw method execution:
 
     [shell] wget 'http://localhost:8080/Files/job1.root/ntuple/exe.json?method=Draw&prototype="Option_t*"&opt="px:py>>h1"&_ret_object_=h1' -O exe.json
 
-To get debug information about command execution, one could submit 'exe.txt' request with same arguments.
+To get debug information about command execution, one could submit `exe.txt` request with same arguments.
 
 
 ### Commands execution
@@ -294,4 +281,4 @@ It can be invoked with `cmd.json` request like:
 
     [shell] wget http://localhost:8080/Folder/Start/cmd.json -O result.txt
 
-If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution
+If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution.
