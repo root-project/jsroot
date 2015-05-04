@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "dev 29/04/2015";
+   JSROOT.version = "dev 4/05/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -615,7 +615,7 @@
       if (pos>=0) allfiles += kind.slice(pos+5);
 
       JSROOT.loadScript(allfiles, function() {
-         if (typeof JSROOT.load_jquery == 'object') {
+         if ((JSROOT.load_jquery!=null) && ('define' in JSROOT.load_jquery)) {
             define = JSROOT.load_jquery.define;
             JSROOT.load_jquery = true;
          }
