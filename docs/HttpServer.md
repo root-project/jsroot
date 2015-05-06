@@ -217,7 +217,7 @@ For the `root.json` request one could specify the 'compact' parameter, which all
 Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH1 object shown in the table:
 
 | Request                 |    Size    |
-| ----------------------: | :--------- |
+| :---------------------- | :--------- |
 | root.bin                | 1658 bytes |
 | root.bin.gz             |  782 bytes |
 | root.json               | 7555 bytes |

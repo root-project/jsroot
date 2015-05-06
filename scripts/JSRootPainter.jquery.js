@@ -88,7 +88,7 @@
             .attr('class', 'ctxmenu')
             .css('font-size', '80%')
             .menu({
-             //  items: "> :not(.ui-widget-header)",
+               items: "> :not(.ui-widget-header)",
                select: function( event, ui ) {
                   var arg = ui.item.attr('arg');
                   var cnt = ui.item.attr('cnt');
