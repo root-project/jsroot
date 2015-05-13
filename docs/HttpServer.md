@@ -76,8 +76,7 @@ After that, the web browser will automatically request to input a name/password 
 
 ## Using FastCGI interface
 
-FastCGI is a protocol for interfacing interactive programs with a web server like
-Apache, lighttpd, Microsoft ISS and many others.
+[FastCGI](http://en.wikipedia.org/wiki/FastCGI) is a protocol for interfacing interactive programs with a web server like Apache, lighttpd, Microsoft ISS and many others.
 
 When starting THttpServer, one could specify:
 
@@ -144,10 +143,10 @@ The first method is to configure an asynchronous timer for the server, like for 
 
     serv->SetTimer(100, kFALSE);
 
-Then, the timer will be activated even without any gSystem->ProcessEvents() method call. The main advantage of such method is that the application code can be used as it is. The disadvantage - there is no control when the communication between the server and the application is performed. It could happen just in-between of **`TH1::Fill()`** calls and an histogram object may be incomplete.
+Then, the timer will be activated even without any gSystem->ProcessEvents() method call. The main advantage of such method is that the application code can be used without any modifications. But there is no control when access to the application data is performed. It could happen just in-between of **`TH1::Fill()`** calls and an histogram object may be incomplete. Therefore such method is not recommended. 
 
 
-### Explicit call of THttpServer::ProcessRequests() method
+### Regular calls of THttpServer::ProcessRequests() method
 
 The second method is preferable - one just inserts in the application regular calls of the THttpServer::ProcessRequests() method, like:
 
