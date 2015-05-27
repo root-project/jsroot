@@ -8089,7 +8089,7 @@
                var drawopt = item['_drawopt'];
                if (JSROOT.canDraw(typename) && (drawopt==null)) return;
                var func = JSROOT.findFunction(item['_drawfunc']);
-               if (func) JSROOT.addDrawFunc(typename, func, drowopt);
+               if (func) JSROOT.addDrawFunc(typename, func, drawopt);
 
                if (item['_drawscript'] != null)
                   JSROOT.addDrawFunc(typename, { script:item['_drawscript'], func: item['_drawfunc']} , drawopt);
