@@ -7630,19 +7630,35 @@
 
    JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
       // execute item marked as 'Command'
+      // If command requires additional arguments, they could be specified as extra arguments
+      // Or they will be requested interactive
 
       var hitem = this.Find(itemname);
       var url = itemname + "/cmd.json";
+      var pthis = this;
+
+      if ('_numargs' in hitem)
+         for (var n=0;n<hitem._numargs;n++) {
+            var argname = "arg" + (n+1);
+            var argvalue = null;
+            if (n+2<arguments.length) argvalue = arguments[n+2];
+            if ((argvalue==null) && (typeof callback == 'object'))
+               argvalue = prompt("Input argument " + argname + " for command " + hitem._name,"");
+            if (argvalue==null) return;
+            url += ((n==0) ? "?" : "&") + argname + "=" + argvalue;
+         }
+
       if ((callback!=null) && (typeof callback == 'object')) {
          callback.css('background','yellow');
          if (hitem && hitem._title) callback.attr('title', "Executing " + hitem._title);
       }
       var req = JSROOT.NewHttpRequest(url, 'text', function(res) {
-         if (typeof callback=='function') return callback(res);
-         if ((callback!=null) && (typeof callback == 'object')) {
+         if (typeof callback == 'function') return callback(res);
+         if ((callback != null) && (typeof callback == 'object')) {
             var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
             if (hitem && hitem._title) callback.attr('title', hitem._title + " lastres=" + res);
             callback.animate({ backgroundColor: col}, 2000, function() { callback.css('background', ''); });
+            if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
          }
       });
       req.send();
