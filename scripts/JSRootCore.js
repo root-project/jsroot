@@ -575,8 +575,10 @@
       }
 
       if (kind.indexOf("mathjax;")>=0) {
-         allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
-                      JSROOT.source_dir + "scripts/mathjax_config.js;";
+         if (typeof MathJax == 'undefined') {
+            allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
+                         JSROOT.source_dir + "scripts/mathjax_config.js;";
+         }
          if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
       }
 
