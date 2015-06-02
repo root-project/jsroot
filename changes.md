@@ -1,10 +1,12 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Try to provide workaround for websites where requirejs already loaded.
+1. Try to provide workaround for websites where require.js already loaded.
    This makes problem by direct loading of jquery and jquery-ui 
 2. Provide workaround for older version of jquery-ui 
 3. Prompt for input of command arguments
+4. After command execution one could automatically reload hierarchy (_hreload property) or
+   update view of displayed object (_update_item property)    
 
 
 ## Changes in 3.5

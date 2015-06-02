@@ -8084,19 +8084,23 @@
             return false;
          }
 
-         var scripts = "";
+         var scripts = "", modules = "";
 
          painter.ForEach(function(item) {
             if (!('_autoload' in item)) return;
             var arr = item['_autoload'].split(";");
             for (var n in arr)
-               if (scripts.indexOf(arr[n])<0) scripts += arr[n] + ";";
+               if (arr[n].indexOf(".js")<0) {
+                  if (modules.indexOf(arr[n])<0) modules += arr[n] + ";";
+               } else {
+                  if (scripts.indexOf(arr[n])<0) scripts += arr[n] + ";";
+               }
          });
 
          if (scripts.length > 0) scripts = "user:" + scripts;
 
          // use AssertPrerequisites, while it protect us from race conditions
-         JSROOT.AssertPrerequisites(scripts, function() {
+         JSROOT.AssertPrerequisites(modules + scripts, function() {
 
             painter.ForEach(function(item) {
                if (!('_drawfunc' in item)) return;
