@@ -8090,7 +8090,7 @@
             if (!('_autoload' in item)) return;
             var arr = item['_autoload'].split(";");
             for (var n in arr)
-               if (arr[n].indexOf(".js")<0) {
+               if ((arr[n].indexOf(".js")<0) && (arr[n].indexOf(".css")<0)) {
                   if (modules.indexOf(arr[n])<0) modules += arr[n] + ";";
                } else {
                   if (scripts.indexOf(arr[n])<0) scripts += arr[n] + ";";
