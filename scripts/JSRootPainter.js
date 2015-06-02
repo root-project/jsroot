@@ -8040,6 +8040,13 @@
             req = 'item.json.gz?compact=3';
       }
 
+      if ((itemname==null) && (item!=null) && ('_cached_draw_object' in this) && (req.indexOf("root.json.gz")==0)) {
+         // special handling for drawGUI when cashed
+         var obj = this['_cached_draw_object'];
+         delete this['_cached_draw_object'];
+         return JSROOT.CallBack(callback, item, obj);
+      }
+
       if (url.length > 0) url += "/";
       url += req;
 
@@ -8361,12 +8368,13 @@
 
    JSROOT.BuildNobrowserGUI = function() {
       var myDiv = d3.select('#simpleGUI');
-      var online = false;
+      var online = false, drawing = false;
 
       if (myDiv.empty()) {
-         myDiv = d3.select('#onlineGUI');
-         if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
          online = true;
+         myDiv = d3.select('#onlineGUI');
+         if (myDiv.empty()) { myDiv = d3.select('#drawGUI'); drawing = true; }
+         if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
       }
 
       JSROOT.Painter.readStyleFromURL();
@@ -8386,7 +8394,13 @@
          if (typeof h0 != 'object') h0 = "";
       }
 
-      hpainter.StartGUI(h0, function() {});
+      hpainter.StartGUI(h0, function() {
+         if (!drawing) return;
+         var func = JSROOT.findFunction('GetCachedObject');
+         var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
+         if (obj!=null) hpainter['_cached_draw_object'] = obj;
+         hpainter.display("");
+      });
    }
 
    // ================================================================
