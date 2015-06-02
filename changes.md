@@ -7,6 +7,8 @@
 3. Prompt for input of command arguments
 4. After command execution one could automatically reload hierarchy (_hreload property) or
    update view of displayed object (_update_item property)    
+5. Use HiearchyPainter for implementing draw.htm. This let us handle
+   all different kinds of extra attributes in central place 
 
 
 ## Changes in 3.5
