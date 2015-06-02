@@ -7659,6 +7659,7 @@
             if (hitem && hitem._title) callback.attr('title', hitem._title + " lastres=" + res);
             callback.animate({ backgroundColor: col}, 2000, function() { callback.css('background', ''); });
             if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
+            if ((col == 'green') && ('_update_item' in hitem)) pthis.display(hitem._update_item,"update");
          }
       });
       req.send();
@@ -7849,7 +7850,6 @@
       if (mdi == null) return;
 
       var allitems = [], options = [], hpainter = this;
-
 
       // first collect items
       mdi.ForEachPainter(function(p) {
