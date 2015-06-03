@@ -114,14 +114,17 @@
          LoadFile("glbox.root", function(file) {
             draw_item_options(file, "h31;1", "h3_draw", "");
          });
-         
+
          LoadFile("graph.root", function(file) {
             draw_item_options(file, "Graph;1", "gr_draw", ";L;P");
          });
 
-
          LoadFile("fillrandom.root", function(file) {
             draw_item_options(file, "sqroot;1", "f1_draw", "");
+         });
+
+         LoadFile("ip0.root", function(file) {
+            draw_item_options(file, "c;1", "f1_draw2", "");
          });
 
          LoadFile("latex.root", function(file) {
@@ -144,7 +147,7 @@
             LoadFile("JPsi_evolution.root", function(file) {
                draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
             });
-         
+
          LoadFile("stacks.root", function(file) {
             draw_item_options(file, "stacks;1", "can5_draw", "", 0.);
          });
@@ -197,6 +200,7 @@
   <h1>TF1 class</h1> 
 
   <div id="f1_draw"></div>
+  <div id="f1_draw2"></div>
 
   <h1>TPaveText class</h1> 
 
