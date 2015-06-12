@@ -73,6 +73,25 @@ It is recommended not to use special symbols in domain or user names. Several us
 
 After that, the web browser will automatically request to input a name/password for the domain "domain_name"
 
+Based on authorized accounts, one could restrict or enable access to some elements in the server objects hierarchy, using THttpServer::Restrict() method.
+
+For instance, one could hide complete folder from 'guest' account:
+
+    root [6]  serv->Restrict("/Folder",  "hidden=guest");
+     
+Or one could hide from all but 'admin' account:  
+
+    root [7]  serv->Restrict("/Folder",  "visible=admin");
+    
+Hidden folders or objects can not be accessed via http protocol.
+
+By default server runs in readonly mode and do not allow methods execution via 'exe.json' or 'exe.bin' requests. To allow such action, one could either grant generic access for all or one could allow to execute only special method:
+
+    root [8]  serv->Restrict("/Folder/histo1",  "allow=all");
+    root [9]  serv->Restrict("/Folder/histo1",  "allow_method=GetTitle");
+
+Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern.ch/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation
+
 
 ## Using FastCGI interface
 
