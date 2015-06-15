@@ -90,7 +90,11 @@ By default server runs in readonly mode and do not allow methods execution via '
     root [8]  serv->Restrict("/Folder/histo1",  "allow=all");
     root [9]  serv->Restrict("/Folder/histo1",  "allow_method=GetTitle");
 
-Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern.ch/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation
+One could provide several options for the same item, separating them with '&' sign:
+
+    root [10]  serv->Restrict("/Folder/histo1",  "allow_method=GetTitle&hide=guest");
+ 
+Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern.ch/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation.
 
 
 ## Using FastCGI interface
@@ -203,15 +207,18 @@ Then, its representation will look like:
 
 The following requests can be performed:
 
-  - `root.bin`  - binary data produced by object streaming with TBufferFile
-  - `root.json` - ROOT JSON representation for object and objects members
-  - `root.xml`  - ROOT XML representation
-  - `root.png`  - PNG image (if object drawing implemented)
-  - `root.gif`  - GIF image
-  - `root.jpeg` - JPEG image
-  - `exe.json`  - method execution in the object
-  - `cmd.json`  - command execution
-  - `item.json` - item (object) properties, specified on the server
+  - `root.bin`   - binary data produced by object streaming with TBufferFile
+  - `root.json`  - ROOT JSON representation for object and objects members
+  - `root.xml`   - ROOT XML representation
+  - `root.png`   - PNG image (if object drawing implemented)
+  - `root.gif`   - GIF image
+  - `root.jpeg`  - JPEG image
+  - `exe.json`   - method execution in the object
+  - `exe.bin`    - method execution, return result in binary form
+  - `cmd.json`   - command execution
+  - `item.json`  - item (object) properties, specified on the server
+  - `multi.json` - perform several requests at once
+  - `multi.bin`  - perform several requests at once, return result in binary form
 
 All data will be automatically zipped if '.gz' extension is appended. Like:
 
@@ -271,8 +278,13 @@ Or one could disable read-only mode with the call:
 
     serv->SetReadOnly(kFALSE);
 
-'exe.json' accepts following parameters:
+Or one could allow access to the folder, object or specific object methods with:
 
+    serv->Restrict("/Histograms", "allow=admin"); // allow full access for user with 'admin' accout 
+    serv->Restrict("/Histograms/hist1", "allow=all"); // allow full access for all users 
+    serv->Restrict("/Histograms/hist1", "allow_method=Rebin"); // allow only Rebin method 
+    
+'exe.json' accepts following parameters:
    - `method` - name of method to execute
    - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern.ch/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
    - `compact` - compact parameter, used to compress return value
@@ -280,11 +292,24 @@ Or one could disable read-only mode with the call:
 
 Example of retrieving object title:
 
-    [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=GetTitle' -O title.txt
+    [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=GetTitle' -O title.json
 
 Example of TTree::Draw method execution:
 
     [shell] wget 'http://localhost:8080/Files/job1.root/ntuple/exe.json?method=Draw&prototype="Option_t*"&opt="px:py>>h1"&_ret_object_=h1' -O exe.json
+
+One also used `exe.bin` method - in this case results of method execution will be returned in binary format. 
+In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
+
+    [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=Clone&_destroy_result_' -O clone.json
+
+If method required object as argument, it could be posted in binary or XML format as POST request. If binary form is used, one should specify following parameters:
+ 
+    [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_&_post_class_=TH1I&c1=10' --post-file=h.bin -O res.json
+
+Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern.ch/root/html/TBufferXML.html#TBufferXML:ConvertToXML)) method, only string with XML code could be specified:
+
+    [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_xml_&c1=10' --post-file=h.xml -O res.json
 
 To get debug information about command execution, one could submit `exe.txt` request with same arguments.
 
@@ -300,3 +325,27 @@ It can be invoked with `cmd.json` request like:
     [shell] wget http://localhost:8080/Folder/Start/cmd.json -O result.txt
 
 If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution.
+
+
+### Performing multiple requests at once
+
+To minimize traffic between sever and client, one could submit several requests at once. This is especially useful when big number of small objects should be requestsed simultaneosely. For this purposes `multi.bin` or `multi.json` requests could be used.
+Both require string as POST data which format as:
+
+    subfolder/item1/root.json\n
+    subfolder/item2/root.json\n
+    subfolder/item1/exe.json?method=GetTitle\n
+
+If such requests saved in 'req.txt' file, one could submit it with command:
+
+    [shell] wget http://localhost:8080/multi.json?number=3 --post-file=req.txt -O result.json
+
+For `multi.json` request one could use only requests, returning JSON format (like `root.json` or `exe.json`). Result will be JSON array.
+For `multi.bin` any kind of requests can be used. It returns binary buffer with following content:
+
+    [size1 (little endian), 4 bytes] + [request1 result, size1 bytes]
+    [size2 (little endian), 4 bytes] + [request2 result, size2 bytes]  
+    [size3 (little endian), 4 bytes] + [request3 result, size3 bytes]  
+
+While POST data in request used to transfer list of multiple reqeusts, it is not possible to submit
+such kind of requests, which themselvs require data from POST block.  
