@@ -7822,8 +7822,8 @@
                } else {
                   var frame = mdi.FindFrame(itemname, true);
                   d3.select(frame).html("");
-                  painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
                   mdi.ActivateFrame(frame);
+                  painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
                   h.enable_dropping(frame, itemname);
                }
             }
