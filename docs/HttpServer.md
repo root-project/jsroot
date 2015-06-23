@@ -19,6 +19,24 @@ There is a [snapshot (frozen copy)](https://root.cern.ch/js/3.5/httpserver.C/) o
 <iframe width="800" height="500" src="https://root.cern.ch/js/3.5/httpserver.C/?layout=simple&item=Canvases/c1">
 </iframe>
 
+One could specify several options when creating http server. They could be add as additional URL parameters to the constructor arguments like:
+
+    serv = new THttpServer("http:8080?loopback&thrds=2");
+
+Following parameters are supported:
+
+   - thrds=N   - number of threads used by the civetweb (default is 5)
+   - top=name  - configure top name, visible in the web browser
+   - auth_file=filename  - authentication file name, created with htdigets utility
+   - auth_domain=domain   - authentication domain
+   - loopback  - bind specified port to loopback 127.0.0.1 address
+   - debug  - enable debug mode, server always returns html page with request info
+
+If necessary, one could bind http server to specific IP address like:
+
+    new THttpServer("http:192.168.1.17:8080")
+
+
 
 ## Registering objects
 
