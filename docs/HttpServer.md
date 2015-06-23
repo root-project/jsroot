@@ -96,11 +96,11 @@ Based on authorized accounts, one could restrict or enable access to some elemen
 For instance, one could hide complete folder from 'guest' account:
 
     root [6]  serv->Restrict("/Folder",  "hidden=guest");
-     
-Or one could hide from all but 'admin' account:  
+
+Or one could hide from all but 'admin' account:
 
     root [7]  serv->Restrict("/Folder",  "visible=admin");
-    
+
 Hidden folders or objects can not be accessed via http protocol.
 
 By default server runs in readonly mode and do not allow methods execution via 'exe.json' or 'exe.bin' requests. To allow such action, one could either grant generic access for all or one could allow to execute only special method:
@@ -145,10 +145,10 @@ Finally in host configuration file one should have following lines:
      </IfModule>
 
 Here is supposed that directory "/srv/www/htdocs" is root directory for web server.
-Than one should be able to open address:  
-     
-     http://apache_host_name/root.app/ 
-  
+Than one should be able to open address:
+
+     http://apache_host_name/root.app/
+
 
 ### Configure fastcgi with lighttpd
 
@@ -362,8 +362,8 @@ For `multi.json` request one could use only requests, returning JSON format (lik
 For `multi.bin` any kind of requests can be used. It returns binary buffer with following content:
 
     [size1 (little endian), 4 bytes] + [request1 result, size1 bytes]
-    [size2 (little endian), 4 bytes] + [request2 result, size2 bytes]  
-    [size3 (little endian), 4 bytes] + [request3 result, size3 bytes]  
+    [size2 (little endian), 4 bytes] + [request2 result, size2 bytes]
+    [size3 (little endian), 4 bytes] + [request3 result, size3 bytes]
 
 While POST data in request used to transfer list of multiple reqeusts, it is not possible to submit
-such kind of requests, which themselvs require data from POST block.  
+such kind of requests, which themselvs require data from POST block.
