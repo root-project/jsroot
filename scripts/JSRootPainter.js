@@ -44,6 +44,7 @@
       DefaultCol : 1,  // default col option 1-svg, 2-canvas
       AutoStat : true,
       OptStat  : 1111,
+      OptFit   : 0,
       StatNDC  : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
       StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
       StatFill : { fFillColor: 0, fFillStyle: 1001 },
@@ -2840,7 +2841,7 @@
           .call(attline.func);
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-      var stepy = height / nlines;
+      var stepy = height / nlines, has_head = false;
       var margin_x = pavetext['fMargin'] * width;
 
       this.StartTextDrawing(pavetext['fTextFont'], height/(nlines * 1.2));
@@ -2860,8 +2861,9 @@
                      this.DrawText("middle",
                                     width * n / num_cols, posy,
                                     width/num_cols, stepy, parts[n], jcolor);
-               } else if ((j == 0) || (lines[j].indexOf('=') < 0)) {
-                   this.DrawText((j == 0) ? "middle" : "start",
+               } else if (lines[j].indexOf('=') < 0) {
+                  if (j==0) has_head = true;
+                  this.DrawText((j == 0) ? "middle" : "start",
                                  margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
                } else {
                   var parts = lines[j].split("="), sumw = 0;
@@ -2878,7 +2880,7 @@
 
       var maxtw = this.FinishTextDrawing();
 
-      if (pavetext['fBorderSize'] && (pavetext['_typename'] == 'TPaveStats')) {
+      if (pavetext['fBorderSize'] && has_head) {
          this.draw_g.append("svg:line")
                     .attr("x1", 0)
                     .attr("y1", stepy.toFixed(1))
@@ -2962,7 +2964,9 @@
       if (!this.IsStats()) return;
 
       var dostat = new Number(this.pavetext['fOptStat']);
-      if (!dostat) dostat = new Number(JSROOT.gStyle.OptStat);
+      var dofit = new Number(this.pavetext['fOptFit']);
+      if (!dostat) dostat = JSROOT.gStyle.OptStat;
+      if (!dofit) dofit = JSROOT.gStyle.OptFit;
 
       // we take histogram from first painter
       if ('FillStatistic' in this.main_painter()) {
@@ -2970,7 +2974,7 @@
          // make empty at the beginning
          this.pavetext['fLines'].arr.length = 0;
 
-         this.main_painter().FillStatistic(this, dostat);
+         this.main_painter().FillStatistic(this, dostat, dofit);
       }
    }
 
@@ -4713,6 +4717,7 @@
       JSROOT.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
                              fOptStat: JSROOT.gStyle.OptStat,
+                             fOptFit: JSROOT.gStyle.OptFit,
                              fBorderSize : 1} );
       JSROOT.extend(stats, JSROOT.gStyle.StatNDC);
       JSROOT.extend(stats, JSROOT.gStyle.StatText);
@@ -4729,6 +4734,16 @@
       this.histo.fFunctions.arr.push(stats);
 
       return stats;
+   }
+
+   JSROOT.THistPainter.prototype.FindF1 = function() {
+      // search for TF1 object in list of functions, it is fitted function
+      if (!('fFunctions' in this.histo))  return null;
+      for ( var i in this.histo.fFunctions.arr) {
+         var func = this.histo.fFunctions.arr[i];
+         if (func['_typename'] == 'TF1') return func;
+      }
+      return null;
    }
 
    JSROOT.THistPainter.prototype.DrawFunctions = function() {
@@ -5386,7 +5401,7 @@
       return res;
    }
 
-   JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat) {
+   JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (!this.histo) return false;
 
       var data = this.CountStat();
@@ -5455,6 +5470,13 @@
 
          if (print_kurt > 0)
             stat.AddLine("Kurt = not avail");
+      }
+
+      if (dofit!=0) {
+         var f1 = this.FindF1();
+         if (f1!=null) {
+            stat.AddLine("#chi^2 / ndf = " + JSROOT.gStyle.StatFormat(f1.fChisquare) + " / " + f1.fNDF);
+         }
       }
 
       // adjust the size of the stats box with the number of lines
@@ -6085,7 +6107,7 @@
       return res;
    }
 
-   JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat) {
+   JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (!this.histo) return false;
 
       var data = this.CountStat();
@@ -6144,6 +6166,12 @@
          stat.pavetext['fY1NDC'] = 0.93 - stath;
          stat.pavetext['fY2NDC'] = 0.93;
       }
+
+//      if (dofit!=0) {
+//         var f1 = this.FindF1();
+//         if (f1!=null) {}
+//      }
+
       return true;
    }
 
