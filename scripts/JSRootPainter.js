@@ -4763,6 +4763,7 @@
       for ( var i in this.histo.fFunctions.arr) {
 
          var func = this.histo.fFunctions.arr[i];
+         var opt = this.histo.fFunctions.opt[i];
 
          var funcpainter = this.FindPainterFor(func);
 
@@ -4771,15 +4772,13 @@
          if (funcpainter != null) continue;
 
          if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-            if (!nostat) funcpainter = JSROOT.Painter.drawPaveText(this.divid, func);
+            if (!nostat)
+               funcpainter = JSROOT.Painter.drawPaveText(this.divid, func, opt);
          } else if (func['_typename'] == 'TF1') {
-            var is_pad = this.root_pad() != null;
-
-            if (!(is_pad && func.TestBit(EStatusBits.kObjInCanvas)) && !func.TestBit(kNotDraw))
-               funcpainter = JSROOT.Painter.drawFunction(this.divid, func);
-
-         } else if (func['_typename'] == 'TPaletteAxis') {
-            funcpainter = JSROOT.Painter.drawPaletteAxis(this.divid, func);
+            if (!func.TestBit(kNotDraw))
+               funcpainter = JSROOT.Painter.drawFunction(this.divid, func, opt);
+         } else {
+            funcpainter = JSROOT.draw(this.divid, func, opt);
          }
       }
    }
