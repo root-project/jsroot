@@ -13,6 +13,8 @@
 7. When drawing several tabs, activate frame before drawing - only then
    real frame size will be set
 8. Fix problem with GetBBox - it only can be used for visible elements in mozilla.    
+9. Support drawing of fit parameters in stat box, use (as far as possible) stat and
+   fit format for statistic display 
 
 
 ## Changes in 3.5

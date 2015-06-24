@@ -49,8 +49,8 @@
       StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
       StatFill : { fFillColor: 0, fFillStyle: 1001 },
       TimeOffset : 788918400000, // UTC time at 01/01/95
-      StatFormat : function(v) { return (Math.abs(v) < 1e5) ? v.toFixed(5) : v.toExponential(7); },
-      StatEntriesFormat : function(v) { return (Math.abs(v) < 1e7) ? v.toFixed(0) : v.toExponential(7); },
+      StatFormat : "6.4g",
+      FitFormat : "5.4g",
       MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
       Palette : null  // color palette, initialized first time when used
    };
@@ -2960,6 +2960,48 @@
       return (this.pavetext['fName'] == "stats") && (this.pavetext['_typename'] == 'TPaveStats');
    }
 
+   JSROOT.Format = function(value, fmt) {
+      if (!fmt) fmt = "6.4g";
+      fmt = fmt.trim();
+      var len = fmt.length;
+      if (len<2) return value.toFixed(4);
+      var last = fmt.charAt(len-1);
+      fmt = fmt.slice(0,len-1);
+      var isexp = null;
+      if ((last=='e') || (last=='E')) { isexp = true; } else
+      if ((last=='f') || (last=='F')) { isexp = false; } else
+      if ((last=='g') || (last=='G')) {
+         var s1 = JSROOT.Format(value, fmt+'e');
+         var s2 = JSROOT.Format(value, fmt+'f');
+         return s2.length <= s1.length ? s2 : s1;
+      } else
+         return value.toFixed(4);
+
+      var pnt = fmt.indexOf(".");
+      if (pnt<0) pnt = 4; else pnt = Number(fmt.slice(pnt+1));
+
+      return isexp ? value.toExponential(pnt) : value.toFixed(pnt);
+   }
+
+   JSROOT.TPavePainter.prototype.Format = function(value, fmt)
+   {
+      if (!fmt) fmt = "stat";
+
+      if (fmt=="stat") {
+         fmt = this.pavetext.fStatFormat;
+         if (!fmt) fmt = JSROOT.gStyle.StatFormat;
+      } else
+      if (fmt=="fit") {
+         fmt = this.pavetext.fFitFormat;
+         if (!fmt) fmt = JSROOT.gStyle.FitFormat;
+      } else
+      if (fmt=="entries") {
+         return value < 1e7 ? value.toFixed(0) : value.toFixed(7);
+      }
+
+      return JSROOT.Format(value, fmt);
+   }
+
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
       if (!this.IsStats()) return;
 
@@ -5422,60 +5464,80 @@
       if (this.IsTProfile()) {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
+            stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(data.meanx));
-            stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(data.meany));
+            stat.AddLine("Mean = " + stat.Format(data.meanx));
+            stat.AddLine("Mean y = " + stat.Format(data.meany));
          }
 
          if (print_rms > 0) {
-            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(data.rmsx));
-            stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(data.rmsy));
+            stat.AddLine("RMS = " + stat.Format(data.rmsx));
+            stat.AddLine("RMS y = " + stat.Format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
+            stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            stat.AddLine("Mean = " + JSROOT.gStyle.StatFormat(data.meanx));
+            stat.AddLine("Mean = " + stat.Format(data.meanx));
          }
 
          if (print_rms > 0) {
-            stat.AddLine("RMS = " + JSROOT.gStyle.StatFormat(data.rmsx));
+            stat.AddLine("RMS = " + stat.Format(data.rmsx));
          }
 
          if (print_under > 0) {
             var res = 0;
             if (this.histo['fArray'].length > 0)
                res = this.histo['fArray'][0];
-            stat.AddLine("Underflow = " + JSROOT.gStyle.StatFormat(res));
+            stat.AddLine("Underflow = " + stat.Format(res));
          }
 
          if (print_over > 0) {
             var res = 0;
             if (this.histo['fArray'].length > 0)
                res = this.histo['fArray'][this.histo['fArray'].length - 1];
-            stat.AddLine("Overflow = " + JSROOT.gStyle.StatFormat(res));
+            stat.AddLine("Overflow = " + stat.Format(res));
          }
 
          if (print_integral > 0) {
-            stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(data.integral));
+            stat.AddLine("Integral = " + stat.Format(data.integral,"entries"));
          }
 
          if (print_skew > 0)
-            stat.AddLine("Skew = not avail");
+            stat.AddLine("Skew = <not avail>");
 
          if (print_kurt > 0)
-            stat.AddLine("Kurt = not avail");
+            stat.AddLine("Kurt = <not avail>");
       }
 
       if (dofit!=0) {
          var f1 = this.FindF1();
          if (f1!=null) {
-            stat.AddLine("#chi^2 / ndf = " + JSROOT.gStyle.StatFormat(f1.fChisquare) + " / " + f1.fNDF);
+            var print_fval    = dofit%10;
+            var print_ferrors = (dofit/10)%10;
+            var print_fchi2   = (dofit/100)%10;
+            var print_fprob   = (dofit/1000)%10;
+
+            if (print_fchi2 > 0)
+               stat.AddLine("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
+            if (print_fprob > 0)
+               stat.AddLine("Prob = <not avail>");
+            if ((print_fval > 0) || (print_ferrors > 0)) {
+               for(var n=0;n<f1.fNpar;n++) {
+                  var parname = (f1.fNames!=null) ? f1.fNames[n] : "Fit par"+ n;
+                  var parvalue = (f1.fParams!=null) ? stat.Format(f1.fParams[n],"fit") : "<not avail>";
+                  var parerr = (f1.fParErrors!=null) ? stat.Format(f1.fParErrors[n],"fit") : "";
+
+                  if ((print_ferrors > 0) && (parerr.length>0))
+                     stat.AddLine(parname + " = " + parvalue + " #pm " + parerr);
+                  else
+                     stat.AddLine(parname + " = " + parvalue);
+               }
+            }
          }
       }
 
@@ -6126,20 +6188,20 @@
          stat.AddLine(this.histo['fName']);
 
       if (print_entries > 0)
-         stat.AddLine("Entries = " + JSROOT.gStyle.StatEntriesFormat(data.entries));
+         stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.AddLine("Mean x = " + JSROOT.gStyle.StatFormat(data.meanx));
-         stat.AddLine("Mean y = " + JSROOT.gStyle.StatFormat(data.meany));
+         stat.AddLine("Mean x = " + stat.Format(data.meanx));
+         stat.AddLine("Mean y = " + stat.Format(data.meany));
       }
 
       if (print_rms > 0) {
-         stat.AddLine("RMS x = " + JSROOT.gStyle.StatFormat(data.rmsx));
-         stat.AddLine("RMS y = " + JSROOT.gStyle.StatFormat(data.rmsy));
+         stat.AddLine("RMS x = " + stat.Format(data.rmsx));
+         stat.AddLine("RMS y = " + stat.Format(data.rmsy));
       }
 
       if (print_integral > 0) {
-         stat.AddLine("Integral = " + JSROOT.gStyle.StatEntriesFormat(data.matrix[4]));
+         stat.AddLine("Integral = " + stat.Format(data.matrix[4],"entries"));
       }
 
       if (print_skew > 0) {
