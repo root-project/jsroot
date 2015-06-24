@@ -91,19 +91,19 @@
       function CreateGui() {
 
          document.getElementById('debug').innerHTML = '';
-         
+
          document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
-         
+
          var arg = "&w=" + JSROOT.GetUrlOption("w", null, "800") + 
                    "&h=" + JSROOT.GetUrlOption("h", null, "600");
          if (JSROOT.GetUrlOption("path")!=null) {
-            global_dir = JSROOT.GetUrlOption("path");               
+            global_dir = JSROOT.GetUrlOption("path");
             arg += "&path=" + global_dir;
          }
 
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?minimal" + arg + "'>Only items/options list</a><br/>"; 
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?default" + arg + "'>Drawings with default options</a><br/>"; 
-         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all" + arg + "'>Drawings for all supported options</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("hsimple.root", function(file) {
             draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;E2");
@@ -168,9 +168,14 @@
                draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3;mathjax=1", 0.);
             });
          }
+
+         LoadFile("danilo.root", function(file) {
+            draw_item_options(file, "canvas;1", "can10_draw", "", 0.);
+         });
+
       }
    </script>
-   
+
 </head>
 
 <body onload="JSROOT.AssertPrerequisites(JSROOT.GetUrlOption('minimal')!=null ? '' : '2d;3d;io', CreateGui, 'debug')">
@@ -217,7 +222,8 @@
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
   <div id="can9_draw"></div>
-  
+  <div id="can10_draw"></div>
+
 </body>
 
 </html>
