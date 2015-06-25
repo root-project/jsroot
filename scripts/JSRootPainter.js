@@ -3031,9 +3031,15 @@
          return value.toExponential(prec);
       }
 
-      var sg = value.toFixed(prec)
+      var sg = value.toFixed(prec);
 
       if (significance) {
+
+         // when using fixed representation, one could get 0.0
+         if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
+            prec = 40; sg = value.toFixed(prec);
+         }
+
          var l = 0;
          while ((l<sg.length) && (sg.charAt(l) == '0' || sg.charAt(l) == '-' || sg.charAt(l) == '.')) l++;
 
@@ -5582,7 +5588,7 @@
                   var parerr = "";
                   if (f1.fParErrors!=null) {
                      parerr = stat.Format(f1.fParErrors[n],"last");
-                     if (parerr=="0" || parerr=="0.0") parerr = stat.Format(f1.fParErrors[n],"4.2g");
+                     if ((Number(parerr)==0.0) && (f1.fParErrors[n]!=0.0)) parerr = stat.Format(f1.fParErrors[n],"4.2g");
                   }
 
                   if ((print_ferrors > 0) && (parerr.length>0))
