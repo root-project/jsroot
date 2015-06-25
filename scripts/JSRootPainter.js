@@ -2965,9 +2965,6 @@
       return (this.pavetext['fName'] == "stats") && (this.pavetext['_typename'] == 'TPaveStats');
    }
 
-   JSROOT.Format = function(value, fmt) {
-   }
-
    JSROOT.TPavePainter.prototype.Format = function(value, fmt)
    {
       // method used to convert value to string according specified format
@@ -2983,7 +2980,8 @@
          if (!fmt) fmt = JSROOT.gStyle.FitFormat;
       } else
       if (fmt=="entries") {
-         return (value < 1e7) ? value.toFixed(0) : value.toExponential(7);
+         if (value < 1e9) return value.toFixed(0);
+         fmt = "14.7g";
       } else
       if (fmt=="last") {
          fmt = this['lastformat'];
