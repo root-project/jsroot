@@ -160,6 +160,11 @@
       if ((mathjax!=null) && (mathjax!="0")) JSROOT.MathJax = 1;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
+
+      JSROOT.gStyle.OptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.OptStat);
+      JSROOT.gStyle.OptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.OptFit);
+      JSROOT.gStyle.StatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.StatFormat);
+      JSROOT.gStyle.FitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.FitFormat);
    }
 
    JSROOT.Painter.Coord = {
@@ -2961,30 +2966,12 @@
    }
 
    JSROOT.Format = function(value, fmt) {
-      if (!fmt) fmt = "6.4g";
-      fmt = fmt.trim();
-      var len = fmt.length;
-      if (len<2) return value.toFixed(4);
-      var last = fmt.charAt(len-1);
-      fmt = fmt.slice(0,len-1);
-      var isexp = null;
-      if ((last=='e') || (last=='E')) { isexp = true; } else
-      if ((last=='f') || (last=='F')) { isexp = false; } else
-      if ((last=='g') || (last=='G')) {
-         var s1 = JSROOT.Format(value, fmt+'e');
-         var s2 = JSROOT.Format(value, fmt+'f');
-         return s2.length <= s1.length ? s2 : s1;
-      } else
-         return value.toFixed(4);
-
-      var pnt = fmt.indexOf(".");
-      if (pnt<0) pnt = 4; else pnt = Number(fmt.slice(pnt+1));
-
-      return isexp ? value.toExponential(pnt) : value.toFixed(pnt);
    }
 
    JSROOT.TPavePainter.prototype.Format = function(value, fmt)
    {
+      // method used to convert value to string according specified format
+      // format can be like 5.4g or 4.2e or 6.4f
       if (!fmt) fmt = "stat";
 
       if (fmt=="stat") {
@@ -2996,10 +2983,72 @@
          if (!fmt) fmt = JSROOT.gStyle.FitFormat;
       } else
       if (fmt=="entries") {
-         return value < 1e7 ? value.toFixed(0) : value.toFixed(7);
+         return (value < 1e7) ? value.toFixed(0) : value.toExponential(7);
+      } else
+      if (fmt=="last") {
+         fmt = this['lastformat'];
       }
 
-      return JSROOT.Format(value, fmt);
+      delete this['lastformat'];
+
+      if (!fmt) fmt = "6.4g";
+      fmt = fmt.trim();
+      var len = fmt.length;
+      if (len<2) return value.toFixed(4);
+      var last = fmt.charAt(len-1);
+      fmt = fmt.slice(0,len-1);
+      var isexp = null;
+      var prec = fmt.indexOf(".");
+      if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
+      if ((prec==NaN) || (prec<0) || (prec==null)) prec = 4;
+      var significance = false;
+      if ((last=='e') || (last=='E')) { isexp = true; } else
+      if (last=='Q') { isexp = true; significance = true; } else
+      if ((last=='f') || (last=='F')) { isexp = false; } else
+      if (last=='W') { isexp = false; significance = true; } else
+      if ((last=='g') || (last=='G')) {
+         var se = this.Format(value, fmt+'Q');
+         var _fmt = this['lastformat'];
+         var sg = this.Format(value, fmt+'W');
+
+         if (se.length < sg.length) {
+            this['lastformat'] = _fmt;
+            return se;
+         }
+         return sg;
+      } else {
+         isexp = false;
+         prec = 4;
+      }
+
+      if (isexp) {
+         // for exponential representation only one significant digit befor point
+         if (significance) prec--;
+         if (prec<0) prec = 0;
+
+         this['lastformat'] = '5.'+prec+'e';
+
+         return value.toExponential(prec);
+      }
+
+      var sg = value.toFixed(prec)
+
+      if (significance) {
+         var l = 0;
+         while ((l<sg.length) && (sg.charAt(l) == '0' || sg.charAt(l) == '-' || sg.charAt(l) == '.')) l++;
+
+         var diff = sg.length - l - prec;
+         if (sg.indexOf(".")>l) diff--;
+
+         if (diff != 0) {
+            prec-=diff; if (prec<0) prec = 0;
+            sg = value.toFixed(prec);
+         }
+      }
+
+      this['lastformat'] = '5.'+prec+'f';
+
+      return sg;
    }
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
@@ -5530,7 +5579,11 @@
                for(var n=0;n<f1.fNpar;n++) {
                   var parname = (f1.fNames!=null) ? f1.fNames[n] : "Fit par"+ n;
                   var parvalue = (f1.fParams!=null) ? stat.Format(f1.fParams[n],"fit") : "<not avail>";
-                  var parerr = (f1.fParErrors!=null) ? stat.Format(f1.fParErrors[n],"fit") : "";
+                  var parerr = "";
+                  if (f1.fParErrors!=null) {
+                     parerr = stat.Format(f1.fParErrors[n],"last");
+                     if (parerr=="0" || parerr=="0.0") parerr = stat.Format(f1.fParErrors[n],"4.2g");
+                  }
 
                   if ((print_ferrors > 0) && (parerr.length>0))
                      stat.AddLine(parname + " = " + parvalue + " #pm " + parerr);

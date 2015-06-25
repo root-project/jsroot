@@ -127,6 +127,10 @@
             draw_item_options(file, "c;1", "f1_draw2", "");
          });
 
+         LoadFile("danilo.root", function(file) {
+            draw_item_options(file, "canvas;1", "f1_draw3", "", 0.);
+         });
+
          LoadFile("latex.root", function(file) {
             draw_item_options(file, "ex3;1", "lat1_draw", ";mathjax=1");
          });
@@ -169,16 +173,13 @@
             });
          }
 
-         LoadFile("danilo.root", function(file) {
-            draw_item_options(file, "canvas;1", "can10_draw", "", 0.);
-         });
 
       }
    </script>
 
 </head>
 
-<body onload="JSROOT.AssertPrerequisites(JSROOT.GetUrlOption('minimal')!=null ? '' : '2d;3d;io', CreateGui, 'debug')">
+<body onload="JSROOT.AssertPrerequisites(JSROOT.GetUrlOption('all')!=null || JSROOT.GetUrlOption('default')!=null ? '2d;3d;io' : '', CreateGui, 'debug')">
 
   <div id="debug">loading...</div>
 
@@ -206,6 +207,7 @@
 
   <div id="f1_draw"></div>
   <div id="f1_draw2"></div>
+  <div id="f1_draw3"></div>
 
   <h1>TPaveText class</h1> 
 
@@ -222,7 +224,6 @@
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
   <div id="can9_draw"></div>
-  <div id="can10_draw"></div>
 
 </body>
 
