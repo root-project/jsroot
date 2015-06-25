@@ -2736,8 +2736,6 @@
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
 
-      console.log('draw painter with option ' + opt);
-
       var painter = new JSROOT.TGraphPainter(graph);
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
