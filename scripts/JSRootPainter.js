@@ -327,7 +327,7 @@
 
       var markerSize = attmarker['fMarkerSize'];
 
-      var markerScale = (info.shape == 0) ? 32 : 64;
+      var markerScale = 64;
       if (attmarker['fMarkerStyle'] == 1) markerScale = 1;
 
       var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
@@ -355,6 +355,7 @@
       res.SetMarker = function(selection) {
          selection.style("fill", this.fill)
                   .style("stroke", this.stroke)
+                  .style("pointer-events","visibleFill") // even if not filled, get events
                   .attr("d", this.marker);
       }
       res.func = res.SetMarker.bind(res);
