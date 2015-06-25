@@ -119,6 +119,10 @@
             draw_item_options(file, "Graph;1", "gr_draw", ";L;P");
          });
 
+         LoadFile("macro2.root", function(file) {
+            draw_item_options(file, "c1;1", "gr2_draw", "");
+         });
+
          LoadFile("fillrandom.root", function(file) {
             draw_item_options(file, "sqroot;1", "f1_draw", "");
          });
@@ -202,6 +206,7 @@
   <h1>TGraph class</h1> 
 
   <div id="gr_draw"></div>
+  <div id="gr2_draw"></div>
 
   <h1>TF1 class</h1> 
 

@@ -2155,21 +2155,9 @@
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
-      this.optionLine = 0;
-      this.optionAxis = 0;
-      this.optionCurve = 0;
-      this.optionStar = 0;
-      this.optionMark = 0;
-      this.optionBar = 0;
-      this.optionR = 0;
-      this.optionOne = 0;
-      this.optionE = 0;
-      this.optionFill = 0;
-      this.optionZ = 0;
-      this.optionCurveFill = 0;
-      this.draw_errors = true;
-      this.optionNone = 0; // no any drawing
-      this.opt = "LP";
+      JSROOT.extend(this, { optionLine:0, optionAxis:0,optionCurve:0,optionStar:0,
+                            optionMark:0, optionBar:0, optionR:0, optionOne:0, optionE:0, optionEF:0,
+                            optionFill:0, optionZ:0, optionCurveFill:0, optionNone:0, opt:"LP", draw_errors:true });
 
       if ((opt != null) && (opt != "")) {
          this.opt = opt.toUpperCase();
@@ -2193,12 +2181,12 @@
          this.optionOne = 1;
       if (this.opt.indexOf('F') != -1)
          this.optionFill = 1;
-      if (this.opt.indexOf('2') != -1 || this.opt.indexOf('3') != -1
-            || this.opt.indexOf('4') != -1 || this.opt.indexOf('5') != -1)
-         this.optionE = 1;
+      if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1))
+         this.optionEF = 1;
+      if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionCurve + this.optionStar + this.optionMark + this.optionBar + this.optionE == 0) {
+      if (this.optionLine + this.optionFill + this.optionCurve + this.optionStar + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
          else {
@@ -2227,6 +2215,9 @@
 
       if (this.optionLine == 1 || this.optionCurve == 1 || this.optionFill == 1)
          this.seriesType = 'line';
+
+      if (this.optionEF == 1)
+         this.seriesType = 'line3';
 
       if (this.optionBar == 1) {
          this.binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
@@ -2481,8 +2472,6 @@
       xf[nf] = xt[0];
       yf[nf] = yt[0];
       nf++;
-      ;
-
 
       for (i = 0; i < nf; i++) {
          if (w > h) {
@@ -2542,6 +2531,20 @@
                                "/+" + pmain.AxisAsText("y", d.eyhigh);
 
          return res;
+      }
+
+      if (this.seriesType == 'line3') {
+         var area = d3.svg.area()
+                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                        .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
+                        .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
+
+         this.draw_g.append("svg:path")
+                    .attr("d", area(pthis.bins))
+                    .style("stroke", "none")
+                    .call(fill.func);
+
+         return;
       }
 
       var line = d3.svg.line()
@@ -2732,6 +2735,8 @@
    }
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
+
+      console.log('draw painter with option ' + opt);
 
       var painter = new JSROOT.TGraphPainter(graph);
       painter.SetDivId(divid, -1); // just to get access to existing elements

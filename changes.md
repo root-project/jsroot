@@ -17,6 +17,7 @@
    fit format for statistic display 
 10.Implement 'g' formatting kind for stat box output - one need to checks 
    significant digits when producing output.  
+11.Support '3' option for TGraph - fill area between error bars 
 
 
 ## Changes in 3.5
