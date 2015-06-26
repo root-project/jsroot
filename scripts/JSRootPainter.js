@@ -2194,11 +2194,17 @@
       if (this.opt.indexOf('1') != -1) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
-      if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1)) {
+      if (this.opt.indexOf('3') != -1) {
          this.optionEF = 1;
          this.optionLine = 0;
          this.draw_errors = false;
       }
+      if (this.opt.indexOf('4') != -1) {
+         this.optionEF = 2;
+         this.optionLine = 0;
+         this.draw_errors = false;
+      }
+
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
@@ -2258,12 +2264,10 @@
             });
    }
 
-   JSROOT.TGraphPainter.prototype.DrawBars = function(tooltipfunc) {
-
+   JSROOT.TGraphPainter.prototype.DrawBars = function() {
       var bins = this.bins;
-      var pmain = this.main_painter();
-
-      if (bins.length==1) {
+      if (bins.length == 1) {
+         // special case of single bar
          var binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
                this.graph['fHistogram']['fXaxis']['fXmin']);
          bins[0].xl = bins[0].x - binwidthx/2;
@@ -2280,19 +2284,16 @@
 
       var h = this.frame_height();
       if (this.optionBar == 1) h = 0;
-      var pthis = this;
+      var pmain = this.main_painter();
 
-      var nodes = this.draw_g.selectAll("bar_graph")
+      return this.draw_g.selectAll("bar_graph")
                .data(bins).enter()
                .append("svg:rect")
                .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
                .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
                .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
                .attr("height", function(d) { return ((h > 0 ? h : pmain.gry(0)) - pmain.gry(d.y)).toFixed(1); })
-               .call(pthis.fillatt.func);
-
-      if (JSROOT.gStyle.Tooltip)
-         nodes.append("svg:title").text(tooltipfunc);
+               .call(this.fillatt.func);
    }
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
@@ -2327,9 +2328,9 @@
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                         .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
                         .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
-
+         if (this.optionEF > 1) area = area.interpolate('basis');
          this.draw_g.append("svg:path")
-                    .attr("d", area(pthis.bins))
+                    .attr("d", area(this.bins))
                     .style("stroke", "none")
                     .call(this.fillatt.func);
       }
@@ -2342,7 +2343,11 @@
       if (this.optionCurve == 1)
          line = line.interpolate('basis');
 
-      if (this.optionBar) this.DrawBars(TooltipText);
+      if (this.optionBar) {
+         var nodes = this.DrawBars();
+         if (JSROOT.gStyle.Tooltip)
+            nodes.append("svg:title").text(TooltipText);
+      }
 
       if (this.lineatt.width > 99) {
          /* first draw exclusion area, and then the line */

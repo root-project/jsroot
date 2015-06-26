@@ -18,9 +18,9 @@
 10.Implement 'g' formatting kind for stat box output - one need to checks 
    significant digits when producing output.  
 11.Support new draw options for TGraph:
-     '3' - fill area between error bars
-     'B1'- bars starting from 0
      'C' - smoothing of curve with spline approximation  
+     'B1'- bars starting from 0
+     '3','4' - fill area between error bars (without and with smoothing)
 12.Primary support for STL containers in IO part. For now limit to classes, used in TF1.
  
 
