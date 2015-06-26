@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "dev 25/06/2015";
+   JSROOT.version = "dev 26/06/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -942,6 +942,20 @@
             return ret;
          };
       }
+
+      if (obj_typename=='TF1') {
+         obj['GetParName'] = function(n) {
+            if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
+            if ('fNames' in this) return this.fNames[n];
+            return "Par"+n;
+         }
+         obj['GetParValue'] = function(n) {
+            if (('fFormula' in this) && ('fClingParameters' in this.fFormula)) return this.fFormula.fClingParameters[n];
+            if (('fParams' in this) && (this.fParams!=null))  return this.fParams[n];
+            return null;
+         }
+      }
+
       if ((obj_typename.indexOf("TGraph") == 0) || (obj_typename == "TCutG")) {
          obj['ComputeRange'] = function() {
             // Compute the x/y range of the points in this graph
