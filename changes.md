@@ -20,7 +20,8 @@
 11.Support new draw options for TGraph:
      '3' - fill area between error bars
      'B1' - bars starting from 0 
-
+12.Primary support for STL containers in IO part. Now limit to classes, used in TF1.
+ 
 
 ## Changes in 3.5
 1. Fix error in vertical text alignment

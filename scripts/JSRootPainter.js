@@ -5589,8 +5589,10 @@
                stat.AddLine("Prob = <not avail>");
             if ((print_fval > 0) || (print_ferrors > 0)) {
                for(var n=0;n<f1.fNpar;n++) {
-                  var parname = (f1.fNames!=null) ? f1.fNames[n] : "Fit par"+ n;
-                  var parvalue = (f1.fParams!=null) ? stat.Format(f1.fParams[n],"fit") : "<not avail>";
+                  var parname = f1.GetParName(n);
+                  var parvalue = f1.GetParValue(n);
+                  if (parvalue != null) parvalue = stat.Format(Number(parvalue),"fit");
+                                 else  parvalue = "<not avail>";
                   var parerr = "";
                   if (f1.fParErrors!=null) {
                      parerr = stat.Format(f1.fParErrors[n],"last");

@@ -377,13 +377,11 @@
       if (typname == "vector<float>") res = this.ReadFastArray(this.ntoi4(),'F'); else
       if (typname == "vector<TObject*>") {
          var n = this.ntoi4();
-         JSROOT.console('reading tobj vector n = ' + n);
          res = [];
          for (var i=0;i<n;i++) res.push(this.ReadObjectAny());
       }  else
       if (typname.indexOf("map<TString,int")==0) {
          var n = this.ntoi4();
-         JSROOT.console('reading map n = ' + n);
          res = [];
          for (var i=0;i<n;i++) {
             var str = this.ReadTString();
