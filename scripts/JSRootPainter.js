@@ -2226,11 +2226,14 @@
       var npoints = this.graph['fNpoints'];
       if ((this.graph._typename=="TCutG") && (npoints>3)) npoints--;
 
-      this.lineatt = JSROOT.Painter.createAttLine(this.graph);
+      var kind = 0;
+      if (this.graph['_typename'] == 'TGraphErrors') kind = 1; else
+      if (this.graph['_typename'] == 'TGraphAsymmErrors'
+          || this.graph['_typename'].match(/^RooHist/)) kind = 2;
 
       this.bins = d3.range(npoints).map(
             function(p) {
-               if (pthis.graph['_typename'] == 'TGraphErrors')
+               if (kind == 1)
                   return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p],
@@ -2239,8 +2242,7 @@
                      eylow : pthis.graph['fEY'][p],
                      eyhigh : pthis.graph['fEY'][p]
                   };
-               if (pthis.graph['_typename'] == 'TGraphAsymmErrors'
-                     || pthis.graph['_typename'].match(/^RooHist/))
+               if (kind == 2)
                   return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p],
@@ -2254,14 +2256,235 @@
                      y : pthis.graph['fY'][p]
                   };
             });
+   }
 
-      this.exclusionGraph = false;
-      if (this.lineatt.width <= 99) return;
+   JSROOT.TGraphPainter.prototype.DrawBars = function(tooltipfunc) {
 
-      // special handling of exclusion graphs
+      var bins = this.bins;
+      var pmain = this.main_painter();
 
-      this.exclusionGraph = true;
+      if (bins.length==1) {
+         var binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
+               this.graph['fHistogram']['fXaxis']['fXmin']);
+         bins[0].xl = bins[0].x - binwidthx/2;
+         bins[0].xr = bins[0].x + binwidthx/2;
+      } else
+      for (var n=0;n<bins.length;n++) {
+         if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
+         if (n<bins.length-1)
+            bins[n].xr = (bins[n].x + bins[n+1].x)/2;
+         else
+            bins[n].xr = 2*bins[n].x - bins[n].xl;
+         if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
+      }
 
+      var h = this.frame_height();
+      if (this.optionBar == 1) h = 0;
+      var pthis = this;
+
+      var nodes = this.draw_g.selectAll("bar_graph")
+               .data(bins).enter()
+               .append("svg:rect")
+               .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
+               .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
+               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
+               .attr("height", function(d) { return ((h > 0 ? h : pmain.gry(0)) - pmain.gry(d.y)).toFixed(1); })
+               .call(pthis.fillatt.func);
+
+      if (JSROOT.gStyle.Tooltip)
+         nodes.append("svg:title").text(tooltipfunc);
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawBins = function() {
+      var w = this.frame_width(), h = this.frame_height();
+
+      this.RecreateDrawG();
+
+      var pthis = this;
+      var pmain = this.main_painter();
+
+      this.lineatt = JSROOT.Painter.createAttLine(this.graph);
+      this.fillatt = this.createAttFill(this.graph);
+
+      function TooltipText(d) {
+
+         var res = "x = " + pmain.AxisAsText("x", d.x) + "\n" +
+                   "y = " + pmain.AxisAsText("y", d.y);
+
+         if (pthis.draw_errors  && !pmain.x_time && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+            res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
+                              "/+" + pmain.AxisAsText("x", d.exhigh);
+
+         if (pthis.draw_errors  && !pmain.y_time && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+            res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
+                               "/+" + pmain.AxisAsText("y", d.eyhigh);
+
+         return res;
+      }
+
+      if (this.optionEF > 0) {
+         var area = d3.svg.area()
+                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                        .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
+                        .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
+
+         this.draw_g.append("svg:path")
+                    .attr("d", area(pthis.bins))
+                    .style("stroke", "none")
+                    .call(this.fillatt.func);
+      }
+
+      var line = d3.svg.line()
+                  .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                  .y(function(d) { return pmain.gry(d.y).toFixed(1); });
+
+      // use smoothing of the line by basic spline interpolation
+      if (this.optionCurve == 1)
+         line = line.interpolate('basis');
+
+      if (this.optionBar) this.DrawBars(TooltipText);
+
+      if (this.lineatt.width > 99) {
+         /* first draw exclusion area, and then the line */
+         this.optionMark = 0;
+
+         this.DrawExclusion(line);
+      }
+
+      if (this.optionLine == 1 || this.optionFill == 1) {
+
+         var close_symbol = "";
+         if (this.graph._typename=="TCutG") close_symbol = " Z";
+
+         var lineatt = this.lineatt;
+         if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
+
+         if (this.optionFill != 1) {
+            this.fillatt.color = 'none';
+         }
+
+         this.draw_g.append("svg:path")
+               .attr("d", line(pthis.bins) + close_symbol)
+               .attr("class", "draw_line")
+               .style("pointer-events","none")
+               .call(lineatt.func)
+               .call(this.fillatt.func);
+
+         // do not add tooltip for line, when we wants to add markers
+         if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
+            this.draw_g.selectAll("draw_line")
+                       .data(pthis.bins).enter()
+                       .append("svg:circle")
+                       .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
+                       .attr("cy", function(d) { return Math.round(pmain.gry(d.y)); })
+                       .attr("r", 3)
+                       .style("opacity", 0)
+                       .append("svg:title")
+                       .text(TooltipText);
+      }
+
+      var nodes = null;
+
+      if (this.draw_errors || this.optionMark) {
+         var draw_bins = new Array;
+         for (var i in this.bins) {
+            var pnt = this.bins[i];
+            var grx = pmain.grx(pnt.x);
+            var gry = pmain.gry(pnt.y);
+            if ((grx<0) || (grx>w) || (gry<0) || (gry>h)) continue;
+
+            // caluclate graphical coordinates
+            pnt['grx1'] = grx.toFixed(1);
+            pnt['gry1'] = gry.toFixed(1);
+            if (pnt.exlow > 0)  pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
+            if (pnt.exhigh > 0) pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
+            if (pnt.eylow > 0)  pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
+            if (pnt.eyhigh > 0) pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+
+            draw_bins.push(pnt);
+         }
+         // here are up to five elements are collected, try to group them
+         nodes = this.draw_g.selectAll("g.node")
+                     .data(draw_bins)
+                     .enter()
+                     .append("svg:g")
+                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
+      }
+
+      if (JSROOT.gStyle.Tooltip && nodes)
+         nodes.append("svg:title").text(TooltipText);
+
+      if (this.draw_errors) {
+         // than doing filer append error bars
+         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
+              .append("svg:line")
+              .attr("x1", function(d) { return d.grx0; })
+              .attr("y1", 0)
+              .attr("x2", function(d) { return d.grx2; })
+              .attr("y2", 0)
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
+
+         nodes.filter(function(d) { return (d.exlow > 0); })
+              .append("svg:line")
+              .attr("y1", -3)
+              .attr("x1", function(d) { return d.grx0; })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return d.grx0; })
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
+
+         nodes.filter(function(d) { return (d.exhigh > 0); })
+              .append("svg:line")
+              .attr("y1", -3)
+              .attr("x1", function(d) { return d.grx2; })
+              .attr("y2", 3)
+              .attr("x2", function(d) { return d.grx2; })
+              .style("stroke", this.lineatt.color)
+              .style( "stroke-width", this.lineatt.width);
+
+         // Add y-error indicators
+
+         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
+              .append("svg:line")
+              .attr("x1", 0)
+              .attr("y1", function(d) { return d.gry0; })
+              .attr("x2", 0)
+              .attr("y2", function(d) { return d.gry2; })
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
+
+         nodes.filter(function(d) { return (d.eylow > 0); })
+              .append("svg:line")
+              .attr("x1", -3)
+              .attr("y1", function(d) { return d.gry0; })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return d.gry0; })
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
+
+         nodes.filter(function(d) { return (d.eyhigh > 0); })
+              .append("svg:line")
+              .attr("x1", -3)
+              .attr("y1", function(d) { return d.gry2; })
+              .attr("x2", 3)
+              .attr("y2", function(d) { return d.gry2; })
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width);
+      }
+
+      if (this.optionMark) {
+         /* Add markers */
+         var style = null;
+         if (this.optionMark == 2) style = 3;
+
+         var marker = JSROOT.Painter.createAttMarker(this.graph, style);
+
+         nodes.append("svg:path").call(marker.func);
+      }
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawExclusion = function(line) {
       var normx, normy;
       var n = this.graph['fNpoints'];
       var xo = new Array(n + 2),
@@ -2269,10 +2492,8 @@
           xt = new Array(n + 2),
           yt = new Array(n + 2),
           xf = new Array(2 * n + 2),
-           yf = new Array(2 * n + 2);
+          yf = new Array(2 * n + 2);
       // negative value means another side of the line...
-
-
 
       var a, i, j, nf, wk = 1;
       if (this.lineatt.width > 32767) {
@@ -2473,9 +2694,7 @@
          if ((yf[i] <= 0.0) && this.main_painter().options.Logy) yf[i] = ymin;
       }
 
-      this.excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
-
-      this.excl_ff = 1;
+      var excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
 
       /* some clean-up */
       xo.splice(0, xo.length);
@@ -2490,237 +2709,13 @@
       yf.splice(0, yf.length);
       xf = null;
       yf = null;
-   }
 
-   JSROOT.TGraphPainter.prototype.DrawBars = function(tooltipfunc) {
-
-      var fill = this.createAttFill(this.graph);
-
-      var bins = this.bins;
-      var pmain = this.main_painter();
-
-      if (bins.length==1) {
-         var binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
-               this.graph['fHistogram']['fXaxis']['fXmin']);
-         bins[0].xl = bins[0].x - binwidthx/2;
-         bins[0].xr = bins[0].x + binwidthx/2;
-      } else
-      for (var n=0;n<bins.length;n++) {
-         if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
-         if (n<bins.length-1)
-            bins[n].xr = (bins[n].x + bins[n+1].x)/2;
-         else
-            bins[n].xr = 2*bins[n].x - bins[n].xl;
-         if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
-      }
-
-      var h = this.frame_height();
-      if (this.optionBar == 1) h = 0;
-
-      var nodes = this.draw_g.selectAll("bar_graph")
-               .data(bins).enter()
-               .append("svg:rect")
-               .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
-               .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
-               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
-               .attr("height", function(d) { return ((h > 0 ? h : pmain.gry(0)) - pmain.gry(d.y)).toFixed(1); })
-               .call(fill.func);
-
-      if (JSROOT.gStyle.Tooltip)
-         nodes.append("svg:title").text(tooltipfunc);
-   }
-
-   JSROOT.TGraphPainter.prototype.DrawBins = function() {
-      var w = this.frame_width(), h = this.frame_height();
-
-      this.RecreateDrawG();
-
-      var pthis = this;
-      var pmain = this.main_painter();
-
-      var fill = this.createAttFill(this.graph);
-
-      function TooltipText(d) {
-
-         var res = "x = " + pmain.AxisAsText("x", d.x) + "\n" +
-                   "y = " + pmain.AxisAsText("y", d.y);
-
-         if (pthis.draw_errors  && !pmain.x_time && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-            res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
-                              "/+" + pmain.AxisAsText("x", d.exhigh);
-
-         if (pthis.draw_errors  && !pmain.y_time && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
-            res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
-                               "/+" + pmain.AxisAsText("y", d.eyhigh);
-
-         return res;
-      }
-
-      if (this.optionEF > 0) {
-         var area = d3.svg.area()
-                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                        .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
-                        .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
-
-         this.draw_g.append("svg:path")
-                    .attr("d", area(pthis.bins))
-                    .style("stroke", "none")
-                    .call(fill.func);
-      }
-
-      var line = d3.svg.line()
-                  .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .y(function(d) { return pmain.gry(d.y).toFixed(1); });
-
-      // use smoothing of the line by basic spline interpolation
-      if (this.optionCurve == 1)
-         line = line.interpolate('basis');
-
-      if (this.optionBar) this.DrawBars(TooltipText);
-
-      if (this.exclusionGraph) {
-         /* first draw exclusion area, and then the line */
-         this.optionMark = 0;
-
-         this.draw_g.append("svg:path")
-                     .attr("d", line(pthis.excl))
-                     .style("stroke", "none")
-                     .style("stroke-width", pthis.excl_ff)
-                     .call(fill.func)
-                     .style('opacity', 0.75);
-      }
-
-      if (this.optionLine == 1 || this.optionFill == 1) {
-
-         var close_symbol = "";
-         if (this.graph._typename=="TCutG") close_symbol = " Z";
-
-         var lineatt = this.lineatt;
-         if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
-
-         if (this.optionFill != 1) {
-            fill.color = 'none';
-         }
-
-         this.draw_g.append("svg:path")
-               .attr("d", line(pthis.bins) + close_symbol)
-               .attr("class", "draw_line")
-               .style("pointer-events","none")
-               .call(lineatt.func)
-               .call(fill.func);
-
-         // do not add tooltip for line, when we wants to add markers
-         if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
-            this.draw_g.selectAll("draw_line")
-                       .data(pthis.bins).enter()
-                       .append("svg:circle")
-                       .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                       .attr("cy", function(d) { return Math.round(pmain.gry(d.y)); })
-                       .attr("r", 3)
-                       .style("opacity", 0)
-                       .append("svg:title")
-                       .text(TooltipText);
-      }
-
-      var nodes = null;
-
-      if (this.draw_errors || this.optionMark) {
-         var draw_bins = new Array;
-         for (var i in this.bins) {
-            var pnt = this.bins[i];
-            var grx = pmain.grx(pnt.x);
-            var gry = pmain.gry(pnt.y);
-            if ((grx<0) || (grx>w) || (gry<0) || (gry>h)) continue;
-
-            // caluclate graphical coordinates
-            pnt['grx1'] = grx.toFixed(1);
-            pnt['gry1'] = gry.toFixed(1);
-            if (pnt.exlow > 0)  pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
-            if (pnt.exhigh > 0) pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
-            if (pnt.eylow > 0)  pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
-            if (pnt.eyhigh > 0) pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
-
-            draw_bins.push(pnt);
-         }
-         // here are up to five elements are collected, try to group them
-         nodes = this.draw_g.selectAll("g.node")
-                     .data(draw_bins)
-                     .enter()
-                     .append("svg:g")
-                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
-      }
-
-      if (JSROOT.gStyle.Tooltip && nodes)
-         nodes.append("svg:title").text(TooltipText);
-
-      if (this.draw_errors) {
-         // than doing filer append error bars
-         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
-              .append("svg:line")
-              .attr("x1", function(d) { return d.grx0; })
-              .attr("y1", 0)
-              .attr("x2", function(d) { return d.grx2; })
-              .attr("y2", 0)
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.exlow > 0); })
-              .append("svg:line")
-              .attr("y1", -3)
-              .attr("x1", function(d) { return d.grx0; })
-              .attr("y2", 3)
-              .attr("x2", function(d) { return d.grx0; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.exhigh > 0); })
-              .append("svg:line")
-              .attr("y1", -3)
-              .attr("x1", function(d) { return d.grx2; })
-              .attr("y2", 3)
-              .attr("x2", function(d) { return d.grx2; })
-              .style("stroke", this.lineatt.color)
-              .style( "stroke-width", this.lineatt.width);
-
-         // Add y-error indicators
-
-         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
-              .append("svg:line")
-              .attr("x1", 0)
-              .attr("y1", function(d) { return d.gry0; })
-              .attr("x2", 0)
-              .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.eylow > 0); })
-              .append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return d.gry0; })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return d.gry0; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.eyhigh > 0); })
-              .append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return d.gry2; })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-      }
-
-      if (this.optionMark) {
-         /* Add markers */
-         var style = null;
-         if (this.optionMark == 2) style = 3;
-
-         var marker = JSROOT.Painter.createAttMarker(this.graph, style);
-
-         nodes.append("svg:path").call(marker.func);
-      }
+      this.draw_g.append("svg:path")
+          .attr("d", line(excl))
+          .style("stroke", "none")
+          .style("stroke-width", 1)
+          .call(this.fillatt.func)
+          .style('opacity', 0.75);
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
