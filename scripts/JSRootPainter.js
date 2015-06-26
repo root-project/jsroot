@@ -2220,11 +2220,6 @@
       if (this.optionEF == 1)
          this.seriesType = 'line3';
 
-      if (this.optionBar == 1) {
-         this.binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
-                           this.graph['fHistogram']['fXaxis']['fXmin'])
-                            / (this.graph['fNpoints'] - 1);
-      }
    }
 
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
@@ -2237,14 +2232,7 @@
 
       this.bins = d3.range(npoints).map(
             function(p) {
-               if (pthis.optionBar == 1) {
-                  return {
-                     x : pthis.graph['fX'][p] - (pthis.binwidthx / 2),
-                     y : pthis.graph['fY'][p], // graph['fHistogram']['fXaxis']['fXmin'],
-                     bw : pthis.binwidthx,
-                     bh : pthis.graph['fY'][p]
-                  }
-               } else if (pthis.graph['_typename'] == 'TGraphErrors') {
+               if (pthis.graph['_typename'] == 'TGraphErrors')
                   return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p],
@@ -2253,8 +2241,8 @@
                      eylow : pthis.graph['fEY'][p],
                      eyhigh : pthis.graph['fEY'][p]
                   };
-               } else if (pthis.graph['_typename'] == 'TGraphAsymmErrors'
-                     || pthis.graph['_typename'].match(/^RooHist/)) {
+               if (pthis.graph['_typename'] == 'TGraphAsymmErrors'
+                     || pthis.graph['_typename'].match(/^RooHist/))
                   return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p],
@@ -2263,12 +2251,10 @@
                      eylow : pthis.graph['fEYlow'][p],
                      eyhigh : pthis.graph['fEYhigh'][p]
                   };
-               } else {
-                  return {
+               return {
                      x : pthis.graph['fX'][p],
                      y : pthis.graph['fY'][p]
                   };
-               }
             });
 
       this.exclusionGraph = false;
@@ -2508,6 +2494,44 @@
       yf = null;
    }
 
+   JSROOT.TGraphPainter.prototype.DrawBars = function(tooltipfunc) {
+
+      var fill = this.createAttFill(this.graph);
+
+      var bins = this.bins;
+      var pmain = this.main_painter();
+
+      if (bins.length==1) {
+         var binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
+               this.graph['fHistogram']['fXaxis']['fXmin']);
+         bins[0].xl = bins[0].x - binwidthx/2;
+         bins[0].xr = bins[0].x + binwidthx/2;
+      } else
+      for (var n=0;n<bins.length;n++) {
+         if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
+         if (n<bins.length-1)
+            bins[n].xr = (bins[n].x + bins[n+1].x)/2;
+         else
+            bins[n].xr = 2*bins[n].x - bins[n].xl;
+         if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
+      }
+
+      /* filled bar graph */
+      this.draw_errors = false;
+
+      var nodes = this.draw_g.selectAll("bar_graph")
+               .data(bins).enter()
+               .append("svg:rect")
+               .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
+               .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
+               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
+               .attr("height", function(d) { return pmain.gry(0.0) - pmain.gry(d.y); })
+               .call(fill.func);
+
+      if (JSROOT.gStyle.Tooltip)
+         nodes.append("svg:title").text(tooltipfunc);
+   }
+
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
@@ -2552,26 +2576,8 @@
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
-      if (this.seriesType == 'bar') {
-         var fillcolor = JSROOT.Painter.root_colors[this.graph['fFillColor']];
-         if (typeof (fillcolor) == 'undefined') fillcolor = "rgb(204,204,204)";
-         /* filled bar graph */
-         var xdom = pmain.x.domain();
-         var xfactor = xdom[1] - xdom[0];
-         this.draw_errors = false;
+      if (this.seriesType == 'bar') this.DrawBars(TooltipText);
 
-         var nodes = this.draw_g.selectAll("bar_graph")
-                  .data(pthis.bins).enter()
-                  .append("svg:rect")
-                  .attr("x", function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
-                  .attr("width", function(d) { return (w / (xdom[1] - xdom[0]))-1; })
-                  .attr("height", function(d) { return pmain.gry(d.y) - pmain.gry(d.y + d.bh); })
-                  .style("fill", fillcolor);
-
-         if (JSROOT.gStyle.Tooltip)
-            nodes.append("svg:title").text(function(d) { return "x = " + d.x.toPrecision(4) + " \nentries = " + d.y.toPrecision(4); });
-      }
       if (this.exclusionGraph) {
          /* first draw exclusion area, and then the line */
          this.showMarker = false;
