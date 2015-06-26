@@ -19,8 +19,9 @@
    significant digits when producing output.  
 11.Support new draw options for TGraph:
      '3' - fill area between error bars
-     'B1' - bars starting from 0 
-12.Primary support for STL containers in IO part. Now limit to classes, used in TF1.
+     'B1'- bars starting from 0
+     'C' - smoothing of curve with spline approximation  
+12.Primary support for STL containers in IO part. For now limit to classes, used in TF1.
  
 
 ## Changes in 3.5

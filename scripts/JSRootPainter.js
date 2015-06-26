@@ -2160,7 +2160,7 @@
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
-                            optionFill:0, optionZ:0, optionCurveFill:0, optionNone:0, opt:"LP"});
+                            optionFill:0, optionZ:0, optionNone:0, opt:"LP"});
 
       this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
                           this.graph['_typename'] == 'TGraphAsymmErrors' ||
@@ -2173,10 +2173,14 @@
       }
       if (this.opt.indexOf('L') != -1)
          this.optionLine = 1;
+      if (this.opt.indexOf('F') != -1)
+         this.optionFill = 1;
       if (this.opt.indexOf('A') != -1)
          this.optionAxis = 1;
-      if (this.opt.indexOf('C') != -1)
+      if (this.opt.indexOf('C') != -1) {
          this.optionCurve = 1;
+         if (this.optionFill==0) this.optionLine = 1;
+      }
       if (this.opt.indexOf('*') != -1)
          this.optionMark = 2;
       if (this.opt.indexOf('P') != -1)
@@ -2190,8 +2194,6 @@
       if (this.opt.indexOf('1') != -1) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
-      if (this.opt.indexOf('F') != -1)
-         this.optionFill = 1;
       if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1)) {
          this.optionEF = 1;
          this.optionLine = 0;
@@ -2200,17 +2202,13 @@
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionCurve + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
+      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
          else {
             this.optionNone = 1;
             return;
          }
-      }
-      if (this.optionCurve && this.optionFill) {
-         this.optionCurveFill = 1;
-         this.optionFill = 0;
       }
 
       if (this.graph['_typename'] == 'TGraphErrors') {
@@ -2574,6 +2572,10 @@
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
+      // use smoothing of the line by basic spline interpolation
+      if (this.optionCurve == 1)
+         line = line.interpolate('basis');
+
       if (this.optionBar) this.DrawBars(TooltipText);
 
       if (this.exclusionGraph) {
@@ -2588,7 +2590,7 @@
                      .style('opacity', 0.75);
       }
 
-      if (this.optionLine == 1 || this.optionCurve == 1 || this.optionFill == 1) {
+      if (this.optionLine == 1 || this.optionFill == 1) {
 
          var close_symbol = "";
          if (this.graph._typename=="TCutG") close_symbol = " Z";
