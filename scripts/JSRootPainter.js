@@ -301,9 +301,11 @@
          'otriangle-down', 'fdiamond', 'fcross');
 
    /** Function returns the ready to use marker for drawing */
-   JSROOT.Painter.createAttMarker = function(attmarker) {
+   JSROOT.Painter.createAttMarker = function(attmarker, style) {
 
-      var marker_name = JSROOT.Painter.root_markers[attmarker['fMarkerStyle']];
+      if (style==null) style = attmarker['fMarkerStyle'];
+
+      var marker_name = JSROOT.Painter.root_markers[style];
 
       var info = { shape: 0, toFill: true, toRotate: false };
 
@@ -328,7 +330,7 @@
       var markerSize = attmarker['fMarkerSize'];
 
       var markerScale = 64;
-      if (attmarker['fMarkerStyle'] == 1) markerScale = 1;
+      if (style == 1) markerScale = 1;
 
       var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
 
@@ -2156,9 +2158,14 @@
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
-      JSROOT.extend(this, { optionLine:0, optionAxis:0,optionCurve:0,optionStar:0,
+      JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0,
                             optionMark:0, optionBar:0, optionR:0, optionOne:0, optionE:0, optionEF:0,
-                            optionFill:0, optionZ:0, optionCurveFill:0, optionNone:0, opt:"LP", draw_errors:true });
+                            optionFill:0, optionZ:0, optionCurveFill:0, optionNone:0, opt:"LP"});
+
+      this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
+                          this.graph['_typename'] == 'TGraphAsymmErrors' ||
+                          this.graph['_typename'].match(/^RooHist/));
+
 
       if ((opt != null) && (opt != "")) {
          this.opt = opt.toUpperCase();
@@ -2171,23 +2178,28 @@
       if (this.opt.indexOf('C') != -1)
          this.optionCurve = 1;
       if (this.opt.indexOf('*') != -1)
-         this.optionStar = 1;
+         this.optionMark = 2;
       if (this.opt.indexOf('P') != -1)
          this.optionMark = 1;
-      if (this.opt.indexOf('B') != -1)
+      if (this.opt.indexOf('B') != -1) {
          this.optionBar = 1;
+         this.draw_errors = false;
+      }
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
       if (this.opt.indexOf('1') != -1)
          this.optionOne = 1;
       if (this.opt.indexOf('F') != -1)
          this.optionFill = 1;
-      if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1))
+      if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1)) {
          this.optionEF = 1;
+         this.optionLine = 0;
+         this.draw_errors = false;
+      }
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionCurve + this.optionStar + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
+      if (this.optionLine + this.optionFill + this.optionCurve + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
          else {
@@ -2195,9 +2207,6 @@
             return;
          }
       }
-      if (this.optionStar)
-         this.graph['fMarkerStyle'] = 3;
-
       if (this.optionCurve && this.optionFill) {
          this.optionCurveFill = 1;
          this.optionFill = 0;
@@ -2209,16 +2218,6 @@
          if (maxEX < 1.0e-300 && maxEY < 1.0e-300)
             this.draw_errors = false;
       }
-      this.seriesType = 'scatter';
-      if (this.optionBar == 1) this.seriesType = 'bar';
-      this.showMarker = false;
-      if (this.optionMark == 1 || this.optionStar == 1) this.showMarker = true;
-
-      if (this.optionLine == 1 || this.optionCurve == 1 || this.optionFill == 1)
-         this.seriesType = 'line';
-
-      if (this.optionEF == 1)
-         this.seriesType = 'line3';
 
    }
 
@@ -2516,9 +2515,6 @@
          if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
       }
 
-      /* filled bar graph */
-      this.draw_errors = false;
-
       var nodes = this.draw_g.selectAll("bar_graph")
                .data(bins).enter()
                .append("svg:rect")
@@ -2558,7 +2554,7 @@
          return res;
       }
 
-      if (this.seriesType == 'line3') {
+      if (this.optionEF > 0) {
          var area = d3.svg.area()
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                         .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
@@ -2568,19 +2564,17 @@
                     .attr("d", area(pthis.bins))
                     .style("stroke", "none")
                     .call(fill.func);
-
-         return;
       }
 
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
-      if (this.seriesType == 'bar') this.DrawBars(TooltipText);
+      if (this.optionBar == 1) this.DrawBars(TooltipText);
 
       if (this.exclusionGraph) {
          /* first draw exclusion area, and then the line */
-         this.showMarker = false;
+         this.optionMark = 0;
 
          this.draw_g.append("svg:path")
                      .attr("d", line(pthis.excl))
@@ -2590,7 +2584,7 @@
                      .style('opacity', 0.75);
       }
 
-      if (this.seriesType == 'line') {
+      if (this.optionLine == 1 || this.optionCurve == 1 || this.optionFill == 1) {
 
          var close_symbol = "";
          if (this.graph._typename=="TCutG") close_symbol = " Z";
@@ -2610,7 +2604,7 @@
                .call(fill.func);
 
          // do not add tooltip for line, when we wants to add markers
-         if (JSROOT.gStyle.Tooltip && !this.showMarker)
+         if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
             this.draw_g.selectAll("draw_line")
                        .data(pthis.bins).enter()
                        .append("svg:circle")
@@ -2622,14 +2616,9 @@
                        .text(TooltipText);
       }
 
-      if (this.draw_errors)
-         this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
-                             this.graph['_typename'] == 'TGraphAsymmErrors' ||
-                             this.graph['_typename'].match(/^RooHist/)) && !this.optionBar;
-
       var nodes = null;
 
-      if (this.draw_errors || this.showMarker) {
+      if (this.draw_errors || this.optionMark) {
          var draw_bins = new Array;
          for (var i in this.bins) {
             var pnt = this.bins[i];
@@ -2717,9 +2706,12 @@
               .style("stroke-width", this.lineatt.width);
       }
 
-      if (this.showMarker) {
+      if (this.optionMark) {
          /* Add markers */
-         var marker = JSROOT.Painter.createAttMarker(this.graph);
+         var style = null;
+         if (this.optionMark == 2) style = 3;
+
+         var marker = JSROOT.Painter.createAttMarker(this.graph, style);
 
          nodes.append("svg:path").call(marker.func);
       }
@@ -2742,6 +2734,8 @@
    }
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
+
+      console.log('draw graph with opt ' + opt);
 
       var painter = new JSROOT.TGraphPainter(graph);
       painter.SetDivId(divid, -1); // just to get access to existing elements
