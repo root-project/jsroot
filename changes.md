@@ -20,6 +20,7 @@
 11.Support new draw options for TGraph:
      'C' - smoothing of curve with spline approximation  
      'B1'- bars starting from 0
+     '2' - draw rectangles for errors
      '3','4' - fill area between error bars (without and with smoothing)
 12.Primary support for STL containers in IO part. For now limit to classes, used in TF1.
  

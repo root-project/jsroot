@@ -2158,7 +2158,7 @@
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
-      JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0,
+      JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
                             optionFill:0, optionZ:0, optionNone:0, opt:"LP"});
 
@@ -2194,6 +2194,9 @@
       if (this.opt.indexOf('1') != -1) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
+      if (this.opt.indexOf('2') != -1)
+         this.optionRect = 1;
+
       if (this.opt.indexOf('3') != -1) {
          this.optionEF = 1;
          this.optionLine = 0;
@@ -2208,7 +2211,7 @@
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE + this.optionEF  == 0) {
+      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE + this.optionEF + this.optionRect  == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
          else {
@@ -2390,7 +2393,7 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionMark) {
+      if (this.draw_errors || this.optionMark || this.optionRect) {
          var draw_bins = new Array;
          for (var i in this.bins) {
             var pnt = this.bins[i];
@@ -2418,6 +2421,16 @@
 
       if (JSROOT.gStyle.Tooltip && nodes)
          nodes.append("svg:title").text(TooltipText);
+
+      if (this.optionRect) {
+         nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
+           .append("svg:rect")
+           .attr("x", function(d) { return d.grx0; })
+           .attr("y", function(d) { return d.gry2; })
+           .attr("width", function(d) { return d.grx2 - d.grx0; })
+           .attr("height", function(d) { return d.gry0 - d.gry2; })
+           .call(this.fillatt.func);
+      }
 
       if (this.draw_errors) {
          // than doing filer append error bars
