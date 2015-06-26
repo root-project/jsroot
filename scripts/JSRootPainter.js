@@ -2159,7 +2159,7 @@
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0,
-                            optionMark:0, optionBar:0, optionR:0, optionOne:0, optionE:0, optionEF:0,
+                            optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
                             optionFill:0, optionZ:0, optionCurveFill:0, optionNone:0, opt:"LP"});
 
       this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
@@ -2187,8 +2187,9 @@
       }
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
-      if (this.opt.indexOf('1') != -1)
-         this.optionOne = 1;
+      if (this.opt.indexOf('1') != -1) {
+         if (this.optionBar == 1) this.optionBar = 2;
+      }
       if (this.opt.indexOf('F') != -1)
          this.optionFill = 1;
       if ((this.opt.indexOf('3') != -1) || (this.opt.indexOf('4') != -1)) {
@@ -2515,13 +2516,16 @@
          if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
       }
 
+      var h = this.frame_height();
+      if (this.optionBar == 1) h = 0;
+
       var nodes = this.draw_g.selectAll("bar_graph")
                .data(bins).enter()
                .append("svg:rect")
                .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
                .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
                .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
-               .attr("height", function(d) { return pmain.gry(0.0) - pmain.gry(d.y); })
+               .attr("height", function(d) { return ((h > 0 ? h : pmain.gry(0)) - pmain.gry(d.y)).toFixed(1); })
                .call(fill.func);
 
       if (JSROOT.gStyle.Tooltip)
@@ -2570,7 +2574,7 @@
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
-      if (this.optionBar == 1) this.DrawBars(TooltipText);
+      if (this.optionBar) this.DrawBars(TooltipText);
 
       if (this.exclusionGraph) {
          /* first draw exclusion area, and then the line */
