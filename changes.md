@@ -17,12 +17,8 @@
    fit format for statistic display 
 10.Implement 'g' formatting kind for stat box output - one need to checks 
    significant digits when producing output.  
-11.Support new draw options for TGraph:
-     'C' - smoothing of curve with spline approximation  
-     'B1'- bars starting from 0
-     '2' - draw rectangles for errors
-     '3','4' - fill area between error bars (without and with smoothing)
-12.Primary support for STL containers in IO part. For now limit to classes, used in TF1.
+11.Support new draw options for TGraph: 'C', 'B1', '2', '3', '4'
+12.Primary support for STL containers in IO part. Allows to read ROOT6 TF1.
  
 
 ## Changes in 3.5

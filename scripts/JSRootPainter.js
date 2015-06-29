@@ -2144,6 +2144,7 @@
       JSROOT.TObjectPainter.call(this, graph);
       this.graph = graph;
       this.ownhisto = false; // indicate if graph histogram was drawn for axes
+      this.bins = null;
    }
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2230,41 +2231,90 @@
    }
 
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
-      var pthis = this;
+      var gr = this.graph;
+      if (gr==null) return;
 
-      var npoints = this.graph['fNpoints'];
-      if ((this.graph._typename=="TCutG") && (npoints>3)) npoints--;
+      var npoints = gr['fNpoints'];
+      if ((gr._typename=="TCutG") && (npoints>3)) npoints--;
 
       var kind = 0;
-      if (this.graph['_typename'] == 'TGraphErrors') kind = 1; else
-      if (this.graph['_typename'] == 'TGraphAsymmErrors'
-          || this.graph['_typename'].match(/^RooHist/)) kind = 2;
+      if (gr['_typename'] == 'TGraphErrors') kind = 1; else
+      if (gr['_typename'] == 'TGraphAsymmErrors'
+          || gr['_typename'].match(/^RooHist/)) kind = 2;
 
       this.bins = d3.range(npoints).map(
             function(p) {
                if (kind == 1)
                   return {
-                     x : pthis.graph['fX'][p],
-                     y : pthis.graph['fY'][p],
-                     exlow : pthis.graph['fEX'][p],
-                     exhigh : pthis.graph['fEX'][p],
-                     eylow : pthis.graph['fEY'][p],
-                     eyhigh : pthis.graph['fEY'][p]
+                     x : gr['fX'][p],
+                     y : gr['fY'][p],
+                     exlow : gr['fEX'][p],
+                     exhigh : gr['fEX'][p],
+                     eylow : gr['fEY'][p],
+                     eyhigh : gr['fEY'][p]
                   };
                if (kind == 2)
                   return {
-                     x : pthis.graph['fX'][p],
-                     y : pthis.graph['fY'][p],
-                     exlow : pthis.graph['fEXlow'][p],
-                     exhigh : pthis.graph['fEXhigh'][p],
-                     eylow : pthis.graph['fEYlow'][p],
-                     eyhigh : pthis.graph['fEYhigh'][p]
+                     x : gr['fX'][p],
+                     y : gr['fY'][p],
+                     exlow : gr['fEXlow'][p],
+                     exhigh : gr['fEXhigh'][p],
+                     eylow : gr['fEYlow'][p],
+                     eyhigh : gr['fEYhigh'][p]
                   };
                return {
-                     x : pthis.graph['fX'][p],
-                     y : pthis.graph['fY'][p]
+                     x : gr['fX'][p],
+                     y : gr['fY'][p]
                   };
             });
+   }
+
+   JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
+      // bins should be created
+
+      var xmin, xmax, ymin, ymax;
+
+      if (this.bins==null) {
+         xmin = 0; xmax = 1; ymin = 0; ymax = 1;
+      } else
+      for (var n in this.bins) {
+         var pnt = this.bins[n];
+         if ((xmin==null) || (pnt.x < xmin)) xmin = pnt.x;
+         if ((xmax==null) || (pnt.x > xmax)) xmax = pnt.x;
+         if ((ymin==null) || (pnt.y < ymin)) ymin = pnt.y;
+         if ((ymax==null) || (pnt.y > ymax)) ymax = pnt.y;
+         if ('exlow' in pnt) {
+            xmin = Math.min(xmin, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+            xmax = Math.max(xmax, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+            ymin = Math.min(ymin, pnt.y - pnt.eylow, pnt.y + pnt.eylow);
+            ymax = Math.max(ymax, pnt.y - pnt.eylow, pnt.y + pnt.eylow);
+         }
+      }
+
+      if (xmin == xmax) xmax+=1;
+      if (ymin == ymax) ymax+=1;
+      var dx = (xmax - xmin)*0.1;
+      var dy = (ymax - ymin)*0.1;
+      var uxmin = xmin - dx, uxmax = xmax + dx;
+      var minimum = ymin - dy, maximum = ymax + dy;
+      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
+      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+
+      if (this.graph.fMinimum != -1111) minimum = ymin = this.graph.fMinimum;
+      if (this.graph.fMaximum != -1111) maximum = ymax = this.graph.fMaximum;
+      if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
+
+      var histo = JSROOT.CreateTH1(100);
+      histo.fName = this.graph.fName + "_h";
+      histo.fTitle = this.graph.fTitle;
+      histo.fXaxis.fXmin = uxmin;
+      histo.fXaxis.fXmax = uxmax;
+      histo.fYaxis.fXmin = minimum;
+      histo.fYaxis.fXmax = maximum;
+      histo.fXaxis.fMinimum = minimum;
+      histo.fXaxis.fMaximum = maximum;
+      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      return histo;
    }
 
    JSROOT.TGraphPainter.prototype.DrawBars = function() {
@@ -2757,20 +2807,19 @@
       console.log('draw graph with opt ' + opt);
 
       var painter = new JSROOT.TGraphPainter(graph);
+      painter.CreateBins();
+
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       if (painter.main_painter() == null) {
-         if (graph['fHistogram']==null) {
-            alert("drawing first graph without fHistogram field, not (yet) supported");
-            return null;
-         }
+         if (graph['fHistogram']==null)
+            graph['fHistogram'] = painter.CreateHistogram();
          JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram']);
          painter.ownhisto = true;
       }
 
       painter.SetDivId(divid);
       painter.DecodeOptions(opt);
-      painter.CreateBins();
       painter.DrawBins();
       return painter.DrawingReady();
    }
