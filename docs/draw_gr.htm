@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 
-   <title>Supported classes and options by JSROOT</title>
+   <title>Supported draw options for TGraph class</title>
 
    <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
 
@@ -17,6 +17,7 @@
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
       if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://web-docs.gsi.de/~linev/js/files/"; else
+      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
@@ -99,85 +100,21 @@
             arg += "&path=" + global_dir;
          }
 
-         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?" + arg + "'>Only items/options list</a><br/>"; 
-         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?default&" + arg + "'>Drawings with default options</a><br/>"; 
-         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
-
-         LoadFile("hsimple.root", function(file) {
-            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;E2");
-            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL2;COL3;LEGO");
-            draw_item_options(file, "hprof;1", "prof_draw", ";E;E1;E2");
-         });
-
-         LoadFile("glbox.root", function(file) {
-            draw_item_options(file, "h31;1", "h3_draw", "");
-         });
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?" + arg + "'>Only items/options list</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?default&" + arg + "'>Drawings with default options</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("graph.root", function(file) {
-            draw_item_options(file, "Graph;1", "gr_draw", ";L;P;*;LP;B;B1");
+            draw_item_options(file, "Graph;1", "gr1_draw", ";L;P;*;LP;B;B1");
          });
 
          LoadFile("macro2.root", function(file) {
-            draw_item_options(file, "c1;1", "gr2_draw", "");
-         });
-
-         LoadFile("fillrandom.root", function(file) {
-            draw_item_options(file, "sqroot;1", "f1_draw", "");
-         });
-
-         LoadFile("ip0.root", function(file) {
-            draw_item_options(file, "c;1", "f1_draw2", "");
-         });
-
-         LoadFile("danilo5.root", function(file) {
-            draw_item_options(file, "canvas;1", "f1_draw3", "", 0.);
-         });
-
-         LoadFile("danilo6.root", function(file) {
-            draw_item_options(file, "canvas;1", "f1_draw4", "", 0.);
-         });
-
-         LoadFile("latex.root", function(file) {
-            draw_item_options(file, "ex3;1", "lat1_draw", ";mathjax=1");
-         });
-
-         LoadFile("rf107.root", function(file) {
-            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", 0.);
-         });
-
-         LoadFile("ct.root", function(file) {
-            draw_item_options(file, "ct;1", "can2_draw", "", 0.);
-         });
-
-         LoadFile("zdemo.root", function(file) {
-            draw_item_options(file, "zdemo;1", "can3_draw", ";mathjax=1", 0.);
-         });
-
-         if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null))
-            LoadFile("JPsi_evolution.root", function(file) {
-               draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0.);
-            });
-
-         LoadFile("stacks.root", function(file) {
-            draw_item_options(file, "stacks;1", "can5_draw", "", 0.);
-         });
-
-         LoadFile("legends.root", function(file) {
-            draw_item_options(file, "legends;1", "can6_draw", ";mathjax=1", 0.);
+            draw_item_options(file, "c1;1", "can1_draw", "");
          });
 
          LoadFile("exclusion.root", function(file) {
-            draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
+            draw_item_options(file, "exclusion;1", "can2_draw", "", 0.);
          });
-
-         if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null)) {
-            LoadFile("can4.root", function(file) {
-               draw_item_options(file, "c1;1", "can8_draw", "", 0.);
-            });
-            LoadFile("higgs_c.root", function(file) {
-               draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3;mathjax=1", 0.);
-            });
-         }
 
 
       }
@@ -189,49 +126,15 @@
 
   <div id="debug">loading...</div>
 
-  <h1>TH1 class</h1> 
-
-  <div id="h1_draw"></div>
-
-  <h1>TH2 class</h1> 
-
-  <div id="h2_draw"></div>
-
-  <h1>TH3 class</h1> 
-
-  <div id="h3_draw"></div>
-
-  <h1>TProfile class</h1> 
-
-  <div id="prof_draw"></div>
-
   <h1>TGraph class</h1> 
 
-  <div id="gr_draw"></div>
+  <div id="gr1_draw"></div>
   <div id="gr2_draw"></div>
 
-  <h1>TF1 class</h1> 
+  <h1>Canvas with TGraph</h1> 
 
-  <div id="f1_draw"></div>
-  <div id="f1_draw2"></div>
-  <div id="f1_draw3"></div>
-  <div id="f1_draw4"></div>
-
-  <h1>TPaveText class</h1> 
-
-  <div id="lat1_draw"></div>
-
-  <h1>TCanvas class</h1> 
-
-  <div id="can_draw"></div>
+  <div id="can1_draw"></div>
   <div id="can2_draw"></div>
-  <div id="can3_draw"></div>
-  <div id="can4_draw"></div>
-  <div id="can5_draw"></div>
-  <div id="can6_draw"></div>
-  <div id="can7_draw"></div>
-  <div id="can8_draw"></div>
-  <div id="can9_draw"></div>
 
 </body>
 

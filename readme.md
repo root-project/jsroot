@@ -25,7 +25,9 @@ JavaScript ROOT [changelog](changes.md)
 
 Default [user interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://web-docs.gsi.de/~linev/js/files/) via rawgit.com
 
-[List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm?minimal)
+[TGraph drawings](http://rawgit.com/linev/jsroot/master/docs/draw_gr.htm)
+
+[List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm)
 
 Latex drawings [without](http://rawgit.com/linev/jsroot/master/docs/latex.htm) and [with](http://rawgit.com/linev/jsroot/master/docs/latex.htm?mathjax) MathJax.js support
 
