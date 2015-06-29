@@ -41,6 +41,7 @@
       function CreateGui() {
 
          if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://web-docs.gsi.de/~linev/js/files/"; else
+         if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
          if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
          document.getElementById('debug').innerHTML = '';

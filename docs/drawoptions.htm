@@ -17,6 +17,7 @@
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
       if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://web-docs.gsi.de/~linev/js/files/"; else
+      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
@@ -27,11 +28,18 @@
       }
 
       function draw_item_options(file, itemname, divid, options, factor) {
+         var comment = null;
+         var pos = options.indexOf("comment:");
+         if (pos >= 0) {
+            comment = options.substr(pos+8);
+            options = options.substr(0,pos);
+         }
+         
          var arr = options.split(";");
 
          var fname = file.fURL;
          if (fname.indexOf("http")!=0)
-            fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "demo/"+ file.fURL;
+            fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "docs/"+ file.fURL;
 
          var has_equal = false;
 
@@ -52,7 +60,11 @@
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
+         
+         if (comment != null) html += comment;
+         
          html += "<br/><br/>";
+         
 
          document.getElementById(divid).innerHTML += html;
 
@@ -61,7 +73,7 @@
          // special case - do not draw on main page
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
-         if (factor!=null) h = w * factor;
+         if (factor != null) h = w * factor;
 
          for (var i in arr) {
             var subid = divid + "_" + i;
@@ -113,14 +125,6 @@
             draw_item_options(file, "h31;1", "h3_draw", "");
          });
 
-         LoadFile("graph.root", function(file) {
-            draw_item_options(file, "Graph;1", "gr_draw", ";L;P;*;LP;B;B1");
-         });
-
-         LoadFile("macro2.root", function(file) {
-            draw_item_options(file, "c1;1", "gr2_draw", "");
-         });
-
          LoadFile("fillrandom.root", function(file) {
             draw_item_options(file, "sqroot;1", "f1_draw", "");
          });
@@ -135,10 +139,6 @@
 
          LoadFile("danilo6.root", function(file) {
             draw_item_options(file, "canvas;1", "f1_draw4", "", 0.);
-         });
-
-         LoadFile("latex.root", function(file) {
-            draw_item_options(file, "ex3;1", "lat1_draw", ";mathjax=1");
          });
 
          LoadFile("rf107.root", function(file) {
@@ -205,10 +205,7 @@
 
   <div id="prof_draw"></div>
 
-  <h1>TGraph class</h1> 
-
-  <div id="gr_draw"></div>
-  <div id="gr2_draw"></div>
+  <h1><a href="draw_gr.htm">TGraph</a> class</h1> 
 
   <h1>TF1 class</h1> 
 
@@ -217,9 +214,8 @@
   <div id="f1_draw3"></div>
   <div id="f1_draw4"></div>
 
-  <h1>TPaveText class</h1> 
+  <h1><a href="latex.htm">TPaveText</a> class</h1> 
 
-  <div id="lat1_draw"></div>
 
   <h1>TCanvas class</h1> 
 

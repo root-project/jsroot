@@ -28,11 +28,18 @@
       }
 
       function draw_item_options(file, itemname, divid, options, factor) {
+         var comment = null;
+         var pos = options.indexOf("comment:");
+         if (pos >= 0) {
+            comment = options.substr(pos+8);
+            options = options.substr(0,pos);
+         }
+         
          var arr = options.split(";");
 
          var fname = file.fURL;
          if (fname.indexOf("http")!=0)
-            fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "demo/"+ file.fURL;
+            fname = (JSROOT.source_dir.indexOf("http")==0) ? file.fURL.substr(3) : "docs/"+ file.fURL;
 
          var has_equal = false;
 
@@ -53,7 +60,11 @@
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
+         
+         if (comment != null) html += comment;
+         
          html += "<br/><br/>";
+         
 
          document.getElementById(divid).innerHTML += html;
 
@@ -62,7 +73,7 @@
          // special case - do not draw on main page
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
-         if (factor!=null) h = w * factor;
+         if (factor != null) h = w * factor;
 
          for (var i in arr) {
             var subid = divid + "_" + i;
@@ -106,16 +117,24 @@
 
          LoadFile("graph.root", function(file) {
             draw_item_options(file, "Graph;1", "gr1_draw", ";L;P;*;LP;B;B1");
+            draw_item_options(file, "GraphErrors;1", "gr2_draw", ";0;3;4");
+            draw_item_options(file, "GraphAsymmErrors;1", "gr3_draw", ";2");
+            draw_item_options(file, "c1;1", "docu_c1", "");
+            draw_item_options(file, "c47;1", "docu_c47", "");
+            draw_item_options(file, "exclusion;1", "docu_excl", "");
+            draw_item_options(file, "c4;1", "docu_c4", "");
+            draw_item_options(file, "c48;1", "docu_c48", "comment: <small>&lt;parially working&gt;</small>");
+            draw_item_options(file, "c41;1", "docu_c41", "");
+            draw_item_options(file, "c42;1", "docu_c42", "");
+            draw_item_options(file, "c43;1", "docu_c43", "comment: <small>&lt;not yet working&gt;</small>");
+            draw_item_options(file, "c44;1", "docu_c44", "");
+            draw_item_options(file, "c45;1", "docu_c45", "comment: <small>&lt;not yet working&gt;</small>");
+            draw_item_options(file, "c46;1", "docu_c46", "comment: <small>&lt;not yet working&gt;</small>");
          });
 
          LoadFile("macro2.root", function(file) {
             draw_item_options(file, "c1;1", "can1_draw", "");
          });
-
-         LoadFile("exclusion.root", function(file) {
-            draw_item_options(file, "exclusion;1", "can2_draw", "", 0.);
-         });
-
 
       }
    </script>
@@ -127,14 +146,30 @@
   <div id="debug">loading...</div>
 
   <h1>TGraph class</h1> 
-
   <div id="gr1_draw"></div>
+
+  <h1>TGraphErrors class</h1> 
   <div id="gr2_draw"></div>
 
-  <h1>Canvas with TGraph</h1> 
+  <h1>TGraphAsymmErrors class</h1> 
+  <div id="gr3_draw"></div>
 
+  <h1>Most examples from <a href="https://root.cern.ch/root/html/TGraphPainter.html">TGraphPainter</a> docu</h1> 
+
+  <div id="docu_c1"></div>
+  <div id="docu_c47"></div>
+  <div id="docu_excl"></div>
+  <div id="docu_c4"></div>
+  <div id="docu_c48"></div>
+  <div id="docu_c41"></div>
+  <div id="docu_c42"></div>
+  <div id="docu_c43"></div>
+  <div id="docu_c44"></div>
+  <div id="docu_c45"></div>
+  <div id="docu_c46"></div>
+
+  <h1>Some more exmaples with TCanvas </h1>
   <div id="can1_draw"></div>
-  <div id="can2_draw"></div>
 
 </body>
 
