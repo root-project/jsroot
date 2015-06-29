@@ -166,16 +166,12 @@
             draw_item_options(file, "legends;1", "can6_draw", ";mathjax=1", 0.);
          });
 
-         LoadFile("exclusion.root", function(file) {
-            draw_item_options(file, "exclusion;1", "can7_draw", "", 0.);
-         });
-
          if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null)) {
             LoadFile("can4.root", function(file) {
-               draw_item_options(file, "c1;1", "can8_draw", "", 0.);
+               draw_item_options(file, "c1;1", "can7_draw", "", 0.);
             });
             LoadFile("higgs_c.root", function(file) {
-               draw_item_options(file, "c;1", "can9_draw", "col=1;col=2;col=3;mathjax=1", 0.);
+               draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", 0.);
             });
          }
 
@@ -227,7 +223,6 @@
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
-  <div id="can9_draw"></div>
 
 </body>
 

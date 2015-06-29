@@ -2336,16 +2336,23 @@
       }
 
       var h = this.frame_height();
-      if (this.optionBar == 1) h = 0;
+      var normal = (this.optionBar != 1);
       var pmain = this.main_painter();
 
       return this.draw_g.selectAll("bar_graph")
                .data(bins).enter()
                .append("svg:rect")
-               .attr("x", function(d) { return pmain.grx(d.xl).toFixed(1); })
-               .attr("y", function(d) { return pmain.gry(d.y).toFixed(1); })
+               .attr("x", function(d) { return (pmain.grx(d.xl)+0.5).toFixed(1); })
+               .attr("y", function(d) {
+                  if (normal || (d.y>=0)) return pmain.gry(d.y).toFixed(1);
+                  return pmain.gry(0).toFixed(1);
+                })
                .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
-               .attr("height", function(d) { return ((h > 0 ? h : pmain.gry(0)) - pmain.gry(d.y)).toFixed(1); })
+               .attr("height", function(d) {
+                  var hh = pmain.gry(d.y);
+                  if (normal) return hh>h ? 0 : (h - hh).toFixed(1);
+                  return (d.y<0) ? (hh - pmain.gry(0)).toFixed(1) : (pmain.gry(0) - hh).toFixed(1);
+                })
                .call(this.fillatt.func);
    }
 
