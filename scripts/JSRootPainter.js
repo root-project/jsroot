@@ -2162,13 +2162,13 @@
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
                             optionFill:0, optionZ:0, optionBrackets:0,
-                            opt:"LP", out_of_range: false });
+                            opt:"LP", out_of_range: false, has_errors: false, draw_errors: false, is_bent:false });
 
-      this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
-                          this.graph['_typename'] == 'TGraphAsymmErrors' ||
-                          this.graph['_typename'] == 'TGraphBentErrors' ||
-                          this.graph['_typename'].match(/^RooHist/));
-
+      this.is_bent = this.graph['_typename'] == 'TGraphBentErrors';
+      this.has_errors = (this.graph['_typename'] == 'TGraphErrors' ||
+                         this.graph['_typename'] == 'TGraphAsymmErrors' ||
+                         this.is_bent || this.graph['_typename'].match(/^RooHist/));
+      this.draw_errors = this.has_errors;
 
       if ((opt != null) && (opt != "")) {
          this.opt = opt.toUpperCase();
@@ -2472,10 +2472,25 @@
             // caluclate graphical coordinates
             pnt['grx1'] = grx.toFixed(1);
             pnt['gry1'] = gry.toFixed(1);
-            if (pnt.exlow > 0)  pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
-            if (pnt.exhigh > 0) pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
-            if (pnt.eylow > 0)  pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
-            if (pnt.eyhigh > 0) pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+
+            if (this.has_errors) {
+               pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
+               pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
+               pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
+               pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+
+               if (this.is_bent) {
+                  pnt['grdx0'] = pmain.gry(pnt.y + this.graph.fEXlowd[i]) - gry;
+                  pnt['grdx2'] = pmain.gry(pnt.y + this.graph.fEXhighd[i]) - gry;
+                  pnt['grdy0'] = pmain.grx(pnt.x + this.graph.fEYlowd[i]) - grx;
+                  pnt['grdy2'] = pmain.grx(pnt.x + this.graph.fEYhighd[i]) - grx;
+               } else {
+                  pnt['grdx0'] = 0; // in y direction
+                  pnt['grdx2'] = 0; // in y direction
+                  pnt['grdy0'] = 0; // in x direction
+                  pnt['grdy2'] = 0; // in x direction
+               }
+            }
 
             draw_bins.push(pnt);
          }
@@ -2549,61 +2564,69 @@
       }
 
       if (this.draw_errors) {
-         // than doing filer append error bars
-         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0); })
-              .append("svg:line")
-              .attr("x1", function(d) { return d.grx0; })
-              .attr("y1", 0)
+         // lower x error
+         var prnt = nodes.filter(function(d) { return (d.exlow > 0); });
+         prnt.append("svg:line")
+             .attr("y1", 0).attr("x1", 0)
+             .attr("x2", function(d) { return d.grx0; })
+             .attr("y2", function(d) { return d.grdx0.toFixed(1); })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+             .attr("y1", function(d) { return (d.grdx0-3).toFixed(1); })
+             .attr("x1", function(d) { return d.grx0; })
+             .attr("y2", function(d) { return (d.grdx0+3).toFixed(1); })
+             .attr("x2", function(d) { return d.grx0; })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
+
+         // high x error
+         prnt = nodes.filter(function(d) { return (d.exhigh > 0); });
+         prnt.append("svg:line")
+              .attr("x1", 0).attr("y1", 0)
               .attr("x2", function(d) { return d.grx2; })
-              .attr("y2", 0)
+              .attr("y2", function(d) { return d.grdx2.toFixed(1); })
               .style("stroke", this.lineatt.color)
               .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.exlow > 0); })
-              .append("svg:line")
-              .attr("y1", -3)
-              .attr("x1", function(d) { return d.grx0; })
-              .attr("y2", 3)
-              .attr("x2", function(d) { return d.grx0; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.exhigh > 0); })
-              .append("svg:line")
-              .attr("y1", -3)
+         prnt.append("svg:line")
               .attr("x1", function(d) { return d.grx2; })
-              .attr("y2", 3)
+              .attr("y1", function(d) { return (d.grdx2-3).toFixed(1); })
               .attr("x2", function(d) { return d.grx2; })
+              .attr("y2", function(d) { return (d.grdx2+3).toFixed(1); })
               .style("stroke", this.lineatt.color)
               .style( "stroke-width", this.lineatt.width);
 
-         // Add y-error indicators
-         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
-              .append("svg:line")
-              .attr("x1", 0)
-              .attr("y1", function(d) { return d.gry0; })
-              .attr("x2", 0)
-              .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
+         // low y error
+         prnt = nodes.filter(function(d) { return (d.eylow > 0); });
+         prnt.append("svg:line")
+             .attr("x1", 0).attr("y1", 0)
+             .attr("x2", function(d) { return d.grdy0.toFixed(1); })
+             .attr("y2", function(d) { return d.gry0; })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+             .attr("x1", function(d) { return (d.grdy0-3).toFixed(1); })
+             .attr("y1", function(d) { return d.gry0; })
+             .attr("x2", function(d) { return (d.grdy0+3).toFixed(1); })
+             .attr("y2", function(d) { return d.gry0; })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
 
-         nodes.filter(function(d) { return (d.eylow > 0); })
-              .append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return d.gry0; })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return d.gry0; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-
-         nodes.filter(function(d) { return (d.eyhigh > 0); })
-              .append("svg:line")
-              .attr("x1", -3)
-              .attr("y1", function(d) { return d.gry2; })
-              .attr("x2", 3)
-              .attr("y2", function(d) { return d.gry2; })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
+         // high y error
+         prnt = nodes.filter(function(d) { return (d.eyhigh > 0); })
+         prnt.append("svg:line")
+             .attr("x1", 0).attr("y1", 0)
+             .attr("x2", function(d) { return d.grdy2.toFixed(1); })
+             .attr("y2", function(d) { return d.gry2; })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+             .attr("x1", function(d) { return (d.grdy2-3).toFixed(1); })
+             .attr("y1", function(d) { return d.gry2; })
+             .attr("x2", function(d) { return (d.grdy2+3).toFixed(1); })
+             .attr("y2", function(d) { return d.gry2; })
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width);
       }
 
       if (this.optionMark) {
