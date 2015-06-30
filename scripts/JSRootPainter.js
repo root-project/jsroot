@@ -2161,7 +2161,8 @@
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
-                            optionFill:0, optionZ:0, opt:"LP", out_of_range: false });
+                            optionFill:0, optionZ:0, optionBrackets:0,
+                            opt:"LP", out_of_range: false });
 
       this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
                           this.graph['_typename'] == 'TGraphAsymmErrors' ||
@@ -2193,6 +2194,11 @@
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
 
+      if (this.opt.indexOf('[]') != -1) {
+         this.optionBrackets = 1;
+         this.draw_errors = false;
+      }
+
       if (this.opt.indexOf('0') != -1) {
          this.optionMark = 1;
          this.draw_errors = true;
@@ -2219,7 +2225,8 @@
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // if no drawing option is selected and if opt<>' ' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE + this.optionEF + this.optionRect  == 0) {
+      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
+          this.optionEF + this.optionRect + this.optionBrackets == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
       }
@@ -2453,7 +2460,7 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionMark || this.optionRect) {
+      if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets) {
          var draw_bins = new Array;
          for (var i in this.bins) {
             var pnt = this.bins[i];
@@ -2490,6 +2497,54 @@
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
            .call(this.fillatt.func);
+      }
+
+      if (this.optionBrackets) {
+         var prnt = nodes.filter(function(d) { return (d.eylow > 0); });
+         prnt.append("svg:line")
+            .attr("x1", -5)
+            .attr("y1", function(d) { return d.gry0; })
+            .attr("x2", 5)
+            .attr("y2", function(d) { return d.gry0; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width)
+         prnt.append("svg:line")
+            .attr("x1", -5)
+            .attr("y1", function(d) { return d.gry0; })
+            .attr("x2", -5)
+            .attr("y2", function(d) { return Number(d.gry0)-3; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+            .attr("x1", 5)
+            .attr("y1", function(d) { return d.gry0; })
+            .attr("x2", 5)
+            .attr("y2", function(d) { return Number(d.gry0)-3; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width);
+
+         prnt = nodes.filter(function(d) { return (d.eyhigh > 0); });
+         prnt.append("svg:line")
+            .attr("x1", -5)
+            .attr("y1", function(d) { return d.gry2; })
+            .attr("x2", 5)
+            .attr("y2", function(d) { return d.gry2; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+            .attr("x1", -5)
+            .attr("y1", function(d) { return d.gry2; })
+            .attr("x2", -5)
+            .attr("y2", function(d) { return Number(d.gry2)+3; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width);
+         prnt.append("svg:line")
+            .attr("x1", 5)
+            .attr("y1", function(d) { return d.gry2; })
+            .attr("x2", 5)
+            .attr("y2", function(d) { return Number(d.gry2)+3; })
+            .style("stroke", this.lineatt.color)
+            .style("stroke-width", this.lineatt.width);
       }
 
       if (this.draw_errors) {
