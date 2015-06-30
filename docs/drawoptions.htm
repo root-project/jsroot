@@ -102,16 +102,17 @@
 
          document.getElementById('debug').innerHTML = '';
 
-         document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
+         document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
 
-         var arg = "w=" + JSROOT.GetUrlOption("w", null, "800") + 
-                   "&h=" + JSROOT.GetUrlOption("h", null, "600");
+         var arg = "";
+         if (JSROOT.GetUrlOption("w") != null) arg += "&w=" + JSROOT.GetUrlOption("w");  
+         if (JSROOT.GetUrlOption("h") != null) arg += "&h=" + JSROOT.GetUrlOption("h");  
          if (JSROOT.GetUrlOption("path")!=null) {
             global_dir = JSROOT.GetUrlOption("path");
             arg += "&path=" + global_dir;
          }
 
-         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?" + arg + "'>Only items/options list</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?list" + arg + "'>Only items/options list</a><br/>"; 
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?default&" + arg + "'>Drawings with default options</a><br/>"; 
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
 
@@ -183,37 +184,39 @@
 
 <body onload="JSROOT.AssertPrerequisites(JSROOT.GetUrlOption('all')!=null || JSROOT.GetUrlOption('default')!=null ? '2d;3d;io' : '', CreateGui, 'debug')">
 
+  <h1>Supported draw options for different classes</h1> 
+
   <div id="debug">loading...</div>
 
-  <h1>TH1 class</h1> 
+  <h2>TH1 class</h2> 
 
   <div id="h1_draw"></div>
 
-  <h1>TH2 class</h1> 
+  <h2>TH2 class</h2> 
 
   <div id="h2_draw"></div>
 
-  <h1>TH3 class</h1> 
+  <h2>TH3 class</h2> 
 
   <div id="h3_draw"></div>
 
-  <h1>TProfile class</h1> 
+  <h2>TProfile class</h2> 
 
   <div id="prof_draw"></div>
 
-  <h1><a href="draw_gr.htm">TGraph</a> class</h1> 
+  <h2><a href="draw_gr.htm">TGraph</a> class</h2> 
 
-  <h1>TF1 class</h1> 
+  <h2>TF1 class</h2> 
 
   <div id="f1_draw"></div>
   <div id="f1_draw2"></div>
   <div id="f1_draw3"></div>
   <div id="f1_draw4"></div>
 
-  <h1><a href="latex.htm">TPaveText</a> class</h1> 
+  <h2><a href="latex.htm">TPaveText</a> class</h2> 
 
 
-  <h1>TCanvas class</h1> 
+  <h2>TCanvas class</h2> 
 
   <div id="can_draw"></div>
   <div id="can2_draw"></div>

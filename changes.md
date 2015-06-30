@@ -19,7 +19,7 @@
    significant digits when producing output.  
 11.Support new draw options for TGraph: 'C', 'B1', '0', '2', '3', '4', '[]'
 12.Primary support for STL containers in IO part. Allows to read ROOT6 TF1.
-13.Fully support TGraphBentErrors
+13.Full support of TGraphBentErrors
   
 
 ## Changes in 3.5

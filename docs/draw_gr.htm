@@ -102,18 +102,19 @@
 
          document.getElementById('debug').innerHTML = '';
 
-         document.getElementById('debug').innerHTML += "<h2>JavaScript ROOT version " + JSROOT.version + "</h2>";
+         document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
 
-         var arg = "w=" + JSROOT.GetUrlOption("w", null, "800") + 
-                   "&h=" + JSROOT.GetUrlOption("h", null, "600");
+         var arg = "";
+         if (JSROOT.GetUrlOption("w") != null) arg += "&w=" + JSROOT.GetUrlOption("w");  
+         if (JSROOT.GetUrlOption("h") != null) arg += "&h=" + JSROOT.GetUrlOption("h");  
          if (JSROOT.GetUrlOption("path")!=null) {
             global_dir = JSROOT.GetUrlOption("path");
             arg += "&path=" + global_dir;
          }
 
-         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?" + arg + "'>Only items/options list</a><br/>"; 
-         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?default&" + arg + "'>Drawings with default options</a><br/>"; 
-         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?list" + arg + "'>Only items/options list</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?default" + arg + "'>Drawings with default options</a><br/>"; 
+         document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?all" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("graph.root", function(file) {
             draw_item_options(file, "Graph;1", "gr1_draw", ";L;P;*;LP;B;B1");
@@ -143,18 +144,20 @@
 
 <body onload="JSROOT.AssertPrerequisites(JSROOT.GetUrlOption('all')!=null || JSROOT.GetUrlOption('default')!=null ? '2d;3d;io' : '', CreateGui, 'debug')">
 
+  <h1>Supported draw options for TGraph classes</h1> 
+
   <div id="debug">loading...</div>
 
-  <h1>TGraph class</h1> 
+  <h2>TGraph class</h2> 
   <div id="gr1_draw"></div>
 
-  <h1>TGraphErrors class</h1> 
+  <h2>TGraphErrors class</h2> 
   <div id="gr2_draw"></div>
 
-  <h1>TGraphAsymmErrors class</h1> 
+  <h2>TGraphAsymmErrors class</h2> 
   <div id="gr3_draw"></div>
 
-  <h1>Most examples from <a href="https://root.cern.ch/root/html/TGraphPainter.html">TGraphPainter</a> docu</h1> 
+  <h2>Most examples from <a href="https://root.cern.ch/root/html/TGraphPainter.html">TGraphPainter</a> docu</h2> 
 
   <div id="docu_c1"></div>
   <div id="docu_c47"></div>
@@ -168,7 +171,7 @@
   <div id="docu_c45"></div>
   <div id="docu_c46"></div>
 
-  <h1>Some more exmaples with TCanvas </h1>
+  <h2>Some more exmaples with TCanvas </h2>
   <div id="can1_draw"></div>
 
 </body>
