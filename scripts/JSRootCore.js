@@ -640,7 +640,12 @@
       var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
       var requirements = "io;2d;";
 
-      if (document.getElementById('simpleGUI')) { debugout = 'simpleGUI'; requirements = "io;2d;" } else
+      if (document.getElementById('simpleGUI')) {
+         debugout = 'simpleGUI';
+         if ((JSROOT.GetUrlOption('json')!=null) &&
+             (JSROOT.GetUrlOption('file')==null) &&
+             (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
+      } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
       if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
       if (!nobrowser) requirements+='jq2d;simple;';

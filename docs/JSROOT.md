@@ -19,6 +19,7 @@ The latest version of JSROOT can also be found online on <http://root.cern.ch/js
 The following parameters can be specified in the URL string:
 
 - file, files - name of the file(s), which will be automatically open with page loading
+- json - name of JSON file with stored ROOT object like histogram or canvas 
 - item, items - name of the item(s) to be displayed
 - opt, opts - drawing option(s) for the item(s)
 - layout - can be 'simple', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values

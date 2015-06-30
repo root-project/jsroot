@@ -8106,6 +8106,7 @@
          }
 
          h.get(itemname, function(item, obj) {
+
             if (updating && item) delete item['_doing_update'];
             if (obj==null) return JSROOT.CallBack(call_back, null, itemname);
 
@@ -8286,8 +8287,49 @@
    }
 
 
-   JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
+   JSROOT.HierarchyPainter.prototype.ForEachJsonFile = function(call_back) {
+      if (this.h==null) return;
+      if ('_jsonfile' in this.h)
+         return JSROOT.CallBack(call_back, this.h);
 
+      if (this.h._childs!=null)
+         for (var n in this.h._childs) {
+            var item = this.h._childs[n];
+            if ('_jsonfile' in item) JSROOT.CallBack(call_back, item);
+         }
+   }
+
+   JSROOT.HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
+      var isfileopened = false;
+      this.ForEachRootFile(function(item) { if (item._fullurl==filepath) isfileopened = true; });
+      if (isfileopened) return JSROOT.CallBack(call_back);
+
+      var pthis = this;
+      JSROOT.NewHttpRequest(filepath,'object', function(res) {
+         if (res == null) return JSROOT.CallBack(call_back);
+         var h1 = { _jsonfile : filepath, _kind : "ROOT." + res._typename, _jsontmp : res, _name: "json" };
+         if ('fName' in res) h1._name = res.fName;
+         h1._get = function(item,itemname,callback) {
+            if ('_jsontmp' in item) {
+               var res = item._jsontmp; delete item['_jsontmp'];
+               return JSROOT.CallBack(callback, item, res);
+            }
+            JSROOT.NewHttpRequest(item._jsonfile, 'object', function(res) {
+               return JSROOT.CallBack(callback, item, res);
+            }).send(null);
+         }
+         if (pthis.h == null) pthis.h = h1; else
+         if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
+            var h0 = pthis.h;
+            var topname = ('_jsonfile' in h0) ? "Files" : "Items";
+            pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
+         }
+
+         pthis.RefreshHtml(call_back);
+      }).send(null);
+   }
+
+   JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
       if (this.h==null) return;
       if ((this.h._kind == "ROOT.TFile") && (this.h._file!=null))
          return JSROOT.CallBack(call_back, this.h);
@@ -8301,9 +8343,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
-
       // first check that file with such URL already opened
-
       var isfileopened = false;
       this.ForEachRootFile(function(item) { if (item._fullurl==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
@@ -8651,15 +8691,20 @@
    JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
       var hpainter = this;
       var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
+      var jsonarr = JSROOT.GetUrlOptionAsArray("json");
       var filesdir = JSROOT.GetUrlOption("path");
-      if (filesdir!=null)
+      if (filesdir!=null) {
          for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
+         for (var i in jsonarr) jsonarr[i] = filesdir + jsonarr[i];
+      }
 
       var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
 
       var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
 
       var monitor = JSROOT.GetUrlOption("monitoring");
+
+      if ((jsonarr.length>0) && (itemsarr.length==0)) itemsarr.push("");
 
       var layout = JSROOT.GetUrlOption("layout");
       if (!this['disp_kind'] || (layout!=null))
@@ -8672,7 +8717,9 @@
       this.SetMonitoring(monitor);
 
       function OpenAllFiles() {
-         if (filesarr.length>0)
+         if (jsonarr.length>0)
+            hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
+         else if (filesarr.length>0)
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
          else
             hpainter.displayAll(itemsarr, optionsarr, function() {
