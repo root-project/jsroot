@@ -17,7 +17,7 @@
    fit format for statistic display 
 10.Implement 'g' formatting kind for stat box output - one need to checks 
    significant digits when producing output.  
-11.Support new draw options for TGraph: 'C', 'B1', '2', '3', '4'
+11.Support new draw options for TGraph: 'C', 'B1', '0', '2', '3', '4'
 12.Primary support for STL containers in IO part. Allows to read ROOT6 TF1.
  
 

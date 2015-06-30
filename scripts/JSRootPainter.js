@@ -2161,7 +2161,7 @@
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
-                            optionFill:0, optionZ:0, optionNone:0, opt:"LP"});
+                            optionFill:0, optionZ:0, opt:"LP", out_of_range: false });
 
       this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
                           this.graph['_typename'] == 'TGraphAsymmErrors' ||
@@ -2192,6 +2192,13 @@
       }
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
+
+      if (this.opt.indexOf('0') != -1) {
+         this.optionMark = 1;
+         this.draw_errors = true;
+         this.out_of_range = true;
+      }
+
       if (this.opt.indexOf('1') != -1) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
@@ -2215,10 +2222,6 @@
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE + this.optionEF + this.optionRect  == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
-         else {
-            this.optionNone = 1;
-            return;
-         }
       }
 
       if (this.graph['_typename'] == 'TGraphErrors') {
@@ -2456,7 +2459,7 @@
             var pnt = this.bins[i];
             var grx = pmain.grx(pnt.x);
             var gry = pmain.gry(pnt.y);
-            if ((grx<0) || (grx>w) || (gry<0) || (gry>h)) continue;
+            if (!this.out_of_range && ((grx<0) || (grx>w) || (gry<0) || (gry>h))) continue;
 
             // caluclate graphical coordinates
             pnt['grx1'] = grx.toFixed(1);
@@ -2519,7 +2522,6 @@
               .style( "stroke-width", this.lineatt.width);
 
          // Add y-error indicators
-
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
               .append("svg:line")
               .attr("x1", 0)
@@ -2550,8 +2552,7 @@
 
       if (this.optionMark) {
          /* Add markers */
-         var style = null;
-         if (this.optionMark == 2) style = 3;
+         var style = (this.optionMark == 2) ? 3 : null;
 
          var marker = JSROOT.Painter.createAttMarker(this.graph, style);
 
