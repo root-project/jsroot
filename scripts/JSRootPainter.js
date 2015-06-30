@@ -8430,7 +8430,7 @@
 
       var itemreq = JSROOT.NewHttpRequest(url, 'object', function(obj) {
 
-         if (!h_get && ('_after_request' in item)) {
+         if (!h_get && (item!=null) && ('_after_request' in item)) {
             var func = JSROOT.findFunction(item['_after_request']);
             if (typeof func == 'function') req = func(pthis, item, obj);
          }
