@@ -2166,6 +2166,7 @@
 
       this.draw_errors = (this.graph['_typename'] == 'TGraphErrors' ||
                           this.graph['_typename'] == 'TGraphAsymmErrors' ||
+                          this.graph['_typename'] == 'TGraphBentErrors' ||
                           this.graph['_typename'].match(/^RooHist/));
 
 
@@ -2249,7 +2250,7 @@
 
       var kind = 0;
       if (gr['_typename'] == 'TGraphErrors') kind = 1; else
-      if (gr['_typename'] == 'TGraphAsymmErrors'
+      if (gr['_typename'] == 'TGraphAsymmErrors' || gr['_typename'] == 'TGraphBentErrors'
           || gr['_typename'].match(/^RooHist/)) kind = 2;
 
       this.bins = d3.range(npoints).map(
