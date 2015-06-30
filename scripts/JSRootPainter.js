@@ -52,7 +52,8 @@
       StatFormat : "6.4g",
       FitFormat : "5.4g",
       MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
-      Palette : null  // color palette, initialized first time when used
+      Palette : null,  // color palette, initialized first time when used,
+      Interpolate : "basis" // d3.js interpolate methods, used in TGraph and TF1 painters
    };
 
    /**
@@ -165,6 +166,9 @@
       JSROOT.gStyle.OptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.OptFit);
       JSROOT.gStyle.StatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.StatFormat);
       JSROOT.gStyle.FitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.FitFormat);
+
+      var interpolate = JSROOT.GetUrlOption("interpolate", url);
+      if (interpolate!=null) JSROOT.gStyle.Interpolate = interpolate;
    }
 
    JSROOT.Painter.Coord = {
@@ -2399,7 +2403,7 @@
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                         .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
                         .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
-         if (this.optionEF > 1) area = area.interpolate('basis');
+         if (this.optionEF > 1) area = area.interpolate(JSROOT.gStyle.Interpolate);
          this.draw_g.append("svg:path")
                     .attr("d", area(this.bins))
                     .style("stroke", "none")
@@ -2412,7 +2416,7 @@
 
       // use smoothing of the line by basic spline interpolation
       if (this.optionCurve == 1)
-         line = line.interpolate('basis');
+         line = line.interpolate(JSROOT.gStyle.Interpolate);
 
       if (this.optionBar) {
          var nodes = this.DrawBars();
