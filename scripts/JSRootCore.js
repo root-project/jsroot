@@ -695,7 +695,7 @@
       else
       if (typename == 'TAttAxis') {
          JSROOT.extend(obj, { fNdivisions: 510, fAxisColor: 1,
-            fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.05, fLabelSize: 0.035, fTickLength: 0.03,
+            fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
             fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont : 42 });
       } else
       if (typename == 'TAxis') {
