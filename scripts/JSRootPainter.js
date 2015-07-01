@@ -3120,12 +3120,11 @@
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
       this.pavetext.AddText(txt);
-      //this.pavetext['fLines'].arr.push({'fTitle' : txt, "fTextColor" : 1 });
    }
 
    JSROOT.TPavePainter.prototype.IsStats = function() {
       if (!this.pavetext) return false;
-      return (this.pavetext['fName'] == "stats") && (this.pavetext['_typename'] == 'TPaveStats');
+      return this.pavetext['_typename'] == 'TPaveStats';
    }
 
    JSROOT.TPavePainter.prototype.Format = function(value, fmt)
@@ -3220,6 +3219,7 @@
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
       if (!this.IsStats()) return;
+      if (this.pavetext['fName'] != "stats") return;
 
       var dostat = new Number(this.pavetext['fOptStat']);
       var dofit = new Number(this.pavetext['fOptFit']);
@@ -3230,7 +3230,7 @@
       if ('FillStatistic' in this.main_painter()) {
 
          // make empty at the beginning
-         this.pavetext['fLines'].arr.length = 0;
+         this.pavetext.Clear();
 
          this.main_painter().FillStatistic(this, dostat, dofit);
       }
@@ -3258,7 +3258,6 @@
       painter.SetDivId(divid);
 
       // refill statistic in any case
-      // if ('_AutoCreated' in pavetext)
       painter.FillStatistic();
       painter.DrawPaveText();
       return painter.DrawingReady();
@@ -6121,6 +6120,7 @@
                continue;
             if (remove) {
                this.histo.fFunctions.arr.splice(i, 1);
+               this.histo.fFunctions.opt.splice(i, 1);
                return null;
             }
 
@@ -6252,7 +6252,7 @@
          this.histo['fFunctions'] = JSROOT.Create("TList");
 
       // place colz in the beginning, that stat box is always drawn on the top
-      this.histo.fFunctions.arr.unshift(pal);
+      this.histo.fFunctions.AddFirst(pal);
 
       // and at the end try to check how much place will be used by the labels
       // in the palette
@@ -9109,6 +9109,7 @@
    JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph,";L;P");
    JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
    JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
+   JSROOT.addDrawFunc("TPaletteAxis", JSROOT.Painter.drawPaletteAxis);
    JSROOT.addDrawFunc("kind:Text", JSROOT.Painter.drawRawText);
 
    JSROOT.getDrawFunc = function(classname, drawopt) {

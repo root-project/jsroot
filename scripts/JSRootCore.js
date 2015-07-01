@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "dev 30/06/2015";
+   JSROOT.version = "dev 1/07/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -902,7 +902,11 @@
          }
          obj['Add'] = function(obj,opt) {
             this['arr'].push(obj);
-            this['opt'].push((typeof opt=='string') ? opt : "");
+            this['opt'].push((opt && typeof opt=='string') ? opt : "");
+         }
+         obj['AddFirst'] = function(obj,opt) {
+            this['arr'].unshift(obj);
+            this['opt'].unshift((opt && typeof opt=='string') ? opt : "");
          }
       }
 
