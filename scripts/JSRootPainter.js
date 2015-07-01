@@ -45,7 +45,8 @@
       AutoStat : true,
       OptStat  : 1111,
       OptFit   : 0,
-      StatNDC  : { fX1NDC : 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
+      FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
+      StatNDC  : { fX1NDC: 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
       StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
       StatFill : { fFillColor: 0, fFillStyle: 1001 },
       TimeOffset : 788918400000, // UTC time at 01/01/95
@@ -1820,8 +1821,8 @@
    JSROOT.TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       var ndc = this.svg_frame().property('NDC');
       if (ndc) {
-         ndc.x1 += shrink_left;
-         ndc.x2 -= shrink_right;
+         ndc.fX1NDC += shrink_left;
+         ndc.fX2NDC -= shrink_right;
       }
    }
 
@@ -1830,14 +1831,14 @@
       var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
-      if (ndc == null) ndc = { x1 : 0.07, y1 : 0.12, x2 : 0.95, y2 : 0.88 };
+      if (ndc == null) ndc = JSROOT.clone(JSROOT.gStyle.FrameNDC);
 
       var root_pad = this.root_pad();
 
-      var lm = width * ndc.x1;
-      var rm = width * (1 - ndc.x2);
-      var tm = height * ndc.y1;
-      var bm = height * (1 - ndc.y2);
+      var lm = width * ndc.fX1NDC;
+      var rm = width * (1 - ndc.fX2NDC);
+      var tm = height * ndc.fY1NDC;
+      var bm = height * (1 - ndc.fY2NDC);
 
       var framecolor = this.createAttFill('white'),
           lineatt = JSROOT.Painter.createAttLine('black'),
@@ -1906,10 +1907,10 @@
 
       // calculate actual NDC coordinates, use them to properly locate PALETTE
       frame_g.property('NDC', {
-         x1 : lm / width,
-         x2 : (lm + w) / width,
-         y1 : tm / height,
-         y2 : (tm + h) / height
+         fX1NDC : lm / width,
+         fX2NDC : (lm + w) / width,
+         fY1NDC : tm / height,
+         fY2NDC : (tm + h) / height
       });
 
       // simple workaround to access painter via frame container
@@ -6142,10 +6143,10 @@
 
       var ndc = this.svg_frame().property('NDC');
 
-      pal['fX1NDC'] = ndc.x2 - rel_width;
-      pal['fY1NDC'] = ndc.y1;
-      pal['fX2NDC'] = ndc.x2;
-      pal['fY2NDC'] = ndc.y2;
+      pal['fX1NDC'] = ndc.fX2NDC - rel_width;
+      pal['fY1NDC'] = ndc.fY1NDC;
+      pal['fX2NDC'] = ndc.fX2NDC;
+      pal['fY2NDC'] = ndc.fY2NDC;
       pal['fInit'] = 1;
       pal['fShadowColor'] = 1;
       pal['fCorenerRadius'] = 0;
