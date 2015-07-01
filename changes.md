@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 3.6
 1. Try to provide workaround for websites where require.js already loaded.
    This makes problem by direct loading of jquery and jquery-ui 
 2. Provide workaround for older version of jquery-ui 
