@@ -908,6 +908,10 @@
             this['arr'].unshift(obj);
             this['opt'].unshift((opt && typeof opt=='string') ? opt : "");
          }
+         obj['RemoveAt'] = function(indx) {
+            this['arr'].splice(indx, 1);
+            this['opt'].splice(indx, 1);
+         }
       }
 
       if ((obj_typename == "TPaveText") || (obj_typename == "TPaveStats")) {

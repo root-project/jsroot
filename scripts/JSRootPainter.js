@@ -6114,13 +6114,11 @@
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
       if ('fFunctions' in this.histo)
-         for ( var i in this.histo.fFunctions.arr) {
+         for (var i in this.histo.fFunctions.arr) {
             var func = this.histo.fFunctions.arr[i];
-            if (func['_typename'] != 'TPaletteAxis')
-               continue;
+            if (func['_typename'] != 'TPaletteAxis') continue;
             if (remove) {
-               this.histo.fFunctions.arr.splice(i, 1);
-               this.histo.fFunctions.opt.splice(i, 1);
+               this.histo.fFunctions.RemoveAt(i);
                return null;
             }
 
