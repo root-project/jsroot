@@ -8241,14 +8241,13 @@
 
    JSROOT.HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
       var isfileopened = false;
-      this.ForEachRootFile(function(item) { if (item._fullurl==filepath) isfileopened = true; });
+      this.ForEachJsonFile(function(item) { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
       JSROOT.NewHttpRequest(filepath,'object', function(res) {
          if (res == null) return JSROOT.CallBack(call_back);
-         var h1 = { _jsonfile : filepath, _kind : "ROOT." + res._typename, _jsontmp : res, _name: "json" };
-         if ('fName' in res) h1._name = res.fName;
+         var h1 = { _jsonfile : filepath, _kind : "ROOT." + res._typename, _jsontmp : res, _name: filepath.split("/").pop() };
          h1._get = function(item,itemname,callback) {
             if ('_jsontmp' in item) {
                var res = item._jsontmp; delete item['_jsontmp'];

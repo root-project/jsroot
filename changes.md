@@ -20,12 +20,12 @@
 11.Support new draw options for TGraph: 'C', 'B1', '0', '2', '3', '4', '[]'
 12.Primary support for STL containers in IO part. Allows to read ROOT6 TF1.
 13.Full support of TGraphBentErrors
-14.Support of JSON files in default user interface. 
-   One could open and display any supported object from JSON file with URL like:
+14.Support objects drawing from JSON files in default user interface, including
+   monitoring. One could open file from link like: 
       https://root.cern.ch/js/dev/?json=demo/canvas_tf1.json 
 15.Introduce JSROOT.FFormat function to convert numeric values into string according
    format like 6.4g or 5.7e. Used for statistic display.
-     
+
 
 ## Changes in 3.5
 1. Fix error in vertical text alignment
