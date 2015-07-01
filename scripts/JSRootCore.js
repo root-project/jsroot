@@ -1830,6 +1830,82 @@
       }
    };
 
+   JSROOT.lastFFormat = "";
+
+   JSROOT.FFormat = function(value, fmt) {
+      // method used to convert numeric value to string according specified format
+      // format can be like 5.4g or 4.2e or 6.4f
+      // function saves actual format in JSROOT.lastFFormat variable
+      if (!fmt) fmt = "6.4g";
+
+      JSROOT.lastFFormat = "";
+
+      if (!fmt) fmt = "6.4g";
+      fmt = fmt.trim();
+      var len = fmt.length;
+      if (len<2) return value.toFixed(4);
+      var last = fmt.charAt(len-1);
+      fmt = fmt.slice(0,len-1);
+      var isexp = null;
+      var prec = fmt.indexOf(".");
+      if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
+      if ((prec==NaN) || (prec<0) || (prec==null)) prec = 4;
+      var significance = false;
+      if ((last=='e') || (last=='E')) { isexp = true; } else
+      if (last=='Q') { isexp = true; significance = true; } else
+      if ((last=='f') || (last=='F')) { isexp = false; } else
+      if (last=='W') { isexp = false; significance = true; } else
+      if ((last=='g') || (last=='G')) {
+         var se = JSROOT.FFormat(value, fmt+'Q');
+         var _fmt = JSROOT.lastFFormat;
+         var sg = JSROOT.FFormat(value, fmt+'W');
+
+         if (se.length < sg.length) {
+            JSROOT.lastFFormat = _fmt;
+            return se;
+         }
+         return sg;
+      } else {
+         isexp = false;
+         prec = 4;
+      }
+
+      if (isexp) {
+         // for exponential representation only one significant digit befor point
+         if (significance) prec--;
+         if (prec<0) prec = 0;
+
+         JSROOT.lastFFormat = '5.'+prec+'e';
+
+         return value.toExponential(prec);
+      }
+
+      var sg = value.toFixed(prec);
+
+      if (significance) {
+
+         // when using fixed representation, one could get 0.0
+         if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
+            prec = 40; sg = value.toFixed(prec);
+         }
+
+         var l = 0;
+         while ((l<sg.length) && (sg.charAt(l) == '0' || sg.charAt(l) == '-' || sg.charAt(l) == '.')) l++;
+
+         var diff = sg.length - l - prec;
+         if (sg.indexOf(".")>l) diff--;
+
+         if (diff != 0) {
+            prec-=diff; if (prec<0) prec = 0;
+            sg = value.toFixed(prec);
+         }
+      }
+
+      JSROOT.lastFFormat = '5.'+prec+'f';
+
+      return sg;
+   }
+
 
    // math methods for Javascript ROOT
 

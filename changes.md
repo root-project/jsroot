@@ -23,7 +23,9 @@
 14.Support of JSON files in default user interface. 
    One could open and display any supported object from JSON file with URL like:
       https://root.cern.ch/js/dev/?json=demo/canvas_tf1.json 
-  
+15.Introduce JSROOT.FFormat function to convert numeric values into string according
+   format like 6.4g or 5.7e. Used for statistic display.
+     
 
 ## Changes in 3.5
 1. Fix error in vertical text alignment
