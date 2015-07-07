@@ -1,7 +1,8 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Support of X axis with custom labels.
+1. Support of X axis with custom labels like:
+      http://web-docs.gsi.de/~linev/js/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
 
 
 ## Changes in 3.6
