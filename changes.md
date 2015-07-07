@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in master
+1. Support of X axis with custom labels.
+
+
 ## Changes in 3.6
 1. Try to provide workaround for websites where require.js already loaded.
    This makes problem by direct loading of jquery and jquery-ui 
