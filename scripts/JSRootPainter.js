@@ -8403,7 +8403,7 @@
 
          if (!h_get && (item!=null) && ('_after_request' in item)) {
             var func = JSROOT.findFunction(item['_after_request']);
-            if (typeof func == 'function') req = func(pthis, item, obj);
+            if (typeof func == 'function') func(pthis, item, obj);
          }
 
          JSROOT.CallBack(callback, item, obj);
