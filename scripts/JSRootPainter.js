@@ -8442,18 +8442,18 @@
          }
 
          var scripts = "", modules = "";
-
-         function updateList(lst, newitems) {
-            if (newitems==null) return lst;
-            var arr = newitems.split(";");
-            for (var n in arr)
-               if (lst.indexOf(arr[n])<0) lst+=arr[n]+";";
-            return lst;
-         }
-
          painter.ForEach(function(item) {
-            if ('_prereq' in item) modules = updateList(modules, item['_prereq']);
-            if ('_autoload' in item) scripts = updateList(scripts, item['_autoload']);
+            if ('_autoload' in item) {
+               var arr = item._autoload.split(";");
+               for (var n in arr)
+                  if ((arr[n].length>3) &&
+                      ((arr[n].lastIndexOf(".js")==arr[n].length-3) ||
+                      (arr[n].lastIndexOf(".css")==arr[n].length-4))) {
+                     if (scripts.indexOf(arr[n])<0) scripts+=arr[n]+";";
+                  } else {
+                     if (modules.indexOf(arr[n])<0) modules+=arr[n]+";";
+                  }
+            }
          });
 
          if (scripts.length > 0) scripts = "user:" + scripts;
