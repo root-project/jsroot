@@ -1,7 +1,17 @@
 /// @file JSRootPainter.jquery.js
 /// Part of JavaScript ROOT graphics, dependent from jQuery functionality
 
-(function() {
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      // AMD. Register as an anonymous module.
+      define( ['JSRootPainter', 'jquery', 'jquery-ui'], factory );
+   } else {
+      // Browser globals
+      factory();
+   }
+} (function() {
+
+   console.log("Loading JSRootPainter.jquery...");
 
    if (typeof JSROOT != 'object') {
       var e1 = new Error('JSROOT is not defined');
@@ -962,5 +972,7 @@
       return JSROOT.Painter.separ.bottom;
    }
 
+   return JSROOT.Painter;
 
-})();
+}));
+

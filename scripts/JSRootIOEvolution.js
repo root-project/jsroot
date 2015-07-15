@@ -1,7 +1,17 @@
 /// @file JSRootIOEvolution.js
 /// I/O methods of JavaScript ROOT
 
-(function(){
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      // AMD. Register as an anonymous module.
+      define( ['JSRootCore', 'rawinflate'], factory );
+   } else {
+      // Browser globals
+      factory();
+   }
+} (function() {
+
+   console.log("Loading JSRootIOEvolution...");
 
    if (typeof JSROOT != "object") {
       var e1 = new Error("This extension requires JSRootCore.js");
@@ -91,7 +101,7 @@
       if (str.charAt(off) == 'Z' && str.charAt(off+1) == 'L') {
          /* New zlib format */
          var data = str.substr(off + JSROOT.IO.Z_HDRSIZE + 2, srcsize);
-         return RawInflate.inflate(data);
+         return window.RawInflate.inflate(data);
       }
       /* Old zlib format */
       else {
@@ -1818,7 +1828,10 @@
       this.fTagOffset = 0;
    }
 
-})();
+   return JSROOT;
+
+}));
+
 
 // JSRootIOEvolution.js ends
 
