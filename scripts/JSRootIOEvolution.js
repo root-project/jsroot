@@ -6,24 +6,21 @@
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'rawinflate'], factory );
    } else {
-      // Browser globals
-      factory();
-   }
-} (function() {
+      if (typeof JSROOT == 'undefined') {
+         var e1 = new Error("This extension requires JSRootCore.js");
+         e1.source = "JSRootIOEvolution.js";
+         throw e1;
+      }
 
-   console.log("Loading JSRootIOEvolution...");
+      if (typeof JSROOT.IO == "object") {
+         var e1 = new Error("This JSROOT IO already loaded");
+         e1.source = "JSRootIOEvolution.js";
+         throw e1;
+      }
 
-   if (typeof JSROOT != "object") {
-      var e1 = new Error("This extension requires JSRootCore.js");
-      e1.source = "JSRootIOEvolution.js";
-      throw e1;
+      factory(JSROOT);
    }
-
-   if (typeof JSROOT.IO == "object") {
-      var e1 = new Error("This JSROOT IO already loaded");
-      e1.source = "JSRootIOEvolution.js";
-      throw e1;
-   }
+} (function(JSROOT) {
 
    JSROOT.IO = {
          kBase : 0, kOffsetL : 20, kOffsetP : 40, kCounter : 6, kCharStar : 7,
