@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['JSRootPainter', 'THREE', 'jquery.mousewheel'], factory );
+      define( ['JSRootPainter', 'three_fonts'], factory );
    } else {
       // Browser globals
       factory();

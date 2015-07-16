@@ -2,20 +2,28 @@
  * Configure application
  */
 requirejs.config({
-   baseUrl: 'scripts',
+//   baseUrl: 'scripts',
    paths: {
-      'd3'              : 'd3.v3.min',
-      'jquery'          : 'jquery.min',
-      'jquery-ui'       : 'jquery-ui.min',
-      'helvetiker_bold' : 'helvetiker_bold.typeface',
-      'MathJax'         : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-      'THREE'           : 'helvetiker_regular.typeface'
+      'd3'                    : 'scripts/d3.v3.min',
+      'helvetiker_bold'       : 'scripts/helvetiker_bold.typeface',
+      'helvetiker_regular'    : 'scripts/helvetiker_regular.typeface',
+      'jquery'                : 'scripts/jquery.min',
+      'jquery-ui'             : 'scripts/jquery-ui.min',
+      'JSRootCore'            : 'scripts/JSRootCore',
+      'JSRootIO'              : 'scripts/JSRootIOEvolution',
+      'JSRootPainter'         : 'scripts/JSRootPainter',
+      'JSRootPainter.jquery'  : 'scripts/JSRootPainter.jquery',
+      'JSRoot3DPainter'       : 'scripts/JSRoot3DPainter',
+      'MathJax'               : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+      'rawinflate'            : 'scripts/rawinflate',
+      'THREE'                 : ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min', 'scripts/three.min'],
+      'three_fonts'           : 'scripts/helvetiker_regular.typeface'
    },
    shim: {
       helvetiker_bold: {
-         deps: ['three.min']
+         deps: ['THREE']
       },
-      THREE: {
+      three_fonts: {
          deps: ['helvetiker_bold']
       },
       MathJax: {
