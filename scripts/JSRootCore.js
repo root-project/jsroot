@@ -9,7 +9,7 @@
 
       // first configure all dependencies
       requirejs.config({
-//       baseUrl: 'scripts',
+       baseUrl: 'scripts',
        paths: {
           'd3'                    : 'd3.v3.min',
           'helvetiker_bold'       : 'helvetiker_bold.typeface',
@@ -69,6 +69,8 @@
       factory(JSROOT);
    }
 } (function(JSROOT) {
+
+   console.log('Loading JSRRootCore.js');
 
    JSROOT.version = "dev 16/07/2015";
 
@@ -696,6 +698,8 @@
          andThen = user_scripts;
          user_scripts = null;
       }
+
+      console.log('Call JSROOT.BuildSimpleGUI');
 
       var debugout = null;
       var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
@@ -2433,8 +2437,7 @@
          }
 
          if ( typeof define === "function" && define.amd ) {
-            window.onload = function() { JSROOT.BuildSimpleGUI('check_existing_elements'); }
-            return;
+            return JSROOT.BuildSimpleGUI('check_existing_elements');
          }
 
          var prereq = "";
