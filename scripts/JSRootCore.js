@@ -6,6 +6,53 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
+
+      // first configure all dependencies
+      requirejs.config({
+//       baseUrl: 'scripts',
+       paths: {
+          'd3'                    : 'd3.v3.min',
+          'helvetiker_bold'       : 'helvetiker_bold.typeface',
+          'helvetiker_regular'    : 'helvetiker_regular.typeface',
+          'jquery'                : 'jquery.min',
+          'jquery-ui'             : 'jquery-ui.min',
+          'touch-punch'           : 'touch-punch.min',
+          'JSRootCore'            : 'JSRootCore',
+          'JSRootIO'              : 'JSRootIOEvolution',
+          'JSRootPainter'         : 'JSRootPainter',
+          'JSRootPainter.jquery'  : 'JSRootPainter.jquery',
+          'JSRoot3DPainter'       : 'JSRoot3DPainter',
+          'JSRootInterface'       : 'JSRootInterface',
+          'MathJax'               : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+          'rawinflate'            : 'rawinflate',
+          'THREE'                 : ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min', 'three.min'],
+          'three_fonts'           : 'helvetiker_regular.typeface'
+       },
+       shim: {
+          helvetiker_bold: {
+             deps: ['THREE']
+          },
+          three_fonts: {
+             deps: ['helvetiker_bold']
+          },
+          MathJax: {
+             exports: "MathJax",
+             init: function () {
+                MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
+                MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
+                   var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+                   VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+                   VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+                   VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
+                   VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
+                });
+                MathJax.Hub.Startup.onload();
+                return MathJax;
+             }
+          }
+       }
+    });
+
       // AMD. Register as an anonymous module.
       define( factory );
    } else {
@@ -77,9 +124,13 @@
    };
 
    // wrapper for console.log, avoids missing console in IE
-   JSROOT.console = function(value) {
-     if ((typeof console != 'undefined') && (typeof console.log == 'function'))
-        console.log(value);
+   // if divid specified, provide output to the HTML element
+   JSROOT.console = function(value, divid) {
+      if ((divid!=null) && (typeof document.getElementById(divid)!='undefined'))
+         document.getElementById(divid).innerHTML = value;
+      else
+      if ((typeof console != 'undefined') && (typeof console.log == 'function'))
+         console.log(value);
    }
 
    // This is part of the JSON-R code, found on
@@ -419,13 +470,6 @@
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
-      function debug(str) {
-         if (debugout)
-            document.getElementById(debugout).innerHTML = str;
-         else
-            JSROOT.console(str);
-      }
-
       function completeLoad() {
          if ((urllist!=null) && (urllist.length>0))
             return JSROOT.loadScript(urllist, callback, debugout);
@@ -486,7 +530,7 @@
 
       var element = null;
 
-      debug("loading " + filename + " ...");
+      JSROOT.console("loading " + filename + " ...", debugout);
 
       if (isstyle) {
          element = document.createElement("link");
@@ -638,6 +682,7 @@
       }
 
       if ((typeof define === "function") && define.amd && (modules.length>0)) {
+         JSROOT.console("loading " + modules + " with require.js", debugout);
          require(modules, function() {
             JSROOT.loadScript(extrafiles, load_callback, debugout);
          });
@@ -664,7 +709,13 @@
       } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
       if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
-      if (!nobrowser) requirements+='jq2d;simple;';
+
+      if (user_scripts == 'check_existing_elements') {
+         user_scripts = null;
+         if (debugout == null) return;
+      }
+
+      if (!nobrowser) requirements += 'jq2d;simple;';
 
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
@@ -2378,6 +2429,11 @@
 
          if (JSROOT.GetUrlOption('gui', src)!=null) {
             window.onload = function() { JSROOT.BuildSimpleGUI(); }
+            return;
+         }
+
+         if ( typeof define === "function" && define.amd ) {
+            window.onload = function() { JSROOT.BuildSimpleGUI('check_existing_elements'); }
             return;
          }
 
