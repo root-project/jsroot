@@ -8372,7 +8372,7 @@
       var pthis = this;
 
       if ( typeof define === "function" && define.amd ) {
-         require(['JSRootIO'], function() {
+         require(['JSRootIOEvolution'], function() {
             new JSROOT.TFile(filepath, function(file) {
                if (file == null) return JSROOT.CallBack(call_back);
                var h1 = pthis.FileHierarchy(file);
