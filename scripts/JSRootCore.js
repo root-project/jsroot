@@ -14,7 +14,7 @@
 
    JSROOT = {};
 
-   JSROOT.version = "dev 10/07/2015";
+   JSROOT.version = "dev 16/07/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -829,7 +829,9 @@
       return graph;
    }
 
-   JSROOT.AdjustTGraphRanges = function(graph) {
+   // adjust histogram ranges with graph content
+   // ygap is value like 0.1 or 0.01 to introduce gaps on Y range
+   JSROOT.AdjustTGraphRanges = function(graph,ygap) {
       if (graph['fNpoints']==0) return;
 
       var minx = graph['fX'][0], maxx = minx;
@@ -843,9 +845,16 @@
       }
 
       if (miny==maxy) maxy = miny + 1;
+      
+      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1(); 
 
       graph['fHistogram']['fXaxis']['fXmin'] = minx;
       graph['fHistogram']['fXaxis']['fXmax'] = maxx;
+      
+      if ((ygap!=null) && (ygap!=0)) {
+         if (miny>0) miny*= (1-2*ygap); else miny*=(1+ygap);
+         if (maxy>0) maxy*= (1+ygap); else maxy*=(1-2*ygap);
+      }
 
       graph['fHistogram']['fYaxis']['fXmin'] = miny;
       graph['fHistogram']['fYaxis']['fXmax'] = maxy;

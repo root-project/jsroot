@@ -83,7 +83,7 @@ function BuildSimpleGUI() {
    var guiCode = "<div id='left-div' class='column' style='top:1px; bottom:1px'>";
 
    if (online) {
-      guiCode += '<h1><font face="Verdana" size="4">ROOT online server</font></h1>'
+      guiCode += '<h1><font face="Verdana" size="4"><div id="toptitle">ROOT online server</div></font></h1>'
          + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/jsroot.html'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
          + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
          + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
@@ -160,6 +160,8 @@ function BuildSimpleGUI() {
       });
 
       if (online) {
+         if ((hpainter.h!=null) && ('_toptitle' in hpainter.h))
+            $("#toptitle").html(hpainter.h._toptitle);
          $("#monitoring")
              .prop('checked', hpainter.IsMonitoring())
              .click(function() {
