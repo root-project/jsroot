@@ -7531,7 +7531,6 @@
       this.frameid = frameid;
       this.h = null; // hierarchy
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      this.cando_cache = {};  // object with cached cando properties
 
       // remember only very first instance
       if (JSROOT.hpainter == null)
@@ -7848,8 +7847,6 @@
       var kind = node["_kind"];
       if ((kind==null) || (typeof kind != "string")) kind = "";
 
-      if ((kind.length>0) && (kind in this.cando_cache)) return this.cando_cache[kind];
-
       var cando = { expand : false, display : false, scan : true, open : false, monitor:null,
                     img1 : "", img2 : "", html : "", ctxt : false, typename : "", execute: false };
 
@@ -7936,6 +7933,7 @@
          if ('icon' in draw_handle) cando.img1 = draw_handle.icon;
          if ('icon2' in draw_handle) cando.img2 = draw_handle.icon2;
          if ('monitor' in draw_handle) cando.monitor = draw_handle.monitor;
+         if ('aslink' in draw_handle) { cando.html = this.itemFullName(node); cando.open = true; }
       }
 
       if (cando.monitor==null) cando.monitor = cando.display;
@@ -7945,8 +7943,6 @@
       if ('_player' in node) cando.monitor = false;
       if ('_icon' in node) cando.img1 = node['_icon'];
       if ('_icon2' in node) cando.img2 = node['_icon2'];
-
-      this.cando_cache[kind] = cando;
 
       return cando;
    }
