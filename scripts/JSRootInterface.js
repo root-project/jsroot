@@ -46,7 +46,8 @@
 
    var hpainter = null;
 
-   JSROOT.loadScript('$$$style/JSRootInterface.css');
+   if ( typeof define === "function" && define.amd )
+      JSROOT.loadScript('$$$style/JSRootInterface.css');
 
    ResetUI = function() {
       if (hpainter) hpainter.clear(true);
