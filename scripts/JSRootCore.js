@@ -31,7 +31,7 @@
           'touch-punch'     : 'touch-punch.min',
           'MathJax'         : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
           'THREE'           : 'helvetiker_regular.typeface'
-        },
+       },
        shim: {
           helvetiker_bold: {
              deps: ['three.min']
