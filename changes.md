@@ -6,6 +6,11 @@
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.
    This let add more custom elements to the generic gui, implemented with JSROOT.HierarchyPainter   
+3. Provide full support of require.js. One could load now JSRootCore.js script like:
+      <script type="text/javascript" src="require.js" data-main="scripts/JSRootCore.js"></script>
+   After this several modules are defined and can be used with syntax like:
+      require(['JSRootIO'], function(JSROOT) { /*any user code*/});
+   Also inside JSROOT require.js used to load all dependencies. 
 
 
 ## Changes in 3.6
