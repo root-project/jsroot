@@ -42,7 +42,8 @@
    }
 } (function($, myui, d3, JSROOT) {
 
-   JSROOT.loadScript('$$$style/jquery-ui.css');
+   if ( typeof define === "function" && define.amd )
+      JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       if (!menuname) menuname = "root_ctx_menu";

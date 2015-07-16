@@ -627,6 +627,7 @@
             mainfiles += '$$$scripts/d3.v3.min.js;';
          modules.push('d3');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
+         extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
@@ -659,6 +660,7 @@
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;
          mainfiles += '$$$scripts/JSRootInterface' + ext + ".js;";
+         extrafiles += '$$$style/JSRootInterface' + ext + '.css;';
          modules.push('JSRootInterface');
       }
 
@@ -673,7 +675,7 @@
             JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
          else {
             lst_jq += '$$$scripts/jquery-ui.min.js;';
-            extrafiles += '$$$style/jquery-ui.min' + ext + '.css';
+            extrafiles += '$$$style/jquery-ui' + ext + '.css;';
          }
 
          if (JSROOT.touches) {
@@ -740,6 +742,7 @@
 
       if (user_scripts != null)
          requirements += "load:" + user_scripts + ";";
+
       JSROOT.AssertPrerequisites(requirements, function() {
          var func = JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
          JSROOT.CallBack(func);
