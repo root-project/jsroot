@@ -9,20 +9,19 @@
       // AMD. Register as an anonymous module.
       define( factory );
    } else {
+
+      if (typeof JSROOT != 'undefined') {
+         var e1 = new Error("JSROOT is already defined");
+         e1.source = "JSRootCore.js";
+         throw e1;
+      }
+
+      JSROOT = {};
+
       // Browser globals
-      factory();
+      factory(JSROOT);
    }
-} (function() {
-
-   console.log("Loading JSRootCore...");
-
-   if (typeof JSROOT == "object") {
-      var e1 = new Error("JSROOT is already defined");
-      e1.source = "JSRootCore.js";
-      throw e1;
-   }
-
-   JSROOT = {};
+} (function(JSROOT) {
 
    JSROOT.version = "dev 16/07/2015";
 
@@ -517,136 +516,133 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   JSROOT.loadCSS = function(cssfilename, debugout) {
-      JSROOT.loadScript(cssfilename, null, false);
-   }
+   JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
+      // one could specify kind of requirements
+      // 'io' for I/O functionality (default)
+      // '2d' for 2d graphic
+      // 'jq' jQuery and jQuery-ui
+      // 'jq2d' jQuery-dependend part of 2d graphic
+      // '3d' for 3d graphic
+      // 'simple' for basic user interface
+      // 'load:' list of user-specific scripts at the end of kind string
 
-   if ( typeof define === "function" && define.amd ) {
-
-      JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
+      if ((typeof kind != 'string') || (kind == ''))
          return JSROOT.CallBack(callback);
-      }
 
-   } else {
-
-      JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
-         // one could specify kind of requirements
-         // 'io' for I/O functionality (default)
-         // '2d' for 2d graphic
-         // 'jq' jQuery and jQuery-ui
-         // 'jq2d' jQuery-dependend part of 2d graphic
-         // '3d' for 3d graphic
-         // 'simple' for basic user interface
-         // 'load:' list of user-specific scripts at the end of kind string
-   
-         if ((typeof kind != 'string') || (kind == ''))
-            return JSROOT.CallBack(callback);
-   
-         if (kind=='shift') {
-            var req = JSROOT.doing_assert.shift();
-            kind = req._kind;
-            callback = req._callback;
-            debugout = req._debug;
-         } else
+      if (kind=='shift') {
+         var req = JSROOT.doing_assert.shift();
+         kind = req._kind;
+         callback = req._callback;
+         debugout = req._debug;
+      } else
          if (JSROOT.doing_assert != null) {
             // if function already called, store request
             return JSROOT.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
          } else {
             JSROOT.doing_assert = [];
          }
-   
-         if (kind.charAt(kind.length-1)!=";") kind+=";";
-   
-         var ext = JSROOT.source_min ? ".min" : "";
-   
-         var need_jquery = false;
-   
-         // file names should be separated with ';'
-         var allfiles = '';
-   
-         if (kind.indexOf('io;')>=0)
-            allfiles += "$$$scripts/rawinflate" + ext + ".js;" +
-                        "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-   
-         if (kind.indexOf('2d;')>=0) {
-            if (typeof d3 != 'undefined')
-               JSROOT.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10");
-            else
-               allfiles += '$$$scripts/d3.v3.min.js;';
-            allfiles += '$$$scripts/JSRootPainter' + ext + ".js;" +
-                        '$$$style/JSRootPainter' + ext + ".css;";
+
+      if (kind.charAt(kind.length-1)!=";") kind+=";";
+
+      var ext = JSROOT.source_min ? ".min" : "";
+
+      var need_jquery = false;
+
+      // file names should be separated with ';'
+      var mainfiles = "", extrafiles = ""; // scripts for direct loadin
+      var modules = [];  // modules used for require.js
+
+      if (kind.indexOf('io;')>=0) {
+         mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
+         "$$$scripts/JSRootIOEvolution" + ext + ".js;";
+         modules.push('JSRootIO');
+      }
+
+      if (kind.indexOf('2d;')>=0) {
+         if (typeof d3 != 'undefined')
+            JSROOT.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10");
+         else
+            mainfiles += '$$$scripts/d3.v3.min.js;';
+         modules.push('d3');
+         mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
+         extrafiles += '$$$style/JSRootPainter' + ext + ".css;";
+      }
+
+      if (kind.indexOf('jq;')>=0) need_jquery = true;
+
+      if (kind.indexOf('jq2d;')>=0) {
+         mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
+         modules.push('JSRootPainter.jquery');
+         need_jquery = true;
+      }
+
+      if (kind.indexOf("3d;")>=0) {
+         need_jquery = true;
+         mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
+                      "$$$scripts/three.min.js;" +
+                      "$$$scripts/helvetiker_regular.typeface.js;" +
+                      "$$$scripts/helvetiker_bold.typeface.js;" +
+                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+         modules.push('JSRoot3DPainter');
+      }
+
+      if (kind.indexOf("mathjax;")>=0) {
+         if (typeof MathJax == 'undefined') {
+            mainfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
+            JSROOT.source_dir + "scripts/mathjax_config.js;";
          }
-   
-         if (kind.indexOf('jq;')>=0) need_jquery = true;
-   
-         if (kind.indexOf('jq2d;')>=0) {
-            allfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
-            need_jquery = true;
+         if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
+         modules.push('MathJax');
+      }
+
+      if (kind.indexOf("simple;")>=0) {
+         need_jquery = true;
+         mainfiles += '$$$scripts/JSRootInterface' + ext + ".js;";
+         extrafiles += '$$$style/JSRootInterface' + ext + ".css;";
+         modules.push('JSRootInterface');
+      }
+
+      if (need_jquery && (JSROOT.load_jquery==null)) {
+         var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
+
+         if (has_jq)
+            JSROOT.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
+         else
+            lst_jq += "$$$scripts/jquery.min.js;";
+         if (has_jq && typeof $.ui != 'undefined')
+            JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
+         else
+            lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
+
+         if (JSROOT.touches) {
+            lst_jq += '$$$scripts/touch-punch.min.js;';
+            modules.push('touch-punch');
          }
-   
-         if (kind.indexOf("3d;")>=0) {
-            need_jquery = true;
-            allfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
-                        "$$$scripts/three.min.js;" +
-                        "$$$scripts/helvetiker_regular.typeface.js;" +
-                        "$$$scripts/helvetiker_bold.typeface.js;" +
-                        "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+
+         modules.splice(0,0, 'jquery', 'jquery-ui');
+         mainfiles = lst_jq + mainfiles;
+
+         JSROOT.load_jquery = true;
+      }
+
+      var pos = kind.indexOf("user:");
+      if (pos<0) pos = kind.indexOf("load:");
+      if (pos>=0) extrafiles += kind.slice(pos+5);
+
+      var load_callback = function() {
+         if (JSROOT.doing_assert.length==0) JSROOT.doing_assert = null;
+         JSROOT.CallBack(callback);
+         if (JSROOT.doing_assert && (JSROOT.doing_assert.length>0)) {
+            JSROOT.AssertPrerequisites('shift');
          }
-   
-         if (kind.indexOf("mathjax;")>=0) {
-            if (typeof MathJax == 'undefined') {
-               allfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
-                            JSROOT.source_dir + "scripts/mathjax_config.js;";
-            }
-            if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
-         }
-   
-         if (kind.indexOf("simple;")>=0) {
-            need_jquery = true;
-            allfiles += '$$$scripts/JSRootInterface' + ext + ".js;" +
-                        '$$$style/JSRootInterface' + ext + ".css;";
-         }
-   
-         if (need_jquery && (JSROOT.load_jquery==null)) {
-            var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
-   
-            if (has_jq)
-               JSROOT.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
-            else
-               lst_jq += "$$$scripts/jquery.min.js;";
-            if (has_jq && typeof $.ui != 'undefined')
-               JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
-            else
-               lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
-   
-            allfiles = lst_jq + allfiles;
-            if (JSROOT.touches)
-               allfiles += '$$$scripts/touch-punch.min.js;';
-   
-            JSROOT.load_jquery = true;
-            if ((typeof define == 'function') && (lst_jq.length>0)) {
-               // special workarond for requirejs - hide define variable when loading jquery
-               JSROOT.load_jquery = { define : define };
-               define = null;
-            }
-         }
-   
-         var pos = kind.indexOf("user:");
-         if (pos<0) pos = kind.indexOf("load:");
-         if (pos>=0) allfiles += kind.slice(pos+5);
-   
-         JSROOT.loadScript(allfiles, function() {
-            if ((JSROOT.load_jquery!=null) && (typeof JSROOT.load_jquery == 'object')
-                && ('define' in JSROOT.load_jquery)) {
-               define = JSROOT.load_jquery.define;
-               JSROOT.load_jquery = true;
-            }
-            if (JSROOT.doing_assert.length==0) JSROOT.doing_assert = null;
-            JSROOT.CallBack(callback);
-            if (JSROOT.doing_assert && (JSROOT.doing_assert.length>0)) {
-               JSROOT.AssertPrerequisites('shift');
-            }
-         }, debugout);
+      }
+
+      if ((typeof define === "function") && define.amd && (modules.length>0)) {
+         require(modules, function() {
+            JSROOT.loadScript(extrafiles, load_callback, debugout);
+         });
+      } else {
+         JSROOT.loadScript(mainfiles + extrafiles, load_callback, debugout);
       }
    }
 
@@ -675,7 +671,6 @@
 
       if (user_scripts != null)
          requirements += "load:" + user_scripts + ";";
-
       JSROOT.AssertPrerequisites(requirements, function() {
          var func = JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
          JSROOT.CallBack(func);
@@ -865,12 +860,12 @@
       }
 
       if (miny==maxy) maxy = miny + 1;
-      
-      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1(); 
+
+      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1();
 
       graph['fHistogram']['fXaxis']['fXmin'] = minx;
       graph['fHistogram']['fXaxis']['fXmax'] = maxx;
-      
+
       if ((ygap!=null) && (ygap!=0)) {
          if (miny>0) miny*= (1-2*ygap); else miny*=(1+ygap);
          if (maxy>0) maxy*= (1+ygap); else maxy*=(1-2*ygap);
@@ -2384,6 +2379,25 @@
          if (JSROOT.GetUrlOption('gui', src)!=null) {
             window.onload = function() { JSROOT.BuildSimpleGUI(); }
             return;
+         }
+
+         var prereq = "";
+         if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
+         if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
+         if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
+         if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
+         if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
+         var user = JSROOT.GetUrlOption('load', src);
+         if ((user!=null) && (user.length>0)) prereq += "load:" + user;
+         var onload = JSROOT.GetUrlOption('onload', src);
+
+         if ((prereq.length>0) || (onload!=null))
+            window.onload = function() {
+              if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
+              if (onload!=null) {
+                 onload = JSROOT.findFunction(onload);
+                 if (typeof onload == 'function') onload();
+              }
          }
 
          return;
