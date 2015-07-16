@@ -25,28 +25,16 @@
        baseUrl: dir,
        paths: {
           'd3'                    : 'd3.v3.min',
-          'helvetiker_bold'       : 'helvetiker_bold.typeface',
-          'helvetiker_regular'    : 'helvetiker_regular.typeface',
           'jquery'                : 'jquery.min',
           'jquery-ui'             : 'jquery-ui.min',
           'touch-punch'           : 'touch-punch.min',
-          'JSRootCore'            : 'JSRootCore',
-          'JSRootIO'              : 'JSRootIOEvolution',
-          'JSRootPainter'         : 'JSRootPainter',
-          'JSRootPainter.jquery'  : 'JSRootPainter.jquery',
-          'JSRoot3DPainter'       : 'JSRoot3DPainter',
-          'JSRootInterface'       : 'JSRootInterface',
           'MathJax'               : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-          'rawinflate'            : 'rawinflate',
-          'THREE'                 : ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min', 'three.min'],
-          'three_fonts'           : 'helvetiker_regular.typeface'
+          'THREE'                 : 'three.min',
+          'THREEEXTRA'            : 'helvetiker_bold.typeface'
        },
        shim: {
-          helvetiker_bold: {
-             deps: ['THREE']
-          },
-          three_fonts: {
-             deps: ['helvetiker_bold']
+          THREEEXTRA: {
+             deps: [ 'THREE', 'jquery.mousewheel', 'helvetiker_regular.typeface']
           },
           MathJax: {
              exports: "MathJax",
@@ -617,7 +605,7 @@
       if (kind.indexOf('io;')>=0) {
          mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
          "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-         modules.push('JSRootIO');
+         modules.push('JSRootIOEvolution');
       }
 
       if (kind.indexOf('2d;')>=0) {
