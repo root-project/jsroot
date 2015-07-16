@@ -70,8 +70,6 @@
    }
 } (function(JSROOT) {
 
-   console.log('Loading JSRRootCore.js');
-
    JSROOT.version = "dev 16/07/2015";
 
    JSROOT.source_dir = "";
@@ -698,8 +696,6 @@
          andThen = user_scripts;
          user_scripts = null;
       }
-
-      console.log('Call JSROOT.BuildSimpleGUI');
 
       var debugout = null;
       var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
@@ -2417,6 +2413,15 @@
    (function() {
       var scripts = document.getElementsByTagName('script');
 
+      function window_on_load(func) {
+         if (func==null) return;
+         if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
+            func();
+         else
+            window.onload = func;
+      }
+
+
       for (var n in scripts) {
          if (scripts[n]['type'] != 'text/javascript') continue;
 
@@ -2431,14 +2436,11 @@
 
          JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
-         if (JSROOT.GetUrlOption('gui', src)!=null) {
-            window.onload = function() { JSROOT.BuildSimpleGUI(); }
-            return;
-         }
+         if (JSROOT.GetUrlOption('gui', src)!=null)
+            return window_on_load(function() { JSROOT.BuildSimpleGUI(); });
 
-         if ( typeof define === "function" && define.amd ) {
-            return JSROOT.BuildSimpleGUI('check_existing_elements');
-         }
+         if ( typeof define === "function" && define.amd )
+            return window_on_load(function() { JSROOT.BuildSimpleGUI('check_existing_elements'); });
 
          var prereq = "";
          if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
@@ -2451,13 +2453,13 @@
          var onload = JSROOT.GetUrlOption('onload', src);
 
          if ((prereq.length>0) || (onload!=null))
-            window.onload = function() {
+            window_on_load(function() {
               if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
               if (onload!=null) {
                  onload = JSROOT.findFunction(onload);
                  if (typeof onload == 'function') onload();
               }
-         }
+            });
 
          return;
       }
