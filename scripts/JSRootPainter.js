@@ -1,16 +1,20 @@
 /// @file JSRootPainter.js
 /// JavaScript ROOT graphics
 
-(function() {
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      // AMD. Register as an anonymous module.
+      define( ['JSRootCore', 'd3'], factory );
+   } else {
+      // Browser globals
+      factory();
+   }
+} (function() {
+
+   console.log("Loading JSRootPainter...");
 
    if (typeof JSROOT != 'object') {
       var e1 = new Error('JSROOT is not defined');
-      e1.source = 'JSRootPainter.js';
-      throw e1;
-   }
-
-   if (typeof d3 != 'object') {
-      var e1 = new Error('This extension requires d3.v3.js');
       e1.source = 'JSRootPainter.js';
       throw e1;
    }
@@ -121,10 +125,17 @@
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
-      JSROOT.AssertPrerequisites('jq2d', function() {
-         document.body.style.cursor = 'auto';
-         JSROOT.Painter.createMenu(maincallback, menuname);
-      });
+      if ( typeof define === "function" && define.amd ) {
+         require(['JSRootPainter.jquery'], function() {
+            document.body.style.cursor = 'auto';
+            JSROOT.Painter.createMenu(maincallback, menuname);
+         });
+      } else {
+         JSROOT.AssertPrerequisites('jq2d', function() {
+            document.body.style.cursor = 'auto';
+            JSROOT.Painter.createMenu(maincallback, menuname);
+         });
+      }
    }
 
    JSROOT.Painter.closeMenu = function(menuname) {
@@ -1615,10 +1626,16 @@
 
          // is any svg missing we shold wait until drawing is really finished
          if (missing)
-            return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
-               if (typeof MathJax != 'object') return;
-               MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
-            }});
+            if ( typeof define === "function" && define.amd ) {
+               return require(['MathJax'], function() {
+                  MathJax.Hub.Queue(["FinishTextDrawing", draw_g.property('_painter'), draw_g]);
+               });
+            } else {
+               return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
+                  if (typeof MathJax != 'object') return;
+                  MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
+               }});
+            }
       }
 
       if (svgs==null) svgs = draw_g.selectAll(".math_svg");
@@ -1797,10 +1814,16 @@
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
 
-      JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
-         if (typeof MathJax == 'object')
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]);
-      }});
+      if ( typeof define === "function" && define.amd ) {
+         require(['MathJax'], function() {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, element]);
+         });
+      } else {
+         JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
+            if (typeof MathJax == 'object')
+               MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]);
+         }});
+      }
 
       return 0;
    }
@@ -6779,9 +6802,15 @@
       if (this.options.Lego<=0) this.options.Lego = 1;
       var painter = this;
 
-      JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram2D(painter);
-      });
+      if ( typeof define === "function" && define.amd ) {
+         require(['JSRoot3DPainter'], function() {
+            JSROOT.Painter.real_drawHistogram2D(painter);
+         });
+      } else {
+         JSROOT.AssertPrerequisites('3d', function() {
+            JSROOT.Painter.real_drawHistogram2D(painter);
+         });
+      }
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
@@ -6810,9 +6839,15 @@
 
    JSROOT.Painter.drawHistogram3D = function(divid, obj, opt) {
       var painter = new JSROOT.TObjectPainter;
-      JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram3D(divid, obj, opt, painter);
-      });
+      if ( typeof define === "function" && define.amd ) {
+         require(['JSRoot3DPainter'], function() {
+            JSROOT.Painter.real_drawHistogram3D(divid, obj, opt, painter);
+         });
+      } else {
+         JSROOT.AssertPrerequisites('3d', function() {
+            JSROOT.Painter.real_drawHistogram3D(divid, obj, opt, painter);
+         });
+      }
       return painter;
    }
 
@@ -7492,12 +7527,21 @@
          if (this['loading_mathjax']) return;
          this['loading_mathjax'] = true;
          var painter = this;
-         JSROOT.AssertPrerequisites('mathjax', function() {
-            painter['loading_mathjax'] = false;
-            if (typeof MathJax == 'object') {
-               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
-            }
-         });
+         if ( typeof define === "function" && define.amd ) {
+            require(['MathJax'], function() {
+               painter['loading_mathjax'] = false;
+               if (typeof MathJax == 'object') {
+                  MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
+               }
+            });
+         } else {
+            JSROOT.AssertPrerequisites('mathjax', function() {
+               painter['loading_mathjax'] = false;
+               if (typeof MathJax == 'object') {
+                  MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
+               }
+            });
+         }
       }
    }
 
@@ -7978,9 +8022,15 @@
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
       if (this.frameid == null) return JSROOT.CallBack(callback);
       var hpainter = this;
-      JSROOT.AssertPrerequisites('jq2d', function() {
-         hpainter.RefreshHtml(callback);
-      });
+      if ( typeof define === "function" && define.amd ) {
+         require(['JSRootPainter.jquery'], function() {
+            hpainter.RefreshHtml(callback);
+         });
+      } else {
+         JSROOT.AssertPrerequisites('jq2d', function() {
+            hpainter.RefreshHtml(callback);
+         });
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.toggle = function(status) {
@@ -8338,21 +8388,39 @@
 
       var pthis = this;
 
-      JSROOT.AssertPrerequisites('io', function() {
-         new JSROOT.TFile(filepath, function(file) {
-            if (file == null) return JSROOT.CallBack(call_back);
-            var h1 = pthis.FileHierarchy(file);
-            h1._isopen = true;
-            if (pthis.h == null) pthis.h = h1; else
-            if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
-               var h0 = pthis.h;
-               var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-               pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
-            }
+      if ( typeof define === "function" && define.amd ) {
+         require(['JSRootIO'], function() {
+            new JSROOT.TFile(filepath, function(file) {
+               if (file == null) return JSROOT.CallBack(call_back);
+               var h1 = pthis.FileHierarchy(file);
+               h1._isopen = true;
+               if (pthis.h == null) pthis.h = h1; else
+               if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
+                  var h0 = pthis.h;
+                  var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+                  pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
+               }
 
-            pthis.RefreshHtml(call_back);
+               pthis.RefreshHtml(call_back);
+            });
          });
-      });
+      } else {
+         JSROOT.AssertPrerequisites('io', function() {
+            new JSROOT.TFile(filepath, function(file) {
+               if (file == null) return JSROOT.CallBack(call_back);
+               var h1 = pthis.FileHierarchy(file);
+               h1._isopen = true;
+               if (pthis.h == null) pthis.h = h1; else
+               if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
+                  var h0 = pthis.h;
+                  var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+                  pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
+               }
+
+               pthis.RefreshHtml(call_back);
+            });
+         });
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.GetFileProp = function(itemname) {
@@ -8675,9 +8743,15 @@
       if (h['disp'] != null)
          JSROOT.CallBack(callback, h['disp']);
       else
-         JSROOT.AssertPrerequisites('jq2d', function() {
-            h.CreateDisplay(callback);
-         });
+         if ( typeof define === "function" && define.amd ) {
+            require(['JSRootPainter.jquery'], function() {
+               h.CreateDisplay(callback);
+            });
+         } else {
+            JSROOT.AssertPrerequisites('jq2d', function() {
+               h.CreateDisplay(callback);
+            });
+         }
    }
 
    JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
@@ -9286,7 +9360,9 @@
       return JSROOT.draw(divid, obj, opt);
    }
 
-})();
+   return JSROOT.Painter;
+
+}));
 
 // JSRootPainter.js ends
 

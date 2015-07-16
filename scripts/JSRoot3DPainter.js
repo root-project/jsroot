@@ -1,7 +1,17 @@
 /// @file JSRoot3DPainter.js
 /// JavaScript ROOT 3D graphics
 
-(function() {
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      // AMD. Register as an anonymous module.
+      define( ['JSRootPainter', 'three_fonts'], factory );
+   } else {
+      // Browser globals
+      factory();
+   }
+} (function() {
+
+   console.log("Loading JSRoot3DPainter...");
 
    if (typeof JSROOT != 'object') {
       var e1 = new Error('JSROOT is not defined');
@@ -817,5 +827,7 @@
       return painter.DrawingReady();
    }
 
-})();
+   return JSROOT.Painter;
+
+}));
 
