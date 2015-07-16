@@ -24,17 +24,20 @@
       requirejs.config({
        baseUrl: dir,
        paths: {
-          'd3'                    : 'd3.v3.min',
-          'jquery'                : 'jquery.min',
-          'jquery-ui'             : 'jquery-ui.min',
-          'touch-punch'           : 'touch-punch.min',
-          'MathJax'               : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-          'THREE'                 : 'three.min',
-          'THREEEXTRA'            : 'helvetiker_bold.typeface'
+          'd3'              : 'd3.v3.min',
+          'helvetiker_bold' : 'helvetiker_bold.typeface',
+          'jquery'          : 'jquery.min',
+          'jquery-ui'       : 'jquery-ui.min',
+          'touch-punch'     : 'touch-punch.min',
+          'MathJax'         : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+          'THREE'           : 'helvetiker_regular.typeface'
        },
        shim: {
-          THREEEXTRA: {
-             deps: [ 'THREE', 'jquery.mousewheel', 'helvetiker_regular.typeface']
+          helvetiker_bold: {
+             deps: ['three.min']
+          },
+          THREE: {
+             deps: ['helvetiker_bold']
           },
           MathJax: {
              exports: "MathJax",
