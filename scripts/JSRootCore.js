@@ -7,9 +7,22 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
+      var dir = "scripts";
+      var scripts = document.getElementsByTagName('script');
+      for (var n in scripts) {
+         if (scripts[n]['type'] != 'text/javascript') continue;
+         var src = scripts[n]['src'];
+         if ((src == null) || (src.length == 0)) continue;
+         var pos = src.indexOf("scripts/JSRootCore.");
+         if (pos>=0) {
+            dir = src.substr(0, pos+7);
+            break;
+         }
+      }
+
       // first configure all dependencies
       requirejs.config({
-       baseUrl: 'scripts',
+       baseUrl: dir,
        paths: {
           'd3'                    : 'd3.v3.min',
           'helvetiker_bold'       : 'helvetiker_bold.typeface',
@@ -156,7 +169,7 @@
 
             if (Object.prototype.toString.apply(value) === '[object Array]') {
                for (i = 0; i < value.length; i++) {
-                  value[i] = JSROOT.JSONR_unref(value[i], dy);
+                  value[i] = this.JSONR_unref(value[i], dy);
                }
             } else {
 
@@ -166,13 +179,12 @@
                }
 
                // add methods to all objects, where _typename is specified
-               if (('_typename' in value) && (typeof JSROOT == "object"))
-                  JSROOT.addMethods(value);
+               if ('_typename' in value) this.addMethods(value);
 
                ks = Object.keys(value);
                for (i = 0; i < ks.length; i++) {
                   k = ks[i];
-                  value[k] = JSROOT.JSONR_unref(value[k], dy);
+                  value[k] = this.JSONR_unref(value[k], dy);
                }
             }
          }
@@ -230,7 +242,7 @@
    JSROOT.parse = function(arg) {
       if ((arg==null) || (arg=="")) return null;
       var obj = JSON.parse(arg);
-      if (obj!=null) obj = JSROOT.JSONR_unref(obj);
+      if (obj!=null) obj = this.JSONR_unref(obj);
       return obj;
    }
 
@@ -370,6 +382,8 @@
          if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
       }
 
+      var pthis = this;
+
       if (window.ActiveXObject) {
 
          xhr.onreadystatechange = function() {
@@ -381,11 +395,8 @@
             }
 
             if (kind == "xml") return callback(xhr.responseXML);
-
             if (kind == "text") return callback(xhr.responseText);
-
-            if (kind == "object") return callback(JSROOT.parse(xhr.responseText));
-
+            if (kind == "object") return callback(pthis.parse(xhr.responseText));
             if (kind == "head") return callback(xhr);
 
             var filecontent = new String("");
@@ -411,7 +422,10 @@
 
             if (kind == "xml") return callback(xhr.responseXML);
             if (kind == "text") return callback(xhr.responseText);
-            if (kind == "object") return callback(JSROOT.parse(xhr.responseText));
+            if (kind == "object") {
+               console.log('parse object ' + xhr.responseText.length);
+               return callback(pthis.parse(xhr.responseText));
+            }
             if (kind == "head") return callback(xhr);
 
             var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
@@ -496,6 +510,10 @@
       if (filename.indexOf("$$$")==0) {
          isrootjs = true;
          filename = filename.slice(3);
+         if ((filename.indexOf("style/")==0) && JSROOT.source_min &&
+             (filename.lastIndexOf('.css')==filename.length-3) &&
+             (filename.indexOf('.min.css')<0))
+            filename = filename.slice(0, filename.length-4) + '.min.css';
       }
       var isstyle = filename.indexOf('.css') > 0;
 
@@ -609,7 +627,6 @@
             mainfiles += '$$$scripts/d3.v3.min.js;';
          modules.push('d3');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
-         extrafiles += '$$$style/JSRootPainter' + ext + ".css;";
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
@@ -642,7 +659,6 @@
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;
          mainfiles += '$$$scripts/JSRootInterface' + ext + ".js;";
-         extrafiles += '$$$style/JSRootInterface' + ext + ".css;";
          modules.push('JSRootInterface');
       }
 
@@ -655,8 +671,10 @@
             lst_jq += "$$$scripts/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
             JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
-         else
-            lst_jq += '$$$style/jquery-ui.css;$$$scripts/jquery-ui.min.js;';
+         else {
+            lst_jq += '$$$scripts/jquery-ui.min.js;';
+            extrafiles += '$$$style/jquery-ui.min' + ext + '.css';
+         }
 
          if (JSROOT.touches) {
             lst_jq += '$$$scripts/touch-punch.min.js;';
@@ -2411,8 +2429,6 @@
    // it is important to run this function at the end when all other
    // functions are available
    (function() {
-      var scripts = document.getElementsByTagName('script');
-
       function window_on_load(func) {
          if (func==null) return;
          if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
@@ -2421,6 +2437,8 @@
             window.onload = func;
       }
 
+
+      var scripts = document.getElementsByTagName('script');
 
       for (var n in scripts) {
          if (scripts[n]['type'] != 'text/javascript') continue;

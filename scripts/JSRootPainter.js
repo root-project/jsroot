@@ -29,6 +29,10 @@
    }
 } (function(JSROOT, d3) {
 
+
+   // do it here while require.js does not provide method to load css files
+   JSROOT.loadScript('$$$style/JSRootPainter.css');
+
    // list of user painters, called with arguments painter(vis, obj, opt)
    JSROOT.fDrawFunc = new Array;
 
