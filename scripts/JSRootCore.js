@@ -417,10 +417,7 @@
 
             if (kind == "xml") return callback(xhr.responseXML);
             if (kind == "text") return callback(xhr.responseText);
-            if (kind == "object") {
-               console.log('parse object ' + xhr.responseText.length);
-               return callback(pthis.parse(xhr.responseText));
-            }
+            if (kind == "object") return callback(pthis.parse(xhr.responseText));
             if (kind == "head") return callback(xhr);
 
             var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);

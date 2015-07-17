@@ -8555,8 +8555,6 @@
       if (((opts==null) || (opts.length==0)) && ('_kind' in node))
          opts = JSROOT.getDrawOptions("kind:" + node._kind, 'nosame');
 
-      console.log('online menu draw opt for ' + node._kind + ' is ' + opts);
-
       if (cando.display)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 

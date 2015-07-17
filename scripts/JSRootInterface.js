@@ -76,7 +76,6 @@
    }
 
    ReadFile = function() {
-      console.log('call Read File');
       var navigator_version = navigator.appVersion;
       if (typeof ActiveXObject == "function") { // Windows
          // detect obsolete browsers
