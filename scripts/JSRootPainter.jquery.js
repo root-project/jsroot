@@ -430,8 +430,6 @@
       var hitem = this.Find(itemname);
       if (hitem==null) return;
 
-      var cando = this.CheckCanDo(hitem);
-
       var painter = this;
 
       var onlineprop = painter.GetOnlineProp(itemname);

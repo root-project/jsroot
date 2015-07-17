@@ -7835,34 +7835,6 @@
       return res;
    }
 
-   JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
-
-      var kind = node["_kind"];
-      if ((kind==null) || (typeof kind != "string")) kind = "missing";
-
-      var cando = { expand : false, display : false, scan : true, open : false,
-                    html : "", ctxt : false, typename : "", execute: false };
-
-      if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
-
-      var draw_handle = JSROOT.getDrawHandle(kind);
-
-      cando.expand = ('_more' in node);
-
-      // enable context menu for top item
-      if (node === this.h) cando.ctxt = true;
-
-      if (draw_handle!=null) {
-         if ('func' in draw_handle) cando.display = true;
-         if ('aslink' in draw_handle) { cando.html = this.itemFullName(node); cando.open = true; }
-         if ('execute' in draw_handle) { cando.execute = true; cando.ctxt = true; }
-      } else {
-         cando.scan = false;
-      }
-
-      return cando;
-   }
-
    JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
       // execute item marked as 'Command'
       // If command requires additional arguments, they could be specified as extra arguments
@@ -7999,32 +7971,35 @@
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
+      var painter = null;
+
+      function display_callback() { JSROOT.CallBack(call_back, painter, itemname); }
 
       h.CreateDisplay(function(mdi) {
-         if (!mdi) return JSROOT.CallBack(call_back, null, itemname);
+         if (!mdi) return display_callback();
 
          var updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
          var item = h.Find(itemname);
 
-         if (item!=null) {
-            var cando = h.CheckCanDo(item);
-            if (!cando.display || ('_player' in item))
-               return h.player(itemname, drawopt, function() { JSROOT.CallBack(call_back, null, itemname); });
-         }
+         if ((item!=null) && ('_player' in item))
+            return h.player(itemname, drawopt, display_callback);
 
          if (updating) {
             drawopt = drawopt.substr(7);
-            if ((item==null) || ('_doing_update' in item)) return JSROOT.CallBack(call_back, null, itemname);
+            if ((item==null) || ('_doing_update' in item)) return display_callback();
             item['_doing_update'] = true;
+         }
+
+         if (item!=null) {
+            var handle = JSROOT.getDrawHandle(item._kind, drawopt);
+            if ((handle==null) || !('func' in handle)) return display_callback();
          }
 
          h.get(itemname, function(item, obj) {
 
             if (updating && item) delete item['_doing_update'];
-            if (obj==null) return JSROOT.CallBack(call_back, null, itemname);
-
-            var painter = null;
+            if (obj==null) return display_callback();
 
             var pos = drawopt ? drawopt.indexOf("divid:") : -1;
             if (pos>=0) {
@@ -8056,7 +8031,7 @@
 
             if (painter) painter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
 
-            JSROOT.CallBack(call_back, painter, itemname);
+            display_callback();
          }, drawopt);
       });
    }
@@ -8493,16 +8468,17 @@
       var painter = this;
 
       var node = this.Find(itemname);
-      var cando = this.CheckCanDo(node);
       var opts = JSROOT.getDrawOptions(node._kind, 'nosame');
+      var handle = JSROOT.getDrawHandle(node._kind);
+      var root_type = node._kind.indexOf("ROOT.") == 0;
 
-      if (cando.display)
+      if (opts != null)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 
-      if (cando.expand || cando.display)
+      if ((node['_childs'] == null) && (('_more' in node) || root_type))
          menu.add("Expand", function() { painter.expand(itemname); });
 
-      if (cando.execute)
+      if (handle && ('execute' in handle))
          menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu['tree_node']); });
 
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
@@ -8512,10 +8488,10 @@
          separ = "&";
       }
 
-      if (cando.display)
+      if (opts != null)
          menu.addDrawMenu("Draw in new window", opts, function(arg) { window.open(drawurl+separ+"opt=" +arg); });
 
-      if (cando.display && (opts!=null) && (opts.length > 0))
+      if ((opts!=null) && (opts.length > 0) && root_type)
          menu.addDrawMenu("Draw as png", opts, function(arg) {
             window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=" + arg);
          });
@@ -9108,7 +9084,7 @@
             if (first == null) first = h;
             // if drawoption specified, check it present in the list
             if (!'opt' in h) continue;
-            var opts = h.split(';');
+            var opts = h.opt.split(';');
             for (var j in opts) opts[j] = opts[j].toLowerCase();
             if (opts.indexOf(selector.toLowerCase())>=0) return h;
          } else {
@@ -9128,7 +9104,7 @@
          var h = JSROOT.getDrawHandle(kind, cnt);
          if (h==null) break;
          isany = true;
-         if (! 'opt' in h) continue;
+         if (! ('opt' in h)) continue;
          var opts = h.opt.split(';');
          for (var i in opts) {
             opts[i] = opts[i].toLowerCase();
