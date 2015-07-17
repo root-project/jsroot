@@ -7840,8 +7840,8 @@
       var kind = node["_kind"];
       if ((kind==null) || (typeof kind != "string")) kind = "missing";
 
-      var cando = { expand : false, display : false, scan : true, open : false, monitor:null,
-                    img1 : "", img2 : "", html : "", ctxt : false, typename : "", execute: false };
+      var cando = { expand : false, display : false, scan : true, open : false,
+                    html : "", ctxt : false, typename : "", execute: false };
 
       if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
 
@@ -7854,22 +7854,11 @@
 
       if (draw_handle!=null) {
          if ('func' in draw_handle) cando.display = true;
-         if ('icon' in draw_handle) cando.img1 = draw_handle.icon;
-         if ('icon2' in draw_handle) cando.img2 = draw_handle.icon2;
-         if ('monitor' in draw_handle) cando.monitor = draw_handle.monitor;
          if ('aslink' in draw_handle) { cando.html = this.itemFullName(node); cando.open = true; }
          if ('execute' in draw_handle) { cando.execute = true; cando.ctxt = true; }
       } else {
          cando.scan = false;
       }
-
-      if (cando.monitor==null) cando.monitor = cando.display;
-
-      if ((cando.img1.length==0) && ('_online' in node)) cando.img1 = "img_globe";
-
-      if ('_player' in node) cando.monitor = false;
-      if ('_icon' in node) cando.img1 = node['_icon'];
-      if ('_icon2' in node) cando.img2 = node['_icon2'];
 
       return cando;
    }
@@ -8107,10 +8096,10 @@
          var drawopt = p.GetItemDrawOpt();
          if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
          var item = hpainter.Find(itemname);
-         if ((item==null) || ('_not_monitor' in item)) return;
+         if ((item==null) || ('_not_monitor' in item) || ('_player' in item)) return;
          var forced = false;
 
-         if (! '_always_monitor' in item) {
+         if ('_always_monitor' in item) {
             forced = true;
          } else {
             var handle = JSROOT.getDrawHandle(item._kind);

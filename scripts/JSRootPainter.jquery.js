@@ -143,44 +143,37 @@
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, parent) {
       var isroot = (parent == null);
       var has_childs = '_childs' in hitem;
+      if (!isroot) hitem._parent = parent;
 
       if ('_hidden' in hitem) return;
 
-      var cando = this.CheckCanDo(hitem);
-
-      if (!isroot) hitem._parent = parent;
-
+      var handle = JSROOT.getDrawHandle(hitem._kind);
+      var img1 = "", img2 = "";
       var can_click = false;
+      if (handle!=null) {
+         if ('icon' in handle) img1 = handle.icon;
+         if ('icon2' in handle) img2 = handle.icon2;
+         if (('func' in handle) || ('execute' in handle) || ('aslink' in handle)) can_click = true;
+      }
+      if ('_icon' in hitem) img1 = hitem['_icon'];
+      if ('_icon2' in hitem) img2 = hitem['_icon2'];
+      if ((img1.length==0) && ('_online' in hitem)) img1 = "img_globe";
+      if ((img1.length==0) && isroot) img1 = "img_base";
 
-      if (!has_childs || !cando.scan) {
-         if (cando.expand) {
-            can_click = true;
-            if (cando.img1.length == 0) {
-               cando.img1 = 'img_folder';
-               cando.img2 = 'img_folderopen';
-            }
-         } else
-         if (cando.display || cando.execute) {
-            can_click = true;
-         } else
-         if (cando.html.length > 0) can_click = true;
+      if ('_more' in hitem) {
+         can_click = true;
+         if (img1.length == 0) {
+            img1 = 'img_folder';
+            img2 = 'img_folderopen';
+         }
       }
 
-      hitem['_img1'] = cando.img1;
-      hitem['_img2'] = cando.img2;
-      if (hitem['_img2']=="") hitem['_img2'] = hitem['_img1'];
+      if (img2.length==0) img2 = img1;
+      if (img1.length==0) img1 = has_childs ? "img_folder" : "img_page";
+      if (img2.length==0) img2 = has_childs ? "img_folderopen" : "img_page";
 
-      // assign root icon
-      if (isroot && (hitem['_img1'].length==0))
-         hitem['_img1'] = hitem['_img2'] = "img_base";
-
-      // assign node icons
-
-      if (hitem['_img1'].length==0)
-         hitem['_img1'] = has_childs ? "img_folder" : "img_page";
-
-      if (hitem['_img2'].length==0)
-         hitem['_img2'] = has_childs ? "img_folderopen" : "img_page";
+      hitem['_img1'] = img1;
+      hitem['_img2'] = img2;
 
       var itemname = this.itemFullName(hitem);
 
