@@ -7972,7 +7972,7 @@
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
       var painter = null;
-
+      
       function display_callback() { JSROOT.CallBack(call_back, painter, itemname); }
 
       h.CreateDisplay(function(mdi) {
@@ -8002,6 +8002,7 @@
             if (obj==null) return display_callback();
 
             var pos = drawopt ? drawopt.indexOf("divid:") : -1;
+
             if (pos>=0) {
                var divid = drawopt.slice(pos+6);
                drawopt = drawopt.slice(0, pos);
@@ -8143,7 +8144,7 @@
 
          // Than create empty frames for each item
          for (var i in items)
-            if (options[i]!='update')
+            if (options[i].indexOf('update:')!=0)
                mdi.CreateFrame(items[i]);
 
          // We start display of all items parallel
