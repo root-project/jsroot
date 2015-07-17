@@ -930,7 +930,7 @@
 
       if (miny==maxy) maxy = miny + 1;
 
-      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1();
+      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1(graph['fNpoints']);
 
       graph['fHistogram']['fXaxis']['fXmin'] = minx;
       graph['fHistogram']['fXaxis']['fXmax'] = maxx;
