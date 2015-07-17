@@ -526,7 +526,7 @@
       JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, painter);
    }
 
-   JSROOT.Painter.real_drawHistogram3D = function(divid, histo, opt, painter) {
+   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt, painter) {
 
       var logx = false, logy = false, logz = false, gridx = false, gridy = false, gridz = false;
 

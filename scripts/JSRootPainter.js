@@ -29,7 +29,6 @@
    }
 } (function(JSROOT, d3) {
 
-
    // do it here while require.js does not provide method to load css files
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootPainter.css');
@@ -41,10 +40,13 @@
    // List of supported draw options could be provided, separated  with ';'
    // Several different draw functions for the same class or kind could be specified
    JSROOT.addDrawFunc = function(_name, _func, _opt) {
-      if ((arguments.length == 1) && (typeof arguments[0] == 'object'))
+      if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
          JSROOT.fDrawFunc.push(arguments[0]);
-      else
-         JSROOT.fDrawFunc.push({ name:_name, func:_func, opt:_opt });
+         return arguments[0];
+      }
+      var handle = { name:_name, func:_func, opt:_opt };
+      JSROOT.fDrawFunc.push(handle);
+      return handle;
    }
 
    JSROOT.gStyle = {
@@ -6821,14 +6823,6 @@
       return painter.DrawingReady();
    }
 
-   JSROOT.Painter.drawHistogram3D = function(divid, obj, opt) {
-      var painter = new JSROOT.TObjectPainter;
-      JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram3D(divid, obj, opt, painter);
-      });
-      return painter;
-   }
-
    // ====================================================================
 
    JSROOT.THStackPainter = function(stack) {
@@ -7867,11 +7861,11 @@
          cando.img1 = "img_globe";
       } else if (kind == "JSROOT.TopFolder") {
          cando.img1 = "img_base";
-      } else if (kind=="Command") {
+      } else if (kind == "Command") {
          cando.ctxt = true;
          cando.execute = true;
          cando.img1 = "img_execute";
-      } else if (kind=="Text") {
+      } else if (kind == "Text") {
          cando.ctxt = true;
          cando.display = true;
          cando.img1 = "img_text";
@@ -7881,10 +7875,6 @@
          cando.display = true;
       } else if (kind.match(/^ROOT.TH2/)) {
          cando.img1 = "img_histo2d";
-         cando.scan = false;
-         cando.display = true;
-      } else if (kind.match(/^ROOT.TH3/)) {
-         cando.img1 = "img_histo3d";
          cando.scan = false;
          cando.display = true;
       } else if (kind == "ROOT.TCanvas") {
@@ -9121,7 +9111,7 @@
    JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;E;E1;E2;same");
    JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D, ";E1;E2");
    JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D, ";COL;COLZ;COL3;LEGO;same");
-   JSROOT.addDrawFunc(/^TH3/, JSROOT.Painter.drawHistogram3D);
+   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
    JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
    JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph,";L;P");
@@ -9234,9 +9224,10 @@
 
       if (prereq.length > 0) {
          // special handling for painters, which should be loaded via extra scripts
-         // such painter get extra last argument - pointer on TBasePainter object
+         // such painter get extra last argument - pointer on dummy painter object
 
-         var painter = new JSROOT.TBasePainter();
+         var painter = (funcname.indexOf("JSROOT.Painter")==0) ?
+                        new JSROOT.TObjectPainter() : new JSROOT.TBasePainter();
 
          JSROOT.AssertPrerequisites(prereq, function() {
             var func = JSROOT.findFunction(funcname);
@@ -9248,7 +9239,7 @@
             var ppp = func(divid, obj, opt, painter);
 
             if (ppp !== painter)
-               alert('Painter function ' + funcname + ' do not follow rules of dynamic_loaded painters');
+               alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
          });
 
          return painter;

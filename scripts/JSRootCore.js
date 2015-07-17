@@ -74,7 +74,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 16/07/2015";
+   JSROOT.version = "dev 17/07/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -324,11 +324,12 @@
    JSROOT.findFunction = function(name) {
       var func = window[name];
       if (typeof func == 'function') return func;
-      var separ = name.indexOf(".");
+      var separ = name.lastIndexOf(".");
       if (separ<0) return null;
       var namespace = name.slice(0, separ);
       name = name.slice(separ+1);
       if (namespace=="JSROOT") func = this[name]; else
+      if (namespace=="JSROOT.Painter") { if ('Painter' in this) func = this['Painter'][name]; } else
       if (window[namespace]) func = window[namespace][name];
       return (typeof func == 'function') ? func : null;
    }
