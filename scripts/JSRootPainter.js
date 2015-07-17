@@ -33,19 +33,19 @@
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
-   // list of user painters, called with arguments painter(vis, obj, opt)
-   JSROOT.fDrawFunc = new Array;
+   // list of user painters, called with arguments func(vis, obj, opt)
+   JSROOT.DrawFuncs = {lst:[], cache:{}};
 
    // add draw function for the class
    // List of supported draw options could be provided, separated  with ';'
    // Several different draw functions for the same class or kind could be specified
    JSROOT.addDrawFunc = function(_name, _func, _opt) {
       if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
-         JSROOT.fDrawFunc.push(arguments[0]);
+         JSROOT.DrawFuncs.lst.push(arguments[0]);
          return arguments[0];
       }
       var handle = { name:_name, func:_func, opt:_opt };
-      JSROOT.fDrawFunc.push(handle);
+      JSROOT.DrawFuncs.lst.push(handle);
       return handle;
    }
 
@@ -1030,11 +1030,10 @@
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
       if (name==null) {
          delete this['_hitemname'];
-         delete this['_hdrawopt'];
       } else {
          this['_hitemname'] = name;
-         this['_hdrawopt'] = opt;
       }
+      if (opt!=null) this['_hdrawopt'] = opt;
    }
 
    JSROOT.TBasePainter.prototype.GetItemName = function() {
@@ -1042,7 +1041,7 @@
    }
 
    JSROOT.TBasePainter.prototype.GetItemDrawOpt = function() {
-      return ('_hdrawopt' in this) ? this['_hdrawopt'] : null;
+      return ('_hdrawopt' in this) ? this['_hdrawopt'] : "";
    }
 
 
@@ -7839,84 +7838,19 @@
    JSROOT.HierarchyPainter.prototype.CheckCanDo = function(node) {
 
       var kind = node["_kind"];
-      if ((kind==null) || (typeof kind != "string")) kind = "";
+      if ((kind==null) || (typeof kind != "string")) kind = "missing";
 
       var cando = { expand : false, display : false, scan : true, open : false, monitor:null,
                     img1 : "", img2 : "", html : "", ctxt : false, typename : "", execute: false };
 
       if (kind.indexOf("ROOT.") == 0) cando.typename = kind.slice(5);
 
-      var draw_handle = null;
-      if (cando.typename.length>0)
-         draw_handle = JSROOT.getDrawHandle(cando.typename);
-      else
-         draw_handle = JSROOT.getDrawHandle("kind:" + kind);
+      var draw_handle = JSROOT.getDrawHandle(kind);
 
       cando.expand = ('_more' in node);
 
       // enable context menu for top item
       if (node === this.h) cando.ctxt = true;
-
-      if (kind == "ROOT.Session") {
-         cando.img1 = "img_globe";
-      } else if (kind == "JSROOT.TopFolder") {
-         cando.img1 = "img_base";
-      } else if (kind == "Command") {
-         cando.ctxt = true;
-         cando.execute = true;
-         cando.img1 = "img_execute";
-      } else if (kind == "Text") {
-         cando.ctxt = true;
-         cando.display = true;
-         cando.img1 = "img_text";
-      } else if (kind.match(/^ROOT.TH1/)) {
-         cando.img1 = "img_histo1d";
-         cando.scan = false;
-         cando.display = true;
-      } else if (kind.match(/^ROOT.TH2/)) {
-         cando.img1 = "img_histo2d";
-         cando.scan = false;
-         cando.display = true;
-      } else if (kind == "ROOT.TCanvas") {
-         cando.img1 = "img_canvas";
-         cando.display = true;
-      } else if (kind == "ROOT.TProfile") {
-         cando.img1 = "img_profile";
-         cando.display = true;
-      } else if (kind.match(/^ROOT.TGraph/) || (kind=="TCutG")) {
-         cando.img1 = "img_graph";
-         cando.display = true;
-      } else if (kind == "ROOT.TF1") {
-         cando.img1 = "img_graph";
-         cando.display = true;
-      } else if (kind == "ROOT.TTree") {
-         cando.img1 = "img_tree";
-      } else if ((kind == "ROOT.TFile") || (kind == "ROOT.TMemFile")) {
-         cando.img1 = "img_file";
-      } else if (kind == "ROOT.TFolder") {
-         cando.img1 = "img_folder";
-         cando.img2 = "img_folderopen";
-      } else if (kind == "ROOT.TNtuple")
-         cando.img1 = "img_tree";
-      else if (kind == "ROOT.TBranch")
-         cando.img1 = "img_branch";
-      else if (kind.match(/^ROOT.TLeaf/))
-         cando.img1 = "img_leaf";
-      else if (kind == "ROOT.TStreamerInfoList") {
-         cando.img1 = 'img_question';
-         cando.expand = false;
-         cando.display = true;
-      } else
-      if ((cando.typename != "") && JSROOT.canDraw(cando.typename)) {
-         cando.img1 = "img_histo1d";
-         cando.scan = false;
-         cando.display = true;
-      } else
-      if (JSROOT.canDraw('kind:' + kind)) {
-         cando.img1 = "img_leaf";
-         cando.scan = false;
-         cando.display = true;
-      }
 
       if (draw_handle!=null) {
          if ('func' in draw_handle) cando.display = true;
@@ -7924,6 +7858,9 @@
          if ('icon2' in draw_handle) cando.img2 = draw_handle.icon2;
          if ('monitor' in draw_handle) cando.monitor = draw_handle.monitor;
          if ('aslink' in draw_handle) { cando.html = this.itemFullName(node); cando.open = true; }
+         if ('execute' in draw_handle) { cando.execute = true; cando.ctxt = true; }
+      } else {
+         cando.scan = false;
       }
 
       if (cando.monitor==null) cando.monitor = cando.display;
@@ -8077,7 +8014,7 @@
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back, null, itemname);
 
-         var updating = (drawopt=="update");
+         var updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
          var item = h.Find(itemname);
 
@@ -8088,6 +8025,7 @@
          }
 
          if (updating) {
+            drawopt = drawopt.substr(7);
             if ((item==null) || ('_doing_update' in item)) return JSROOT.CallBack(call_back, null, itemname);
             item['_doing_update'] = true;
          }
@@ -8154,8 +8092,9 @@
       return true;
    }
 
-   JSROOT.HierarchyPainter.prototype.updateAll = function() {
+   JSROOT.HierarchyPainter.prototype.updateAll = function(only_auto_items) {
       // method can be used to fetch new objects and update all existing drawings
+      // if only_auto_items specified, only automatic items will be updated
 
       var mdi = this['disp'];
       if (mdi == null) return;
@@ -8165,11 +8104,26 @@
       // first collect items
       mdi.ForEachPainter(function(p) {
          var itemname = p.GetItemName();
+         var drawopt = p.GetItemDrawOpt();
          if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
          var item = hpainter.Find(itemname);
-         if ((item==null) || ('_not_monitor' in item) || !hpainter.CheckCanDo(item).monitor) return;
-         allitems.push(itemname);
-         options.push("update");
+         if ((item==null) || ('_not_monitor' in item)) return;
+         var forced = false;
+
+         if (! '_always_monitor' in item) {
+            forced = true;
+         } else {
+            var handle = JSROOT.getDrawHandle(item._kind);
+            if (handle && ('monitor' in handle)) {
+               if ((handle.monitor===false) || (handle.monitor=='never')) return;
+               if (handle.monitor==='always') forced = true;
+            }
+         }
+
+         if (forced || !only_auto_items) {
+            allitems.push(itemname);
+            options.push("update:" + drawopt);
+         }
       }, true); // only visible panels are considered
 
       var painter = this;
@@ -8306,10 +8260,10 @@
             }).send(null);
          }
          if (pthis.h == null) pthis.h = h1; else
-         if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
+         if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
             var h0 = pthis.h;
             var topname = ('_jsonfile' in h0) ? "Files" : "Items";
-            pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
+            pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
          pthis.RefreshHtml(call_back);
@@ -8343,10 +8297,10 @@
             var h1 = pthis.FileHierarchy(file);
             h1._isopen = true;
             if (pthis.h == null) pthis.h = h1; else
-               if (pthis.h._kind == 'JSROOT.TopFolder') pthis.h._childs.push(h1); else {
+               if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
                   var h0 = pthis.h;
                   var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-                  pthis.h = { _name: topname, _kind: 'JSROOT.TopFolder', _childs : [h0, h1] };
+                  pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
                }
 
             pthis.RefreshHtml(call_back);
@@ -8399,7 +8353,7 @@
             func = JSROOT.findFunction(item['_make_request']);
          } else
          if (('_kind' in item) && (item._kind.indexOf("ROOT.")!=0)) {
-            draw_handle = JSROOT.getDrawHandle("kind:"+item._kind);
+            draw_handle = JSROOT.getDrawHandle(item._kind);
             if ((draw_handle!=null) && ('make_request' in draw_handle))
                func = draw_handle['make_request'];
          }
@@ -8551,9 +8505,7 @@
 
       var node = this.Find(itemname);
       var cando = this.CheckCanDo(node);
-      var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
-      if (((opts==null) || (opts.length==0)) && ('_kind' in node))
-         opts = JSROOT.getDrawOptions("kind:" + node._kind, 'nosame');
+      var opts = JSROOT.getDrawOptions(node._kind, 'nosame');
 
       if (cando.display)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
@@ -8736,10 +8688,10 @@
 
                JSROOT.RegisterForResize(hpainter);
 
-               setInterval(function() { if (hpainter.IsMonitoring()) hpainter.updateAll(); }, hpainter.MonitoringInterval());
+               setInterval(function() { hpainter.updateAll(!hpainter.IsMonitoring()); }, hpainter.MonitoringInterval());
 
                JSROOT.CallBack(call_back);
-            });
+           });
       }
 
       function AfterOnlineOpened() {
@@ -9096,86 +9048,104 @@
       window.addEventListener('resize', ProcessResize);
    }
 
-   JSROOT.addDrawFunc("TCanvas", JSROOT.Painter.drawCanvas);
-   JSROOT.addDrawFunc("TPad", JSROOT.Painter.drawPad);
-   JSROOT.addDrawFunc("TFrame", JSROOT.Painter.drawFrame);
-   JSROOT.addDrawFunc("TLegend", JSROOT.Painter.drawLegend);
-   JSROOT.addDrawFunc("TPaveText", JSROOT.Painter.drawPaveText);
-   JSROOT.addDrawFunc("TPaveStats", JSROOT.Painter.drawPaveText);
-   JSROOT.addDrawFunc("TLatex", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc("TMathText", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc("TText", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc("TPaveLabel", JSROOT.Painter.drawText);
-   JSROOT.addDrawFunc(/^TH1/, JSROOT.Painter.drawHistogram1D, ";P;P0;E;E1;E2;same");
-   JSROOT.addDrawFunc("TProfile", JSROOT.Painter.drawHistogram1D, ";E1;E2");
-   JSROOT.addDrawFunc(/^TH2/, JSROOT.Painter.drawHistogram2D, ";COL;COLZ;COL3;LEGO;same");
+   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func:JSROOT.Painter.drawCanvas });
+   JSROOT.addDrawFunc({ name: "TPad", func:JSROOT.Painter.drawPad });
+   JSROOT.addDrawFunc({ name: "TFrame", func:JSROOT.Painter.drawFrame });
+   JSROOT.addDrawFunc({ name: "TLegend", func:JSROOT.Painter.drawLegend });
+   JSROOT.addDrawFunc({ name: "TPaveText", func:JSROOT.Painter.drawPaveText });
+   JSROOT.addDrawFunc({ name: "TPaveStats", func:JSROOT.Painter.drawPaveText });
+   JSROOT.addDrawFunc({ name: "TLatex", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TMathText", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TText", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TPaveLabel", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func:JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
+   JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func:JSROOT.Painter.drawHistogram1D, opt:";E1;E2"});
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", func:JSROOT.Painter.drawHistogram2D, opt:";COL;COLZ;COL3;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
-   JSROOT.addDrawFunc("THStack", JSROOT.Painter.drawHStack);
-   JSROOT.addDrawFunc("TF1", JSROOT.Painter.drawFunction);
-   JSROOT.addDrawFunc(/^TGraph/, JSROOT.Painter.drawGraph,";L;P");
-   JSROOT.addDrawFunc("TCutG", JSROOT.Painter.drawGraph,";L;P");
-   JSROOT.addDrawFunc(/^RooHist/, JSROOT.Painter.drawGraph,";L;P");
-   JSROOT.addDrawFunc(/^RooCurve/, JSROOT.Painter.drawGraph,";L;P");
-   JSROOT.addDrawFunc("TMultiGraph", JSROOT.Painter.drawMultiGraph);
-   JSROOT.addDrawFunc("TStreamerInfoList", JSROOT.Painter.drawStreamerInfo);
-   JSROOT.addDrawFunc("TPaletteAxis", JSROOT.Painter.drawPaletteAxis);
-   JSROOT.addDrawFunc("kind:Text", JSROOT.Painter.drawRawText);
+   JSROOT.addDrawFunc({ name: "THStack", func:JSROOT.Painter.drawHStack });
+   JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", func:JSROOT.Painter.drawFunction });
+   JSROOT.addDrawFunc({ name: /^TGraph/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P"});
+   JSROOT.addDrawFunc({ name: "TCutG", icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P"});
+   JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P" });
+   JSROOT.addDrawFunc({ name: /^RooCurve/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P" });
+   JSROOT.addDrawFunc({ name: "TMultiGraph", func:JSROOT.Painter.drawMultiGraph });
+   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func:JSROOT.Painter.drawStreamerInfo });
+   JSROOT.addDrawFunc({ name: "TPaletteAxis", func:JSROOT.Painter.drawPaletteAxis });
+   JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func:JSROOT.Painter.drawRawText });
+   // these are not draw functions, but provide extra info about correspondent classes
+   JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });
+   JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen" });
+   JSROOT.addDrawFunc({ name: "TTree", icon:"img_tree" });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon:"img_tree" });
+   JSROOT.addDrawFunc({ name: "TBranch", icon:"img_branch" });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon:"img_leaf" });
+   JSROOT.addDrawFunc({ name: "TFile", icon:"img_file" });
+   JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file" });
+   JSROOT.addDrawFunc({ name: "Session", icon:"img_globe" });
+   JSROOT.addDrawFunc({ name: "kind:TopFolder", icon:"img_base" });
 
+   JSROOT.getDrawHandle = function(kind, selector) {
+      // return draw handle for specified item kind
+      // kind could be ROOT.TH1I for ROOT classes or just
+      // kind string like "Command" or "Text"
+      // selector can be used to search for draw handle with specified option (string)
+      // or just sequence id
 
-   JSROOT.getDrawHandle = function(classname, drawopt) {
-      if (typeof classname != 'string') return null;
+      if (typeof kind != 'string') return null;
+      if (selector === "") selector = null;
 
       var first = null;
 
-      for (var i in JSROOT.fDrawFunc) {
-         if ((typeof JSROOT.fDrawFunc[i].name) === "string") {
-            if (JSROOT.fDrawFunc[i].name != classname) continue;
+      if ((selector == null) && (kind in JSROOT.DrawFuncs.cache))
+         return JSROOT.DrawFuncs.cache[kind];
+
+      var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind;
+
+      var counter = 0;
+      for (var i in JSROOT.DrawFuncs.lst) {
+         var h = JSROOT.DrawFuncs.lst[i];
+         if (typeof h.name == "string") {
+            if (h.name != search) continue;
          } else {
-            if (!classname.match(JSROOT.fDrawFunc[i].name)) continue;
+            if (!search.match(h.name)) continue;
          }
-         if (first == null) first = JSROOT.fDrawFunc[i];
 
-         if ((typeof drawopt=='string') && (drawopt!="")) {
+         if (selector==null) {
+            // store found handle in cache, can reuse later
+            if (!(kind in JSROOT.DrawFuncs.cache)) JSROOT.DrawFuncs.cache[kind] = h;
+            return h;
+         } else
+         if (typeof selector=='string') {
+            if (first == null) first = h;
             // if drawoption specified, check it present in the list
-            if (JSROOT.fDrawFunc[i].opt == null) continue;
-            var opts = JSROOT.fDrawFunc[i].opt.split(';');
+            if (!'opt' in h) continue;
+            var opts = h.split(';');
             for (var j in opts) opts[j] = opts[j].toLowerCase();
-            if (opts.indexOf(drawopt.toLowerCase())<0) continue;
+            if (opts.indexOf(selector.toLowerCase())>=0) return h;
+         } else {
+            if (selector === counter) return h;
          }
-
-         return JSROOT.fDrawFunc[i];
+         counter++;
       }
+
       return first;
    }
 
-   // returns draw function for specified class and draw option
-   JSROOT.getDrawFunc = function(classname, drawopt) {
-      var handle = JSROOT.getDrawHandle(classname, drawopt);
-      if ((handle==null) || !('func' in handle)) return null;
-      if (typeof handle.func == 'function') return handle.func;
-      return JSROOT.findFunction(handle.func);
-   }
-
    // returns array with supported draw options for the specified class
-   JSROOT.getDrawOptions = function(classname, selector) {
-      if ((typeof classname != 'string') || (classname=="")) return null;
-
+   JSROOT.getDrawOptions = function(kind, selector) {
+      if (typeof kind != 'string') return null;
       var allopts = null, isany = false;
-
-      for (var i in JSROOT.fDrawFunc) {
-         if ((typeof JSROOT.fDrawFunc[i].name) === "string") {
-            if (JSROOT.fDrawFunc[i].name != classname) continue;
-         } else {
-            if (!classname.match(JSROOT.fDrawFunc[i].name)) continue;
-         }
+      for (var cnt=0;cnt<1000;cnt++) {
+         var h = JSROOT.getDrawHandle(kind, cnt);
+         if (h==null) break;
          isany = true;
-         if (JSROOT.fDrawFunc[i].opt == null) continue;
-         var opts = JSROOT.fDrawFunc[i].opt.split(';');
+         if (! 'opt' in h) continue;
+         var opts = h.opt.split(';');
          for (var i in opts) {
             opts[i] = opts[i].toLowerCase();
             if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
 
-            if (allopts==null) allopts = new Array;
+            if (allopts==null) allopts = [];
             if (allopts.indexOf(opts[i])<0) allopts.push(opts[i]);
          }
       }
@@ -9188,9 +9158,8 @@
       return allopts;
    }
 
-
    JSROOT.canDraw = function(classname) {
-      return JSROOT.getDrawHandle(classname) != null;
+      return JSROOT.getDrawHandle("ROOT." + classname) != null;
    }
 
    /** @fn JSROOT.draw(divid, obj, opt)
@@ -9200,8 +9169,8 @@
       if (typeof obj != 'object') return null;
 
       var handle = null;
-      if ('_typename' in obj) handle = JSROOT.getDrawHandle(obj['_typename'], opt);
-      else if ('_kind' in obj) handle = JSROOT.getDrawHandle('kind:' + obj['_kind'], opt);
+      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj['_typename'], opt);
+      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj['_kind'], opt);
 
       if ((handle==null) || !('func' in handle)) return null;
 

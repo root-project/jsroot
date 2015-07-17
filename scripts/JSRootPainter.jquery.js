@@ -496,7 +496,7 @@
             painter.FillOnlineMenu(menu, onlineprop, itemname);
          } else
          if (fileprop != null) {
-            var opts = JSROOT.getDrawOptions(cando.typename, 'nosame');
+            var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
 
             menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 

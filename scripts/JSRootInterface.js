@@ -210,7 +210,7 @@
             .prop('checked', hpainter.IsMonitoring())
             .click(function() {
                hpainter.EnableMonitoring(this.checked);
-               if (this.checked) hpainter.updateAll();
+               hpainter.updateAll(!this.checked);
             });
          } else {
             var fname = "";
