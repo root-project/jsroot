@@ -392,22 +392,24 @@
       if (hitem==null) return;
 
       if (!plusminus) {
-         var cando = this.CheckCanDo(hitem);
-
-         if (cando.open && (cando.html.length>0))
-            return window.open(cando.html);
-
-         if (cando.expand && (hitem['_childs'] == null))
-            return this.expand(itemname, hitem, node.parent());
-
-         if (cando.display)
-            return this.display(itemname);
 
          if ('_player' in hitem)
             return this.player(itemname);
 
-         if (cando.execute)
-            return this.ExecuteCommand(itemname, node);
+         var handle = JSROOT.getDrawHandle(hitem._kind);
+         if (handle!=null) {
+            if ('aslink' in handle)
+               return window.open(itemname);
+
+            if ('func' in handle)
+               return this.display(itemname);
+
+            if ('execute' in handle)
+               return this.ExecuteCommand(itemname, node);
+         }
+
+         if ((hitem['_childs'] == null) && ('_more' in hitem))
+            return this.expand(itemname, hitem, node.parent());
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
