@@ -9084,10 +9084,11 @@
          if (typeof selector=='string') {
             if (first == null) first = h;
             // if drawoption specified, check it present in the list
-            if (!'opt' in h) continue;
-            var opts = h.opt.split(';');
-            for (var j in opts) opts[j] = opts[j].toLowerCase();
-            if (opts.indexOf(selector.toLowerCase())>=0) return h;
+            if ('opt' in h) {
+               var opts = h.opt.split(';');
+               for (var j in opts) opts[j] = opts[j].toLowerCase();
+               if (opts.indexOf(selector.toLowerCase())>=0) return h;
+            }
          } else {
             if (selector === counter) return h;
          }
