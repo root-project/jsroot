@@ -325,8 +325,11 @@
       var func = window[name];
       if (typeof func == 'function') return func;
       var separ = name.indexOf(".");
-      if ((separ>0) && window[name.slice(0, separ)])
-         func = window[name.slice(0, separ)][name.slice(separ+1)];
+      if (separ<0) return null;
+      var namespace = name.slice(0, separ);
+      name = name.slice(separ+1);
+      if (namespace=="JSROOT") func = this[name]; else
+      if (window[namespace]) func = window[namespace][name];
       return (typeof func == 'function') ? func : null;
    }
 
@@ -579,25 +582,27 @@
       // 'simple' for basic user interface
       // 'load:' list of user-specific scripts at the end of kind string
 
+      var jsroot = this;
+
       if ((typeof kind != 'string') || (kind == ''))
-         return JSROOT.CallBack(callback);
+         return jsroot.CallBack(callback);
 
       if (kind=='shift') {
-         var req = JSROOT.doing_assert.shift();
+         var req = jsroot.doing_assert.shift();
          kind = req._kind;
          callback = req._callback;
          debugout = req._debug;
       } else
-         if (JSROOT.doing_assert != null) {
-            // if function already called, store request
-            return JSROOT.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
-         } else {
-            JSROOT.doing_assert = [];
-         }
+      if (jsroot.doing_assert != null) {
+         // if function already called, store request
+         return jsroot.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
+      } else {
+         jsroot.doing_assert = [];
+      }
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
 
-      var ext = JSROOT.source_min ? ".min" : "";
+      var ext = jsroot.source_min ? ".min" : "";
 
       var need_jquery = false;
 
@@ -607,16 +612,16 @@
 
       if (kind.indexOf('io;')>=0) {
          mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
-         "$$$scripts/JSRootIOEvolution" + ext + ".js;";
+                      "$$$scripts/JSRootIOEvolution" + ext + ".js;";
          modules.push('JSRootIOEvolution');
       }
 
       if (kind.indexOf('2d;')>=0) {
          if (typeof d3 != 'undefined')
-            JSROOT.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10");
+            jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
          else
             mainfiles += '$$$scripts/d3.v3.min.js;';
-         modules.push('d3');
+         modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
       }
@@ -642,7 +647,7 @@
       if (kind.indexOf("mathjax;")>=0) {
          if (typeof MathJax == 'undefined') {
             mainfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
-            JSROOT.source_dir + "scripts/mathjax_config.js;";
+                          jsroot.source_dir + "scripts/mathjax_config.js;";
          }
          if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
          modules.push('MathJax');
@@ -659,11 +664,11 @@
          var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
 
          if (has_jq)
-            JSROOT.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1");
+            jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.1", debugout);
          else
             lst_jq += "$$$scripts/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
-            JSROOT.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0");
+            jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.0", debugout);
          else {
             lst_jq += '$$$scripts/jquery-ui.min.js;';
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
@@ -677,7 +682,7 @@
          modules.splice(0,0, 'jquery', 'jquery-ui');
          mainfiles = lst_jq + mainfiles;
 
-         JSROOT.load_jquery = true;
+         jsroot.load_jquery = true;
       }
 
       var pos = kind.indexOf("user:");
@@ -685,38 +690,41 @@
       if (pos>=0) extrafiles += kind.slice(pos+5);
 
       var load_callback = function() {
-         if (JSROOT.doing_assert.length==0) JSROOT.doing_assert = null;
-         JSROOT.CallBack(callback);
-         if (JSROOT.doing_assert && (JSROOT.doing_assert.length>0)) {
-            JSROOT.AssertPrerequisites('shift');
+         if (jsroot.doing_assert.length==0) jsroot.doing_assert = null;
+         jsroot.CallBack(callback);
+         if (jsroot.doing_assert && (jsroot.doing_assert.length>0)) {
+            jsroot.AssertPrerequisites('shift');
          }
       }
 
       if ((typeof define === "function") && define.amd && (modules.length>0)) {
-         JSROOT.console("loading " + modules + " with require.js", debugout);
+         jsroot.console("loading " + modules + " with require.js", debugout);
          require(modules, function() {
-            JSROOT.loadScript(extrafiles, load_callback, debugout);
+            jsroot.loadScript(extrafiles, load_callback, debugout);
          });
       } else {
-         JSROOT.loadScript(mainfiles + extrafiles, load_callback, debugout);
+         jsroot.loadScript(mainfiles + extrafiles, load_callback, debugout);
       }
    }
 
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
+
+      var jsroot = this;
+
       if (typeof user_scripts == 'function') {
          andThen = user_scripts;
          user_scripts = null;
       }
 
       var debugout = null;
-      var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
+      var nobrowser = jsroot.GetUrlOption('nobrowser')!=null;
       var requirements = "io;2d;";
 
       if (document.getElementById('simpleGUI')) {
          debugout = 'simpleGUI';
-         if ((JSROOT.GetUrlOption('json')!=null) &&
-             (JSROOT.GetUrlOption('file')==null) &&
-             (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
+         if ((jsroot.GetUrlOption('json')!=null) &&
+             (jsroot.GetUrlOption('file')==null) &&
+             (jsroot.GetUrlOption('files')==null)) requirements = "2d;";
       } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
       if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
@@ -728,16 +736,16 @@
 
       if (!nobrowser) requirements += 'jq2d;simple;';
 
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
+      if (user_scripts == null) user_scripts = jsroot.GetUrlOption("autoload");
+      if (user_scripts == null) user_scripts = jsroot.GetUrlOption("load");
 
       if (user_scripts != null)
          requirements += "load:" + user_scripts + ";";
 
-      JSROOT.AssertPrerequisites(requirements, function() {
-         var func = JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
-         JSROOT.CallBack(func);
-         JSROOT.CallBack(andThen);
+      this.AssertPrerequisites(requirements, function() {
+         var func = jsroot.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
+         jsroot.CallBack(func);
+         jsroot.CallBack(andThen);
       }, debugout);
    }
 
