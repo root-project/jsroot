@@ -8083,7 +8083,7 @@
    }
 
 
-   JSROOT.HierarchyPainter.prototype.updateAll = function(only_auto_items) {
+   JSROOT.HierarchyPainter.prototype.updateAll = function(only_auto_items, only_items) {
       // method can be used to fetch new objects and update all existing drawings
       // if only_auto_items specified, only automatic items will be updated
 
@@ -8336,6 +8336,8 @@
          while ((top!=null) && (!('_online' in top))) top = top._parent;
          url = this.itemFullName(item, top);
          var func = null;
+         if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
+         
 
          if ('_doing_expand' in item) {
             h_get = true;
@@ -8344,10 +8346,8 @@
          if ('_make_request' in item) {
             func = JSROOT.findFunction(item['_make_request']);
          } else
-         if (('_kind' in item) && (item._kind.indexOf("ROOT.")!=0)) {
-            draw_handle = JSROOT.getDrawHandle(item._kind);
-            if ((draw_handle!=null) && ('make_request' in draw_handle))
-               func = draw_handle['make_request'];
+         if ((draw_handle!=null) && ('make_request' in draw_handle)) {
+            func = draw_handle['make_request'];
          }
 
          if (typeof func == 'function') {
