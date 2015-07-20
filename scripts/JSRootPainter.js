@@ -7866,7 +7866,7 @@
             if (hitem && hitem._title) callback.attr('title', hitem._title + " lastres=" + res);
             callback.animate({ backgroundColor: col}, 2000, function() { callback.css('background', ''); });
             if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
-            if ((col == 'green') && ('_update_item' in hitem)) pthis.display(hitem._update_item,"update");
+            if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
          }
       });
       req.send();
@@ -7972,7 +7972,7 @@
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
       var painter = null;
-      
+
       function display_callback() { JSROOT.CallBack(call_back, painter, itemname); }
 
       h.CreateDisplay(function(mdi) {
@@ -8057,6 +8057,32 @@
       return true;
    }
 
+   JSROOT.HierarchyPainter.prototype.updateItems = function(items) {
+      // argument is item name or array of string with items name
+      // only already drawn items will be update with same draw option
+
+      var mdi = this['disp'];
+      if ((mdi == null) || (items==null)) return;
+
+      var draw_items = [], draw_options = [];
+
+      mdi.ForEachPainter(function(p) {
+         var itemname = p.GetItemName();
+         if ((itemname==null) || (draw_items.indexOf(itemname)>=0)) return;
+         if (typeof items == 'array') {
+            if (items.indexOf(itemname) < 0) return;
+         } else {
+            if (items != itemname) return;
+         }
+         draw_items.push(itemname);
+         draw_options.push("update:" + p.GetItemDrawOpt());
+      }, true); // only visible panels are considered
+
+      if (draw_items.length > 0)
+         this.displayAll(draw_items, draw_options);
+   }
+
+
    JSROOT.HierarchyPainter.prototype.updateAll = function(only_auto_items) {
       // method can be used to fetch new objects and update all existing drawings
       // if only_auto_items specified, only automatic items will be updated
@@ -8071,6 +8097,7 @@
          var itemname = p.GetItemName();
          var drawopt = p.GetItemDrawOpt();
          if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
+
          var item = hpainter.Find(itemname);
          if ((item==null) || ('_not_monitor' in item) || ('_player' in item)) return;
          var forced = false;
