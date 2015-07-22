@@ -8337,7 +8337,7 @@
          url = this.itemFullName(item, top);
          var func = null;
          if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
-         
+
 
          if ('_doing_expand' in item) {
             h_get = true;
@@ -9160,7 +9160,7 @@
     * Draw object in specified HTML element with given draw options  */
 
    JSROOT.draw = function(divid, obj, opt) {
-      if (typeof obj != 'object') return null;
+      if ((obj==null) || (typeof obj != 'object')) return null;
 
       var handle = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj['_typename'], opt);
