@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 3.7
 1. Support of X axis with custom labels like:
       http://web-docs.gsi.de/~linev/js/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
