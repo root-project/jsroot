@@ -9200,7 +9200,7 @@
          JSROOT.AssertPrerequisites(prereq, function() {
             var func = JSROOT.findFunction(funcname);
             if (func==null) {
-               alert('Fail to find function ' + funcname + ' after loading script ' + scriptname);
+               alert('Fail to find function ' + funcname + ' after loading ' + prereq);
                return null;
             }
 
