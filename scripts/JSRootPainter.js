@@ -8326,15 +8326,22 @@
          obj['_typename'] = 'TStreamerInfoList';
    }
 
+   JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
+      // returns URL, which could be used to request item from the online server
+      if ((item!=null) && (typeof item == "string")) item = this.Find(item);
+      if (item==null) return null;
+      var top = item;
+      while ((top!=null) && (!('_online' in top))) top = top._parent;
+      return this.itemFullName(item, top);
+   }
+
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
       // method used to request object from the http server
 
       var url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
 
       if (item != null) {
-         var top = item;
-         while ((top!=null) && (!('_online' in top))) top = top._parent;
-         url = this.itemFullName(item, top);
+         url = this.GetOnlineItemUrl(item);
          var func = null;
          if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
 
