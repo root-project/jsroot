@@ -1,6 +1,10 @@
 # JSROOT changelog
 
 ## Changes in master
+1. Let use HTML element pointer in JSROOT.draw function like:
+       JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
+   Normally unique identifier was used before, which is not required any longer.
+   Of course, old functionality with element identifier will work as well. 
 
 
 ## Changes in 3.7

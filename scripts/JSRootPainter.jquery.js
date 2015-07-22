@@ -802,7 +802,7 @@
 
    JSROOT.TTreePlayer.prototype.PerformDraw = function() {
 
-      var frame = $("#" + this.divid);
+      var frame = $(this.select_main().node());
 
       var url = this.url + '/exe.json.gz?compact=3&method=Draw';
       var expr = frame.find('.treedraw_varexp').val();
@@ -847,9 +847,11 @@
    }
 
    JSROOT.TTreePlayer.prototype.CheckResize = function(force) {
-      $("#" + this.drawid).width($("#" + this.divid).width());
-      var h = $("#" + this.divid).height();
-      var h0 = $("#" + this.divid +" .treedraw_buttons").height();
+      var main = $(this.select_main().node());
+
+      $("#" + this.drawid).width(main.width());
+      var h = main.height();
+      var h0 = main.find(".treedraw_buttons").height();
       if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
 
       if (this.hist_painter) {

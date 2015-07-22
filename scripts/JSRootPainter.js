@@ -970,6 +970,7 @@
    // ==============================================================================
 
    JSROOT.TBasePainter = function() {
+      this.divid = null; // either id of element (preferable) or element itself
    }
 
    JSROOT.TBasePainter.prototype.Cleanup = function() {
@@ -1016,13 +1017,20 @@
    JSROOT.TBasePainter.prototype.CheckResize = function(force) {
    }
 
+   JSROOT.TBasePainter.prototype.select_main = function() {
+      // return d3.select for main element, defined with divid
+      if (this.divid==null) return d3.select(null);
+      if ((typeof this.divid == "string") &&
+          (this.divid.charAt(0) != "#")) return d3.select("#" + this.divid);
+      return d3.select(this.divid);
+   }
+
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
       // base painter does not creates canvas or frames
       // it registered in the first child element
 
       this['divid'] = divid;
-
-      var main = d3.select("#" + divid);
+      var main = this.select_main();
       if (main.node() && main.node().firstChild)
          main.node().firstChild['painter'] = this;
    }
@@ -1057,12 +1065,15 @@
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
+
+   JSROOT.TObjectPainter.prototype.pad_painter = function(active_pad) {
+      var can = active_pad ? this.svg_pad() : this.svg_canvas();
+      return can.empty() ? null : can.property('pad_painter');
+   }
+
    JSROOT.TObjectPainter.prototype.CheckResize = function(force) {
-      // no canvas - no resize
-      var can = this.svg_canvas();
-
-      var pad_painter = can.empty() ? null : can.property('pad_painter');
-
+      // no painter - no resize
+      var pad_painter = this.pad_painter();
       if (pad_painter) pad_painter.CheckCanvasResize();
    }
 
@@ -1112,7 +1123,7 @@
 
    /** This is main graphical SVG element, where all Canvas drawing are performed */
    JSROOT.TObjectPainter.prototype.svg_canvas = function() {
-      return d3.select("#" + this.divid + " .root_canvas");
+      return this.select_main().select(".root_canvas");
    }
 
    /** This is SVG element, correspondent to current pad */
@@ -1124,8 +1135,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.root_pad = function() {
-      var p = this.svg_pad();
-      var pad_painter = p.empty() ? null : p.property('pad_painter');
+      var pad_painter = this.pad_painter(true);
       return pad_painter ? pad_painter.pad : null;
    }
 
@@ -1360,31 +1370,27 @@
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
 
-      var main = d3.select("#" + this.divid);
+      var main = this.select_main();
       var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null;
       if (painter!=null) { userfunc(painter); return; }
 
-      var svg_c = this.svg_canvas();
-      if (svg_c.empty()) return;
+      var pad_painter = this.pad_painter();
+      if (pad_painter == null) return;
 
-      userfunc(svg_c.property('pad_painter'));
-      var painters = svg_c.property('pad_painter').painters;
-      for (var k in painters) userfunc(painters[k]);
+      userfunc(pad_painter);
+      if ('painters' in pad_painter)
+         for (var k in pad_painter.painters) userfunc(pad_painter.painters[k]);
    }
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
       // generic method to cleanup painters
-      d3.select("#" + this.divid).html("");
+      this.select_main().html("");
    }
 
    JSROOT.TObjectPainter.prototype.RedrawPad = function() {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
-
-      var pad = this.svg_pad();
-
-      var pad_painter = pad.empty() ? null : pad.property('pad_painter');
-
+      var pad_painter = this.pad_painter(true);
       if (pad_painter) pad_painter.Redraw();
    }
 
@@ -1555,8 +1561,8 @@
       // can be used to find painter for some special objects, registered as
       // histogram functions
 
-      var ppp = this.svg_pad();
-      var painters = ppp.empty() ? null : ppp.property('pad_painter').painters;
+      var painter = this.pad_painter(true);
+      var painters = painter==null ? null : painter.painters;
       if (painters == null) return null;
 
       for (var n in painters) {
@@ -3238,7 +3244,7 @@
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
-      var render_to = d3.select("#" + this.divid);
+      var render_to = this.select_main();
 
       var rect = render_to.node().getBoundingClientRect();
 
@@ -3311,7 +3317,7 @@
 
          render_to.style("background-color", fill.color);
 
-         svg = d3.select("#" + this.divid)
+         svg = this.select_main()
              .append("svg")
              .attr("class", "root_canvas")
              .style("background-color", fill.color)
@@ -7481,7 +7487,7 @@
             txt += "<pre>" + arr[i] + "</pre>";
       }
 
-      var frame = d3.select("#" + this.divid);
+      var frame = this.select_main();
       var main = frame.select("div");
       if (main.empty())
          main = frame.append("div")
@@ -9227,8 +9233,10 @@
    JSROOT.redraw = function(divid, obj, opt) {
       if (obj==null) return;
 
-      var can = d3.select("#" + divid + " .root_canvas");
-      var can_painter = can.empty() ? null : can.property('pad_painter');
+
+      var dummy = new JSROOT.TObjectPainter();
+      dummy.SetDivId(divid, -1);
+      var can_painter = dummy.pad_painter();
 
       if (can_painter != null) {
          if (obj._typename=="TCanvas") {
@@ -9250,7 +9258,7 @@
       if (can_painter)
           JSROOT.console("Cannot find painter to update object of type " + obj._typename);
 
-      d3.select("#"+divid).html("");
+      dummy.select_main().html("");
       return JSROOT.draw(divid, obj, opt);
    }
 
