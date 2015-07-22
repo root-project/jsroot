@@ -7,7 +7,9 @@
        
    Normally unique identifier was used before, which is not required any longer.
    Of course, old functionality with element identifier will work as well. 
-
+2. TreePlayer can also be used for trees, which not yet read from the file.
+   Requires appropriate changes in TRootSniffer class. 
+ 
 
 ## Changes in 3.7
 1. Support of X axis with custom labels like:
