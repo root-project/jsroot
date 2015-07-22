@@ -2,21 +2,29 @@
 
 ## Changes in master
 1. Let use HTML element pointer in JSROOT.draw function like:
+
        JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
+       
    Normally unique identifier was used before, which is not required any longer.
    Of course, old functionality with element identifier will work as well. 
 
 
 ## Changes in 3.7
 1. Support of X axis with custom labels like:
+
       http://web-docs.gsi.de/~linev/js/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
+      
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.
    This let add more custom elements to the generic gui, implemented with JSROOT.HierarchyPainter   
 3. Provide full support of require.js. One could load now JSRootCore.js script like:
+
       <script type="text/javascript" src="require.js" data-main="scripts/JSRootCore.js"></script>
+      
    After this several modules are defined and can be used with syntax like:
+   
       require(['JSRootPainter'], function(jsroot) { /*any user code*/});
+      
    Also inside JSROOT require.js used to load all dependencies. 
 
 
