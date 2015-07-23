@@ -68,7 +68,7 @@ Element with name `DoSomething` will appear in the web browser and can be clicke
 It will result in `gROOT->ProcessLineSync("SomeFunction()")` call. When registering command,
 one could specify icon name which will be displayed with the command.
 
-    serv->RegisterCommand("/DoSomething","SomeFunction()", "/rootsys/icons/ed_execute.png");
+    serv->RegisterCommand("/DoSomething","SomeFunction()", "rootsys/icons/ed_execute.png");
 
 In example usage of images from `$ROOTSYS/icons` directory is shown. One could prepend `button;`
 string to the icon name to let browser show command as extra button. In last case one could hide command element from elements list:
@@ -132,7 +132,7 @@ One could specify a debug parameter to be able to adjust the FastCGI configurati
 
     serv->CreateEngine("fastcgi:9000?debug=1");
 
-All user access will be ruled by the main web server - for the moment one cannot restrict access with fastcgi engine.
+All user access will be ruled by the main web server. Authorized account names could be used to configure access restriction in THttpServer.
 
 ### Configure fastcgi with Apcahe2
 
@@ -148,6 +148,18 @@ Here is supposed that directory "/srv/www/htdocs" is root directory for web serv
 Than one should be able to open address:
 
      http://apache_host_name/root.app/
+
+There are many ways to configure user authentication in Apache. Example of digest for FastCGI server:
+
+    <Location "/root.app/">
+       AuthType Digest
+       AuthName "root"
+       AuthDigestDomain "/root.app/" "root"
+       AuthDigestProvider file
+       AuthUserFile "/srv/auth/auth.txt"
+       Require valid-user
+    </Location>
+
 
 
 ### Configure fastcgi with lighttpd
@@ -168,7 +180,14 @@ Be aware, that with *lighttpd* one should specify IP address of the host, where 
 
     http://lighttpd_host_name/root.app/
 
+Example of authorization configuration for FastCGI connection:
 
+    auth.require = ( "/root.app" => (
+                       "method" => "digest",
+                       "realm" => "root",
+                       "require" => "valid-user"
+                    ) )
+ 
 
 ## Integration with existing applications
 
@@ -279,7 +298,7 @@ one could produce images with requests: `root.png`, `root.gif`, `root.jpeg`. For
 
     wget "http://localhost:8080/Files/hsimple.root/hpx/root.png?w=500&h=500&opt=lego1" -O lego1.png
 
-For all such requests one could specify following parameters:
+For all such requests following parameters could be specified:
 
    - `h` - image height
    - `w` - image width
@@ -303,6 +322,7 @@ Or one could allow access to the folder, object or specific object methods with:
     serv->Restrict("/Histograms/hist1", "allow_method=Rebin"); // allow only Rebin method 
     
 'exe.json' accepts following parameters:
+
    - `method` - name of method to execute
    - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern.ch/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
    - `compact` - compact parameter, used to compress return value
@@ -316,8 +336,7 @@ Example of TTree::Draw method execution:
 
     [shell] wget 'http://localhost:8080/Files/job1.root/ntuple/exe.json?method=Draw&prototype="Option_t*"&opt="px:py>>h1"&_ret_object_=h1' -O exe.json
 
-One also used `exe.bin` method - in this case results of method execution will be returned in binary format. 
-In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
+One also used `exe.bin` method - in this case results of method execution will be returned in binary format. In case when method returns temporary object, which should be delete at the end of command execution, one should specify `_destroy_result_` parameter in the URL string:
 
     [shell] wget 'http://localhost:8080/Objects/subfolder/obj/exe.json?method=Clone&_destroy_result_' -O clone.json
 
