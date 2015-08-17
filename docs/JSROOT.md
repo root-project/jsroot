@@ -195,6 +195,10 @@ In URL string with JSRootCore.js script one should specify which JSROOT function
     + 'load' name of user script(s) to load
     + 'onload' name of function to call when scripts loading completed
 
+For instance, to load functionality with normal 2D graphics and binary ROOT files support, one should specify:
+
+    <script type="text/javascript" src="https://root.cern.ch/js/3.6/scripts/JSRootCore.js?2d&io"></script>
+
 
 ### Use of JSON
 
