@@ -1078,8 +1078,8 @@
    }
 
    JSROOT.TObjectPainter.prototype.RemoveDrawG = function() {
-      // generic method to delete all graphical elements, associated with
-      // painter may not work for all cases
+      // generic method to delete all graphical elements, associated with painter
+      // may not work for all cases
 
       if (this.draw_g != null) {
          this.draw_g.remove();
@@ -1094,7 +1094,7 @@
          this.draw_g.selectAll("*").remove();
 
       if (take_pad) {
-         if (layer==null) layer = ".text_layer"
+         if (layer==null) layer = ".text_layer";
          if (!this.draw_g)
             this.draw_g = this.svg_pad().select(layer).append("svg:g");
       } else {
@@ -1155,6 +1155,14 @@
       if (pad['fLogx'])
          value = (value>0) ? JSROOT.Math.log10(value) : pad['fUxmin'];
       return (value - pad['fX1']) / (pad['fX2'] - pad['fX1']);
+   }
+
+   /** Converts pad x or y coordinate into SVG value,
+    *  which could be used directly for drawing. */
+   JSROOT.TObjectPainter.prototype.PadToSvg = function(axis, value, ndc) {
+      if (!ndc) value = this.ConvertToNDC(axis, value);
+      if (axis=="y") return (1-value)*this.pad_height();
+      return value * this.pad_width();
    }
 
    /** This is SVG element with current frame */
