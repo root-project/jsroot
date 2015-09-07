@@ -317,7 +317,7 @@ Or one could disable read-only mode with the call:
 
 Or one could allow access to the folder, object or specific object methods with:
 
-    serv->Restrict("/Histograms", "allow=admin"); // allow full access for user with 'admin' accout 
+    serv->Restrict("/Histograms", "allow=admin"); // allow full access for user with 'admin' account 
     serv->Restrict("/Histograms/hist1", "allow=all"); // allow full access for all users 
     serv->Restrict("/Histograms/hist1", "allow_method=Rebin"); // allow only Rebin method 
     
