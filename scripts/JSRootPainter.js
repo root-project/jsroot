@@ -1134,9 +1134,27 @@
       return c;
    }
 
+
    JSROOT.TObjectPainter.prototype.root_pad = function() {
       var pad_painter = this.pad_painter(true);
       return pad_painter ? pad_painter.pad : null;
+   }
+
+   /** Converts pad x or y coordinate into NDC value */
+   JSROOT.TObjectPainter.prototype.ConvertToNDC = function(axis, value, isndc) {
+      var pad = this.root_pad();
+      if (isndc == null) isndc = false;
+
+      if (isndc || (pad==null)) return value;
+
+      if (axis=="y") {
+         if (pad['fLogy'])
+            value = (value>0) ? JSROOT.Math.log10(value) : pad['fUymin'];
+         return (value - pad['fY1']) / (pad['fY2'] - pad['fY1']);
+      }
+      if (pad['fLogx'])
+         value = (value>0) ? JSROOT.Math.log10(value) : pad['fUxmin'];
+      return (value - pad['fX1']) / (pad['fX2'] - pad['fX1']);
    }
 
    /** This is SVG element with current frame */
@@ -1201,6 +1219,7 @@
       }
 
       if (svg_c.empty()) {
+
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
 
          JSROOT.console("Special case for " + this.obj_typename + " assign painter to first DOM element");
@@ -1228,7 +1247,7 @@
       if (svg_p.property('pad_painter') != this)
          svg_p.property('pad_painter').painters.push(this);
 
-      if ((is_main > 0) && (svg_p.property('mainpainter')==null))
+      if ((is_main > 0) && (svg_p.property('mainpainter') == null))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
    }
@@ -3478,7 +3497,6 @@
    }
 
    JSROOT.Painter.drawPad = function(divid, pad) {
-
       var painter = new JSROOT.TPadPainter(pad, false);
       painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
 
@@ -7314,8 +7332,19 @@
 
       var w = this.pad_width(), h = this.pad_height();
 
+      if (pavelabel.fInit == 0) {
+         // recalculate NDC coordiantes if not yet done
+         pavelabel.fInit = 1;
+         var isndc = (pavelabel.fOption.indexOf("NDC") >= 0);
+         pavelabel['fX1NDC'] = this.ConvertToNDC("x", pavelabel['fX1'], isndc);
+         pavelabel['fX2NDC'] = this.ConvertToNDC("x", pavelabel['fX2'], isndc);
+         pavelabel['fY1NDC'] = this.ConvertToNDC("y", pavelabel['fY1'], isndc);
+         pavelabel['fY2NDC'] = this.ConvertToNDC("y", pavelabel['fY2'], isndc);
+      }
+
       var pos_x = pavelabel['fX1NDC'] * w;
       var pos_y = (1.0 - pavelabel['fY1NDC']) * h;
+
       var width = Math.abs(pavelabel['fX2NDC'] - pavelabel['fX1NDC']) * w;
       var height = Math.abs(pavelabel['fY2NDC'] - pavelabel['fY1NDC']) * h;
       pos_y -= height;
@@ -7340,17 +7369,17 @@
       var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
 
       var pave = this.draw_g
-                   .attr("x", pos_x)
-                   .attr("y", pos_y)
-                   .attr("width", width)
-                   .attr("height", height)
-                   .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+                   .attr("x", pos_x.toFixed(1))
+                   .attr("y", pos_y.toFixed(1))
+                   .attr("width", width.toFixed(1))
+                   .attr("height", height.toFixed(1))
+                   .attr("transform", "translate(" + pos_x.toFixed(1) + "," + pos_y.toFixed(1) + ")");
 
       pave.append("svg:rect")
              .attr("x", 0)
              .attr("y", 0)
-             .attr("width", width)
-             .attr("height", height)
+             .attr("width", width.toFixed(1))
+             .attr("height", height.toFixed(1))
              .call(fcolor.func)
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor.color);
@@ -7391,20 +7420,14 @@
          pos_x = pos_x * w;
          pos_y = (1 - pos_y) * h;
       } else
-      if (this.main_painter()!=null) {
+      if (this.main_painter() != null) {
          w = this.frame_width(); h = this.frame_height(); use_pad = false;
          pos_x = this.main_painter().grx(pos_x);
          pos_y = this.main_painter().gry(pos_y);
       } else
-      if (this.root_pad()!=null) {
-         var pad = this.root_pad();
-         if (pad['fLogx'])
-            pos_x = (pos_x > 0) ? JSROOT.Math.log10(pos_x) : pad['fUxmin'];
-         if (pad['fLogy'])
-            pos_y = (pos_y > 0) ? JSROOT.Math.log10(pos_y) : pad['fUymin'];
-
-         pos_x = ((Math.abs(pad['fX1']) + pos_x) / (pad['fX2'] - pad['fX1'])) * w;
-         pos_y = (1 - ((Math.abs(pad['fY1']) + pos_y) / (pad['fY2'] - pad['fY1']))) * h;
+      if (this.root_pad() != null) {
+         pos_x = this.ConvertToNDC("x", pos_x) * w;
+         pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
       } else {
          JSROOT.console("Cannot draw text at x/y coordinates without real TPad object");
          pos_x = w/2;
