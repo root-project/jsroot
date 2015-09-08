@@ -7,7 +7,7 @@ It is the successor of the JSRootIO project.
 
 ## Installing JSROOT
 
-In most practical cases it is not necessary to install JSROOT on the local computer - it can be used directly from project web sites <https://root.cern.ch/js/> and <http://web-docs.gsi.de/~linev/js/>. Developers repository for JSROOT code situated on <https://github.com/linev/jsroot/>.
+In most practical cases it is not necessary to install JSROOT on the local computer - it can be used directly from project web sites <https://root.cern.ch/js/> and <http://jsroot.gsi.de/>. Developers repository for JSROOT code situated on <https://github.com/linev/jsroot/>.
 
 In rare cases one need to install JSROOT on separate web server - for such case one could use provided packages from <https://github.com/linev/jsroot/releases>. 
 
@@ -49,7 +49,7 @@ One can very easy integrate JSROOT graphic into other HTML pages using a __ifram
 
 In principle, one could open any ROOT file placed in the web, providing the full URL to it like:
 
-<https://web-docs.gsi.de/~linev/js/3.6/?file=https://root.cern.ch/js/files/hsimple.root&item=hpx>
+<https://jsroot.gsi.de/3.6/?file=https://root.cern.ch/js/files/hsimple.root&item=hpx>
 
 But one should be aware of [Cross-Origin Request blocking](https://developer.mozilla.org/en/http_access_control), when the browser blocks requests to files from domains other than current web page.
 To enable CORS on Apache web server, hosting ROOT files, one should add following lines to `.htaccess` file:

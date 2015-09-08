@@ -14,7 +14,7 @@
 ## Changes in 3.7
 1. Support of X axis with custom labels like:
 
-      http://web-docs.gsi.de/~linev/js/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
+      http://jsroot.gsi.de/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
       
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.

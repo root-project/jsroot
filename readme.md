@@ -23,7 +23,7 @@ JavaScript ROOT [changelog](changes.md)
 
 ## Examples
 
-Default [user interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://web-docs.gsi.de/~linev/js/files/) via rawgit.com
+Default [user interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://jsroot.gsi.de/files/) via rawgit.com
 
 [TGraph drawings](http://rawgit.com/linev/jsroot/master/docs/draw_gr.htm)
 
