@@ -9,7 +9,8 @@
    Of course, old functionality with element identifier will work as well. 
 2. TreePlayer can also be used for trees, which not yet read from the file.
    Requires appropriate changes in TRootSniffer class. 
- 
+3. Fix error in I/O with members like:   `Double_t *fArr; //[fN]`  
+
 
 ## Changes in 3.7
 1. Support of X axis with custom labels like:
