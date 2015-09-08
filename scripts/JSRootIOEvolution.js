@@ -336,14 +336,12 @@
    }
 
    JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
-      var isArray = this.b.charCodeAt(this.o++) & 0xff;
-      if (isArray)
+      var isArray = this.b.charCodeAt(this.o++);
+
+      if (isArray === 1)
          return this.ReadFastArray(len, array_type);
 
-      if (len==0) return new Array();
-
-      this.o--;
-      return this.ReadFastArray(len, array_type);
+      return new Array();
    }
 
    JSROOT.TBuffer.prototype.ReadString = function(max_len) {
@@ -1027,7 +1025,7 @@
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
-            alert("Strange code was here????"); // var n_el = str.charCodeAt(o) & 0xff;
+            // alert("Strange code was here????"); // var n_el = str.charCodeAt(o) & 0xff;
             var n_el  = this[prop]['length'];
             obj[prop] = buf.ReadFastArray(n_el, 'S');
             break;
@@ -1108,17 +1106,16 @@
 
       // first base classes
       for (var prop in this) {
-         if (!this[prop] || typeof(this[prop]) === "function")
-            continue;
-         if (this[prop]['typename'] === 'BASE') {
-            var clname = this[prop]['class'];
-            if (this[prop]['class'].indexOf("TArray") == 0) {
-               var array_type = this[prop]['class'].charAt(6);
-               var len = buf.ntou4();
-               obj['fArray'] = buf.ReadFastArray(len, array_type);
-            } else {
-               buf.ClassStreamer(obj, this[prop]['class']);
-            }
+         if (!this[prop] || typeof(this[prop]) === "function") continue;
+         if (this[prop]['typename'] != 'BASE') continue;
+
+         var clname = this[prop]['class'];
+         if (this[prop]['class'].indexOf("TArray") == 0) {
+            var array_type = this[prop]['class'].charAt(6);
+            var len = buf.ntou4();
+            obj['fArray'] = buf.ReadFastArray(len, array_type);
+         } else {
+            buf.ClassStreamer(obj, this[prop]['class']);
          }
       }
       // then class members
@@ -1174,6 +1171,7 @@
                break;
          }
       }
+
       if (('fBits' in obj) && !('TestBit' in obj)) {
          obj['TestBit'] = function (f) {
             return ((obj['fBits'] & f) != 0);
