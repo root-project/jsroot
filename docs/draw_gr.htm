@@ -16,7 +16,7 @@
       var global_dir = "files/"; // for local testing
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
-      if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://web-docs.gsi.de/~linev/js/files/"; else
+      if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://jsroot.gsi.de/files/"; else
       if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
@@ -34,7 +34,7 @@
             comment = options.substr(pos+8);
             options = options.substr(0,pos);
          }
-         
+
          var arr = options.split(";");
 
          var fname = file.fURL;

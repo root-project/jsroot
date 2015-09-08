@@ -8,9 +8,9 @@ user interface for THttpServer class.
 
 ## Links
 
-Official project web page on [root.cern.ch](https://root.cern.ch/js/) 
+Official project web page on [root.cern.ch/js/](https://root.cern.ch/js/) 
 
-Mirror on [web-docs.gsi.de](http://web-docs.gsi.de/~linev/js/)
+Mirror on [jsroot.gsi.de](http://jsroot.gsi.de/)
 
 # Documentation
 
