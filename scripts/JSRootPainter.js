@@ -5699,8 +5699,8 @@
          }
 
          if (print_rms > 0) {
-            stat.AddLine("RMS = " + stat.Format(data.rmsx));
-            stat.AddLine("RMS y = " + stat.Format(data.rmsy));
+            stat.AddLine("Std Dev = " + stat.Format(data.rmsx));
+            stat.AddLine("Std Dev y = " + stat.Format(data.rmsy));
          }
 
       } else {
@@ -5713,7 +5713,7 @@
          }
 
          if (print_rms > 0) {
-            stat.AddLine("RMS = " + stat.Format(data.rmsx));
+            stat.AddLine("Std Dev = " + stat.Format(data.rmsx));
          }
 
          if (print_under > 0) {
@@ -6432,8 +6432,8 @@
       }
 
       if (print_rms > 0) {
-         stat.AddLine("RMS x = " + stat.Format(data.rmsx));
-         stat.AddLine("RMS y = " + stat.Format(data.rmsy));
+         stat.AddLine("Std Dev x = " + stat.Format(data.rmsx));
+         stat.AddLine("Std Dev y = " + stat.Format(data.rmsy));
       }
 
       if (print_integral > 0) {
