@@ -77,7 +77,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 8/09/2015";
+   JSROOT.version = "dev 11/09/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -708,6 +708,22 @@
       }
    }
 
+   // function can be used to open ROOT file, I/O functionality will be loaded when missing
+   JSROOT.OpenFile = function(filename, callback) {
+      JSROOT.AssertPrerequisites("io", function() {
+         new JSROOT.TFile(filename, callback);
+      });
+   }
+
+   // function can be used to draw supported ROOT classes,
+   // required functionality will be loaded automatically
+   // if painter pointer required, one should load '2d' functionlity itself
+   JSROOT.draw = function(divid, obj, opt) {
+      JSROOT.AssertPrerequisites("2d", function() {
+         JSROOT.draw(divid, obj, opt);
+      });
+   }
+
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
 
       var jsroot = this;
@@ -933,7 +949,10 @@
 
       if (miny==maxy) maxy = miny + 1;
 
-      if (graph['fHistogram'] == null) graph['fHistogram'] = JSROOT.CreateTH1(graph['fNpoints']);
+      if (graph['fHistogram'] == null) {
+         graph['fHistogram'] = JSROOT.CreateTH1(graph['fNpoints']);
+         graph['fHistogram'].fTitle = graph.fTitle;
+      }
 
       graph['fHistogram']['fXaxis']['fXmin'] = minx;
       graph['fHistogram']['fXaxis']['fXmax'] = maxx;
