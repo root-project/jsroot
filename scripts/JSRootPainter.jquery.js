@@ -833,7 +833,7 @@
 
          // if any of optional arguments specified, specify all of them
          if ((option!="") || (nentries!="") || (firstentry!="")) {
-            if (nentries=="") nentries = "1000000000";
+            if (nentries=="") nentries = "TTree::kMaxEntries";
             if (firstentry=="") firstentry = "0";
             url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
          }
