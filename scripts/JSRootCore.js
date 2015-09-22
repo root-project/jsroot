@@ -77,7 +77,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 11/09/2015";
+   JSROOT.version = "dev 22/09/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -697,7 +697,7 @@
       if (pos>=0) extrafiles += kind.slice(pos+5);
 
       var load_callback = function() {
-         if (jsroot.doing_assert.length==0) jsroot.doing_assert = null;
+         if (jsroot.doing_assert && jsroot.doing_assert.length==0) jsroot.doing_assert = null;
          jsroot.CallBack(callback);
          if (jsroot.doing_assert && (jsroot.doing_assert.length>0)) {
             jsroot.AssertPrerequisites('shift');
