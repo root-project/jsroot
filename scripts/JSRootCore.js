@@ -629,6 +629,12 @@
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
+      if (kind.indexOf('more2d;')>=0) {
+         mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
+         modules.push('JSRootPainter.more');
+         need_jquery = true;
+      }
+
       if (kind.indexOf('jq2d;')>=0) {
          mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
          modules.push('JSRootPainter.jquery');

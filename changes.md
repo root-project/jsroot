@@ -14,6 +14,9 @@
    therefore can be used directly after loading JSRootCore.js script
 5. Same is done with JSROOT.draw function. It is defined in the JSRootCore.js
    and can be used directly. Makes usage of JSROOT easier    
+6. Introduce JSRootPainter.more.js script, where painters for auxiliary classes
+   will be implemented.
+7. Implement painter for TEllipse class     
 
 
 ## Changes in 3.7
