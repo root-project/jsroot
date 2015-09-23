@@ -16,7 +16,7 @@
    and can be used directly. Makes usage of JSROOT easier    
 6. Introduce JSRootPainter.more.js script, where painters for auxiliary classes
    will be implemented.
-7. Implement painter for TEllipse class     
+7. Implement painter for TEllipse, TLine classes     
 
 
 ## Changes in 3.7

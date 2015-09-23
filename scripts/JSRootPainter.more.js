@@ -94,6 +94,43 @@
       return painter.DrawingReady();
    }
 
+   JSROOT.Painter.drawLine = function(divid, obj, opt, painter) {
+
+      painter.line = obj;
+      painter.SetDivId(divid);
+
+      // function used for live update of object
+      painter['UpdateObject'] = function(obj) {
+         // copy all fields
+         JSROOT.extend(this.line, obj);
+      }
+
+      painter['Redraw'] = function() {
+         var lineatt = JSROOT.Painter.createAttLine(this.line);
+
+         // create svg:g container for ellipse drawing
+         this.RecreateDrawG(this.main_painter() == null, null, true);
+
+         var x1 = this.AxisToSvg("x", this.line.fX1);
+         var y1 = this.AxisToSvg("y", this.line.fY1);
+         var x2 = this.AxisToSvg("x", this.line.fX2);
+         var y2 = this.AxisToSvg("y", this.line.fY2);
+
+         // this is simple case, which could be drawn with svg:ellipse
+         this.draw_g
+             .append("svg:line")
+             .attr("x1", x1.toFixed(1))
+             .attr("y1", y1.toFixed(1))
+             .attr("x2", x2.toFixed(1))
+             .attr("y2", y2.toFixed(1))
+             .call(lineatt.func);
+      }
+
+      painter.Redraw(); // actual drawing
+      return painter.DrawingReady();
+   }
+
+
    return JSROOT.Painter;
 
 }));
