@@ -1350,7 +1350,7 @@
       this.fFullURL = url;
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = true;  // use additional stamp parameter for file name to avoid browser caching problem
+      this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = ""; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
 
       this.ERelativeTo = { kBeg : 0, kCur : 1, kEnd : 2 };
@@ -1408,8 +1408,7 @@
       if (this.fUseStampPar) {
          // try to avoid browser caching by adding stamp parameter to URL
          if (url.indexOf('?')>0) url+="&stamp="; else url += "?stamp=";
-         var d = new Date;
-         url += d.getTime();
+         url += this.fUseStampPar.getTime();
       }
 
       function read_callback(res) {
