@@ -48,21 +48,20 @@
          var fillatt = this.createAttFill(this.ellipse);
 
          // create svg:g container for ellipse drawing
-         this.RecreateDrawG(true);
+         this.RecreateDrawG(this.main_painter() == null, null, true);
 
-         var x = this.PadToSvg("x", this.ellipse.fX1);
-         var y = this.PadToSvg("y", this.ellipse.fY1);
-         var rx = this.PadToSvg("x", this.ellipse.fX1 + this.ellipse.fR1) - x;
-         var ry = y - this.PadToSvg("y", this.ellipse.fY1 + this.ellipse.fR2);
+         var x = this.AxisToSvg("x", this.ellipse.fX1);
+         var y = this.AxisToSvg("y", this.ellipse.fY1);
+         var rx = this.AxisToSvg("x", this.ellipse.fX1 + this.ellipse.fR1) - x;
+         var ry = y - this.AxisToSvg("y", this.ellipse.fY1 + this.ellipse.fR2);
 
          if ((this.ellipse.fPhimin == 0) && (this.ellipse.fPhimax == 360) && (this.ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
             this.draw_g
                 .append("svg:ellipse")
-                .attr("cx", x).attr("cy", y)
-                .attr("rx", rx).attr("ry", ry)
-                .call(lineatt.func).call(fillatt.func)
-                .append("svg:title").text('svg ellipse');
+                .attr("cx", x.toFixed(1)).attr("cy", y.toFixed(1))
+                .attr("rx", rx.toFixed(1)).attr("ry", ry.toFixed(1))
+                .call(lineatt.func).call(fillatt.func);
             return;
          }
 
@@ -82,11 +81,13 @@
          var y2 = -dx2*st - dy2*ct;
 
          this.draw_g
-            .attr("transform","translate("+x+","+y+")")
+            .attr("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")")
             .append("svg:path")
-            .attr("d", "M 0,0" + " L " +x1+","+y1 + " A " + rx + " " + ry + " " + -this.ellipse.fTheta + " 1 0 " + x2+","+y2 + " L 0,0 Z")
-            .call(lineatt.func).call(fillatt.func)
-            .append("svg:title").text('ellipse drawn with svg:path');
+            .attr("d", "M 0,0" +
+                       " L " + x1.toFixed(1) + "," + y1.toFixed(1) +
+                       " A " + rx.toFixed(1) + " " + ry.toFixed(1) + " " + -this.ellipse.fTheta.toFixed(1) + " 1 0 " + x2.toFixed(1) + "," + y2.toFixed(1) +
+                       " L 0,0 Z")
+            .call(lineatt.func).call(fillatt.func);
       }
 
       painter.Redraw(); // actual drawing

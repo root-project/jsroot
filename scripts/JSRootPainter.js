@@ -1087,9 +1087,10 @@
       }
    }
 
+   /** function (re)creates svg:g element used for specific object drawings
+     *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
+     *  svg:g element can be attached to different layers */
    JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer, normalg) {
-      //this.RemoveDrawG();
-
       if (this.draw_g)
          this.draw_g.selectAll("*").remove();
 
@@ -1157,12 +1158,20 @@
       return (value - pad['fX1']) / (pad['fX2'] - pad['fX1']);
    }
 
-   /** Converts pad x or y coordinate into SVG value,
-    *  which could be used directly for drawing. */
-   JSROOT.TObjectPainter.prototype.PadToSvg = function(axis, value, ndc) {
+   /** Converts x or y coordinate into SVG coordinates,
+    *  which could be used directly for drawing.
+    *  Parameters: axis should be "x" or "y", value to convert, is ndc should be used */
+   JSROOT.TObjectPainter.prototype.AxisToSvg = function(axis, value, ndc) {
+      var main = this.main_painter();
+      if ((main!=null) && !ndc)
+         return axis=="y" ? main.gry(value) : main.grx(value);
       if (!ndc) value = this.ConvertToNDC(axis, value);
       if (axis=="y") return (1-value)*this.pad_height();
-      return value * this.pad_width();
+      return value*this.pad_width();
+   }
+
+   JSROOT.TObjectPainter.prototype.PadToSvg = function(axis, value, ndc) {
+      return this.AxisToSvg(axis,value,ndc);
    }
 
    /** This is SVG element with current frame */
@@ -2122,7 +2131,7 @@
    JSROOT.TF1Painter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
-      this.RecreateDrawG();
+      this.RecreateDrawG(false);
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -2422,7 +2431,7 @@
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
-      this.RecreateDrawG();
+      this.RecreateDrawG(false);
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -4437,7 +4446,7 @@
          this['grx'] = function(val) { return this.x(this.ConvertX(val)); }
       } else
       if (this.options.Logx) {
-         this['grx'] = function(val) { return (val < this.scale_xmin) ? - 5 : this.x(val); }
+         this['grx'] = function(val) { return (val < this.scale_xmin) ? -5 : this.x(val); }
       } else {
          this['grx'] = this.x;
       }
@@ -5980,7 +5989,7 @@
          return;
       }
 
-      this.RecreateDrawG();
+      this.RecreateDrawG(false);
 
       if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
@@ -6715,7 +6724,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG();
+      this.RecreateDrawG(false);
 
       var w = this.frame_width(), h = this.frame_height();
 
