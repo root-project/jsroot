@@ -1094,6 +1094,8 @@
       if (this.draw_g)
          this.draw_g.selectAll("*").remove();
 
+      if (normalg == null) normalg = true;
+
       if (take_pad) {
          if (layer==null) layer = ".text_layer";
          if (!this.draw_g)
@@ -2131,7 +2133,7 @@
    JSROOT.TF1Painter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
-      this.RecreateDrawG(false);
+      this.RecreateDrawG(false, ".main_layer", false);
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -2431,7 +2433,7 @@
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
-      this.RecreateDrawG(false);
+      this.RecreateDrawG(false, ".main_layer", false);
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -5989,7 +5991,7 @@
          return;
       }
 
-      this.RecreateDrawG(false);
+      this.RecreateDrawG(false, ".main_layer", false);
 
       if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
@@ -6724,7 +6726,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG(false);
+      this.RecreateDrawG(false, ".main_layer", false);
 
       var w = this.frame_width(), h = this.frame_height();
 
@@ -9120,6 +9122,7 @@
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func:JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
+   JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen" });
