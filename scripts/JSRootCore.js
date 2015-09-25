@@ -618,10 +618,15 @@
       }
 
       if (kind.indexOf('2d;')>=0) {
-         if (typeof d3 != 'undefined')
-            jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
-         else
-            mainfiles += '$$$scripts/d3.v3.min.js;';
+         if (!('_test_d3_' in jsroot)) {
+            if (typeof d3 != 'undefined') {
+               jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
+               jsroot['_test_d3_'] = 1;
+            } else {
+               mainfiles += '$$$scripts/d3.v3.min.js;';
+               jsroot['_test_d3_'] = 2;
+            }
+         }
          modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
