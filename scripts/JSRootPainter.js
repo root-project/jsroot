@@ -8553,7 +8553,7 @@
       var node = this.Find(itemname);
       var opts = JSROOT.getDrawOptions(node._kind, 'nosame');
       var handle = JSROOT.getDrawHandle(node._kind);
-      var root_type = node._kind.indexOf("ROOT.") == 0;
+      var root_type = ('_kind' in node) ? node._kind.indexOf("ROOT.") == 0 : false;
 
       if (opts != null)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
