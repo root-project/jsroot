@@ -153,7 +153,7 @@
       if (optimize=="") JSROOT.gStyle.OptimizeDraw = 2; else
       if (optimize!=null) {
          JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
-         if (JSROOT.gStyle.OptimizeDraw==NaN) JSROOT.gStyle.OptimizeDraw = 2;
+         if (isNaN(JSROOT.gStyle.OptimizeDraw)) JSROOT.gStyle.OptimizeDraw = 2;
       }
 
       var inter = JSROOT.GetUrlOption("interactive", url);
@@ -170,7 +170,7 @@
       var col = JSROOT.GetUrlOption("col", url);
       if (col!=null) {
          col = parseInt(col);
-         if ((col!=NaN) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
+         if (!isNaN(col) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
 
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
@@ -1183,22 +1183,22 @@
 
    JSROOT.TObjectPainter.prototype.pad_width = function() {
       var res = parseInt(this.svg_pad().attr("width"));
-      return (res==NaN) ? 0 : res;
+      return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.pad_height = function() {
       var res = parseInt(this.svg_pad().attr("height"));
-      return (res==NaN) ? 0 : res;
+      return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.frame_width = function() {
       var res = parseInt(this.svg_frame().attr("width"));
-      return (res==NaN) ? 0 : res;
+      return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.frame_height = function() {
       var res = parseInt(this.svg_frame().attr("height"));
-      return (res==NaN) ? 0 : res;
+      return isNaN(res) ? 0 : res;
    }
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
@@ -3277,7 +3277,7 @@
       var value = select.style(name);
       if (!value) return 0;
       value = parseFloat(value.replace("px",""));
-      return (value === NaN) ? 0 : value;
+      return isNaN(value) ? 0 : value;
    }
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
@@ -8601,7 +8601,7 @@
       if ((val!=null) && (val!='0')) {
          this['_monitoring_on'] = true;
          this['_monitoring_interval'] = parseInt(val);
-         if ((this['_monitoring_interval'] == NaN) || (this['_monitoring_interval']<100))
+         if (isNaN(this['_monitoring_interval']) || (this['_monitoring_interval']<100))
             this['_monitoring_interval'] = 3000;
       }
    }
@@ -8955,8 +8955,8 @@
             sizey = sizex;
          }
 
-         if (sizex == NaN) sizex = 3;
-         if (sizey == NaN) sizey = 3;
+         if (isNaN(sizex)) sizex = 3;
+         if (isNaN(sizey)) sizey = 3;
       }
 
       if (!sizex) sizex = 3;

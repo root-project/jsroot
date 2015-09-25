@@ -1233,7 +1233,7 @@
             if (this['fSumw2'].length == 0 && h1['fSumw2'].length != 0) this.sumw2();
 
             // - Add statistics
-            if (this['fEntries'] == NaN) this['fEntries'] = 0;
+            if (isNaN(this['fEntries'])) this['fEntries'] = 0;
             var entries = Math.abs( this['fEntries'] + c1 * h1['fEntries'] );
 
             // statistics can be preserved only in case of positive coefficients
@@ -1974,7 +1974,7 @@
       var isexp = null;
       var prec = fmt.indexOf(".");
       if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
-      if ((prec==NaN) || (prec<0) || (prec==null)) prec = 4;
+      if (isNaN(prec) || (prec<0) || (prec==null)) prec = 4;
       var significance = false;
       if ((last=='e') || (last=='E')) { isexp = true; } else
       if (last=='Q') { isexp = true; significance = true; } else
