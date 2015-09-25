@@ -9220,13 +9220,19 @@
    JSROOT.draw = function(divid, obj, opt) {
       if ((obj==null) || (typeof obj != 'object')) return null;
 
-      var handle = null;
+      var handle = null, painter = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj['_typename'], opt);
       else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj['_kind'], opt);
 
       if ((handle==null) || !('func' in handle)) return null;
 
-      if (typeof handle.func == 'function') return handle.func(divid, obj, opt);
+      function performDraw() {
+         if ((painter==null) && ('painter_kind' in handle))
+            painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter();
+         return handle.func(divid, obj, opt, painter);
+      }
+
+      if (typeof handle.func == 'function') return performDraw();
 
       var funcname = "", prereq = "";
       if (typeof handle.func == 'object') {
@@ -9245,8 +9251,10 @@
          // special handling for painters, which should be loaded via extra scripts
          // such painter get extra last argument - pointer on dummy painter object
 
-         var painter = (funcname.indexOf("JSROOT.Painter")==0) ?
-                        new JSROOT.TObjectPainter() : new JSROOT.TBasePainter();
+         if (!('painter_kind' in handle))
+            handle['painter_kind'] = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
+
+         painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter();
 
          JSROOT.AssertPrerequisites(prereq, function() {
             var func = JSROOT.findFunction(funcname);
@@ -9255,8 +9263,8 @@
                return null;
             }
 
-            //handle.func = func; // remember function once it found
-            var ppp = func(divid, obj, opt, painter);
+            handle.func = func; // remember function once it found
+            var ppp = performDraw();
 
             if (ppp !== painter)
                alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
@@ -9268,8 +9276,8 @@
       var func = JSROOT.findFunction(funcname);
       if (func == null) return null;
 
-      //handle.func = func; // remember function once it found
-      return func(divid, obj, opt);
+      handle.func = func; // remember function once it found
+      return performDraw();
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
