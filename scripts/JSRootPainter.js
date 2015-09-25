@@ -9255,6 +9255,7 @@
                return null;
             }
 
+            //handle.func = func; // remember function once it found
             var ppp = func(divid, obj, opt, painter);
 
             if (ppp !== painter)
@@ -9265,9 +9266,10 @@
       }
 
       var func = JSROOT.findFunction(funcname);
-      if (func != null) return func(divid, obj, opt);
+      if (func == null) return null;
 
-      return null;
+      //handle.func = func; // remember function once it found
+      return func(divid, obj, opt);
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
