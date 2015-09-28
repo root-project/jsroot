@@ -5120,9 +5120,7 @@
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       var obj = this.main_painter();
       if (!obj) obj = this;
-
       var isany = false;
-
       if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*2.0)) {
          obj['zoom_xmin'] = xmin;
          obj['zoom_xmax'] = xmax;
@@ -5138,7 +5136,6 @@
          obj['zoom_zmax'] = zmax;
          isany = true;
       }
-
       if (isany) this.RedrawPad();
    }
 
@@ -5927,7 +5924,7 @@
             .attr("y", function(d) { return (-d.yerr).toFixed(1); })
             .attr("width", function(d) { return (2*d.xerr).toFixed(1); })
             .attr("height", function(d) { return (2*d.yerr).toFixed(1); })
-            .call(this.attline.func)
+            // .call(this.attline.func)
             .call(this.fill.func)
             .style("pointer-events","visibleFill") // even when fill attribute not specified, get mouse events
             .property("fill0", this.fill.color) // remember color
