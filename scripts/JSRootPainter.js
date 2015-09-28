@@ -312,38 +312,38 @@
          "5, 3, 1, 3, 1, 3", "20, 5", "20, 10, 1, 10", "1, 2");
 
    // Initialize ROOT markers
-   JSROOT.Painter.root_markers = new Array('fcircle', 'fcircle', 'fcross',
-         'dcross', 'ocircle', 'gcross', 'fcircle', 'fcircle', 'fcircle',
-         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',
-         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',
-         'fsquare', 'ftriangle-up', 'ftriangle-down', 'ocircle', 'osquare',
-         'otriangle-up', 'odiamond', 'ocross', 'fstar', 'ostar', 'dcross',
-         'otriangle-down', 'fdiamond', 'fcross');
+   JSROOT.Painter.root_markers = new Array(
+         'fcircle', 'fcircle', 'oplus', 'oasterisk', 'ocircle',        // 0..4
+         'omult', 'fcircle', 'fcircle', 'fcircle', 'fcircle',          // 5..9
+         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 10..14
+         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 15..19
+         'fcircle', 'fsquare', 'ftriangle-up', 'ftriangle-down', 'ocircle', // 20..24
+         'osquare', 'otriangle-up', 'odiamond', 'ocross', 'fstar',     // 25..29
+         'ostar', 'dcross', 'otriangle-down', 'fdiamond', 'fcross');   // 30..34
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
 
       if (style==null) style = attmarker['fMarkerStyle'];
 
-      var marker_name = JSROOT.Painter.root_markers[style];
+      var marker_name = (style < JSROOT.Painter.root_markers.length) ? JSROOT.Painter.root_markers[style] : "fcircle";
 
-      var info = { shape: 0, toFill: true, toRotate: false };
+      var shape = 0, toFill = true;
 
       if (typeof (marker_name) != 'undefined') {
-         switch (marker_name.charAt(0)) {
-            case 'd': info.shape = 7; break;
-            case 'o': info.toFill = false; break;
-            case 'g': info.toRotate = true; break;
-         }
+         if (marker_name.charAt(0) == '0') toFill = false;
 
          switch (marker_name.substr(1)) {
-           case "circle":  info.shape = 0; break;
-           case "cross":   info.shape = 1; break;
-           case "diamond": info.shape = 2; break;
-           case "square":  info.shape = 3; break;
-           case "triangle-up": info.shape = 4; break;
-           case "triangle-down": info.shape = 5; break;
-           case "star":    info.shape = 6; break;
+           case "circle":  shape = 0; break;
+           case "cross":   shape = 1; break;
+           case "diamond": shape = 2; break;
+           case "square":  shape = 3; break;
+           case "triangle-up": shape = 4; break;
+           case "triangle-down": shape = 5; break;
+           case "star":    shape = 6; break;
+           case "asterisk":  shape = 7; break;
+           case "plus":     shape = 8; break;
+           case "mult":     shape = 9; break;
          }
       }
 
@@ -355,24 +355,33 @@
       var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
 
       var res = { stroke: marker_color, fill: marker_color, marker: "" };
-      if (!info.toFill) res['fill'] = 'none';
+      if (!toFill) res['fill'] = 'none';
 
-      if (info.shape==6)
-         res['marker'] = "M " + (-4*markerSize) + " " + (-1*markerSize) +
-                " L " + 4*markerSize + " " + (-1*markerSize) +
-                " L " + (-2.4*markerSize) + " " + 4*markerSize +
-                " L 0 " + (-4*markerSize) +
-                " L " + 2.8*markerSize + " " + 4*markerSize + " z";
-      else
-      if (info.shape==7)
-         res['marker'] = "M " + (-4*markerSize) + " " + (-4*markerSize) +
-                 " L " + 4*markerSize + " " + 4*markerSize +
-                 " M 0 " + (-4*markerSize) + " 0 " + 4*markerSize +
-                 " M "  + 4*markerSize + " " + (-4*markerSize) +
-                 " L " + (-4*markerSize) + " " + 4*markerSize +
-                 " M " + (-4*markerSize) + " 0 L " + 4*markerSize + " 0";
-      else
-         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[info.shape]).size(markerSize * markerScale);
+      switch(shape) {
+      case 6: // star
+         res['marker'] = "M" + (-4*markerSize) + "," + (-1*markerSize) +
+                        " L" + 4*markerSize + "," + (-1*markerSize) +
+                        " L" + (-2.4*markerSize) + "," + 4*markerSize +
+                        " L0," + (-4*markerSize) +
+                        " L" + 2.8*markerSize + "," + 4*markerSize + " z"; break;
+      case 7: // asterisk
+         res['marker'] = "M " + (-4*markerSize) + "," + (-4*markerSize) +
+                        " L" + 4*markerSize + "," + 4*markerSize +
+                        " M 0," + (-4*markerSize) + " L 0," + 4*markerSize +
+                        " M "  + 4*markerSize + "," + (-4*markerSize) +
+                        " L " + (-4*markerSize) + "," + 4*markerSize +
+                        " M " + (-4*markerSize) + ",0 L " + 4*markerSize + ",0"; break;
+      case 8: // plus
+         res['marker'] = "M 0," + (-4*markerSize) + " L 0," + 4*markerSize +
+                        " M " + (-4*markerSize) + ",0 L " + 4*markerSize + ",0"; break;
+      case 9: // mult
+         res['marker'] = "M " + (-4*markerSize) + "," + (-4*markerSize) +
+                        " L" + 4*markerSize + "," + 4*markerSize +
+                        " M "  + 4*markerSize + "," + (-4*markerSize) +
+                        " L " + (-4*markerSize) + "," + 4*markerSize; break;
+      default:
+         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize * markerScale);
+      }
 
       res.SetMarker = function(selection) {
          selection.style("fill", this.fill)
@@ -4234,14 +4243,15 @@
          option.Line = 1;
          option.Hist = -1;
       }
+
       if (chopt.indexOf('P') != -1) {
          option.Mark = 1;
          option.Hist = -1;
+         if (chopt.indexOf('P0') != -1) option.Mark = 10;
       }
       if (chopt.indexOf('Z') != -1) option.Zscale = 1;
       if (chopt.indexOf('*') != -1) option.Star = 1;
       if (chopt.indexOf('H') != -1) option.Hist = 2;
-      if (chopt.indexOf('P0') != -1) option.Mark = 10;
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
       }
@@ -5896,8 +5906,8 @@
 
    JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, w, h) {
 
-      /* Add a panel for each data point */
-      var draw_bins = this.CreateDrawBins(w, h, this.IsTProfile() || (this.Mark==10));
+      /* Calculate coordinates for each point, exclude zeros if not p0 or e0 option */
+      var draw_bins = this.CreateDrawBins(w, h, (this.options.Error!=10) && (this.options.Mark!=10));
 
       // here are up to five elements are collected, try to group them
       var nodes = this.draw_g.selectAll("g")
@@ -5975,7 +5985,7 @@
                  .call(this.attline.func);
       }
 
-      if ((this.options.Mark > 0) || (this.options.Error == 12)) {
+      if (this.options.Mark > 0) {
          // draw markers also when e2 option was specified
          var marker = JSROOT.Painter.createAttMarker(this.histo);
          nodes.append("svg:path").call(marker.func);
@@ -5993,7 +6003,7 @@
 
       this.RecreateDrawG(false, ".main_layer", false);
 
-      if (this.IsTProfile() || (this.options.Error > 0) || (this.options.Mark > 0))
+      if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
       var draw_bins = this.CreateDrawBins(width, height);
