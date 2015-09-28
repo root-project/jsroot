@@ -4726,7 +4726,7 @@
          }
       } else {
          if (this.x_kind=='labels') {
-            if (this.x_nticks > 8) this.x_nticks = 8;
+            this.x_nticks = 30; // for text output allow max 30 names
             var scale_xrange = this.scale_xmax - this.scale_xmin;
             if (this.x_nticks > scale_xrange)
                this.x_nticks = parseInt(scale_xrange);
