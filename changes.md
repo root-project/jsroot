@@ -17,6 +17,7 @@
 6. Introduce JSRootPainter.more.js script, where painters for auxiliary classes
    will be implemented.
 7. Implement painter for TEllipse, TLine, TArrow classes     
+8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols. 
 
 
 ## Changes in 3.7
