@@ -49,7 +49,7 @@ One can very easy integrate JSROOT graphic into other HTML pages using a __ifram
 
 In principle, one could open any ROOT file placed in the web, providing the full URL to it like:
 
-<https://jsroot.gsi.de/latest/?file=https://root.cern.ch/js/files/hsimple.root&item=hpx>
+<https://web-docs.gsi.de/~linev/js/?file=https://root.cern.ch/js/files/hsimple.root&item=hpx>
 
 But one should be aware of [Cross-Origin Request blocking](https://developer.mozilla.org/en/http_access_control), when the browser blocks requests to files from domains other than current web page.
 To enable CORS on Apache web server, hosting ROOT files, one should add following lines to `.htaccess` file:
