@@ -8267,7 +8267,12 @@
       alert('expand ' + itemname + ' can be used only jquery part loaded');
    }
 
-   JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function() {
+   JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function(item) {
+      if (item!=null) {
+         while ((item!=null) && (!('_online' in item))) item = item._parent;
+         return item;
+      }
+
       if (this.h==null) return null;
       if ('_online' in this.h) return this.h;
       if ((this.h._childs!=null) && ('_online' in this.h._childs[0])) return this.h._childs[0];
@@ -8384,10 +8389,7 @@
    JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
       if ((item!=null) && (typeof item == "string")) item = this.Find(item);
-      if (item==null) return null;
-      var top = item;
-      while ((top!=null) && (!('_online' in top))) top = top._parent;
-      return this.itemFullName(item, top);
+      return (item==null) ? null : this.itemFullName(item, this.GetTopOnlineItem(item));
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {

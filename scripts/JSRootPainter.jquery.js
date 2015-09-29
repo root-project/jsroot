@@ -756,10 +756,11 @@
 
    // ========== performs tree drawing on server ==================
 
-   JSROOT.TTreePlayer = function(itemname, url, askey) {
+   JSROOT.TTreePlayer = function(itemname, url, askey, root_version) {
       JSROOT.TBasePainter.call(this);
       this.SetItemName(itemname);
       this.url = url;
+      this.root_version = root_version;
       this.hist_painter = null;
       this.askey = askey;
       return this;
@@ -833,7 +834,7 @@
 
          // if any of optional arguments specified, specify all of them
          if ((option!="") || (nentries!="") || (firstentry!="")) {
-            if (nentries=="") nentries = "TTree::kMaxEntries";
+            if (nentries=="") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
             if (firstentry=="") firstentry = "0";
             url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
          }
@@ -877,6 +878,10 @@
       var url = hpainter.GetOnlineItemUrl(itemname);
       if (url == null) return null;
 
+      var top = hpainter.GetTopOnlineItem(hpainter.Find(itemname));
+      if (top == null) return null;
+      var root_version = ('_root_version' in top) ? top._root_version : 336417; // by default use version number 5-34-32
+
       var mdi = hpainter.GetDisplay();
       if (mdi == null) return null;
 
@@ -885,7 +890,7 @@
 
       var divid = d3.select(frame).attr('id');
 
-      var player = new JSROOT.TTreePlayer(itemname, url, askey);
+      var player = new JSROOT.TTreePlayer(itemname, url, askey, root_version);
       player.Show(divid);
       return player;
    }
