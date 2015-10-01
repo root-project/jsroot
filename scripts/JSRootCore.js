@@ -133,7 +133,7 @@
    // wrapper for console.log, avoids missing console in IE
    // if divid specified, provide output to the HTML element
    JSROOT.console = function(value, divid) {
-      if ((divid!=null) && (typeof document.getElementById(divid)!='undefined'))
+      if ((divid!=null) && (typeof divid=='string') && ((typeof document.getElementById(divid))!='undefined'))
          document.getElementById(divid).innerHTML = value;
       else
       if ((typeof console != 'undefined') && (typeof console.log == 'function'))

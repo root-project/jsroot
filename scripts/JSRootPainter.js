@@ -2459,7 +2459,7 @@
             res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
                               "/+" + pmain.AxisAsText("x", d.exhigh);
 
-         if (pthis.draw_errors  && !pmain.y_time && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+         if (pthis.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
             res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
                                "/+" + pmain.AxisAsText("y", d.eyhigh);
 
@@ -3771,7 +3771,7 @@
       this.nbinsx = 0;
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.y_time = false;
+      this.y_kind = 'normal'; // 'normal', 'time', 'labels'
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -4418,7 +4418,7 @@
          this['ConvertX'] = function(x) { return new Date(this.timeoffsetx + x*1000); };
          this['RevertX'] = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
       } else {
-         this.x_kind = this.histo['fXaxis'].fLabels== null ? 'normal' : 'labels';
+         this.x_kind = (this.histo['fXaxis'].fLabels==null) ? 'normal' : 'labels';
          this['ConvertX'] = function(x) { return x; };
          this['RevertX'] = function(grx) { return this.x.invert(grx); };
       }
@@ -4478,12 +4478,12 @@
       }
 
       if (this.histo['fYaxis']['fTimeDisplay']) {
-         this.y_time = true;
+         this.y_kind = 'time';
          this['timeoffsety'] = JSROOT.Painter.getTimeOffset(this.histo['fYaxis']);
          this['ConvertY'] = function(y) { return new Date(this.timeoffsety + y*1000); };
          this['RevertY'] = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
-         this.y_time = false;
+         this.y_kind = ((this.Dimension()==2) && (this.histo['fYaxis'].fLabels!=null)) ? 'labels' : 'normal';
          this['ConvertY'] = function(y) { return y; };
          this['RevertY'] = function(gry) { return this.y.invert(gry); };
       }
@@ -4504,7 +4504,7 @@
             this.scale_ymin = 0.000001 * this.scale_ymax;
          this['y'] = d3.scale.log();
       } else
-      if (this.y_time) {
+      if (this.y_kind=='time') {
          this['y'] = d3.time.scale();
       } else {
          this['y'] = d3.scale.linear()
@@ -4512,7 +4512,7 @@
 
       this['y'].domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ]).range([ h, 0 ]);
 
-      if (this.y_time) {
+      if (this.y_kind=='time') {
          // we emulate scale functionality
          this['gry'] = function(val) { return this.y(this.ConvertY(val)); }
       } else
@@ -4603,12 +4603,20 @@
       }
 
       if (axis == "y") {
+         if (this.y_kind == 'labels') {
+            var indx = parseInt(value) + 1;
+            if ((indx<1) || (indx>this.histo['fYaxis'].fNbins)) return null;
+            for (var i in this.histo['fYaxis'].fLabels.arr) {
+               var tstr = this.histo['fYaxis'].fLabels.arr[i];
+               if (tstr.fUniqueID == indx) return tstr.fString;
+            }
+            return null;
+         }
          if ('dfy' in this) {
             return this.dfy(new Date(this.timeoffsety + value * 1000));
          }
          if (Math.abs(value) < 1e-14)
-            if (Math.abs(this.ymax - this.ymin) > 1e-5)
-               value = 0;
+            if (Math.abs(this.ymax - this.ymin) > 1e-5) value = 0;
          return value.toPrecision(4);
       }
 
@@ -4726,7 +4734,7 @@
          }
       } else {
          if (this.x_kind=='labels') {
-            this.x_nticks = 30; // for text output allow max 30 names
+            this.x_nticks = 50; // for text output allow max 50 names
             var scale_xrange = this.scale_xmax - this.scale_xmin;
             if (this.x_nticks > scale_xrange)
                this.x_nticks = parseInt(scale_xrange);
@@ -4751,7 +4759,7 @@
 
       delete this['formaty'];
 
-      if (this.y_time) {
+      if (this.y_kind=='time') {
          if (this.y_nticks > 8)  this.y_nticks = 8;
 
          var timeformaty = JSROOT.Painter.getTimeFormat(this.histo['fYaxis']);
@@ -4789,9 +4797,18 @@
             }
          };
       } else {
-         if (this.y_nticks >= 10) this.y_nticks -= 2;
+
+         if (this.y_kind=='labels') {
+            this.y_nticks = 50; // for text output allow max 50 names
+            var scale_yrange = this.scale_ymax - this.scale_ymin;
+            if (this.y_nticks > scale_yrange)
+               this.y_nticks = parseInt(scale_yrange);
+         } else {
+            if (this.y_nticks >= 10) this.y_nticks -= 2;
+         }
 
          this['formaty'] = function(d) {
+            if (this.y_kind=='labels') return this.AxisAsText("y", d);
             if ((Math.abs(d) < 1e-14) && (Math.abs(pthis.ymax - pthis.ymin) > 1e-5)) d = 0;
             return parseFloat(d.toPrecision(12));
          }
@@ -4807,16 +4824,38 @@
       if ('formaty' in this)
          y_axis.tickFormat(function(d) { return pthis.formaty(d); });
 
-      var drawx = xax_g.append("svg:g").attr("class", "xaxis").call(x_axis);
+      var drawx = xax_g.append("svg:g").attr("class", "xaxis")
+                       .call(x_axis).call(xlabelfont.func);
 
-      // this is additional ticks, required in d3.v3
       if (this.x_kind == 'labels') {
+         // caluclate label widths to adjust font size
+
+         var maxwidth = 0, cnt = 0, shift = 10;
+         drawx.selectAll(".tick text").each(function() {
+            var box = pthis.GetBoundarySizes(d3.select(this).node());
+            if (box.width > maxwidth) maxwidth = box.width;
+            cnt++;
+         });
+
+         if ((cnt>0) && (maxwidth>0)) {
+            // adjust shift relative to the tick
+            if (maxwidth < w/cnt)  {
+               shift = parseInt((w/cnt - maxwidth) / 2);
+            } else {
+               shift = 1;
+               xlabelfont.size = parseInt(xlabelfont.size*(w/cnt-2)/maxwidth);
+               if (xlabelfont.size<2) xlabelfont.size = 2;
+               drawx.call(xlabelfont.func);
+            }
+         }
+
          // shift labels
          drawx.selectAll(".tick text")
               .style("text-anchor", "start")
-              .attr("x", 10).attr("y", 6);
+              .attr("x", shift).attr("y", 6);
       } else
       if ((n2ax > 0) && !this.options.Logx) {
+         // this is additional ticks, required in d3.v3
          var x_axis_sub =
              d3.svg.axis().scale(this.x).orient("bottom")
                .tickPadding(xAxisLabelOffset).innerTickSize(-xDivLength / 2)
@@ -4826,10 +4865,31 @@
          xax_g.append("svg:g").attr("class", "xaxis").call(x_axis_sub);
       }
 
-      yax_g.append("svg:g").attr("class", "yaxis").call(y_axis);
+      var drawy = yax_g.append("svg:g").attr("class", "yaxis").call(y_axis).call(ylabelfont.func);
 
-      // this is additional ticks, required in d3.v3
+      if (this.y_kind == 'labels') {
+         var maxh = 0, cnt = 0, shift = 3;
+         drawx.selectAll(".tick text").each(function() {
+            var box = pthis.GetBoundarySizes(d3.select(this).node());
+            if (box.height > maxh) maxh = box.height;
+            cnt++;
+         });
+         if ((cnt>0) && (maxh>0)) {
+            // adjust font size
+            if (maxh < h/cnt)  {
+               shift = parseInt((h/cnt - maxh) / 2);
+            } else {
+               shift = 1;
+               ylabelfont.size = parseInt(ylabelfont.size * (h/cnt-2) / maxh);
+               if (ylabelfont.size<2) ylabelfont.size = 2;
+               drawy.call(ylabelfont.func);
+            }
+         }
+         drawy.selectAll(".tick text").attr("dy", shift);
+
+      } else
       if ((n2ay > 0) && !this.options.Logy) {
+         // this is additional ticks, required in d3.v3
          var y_axis_sub = d3.svg.axis().scale(this.y).orient("left")
                .tickPadding(yAxisLabelOffset).innerTickSize(-yDivLength / 2)
                .tickFormat(function(d) { return; })
@@ -4838,8 +4898,6 @@
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-      xax_g.call(xlabelfont.func);
-      yax_g.call(ylabelfont.func);
 
       // we will use such rect for zoom selection
       if (JSROOT.gStyle.Zooming) {
@@ -5885,7 +5943,7 @@
                point['tip'] += ("x = " + this.AxisAsText("x", x1) + "\n");
             else
                point['tip'] += ("x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n");
-            point['tip'] += ("entries = " + cont);
+            point['tip'] += ("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
          }
 
          draw_bins.push(point);
@@ -6649,14 +6707,21 @@
 
             if (point==null) continue;
 
-            if (tipkind == 1)
-               point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n" +
-                              "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n" +
-                              "entries = " + binz;
-            else if (tipkind == 2)
+            if (tipkind == 1) {
+               if (this.x_kind=='labels')
+                  point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n";
+               else
+                  point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n";
+               if (this.y_kind=='labels')
+                  point['tip'] += "y = " + this.AxisAsText("y", y1) + "\n";
+               else
+                  point['tip'] += "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n";
+
+               point['tip'] += "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+            } else if (tipkind == 2)
                point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n" +
                               "y = " + this.AxisAsText("y", y1) + "\n" +
-                              "entries = " + binz;
+                              "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
 
             local_bins.push(point);
          }

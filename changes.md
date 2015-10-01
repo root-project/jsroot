@@ -19,6 +19,7 @@
 7. Implement painter for TEllipse, TLine, TArrow classes     
 8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols. 
 9. Implement custom layout, which allows to configure user-defined layout for displayed objects   
+10.Support also Y axis with custom labels, scale font size to see as much as possible of such labels
 
 
 ## Changes in 3.7
