@@ -6357,7 +6357,7 @@
       var axisfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
       var ticks = d3.scale.linear().clamp(true)
-                  .domain([ this.minbin, this.maxbin ])
+                  .domain([ this.gminbin, this.gmaxbin ])
                   .range([ height, 0 ]).nice().ticks(axis['fNdiv'] % 100);
 
       var maxlen = 0;
@@ -6366,7 +6366,7 @@
          if (len > maxlen) maxlen = len;
       }
 
-      var rel = (maxlen + axisOffset) / width;
+      var rel = (maxlen + 5 + axisOffset) / width;
 
       if (pal['fX2NDC'] + rel > 0.98) {
          var shift = pal['fX2NDC'] + rel - 0.98;
@@ -6876,6 +6876,7 @@
       // check if we need to create palette
       if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
          // create pallette
+
          var shrink = this.CreatePalette(0.04);
          this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.svg_frame().property('frame_painter').Redraw();
