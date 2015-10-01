@@ -4874,18 +4874,21 @@
             if (box.height > maxh) maxh = box.height;
             cnt++;
          });
+
          if ((cnt>0) && (maxh>0)) {
             // adjust font size
             if (maxh < h/cnt)  {
                shift = parseInt((h/cnt - maxh) / 2);
+               drawy.selectAll(".tick text").attr("y", -shift).attr("dy", "0");
             } else {
                shift = 1;
                ylabelfont.size = parseInt(ylabelfont.size * (h/cnt-2) / maxh);
                if (ylabelfont.size<2) ylabelfont.size = 2;
                drawy.call(ylabelfont.func);
+               drawy.selectAll(".tick text").attr("dy", shift);
             }
          }
-         drawy.selectAll(".tick text").attr("dy", shift);
+
 
       } else
       if ((n2ay > 0) && !this.options.Logy) {
