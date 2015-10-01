@@ -403,7 +403,7 @@
          var handle = JSROOT.getDrawHandle(hitem._kind);
          if (handle!=null) {
             if ('aslink' in handle)
-               return window.open(itemname);
+               return window.open(itemname + "/");
 
             if ('func' in handle)
                return this.display(itemname);

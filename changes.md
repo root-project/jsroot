@@ -18,6 +18,7 @@
    will be implemented.
 7. Implement painter for TEllipse, TLine, TArrow classes     
 8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols. 
+9. Implement custom layout, which allows to configure user-defined layout for displayed objects   
 
 
 ## Changes in 3.7

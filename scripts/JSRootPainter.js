@@ -8001,6 +8001,11 @@
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.draw(divid, obj, drawopt);
    }
+   
+   JSROOT.HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
+      // just envelope, one should be able to redefine it for sub-classes
+      return JSROOT.redraw(divid, obj, drawopt);
+   }
 
    JSROOT.HierarchyPainter.prototype.player = function(itemname, option, call_back) {
       var item = this.Find(itemname);
@@ -8033,12 +8038,12 @@
       h.CreateDisplay(function(mdi) {
          if (!mdi) return display_callback();
 
-         var updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
-
          var item = h.Find(itemname);
 
          if ((item!=null) && ('_player' in item))
             return h.player(itemname, drawopt, display_callback);
+
+         var updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
          if (updating) {
             drawopt = drawopt.substr(7);
@@ -8050,18 +8055,21 @@
             var handle = JSROOT.getDrawHandle(item._kind, drawopt);
             if ((handle==null) || !('func' in handle)) return display_callback();
          }
+         
+         var divid = "";
+         if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
+            var pos = drawopt.indexOf("divid:");
+            divid = drawopt.slice(pos+6);
+            drawopt = drawopt.slice(0, pos);
+         }
 
          h.get(itemname, function(item, obj) {
 
             if (updating && item) delete item['_doing_update'];
             if (obj==null) return display_callback();
 
-            var pos = drawopt ? drawopt.indexOf("divid:") : -1;
-
-            if (pos>=0) {
-               var divid = drawopt.slice(pos+6);
-               drawopt = drawopt.slice(0, pos);
-               painter = h.draw(divid, obj, drawopt);
+            if (divid.length > 0) {
+               painter = updating ? h.redraw(divid, obj, drawopt) : h.draw(divid, obj, drawopt);
             } else {
                mdi.ForEachPainter(function(p, frame) {
                   if (p.GetItemName() != itemname) return;
@@ -8389,7 +8397,12 @@
    JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
       if ((item!=null) && (typeof item == "string")) item = this.Find(item);
-      return (item==null) ? null : this.itemFullName(item, this.GetTopOnlineItem(item));
+      var top = this.GetTopOnlineItem(item);
+      if (item==null) return null;
+      
+      var urlpath = this.itemFullName(item, top);
+      if (top && ('_online' in top) && (top._online!="")) urlpath = top._online + urlpath;
+      return urlpath;
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
@@ -8401,7 +8414,6 @@
          url = this.GetOnlineItemUrl(item);
          var func = null;
          if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
-
 
          if ('_doing_expand' in item) {
             h_get = true;
@@ -8629,8 +8641,14 @@
    }
 
    JSROOT.HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
-      this['disp_kind'] = layout;
-      this['disp_frameid'] = frameid;
+      if ((frameid==null) && (typeof layout == 'object')) {
+         this['disp'] = layout;
+         this['disp_kind'] = 'custom';
+         this['disp_frameid'] = null;
+      } else {
+         this['disp_kind'] = layout;
+         this['disp_frameid'] = frameid;
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.GetLayout = function() {
@@ -8663,7 +8681,7 @@
       var h = this;
 
       if ('disp' in this) {
-         if (h['disp'].NumDraw() > 0) return JSROOT.CallBack(callback, h['disp']);
+         if ((h['disp'].NumDraw() > 0) || (h['disp_kind'] == "custom")) return JSROOT.CallBack(callback, h['disp']);
          h['disp'].Reset();
          delete h['disp'];
       }
@@ -8905,6 +8923,47 @@
       return JSROOT.redraw(d3.select(frame).attr("id"), obj, drawopt);
    }
 
+
+   // ==================================================
+
+   JSROOT.CustomDisplay = function() {
+      JSROOT.MDIDisplay.call(this, "dummy");
+      this.frames = {}; // array of configured frames
+   }
+
+   JSROOT.CustomDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.CustomDisplay.prototype.AddFrame = function(divid, itemname) {
+      if (!(divid in this.frames)) this.frames[divid] = "";
+         
+      this.frames[divid] += (itemname + ";");
+   }
+   
+   JSROOT.CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      var ks = Object.keys(this.frames);
+      for (var k = 0; k < ks.length; k++) {
+         var node = d3.select("#"+ks[k]);
+         if (!node.empty())
+            JSROOT.CallBack(userfunc, node.node());
+      }
+   }
+
+   JSROOT.CustomDisplay.prototype.CreateFrame = function(title) {
+      var ks = Object.keys(this.frames);
+      for (var k = 0; k < ks.length; k++) {
+         var items = this.frames[ks[k]];
+         if (items.indexOf(title+";")>=0)
+            return d3.select("#"+ks[k]).node();
+      }
+      return null;
+   }
+
+   JSROOT.CustomDisplay.prototype.Reset = function() {
+      JSROOT.MDIDisplay.prototype.Reset.call(this);
+      this.ForEachFrame(function(frame) {
+         d3.select(frame).html("");
+      });
+   }
 
    // ==================================================
 
