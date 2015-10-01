@@ -8001,7 +8001,7 @@
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.draw(divid, obj, drawopt);
    }
-   
+
    JSROOT.HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.redraw(divid, obj, drawopt);
@@ -8055,7 +8055,7 @@
             var handle = JSROOT.getDrawHandle(item._kind, drawopt);
             if ((handle==null) || !('func' in handle)) return display_callback();
          }
-         
+
          var divid = "";
          if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
             var pos = drawopt.indexOf("divid:");
@@ -8399,7 +8399,7 @@
       if ((item!=null) && (typeof item == "string")) item = this.Find(item);
       var top = this.GetTopOnlineItem(item);
       if (item==null) return null;
-      
+
       var urlpath = this.itemFullName(item, top);
       if (top && ('_online' in top) && (top._online!="")) urlpath = top._online + urlpath;
       return urlpath;
@@ -8935,10 +8935,10 @@
 
    JSROOT.CustomDisplay.prototype.AddFrame = function(divid, itemname) {
       if (!(divid in this.frames)) this.frames[divid] = "";
-         
+
       this.frames[divid] += (itemname + ";");
    }
-   
+
    JSROOT.CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var ks = Object.keys(this.frames);
       for (var k = 0; k < ks.length; k++) {
