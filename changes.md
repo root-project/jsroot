@@ -2,9 +2,7 @@
 
 ## Changes in master
 1.  Let use HTML element pointer in JSROOT.draw function like:
-
        JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
-       
    Normally unique identifier was used before, which is not required any longer.
    Of course, old functionality with element identifier will work as well. 
 2. TreePlayer can also be used for trees, which not yet read from the file.
@@ -20,16 +18,11 @@
 8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols. 
 9. Implement custom layout, which allows to configure user-defined layout for displayed objects
 10. Fix errors with scaling of axis labels.     
-11. Support also Y axis with custom labels like:
-      
-      http://jsroot.gsi.de/dev/?nobrowser&file=../files/atlas.root&item=LEDShapeHeightCorr_Gain0;1&opt=col   
+11. Support also Y axis with custom labels like: http://jsroot.gsi.de/dev/?nobrowser&file=../files/atlas.root&item=LEDShapeHeightCorr_Gain0;1&opt=col   
 
 
 ## Changes in 3.7
-1. Support of X axis with custom labels like:
-
-      http://jsroot.gsi.de/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
-      
+1. Support of X axis with custom labels like: http://jsroot.gsi.de/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.
    This let add more custom elements to the generic gui, implemented with JSROOT.HierarchyPainter   
@@ -65,8 +58,7 @@
 12. Primary support for STL containers in IO part. Allows to read ROOT6 TF1.
 13. Full support of TGraphBentErrors
 14. Support objects drawing from JSON files in default user interface, including
-    monitoring. One could open file from link like: 
-       https://root.cern.ch/js/dev/?json=demo/canvas_tf1.json 
+    monitoring. One could open file from link like: https://root.cern.ch/js/dev/?json=demo/canvas_tf1.json 
 15. Introduce JSROOT.FFormat function to convert numeric values into string according
     format like 6.4g or 5.7e. Used for statistic display.
 
