@@ -3630,7 +3630,8 @@
                     .orient("right")
                     .tickPadding(axisOffset)
                     .tickSize(-tickSize, -tickSize / 2, 0)
-                    .ticks(nbr1);
+                    .ticks(nbr1)
+                    .tickFormat(function(d) { return d; });
 
       var zax = this.draw_g.append("svg:g")
                    .attr("class", "zaxis")
@@ -6325,7 +6326,7 @@
       axis['fLabelFont'] = 42;
       axis['fChopt'] = "";
       axis['fName'] = "";
-      axis['fTitle'] = "";
+      axis['fTitle'] = this.histo.fZaxis.fTitle;
       axis['fTimeFormat'] = "";
       axis['fFunctionName'] = "";
       axis['fWmin'] = 0;
