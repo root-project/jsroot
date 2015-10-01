@@ -18,8 +18,11 @@
    will be implemented.
 7. Implement painter for TEllipse, TLine, TArrow classes     
 8. Fix several problems with markers drawing; implement plus, asterisk, mult symbols. 
-9. Implement custom layout, which allows to configure user-defined layout for displayed objects   
-10.Support also Y axis with custom labels, scale font size to see as much as possible of such labels
+9. Implement custom layout, which allows to configure user-defined layout for displayed objects
+10. Fix errors with scaling of axis labels.     
+11. Support also Y axis with custom labels like:
+      
+      http://jsroot.gsi.de/dev/?nobrowser&file=../files/atlas.root&item=LEDShapeHeightCorr_Gain0;1&opt=col   
 
 
 ## Changes in 3.7
