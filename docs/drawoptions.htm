@@ -116,7 +116,7 @@
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("hsimple.root", function(file) {
-            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;E2");
+            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;pE2");
             draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL2;COL3;LEGO");
             draw_item_options(file, "hprof;1", "prof_draw", ";E;E1;pE2;hist");
          });
@@ -173,6 +173,15 @@
             LoadFile("higgs_c.root", function(file) {
                draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", 0.);
             });
+            LoadFile("hitmap.root", function(file) {
+               draw_item_options(file, "HitMap;1", "atlas1_draw", "colz", 0.);
+               draw_item_options(file, "EnergyMeanAsyLo;1", "atlas2_draw", "hist", 0.);
+            });
+
+            LoadFile("atlas.root", function(file) {
+               draw_item_options(file, "LEDShapeHeightCorr_Gain0;1", "atlas3_draw", "col", 0.);
+            });
+
          }
 
 
@@ -226,6 +235,11 @@
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
+
+  <div id="atlas1_draw"></div>
+  <div id="atlas2_draw"></div>
+  <div id="atlas3_draw"></div>
+   
 
 </body>
 
