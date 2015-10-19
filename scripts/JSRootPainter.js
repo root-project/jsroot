@@ -5710,6 +5710,7 @@
          hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
+      if (this.histo.fEntries>1) this.stat_entries = this.histo.fEntries;
 
       this.CreateAxisFuncs(false);
 
@@ -6537,6 +6538,8 @@
 
       if (res.wmax==null) res.wmax = 0;
       res.integral = stat_sum0;
+
+      if (this.histo.fEntries > 1) res.entries = this.histo.fEntries;
 
       return res;
    }
