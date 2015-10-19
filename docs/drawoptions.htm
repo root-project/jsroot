@@ -121,6 +121,12 @@
             draw_item_options(file, "hprof;1", "prof_draw", ";E;E1;pE2;hist");
          });
 
+         if ((JSROOT.source_dir.indexOf("http")<0) || (JSROOT.GetUrlOption("more")!=null)) {
+            LoadFile("hbins.root", function(file) {
+               draw_item_options(file, "SpectraPions;1", "hbins_draw", ";mathjax=1");
+            });
+         }
+
          LoadFile("glbox.root", function(file) {
             draw_item_options(file, "h31;1", "h3_draw", "");
          });
@@ -205,6 +211,7 @@
   <h2>TH1 class</h2> 
 
   <div id="h1_draw"></div>
+  <div id="hbins_draw"></div>
 
   <h2>TH2 class</h2> 
 

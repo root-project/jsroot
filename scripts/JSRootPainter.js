@@ -3801,9 +3801,6 @@
 
    JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
 
-      console.log("option = " + opt + "  hist = " + this.histo['fOption']);
-      console.log("mark size = " + this.histo.fMarkerSize + "  style = " + this.histo.fMarkerStyle);
-
       if ((opt == null) || (opt == "")) opt = this.histo['fOption'];
 
       /* decode string 'opt' and fill the option structure */
