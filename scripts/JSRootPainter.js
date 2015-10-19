@@ -1202,6 +1202,16 @@
       return isNaN(res) ? 0 : res;
    }
 
+   JSROOT.TObjectPainter.prototype.frame_x = function(name) {
+      var res = parseInt(this.svg_frame().attr("x"));
+      return isNaN(res) ? 0 : res;
+   }
+
+   JSROOT.TObjectPainter.prototype.frame_y = function(name) {
+      var res = parseInt(this.svg_frame().attr("y"));
+      return isNaN(res) ? 0 : res;
+   }
+
    JSROOT.TObjectPainter.prototype.frame_width = function() {
       var res = parseInt(this.svg_frame().attr("width"));
       return isNaN(res) ? 0 : res;
@@ -1658,7 +1668,7 @@
       // getBoundingClientRect() returns wrong sizes for MathJax
       // are there good solution?
       var box = elem.getBoundingClientRect(); // works always, but returns sometimes wrong results
-      if (parseInt(box.width) > 0) box = elem.getBBox(); // works only for visisble
+      if (parseInt(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
       return { width : parseInt(box.width), height : parseInt(box.height) };
    }
 
@@ -1750,6 +1760,11 @@
             if (align[1] == 'top' && rotate) fo_y -= box.height;
          }
 
+         //  this is just workaround for Y-axis label,
+         // one could extend it the future on all labels
+         if ((fo_y < 0) && (painter.frame_x() < -fo_y))
+            fo_y = -painter.frame_x() + 1;
+
          fo_g.attr('x', fo_x).attr('y', fo_y)  // use x/y while transform used for rotation
              .attr('width', box.width+10).attr('height', box.height+10)  // width and height required by Chrome
              .attr('visibility', null);
@@ -1821,7 +1836,7 @@
                          .text(label);
          if (pos_dy!=null) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
-         if ((!scale) && (h==-270)) txt.attr("transform", "rotate(270, 0, 0)");
+         if (!scale && (h==-270)) txt.attr("transform", "rotate(270, 0, 0)");
 
          var box = this.GetBoundarySizes(txt.node());
 
@@ -1841,8 +1856,8 @@
 
       if (!scale) {
          if (h==-270) rotate = true;
-         w = this.pad_width(); h = this.pad_height(); // artifical values, big enough to see output
-         // w = 5; h = 5;
+         w = this.pad_width(); // artifical values, big enough to see output
+         h = this.pad_height();
       }
 
       var fo_g = draw_g.append("svg")
@@ -4739,8 +4754,8 @@
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
 
-         var res = this.DrawText("end", 0, - yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
-                                   0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
+         var res = this.DrawText("end", 0, -yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
+                                        0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;
 
