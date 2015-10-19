@@ -3798,6 +3798,10 @@
    }
 
    JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
+
+      console.log("option = " + opt + "  hist = " + this.histo['fOption']);
+      console.log("mark size = " + this.histo.fMarkerSize + "  style = " + this.histo.fMarkerStyle);
+
       if ((opt == null) || (opt == "")) opt = this.histo['fOption'];
 
       /* decode string 'opt' and fill the option structure */
@@ -6035,6 +6039,10 @@
    }
 
    JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, w, h) {
+
+      // when draw as error, enable marker draw
+      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
+         this.options.Mark = 1;
 
       /* Calculate coordinates for each point, exclude zeros if not p0 or e0 option */
       var draw_bins = this.CreateDrawBins(w, h, (this.options.Error!=10) && (this.options.Mark!=10));
