@@ -4395,6 +4395,66 @@
       return true;
    }
 
+   JSROOT.THistPainter.prototype.CreateAxisFuncs = function(with_y_axis) {
+      // here functions are defined to convert index to axis value and back
+      // introduced to support non-equidistant bins
+
+      this.xmin = this.histo['fXaxis']['fXmin'];
+      this.xmax = this.histo['fXaxis']['fXmax'];
+
+      if (this.histo['fXaxis'].fXbins.length == this.nbinsx+1) {
+         this['GetBinX'] = function(bin) {
+            var indx = Math.round(bin);
+            if (indx <= 0) return this.xmin;
+            if (indx > this.nbinsx) this.xmax;
+            if (indx==bin) return this.histo['fXaxis'].fXbins[indx];
+            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.histo['fXaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fXbins[indx2] * Math.abs(bin-indx);
+         };
+         this['GetIndexX'] = function(x,add) {
+            for (var k = 1; k < this.histo['fXaxis'].fXbins.length; k++)
+               if (x < this.histo['fXaxis'].fXbins[k]) return Math.floor(k-1+add);
+            return this.nbinsx;
+         };
+      } else {
+         this.binwidthx = (this.xmax - this.xmin);
+         if (this.nbinsx > 0)
+            this.binwidthx = this.binwidthx / this.nbinsx;
+
+         this['GetBinX'] = function(bin) { return this.xmin + bin*this.binwidthx; };
+         this['GetIndexX'] = function(x,add) { return Math.floor((x - this.xmin) / this.binwidthx + add); };
+      }
+
+      this.ymin = this.histo['fYaxis']['fXmin'];
+      this.ymax = this.histo['fYaxis']['fXmax'];
+
+      if (!with_y_axis || (this.nbinsy==0)) return;
+
+      if (this.histo['fYaxis'].fXbins.length == this.nbinsy+1) {
+         this['GetBinY'] = function(bin) {
+            var indx = Math.round(bin);
+            if (indx <= 0) return this.ymin;
+            if (indx > this.nbinsx) this.ymax;
+            if (indx==bin) return this.histo['fYaxis'].fXbins[indx];
+            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.histo['fYaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fYbins[indx2] * Math.abs(bin-indx);
+         };
+         this['GetIndexY'] = function(y,add) {
+            for (var k = 1; k < this.histo['fYaxis'].fXbins.length; k++)
+               if (y < this.histo['fYaxis'].fXbins[k]) return Math.floor(k-1+add);
+            return this.nbinsy;
+         };
+      } else {
+         this.binwidthy = (this.ymax - this.ymin);
+         if (this.nbinsy > 0)
+            this.binwidthy = this.binwidthy / this.nbinsy
+
+         this['GetBinY'] = function(bin) { return this.ymin+bin*this.binwidthy; };
+         this['GetIndexY'] = function(y,add) { return Math.floor((y - this.ymin) / this.binwidthy + add); };
+      }
+   }
+
+
    JSROOT.THistPainter.prototype.CreateXY = function() {
       // here we create x,y objects which maps our physical coordnates into pixels
       // while only first painter really need such object, all others just reuse it
@@ -5016,21 +5076,20 @@
          nbin = this.nbinsx;
          if (obj.zoom_xmin != obj.zoom_xmax) {
             if (size == "left")
-               indx = Math.floor((obj.zoom_xmin - this.xmin) / this.binwidthx + add);
+               indx = this.GetIndexX(obj.zoom_xmin, add);
             else
-               indx = Math.round((obj.zoom_xmax - this.xmin) / this.binwidthx + 0.5 + add);
+               indx = this.GetIndexX(obj.zoom_xmax, add + 0.5);
          } else {
             indx = (size == "left") ? 0 : nbin;
          }
-
       } else
       if (axis == "y") {
          nbin = this.nbinsy;
-         if (obj.zoom_ymin != obj.zoom_ymax) {
+         if ((obj.zoom_ymin != obj.zoom_ymax) && ('GetIndexY' in this)) {
             if (size == "left")
-               indx = Math.floor((obj.zoom_ymin - this.ymin) / this.binwidthy + add);
+               indx = this.GetIndexY(obj.zoom_ymin, add);
             else
-               indx = Math.round((obj.zoom_ymax - this.ymin) / this.binwidthy + 0.5 + add);
+               indx = this.GetIndexY(obj.zoom_ymax, add + 0.5);
          } else {
             indx = (size == "left") ? 0 : nbin;
          }
@@ -5183,16 +5242,17 @@
       var obj = this.main_painter();
       if (!obj) obj = this;
       var isany = false;
-      if ((xmin != xmax) && (Math.abs(xmax-xmin) > obj.binwidthx*2.0)) {
+      if ((xmin != xmax) && (obj.GetIndexX(xmax,0.5) - obj.GetIndexX(xmin,0) > 1)) {
          obj['zoom_xmin'] = xmin;
          obj['zoom_xmax'] = xmax;
          isany = true;
       }
-      if ((ymin != ymax) && (Math.abs(ymax-ymin) > (('binwidthy' in obj) ? (obj.binwidthy*2.0) : Math.abs(obj.ymax-obj.ymin)*1e-6))) {
-         obj['zoom_ymin'] = ymin;
-         obj['zoom_ymax'] = ymax;
-         isany = true;
-      }
+      if (ymin != ymax)
+         if (('GetIndexY' in obj) ?  (obj.GetIndexY(ymax,0.5) - obj.GetIndexY(ymin,0) > 1) : (Math.abs(ymax-ymin) > Math.abs(obj.ymax-obj.ymin)*1e-6)) {
+           obj['zoom_ymin'] = ymin;
+           obj['zoom_ymax'] = ymax;
+           isany = true;
+         }
       if ((zmin!=zmax) && (zmin!=null) && (zmax!=null)) {
          obj['zoom_zmin'] = zmin;
          obj['zoom_zmax'] = zmax;
@@ -5616,7 +5676,6 @@
    JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
    JSROOT.TH1Painter.prototype.ScanContent = function() {
-
       // from here we analyze object content
       // therefore code will be moved
       this.fill = this.createAttFill(this.histo);
@@ -5631,6 +5690,7 @@
       var profile = this.IsTProfile();
 
       this.nbinsx = this.histo['fXaxis']['fNbins'];
+      this.nbinsy = 0;
 
       for (var i = 0; i < this.nbinsx; ++i) {
          var value = this.histo.getBinContent(i + 1);
@@ -5651,18 +5711,8 @@
 
       this.stat_entries = hsum;
 
-      // used in CreateXY and tooltip providing
-      this.xmin = this.histo['fXaxis']['fXmin'];
-      this.xmax = this.histo['fXaxis']['fXmax'];
+      this.CreateAxisFuncs(false);
 
-      this.binwidthx = (this.xmax - this.xmin);
-      if (this.nbinsx > 0)
-         this.binwidthx = this.binwidthx / this.nbinsx;
-
-      this['GetBinX'] = function(bin) { return this.xmin+bin*this.binwidthx; };
-
-      this.ymin = this.histo['fYaxis']['fXmin'];
-      this.ymax = this.histo['fYaxis']['fXmax'];
       this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
@@ -5670,10 +5720,8 @@
          if (this.histo['fMaximum'] != -1111) this.ymax = this.histo['fMaximum'];
          this.draw_content = false;
       } else {
-         if (this.histo['fMinimum'] != -1111) hmin = this.histo['fMinimum'];
-         if (this.histo['fMaximum'] != -1111) hmax = this.histo['fMaximum'];
          if (hmin >= hmax) {
-            if (hmin == 0) { this.ymax = 0; this.ymax = 1; } else
+            if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
             if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
                      else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
@@ -5682,6 +5730,28 @@
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
          }
+
+         hmin = hmax = null;
+         var set_zoom = false;
+         if (this.histo['fMinimum'] != -1111) {
+            hmin = this.histo['fMinimum'];
+            if (hmin < this.ymin)
+               this.ymin = hmin;
+            else
+               set_zoom = true;
+         }
+         if (this.histo['fMaximum'] != -1111) {
+            hmax = this.histo['fMaximum'];
+            if (hmax > this.ymax)
+               this.ymax = hmax;
+            else
+               set_zoom = true;
+         }
+         if (set_zoom) {
+            this.zoom_xmin = (hmin == null) ? this.ymin : hmin;
+            this.zoom_xmax = (hmax == null) ? this.ymax : hmax;
+         }
+
          this.draw_content = true;
       }
 
@@ -6391,22 +6461,8 @@
       this.nbinsy = this.histo['fYaxis']['fNbins'];
 
       // used in CreateXY method
-      this.xmin = this.histo['fXaxis']['fXmin'];
-      this.xmax = this.histo['fXaxis']['fXmax'];
-      this.ymin = this.histo['fYaxis']['fXmin'];
-      this.ymax = this.histo['fYaxis']['fXmax'];
 
-      this.binwidthx = (this.xmax - this.xmin);
-      if (this.nbinsx > 0)
-         this.binwidthx = this.binwidthx / this.nbinsx;
-
-      this['GetBinX'] = function(bin) { return this.xmin+bin*this.binwidthx; };
-
-      this.binwidthy = (this.ymax - this.ymin);
-      if (this.nbinsy > 0)
-         this.binwidthy = this.binwidthy / this.nbinsy
-
-      this['GetBinY'] = function(bin) { return this.ymin+bin*this.binwidthy; };
+      this.CreateAxisFuncs(true);
 
       this.gmaxbin = this.histo.getBinContent(1, 1);
       this.gminbin = this.gmaxbin; // global min/max, used at the moment in 3D drawing
@@ -6440,7 +6496,7 @@
 
          for (var yi = 0; yi <= this.nbinsx + 1; yi++) {
             var yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
-            var yy = this.ymin + (yi - 0.5) * this.binwidthy;
+            var yy = this.ymin + this.GetBinY(yi - 0.5);
 
             var zz = this.histo.getBinContent(xi, yi);
 

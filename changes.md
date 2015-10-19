@@ -1,7 +1,11 @@
 # JSROOT changelog
 
+## Changes in master
+1. Support non-equidistant bins for TH1/TH2 objects.
+
+
 ## Changes in 3.8
-1.  Let use HTML element pointer in JSROOT.draw function like:
+1. Let use HTML element pointer in JSROOT.draw function like:
        JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
    Normally unique identifier was used before, which is not required any longer.
    Of course, old functionality with element identifier will work as well. 
