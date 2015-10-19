@@ -939,6 +939,8 @@
          str = str.replace(/#arcbar/g, "?");
          str = str.replace(/#downleftarrow/g, "?");
          str = str.replace(/#splitline/g, "\\genfrac{}{}{0pt}{}");
+         str = str.replace(/#it/g, "\\textit");
+         str = str.replace(/#bf/g, "\\textbf");
 
          str = str.replace(/#frac/g, "\\frac");
          //str = str.replace(/#left{/g, "\\left\\{");
