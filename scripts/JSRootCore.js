@@ -783,6 +783,7 @@
       formula = formula.replace('abs(', 'Math.abs(');
       formula = formula.replace('sin(', 'Math.sin(');
       formula = formula.replace('cos(', 'Math.cos(');
+      formula = formula.replace('exp(', 'Math.exp(');
       var code = obj['fName'] + " = function(x) { return " + formula + " };";
       eval(code);
       var sig = obj['fName']+'(x)';
@@ -1082,6 +1083,7 @@
             _function = _function.replace(/\b(sin)\b/gi, 'Math.sin')
             _function = _function.replace(/\b(cos)\b/gi, 'Math.cos')
             _function = _function.replace(/\b(tan)\b/gi, 'Math.tan')
+            _function = _function.replace(/\b(exp)\b/gi, 'Math.exp')
             var ret = eval(_function);
             return ret;
          };
