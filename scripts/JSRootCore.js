@@ -22,7 +22,7 @@
 
       // first configure all dependencies
       requirejs.config({
-       context: "dev 19/10/2015",
+       context: "dev 20/10/2015",
        baseUrl: dir,
        paths: {
           'd3'              : 'd3.v3.min',
@@ -78,7 +78,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 19/10/2015";
+   JSROOT.version = "dev 20/10/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1058,34 +1058,33 @@
       if ((obj_typename.indexOf("TFormula") != -1) ||
           (obj_typename.indexOf("TF1") == 0)) {
          obj['evalPar'] = function(x) {
-            var i, _function = this['fTitle'];
-            _function = _function.replace('TMath::Exp(', 'Math.exp(');
-            _function = _function.replace('TMath::Abs(', 'Math.abs(');
-            _function = _function.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
-            _function = _function.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
-            _function = _function.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
-            _function = _function.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
-            _function = _function.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
-            _function = _function.replace('pi', 'Math.PI');
-            for (i=0;i<this['fNpar'];++i) {
-               while(_function.indexOf('['+i+']') != -1)
-                  _function = _function.replace('['+i+']', this['fParams'][i])
+            var _func = this['fTitle'];
+            _func = _func.replace('TMath::Exp(', 'Math.exp(');
+            _func = _func.replace('TMath::Abs(', 'Math.abs(');
+            _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
+            _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
+            _func = _func.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
+            _func = _func.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
+            _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
+            _func = _func.replace('pi', 'Math.PI');
+            for (var i=0;i<this['fNpar'];++i) {
+               while(_func.indexOf('['+i+']') != -1)
+                  _func = _func.replace('['+i+']', this['fParams'][i]);
             }
-            for (i=0;i<JSROOT.function_list.length;++i) {
+            for (var i=0;i<JSROOT.function_list.length;++i) {
                var f = JSROOT.function_list[i].substring(0, JSROOT.function_list[i].indexOf('('));
-               if (_function.indexOf(f) != -1) {
+               if (_func.indexOf(f) != -1) {
                   var fa = JSROOT.function_list[i].replace('(x)', '(' + x + ')');
-                  _function = _function.replace(f, fa);
+                  _func = _func.replace(f, fa);
                }
             }
             // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
-            _function = _function.replace(/\b(x)\b/gi, x)
-            _function = _function.replace(/\b(sin)\b/gi, 'Math.sin')
-            _function = _function.replace(/\b(cos)\b/gi, 'Math.cos')
-            _function = _function.replace(/\b(tan)\b/gi, 'Math.tan')
-            _function = _function.replace(/\b(exp)\b/gi, 'Math.exp')
-            var ret = eval(_function);
-            return ret;
+            _func = _func.replace(/\b(x)\b/gi, x);
+            _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
+            _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
+            _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
+            _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
+            return eval(_func);
          };
       }
 
