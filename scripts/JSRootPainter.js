@@ -4827,16 +4827,16 @@
 
       } else if (this.options.Logx) {
 
-         var noexpx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
-         if (this.scale_xmax < 100 && this.scale_xmin > 0 && this.scale_xmax / this.scale_xmin < 100) noexpx = true;
-         var moreloglabelsx = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+         this['noexpx'] = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+         if ((this.scale_xmax < 300) && (this.scale_xmin > 0.3)) this['noexpx'] = true;
+         this['moreloglabelsx'] = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
          this['formatx'] = function(d) {
             var val = parseFloat(d);
             var vlog = Math.abs(JSROOT.Math.log10(val));
-            if (moreloglabelsx) {
+            if (this['moreloglabelsx']) {
                if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
-                  if (noexpx)
+                  if (this['noexpx'])
                      return val.toFixed();
                   else
                      return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -4844,7 +4844,7 @@
                   return null;
             } else {
                if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
-                  if (noexpx)
+                  if (this['noexpx'])
                      return val.toFixed();
                   else
                      return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -4891,16 +4891,16 @@
             this['formaty'] = d3.time.format(timeformaty);
 
       } else if (this.options.Logy) {
-         var noexpy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
-         var moreloglabelsy = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
-         if (this.scale_ymax < 100 && this.scale_ymin > 0 && this.scale_ymax / this.scale_ymin < 100) noexpy = true;
+         this['noexpy'] = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+         if ((this.scale_ymax < 300) && (this.scale_ymin > 0.3)) this['noexpy'] = true;
+         this['moreloglabelsy'] = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
          this['formaty'] = function(d) {
             var val = parseFloat(d);
             var vlog = Math.abs(JSROOT.Math.log10(val));
-            if (moreloglabelsy) {
+            if (this['moreloglabelsy']) {
                if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
-                  if (noexpy)
+                  if (this['noexpy'])
                      return val.toFixed();
                   else
                      return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -4908,7 +4908,7 @@
                   return null;
             } else {
                if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
-                  if (noexpy)
+                  if (this['noexpy'])
                      return val.toFixed();
                   else
                      return JSROOT.Painter.formatExp(val.toExponential(0));
