@@ -1063,6 +1063,11 @@
       return ('_hdrawopt' in this) ? this['_hdrawopt'] : "";
    }
 
+   JSROOT.TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
+      // check if it makes sense to zoom inside specified axis range
+      return false;
+   }
+
 
    // ==============================================================================
 
@@ -2136,11 +2141,13 @@
          });
          this['interpolate_method'] = 'monotone';
       } else {
+         var main = this.main_painter();
+
          if (this.tf1['fNpfits'] <= 103)
             this.tf1['fNpfits'] = 333;
          var xmin = this.tf1['fXmin'], xmax = this.tf1['fXmax'], logx = false;
 
-         if (this.main_painter().options.Logx && (xmin>0) && (xmax>0)) {
+         if (main.options.Logx && (xmin>0) && (xmax>0)) {
             logx = true;
             xmin = Math.log(xmin);
             xmax = Math.log(xmax);
@@ -2218,8 +2225,30 @@
       return true;
    }
 
+   JSROOT.TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
+      if (axis!="x") return false;
+
+      if (this.tf1['fSave'].length > 0) {
+         // in the case where the points have been saved, useful for example
+         // if we don't have the user's function
+         var nb_points = this.tf1['fNpx'];
+
+         var xmin = this.tf1['fSave'][nb_points + 1];
+         var xmax = this.tf1['fSave'][nb_points + 2];
+
+         return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
+      }
+
+      // if function calculated, one always could zoom inside
+      return true;
+   }
+
+
    JSROOT.Painter.drawFunction = function(divid, tf1) {
       var painter = new JSROOT.TF1Painter(tf1);
+
+      if (tf1.fTitle.indexOf("U projectile")==0) tf1.fTitle = "TMath::Abs(sin(x))";
+      // console.log('draw function ' + tf1.fName + " save " + tf1.fSave.length + "  tile = " + tf1.fTitle);
 
       painter.SetDivId(divid, -1);
       if (painter.main_painter() == null) {
@@ -5262,25 +5291,27 @@
    }
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      var obj = this.main_painter();
-      if (!obj) obj = this;
       var isany = false;
-      if ((xmin != xmax) && (obj.GetIndexX(xmax,0.5) - obj.GetIndexX(xmin,0) > 1)) {
-         obj['zoom_xmin'] = xmin;
-         obj['zoom_xmax'] = xmax;
-         isany = true;
-      }
-      if (ymin != ymax)
-         if (('GetIndexY' in obj) ?  (obj.GetIndexY(ymax,0.5) - obj.GetIndexY(ymin,0) > 1) : (Math.abs(ymax-ymin) > Math.abs(obj.ymax-obj.ymin)*1e-6)) {
-           obj['zoom_ymin'] = ymin;
-           obj['zoom_ymax'] = ymax;
-           isany = true;
+      var main = this.main_painter();
+
+      this.ForEachPainter(function(obj) {
+         if ((xmin != xmax) && obj.CanZoomIn("x", xmin, xmax)) {
+            main['zoom_xmin'] = xmin;
+            main['zoom_xmax'] = xmax;
+            isany = true;
          }
-      if ((zmin!=zmax) && (zmin!=null) && (zmax!=null)) {
-         obj['zoom_zmin'] = zmin;
-         obj['zoom_zmax'] = zmax;
-         isany = true;
-      }
+         if ((ymin != ymax) && obj.CanZoomIn("y", ymin, ymax)) {
+            main['zoom_ymin'] = ymin;
+            main['zoom_ymax'] = ymax;
+            isany = true;
+         }
+         if ((zmin!=zmax) && (zmin!=null) && (zmax!=null) && obj.CanZoomIn("z",zmin, zmax)) {
+            main['zoom_zmin'] = zmin;
+            main['zoom_zmax'] = zmax;
+            isany = true;
+         }
+      });
+
       if (isany) this.RedrawPad();
    }
 
@@ -6243,6 +6274,15 @@
          this.Zoom(this.GetBinX(left), this.GetBinX(right), 0, 0);
    }
 
+   JSROOT.TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
+      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+
+      if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
+
+      // check if it makes sense to zoom inside specified axis range
+      return false;
+   }
+
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
 
       // create painter and add it to canvas
@@ -6952,6 +6992,17 @@
       }
 
       delete local_bins;
+   }
+
+   JSROOT.TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
+      // check if it makes sense to zoom inside specified axis range
+      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+
+      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
+
+      if (axis=="z") return true;
+
+      return false;
    }
 
    JSROOT.TH2Painter.prototype.Draw2D = function() {
