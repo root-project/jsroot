@@ -22,7 +22,6 @@
 
       // first configure all dependencies
       requirejs.config({
-       context: "dev 20/10/2015",
        baseUrl: dir,
        paths: {
           'd3'              : 'd3.v3.min',
