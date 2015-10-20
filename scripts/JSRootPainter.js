@@ -7224,9 +7224,11 @@
       }
       y -= h;
       var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
-      var fill = this.createAttFill(pave);
-      var lcolor = JSROOT.Painter.createAttLine(pave, lwidth);
-      var nlines = pave.fPrimitives.arr.length;
+      var boxfill = this.createAttFill(pave);
+      var lineatt = JSROOT.Painter.createAttLine(pave, lwidth);
+      var ncols = pave.fNColumns, nlines = pave.fPrimitives.arr.length;
+      var nrows = nlines;
+      if (ncols>1) { while ((nrows-1)*ncols>=nlines) nrows--; } else ncols = 1;
 
       this.draw_g.attr("x", x)
                  .attr("y", y)
@@ -7242,25 +7244,30 @@
            .attr("y", 0)
            .attr("width", w)
            .attr("height", h)
-           .call(fill.func)
+           .call(boxfill.func)
            .style("stroke-width", lwidth ? 1 : 0)
-           .style("stroke", lcolor.color);
+           .style("stroke", lineatt.color);
 
       var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
-      var tpos_x = Math.round(pave['fMargin'] * w);
-      var padding_x = Math.round(0.03 * w);
+      var column_width = Math.round(w/ncols);
+      var padding_x = Math.round(0.03 * w/ncols);
       var padding_y = Math.round(0.03 * h);
 
       var leg_painter = this;
 
-      var step_y = (h - 2*padding_y)/nlines;
+      var step_y = (h - 2*padding_y)/nrows;
 
       for (var i = 0; i < nlines; ++i) {
          var leg = pave.fPrimitives.arr[i];
          var lopt = leg['fOption'].toLowerCase();
 
-         var pos_y = Math.round(padding_y + i*step_y); // top corner
-         var mid_y = Math.round(padding_y + (i+0.5)*step_y); // top corner
+         var icol = i % ncols, irow = (i - icol) / ncols;
+
+         var x0 = icol * column_width;
+         var tpos_x = x0 + Math.round(pave['fMargin']*column_width);
+
+         var pos_y = Math.round(padding_y + irow*step_y); // top corner
+         var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
 
          var attfill = leg;
          var attmarker = leg;
@@ -7282,17 +7289,17 @@
             // box total height is yspace*0.7
             // define x,y as the center of the symbol for this entry
             this.draw_g.append("svg:rect")
-                   .attr("x", padding_x)
+                   .attr("x", x0 + padding_x)
                    .attr("y", Math.round(pos_y+step_y*0.1))
-                   .attr("width", tpos_x - 2*padding_x)
+                   .attr("width", tpos_x - 2*padding_x - x0)
                    .attr("height", Math.round(step_y*0.8))
-                   .call(llll.func)
                    .call(fill.func);
          }
+
          // Draw line
          if (lopt.indexOf('l') != -1) {
             this.draw_g.append("svg:line")
-               .attr("x1", padding_x)
+               .attr("x1", x0 + padding_x)
                .attr("y1", mid_y)
                .attr("x2", tpos_x - padding_x)
                .attr("y2", mid_y)
@@ -7305,14 +7312,14 @@
          if (lopt.indexOf('p') != -1) {
             var marker = JSROOT.Painter.createAttMarker(attmarker);
             this.draw_g.append("svg:path")
-                .attr("transform", function(d) { return "translate(" + tpos_x/2 + "," + mid_y + ")"; })
+                .attr("transform", function(d) { return "translate(" + (x0 + tpos_x)/2 + "," + mid_y + ")"; })
                 .call(marker.func);
          }
 
          var pos_x = tpos_x;
-         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = padding_x;
+         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = x0 + padding_x;
 
-         this.DrawText("start", pos_x, pos_y, w-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
+         this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
       }
 
       // rescale after all entries are shown
@@ -7324,13 +7331,13 @@
             .attr("y1", lwidth + 1)
             .attr("x2", w + (lwidth / 2))
             .attr("y2",  h + lwidth - 1)
-            .call(lcolor.func);
+            .call(lineatt.func);
          this.draw_g.append("svg:line")
             .attr("x1", lwidth + 1)
             .attr("y1", h + (lwidth / 2))
             .attr("x2", w + lwidth - 1)
             .attr("y2", h + (lwidth / 2))
-            .call(lcolor.func);
+            .call(lineatt.func);
       }
 
       this.AddDrag({ obj:pave, redraw: 'drawLegend' });
