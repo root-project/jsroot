@@ -3019,9 +3019,14 @@
    }
 
    JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
+      // allow to zoom TGraph only when at least one point in the range
 
-      // allow to zoom in when TGraph is displayed
-      return true;
+      if (axis!="x") return false;
+
+      for (var n in this.bins)
+         if ((min<this.bins[n].x) && (max>this.bins[n].x)) return true;
+
+      return false;
    }
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
@@ -5289,24 +5294,28 @@
    }
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      var isany = false;
+      var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax);
+      var test_z = (zmin!=zmax) && (zmin!=null) && (zmax!=null);
       var main = this.main_painter();
 
       main.ForEachPainter(function(obj) {
-         if ((xmin != xmax) && obj.CanZoomIn("x", xmin, xmax)) {
+         if (test_x && obj.CanZoomIn("x", xmin, xmax)) {
             main['zoom_xmin'] = xmin;
             main['zoom_xmax'] = xmax;
             isany = true;
+            test_x = false;
          }
-         if ((ymin != ymax) && obj.CanZoomIn("y", ymin, ymax)) {
+         if (test_y && obj.CanZoomIn("y", ymin, ymax)) {
             main['zoom_ymin'] = ymin;
             main['zoom_ymax'] = ymax;
             isany = true;
+            test_y = false;
          }
-         if ((zmin!=zmax) && (zmin!=null) && (zmax!=null) && obj.CanZoomIn("z",zmin, zmax)) {
+         if (test_z && obj.CanZoomIn("z",zmin, zmax)) {
             main['zoom_zmin'] = zmin;
             main['zoom_zmax'] = zmax;
             isany = true;
+            test_z = false;
          }
       });
 
