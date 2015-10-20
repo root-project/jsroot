@@ -2257,10 +2257,6 @@
 
    JSROOT.Painter.drawFunction = function(divid, tf1) {
       var painter = new JSROOT.TF1Painter(tf1);
-
-      if (tf1.fTitle.indexOf("U projectile")==0) tf1.fTitle = "TMath::Abs(sin(x))";
-      // console.log('draw function ' + tf1.fName + " save " + tf1.fSave.length + "  tile = " + tf1.fTitle);
-
       painter.SetDivId(divid, -1);
       if (painter.main_painter() == null) {
          var histo = painter.CreateDummyHisto();
