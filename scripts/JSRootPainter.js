@@ -2186,6 +2186,7 @@
 
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.tf1.fName;
+      if (name.length > 0) name += "\n";
 
       var attline = JSROOT.Painter.createAttLine(this.tf1);
       var fill = this.createAttFill(this.tf1);
@@ -2226,7 +2227,7 @@
                    .attr("r", 4)
                    .style("opacity", 0)
                    .append("svg:title")
-                   .text( function(d) { return name + "\nx = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
+                   .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
    }
 
    JSROOT.TF1Painter.prototype.UpdateObject = function(obj) {
@@ -2507,9 +2508,14 @@
       this.lineatt = JSROOT.Painter.createAttLine(this.graph);
       this.fillatt = this.createAttFill(this.graph);
 
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.graph.fName;
+      if (name.length > 0) name += "\n";
+
       function TooltipText(d) {
 
-         var res = "x = " + pmain.AxisAsText("x", d.x) + "\n" +
+         var res = name +
+                   "x = " + pmain.AxisAsText("x", d.x) + "\n" +
                    "y = " + pmain.AxisAsText("y", d.y);
 
          if (pthis.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
@@ -6018,6 +6024,7 @@
 
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.histo.fName;
+      if (name.length > 0) name += "\n";
 
       for (var i = left; i < right; i++) {
          // if interval wider than specified range, make it shorter
@@ -6064,7 +6071,7 @@
 
          if (this.options.Error > 0) {
             point['x'] = (grx1 + grx2) / 2;
-            point['tip'] = name + "\n" +
+            point['tip'] = name +
                            "x = " + this.AxisAsText("x", (x1 + x2)/2) + "\n" +
                            "y = " + this.AxisAsText("y", cont) + "\n" +
                            "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" +
@@ -6072,8 +6079,7 @@
          } else {
             point['width'] = grx2 - grx1;
 
-            point['tip'] = name + "\n" +
-                           "bin = " + (pmax + 1) + "\n";
+            point['tip'] = name + "bin = " + (pmax + 1) + "\n";
 
             if (pmain.x_kind=='labels')
                point['tip'] += ("x = " + this.AxisAsText("x", x1) + "\n");
@@ -6755,6 +6761,10 @@
 
       var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy;
 
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.histo.fName;
+      if (name.length > 0) name += "\n";
+
       // first found min/max values in selected range
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
       for (var i = i1; i < i2; i++) {
@@ -6846,9 +6856,9 @@
 
             if (tipkind == 1) {
                if (this.x_kind=='labels')
-                  point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n";
+                  point['tip'] = name + "x = " + this.AxisAsText("x", x1) + "\n";
                else
-                  point['tip'] = "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n";
+                  point['tip'] = name + "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n";
                if (this.y_kind=='labels')
                   point['tip'] += "y = " + this.AxisAsText("y", y1) + "\n";
                else
@@ -6856,7 +6866,8 @@
 
                point['tip'] += "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
             } else if (tipkind == 2)
-               point['tip'] = "x = " + this.AxisAsText("x", x1) + "\n" +
+               point['tip'] = name +
+                              "x = " + this.AxisAsText("x", x1) + "\n" +
                               "y = " + this.AxisAsText("y", y1) + "\n" +
                               "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
 
