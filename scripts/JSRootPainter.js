@@ -2038,6 +2038,7 @@
    JSROOT.TF1Painter = function(tf1) {
       JSROOT.TObjectPainter.call(this, tf1);
       this.tf1 = tf1;
+      this['bins'] = null;
    }
 
    JSROOT.TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2147,6 +2148,11 @@
             this.tf1['fNpfits'] = 333;
          var xmin = this.tf1['fXmin'], xmax = this.tf1['fXmax'], logx = false;
 
+         if (main['zoom_xmin'] != main['zoom_xmax']) {
+            if (main['zoom_xmin'] > xmin) xmin = main['zoom_xmin'];
+            if (main['zoom_xmax'] < xmax) xmax = main['zoom_xmax'];
+         }
+
          if (main.options.Logx && (xmin>0) && (xmax>0)) {
             logx = true;
             xmin = Math.log(xmin);
@@ -2171,6 +2177,9 @@
       var w = this.frame_width(), h = this.frame_height();
 
       this.RecreateDrawG(false, ".main_layer", false);
+
+      // recalculate drawing bins when necessary
+      if ((this['bins']==null) || (this.tf1['fSave'].length==0)) this.CreateBins();
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -2221,7 +2230,6 @@
       if (obj['_typename'] != this.tf1['_typename']) return false;
       // TODO: realy update object content
       this.tf1 = obj;
-      this.CreateBins();
       return true;
    }
 
@@ -2256,7 +2264,6 @@
          JSROOT.Painter.drawHistogram1D(divid, histo);
       }
       painter.SetDivId(divid);
-      painter.CreateBins();
       painter.DrawBins();
       return painter.DrawingReady();
    }
