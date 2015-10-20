@@ -2184,6 +2184,9 @@
       var pthis = this;
       var pmain = this.main_painter();
 
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.tf1.fName;
+
       var attline = JSROOT.Painter.createAttLine(this.tf1);
       var fill = this.createAttFill(this.tf1);
       if (fill.color == 'white') fill.color = 'none';
@@ -2223,7 +2226,7 @@
                    .attr("r", 4)
                    .style("opacity", 0)
                    .append("svg:title")
-                   .text( function(d) { return "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
+                   .text( function(d) { return name + "\nx = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
    }
 
    JSROOT.TF1Painter.prototype.UpdateObject = function(obj) {
