@@ -2071,7 +2071,6 @@
             this.tf1['fNpfits'] = 103;
          xmin = this.tf1['fXmin'];
          xmax = this.tf1['fXmax'];
-
          var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
 
          var binwidthx = (xmax - xmin) / nb_points;
@@ -2139,20 +2138,25 @@
       } else {
          if (this.tf1['fNpfits'] <= 103)
             this.tf1['fNpfits'] = 333;
-         var xmin = this.tf1['fXmin'];
-         var xmax = this.tf1['fXmax'];
+         var xmin = this.tf1['fXmin'], xmax = this.tf1['fXmax'], logx = false;
+
+         if (this.main_painter().options.Logx && (xmin>0) && (xmax>0)) {
+            logx = true;
+            xmin = Math.log(xmin);
+            xmax = Math.log(xmax);
+         }
+
          var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
          var binwidthx = (xmax - xmin) / nb_points;
          this['bins'] = d3.range(nb_points).map(function(p) {
             var xx = xmin + (p * binwidthx);
+            if (logx) xx = Math.exp(xx);
             var yy = pthis.Eval(xx);
             if (isNaN(yy)) yy = 0;
-            return {
-               x : xx,
-               y : yy
-            };
+            return { x : xx, y : yy };
          });
-         this['interpolate_method'] = 'cardinal-open';
+
+         this['interpolate_method'] = 'monotone';
       }
    }
 
@@ -2216,6 +2220,7 @@
 
    JSROOT.Painter.drawFunction = function(divid, tf1) {
       var painter = new JSROOT.TF1Painter(tf1);
+
       painter.SetDivId(divid, -1);
       if (painter.main_painter() == null) {
          var histo = painter.CreateDummyHisto();
