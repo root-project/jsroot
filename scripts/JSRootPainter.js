@@ -1436,9 +1436,9 @@
 
       var main = this.select_main();
       var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null;
-      if (painter!=null) { userfunc(painter); return; }
+      if (painter!=null) return userfunc(painter);
 
-      var pad_painter = this.pad_painter();
+      var pad_painter = this.pad_painter(true);
       if (pad_painter == null) return;
 
       userfunc(pad_painter);
@@ -3018,6 +3018,12 @@
       return true;
    }
 
+   JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
+
+      // allow to zoom in when TGraph is displayed
+      return true;
+   }
+
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       var painter = new JSROOT.TGraphPainter(graph);
       painter.CreateBins();
@@ -3025,6 +3031,7 @@
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       if (painter.main_painter() == null) {
+
          if (graph['fHistogram']==null)
             graph['fHistogram'] = painter.CreateHistogram();
          JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram']);
@@ -4548,7 +4555,6 @@
          this['scale_xmin'] = this.zoom_xmin;
          this['scale_xmax'] = this.zoom_xmax;
       }
-
       if (this.x_kind == 'time') {
          this['x'] = d3.time.scale();
       } else
@@ -5286,7 +5292,7 @@
       var isany = false;
       var main = this.main_painter();
 
-      this.ForEachPainter(function(obj) {
+      main.ForEachPainter(function(obj) {
          if ((xmin != xmax) && obj.CanZoomIn("x", xmin, xmax)) {
             main['zoom_xmin'] = xmin;
             main['zoom_xmax'] = xmax;
@@ -5795,8 +5801,8 @@
                set_zoom = true;
          }
          if (set_zoom) {
-            this.zoom_xmin = (hmin == null) ? this.ymin : hmin;
-            this.zoom_xmax = (hmax == null) ? this.ymax : hmax;
+            this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
+            this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
          }
 
          this.draw_content = true;
