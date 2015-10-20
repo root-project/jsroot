@@ -4833,24 +4833,17 @@
 
          this['formatx'] = function(d) {
             var val = parseFloat(d);
-            var vlog = Math.abs(JSROOT.Math.log10(val));
-            if (this['moreloglabelsx']) {
-               if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
-                  if (this['noexpx'])
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
-            } else {
-               if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
-                  if (this['noexpx'])
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
+            var vlog = JSROOT.Math.log10(val);
+            if (this['moreloglabelsx'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this['noexpx'])
+                  return JSROOT.Painter.formatExp(val.toExponential(0));
+               else
+               if (vlog<0)
+                  return val.toFixed(Math.round(-vlog+0.5));
+               else
+                  return val.toFixed(0);
             }
+            return null;
          }
       } else {
          if (this.x_kind=='labels') {
@@ -4897,25 +4890,18 @@
 
          this['formaty'] = function(d) {
             var val = parseFloat(d);
-            var vlog = Math.abs(JSROOT.Math.log10(val));
-            if (this['moreloglabelsy']) {
-               if (vlog % 1 < 0.7 || vlog % 1 > 0.9999) {
-                  if (this['noexpy'])
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
-            } else {
-               if (vlog % 1 < 0.0001 || vlog % 1 > 0.9999) {
-                  if (this['noexpy'])
-                     return val.toFixed();
-                  else
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-               } else
-                  return null;
+            var vlog = JSROOT.Math.log10(val);
+            if (this['moreloglabelsy'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this['noexpy'])
+                  return JSROOT.Painter.formatExp(val.toExponential(0));
+               else
+               if (vlog<0)
+                  return val.toFixed(Math.round(-vlog+0.5));
+               else
+                  return val.toFixed(0);
             }
-         };
+            return null;
+         }
       } else {
 
          if (this.y_kind=='labels') {
