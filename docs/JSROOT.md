@@ -179,11 +179,11 @@ Before JSROOT can be used, all appropriate scripts should be loaded.
 Any HTML pages where JSROOT is used should include the JSRootCore.js script.
 The `<head>` section of the HTML page should have the following line:
 
-    <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.js?gui"></script>
+    <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.js?2d"></script>
 
 Here, the default location of JSROOT is specified. One could have a local copy on the file system or on a private web server. When JSROOT is used with THttpServer, the address looks like:
 
-    <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRootCore.js?gui"></script>
+    <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRootCore.js?2d"></script>
 
 In URL string with JSRootCore.js script one should specify which JSROOT functionality will be loaded:
 
