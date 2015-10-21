@@ -845,21 +845,20 @@
          while (str.indexOf(x) != -1)
             str = str.replace(x, JSROOT.Painter.symbols_map[x]);
       }
+
+      // simple workaround for simple #splitline{first_line}{second_line}
+      if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
+         var pos = str.indexOf("}{");
+         if ((pos>0) && (pos == str.lastIndexOf("}{"))) {
+            str = str.replace("}{", "\n");
+            str = str.slice(11, str.length-1);
+         }
+      }
       return str;
    }
 
    JSROOT.Painter.isAnyLatex = function(str) {
-
       return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
-
-      //var specials = "\\{}_()#";
-      //for (var i=0;i<str.length;i++) {
-      //   if (specials.indexOf(str[i])>=0) return true;
-      //}
-      //return false;
-
-      //for ( var x in JSROOT.Painter.symbols_map)
-      //   if (str.indexOf(x) >= 0) return true;
    }
 
    JSROOT.Painter.translateMath = function(str, kind, color) {
@@ -2093,10 +2092,8 @@
             if ((right < 0) || (right == i - 1))
                right = i;
 
-            if (h > ymax)
-               ymax = h;
-            if (h < ymin)
-               ymin = h;
+            if (h > ymax) ymax = h;
+            if (h < ymin) ymin = h;
          }
 
          if (left < right) {
@@ -7315,8 +7312,8 @@
       var padding_y = Math.round(0.03 * h);
 
       var leg_painter = this;
-
       var step_y = (h - 2*padding_y)/nrows;
+      var any_opt = false;
 
       for (var i = 0; i < nlines; ++i) {
          var leg = pave.fPrimitives.arr[i];
@@ -7378,7 +7375,8 @@
          }
 
          var pos_x = tpos_x;
-         if ((lopt.indexOf('h')>=0) || (lopt.length==0)) pos_x = x0 + padding_x;
+         if (lopt.length>0) any_opt = true;
+                       else if (!any_opt) pos_x = x0 + padding_x;
 
          this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
       }
