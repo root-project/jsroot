@@ -169,10 +169,17 @@
             draw_item_options(file, "canvas;1", "f1_draw4", "", 0., "TF1");
          });
 
-         if (extra_drawing)
+         if (extra_drawing) {
             LoadFile("ff2.root", function(file) {
                draw_item_options(file, "c1Dia;1", "f1_draw5", "", 0., "TF1");
             });
+            LoadFile("ff3.root", function(file) {
+               draw_item_options(file, "c1Dia;1", "f1_draw6", "", 0., "TF1");
+            });
+            LoadFile("gr2.root", function(file) {
+               draw_item_options(file, "c1equi;1", "gr_draw1", ";mathjax=1", 0., "TGraph");
+            });
+         }
 
          LoadFile("rf107.root", function(file) {
             draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", 0., "TCanvas");
@@ -254,6 +261,9 @@
   <div id="f1_draw3"></div>
   <div id="f1_draw4"></div>
   <div id="f1_draw5"></div>
+  <div id="f1_draw6"></div>
+
+  <div id="gr_draw1"></div>
 
   <h2>TCanvas class</h2> 
 
@@ -265,6 +275,7 @@
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
+
    
 
 </body>

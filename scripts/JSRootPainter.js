@@ -1696,7 +1696,7 @@
             if (d3.select(entry).select("svg").empty()) missing = true;
          });
 
-         // is any svg missing we shold wait until drawing is really finished
+         // is any svg missing we should wait until drawing is really finished
          if (missing)
             return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
                if (typeof MathJax != 'object') return;
@@ -1769,9 +1769,13 @@
          if ((fo_y < 0) && (painter.frame_x() < -fo_y))
             fo_y = -painter.frame_x() + 1;
 
-         fo_g.attr('x', fo_x).attr('y', fo_y)  // use x/y while transform used for rotation
-             .attr('width', box.width+10).attr('height', box.height+10)  // width and height required by Chrome
-             .attr('visibility', null);
+         // use x/y while transform used for rotation
+         fo_g.attr('x', fo_x).attr('y', fo_y).attr('visibility', null);
+
+         // width and height required by Chrome
+         if ((fo_g.attr('width')==0) || (fo_g.attr('width') < box.width+15)) fo_g.attr('width', box.width+15);
+         if ((fo_g.attr('height')==0) || (fo_g.attr('height') < box.height+10)) fo_g.attr('height', box.height+10);
+
       });
 
       // now hidden text after rescaling can be shown
@@ -1865,7 +1869,7 @@
       }
 
       var fo_g = draw_g.append("svg")
-                       .attr('x',x).attr('y',y)  // set x,y, width,height attribute to be able apply alignment later
+                       .attr('x',x).attr('y',y)  // set x,y,width,height attribute to be able apply alignment later
                        .attr('width',w).attr('height',h)
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
@@ -7288,11 +7292,11 @@
       var nrows = nlines;
       if (ncols>1) { while ((nrows-1)*ncols>=nlines) nrows--; } else ncols = 1;
 
-      this.draw_g.attr("x", x)
-                 .attr("y", y)
-                 .attr("width", w)
-                 .attr("height", h)
-                 .attr("transform", "translate(" + x + "," + y + ")");
+      this.draw_g.attr("x", x.toFixed(1))
+                 .attr("y", y.toFixed(1))
+                 .attr("width", w.toFixed(1))
+                 .attr("height", h.toFixed(1))
+                 .attr("transform", "translate(" + x.toFixed(1) + "," + y.toFixed(1) + ")");
 
       this.StartTextDrawing(pave['fTextFont'], h / (nlines * 1.2));
 
@@ -7300,8 +7304,8 @@
            .append("svg:rect")
            .attr("x", 0)
            .attr("y", 0)
-           .attr("width", w)
-           .attr("height", h)
+           .attr("width", w.toFixed(1))
+           .attr("height", h.toFixed(1))
            .call(boxfill.func)
            .style("stroke-width", lwidth ? 1 : 0)
            .style("stroke", lineatt.color);
