@@ -4601,13 +4601,6 @@
 
       this['scale_ymin'] = this.ymin;
       this['scale_ymax'] = this.ymax;
-
-      if ((this.Dimension()==1) && (this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
-         // only for 1D histogram use min.max for range selection
-         this['scale_ymin'] = this.histo.fMinimum;
-         this['scale_ymax'] = this.histo.fMaximum;
-      }
-
       if (this.zoom_ymin != this.zoom_ymax) {
          this['scale_ymin'] = this.zoom_ymin;
          this['scale_ymax'] = this.zoom_ymax;
@@ -5784,43 +5777,42 @@
       this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
-         if (this.histo['fMinimum'] != -1111) this.ymin = this.histo['fMinimum'];
-         if (this.histo['fMaximum'] != -1111) this.ymax = this.histo['fMaximum'];
          this.draw_content = false;
+         hmin = this.ymin;
+         hmax = this.ymax;
       } else {
-         if (hmin >= hmax) {
-            if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
-            if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-                     else { this.ymin = 0; this.ymax = hmin * 2; }
-         } else {
-            var dy = (hmax - hmin) * 0.1;
-            this.ymin = hmin - dy;
-            if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-            this.ymax = hmax + dy;
-         }
-
-         hmin = hmax = null;
-         var set_zoom = false;
-         if (this.histo['fMinimum'] != -1111) {
-            hmin = this.histo['fMinimum'];
-            if (hmin < this.ymin)
-               this.ymin = hmin;
-            else
-               set_zoom = true;
-         }
-         if (this.histo['fMaximum'] != -1111) {
-            hmax = this.histo['fMaximum'];
-            if (hmax > this.ymax)
-               this.ymax = hmax;
-            else
-               set_zoom = true;
-         }
-         if (set_zoom) {
-            this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
-            this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
-         }
-
          this.draw_content = true;
+      }
+      if (hmin >= hmax) {
+         if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
+         if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
+                  else { this.ymin = 0; this.ymax = hmin * 2; }
+      } else {
+         var dy = (hmax - hmin) * 0.05;
+         this.ymin = hmin - dy;
+         if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
+         this.ymax = hmax + dy;
+      }
+
+      hmin = hmax = null;
+      var set_zoom = false;
+      if (this.histo['fMinimum'] != -1111) {
+         hmin = this.histo['fMinimum'];
+         if (hmin < this.ymin)
+            this.ymin = hmin;
+         else
+            set_zoom = true;
+      }
+      if (this.histo['fMaximum'] != -1111) {
+         hmax = this.histo['fMaximum'];
+         if (hmax > this.ymax)
+            this.ymax = hmax;
+         else
+            set_zoom = true;
+      }
+      if (set_zoom) {
+         this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
+         this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
       }
 
       // If no any draw options specified, do not try draw histogram

@@ -77,7 +77,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 20/10/2015";
+   JSROOT.version = "dev 21/10/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -2042,12 +2042,8 @@
 
    JSROOT.Math = {};
 
-
    JSROOT.Math.lgam = function( x ) {
-      var p, q, u, w, z;
-      var i;
-
-      var sgngam = 1;
+      var p, q, u, w, z, i, sgngam = 1;
 
       if (x >= Number.POSITIVE_INFINITY)
          return(Number.POSITIVE_INFINITY);
