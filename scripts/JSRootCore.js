@@ -25,24 +25,21 @@
        baseUrl: dir,
        paths: {
           'd3'              : 'd3.v3.min',
-          'helvetiker_bold' : 'helvetiker_bold.typeface',
           'jquery'          : 'jquery.min',
           'jquery-ui'       : 'jquery-ui.min',
           'touch-punch'     : 'touch-punch.min',
           'MathJax'         : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-          'THREE'           : 'helvetiker_regular.typeface'
+          'THREE'           : 'three.min',
+          'THREE_ALL'       : 'jquery.mousewheel',
+          'helvetiker_regular' : 'helvetiker_regular.typeface',
+          'helvetiker_bold' : 'helvetiker_bold.typeface'
        },
        shim: {
-          'touch-punch': {
-             deps: ['jquery']
-          },
-          'helvetiker_bold': {
-             deps: ['three.min']
-          },
-          'THREE': {
-             deps: ['helvetiker_bold']
-          },
-          'MathJax': {
+         'touch-punch': { deps: ['jquery'] },
+         'helvetiker_regular': { deps: ['THREE'] },
+         'helvetiker_bold': { deps: ['THREE'] },
+         'THREE_ALL': {deps: ['jquery', 'jquery-ui', 'THREE', 'helvetiker_regular', 'helvetiker_bold'] },
+         'MathJax': {
              exports: 'MathJax',
              init: function () {
                 MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
