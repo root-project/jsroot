@@ -136,6 +136,10 @@
          LoadFile("macro2.root", function(file) {
             draw_item_options(file, "c1;1", "can1_draw", "");
          });
+         
+         LoadFile("gr2.root", function(file) {
+            draw_item_options(file, "c1equi;1", "can2_draw", ";mathjax=1 comment:<b>#splitline in the legend</b>");
+         });
 
       }
    </script>
@@ -173,6 +177,7 @@
 
   <h2>Some more exmaples with TCanvas </h2>
   <div id="can1_draw"></div>
+  <div id="can2_draw"></div>
 
 </body>
 
