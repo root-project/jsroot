@@ -64,11 +64,8 @@
       define( factory );
    } else {
 
-      if (typeof JSROOT != 'undefined') {
-         var e1 = new Error("JSROOT is already defined");
-         e1.source = "JSRootCore.js";
-         throw e1;
-      }
+      if (typeof JSROOT != 'undefined')
+         throw new Error("JSROOT is already defined", "JSRootCore.js");
 
       JSROOT = {};
 
@@ -77,7 +74,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/10/2015";
+   JSROOT.version = "dev 22/10/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;

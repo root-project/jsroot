@@ -7,23 +7,14 @@
       define( ['JSRootCore', 'd3'], factory );
    } else {
 
-      if (typeof JSROOT == 'undefined') {
-         var e1 = new Error('JSROOT is not defined');
-         e1.source = 'JSRootPainter.js';
-         throw e1;
-      }
+      if (typeof JSROOT == 'undefined')
+         throw new Error('JSROOT is not defined', 'JSRootPainter.js');
 
-      if (typeof d3 != 'object') {
-         var e1 = new Error('d3 is not defined');
-         e1.source = 'JSRootPainter.js';
-         throw e1;
-      }
+      if (typeof d3 != 'object')
+         throw new Error('d3 is not defined', 'JSRootPainter.js');
 
-      if (typeof JSROOT.Painter == 'object') {
-         var e1 = new Error('JSROOT.Painter already defined');
-         e1.source = 'JSRootPainter.js';
-         throw e1;
-      }
+      if (typeof JSROOT.Painter == 'object')
+         throw new Error('JSROOT.Painter already defined', 'JSRootPainter.js');
 
       factory(JSROOT, d3);
    }
