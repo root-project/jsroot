@@ -7,7 +7,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      var dir = "scripts";
+      var dir = "scripts", ext = "";
       var scripts = document.getElementsByTagName('script');
       for (var n in scripts) {
          if (scripts[n]['type'] != 'text/javascript') continue;
@@ -15,24 +15,31 @@
          if ((src == null) || (src.length == 0)) continue;
          var pos = src.indexOf("scripts/JSRootCore.");
          if (pos>=0) {
-            dir = src.substr(0, pos+7);
+            dir = src.substr(0, pos+8);
+            if (src.indexOf("scripts/JSRootCore.min.js")==pos) ext = ".min";
             break;
          }
       }
 
       // first configure all dependencies
       requirejs.config({
-       baseUrl: dir,
        paths: {
-          'd3'              : 'd3.v3.min',
-          'jquery'          : 'jquery.min',
-          'jquery-ui'       : 'jquery-ui.min',
-          'touch-punch'     : 'touch-punch.min',
-          'MathJax'         : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-          'THREE'           : 'three.min',
-          'THREE_ALL'       : 'jquery.mousewheel',
-          'helvetiker_regular' : 'helvetiker_regular.typeface',
-          'helvetiker_bold' : 'helvetiker_bold.typeface'
+          'd3'                   : dir+'d3.v3.min',
+          'jquery'               : dir+'jquery.min',
+          'jquery-ui'            : dir+'jquery-ui.min',
+          'touch-punch'          : dir+'touch-punch.min',
+          'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+          'THREE'                : dir+'three.min',
+          'THREE_ALL'            : dir+'jquery.mousewheel' + ext,
+          'helvetiker_regular'   : dir+'helvetiker_regular.typeface',
+          'helvetiker_bold'      : dir+'helvetiker_bold.typeface',
+          'JSRootCore'           : dir + 'JSRootCore' + ext,
+          'JSRootInterface'      : dir + 'JSRootInterface' + ext,
+          'JSRootIOEvolution'    : dir + 'JSRootIOEvolution' + ext,
+          'JSRootPainter'        : dir + 'JSRootPainter' + ext,
+          'JSRootPainter.more'   : dir + 'JSRootPainter.more' + ext,
+          'JSRootPainter.jquery' : dir + 'JSRootPainter.jquery' + ext,
+          'JSRoot3DPainter'      : dir + 'JSRoot3DPainter' + ext
        },
        shim: {
          'touch-punch': { deps: ['jquery'] },
