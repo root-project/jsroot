@@ -28,18 +28,19 @@
           'jquery'               : dir+'jquery.min',
           'jquery-ui'            : dir+'jquery-ui.min',
           'touch-punch'          : dir+'touch-punch.min',
+          'rawinflate'           : dir+'rawinflate'+ext,
           'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
           'THREE'                : dir+'three.min',
-          'THREE_ALL'            : dir+'jquery.mousewheel' + ext,
+          'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
           'helvetiker_regular'   : dir+'helvetiker_regular.typeface',
           'helvetiker_bold'      : dir+'helvetiker_bold.typeface',
-          'JSRootCore'           : dir + 'JSRootCore' + ext,
-          'JSRootInterface'      : dir + 'JSRootInterface' + ext,
-          'JSRootIOEvolution'    : dir + 'JSRootIOEvolution' + ext,
-          'JSRootPainter'        : dir + 'JSRootPainter' + ext,
-          'JSRootPainter.more'   : dir + 'JSRootPainter.more' + ext,
-          'JSRootPainter.jquery' : dir + 'JSRootPainter.jquery' + ext,
-          'JSRoot3DPainter'      : dir + 'JSRoot3DPainter' + ext
+          'JSRootCore'           : dir+'JSRootCore'+ext,
+          'JSRootInterface'      : dir+'JSRootInterface'+ext,
+          'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
+          'JSRootPainter'        : dir+'JSRootPainter'+ext,
+          'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
+          'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
+          'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
        },
        shim: {
          'touch-punch': { deps: ['jquery'] },
@@ -78,7 +79,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 22/10/2015";
+   JSROOT.version = "dev 23/10/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
