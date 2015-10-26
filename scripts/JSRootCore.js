@@ -21,27 +21,34 @@
          }
       }
 
-      // first configure all dependencies
+      var paths = {
+            'd3'                   : dir+'d3.v3.min',
+            'jquery'               : dir+'jquery.min',
+            'jquery-ui'            : dir+'jquery-ui.min',
+            'touch-punch'          : dir+'touch-punch.min',
+            'rawinflate'           : dir+'rawinflate'+ext,
+            'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+            'THREE'                : dir+'three.min',
+            'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
+            'helvetiker_regular'   : dir+'helvetiker_regular.typeface',
+            'helvetiker_bold'      : dir+'helvetiker_bold.typeface',
+            'JSRootCore'           : dir+'JSRootCore'+ext,
+            'JSRootInterface'      : dir+'JSRootInterface'+ext,
+            'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
+            'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
+            'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
+            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
+         };
+
+      // check if modules are already loaded
+      for (var module in paths)
+        if (requirejs.defined(module))
+           delete paths[module];
+
+      // configure all dependencies
       requirejs.config({
-       paths: {
-          'd3'                   : dir+'d3.v3.min',
-          'jquery'               : dir+'jquery.min',
-          'jquery-ui'            : dir+'jquery-ui.min',
-          'touch-punch'          : dir+'touch-punch.min',
-          'rawinflate'           : dir+'rawinflate'+ext,
-          'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-          'THREE'                : dir+'three.min',
-          'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
-          'helvetiker_regular'   : dir+'helvetiker_regular.typeface',
-          'helvetiker_bold'      : dir+'helvetiker_bold.typeface',
-          'JSRootCore'           : dir+'JSRootCore'+ext,
-          'JSRootInterface'      : dir+'JSRootInterface'+ext,
-          'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
-          'JSRootPainter'        : dir+'JSRootPainter'+ext,
-          'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
-          'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-          'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
-       },
+       paths: paths,
        shim: {
          'touch-punch': { deps: ['jquery'] },
          'helvetiker_regular': { deps: ['THREE'] },
@@ -79,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 23/10/2015";
+   JSROOT.version = "dev 26/10/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
