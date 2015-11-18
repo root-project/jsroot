@@ -1664,7 +1664,10 @@
       // are there good solution?
       var box = elem.getBoundingClientRect(); // works always, but returns sometimes wrong results
       if (parseInt(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
-      return { width : parseInt(box.width), height : parseInt(box.height) };
+      var res = { width : parseInt(box.width), height : parseInt(box.height) };
+      if ('left' in box) { res['x'] = parseInt(box.left); res['y'] = parseInt(box.right); } else
+      if ('x' in box) { res['x'] = parseInt(box.x); res['y'] = parseInt(box.y); }
+      return res;
    }
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
@@ -4944,7 +4947,9 @@
          // caluclate label widths to adjust font size
 
          var maxwidth = 0, cnt = 0, shift = 10;
-         drawx.selectAll(".tick text").each(function() {
+         var xlabels = drawx.selectAll(".tick text");
+
+         xlabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
             if (box.width > maxwidth) maxwidth = box.width;
             cnt++;
@@ -4963,9 +4968,17 @@
          }
 
          // shift labels
-         drawx.selectAll(".tick text")
-              .style("text-anchor", "start")
-              .attr("x", shift).attr("y", 6);
+         xlabels.style("text-anchor", "start")
+               .attr("x", shift).attr("y", 6);
+
+         if (this.x_kind != 'labels') {
+            // hide labels which moved too far away
+            var box0 = this.svg_frame().node().getBoundingClientRect();
+            xlabels.each(function() {
+              var box = d3.select(this).node().getBoundingClientRect();
+              if (box.left - box0.left > w) d3.select(this).attr('opacity', 0);
+           });
+         }
       }
 
       if ((n2ax > 0) && !this.options.Logx && (this.x_kind != 'labels')) {
@@ -4983,8 +4996,8 @@
 
       if ((this.y_kind == 'labels') ||
            (!this.options.Logy && this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterLabels))) {
-         var maxh = 0, cnt = 0, shift = 3;
-         drawy.selectAll(".tick text").each(function() {
+         var maxh = 0, cnt = 0, shift = 3, ylabels = drawy.selectAll(".tick text");
+         ylabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
             if (box.height > maxh) maxh = box.height;
             cnt++;
@@ -4994,16 +5007,23 @@
             // adjust font size
             if (maxh < h/cnt)  {
                shift = parseInt((h/cnt - maxh) / 2);
-               drawy.selectAll(".tick text").attr("y", -shift).attr("dy", "0");
+               ylabels.attr("y", -shift).attr("dy", "0");
             } else {
                shift = 1;
                ylabelfont.size = parseInt(ylabelfont.size * (h/cnt-2) / maxh);
                if (ylabelfont.size<2) ylabelfont.size = 2;
                drawy.call(ylabelfont.func);
-               drawy.selectAll(".tick text").attr("dy", shift);
+               ylabels.attr("dy", shift);
             }
          }
-
+         if (this.y_kind != 'labels') {
+            // hide labels which moved too far away
+            var box0 = this.svg_frame().node().getBoundingClientRect();
+            ylabels.each(function() {
+               var box = d3.select(this).node().getBoundingClientRect();
+               if (box.top - box0.top < -10) d3.select(this).attr('opacity', 0);
+           });
+         }
       }
 
       if ((n2ay > 0) && !this.options.Logy && (this.y_kind != 'labels')) {
