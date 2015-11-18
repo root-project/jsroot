@@ -37,7 +37,7 @@
 
       menu.add = function(name, arg, func) {
          if (name.indexOf("header:")==0) {
-            this.code += "<li class='ui-widget-header'>"+name.substr(7)+"</li>";
+            this.code += "<li class='ui-widget-header' style='padding-left:5px'>"+name.substr(7)+"</li>";
             return;
          }
 
@@ -48,6 +48,9 @@
          if (typeof arg == 'function') { func = arg; arg = name; }
 
          if ((arg==null) || (typeof arg != 'string')) arg = name;
+
+         if (name.indexOf("chk:")==0) { name = "<span class='ui-icon ui-icon-check'></span>" + name.substr(4); } else
+         if (name.indexOf("unk:")==0) { name = "<span class='ui-icon ui-icon-blank'></span>" + name.substr(4); }
 
          // special handling of first versions with menu support
          if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
@@ -90,6 +93,7 @@
             .css('top', event.clientY + window.pageYOffset)
             .attr('class', 'ctxmenu')
             .css('font-size', '80%')
+            .css('position', 'absolute') // this overrides ui-menu-items class property
             .menu({
                items: "> :not(.ui-widget-header)",
                select: function( event, ui ) {
