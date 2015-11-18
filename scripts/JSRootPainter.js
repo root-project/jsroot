@@ -5008,7 +5008,6 @@
          yax_g.append("svg:g").attr("class", "yaxis").call(y_axis_sub);
       }
 
-
       // we will use such rect for zoom selection
       if (JSROOT.gStyle.Zooming) {
          xax_g.append("svg:rect")
@@ -5284,6 +5283,13 @@
       if (changed) this.RedrawPad();
    }
 
+   JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
+      var obj = this.main_painter();
+      if (!obj) obj = this;
+      obj.options["Log" + axis] = obj.options["Log" + axis] ? 0 : 1;
+      obj.RedrawPad();
+   }
+
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax);
       var test_z = (zmin!=zmax) && (zmin!=null) && (zmax!=null);
@@ -5316,7 +5322,8 @@
    JSROOT.THistPainter.prototype.AddInteractive = function() {
 
       // only first painter in list allowed to add interactive functionality to the main pad
-      if (!JSROOT.gStyle.Zooming || !this.is_main_painter()) return;
+
+      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
       // if (!this.draw_content) return;
 
@@ -5361,7 +5368,6 @@
             pthis.FillContextMenu(menu);
             menu.show(evnt);
          });
-
       }
 
       function startTouchSel() {
@@ -5671,10 +5677,34 @@
          if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
       }
 
-      this.svg_frame().on("mousedown", startRectSel);
-      this.svg_frame().on("touchstart", startTouchSel);
-      if (JSROOT.gStyle.ContextMenu)
+      if (JSROOT.gStyle.Zooming) {
+         this.svg_frame().on("mousedown", startRectSel);
+         this.svg_frame().on("touchstart", startTouchSel);
+      }
+      if (JSROOT.gStyle.ContextMenu) {
          this.svg_frame().on("contextmenu", showContextMenu);
+         this.svg_frame().selectAll(".xaxis_container")
+             .on("contextmenu", function() { pthis.ShowAxisContextMenu("x"); });
+         this.svg_frame().selectAll(".yaxis_container")
+             .on("contextmenu", function() { pthis.ShowAxisContextMenu("y"); });
+      }
+   }
+
+   JSROOT.THistPainter.prototype.ShowAxisContextMenu = function(axis) {
+      d3.event.stopPropagation(); // disable main context menu
+      d3.event.preventDefault();  // disable browser context menu
+
+      // one need to copy event, while after call back event may be changed
+      var evnt = d3.event;
+      var pthis = this;
+
+      JSROOT.Painter.createMenu(function(menu) {
+         menu['painter'] = pthis;
+         menu.add("header: " + axis.toUpperCase() + " axis");
+         menu.add("Unzoom", function() { pthis.Unzoom(axis=="x", axis=="y", false); });
+         menu.add((pthis.options["Log" + axis] ? "chk:" : "unk:") + "SetLog"+axis, function() { pthis.ToggleLog(axis); });
+         menu.show(evnt);
+      });
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
@@ -5694,25 +5724,16 @@
 
       if (this.options) {
 
-         var item = this.options.Logx > 0 ? "Linear X" : "Log X";
+         var item = (this.options.Logx ? "chk:" : "unk:") + "SetLogx";
 
-         menu.add(item, function() {
-            menu['painter'].options.Logx = 1 - menu['painter'].options.Logx;
-            menu['painter'].RedrawPad();
-         });
+         menu.add(item, function() { menu['painter'].ToggleLog("x"); });
 
-         item = this.options.Logy > 0 ? "Linear Y" : "Log Y";
-         menu.add(item, function() {
-            menu['painter'].options.Logy = 1 - menu['painter'].options.Logy;
-            menu['painter'].RedrawPad();
-         });
+         item = (this.options.Logy ? "chk:" : "unk:") +"SetLogy";
+         menu.add(item, function() { menu['painter'].ToggleLog("y"); });
 
          if (this.Dimension() == 2) {
-            item = this.options.Logz > 0 ? "Linear Z" : "Log Z";
-            menu.add(item, function() {
-               menu['painter'].options.Logz = 1 - menu['painter'].options.Logz;
-               menu['painter'].RedrawPad();
-            });
+            item = (this.options.Logz ? "chk:" : "unk:") + "SetLogz";
+            menu.add(item, function() { menu['painter'].ToggleLog("z"); });
          }
       }
       if (this.draw_content)
