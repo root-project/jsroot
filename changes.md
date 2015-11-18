@@ -6,7 +6,7 @@
 3. Support italic and bold text when used with MathJax
 4. Improve TF1 drawing - support exp function in TFormula, fix erros with logx scale, enable zoom-in, (re)calculate function points when zooming
 5. Support several columns in TLegend
-6. Introduce context menu for x/y axis, make it similar to native ROOT menu  
+6. Introduce context menus for x/y axis, add some items similar to native ROOT menus  
 
 
 ## Changes in 3.8

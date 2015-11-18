@@ -4780,8 +4780,11 @@
       if (this.histo['fXaxis']['fTitle'].length > 0) {
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
-          var res = this.DrawText('end', w, xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset']),
-                                    0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
+          var center = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
+
+          var res = this.DrawText(center ? 'middle' : 'end', center ? w/2 : w,
+                                  xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset']),
+                                  0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
 
           if (res<=0) shrink_forbidden = true;
 
@@ -4796,8 +4799,11 @@
       if (this.histo['fYaxis']['fTitle'].length > 0) {
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
 
-         var res = this.DrawText("end", 0, -yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
-                                        0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
+         var center = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
+
+         var res = this.DrawText(center ? "middle" : "end", center ? -h/2 : 0,
+                                 -yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
+                                 0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;
 
@@ -5697,12 +5703,16 @@
       // one need to copy event, while after call back event may be changed
       var evnt = d3.event;
       var pthis = this;
+      var faxis = (axis=="x") ? this.histo['fXaxis'] : this.histo['fYaxis'];
 
       JSROOT.Painter.createMenu(function(menu) {
          menu['painter'] = pthis;
          menu.add("header: " + axis.toUpperCase() + " axis");
          menu.add("Unzoom", function() { pthis.Unzoom(axis=="x", axis=="y", false); });
          menu.add((pthis.options["Log" + axis] ? "chk:" : "unk:") + "SetLog"+axis, function() { pthis.ToggleLog(axis); });
+         menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
+            function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); pthis.RedrawPad(); });
+
          menu.show(evnt);
       });
    }

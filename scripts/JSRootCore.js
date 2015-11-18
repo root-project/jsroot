@@ -121,6 +121,24 @@
          kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
    };
 
+   JSROOT.TObjectBits = {
+         kCanDelete     : JSROOT.BIT(0),   // if object in a list can be deleted
+         kMustCleanup   : JSROOT.BIT(3),   // if object destructor must call RecursiveRemove()
+         kObjInCanvas   : JSROOT.BIT(3),   // for backward compatibility only, use kMustCleanup
+         kIsReferenced  : JSROOT.BIT(4),   // if object is referenced by a TRef or TRefArray
+         kHasUUID       : JSROOT.BIT(5),   // if object has a TUUID (its fUniqueID=UUIDNumber)
+         kCannotPick    : JSROOT.BIT(6),   // if object in a pad cannot be picked
+         kNoContextMenu : JSROOT.BIT(8),   // if object does not want context menu
+         kInvalidObject : JSROOT.BIT(13),  // if object ctor succeeded but object should not be used
+         kSingleKey     : JSROOT.BIT(0),   // write collection with single key
+         kOverwrite     : JSROOT.BIT(1),   // overwrite existing object with same name
+         kWriteDelete   : JSROOT.BIT(2),   // write object, then delete previous key with same name
+         kIsOnHeap      : 0x01000000,      // object is on heap
+         kNotDeleted    : 0x02000000,      // object has not been deleted
+         kZombie        : 0x04000000,      // object ctor failed
+         kBitMask       : 0x00ffffff,
+   };
+
    JSROOT.EAxisBits = {
          kTickPlus      : JSROOT.BIT(9),
          kTickMinus     : JSROOT.BIT(10),
@@ -990,9 +1008,8 @@
    JSROOT.addMethods = function(obj, obj_typename) {
       // check object type and add methods if needed
       if (('fBits' in obj) && !('TestBit' in obj)) {
-         obj['TestBit'] = function (f) {
-            return ((obj['fBits'] & f) != 0);
-         };
+         obj['TestBit'] = function (f) { return (this['fBits'] & f) != 0; };
+         obj['InvertBit'] = function (f) { this['fBits'] = this['fBits'] ^ (f & JSROOT.TObjectBits.kBitMask); };
       }
 
       if (!obj_typename) {
