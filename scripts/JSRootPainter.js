@@ -3251,6 +3251,10 @@
       }
 
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
+
+      if (this.IsStats() && JSROOT.gStyle.ContextMenu)
+         this.draw_g.on("contextmenu", function() { pthis.ShowConextMenu(); });
+
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
@@ -3294,23 +3298,99 @@
       return res;
    }
 
+   JSROOT.TPavePainter.prototype.ShowConextMenu = function() {
+      d3.event.stopPropagation(); // disable main context menu
+      d3.event.preventDefault();  // disable browser context menu
+
+      // one need to copy event, while after call back event may be changed
+      var evnt = d3.event;
+      var pthis = this;
+
+      JSROOT.Painter.createMenu(function(menu) {
+         menu['painter'] = pthis;
+         menu.add("header: " + pthis.pavetext._typename + "::" + pthis.pavetext.fName);
+         menu.add("SetStatFormat", function() {
+            var fmt = prompt("Enter StatFormat", pthis.pavetext.fStatFormat);
+            if (fmt!=null) {
+               pthis.pavetext.fStatFormat = fmt;
+               pthis.Redraw();
+            }
+         });
+         menu.add("SetFitFormat", function() {
+            var fmt = prompt("Enter FitFormat", pthis.pavetext.fFitFormat);
+            if (fmt!=null) {
+               pthis.pavetext.fFitFormat = fmt;
+               pthis.Redraw();
+            }
+         });
+         menu.add("separator");
+         menu.add("SetOptStat", function() {
+            // todo - use jqury dialog here
+            var fmt = prompt("Enter OptStat", pthis.pavetext.fOptStat);
+            if (fmt!=null) { pthis.pavetext.fOptStat = parseInt(fmt); pthis.Redraw(); }
+         });
+         menu.add("separator");
+         function AddStatOpt(pos, name) {
+            var opt = (pos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
+            var divider = parseInt(Math.pow(10,pos % 10));
+            var opt = parseInt(parseInt(opt) / divider);
+            menu.add((opt % 10 ? "chk:" : "unk:") + name, pos + (opt % 10) * 100, function(rrr) {
+               var newpos = rrr % 100;
+               var newopt = (newpos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
+               var value = parseInt(rrr / 100) * parseInt(Math.pow(10,newpos % 10));
+               if (value > 0) newopt -= value;
+                         else newopt += parseInt(Math.pow(10,newpos % 10));
+               if (newpos<10) pthis.pavetext.fOptStat = newopt;
+                         else pthis.pavetext.fOptFit = newopt;
+               pthis.Redraw();
+            });
+         }
+
+         AddStatOpt(0, "Histogram name");
+         AddStatOpt(1, "Entries");
+         AddStatOpt(2, "Mean");
+         AddStatOpt(3, "Std Dev");
+         AddStatOpt(4, "Underflow");
+         AddStatOpt(5, "Overflow");
+         AddStatOpt(6, "Integral");
+         AddStatOpt(7, "Skewness");
+         AddStatOpt(8, "Kurtosis");
+         menu.add("separator");
+
+         menu.add("SetOptFit", function() {
+            // todo - use jqury dialog here
+            var fmt = prompt("Enter OptStat", pthis.pavetext.fOptFit);
+            if (fmt!=null) { pthis.pavetext.fOptFit = parseInt(fmt); pthis.Redraw(); }
+         });
+         menu.add("separator");
+         AddStatOpt(10, "Fit parameters");
+         AddStatOpt(11, "Par errors");
+         AddStatOpt(12, "Chi square / NDF");
+         AddStatOpt(13, "Probability");
+
+         menu.show(evnt);
+      });
+
+   }
+
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
-      if (!this.IsStats()) return;
-      if (this.pavetext['fName'] != "stats") return;
+      if (!this.IsStats()) return false;
+      if (this.pavetext['fName'] != "stats") return false;
+      if (!('FillStatistic' in this.main_painter())) return false;
 
       var dostat = new Number(this.pavetext['fOptStat']);
       var dofit = new Number(this.pavetext['fOptFit']);
       if (!dostat) dostat = JSROOT.gStyle.OptStat;
       if (!dofit) dofit = JSROOT.gStyle.OptFit;
 
-      // we take histogram from first painter
-      if ('FillStatistic' in this.main_painter()) {
+      // make empty at the beginning
+      this.pavetext.Clear();
 
-         // make empty at the beginning
-         this.pavetext.Clear();
+      // we take statistic from first painter
+      this.main_painter().FillStatistic(this, dostat, dofit);
 
-         this.main_painter().FillStatistic(this, dostat, dofit);
-      }
+      return true;
+
    }
 
    JSROOT.TPavePainter.prototype.UpdateObject = function(obj) {
@@ -3320,7 +3400,6 @@
    }
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
-
       // if pavetext artificially disabled, do not redraw it
       if (this.Enabled) {
          this.FillStatistic();
@@ -4646,7 +4725,6 @@
       } else {
          this['gry'] = this.y;
       }
-
    }
 
    JSROOT.THistPainter.prototype.DrawGrids = function() {

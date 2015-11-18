@@ -36,6 +36,8 @@
       var menu = { divid: menuname, code:"", cnt: 1, funcs : {} };
 
       menu.add = function(name, arg, func) {
+         if (name == "separator") { this.code += "<li>-</li>"; return; }
+
          if (name.indexOf("header:")==0) {
             this.code += "<li class='ui-widget-header' style='padding-left:5px'>"+name.substr(7)+"</li>";
             return;
@@ -47,7 +49,7 @@
 
          if (typeof arg == 'function') { func = arg; arg = name; }
 
-         if ((arg==null) || (typeof arg != 'string')) arg = name;
+         // if ((arg==null) || (typeof arg != 'string')) arg = name;
 
          if (name.indexOf("chk:")==0) { name = "<span class='ui-icon ui-icon-check'></span>" + name.substr(4); } else
          if (name.indexOf("unk:")==0) { name = "<span class='ui-icon ui-icon-blank'></span>" + name.substr(4); }
