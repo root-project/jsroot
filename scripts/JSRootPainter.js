@@ -4910,7 +4910,6 @@
             return null;
          }
       } else {
-
          if (this.y_kind=='labels') {
             this.y_nticks = 50; // for text output allow max 50 names
             var scale_yrange = this.scale_ymax - this.scale_ymin;
@@ -4940,7 +4939,8 @@
       var drawx = xax_g.append("svg:g").attr("class", "xaxis")
                        .call(x_axis).call(xlabelfont.func);
 
-      if (this.x_kind == 'labels') {
+      if ((this.x_kind == 'labels') ||
+          (!this.options.Logx && this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kCenterLabels))) {
          // caluclate label widths to adjust font size
 
          var maxwidth = 0, cnt = 0, shift = 10;
@@ -4966,8 +4966,9 @@
          drawx.selectAll(".tick text")
               .style("text-anchor", "start")
               .attr("x", shift).attr("y", 6);
-      } else
-      if ((n2ax > 0) && !this.options.Logx) {
+      }
+
+      if ((n2ax > 0) && !this.options.Logx && (this.x_kind != 'labels')) {
          // this is additional ticks, required in d3.v3
          var x_axis_sub =
              d3.svg.axis().scale(this.x).orient("bottom")
@@ -4980,9 +4981,10 @@
 
       var drawy = yax_g.append("svg:g").attr("class", "yaxis").call(y_axis).call(ylabelfont.func);
 
-      if (this.y_kind == 'labels') {
+      if ((this.y_kind == 'labels') ||
+           (!this.options.Logy && this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterLabels))) {
          var maxh = 0, cnt = 0, shift = 3;
-         drawx.selectAll(".tick text").each(function() {
+         drawy.selectAll(".tick text").each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
             if (box.height > maxh) maxh = box.height;
             cnt++;
@@ -5002,9 +5004,9 @@
             }
          }
 
+      }
 
-      } else
-      if ((n2ay > 0) && !this.options.Logy) {
+      if ((n2ay > 0) && !this.options.Logy && (this.y_kind != 'labels')) {
          // this is additional ticks, required in d3.v3
          var y_axis_sub = d3.svg.axis().scale(this.y).orient("left")
                .tickPadding(yAxisLabelOffset).innerTickSize(-yDivLength / 2)
@@ -5710,6 +5712,8 @@
          menu.add("header: " + axis.toUpperCase() + " axis");
          menu.add("Unzoom", function() { pthis.Unzoom(axis=="x", axis=="y", false); });
          menu.add((pthis.options["Log" + axis] ? "chk:" : "unk:") + "SetLog"+axis, function() { pthis.ToggleLog(axis); });
+         menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); pthis.RedrawPad(); });
          menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
             function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); pthis.RedrawPad(); });
 
