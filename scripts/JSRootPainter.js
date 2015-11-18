@@ -5736,7 +5736,10 @@
                function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); pthis.RedrawPad(); });
          menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
             function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); pthis.RedrawPad(); });
-
+         menu.add((faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) ? "chk:" : "unk:") + "MoreLogLabels",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); pthis.RedrawPad(); });
+         menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); pthis.RedrawPad(); });
          menu.show(evnt);
       });
    }
