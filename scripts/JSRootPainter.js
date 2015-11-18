@@ -1758,7 +1758,7 @@
             if (align[1] == 'top' && rotate) fo_y -= box.height;
          }
 
-         //  this is just workaround for Y-axis label,
+         // this is just workaround for Y-axis label,
          // one could extend it the future on all labels
          if ((fo_y < 0) && (painter.frame_x() < -fo_y))
             fo_y = -painter.frame_x() + 1;
@@ -1838,7 +1838,7 @@
                          .text(label);
          if (pos_dy!=null) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
-         if (!scale && (h==-270)) txt.attr("transform", "rotate(270, 0, 0)");
+         if (!scale && (h<0)) txt.attr("transform", "rotate(" + (-h) + ", 0, 0)");
 
          var box = this.GetBoundarySizes(txt.node());
 
@@ -1857,7 +1857,7 @@
       var rotate = false;
 
       if (!scale) {
-         if (h==-270) rotate = true;
+         if ((h==-270) || (h==-90)) rotate = true;
          w = this.pad_width(); // artifical values, big enough to see output
          h = this.pad_height();
       }
@@ -4784,10 +4784,13 @@
           this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
 
           var center = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
+          var rotate = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1. : 1.;
 
-          var res = this.DrawText(center ? 'middle' : 'end', center ? w/2 : w,
-                                  xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset']),
-                                  0, 0, this.histo['fXaxis']['fTitle'], null, 1, xax_g);
+          var res = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
+                                 (center ? w/2 : w)*rotate,
+                                  rotate*(xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset'])),
+                                  0, (rotate<0) ? -180 : 0,
+                                  this.histo['fXaxis']['fTitle'], null, 1, xax_g);
 
           if (res<=0) shrink_forbidden = true;
 
@@ -4803,10 +4806,13 @@
          this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
 
          var center = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
+         var rotate = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kRotateTitle) ? 1 : -1;
 
-         var res = this.DrawText(center ? "middle" : "end", center ? -h/2 : 0,
-                                 -yAxisLabelOffset - (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size - yax_g.property('text_font').size,
-                                 0, -270, this.histo['fYaxis']['fTitle'], null, 1, yax_g);
+         var res = this.DrawText(center ? "middle" : ((rotate<0) ? "end" : "begin"),
+                                 (center ? h/2 : 0) * rotate,
+                                 rotate * (yAxisLabelOffset + (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size + yax_g.property('text_font').size),
+                                 0, (rotate<0 ? -270 : -90),
+                                 this.histo['fYaxis']['fTitle'], null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;
 
@@ -5736,6 +5742,8 @@
                function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); pthis.RedrawPad(); });
          menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
             function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); pthis.RedrawPad(); });
+         menu.add((faxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? "chk:" : "unk:") + "RotateTitle",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); pthis.RedrawPad(); });
          menu.add((faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) ? "chk:" : "unk:") + "MoreLogLabels",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); pthis.RedrawPad(); });
          menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
