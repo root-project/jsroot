@@ -8,6 +8,7 @@
 5. Support several columns in TLegend
 6. Introduce context menus for x/y axis, add some items similar to native ROOT menus
 7. Introduce context menu for TPaveStats, let switch single elements in the box   
+8. Enable usage of all context menus on touch devices 
 
 
 ## Changes in 3.8

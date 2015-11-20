@@ -1545,7 +1545,8 @@
 
                if((dx==0) && (dy==0) && callback['ctxmenu'] &&
                         ((new Date()).getTime() - drag_tm.getTime() > 600)) {
-                  pthis.ShowContextMenu("main", { ClientX: 100, ClientY : 100 });
+                  var rrr = resize_rect.node().getBoundingClientRect();
+                  pthis.ShowContextMenu('main', { clientX: rrr.left + 20, clientY : rrr.top + 20 } );
                }
             });
 
@@ -1648,7 +1649,12 @@
       d3.select(this[fld].tgt).on("touchcancel", null)
                               .on("touchend", null, true);
 
-      if (diff>500) this.ShowContextMenu(kind, { ClientX: 100, ClientY : 100 } );
+      if (diff>500) {
+         var rect = d3.select(this[fld].tgt).node().getBoundingClientRect();
+         this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
+                                      clientY : rect.top + this[fld].pos[1] } );
+      }
+
 
       delete this[fld];
    }
@@ -3296,9 +3302,8 @@
 
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText', ctxmenu : JSROOT.touches });
 
-      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches) {
-        this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-      }
+      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
+         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
@@ -5705,8 +5710,7 @@
       if (arr.length != 2)
          return this.clearInteractiveElements();
 
-      var pnt1 = arr[0];
-      var pnt2 = arr[1];
+      var pnt1 = arr[0], pnt2 = arr[1];
 
       if (this.zoom_kind != 103) {
          this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
@@ -5751,7 +5755,7 @@
          var diff = now.getTime() - this.last_touch.getTime();
 
          if ((diff > 500) && (diff<2000)) {
-            this.ShowContextMenu();
+            this.ShowContextMenu('main', { clientX : this.zoom_curr[0], clientY : this.zoom_curr[1]});
             this.last_touch = new Date(0);
          } else {
             this.clearInteractiveElements();
@@ -5813,7 +5817,7 @@
 
       var pthis = this;
 
-      if (JSROOT.gStyle.Zooming) {
+      if (JSROOT.gStyle.Zooming && !JSROOT.touches) {
          this.svg_frame().on("mousedown", function() { pthis.startRectSel(this); } );
          this.svg_frame().on("dblclick", function() { pthis.mouseDoubleClick(); });
       }
@@ -5838,15 +5842,17 @@
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
-      d3.event.preventDefault();
-
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
-      d3.event.stopPropagation(); // disable main context menu
+      if (!evnt) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation(); // disable main context menu
+         evnt = d3.event;
+      }
 
       // one need to copy event, while after call back event may be changed
-      this.ctx_menu_evnt = evnt ? evnt : d3.event;
+      this.ctx_menu_evnt = evnt;
 
       // suppress any running zomming
       this.clearInteractiveElements();
