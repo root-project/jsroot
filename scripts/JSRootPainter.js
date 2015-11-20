@@ -6153,7 +6153,7 @@
             if (print_fchi2 > 0)
                stat.AddLine("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
             if (print_fprob > 0)
-               stat.AddLine("Prob = <not avail>");
+               stat.AddLine("Prob = "  + stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)));
             if (print_fval > 0) {
                for(var n=0;n<f1.fNpar;n++) {
                   var parname = f1.GetParName(n);

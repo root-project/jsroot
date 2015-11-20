@@ -2070,6 +2070,35 @@
 
    JSROOT.Math.lgam = function( x ) {
       var p, q, u, w, z, i, sgngam = 1;
+      var kMAXLGM  = 2.556348e305;
+      var LS2PI  =  0.91893853320467274178;
+
+      var A = [
+         8.11614167470508450300E-4,
+         -5.95061904284301438324E-4,
+         7.93650340457716943945E-4,
+         -2.77777777730099687205E-3,
+         8.33333333333331927722E-2
+      ];
+
+      var B = [
+         -1.37825152569120859100E3,
+         -3.88016315134637840924E4,
+         -3.31612992738871184744E5,
+         -1.16237097492762307383E6,
+         -1.72173700820839662146E6,
+         -8.53555664245765465627E5
+      ];
+
+      var C = [
+      /* 1.00000000000000000000E0, */
+         -3.51815701436523470549E2,
+         -1.70642106651881159223E4,
+         -2.20528590553854454839E5,
+         -1.13933444367982507207E6,
+         -2.53252307177582951285E6,
+         -2.01889141433532773231E6
+      ];
 
       if (x >= Number.POSITIVE_INFINITY)
          return(Number.POSITIVE_INFINITY);
@@ -2268,7 +2297,113 @@
       if ( code != 0 )
          x = -x;
       return( x );
-   };
+   }
+
+   JSROOT.Math.igam = function(a,x) {
+      var kMACHEP = 1.11022302462515654042363166809e-16;
+      var kMAXLOG = 709.782712893383973096206318587;
+      var ans, ax, c, r;
+
+      // LM: for negative values returns 1.0 instead of zero
+      // This is correct if a is a negative integer since Gamma(-n) = +/- inf
+      if (a <= 0)  return 1.0;
+
+      if (x <= 0)  return 0.0;
+
+      if( (x > 1.0) && (x > a ) )
+         return( 1.0 - this.igamc(a,x) );
+
+      /* Compute  x**a * exp(-x) / gamma(a)  */
+      ax = a * Math.log(x) - x - this.lgam(a);
+      if( ax < -kMAXLOG )
+         return( 0.0 );
+
+      ax = Math.exp(ax);
+
+      /* power series */
+      r = a;
+      c = 1.0;
+      ans = 1.0;
+
+      do
+      {
+         r += 1.0;
+         c *= x/r;
+         ans += c;
+      }
+      while( c/ans > kMACHEP );
+
+      return( ans * ax/a );
+   }
+
+   JSROOT.Math.igamc = function(a,x) {
+      var kMACHEP = 1.11022302462515654042363166809e-16;
+      var kMAXLOG = 709.782712893383973096206318587;
+
+      var kBig = 4.503599627370496e15;
+      var kBiginv =  2.22044604925031308085e-16;
+
+      var ans, ax, c, yc, r, t, y, z;
+      var pk, pkm1, pkm2, qk, qkm1, qkm2;
+
+      // LM: for negative values returns 0.0
+      // This is correct if a is a negative integer since Gamma(-n) = +/- inf
+      if (a <= 0)  return 0.0;
+
+      if (x <= 0) return 1.0;
+
+      if( (x < 1.0) || (x < a) )
+         return ( 1.0 - JSROOT.Math.igam(a,x) );
+
+      ax = a * Math.log(x) - x - JSROOT.Math.lgam(a);
+      if( ax < -kMAXLOG )
+         return( 0.0 );
+
+      ax = Math.exp(ax);
+
+      /* continued fraction */
+      y = 1.0 - a;
+      z = x + y + 1.0;
+      c = 0.0;
+      pkm2 = 1.0;
+      qkm2 = x;
+      pkm1 = x + 1.0;
+      qkm1 = z * x;
+      ans = pkm1/qkm1;
+
+      do
+      {
+         c += 1.0;
+         y += 1.0;
+         z += 2.0;
+         yc = y * c;
+         pk = pkm1 * z  -  pkm2 * yc;
+         qk = qkm1 * z  -  qkm2 * yc;
+         if(qk)
+         {
+            r = pk/qk;
+            t = Math.abs( (ans - r)/r );
+            ans = r;
+         }
+         else
+            t = 1.0;
+         pkm2 = pkm1;
+         pkm1 = pk;
+         qkm2 = qkm1;
+         qkm1 = qk;
+         if( Math.abs(pk) > kBig )
+         {
+            pkm2 *= kBiginv;
+            pkm1 *= kBiginv;
+            qkm2 *= kBiginv;
+            qkm1 *= kBiginv;
+         }
+      }
+      while( t > kMACHEP );
+
+      return( ans * ax );
+   }
+
 
    JSROOT.Math.igami = function(a, y0) {
       var x0, x1, x, yl, yh, y, d, lgm, dithresh;
@@ -2304,7 +2439,7 @@
       for( i=0; i<10; i++ ) {
          if ( x > x0 || x < x1 )
             break;
-         y = igamc(a,x);
+         y = this.igamc(a,x);
          if ( y < yl || y > yh )
             break;
          if ( y < y0 ) {
@@ -2333,7 +2468,7 @@
             x = 1.0;
          while ( x0 == kMAXNUM ) {
             x = (1.0 + d) * x;
-            y = igamc( a, x );
+            y = this.igamc( a, x );
             if ( y < y0 ) {
                x0 = x;
                yl = y;
@@ -2347,7 +2482,7 @@
 
       for( i=0; i<400; i++ ) {
          x = x1  +  d * (x0 - x1);
-         y = igamc( a, x );
+         y = this.igamc( a, x );
          lgm = (x0 - x1)/(x1 + x0);
          if ( Math.abs(lgm) < dithresh )
             break;
@@ -2460,7 +2595,26 @@
       var den = JSROOT.Math.landau_pdf((x - mpv) / sigma, 1, 0);
       if (!norm) return den;
       return den/sigma;
-   };
+   }
+
+   JSROOT.Math.inc_gamma_c = function(a,x) {
+      return JSROOT.Math.igamc(a,x);
+   }
+
+   JSROOT.Math.chisquared_cdf_c = function(x,r,x0) {
+     return JSROOT.Math.inc_gamma_c ( 0.5 * r , 0.5* (x-x0) );
+   }
+
+   JSROOT.Math.Prob = function(chi2, ndf) {
+      if (ndf <= 0) return 0; // Set CL to zero in case ndf<=0
+
+      if (chi2 <= 0) {
+         if (chi2 < 0) return 0;
+         else          return 1;
+      }
+
+      return JSROOT.Math.chisquared_cdf_c(chi2,ndf,0);
+   }
 
    JSROOT.Math.gaus = function(f, x, i) {
       return f['fParams'][i+0] * Math.exp(-0.5 * Math.pow((x-f['fParams'][i+1]) / f['fParams'][i+2], 2));
