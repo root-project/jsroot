@@ -1419,7 +1419,6 @@
       return fill;
    }
 
-
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
 
@@ -1455,7 +1454,7 @@
       var rect_width = function() { return Number(pthis.draw_g.attr("width")); }
       var rect_height = function() { return Number(pthis.draw_g.attr("height")); }
 
-      var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1;
+      var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1, drag_tm = null;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -1485,6 +1484,8 @@
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
+
+            drag_tm = new Date();
 
             drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
                  .classed("zoom", true)
@@ -1540,6 +1541,11 @@
                   callback.obj['fX2NDC'] += dx / pthis.pad_width();
                   callback.obj['fY1NDC'] -= dy / pthis.pad_height();
                   callback.obj['fY2NDC'] -= dy / pthis.pad_height();
+               }
+
+               if((dx==0) && (dy==0) && callback['ctxmenu'] &&
+                        ((new Date()).getTime() - drag_tm.getTime() > 600)) {
+                  pthis.ShowContextMenu("main", { ClientX: 100, ClientY : 100 });
                }
             });
 
@@ -1610,6 +1616,43 @@
 
       resize_rect.call(drag_resize);
    }
+
+   JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind, select) {
+      // method to let activate context menu via touch handler
+
+      var arr = d3.touches(touch_tgt);
+      if (arr.length != 1) return;
+
+      if (!kind || (kind=="")) kind = "main";
+      var fld = "touch_" + kind;
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0], sel: select };
+
+      select.on("touchcancel", this.endTouchMenu.bind(this, kind))
+            .on("touchend", this.endTouchMenu.bind(this, kind), true);
+   }
+
+   JSROOT.TObjectPainter.prototype.endTouchMenu = function(kind) {
+      var fld = "touch_" + kind;
+
+      if (! (fld in this)) return;
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      var diff = new Date().getTime() - this[fld].dt.getTime();
+
+      this[fld].sel.on("touchcancel", null)
+                   .on("touchend", null, true);
+
+      if (diff>500) this.ShowContextMenu(kind, { ClientX: 100, ClientY : 100 } );
+
+      delete this[fld];
+   }
+
 
    JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
       // try to find painter for sepcified object
@@ -3251,11 +3294,11 @@
          this.FinishTextDrawing(lbl_g);
       }
 
-      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
+      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText', ctxmenu : JSROOT.touches });
 
-      if (this.IsStats() && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-
+      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches) {
+        this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
+      }
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
@@ -3299,12 +3342,14 @@
       return res;
    }
 
-   JSROOT.TPavePainter.prototype.ShowContextMenu = function() {
-      d3.event.stopPropagation(); // disable main context menu
-      d3.event.preventDefault();  // disable browser context menu
+   JSROOT.TPavePainter.prototype.ShowContextMenu = function(kind, evnt) {
+      if (!evnt) {
+         d3.event.stopPropagation(); // disable main context menu
+         d3.event.preventDefault();  // disable browser context menu
 
-      // one need to copy event, while after call back event may be changed
-      var evnt = d3.event;
+         // one need to copy event, while after call back event may be changed
+         evnt = d3.event;
+      }
       var pthis = this;
 
       JSROOT.Painter.createMenu(function(menu) {
@@ -5790,40 +5835,6 @@
                 .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
          }
       }
-   }
-
-   JSROOT.THistPainter.prototype.startTouchMenu = function(touch_tgt, kind, select) {
-      var arr = d3.touches(touch_tgt);
-      if (arr.length != 1) return;
-
-      if (!kind || (kind=="")) kind = "main";
-      var fld = "touch_" + kind;
-
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0], sel: select };
-
-      select.on("touchcancel", this.endTouchMenu.bind(this, kind))
-            .on("touchend", this.endTouchMenu.bind(this, kind), true);
-   }
-
-   JSROOT.THistPainter.prototype.endTouchMenu = function(kind) {
-      var fld = "touch_" + kind;
-
-      if (! (fld in this)) return;
-
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      var diff = new Date().getTime() - this[fld].dt.getTime();
-
-      this[fld].sel.on("touchcancel", null)
-                   .on("touchend", null, true);
-
-      if (diff>500) this.ShowContextMenu(kind, { ClientX: 100, ClientY : 100 } );
-
-      delete this[fld];
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
