@@ -3254,7 +3254,7 @@
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", function() { pthis.ShowConextMenu(); });
+         this.draw_g.on("contextmenu", function() { pthis.showContextMenu(); });
 
    }
 
@@ -3299,7 +3299,7 @@
       return res;
    }
 
-   JSROOT.TPavePainter.prototype.ShowConextMenu = function() {
+   JSROOT.TPavePainter.prototype.showContextMenu = function() {
       d3.event.stopPropagation(); // disable main context menu
       d3.event.preventDefault();  // disable browser context menu
 
@@ -3368,7 +3368,6 @@
 
          menu.show(evnt);
       });
-
    }
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
@@ -5584,15 +5583,185 @@
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
 
+   JSROOT.THistPainter.prototype.startTouchZoom = function(tgt) {
+      // in case when zooming was started, block any other kind of events
+      if (this.zoom_kind != 0) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation();
+         return;
+      }
+
+      this.last_touch_tgt = tgt;
+      var arr = d3.touches(this.last_touch_tgt);
+
+      // only double-touch will be handled
+      if (arr.length == 1) {
+         // this is touch with single element
+
+         var now = new Date();
+         var diff = now.getTime() - this.last_touch.getTime();
+
+         if ((diff < 300) && (this.zoom_curr != null)
+               && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+               && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+
+            this.clearInteractiveElements();
+            this.Unzoom(true, true, true);
+
+            this.svg_frame().on("touchcancel", null)
+                            .on("touchend", null);
+         } else {
+            this.last_touch = now;
+            this.zoom_curr = arr[0];
+            this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
+                            .on("touchend", this.endTouchSel.bind(this), true);
+         }
+      }
+
+      if (arr.length != 2) return;
+
+      d3.event.preventDefault();
+
+      this.clearInteractiveElements();
+
+      var pnt1 = arr[0];
+      var pnt2 = arr[1];
+
+      this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
+      this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
+
+      if (this.zoom_curr[0] < 0) {
+         this.zoom_kind = 103; // only y
+         this.zoom_curr[0] = 0;
+         this.zoom_origin[0] = this.frame_width();
+      } else if (this.zoom_origin[1] > this.frame_height()) {
+         this.zoom_kind = 102; // only x
+         this.zoom_curr[1] = 0;
+         this.zoom_origin[1] = this.frame_height();
+      } else {
+         this.zoom_kind = 101; // x and y
+      }
+
+      // d3.select("body").classed("noselect", true);
+      // d3.select("body").style("-webkit-user-select", "none");
+
+      this.zoom_rect = this.svg_frame().append("rect")
+            .attr("class", "zoom")
+            .attr("id", "zoomRect")
+            .attr("x", this.zoom_curr[0])
+            .attr("y", this.zoom_curr[1])
+            .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+            .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+      d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
+                       .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
+                       .on("touchend.zoomRect", this.endTouchSel.bind(this), true);
+      d3.event.stopPropagation();
+   }
+
+   JSROOT.THistPainter.prototype.moveTouchSel = function() {
+      if (this.zoom_kind < 100) return;
+
+      d3.event.preventDefault();
+
+      // var t = d3.event.changedTouches;
+      var arr = d3.touches(this.last_touch_tgt);
+
+      if (arr.length != 2)
+         return this.clearInteractiveElements();
+
+      var pnt1 = arr[0];
+      var pnt2 = arr[1];
+
+      if (this.zoom_kind != 103) {
+         this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
+         this.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
+      }
+      if (this.zoom_kind != 102) {
+         this.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
+         this.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
+      }
+
+      this.zoom_rect.attr("x", this.zoom_curr[0])
+                     .attr("y", this.zoom_curr[1])
+                     .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+                     .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+      if (JSROOT.gStyle.Tooltip && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+                || (this.zoom_origin[1] - this.zoom_curr[1] > 10))) {
+         JSROOT.gStyle.Tooltip = false;
+         this.disable_tooltip = true;
+      }
+
+      d3.event.stopPropagation();
+   }
+
+   JSROOT.THistPainter.prototype.endTouchSel = function() {
+
+      if (this.zoom_kind == 0) {
+         // special case - single touch can ends up with context menu
+         d3.event.preventDefault();
+         this.svg_frame().on("touchcancel", null)
+                         .on("touchend", null);
+
+         var arr = d3.touches(this.last_touch_tgt);
+         if (arr.length == 1) {
+            // this is touch with single element
+
+            var diff = Date().getTime() - this.last_touch.getTime();
+
+            if ((diff > 500) && (this.zoom_curr != null)
+                && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+                && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+               this.showContextMenu();
+            } else {
+               this.clearInteractiveElements();
+            }
+         }
+         return;
+      }
+
+      if (this.zoom_kind < 100) return;
+
+      d3.event.preventDefault();
+      d3.select(window).on("touchmove.zoomRect", null)
+                       .on("touchend.zoomRect", null)
+                       .on("touchcancel.zoomRect", null);
+      d3.select("body").classed("noselect", false);
+
+      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+
+      var isany = false;
+
+      if ((this.zoom_kind != 103) && (Math.abs(this.zoom_curr[0] - this.zoom_origin[0]) > 10)) {
+         xmin = Math.min(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
+         xmax = Math.max(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
+         isany = true;
+      }
+
+      if ((this.zoom_kind != 102) && (Math.abs(this.zoom_curr[1] - this.zoom_origin[1]) > 10)) {
+         ymin = Math.min(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
+         ymax = Math.max(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
+         isany = true;
+      }
+
+      d3.select("body").style("-webkit-user-select", "auto");
+
+      this.clearInteractiveElements();
+
+      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+
+      d3.event.stopPropagation();
+   }
+
    JSROOT.THistPainter.prototype.AddInteractive = function() {
 
       // only first painter in list allowed to add interactive functionality to the main pad
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
-
-      // if (!this.draw_content) return;
-
-      var pthis = this;
 
       this.last_touch = new Date(0);
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
@@ -5603,160 +5772,16 @@
       this.zoom_origin = null;  // original point where zooming started
       this.zoom_curr = null;    // current point for zomming
 
-      function startTouchSel() {
-         // in case when zooming was started, block any other kind of events
-         if (pthis.zoom_kind != 0) {
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
-            return;
-         }
-
-         pthis.last_touch_tgt = this;
-         var arr = d3.touches(pthis.last_touch_tgt);
-
-         // only double-touch will be handled
-         if (arr.length == 1) {
-
-            var now = new Date();
-            var diff = now.getTime() - phis.last_touch.getTime();
-
-            if ((diff < 300) && (pthis.zoom_curr != null)
-                  && (Math.abs(pthis.zoom_curr[0] - arr[0][0]) < 30)
-                  && (Math.abs(pthis.zoom_curr[1] - arr[0][1]) < 30)) {
-
-               d3.event.preventDefault();
-               d3.event.stopPropagation();
-
-               pthis.clearInteractiveElements();
-               pthis.Unzoom(true, true, true);
-            } else {
-               phis.last_touch = now;
-               pthis.zoom_curr = arr[0];
-            }
-         }
-
-         if (arr.length != 2) return;
-
-         d3.event.preventDefault();
-
-         pthis.clearInteractiveElements();
-
-         var pnt1 = arr[0];
-         var pnt2 = arr[1];
-
-         pthis.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
-         pthis.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
-
-         if (pthis.zoom_curr[0] < 0) {
-            pthis.zoom_kind = 103; // only y
-            pthis.zoom_curr[0] = 0;
-            pthis.zoom_origin[0] = pthis.frame_width();
-         } else if (pthis.zoom_origin[1] > pthis.frame_height()) {
-            pthis.zoom_kind = 102; // only x
-            pthis.zoom_curr[1] = 0;
-            pthis.zoom_origin[1] = pthis.frame_height();
-         } else {
-            pthis.zoom_kind = 101; // x and y
-         }
-
-         // d3.select("body").classed("noselect", true);
-         // d3.select("body").style("-webkit-user-select", "none");
-
-         pthis.zoom_rect = pthis.svg_frame().append("rect")
-               .attr("class", "zoom")
-               .attr("id", "zoomRect")
-               .attr("x", pthis.zoom_curr[0])
-               .attr("y", pthis.zoom_curr[1])
-               .attr("width", pthis.zoom_origin[0] - pthis.zoom_curr[0])
-               .attr("height", pthis.zoom_origin[1] - pthis.zoom_curr[1]);
-
-         d3.select(window).on("touchmove.zoomRect", moveTouchSel)
-                          .on("touchcancel.zoomRect", endTouchSel)
-                          .on("touchend.zoomRect", endTouchSel, true);
-         d3.event.stopPropagation();
-      }
-
-      function moveTouchSel() {
-         if (pthis.zoom_kind < 100) return;
-
-         d3.event.preventDefault();
-
-         // var t = d3.event.changedTouches;
-         var arr = d3.touches(pthis.last_touch_tgt);
-
-         if (arr.length != 2)
-            return this.clearInteractiveElements();
-
-         var pnt1 = arr[0];
-         var pnt2 = arr[1];
-
-         if (pthis.zoom_kind != 103) {
-            pthis.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
-            pthis.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
-         }
-         if (pthis.zoom_kind != 102) {
-            pthis.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
-            pthis.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
-         }
-
-         pthis.zoom_rect.attr("x", pthis.zoom_curr[0])
-                        .attr("y", pthis.zoom_curr[1])
-                        .attr("width", pthis.zoom_origin[0] - pthis.zoom_curr[0])
-                        .attr("height", pthis.zoom_origin[1] - pthis.zoom_curr[1]);
-
-         if (JSROOT.gStyle.Tooltip && ((pthis.zoom_origin[0] - pthis.zoom_curr[0] > 10)
-                   || (pthis.zoom_origin[1] - pthis.zoom_curr[1] > 10))) {
-            JSROOT.gStyle.Tooltip = false;
-            pthis.disable_tooltip = true;
-         }
-
-         d3.event.stopPropagation();
-      }
-
-      function endTouchSel() {
-
-         if (pthis.zoom_kind < 100) return;
-
-         d3.event.preventDefault();
-         d3.select(window).on("touchmove.zoomRect", null)
-                          .on("touchend.zoomRect", null)
-                          .on("touchcancel.zoomRect", null);
-         d3.select("body").classed("noselect", false);
-
-         var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-
-         var isany = false;
-
-         if ((pthis.zoom_kind != 103) && (Math.abs(pthis.zoom_curr[0] - pthis.zoom_origin[0]) > 10)) {
-            xmin = Math.min(pthis.RevertX(pthis.zoom_origin[0]), pthis.RevertX(pthis.zoom_curr[0]));
-            xmax = Math.max(pthis.RevertX(pthis.zoom_origin[0]), pthis.RevertX(pthis.zoom_curr[0]));
-            isany = true;
-         }
-
-         if ((pthis.zoom_kind != 102) && (Math.abs(pthis.zoom_curr[1] - pthis.zoom_origin[1]) > 10)) {
-            ymin = Math.min(pthis.y.invert(pthis.zoom_origin[1]), pthis.y.invert(pthis.zoom_curr[1]));
-            ymax = Math.max(pthis.y.invert(pthis.zoom_origin[1]), pthis.y.invert(pthis.zoom_curr[1]));
-            isany = true;
-         }
-
-         d3.select("body").style("-webkit-user-select", "auto");
-
-         pthis.clearInteractiveElements();
-
-         if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
-
-         d3.event.stopPropagation();
-      }
-
-
-      // one cannot use bind with some mouse/touch events
+      // one cannot use bind() with some mouse/touch events
       // therefore use normal functions with pthis workaround
+
+      var pthis = this;
 
       if (JSROOT.gStyle.Zooming) {
          this.svg_frame().on("mousedown", function() { pthis.startRectSel(this); } );
          this.svg_frame().on("dblclick", function() { pthis.mouseDoubleClick(); });
          if (JSROOT.touches)
-            this.svg_frame().on("touchstart", startTouchSel);
+            this.svg_frame().on("touchstart", function() { pthis.startTouchZoom(this); });
       }
       if (JSROOT.gStyle.ContextMenu) {
          this.svg_frame().on("contextmenu", function() { pthis.showContextMenu(); });
