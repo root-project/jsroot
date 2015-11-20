@@ -103,7 +103,12 @@
                   var cnt = ui.item.attr('cnt');
                   var func = cnt ? menu.funcs[cnt] : null;
                   menu.remove();
-                  if (typeof func == 'function') func(arg);
+                  if (typeof func == 'function') {
+                     if ('painter' in menu)
+                        func.bind(menu['painter'])(arg); // if 'painter' field set, returned as this to callback
+                     else
+                        func(arg);
+                  }
               }
          });
 
