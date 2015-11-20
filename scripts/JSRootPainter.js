@@ -1617,7 +1617,7 @@
       resize_rect.call(drag_resize);
    }
 
-   JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind, select) {
+   JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind) {
       // method to let activate context menu via touch handler
 
       var arr = d3.touches(touch_tgt);
@@ -1629,10 +1629,10 @@
       d3.event.preventDefault();
       d3.event.stopPropagation();
 
-      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0], sel: select };
+      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0] };
 
-      select.on("touchcancel", this.endTouchMenu.bind(this, kind))
-            .on("touchend", this.endTouchMenu.bind(this, kind), true);
+      d3.select(touch_tgt).on("touchcancel", this.endTouchMenu.bind(this, kind))
+                          .on("touchend", this.endTouchMenu.bind(this, kind), true);
    }
 
    JSROOT.TObjectPainter.prototype.endTouchMenu = function(kind) {
@@ -1645,8 +1645,8 @@
 
       var diff = new Date().getTime() - this[fld].dt.getTime();
 
-      this[fld].sel.on("touchcancel", null)
-                   .on("touchend", null, true);
+      d3.select(this[fld].tgt).on("touchcancel", null)
+                              .on("touchend", null, true);
 
       if (diff>500) this.ShowContextMenu(kind, { ClientX: 100, ClientY : 100 } );
 
@@ -5824,9 +5824,9 @@
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
             this.svg_frame().selectAll(".xaxis_container")
-               .on("touchstart", function() { pthis.startTouchMenu(this, "x", pthis.svg_frame().selectAll(".xaxis_container")); } );
+               .on("touchstart", function() { pthis.startTouchMenu(this, "x"); } );
             this.svg_frame().selectAll(".yaxis_container")
-               .on("touchstart", function() { pthis.startTouchMenu(this, "y", pthis.svg_frame().selectAll(".yaxis_container")); } );
+               .on("touchstart", function() { pthis.startTouchMenu(this, "y"); } );
          } else {
             this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
             this.svg_frame().selectAll(".xaxis_container")
