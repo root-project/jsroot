@@ -3254,7 +3254,7 @@
       this.AddDrag({ obj:pavetext, redraw:'DrawPaveText' });
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", function() { pthis.showContextMenu(); });
+         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
 
    }
 
@@ -3299,7 +3299,7 @@
       return res;
    }
 
-   JSROOT.TPavePainter.prototype.showContextMenu = function() {
+   JSROOT.TPavePainter.prototype.ShowContextMenu = function() {
       d3.event.stopPropagation(); // disable main context menu
       d3.event.preventDefault();  // disable browser context menu
 
@@ -5438,27 +5438,6 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.showContextMenu = function() {
-      d3.event.preventDefault();
-
-      // ignore context menu when touches zooming is ongoing
-      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
-
-      // one need to copy event, while after call back event may be changed
-      this.ctx_menu_evnt = d3.event;
-
-      // suppress any running zomming
-      this.clearInteractiveElements();
-
-      JSROOT.Painter.createMenu(function(menu) {
-         menu['painter'] = this;
-         menu.add("header:"+ this.histo['fName']);
-         this.FillContextMenu(menu);
-         menu.show(this.ctx_menu_evnt);
-         delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(this));
-   }
-
    JSROOT.THistPainter.prototype.mouseDoubleClick = function() {
       d3.event.preventDefault();
       var m = d3.mouse(this.last_mouse_tgt);
@@ -5716,7 +5695,7 @@
             if ((diff > 500) && (this.zoom_curr != null)
                 && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
                 && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
-               this.showContextMenu();
+               this.ShowContextMenu();
             } else {
                this.clearInteractiveElements();
             }
@@ -5784,73 +5763,87 @@
             this.svg_frame().on("touchstart", function() { pthis.startTouchZoom(this); });
       }
       if (JSROOT.gStyle.ContextMenu) {
-         this.svg_frame().on("contextmenu", function() { pthis.showContextMenu(); });
+         this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
          this.svg_frame().selectAll(".xaxis_container")
-             .on("contextmenu", function() { pthis.ShowAxisContextMenu("x"); });
+             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
          this.svg_frame().selectAll(".yaxis_container")
-             .on("contextmenu", function() { pthis.ShowAxisContextMenu("y"); });
+             .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
       }
    }
 
-   JSROOT.THistPainter.prototype.ShowAxisContextMenu = function(axis) {
+   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind) {
+      d3.event.preventDefault();
+
+      // ignore context menu when touches zooming is ongoing
+      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
+
       d3.event.stopPropagation(); // disable main context menu
-      d3.event.preventDefault();  // disable browser context menu
 
       // one need to copy event, while after call back event may be changed
-      var evnt = d3.event;
-      var pthis = this;
-      var faxis = (axis=="x") ? this.histo['fXaxis'] : this.histo['fYaxis'];
+      this.ctx_menu_evnt = d3.event;
 
-      JSROOT.Painter.createMenu(function(menu) {
-         menu['painter'] = pthis;
-         menu.add("header: " + axis.toUpperCase() + " axis");
-         menu.add("Unzoom", function() { pthis.Unzoom(axis=="x", axis=="y", false); });
-         menu.add((pthis.options["Log" + axis] ? "chk:" : "unk:") + "SetLog"+axis, function() { pthis.ToggleLog(axis); });
-         menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); pthis.RedrawPad(); });
-         menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
-            function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); pthis.RedrawPad(); });
-         menu.add((faxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? "chk:" : "unk:") + "RotateTitle",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); pthis.RedrawPad(); });
-         menu.add((faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) ? "chk:" : "unk:") + "MoreLogLabels",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); pthis.RedrawPad(); });
-         menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); pthis.RedrawPad(); });
-         menu.show(evnt);
-      });
+      // suppress any running zomming
+      this.clearInteractiveElements();
+
+      JSROOT.Painter.createMenu(function(arg, menu) {
+         menu['painter'] = this;
+
+         if ((arg=="x") || (arg=='y')) {
+            var faxis = (arg=="x") ? this.histo['fXaxis'] : this.histo['fYaxis'];
+            menu.add("header: " + arg.toUpperCase() + " axis");
+            menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", false); });
+            menu.add((this.options["Log" + kind] ? "chk:" : "unk:") + "SetLog"+arg, function() { this.ToggleLog(arg); });
+            menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+            menu.add((faxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? "chk:" : "unk:") + "RotateTitle",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+            menu.add((faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) ? "chk:" : "unk:") + "MoreLogLabels",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+            menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+         } else {
+            menu.add("header:"+ this.histo['fName']);
+            this.FillContextMenu(menu);
+         }
+
+         menu.show(this.ctx_menu_evnt);
+         delete this.ctx_menu_evnt; // delete temporary variable
+      }.bind(this, kind));
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
 
       if (this.zoom_xmin!=this.zoom_xmax)
-         menu.add("Unzoom X", function() { menu['painter'].Unzoom(true, false, false); });
+         menu.add("Unzoom X", function() { this.Unzoom(true, false, false); });
       if (this.zoom_ymin!=this.zoom_ymax)
-         menu.add("Unzoom Y", function() { menu['painter'].Unzoom(false, true, false); });
+         menu.add("Unzoom Y", function() { this.Unzoom(false, true, false); });
       if (this.zoom_zmin!=this.zoom_zmax)
-         menu.add("Unzoom Z", function() { menu['painter'].Unzoom(false, false, true); });
-      menu.add("Unzoom", function() { menu['painter'].Unzoom(true, true, true); });
+         menu.add("Unzoom Z", function() { this.Unzoom(false, false, true); });
+      menu.add("Unzoom", function() { this.Unzoom(true, true, true); });
 
       menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
-         menu['painter'].RedrawPad();
+         this.RedrawPad();
       });
 
       if (this.options) {
 
          var item = (this.options.Logx ? "chk:" : "unk:") + "SetLogx";
 
-         menu.add(item, function() { menu['painter'].ToggleLog("x"); });
+         menu.add(item, function() { this.ToggleLog("x"); });
 
          item = (this.options.Logy ? "chk:" : "unk:") +"SetLogy";
-         menu.add(item, function() { menu['painter'].ToggleLog("y"); });
+         menu.add(item, function() { this.ToggleLog("y"); });
 
          if (this.Dimension() == 2) {
             item = (this.options.Logz ? "chk:" : "unk:") + "SetLogz";
-            menu.add(item, function() { menu['painter'].ToggleLog("z"); });
+            menu.add(item, function() { this.ToggleLog("z"); });
          }
       }
       if (this.draw_content)
-         menu.add("Toggle stat", function() { menu['painter'].ToggleStat(); });
+         menu.add("Toggle stat", function() { this.ToggleStat(); });
    }
 
    // ======= TH1 painter================================================
@@ -6381,7 +6374,7 @@
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
-         menu.add("Auto zoom-in", function() { menu['painter'].AutoZoom(); });
+         menu.add("Auto zoom-in", function() { this.AutoZoom(); });
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function() {
@@ -6463,18 +6456,18 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      menu.add("Auto zoom-in", function() { menu['painter'].AutoZoom(); });
-      menu.add("Draw in 3D", function() { menu['painter'].Draw3D(); });
+      menu.add("Auto zoom-in", function() { this.AutoZoom(); });
+      menu.add("Draw in 3D", function() { this.Draw3D(); });
       menu.add("Toggle col", function() {
-         if (menu['painter'].options.Color == 0)
-            menu['painter'].options.Color = JSROOT.gStyle.DefaultCol;
+         if (this.options.Color == 0)
+            this.options.Color = JSROOT.gStyle.DefaultCol;
          else
-            menu['painter'].options.Color = -1 * menu['painter'].options.Color;
-         menu['painter'].RedrawPad();
+            this.options.Color = -1 * this.options.Color;
+         this.RedrawPad();
       });
 
       if (this.options.Color > 0)
-         menu.add("Toggle colz", function() { menu['painter'].ToggleColz(); });
+         menu.add("Toggle colz", function() { this.ToggleColz(); });
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
