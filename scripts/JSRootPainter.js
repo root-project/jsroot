@@ -3332,16 +3332,13 @@
          menu.add("separator");
          function AddStatOpt(pos, name) {
             var opt = (pos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
-            var divider = parseInt(Math.pow(10,pos % 10));
-            var opt = parseInt(parseInt(opt) / divider);
-            menu.add((opt % 10 ? "chk:" : "unk:") + name, pos + (opt % 10) * 100, function(rrr) {
-               var newpos = rrr % 100;
-               var newopt = (newpos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
-               var value = parseInt(rrr / 100) * parseInt(Math.pow(10,newpos % 10));
-               if (value > 0) newopt -= value;
-                         else newopt += parseInt(Math.pow(10,newpos % 10));
-               if (newpos<10) pthis.pavetext.fOptStat = newopt;
-                         else pthis.pavetext.fOptFit = newopt;
+            opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
+            menu.add( (opt ? "chk:" : "unk:") + name, opt * 100 + pos, function(arg) {
+               var newopt = (arg % 100 < 10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
+               var oldopt = parseInt(arg / 100);
+               newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
+               if (arg % 100 < 10) pthis.pavetext.fOptStat = newopt;
+                              else pthis.pavetext.fOptFit = newopt;
                pthis.Redraw();
             });
          }
@@ -6021,7 +6018,7 @@
 
       var data = this.CountStat();
 
-      var print_name = Math.floor(dostat % 10);
+      var print_name = dostat % 10;
       var print_entries = Math.floor(dostat / 10) % 10;
       var print_mean = Math.floor(dostat / 100) % 10;
       var print_rms = Math.floor(dostat / 1000) % 10;
@@ -6091,15 +6088,15 @@
          var f1 = this.FindF1();
          if (f1!=null) {
             var print_fval    = dofit%10;
-            var print_ferrors = (dofit/10)%10;
-            var print_fchi2   = (dofit/100)%10;
-            var print_fprob   = (dofit/1000)%10;
+            var print_ferrors = Math.floor(dofit/10) % 10;
+            var print_fchi2   = Math.floor(dofit/100) % 10;
+            var print_fprob   = Math.floor(dofit/1000) % 10;
 
             if (print_fchi2 > 0)
                stat.AddLine("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
             if (print_fprob > 0)
                stat.AddLine("Prob = <not avail>");
-            if ((print_fval > 0) || (print_ferrors > 0)) {
+            if (print_fval > 0) {
                for(var n=0;n<f1.fNpar;n++) {
                   var parname = f1.GetParName(n);
                   var parvalue = f1.GetParValue(n);
@@ -6111,7 +6108,7 @@
                      if ((Number(parerr)==0.0) && (f1.fParErrors[n]!=0.0)) parerr = stat.Format(f1.fParErrors[n],"4.2g");
                   }
 
-                  if ((print_ferrors > 0) && (parerr.length>0))
+                  if ((print_ferrors > 0) && (parerr.length > 0))
                      stat.AddLine(parname + " = " + parvalue + " #pm " + parerr);
                   else
                      stat.AddLine(parname + " = " + parvalue);
