@@ -5526,7 +5526,7 @@
       // null).on("touchend.zoomRect", null);
       d3.select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
-      d3.select("body").classed("noselect", false);
+      // d3.select("body").classed("noselect", false);
 
       var m = d3.mouse(this.last_mouse_tgt);
 
@@ -5572,6 +5572,7 @@
 
       this.last_touch_tgt = tgt;
       var arr = d3.touches(this.last_touch_tgt);
+      this.touch_cnt+=1;
 
       // only double-touch will be handled
       if (arr.length == 1) {
@@ -5579,6 +5580,7 @@
 
          var now = new Date();
          var diff = now.getTime() - this.last_touch.getTime();
+         this.last_touch = now;
 
          if ((diff < 300) && (this.zoom_curr != null)
                && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
@@ -5590,13 +5592,17 @@
             this.clearInteractiveElements();
             this.Unzoom(true, true, true);
 
+            this.last_touch = new Date(0);
+
             this.svg_frame().on("touchcancel", null)
-                            .on("touchend", null);
-         } else {
-            this.last_touch = now;
+                            .on("touchend", null, true);
+         } else
+         if (JSROOT.gStyle.ContextMenu) {
             this.zoom_curr = arr[0];
             this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
                             .on("touchend", this.endTouchSel.bind(this), true);
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
          }
       }
 
@@ -5606,8 +5612,10 @@
 
       this.clearInteractiveElements();
 
-      var pnt1 = arr[0];
-      var pnt2 = arr[1];
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null, true);
+
+      var pnt1 = arr[0], pnt2 = arr[1];
 
       this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
       this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
@@ -5680,27 +5688,29 @@
 
    JSROOT.THistPainter.prototype.endTouchSel = function() {
 
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null, true);
+
       if (this.zoom_kind == 0) {
          // special case - single touch can ends up with context menu
-         d3.event.preventDefault();
-         this.svg_frame().on("touchcancel", null)
-                         .on("touchend", null);
 
-         var arr = d3.touches(this.last_touch_tgt);
-         if (arr.length == 1) {
+         d3.event.preventDefault();
+
+         // var arr = d3.touches(this.last_touch_tgt);
+
+         //if (arr.length == 1) {
             // this is touch with single element
 
-            var diff = Date().getTime() - this.last_touch.getTime();
+         var now = new Date();
 
-            if ((diff > 500) && (this.zoom_curr != null)
-                && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-                && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
-               this.ShowContextMenu();
-            } else {
-               this.clearInteractiveElements();
-            }
+         var diff = now.getTime() - this.last_touch.getTime();
+
+         if ((diff > 500) && (diff<2000)) {
+            this.ShowContextMenu();
+            this.last_touch = new Date(0);
+         } else {
+            this.clearInteractiveElements();
          }
-         return;
       }
 
       if (this.zoom_kind < 100) return;
@@ -5709,7 +5719,7 @@
       d3.select(window).on("touchmove.zoomRect", null)
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
-      d3.select("body").classed("noselect", false);
+      // d3.select("body").classed("noselect", false);
 
       var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
 
@@ -5730,6 +5740,7 @@
       d3.select("body").style("-webkit-user-select", "auto");
 
       this.clearInteractiveElements();
+      this.last_touch = new Date(0);
 
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
 
@@ -5750,6 +5761,7 @@
       this.last_touch_tgt = null; // last place where touch event was
       this.zoom_origin = null;  // original point where zooming started
       this.zoom_curr = null;    // current point for zomming
+      this.touch_cnt = 0;
 
       // one cannot use bind() with some mouse/touch events
       // therefore use normal functions with pthis workaround
@@ -5759,19 +5771,62 @@
       if (JSROOT.gStyle.Zooming) {
          this.svg_frame().on("mousedown", function() { pthis.startRectSel(this); } );
          this.svg_frame().on("dblclick", function() { pthis.mouseDoubleClick(); });
-         if (JSROOT.touches)
-            this.svg_frame().on("touchstart", function() { pthis.startTouchZoom(this); });
       }
+
+      if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
+         this.svg_frame().on("touchstart", function() { pthis.startTouchZoom(this); });
+
       if (JSROOT.gStyle.ContextMenu) {
-         this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
-         this.svg_frame().selectAll(".xaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         this.svg_frame().selectAll(".yaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
+         if (JSROOT.touches) {
+            this.svg_frame().selectAll(".xaxis_container")
+               .on("touchstart", function() { pthis.startTouchMenu(this, "x", pthis.svg_frame().selectAll(".xaxis_container")); } );
+            this.svg_frame().selectAll(".yaxis_container")
+               .on("touchstart", function() { pthis.startTouchMenu(this, "y", pthis.svg_frame().selectAll(".yaxis_container")); } );
+         } else {
+            this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
+            this.svg_frame().selectAll(".xaxis_container")
+                .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+            this.svg_frame().selectAll(".yaxis_container")
+                .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
+         }
       }
    }
 
-   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind) {
+   JSROOT.THistPainter.prototype.startTouchMenu = function(touch_tgt, kind, select) {
+      var arr = d3.touches(touch_tgt);
+      if (arr.length != 1) return;
+
+      if (!kind || (kind=="")) kind = "main";
+      var fld = "touch_" + kind;
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0], sel: select };
+
+      select.on("touchcancel", this.endTouchMenu.bind(this, kind))
+            .on("touchend", this.endTouchMenu.bind(this, kind), true);
+   }
+
+   JSROOT.THistPainter.prototype.endTouchMenu = function(kind) {
+      var fld = "touch_" + kind;
+
+      if (! (fld in this)) return;
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      var diff = new Date().getTime() - this[fld].dt.getTime();
+
+      this[fld].sel.on("touchcancel", null)
+                   .on("touchend", null, true);
+
+      if (diff>500) this.ShowContextMenu(kind, { ClientX: 100, ClientY : 100 } );
+
+      delete this[fld];
+   }
+
+   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
       d3.event.preventDefault();
 
       // ignore context menu when touches zooming is ongoing
@@ -5780,7 +5835,7 @@
       d3.event.stopPropagation(); // disable main context menu
 
       // one need to copy event, while after call back event may be changed
-      this.ctx_menu_evnt = d3.event;
+      this.ctx_menu_evnt = evnt ? evnt : d3.event;
 
       // suppress any running zomming
       this.clearInteractiveElements();
