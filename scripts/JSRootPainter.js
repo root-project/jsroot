@@ -418,7 +418,6 @@
       return line;
    }
 
-
    JSROOT.Painter.clearCuts = function(chopt) {
       /* decode string "chopt" and remove graphical cuts */
       var left = chopt.indexOf('[');
@@ -1479,6 +1478,8 @@
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
+
+            JSROOT.Painter.closeMenu(); // close menu
 
             d3.event.sourceEvent.preventDefault();
             acc_x = 0; acc_y = 0;
@@ -5436,11 +5437,9 @@
 
       // if (!this.draw_content) return;
 
-      var width = this.frame_width(), height = this.frame_height();
       var e, origin, curr = null, rect = null;
-      var lasttouch = new Date(0);
-
-      var zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
+      this.last_touch = new Date(0);
+      this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
 
       var disable_tooltip = false;
 
@@ -5451,7 +5450,7 @@
       function closeAllExtras() {
          JSROOT.Painter.closeMenu();
          if (rect != null) { rect.remove(); rect = null; }
-         zoom_kind = 0;
+         pthis.zoom_kind = 0;
          if (disable_tooltip) {
             JSROOT.gStyle.Tooltip = true;
             disable_tooltip = false;
@@ -5463,7 +5462,7 @@
          d3.event.preventDefault();
 
          // ignore context menu when touches zooming is ongoing
-         if (zoom_kind > 100) return;
+         if (pthis.zoom_kind > 100) return;
 
          // one need to copy event, while after call back event may be changed
          var evnt = d3.event;
@@ -5481,15 +5480,11 @@
 
       function startTouchSel() {
          // in case when zooming was started, block any other kind of events
-         if (zoom_kind != 0) {
+         if (pthis.zoom_kind != 0) {
             d3.event.preventDefault();
             d3.event.stopPropagation();
             return;
          }
-
-         // update frame dimensions while frame could be resized
-         width = Number(pthis.svg_frame().attr("width"));
-         height = Number(pthis.svg_frame().attr("height"));
 
          e = this;
          // var t = d3.event.changedTouches;
@@ -5499,7 +5494,7 @@
          if (arr.length == 1) {
 
             var now = new Date();
-            var diff = now.getTime() - lasttouch.getTime();
+            var diff = now.getTime() - phis.last_touch.getTime();
 
             if ((diff < 300) && (curr != null)
                   && (Math.abs(curr[0] - arr[0][0]) < 30)
@@ -5511,7 +5506,7 @@
                closeAllExtras();
                pthis.Unzoom(true, true, true);
             } else {
-               lasttouch = now;
+               phis.last_touch = now;
                curr = arr[0];
             }
          }
@@ -5534,15 +5529,15 @@
          origin.push(Math.max(pnt1[1], pnt2[1]));
 
          if (curr[0] < 0) {
-            zoom_kind = 103; // only y
+            pthis.zoom_kind = 103; // only y
             curr[0] = 0;
-            origin[0] = width;
-         } else if (origin[1] > height) {
-            zoom_kind = 102; // only x
+            origin[0] = pthis.frame_width();
+         } else if (origin[1] > pthis.frame_height()) {
+            pthis.zoom_kind = 102; // only x
             curr[1] = 0;
-            origin[1] = height;
+            origin[1] = pthis.frame_height();
          } else {
-            zoom_kind = 101; // x and y
+            pthis.zoom_kind = 101; // x and y
          }
 
          // d3.select("body").classed("noselect", true);
@@ -5565,7 +5560,7 @@
       }
 
       function moveTouchSel() {
-         if (zoom_kind < 100) return;
+         if (pthis.zoom_kind < 100) return;
 
          d3.event.preventDefault();
 
@@ -5574,18 +5569,18 @@
 
          if (arr.length != 2) {
             closeAllExtras();
-            zoom_kind = 0;
+            pthis.zoom_kind = 0;
             return;
          }
 
          var pnt1 = arr[0];
          var pnt2 = arr[1];
 
-         if (zoom_kind != 103) {
+         if (pthis.zoom_kind != 103) {
             curr[0] = Math.min(pnt1[0], pnt2[0]);
             origin[0] = Math.max(pnt1[0], pnt2[0]);
          }
-         if (zoom_kind != 102) {
+         if (pthis.zoom_kind != 102) {
             curr[1] = Math.min(pnt1[1], pnt2[1]);
             origin[1] = Math.max(pnt1[1], pnt2[1]);
          }
@@ -5605,7 +5600,7 @@
 
       function endTouchSel() {
 
-         if (zoom_kind < 100) return;
+         if (pthis.zoom_kind < 100) return;
 
          d3.event.preventDefault();
          d3.select(window).on("touchmove.zoomRect", null)
@@ -5617,13 +5612,13 @@
 
          var isany = false;
 
-         if ((zoom_kind != 103) && (Math.abs(curr[0] - origin[0]) > 10)) {
+         if ((pthis.zoom_kind != 103) && (Math.abs(curr[0] - origin[0]) > 10)) {
             xmin = Math.min(pthis.RevertX(origin[0]), pthis.RevertX(curr[0]));
             xmax = Math.max(pthis.RevertX(origin[0]), pthis.RevertX(curr[0]));
             isany = true;
          }
 
-         if ((zoom_kind != 102) && (Math.abs(curr[1] - origin[1]) > 10)) {
+         if ((pthis.zoom_kind != 102) && (Math.abs(curr[1] - origin[1]) > 10)) {
             ymin = Math.min(pthis.y.invert(origin[1]), pthis.y.invert(curr[1]));
             ymax = Math.max(pthis.y.invert(origin[1]), pthis.y.invert(curr[1]));
             isany = true;
@@ -5636,7 +5631,7 @@
 
          rect.remove();
          rect = null;
-         zoom_kind = 0;
+         pthis.zoom_kind = 0;
 
          if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
 
@@ -5646,13 +5641,9 @@
       function startRectSel() {
 
          // ignore when touch selection is actiavated
-         if (zoom_kind > 100) return;
+         if (pthis.zoom_kind > 100) return;
 
          d3.event.preventDefault();
-
-         // update frame dimensions while frame could be resized
-         width = Number(pthis.svg_frame().attr("width"));
-         height = Number(pthis.svg_frame().attr("height"));
 
          closeAllExtras();
 
@@ -5660,23 +5651,23 @@
          origin = d3.mouse(e);
 
          curr = new Array;
-         curr.push(Math.max(0, Math.min(width, origin[0])));
-         curr.push(Math.max(0, Math.min(height, origin[1])));
+         curr.push(Math.max(0, Math.min(pthis.frame_width(), origin[0])));
+         curr.push(Math.max(0, Math.min(pthis.frame_height(), origin[1])));
 
          if (origin[0] < 0) {
-            zoom_kind = 3; // only y
+            pthis.zoom_kind = 3; // only y
             origin[0] = 0;
             origin[1] = curr[1];
-            curr[0] = width;
+            curr[0] = pthis.frame_width();
             curr[1] += 1;
-         } else if (origin[1] > height) {
-            zoom_kind = 2; // only x
+         } else if (origin[1] > pthis.frame_height()) {
+            pthis.zoom_kind = 2; // only x
             origin[0] = curr[0];
             origin[1] = 0;
             curr[0] += 1;
-            curr[1] = height;
+            curr[1] = pthis.frame_height();
          } else {
-            zoom_kind = 1; // x and y
+            pthis.zoom_kind = 1; // x and y
             origin[0] = curr[0];
             origin[1] = curr[1];
          }
@@ -5702,7 +5693,7 @@
          var m = d3.mouse(e);
          closeAllExtras();
          if (m[0] < 0) pthis.Unzoom(false, true, false); else
-         if (m[1] > height) pthis.Unzoom(true, false, false); else {
+         if (m[1] > pthis.frame_height()) pthis.Unzoom(true, false, false); else {
             pthis.Unzoom(true, true, true);
             pthis.svg_frame().on("dblclick", null);
          }
@@ -5710,15 +5701,15 @@
 
       function moveRectSel() {
 
-         if ((zoom_kind == 0) || (zoom_kind > 100)) return;
+         if ((pthis.zoom_kind == 0) || (pthis.zoom_kind > 100)) return;
 
          d3.event.preventDefault();
          var m = d3.mouse(e);
 
-         m[0] = Math.max(0, Math.min(width, m[0]));
-         m[1] = Math.max(0, Math.min(height, m[1]));
+         m[0] = Math.max(0, Math.min(pthis.frame_width(), m[0]));
+         m[1] = Math.max(0, Math.min(pthis.frame_height(), m[1]));
 
-         switch (zoom_kind) {
+         switch (pthis.zoom_kind) {
             case 1: curr[0] = m[0]; curr[1] = m[1]; break;
             case 2: curr[0] = m[0]; break;
             case 3: curr[1] = m[1]; break;
@@ -5736,7 +5727,7 @@
       }
 
       function endRectSel() {
-         if ((zoom_kind == 0) || (zoom_kind > 100)) return;
+         if ((pthis.zoom_kind == 0) || (pthis.zoom_kind > 100)) return;
 
          d3.event.preventDefault();
          // d3.select(window).on("touchmove.zoomRect",
@@ -5747,10 +5738,10 @@
 
          var m = d3.mouse(e);
 
-         m[0] = Math.max(0, Math.min(width, m[0]));
-         m[1] = Math.max(0, Math.min(height, m[1]));
+         m[0] = Math.max(0, Math.min(pthis.frame_width(), m[0]));
+         m[1] = Math.max(0, Math.min(pthis.frame_height(), m[1]));
 
-         switch (zoom_kind) {
+         switch (pthis.zoom_kind) {
             case 1: curr[0] = m[0]; curr[1] = m[1]; break;
             case 2: curr[0] = m[0]; break; // only X
             case 3: curr[1] = m[1]; break; // only Y
@@ -5760,13 +5751,13 @@
 
          var isany = false;
 
-         if ((zoom_kind != 3) && (Math.abs(curr[0] - origin[0]) > 10)) {
+         if ((pthis.zoom_kind != 3) && (Math.abs(curr[0] - origin[0]) > 10)) {
             xmin = Math.min(pthis.RevertX(origin[0]), pthis.RevertX(curr[0]));
             xmax = Math.max(pthis.RevertX(origin[0]), pthis.RevertX(curr[0]));
             isany = true;
          }
 
-         if ((zoom_kind != 2) && (Math.abs(curr[1] - origin[1]) > 10)) {
+         if ((pthis.zoom_kind != 2) && (Math.abs(curr[1] - origin[1]) > 10)) {
             ymin = Math.min(pthis.y.invert(origin[1]), pthis.y.invert(curr[1]));
             ymax = Math.max(pthis.y.invert(origin[1]), pthis.y.invert(curr[1]));
             isany = true;
@@ -5781,7 +5772,7 @@
 
          rect.remove();
          rect = null;
-         zoom_kind = 0;
+         pthis.zoom_kind = 0;
 
          if (isany) pthis.Zoom(xmin, xmax, ymin, ymax);
       }
