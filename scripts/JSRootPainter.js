@@ -9693,7 +9693,7 @@
       var allopts = null, isany = false;
       for (var cnt=0;cnt<1000;cnt++) {
          var h = JSROOT.getDrawHandle(kind, cnt);
-         if (h==null) break;
+         if ((h==null) || !('func' in h)) break;
          isany = true;
          if (! ('opt' in h)) continue;
          var opts = h.opt.split(';');
@@ -9715,7 +9715,7 @@
    }
 
    JSROOT.canDraw = function(classname) {
-      return JSROOT.getDrawHandle("ROOT." + classname) != null;
+      return JSROOT.getDrawOptions("ROOT." + classname) != null;
    }
 
    /** @fn JSROOT.draw(divid, obj, opt)

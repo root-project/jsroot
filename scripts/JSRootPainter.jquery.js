@@ -491,15 +491,17 @@
          if (fileprop != null) {
             var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
 
-            menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
+            if (opts!=null)
+               menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 
             var filepath = qualifyURL(fileprop.fileurl);
             if (filepath.indexOf(JSROOT.source_dir) == 0)
                filepath = filepath.slice(JSROOT.source_dir.length);
 
-            menu.addDrawMenu("Draw in new window", opts, function(arg) {
-               window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
-            });
+            if (opts!=null)
+               menu.addDrawMenu("Draw in new window", opts, function(arg) {
+                  window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
+               });
          }
 
          if (menu.size()>0) {
