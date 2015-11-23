@@ -3778,14 +3778,12 @@
 
       if (this.main_painter().options.Logz) {
          z = d3.scale.log();
-         this['noexpz'] = this.main_painter().histo['fZaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
-         if ((zmax < 300) && (zmin > 0.3)) this['noexpz'] = true;
-         this['moreloglabelsz'] = this.main_painter().histo['fZaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+         this['noexpz'] = ((zmax < 300) && (zmin > 0.3));
 
          this['formatz'] = function(d) {
             var val = parseFloat(d);
             var vlog = JSROOT.Math.log10(val);
-            if (this['moreloglabelsz'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+            if (Math.abs(vlog - Math.round(vlog))<0.001) {
                if (!this['noexpz'])
                   return JSROOT.Painter.formatExp(val.toExponential(0));
                else
@@ -3822,7 +3820,6 @@
              .attr("x", pos_x).attr("y", pos_y)               // position required only for drag functions
              .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
              .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
-
 
       for (var i=0;i<contour.length-1;i++) {
          var z0 = z(contour[i]);
@@ -5880,12 +5877,13 @@
          menu['painter'] = this;
 
          if ((arg=="x") || (arg=='y') || (arg=='z')) {
-            var faxis = this.histo['fXaxis'];
-            if (arg=="y") faxis = this.histo['fYaxis']; else
-            if (arg=="z") faxis = this.histo['fZaxis'];
+            var faxis = null;
+            if (arg=="x") faxis = this.histo['fXaxis']; else
+            if (arg=="y") faxis = this.histo['fYaxis'];
             menu.add("header: " + arg.toUpperCase() + " axis");
             menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", arg=="z"); });
             menu.add((this.options["Log" + kind] ? "chk:" : "unk:") + "SetLog"+arg, function() { this.ToggleLog(arg); });
+            if (faxis != null) {
             menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
             menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
@@ -5896,6 +5894,7 @@
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
             menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+            }
          } else {
             menu.add("header:"+ this.histo['fName']);
             this.FillContextMenu(menu);
