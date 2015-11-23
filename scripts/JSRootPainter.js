@@ -3768,17 +3768,43 @@
       var tickSize = axis['fTickSize'] * width;
 
       // force creation of contour array if missing
-      if (this.main_painter().fContour==null)
+      if (this.main_painter().fContour == null)
          this.main_painter().getValueColor(this.main_painter().minbin);
 
       var contour = this.main_painter().fContour;
+      var zmin = contour[0], zmax = contour[contour.length-1];
 
       var z = null;
-      if (this.main_painter().options.Logz)
+
+      if (this.main_painter().options.Logz) {
          z = d3.scale.log();
-      else
+         this['noexpz'] = this.main_painter().histo['fZaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+         if ((zmax < 300) && (zmin > 0.3)) this['noexpz'] = true;
+         this['moreloglabelsz'] = this.main_painter().histo['fZaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+
+         this['formatz'] = function(d) {
+            var val = parseFloat(d);
+            var vlog = JSROOT.Math.log10(val);
+            if (this['moreloglabelsz'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this['noexpz'])
+                  return JSROOT.Painter.formatExp(val.toExponential(0));
+               else
+               if (vlog<0)
+                  return val.toFixed(Math.round(-vlog+0.5));
+               else
+                  return val.toFixed(0);
+            }
+            return null;
+         }
+
+      } else {
          z = d3.scale.linear();
-      z.domain([contour[0], contour[contour.length-1]]).range([s_height,0]);
+         this['formatz'] = function(d) {
+            if ((Math.abs(d) < 1e-14) && (Math.abs(zmax - zmin) > 1e-5)) d = 0;
+            return parseFloat(d.toPrecision(12));
+         }
+      }
+      z.domain([zmin, zmax]).range([s_height,0]);
 
       var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
 
@@ -3827,7 +3853,7 @@
                     .tickPadding(axisOffset)
                     .tickSize(-tickSize, -tickSize / 2, 0)
                     .ticks(nbr1)
-                    .tickFormat(function(d) { return d; });
+                    .tickFormat(this.formatz.bind(this));
 
       var zax = this.draw_g.append("svg:g")
                    .attr("class", "zaxis")
@@ -5002,7 +5028,6 @@
          }
 
          this['formatx'] = function(d) {
-            // do not show x at all
             if (this.x_kind=='labels') return this.AxisAsText("x", d);
 
             if ((Math.abs(d) < 1e-14) && (Math.abs(this.xmax - this.xmin) > 1e-5)) d = 0;
@@ -5016,7 +5041,7 @@
                            .ticks(this.x_nticks);
 
       if ('formatx' in this)
-         x_axis.tickFormat(function(d) { return pthis.formatx(d); });
+         x_axis.tickFormat(this.formatx.bind(this));
 
       delete this['formaty'];
 
@@ -5075,7 +5100,7 @@
                    .ticks(this.y_nticks);
 
       if ('formaty' in this)
-         y_axis.tickFormat(function(d) { return pthis.formaty(d); });
+         y_axis.tickFormat(this.formaty.bind(this));
 
       var drawx = xax_g.append("svg:g").attr("class", "xaxis")
                        .call(x_axis).call(xlabelfont.func);
