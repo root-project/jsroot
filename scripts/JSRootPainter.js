@@ -5362,12 +5362,12 @@
    }
 
    JSROOT.THistPainter.prototype.DrawFunctions = function() {
-
       // draw statistics box & other TPaveTexts, which are belongs to histogram
       // should be called once to create all painters, which are than updated separately
       // not drawn when no stats or
 
       if (!('fFunctions' in this.histo))  return;
+
       // if (this.options.Func == 0) return; // in some cases on need to disable
       // functions drawing
 
@@ -5376,19 +5376,6 @@
       var nostat = this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.NoStat==1);
 
       var lastpainter = this;
-
-      var kNotDraw = JSROOT.BIT(9); // don't draw the function (TF1) when in a TH1
-
-      var EStatusBits = {
-         kCanDelete : JSROOT.BIT(0), // if object in a list can be deleted
-         kMustCleanup : JSROOT.BIT(3), // if object destructor must call RecursiveRemove()
-         kObjInCanvas : JSROOT.BIT(3), // for backward compatibility only, use kMustCleanup
-         kIsReferenced : JSROOT.BIT(4), // if object is referenced by a TRef or TRefArray
-         kHasUUID : JSROOT.BIT(5), // if object has a TUUID (its fUniqueID=UUIDNumber)
-         kCannotPick : JSROOT.BIT(6), // if object in a pad cannot be picked
-         kNoContextMenu : JSROOT.BIT(8), // if object does not want context menu
-         kInvalidObject : JSROOT.BIT(13)  // if object ctor succeeded but object should not be used
-      }
 
       for ( var i in this.histo.fFunctions.arr) {
 
@@ -5405,7 +5392,7 @@
             if (!nostat)
                funcpainter = JSROOT.Painter.drawPaveText(this.divid, func, opt);
          } else if (func['_typename'] == 'TF1') {
-            if (!func.TestBit(kNotDraw))
+            if (!func.TestBit(JSROOT.BIT(9)))
                funcpainter = JSROOT.Painter.drawFunction(this.divid, func, opt);
          } else {
             funcpainter = JSROOT.draw(this.divid, func, opt);
