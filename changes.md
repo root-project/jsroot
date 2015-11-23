@@ -10,6 +10,7 @@
 7. Introduce context menu for TPaveStats, let switch single elements in the box   
 8. Enable usage of all context menus on touch devices 
 9. Implement JSROOT.Math.Prob function, provides probability value in stat box 
+10. Introduce context menu for color palette (z axis)
 
 
 ## Changes in 3.8

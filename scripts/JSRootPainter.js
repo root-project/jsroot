@@ -3300,7 +3300,7 @@
          this.FinishTextDrawing(lbl_g);
       }
 
-      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText', ctxmenu : JSROOT.touches });
+      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText', ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
@@ -3856,7 +3856,10 @@
          this.FinishTextDrawing();
       }
 
-      this.AddDrag({ obj: palette, redraw: 'DrawPalette' });
+      this.AddDrag({ obj: palette, redraw: 'DrawPalette', ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
+
+      if (JSROOT.gStyle.ContextMenu && !JSROOT.touches)
+         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
 
       if (!JSROOT.gStyle.Zooming) return;
 
@@ -3931,6 +3934,10 @@
                  .style("cursor", "crosshair")
                  .style("opacity", "0")
                  .on("mousedown", startRectSel);
+   }
+
+   JSROOT.TPaletteAxisPainter.prototype.ShowContextMenu = function(kind, evnt) {
+      this.main_painter().ShowContextMenu("z", evnt);
    }
 
    JSROOT.TPaletteAxisPainter.prototype.Redraw = function() {
@@ -5847,10 +5854,12 @@
       JSROOT.Painter.createMenu(function(arg, menu) {
          menu['painter'] = this;
 
-         if ((arg=="x") || (arg=='y')) {
-            var faxis = (arg=="x") ? this.histo['fXaxis'] : this.histo['fYaxis'];
+         if ((arg=="x") || (arg=='y') || (arg=='z')) {
+            var faxis = this.histo['fXaxis'];
+            if (arg=="y") faxis = this.histo['fYaxis']; else
+            if (arg=="z") faxis = this.histo['fZaxis'];
             menu.add("header: " + arg.toUpperCase() + " axis");
-            menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", false); });
+            menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", arg=="z"); });
             menu.add((this.options["Log" + kind] ? "chk:" : "unk:") + "SetLog"+arg, function() { this.ToggleLog(arg); });
             menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
