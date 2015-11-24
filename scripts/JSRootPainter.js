@@ -3384,7 +3384,7 @@
          function AddStatOpt(pos, name) {
             var opt = (pos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
-            menu.add( (opt ? "chk:" : "unk:") + name, opt * 100 + pos, function(arg) {
+            menu.addchk(opt, name, opt * 100 + pos, function(arg) {
                var newopt = (arg % 100 < 10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
                var oldopt = parseInt(arg / 100);
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
@@ -5881,18 +5881,18 @@
             if (arg=="y") faxis = this.histo['fYaxis'];
             menu.add("header: " + arg.toUpperCase() + " axis");
             menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", arg=="z"); });
-            menu.add((this.options["Log" + kind] ? "chk:" : "unk:") + "SetLog"+arg, function() { this.ToggleLog(arg); });
+            menu.addchk(this.options["Log" + kind], "SetLog"+arg, this.ToggleLog.bind(this, arg) );
             if (faxis != null) {
-            menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterLabels) ? "chk:" : "unk:") + "CenterLabels",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-            menu.add((faxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? "chk:" : "unk:") + "CenterTitle",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-            menu.add((faxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? "chk:" : "unk:") + "RotateTitle",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            menu.add((faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) ? "chk:" : "unk:") + "MoreLogLabels",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-            menu.add((faxis.TestBit(JSROOT.EAxisBits.kNoExponent) ? "chk:" : "unk:") + "NoExponent",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
+                     function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "CenterTitle",
+                     function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "RotateTitle",
+                     function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "MoreLogLabels",
+                      function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "NoExponent",
+                      function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
             }
          } else {
             menu.add("header:"+ this.histo['fName']);
@@ -5913,26 +5913,21 @@
          menu.add("Unzoom Z", function() { this.Unzoom(false, false, true); });
       menu.add("Unzoom", function() { this.Unzoom(true, true, true); });
 
-      menu.add((JSROOT.gStyle.Tooltip ? "chk:" : "unk:") + "Show tooltips", function() {
+      menu.addchk(JSROOT.gStyle.Tooltip, "Show tooltips", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
          this.RedrawPad();
       });
 
       if (this.options) {
-         var item = (this.options.Logx ? "chk:" : "unk:") + "SetLogx";
+         menu.addchk(this.options.Logx, "SetLogx", function() { this.ToggleLog("x"); });
 
-         menu.add(item, function() { this.ToggleLog("x"); });
+         menu.addchk(this.options.Logy, "SetLogy", function() { this.ToggleLog("y"); });
 
-         item = (this.options.Logy ? "chk:" : "unk:") +"SetLogy";
-         menu.add(item, function() { this.ToggleLog("y"); });
-
-         if (this.Dimension() == 2) {
-            item = (this.options.Logz ? "chk:" : "unk:") + "SetLogz";
-            menu.add(item, function() { this.ToggleLog("z"); });
-         }
+         if (this.Dimension() == 2)
+            menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
       }
       if (this.draw_content)
-         menu.add((this.ToggleStat('only-check') ? "chk:" : "unk:") + "Show statbox", this.ToggleStat.bind(this));
+         menu.addchk(this.ToggleStat('only-check'), "Show statbox", this.ToggleStat.bind(this));
    }
 
    // ======= TH1 painter================================================

@@ -64,6 +64,10 @@
          this.cnt++;
       }
 
+      menu.addchk = function(flag, name, arg, func) {
+         return this.add((flag ? "chk:" : "unk:") + name, arg, func);
+      }
+
       menu.size = function() { return this.cnt-1; }
 
       menu.addDrawMenu = function(menu_name, opts, call_back) {
