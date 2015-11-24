@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 3.9
 1. Support non-equidistant bins for TH1/TH2 objects.
 2. Display entries count from histo.fEntries member, only when not set use computed value  
 3. Support italic and bold text when used with MathJax
