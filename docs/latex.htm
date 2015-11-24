@@ -44,14 +44,12 @@
          if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
          if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
-         document.getElementById('debug').innerHTML = '';
-
          if (JSROOT.GetUrlOption('mathjax')!=null)
-            document.getElementById('debug').innerHTML += "<h1>Drawing with <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
+            document.getElementById('caption').innerHTML = "<h1>Drawing with <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
          else
-            document.getElementById('debug').innerHTML += "<h1>Drawing without <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
+            document.getElementById('caption').innerHTML = "<h1>Drawing without <a href='https://www.mathjax.org/'>MathJax.js</a> rendering</h1>";
 
-         document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
+         document.getElementById('debug').innerHTML = "<h3>JavaScript ROOT version <font color='green'>" + JSROOT.version + "</font> from <a href='" + JSROOT.source_dir +"index.htm'>" + JSROOT.source_dir + "</a></h3>";
 
          JSROOT.Painter.readStyleFromURL();
 
@@ -70,6 +68,7 @@
 
 <body>
 
+  <div id="caption"></div>
   <div id="debug">loading...</div>
   <br/>
 
