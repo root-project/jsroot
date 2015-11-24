@@ -4327,6 +4327,7 @@
       if (l!=-1) {
          var name = 'COL';
 
+         if (chopt.charAt(l+3)=='0') { option.Color = 111; name += "0"; l++; } else
          if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; l++; } else
          if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; l++; } else
          if (chopt.charAt(l+3)=='3') { option.Color = 3; name += "3"; l++; } else
@@ -6548,8 +6549,8 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      menu.add("Auto zoom-in", function() { this.AutoZoom(); });
-      menu.add("Draw in 3D", function() { this.Draw3D(); });
+      menu.add("Auto zoom-in", this.AutoZoom().bind(this));
+      menu.add("Draw in 3D", this.Draw3D().bind(this));
       menu.add("Toggle col", function() {
          if (this.options.Color == 0)
             this.options.Color = JSROOT.gStyle.DefaultCol;
@@ -6559,7 +6560,7 @@
       });
 
       if (this.options.Color > 0)
-         menu.add("Toggle colz", function() { this.ToggleColz(); });
+         menu.add("Toggle colz", this.ToggleColz().bind(this));
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
@@ -6947,8 +6948,11 @@
          color = Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
       }
 
+      if (color<0) {
       // do not draw bin where color is negative
-      if (color<0) return null;
+         if (this.options.Color != 111) return null;
+         color = 0;
+      }
 
       var palette = JSROOT.gStyle.GetColorPalette();
       var theColor = Math.floor((color+0.99)*palette.length/(this.fContour.length-1));
@@ -7010,7 +7014,6 @@
             gry1 = gry2;
             if (gry1 < 0) gry1 = this.gry(y1);
             gry2 = this.gry(y2);
-
 
             binz = this.histo.getBinContent(i + 1, j + 1);
             if ((binz == 0) || (binz < this.minbin)) continue;
@@ -9612,7 +9615,7 @@
    JSROOT.addDrawFunc({ name: "TPaveLabel", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func:JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func:JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", func:JSROOT.Painter.drawHistogram2D, opt:";COL;COLZ;COL3;LEGO;same" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", func:JSROOT.Painter.drawHistogram2D, opt:";COL;COLZ;COL0Z;COL3;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "THStack", func:JSROOT.Painter.drawHStack });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", func:JSROOT.Painter.drawFunction });
