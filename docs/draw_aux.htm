@@ -99,9 +99,7 @@
 
       function CreateGui() {
 
-         document.getElementById('debug').innerHTML = '';
-
-         document.getElementById('debug').innerHTML += "<h3>JavaScript ROOT version " + JSROOT.version + "</h3>";
+         document.getElementById('debug').innerHTML = "<h3>JavaScript ROOT version <font color='green'>" + JSROOT.version + "</font> from <a href='" + JSROOT.source_dir +"index.htm'>" + JSROOT.source_dir + "</a></h3>";
 
          var arg = "";
          if (JSROOT.GetUrlOption("w") != null) arg += "&w=" + JSROOT.GetUrlOption("w");  
