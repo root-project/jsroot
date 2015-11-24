@@ -92,7 +92,7 @@
          // do not read file when not required - create only fake instance
          if (is_minimal) return filecallback({ fURL: dir+filename });
 
-         new JSROOT.TFile(dir + filename + "+", function(file) {
+         JSROOT.OpenFile(dir + filename + "+", function(file) {
             if (file==null) return file_error(dir+filename + " cannot be opened");
             filecallback(file);
          });

@@ -28,11 +28,10 @@
       }
 
       function LoadFile(filename, filecallback) {
-
          var dir = JSROOT.GetUrlOption("path");
          if (dir==null) dir = global_dir;
 
-         new JSROOT.TFile(dir + filename + "+", function(file) {
+         JSROOT.OpenFile(dir + filename + "+", function(file) {
             if (file==null) return file_error(dir+filename + " cannot be opened");
             filecallback(file);
          });
