@@ -5263,31 +5263,29 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.ToggleStat = function() {
+   JSROOT.THistPainter.prototype.ToggleStat = function(arg) {
 
       var stat = this.FindStat();
-
       if (stat == null) {
-
+         if (arg=='only-check') return false;
          // when statbox created first time, one need to draw it
-         stat = this.CreateStat();
-
+         this.CreateStat();
          this.Redraw();
-
-         return;
+         return true;
       }
 
       var statpainter = this.FindPainterFor(stat);
-      if (statpainter == null) {
-         alert("Did not found painter for existing stat??");
-         return;
-      }
+      if (statpainter == null) return false;
+
+      if (arg=='only-check') return statpainter.Enabled;
 
       statpainter.Enabled = !statpainter.Enabled;
 
       // when stat box is drawed, it always can be draw individualy while it
       // should be last for colz RedrawPad is used
       statpainter.Redraw();
+
+      return statpainter.Enabled;
    }
 
    JSROOT.THistPainter.prototype.IsAxisZoomed = function(axis) {
@@ -5907,7 +5905,6 @@
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
-
       if (this.zoom_xmin!=this.zoom_xmax)
          menu.add("Unzoom X", function() { this.Unzoom(true, false, false); });
       if (this.zoom_ymin!=this.zoom_ymax)
@@ -5916,13 +5913,12 @@
          menu.add("Unzoom Z", function() { this.Unzoom(false, false, true); });
       menu.add("Unzoom", function() { this.Unzoom(true, true, true); });
 
-      menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
+      menu.add((JSROOT.gStyle.Tooltip ? "chk:" : "unk:") + "Show tooltips", function() {
          JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
          this.RedrawPad();
       });
 
       if (this.options) {
-
          var item = (this.options.Logx ? "chk:" : "unk:") + "SetLogx";
 
          menu.add(item, function() { this.ToggleLog("x"); });
@@ -5936,7 +5932,7 @@
          }
       }
       if (this.draw_content)
-         menu.add("Toggle stat", function() { this.ToggleStat(); });
+         menu.add((this.ToggleStat('only-check') ? "chk:" : "unk:") + "Show statbox", this.ToggleStat.bind(this));
    }
 
    // ======= TH1 painter================================================
@@ -6467,7 +6463,7 @@
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.draw_content)
-         menu.add("Auto zoom-in", function() { this.AutoZoom(); });
+         menu.add("Auto zoom-in", this.AutoZoom.bind(this));
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function() {
@@ -6549,18 +6545,18 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      menu.add("Auto zoom-in", this.AutoZoom().bind(this));
-      menu.add("Draw in 3D", this.Draw3D().bind(this));
+      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
+      menu.add("Draw in 3D", this.Draw3D.bind(this));
       menu.add("Toggle col", function() {
          if (this.options.Color == 0)
             this.options.Color = JSROOT.gStyle.DefaultCol;
          else
-            this.options.Color = -1 * this.options.Color;
+            this.options.Color = - this.options.Color;
          this.RedrawPad();
       });
 
       if (this.options.Color > 0)
-         menu.add("Toggle colz", this.ToggleColz().bind(this));
+         menu.add("Toggle colz", this.ToggleColz.bind(this));
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
