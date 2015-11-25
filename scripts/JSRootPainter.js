@@ -3262,6 +3262,7 @@
       // refill statistic in any case
       painter.FillStatistic();
       painter.DrawPaveText();
+
       return painter.DrawingReady();
    }
 
@@ -3541,254 +3542,6 @@
          painter.svg_canvas().property('current_pad', prev_name);
          painter.DrawingReady();
       });
-
-      return painter;
-   }
-
-   // ===========================================================================
-
-   JSROOT.TPaletteAxisPainter = function(palette) {
-      JSROOT.TObjectPainter.call(this, palette);
-      this.palette = palette;
-   }
-
-   JSROOT.TPaletteAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TPaletteAxisPainter.prototype.GetObject = function() {
-      return this.palette;
-   }
-
-   JSROOT.TPaletteAxisPainter.prototype.DrawPalette = function() {
-      var palette = this.palette;
-      var axis = palette['fAxis'];
-
-      var nbr1 = axis['fNdiv'] % 100;
-      if (nbr1<=0) nbr1 = 8;
-
-      var width = this.pad_width(), height = this.pad_height();
-
-      var s_height = Math.round(Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height);
-
-      var axisOffset = axis['fLabelOffset'] * width;
-      var tickSize = axis['fTickSize'] * width;
-
-      // force creation of contour array if missing
-      if (this.main_painter().fContour == null)
-         this.main_painter().getValueColor(this.main_painter().minbin);
-
-      var contour = this.main_painter().fContour;
-      var zmin = contour[0], zmax = contour[contour.length-1];
-
-      var z = null;
-
-      if (this.main_painter().options.Logz) {
-         z = d3.scale.log();
-         this['noexpz'] = ((zmax < 300) && (zmin > 0.3));
-
-         this['formatz'] = function(d) {
-            var val = parseFloat(d);
-            var vlog = JSROOT.log10(val);
-            if (Math.abs(vlog - Math.round(vlog))<0.001) {
-               if (!this['noexpz'])
-                  return JSROOT.Painter.formatExp(val.toExponential(0));
-               else
-               if (vlog<0)
-                  return val.toFixed(Math.round(-vlog+0.5));
-               else
-                  return val.toFixed(0);
-            }
-            return null;
-         }
-
-      } else {
-         z = d3.scale.linear();
-         this['formatz'] = function(d) {
-            if ((Math.abs(d) < 1e-14) && (Math.abs(zmax - zmin) > 1e-5)) d = 0;
-            return parseFloat(d.toPrecision(12));
-         }
-      }
-      z.domain([zmin, zmax]).range([s_height,0]);
-
-      var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
-
-      var pos_x = Math.round(palette['fX1NDC'] * width);
-      var pos_y = Math.round(height*(1 - palette['fY1NDC']));
-
-      var s_width = Math.round(Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width);
-      pos_y -= s_height;
-      if (tickSize > s_width*0.8) tickSize = s_width*0.8;
-
-      // Draw palette pad
-      this.RecreateDrawG(true, ".text_layer");
-
-      this.draw_g
-             .attr("x", pos_x).attr("y", pos_y)               // position required only for drag functions
-             .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
-             .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
-
-      for (var i=0;i<contour.length-1;i++) {
-         var z0 = z(contour[i]);
-         var z1 = z(contour[i+1]);
-         var col = this.main_painter().getValueColor(contour[i]);
-         var r = this.draw_g
-            .append("svg:rect")
-            .attr("x", 0)
-            .attr("y",  z1.toFixed(1))
-            .attr("width", s_width)
-            .attr("height", (z0-z1).toFixed(1))
-            .attr("fill", col)
-            .property("fill0", col)
-            .attr("stroke", col);
-
-         if (JSROOT.gStyle.Tooltip)
-            r.on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip)
-                  d3.select(this).transition().duration(100).style("fill", 'grey');
-            }).on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", this['fill0']);
-            }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
-      }
-
-      // Build and draw axes
-      var z_axis = d3.svg.axis().scale(z)
-                    .orient("right")
-                    .tickPadding(axisOffset)
-                    .tickSize(-tickSize, -tickSize / 2, 0)
-                    .ticks(nbr1)
-                    .tickFormat(this.formatz.bind(this));
-
-      var zax = this.draw_g.append("svg:g")
-                   .attr("class", "zaxis")
-                   .attr("transform", "translate(" + s_width + ", 0)")
-                   .call(z_axis);
-
-      zax.selectAll("text")
-              .call(labelfont.func)
-              .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
-
-      /** Add palette axis title */
-      if ((axis['fTitle'] != "") && (typeof axis['fTextFont'] != 'undefined')) {
-         // offest in width of colz drawings
-         var xoffset = axis['fTitleOffset'] * s_width;
-         if ('getBoundingClientRect' in this.draw_g.node()) {
-            var rect1 = this.draw_g.node().getBoundingClientRect();
-            // offset in portion of real text width produced by axis
-            xoffset = axis['fTitleOffset'] * (rect1.width-s_width);
-         }
-         // add font size
-         xoffset += s_width + axis['fTitleSize'] * height * 1.3;
-         if (pos_x + xoffset > width-3) xoffset = width - 3 - pos_x;
-         var tcolor = JSROOT.Painter.root_colors[axis['fTextColor']];
-         this.StartTextDrawing(axis['fTextFont'], axis['fTitleSize'] * height);
-         this.DrawText(33, 0, xoffset, 0, -270, axis['fTitle'], tcolor);
-         this.FinishTextDrawing();
-      }
-
-      this.AddDrag({ obj: palette, redraw: 'DrawPalette', ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
-
-      if (JSROOT.gStyle.ContextMenu && !JSROOT.touches)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-
-      if (!JSROOT.gStyle.Zooming) return;
-
-      var pthis = this, evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
-
-      function moveRectSel() {
-
-         if (!doing_zoom) return;
-
-         d3.event.preventDefault();
-         var m = d3.mouse(evnt);
-
-         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
-
-         zoom_rect.attr("y", sel1)
-                  .attr("height", Math.abs(sel2-sel1));
-      }
-
-      function endRectSel() {
-         if (!doing_zoom) return;
-
-         d3.event.preventDefault();
-         // d3.select(window).on("touchmove.zoomRect",
-         // null).on("touchend.zoomRect", null);
-         d3.select(window).on("mousemove.colzoomRect", null)
-                          .on("mouseup.colzoomRect", null);
-         // d3.select("body").classed("noselect", false);
-         // d3.select("body").style("-webkit-user-select", "auto");
-         zoom_rect.remove();
-         zoom_rect = null;
-         doing_zoom = false;
-
-         var zmin = Math.min(z.invert(sel1), z.invert(sel2));
-         var zmax = Math.max(z.invert(sel1), z.invert(sel2));
-
-         pthis.main_painter().Zoom(0, 0, 0, 0, zmin, zmax);
-      }
-
-      function startRectSel() {
-
-         // ignore when touch selection is actiavated
-         if (doing_zoom) return;
-         doing_zoom = true;
-
-         d3.event.preventDefault();
-
-         evnt = this;
-         var origin = d3.mouse(evnt);
-
-         sel1 = sel2 = origin[1];
-
-         zoom_rect = pthis.draw_g
-                .append("svg:rect")
-                .attr("class", "zoom")
-                .attr("id", "colzoomRect")
-                .attr("x", "0")
-                .attr("width", s_width)
-                .attr("y", sel1)
-                .attr("height", 5);
-
-         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-                          .on("mouseup.colzoomRect", endRectSel, true);
-
-         d3.event.stopPropagation();
-      }
-
-      this.draw_g.append("svg:rect")
-                 .attr("x", s_width)
-                 .attr("y", 0)
-                 .attr("width", 20)
-                 .attr("height", s_height)
-                 .style("cursor", "crosshair")
-                 .style("opacity", "0")
-                 .on("mousedown", startRectSel);
-   }
-
-   JSROOT.TPaletteAxisPainter.prototype.ShowContextMenu = function(kind, evnt) {
-      this.main_painter().ShowContextMenu("z", evnt);
-   }
-
-   JSROOT.TPaletteAxisPainter.prototype.Redraw = function() {
-
-      var enabled = true;
-
-      if ('options' in this.main_painter())
-         enabled = (this.main_painter().options.Zscale > 0) && (this.main_painter().options.Color > 0);
-
-      if (enabled) {
-         this.DrawPalette();
-      } else {
-         // if palette artificially disabled, do not redraw it
-         this.RemoveDrawG();
-      }
-   }
-
-   JSROOT.Painter.drawPaletteAxis = function(divid, palette) {
-      var painter = new JSROOT.TPaletteAxisPainter(palette);
-
-      painter.SetDivId(divid);
-
-      painter.DrawPalette();
 
       return painter;
    }
@@ -6380,7 +6133,7 @@
          this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.options.Zscale = 1;
          // one should draw palette
-         JSROOT.Painter.drawPaletteAxis(this.divid, this.FindPalette());
+         JSROOT.draw(this.divid, this.FindPalette());
       } else {
          if (this.options.Zscale > 0)
             this.options.Zscale = 0;
@@ -6944,7 +6697,6 @@
       ctx.stroke();
    }
 
-
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
       this.RecreateDrawG(false, ".main_layer", false);
@@ -7248,7 +7000,6 @@
 
       return true;
    }
-
 
    JSROOT.TTextPainter.prototype.Redraw = function() {
       if (this.text['_typename'] == 'TPaveLabel')
@@ -8947,7 +8698,7 @@
    JSROOT.addDrawFunc({ name: "THStack", prereq: "more2d", func: "JSROOT.Painter.drawHStack" });
    JSROOT.addDrawFunc({ name: "TMultiGraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph" });
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func:JSROOT.Painter.drawStreamerInfo });
-   JSROOT.addDrawFunc({ name: "TPaletteAxis", func:JSROOT.Painter.drawPaletteAxis });
+   JSROOT.addDrawFunc({ name: "TPaletteAxis", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func:JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", prereq: "math;more2d", func:"JSROOT.Painter.drawFunction" });
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
