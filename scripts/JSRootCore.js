@@ -1414,62 +1414,6 @@
             }
             return sum;
          };
-         obj['labelsInflate'] = function(ax) {
-            // Double the number of bins for axis.
-            // Refill histogram
-
-            var axis = null;
-            var achoice = ax[0].toUpperCase();
-            if (achoice == 'X') axis = this['fXaxis'];
-            if (achoice == 'Y') axis = this['fYaxis'];
-            if (achoice == 'Z') axis = this['fZaxis'];
-            if (axis == null) return;
-
-            var hold = JSROOT.clone(this);
-
-            var timedisp = axis['fTimeDisplay'];
-            var nbxold = this['fXaxis']['fNbins'];
-            var nbyold = this['fYaxis']['fNbins'];
-            var nbzold = this['fZaxis']['fNbins'];
-            var nbins  = axis['fNbins'];
-            var xmin = axis['fXmin'];
-            var xmax = axis['fXmax'];
-            xmax = xmin + 2 * (xmax - xmin);
-            axis['fFirst'] = 1;
-            axis['fLast'] = axis['fNbins'];
-            this['fBits'] &= ~(JSROOT.EAxisBits.kAxisRange & 0x00ffffff); // SetBit(kAxisRange, 0);
-            // double the bins and recompute ncells
-            axis['fNbins'] = 2*nbins;
-            axis['fXmin']  = xmin;
-            axis['fXmax']  = xmax;
-            this['fNcells'] = -1;
-            this['fArray'].length = -1;
-            var errors = this['fSumw2'].length;
-            if (errors) ['fSumw2'].length = this['fNcells'];
-            axis['fTimeDisplay'] = timedisp;
-
-            Reset("ICE");  // reset content and error
-            this['fSumw2'].splice(0, this['fSumw2'].length);
-            this['fMinimum'] = -1111;
-            this['fMaximum'] = -1111;
-
-            //now loop on all bins and refill
-            var oldEntries = this['fEntries'];
-            var bin, ibin, bins;
-            for (ibin = 0; ibin < this['fNcells']; ibin++) {
-               bins = this.getBinXYZ(ibin);
-               bin = hold.getBin(bins['binx'],bins['biny'],bins['binz']);
-               // NOTE that overflow in hold will be not considered
-               if (bins['binx'] > nbxold  || bins['biny'] > nbyold || bins['binz'] > nbzold) bin = -1;
-               if (bin > 0)  {
-                  var cu = hold.getBinContent(bin);
-                  this['fArray'][bin] += cu;
-                  if (errors) this['fSumw2'][ibin] += hold['fSumw2'][bin];
-               }
-            }
-            this['fEntries'] = oldEntries;
-            delete hold;
-         };
          obj['resetStats'] = function() {
             // Reset the statistics including the number of entries
             // and replace with values calculates from bin content
@@ -1488,24 +1432,11 @@
                this['fEntries'] = stats[0] * stats[0] / stats[1];
          }
          obj['setBinContent'] = function(bin, content) {
-            // Set bin content
-            // see convention for numbering bins in TH1::GetBin
-            // In case the bin number is greater than the number of bins and
-            // the timedisplay option is set or the kCanRebin bit is set,
-            // the number of bins is automatically doubled to accommodate the new bin
-
+            // Set bin content - only trival case, without expansion
             this['fEntries']++;
             this['fTsumw'] = 0;
-            if (bin < 0) return;
-            if (bin >= this['fNcells']-1) {
-               if (this['fXaxis']['fTimeDisplay'] || this.TestBit(JSROOT.TH1StatusBits.kCanRebin) ) {
-                  while (bin >= this['fNcells']-1) this.labelsInflate();
-               } else {
-                  if (bin == this['fNcells']-1) this['fArray'][bin] = content;
-                  return;
-               }
-            }
-            this['fArray'][bin] = content;
+            if ((bin>=0) && (bin<this['fArray'].length))
+               this['fArray'][bin] = content;
          };
          obj['sumw2'] = function() {
             // Create structure to store sum of squares of weights*-*-*-*-*-*-*-*
