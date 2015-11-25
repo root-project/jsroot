@@ -140,6 +140,10 @@
          });
 
          LoadFile("multigraph.root", function(file) {
+            draw_item_options(file, "c1;1", "mg_c1_draw", "");
+            draw_item_options(file, "c2;1", "mg_c2_draw", "");
+            draw_item_options(file, "c3;1", "mg_c3_draw", "");
+            draw_item_options(file, "c4;1", "mg_c4_draw", "");
             draw_item_options(file, "c5;1", "mg_c5_draw", "");
          });
 
@@ -182,7 +186,10 @@
   <div id="can2_draw"></div>
 
   <h2>MultiGraph class (examples from ROOT docu)</h2>
-
+  <div id="mg_c1_draw"></div>
+  <div id="mg_c2_draw"></div>
+  <div id="mg_c3_draw"></div>
+  <div id="mg_c4_draw"></div>
   <div id="mg_c5_draw"></div>
 
 </body>

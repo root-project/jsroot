@@ -308,7 +308,7 @@
          'omult', 'fcircle', 'fcircle', 'fcircle', 'fcircle',          // 5..9
          'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 10..14
          'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 15..19
-         'fcircle', 'fsquare', 'ftriangle-up', 'ftriangle-down', 'ocircle', // 20..24
+         'fcircle', 'fsquare', 'ftriangle-down', 'ftriangle-up', 'ocircle', // 20..24
          'osquare', 'otriangle-up', 'odiamond', 'ocross', 'fstar',     // 25..29
          'ostar', 'dcross', 'otriangle-down', 'fdiamond', 'fcross');   // 30..34
 
