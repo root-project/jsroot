@@ -7100,173 +7100,6 @@
       return painter.Draw2D();
    }
 
-   // ==============================================================================
-
-   JSROOT.TLegendPainter = function(legend) {
-      JSROOT.TObjectPainter.call(this, legend);
-      this.legend = legend;
-   }
-
-   JSROOT.TLegendPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TLegendPainter.prototype.GetObject = function() {
-      return this.legend;
-   }
-
-   JSROOT.TLegendPainter.prototype.drawLegend = function() {
-      this.RecreateDrawG(true, ".text_layer");
-
-      var svg = this.svg_pad();
-      var pave = this.legend;
-
-      var x = 0, y = 0, w = 0, h = 0;
-
-      if (pave['fInit'] == 0) {
-         x = pave['fX1'] * Number(svg.attr("width"));
-         y = Number(svg.attr("height")) - pave['fY1']
-               * Number(svg.attr("height"));
-         w = (pave['fX2'] - pave['fX1']) * Number(svg.attr("width"));
-         h = (pave['fY2'] - pave['fY1']) * Number(svg.attr("height"));
-      } else {
-         x = pave['fX1NDC'] * Number(svg.attr("width"));
-         y = Number(svg.attr("height")) - pave['fY1NDC']
-               * Number(svg.attr("height"));
-         w = (pave['fX2NDC'] - pave['fX1NDC']) * Number(svg.attr("width"));
-         h = (pave['fY2NDC'] - pave['fY1NDC']) * Number(svg.attr("height"));
-      }
-      y -= h;
-      var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
-      var boxfill = this.createAttFill(pave);
-      var lineatt = JSROOT.Painter.createAttLine(pave, lwidth);
-      var ncols = pave.fNColumns, nlines = pave.fPrimitives.arr.length;
-      var nrows = nlines;
-      if (ncols>1) { while ((nrows-1)*ncols>=nlines) nrows--; } else ncols = 1;
-
-      this.draw_g.attr("x", x.toFixed(1))
-                 .attr("y", y.toFixed(1))
-                 .attr("width", w.toFixed(1))
-                 .attr("height", h.toFixed(1))
-                 .attr("transform", "translate(" + x.toFixed(1) + "," + y.toFixed(1) + ")");
-
-      this.StartTextDrawing(pave['fTextFont'], h / (nlines * 1.2));
-
-      this.draw_g
-           .append("svg:rect")
-           .attr("x", 0)
-           .attr("y", 0)
-           .attr("width", w.toFixed(1))
-           .attr("height", h.toFixed(1))
-           .call(boxfill.func)
-           .style("stroke-width", lwidth ? 1 : 0)
-           .style("stroke", lineatt.color);
-
-      var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
-      var column_width = Math.round(w/ncols);
-      var padding_x = Math.round(0.03 * w/ncols);
-      var padding_y = Math.round(0.03 * h);
-
-      var leg_painter = this;
-      var step_y = (h - 2*padding_y)/nrows;
-      var any_opt = false;
-
-      for (var i = 0; i < nlines; ++i) {
-         var leg = pave.fPrimitives.arr[i];
-         var lopt = leg['fOption'].toLowerCase();
-
-         var icol = i % ncols, irow = (i - icol) / ncols;
-
-         var x0 = icol * column_width;
-         var tpos_x = x0 + Math.round(pave['fMargin']*column_width);
-
-         var pos_y = Math.round(padding_y + irow*step_y); // top corner
-         var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
-
-         var attfill = leg;
-         var attmarker = leg;
-         var attline = leg;
-
-         var mo = leg['fObject'];
-
-         if ((mo != null) && (typeof mo == 'object')) {
-            if ('fLineColor' in mo) attline = mo;
-            if ('fFillColor' in mo) attfill = mo;
-            if ('fMarkerColor' in mo) attmarker = mo;
-         }
-
-         var fill = this.createAttFill(attfill);
-         var llll = JSROOT.Painter.createAttLine(attline);
-
-         // Draw fill pattern (in a box)
-         if (lopt.indexOf('f') != -1) {
-            // box total height is yspace*0.7
-            // define x,y as the center of the symbol for this entry
-            this.draw_g.append("svg:rect")
-                   .attr("x", x0 + padding_x)
-                   .attr("y", Math.round(pos_y+step_y*0.1))
-                   .attr("width", tpos_x - 2*padding_x - x0)
-                   .attr("height", Math.round(step_y*0.8))
-                   .call(fill.func);
-         }
-
-         // Draw line
-         if (lopt.indexOf('l') != -1) {
-            this.draw_g.append("svg:line")
-               .attr("x1", x0 + padding_x)
-               .attr("y1", mid_y)
-               .attr("x2", tpos_x - padding_x)
-               .attr("y2", mid_y)
-               .call(llll.func);
-         }
-         // Draw error only
-         if (lopt.indexOf('e') != -1  && (lopt.indexOf('l') == -1 || lopt.indexOf('f') != -1)) {
-         }
-         // Draw Polymarker
-         if (lopt.indexOf('p') != -1) {
-            var marker = JSROOT.Painter.createAttMarker(attmarker);
-            this.draw_g.append("svg:path")
-                .attr("transform", function(d) { return "translate(" + (x0 + tpos_x)/2 + "," + mid_y + ")"; })
-                .call(marker.func);
-         }
-
-         var pos_x = tpos_x;
-         if (lopt.length>0) any_opt = true;
-                       else if (!any_opt) pos_x = x0 + padding_x;
-
-         this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
-      }
-
-      // rescale after all entries are shown
-      this.FinishTextDrawing();
-
-      if (lwidth && lwidth > 1) {
-         this.draw_g.append("svg:line")
-            .attr("x1", w + (lwidth / 2))
-            .attr("y1", lwidth + 1)
-            .attr("x2", w + (lwidth / 2))
-            .attr("y2",  h + lwidth - 1)
-            .call(lineatt.func);
-         this.draw_g.append("svg:line")
-            .attr("x1", lwidth + 1)
-            .attr("y1", h + (lwidth / 2))
-            .attr("x2", w + lwidth - 1)
-            .attr("y2", h + (lwidth / 2))
-            .call(lineatt.func);
-      }
-
-      this.AddDrag({ obj:pave, redraw: 'drawLegend' });
-   }
-
-   JSROOT.TLegendPainter.prototype.Redraw = function() {
-      this.drawLegend();
-   }
-
-   JSROOT.Painter.drawLegend = function(divid, obj, opt) {
-      var painter = new JSROOT.TLegendPainter(obj);
-      painter.SetDivId(divid);
-      painter.Redraw();
-      return painter.DrawingReady();
-   }
-
    // =====================================================================================
 
    JSROOT.TTextPainter = function(text) {
@@ -9097,7 +8930,6 @@
    JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func:JSROOT.Painter.drawCanvas });
    JSROOT.addDrawFunc({ name: "TPad", func:JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", func:JSROOT.Painter.drawFrame });
-   JSROOT.addDrawFunc({ name: "TLegend", func:JSROOT.Painter.drawLegend });
    JSROOT.addDrawFunc({ name: "TPaveText", func:JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveStats", func:JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TLatex", func:JSROOT.Painter.drawText });
@@ -9121,6 +8953,7 @@
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
+   JSROOT.addDrawFunc({ name: "TLegend", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen" });
