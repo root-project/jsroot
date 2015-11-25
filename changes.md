@@ -1,6 +1,8 @@
 # JSROOT changelog
 
 ## Changes in master
+1. Introduce JSRootMath.js script, all JSROOT.Math methods placed there
+2. Move TF1 and THStack painters into JSRootPainter.more.js script
 
 
 ## Changes in 3.9

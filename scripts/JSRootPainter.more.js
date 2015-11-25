@@ -470,6 +470,169 @@
    }
 
 
+   // ====================================================================
+
+   JSROOT.THStackPainter = function(stack) {
+      JSROOT.TObjectPainter.call(this, stack);
+   }
+
+   JSROOT.THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+
+
+   JSROOT.Painter.drawHStack = function(divid, stack, opt) {
+      // paint the list of histograms
+      // By default, histograms are shown stacked.
+      // -the first histogram is paint
+      // -then the sum of the first and second, etc
+
+      // this pointer set to created painter instance
+      this.stack = stack;
+      this.nostack = false;
+      this.firstpainter = null;
+      this.painters = new Array; // keep painters to be able update objects
+
+      this.SetDivId(divid);
+
+      if (!('fHists' in stack) || (stack['fHists'].arr.length == 0)) return this.DrawingReady();
+
+      this['GetObject'] = function() {
+         return this.stack;
+      }
+
+      this['drawStack'] = function(opt) {
+         var pad = this.root_pad();
+         var histos = this.stack['fHists'];
+         var nhists = histos.arr.length;
+
+         if (opt == null) opt = "";
+                     else opt = opt.toLowerCase();
+         var lsame = false;
+         if (opt.indexOf("same") != -1) {
+            lsame = true;
+            opt.replace("same", "");
+         }
+         // compute the min/max of each axis
+         var i, h, xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+         for (var i = 0; i < nhists; ++i) {
+            h = histos.arr[i];
+            if (i == 0 || h['fXaxis']['fXmin'] < xmin)
+               xmin = h['fXaxis']['fXmin'];
+            if (i == 0 || h['fXaxis']['fXmax'] > xmax)
+               xmax = h['fXaxis']['fXmax'];
+            if (i == 0 || h['fYaxis']['fXmin'] < ymin)
+               ymin = h['fYaxis']['fXmin'];
+            if (i == 0 || h['fYaxis']['fXmax'] > ymax)
+               ymax = h['fYaxis']['fXmax'];
+         }
+         this.nostack = opt.indexOf("nostack") == -1 ? false : true;
+         if (!this.nostack)
+            this.stack.buildStack();
+
+         var themin, themax;
+         if (this.stack['fMaximum'] == -1111) themax = this.stack.getMaximum(opt);
+                                         else themax = this.stack['fMaximum'];
+         if (this.stack['fMinimum'] == -1111) {
+            themin = this.stack.getMinimum(opt);
+            if (pad && pad['fLogy']) {
+               if (themin > 0)
+                  themin *= .9;
+               else
+                  themin = themax * 1.e-3;
+            } else if (themin > 0)
+               themin = 0;
+         } else
+            themin = this.stack['fMinimum'];
+         if (!('fHistogram' in this.stack)) {
+            h = this.stack['fHists'].arr[0];
+            this.stack['fHistogram'] = JSROOT.Create("TH1I");
+            this.stack['fHistogram']['fName'] = "unnamed";
+            this.stack['fHistogram']['fXaxis'] = JSROOT.clone(h['fXaxis']);
+            this.stack['fHistogram']['fYaxis'] = JSROOT.clone(h['fYaxis']);
+            this.stack['fHistogram']['fXaxis']['fXmin'] = xmin;
+            this.stack['fHistogram']['fXaxis']['fXmax'] = xmax;
+            this.stack['fHistogram']['fYaxis']['fXmin'] = ymin;
+            this.stack['fHistogram']['fYaxis']['fXmax'] = ymax;
+         }
+         this.stack['fHistogram']['fTitle'] = this.stack['fTitle'];
+         // var histo = JSROOT.clone(stack['fHistogram']);
+         var histo = this.stack['fHistogram'];
+         if (!histo.TestBit(JSROOT.TH1StatusBits.kIsZoomed)) {
+            if (this.nostack && this.stack['fMaximum'] != -1111)
+               histo['fMaximum'] = this.stack['fMaximum'];
+            else {
+               if (pad && pad['fLogy'])
+                  histo['fMaximum'] = themax * (1 + 0.2 * JSROOT.log10(themax / themin));
+               else
+                  histo['fMaximum'] = 1.05 * themax;
+            }
+            if (this.nostack && this.stack['fMinimum'] != -1111)
+               histo['fMinimum'] = this.stack['fMinimum'];
+            else {
+               if (pad && pad['fLogy'])
+                  histo['fMinimum'] = themin / (1 + 0.5 * JSROOT.log10(themax / themin));
+               else
+                  histo['fMinimum'] = themin;
+            }
+         }
+         if (!lsame) {
+
+            var hopt = histo['fOption'];
+            if ((opt != "") && (hopt.indexOf(opt) == -1))
+               hopt += opt;
+
+            if (histo['_typename'].match(/^TH1/))
+               this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo, hopt);
+            else
+            if (histo['_typename'].match(/^TH2/))
+               this.firstpainter = JSROOT.Painter.drawHistogram2D(this.divid, histo, hopt);
+
+         }
+         for (var i = 0; i < nhists; ++i) {
+            if (this.nostack)
+               h = histos.arr[i];
+            else
+               h = this.stack['fStack'].arr[nhists - i - 1];
+
+            var hopt = h['fOption'];
+            if ((opt != "") && (hopt.indexOf(opt) == -1)) hopt += opt;
+            hopt += "same";
+
+            if (h['_typename'].match(/^TH1/)) {
+               var subpainter = JSROOT.Painter.drawHistogram1D(this.divid, h, hopt);
+               this.painters.push(subpainter);
+            }
+         }
+      }
+
+      this['UpdateObject'] = function(obj) {
+         var isany = false;
+         if (this.firstpainter)
+            if (this.firstpainter.UpdateObject(obj['fHistogram'])) isany = true;
+
+         var histos = obj['fHists'];
+         var nhists = histos.arr.length;
+
+         for (var i = 0; i < nhists; ++i) {
+            var h = null;
+
+            if (this.nostack)
+               h = histos.arr[i];
+            else
+               h = obj['fStack'].arr[nhists - i - 1];
+
+            if (this.painters[i].UpdateObject(h)) isany = true;
+         }
+
+         return isany;
+      }
+
+      this.drawStack(opt);
+
+      return this.DrawingReady();
+   }
+
+
    return JSROOT.Painter;
 
 }));

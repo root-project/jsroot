@@ -19,8 +19,6 @@
 
    JSROOT.Math = {};
 
-   console.log("Rading math " + ('Math' in JSROOT));
-
    JSROOT.Math.lgam = function( x ) {
       var p, q, u, w, z, i, sgngam = 1;
       var kMAXLGM  = 2.556348e305;
