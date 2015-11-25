@@ -23,18 +23,18 @@
 } (function(d3, JSROOT) {
 
 
-   JSROOT.Painter.drawEllipse = function(divid, obj, opt, painter) {
+   JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
 
-      painter.ellipse = obj;
-      painter.SetDivId(divid);
+      this.ellipse = obj;
+      this.SetDivId(divid);
 
       // function used for live update of object
-      painter['UpdateObject'] = function(obj) {
+      this['UpdateObject'] = function(obj) {
          // copy all fields
          JSROOT.extend(this.ellipse, obj);
       }
 
-      painter['Redraw'] = function() {
+      this['Redraw'] = function() {
          var lineatt = JSROOT.Painter.createAttLine(this.ellipse);
          var fillatt = this.createAttFill(this.ellipse);
 
@@ -81,24 +81,24 @@
             .call(lineatt.func).call(fillatt.func);
       }
 
-      painter.Redraw(); // actual drawing
-      return painter.DrawingReady();
+      this.Redraw(); // actual drawing
+      return this.DrawingReady();
    }
 
    // =============================================================================
 
-   JSROOT.Painter.drawLine = function(divid, obj, opt, painter) {
+   JSROOT.Painter.drawLine = function(divid, obj, opt) {
 
-      painter.line = obj;
-      painter.SetDivId(divid);
+      this.line = obj;
+      this.SetDivId(divid);
 
       // function used for live update of object
-      painter['UpdateObject'] = function(obj) {
+      this['UpdateObject'] = function(obj) {
          // copy all fields
          JSROOT.extend(this.line, obj);
       }
 
-      painter['Redraw'] = function() {
+      this['Redraw'] = function() {
          var lineatt = JSROOT.Painter.createAttLine(this.line);
 
          // create svg:g container for line drawing
@@ -118,24 +118,24 @@
              .call(lineatt.func);
       }
 
-      painter.Redraw(); // actual drawing
-      return painter.DrawingReady();
+      this.Redraw(); // actual drawing
+      return this.DrawingReady();
    }
 
    // ======================================================================================
 
-   JSROOT.Painter.drawArrow = function(divid, obj, opt, painter) {
+   JSROOT.Painter.drawArrow = function(divid, obj, opt) {
 
-      painter.arrow = obj;
-      painter.SetDivId(divid);
+      this.arrow = obj;
+      this.SetDivId(divid);
 
       // function used for live update of object
-      painter['UpdateObject'] = function(obj) {
+      this['UpdateObject'] = function(obj) {
          // copy all fields
          JSROOT.extend(this.arrow, obj);
       }
 
-      painter['Redraw'] = function() {
+      this['Redraw'] = function() {
          var lineatt = JSROOT.Painter.createAttLine(this.arrow);
          var fillatt = this.createAttFill(this.arrow);
 
@@ -238,30 +238,30 @@
 
       if (!('arrowcnt' in JSROOT.Painter)) JSROOT.Painter['arrowcnt'] = 0;
 
-      painter.Redraw(); // actual drawing
-      return painter.DrawingReady();
+      this.Redraw(); // actual drawing
+      return this.DrawingReady();
    }
 
    // ===================================================================================
 
-   JSROOT.Painter.drawFunction = function(divid, tf1, opt, painter) {
+   JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
 
-      painter['tf1'] = tf1;
-      painter['bins'] = null;
+      this['tf1'] = tf1;
+      this['bins'] = null;
 
-      painter['GetObject'] = function() {
+      this['GetObject'] = function() {
          return this.tf1;
       }
 
-      painter['Redraw'] = function() {
+      this['Redraw'] = function() {
          this.DrawBins();
       }
 
-      painter['Eval'] = function(x) {
+      this['Eval'] = function(x) {
          return this.tf1.evalPar(x);
       }
 
-      painter['CreateDummyHisto'] = function() {
+      this['CreateDummyHisto'] = function() {
          var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
          if (this.tf1['fSave'].length > 0) {
             // in the case where the points have been saved, useful for example
@@ -325,7 +325,7 @@
          return histo;
       }
 
-      painter['CreateBins'] = function() {
+      this['CreateBins'] = function() {
 
          var pthis = this;
 
@@ -377,7 +377,7 @@
          }
       }
 
-      painter['DrawBins'] = function() {
+      this['DrawBins'] = function() {
          var w = this.frame_width(), h = this.frame_height();
 
          this.RecreateDrawG(false, ".main_layer", false);
@@ -434,14 +434,14 @@
                       .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
       }
 
-      painter['UpdateObject'] = function(obj) {
+      this['UpdateObject'] = function(obj) {
          if (obj['_typename'] != this.tf1['_typename']) return false;
          // TODO: realy update object content
          this.tf1 = obj;
          return true;
       }
 
-      painter['CanZoomIn'] = function(axis,min,max) {
+      this['CanZoomIn'] = function(axis,min,max) {
          if (axis!="x") return false;
 
          if (this.tf1['fSave'].length > 0) {
@@ -459,19 +459,17 @@
          return true;
       }
 
-      painter.SetDivId(divid, -1);
-      if (painter.main_painter() == null) {
-         var histo = painter.CreateDummyHisto();
-         JSROOT.Painter.drawHistogram1D(divid, histo);
+      this.SetDivId(divid, -1);
+      if (this.main_painter() == null) {
+         var histo = this.CreateDummyHisto();
+         JSROOT.Painter.drawHistogram1D(divid, histo, "AXIS");
       }
-      painter.SetDivId(divid);
-      painter.DrawBins();
-      return painter.DrawingReady();
+      this.SetDivId(divid);
+      this.DrawBins();
+      return this.DrawingReady();
    }
 
-
    // ====================================================================
-
 
    JSROOT.Painter.drawHStack = function(divid, stack, opt) {
       // paint the list of histograms
