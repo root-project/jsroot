@@ -2872,7 +2872,7 @@
       if (painter.main_painter() == null) {
          if (graph['fHistogram']==null)
             graph['fHistogram'] = painter.CreateHistogram();
-         JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram']);
+         JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram'], "AXIS");
          painter.ownhisto = true;
       }
 
@@ -3208,7 +3208,13 @@
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
       if (!this.IsStats()) return false;
       if (this.pavetext['fName'] != "stats") return false;
-      if (!('FillStatistic' in this.main_painter())) return false;
+
+      var main = this.main_painter();
+
+      if (!('FillStatistic' in main)) return false;
+
+      // no need to refill statistic if histogram is dummy
+      if (main.IsDummyHisto()) return true;
 
       var dostat = new Number(this.pavetext['fOptStat']);
       var dofit = new Number(this.pavetext['fOptFit']);
@@ -3219,10 +3225,9 @@
       this.pavetext.Clear();
 
       // we take statistic from first painter
-      this.main_painter().FillStatistic(this, dostat, dofit);
+      main.FillStatistic(this, dostat, dofit);
 
       return true;
-
    }
 
    JSROOT.TPavePainter.prototype.UpdateObject = function(obj) {
@@ -3796,6 +3801,10 @@
 
    JSROOT.THistPainter.prototype.GetObject = function() {
       return this.histo;
+   }
+
+   JSROOT.THistPainter.prototype.IsDummyHisto = function() {
+      return (this.histo==null) || !this.draw_content || (this.options.Axis>0);
    }
 
    JSROOT.THistPainter.prototype.IsTProfile = function() {

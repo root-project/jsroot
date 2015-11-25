@@ -665,7 +665,7 @@
          return isany;
       }
 
-      this['DrawAxes'] = function() {
+      this['DrawAxis'] = function() {
          // draw special histogram
          var maximum, minimum, dx, dy;
          var rwxmin = 0, rwxmax = 0, rwymin = 0, rwymax = 0, uxmin = 0, uxmax = 0;
@@ -762,7 +762,7 @@
 
          // histogram painter will be first in the pad, will define axis and
          // interactive actions
-         this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo);
+         this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
       }
 
       this['Draw'] = function(opt) {
@@ -781,7 +781,7 @@
                console.log('Most probably, drawing of multigraph will fail')
          } else {
             opt = opt.replace("A","");
-            this.DrawAxes();
+            this.DrawAxis();
          }
 
          var graphs = this.mgraph['fGraphs'];
