@@ -507,7 +507,7 @@
    JSROOT.Painter.ytoPad = function(y, pad) {
       if (pad['fLogy']) {
          if (y > 0)
-            y = JSROOT.Math.log10(y);
+            y = JSROOT.log10(y);
          else
             y = pad['fUymin'];
       }
@@ -1157,11 +1157,11 @@
 
       if (axis=="y") {
          if (pad['fLogy'])
-            value = (value>0) ? JSROOT.Math.log10(value) : pad['fUymin'];
+            value = (value>0) ? JSROOT.log10(value) : pad['fUymin'];
          return (value - pad['fY1']) / (pad['fY2'] - pad['fY1']);
       }
       if (pad['fLogx'])
-         value = (value>0) ? JSROOT.Math.log10(value) : pad['fUxmin'];
+         value = (value>0) ? JSROOT.log10(value) : pad['fUxmin'];
       return (value - pad['fX1']) / (pad['fX2'] - pad['fX1']);
    }
 
@@ -2080,239 +2080,6 @@
       return p.DrawingReady();
    }
 
-   // =========================================================================
-
-   JSROOT.TF1Painter = function(tf1) {
-      JSROOT.TObjectPainter.call(this, tf1);
-      this.tf1 = tf1;
-      this['bins'] = null;
-   }
-
-   JSROOT.TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TF1Painter.prototype.GetObject = function() {
-      return this.tf1;
-   }
-
-   JSROOT.TF1Painter.prototype.Redraw = function() {
-      this.DrawBins();
-   }
-
-   JSROOT.TF1Painter.prototype.Eval = function(x) {
-      return this.tf1.evalPar(x);
-   }
-
-   JSROOT.TF1Painter.prototype.CreateDummyHisto = function() {
-      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-      if (this.tf1['fSave'].length > 0) {
-         // in the case where the points have been saved, useful for example
-         // if we don't have the user's function
-         var nb_points = this.tf1['fNpx'];
-         for (var i = 0; i < nb_points; ++i) {
-            var h = this.tf1['fSave'][i];
-            if ((i == 0) || (h > ymax))
-               ymax = h;
-            if ((i == 0) || (h < ymin))
-               ymin = h;
-         }
-         xmin = this.tf1['fSave'][nb_points + 1];
-         xmax = this.tf1['fSave'][nb_points + 2];
-      } else {
-         // we don't have the points, so let's try to interpret the function
-         // use fNpfits instead of fNpx if possible (to use more points)
-         if (this.tf1['fNpfits'] <= 103)
-            this.tf1['fNpfits'] = 103;
-         xmin = this.tf1['fXmin'];
-         xmax = this.tf1['fXmax'];
-         var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
-
-         var binwidthx = (xmax - xmin) / nb_points;
-         var left = -1, right = -1;
-         for (var i = 0; i < nb_points; ++i) {
-            var h = this.Eval(xmin + (i * binwidthx));
-            if (isNaN(h)) continue;
-
-            if (left < 0) {
-               left = i;
-               ymax = h;
-               ymin = h;
-            }
-            if ((right < 0) || (right == i - 1))
-               right = i;
-
-            if (h > ymax) ymax = h;
-            if (h < ymin) ymin = h;
-         }
-
-         if (left < right) {
-            xmax = xmin + right * binwidthx;
-            xmin = xmin + left * binwidthx;
-         }
-      }
-
-      if (ymax > 0.0) ymax *= 1.05;
-      if (ymin < 0.0) ymin *= 1.05;
-
-      var histo = JSROOT.Create("TH1I");
-
-      histo['fName'] = this.tf1['fName'] + "_hist";
-      histo['fTitle'] = this.tf1['fTitle'];
-
-      histo['fXaxis']['fXmin'] = xmin;
-      histo['fXaxis']['fXmax'] = xmax;
-      histo['fYaxis']['fXmin'] = ymin;
-      histo['fYaxis']['fXmax'] = ymax;
-
-      return histo;
-   }
-
-   JSROOT.TF1Painter.prototype.CreateBins = function() {
-
-      var pthis = this;
-
-      if (this.tf1['fSave'].length > 0) {
-         // in the case where the points have been saved, useful for example
-         // if we don't have the user's function
-         var nb_points = this.tf1['fNpx'];
-
-         var xmin = this.tf1['fSave'][nb_points + 1];
-         var xmax = this.tf1['fSave'][nb_points + 2];
-         var binwidthx = (xmax - xmin) / nb_points;
-
-         this['bins'] = d3.range(nb_points).map(function(p) {
-            return {
-               x : xmin + (p * binwidthx),
-               y : pthis.tf1['fSave'][p]
-            };
-         });
-         this['interpolate_method'] = 'monotone';
-      } else {
-         var main = this.main_painter();
-
-         if (this.tf1['fNpfits'] <= 103)
-            this.tf1['fNpfits'] = 333;
-         var xmin = this.tf1['fXmin'], xmax = this.tf1['fXmax'], logx = false;
-
-         if (main['zoom_xmin'] != main['zoom_xmax']) {
-            if (main['zoom_xmin'] > xmin) xmin = main['zoom_xmin'];
-            if (main['zoom_xmax'] < xmax) xmax = main['zoom_xmax'];
-         }
-
-         if (main.options.Logx && (xmin>0) && (xmax>0)) {
-            logx = true;
-            xmin = Math.log(xmin);
-            xmax = Math.log(xmax);
-         }
-
-         var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
-         var binwidthx = (xmax - xmin) / nb_points;
-         this['bins'] = d3.range(nb_points).map(function(p) {
-            var xx = xmin + (p * binwidthx);
-            if (logx) xx = Math.exp(xx);
-            var yy = pthis.Eval(xx);
-            if (isNaN(yy)) yy = 0;
-            return { x : xx, y : yy };
-         });
-
-         this['interpolate_method'] = 'monotone';
-      }
-   }
-
-   JSROOT.TF1Painter.prototype.DrawBins = function() {
-      var w = this.frame_width(), h = this.frame_height();
-
-      this.RecreateDrawG(false, ".main_layer", false);
-
-      // recalculate drawing bins when necessary
-      if ((this['bins']==null) || (this.tf1['fSave'].length==0)) this.CreateBins();
-
-      var pthis = this;
-      var pmain = this.main_painter();
-
-      var name = this.GetItemName();
-      if ((name==null) || (name=="")) name = this.tf1.fName;
-      if (name.length > 0) name += "\n";
-
-      var attline = JSROOT.Painter.createAttLine(this.tf1);
-      var fill = this.createAttFill(this.tf1);
-      if (fill.color == 'white') fill.color = 'none';
-
-      var line = d3.svg.line()
-                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                   .y(function(d) { return pmain.gry(d.y).toFixed(1); })
-                   .interpolate(this.interpolate_method);
-
-      var area = d3.svg.area()
-                  .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .y1(h)
-                  .y0(function(d) { return pmain.gry(d.y).toFixed(1); });
-
-      if (attline.color != "none")
-         this.draw_g.append("svg:path")
-            .attr("class", "line")
-            .attr("d",line(pthis.bins))
-            .style("fill", "none")
-            .call(attline.func);
-
-      if (fill.color != "none")
-         this.draw_g.append("svg:path")
-                .attr("class", "area")
-                .attr("d",area(pthis.bins))
-                .style("stroke", "none")
-                .style("pointer-events", "none")
-                .call(fill.func);
-
-      // add tooltips
-      if (JSROOT.gStyle.Tooltip)
-         this.draw_g.selectAll()
-                   .data(this.bins).enter()
-                   .append("svg:circle")
-                   .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                   .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
-                   .attr("r", 4)
-                   .style("opacity", 0)
-                   .append("svg:title")
-                   .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
-   }
-
-   JSROOT.TF1Painter.prototype.UpdateObject = function(obj) {
-      if (obj['_typename'] != this.tf1['_typename']) return false;
-      // TODO: realy update object content
-      this.tf1 = obj;
-      return true;
-   }
-
-   JSROOT.TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
-      if (axis!="x") return false;
-
-      if (this.tf1['fSave'].length > 0) {
-         // in the case where the points have been saved, useful for example
-         // if we don't have the user's function
-         var nb_points = this.tf1['fNpx'];
-
-         var xmin = this.tf1['fSave'][nb_points + 1];
-         var xmax = this.tf1['fSave'][nb_points + 2];
-
-         return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
-      }
-
-      // if function calculated, one always could zoom inside
-      return true;
-   }
-
-
-   JSROOT.Painter.drawFunction = function(divid, tf1) {
-      var painter = new JSROOT.TF1Painter(tf1);
-      painter.SetDivId(divid, -1);
-      if (painter.main_painter() == null) {
-         var histo = painter.CreateDummyHisto();
-         JSROOT.Painter.drawHistogram1D(divid, histo);
-      }
-      painter.SetDivId(divid);
-      painter.DrawBins();
-      return painter.DrawingReady();
-   }
-
    // =======================================================================
 
    JSROOT.TGraphPainter = function(graph) {
@@ -3124,12 +2891,12 @@
          var pad = this.root_pad();
          if (pad!=null) {
             if (pad['fLogx']) {
-               if (pavetext.fX1 > 0) pavetext.fX1 = JSROOT.Math.log10(pavetext.fX1);
-               if (pavetext.fX2 > 0) pavetext.fX2 = JSROOT.Math.log10(pavetext.fX2);
+               if (pavetext.fX1 > 0) pavetext.fX1 = JSROOT.log10(pavetext.fX1);
+               if (pavetext.fX2 > 0) pavetext.fX2 = JSROOT.log10(pavetext.fX2);
             }
             if (pad['fLogy']) {
-               if (pavetext.fY1 > 0) pavetext.fY1 = JSROOT.Math.log10(pavetext.fY1);
-               if (pavetext.fY2 > 0) pavetext.fY2 = JSROOT.Math.log10(pavetext.fY2);
+               if (pavetext.fY1 > 0) pavetext.fY1 = JSROOT.log10(pavetext.fY1);
+               if (pavetext.fY2 > 0) pavetext.fY2 = JSROOT.log10(pavetext.fY2);
             }
             pavetext['fX1NDC'] = (pavetext.fX1-pad['fX1'])/(pad['fX2'] - pad['fX1']);
             pavetext['fY1NDC'] = (pavetext.fY1-pad['fY1'])/(pad['fY2'] - pad['fY1']);
@@ -3649,13 +3416,18 @@
       }
    }
 
-   JSROOT.TPadPainter.prototype.DrawPrimitives = function() {
-      if (this.pad==null) return;
+   JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
 
-      for (var i in this.pad.fPrimitives.arr) {
-         var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[i],  this.pad.fPrimitives.opt[i]);
-         if (pp) pp['_primitive'] = true; // mark painter as belonging to primitive
+      if ((this.pad==null) || (indx>=this.pad.fPrimitives.arr.length))
+         return JSROOT.CallBack(callback);
+
+      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
+      if (pp) {
+         pp['_primitive'] = true; // mark painter as belonging to primitive
+         return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
       }
+
+      this.DrawPrimitive(indx+1, callback);
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function() {
@@ -3712,12 +3484,12 @@
 
       if (can==null) {
          JSROOT.Painter.drawFrame(divid, null);
-      } else {
-         painter.CheckColors(can);
-         painter.DrawPrimitives();
+         return painter.DrawingReady();
       }
 
-      return painter.DrawingReady();
+      painter.CheckColors(can);
+      painter.DrawPrimitive(0, painter.DrawingReady.bind(painter));
+      return painter;
    }
 
    JSROOT.Painter.drawPad = function(divid, pad) {
@@ -3732,12 +3504,13 @@
       var prev_name = painter.svg_canvas().property('current_pad');
       painter.svg_canvas().property('current_pad', pad['fName']);
 
-      painter.DrawPrimitives();
+      painter.DrawPrimitive(0, function() {
+         // we restore previous pad name
+         painter.svg_canvas().property('current_pad', prev_name);
+         painter.DrawingReady();
+      });
 
-      // we restore previous pad name
-      painter.svg_canvas().property('current_pad', prev_name);
-
-      return painter.DrawingReady();
+      return painter;
    }
 
    // ===========================================================================
@@ -3782,7 +3555,7 @@
 
          this['formatz'] = function(d) {
             var val = parseFloat(d);
-            var vlog = JSROOT.Math.log10(val);
+            var vlog = JSROOT.log10(val);
             if (Math.abs(vlog - Math.round(vlog))<0.001) {
                if (!this['noexpz'])
                   return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -5005,7 +4778,7 @@
 
          this['formatx'] = function(d) {
             var val = parseFloat(d);
-            var vlog = JSROOT.Math.log10(val);
+            var vlog = JSROOT.log10(val);
             if (this['moreloglabelsx'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this['noexpx'])
                   return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -5061,7 +4834,7 @@
 
          this['formaty'] = function(d) {
             var val = parseFloat(d);
-            var vlog = JSROOT.Math.log10(val);
+            var vlog = JSROOT.log10(val);
             if (this['moreloglabelsy'] || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this['noexpy'])
                   return JSROOT.Painter.formatExp(val.toExponential(0));
@@ -5389,43 +5162,35 @@
       return null;
    }
 
-   JSROOT.THistPainter.prototype.DrawFunctions = function() {
-      // draw statistics box & other TPaveTexts, which are belongs to histogram
-      // should be called once to create all painters, which are than updated separately
-      // not drawn when no stats or
+   JSROOT.THistPainter.prototype.DrawNextFunction = function(indx, callback) {
+      // method draws next function from the functions list
 
-      if (!('fFunctions' in this.histo))  return;
+      if (this.options.Same || !('fFunctions' in this.histo) || (indx >= this.histo.fFunctions.arr.length))
+         return JSROOT.CallBack(callback);
 
-      // if (this.options.Func == 0) return; // in some cases on need to disable
-      // functions drawing
+      var func = this.histo.fFunctions.arr[indx];
+      var opt = this.histo.fFunctions.opt[indx];
 
-      // do not draw functions when 'same' option was used
-      if (this.options.Same) return;
-      var nostat = this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || (this.options.NoStat==1);
+      var do_draw = false;
 
-      var lastpainter = this;
-
-      for ( var i in this.histo.fFunctions.arr) {
-
-         var func = this.histo.fFunctions.arr[i];
-         var opt = this.histo.fFunctions.opt[i];
-
-         var funcpainter = this.FindPainterFor(func);
-
-         // no need to do something if painter for object was already done
-         // object will be redraw automatically
-         if (funcpainter != null) continue;
-
+      // no need to do something if painter for object was already done
+      // object will be redraw automatically
+      if (this.FindPainterFor(func) == null) {
          if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-            if (!nostat)
-               funcpainter = JSROOT.Painter.drawPaveText(this.divid, func, opt);
-         } else if (func['_typename'] == 'TF1') {
-            if (!func.TestBit(JSROOT.BIT(9)))
-               funcpainter = JSROOT.Painter.drawFunction(this.divid, func, opt);
-         } else {
-            funcpainter = JSROOT.draw(this.divid, func, opt);
-         }
+            do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && (this.options.NoStat!=1);
+         } else
+         if (func['_typename'] == 'TF1') {
+            do_draw = !func.TestBit(JSROOT.BIT(9));
+         } else
+            do_draw = true;
       }
+
+      if (do_draw) {
+         var painter = JSROOT.draw(this.divid, func, opt)
+         if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
+      }
+
+      this.DrawNextFunction(indx+1, callback);
    }
 
    JSROOT.THistPainter.prototype.Redraw = function() {
@@ -6165,7 +5930,7 @@
             if (print_fchi2 > 0)
                stat.AddLine("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
             if (print_fprob > 0)
-               stat.AddLine("Prob = "  + stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)));
+               stat.AddLine("Prob = "  + (('Math' in JSROOT) ? stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
             if (print_fval > 0) {
                for(var n=0;n<f1.fNpar;n++) {
                   var parname = f1.GetParName(n);
@@ -6519,13 +6284,16 @@
          painter.CreateStat();
       }
 
-      painter.DrawFunctions();
+      painter.DrawNextFunction(0, function() {
 
-      painter.AddInteractive();
+         painter.AddInteractive();
 
-      if (painter.options.AutoZoom) painter.AutoZoom();
+         if (painter.options.AutoZoom) painter.AutoZoom();
 
-      return painter.DrawingReady();
+         painter.DrawingReady();
+      });
+
+      return painter;
    }
 
    // ==================== painter for TH2 histograms ==============================
@@ -7251,13 +7019,14 @@
 
       if (this.create_canvas) this.DrawTitle();
 
-      this.DrawFunctions();
+      this.DrawNextFunction(0, function() {
+         this.AddInteractive();
+         if (this.options.AutoZoom) this.AutoZoom();
+         this['done2d'] = true; // indicate that 2d drawing was once done
+         this.DrawingReady();
+      }.bind(this));
 
-      this.AddInteractive();
-
-      if (this.options.AutoZoom) this.AutoZoom();
-
-      this['done2d'] = true; // indicate that 2d drawing was once done
+      return this;
    }
 
    JSROOT.TH2Painter.prototype.Draw3D = function() {
@@ -7267,7 +7036,10 @@
 
       JSROOT.AssertPrerequisites('3d', function() {
          JSROOT.Painter.real_drawHistogram2D(painter);
+         painter.DrawingReady();
       });
+
+      return painter;
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
@@ -7287,11 +7059,9 @@
       painter.CreateXY();
 
       if (painter.options.Lego > 0)
-         painter.Draw3D();
-      else
-         painter.Draw2D();
+         return painter.Draw3D();
 
-      return painter.DrawingReady();
+      return painter.Draw2D();
    }
 
    // ====================================================================
@@ -7374,7 +7144,7 @@
             histo['fMaximum'] = this.stack['fMaximum'];
          else {
             if (pad && pad['fLogy'])
-               histo['fMaximum'] = themax * (1 + 0.2 * JSROOT.Math.log10(themax / themin));
+               histo['fMaximum'] = themax * (1 + 0.2 * JSROOT.log10(themax / themin));
             else
                histo['fMaximum'] = 1.05 * themax;
          }
@@ -7382,7 +7152,7 @@
             histo['fMinimum'] = this.stack['fMinimum'];
          else {
             if (pad && pad['fLogy'])
-               histo['fMinimum'] = themin / (1 + 0.5 * JSROOT.Math.log10(themax / themin));
+               histo['fMinimum'] = themin / (1 + 0.5 * JSROOT.log10(themax / themin));
             else
                histo['fMinimum'] = themin;
          }
@@ -7698,8 +7468,8 @@
          uxmax = rwxmax + dx;
          if (logy) {
             if (rwymin <= 0) rwymin = 0.001 * rwymax;
-            minimum = rwymin / (1 + 0.5 * JSROOT.Math.log10(rwymax / rwymin));
-            maximum = rwymax * (1 + 0.2 * JSROOT.Math.log10(rwymax / rwymin));
+            minimum = rwymin / (1 + 0.5 * JSROOT.log10(rwymax / rwymin));
+            maximum = rwymax * (1 + 0.2 * JSROOT.log10(rwymax / rwymin));
          } else {
             minimum = rwymin - dy;
             maximum = rwymax + dy;
@@ -9609,7 +9379,6 @@
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", func:JSROOT.Painter.drawHistogram2D, opt:";COL;COLZ;COL0Z;COL3;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "THStack", func:JSROOT.Painter.drawHStack });
-   JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", func:JSROOT.Painter.drawFunction });
    JSROOT.addDrawFunc({ name: /^TGraph/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P"});
    JSROOT.addDrawFunc({ name: "TCutG", icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P"});
    JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P" });
@@ -9618,6 +9387,7 @@
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func:JSROOT.Painter.drawStreamerInfo });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", func:JSROOT.Painter.drawPaletteAxis });
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func:JSROOT.Painter.drawRawText });
+   JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", prereq: "more2d", func:"JSROOT.Painter.drawFunction" });
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
