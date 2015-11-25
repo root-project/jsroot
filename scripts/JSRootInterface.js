@@ -61,25 +61,6 @@
    }
 
    ReadFile = function() {
-      var navigator_version = navigator.appVersion;
-      if (typeof ActiveXObject == "function") { // Windows
-         // detect obsolete browsers
-         if ((navigator_version.indexOf("MSIE 8") != -1) ||
-               (navigator_version.indexOf("MSIE 7") != -1))  {
-            alert("You need at least MS Internet Explorer version 9.0. Note you can also use any other web browser");
-            return;
-         }
-      }
-      else {
-         // Safari 5.1.7 on MacOS X doesn't work properly
-         if ((navigator_version.indexOf("Windows NT") == -1) &&
-               (navigator_version.indexOf("Safari") != -1) &&
-               (navigator_version.indexOf("Version/5.1.7") != -1)) {
-            alert("There are know issues with Safari 5.1.7 on MacOS X. It may become unresponsive or even hangs. You can use any other web browser");
-            return;
-         }
-      }
-
       var filename = $("#urlToLoad").val();
       filename.trim();
       if (filename.length == 0) return;
@@ -91,7 +72,6 @@
       else
          hpainter.OpenRootFile(filename);
    }
-
 
    BuildSimpleGUI = function() {
 
@@ -113,7 +93,7 @@
 
       if (online) {
          guiCode += '<h1><font face="Verdana" size="4"><div id="toptitle">ROOT online server</div></font></h1>'
-            + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
+            + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
             + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
             + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
@@ -130,7 +110,7 @@
          var arrFiles = files.split(';');
 
          guiCode += "<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
-            + "<p><font face='Verdana' size='1px'><a href='http://root.cern.ch/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
+            + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
 
          if (JSROOT.GetUrlOption("noselect")==null) {
             guiCode += '<form name="ex">'
