@@ -2847,6 +2847,22 @@
       return false;
    }
 
+   JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
+      // method draws next function from the functions list
+
+      if (!('fFunctions' in this.graph) || (indx >= this.graph.fFunctions.arr.length))
+         return JSROOT.CallBack(callback);
+
+      var func = this.graph.fFunctions.arr[indx];
+      var opt = this.graph.fFunctions.opt[indx];
+
+      var painter = JSROOT.draw(this.divid, func, opt);
+      if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
+
+      this.DrawNextFunction(indx+1, callback);
+   }
+
+
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       var painter = new JSROOT.TGraphPainter(graph);
       painter.CreateBins();
@@ -2854,7 +2870,6 @@
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       if (painter.main_painter() == null) {
-
          if (graph['fHistogram']==null)
             graph['fHistogram'] = painter.CreateHistogram();
          JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram']);
@@ -2864,7 +2879,10 @@
       painter.SetDivId(divid);
       painter.DecodeOptions(opt);
       painter.DrawBins();
-      return painter.DrawingReady();
+
+      painter.DrawNextFunction(0, painter.DrawingReady.bind(painter));
+
+      return painter;
    }
 
    // ============================================================
@@ -5186,7 +5204,7 @@
       }
 
       if (do_draw) {
-         var painter = JSROOT.draw(this.divid, func, opt)
+         var painter = JSROOT.draw(this.divid, func, opt);
          if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
       }
 

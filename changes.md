@@ -3,6 +3,7 @@
 ## Changes in master
 1. Introduce JSRootMath.js script, all JSROOT.Math methods placed there
 2. Move TF1, THStack and TMultiGraph painters into JSRootPainter.more.js script
+3. Draw functions list from TGraph 
 
 
 ## Changes in 3.9
