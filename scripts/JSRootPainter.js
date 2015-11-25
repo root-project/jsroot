@@ -1062,14 +1062,13 @@
 
    JSROOT.TObjectPainter = function(obj) {
       JSROOT.TBasePainter.call(this);
-      this.obj_typename = (obj!=null) && ('_typename' in obj) ? obj['_typename'] : "";
       this.draw_g = null; // container for all draw objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
+      this.obj_typename = (obj!=null) && ('_typename' in obj) ? obj['_typename'] : "";
    }
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
-
 
    JSROOT.TObjectPainter.prototype.pad_painter = function(active_pad) {
       var can = active_pad ? this.svg_pad() : this.svg_canvas();
@@ -1967,7 +1966,18 @@
       var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
-      if (ndc == null) ndc = JSROOT.clone(JSROOT.gStyle.FrameNDC);
+      if (ndc == null) {
+         var pad = this.root_pad();
+         if (pad==null)
+            ndc = JSROOT.clone(JSROOT.gStyle.FrameNDC);
+         else
+            ndc = {
+               fX1NDC: pad.fLeftMargin,
+               fX2NDC: 1 - pad.fRightMargin,
+               fY1NDC: pad.fTopMargin,
+               fY2NDC: 1 - pad.fBottomMargin
+            }
+      }
 
       var root_pad = this.root_pad();
 
@@ -2959,7 +2969,7 @@
       var pthis = this;
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true,".stat_layer");
+      this.RecreateDrawG(true, ".stat_layer");
 
       // position and size required only for drag functions
       this.draw_g
@@ -7110,6 +7120,7 @@
       var pave = this.legend;
 
       var x = 0, y = 0, w = 0, h = 0;
+
       if (pave['fInit'] == 0) {
          x = pave['fX1'] * Number(svg.attr("width"));
          y = Number(svg.attr("height")) - pave['fY1']
@@ -9215,7 +9226,10 @@
 
       function performDraw() {
          if ((painter==null) && ('painter_kind' in handle))
-            painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter();
+            painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
+
+         if (painter==null) return handle.func(divid, obj, opt);
+
          return handle.func.bind(painter)(divid, obj, opt, painter);
       }
 
@@ -9274,7 +9288,6 @@
 
    JSROOT.redraw = function(divid, obj, opt) {
       if (obj==null) return;
-
 
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);

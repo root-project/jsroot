@@ -472,13 +472,6 @@
 
    // ====================================================================
 
-   JSROOT.THStackPainter = function(stack) {
-      JSROOT.TObjectPainter.call(this, stack);
-   }
-
-   JSROOT.THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-
 
    JSROOT.Painter.drawHStack = function(divid, stack, opt) {
       // paint the list of histograms
@@ -636,6 +629,7 @@
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
       // function call with bind(painter)
+
       this.mgraph = mgraph;
       this.firstpainter = null;
       this.painters = new Array; // keep painters to be able update objects
