@@ -2850,7 +2850,7 @@
    JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      if (!('fFunctions' in this.graph) || (indx >= this.graph.fFunctions.arr.length))
+      if ((this.graph['fFunctions'] == null) || (indx >= this.graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
       var func = this.graph.fFunctions.arr[indx];
@@ -2861,7 +2861,6 @@
 
       this.DrawNextFunction(indx+1, callback);
    }
-
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       var painter = new JSROOT.TGraphPainter(graph);

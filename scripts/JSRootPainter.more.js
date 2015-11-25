@@ -765,16 +765,24 @@
          this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
       }
 
+      this['DrawNextFunction'] = function(indx, callback) {
+         // method draws next function from the functions list
+
+         if ((this.mgraph['fFunctions'] == null) || (indx >= this.mgraph.fFunctions.arr.length))
+            return JSROOT.CallBack(callback);
+
+         var func = this.mgraph.fFunctions.arr[indx];
+         var opt = this.mgraph.fFunctions.opt[indx];
+
+         var painter = JSROOT.draw(this.divid, func, opt);
+         if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
+
+         this.DrawNextFunction(indx+1, callback);
+      }
+
       this['Draw'] = function(opt) {
          if (opt == null) opt = "";
          opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
-
-         console.log('draw multigraph opt = '+opt);
-
-         if (this.mgraph.fFunctions)
-            console.log('func length = ' + this.mgraph.fFunctions.arr.length);
-         else
-            console.log('no functions in multigraph');
 
          if (opt.indexOf("A") < 0) {
             if (this.main_painter()==null)
@@ -796,7 +804,9 @@
 
       this.Draw(opt);
 
-      return this.DrawingReady();
+      this.DrawNextFunction(0, this.DrawingReady.bind(this));
+
+      return this;
    }
 
    return JSROOT.Painter;
