@@ -644,7 +644,7 @@
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
-      if ((kind.indexOf('math;')>=0) || (kind.indexOf('more2d;')>=0))  {
+      if (kind.indexOf('math;')>=0)  {
          mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
          modules.push('JSRootMath');
       }
