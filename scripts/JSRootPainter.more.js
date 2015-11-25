@@ -666,106 +666,125 @@
       }
 
       this['Draw'] = function(opt) {
-         var maximum, minimum, rwxmin = 0, rwxmax = 0, rwymin = 0, rwymax = 0, uxmin = 0, uxmax = 0, dx, dy;
-         var histo = this.mgraph['fHistogram'];
+         if (opt == null) opt = "";
+         opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
          var graphs = this.mgraph['fGraphs'];
-         var scalex = 1, scaley = 1;
-         var logx = false, logy = false;
-         var draw_all = true;
 
-         var pad = this.root_pad();
+         console.log('draw multigraph opt = '+opt + " histo = " + histo);
 
-         if (pad!=null) {
-            rwxmin = pad.fUxmin;
-            rwxmax = pad.fUxmax;
-            rwymin = pad.fUymin;
-            rwymax = pad.fUymax;
-            logx = pad['fLogx'];
-            logy = pad['fLogy'];
-         }
-         if (histo!=null) {
-            minimum = histo['fYaxis']['fXmin'];
-            maximum = histo['fYaxis']['fXmax'];
-            if (pad) {
-               uxmin = JSROOT.Painter.padtoX(pad, rwxmin);
-               uxmax = JSROOT.Painter.padtoX(pad, rwxmax);
-            }
+         if (this.mgraph.fFunctions)
+            console.log('func length = ' + this.mgraph.fFunctions.arr.length);
+         else
+            console.log('no functions in multigraph');
+
+         if (opt.indexOf("A")<0) {
+            if (this.main_painter()==null)
+               console.log('Most probably, drawing of multigraph will fail')
          } else {
-            for (var i = 0; i < graphs.arr.length; ++i) {
-               var r = graphs.arr[i].ComputeRange();
-               if ((i==0) || (r.xmin < rwxmin)) rwxmin = r.xmin;
-               if ((i==0) || (r.ymin < rwymin)) rwymin = r.ymin;
-               if ((i==0) || (r.xmax > rwxmax)) rwxmax = r.xmax;
-               if ((i==0) || (r.ymax > rwymax)) rwymax = r.ymax;
+
+            opt = opt.replace("A","");
+
+            var maximum, minimum, rwxmin = 0, rwxmax = 0, rwymin = 0, rwymax = 0, uxmin = 0, uxmax = 0, dx, dy;
+            var histo = this.mgraph['fHistogram'];
+            var scalex = 1, scaley = 1, logx = false, logy = false;
+
+            var pad = this.root_pad();
+
+            if (pad!=null) {
+               rwxmin = pad.fUxmin;
+               rwxmax = pad.fUxmax;
+               rwymin = pad.fUymin;
+               rwymax = pad.fUymax;
+               logx = pad['fLogx'];
+               logy = pad['fLogy'];
             }
-            if (rwxmin == rwxmax)
-               rwxmax += 1.;
-            if (rwymin == rwymax)
-               rwymax += 1.;
-            dx = 0.05 * (rwxmax - rwxmin);
-            dy = 0.05 * (rwymax - rwymin);
-            uxmin = rwxmin - dx;
-            uxmax = rwxmax + dx;
-            if (logy) {
-               if (rwymin <= 0) rwymin = 0.001 * rwymax;
-               minimum = rwymin / (1 + 0.5 * JSROOT.log10(rwymax / rwymin));
-               maximum = rwymax * (1 + 0.2 * JSROOT.log10(rwymax / rwymin));
+            if (histo!=null) {
+               minimum = histo['fYaxis']['fXmin'];
+               maximum = histo['fYaxis']['fXmax'];
+               if (pad) {
+                  uxmin = JSROOT.Painter.padtoX(pad, rwxmin);
+                  uxmax = JSROOT.Painter.padtoX(pad, rwxmax);
+               }
             } else {
-               minimum = rwymin - dy;
-               maximum = rwymax + dy;
+               for (var i = 0; i < graphs.arr.length; ++i) {
+                  var r = graphs.arr[i].ComputeRange();
+                  if ((i==0) || (r.xmin < rwxmin)) rwxmin = r.xmin;
+                  if ((i==0) || (r.ymin < rwymin)) rwymin = r.ymin;
+                  if ((i==0) || (r.xmax > rwxmax)) rwxmax = r.xmax;
+                  if ((i==0) || (r.ymax > rwymax)) rwymax = r.ymax;
+               }
+               if (rwxmin == rwxmax)
+                  rwxmax += 1.;
+               if (rwymin == rwymax)
+                  rwymax += 1.;
+               dx = 0.05 * (rwxmax - rwxmin);
+               dy = 0.05 * (rwymax - rwymin);
+               uxmin = rwxmin - dx;
+               uxmax = rwxmax + dx;
+               if (logy) {
+                  if (rwymin <= 0) rwymin = 0.001 * rwymax;
+                  minimum = rwymin / (1 + 0.5 * JSROOT.log10(rwymax / rwymin));
+                  maximum = rwymax * (1 + 0.2 * JSROOT.log10(rwymax / rwymin));
+               } else {
+                  minimum = rwymin - dy;
+                  maximum = rwymax + dy;
+               }
+               if (minimum < 0 && rwymin >= 0)
+                  minimum = 0;
+               if (maximum > 0 && rwymax <= 0)
+                  maximum = 0;
             }
-            if (minimum < 0 && rwymin >= 0)
-               minimum = 0;
-            if (maximum > 0 && rwymax <= 0)
-               maximum = 0;
-         }
-         if (this.mgraph['fMinimum'] != -1111)
-            rwymin = minimum = this.mgraph['fMinimum'];
-         if (this.mgraph['fMaximum'] != -1111)
-            rwymax = maximum = this.mgraph['fMaximum'];
-         if (uxmin < 0 && rwxmin >= 0) {
-            if (logx) uxmin = 0.9 * rwxmin;
-            // else uxmin = 0;
-         }
-         if (uxmax > 0 && rwxmax <= 0) {
-            if (logx) uxmax = 1.1 * rwxmax;
-         }
-         if (minimum < 0 && rwymin >= 0) {
-            if (logy) minimum = 0.9 * rwymin;
-         }
-         if (maximum > 0 && rwymax <= 0) {
-            if (logy) maximum = 1.1 * rwymax;
-         }
-         if (minimum <= 0 && logy)
-            minimum = 0.001 * maximum;
-         if (uxmin <= 0 && logx) {
-            if (uxmax > 1000)
-               uxmin = 1;
-            else
-               uxmin = 0.001 * uxmax;
-         }
-         rwymin = minimum;
-         rwymax = maximum;
-         if (histo!=null) {
-            histo['fYaxis']['fXmin'] = rwymin;
-            histo['fYaxis']['fXmax'] = rwymax;
-         }
+            if (this.mgraph['fMinimum'] != -1111)
+               rwymin = minimum = this.mgraph['fMinimum'];
+            if (this.mgraph['fMaximum'] != -1111)
+               rwymax = maximum = this.mgraph['fMaximum'];
+            if (uxmin < 0 && rwxmin >= 0) {
+               if (logx) uxmin = 0.9 * rwxmin;
+               // else uxmin = 0;
+            }
+            if (uxmax > 0 && rwxmax <= 0) {
+               if (logx) uxmax = 1.1 * rwxmax;
+            }
+            if (minimum < 0 && rwymin >= 0) {
+               if (logy) minimum = 0.9 * rwymin;
+            }
+            if (maximum > 0 && rwymax <= 0) {
+               if (logy) maximum = 1.1 * rwymax;
+            }
+            if (minimum <= 0 && logy)
+               minimum = 0.001 * maximum;
+            if (uxmin <= 0 && logx) {
+               if (uxmax > 1000)
+                  uxmin = 1;
+               else
+                  uxmin = 0.001 * uxmax;
+            }
+            rwymin = minimum;
+            rwymax = maximum;
+            if (histo!=null) {
+               histo['fYaxis']['fXmin'] = rwymin;
+               histo['fYaxis']['fXmax'] = rwymax;
+            }
 
-         // Create a temporary histogram to draw the axis (if necessary)
-         if (!histo) {
-            histo = JSROOT.Create("TH1I");
-            histo['fXaxis']['fXmin'] = rwxmin;
-            histo['fXaxis']['fXmax'] = rwxmax;
-            histo['fYaxis']['fXmin'] = rwymin;
-            histo['fYaxis']['fXmax'] = rwymax;
-         }
+            // Create a temporary histogram to draw the axis (if necessary)
+            if (!histo) {
+               console.log('Create histogram for multigraph');
+               histo = JSROOT.Create("TH1I");
+               histo['fXaxis']['fXmin'] = rwxmin;
+               histo['fXaxis']['fXmax'] = rwxmax;
+               histo['fYaxis']['fXmin'] = rwymin;
+               histo['fYaxis']['fXmax'] = rwymax;
+            }
 
-         // histogram painter will be first in the pad, will define axis and
-         // interactive actions
-         this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo);
+            // histogram painter will be first in the pad, will define axis and
+            // interactive actions
+            this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo);
+         }
 
          for (var i in graphs.arr) {
-            var subpainter = JSROOT.Painter.drawGraph(this.divid, graphs.arr[i]);
+            var drawopt = graphs.opt[i];
+            if ((drawopt==null) || (drawopt == "")) drawopt = opt;
+            var subpainter = JSROOT.Painter.drawGraph(this.divid, graphs.arr[i], drawopt);
             this.painters.push(subpainter);
          }
       }
