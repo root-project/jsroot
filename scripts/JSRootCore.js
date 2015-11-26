@@ -1299,23 +1299,6 @@
             }
             return sum;
          };
-         obj['resetStats'] = function() {
-            // Reset the statistics including the number of entries
-            // and replace with values calculates from bin content
-            // The number of entries is set to the total bin content or (in case of weighted histogram)
-            // to number of effective entries
-            this['fTsumw'] = 0;
-            this['fEntries'] = 1; // to force re-calculation of the statistics in TH1::GetStats
-            var stats = this.getStats();
-            this['fTsumw']   = stats[0];
-            this['fTsumw2']  = stats[1];
-            this['fTsumwx']  = stats[2];
-            this['fTsumwx2'] = stats[3];
-            this['fEntries'] = Math.abs(this['fTsumw']);
-            // use effective entries for weighted histograms:  (sum_w) ^2 / sum_w2
-            if (this['fSumw2'].length > 0 && this['fTsumw'] > 0 && stats[1] > 0 )
-               this['fEntries'] = stats[0] * stats[0] / stats[1];
-         }
          obj['setBinContent'] = function(bin, content) {
             // Set bin content - only trival case, without expansion
             this['fEntries']++;
@@ -1351,46 +1334,6 @@
             if (bin >= this['fNcells']) bin = this['fNcells']-1;
             return this['fArray'][bin];
          };
-         obj['getStats'] = function() {
-            // fill the array stats from the contents of this histogram
-            // The array stats must be correctly dimensioned in the calling program.
-            // stats[0] = sumw
-            // stats[1] = sumw2
-            // stats[2] = sumwx
-            // stats[3] = sumwx2
-            // Loop on bins (possibly including underflows/overflows)
-            var bin, binx, w, err, x, stats = new Array(0,0,0,0,0);
-            // case of labels with rebin of axis set
-            // statistics in x does not make any sense - set to zero
-            if (this['fXaxis']['fLabels'] && this.TestBit(JSROOT.TH1StatusBits.kCanRebin) ) {
-               stats[0] = this['fTsumw'];
-               stats[1] = this['fTsumw2'];
-               stats[2] = 0;
-               stats[3] = 0;
-            }
-            else if ((this['fTsumw'] == 0 && this['fEntries'] > 0) ||
-                     this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               for (bin=0;bin<4;bin++) stats[bin] = 0;
-
-               var firstBinX = this['fXaxis'].getFirst();
-               var lastBinX  = this['fXaxis'].getLast();
-               for (binx = firstBinX; binx <= lastBinX; binx++) {
-                  x   = this['fXaxis'].getBinCenter(binx);
-                  w   = this.getBinContent(binx);
-                  err = Math.abs(this.getBinError(binx));
-                  stats[0] += w;
-                  stats[1] += err*err;
-                  stats[2] += w*x;
-                  stats[3] += w*x*x;
-               }
-            } else {
-               stats[0] = this['fTsumw'];
-               stats[1] = this['fTsumw2'];
-               stats[2] = this['fTsumwx'];
-               stats[3] = this['fTsumwx2'];
-            }
-            return stats;
-         };
       }
       if (obj_typename.indexOf("TH2") == 0) {
          obj['fDimension'] = 2;
@@ -1400,51 +1343,6 @@
          };
          obj['getBinContent'] = function(x, y) {
             return this['fArray'][this.getBin(x, y)];
-         };
-         obj['getStats'] = function() {
-            var bin, binx, biny, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if ((this['fTsumw'] == 0 && this['fEntries'] > 0) || this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || this['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               var firstBinX = this['fXaxis'].getFirst();
-               var lastBinX  = this['fXaxis'].getLast();
-               var firstBinY = this['fYaxis'].getFirst();
-               var lastBinY  = this['fYaxis'].getLast();
-               // include underflow/overflow if TH1::StatOverflows(kTRUE) in case no range is set on the axis
-               if (this['fgStatOverflows']) {
-                 if ( !this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
-                     if (firstBinX == 1) firstBinX = 0;
-                     if (lastBinX ==  this['fXaxis']['fNbins'] ) lastBinX += 1;
-                  }
-                  if ( !this['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
-                     if (firstBinY == 1) firstBinY = 0;
-                     if (lastBinY ==  this['fYaxis']['fNbins'] ) lastBinY += 1;
-                  }
-               }
-               for (biny = firstBinY; biny <= lastBinY; biny++) {
-                  y = this['fYaxis'].getBinCenter(biny);
-                  for (binx = firstBinX; binx <= lastBinX; binx++) {
-                     bin = this.getBin(binx,biny);
-                     x   = this['fXaxis'].getBinCenter(binx);
-                     w   = this.GetBinContent(bin);
-                     err = Math.abs(this.getBinError(bin));
-                     stats[0] += w;
-                     stats[1] += err*err;
-                     stats[2] += w*x;
-                     stats[3] += w*x*x;
-                     stats[4] += w*y;
-                     stats[5] += w*y*y;
-                     stats[6] += w*x*y;
-                  }
-               }
-            } else {
-               stats[0] = this['fTsumw'];
-               stats[1] = this['fTsumw2'];
-               stats[2] = this['fTsumwx'];
-               stats[3] = this['fTsumwx2'];
-               stats[4] = this['fTsumwy'];
-               stats[5] = this['fTsumwy2'];
-               stats[6] = this['fTsumwxy'];
-            }
-            return stats;
          };
       }
       if (obj_typename.indexOf("TH3") == 0) {
@@ -1460,90 +1358,6 @@
          };
          obj['getBinContent'] = function(x, y, z) {
             return this['fArray'][this.getBin(x, y, z)];
-         };
-         obj['getStats'] = function() {
-            var bin, binx, biny, binz, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if ((obj['fTsumw'] == 0 && obj['fEntries'] > 0) || obj['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || obj['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) || obj['fZaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               var firstBinX = obj['fXaxis'].getFirst();
-               var lastBinX  = obj['fXaxis'].getLast();
-               var firstBinY = obj['fYaxis'].getFirst();
-               var lastBinY  = obj['fYaxis'].getLast();
-               var firstBinZ = obj['fZaxis'].getFirst();
-               var lastBinZ  = obj['fZaxis'].getLast();
-               // include underflow/overflow if TH1::StatOverflows(kTRUE) in case no range is set on the axis
-               if (obj['fgStatOverflows']) {
-                 if ( !obj['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
-                     if (firstBinX == 1) firstBinX = 0;
-                     if (lastBinX ==  obj['fXaxis']['fNbins'] ) lastBinX += 1;
-                  }
-                  if ( !obj['fYaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
-                     if (firstBinY == 1) firstBinY = 0;
-                     if (lastBinY ==  obj['fYaxis']['fNbins'] ) lastBinY += 1;
-                  }
-                  if ( !obj['fZaxis'].TestBit(JSROOT.EAxisBits.kAxisRange) ) {
-                     if (firstBinZ == 1) firstBinZ = 0;
-                     if (lastBinZ ==  obj['fZaxis']['fNbins'] ) lastBinZ += 1;
-                  }
-               }
-               for (binz = firstBinZ; binz <= lastBinZ; binz++) {
-                  z = obj['fZaxis'].getBinCenter(binz);
-                  for (biny = firstBinY; biny <= lastBinY; biny++) {
-                     y = obj['fYaxis'].getBinCenter(biny);
-                     for (binx = firstBinX; binx <= lastBinX; binx++) {
-                        bin = obj.getBin(binx,biny,binz);
-                        x   = obj['fXaxis'].getBinCenter(binx);
-                        w   = obj.GetBinContent(bin);
-                        err = Math.abs(obj.getBinError(bin));
-                        stats[0] += w;
-                        stats[1] += err*err;
-                        stats[2] += w*x;
-                        stats[3] += w*x*x;
-                        stats[4] += w*y;
-                        stats[5] += w*y*y;
-                        stats[6] += w*x*y;
-                        stats[7] += w*z;
-                        stats[8] += w*z*z;
-                        stats[9] += w*x*z;
-                        stats[10] += w*y*z;
-                     }
-                  }
-               }
-            } else {
-               stats[0] = obj['fTsumw'];
-               stats[1] = obj['fTsumw2'];
-               stats[2] = obj['fTsumwx'];
-               stats[3] = obj['fTsumwx2'];
-               stats[4] = obj['fTsumwy'];
-               stats[5] = obj['fTsumwy2'];
-               stats[6] = obj['fTsumwxy'];
-               stats[7] = obj['fTsumwz'];
-               stats[8] = obj['fTsumwz2'];
-               stats[9] = obj['fTsumwxz'];
-               stats[10] =obj['fTsumwyz'];
-            }
-            return stats;
-         };
-      }
-      if ((obj_typename.indexOf("TH1") == 0) ||
-          (obj_typename.indexOf("TH2") == 0) ||
-          (obj_typename.indexOf("TH3") == 0) ||
-          (obj_typename.indexOf("TProfile") == 0)) {
-         obj['getMean'] = function(axis) {
-            if (axis < 1 || (axis > 3 && axis < 11) || axis > 13) return 0;
-            var stats = this.getStats();
-            if (stats[0] == 0) return 0;
-            var ax = new Array(2,4,7);
-            return stats[ax[axis-1]]/stats[0];
-         };
-         obj['getRMS'] = function(axis) {
-            if (axis < 1 || (axis > 3 && axis < 11) || axis > 13) return 0;
-            var stats = this.getStats();
-            if (stats[0] == 0) return 0;
-            var ax = new Array(2,4,7);
-            var axm = ax[axis%10 - 1];
-            var x = stats[axm]/stats[0];
-            var rms2 = Math.abs(stats[axm+1]/stats[0] -x*x);
-            return Math.sqrt(rms2);
          };
       }
       if (obj_typename.indexOf("TProfile") == 0) {
@@ -1562,39 +1376,6 @@
             }
             var sumOfWeightsSquare = this['fSumw2'][bin];
             return ( sumOfWeightsSquare > 0 ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0 );
-         };
-         obj['getStats'] = function() {
-            var bin, binx, stats = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0);
-            if (this['fTsumw'] < 1e-300 || this['fXaxis'].TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               var firstBinX = this['fXaxis'].getFirst();
-               var lastBinX  = this['fXaxis'].getLast();
-               for (binx = this['firstBinX']; binx <= lastBinX; binx++) {
-                  var w   = onj['fBinEntries'][binx];
-                  var w2  = (this['fBinSumw2'] ? this['fBinSumw2'][binx] : w);
-                  var x   = fXaxis.GetBinCenter(binx);
-                  stats[0] += w;
-                  stats[1] += w2;
-                  stats[2] += w*x;
-                  stats[3] += w*x*x;
-                  stats[4] += this['fArray'][binx];
-                  stats[5] += this['fSumw2'][binx];
-               }
-            } else {
-               if (this['fTsumwy'] < 1e-300 && this['fTsumwy2'] < 1e-300) {
-                  //this case may happen when processing TProfiles with version <=3
-                  for (binx=this['fXaxis'].getFirst();binx<=this['fXaxis'].getLast();binx++) {
-                     this['fTsumwy'] += this['fArray'][binx];
-                     this['fTsumwy2'] += this['fSumw2'][binx];
-                  }
-               }
-               stats[0] = this['fTsumw'];
-               stats[1] = this['fTsumw2'];
-               stats[2] = this['fTsumwx'];
-               stats[3] = this['fTsumwx2'];
-               stats[4] = this['fTsumwy'];
-               stats[5] = this['fTsumwy2'];
-            }
-            return stats;
          };
          obj['getBinError'] = function(bin) {
             if (bin < 0 || bin >= this['fNcells']) return 0;
@@ -1619,22 +1400,6 @@
             }
             // if approximate compute the sums (of w, wy and wy2) using all the bins
             //  when the variance in y is zero
-            var testing = 1;
-            if (err2 != 0 && neff < 5) testing = eprim2*sum/err2;
-            if (this['fgApproximate'] && (testing < 1.e-4 || eprim2 < 1e-6)) { //3.04
-               var stats = this.getStats();
-               var ssum = stats[0];
-               // for 1D profile
-               var idx = 4;  // index in the stats array for 1D
-               var scont = stats[idx];
-               var serr2 = stats[idx+1];
-               // compute mean and variance in y
-               var scontsum = scont/ssum; // global mean
-               var seprim2  = Math.abs(serr2/ssum - scontsum*scontsum); // global variance
-               eprim = 2*Math.sqrt(seprim2); // global std (why factor of 2 ??)
-               sum = ssum;
-            }
-            sum = Math.abs(sum);
             // case option "S" return standard deviation in y
             if (this['fErrorMode'] == EErrorType.kERRORSPREAD) return eprim;
             // default case : fErrorMode = kERRORMEAN
