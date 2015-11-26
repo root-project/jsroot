@@ -987,28 +987,6 @@
           kERRORSPREADG : 3
        };
 
-      if (obj_typename.indexOf("TAxis") == 0) {
-         obj['getFirst'] = function() {
-            if (!this.TestBit(JSROOT.EAxisBits.kAxisRange)) return 1;
-            return this['fFirst'];
-         };
-         obj['getLast'] = function() {
-            if (!this.TestBit(JSROOT.EAxisBits.kAxisRange)) return this['fNbins'];
-            return this['fLast'];
-         };
-         obj['getBinCenter'] = function(bin) {
-            // Return center of bin
-            var binwidth;
-            if (!this['fNbins'] || bin < 1 || bin > this['fNbins']) {
-               binwidth = (this['fXmax'] - this['fXmin']) / this['fNbins'];
-               return this['fXmin'] + (bin-1) * binwidth + 0.5*binwidth;
-            } else {
-               binwidth = this['fXbins'][bin] - this['fXbins'][bin-1];
-               return this['fXbins'][bin-1] + 0.5*binwidth;
-            }
-         };
-      }
-
       if ((obj_typename == 'TList') || (obj_typename == 'THashList')) {
          obj['Clear'] = function() {
             this['arr'] = new Array;
@@ -1037,8 +1015,7 @@
          }
       }
 
-      if ((obj_typename.indexOf("TFormula") != -1) ||
-          (obj_typename.indexOf("TF1") == 0)) {
+      if ((obj_typename.indexOf("TFormula") != -1) || (obj_typename.indexOf("TF1") == 0)) {
          obj['evalPar'] = function(x) {
             var _func = this['fTitle'];
             _func = _func.replace('TMath::Exp(', 'Math.exp(');

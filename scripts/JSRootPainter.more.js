@@ -537,8 +537,12 @@
             domax = true;
 
          if (domin || domax) {
-            var left  = hist['fXaxis'].getFirst() + 1;
-            var right = hist['fXaxis'].getLast() + 1;
+            var left = 1, right = hist.fXaxis.fNbins;
+
+            if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+               left = hist.fXaxis.fFirst;
+               right = hist.fXaxis.fLast;
+            }
             for (var bin = left; bin<=right; bin++) {
                var val = hist.getBinContent(bin);
                var err = witherr ? hist.getBinError(bin) : 0;
@@ -552,13 +556,11 @@
 
       this['GetMinMax'] = function(opt) {
          var res = { min : 0, max : 0 };
-
          var iserr = opt.indexOf('e')>=0;
 
          if (this.nostack) {
             for (var i in this.stack['fHists'].arr) {
                var resh = this.GetHistMinMax(this.stack['fHists'].arr[i], iserr);
-
                if (i==0) res = resh; else {
                   if (resh.min < res.min) res.min = resh.min;
                   if (resh.max > res.max) res.max = resh.max;
