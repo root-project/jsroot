@@ -2408,7 +2408,7 @@
                        .data(pthis.bins).enter()
                        .append("svg:circle")
                        .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                       .attr("cy", function(d) { return Math.round(pmain.gry(d.y)); })
+                       .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
                        .attr("r", 3)
                        .style("opacity", 0)
                        .append("svg:title")
