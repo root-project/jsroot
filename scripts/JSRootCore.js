@@ -30,8 +30,7 @@
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'THREE'                : dir+'three.min',
             'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
-            'helvetiker_regular'   : dir+'helvetiker_regular.typeface',
-            'helvetiker_bold'      : dir+'helvetiker_bold.typeface',
+            'three.extra'          : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -52,9 +51,8 @@
        paths: paths,
        shim: {
          'touch-punch': { deps: ['jquery'] },
-         'helvetiker_regular': { deps: ['THREE'] },
-         'helvetiker_bold': { deps: ['THREE'] },
-         'THREE_ALL': {deps: ['jquery', 'jquery-ui', 'THREE', 'helvetiker_regular', 'helvetiker_bold'] },
+         'three.extra': { deps: ['THREE'] },
+         'THREE_ALL': { deps: ['jquery', 'jquery-ui', 'THREE', 'three.extra'] },
          'MathJax': {
              exports: 'MathJax',
              init: function () {
@@ -664,8 +662,7 @@
          need_jquery = true;
          mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
                       "$$$scripts/three.min.js;" +
-                      "$$$scripts/helvetiker_regular.typeface.js;" +
-                      "$$$scripts/helvetiker_bold.typeface.js;" +
+                      "$$$scripts/three.extra" + ext + ".js;" +
                       "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }

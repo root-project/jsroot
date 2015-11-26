@@ -126,7 +126,8 @@
             return;
          }
          var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-         projector.unprojectVector(vector, camera);
+         vector.unproject( camera );
+         // projector.unprojectVector(vector, camera);
          var raycaster = new THREE.Raycaster(camera.position, vector.sub(
                camera.position).normalize());
          var intersects = raycaster.intersectObjects(scene.children, true);
@@ -484,7 +485,7 @@
 
          // create a new mesh with cube geometry
          bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy),
-                               new THREE.MeshLambertMaterial({ color : fillcolor.getHex(), shading : THREE.NoShading }));
+                               new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
          helper = new THREE.BoxHelper(bin);
          helper.material.color.set(0x000000);
          helper.material.linewidth = 1.0;
@@ -802,13 +803,13 @@
          wei = (optFlag ? maxbin : bins[i].n);
          if (opt.indexOf('box1') != -1) {
             bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx /*, 16, 16 */),
-                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f /*, shading: THREE.NoShading */}));
+                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f /*, shading: THREE.FlatShading */}));
          } else {
             // create a new mesh with cube geometry
             bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
-                                 new THREE.MeshLambertMaterial({ color : fillcolor.getHex(),
-                                                                 shading : THREE.NoShading }));
+                                 new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.FlatShading */ }));
             helper = new THREE.BoxHelper(bin);
+
             helper.material.color.set(0x000000);
             helper.material.linewidth = 1.0;
             scene.add(helper);
