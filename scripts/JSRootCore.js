@@ -949,47 +949,20 @@
       if (npoints>0) {
          graph['fMaxSize'] = graph['fNpoints'] = npoints;
          for (var i=0;i<npoints;i++) {
-            graph['fX'].push(i);
-            graph['fY'].push(i);
+            graph['fX'].push(i/npoints);
+            graph['fY'].push(i/npoints);
          }
-         JSROOT.AdjustTGraphRanges(graph);
+
+         graph['fHistogram'] = JSROOT.CreateTH1(npoints);
+         graph['fHistogram'].fTitle = graph.fTitle;
+
+         graph['fHistogram']['fXaxis']['fXmin'] = 0;
+         graph['fHistogram']['fXaxis']['fXmax'] = 1;
+         graph['fHistogram']['fYaxis']['fXmin'] = 0;
+         graph['fHistogram']['fYaxis']['fXmax'] = 1;
       }
 
       return graph;
-   }
-
-   // adjust histogram ranges with graph content
-   // ygap is value like 0.1 or 0.01 to introduce gaps on Y range
-   JSROOT.AdjustTGraphRanges = function(graph,ygap) {
-      if (graph['fNpoints']==0) return;
-
-      var minx = graph['fX'][0], maxx = minx;
-      var miny = graph['fY'][0], maxy = miny;
-
-      for (var i=1;i<graph['fNpoints'];i++) {
-         if (graph['fX'][i] < minx) minx = graph['fX'][i];
-         if (graph['fX'][i] > maxx) maxx = graph['fX'][i];
-         if (graph['fY'][i] < miny) miny = graph['fY'][i];
-         if (graph['fY'][i] > maxy) maxy = graph['fY'][i];
-      }
-
-      if (miny==maxy) maxy = miny + 1;
-
-      if (graph['fHistogram'] == null) {
-         graph['fHistogram'] = JSROOT.CreateTH1(graph['fNpoints']);
-         graph['fHistogram'].fTitle = graph.fTitle;
-      }
-
-      graph['fHistogram']['fXaxis']['fXmin'] = minx;
-      graph['fHistogram']['fXaxis']['fXmax'] = maxx;
-
-      if ((ygap!=null) && (ygap!=0)) {
-         if (miny>0) miny*= (1-2*ygap); else miny*=(1+ygap);
-         if (maxy>0) maxy*= (1+ygap); else maxy*=(1-2*ygap);
-      }
-
-      graph['fHistogram']['fYaxis']['fXmin'] = miny;
-      graph['fHistogram']['fYaxis']['fXmax'] = maxy;
    }
 
    JSROOT.addMethods = function(obj, obj_typename) {
@@ -1114,25 +1087,9 @@
       }
 
       if ((obj_typename.indexOf("TGraph") == 0) || (obj_typename == "TCutG")) {
-         obj['ComputeRange'] = function() {
-            // Compute the x/y range of the points in this graph
-            var res = { xmin: 0, xmax: 0, ymin: 0, ymax: 0 };
-            if (this['fNpoints'] > 0) {
-               res.xmin = res.xmax = this['fX'][0];
-               res.ymin = res.ymax = this['fY'][0];
-               for (var i=1; i<this['fNpoints']; i++) {
-                  if (this['fX'][i] < res.xmin) res.xmin = this['fX'][i];
-                  if (this['fX'][i] > res.xmax) res.xmax = this['fX'][i];
-                  if (this['fY'][i] < res.ymin) res.ymin = this['fY'][i];
-                  if (this['fY'][i] > res.ymax) res.ymax = this['fY'][i];
-               }
-            }
-            return res;
-         };
          // check if point inside figure specified by the TGrpah
          obj['IsInside'] = function(xp,yp) {
-            var j = this['fNpoints'] - 1 ;
-            var x = this['fX'], y = this['fY'];
+            var j = this['fNpoints'] - 1, x = this['fX'], y = this['fY'];
             var oddNodes = false;
 
             for (var i=0; i<this['fNpoints']; i++) {
@@ -1155,212 +1112,34 @@
             //    if the sum of squares of weights has been defined (via Sumw2),
             //    this function returns the sqrt(sum of w2).
             //    otherwise it returns the sqrt(contents) for this bin.
+            if (bin >= this.fNcells) bin = this.fNcells - 1;
             if (bin < 0) bin = 0;
-            if (bin >= this['fNcells']) bin = this['fNcells'] - 1;
-            if (this['fNcells'] && this['fSumw2'].length > 0) {
-               var err2 = this['fSumw2'][bin];
-               return Math.sqrt(err2);
-            }
-            var error2 = Math.abs(this['fArray'][bin]);
-            return Math.sqrt(error2);
-         };
-         obj['getBinErrorLow'] = function(bin) {
-            //   -*-*-*-*-*Return lower error associated to bin number bin*-*-*-*-*
-            //    The error will depend on the statistic option used will return
-            //     the binContent - lower interval value
-            if (this['fBinStatErrOpt'] == EBinErrorOpt.kNormal) return this.getBinError(bin);
-            if (bin < 0) bin = 0;
-            if (bin >= this['fNcells']) bin = this['fNcells'] - 1;
-            var alpha = 1.0 - 0.682689492;
-            if (this['fBinStatErrOpt'] == EBinErrorOpt.kPoisson2) alpha = 0.05;
-            var c = this['fArray'][bin];
-            var n = Math.round(c);
-            if (n < 0) {
-               alert("GetBinErrorLow : Histogram has negative bin content-force usage to normal errors");
-               this['fBinStatErrOpt'] = EBinErrorOpt.kNormal;
-               return this.getBinError(bin);
-            }
-            if (n == 0) return 0;
-            return c - JSROOT.Math.gamma_quantile( alpha/2, n, 1.);
-         };
-         obj['getBinErrorUp'] = function(bin) {
-            //   -*-*-*-*-*Return lower error associated to bin number bin*-*-*-*-*
-            //    The error will depend on the statistic option used will return
-            //     the binContent - lower interval value
-            if (this['fBinStatErrOpt'] == EBinErrorOpt.kNormal) return this.getBinError(bin);
-            if (bin < 0) bin = 0;
-            if (bin >= this['fNcells']) bin = this['fNcells'] - 1;
-            var alpha = 1.0 - 0.682689492;
-            if (this['fBinStatErrOpt'] == EBinErrorOpt.kPoisson2) alpha = 0.05;
-            var c = this['fArray'][bin];
-            var n = Math.round(c);
-            if (n < 0) {
-               alert("GetBinErrorLow : Histogram has negative bin content-force usage to normal errors");
-               this['fBinStatErrOpt'] = EBinErrorOpt.kNormal;
-               return this.getBinError(bin);
-            }
-            // for N==0 return an upper limit at 0.68 or (1-alpha)/2 ?
-            // decide to return always (1-alpha)/2 upper interval
-            //if (n == 0) return ROOT::Math::gamma_quantile_c(alpha,n+1,1);
-            return JSROOT.Math.gamma_quantile_c( alpha/2, n+1, 1) - c;
-         };
-         obj['getBinLowEdge'] = function(bin) {
-            // Return low edge of bin
-            if (this['fXaxis']['fXbins'].length && bin > 0 && bin <= this['fXaxis']['fNbins'])
-               return this['fXaxis']['fXbins']['fArray'][bin-1];
-            var binwidth = (this['fXaxis']['fXmax'] - this['fXaxis']['fXmin']) / this['fXaxis']['fNbins'];
-            return this['fXaxis']['fXmin'] + (bin-1) * binwidth;
-         };
-         obj['getBinUpEdge'] = function(bin) {
-            // Return up edge of bin
-            var binwidth;
-            if (!this['fXaxis']['fXbins'].length || bin < 1 || bin > this['fXaxis']['fNbins']) {
-               binwidth = (this['fXaxis']['fXmax'] - this['fXaxis']['fXmin']) / this['fXaxis']['fNbins'];
-               return this['fXaxis']['fXmin'] + bin * binwidth;
-            } else {
-               binwidth = this['fArray'][bin] - this['fArray'][bin-1];
-               return this['fArray'][bin-1] + binwidth;
-            }
-         };
-         obj['getBinWidth'] = function(bin) {
-            // Return bin width
-            if (this['fXaxis']['fNbins'] <= 0) return 0;
-            if (this['fXaxis']['fXbins'].length <= 0)
-               return (this['fXaxis']['fXmax'] - this['fXaxis']['fXmin']) / this['fXaxis']['fNbins'];
-            if (bin > this['fXaxis']['fNbins']) bin = this['fXaxis']['fNbins'];
-            if (bin < 1) bin = 1;
-            return this['fArray'][bin] - this['fArray'][bin-1];
-         };
-         obj['getBin'] = function(binx, biny, binz) {
-            //   -*-*-*-*Return Global bin number corresponding to binx,y,z*-*-*-*-*-*-*
-            var nx, ny, nz;
-            if (this['fDimension'] < 2) {
-               nx  = this['fXaxis']['fNbins']+2;
-               if (binx < 0)   binx = 0;
-               if (binx >= nx) binx = nx-1;
-               return binx;
-            }
-            if (this['fDimension'] < 3) {
-               nx  = this['fXaxis']['fNbins']+2;
-               if (binx < 0)   binx = 0;
-               if (binx >= nx) binx = nx-1;
-               ny  = this['fYaxis']['fNbins']+2;
-               if (biny < 0)   biny = 0;
-               if (biny >= ny) biny = ny-1;
-               return  binx + nx*biny;
-            }
-            if (this['fDimension'] < 4) {
-               nx  = this['fXaxis']['fNbins']+2;
-               if (binx < 0)   binx = 0;
-               if (binx >= nx) binx = nx-1;
-               ny  = this['fYaxis']['fNbins']+2;
-               if (biny < 0)   biny = 0;
-               if (biny >= ny) biny = ny-1;
-               nz  = this['fZaxis']['fNbins']+2;
-               if (binz < 0)   binz = 0;
-               if (binz >= nz) binz = nz-1;
-               return  binx + nx*(biny +ny*binz);
-            }
-            return -1;
-         };
-         obj['getBinXYZ'] = function(binglobal) {
-            // return binx, biny, binz corresponding to the global bin number globalbin
-            // see TH1::GetBin function above
-            var binx, biny, binz;
-            var nx  = this['fXaxis']['fNbins']+2;
-            var ny  = this['fYaxis']['fNbins']+2;
-            if (this['fDimension'] < 2) {
-               binx = binglobal%nx;
-               biny = -1;
-               binz = -1;
-            }
-            if (this['fDimension'] < 3) {
-               binx = binglobal%nx;
-               biny = ((binglobal-binx)/nx)%ny;
-               binz = -1;
-            }
-            if (this['fDimension'] < 4) {
-               binx = binglobal%nx;
-               biny = ((binglobal-binx)/nx)%ny;
-               binz = ((binglobal-binx)/nx -biny)/ny;
-            }
-            return { binsx: binx, biny: biny, binz: binz };
-         };
-         obj['getSumOfWeights'] = function() {
-            //   -*-*-*-*-*-*Return the sum of weights excluding under/overflows*-*-*-*-*
-            var sum = 0;
-            for (var binz=1; binz<=this['fZaxis']['fNbins']; binz++) {
-               for (var biny=1; biny<=this['fYaxis']['fNbins']; biny++) {
-                  for (var binx=1; binx<=this['fXaxis']['fNbins']; binx++) {
-                     var bin = this.getBin(binx,biny,binz);
-                     sum += this.getBinContent(bin);
-                  }
-               }
-            }
-            return sum;
-         };
+            if (bin < this.fSumw2.length)
+               return Math.sqrt(this.fSumw2[bin]);
+            return Math.sqrt(Math.abs(this.fArray[bin]));
+         }
          obj['setBinContent'] = function(bin, content) {
             // Set bin content - only trival case, without expansion
-            this['fEntries']++;
-            this['fTsumw'] = 0;
-            if ((bin>=0) && (bin<this['fArray'].length))
-               this['fArray'][bin] = content;
-         };
-         obj['sumw2'] = function() {
-            // Create structure to store sum of squares of weights*-*-*-*-*-*-*-*
-            //
-            //     if histogram is already filled, the sum of squares of weights
-            //     is filled with the existing bin contents
-            //
-            //     The error per bin will be computed as sqrt(sum of squares of weight)
-            //     for each bin.
-            //
-            //  This function is automatically called when the histogram is created
-            //  if the static function TH1::SetDefaultSumw2 has been called before.
-
-            if (this['fSumw2'].length == this['fNcells']) return;
-            this['fSumw2'].length = this['fNcells'];
-            if ( this['fEntries'] > 0 ) {
-               for (var bin=0; bin<this['fNcells']; bin++) {
-                  this['fSumw2'][bin] = Math.abs(this.getBinContent(bin));
-               }
-            }
-         };
+            this.fEntries++;
+            this.fTsumw = 0;
+            if ((bin>=0) && (bin<this.fArray.length))
+               this.fArray[bin] = content;
+         }
       }
       if (obj_typename.indexOf("TH1") == 0) {
-         obj['fDimension'] = 1;
-         obj['getBinContent'] = function(bin) {
-            if (bin < 0) bin = 0;
-            if (bin >= this['fNcells']) bin = this['fNcells']-1;
-            return this['fArray'][bin];
-         };
+         obj['getBin'] = function(x) { return x; }
+         obj['getBinContent'] = function(bin) { return this.fArray[bin]; }
       }
       if (obj_typename.indexOf("TH2") == 0) {
-         obj['fDimension'] = 2;
-         obj['getBin'] = function(x, y) {
-            var nx = this['fXaxis']['fNbins']+2;
-            return (x + nx * y);
-         };
-         obj['getBinContent'] = function(x, y) {
-            return this['fArray'][this.getBin(x, y)];
-         };
+         obj['getBin'] = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
+         obj['getBinContent'] = function(x, y) { return this.fArray[this.getBin(x, y)]; }
       }
       if (obj_typename.indexOf("TH3") == 0) {
-         obj['fDimension'] = 3;
-         obj['getBin'] = function(x, y, z) {
-            var nx = this['fXaxis']['fNbins']+2;
-            if (x < 0) x = 0;
-            if (x >= nx) x = nx-1;
-            var ny = this['fYaxis']['fNbins']+2;
-            if (y < 0) y = 0;
-            if (y >= ny) y = ny-1;
-            return (x + nx * (y + ny * z));
-         };
-         obj['getBinContent'] = function(x, y, z) {
-            return this['fArray'][this.getBin(x, y, z)];
-         };
+         obj['getBin'] = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
+         obj['getBinContent'] = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
       }
       if (obj_typename.indexOf("TProfile") == 0) {
+         obj['getBin'] = function(x) { return x; }
          obj['getBinContent'] = function(bin) {
             if (bin < 0 || bin >= this['fNcells']) return 0;
             if (this['fBinEntries'][bin] < 1e-300) return 0;

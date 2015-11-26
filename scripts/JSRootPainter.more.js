@@ -718,10 +718,29 @@
          return isany;
       }
 
+      this['ComputeGraphRange'] = function(res, gr) {
+         // Compute the x/y range of the points in this graph
+         if (gr.fNpoints == 0) return;
+         if (res.first) {
+            res.xmin = res.xmax = gr.fX[0];
+            res.ymin = res.ymax = gr.fY[0];
+            res.first = false;
+         }
+         for (var i=0; i < gr.fNpoints; i++) {
+            if (gr.fX[i] < res.xmin) res.xmin = gr.fX[i];
+            if (gr.fX[i] > res.xmax) res.xmax = gr.fX[i];
+            if (gr.fY[i] < res.ymin) res.ymin = gr.fY[i];
+            if (gr.fY[i] > res.ymax) res.ymax = gr.fY[i];
+         }
+         return res;
+      }
+
       this['DrawAxis'] = function() {
          // draw special histogram
          var maximum, minimum, dx, dy;
-         var rwxmin = 0, rwxmax = 0, rwymin = 0, rwymax = 0, uxmin = 0, uxmax = 0;
+
+         var rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
+         var uxmin = 0, uxmax = 0;
          var scalex = 1, scaley = 1, logx = false, logy = false;
          var histo = this.mgraph['fHistogram'];
          var graphs = this.mgraph['fGraphs'];
@@ -729,65 +748,60 @@
          var pad = this.root_pad();
 
          if (pad!=null) {
-            rwxmin = pad.fUxmin;
-            rwxmax = pad.fUxmax;
-            rwymin = pad.fUymin;
-            rwymax = pad.fUymax;
+            rw.xmin = pad.fUxmin;
+            rw.xmax = pad.fUxmax;
+            rw.ymin = pad.fUymin;
+            rw.ymax = pad.fUymax;
+            rw.first = false;
             logx = pad['fLogx'];
             logy = pad['fLogy'];
          }
          if (histo!=null) {
             minimum = histo['fYaxis']['fXmin'];
             maximum = histo['fYaxis']['fXmax'];
-            if (pad) {
-               uxmin = JSROOT.Painter.padtoX(pad, rwxmin);
-               uxmax = JSROOT.Painter.padtoX(pad, rwxmax);
+            if (pad!=null) {
+               uxmin = JSROOT.Painter.padtoX(pad, rw.xmin);
+               uxmax = JSROOT.Painter.padtoX(pad, rw.xmax);
             }
          } else {
-            for (var i = 0; i < graphs.arr.length; ++i) {
-               var r = graphs.arr[i].ComputeRange();
-               if ((i==0) || (r.xmin < rwxmin)) rwxmin = r.xmin;
-               if ((i==0) || (r.ymin < rwymin)) rwymin = r.ymin;
-               if ((i==0) || (r.xmax > rwxmax)) rwxmax = r.xmax;
-               if ((i==0) || (r.ymax > rwymax)) rwymax = r.ymax;
-            }
-            if (rwxmin == rwxmax)
-               rwxmax += 1.;
-            if (rwymin == rwymax)
-               rwymax += 1.;
-            dx = 0.05 * (rwxmax - rwxmin);
-            dy = 0.05 * (rwymax - rwymin);
-            uxmin = rwxmin - dx;
-            uxmax = rwxmax + dx;
+            for (var i in graphs.arr)
+               this.ComputeGraphRange(rw, graphs.arr[i]);
+
+            if (rw.xmin == rw.xmax) rw.xmax += 1.;
+            if (rw.ymin == rw.ymax) rw.ymax += 1.;
+            dx = 0.05 * (rw.xmax - rw.xmin);
+            dy = 0.05 * (rw.ymax - rw.ymin);
+            uxmin = rw.xmin - dx;
+            uxmax = rw.xmax + dx;
             if (logy) {
-               if (rwymin <= 0) rwymin = 0.001 * rwymax;
-               minimum = rwymin / (1 + 0.5 * JSROOT.log10(rwymax / rwymin));
-               maximum = rwymax * (1 + 0.2 * JSROOT.log10(rwymax / rwymin));
+               if (rw.ymin <= 0) rw.ymin = 0.001 * rw.ymax;
+               minimum = rw.ymin / (1 + 0.5 * JSROOT.log10(rw.ymax / rw.ymin));
+               maximum = rw.ymax * (1 + 0.2 * JSROOT.log10(rw.ymax / rw.ymin));
             } else {
-               minimum = rwymin - dy;
-               maximum = rwymax + dy;
+               minimum = rw.ymin - dy;
+               maximum = rw.ymax + dy;
             }
-            if (minimum < 0 && rwymin >= 0)
+            if (minimum < 0 && rw.ymin >= 0)
                minimum = 0;
-            if (maximum > 0 && rwymax <= 0)
+            if (maximum > 0 && rw.ymax <= 0)
                maximum = 0;
          }
          if (this.mgraph['fMinimum'] != -1111)
-            rwymin = minimum = this.mgraph['fMinimum'];
+            rw.ymin = minimum = this.mgraph['fMinimum'];
          if (this.mgraph['fMaximum'] != -1111)
-            rwymax = maximum = this.mgraph['fMaximum'];
-         if (uxmin < 0 && rwxmin >= 0) {
-            if (logx) uxmin = 0.9 * rwxmin;
+            rw.ymax = maximum = this.mgraph['fMaximum'];
+         if (uxmin < 0 && rw.xmin >= 0) {
+            if (logx) uxmin = 0.9 * rw.xmin;
             // else uxmin = 0;
          }
-         if (uxmax > 0 && rwxmax <= 0) {
-            if (logx) uxmax = 1.1 * rwxmax;
+         if (uxmax > 0 && rw.xmax <= 0) {
+            if (logx) uxmax = 1.1 * rw.xmax;
          }
-         if (minimum < 0 && rwymin >= 0) {
-            if (logy) minimum = 0.9 * rwymin;
+         if (minimum < 0 && rw.ymin >= 0) {
+            if (logy) minimum = 0.9 * rw.ymin;
          }
-         if (maximum > 0 && rwymax <= 0) {
-            if (logy) maximum = 1.1 * rwymax;
+         if (maximum > 0 && rw.ymax <= 0) {
+            if (logy) maximum = 1.1 * rw.ymax;
          }
          if (minimum <= 0 && logy)
             minimum = 0.001 * maximum;
@@ -797,20 +811,20 @@
             else
                uxmin = 0.001 * uxmax;
          }
-         rwymin = minimum;
-         rwymax = maximum;
+         rw.ymin = minimum;
+         rw.ymax = maximum;
          if (histo!=null) {
-            histo['fYaxis']['fXmin'] = rwymin;
-            histo['fYaxis']['fXmax'] = rwymax;
+            histo['fYaxis']['fXmin'] = rw.ymin;
+            histo['fYaxis']['fXmax'] = rw.ymax;
          }
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
             histo = JSROOT.Create("TH1I");
-            histo['fXaxis']['fXmin'] = rwxmin;
-            histo['fXaxis']['fXmax'] = rwxmax;
-            histo['fYaxis']['fXmin'] = rwymin;
-            histo['fYaxis']['fXmax'] = rwymax;
+            histo['fXaxis']['fXmin'] = rw.xmin;
+            histo['fXaxis']['fXmax'] = rw.xmax;
+            histo['fYaxis']['fXmin'] = rw.ymin;
+            histo['fYaxis']['fXmax'] = rw.ymax;
          }
 
          // histogram painter will be first in the pad, will define axis and

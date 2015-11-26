@@ -3579,9 +3579,8 @@
 
    JSROOT.THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
-      if ('fDimension' in this.histo) return this.histo['fDimension'];
-      if (this.histo['_typename'].match(/^TH2/)) return 2;
-      if (this.histo['_typename'].match(/^TH3/)) return 3;
+      if (this.histo['_typename'].indexOf("TH2")==0) return 2;
+      if (this.histo['_typename'].indexOf("TH3")==0) return 3;
       return 1;
    }
 
