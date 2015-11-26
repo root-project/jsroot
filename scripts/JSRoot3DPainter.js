@@ -112,7 +112,7 @@
 
       var radius = 100;
       var theta = 0;
-      var projector = new THREE.Projector();
+      var raycaster = new THREE.Raycaster();
       function findIntersection() {
          // find intersections
          if (mouseDowned) {
@@ -125,11 +125,7 @@
                tooltip.hide();
             return;
          }
-         var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-         vector.unproject( camera );
-         // projector.unprojectVector(vector, camera);
-         var raycaster = new THREE.Raycaster(camera.position, vector.sub(
-               camera.position).normalize());
+         raycaster.setFromCamera( mouse, camera );
          var intersects = raycaster.intersectObjects(scene.children, true);
          if (intersects.length > 0) {
             var pick = null;
@@ -483,14 +479,9 @@
          hh = local_bins[i];
          wei = tz(hh.z);
 
-         if ((opt!=null) && (opt.indexOf("test")>0) && (i>0)) break;
-
          // create a new mesh with cube geometry
          bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy),
                                new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
-         helper = new THREE.BoxHelper(bin);
-         helper.material.color.set(0x000000);
-         helper.material.linewidth = 1.0;
 
          bin.position.x = tx(hh.x);
          bin.position.y = wei / 2;
@@ -499,7 +490,11 @@
          if (JSROOT.gStyle.Tooltip)
             bin.name = hh.tip;
          toplevel.add(bin);
-         scene.add(helper);
+
+         helper = new THREE.BoxHelper(bin);
+         helper.material.color.set(0x000000);
+         helper.material.linewidth = 1.0;
+         toplevel.add(helper);
       }
 
       delete local_bins;
@@ -804,7 +799,6 @@
       var bin, mesh, wei;
       console.log("opt = " + opt);
       for (var i = 0; i < bins.length; ++i) {
-         if ((opt!=null) && (opt.indexOf("test")>=0) && (i>0)) break;
          wei = (optFlag ? maxbin : bins[i].n);
          if (opt.indexOf('box1') != -1) {
             bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx /*, 16, 16 */),
@@ -813,11 +807,6 @@
             // create a new mesh with cube geometry
             bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.FlatShading */ }));
-            helper = new THREE.BoxHelper(bin);
-
-            helper.material.color.set(0x000000);
-            helper.material.linewidth = 1.0;
-            scene.add(helper);
          }
          bin.position.x = tx(bins[i].x - (scalex / 2));
          bin.position.y = tz(bins[i].z - (scalez / 2));
@@ -830,6 +819,13 @@
                    + (bins[i].z + scalez).toPrecision(4) + "]<br/>"
                    + "entries: " + bins[i].n.toFixed();
          toplevel.add(bin);
+
+         if (opt.indexOf('box1') == -1) {
+            helper = new THREE.BoxHelper(bin);
+            helper.material.color.set(0x000000);
+            helper.material.linewidth = 1.0;
+            toplevel.add(helper);
+         }
       }
 
       var camera = new THREE.PerspectiveCamera(45, w / h, 1, 4000);
