@@ -6510,9 +6510,9 @@
 
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
       var i1 = this.GetSelectIndex("x", "left", 0);
-      var i2 = this.GetSelectIndex("x", "right", 0);
+      var i2 = this.GetSelectIndex("x", "right", 1);
       var j1 = this.GetSelectIndex("y", "left", 0);
-      var j2 = this.GetSelectIndex("y", "right", 0);
+      var j2 = this.GetSelectIndex("y", "right", 1);
 
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.histo.fName;
@@ -6647,9 +6647,9 @@
    JSROOT.TH2Painter.prototype.DrawSimpleCanvas = function(w,h) {
 
       var i1 = this.GetSelectIndex("x", "left", 0);
-      var i2 = this.GetSelectIndex("x", "right", 0);
+      var i2 = this.GetSelectIndex("x", "right", 1);
       var j1 = this.GetSelectIndex("y", "left", 0);
-      var j2 = this.GetSelectIndex("y", "right", 0);
+      var j2 = this.GetSelectIndex("y", "right", 1);
 
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
       for (var i = i1; i < i2; i++) {
