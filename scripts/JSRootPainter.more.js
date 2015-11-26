@@ -495,7 +495,7 @@
          var stack = this.stack;
          //  build sum of all histograms
          //  Build a separate list fStack containing the running sum of all histograms
-         if (!('fHists' in stack))  return;
+         if (!('fHists' in stack)) return;
          var nhists = stack['fHists'].arr.length;
          if (nhists <= 0) return;
          stack['fStack'] = JSROOT.Create("TList");
@@ -824,31 +824,31 @@
          this.DrawNextFunction(indx+1, callback);
       }
 
-      this['Draw'] = function(opt) {
-         if (opt == null) opt = "";
-         opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
-
-         if (opt.indexOf("A") < 0) {
-            if (this.main_painter()==null)
-               console.log('Most probably, drawing of multigraph will fail')
-         } else {
-            opt = opt.replace("A","");
-            this.DrawAxis();
-         }
-
+      this['DrawNextGraph'] = function(indx, opt) {
          var graphs = this.mgraph['fGraphs'];
+         // at the end of graphs drawing draw functions (if any)
+         if (indx >= graphs.arr.length)
+            return this.DrawNextFunction(0, this.DrawingReady.bind(this));
 
-         for (var i in graphs.arr) {
-            var drawopt = graphs.opt[i];
-            if ((drawopt==null) || (drawopt == "")) drawopt = opt;
-            var subpainter = JSROOT.Painter.drawGraph(this.divid, graphs.arr[i], drawopt);
-            this.painters.push(subpainter);
-         }
+         var drawopt = graphs.opt[indx];
+         if ((drawopt==null) || (drawopt == "")) drawopt = opt;
+         var subp = JSROOT.Painter.drawGraph(this.divid, graphs.arr[indx], drawopt);
+         this.painters.push(subp);
+         subp.WhenReady(this.DrawNextGraph.bind(this, indx+1, opt));
       }
 
-      this.Draw(opt);
+      if (opt == null) opt = "";
+      opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
 
-      this.DrawNextFunction(0, this.DrawingReady.bind(this));
+      if (opt.indexOf("A") < 0) {
+         if (this.main_painter()==null)
+            console.log('Most probably, drawing of multigraph will fail')
+      } else {
+         opt = opt.replace("A","");
+         this.DrawAxis();
+      }
+
+      this.DrawNextGraph(0, opt);
 
       return this;
    }
@@ -1234,25 +1234,20 @@
       }
 
       this['Redraw'] = function() {
-
          var enabled = true;
-
          if ('options' in this.main_painter())
             enabled = (this.main_painter().options.Zscale > 0) && (this.main_painter().options.Color > 0);
 
-         if (enabled) {
+         if (enabled)
             this.DrawPalette();
-         } else {
-            // if palette artificially disabled, do not redraw it
-            this.RemoveDrawG();
-         }
+         else
+            this.RemoveDrawG(); // if palette artificially disabled, do not redraw it
       }
 
       this.DrawPalette();
 
       return this.DrawingReady();
    }
-
 
    return JSROOT.Painter;
 
