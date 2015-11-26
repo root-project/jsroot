@@ -254,7 +254,7 @@
       });
    }
 
-   JSROOT.Painter.real_drawHistogram2D = function(painter) {
+   JSROOT.Painter.real_drawHistogram2D = function(painter, opt) {
 
       var w = painter.pad_width(), h = painter.pad_height(), size = 100;
 
@@ -483,6 +483,8 @@
          hh = local_bins[i];
          wei = tz(hh.z);
 
+         if ((opt!=null) && (opt.indexOf("test")>0) && (i>0)) break;
+
          // create a new mesh with cube geometry
          bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy),
                                new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
@@ -537,21 +539,22 @@
       JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, painter);
    }
 
-   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt, painter) {
+   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
+      // when called, *this* set to painter instance
 
       var logx = false, logy = false, logz = false, gridx = false, gridy = false, gridz = false;
 
-      painter.SetDivId(divid, -1);
-      var pad = painter.root_pad();
+      this.SetDivId(divid, -1);
+      var pad = this.root_pad();
 
       var render_to;
-      if (!painter.svg_pad().empty())
-         render_to = $(painter.svg_pad().node()).hide().parent();
+      if (!this.svg_pad().empty())
+         render_to = $(this.svg_pad().node()).hide().parent();
       else
          render_to = $("#" + divid);
 
-      var opt = histo['fOption'].toLowerCase();
-      // if (opt=="") opt = "colz";
+      if (opt=="") opt = histo['fOption'].toLowerCase();
+      if (opt=="") opt = "colz";
 
       if (pad) {
          logx = pad['fLogx'];
@@ -799,7 +802,9 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
       var bin, mesh, wei;
+      console.log("opt = " + opt);
       for (var i = 0; i < bins.length; ++i) {
+         if ((opt!=null) && (opt.indexOf("test")>=0) && (i>0)) break;
          wei = (optFlag ? maxbin : bins[i].n);
          if (opt.indexOf('box1') != -1) {
             bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx /*, 16, 16 */),
@@ -865,7 +870,7 @@
 
       JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, null);
 
-      return painter.DrawingReady();
+      return this.DrawingReady();
    }
 
    return JSROOT.Painter;

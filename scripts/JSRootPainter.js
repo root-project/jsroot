@@ -6828,13 +6828,13 @@
       return this;
    }
 
-   JSROOT.TH2Painter.prototype.Draw3D = function() {
+   JSROOT.TH2Painter.prototype.Draw3D = function(opt) {
 
       if (this.options.Lego<=0) this.options.Lego = 1;
       var painter = this;
 
       JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram2D(painter);
+         JSROOT.Painter.real_drawHistogram2D(painter, opt);
          painter.DrawingReady();
       });
 
@@ -6858,7 +6858,7 @@
       painter.CreateXY();
 
       if (painter.options.Lego > 0)
-         return painter.Draw3D();
+         return painter.Draw3D(opt);
 
       return painter.Draw2D();
    }
