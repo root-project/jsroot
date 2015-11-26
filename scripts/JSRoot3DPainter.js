@@ -553,8 +553,8 @@
       else
          render_to = $("#" + divid);
 
-      if (opt=="") opt = histo['fOption'].toLowerCase();
-      if (opt=="") opt = "colz";
+      if (opt=="") opt = histo['fOption'];
+      opt = opt.toLowerCase();
 
       if (pad) {
          logx = pad['fLogx'];
