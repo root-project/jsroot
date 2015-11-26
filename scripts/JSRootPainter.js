@@ -2326,18 +2326,13 @@
       var pthis = this;
       var pmain = this.main_painter();
 
-      this.lineatt = JSROOT.Painter.createAttLine(this.graph);
-      this.fillatt = this.createAttFill(this.graph);
-
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.graph.fName;
       if (name.length > 0) name += "\n";
 
       function TooltipText(d) {
-
-         var res = name +
-                   "x = " + pmain.AxisAsText("x", d.x) + "\n" +
-                   "y = " + pmain.AxisAsText("y", d.y);
+         res = name + "x = " + pmain.AxisAsText("x", d.x) + "\n" +
+                      "y = " + pmain.AxisAsText("y", d.y);
 
          if (pthis.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
             res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
@@ -2345,17 +2340,21 @@
 
          if (pthis.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
             res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
-                               "/+" + pmain.AxisAsText("y", d.eyhigh);
+                              "/+" + pmain.AxisAsText("y", d.eyhigh);
 
          return res;
       }
+
+      this.lineatt = JSROOT.Painter.createAttLine(this.graph);
+      this.fillatt = this.createAttFill(this.graph);
 
       if (this.optionEF > 0) {
          var area = d3.svg.area()
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                         .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
                         .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
-         if (this.optionEF > 1) area = area.interpolate(JSROOT.gStyle.Interpolate);
+         if (this.optionEF > 1)
+            area = area.interpolate(JSROOT.gStyle.Interpolate);
          this.draw_g.append("svg:path")
                     .attr("d", area(this.bins))
                     .style("stroke", "none")
@@ -5424,16 +5423,16 @@
       // suppress any running zomming
       this.clearInteractiveElements();
 
-      JSROOT.Painter.createMenu(function(arg, menu) {
+      JSROOT.Painter.createMenu(function(menu) {
          menu['painter'] = this;
 
-         if ((arg=="x") || (arg=='y') || (arg=='z')) {
+         if ((kind=="x") || (kind=='y') || (kind=='z')) {
             var faxis = null;
-            if (arg=="x") faxis = this.histo['fXaxis']; else
-            if (arg=="y") faxis = this.histo['fYaxis'];
-            menu.add("header: " + arg.toUpperCase() + " axis");
-            menu.add("Unzoom", function() { this.Unzoom(arg=="x", arg=="y", arg=="z"); });
-            menu.addchk(this.options["Log" + kind], "SetLog"+arg, this.ToggleLog.bind(this, arg) );
+            if (kind=="x") faxis = this.histo['fXaxis']; else
+            if (kind=="y") faxis = this.histo['fYaxis'];
+            menu.add("header: " + kind.toUpperCase() + " axis");
+            menu.add("Unzoom", function() { this.Unzoom(kind=="x", kind=="y", kind=="z"); });
+            menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
             if (faxis != null) {
                menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
                      function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
@@ -5453,7 +5452,7 @@
 
          menu.show(this.ctx_menu_evnt);
          delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(this, kind));
+      }.bind(this));
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
