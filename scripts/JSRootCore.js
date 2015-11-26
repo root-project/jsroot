@@ -1091,14 +1091,14 @@
             if (bin < this.fSumw2.length)
                return Math.sqrt(this.fSumw2[bin]);
             return Math.sqrt(Math.abs(this.fArray[bin]));
-         }
+         };
          obj['setBinContent'] = function(bin, content) {
             // Set bin content - only trival case, without expansion
             this.fEntries++;
             this.fTsumw = 0;
             if ((bin>=0) && (bin<this.fArray.length))
                this.fArray[bin] = content;
-         }
+         };
       }
       if (obj_typename.indexOf("TH1") == 0) {
          obj['getBin'] = function(x) { return x; }

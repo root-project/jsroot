@@ -1463,7 +1463,7 @@
       }
 
       var resize_rect =
-         pthis.draw_g.append("rect")
+         this.draw_g.append("rect")
                   .style("opacity", "0")
                   .style("cursor", "se-resize")
                   .attr("x", rect_width() - 20)
@@ -1607,12 +1607,11 @@
                    callback.obj['fX2NDC'] = callback.obj['fX1NDC'] + newwidth  / pthis.pad_width();
                    callback.obj['fY1NDC'] = callback.obj['fY2NDC'] - newheight / pthis.pad_height();
                 }
-                if (('redraw' in callback) &&
-                    (typeof pthis[callback.redraw] == 'function')) pthis[callback.redraw]();
+                if ('redraw' in callback) callback.redraw();
             }
          });
 
-      pthis.draw_g.style("cursor", "move").call(drag_move);
+      this.draw_g.style("cursor", "move").call(drag_move);
 
       resize_rect.call(drag_resize);
    }
@@ -3094,7 +3093,7 @@
          this.FinishTextDrawing(lbl_g);
       }
 
-      this.AddDrag({ obj:pavetext, redraw:'DrawPaveText', ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
+      this.AddDrag({ obj:pavetext, redraw: this.DrawPaveText.bind(this), ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
@@ -6959,7 +6958,7 @@
 
       var pave_painter = this;
 
-      this.AddDrag({ obj : pavelabel, redraw:'drawPaveLabel' });
+      this.AddDrag({ obj : pavelabel, redraw: this.drawPaveLabel.bind(this) });
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {

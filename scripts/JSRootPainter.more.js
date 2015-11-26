@@ -1029,7 +1029,7 @@
                .call(lineatt.func);
          }
 
-         this.AddDrag({ obj:pave, redraw: 'drawLegend' });
+         this.AddDrag({ obj:pave, redraw: this.Redraw.bind(this) });
       }
 
       this.Redraw();
@@ -1174,7 +1174,7 @@
             this.FinishTextDrawing();
          }
 
-         this.AddDrag({ obj: palette, redraw: 'DrawPalette', ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
+         this.AddDrag({ obj: palette, redraw: this.DrawPalette.bind(this), ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
 
          if (JSROOT.gStyle.ContextMenu && !JSROOT.touches)
             this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
