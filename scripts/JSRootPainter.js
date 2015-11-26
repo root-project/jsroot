@@ -6514,8 +6514,6 @@
       var j1 = this.GetSelectIndex("y", "left", 0);
       var j2 = this.GetSelectIndex("y", "right", 0);
 
-      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy;
-
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.histo.fName;
       if (name.length > 0) name += "\n";
@@ -6530,16 +6528,25 @@
          }
       }
 
-      var xfactor = 1, yfactor = 1;
-      if (coordinates_kind == 1) {
-         xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
-         yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
-      }
+      var xfactor = 1, yfactor = 1, uselogz = false, logmin  = 0, logmax = 1;
+      if (coordinates_kind == 1)
+         if (this.options.Logz && (this.maxbin>0)) {
+            uselogz = true;
+            logmax = Math.log(this.maxbin);
+            logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
+            xfactor = 0.5 * w / (i2 - i1) / (logmax - logmin);
+            yfactor = 0.5 * h / (j2 - j1) / (logmax - logmin);
+         } else {
+            xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
+            yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
+         }
 
       this.fContour = null; // z-scale ranges when drawing with color
       this.fUserContour = false;
 
       var local_bins = new Array;
+
+      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy, zdiff;
 
       x2 = this.GetBinX(i1);
       grx2 = -11111;
@@ -6584,17 +6591,22 @@
                break;
             }
             case 1:
-               shrx = xfactor * (this.maxbin - binz);
-               shry = yfactor * (this.maxbin - binz);
-               point = {
-                  x : grx1 + shrx,
-                  y : gry2 + shry,
-                  width : grx2 - grx1 - 2 * shrx,
-                  height : gry1 - gry2 - 2 * shry,
-                  stroke : this.attline.color,
-                  fill : this.fillcolor
+               if (uselogz) {
+                  zdiff = logmax - ((binz>0) ? Math.log(binz) : logmin);
+               } else {
+                  zdiff = this.maxbin - binz;
                }
-               point['tipcolor'] = (point['fill'] == "black") ? "grey" : "black";
+
+               point = {
+                  x : grx1 + xfactor * zdiff,
+                  y : gry2 + yfactor * zdiff,
+                  width : grx2 - grx1 - 2 * xfactor * zdiff,
+                  height : gry1 - gry2 - 2 * yfactor * zdiff,
+                  stroke : this.attline.color,
+                  fill : this.fillcolor,
+                  tipcolor: this.fillcolor == 'black' ? "grey" : "black"
+               }
+               if ((point.width < 0.05) || (point.height < 0.05)) point = null;
                break;
 
             case 2:

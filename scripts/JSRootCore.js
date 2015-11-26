@@ -1726,7 +1726,7 @@
 
    // it is important to run this function at the end when all other
    // functions are available
-   JSROOT.Init = function() {
+   JSROOT.Initialize = function() {
       function window_on_load(func) {
          if (func!=null) {
             if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
@@ -1784,7 +1784,7 @@
       return this;
    }
 
-   return JSROOT.Init();
+   return JSROOT.Initialize();
 
 }));
 
