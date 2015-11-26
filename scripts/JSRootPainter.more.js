@@ -492,20 +492,36 @@
       }
 
       this['BuildStack'] = function() {
-         var stack = this.stack;
          //  build sum of all histograms
          //  Build a separate list fStack containing the running sum of all histograms
-         if (!('fHists' in stack)) return;
-         var nhists = stack['fHists'].arr.length;
-         if (nhists <= 0) return;
-         stack['fStack'] = JSROOT.Create("TList");
-         var h = JSROOT.clone(stack['fHists'].arr[0]);
-         stack['fStack'].Add(h);
+
+         if (!('fHists' in this.stack)) return false;
+         var nhists = this.stack['fHists'].arr.length;
+         if (nhists <= 0) return false;
+         var lst = JSROOT.Create("TList");
+         lst.Add(JSROOT.clone(this.stack['fHists'].arr[0]));
          for (var i=1;i<nhists;i++) {
-            h = JSROOT.clone(stack['fHists'].arr[i]);
-            h.add(stack['fStack'].arr[i-1]);
-            stack['fStack'].Add(h);
+            var hnext = JSROOT.clone(this.stack['fHists'].arr[i]);
+            var hprev = lst.arr[i-1];
+
+            if ((hnext.fNbins != hprev.fNbins) ||
+                (hnext['fXaxis']['fXmin'] != hprev['fXaxis']['fXmin']) ||
+                (hnext['fXaxis']['fXmax'] != hprev['fXaxis']['fXmax'])) {
+               JSROOT.console("When drawing THStack, cannot sum-up histograms " + hnext.fName + " and " + hprev.fName);
+               delete hnext;
+               delete lst;
+               return false;
+            }
+
+            //hnext.add(hprev);
+            // trivial sum of histograms
+            for (var n in hnext.fArray)
+               hnext.fArray[n] += hprev.fArray[n];
+
+            lst.Add(hnext);
          }
+         this.stack['fStack'] = lst;
+         return true;
       }
 
       this['GetHistMinMax'] = function(hist, witherr) {
@@ -602,7 +618,9 @@
          }
          this.nostack = opt.indexOf("nostack") < 0 ? false : true;
 
-         if (!this.nostack) this.BuildStack();
+         // when building stack, one could fail to sum up histograms
+         if (!this.nostack)
+            this.nostack = ! this.BuildStack();
 
          var mm = this.GetMinMax(opt);
 
