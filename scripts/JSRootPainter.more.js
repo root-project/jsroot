@@ -477,7 +477,7 @@
       // -the first histogram is paint
       // -then the sum of the first and second, etc
 
-      // this pointer set to created painter instance
+      // 'this' pointer set to created painter instance
       this.stack = stack;
       this.nostack = false;
       this.firstpainter = null;
@@ -568,6 +568,24 @@
          return res;
       }
 
+      this['DrawNextHisto'] = function(indx, opt) {
+         var nhists = this.stack['fHists'].arr.length;
+         if (indx>=nhists) return this.DrawingReady();
+
+         var hist = null;
+         if (indx<0) hist = this.stack['fHistogram']; else
+         if (this.nostack) hist = this.stack['fHists'].arr[indx];
+                     else  hist = this.stack['fStack'].arr[nhists - indx - 1];
+
+         var hopt = hist['fOption'];
+         if ((opt != "") && (hopt.indexOf(opt) == -1)) hopt += opt;
+         if (indx>=0) hopt += "same";
+         var subp = JSROOT.draw(this.divid, hist, hopt);
+         if (indx<0) this.firstpainter = subp;
+                else this.painters.push(subp);
+         subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
+      }
+
       this['drawStack'] = function(opt) {
          var pad = this.root_pad();
          var histos = this.stack['fHists'];
@@ -626,26 +644,9 @@
             else
                histo['fMinimum'] = mm.min;
          }
-         if (!lsame) {
-            var hopt = histo['fOption'];
-            if ((opt != "") && (hopt.indexOf(opt) == -1))
-               hopt += opt;
 
-            this.firstpainter = JSROOT.draw(this.divid, histo, hopt);
-         }
-         for (var i = 0; i < nhists; ++i) {
-            if (this.nostack)
-               h = histos.arr[i];
-            else
-               h = this.stack['fStack'].arr[nhists - i - 1];
-
-            var hopt = h['fOption'];
-            if ((opt != "") && (hopt.indexOf(opt) == -1)) hopt += opt;
-            hopt += "same";
-
-            var subp = JSROOT.draw(this.divid, h, hopt);
-            this.painters.push(subp);
-         }
+         this.DrawNextHisto(!lsame ? -1 : 0, opt);
+         return this;
       }
 
       this['UpdateObject'] = function(obj) {
@@ -653,26 +654,16 @@
          if (this.firstpainter)
             if (this.firstpainter.UpdateObject(obj['fHistogram'])) isany = true;
 
-         var histos = obj['fHists'];
-         var nhists = histos.arr.length;
-
+         var nhists = obj['fHists'].arr.length;
          for (var i = 0; i < nhists; ++i) {
-            var h = null;
-
-            if (this.nostack)
-               h = histos.arr[i];
-            else
-               h = obj['fStack'].arr[nhists - i - 1];
-
-            if (this.painters[i].UpdateObject(h)) isany = true;
+            var hist = this.nostack ? obj['fHists'].arr[i] : obj['fStack'].arr[nhists - i - 1];
+            if (this.painters[i].UpdateObject(hist)) isany = true;
          }
 
          return isany;
       }
 
-      this.drawStack(opt);
-
-      return this.DrawingReady();
+      return this.drawStack(opt);
    }
 
    // =============================================================
