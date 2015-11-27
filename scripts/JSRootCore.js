@@ -52,8 +52,6 @@
        shim: {
          'touch-punch': { deps: ['jquery'] },
          'three.extra': { deps: ['THREE'] },
-         'Trackball': { deps: ['THREE'] },
-         'Transform': { deps: ['THREE'] },
          'THREE_ALL': { deps: ['jquery', 'jquery-ui', 'THREE', 'three.extra'] },
          'MathJax': {
              exports: 'MathJax',
@@ -665,6 +663,7 @@
          mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
                       "$$$scripts/three.min.js;" +
                       "$$$scripts/three.extra" + ext + ".js;";
+         modules.push('THREE_ALL');
       }
 
       if (kind.indexOf("3d;")>=0) {
