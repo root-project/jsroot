@@ -802,12 +802,64 @@
 
       var subid = topid + "_frame" + this.cnt;
 
-      var entry = '<div id="' + subid + '" class="flex_frame" style="display: table; position:absolute">' +
-                  '<h3 class="ui-widget-header flex_header" style="display: table-row; padding-left:5px">'+title+'</h3>' +
+      var entry ='<div id="' + subid + '" class="flex_frame" style="display: table; position:absolute">' +
+                  '<div class="ui-widget-header flex_header" style="display: table-row">'+
+                    '<h3 style="float:left; padding-left:5px">'+title+'</h3>' +
+                    '<button type="button" style="float:right"/>' +
+                    '<button type="button" style="float:right"/>' +
+                    '<button type="button" style="float:right"/>' +
+                   '</div>' +
                   '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
-                  '</div>';
+                 '</div>';
 
       top.append(entry);
+
+      function ChangeWindowState(main, state) {
+         var curr = main.prop('state');
+         if (!curr) curr = "normal";
+         main.prop('state', state);
+         if (state==curr) return;
+
+         if (curr == "normal") {
+            main.prop('original_height', main.height());
+            main.prop('original_width', main.width());
+            main.prop('original_top', main.css('top'));
+            main.prop('original_left', main.css('left'));
+         }
+
+         main.find(".jsroot_minbutton").find('.ui-icon')
+             .toggleClass("ui-icon-carat-1-s", state!="minimal")
+             .toggleClass("ui-icon-carat-2-n-s", state=="minimal");
+
+         main.find(".jsroot_maxbutton").find('.ui-icon')
+             .toggleClass("ui-icon-carat-1-n", state!="maximal")
+             .toggleClass("ui-icon-carat-2-n-s", state=="maximal");
+
+         switch (state) {
+            case "minimal" :
+               main.height(main.find('.flex_header').height())
+                   .width("auto")
+               main.find(".flex_draw").css("display","none");
+               main.find(".ui-resizable-handle").css("display","none");
+               break;
+            case "maximal" :
+               main.height("100%").width("100%").css('left','').css('top','');
+               main.find(".flex_draw").css("display","table-row");
+               main.find(".ui-resizable-handle").css("display","none");
+               break;
+            default:
+               main.find(".flex_draw").css("display","table-row");
+               main.find(".ui-resizable-handle").css("display","");
+               main.height(main.prop('original_height'))
+                   .width(main.prop('original_width'));
+               if (curr!="minimal")
+                  main.css('left', main.prop('original_left'))
+                      .css('top', main.prop('original_top'));
+         }
+
+         if (state!="minimal")
+            JSROOT.CheckElementResize(main.find(".flex_draw").get(0));
+      }
 
       $("#" + subid)
          .css('left', parseInt(w * (this.cnt % 5)/10))
@@ -824,17 +876,45 @@
                JSROOT.CheckElementResize($(this).find(".flex_draw").get(0));
             }
           })
-         .draggable({
+          .draggable({
             containment: "parent",
             start: function(event, ui) {
                // bring element to front when start dragging
                $(this).appendTo($(this).parent());
             }
           })
-         .find('.flex_header').click(function(){
+       .find('.flex_header')
+         // .hover(function() { $(this).toggleClass("ui-state-hover"); })
+         .click(function() {
             var div = $(this).parent();
             div.appendTo(div.parent());
-         });
+         })
+        .find("button")
+           .first()
+           .attr('title','close canvas')
+           .button({ icons: { primary: "ui-icon-close" }, text: false })
+           .click(function() { $(this).parent().parent().remove(); })
+           .next()
+           .attr('title','maximize canvas')
+           .addClass('jsroot_maxbutton')
+           .button({ icons: { primary: "ui-icon-carat-1-n" }, text: false })
+           .click(function() {
+              var main = $(this).parent().parent();
+              var maximize = $(this).find('.ui-icon').hasClass("ui-icon-carat-1-n");
+              ChangeWindowState(main, maximize ? "maximal" : "normal");
+           })
+           .next()
+           .attr('title','minimize canvas')
+           .addClass('jsroot_minbutton')
+           .button({ icons: { primary: "ui-icon-carat-1-s" }, text: false })
+           .click(function() {
+              var main = $(this).parent().parent();
+              var minimize = $(this).find('.ui-icon').hasClass("ui-icon-carat-1-s");
+              ChangeWindowState(main, minimize ? "minimal" : "normal");
+           });
+
+      // set default z-index to avoid overlap of these special elements
+      $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
 
       this.cnt++;
 
