@@ -673,10 +673,8 @@
 
       if (kind.indexOf("geom;")>=0) {
          need_jquery = true;
-         mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
-                      "$$$scripts/three.min.js;" +
-                      "$$$scripts/helvetiker_regular.typeface.js;" +
-                      "$$$scripts/helvetiker_bold.typeface.js;" +
+         mainfiles += "$$$scripts/TrackballControls" + ext + ".js;" +
+                      "$$$scripts/TransformControls" + ext + ".js;" +
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          modules.push('JSRootGeoPainter');
       }
