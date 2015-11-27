@@ -727,7 +727,7 @@
       var hid = topid + "_sub" + this.cnt++;
 
       var li = '<li><a href="#' + hid + '">' + title
-            + '</a><span class="ui-icon ui-icon-close" role="presentation">Remove Tab</span></li>';
+            + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>';
       var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
       var pthis = this;
@@ -749,6 +749,9 @@
             var panelId = $(this).closest("li").remove().attr("aria-controls");
             $("#" + panelId).remove();
             tabs.tabs("refresh");
+            if ($('#' + topid + '> .tabs_draw').length == 0)
+               $("#" + topid).remove();
+
          });
       } else {
          $("#" + topid).find("> .ui-tabs-nav").append(li);

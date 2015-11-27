@@ -152,7 +152,7 @@
 
       hpainter = new JSROOT.HierarchyPainter('root', 'browser');
 
-      hpainter.SetDisplay(guiLayout(), drawDivId);
+      hpainter.SetDisplay(null, drawDivId);
 
       JSROOT.Painter.ConfigureVSeparator(hpainter);
 
