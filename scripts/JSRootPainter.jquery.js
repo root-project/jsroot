@@ -258,6 +258,8 @@
          return JSROOT.CallBack(callback);
       }
 
+      var d3elem = d3.select("#" + this.frameid);
+
       var factcmds = [], status_item = null;
       this.ForEach(function(item) {
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
@@ -302,6 +304,7 @@
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
       }
 
+      // d3elem.selectAll(".plus_minus").on("click", function(d) { h.tree_click($(d),true); });
       elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
@@ -383,6 +386,8 @@
          if (JSROOT.gStyle.ContextMenu)
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
       }
+
+      // d3.select(node.get()).selectAll(".plus_minus").on("click", function(d) { h.tree_click($(d), true); });
 
       childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
    }
@@ -567,6 +572,9 @@
       if (this['disp_kind'] == "tabs")
          this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
       else
+      if (this['disp_kind'] == "flex")
+         this['disp'] = new JSROOT.FlexibleDisplay(this['disp_frameid']);
+      else
       if (this['disp_kind'].search("grid") == 0)
          this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']);
       else
@@ -639,7 +647,7 @@
       var topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null)
-         $("#right-div").append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
+         $("#"+this.frameid).append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
       var hid = topid + "_sub" + this.cnt++;
       var uid = hid + "h";
@@ -755,6 +763,58 @@
 
       return $('#' + hid).get(0);
    }
+
+   // ==================================================
+
+   JSROOT.FlexibleDisplay = function(frameid) {
+      JSROOT.MDIDisplay.call(this, frameid);
+      this.cnt = 0; // use to count newly created frames
+   }
+
+   JSROOT.FlexibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.FlexibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      var topid = this.frameid + '_flex';
+
+      if (document.getElementById(topid) == null) return;
+      if (typeof userfunc != 'function') return;
+
+      $('#' + topid + ' .flex_draw').each(function() {
+         // check if only visible specified
+         //if (only_visible && $(this).is(":hidden")) return;
+
+         userfunc($(this).get(0));
+      });
+   }
+
+   JSROOT.FlexibleDisplay.prototype.ActivateFrame = function(frame) {
+   }
+
+   JSROOT.FlexibleDisplay.prototype.CreateFrame = function(title) {
+      var topid = this.frameid + '_flex';
+
+      if (document.getElementById(topid) == null)
+         $("#" + this.frameid).append('<div id="'+ topid  + '" style="overflow:none; height:100%; width:100%"></div>');
+
+      var subid = topid + "_frame" + this.cnt++;
+
+      var entry = '<div id="' + subid + '" class="flex_frame" style="display: table; width:400px; height:300px">' +
+                  '<h3 class="ui-widget-header flex_header" style="display: table-row;">'+title+'</h3>' +
+                  '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
+                  '</div>';
+
+      $("#" + topid).append(entry);
+
+      $("#" + subid).resizable({
+         helper: "ui-resizable-helper"
+      });
+      $("#" + subid).draggable({
+         containment: "parent"
+      });
+
+      return $("#" + subid + "_cont").prop('title', title).get(0);
+   }
+
 
    // ========== performs tree drawing on server ==================
 

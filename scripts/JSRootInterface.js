@@ -97,7 +97,7 @@
             + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
             + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
             + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
-            + '   <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+            +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
             + ' </select>';
       } else {
 
@@ -128,7 +128,7 @@
                +'<input style="padding:2px; margin-left:10px;"'
                +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
                +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
-               +'  <option>simple</option><option>collapsible</option><option>grid 2x2</option><option>grid 3x3</option><option>grid 4x4</option><option>tabs</option>'
+               +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                +'</select><br/>'
                +'</form>';
          }
