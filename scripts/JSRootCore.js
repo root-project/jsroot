@@ -38,7 +38,9 @@
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
+            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
+            'Trackball'            : dir+'TrackballControls'+ext,
+            'Transform'            : dir+'TransformControls'+ext
          };
 
       // check if modules are already loaded
@@ -52,6 +54,8 @@
        shim: {
          'touch-punch': { deps: ['jquery'] },
          'three.extra': { deps: ['THREE'] },
+         'Trackball': { deps: ['THREE'] },
+         'Transform': { deps: ['THREE'] },
          'THREE_ALL': { deps: ['jquery', 'jquery-ui', 'THREE', 'three.extra'] },
          'MathJax': {
              exports: 'MathJax',
@@ -665,6 +669,16 @@
                       "$$$scripts/three.extra" + ext + ".js;" +
                       "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
+      }
+
+      if (kind.indexOf("geom;")>=0) {
+         need_jquery = true;
+         mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
+                      "$$$scripts/three.min.js;" +
+                      "$$$scripts/helvetiker_regular.typeface.js;" +
+                      "$$$scripts/helvetiker_bold.typeface.js;" +
+                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+         modules.push('JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
