@@ -548,7 +548,7 @@
       else
          render_to = $("#" + divid);
 
-      if (opt=="") opt = histo['fOption'];
+      if (typeof opt == 'undefined' || opt == "") opt = histo['fOption'];
       opt = opt.toLowerCase();
 
       if (pad) {
