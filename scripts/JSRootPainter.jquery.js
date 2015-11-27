@@ -796,28 +796,50 @@
       if (document.getElementById(topid) == null)
          $("#" + this.frameid).append('<div id="'+ topid  + '" style="overflow:none; height:100%; width:100%"></div>');
 
-      var subid = topid + "_frame" + this.cnt++;
+      var top = $("#" + topid);
 
-      var entry = '<div id="' + subid + '" class="flex_frame" style="display: table; width:400px; height:300px">' +
+      var w = top.width(), h = top.height();
+
+      var subid = topid + "_frame" + this.cnt;
+
+      var entry = '<div id="' + subid + '" class="flex_frame" style="display: table; position:absolute">' +
                   '<h3 class="ui-widget-header flex_header" style="display: table-row; padding-left:5px">'+title+'</h3>' +
                   '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
                   '</div>';
 
-      $("#" + topid).append(entry);
+      top.append(entry);
 
-      $("#" + subid).resizable({
-         helper: "jsroot-resizable-helper",
-         stop: function(event, ui) {
-            JSROOT.CheckElementResize($(this).find(".flex_draw").get(0));
-         }
-      });
-      $("#" + subid).draggable({
-         containment: "parent"
-      });
+      $("#" + subid)
+         .css('left', parseInt(w * (this.cnt % 5)/10))
+         .css('top', parseInt(h * (this.cnt % 5)/10))
+         .css('width', parseInt(w * 0.58))
+         .css('height', parseInt(h * 0.58))
+         .resizable({
+            helper: "jsroot-resizable-helper",
+            start: function(event, ui) {
+               // bring element to front when start resizing
+               $(this).appendTo($(this).parent());
+            },
+            stop: function(event, ui) {
+               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0));
+            }
+          })
+         .draggable({
+            containment: "parent",
+            start: function(event, ui) {
+               // bring element to front when start dragging
+               $(this).appendTo($(this).parent());
+            }
+          })
+         .find('.flex_header').click(function(){
+            var div = $(this).parent();
+            div.appendTo(div.parent());
+         });
+
+      this.cnt++;
 
       return $("#" + subid + "_cont").prop('title', title).get(0);
    }
-
 
    // ========== performs tree drawing on server ==================
 
