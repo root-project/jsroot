@@ -1141,7 +1141,6 @@
       return c;
    }
 
-
    JSROOT.TObjectPainter.prototype.root_pad = function() {
       var pad_painter = this.pad_painter(true);
       return pad_painter ? pad_painter.pad : null;
@@ -1186,12 +1185,12 @@
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function() {
-      var res = parseInt(this.svg_pad().attr("width"));
+      var res = this.svg_pad().property("draw_width");
       return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.pad_height = function() {
-      var res = parseInt(this.svg_pad().attr("height"));
+      var res = this.svg_pad().property("draw_height");
       return isNaN(res) ? 0 : res;
    }
 
@@ -3289,18 +3288,17 @@
 
       var rect = render_to.node().getBoundingClientRect();
 
-      var w = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
-      var h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
-      var factor = null;
+      // this is size where canvas should be rendered
+      var w = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right')),
+          h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
 
-      var svg = null;
+      var factor = null, svg = null;
 
       if (check_resize > 0) {
 
          svg = this.svg_canvas();
 
-         var oldw = svg.property('last_width');
-         var oldh = svg.property('last_height');
+         var oldw = svg.property('draw_width'), oldh = svg.property('draw_height');
 
          if ((w<=0) && (h<=0)) {
             svg.attr("visibility", "hidden");
@@ -3310,7 +3308,6 @@
          }
 
          if (check_resize == 1) {
-            if ((svg.attr('width') == w) && (svg.attr('height') == h)) return false;
             if ((oldw == w) && (oldh == h)) return false;
          }
 
@@ -3324,9 +3321,8 @@
 
          if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
-               // change view port without changing view box
-               // let SVG scale drawing itself
-               svg.attr("width", w).attr("height", h);
+               // not significant change in actual sizes, keep as it is
+               // let browser scale SVG without out help
                return false;
             }
 
@@ -3378,12 +3374,13 @@
          svg.attr("visibility", "visible");
       }
 
-      svg.attr("width", w).attr("height", h)
+      svg.attr("width", "100%")
+         .attr("height", "100%")
          .attr("viewBox", "0 0 " + w + " " + h)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
-         .property('last_width', w)
-         .property('last_height', h)
+         .property('draw_width', w)
+         .property('draw_height', h)
          .property('redraw_by_resize', false);
 
       return true;
@@ -3391,12 +3388,12 @@
 
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
-      var width = Number(this.svg_canvas().attr("width")),
-          height = Number(this.svg_canvas().attr("height"));
-      var x = Math.round(this.pad['fAbsXlowNDC'] * width);
-      var y = Math.round(height - this.pad['fAbsYlowNDC'] * height);
-      var w = Math.round(this.pad['fAbsWNDC'] * width);
-      var h = Math.round(this.pad['fAbsHNDC'] * height);
+      var width = this.svg_canvas().property("draw_width"),
+          height = this.svg_canvas().property("draw_height"),
+          x = Math.round(this.pad['fAbsXlowNDC'] * width),
+          y = Math.round(height - this.pad['fAbsYlowNDC'] * height),
+          w = Math.round(this.pad['fAbsWNDC'] * width),
+          h = Math.round(this.pad['fAbsHNDC'] * height);
       y -= h;
 
       var fill = this.createAttFill(this.pad);
@@ -3420,10 +3417,12 @@
          svg_pad.append("svg:g").attr("class","stat_layer");
       }
 
-      svg_pad.attr("width", w)
+      svg_pad.attr("width", w) // this is for SVG drawing
              .attr("height", h)
              .attr("viewBox", x + " " + y + " " + (x+w) + " " + (y+h))
-             .attr("transform", "translate(" + x + "," + y + ")");
+             .attr("transform", "translate(" + x + "," + y + ")")
+             .property('draw_width', w) // this is to make similar with canvas
+             .property('draw_height', h);
 
       svg_rect.attr("x", 0)
               .attr("y", 0)
