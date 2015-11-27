@@ -799,14 +799,17 @@
       var subid = topid + "_frame" + this.cnt++;
 
       var entry = '<div id="' + subid + '" class="flex_frame" style="display: table; width:400px; height:300px">' +
-                  '<h3 class="ui-widget-header flex_header" style="display: table-row;">'+title+'</h3>' +
+                  '<h3 class="ui-widget-header flex_header" style="display: table-row; padding-left:5px">'+title+'</h3>' +
                   '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
                   '</div>';
 
       $("#" + topid).append(entry);
 
       $("#" + subid).resizable({
-         helper: "ui-resizable-helper"
+         helper: "jsroot-resizable-helper",
+         stop: function(event, ui) {
+            JSROOT.CheckElementResize($(this).find(".flex_draw").get(0));
+         }
       });
       $("#" + subid).draggable({
          containment: "parent"

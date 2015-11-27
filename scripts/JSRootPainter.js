@@ -1479,6 +1479,8 @@
             JSROOT.Painter.closeMenu(); // close menu
 
             d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
             acc_x = 0; acc_y = 0;
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
@@ -8626,6 +8628,18 @@
 
    // =========================================================================
 
+   JSROOT.CheckElementResize = function(dom_node) {
+      if (dom_node==null) return;
+      var dummy = new JSROOT.TObjectPainter(), first = true;
+      dummy.SetDivId(dom_node);
+      dummy.ForEachPainter(function(painter) {
+         if (!first) return;
+         if (typeof painter['CheckResize'] != 'function') return;
+         first = false;
+         painter.CheckResize();
+      });
+   }
+
    JSROOT.RegisterForResize = function(handle, delay) {
       // function used to react on browser window resize event
       // While many resize events could come in short time,
@@ -8661,15 +8675,7 @@
                if (mdi) {
                   mdi.CheckResize();
                } else {
-                  var dummy = new JSROOT.TObjectPainter();
-                  var first = true;
-                  dummy.SetDivId(handle, -1);
-                  dummy.ForEachPainter(function(painter) {
-                     if (first && (typeof painter['CheckResize'] == 'function')) {
-                        first = false;
-                        painter.CheckResize();
-                     }
-                  });
+                  JSROOT.CheckElementResize(node.node());
                }
             }
          }
