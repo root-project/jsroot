@@ -652,7 +652,11 @@
       var hid = topid + "_sub" + this.cnt++;
       var uid = hid + "h";
 
-      var entryInfo = "<h5 id=\"" + uid + "\"><a> " + title + "</a>&nbsp; </h5>\n";
+      var entryInfo = "<h5 id=\"" + uid + "\">" +
+                        "<span class='ui-icon ui-icon-triangle-1-e'></span>" +
+                        "<a> " + title + "</a>&nbsp; " +
+                        "<button type='button' class='jsroot_collaps_closebtn' style='float:right; width:1.4em' title='close canvas'/>" +
+                        " </h5>\n";
       entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
       $("#" + topid).append(entryInfo);
 
@@ -661,10 +665,6 @@
       $('#' + uid)
             .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
             .hover(function() { $(this).toggleClass("ui-state-hover"); })
-            .prepend('<span class="ui-icon ui-icon-triangle-1-e"></span>')
-            .append('<button type="button" class="closeButton" title="close canvas" '+
-                    'onclick="javascript: $(this).parent().next().andSelf().remove();">'+
-                    '<img class="img_remove" src="" alt=""/></button>')
             .click( function() {
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
@@ -675,6 +675,11 @@
             .next()
             .addClass("ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom")
             .hide();
+
+      $('#' + uid).find(" .jsroot_collaps_closebtn")
+           .button({ icons: { primary: "ui-icon-close" }, text: false })
+           .click(function(){ $(this).parent().next().andSelf().remove(); });
+
 
       $('#' + uid)
             .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
@@ -808,9 +813,9 @@
       var entry ='<div id="' + subid + '" class="flex_frame" style="display: table; position:absolute">' +
                   '<div class="ui-widget-header flex_header" style="display: table-row">'+
                     '<h3 style="float:left; padding-left:5px">'+title+'</h3>' +
-                    '<button type="button" style="float:right"/>' +
-                    '<button type="button" style="float:right"/>' +
-                    '<button type="button" style="float:right"/>' +
+                    '<button type="button" style="float:right; width:1.4em"/>' +
+                    '<button type="button" style="float:right; width:1.4em"/>' +
+                    '<button type="button" style="float:right; width:1.4em"/>' +
                    '</div>' +
                   '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
                  '</div>';
