@@ -8266,9 +8266,18 @@
 
       if ((jsonarr.length>0) && (itemsarr.length==0)) itemsarr.push("");
 
-      var layout = JSROOT.GetUrlOption("layout");
-      if (!this['disp_kind'] || (layout!=null))
-         this['disp_kind'] = (layout && layout.length>0) ? layout : 'simple';
+      if (!this['disp_kind']) {
+         var layout = JSROOT.GetUrlOption("layout");
+         if ((typeof layout == "string") && (layout.length>0))
+            this['disp_kind'] = layout;
+         else
+         switch (itemsarr.length) {
+           case 0:
+           case 1: this['disp_kind'] = 'simple'; break;
+           case 2: this['disp_kind'] = 'grid 1x2'; break;
+           default: this['disp_kind'] = 'flex';
+         }
+      }
 
       if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
 
