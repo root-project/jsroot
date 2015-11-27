@@ -662,20 +662,20 @@
          need_jquery = true;
       }
 
-      if (kind.indexOf("3d;")>=0) {
+      if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
          need_jquery = true;
          mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
                       "$$$scripts/three.min.js;" +
-                      "$$$scripts/three.extra" + ext + ".js;" +
-                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+                      "$$$scripts/three.extra" + ext + ".js;";
+      }
+
+      if (kind.indexOf("3d;")>=0) {
+         mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
 
       if (kind.indexOf("geom;")>=0) {
-         need_jquery = true;
-         mainfiles += "$$$scripts/TrackballControls" + ext + ".js;" +
-                      "$$$scripts/TransformControls" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+         mainfiles += "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          modules.push('JSRootGeoPainter');
       }
 
