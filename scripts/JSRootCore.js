@@ -38,9 +38,7 @@
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
-            'Trackball'            : dir+'TrackballControls'+ext,
-            'Transform'            : dir+'TransformControls'+ext
+            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
          };
 
       // check if modules are already loaded

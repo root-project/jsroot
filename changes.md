@@ -6,6 +6,8 @@
 3. Draw functions list from TGraph and TMultiGraph 
 4. Update all basic libraries:
      d3.js - v3.5.9, jquery.js - v2.1.4, jquery-ui.js - v1.11.4, three.js - r73  
+5. Introduce 'flex' layout - MDI-like desktop 
+6. Introduce TGeo support
 
 
 ## Changes in 3.9

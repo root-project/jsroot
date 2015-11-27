@@ -4,26 +4,17 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['jquery', 'jquery-ui', 'JSRootPainter', 'Trackball', 'Transform', 'THREE', 'jquery.mousewheel'], factory );
+      define( ['jquery', 'jquery-ui', 'JSRootPainter', 'THREE_ALL'], factory );
    } else {
 
-      if (typeof JSROOT == 'undefined') {
-         var e1 = new Error('JSROOT is not defined');
-         e1.source = 'JSRootGeoPainter.js';
-         throw e1;
-      }
+      if (typeof JSROOT == 'undefined')
+         throw new Error('JSROOT is not defined', 'JSRootGeoPainter.js');
 
-      if (typeof JSROOT.Painter != 'object') {
-         var e1 = new Error('JSROOT.Painter is not defined');
-         e1.source = 'JSRootGeoPainter.js';
-         throw e1;
-      }
+      if (typeof JSROOT.Painter != 'object')
+         throw new Error('JSROOT.Painter is not defined', 'JSRootGeoPainter.js');
 
-      if (typeof THREE == 'undefined') {
-         var e1 = new Error('THREE is not defined');
-         e1.source = 'JSRootGeoPainter.js';
-         throw e1;
-      }
+      if (typeof THREE == 'undefined')
+         throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
 
       factory(jQuery, jQuery.ui, JSROOT);
    }
@@ -778,7 +769,7 @@
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                opacity: _opacity, wireframe: false, color: fillcolor,
                side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-               overdraw: false, shading : THREE.NoShading } );
+               overdraw: false /*, shading : THREE.NoShading */ } );
       if ( !_isdrawn ) {
          //material.depthWrite = false;
          material.visible = false;
@@ -927,8 +918,8 @@
          if ( renderer.domElement.transformControl !== null )
             renderer.domElement.transformControl.attach( toplevel );
       }
-      camera.position.x = overall_size * Math.cos( 135.0 );  
-      camera.position.y = overall_size * Math.cos( 45.0 );  
+      camera.position.x = overall_size * Math.cos( 135.0 );
+      camera.position.y = overall_size * Math.cos( 45.0 );
       camera.position.z = overall_size * Math.sin( 45.0 );
       renderer.render(this._scene, camera);
 
@@ -957,9 +948,9 @@
          if ( this.painter._scene === null ) return;
 
          renderer.domElement.clock = null;
-         if (renderer.domElement._timeoutFunc != null) 
+         if (renderer.domElement._timeoutFunc != null)
             clearTimeout( renderer.domElement._timeoutFunc );
-         if (renderer.domElement._animationId != null) 
+         if (renderer.domElement._animationId != null)
             cancelAnimationFrame( renderer.domElement._animationId );
 
          this.painter.deleteChildren(this.painter._scene);
