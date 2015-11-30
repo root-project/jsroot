@@ -1017,9 +1017,10 @@
    JSROOT.Painter.drawGeometry = function(divid, geometry, opt, painter) {
 
       // create painter and add it to canvas
-      var geopainter = new JSROOT.TGeoPainter(geometry);
-      geopainter.SetDivId(divid);
-      geopainter.drawGeometry();
+      JSROOT.extend(painter, new JSROOT.TGeoPainter(geometry));
+
+      painter.SetDivId(divid);
+      painter.drawGeometry();
       return painter.DrawingReady();
    }
 
