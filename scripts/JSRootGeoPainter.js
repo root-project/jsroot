@@ -764,11 +764,10 @@
             _transparent = true;
             _opacity = (100.0 - transparency) / 100.0;
          }
-         if (typeof fillcolor == undefined) {
-            var fill_color = volume['fMedium']['fMaterial']['fFillColor'];
-            fillcolor = JSROOT.Painter.root_colors[fill_color];
-         }
+         if (typeof fillcolor == "undefined")
+            fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
       }
+
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                opacity: _opacity, wireframe: false, color: fillcolor,
                side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
