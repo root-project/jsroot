@@ -879,6 +879,8 @@
 
       dom.appendChild(renderer.domElement);
 
+      this.SetDivId(); // now one could set painter pointer in child element
+
       this.addControls(renderer, this._scene, camera);
 
       var toplevel = new THREE.Object3D();
@@ -923,7 +925,11 @@
       camera.position.z = overall_size * Math.sin( 45.0 );
       renderer.render(this._scene, camera);
 
-      dom.painter = this;
+
+      // pointer used in the event handlers
+      var pthis = this;
+
+
       dom.tabIndex = 0;
       dom.focus();
       dom.onkeypress = function(e) {
@@ -931,7 +937,7 @@
          switch ( e.keyCode ) {
             case 87:  // W
             case 119: // w
-               this.painter.toggleWireFrame(this.painter._scene);
+               pthis.toggleWireFrame(pthis._scene);
                break;
          }
       };
@@ -945,7 +951,7 @@
       //   this.blur();
       //};
       dom.onremove = function () {
-         if ( this.painter._scene === null ) return;
+         if (pthis._scene === null ) return;
 
          renderer.domElement.clock = null;
          if (renderer.domElement._timeoutFunc != null)
@@ -953,16 +959,17 @@
          if (renderer.domElement._animationId != null)
             cancelAnimationFrame( renderer.domElement._animationId );
 
-         this.painter.deleteChildren(this.painter._scene);
-         renderer.initWebGLObjects(this.painter._scene);
-         delete(this.painter._scene);
-         this.painter._scene = null;
+         pthis.deleteChildren(pthis._scene);
+         renderer.initWebGLObjects(pthis._scene);
+         delete pthis._scene;
+         pthis._scene = null;
          if ( renderer.domElement.transformControl !== null )
             renderer.domElement.transformControl.dispose();
          renderer.domElement.transformControl = null;
          renderer.domElement.trackballControls = null;
          renderer.domElement.render = null;
          renderer = null;
+         pthis = null;
       };
 
       return this.DrawingReady();
@@ -1020,8 +1027,8 @@
       JSROOT.extend(this, new JSROOT.TGeoPainter(geometry));
 
       this.SetDivId(divid);
-      this.drawGeometry();
-      return this.DrawingReady();
+
+      return this.drawGeometry();
    }
 
    return JSROOT.Painter;
