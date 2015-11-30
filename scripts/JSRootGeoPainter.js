@@ -182,12 +182,15 @@
          tube[seg] = new THREE.CylinderGeometry(outerRadius[n+1], outerRadius[n],
                   DZ, radiusSegments, 1, true, thetaStart, thetaLength);
          tube[seg].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+         tube[seg].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
          tubeMesh[seg] = new THREE.Mesh( tube[seg], material );
          tubeMesh[seg].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
          tube[seg+1] = new THREE.CylinderGeometry(innerRadius[n+1], innerRadius[n],
                   DZ, radiusSegments, 1, true, thetaStart, thetaLength);
          tube[seg+1].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+         tube[seg+1].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
+
          tubeMesh[seg+1] = new THREE.Mesh( tube[seg+1], material );
          tubeMesh[seg+1].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
