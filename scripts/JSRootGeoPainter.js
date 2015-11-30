@@ -1014,14 +1014,14 @@
       obj = null;
    }
 
-   JSROOT.Painter.drawGeometry = function(divid, geometry, opt, painter) {
+   JSROOT.Painter.drawGeometry = function(divid, geometry, opt) {
 
       // create painter and add it to canvas
-      JSROOT.extend(painter, new JSROOT.TGeoPainter(geometry));
+      JSROOT.extend(this, new JSROOT.TGeoPainter(geometry));
 
-      painter.SetDivId(divid);
-      painter.drawGeometry();
-      return painter.DrawingReady();
+      this.SetDivId(divid);
+      this.drawGeometry();
+      return this.DrawingReady();
    }
 
    return JSROOT.Painter;
