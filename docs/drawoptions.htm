@@ -47,12 +47,22 @@
 
          var html = "";
          if (!is_minimal) html += '<br/><br/>';
-         html += 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
+         html += 'File: <a href="../index.htm?';
+         if (fname.indexOf(".json")>0) 
+            html += 'json=' + fname;
+         else
+            html += 'file=' + fname;
+         
+         html += '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
-            html += '<a href="../index.htm?nobrowser&file=' + fname; 
-            html += '&item=' + itemname + '&';
+            html += '<a href="../index.htm?nobrowser&';
+            if (fname.indexOf(".json")>0) {
+               html += 'json=' + fname + '&';
+            } else {
+               html += 'file=' + fname + '&item=' + itemname + '&';
+            }
 
             if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
                                   else { html += arr[i]; has_equal = true; } 
@@ -98,10 +108,16 @@
 
          var dir = JSROOT.GetUrlOption("path");
          if (dir==null) dir = global_dir;
+         
+         if (filename.indexOf(".json")>0) {
+            if (JSROOT.source_dir.indexOf("file:///")!=0)             
+               return filecallback({ fURL: dir+filename+'.gz' });
+            return filecallback({ fURL: dir+filename });
+         }
 
          // do not read file when not required - create only fake instance
          if (is_minimal) return filecallback({ fURL: dir+filename });
-
+         
          JSROOT.OpenFile(dir + filename + "+", function(file) {
             if (file==null) return file_error(dir+filename + " cannot be opened");
             filecallback(file);
@@ -205,12 +221,22 @@
             draw_item_options(file, "legends;1", "can6_draw", ";mathjax=1", 0., "TCanvas");
          });
 
+         LoadFile("rootgeom.json", function(file) {
+            draw_item_options(file, "json", "geo1_draw", "", 0., "TGeo");
+         });
+
          if (extra_drawing) {
             LoadFile("can4.root", function(file) {
                draw_item_options(file, "c1;1", "can7_draw", "", 0., "TCanvas");
             });
             LoadFile("higgs_c.root", function(file) {
                draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", 0., "TCanvas");
+            });
+            LoadFile("atlas_cryo.json", function(file) {
+               draw_item_options(file, "json", "geo2_draw", "", 0., "TGeo");
+            });
+            LoadFile("simple_alice.json", function(file) {
+               draw_item_options(file, "json", "geo3_draw", "", 0., "TGeo");
             });
          }
 
@@ -273,6 +299,11 @@
   <div id="can6_draw"></div>
   <div id="can7_draw"></div>
   <div id="can8_draw"></div>
+
+  <h2>TGeo classes</h2> 
+  <div id="geo1_draw"></div>
+  <div id="geo2_draw"></div>
+  <div id="geo3_draw"></div>
 
    
 
