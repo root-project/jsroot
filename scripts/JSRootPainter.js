@@ -272,6 +272,13 @@
             colorMap[colorn] = 'rgb(' + rectSets[i][3 * j] + ',' + rectSets[i][3 * j + 1] + ',' + rectSets[i][3 * j + 2] + ')';
          }
       }
+
+      // grey colors 920..923
+      for (var gr=0;gr<4;gr++) {
+         var code = parseInt(0.2 * 255 * (4-gr));
+         colorMap[920+gr] = 'rgb(' + code + ',' + code + ',' + code+ ')';
+      }
+
       return colorMap;
    }();
 
