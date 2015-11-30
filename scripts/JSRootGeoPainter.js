@@ -741,15 +741,13 @@
             rotation_matrix[4] = node['fFinder']['fSinCos'][(2*node['fIndex'])+1];
          }
       }
-      var mesh = null;
-      var linecolor = JSROOT.Painter.root_colors[volume['fLineColor']];
-      var fillcolor = JSROOT.Painter.root_colors[volume['fFillColor']];
-      fillcolor = linecolor;
-      var _transparent = true;
-      var _helper = false;
+      var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
+
+      var _transparent = true,
+          _helper = false,
+          _opacity = 0.0,
+          _isdrawn = false;
       if (this._debug) _helper = true;
-      var _opacity = 0.0;
-      var _isdrawn = false;
       if (volume.TestAttBit(JSROOT.BIT(7))) {
          _transparent = false;
          _opacity = 1.0;
@@ -776,7 +774,7 @@
          //material.depthWrite = false;
          material.visible = false;
       }
-      mesh = this.createMesh(shape, material, rotation_matrix);
+      var mesh = this.createMesh(shape, material, rotation_matrix);
       if (typeof mesh != 'undefined' && mesh != null) {
          mesh.position.x = 0.5 * translation_matrix[0];
          mesh.position.y = 0.5 * translation_matrix[1];
