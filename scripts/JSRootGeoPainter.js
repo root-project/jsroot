@@ -552,13 +552,13 @@
       var outerTube = new THREE.CylinderGeometry(outerRadius1/2, outerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-//    outerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
+      outerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
       var outerTubeMesh = new THREE.Mesh( outerTube, material );
 
       var innerTube = new THREE.CylinderGeometry(innerRadius1/2, innerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       innerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-//      innerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
+      innerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
       var innerTubeMesh = new THREE.Mesh( innerTube, material );
 
       var first = new THREE.Geometry();
