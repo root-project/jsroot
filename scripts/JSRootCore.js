@@ -29,8 +29,8 @@
             'rawinflate'           : dir+'rawinflate'+ext,
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'THREE'                : dir+'three'+ext,
-            'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
             'three.extra'          : dir+'three.extra'+ext,
+            'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -661,14 +661,14 @@
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
          mainfiles += "$$$scripts/three" + ext + ".js;" +
                       "$$$scripts/three.extra" + ext + ".js;";
-         modules.push('THREE_ALL');
+         modules.push('THREE', "three.extra");
       }
 
       if (kind.indexOf("3d;")>=0) {
          need_jquery = true;
          mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
                       "$$$scripts/JSRoot3DPainter" + ext + ".js;";
-         modules.push('JSRoot3DPainter');
+         modules.push('THREE_ALL', 'JSRoot3DPainter');
       }
 
       if (kind.indexOf("geom;")>=0) {
