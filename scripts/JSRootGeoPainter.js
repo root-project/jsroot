@@ -552,11 +552,13 @@
       var outerTube = new THREE.CylinderGeometry(outerRadius1/2, outerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+//    outerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
       var outerTubeMesh = new THREE.Mesh( outerTube, material );
 
       var innerTube = new THREE.CylinderGeometry(innerRadius1/2, innerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       innerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+//      innerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
       var innerTubeMesh = new THREE.Mesh( innerTube, material );
 
       var first = new THREE.Geometry();
@@ -576,6 +578,8 @@
       first.computeFaceNormals();
       var firstMesh = new THREE.Mesh( first, material );
 
+      var face1Mesh, face2Mesh;
+
       if ((shape['_typename'] == "TGeoConeSeg") || (shape['_typename'] == "TGeoTubeSeg") ||
           (shape['_typename'] == "TGeoCtub")) {
          var face1 = new THREE.Geometry();
@@ -589,7 +593,7 @@
          face1.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face1.mergeVertices();
          face1.computeFaceNormals();
-         var face1Mesh = new THREE.Mesh( face1, material );
+         face1Mesh = new THREE.Mesh( face1, material );
 
          var face2 = new THREE.Geometry();
          face2.vertices.push(outerTube.vertices[radiusSegments]/*.clone()*/);
@@ -602,7 +606,7 @@
          face2.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face2.mergeVertices();
          face2.computeFaceNormals();
-         var face2Mesh = new THREE.Mesh( face2, material );
+         face2Mesh = new THREE.Mesh( face2, material );
       }
 
       var second = new THREE.Geometry();
@@ -628,8 +632,7 @@
       innerTubeMesh.updateMatrix();
       geometry.merge(innerTubeMesh.geometry, innerTubeMesh.matrix);
 
-      if ((shape['_typename'] == "TGeoConeSeg") || (shape['_typename'] == "TGeoTubeSeg") ||
-          (shape['_typename'] == "TGeoCtub")) {
+      if (face1Mesh && face2Mesh) {
          face1Mesh.updateMatrix();
          geometry.merge(face1Mesh.geometry, face1Mesh.matrix);
          face2Mesh.updateMatrix();
@@ -808,10 +811,8 @@
       }
       if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
          var nodes = volume['fNodes']['arr'];
-         for (var i = 0; i < nodes.length; ++i) {
-            var node = volume['fNodes']['arr'][i];
-            this.drawNode(scene, container, node);
-         }
+         for (var i in nodes)
+            this.drawNode(scene, container, nodes[i]);
       }
    }
 
@@ -897,10 +898,8 @@
       //this.drawVolume(this._scene, toplevel, this._geometry);
       if (typeof this._geometry['fNodes'] != 'undefined' && this._geometry['fNodes'] != null) {
          var nodes = this._geometry['fNodes']['arr'];
-         for (var i = 0; i < nodes.length; ++i) {
-            var node = this._geometry['fNodes']['arr'][i];
-            this.drawNode(this._scene, cube, node)
-         }
+         for (var i in nodes)
+            this.drawNode(this._scene, cube, nodes[i])
       }
 
       top.computeBoundingBox();
