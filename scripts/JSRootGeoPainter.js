@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['jquery', 'jquery-ui', 'JSRootPainter', 'THREE_ALL'], factory );
+      define( ['JSRootPainter', 'THREE_ALL'], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -16,9 +16,9 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
 
-      factory(jQuery, jQuery.ui, JSROOT);
+      factory(JSROOT);
    }
-} (function($, myui, JSROOT) {
+} (function(JSROOT) {
 
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
@@ -834,10 +834,13 @@
 
    JSROOT.TGeoPainter.prototype.drawGeometry = function() {
 
-      var render_to = $("#" + this['divid']);
+      var w = this.GetStyleValue(this.select_main(), 'width'),
+          h = this.GetStyleValue(this.select_main(), 'height'),
+          size = 100;
 
-      var w = render_to.width(), h = render_to.height(), size = 100;
-      if (h < 10) { render_to.height(0.66*w); h = render_to.height(); }
+      if (h < 10) { h = parseInt(0.66*w); this.select_main().style('height', h +"px"); }
+
+      var dom = this.select_main().node();
 
       // three.js 3D drawing
       this._scene = new THREE.Scene();
@@ -875,7 +878,8 @@
       renderer.setClearColor(0xffffff, 1);
       renderer.setSize(w, h);
       this._renderer = renderer;
-      render_to.append(renderer.domElement);
+
+      dom.appendChild(renderer.domElement);
 
       this.addControls(renderer, this._scene, camera);
 
@@ -923,10 +927,10 @@
       camera.position.z = overall_size * Math.sin( 45.0 );
       renderer.render(this._scene, camera);
 
-      document.getElementById(this['divid']).painter = this;
-      document.getElementById(this['divid']).tabIndex = 0;
-      document.getElementById(this['divid']).focus();
-      document.getElementById(this['divid']).onkeypress = function(e) {
+      dom.painter = this;
+      dom.tabIndex = 0;
+      dom.focus();
+      dom.onkeypress = function(e) {
          if (!e) e = event;
          switch ( e.keyCode ) {
             case 87:  // W
@@ -935,16 +939,16 @@
                break;
          }
       };
-      document.getElementById(this['divid']).onclick = function(e) {
+      dom.onclick = function(e) {
          this.focus();
       };
-      //document.getElementById(this['divid']).onmouseenter = function(e) {
+      //dom.onmouseenter = function(e) {
       //   this.focus();
       //};
-      //document.getElementById(this['divid']).onmouseleave = function(e) {
+      //dom.onmouseleave = function(e) {
       //   this.blur();
       //};
-      document.getElementById(this['divid']).onremove = function () {
+      dom.onremove = function () {
          if ( this.painter._scene === null ) return;
 
          renderer.domElement.clock = null;

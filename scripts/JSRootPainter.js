@@ -1057,6 +1057,14 @@
       return false;
    }
 
+   JSROOT.TBasePainter.prototype.GetStyleValue = function(select, name) {
+      var value = select.style(name);
+      if (!value) return 0;
+      value = parseFloat(value.replace("px",""));
+      return isNaN(value) ? 0 : value;
+   }
+
+
 
    // ==============================================================================
 
@@ -3276,13 +3284,6 @@
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TPadPainter.prototype.GetStyleValue = function(select, name) {
-      var value = select.style(name);
-      if (!value) return 0;
-      value = parseFloat(value.replace("px",""));
-      return isNaN(value) ? 0 : value;
-   }
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
 
