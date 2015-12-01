@@ -975,9 +975,14 @@
       return this.DrawingReady();
    }
 
-   JSROOT.TGeoPainter.prototype.CheckResize = function() {
+   JSROOT.TGeoPainter.prototype.CheckResize = function(force, size) {
       var w = this.GetStyleValue(this.select_main(), 'width'),
           h = this.GetStyleValue(this.select_main(), 'height');
+
+      if ((size!=null) && ('width' in size) && ('height' in size)) {
+         w = size.width;
+         h = size.height;
+      }
 
       if ((w<=10) || (h<=10)) return;
 

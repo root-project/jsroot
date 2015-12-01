@@ -881,7 +881,9 @@
                $(this).appendTo($(this).parent());
             },
             stop: function(event, ui) {
-               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0));
+               console.log('resize ui' + ui.size.width + ' ' + ui.size.height);
+
+               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), false, ui.size);
             }
           })
           .draggable({

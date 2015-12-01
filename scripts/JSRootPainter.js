@@ -7745,7 +7745,7 @@
 
    // =========================================================================
 
-   JSROOT.CheckElementResize = function(dom_node) {
+   JSROOT.CheckElementResize = function(dom_node, force, size) {
       if (dom_node==null) return;
       var dummy = new JSROOT.TObjectPainter(), first = true;
       dummy.SetDivId(dom_node, -1);
@@ -7753,7 +7753,7 @@
          if (!first) return;
          if (typeof painter['CheckResize'] != 'function') return;
          first = false;
-         painter.CheckResize();
+         painter.CheckResize(force, size);
       });
    }
 
