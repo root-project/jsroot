@@ -349,7 +349,6 @@
       // generic method to invoke callback function
       // func either normal function or container like
       // { obj: object_pointer, func: name of method to call }
-      // { _this: object pointer, func: function to call }
       // arg1, arg2 are optional arguments of the callback
 
       if (func == null) return;
@@ -362,10 +361,10 @@
 
       if (('obj' in func) && ('func' in func) &&
          (typeof func.obj == 'object') && (typeof func.func == 'string') &&
-         (typeof func.obj[func.func] == 'function')) return func.obj[func.func](arg1, arg2);
-
-      if (('_this' in func) && ('func' in func) &&
-         (typeof func.func == 'function')) return func.func.call(func._this, arg1, arg2);
+         (typeof func.obj[func.func] == 'function')) {
+         alert('Old-style call-back, change code for ' + func.func);
+             return func.obj[func.func](arg1, arg2);
+      }
    }
 
    JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
@@ -591,23 +590,27 @@
       // 'simple' for basic user interface
       // 'load:' list of user-specific scripts at the end of kind string
 
-      var jsroot = this;
+      var jsroot = JSROOT;
+
+      if (!('doing_assert' in jsroot)) jsroot.doing_assert = [];
+
 
       if ((typeof kind != 'string') || (kind == ''))
          return jsroot.CallBack(callback);
 
-      if (kind=='shift') {
-         var req = jsroot.doing_assert.shift();
+      if (kind=='__next__') {
+         if (jsroot.doing_assert.length==0) return;
+         var req = jsroot.doing_assert[0];
+         if ('running' in req) return;
          kind = req._kind;
          callback = req._callback;
          debugout = req._debug;
-      } else
-      if (jsroot.doing_assert != null) {
-         // if function already called, store request
-         return jsroot.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
       } else {
-         jsroot.doing_assert = [];
+         jsroot.doing_assert.push({_kind:kind, _callback:callback, _debug: debugout});
+         if (jsroot.doing_assert.length > 1) return;
       }
+
+      jsroot.doing_assert[0]['running'] = true;
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
 
@@ -721,16 +724,14 @@
       if (pos<0) pos = kind.indexOf("load:");
       if (pos>=0) extrafiles += kind.slice(pos+5);
 
-      var load_callback = function() {
-         if (jsroot.doing_assert && jsroot.doing_assert.length==0) jsroot.doing_assert = null;
-         jsroot.CallBack(callback);
-         if (jsroot.doing_assert && (jsroot.doing_assert.length>0)) {
-            jsroot.AssertPrerequisites('shift');
-         }
+      function load_callback() {
+         var req = jsroot.doing_assert.shift();
+         jsroot.CallBack(req._callback);
+         jsroot.AssertPrerequisites('__next__');
       }
 
       if ((typeof define === "function") && define.amd && (modules.length>0)) {
-         jsroot.console("loading " + modules + " with require.js", debugout);
+         jsroot.console("loading " + JSON.stringify(modules) + " with require.js", debugout);
          require(modules, function() {
             jsroot.loadScript(extrafiles, load_callback, debugout);
          });
@@ -1039,20 +1040,16 @@
                while(_func.indexOf('['+i+']') != -1)
                   _func = _func.replace('['+i+']', this['fParams'][i]);
             }
-            for (var i=0;i<JSROOT.function_list.length;++i) {
-               var f = JSROOT.function_list[i].substring(0, JSROOT.function_list[i].indexOf('('));
-               if (_func.indexOf(f) != -1) {
-                  var fa = JSROOT.function_list[i].replace('(x)', '(' + x + ')');
-                  _func = _func.replace(f, fa);
-               }
-            }
             // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
-            _func = _func.replace(/\b(x)\b/gi, x);
             _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
             _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
             _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
             _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
-            return eval(_func);
+
+            var tmpfunc = new Function("x", "return " + _func);
+            var res = tmpfunc(x);
+            delete tmpfunc;
+            return res;
          };
       }
 

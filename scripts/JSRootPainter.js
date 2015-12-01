@@ -1611,14 +1611,13 @@
    }
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
-
       if (!draw_g) draw_g = this.draw_g;
+      var pthis = this;
 
       var svgs = null;
 
       if (draw_g.property('mathjax_use')) {
          draw_g.property('mathjax_use', false);
-         draw_g.property('_painter', this);
 
          var missing = false;
          svgs = draw_g.selectAll(".math_svg");
@@ -1630,15 +1629,14 @@
             if (d3.select(entry).select("svg").empty()) missing = true;
          });
 
-         console.log('FinishTextDrawing missing ' + missing);
-
          // is any svg missing we should wait until drawing is really finished
-         if (missing)
-            return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
-               console.log('FinishTextDrawing called assert ' + (typeof window.MathJax));
-               if (typeof window.MathJax != 'object') return;
-               MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
-            }});
+         if (missing) {
+            JSROOT.AssertPrerequisites('moremathjax', function() {
+               if (typeof MathJax == 'object')
+                  MathJax.Hub.Queue(["FinishTextDrawing", pthis, draw_g]);
+            });
+            return null;
+         }
       }
 
       if (svgs==null) svgs = draw_g.selectAll(".math_svg");
@@ -1826,10 +1824,10 @@
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
 
-      JSROOT.AssertPrerequisites('mathjax', { _this:element, func: function() {
+      JSROOT.AssertPrerequisites('mathjax', function() {
          if (typeof MathJax == 'object')
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]);
-      }});
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, element]);
+      });
 
       return 0;
    }
