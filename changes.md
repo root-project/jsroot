@@ -9,6 +9,7 @@
 5. New 'flex' layout - MDI-like desktop 
 6. TGeo support
 7. New ROOT6-like color palette
+8. Significant improve in TF1::Eval performance 
 
 
 ## Changes in 3.9

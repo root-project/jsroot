@@ -25,10 +25,11 @@ The following parameters can be specified in the URL string:
 - json - name of JSON file with stored ROOT object like histogram or canvas 
 - item, items - name of the item(s) to be displayed
 - opt, opts - drawing option(s) for the item(s)
-- layout - can be 'simple', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values
+- layout - can be 'simple', 'flex', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values
 - nobrowser - do not display file browser
-- load - name of JavaScript to load
+- load - name of extra JavaScript to load
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
+- paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
 - interactive - enable/disable interactive functions 0-disable all, 1-enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output

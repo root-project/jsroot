@@ -1250,8 +1250,6 @@
       return Math.log(n) / Math.log(10);
    }
 
-   // it is important to run this function at the end when all other
-   // functions are available
    JSROOT.Initialize = function() {
       function window_on_load(func) {
          if (func!=null) {

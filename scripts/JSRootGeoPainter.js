@@ -29,7 +29,7 @@
    var renderer =  null;
 
    JSROOT.TGeoPainter = function( geometry ) {
-      JSROOT.TObjectPainter.call( this, geometry );
+      JSROOT.TBasePainter.call( this, geometry );
       this._debug = false;
       this._full = false;
       this._bound = false;
@@ -47,7 +47,7 @@
       if (_opt !== null && _opt == "full") { this._debug = true; this._grid = true; this._full = true; this._bound = true; }
    }
 
-   JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
+   JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
 
    JSROOT.TGeoPainter.prototype.GetObject = function() {
       return this._geometry;
@@ -931,7 +931,6 @@
 
       // pointer used in the event handlers
       var pthis = this;
-
 
       dom.tabIndex = 0;
       dom.focus();

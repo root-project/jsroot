@@ -911,11 +911,13 @@
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
       // base painter does not creates canvas or frames
       // it registered in the first child element
-      if (argumnets.length > 0)
+      if (arguments.length > 0)
          this['divid'] = divid;
       var main = this.select_main();
       var chld = main.node() ? main.node().firstChild : null;
-      if (chld) chld['painter'] = this;
+      if (chld) {
+         chld['painter'] = this;
+      }
    }
 
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
@@ -7746,7 +7748,7 @@
    JSROOT.CheckElementResize = function(dom_node) {
       if (dom_node==null) return;
       var dummy = new JSROOT.TObjectPainter(), first = true;
-      dummy.SetDivId(dom_node);
+      dummy.SetDivId(dom_node, -1);
       dummy.ForEachPainter(function(painter) {
          if (!first) return;
          if (typeof painter['CheckResize'] != 'function') return;
