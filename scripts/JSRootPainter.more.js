@@ -899,18 +899,15 @@
 
          if (pave['fInit'] == 0) {
             x = pave['fX1'] * svg.property("draw_width");
-            y = (1 - pave['fY1']) * svg.property("draw_height");
+            y = (1 - pave['fY2']) * svg.property("draw_height");
             w = (pave['fX2'] - pave['fX1']) * svg.property("draw_width");
             h = (pave['fY2'] - pave['fY1']) * svg.property("draw_height");
          } else {
             x = pave['fX1NDC'] * svg.property("draw_width");
-            y = (1 - pave['fY1NDC']) * svg.property("draw_height");
+            y = (1 - pave['fY2NDC']) * svg.property("draw_height");
             w = (pave['fX2NDC'] - pave['fX1NDC']) * svg.property("draw_width");
             h = (pave['fY2NDC'] - pave['fY1NDC']) * svg.property("draw_height");
          }
-         y -= h;
-
-         console.log('legend w = ' + w + "  h= " + h);
          var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
          var boxfill = this.createAttFill(pave);
          var lineatt = JSROOT.Painter.createAttLine(pave, lwidth);
