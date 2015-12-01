@@ -866,7 +866,7 @@
          }
 
          if (state!="minimal")
-            JSROOT.CheckElementResize(main.find(".flex_draw").get(0));
+            JSROOT.CheckElementResize(main.find(".flex_draw").get(0), false, { width : main.width(), height : main.height() });
       }
 
       $("#" + subid)
