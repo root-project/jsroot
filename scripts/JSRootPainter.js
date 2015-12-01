@@ -843,7 +843,7 @@
       }
 
       if (typeof color != 'string') return "\\(" + str + "\\)";
-      mathcolor = color;
+      var mathcolor = color;
       mathcolor = mathcolor.replace(/rgb/g, "[RGB]");
       mathcolor = mathcolor.replace(/\(/g, '{');
       mathcolor = mathcolor.replace(/\)/g, '}');
@@ -1630,10 +1630,13 @@
             if (d3.select(entry).select("svg").empty()) missing = true;
          });
 
+         console.log('FinishTextDrawing missing ' + missing);
+
          // is any svg missing we should wait until drawing is really finished
          if (missing)
             return JSROOT.AssertPrerequisites('mathjax', { _this:draw_g, func: function() {
-               if (typeof MathJax != 'object') return;
+               console.log('FinishTextDrawing called assert ' + (typeof window.MathJax));
+               if (typeof window.MathJax != 'object') return;
                MathJax.Hub.Queue(["FinishTextDrawing", this.property('_painter'), this]);
             }});
       }
@@ -2223,7 +2226,7 @@
       if (name.length > 0) name += "\n";
 
       function TooltipText(d) {
-         res = name + "x = " + pmain.AxisAsText("x", d.x) + "\n" +
+         var res = name + "x = " + pmain.AxisAsText("x", d.x) + "\n" +
                       "y = " + pmain.AxisAsText("y", d.y);
 
          if (pthis.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
