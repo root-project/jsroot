@@ -847,11 +847,11 @@
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
 
-      var camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
+      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
       var pointLight = new THREE.PointLight(0xefefef);
-      camera.add( pointLight );
+      this._camera.add( pointLight );
       pointLight.position.set( 10, 10, 10 );
-      this._scene.add( camera );
+      this._scene.add( this._camera );
 
       /**
        * @author alteredq / http://alteredqualia.com/
@@ -873,18 +873,17 @@
             && window.FileList && window.Blob
       };
 
-      renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) :
+      this._renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) :
                        new THREE.CanvasRenderer({antialias : true });
-      renderer.setPixelRatio( window.devicePixelRatio );
-      renderer.setClearColor(0xffffff, 1);
-      renderer.setSize(w, h);
-      this._renderer = renderer;
+      this._renderer.setPixelRatio( window.devicePixelRatio );
+      this._renderer.setClearColor(0xffffff, 1);
+      this._renderer.setSize(w, h);
 
-      dom.appendChild(renderer.domElement);
+      dom.appendChild(this._renderer.domElement);
 
       this.SetDivId(); // now one could set painter pointer in child element
 
-      this.addControls(renderer, this._scene, camera);
+      this.addControls(this._renderer, this._scene, this._camera);
 
       var toplevel = new THREE.Object3D();
       //toplevel.rotation.x = 30 * Math.PI / 180;
@@ -919,15 +918,14 @@
          }
          this._scene.add( new THREE.AxisHelper( 2 * overall_size ) );
          this._scene.add( new THREE.GridHelper( Math.ceil( overall_size), Math.ceil( overall_size ) / 50 ) );
-         renderer.domElement._translationSnap = Math.ceil( overall_size ) / 50;
-         if ( renderer.domElement.transformControl !== null )
-            renderer.domElement.transformControl.attach( toplevel );
+         this._renderer.domElement._translationSnap = Math.ceil( overall_size ) / 50;
+         if ( this._renderer.domElement.transformControl !== null )
+            this._renderer.domElement.transformControl.attach( toplevel );
       }
-      camera.position.x = overall_size * Math.cos( 135.0 );
-      camera.position.y = overall_size * Math.cos( 45.0 );
-      camera.position.z = overall_size * Math.sin( 45.0 );
-      renderer.render(this._scene, camera);
-
+      this._camera.position.x = overall_size * Math.cos( 135.0 );
+      this._camera.position.y = overall_size * Math.cos( 45.0 );
+      this._camera.position.z = overall_size * Math.sin( 45.0 );
+      this._renderer.render(this._scene, this._camera);
 
       // pointer used in the event handlers
       var pthis = this;
@@ -955,26 +953,39 @@
       dom.onremove = function () {
          if (pthis._scene === null ) return;
 
-         renderer.domElement.clock = null;
-         if (renderer.domElement._timeoutFunc != null)
-            clearTimeout( renderer.domElement._timeoutFunc );
-         if (renderer.domElement._animationId != null)
-            cancelAnimationFrame( renderer.domElement._animationId );
+         pthis._renderer.domElement.clock = null;
+         if (pthis._renderer.domElement._timeoutFunc != null)
+            clearTimeout( pthis._renderer.domElement._timeoutFunc );
+         if (pthis._renderer.domElement._animationId != null)
+            cancelAnimationFrame( pthis._renderer.domElement._animationId );
 
          pthis.deleteChildren(pthis._scene);
-         renderer.initWebGLObjects(pthis._scene);
+         pthis._renderer.initWebGLObjects(pthis._scene);
          delete pthis._scene;
          pthis._scene = null;
-         if ( renderer.domElement.transformControl !== null )
-            renderer.domElement.transformControl.dispose();
-         renderer.domElement.transformControl = null;
-         renderer.domElement.trackballControls = null;
-         renderer.domElement.render = null;
-         renderer = null;
+         if ( pthis._renderer.domElement.transformControl !== null )
+            pthis._renderer.domElement.transformControl.dispose();
+         pthis._renderer.domElement.transformControl = null;
+         pthis._renderer.domElement.trackballControls = null;
+         pthis._renderer.domElement.render = null;
+         pthis._renderer = null;
          pthis = null;
       };
 
       return this.DrawingReady();
+   }
+
+   JSROOT.TGeoPainter.prototype.CheckResize = function() {
+      var w = this.GetStyleValue(this.select_main(), 'width'),
+          h = this.GetStyleValue(this.select_main(), 'height');
+
+      if ((w<=10) || (h<=10)) return;
+
+      this._camera.aspect = w / h;
+      this._camera.updateProjectionMatrix();
+
+      this._renderer.setSize( w, h );
+
    }
 
    ownedByTransformControls = function(child) {
