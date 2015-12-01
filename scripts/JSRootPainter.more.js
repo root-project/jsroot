@@ -22,6 +22,506 @@
    }
 } (function(d3, JSROOT) {
 
+   JSROOT.Painter.CreateDefaultPalette = function() {
+
+      function HLStoRGB(h, l, s) {
+         var r, g, b;
+         if (s < 1e-300) {
+            r = g = b = l; // achromatic
+         } else {
+            function hue2rgb(p, q, t) {
+               if (t < 0) t += 1;
+               if (t > 1) t -= 1;
+               if (t < 1 / 6) return p + (q - p) * 6 * t;
+               if (t < 1 / 2) return q;
+               if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+               return p;
+            }
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+         }
+         return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
+      }
+
+      var palette = [];
+      var saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
+      for (var i = 0; i < maxPretty; i++) {
+         var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360.0;
+         var rgbval = HLStoRGB(hue, lightness, saturation);
+         palette.push(rgbval);
+      }
+      return palette;
+   }
+
+
+   JSROOT.Painter.CreateGradientColorTable = function(Stops, Red, Green, Blue, NColors, alpha) {
+      // skip all checks
+       var palette = [];
+
+       for (var g = 1; g < Stops.length; g++) {
+          // create the colors...
+          var nColorsGradient = parseInt(Math.floor(NColors*Stops[g]) - Math.floor(NColors*Stops[g-1]));
+          for (var c = 0; c < nColorsGradient; c++) {
+             var col = Math.round(Red[g-1] + c * (Red[g] - Red[g-1])/nColorsGradient) + "," +
+                       Math.round(Green[g-1] + c * (Green[g] - Green[g-1])/ nColorsGradient) + "," +
+                       Math.round(Blue[g-1] + c * (Blue[g] - Blue[g-1])/ nColorsGradient);
+             palette.push("rgb("+col+")");
+          }
+       }
+
+       return palette;
+   }
+
+   JSROOT.Painter.GetColorPalette = function(ncol, alfa) {
+      if ((ncol==null) || (ncol === undefined)) ncol = JSROOT.gStyle.Palette;
+      if ((ncol < 51) || (ncol>112)) ncol = JSROOT.gStyle.Palette;
+      var stops = [ 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 ];
+      var red, green, blue;
+      switch(ncol) {
+         // Deep Sea
+         case 51:
+            var red   = [ 0,  9, 13, 17, 24,  32,  27,  25,  29];
+            var green = [ 0,  0,  0,  2, 37,  74, 113, 160, 221];
+            var blue  = [ 28, 42, 59, 78, 98, 129, 154, 184, 221];
+            break;
+         // Grey Scale
+         case 52:
+               red = [ 0, 32, 64, 96, 128, 160, 192, 224, 255];
+               green = [ 0, 32, 64, 96, 128, 160, 192, 224, 255];
+               blue = [ 0, 32, 64, 96, 128, 160, 192, 224, 255];
+            break;
+
+         // Dark Body Radiator
+         case 53:
+               red = [ 0, 45, 99, 156, 212, 230, 237, 234, 242];
+               green = [ 0,  0,  0,  45, 101, 168, 238, 238, 243];
+               blue = [ 0,  1,  1,   3,   9,   8,  11,  95, 230];
+            break;
+
+         // Two-color hue (dark blue through neutral gray to bright yellow)
+         case 54:
+               red = [  0,  22, 44, 68, 93, 124, 160, 192, 237];
+               green = [  0,  16, 41, 67, 93, 125, 162, 194, 241];
+               blue = [ 97, 100, 99, 99, 93,  68,  44,  26,  74];
+            break;
+
+         // Rain Bow
+         case 55:
+               red = [  0,   5,  15,  35, 102, 196, 208, 199, 110];
+               green = [  0,  48, 124, 192, 206, 226,  97,  16,   0];
+               blue = [ 99, 142, 198, 201,  90,  22,  13,   8,   2];
+            break;
+         // Inverted Dark Body Radiator
+         case 56:
+               red = [ 242, 234, 237, 230, 212, 156, 99, 45, 0];
+               green = [ 243, 238, 238, 168, 101,  45,  0,  0, 0];
+               blue = [ 230,  95,  11,   8,   9,   3,  1,  1, 0];
+            break;
+
+         // Bird
+         case 57:
+               red = [ 0.2082*255, 0.0592*255, 0.0780*255, 0.0232*255, 0.1802*255, 0.5301*255, 0.8186*255, 0.9956*255, 0.9764*255];
+               green = [ 0.1664*255, 0.3599*255, 0.5041*255, 0.6419*255, 0.7178*255, 0.7492*255, 0.7328*255, 0.7862*255, 0.9832*255];
+               blue = [ 0.5293*255, 0.8684*255, 0.8385*255, 0.7914*255, 0.6425*255, 0.4662*255, 0.3499*255, 0.1968*255, 0.0539*255];
+            break;
+
+         // Cubehelix
+         case 58:
+               red = [ 0.0000, 0.0956*255, 0.0098*255, 0.2124*255, 0.6905*255, 0.9242*255, 0.7914*255, 0.7596*255, 1.0000*255];
+               green = [ 0.0000, 0.1147*255, 0.3616*255, 0.5041*255, 0.4577*255, 0.4691*255, 0.6905*255, 0.9237*255, 1.0000*255];
+               blue = [ 0.0000, 0.2669*255, 0.3121*255, 0.1318*255, 0.2236*255, 0.6741*255, 0.9882*255, 0.9593*255, 1.0000*255];
+            break;
+
+         // Green Red Violet
+         case 59:
+               red = [13, 23, 25, 63, 76, 104, 137, 161, 206];
+               green = [95, 67, 37, 21,  0,  12,  35,  52,  79];
+               blue = [ 4,  3,  2,  6, 11,  22,  49,  98, 208];
+            break;
+
+         // Blue Red Yellow
+         case 60:
+               red = [0,  61,  89, 122, 143, 160, 185, 204, 231];
+               green = [0,   0,   0,   0,  14,  37,  72, 132, 235];
+               blue = [0, 140, 224, 144,   4,   5,   6,   9,  13];
+            break;
+         // Ocean
+         case 61:
+               red = [ 14,  7,  2,  0,  5,  11,  55, 131, 229];
+               green = [105, 56, 26,  1, 42,  74, 131, 171, 229];
+               blue = [  2, 21, 35, 60, 92, 113, 160, 185, 229];
+            break;
+
+         // Color Printable On Grey
+         case 62:
+               red = [ 0,   0,   0,  70, 148, 231, 235, 237, 244];
+               green = [ 0,   0,   0,   0,   0,  69,  67, 216, 244];
+               blue = [ 0, 102, 228, 231, 177, 124, 137,  20, 244];
+            break;
+
+         // Alpine
+         case 63:
+               red = [ 50, 56, 63, 68,  93, 121, 165, 192, 241];
+               green = [ 66, 81, 91, 96, 111, 128, 155, 189, 241];
+               blue = [ 97, 91, 75, 65,  77, 103, 143, 167, 217];
+            break;
+
+         // Aquamarine
+         case 64:
+               red = [ 145, 166, 167, 156, 131, 114, 101, 112, 132];
+               green = [ 158, 178, 179, 181, 163, 154, 144, 152, 159];
+               blue = [ 190, 199, 201, 192, 176, 169, 160, 166, 190];
+            break;
+
+         // Army
+         case 65:
+               red = [ 93,   91,  99, 108, 130, 125, 132, 155, 174];
+               green = [ 126, 124, 128, 129, 131, 121, 119, 153, 173];
+               blue = [ 103,  94,  87,  85,  80,  85, 107, 120, 146];
+            break;
+
+         // Atlantic
+         case 66:
+               red = [ 24, 40, 69,  90, 104, 114, 120, 132, 103];
+               green = [ 29, 52, 94, 127, 150, 162, 159, 151, 101];
+               blue = [ 29, 52, 96, 132, 162, 181, 184, 186, 131];
+               break;
+               // Aurora
+         case 67:
+               red = [ 46, 38, 61, 92, 113, 121, 132, 150, 191];
+               green = [ 46, 36, 40, 69, 110, 135, 131,  92,  34];
+               blue = [ 46, 80, 74, 70,  81, 105, 165, 211, 225];
+            break;
+
+         // Avocado
+         case 68:
+               red = [ 0,  4, 12,  30,  52, 101, 142, 190, 237];
+               green = [ 0, 40, 86, 121, 140, 172, 187, 213, 240];
+               blue = [ 0,  9, 14,  18,  21,  23,  27,  35, 101];
+            break;
+
+         // Beach
+         case 69:
+               red = [ 198, 206, 206, 211, 198, 181, 161, 171, 244];
+               green = [ 103, 133, 150, 172, 178, 174, 163, 175, 244];
+               blue = [  49,  54,  55,  66,  91, 130, 184, 224, 244];
+            break;
+
+         // Black Body
+         case 70:
+               red = [ 243, 243, 240, 240, 241, 239, 186, 151, 129];
+               green = [   0,  46,  99, 149, 194, 220, 183, 166, 147];
+               blue = [   6,   8,  36,  91, 169, 235, 246, 240, 233];
+            break;
+
+         // Blue Green Yellow
+         case 71:
+               red = [ 22, 19,  19,  25,  35,  53,  88, 139, 210];
+               green = [  0, 32,  69, 108, 135, 159, 183, 198, 215];
+               blue = [ 77, 96, 110, 116, 110, 100,  90,  78,  70];
+            break;
+
+            // Brown Cyan
+         case 72:
+               red = [ 68, 116, 165, 182, 189, 180, 145, 111,  71];
+               green = [ 37,  82, 135, 178, 204, 225, 221, 202, 147];
+               blue = [ 16,  55, 105, 147, 196, 226, 232, 224, 178];
+            break;
+
+         // CMYK
+         case 73:
+               red = [  61,  99, 136, 181, 213, 225, 198, 136, 24];
+               green = [ 149, 140,  96,  83, 132, 178, 190, 135, 22];
+               blue = [ 214, 203, 168, 135, 110, 100, 111, 113, 22];
+            break;
+
+         // Candy
+         case 74:
+               red = [ 76, 120, 156, 183, 197, 180, 162, 154, 140];
+               green = [ 34,  35,  42,  69, 102, 137, 164, 188, 197];
+               blue = [ 64,  69,  78, 105, 142, 177, 205, 217, 198];
+            break;
+
+         // Cherry
+         case 75:
+               red = [ 37, 102, 157, 188, 196, 214, 223, 235, 251];
+               green = [ 37,  29,  25,  37,  67,  91, 132, 185, 251];
+               blue = [ 37,  32,  33,  45,  66,  98, 137, 187, 251];
+            break;
+
+         // Coffee
+         case 76:
+               red = [ 79, 100, 119, 137, 153, 172, 192, 205, 250];
+               green = [ 63,  79,  93, 103, 115, 135, 167, 196, 250];
+               blue = [ 51,  59,  66,  61,  62,  70, 110, 160, 250];
+            break;
+
+         // Dark Rain Bow
+         case 77:
+               red = [  43,  44, 50,  66, 125, 172, 178, 155, 157];
+               green = [  63,  63, 85, 101, 138, 163, 122,  51,  39];
+               blue = [ 121, 101, 58,  44,  47,  55,  57,  44,  43];
+            break;
+
+            // Dark Terrain
+         case 78:
+               red = [  0, 41, 62, 79, 90, 87, 99, 140, 228];
+               green = [  0, 57, 81, 93, 85, 70, 71, 125, 228];
+               blue = [ 95, 91, 91, 82, 60, 43, 44, 112, 228];
+            break;
+
+         // Fall
+         case 79:
+               red = [ 49, 59, 72, 88, 114, 141, 176, 205, 222];
+               green = [ 78, 72, 66, 57,  59,  75, 106, 142, 173];
+               blue = [ 78, 55, 46, 40,  39,  39,  40,  41,  47];
+            break;
+
+         // Fruit Punch
+         case 80:
+               red = [ 243, 222, 201, 185, 165, 158, 166, 187, 219];
+               green = [  94, 108, 132, 135, 125,  96,  68,  51,  61];
+               blue = [   7,  9,   12,  19,  45,  89, 118, 146, 118];
+            break;
+
+         // Fuchsia
+         case 81:
+               red = [ 19, 44, 74, 105, 137, 166, 194, 206, 220];
+               green = [ 19, 28, 40,  55,  82, 110, 159, 181, 220];
+               blue = [ 19, 42, 68,  96, 129, 157, 188, 203, 220];
+            break;
+
+         // Grey Yellow
+         case 82:
+               red = [ 33, 44, 70,  99, 140, 165, 199, 211, 216];
+               green = [ 38, 50, 76, 105, 140, 165, 191, 189, 167];
+               blue = [ 55, 67, 97, 124, 140, 166, 163, 129,  52];
+            break;
+
+         // Green Brown Terrain
+         case 83:
+               red = [ 0, 33, 73, 124, 136, 152, 159, 171, 223];
+               green = [ 0, 43, 92, 124, 134, 126, 121, 144, 223];
+               blue = [ 0, 43, 68,  76,  73,  64,  72, 114, 223];
+            break;
+
+            // Green Pink
+         case 84:
+               red = [  5,  18,  45, 124, 193, 223, 205, 128, 49];
+               green = [ 48, 134, 207, 230, 193, 113,  28,   0,  7];
+               blue = [  6,  15,  41, 121, 193, 226, 208, 130, 49];
+            break;
+
+         // Island
+         case 85:
+               red = [ 180, 106, 104, 135, 164, 188, 189, 165, 144];
+               green = [  72, 126, 154, 184, 198, 207, 205, 190, 179];
+               blue = [  41, 120, 158, 188, 194, 181, 145, 100,  62];
+            break;
+
+         // Lake
+         case 86:
+               red = [  57,  72,  94, 117, 136, 154, 174, 192, 215];
+               green = [   0,  33,  68, 109, 140, 171, 192, 196, 209];
+               blue = [ 116, 137, 173, 201, 200, 201, 203, 190, 187];
+            break;
+
+         // Light Temperature
+         case 87:
+               red = [  31,  71, 123, 160, 210, 222, 214, 199, 183];
+               green = [  40, 117, 171, 211, 231, 220, 190, 132,  65];
+               blue = [ 234, 214, 228, 222, 210, 160, 105,  60,  34];
+            break;
+
+         // Light Terrain
+         case 88:
+               red = [ 123, 108, 109, 126, 154, 172, 188, 196, 218];
+               green = [ 184, 138, 130, 133, 154, 175, 188, 196, 218];
+               blue = [ 208, 130, 109,  99, 110, 122, 150, 171, 218];
+            break;
+
+         // Mint
+         case 89:
+               red = [ 105, 106, 122, 143, 159, 172, 176, 181, 207];
+               green = [ 252, 197, 194, 187, 174, 162, 153, 136, 125];
+               blue = [ 146, 133, 144, 155, 163, 167, 166, 162, 174];
+            break;
+
+            // Neon
+         case 90:
+               red = [ 171, 141, 145, 152, 154, 159, 163, 158, 177];
+               green = [ 236, 143, 100,  63,  53,  55,  44,  31,   6];
+               blue = [  59,  48,  46,  44,  42,  54,  82, 112, 179];
+            break;
+
+         // Pastel
+         case 91:
+               red = [ 180, 190, 209, 223, 204, 228, 205, 152,  91];
+               green = [  93, 125, 147, 172, 181, 224, 233, 198, 158];
+               blue = [ 236, 218, 160, 133, 114, 132, 162, 220, 218];
+            break;
+
+         // Pearl
+         case 92:
+               red = [ 225, 183, 162, 135, 115, 111, 119, 145, 211];
+               green = [ 205, 177, 166, 135, 124, 117, 117, 132, 172];
+               blue = [ 186, 165, 155, 135, 126, 130, 150, 178, 226];
+            break;
+
+         // Pigeon
+         case 93:
+               red = [ 39, 43, 59, 63, 80, 116, 153, 177, 223];
+               green = [ 39, 43, 59, 74, 91, 114, 139, 165, 223];
+               blue = [ 39, 50, 59, 70, 85, 115, 151, 176, 223];
+            break;
+
+         // Plum
+         case 94:
+               red = [ 0, 38, 60, 76, 84, 89, 101, 128, 204];
+               green = [ 0, 10, 15, 23, 35, 57,  83, 123, 199];
+               blue = [ 0, 11, 22, 40, 63, 86,  97,  94,  85];
+            break;
+
+         // Red Blue
+         case 95:
+               red = [ 94, 112, 141, 165, 167, 140,  91,  49,  27];
+               green = [ 27,  46,  88, 135, 166, 161, 135,  97,  58];
+               blue = [ 42,  52,  81, 106, 139, 158, 155, 137, 116];
+            break;
+
+            // Rose
+         case 96:
+               red = [ 30, 49, 79, 117, 135, 151, 146, 138, 147];
+               green = [ 63, 60, 72,  90,  94,  94,  68,  46,  16];
+               blue = [ 18, 28, 41,  56,  62,  63,  50,  36,  21];
+            break;
+
+         // Rust
+         case 97:
+               red = [  0, 30, 63, 101, 143, 152, 169, 187, 230];
+               green = [  0, 14, 28,  42,  58,  61,  67,  74,  91];
+               blue = [ 39, 26, 21,  18,  15,  14,  14,  13,  13];
+            break;
+
+         // Sandy Terrain
+         case 98:
+               red = [ 149, 140, 164, 179, 182, 181, 131, 87, 61];
+               green = [  62,  70, 107, 136, 144, 138, 117, 87, 74];
+               blue = [  40,  38,  45,  49,  49,  49,  38, 32, 34];
+            break;
+
+         // Sienna
+         case 99:
+               red = [ 99, 112, 148, 165, 179, 182, 183, 183, 208];
+               green = [ 39,  40,  57,  79, 104, 127, 148, 161, 198];
+               blue = [ 15,  16,  18,  33,  51,  79, 103, 129, 177];
+            break;
+
+         // Solar
+         case 100:
+               red = [ 99, 116, 154, 174, 200, 196, 201, 201, 230];
+               green = [  0,   0,   8,  32,  58,  83, 119, 136, 173];
+               blue = [  5,   6,   7,   9,   9,  14,  17,  19,  24];
+            break;
+
+            // South West
+         case 101:
+               red = [ 82, 106, 126, 141, 155, 163, 142, 107,  66];
+               green = [ 62,  44,  69, 107, 135, 152, 149, 132, 119];
+               blue = [ 39,  25,  31,  60,  73,  68,  49,  72, 188];
+            break;
+
+         // Starry Night
+         case 102:
+               red = [ 18, 29, 44,  72, 116, 158, 184, 208, 221];
+               green = [ 27, 46, 71, 105, 146, 177, 189, 190, 183];
+               blue = [ 39, 55, 80, 108, 130, 133, 124, 100,  76];
+            break;
+
+         // Sunset
+         case 103:
+               red = [ 0, 48, 119, 173, 212, 224, 228, 228, 245];
+               green = [ 0, 13,  30,  47,  79, 127, 167, 205, 245];
+               blue = [ 0, 68,  75,  43,  16,  22,  55, 128, 245];
+            break;
+
+         // Temperature Map
+         case 104:
+               red = [  34,  70, 129, 187, 225, 226, 216, 193, 179];
+               green = [  48,  91, 147, 194, 226, 229, 196, 110,  12];
+               blue = [ 234, 212, 216, 224, 206, 110,  53,  40,  29];
+            break;
+
+         // Thermometer
+         case 105:
+               red = [  30,  55, 103, 147, 174, 203, 188, 151, 105];
+               green = [   0,  65, 138, 182, 187, 175, 121,  53,   9];
+               blue = [ 191, 202, 212, 208, 171, 140,  97,  57,  30];
+            break;
+
+            // Valentine
+         case 106:
+               red = [ 112, 97, 113, 125, 138, 159, 178, 188, 225];
+               green = [  16, 17,  24,  37,  56,  81, 110, 136, 189];
+               blue = [  38, 35,  46,  59,  78, 103, 130, 152, 201];
+            break;
+
+         // Visible Spectrum
+         case 107:
+               red = [ 18,  72,   5,  23,  29, 201, 200, 98, 29];
+               green = [  0,   0,  43, 167, 211, 117,   0,  0,  0];
+               blue = [ 51, 203, 177,  26,  10,   9,   8,  3,  0];
+            break;
+
+         // Water Melon
+         case 108:
+               red = [ 19, 42, 64,  88, 118, 147, 175, 187, 205];
+               green = [ 19, 55, 89, 125, 154, 169, 161, 129,  70];
+               blue = [ 19, 32, 47,  70, 100, 128, 145, 130,  75];
+            break;
+
+         // Cool
+         case 109:
+               red = [  33,  31,  42,  68,  86, 111, 141, 172, 227];
+               green = [ 255, 175, 145, 106,  88,  55,  15,   0,   0];
+               blue = [ 255, 205, 202, 203, 208, 205, 203, 206, 231];
+            break;
+
+         // Copper
+         case 110:
+               red = [ 0, 25, 50, 79, 110, 145, 181, 201, 254];
+               green = [ 0, 16, 30, 46,  63,  82, 101, 124, 179];
+               blue = [ 0, 12, 21, 29,  39,  49,  61,  74, 103];
+            break;
+
+         // Gist Earth
+         case 111:
+               red = [ 0, 13,  30,  44,  72, 120, 156, 200, 247];
+               green = [ 0, 36,  84, 117, 141, 153, 151, 158, 247];
+               blue = [ 0, 94, 100,  82,  56,  66,  76, 131, 247];
+            break;
+
+         // Viridis
+         case 112:
+               red = [ 26, 51,  43,  33,  28,  35,  74, 144, 246];
+               green = [  9, 24,  55,  87, 118, 150, 180, 200, 222];
+               blue = [ 30, 96, 112, 114, 112, 101,  72,  35,   0];
+            break;
+
+
+         default:
+            return JSROOT.Painter.CreateDefaultPalette();
+
+      }
+
+      return JSROOT.Painter.CreateGradientColorTable(stops, red, green, blue, 255, alfa);
+   }
+
+   // ==============================================================================
+
 
    JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
 
@@ -1269,6 +1769,784 @@
 
       return this.DrawingReady();
    }
+
+   // ==================== painter for TH2 histograms ==============================
+
+   JSROOT.TH2Painter = function(histo) {
+      JSROOT.THistPainter.call(this, histo);
+      this.fContour = null; // contour levels
+      this.fUserContour = false; // are this user-defined levels
+      this.fPalette = null;
+   }
+
+   JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+
+   JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
+      JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
+      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
+      menu.add("Draw in 3D", this.Draw3D.bind(this));
+      menu.add("Toggle col", function() {
+         if (this.options.Color == 0)
+            this.options.Color = JSROOT.gStyle.DefaultCol;
+         else
+            this.options.Color = - this.options.Color;
+         this.RedrawPad();
+      });
+
+      if (this.options.Color > 0)
+         menu.add("Toggle colz", this.ToggleColz.bind(this));
+   }
+
+   JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
+      if ('fFunctions' in this.histo)
+         for (var i in this.histo.fFunctions.arr) {
+            var func = this.histo.fFunctions.arr[i];
+            if (func['_typename'] != 'TPaletteAxis') continue;
+            if (remove) {
+               this.histo.fFunctions.RemoveAt(i);
+               return null;
+            }
+
+            return func;
+         }
+
+      return null;
+   }
+
+   JSROOT.TH2Painter.prototype.ToggleColz = function() {
+      if (this.FindPalette() == null) {
+         var shrink = this.CreatePalette(0.04);
+         this.svg_frame().property('frame_painter').Shrink(0, shrink);
+         this.options.Zscale = 1;
+         // one should draw palette
+         JSROOT.draw(this.divid, this.FindPalette());
+      } else {
+         if (this.options.Zscale > 0)
+            this.options.Zscale = 0;
+         else
+            this.options.Zscale = 1;
+      }
+
+      this.RedrawPad();
+   }
+
+   JSROOT.TH2Painter.prototype.AutoZoom = function() {
+      var i1 = this.GetSelectIndex("x", "left", -1);
+      var i2 = this.GetSelectIndex("x", "right", 1);
+      var j1 = this.GetSelectIndex("y", "left", -1);
+      var j2 = this.GetSelectIndex("y", "right", 1);
+
+      if ((i1 == i2) || (j1 == j2)) return;
+
+      // first find minimum
+      var min = this.histo.getBinContent(i1 + 1, j1 + 1);
+      for (var i = i1; i < i2; i++)
+         for (var j = j1; j < j2; j++)
+            if (this.histo.getBinContent(i + 1, j + 1) < min)
+               min = this.histo.getBinContent(i + 1, j + 1);
+      if (min>0) return; // if all points positive, no chance for autoscale
+
+      var ileft = i2, iright = i1, jleft = j2, jright = j1;
+
+      for (var i = i1; i < i2; i++)
+         for (var j = j1; j < j2; j++)
+            if (this.histo.getBinContent(i + 1, j + 1) > min) {
+               if (i < ileft) ileft = i;
+               if (i >= iright) iright = i + 1;
+               if (j < jleft) jleft = j;
+               if (j >= jright) jright = j + 1;
+            }
+
+      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+
+      if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
+         xmin = this.GetBinX(ileft);
+         xmax = this.GetBinX(iright);
+      }
+
+      if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
+         ymin = this.GetBinY(jleft);
+         ymax = this.GetBinY(jright);
+      }
+
+      this.Zoom(xmin, xmax, ymin, ymax);
+   }
+
+   JSROOT.TH2Painter.prototype.CreatePalette = function(rel_width) {
+      if (this.FindPalette() != null) return 0.;
+
+      if (!rel_width || rel_width <= 0) rel_width = 0.04;
+
+      var pal = {};
+      pal['_typename'] = 'TPaletteAxis';
+      pal['fName'] = 'palette';
+
+      pal['_AutoCreated'] = true;
+
+      var ndc = this.svg_frame().property('NDC');
+
+      pal['fX1NDC'] = ndc.fX2NDC - rel_width;
+      pal['fY1NDC'] = ndc.fY1NDC;
+      pal['fX2NDC'] = ndc.fX2NDC;
+      pal['fY2NDC'] = ndc.fY2NDC;
+      pal['fInit'] = 1;
+      pal['fShadowColor'] = 1;
+      pal['fCorenerRadius'] = 0;
+      pal['fResizing'] = false;
+      pal['fBorderSize'] = 4;
+      pal['fName'] = "TPave";
+      pal['fOption'] = "br";
+      pal['fLineColor'] = 1;
+      pal['fLineSyle'] = 1;
+      pal['fLineWidth'] = 1;
+      pal['fFillColor'] = 1;
+      pal['fFillSyle'] = 1;
+
+      var axis = {};
+
+      axis['_typename'] = 'TGaxis';
+      axis['fTickSize'] = 0.03;
+      axis['fLabelOffset'] = 0.005;
+      axis['fLabelSize'] = 0.035;
+      axis['fTitleOffset'] = 1;
+      axis['fTitleSize'] = 0.035;
+      axis['fNdiv'] = 8;
+      axis['fLabelColor'] = 1;
+      axis['fLabelFont'] = 42;
+      axis['fChopt'] = "";
+      axis['fName'] = "";
+      axis['fTitle'] = this.histo.fZaxis.fTitle;
+      axis['fTimeFormat'] = "";
+      axis['fFunctionName'] = "";
+      axis['fWmin'] = 0;
+      axis['fWmax'] = 100;
+      axis['fLineColor'] = 1;
+      axis['fLineSyle'] = 1;
+      axis['fLineWidth'] = 1;
+      axis['fTextAngle'] = 0;
+      axis['fTextSize'] = 0.04;
+      axis['fTextAlign'] = 11;
+      axis['fTextColor'] = 1;
+      axis['fTextFont'] = 42;
+
+      pal['fAxis'] = axis;
+
+      if (!'fFunctions' in this.histo)
+         this.histo['fFunctions'] = JSROOT.Create("TList");
+
+      // place colz in the beginning, that stat box is always drawn on the top
+      this.histo.fFunctions.AddFirst(pal);
+
+      // and at the end try to check how much place will be used by the labels
+      // in the palette
+
+      var width = this.frame_width(), height = this.frame_height();
+
+      var axisOffset = Math.round(axis['fLabelOffset'] * width);
+      var tickSize = Math.round(axis['fTickSize'] * width);
+      var axisfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
+
+      var ticks = d3.scale.linear().clamp(true)
+                  .domain([ this.gminbin, this.gmaxbin ])
+                  .range([ height, 0 ]).nice().ticks(axis['fNdiv'] % 100);
+
+      var maxlen = 0;
+      for (var i in ticks) {
+         var len = axisfont.stringWidth(this.svg_frame(), ticks[i]);
+         if (len > maxlen) maxlen = len;
+      }
+
+      var rel = (maxlen + 5 + axisOffset) / width;
+
+      if (pal['fX2NDC'] + rel > 0.98) {
+         var shift = pal['fX2NDC'] + rel - 0.98;
+
+         pal['fX1NDC'] -= shift;
+         pal['fX2NDC'] -= shift;
+         rel_width += shift;
+      }
+
+      return rel_width + 0.01;
+   }
+
+   JSROOT.TH2Painter.prototype.ScanContent = function() {
+      this.fillcolor = JSROOT.Painter.root_colors[this.histo['fFillColor']];
+      // if (this.histo['fFillColor'] == 0) this.fillcolor = '#4572A7'; // why?
+
+      this.attline = JSROOT.Painter.createAttLine(this.histo);
+      if (this.attline.color == 'none') this.attline.color = '#4572A7';
+
+      this.nbinsx = this.histo['fXaxis']['fNbins'];
+      this.nbinsy = this.histo['fYaxis']['fNbins'];
+
+      // used in CreateXY method
+
+      this.CreateAxisFuncs(true);
+
+      this.gmaxbin = this.histo.getBinContent(1, 1);
+      this.gminbin = this.gmaxbin; // global min/max, used at the moment in 3D drawing
+      for (var i = 0; i < this.nbinsx; ++i) {
+         for (var j = 0; j < this.nbinsy; ++j) {
+            var bin_content = this.histo.getBinContent(i + 1, j + 1);
+            if (bin_content < this.gminbin) this.gminbin = bin_content; else
+            if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+         }
+      }
+
+      // used to enable/disable stat box
+      this.draw_content = this.gmaxbin > 0;
+   }
+
+   JSROOT.TH2Painter.prototype.CountStat = function(cond) {
+      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0;
+
+      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null };
+      for (var n = 0; n < 9; n++) res.matrix.push(0);
+
+      var xleft = this.GetSelectIndex("x", "left");
+      var xright = this.GetSelectIndex("x", "right");
+
+      var yleft = this.GetSelectIndex("y", "left");
+      var yright = this.GetSelectIndex("y", "right");
+
+      for (var xi = 0; xi <= this.nbinsx + 1; xi++) {
+         var xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
+         var xx = this.GetBinX(xi - 0.5);
+
+         for (var yi = 0; yi <= this.nbinsx + 1; yi++) {
+            var yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
+            var yy = this.ymin + this.GetBinY(yi - 0.5);
+
+            var zz = this.histo.getBinContent(xi, yi);
+
+            res.entries += zz;
+
+            res.matrix[yside * 3 + xside] += zz;
+
+            if ((xside != 1) || (yside != 1)) continue;
+
+            if ((cond!=null) && !cond(xx,yy)) continue;
+
+            if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+
+            stat_sum0 += zz;
+            stat_sumx1 += xx * zz;
+            stat_sumy1 += yy * zz;
+            stat_sumx2 += xx * xx * zz;
+            stat_sumy2 += yy * yy * zz;
+            stat_sumxy += xx * yy * zz;
+         }
+      }
+
+      if (!this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && (this.histo.fTsumw>0)) {
+         stat_sum0 = this.histo.fTsumw;
+         stat_sumx1 = this.histo.fTsumwx;
+         stat_sumx2 = this.histo.fTsumwx2;
+         stat_sumy1 = this.histo.fTsumwy;
+         stat_sumy2 = this.histo.fTsumwy2;
+         stat_sumxy = this.histo.fTsumwxy;
+      }
+
+      if (stat_sum0 > 0) {
+         res.meanx = stat_sumx1 / stat_sum0;
+         res.meany = stat_sumy1 / stat_sum0;
+         res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
+         res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
+      }
+
+      if (res.wmax==null) res.wmax = 0;
+      res.integral = stat_sum0;
+
+      if (this.histo.fEntries > 1) res.entries = this.histo.fEntries;
+
+      return res;
+   }
+
+   JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+      if (!this.histo) return false;
+
+      var data = this.CountStat();
+
+      var print_name = Math.floor(dostat % 10);
+      var print_entries = Math.floor(dostat / 10) % 10;
+      var print_mean = Math.floor(dostat / 100) % 10;
+      var print_rms = Math.floor(dostat / 1000) % 10;
+      var print_under = Math.floor(dostat / 10000) % 10;
+      var print_over = Math.floor(dostat / 100000) % 10;
+      var print_integral = Math.floor(dostat / 1000000) % 10;
+      var print_skew = Math.floor(dostat / 10000000) % 10;
+      var print_kurt = Math.floor(dostat / 100000000) % 10;
+
+      if (print_name > 0)
+         stat.AddLine(this.histo['fName']);
+
+      if (print_entries > 0)
+         stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
+
+      if (print_mean > 0) {
+         stat.AddLine("Mean x = " + stat.Format(data.meanx));
+         stat.AddLine("Mean y = " + stat.Format(data.meany));
+      }
+
+      if (print_rms > 0) {
+         stat.AddLine("Std Dev x = " + stat.Format(data.rmsx));
+         stat.AddLine("Std Dev y = " + stat.Format(data.rmsy));
+      }
+
+      if (print_integral > 0) {
+         stat.AddLine("Integral = " + stat.Format(data.matrix[4],"entries"));
+      }
+
+      if (print_skew > 0) {
+         stat.AddLine("Skewness x = <undef>");
+         stat.AddLine("Skewness y = <undef>");
+      }
+
+      if (print_kurt > 0)
+         stat.AddLine("Kurt = <undef>");
+
+      if ((print_under > 0) || (print_over > 0)) {
+         var m = data.matrix;
+
+         stat.AddLine("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
+         stat.AddLine("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
+         stat.AddLine("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
+      }
+
+      // adjust the size of the stats box wrt the number of lines
+      var nlines = stat.pavetext['fLines'].arr.length;
+      var stath = nlines * JSROOT.gStyle.StatFontSize;
+      if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
+         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
+         stat.pavetext['fY1NDC'] = 0.93 - stath;
+         stat.pavetext['fY2NDC'] = 0.93;
+      }
+
+      return true;
+   }
+
+   JSROOT.TH2Painter.prototype.getValueColor = function(zc) {
+      if (this.fContour == null) {
+         // if not initialized, first create controur array
+         // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+         this.fUserContour = false;
+
+         if ((this.histo.fContour!=null) && (this.histo.fContour.length>0) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+            this.fContour = JSROOT.clone(this.histo.fContour);
+            this.fUserContour = true;
+         } else {
+            var nlevels = 20;
+            if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+            if (nlevels<1) nlevels = 20;
+            this.fContour = [];
+            this.zmin = this.minbin;
+            this.zmax = this.maxbin;
+            if (this.zoom_zmin != this.zoom_zmax) {
+               this.zmin = this.zoom_zmin;
+               this.zmax = this.zoom_zmax;
+            }
+
+            if (this.options.Logz) {
+               if (this.zmax <= 0) this.zmax = 1.;
+               if (this.zmin <= 0) this.zmin = 0.001*this.zmax;
+               var logmin = Math.log(this.zmin)/Math.log(10);
+               var logmax = Math.log(this.zmax)/Math.log(10);
+               var dz = (logmax-logmin)/nlevels;
+               this.fContour.push(this.zmin);
+               for (var level=1; level<nlevels; level++)
+                  this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
+               this.fContour.push(this.zmax);
+            } else {
+               if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+                  this.zmax += 0.01*Math.abs(this.zmax);
+                  this.zmin -= 0.01*Math.abs(this.zmin);
+               }
+               var dz = (this.zmax-this.zmin)/nlevels;
+               for (var level=0; level<=nlevels; level++)
+                  this.fContour.push(this.zmin + dz*level);
+            }
+         }
+      }
+
+      var color = -1;
+      if (this.fUserContour || this.options.Logz) {
+         for (var k in this.fContour) {
+            if (zc >= this.fContour[k]) color++;
+         }
+      } else {
+         color = Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+      }
+
+      if (color<0) {
+      // do not draw bin where color is negative
+         if (this.options.Color != 111) return null;
+         color = 0;
+      }
+
+      if (this.fPalette == null) {
+         this.fPalette = JSROOT.Painter.GetColorPalette(this.fContour.length);
+      }
+
+      var theColor = Math.floor((color+0.99)*this.fPalette.length/(this.fContour.length-1));
+      if (theColor > this.fPalette.length-1) theColor = this.fPalette.length-1;
+      return this.fPalette[theColor];
+   }
+
+   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
+      var i1 = this.GetSelectIndex("x", "left", 0);
+      var i2 = this.GetSelectIndex("x", "right", 1);
+      var j1 = this.GetSelectIndex("y", "left", 0);
+      var j2 = this.GetSelectIndex("y", "right", 1);
+
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.histo.fName;
+      if (name.length > 0) name += "\n";
+
+      // first found min/max values in selected range
+      this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
+      for (var i = i1; i < i2; i++) {
+         for (var j = j1; j < j2; j++) {
+            binz = this.histo.getBinContent(i + 1, j + 1);
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+
+      var xfactor = 1, yfactor = 1, uselogz = false, logmin  = 0, logmax = 1;
+      if (coordinates_kind == 1)
+         if (this.options.Logz && (this.maxbin>0)) {
+            uselogz = true;
+            logmax = Math.log(this.maxbin);
+            logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
+            xfactor = 0.5 * w / (i2 - i1) / (logmax - logmin);
+            yfactor = 0.5 * h / (j2 - j1) / (logmax - logmin);
+         } else {
+            xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
+            yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
+         }
+
+      this.fContour = null; // z-scale ranges when drawing with color
+      this.fUserContour = false;
+
+      var local_bins = new Array;
+
+      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy, zdiff;
+
+      x2 = this.GetBinX(i1);
+      grx2 = -11111;
+      for (var i = i1; i < i2; i++) {
+         x1 = x2;
+         x2 = this.GetBinX(i+1);
+
+         if (this.options.Logx && (x1 <= 0)) continue;
+
+         grx1 = grx2;
+         if (grx1 < 0) grx1 = this.grx(x1);
+         grx2 = this.grx(x2);
+
+         y2 = this.GetBinY(j1);
+         gry2 = -1111;
+         for (var j = j1; j < j2; j++) {
+            y1 = y2;
+            y2 = this.GetBinY(j+1);
+            if (this.options.Logy && (y1 <= 0)) continue;
+            gry1 = gry2;
+            if (gry1 < 0) gry1 = this.gry(y1);
+            gry2 = this.gry(y2);
+
+            binz = this.histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            point = null;
+
+            switch (coordinates_kind) {
+            case 0: {
+               fillcol = this.getValueColor(binz);
+               if (fillcol!=null)
+                 point = {
+                   x : grx1,
+                   y : gry2,
+                   width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins
+                   height : gry1 - gry2 + 1,
+                   stroke : "none",
+                   fill : fillcol,
+                   tipcolor: (fillcol == 'black') ? "grey" : "black"
+                 };
+               break;
+            }
+            case 1:
+               if (uselogz) {
+                  zdiff = logmax - ((binz>0) ? Math.log(binz) : logmin);
+               } else {
+                  zdiff = this.maxbin - binz;
+               }
+
+               point = {
+                  x : grx1 + xfactor * zdiff,
+                  y : gry2 + yfactor * zdiff,
+                  width : grx2 - grx1 - 2 * xfactor * zdiff,
+                  height : gry1 - gry2 - 2 * yfactor * zdiff,
+                  stroke : this.attline.color,
+                  fill : this.fillcolor,
+                  tipcolor: this.fillcolor == 'black' ? "grey" : "black"
+               }
+               if ((point.width < 0.05) || (point.height < 0.05)) point = null;
+               break;
+
+            case 2:
+               point = {
+                  x : (x1 + x2) / 2,
+                  y : (y1 + y2) / 2,
+                  z : binz
+               }
+               break;
+            }
+
+            if (point==null) continue;
+
+            if (tipkind == 1) {
+               if (this.x_kind=='labels')
+                  point['tip'] = name + "x = " + this.AxisAsText("x", x1) + "\n";
+               else
+                  point['tip'] = name + "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n";
+               if (this.y_kind=='labels')
+                  point['tip'] += "y = " + this.AxisAsText("y", y1) + "\n";
+               else
+                  point['tip'] += "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n";
+
+               point['tip'] += "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+            } else if (tipkind == 2)
+               point['tip'] = name +
+                              "x = " + this.AxisAsText("x", x1) + "\n" +
+                              "y = " + this.AxisAsText("y", y1) + "\n" +
+                              "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+
+            local_bins.push(point);
+         }
+      }
+
+      return local_bins;
+   }
+
+   JSROOT.TH2Painter.prototype.DrawSimpleCanvas = function(w,h) {
+      var i1 = this.GetSelectIndex("x", "left", 0);
+      var i2 = this.GetSelectIndex("x", "right", 1);
+      var j1 = this.GetSelectIndex("y", "left", 0);
+      var j2 = this.GetSelectIndex("y", "right", 1);
+
+      this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
+      for (var i = i1; i < i2; i++) {
+         for (var j = j1; j < j2; j++) {
+            binz = this.histo.getBinContent(i + 1, j + 1);
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+
+      var dx = i2-i1, dy = j2-j1;
+
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, 0, 0);
+
+      var canvas = fo.append("xhtml:canvas")
+                     .attr("width", dx).attr("height", dy)
+                     .attr("style", "width: " + w + "px; height: "+ h + "px");
+
+      var context = canvas.node().getContext("2d");
+      var image = context.createImageData(dx, dy);
+
+      var p = -1;
+
+      for (var j = j2-1; j >= j1; j--) {
+         for (var i = i1; i < i2; i++) {
+            var bin = this.histo.getBinContent(i + 1, j + 1);
+            var col = bin>this.minbin ? this.getValueColor(bin) : 'white';
+            var c = d3.rgb(col);
+            image.data[++p] = c.r;
+            image.data[++p] = c.g;
+            image.data[++p] = c.b;
+            image.data[++p] = 255;
+         }
+      }
+
+      context.putImageData(image, 0, 0);
+   }
+
+   JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
+
+      var local_bins = this.CreateDrawBins(w, h, 0, 0);
+
+      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
+      this.SetForeignObjectPosition(fo, 0, 0);
+
+      var canvas = fo.append("xhtml:canvas").attr("width", w).attr("height", h);
+
+      var ctx = canvas.node().getContext("2d");
+
+      for (var i in local_bins) {
+         var bin = local_bins[i];
+         ctx.fillStyle = bin.fill;
+         ctx.fillRect(bin.x,bin.y,bin.width,bin.height);
+      }
+
+      ctx.stroke();
+   }
+
+   JSROOT.TH2Painter.prototype.DrawBins = function() {
+
+      this.RecreateDrawG(false, ".main_layer", false);
+
+      var w = this.frame_width(), h = this.frame_height();
+
+      if ((this.options.Color==2) && !JSROOT.browser.isIE)
+         return this.DrawSimpleCanvas(w,h);
+
+      if ((this.options.Color==3) && !JSROOT.browser.isIE)
+         return this.DrawNormalCanvas(w,h);
+
+      // this.options.Scat =1;
+      // this.histo['fMarkerStyle'] = 2;
+
+      var draw_markers = (this.options.Scat > 0 && this.histo['fMarkerStyle'] > 1);
+      var normal_coordinates = (this.options.Color > 0) || draw_markers;
+
+      var tipkind = 0;
+      if (JSROOT.gStyle.Tooltip) tipkind = draw_markers ? 2 : 1;
+
+      var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
+
+      if (draw_markers) {
+         // Add markers
+         var marker = JSROOT.Painter.createAttMarker(this.histo);
+
+         var markers =
+            this.draw_g.selectAll(".marker")
+                  .data(local_bins)
+                  .enter().append("svg:path")
+                  .attr("class", "marker")
+                  .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
+                  .call(marker.func);
+
+         if (JSROOT.gStyle.Tooltip)
+            markers.append("svg:title").text(function(d) { return d.tip; });
+      } else {
+         var drawn_bins = this.draw_g.selectAll(".bins")
+                           .data(local_bins).enter()
+                           .append("svg:rect")
+                           .attr("class", "bins")
+                           .attr("x", function(d) { return d.x.toFixed(1); })
+                           .attr("y", function(d) { return d.y.toFixed(1); })
+                           .attr("width", function(d) { return d.width.toFixed(1); })
+                           .attr("height", function(d) { return d.height.toFixed(1); })
+                           .style("stroke", function(d) { return d.stroke; })
+                           .style("fill", function(d) {
+                               this['f0'] = d.fill;
+                               this['f1'] = d.tipcolor;
+                               return d.fill;
+                            });
+
+         if (JSROOT.gStyle.Tooltip)
+            drawn_bins
+              .on('mouseover', function() {
+                   if (JSROOT.gStyle.Tooltip)
+                      d3.select(this).transition().duration(100).style("fill", this['f1']);
+              })
+              .on('mouseout', function() {
+                   d3.select(this).transition().duration(100).style("fill", this['f0']);
+              })
+              .append("svg:title").text(function(d) { return d.tip; });
+      }
+
+      delete local_bins;
+   }
+
+   JSROOT.TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
+      // check if it makes sense to zoom inside specified axis range
+      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+
+      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
+
+      if (axis=="z") return true;
+
+      return false;
+   }
+
+   JSROOT.TH2Painter.prototype.Draw2D = function() {
+
+      if (this.options.Lego>0) this.options.Lego = 0;
+
+      if (this['done2d']) return;
+
+      // check if we need to create palette
+      if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
+         // create pallette
+
+         var shrink = this.CreatePalette(0.04);
+         this.svg_frame().property('frame_painter').Shrink(0, shrink);
+         this.svg_frame().property('frame_painter').Redraw();
+         this.CreateXY();
+      } else if (this.options.Zscale == 0) {
+         // delete palette - it may appear there due to previous draw options
+         this.FindPalette(true);
+      }
+
+      // check if we need to create statbox
+      if (JSROOT.gStyle.AutoStat && this.create_canvas)
+         this.CreateStat();
+
+      this.DrawAxes();
+
+      this.DrawGrids();
+
+      this.DrawBins();
+
+      if (this.create_canvas) this.DrawTitle();
+
+      this.DrawNextFunction(0, function() {
+         this.AddInteractive();
+         if (this.options.AutoZoom) this.AutoZoom();
+         this['done2d'] = true; // indicate that 2d drawing was once done
+         this.DrawingReady();
+      }.bind(this));
+
+      return this;
+   }
+
+   JSROOT.TH2Painter.prototype.Draw3D = function(opt) {
+
+      if (this.options.Lego<=0) this.options.Lego = 1;
+      var painter = this;
+
+      JSROOT.AssertPrerequisites('3d', function() {
+         JSROOT.Painter.real_drawHistogram2D(painter, opt);
+         painter.DrawingReady();
+      });
+
+      return painter;
+   }
+
+   JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
+
+      // create painter and add it to canvas
+      JSROOT.extend(this, new JSROOT.TH2Painter(histo));
+
+      this.SetDivId(divid, 1);
+
+      // here we deciding how histogram will look like and how will be shown
+      this.options = this.DecodeOptions(opt);
+
+      this.CheckPadOptions();
+
+      this.ScanContent();
+
+      this.CreateXY();
+
+      if (this.options.Lego > 0)
+         return this.Draw3D(opt);
+
+      return this.Draw2D();
+   }
+
 
    return JSROOT.Painter;
 
