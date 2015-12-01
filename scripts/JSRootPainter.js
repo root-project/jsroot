@@ -400,48 +400,13 @@
    JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
       if (nticks < 1) nticks = 1;
       var awidth = range / nticks;
-      var reasformat = 0;
-
-      // code from TAxis::ChooseTimeFormat
-      // width in seconds ?
-      if (awidth >= .5) {
-         reasformat = 1;
-         // width in minutes ?
-         if (awidth >= 30) {
-            awidth /= 60;  reasformat = 2;
-            // width in hours ?
-            if (awidth >= 30) {
-               awidth /= 60;   reasformat = 3;
-               // width in days ?
-               if (awidth >= 12) {
-                  awidth /= 24; reasformat = 4;
-                  // width in months ?
-                  if (awidth >= 15.218425) {
-                     awidth /= 30.43685; reasformat = 5;
-                     // width in years ?
-                     if (awidth >= 6) {
-                        awidth /= 12; reasformat = 6;
-                        if (awidth >= 2) {
-                           awidth /= 12; reasformat = 7;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-      }
-
-      switch (reasformat) {
-        case 0: return "%S";
-        case 1: return "%Mm%S";
-        case 2: return "%Hh%M";
-        case 3: return "%d-%Hh";
-        case 4: return "%d/%m";
-        case 5: return "%d/%m/%y";
-        case 6: return "%d/%m/%y";
-        case 7: return "%m/%y";
-      }
-
+      if (awidth < .5) return "%S";
+      if (awidth < 30) return "%Mm%S";
+      awidth /= 60; if (awidth < 30) return "%Hh%M";
+      awidth /= 60; if (awidth < 12) return "%d-%Hh";
+      awidth /= 24; if (awidth < 15.218425) return "%d/%m";
+      awidth /= 30.43685; if (awidth < 6) return "%d/%m/%y";
+      awidth /= 12; if (awidth < 2) return "%m/%y";
       return "%Y";
    }
 
@@ -843,10 +808,9 @@
       }
 
       if (typeof color != 'string') return "\\(" + str + "\\)";
-      var mathcolor = color;
-      mathcolor = mathcolor.replace(/rgb/g, "[RGB]");
-      mathcolor = mathcolor.replace(/\(/g, '{');
-      mathcolor = mathcolor.replace(/\)/g, '}');
+      color = color.replace(/rgb/g, "[RGB]")
+                   .replace(/\(/g, '{')
+                   .replace(/\)/g, '}');
       return "\\(\\color " + mathcolor + str + "\\)";
    }
 
