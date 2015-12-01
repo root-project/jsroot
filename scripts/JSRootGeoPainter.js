@@ -834,10 +834,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.drawGeometry = function() {
+      var rect = this.select_main().node().getBoundingClientRect();
 
-      var w = this.GetStyleValue(this.select_main(), 'width'),
-          h = this.GetStyleValue(this.select_main(), 'height'),
-          size = 100;
+      var w = rect.width, h = rect.height, size = 100;
 
       if (h < 10) { h = parseInt(0.66*w); this.select_main().style('height', h +"px"); }
 
@@ -976,20 +975,17 @@
    }
 
    JSROOT.TGeoPainter.prototype.CheckResize = function(force, size) {
-      var w = this.GetStyleValue(this.select_main(), 'width'),
-          h = this.GetStyleValue(this.select_main(), 'height');
 
-      if ((size!=null) && ('width' in size) && ('height' in size)) {
-         w = size.width;
-         h = size.height;
-      }
+      var rect = this.select_main().node().getBoundingClientRect();
 
-      if ((w<=10) || (h<=10)) return;
+      if ((size!=null) && ('width' in size) && ('height' in size)) rect = size;
 
-      this._camera.aspect = w / h;
+      if ((rect.width<10) || (rect.height<10)) return;
+
+      this._camera.aspect = rect.width / rect.height;
       this._camera.updateProjectionMatrix();
 
-      this._renderer.setSize( w, h );
+      this._renderer.setSize( rect.width, rect.height );
 
    }
 

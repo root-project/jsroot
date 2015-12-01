@@ -866,7 +866,7 @@
          }
 
          if (state!="minimal")
-            JSROOT.CheckElementResize(main.find(".flex_draw").get(0), false, { width : main.width(), height : main.height() });
+            JSROOT.CheckElementResize(main.find(".flex_draw").get(0));
       }
 
       $("#" + subid)
@@ -881,8 +881,6 @@
                $(this).appendTo($(this).parent());
             },
             stop: function(event, ui) {
-               console.log('resize ui' + ui.size.width + ' ' + ui.size.height);
-
                JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), false, ui.size);
             }
           })
