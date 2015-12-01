@@ -793,7 +793,7 @@
       color = color.replace(/rgb/g, "[RGB]")
                    .replace(/\(/g, '{')
                    .replace(/\)/g, '}');
-      return "\\(\\color " + mathcolor + str + "\\)";
+      return "\\(\\color " + color + str + "\\)";
    }
 
    // ==============================================================================
