@@ -1612,7 +1612,7 @@
       return res;
    }
 
-   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g) {
+   JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
       if (!draw_g) draw_g = this.draw_g;
       var pthis = this;
 
@@ -1633,9 +1633,9 @@
 
          // is any svg missing we should wait until drawing is really finished
          if (missing) {
-            JSROOT.AssertPrerequisites('moremathjax', function() {
+            JSROOT.AssertPrerequisites('mathjax', function() {
                if (typeof MathJax == 'object')
-                  MathJax.Hub.Queue(["FinishTextDrawing", pthis, draw_g]);
+                  MathJax.Hub.Queue(["FinishTextDrawing", pthis, draw_g, call_ready]);
             });
             return null;
          }
@@ -1717,6 +1717,9 @@
 
       // now hidden text after rescaling can be shown
       draw_g.selectAll('.hidden_text').attr('opacity', '1').classed('hidden_text',false);
+
+      // if specified, call ready function
+      JSROOT.CallBack(call_ready);
 
       return draw_g.property('max_text_width');
    }
@@ -6047,8 +6050,6 @@
 
       this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel['fLabel'], tcolor);
 
-      this.FinishTextDrawing();
-
       if (lwidth && lwidth > 1) {
          pave.append("svg:line")
                .attr("x1", width + (lwidth / 2))
@@ -6067,6 +6068,8 @@
       var pave_painter = this;
 
       this.AddDrag({ obj : pavelabel, redraw: this.drawPaveLabel.bind(this) });
+
+      this.FinishTextDrawing(null, this.DrawingReady.bind(this));
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
@@ -6105,7 +6108,7 @@
 
       this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, latex_kind);
 
-      this.FinishTextDrawing();
+      this.FinishTextDrawing(null, this.DrawingReady.bind(this));
    }
 
    JSROOT.TTextPainter.prototype.UpdateObject = function(obj) {
@@ -6130,7 +6133,7 @@
       var painter = new JSROOT.TTextPainter(text);
       painter.SetDivId(divid);
       painter.Redraw();
-      return painter.DrawingReady();
+      return painter;
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {

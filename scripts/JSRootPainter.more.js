@@ -1507,9 +1507,6 @@
             this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
          }
 
-         // rescale after all entries are shown
-         this.FinishTextDrawing();
-
          if (lwidth && lwidth > 1) {
             this.draw_g.append("svg:line")
                .attr("x1", w + (lwidth / 2))
@@ -1526,11 +1523,14 @@
          }
 
          this.AddDrag({ obj:pave, redraw: this.Redraw.bind(this) });
+
+         // rescale after all entries are shown
+         this.FinishTextDrawing(null, this.DrawingReady.bind(this));
       }
 
       this.Redraw();
 
-      return this.DrawingReady();
+      return this; // ready will be called
    }
 
    // ===========================================================================
