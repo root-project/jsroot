@@ -379,24 +379,6 @@
       return res;
    }
 
-
-   JSROOT.Painter.padtoX = function(pad, x) {
-      // Convert x from pad to X.
-      if (pad['fLogx'] && x < 50)
-         return Math.exp(2.302585092994 * x);
-      return x;
-   }
-
-   JSROOT.Painter.ytoPad = function(y, pad) {
-      if (pad['fLogy']) {
-         if (y > 0)
-            y = JSROOT.log10(y);
-         else
-            y = pad['fUymin'];
-      }
-      return y;
-   };
-
    JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
       if (nticks < 1) nticks = 1;
       var awidth = range / nticks;

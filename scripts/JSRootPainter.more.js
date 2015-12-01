@@ -1237,6 +1237,13 @@
          return res;
       }
 
+      this['padtoX'] = function(pad, x) {
+         // Convert x from pad to X.
+         if (pad['fLogx'] && x < 50)
+            return Math.exp(2.302585092994 * x);
+         return x;
+      }
+
       this['DrawAxis'] = function() {
          // draw special histogram
          var maximum, minimum, dx, dy;
@@ -1262,8 +1269,8 @@
             minimum = histo['fYaxis']['fXmin'];
             maximum = histo['fYaxis']['fXmax'];
             if (pad!=null) {
-               uxmin = JSROOT.Painter.padtoX(pad, rw.xmin);
-               uxmax = JSROOT.Painter.padtoX(pad, rw.xmax);
+               uxmin = this.padtoX(pad, rw.xmin);
+               uxmax = this.padtoX(pad, rw.xmax);
             }
          } else {
             for (var i in graphs.arr)
