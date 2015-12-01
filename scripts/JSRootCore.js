@@ -1027,29 +1027,31 @@
 
       if ((obj_typename.indexOf("TFormula") != -1) || (obj_typename.indexOf("TF1") == 0)) {
          obj['evalPar'] = function(x) {
-            var _func = this['fTitle'];
-            _func = _func.replace('TMath::Exp(', 'Math.exp(');
-            _func = _func.replace('TMath::Abs(', 'Math.abs(');
-            _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
-            _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
-            _func = _func.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
-            _func = _func.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
-            _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
-            _func = _func.replace('pi', 'Math.PI');
-            for (var i=0;i<this['fNpar'];++i) {
-               while(_func.indexOf('['+i+']') != -1)
-                  _func = _func.replace('['+i+']', this['fParams'][i]);
+            if (! ('_func' in this) || (this['_title'] != this['fTitle'])) {
+              var _func = this['fTitle'];
+              _func = _func.replace('TMath::Exp(', 'Math.exp(');
+              _func = _func.replace('TMath::Abs(', 'Math.abs(');
+              _func = _func.replace('TMath::Prob(', 'JSROOT.Math.Prob(');
+              _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
+              _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
+              _func = _func.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
+              _func = _func.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
+              _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
+              _func = _func.replace('pi', 'Math.PI');
+              for (var i=0;i<this['fNpar'];++i) {
+                 while(_func.indexOf('['+i+']') != -1)
+                    _func = _func.replace('['+i+']', this['fParams'][i]);
+              }
+              // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
+              _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
+              _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
+              _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
+              _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
+               this['_func'] = new Function("x", "return " + _func).bind(this);
+               this['_title'] = this['fTitle'];
             }
-            // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
-            _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
-            _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
-            _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
-            _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
 
-            var tmpfunc = new Function("x", "return " + _func);
-            var res = tmpfunc(x);
-            delete tmpfunc;
-            return res;
+            return this['_func'](x);
          };
       }
 
