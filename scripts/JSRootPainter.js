@@ -206,8 +206,9 @@
       for (var indx in moreCol) {
          var entry = moreCol[indx];
          for (var n in entry.arr) {
-            var code = entry.arr[n];
-            colorMap[entry.col + n] = 'rgb(' + (code >> 16) + "," + ((code >> 8) & 255) + "," + (code & 255) + ")";
+            var code = parseInt(entry.arr[n]);
+            var num = parseInt(entry.col) + parseInt(n);
+            colorMap[num] = 'rgb(' + (code >> 16) + "," + ((code >> 8) & 255) + "," + (code & 255) + ")";
          }
       }
 
