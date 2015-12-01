@@ -1,13 +1,14 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Introduce JSRootMath.js script, all JSROOT.Math methods placed there
+1. New JSRootMath.js script, all JSROOT.Math methods placed there
 2. Move TF1, THStack and TMultiGraph painters into JSRootPainter.more.js script
 3. Draw functions list from TGraph and TMultiGraph 
 4. Update all basic libraries:
      d3.js - v3.5.9, jquery.js - v2.1.4, jquery-ui.js - v1.11.4, three.js - r73  
-5. Introduce 'flex' layout - MDI-like desktop 
-6. Introduce TGeo support
+5. New 'flex' layout - MDI-like desktop 
+6. TGeo support
+7. New ROOT6-like color palette
 
 
 ## Changes in 3.9
