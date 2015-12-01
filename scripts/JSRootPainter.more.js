@@ -892,21 +892,20 @@
       this['Redraw'] = function() {
          this.RecreateDrawG(true, ".text_layer");
 
-         var svg = this.svg_pad();
          var pave = this.legend;
 
          var x = 0, y = 0, w = 0, h = 0;
 
          if (pave['fInit'] == 0) {
-            x = pave['fX1'] * svg.property("draw_width");
-            y = (1 - pave['fY2']) * svg.property("draw_height");
-            w = (pave['fX2'] - pave['fX1']) * svg.property("draw_width");
-            h = (pave['fY2'] - pave['fY1']) * svg.property("draw_height");
+            x = pave['fX1'] * this.pad_width();
+            y = (1 - pave['fY2']) * this.pad_height();
+            w = (pave['fX2'] - pave['fX1']) * this.pad_width();
+            h = (pave['fY2'] - pave['fY1']) * this.pad_height();
          } else {
-            x = pave['fX1NDC'] * svg.property("draw_width");
-            y = (1 - pave['fY2NDC']) * svg.property("draw_height");
-            w = (pave['fX2NDC'] - pave['fX1NDC']) * svg.property("draw_width");
-            h = (pave['fY2NDC'] - pave['fY1NDC']) * svg.property("draw_height");
+            x = pave['fX1NDC'] * this.pad_width();
+            y = (1 - pave['fY2NDC']) * this.pad_height();
+            w = (pave['fX2NDC'] - pave['fX1NDC']) * this.pad_width();
+            h = (pave['fY2NDC'] - pave['fY1NDC']) * this.pad_height();
          }
          var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
          var boxfill = this.createAttFill(pave);
