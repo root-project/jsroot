@@ -7328,6 +7328,9 @@
       var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
       var jsonarr = JSROOT.GetUrlOptionAsArray("json");
       var filesdir = JSROOT.GetUrlOption("path");
+      var expanditems = JSROOT.GetUrlOptionAsArray("expand");
+      if (expanditems.length==0 && (JSROOT.GetUrlOption("expand")=="")) expanditems.push("");
+
       if (filesdir!=null) {
          for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
          for (var i in jsonarr) jsonarr[i] = filesdir + jsonarr[i];
@@ -7339,7 +7342,7 @@
 
       var monitor = JSROOT.GetUrlOption("monitoring");
 
-      if ((jsonarr.length>0) && (itemsarr.length==0)) itemsarr.push("");
+      if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
       if (!this['disp_kind']) {
          var layout = JSROOT.GetUrlOption("layout");
@@ -7368,6 +7371,8 @@
          else
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
+
+               for (var n in expanditems) hpainter.expand(expanditems[n]);
 
                JSROOT.RegisterForResize(hpainter);
 
@@ -7803,7 +7808,7 @@
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
    JSROOT.addDrawFunc({ name: "TLegend", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
-   JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", painter_kind : "base" });
+   JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", painter_kind : "base" });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });

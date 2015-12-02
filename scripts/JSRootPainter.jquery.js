@@ -458,7 +458,9 @@
 
       JSROOT.Painter.createMenu(function(menu) {
 
-         if (itemname == "") {
+         menu['painter'] = painter;
+
+         if ((itemname == "") && !('_jsonfile' in hitem)) {
             var addr = "", cnt = 0;
             function separ() { return cnt++ > 0 ? "&" : "?"; }
 
@@ -514,9 +516,21 @@
                menu.addDrawMenu("Draw in new window", opts, function(arg) {
                   window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
                });
+         } else {
+            // this is standard menu for any object
+            var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
+
+            if (opts!=null)
+               menu.addDrawMenu("Draw", opts, function(arg) { this.display(itemname, arg); });
+
+            if (!('_childs' in hitem)) {
+               var handle = JSROOT.getDrawHandle(hitem._kind);
+               if (handle && ('expand' in handle))
+                  menu.add("Expand", function() { this.expand(itemname); });
+            }
          }
 
-         if (menu.size()>0) {
+         if (menu.size() > 0) {
             menu['tree_node'] = node;
             menu.add("Close");
             menu.show(event);
@@ -556,6 +570,7 @@
 
       this.get(itemname, function(item, obj) {
          delete item0['_doing_expand'];
+
          if ((item == null) || (obj == null)) return;
 
          var curr = item;
