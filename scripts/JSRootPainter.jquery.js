@@ -153,7 +153,7 @@
       if (handle!=null) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
-         if (('func' in handle) || ('execute' in handle) || ('aslink' in handle)) can_click = true;
+         if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) || ('expand' in handle)) can_click = true;
       }
       if ('_icon' in hitem) img1 = hitem['_icon'];
       if ('_icon2' in hitem) img2 = hitem['_icon2'];
@@ -415,6 +415,9 @@
 
             if ('execute' in handle)
                return this.ExecuteCommand(itemname, node);
+
+            if (('expand' in handle) && (hitem['_childs'] == null))
+               return this.expand(itemname, hitem, node.parent());
          }
 
          if ((hitem['_childs'] == null) && ('_more' in hitem))
@@ -527,14 +530,28 @@
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
       var painter = this;
 
-      if (node==null)
-         node = $("#" + this.frameid).find("[item='" + itemname + "']");
-
-      if (node.length==0)
-         return JSROOT.console("Did not found node with item = " + itemname);
-
       if (item0==null) item0 = this.Find(itemname);
-      if (item0==null) return;
+      if (item0==null) return false;
+
+      if (!('_more' in item0)) {
+         var handle = JSROOT.getDrawHandle(item0._kind);
+         if ((handle!=null) && ('expand' in handle)) {
+            return JSROOT.AssertPrerequisites(handle['prereq'], function() {
+               item0['_expand'] = JSROOT.findFunction(handle['expand']);
+               if (typeof item0['_expand'] == 'function') {
+                  item0['_more'] = true; // use as workaround - not try to repeat same action
+                  painter.expand(itemname, item0, node);
+                  delete item0['_more'];
+               }
+            });
+         }
+      }
+
+      var tree_node = node;
+      if (tree_node==null)
+         tree_node = $("#" + this.frameid).find("[item='" + itemname + "']");
+      if (tree_node.length==0) return false;
+
       item0['_doing_expand'] = true;
 
       this.get(itemname, function(item, obj) {
@@ -545,11 +562,10 @@
          while (curr != null) {
             if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
                 if (curr['_expand'](item, obj)) {
-                   var itemname = painter.itemFullName(item);
-                   node.attr('item', itemname);
-                   node.find("a").text(item._name);
+                   tree_node.attr('item', painter.itemFullName(item));
+                   tree_node.find("a").text(item._name);
                    item._isopen = true;
-                   painter.UpdateTreeNode(node, item);
+                   painter.UpdateTreeNode(tree_node, item);
                 }
                 return;
             }
@@ -572,7 +588,7 @@
       if (this['disp_kind'] == "tabs")
          this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
       else
-      if (this['disp_kind'] == "flex")
+      if ((this['disp_kind'] == "flex") || (this['disp_kind'] == "flexible"))
          this['disp'] = new JSROOT.FlexibleDisplay(this['disp_frameid']);
       else
       if (this['disp_kind'].search("grid") == 0)

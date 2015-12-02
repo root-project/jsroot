@@ -26,8 +26,6 @@
 
    // ======= Geometry painter================================================
 
-   var renderer =  null;
-
    JSROOT.TGeoPainter = function( geometry ) {
       JSROOT.TBasePainter.call( this, geometry );
       this._debug = false;
@@ -805,8 +803,8 @@
          mesh['name'] = node['fName'];
          // add the mesh to the scene
          toplevel.add(mesh);
-         //if ( this._debug && renderer.domElement.transformControl !== null)
-         //   renderer.domElement.transformControl.attach( mesh );
+         //if ( this._debug && this._renderer.domElement.transformControl !== null)
+         //   this._renderer.domElement.transformControl.attach( mesh );
          container = mesh;
       }
       if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
@@ -1043,6 +1041,66 @@
       this.SetDivId(divid);
 
       return this.drawGeometry();
+   }
+
+   JSROOT.expandGeoList = function(item, lst) {
+      if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
+
+      item['_childs'] = [];
+      for (var n in lst.arr) {
+         var obj = lst.arr[n];
+         var sub = {
+            _kind : "ROOT." + obj._typename,
+            _name : obj.fName,
+            _title : obj.fTitle
+         };
+         item['_childs'].push(sub);
+      }
+   }
+
+   JSROOT.expandGeoVolume = function(parent, volume, dname) {
+      if ((parent == null) || (volume==null)) return;
+
+      var item = {
+         _kind : "ROOT." + volume._typename,
+         _name : dname ? dname : volume.fName,
+         _title : volume.fTitle + "  " + volume._typename
+      };
+
+      if (volume['fShape']!=null) item._title += "  shape" + volume['fShape']._typename;
+
+      if (!('_childs' in parent)) parent['_childs'] = [];
+      parent['_childs'].push(item);
+
+      if ((typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null)) {
+         var subnodes = volume['fNodes']['arr'];
+         for (var i in subnodes)
+            JSROOT.expandGeoVolume(item, subnodes[i]['fVolume']);
+      }
+   }
+
+   JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
+      if ((hitem==null) || (obj==null)) {
+         return false;
+      }
+
+      hitem['_childs'] = [];
+
+      item = { _name : "Materials", _kind : "ROOT.TFolder", _title : "list of materials" };
+      JSROOT.expandGeoList(item, obj.fMaterials);
+      hitem['_childs'].push(item);
+
+      item = { _name : "Media", _kind : "ROOT.TFolder", _title : "list of media" };
+      JSROOT.expandGeoList(item, obj.fMedia);
+      hitem['_childs'].push(item);
+
+      item = { _name : "Tracks", _kind : "ROOT.TFolder", _title : "list of tracks" };
+      JSROOT.expandGeoList(item, obj.fTracks);
+      hitem['_childs'].push(item);
+
+      JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Master volume");
+
+      return true;
    }
 
    return JSROOT.Painter;

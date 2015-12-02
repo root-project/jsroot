@@ -6610,6 +6610,12 @@
       });
    }
 
+   JSROOT.HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
+      if (item == null) return false;
+      var handle = JSROOT.getDrawHandle(item._kind, drawopt);
+      return (handle!=null) && ('func' in handle);
+   }
+
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this;
       var painter = null;
@@ -6633,8 +6639,7 @@
          }
 
          if (item!=null) {
-            var handle = JSROOT.getDrawHandle(item._kind, drawopt);
-            if ((handle==null) || !('func' in handle)) return display_callback();
+            if (!h.canDisplay(item, drawopt)) return display_callback();
          }
 
          var divid = "";
@@ -6780,38 +6785,51 @@
 
       var h = this;
 
+      if (options == null) options = [];
+      while (options.length < items.length)
+         options.push("");
+
+      var dropitems = new Array(items.length);
+
+      // First of all check that items are exists, look for cycle extension
+      for (var i in items) {
+         dropitems[i] = null;
+         if (h.Find(items[i])) continue;
+         if (h.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
+
+         var pos = items[i].indexOf("+");
+         if (pos>0) {
+            dropitems[i] = items[i].split("+");
+            items[i] = dropitems[i].shift();
+            // allow to specify _same_ item in different file
+            for (var j in dropitems[i]) {
+               var pos = dropitems[i][j].indexOf("_same_");
+               if ((pos>0) && (h.Find(dropitems[i][j])==null))
+                  dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
+            }
+         }
+
+         // also check if subsequent items has _same_, than use name from first item
+         var pos = items[i].indexOf("_same_");
+         if ((pos>0) && !h.Find(items[i]) && (i>0))
+            items[i] = items[i].substr(0,pos) + items[0].substr(pos);
+      }
+
+      // now check that items can be displayed
+      for (var n = items.length-1; n>=0; n--) {
+         var hitem = h.Find(items[n]);
+         if ((hitem==null) || h.canDisplay(hitem, options[n])) continue;
+         // try to expand specified item
+         h.expand(items[n]);
+         items.splice(n, 1);
+         options.splice(n, 1);
+         dropitems.splice(n,1);
+      }
+
+      if (items.length == 0) return JSROOT.CallBack(call_back);
+
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back);
-
-         if (options == null) options = [];
-         while (options.length < items.length)
-            options.push("");
-
-         var dropitems = new Array(items.length);
-
-         // First of all check that items are exists, look for cycle extension
-         for (var i in items) {
-            dropitems[i] = null;
-            if (h.Find(items[i])) continue;
-            if (h.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
-
-            var pos = items[i].indexOf("+");
-            if (pos>0) {
-               dropitems[i] = items[i].split("+");
-               items[i] = dropitems[i].shift();
-               // allow to specify _same_ item in different file
-               for (var j in dropitems[i]) {
-                  var pos = dropitems[i][j].indexOf("_same_");
-                  if ((pos>0) && (h.Find(dropitems[i][j])==null))
-                     dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
-               }
-            }
-
-            // also check if subsequent items has _same_, than use name from first item
-            var pos = items[i].indexOf("_same_");
-            if ((pos>0) && !h.Find(items[i]) && (i>0))
-               items[i] = items[i].substr(0,pos) + items[0].substr(pos);
-         }
 
          // Than create empty frames for each item
          for (var i in items)
@@ -6853,7 +6871,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname) {
-      alert('expand ' + itemname + ' can be used only jquery part loaded');
+      // alert('expand ' + itemname + ' can be used only jquery part loaded');
    }
 
    JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function(item) {
@@ -7786,6 +7804,7 @@
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
    JSROOT.addDrawFunc({ name: "TLegend", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", painter_kind : "base" });
+   JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen" });
