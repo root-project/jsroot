@@ -773,9 +773,10 @@
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                opacity: _opacity, wireframe: false, color: fillcolor,
                side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-               overdraw: false /*, shading : THREE.NoShading */ } );
+               overdraw: false } );
       if ( !_isdrawn ) {
-         //material.depthWrite = false;
+         material.depthWrite = false;
+         material.depthTest = false;
          material.visible = false;
       }
       var mesh = this.createMesh(shape, material, rotation_matrix);
@@ -817,16 +818,89 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.computeBoundingBox = function( mesh ) {
+   JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
+      var container = toplevel;
+      var shape = node['fShape'];
+      var rotation_matrix = null;
+      var mesh = null;
+      var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
+      var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
+      var _transparent = true;
+      var _helper = false;
+      if (this._debug) _helper = true;
+      var _opacity = 0.0;
+      var _isdrawn = false;
+      if (node['fRnrSelf'] == true) {
+         _transparent = false;
+         _opacity = 1.0;
+         _isdrawn = true;
+      }
+      if ( node['fRGBA'][3] < 1.0) {
+         _transparent = true;
+         _opacity = node['fRGBA'][3];
+      }
+      var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+               opacity: _opacity, wireframe: false, color: fillcolor,
+               side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
+               overdraw: false } );
+      if ( !_isdrawn ) {
+         material.depthWrite = false;
+         material.depthTest = false;
+         material.visible = false;
+      }
+      material.polygonOffset = true;
+      material.polygonOffsetFactor = -1;
+      if (shape !== null)
+         mesh = this.createMesh(shape, material, rotation_matrix);
+      if (typeof mesh != 'undefined' && mesh != null) {
+         mesh.position.x = 0.5 * node['fTrans'][12];
+         mesh.position.y = 0.5 * node['fTrans'][13];
+         mesh.position.z = 0.5 * node['fTrans'][14];
+
+         mesh.rotation.setFromRotationMatrix( new THREE.Matrix4().set(
+               node['fTrans'][0],  node['fTrans'][4],  node['fTrans'][8],  0,
+               node['fTrans'][1],  node['fTrans'][5],  node['fTrans'][9],  0,
+               node['fTrans'][2],  node['fTrans'][6],  node['fTrans'][10], 0,
+               0, 0, 0, 1 ) );
+
+         if (_isdrawn && _helper) {
+            var helper = new THREE.WireframeHelper(mesh);
+            helper.material.color.set(JSROOT.Painter.root_colors[volume['fLineColor']]);
+            helper.material.linewidth = volume['fLineWidth'];
+            scene.add(helper);
+         }
+         if (this._debug && this._bound) {
+            if (_isdrawn || this._full) {
+               var boxHelper = new THREE.BoxHelper( mesh );
+               toplevel.add( boxHelper );
+            }
+         }
+         mesh['name'] = node['fName'];
+         // add the mesh to the scene
+         toplevel.add(mesh);
+         //if ( this._debug && renderer.domElement.transformControl !== null)
+         //   renderer.domElement.transformControl.attach( mesh );
+         container = mesh;
+      }
+      if (typeof node['fElements'] != 'undefined' && node['fElements'] != null) {
+         var nodes = node['fElements']['arr'];
+         for (var i = 0; i < nodes.length; ++i) {
+            var inode = node['fElements']['arr'][i];
+            this.drawEveNode(scene, container, inode);
+         }
+      }
+   }
+
+   JSROOT.TGeoPainter.prototype.computeBoundingBox = function( mesh, any ) {
       var bbox = null;
       for (var i = 0; i < mesh.children.length; ++i) {
          var node = mesh.children[i];
          if ( node instanceof THREE.Mesh ) {
-            if ( node['material']['visible'] ) {
+            if ( any || node['material']['visible'] ) {
                bbox = new THREE.Box3().setFromObject( node );
                return bbox;
             } else {
-               bbox = this.computeBoundingBox( node );
+               bbox = this.computeBoundingBox( node, any );
                if (bbox != null) return bbox;
             }
          }
@@ -873,7 +947,7 @@
             && window.FileList && window.Blob
       };
 
-      this._renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) :
+      this._renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
                        new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio( window.devicePixelRatio );
       this._renderer.setClearColor(0xffffff, 1);
@@ -890,27 +964,40 @@
       toplevel.rotation.y = 90 * Math.PI / 180;
       this._scene.add(toplevel);
 
-      var shape = this._geometry['fShape'];
-      var top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
-      var cube = new THREE.Mesh( top, new THREE.MeshBasicMaterial( {
-               visible: false, transparent: true, opacity: 0.0 } ) );
-      toplevel.add(cube);
+      var overall_size = 10;
 
-      //this.drawVolume(this._scene, toplevel, this._geometry);
-      if (typeof this._geometry['fNodes'] != 'undefined' && this._geometry['fNodes'] != null) {
-         var nodes = this._geometry['fNodes']['arr'];
-         for (var i in nodes)
-            this.drawNode(this._scene, cube, nodes[i])
+      if ((this._geometry['_typename'] == 'TGeoVolume') || (this._geometry['_typename'] == 'TGeoVolumeAssembly'))  {
+         var shape = this._geometry['fShape'];
+         var top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
+         var cube = new THREE.Mesh( top, new THREE.MeshBasicMaterial( {
+                  visible: false, transparent: true, opacity: 0.0 } ) );
+         toplevel.add(cube);
+
+         //this.drawVolume(this._scene, toplevel, this._geometry);
+         if (typeof this._geometry['fNodes'] != 'undefined' && this._geometry['fNodes'] != null) {
+            var nodes = this._geometry['fNodes']['arr'];
+            for (var i in nodes)
+               this.drawNode(this._scene, cube, nodes[i])
+         }
+         //top.computeBoundingBox();
+         //var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
+         //                                 Math.abs(top.boundingBox.max.z));
+         var boundingBox = this.computeBoundingBox(toplevel, false);
+         overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
+                                       Math.abs(boundingBox.max.z));
       }
-
-      top.computeBoundingBox();
-      var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
-                                       Math.abs(top.boundingBox.max.z));
-/*
-      var boundingBox = this.computeBoundingBox(cube);
-      overall_size = 20 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
-                                   Math.abs(boundingBox.max.z));
-*/
+      else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
+         if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
+            var nodes = this._geometry['fElements']['arr'];
+            for (var i = 0; i < nodes.length; ++i) {
+               var node = this._geometry['fElements']['arr'][i];
+               this.drawEveNode(this._scene, toplevel, node)
+            }
+         }
+         var boundingBox = this.computeBoundingBox(toplevel, true);
+         overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
+                                       Math.abs(boundingBox.max.z));
+      }
       if ( this._debug || this._grid ) {
          if ( this._full ) {
             var boxHelper = new THREE.BoxHelper( cube );
@@ -922,6 +1009,9 @@
          if ( this._renderer.domElement.transformControl !== null )
             this._renderer.domElement.transformControl.attach( toplevel );
       }
+      this._camera.near = overall_size / 200;
+      this._camera.far = overall_size * 500;
+      this._camera.updateProjectionMatrix();
       this._camera.position.x = overall_size * Math.cos( 135.0 );
       this._camera.position.y = overall_size * Math.cos( 45.0 );
       this._camera.position.z = overall_size * Math.sin( 45.0 );
