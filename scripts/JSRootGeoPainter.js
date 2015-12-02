@@ -977,14 +977,16 @@
          if (typeof this._geometry['fNodes'] != 'undefined' && this._geometry['fNodes'] != null) {
             var nodes = this._geometry['fNodes']['arr'];
             for (var i in nodes)
-               this.drawNode(this._scene, cube, nodes[i])
-         }
+               this.drawNode(this._scene, cube, nodes[i]);
+         } else
+            this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"direct" } );
          //top.computeBoundingBox();
          //var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
          //                                 Math.abs(top.boundingBox.max.z));
          var boundingBox = this.computeBoundingBox(toplevel, false);
-         overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
-                                       Math.abs(boundingBox.max.z));
+         if (boundingBox!=null)
+            overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
+                                         Math.abs(boundingBox.max.z));
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
