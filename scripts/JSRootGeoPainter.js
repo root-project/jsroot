@@ -20,6 +20,9 @@
    }
 } (function(JSROOT) {
 
+   if ( typeof define === "function" && define.amd )
+      JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
+
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
@@ -1067,6 +1070,9 @@
          _title : volume.fTitle + "  " + volume._typename
       };
 
+      if (dname)
+         item._icon = "img_geoarb8";
+
       if (volume['fShape']!=null) item._title += "  shape" + volume['fShape']._typename;
 
       if (!('_childs' in parent)) parent['_childs'] = [];
@@ -1076,6 +1082,8 @@
          var subnodes = volume['fNodes']['arr'];
          for (var i in subnodes)
             JSROOT.expandGeoVolume(item, subnodes[i]['fVolume']);
+      } else {
+         item._icon = "img_geoarb8";
       }
    }
 

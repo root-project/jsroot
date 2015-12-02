@@ -676,6 +676,7 @@
 
       if (kind.indexOf("geom;")>=0) {
          mainfiles += "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+         extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
          modules.push('JSRootGeoPainter');
       }
 
