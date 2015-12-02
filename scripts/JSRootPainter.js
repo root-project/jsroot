@@ -7337,6 +7337,7 @@
       }
 
       var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
+      if ((itemsarr.length==0) && JSROOT.GetUrlOption("item")=="") itemsarr.push("");
 
       var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
 
