@@ -159,25 +159,23 @@
 
    JSROOT.TBuffer.prototype.ntou4 = function() {
       // convert (read) four bytes of buffer b into a UInt_t
-      var n  = ((this.b.charCodeAt(this.o) & 0xff) << 24) >>> 0;
-      n += ((this.b.charCodeAt(this.o+1) & 0xff) << 16) >>> 0;
-      n += ((this.b.charCodeAt(this.o+2) & 0xff) << 8)  >>> 0;
-      n +=  (this.b.charCodeAt(this.o+3) & 0xff) >>> 0;
-      this.o += 4;
+      var n  = ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8)  >>> 0;
+      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
       return n;
    }
 
    JSROOT.TBuffer.prototype.ntou8 = function() {
       // convert (read) eight bytes of buffer b into a ULong_t
-      var n = ((this.b.charCodeAt(this.o) & 0xff) << 56) >>> 0;
-      n += ((this.b.charCodeAt(this.o+1) & 0xff) << 48) >>> 0;
-      n += ((this.b.charCodeAt(this.o+2) & 0xff) << 40) >>> 0;
-      n += ((this.b.charCodeAt(this.o+3) & 0xff) << 32) >>> 0;
-      n += ((this.b.charCodeAt(this.o+4) & 0xff) << 24) >>> 0;
-      n += ((this.b.charCodeAt(this.o+5) & 0xff) << 16) >>> 0;
-      n += ((this.b.charCodeAt(this.o+6) & 0xff) << 8) >>> 0;
-      n +=  (this.b.charCodeAt(this.o+7) & 0xff) >>> 0;
-      this.o += 8;
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 56) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 48) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 40) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 32) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8) >>> 0;
+      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
       return n;
    }
 
@@ -187,33 +185,30 @@
 
    JSROOT.TBuffer.prototype.ntoi2 = function() {
       // convert (read) two bytes of buffer b into a Short_t
-      var n  = (this.b.charCodeAt(this.o)   & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o+1) & 0xff);
-      this.o += 2;
+      var n = (this.b.charCodeAt(this.o++) & 0xff) << 8;
+      n += (this.b.charCodeAt(this.o++) & 0xff);
       return n;
    }
 
    JSROOT.TBuffer.prototype.ntoi4 = function() {
       // convert (read) four bytes of buffer b into a Int_t
-      var n  = ((this.b.charCodeAt(this.o) & 0xff) << 24) +
-               ((this.b.charCodeAt(this.o+1) & 0xff) << 16) +
-               ((this.b.charCodeAt(this.o+2) & 0xff) << 8) +
-               ((this.b.charCodeAt(this.o+3) & 0xff));
-      this.o += 4;
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 24);
+      n +=  ((this.b.charCodeAt(this.o++) & 0xff) << 16);
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8);
+      n += ((this.b.charCodeAt(this.o++) & 0xff));
       return n;
    }
 
    JSROOT.TBuffer.prototype.ntoi8 = function(b, o) {
       // convert (read) eight bytes of buffer b into a Long_t
-      var n = (this.b.charCodeAt(this.o) & 0xff) << 56;
-      n += (this.b.charCodeAt(this.o+1) & 0xff) << 48;
-      n += (this.b.charCodeAt(this.o+2) & 0xff) << 40;
-      n += (this.b.charCodeAt(this.o+3) & 0xff) << 32;
-      n += (this.b.charCodeAt(this.o+4) & 0xff) << 24;
-      n += (this.b.charCodeAt(this.o+5) & 0xff) << 16;
-      n += (this.b.charCodeAt(this.o+6) & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o+7) & 0xff);
-      this.o += 8;
+      var n = (this.b.charCodeAt(this.o++) & 0xff) << 56;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 48;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 40;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 32;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 24;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 16;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 8;
+      n += (this.b.charCodeAt(this.o++) & 0xff);
       return n;
    }
 
@@ -1019,77 +1014,60 @@
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
-            // alert("Strange code was here????"); // var n_el = str.charCodeAt(o) & 0xff;
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'S');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'S');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'I');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'I');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'U');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'U');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'LU');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'LU');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'L');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'L');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-            //var n_el = str.charCodeAt(o) & 0xff;
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'F');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'F');
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
-            //var n_el = str.charCodeAt(o) & 0xff;
-            var n_el  = this[prop]['length'];
-            obj[prop] = buf.ReadFastArray(n_el, 'D');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'D');
             break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'C');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'C');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'S');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'S');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'I');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'I');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'U');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'U');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'LU');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'LU');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'L');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'L');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'F');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'F');
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'D');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'D');
             break;
          default:
-            alert('failed to stream ' + prop + ' (' + this[prop]['typename'] + ')');
+            alert('failed to stream ' + prop + ' (' + this[prop]['typename'] + ')  typ = ' + this[prop]['type']);
             break;
       }
    }
