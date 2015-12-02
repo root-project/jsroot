@@ -1070,20 +1070,43 @@
          _title : volume.fTitle + "  " + volume._typename
       };
 
-      if (dname)
-         item._icon = "img_geoarb8";
-
-      if (volume['fShape']!=null) item._title += "  shape" + volume['fShape']._typename;
+      if (volume['fShape']!=null)
+         switch (volume['fShape']._typename) {
+            case "TGeoArb8" : item._icon = "img_geoarb8"; break;
+            case "TGeoCone" : item._icon = "img_geocone"; break;
+            case "TGeoConeSeg" : item._icon = "img_geoconeseg"; break;
+            case "TGeoCompositeShape" : item._icon = "img_geocomposite"; break;
+            case "TGeoTube" : item._icon = "img_geotube"; break;
+            case "TGeoTubeSeg" : item._icon = "img_geotubeseg"; break;
+            case "TGeoPara" : item._icon = "img_geopara"; break;
+            case "TGeoParaboloid" : item._icon = "img_geoparab"; break;
+            case "TGeoPcon" : item._icon = "img_geopcon"; break;
+            case "TGeoPgon" : item._icon = "img_geopgon"; break;
+            case "TGeoShapeAssembly" : item._icon = "img_geoassembly"; break;
+            case "TGeoSphere" : item._icon = "img_geosphere"; break;
+            case "TGeoTorus" : item._icon = "img_geotorus"; break;
+            case "TGeoTrd1" : item._icon = "img_geotrd1"; break;
+            case "TGeoTrd2" : item._icon = "img_geotrd2"; break;
+            case "TGeoXtru" : item._icon = "img_geoxtru"; break;
+            case "TGeoTrap" : item._icon = "img_geotrap"; break;
+            case "TGeoGtra" : item._icon = "img_geogtra"; break;
+            case "TGeoEltu" : item._icon = "img_geoeltu"; break;
+            case "TGeoHype" : item._icon = "img_geohype"; break;
+            case "TGeoCtub" : item._icon = "img_geoctub"; break;
+         }
 
       if (!('_childs' in parent)) parent['_childs'] = [];
       parent['_childs'].push(item);
 
       if ((typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null)) {
+         if (!('_icon' in item))
+            item._icon = "img_geocombi";
          var subnodes = volume['fNodes']['arr'];
          for (var i in subnodes)
             JSROOT.expandGeoVolume(item, subnodes[i]['fVolume']);
       } else {
-         item._icon = "img_geoarb8";
+        if (!('_icon' in item))
+           item._icon = "img_geobbox";
       }
    }
 
