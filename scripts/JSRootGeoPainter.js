@@ -1057,20 +1057,47 @@
             _name : obj.fName,
             _title : obj.fTitle
          };
+
+         if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
+         if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium";
+
          item['_childs'].push(sub);
       }
    }
 
-   JSROOT.expandGeoVolume = function(parent, volume, dname) {
-      if ((parent == null) || (volume==null)) return;
+   JSROOT.expandGeoVolume = function(parent, volume, arg) {
+
+      if ((parent == null) || (volume==null)) return false;
 
       var item = {
-         _kind : "ROOT." + volume._typename,
-         _name : dname ? dname : volume.fName,
-         _title : volume.fTitle + "  " + volume._typename
+         _kind : "ROOT.TGeoVolume",
+         _name : volume.fName,
+         _title : volume.fTitle,
+         _volume : volume // keep direct reference
       };
 
-      if (volume['fShape']!=null)
+      if (arg == null) {
+         // this is special case of expand of geo volume
+         item['_get'] = function(item, itemname, callback) {
+            if ((item!=null) && (item._volume != null))
+               return JSROOT.CallBack(callback, item, item._volume);
+
+            JSROOT.CallBack(callback, item, null);
+         }
+        arg = 0;
+      } else
+      if (typeof arg == 'string') {
+         item._name = arg;
+         arg = 0;
+      }
+
+      if (item._title == "")
+         if (volume._typename != "TGeoVolume") item._title = volume._typename;
+
+      if (volume['fShape']!=null) {
+         if (item._title == "")
+            item._title = volume['fShape']._typename;
+
          switch (volume['fShape']._typename) {
             case "TGeoArb8" : item._icon = "img_geoarb8"; break;
             case "TGeoCone" : item._icon = "img_geocone"; break;
@@ -1094,6 +1121,7 @@
             case "TGeoHype" : item._icon = "img_geohype"; break;
             case "TGeoCtub" : item._icon = "img_geoctub"; break;
          }
+      }
 
       if (!('_childs' in parent)) parent['_childs'] = [];
       parent['_childs'].push(item);
@@ -1103,16 +1131,25 @@
             item._icon = "img_geocombi";
          var subnodes = volume['fNodes']['arr'];
          for (var i in subnodes)
-            JSROOT.expandGeoVolume(item, subnodes[i]['fVolume']);
+            JSROOT.expandGeoVolume(item, subnodes[i]['fVolume'], arg+1);
       } else {
         if (!('_icon' in item))
            item._icon = "img_geobbox";
       }
+
+      return true;
    }
 
    JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
       if ((hitem==null) || (obj==null)) {
          return false;
+      }
+
+      hitem['_get'] = function(item, itemname, callback) {
+         if ((item!=null) && (item._volume != null))
+            return JSROOT.CallBack(callback, item, item._volume);
+
+         JSROOT.CallBack(callback, item, null);
       }
 
       hitem['_childs'] = [];
@@ -1131,8 +1168,12 @@
 
       JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Master volume");
 
+
       return true;
    }
+
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base" });
+
 
    return JSROOT.Painter;
 
