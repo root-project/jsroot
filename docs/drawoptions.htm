@@ -224,6 +224,12 @@
          LoadFile("rootgeom.json", function(file) {
             draw_item_options(file, "json", "geo1_draw", "", 0., "TGeo");
          });
+         LoadFile("atlas_cryo.json", function(file) {
+            draw_item_options(file, "json", "geo2_draw", "", 0., "TGeo");
+         });
+         LoadFile("simple_alice.json", function(file) {
+            draw_item_options(file, "json", "geo3_draw", "", 0., "TGeo");
+         });
 
          if (extra_drawing) {
             LoadFile("can4.root", function(file) {
@@ -232,14 +238,7 @@
             LoadFile("higgs_c.root", function(file) {
                draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", 0., "TCanvas");
             });
-            LoadFile("atlas_cryo.json", function(file) {
-               draw_item_options(file, "json", "geo2_draw", "", 0., "TGeo");
-            });
-            LoadFile("simple_alice.json", function(file) {
-               draw_item_options(file, "json", "geo3_draw", "", 0., "TGeo");
-            });
          }
-
 
       }
    </script>

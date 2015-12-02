@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 1/12/2015";
+   JSROOT.version = "dev 2/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -757,23 +757,20 @@
    }
 
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
-
-      var jsroot = this;
-
       if (typeof user_scripts == 'function') {
          andThen = user_scripts;
          user_scripts = null;
       }
 
       var debugout = null;
-      var nobrowser = jsroot.GetUrlOption('nobrowser')!=null;
+      var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
       var requirements = "io;2d;";
 
       if (document.getElementById('simpleGUI')) {
          debugout = 'simpleGUI';
-         if ((jsroot.GetUrlOption('json')!=null) &&
-             (jsroot.GetUrlOption('file')==null) &&
-             (jsroot.GetUrlOption('files')==null)) requirements = "2d;";
+         if ((JSROOT.GetUrlOption('json')!=null) &&
+             (JSROOT.GetUrlOption('file')==null) &&
+             (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
       } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
       if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
@@ -785,16 +782,15 @@
 
       if (!nobrowser) requirements += 'jq2d;simple;';
 
-      if (user_scripts == null) user_scripts = jsroot.GetUrlOption("autoload");
-      if (user_scripts == null) user_scripts = jsroot.GetUrlOption("load");
+      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
+      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
 
       if (user_scripts != null)
          requirements += "load:" + user_scripts + ";";
 
-      this.AssertPrerequisites(requirements, function() {
-         var func = jsroot.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI');
-         jsroot.CallBack(func);
-         jsroot.CallBack(andThen);
+      JSROOT.AssertPrerequisites(requirements, function() {
+         JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI'));
+         JSROOT.CallBack(andThen);
       }, debugout);
    }
 
@@ -1251,6 +1247,7 @@
    }
 
    JSROOT.Initialize = function() {
+
       function window_on_load(func) {
          if (func!=null) {
             if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
@@ -1278,10 +1275,10 @@
          JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
          if (JSROOT.GetUrlOption('gui', src)!=null)
-            return window_on_load(function() { JSROOT.BuildSimpleGUI(); });
+            return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
 
          if ( typeof define === "function" && define.amd )
-            return window_on_load(function() { JSROOT.BuildSimpleGUI('check_existing_elements'); });
+            return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
 
          var prereq = "";
          if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
