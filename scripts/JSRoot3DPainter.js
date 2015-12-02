@@ -797,7 +797,6 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
       var bin, mesh, wei;
-      console.log("opt = " + opt);
       for (var i = 0; i < bins.length; ++i) {
          wei = (optFlag ? maxbin : bins[i].n);
          if (opt.indexOf('box1') != -1) {

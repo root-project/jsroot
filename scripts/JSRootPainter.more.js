@@ -1374,7 +1374,7 @@
 
       if (opt.indexOf("A") < 0) {
          if (this.main_painter()==null)
-            console.log('Most probably, drawing of multigraph will fail')
+            JSROOT.console('Most probably, drawing of multigraph will fail')
       } else {
          opt = opt.replace("A","");
          this.DrawAxis();
