@@ -762,8 +762,6 @@ var zip_inflate_arr = function(arr, tgt)
 {
    var i, j;
 
-   console.log('arr length = ' + arr.byteLength + "   tgt = " + tgt.byteLength);
-
    zip_inflate_start();
    zip_inflate_data = arr;
    zip_inflate_pos = 0;

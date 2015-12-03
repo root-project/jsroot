@@ -10,6 +10,8 @@
 6. TGeo support
 7. New ROOT6-like color palette
 8. Significant improve in TF1::Eval performance 
+9. I/O performance improvement. Use DataView and ArrayBuffer for decoding binrary data.
+   Still old method with JS String supported (add &iomode=str to URL)
 
 
 ## Changes in 3.9

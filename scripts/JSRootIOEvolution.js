@@ -35,8 +35,7 @@
          kClassMask : 0x80000000,
          Z_DEFLATED : 8,
          Z_HDRSIZE : 9,
-         Mode : "string" // could be string or array
-
+         Mode : "array" // could be string or array
    };
 
    JSROOT.fUserStreamers = null; // map of user-streamer function like func(buf,obj,prop,streamerinfo)
@@ -1497,8 +1496,6 @@
 
             file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
 
-            console.log('content length = ' + file.fFileContent.totalLength());
-
             if (!this.fAcceptRanges)
                file.fEND = file.fFileContent.totalLength();
 
@@ -1835,14 +1832,14 @@
          });
          delete buf;
       });
-   }
+   };
 
    JSROOT.TFile.prototype.ReadDirectory = function(dir_name, cycle, readdir_callback) {
       // read the directory content from  a root file
       // do not read directory if it is already exists
 
       return this.ReadObject(dir_name, cycle, readdir_callback);
-   }
+   };
 
    JSROOT.TFile.prototype.GetStreamer = function(clname) {
       // return the streamer for the class 'clname', from the list of streamers
@@ -1888,7 +1885,7 @@
          }
       }
       return this.fStreamers[clname];
-   }
+   };
 
    JSROOT.TFile.prototype.Delete = function() {
       if (this.fDirectories) this.fDirectories.splice(0, this.fDirectories.length);
@@ -1900,13 +1897,13 @@
       this.fSeekInfo = 0;
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
-   }
+   };
 
-   ((function() {
+   (function() {
      var iomode = JSROOT.GetUrlOption("iomode");
      if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
      if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
-   })());
+   })();
 
    return JSROOT;
 
