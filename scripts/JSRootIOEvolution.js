@@ -1030,7 +1030,7 @@
             break;
          case JSROOT.IO.kChar:
          case JSROOT.IO.kLegacyChar:
-            obj[prop] = buf.b.charCodeAt(buf.o++) & 0xff;
+            obj[prop] = buf.ntou1();
             break;
          case JSROOT.IO.kShort:
             obj[prop] = buf.ntoi2();
@@ -1050,7 +1050,7 @@
             obj[prop] = buf.ntod();
             break;
          case JSROOT.IO.kUChar:
-            obj[prop] = (buf.b.charCodeAt(buf.o++) & 0xff) >>> 0;
+            obj[prop] = buf.ntou1();
             break;
          case JSROOT.IO.kUShort:
             obj[prop] = buf.ntou2();
@@ -1071,7 +1071,7 @@
             obj[prop] = buf.ntou8();
             break;
          case JSROOT.IO.kBool:
-            obj[prop] = (buf.b.charCodeAt(buf.o++) & 0xff) != 0;
+            obj[prop] = buf.ntou1() != 0;
             break;
          case JSROOT.IO.kFloat16:
             obj[prop] = 0;
