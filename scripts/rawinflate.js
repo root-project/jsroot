@@ -313,11 +313,19 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
 /* routines (inflate) */
 
-var zip_GET_BYTE = function() {
+var zip_GET_STR_BYTE = function() {
    if (zip_inflate_data.length == zip_inflate_pos)
       return -1;
    return zip_inflate_data.charCodeAt(zip_inflate_pos++) & 0xff;
 }
+
+var zip_GET_ARR_BYTE = function() {
+   if (zip_inflate_pos == zip_inflate_data.byteLength)
+      return -1;
+   return zip_inflate_data.getUint8(zip_inflate_pos);
+}
+
+var zip_GET_BYTE = zip_GET_STR_BYTE;
 
 var zip_NEEDBITS = function(n) {
    while (zip_bit_len < n) {
@@ -472,7 +480,7 @@ var zip_inflate_fixed = function(buff, off, size) {
          l[i] = 8;
       zip_fixed_bl = 7;
 
-      h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, 
+      h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext,
                             zip_fixed_bl);
       if (h.status != 0) {
          alert("HufBuild error: "+h.status);
@@ -735,6 +743,8 @@ var zip_inflate = function(str)
    zip_inflate_data = str;
    zip_inflate_pos = 0;
 
+   zip_GET_BYTE = zip_GET_STR_BYTE;
+
    var buff = new Array(1024);
    var aout = [];
    while ((i = zip_inflate_internal(buff, 0, buff.length)) > 0) {
@@ -748,8 +758,28 @@ var zip_inflate = function(str)
    return aout.join("");
 }
 
+var zip_inflate_arr = function(arr, tgt)
+{
+   var i, j;
+
+   zip_inflate_start();
+   zip_inflate_data = arr;
+   zip_inflate_pos = 0;
+   zip_GET_BYTE = zip_GET_ARR_BYTE;
+
+   var cnt = 0;
+   while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
+      cnt += i;
+   }
+   zip_inflate_data = null; // G.C.
+
+   return cnt;
+}
+
+
 if (! window.RawInflate) RawInflate = {};
 
 RawInflate.inflate = zip_inflate;
+RawInflate.arr_inflate = zip_inflate_arr;
 
 })();
