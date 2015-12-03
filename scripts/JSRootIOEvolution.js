@@ -34,7 +34,9 @@
          kNewClassTag : 0xFFFFFFFF,
          kClassMask : 0x80000000,
          Z_DEFLATED : 8,
-         Z_HDRSIZE : 9
+         Z_HDRSIZE : 9,
+         Mode : "string" // could be string or array
+
    };
 
    JSROOT.fUserStreamers = null; // map of user-streamer function like func(buf,obj,prop,streamerinfo)
@@ -194,6 +196,27 @@
          return false;
       }
       return true;
+   }
+
+   JSROOT.TBuffer.prototype.ReadString = function() {
+      // read a null-terminated string from buffer
+      var pos0 = this.o, len = this.totalLength();
+      while (this.o < len) {
+         if (this.codeAt(this.o++) == 0) break;
+      }
+      return (this.o > pos0) ? this.substring(pos0, this.o-1) : "";
+   }
+
+   JSROOT.TBuffer.prototype.ReadTString = function() {
+      // stream a TString object from buffer
+      var len = this.ntou1();
+      // large strings
+      if (len == 255) len = this.ntou4();
+
+      var pos = this.o;
+      this.o += len;
+
+      return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
    }
 
    JSROOT.TBuffer.prototype.ReadTObject = function(tobj) {
@@ -861,29 +884,12 @@
       return new Array();
    }
 
-   JSROOT.TStrBuffer.prototype.ReadString = function(max_len) {
-      // stream a string from buffer
-      max_len = typeof(max_len) != 'undefined' ? max_len : 0;
-      var len = 0;
-      var pos0 = this.o;
-      while ((max_len==0) || (len<max_len)) {
-         if ((this.b.charCodeAt(this.o++) & 0xff) == 0) break;
-         len++;
-      }
-
-      return (len == 0) ? "" : this.b.substring(pos0, pos0 + len);
+   JSROOT.TStrBuffer.prototype.codeAt = function(pos) {
+      return this.b.charCodeAt(pos);
    }
 
-   JSROOT.TStrBuffer.prototype.ReadTString = function() {
-      // stream a TString object from buffer
-      var len = this.b.charCodeAt(this.o++) & 0xff;
-      // large strings
-      if (len == 255) len = this.ntou4();
-
-      var pos = this.o;
-      this.o += len;
-
-      return (this.b.charCodeAt(pos) == 0) ? '' : this.b.substring(pos, pos + len);
+   JSROOT.TStrBuffer.prototype.substring = function(beg, end) {
+      return this.b.substring(beg, end);
    }
 
    // =======================================================================
@@ -903,6 +909,58 @@
    JSROOT.TArrBuffer.prototype.extract = function(off,len) {
       if (!this.arr || !this.arr.buffer || (this.arr.buffer.byteLength < off+len)) return null;
       return new DataView(this.arr.buffer, off,  len);
+   }
+
+   JSROOT.TArrBuffer.prototype.codeAt = function(pos) {
+      return this.arr.getUint8(pos);
+   }
+
+   JSROOT.TArrBuffer.prototype.substring = function(beg, end) {
+      var res = "";
+      for (var n=beg;n<end;n++)
+         res += String.fromCharCode(this.arr.getUint8(n));
+      return res;
+   }
+
+   JSROOT.TArrBuffer.prototype.ntou1 = function() {
+      return this.arr.getUint8(this.o++);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntou2 = function() {
+      var o = this.o; this.o+=2;
+      return this.arr.getUint16(o);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntou4 = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getUint32(o);
+   }
+
+   JSROOT.TStrBuffer.prototype.ntou8 = function() {
+      var high = this.arr.getUint32(o); this.o+=4;
+      var low = this.arr.getUint32(o); this.o+=4;
+      return high * 0x100000000 + low;
+   }
+
+   JSROOT.TArrBuffer.prototype.ntoi1 = function() {
+      return this.arr.getInt8(this.o++);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntoi2 = function() {
+      var o = this.o; this.o+=2;
+      return this.arr.getInt16(o);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntoi4 = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getInt32(o);
+   }
+
+   JSROOT.TStrBuffer.prototype.ntoi8 = function() {
+      var high = this.arr.getUint32(o); this.o+=4;
+      var low = this.arr.getUint32(o); this.o+=4;
+      if (high < 0x80000000) return high * 0x100000000 + low;
+      return -1 - ((~high) * 0x100000000 + ~low);
    }
 
    // =======================================================================
@@ -1417,10 +1475,11 @@
       }
 
       function read_callback(res) {
+
          if ((res==null) && file.fUseStampPar && (file.fOffset==0)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
-            var xhr2 = JSROOT.NewHttpRequest(this.fURL, "bin", read_callback);
+            var xhr2 = JSROOT.NewHttpRequest(this.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
             if (this.fAcceptRanges)
                xhr2.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len - 1));
             xhr2.send(null);
@@ -1428,11 +1487,13 @@
          } else
          if ((res!=null) && (file.fOffset==0) && (file.fFileContent == null)) {
             // special case - keep content of first request (could be complete file) in memory
-            file.fFileContent = JSROOT.CreateTBuffer(res);
-            if (!this.fAcceptRanges) {
+
+            file.fFileContent = JSROOT.CreateTBuffer(typeof res == 'string' ? res : new DataView(res));
+
+            if (!this.fAcceptRanges)
                file.fEND = file.fFileContent.totalLength();
-               return callback(file.fFileContent.extract(file.fOffset, len));
-            }
+
+            return callback(file.fFileContent.extract(file.fOffset, len));
          }
 
          if ((res==null) || (res === undefined) || (typeof res == 'string'))
@@ -1442,7 +1503,7 @@
          callback(new DataView(res));
       }
 
-      var xhr = JSROOT.NewHttpRequest(url, "bin", read_callback);
+      var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
       if (this.fAcceptRanges)
          xhr.setRequestHeader("Range", "bytes=" + this.fOffset + "-" + (this.fOffset + len - 1));
       xhr.send(null);
@@ -1671,12 +1732,14 @@
       this.ReadBuffer(1024, function(blob1) {
          if (blob1==null) return JSROOT.CallBack(readkeys_callback, null);
 
-         if (blob1.substring(0, 4)!='root') {
+         var buf = JSROOT.CreateTBuffer(blob1, 0, file);
+
+         if (buf.substring(0, 4)!='root') {
             alert("NOT A ROOT FILE! " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
          }
+         buf.shift(4);
 
-         var buf = JSROOT.CreateTBuffer(blob1, 4, file); // skip the "root" file identifier
          file.fVersion = buf.ntou4();
          file.fBEGIN = buf.ntou4();
          if (file.fVersion < 1000000) { //small file
@@ -1829,6 +1892,12 @@
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
    }
+
+   ((function() {
+     var iomode = JSROOT.GetUrlOption("iomode");
+     if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
+     if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
+   })());
 
    return JSROOT;
 
