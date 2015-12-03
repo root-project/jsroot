@@ -102,34 +102,10 @@
       return null;
    }
 
-   JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
-      // method can be used to reconstruct ROOT object from binary buffer
-      // Buffer can be requested from online server with request like:
-      //   http://localhost:8080/Files/job1.root/hpx/root.bin
-      // One also requires buffer with streamer infos, reqeusted with command
-      //   http://localhost:8080/StreamerInfo/root.bin
-      // And one should provide class name of the object
-      //
-      // Method provided for convenience only to see how binary JSROOT.IO works.
-      // It is strongly recommended to use JSON representation:
-      //   http://localhost:8080/Files/job1.root/hpx/root.json
+   // =================================================================================
 
-      var file = new JSROOT.TFile;
-      var buf = new JSROOT.TBuffer(sinfo_rawdata, 0, file);
-      file.ExtractStreamerInfos(buf);
-
-      var obj = {};
-
-      buf = new JSROOT.TBuffer(obj_rawdata, 0, file);
-      buf.MapObject(obj, 1);
-      buf.ClassStreamer(obj, class_name);
-
-      return obj;
-   }
-
-   JSROOT.TBuffer = function(_str, _o, _file) {
+   JSROOT.TBuffer = function(_o, _file) {
       this._typename = "TBuffer";
-      this.b = _str;
       this.o = (_o==null) ? 0 : _o;
       this.fFile = _file;
       this.ClearObjectMap();
@@ -143,219 +119,6 @@
 
    JSROOT.TBuffer.prototype.shift = function(cnt) {
       this.o += cnt;
-   }
-
-   JSROOT.TBuffer.prototype.ntou1 = function() {
-      return (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
-   }
-
-   JSROOT.TBuffer.prototype.ntou2 = function() {
-      // convert (read) two bytes of buffer b into a UShort_t
-      var n = ((this.b.charCodeAt(this.o) & 0xff) << 8) >>> 0;
-      n += (this.b.charCodeAt(this.o+1) & 0xff) >>> 0;
-      this.o += 2;
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntou4 = function() {
-      // convert (read) four bytes of buffer b into a UInt_t
-      var n  = ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8)  >>> 0;
-      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntou8 = function() {
-      // convert (read) eight bytes of buffer b into a ULong_t
-      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 56) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 48) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 40) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 32) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8) >>> 0;
-      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntoi1 = function() {
-      return (this.b.charCodeAt(this.o++) & 0xff);
-   }
-
-   JSROOT.TBuffer.prototype.ntoi2 = function() {
-      // convert (read) two bytes of buffer b into a Short_t
-      var n = (this.b.charCodeAt(this.o++) & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o++) & 0xff);
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntoi4 = function() {
-      // convert (read) four bytes of buffer b into a Int_t
-      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 24);
-      n +=  ((this.b.charCodeAt(this.o++) & 0xff) << 16);
-      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8);
-      n += ((this.b.charCodeAt(this.o++) & 0xff));
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntoi8 = function(b, o) {
-      // convert (read) eight bytes of buffer b into a Long_t
-      var n = (this.b.charCodeAt(this.o++) & 0xff) << 56;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 48;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 40;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 32;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 24;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 16;
-      n += (this.b.charCodeAt(this.o++) & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o++) & 0xff);
-      return n;
-   }
-
-   JSROOT.TBuffer.prototype.ntof = function() {
-      // IEEE-754 Floating-Point Conversion (single precision - 32 bits)
-      var inString = this.b.substring(this.o, this.o + 4); this.o+=4;
-      if (inString.length < 4) return Number.NaN;
-      var bits = "";
-      for (var i=0; i<4; i++) {
-         var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
-         var byteLen = curByte.length;
-         if (byteLen < 8) {
-            for (var bit=0; bit<(8-byteLen); bit++)
-               curByte = '0' + curByte;
-         }
-         bits = bits + curByte;
-      }
-      //var bsign = parseInt(bits[0]) ? -1 : 1;
-      var bsign = (bits.charAt(0) == '1') ? -1 : 1;
-      var bexp = parseInt(bits.substring(1, 9), 2) - 127;
-      var bman;
-      if (bexp == -127)
-         bman = 0;
-      else {
-         bman = 1;
-         for (var i=0; i<23; i++) {
-            if (parseInt(bits.substr(9+i, 1)) == 1)
-               bman = bman + 1 / Math.pow(2, i+1);
-         }
-      }
-      return (bsign * Math.pow(2, bexp) * bman);
-   }
-
-   JSROOT.TBuffer.prototype.ntod = function() {
-      // IEEE-754 Floating-Point Conversion (double precision - 64 bits)
-      var inString = this.b.substring(this.o, this.o + 8); this.o+=8;
-      if (inString.length < 8) return Number.NaN;
-      var bits = "";
-      for (var i=0; i<8; i++) {
-         var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
-         var byteLen = curByte.length;
-         if (byteLen < 8) {
-            for (var bit=0; bit<(8-byteLen); bit++)
-               curByte = '0' + curByte;
-         }
-         bits = bits + curByte;
-      }
-      //var bsign = parseInt(bits[0]) ? -1 : 1;
-      var bsign = (bits.charAt(0) == '1') ? -1 : 1;
-      var bexp = parseInt(bits.substring(1, 12), 2) - 1023;
-      var bman;
-      if (bexp == -127)
-         bman = 0;
-      else {
-         bman = 1;
-         for (var i=0; i<52; i++) {
-            if (parseInt(bits.substr(12+i, 1)) == 1)
-               bman = bman + 1 / Math.pow(2, i+1);
-         }
-      }
-      return (bsign * Math.pow(2, bexp) * bman);
-   }
-
-   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n integers from the I/O buffer
-      var array = new Array();
-      switch (array_type) {
-      case 'D':
-         for (var i = 0; i < n; ++i) {
-            array[i] = this.ntod();
-            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
-         }
-         break;
-      case 'F':
-         for (var i = 0; i < n; ++i) {
-            array[i] = this.ntof();
-            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
-         }
-         break;
-      case 'L':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi8();
-         break;
-      case 'LU':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou8();
-         break;
-      case 'I':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi4();
-         break;
-      case 'U':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-         break;
-      case 'S':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi2();
-         break;
-      case 'C':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.b.charCodeAt(this.o++) & 0xff;
-         break;
-      case 'TString':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ReadTString();
-         break;
-      default:
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-         break;
-      }
-      return array;
-   }
-
-   JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
-      var isArray = this.b.charCodeAt(this.o++);
-
-      if (isArray === 1)
-         return this.ReadFastArray(len, array_type);
-
-      return new Array();
-   }
-
-   JSROOT.TBuffer.prototype.ReadString = function(max_len) {
-      // stream a string from buffer
-      max_len = typeof(max_len) != 'undefined' ? max_len : 0;
-      var len = 0;
-      var pos0 = this.o;
-      while ((max_len==0) || (len<max_len)) {
-         if ((this.b.charCodeAt(this.o++) & 0xff) == 0) break;
-         len++;
-      }
-
-      return (len == 0) ? "" : this.b.substring(pos0, pos0 + len);
-   }
-
-   JSROOT.TBuffer.prototype.ReadTString = function() {
-      // stream a TString object from buffer
-      var len = this.b.charCodeAt(this.o++) & 0xff;
-      // large strings
-      if (len == 255) len = this.ntou4();
-
-      var pos = this.o;
-      this.o += len;
-
-      return (this.b.charCodeAt(pos) == 0) ? '' : this.b.substring(pos, pos + len);
    }
 
    JSROOT.TBuffer.prototype.ReadSpecial = function(typ, typname)
@@ -634,7 +397,6 @@
       return this.CheckBytecount(ver,"ReadTBasket");
    }
 
-
    JSROOT.TBuffer.prototype.ReadTCanvas = function(obj) {
       // stream all objects in the list from the I/O buffer
       var ver = this.ReadVersion();
@@ -899,6 +661,270 @@
       JSROOT.addMethods(obj);
    }
 
+   // =================================================================================
+
+   JSROOT.TStrBuffer = function(str, pos, file) {
+      JSROOT.TBuffer.call(this, pos, file);
+      this.b = str;
+   }
+
+   JSROOT.TStrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
+
+   JSROOT.TStrBuffer.prototype.ntou1 = function() {
+      return (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntou2 = function() {
+      // convert (read) two bytes of buffer b into a UShort_t
+      var n = ((this.b.charCodeAt(this.o) & 0xff) << 8) >>> 0;
+      n += (this.b.charCodeAt(this.o+1) & 0xff) >>> 0;
+      this.o += 2;
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntou4 = function() {
+      // convert (read) four bytes of buffer b into a UInt_t
+      var n  = ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8)  >>> 0;
+      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntou8 = function() {
+      // convert (read) eight bytes of buffer b into a ULong_t
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 56) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 48) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 40) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 32) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 24) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 16) >>> 0;
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8) >>> 0;
+      n +=  (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntoi1 = function() {
+      return (this.b.charCodeAt(this.o++) & 0xff);
+   }
+
+   JSROOT.TStrBuffer.prototype.ntoi2 = function() {
+      // convert (read) two bytes of buffer b into a Short_t
+      var n = (this.b.charCodeAt(this.o++) & 0xff) << 8;
+      n += (this.b.charCodeAt(this.o++) & 0xff);
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntoi4 = function() {
+      // convert (read) four bytes of buffer b into a Int_t
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 24);
+      n +=  ((this.b.charCodeAt(this.o++) & 0xff) << 16);
+      n += ((this.b.charCodeAt(this.o++) & 0xff) << 8);
+      n += ((this.b.charCodeAt(this.o++) & 0xff));
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntoi8 = function(b, o) {
+      // convert (read) eight bytes of buffer b into a Long_t
+      var n = (this.b.charCodeAt(this.o++) & 0xff) << 56;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 48;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 40;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 32;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 24;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 16;
+      n += (this.b.charCodeAt(this.o++) & 0xff) << 8;
+      n += (this.b.charCodeAt(this.o++) & 0xff);
+      return n;
+   }
+
+   JSROOT.TStrBuffer.prototype.ntof = function() {
+      // IEEE-754 Floating-Point Conversion (single precision - 32 bits)
+      var inString = this.b.substring(this.o, this.o + 4); this.o+=4;
+      if (inString.length < 4) return Number.NaN;
+      var bits = "";
+      for (var i=0; i<4; i++) {
+         var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
+         var byteLen = curByte.length;
+         if (byteLen < 8) {
+            for (var bit=0; bit<(8-byteLen); bit++)
+               curByte = '0' + curByte;
+         }
+         bits = bits + curByte;
+      }
+      //var bsign = parseInt(bits[0]) ? -1 : 1;
+      var bsign = (bits.charAt(0) == '1') ? -1 : 1;
+      var bexp = parseInt(bits.substring(1, 9), 2) - 127;
+      var bman;
+      if (bexp == -127)
+         bman = 0;
+      else {
+         bman = 1;
+         for (var i=0; i<23; i++) {
+            if (parseInt(bits.substr(9+i, 1)) == 1)
+               bman = bman + 1 / Math.pow(2, i+1);
+         }
+      }
+      return (bsign * Math.pow(2, bexp) * bman);
+   }
+
+   JSROOT.TStrBuffer.prototype.ntod = function() {
+      // IEEE-754 Floating-Point Conversion (double precision - 64 bits)
+      var inString = this.b.substring(this.o, this.o + 8); this.o+=8;
+      if (inString.length < 8) return Number.NaN;
+      var bits = "";
+      for (var i=0; i<8; i++) {
+         var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
+         var byteLen = curByte.length;
+         if (byteLen < 8) {
+            for (var bit=0; bit<(8-byteLen); bit++)
+               curByte = '0' + curByte;
+         }
+         bits = bits + curByte;
+      }
+      //var bsign = parseInt(bits[0]) ? -1 : 1;
+      var bsign = (bits.charAt(0) == '1') ? -1 : 1;
+      var bexp = parseInt(bits.substring(1, 12), 2) - 1023;
+      var bman;
+      if (bexp == -127)
+         bman = 0;
+      else {
+         bman = 1;
+         for (var i=0; i<52; i++) {
+            if (parseInt(bits.substr(12+i, 1)) == 1)
+               bman = bman + 1 / Math.pow(2, i+1);
+         }
+      }
+      return (bsign * Math.pow(2, bexp) * bman);
+   }
+
+   JSROOT.TStrBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n integers from the I/O buffer
+      var array = new Array();
+      switch (array_type) {
+      case 'D':
+         for (var i = 0; i < n; ++i) {
+            array[i] = this.ntod();
+            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
+         }
+         break;
+      case 'F':
+         for (var i = 0; i < n; ++i) {
+            array[i] = this.ntof();
+            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
+         }
+         break;
+      case 'L':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi8();
+         break;
+      case 'LU':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou8();
+         break;
+      case 'I':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi4();
+         break;
+      case 'U':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou4();
+         break;
+      case 'S':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi2();
+         break;
+      case 'C':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.b.charCodeAt(this.o++) & 0xff;
+         break;
+      case 'TString':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ReadTString();
+         break;
+      default:
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou4();
+         break;
+      }
+      return array;
+   }
+
+   JSROOT.TStrBuffer.prototype.ReadBasicPointer = function(len, array_type) {
+      var isArray = this.b.charCodeAt(this.o++);
+
+      if (isArray === 1)
+         return this.ReadFastArray(len, array_type);
+
+      return new Array();
+   }
+
+   JSROOT.TStrBuffer.prototype.ReadString = function(max_len) {
+      // stream a string from buffer
+      max_len = typeof(max_len) != 'undefined' ? max_len : 0;
+      var len = 0;
+      var pos0 = this.o;
+      while ((max_len==0) || (len<max_len)) {
+         if ((this.b.charCodeAt(this.o++) & 0xff) == 0) break;
+         len++;
+      }
+
+      return (len == 0) ? "" : this.b.substring(pos0, pos0 + len);
+   }
+
+   JSROOT.TStrBuffer.prototype.ReadTString = function() {
+      // stream a TString object from buffer
+      var len = this.b.charCodeAt(this.o++) & 0xff;
+      // large strings
+      if (len == 255) len = this.ntou4();
+
+      var pos = this.o;
+      this.o += len;
+
+      return (this.b.charCodeAt(pos) == 0) ? '' : this.b.substring(pos, pos + len);
+   }
+
+   // =======================================================================
+
+   JSROOT.TArrBuffer = function(arr, pos, file) {
+      JSROOT.TBuffer.call(this, pos, file);
+      this.arr = arr;
+   }
+
+   JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
+
+   // =======================================================================
+
+   JSROOT.CreateTBuffer = function(blob, pos, file) {
+      if ((blob==null) || (typeof(blob) == 'string'))
+         return new JSROOT.TStrBuffer(blob, pos, file);
+
+      return new JSROOT.TArrBuffer(blob, pos, file);
+   }
+
+   JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
+      // method can be used to reconstruct ROOT object from binary buffer
+      // Buffer can be requested from online server with request like:
+      //   http://localhost:8080/Files/job1.root/hpx/root.bin
+      // One also requires buffer with streamer infos, reqeusted with command
+      //   http://localhost:8080/StreamerInfo/root.bin
+      // And one should provide class name of the object
+      //
+      // Method provided for convenience only to see how binary JSROOT.IO works.
+      // It is strongly recommended to use JSON representation:
+      //   http://localhost:8080/Files/job1.root/hpx/root.json
+
+      var file = new JSROOT.TFile;
+      var buf = JSROOT.CreateTBuffer(sinfo_rawdata, 0, file);
+      file.ExtractStreamerInfos(buf);
+
+      var obj = {};
+
+      buf = JSROOT.CreateTBuffer(obj_rawdata, 0, file);
+      buf.MapObject(obj, 1);
+      buf.ClassStreamer(obj, class_name);
+
+      return obj;
+   }
 
    // ==============================================================================
 
@@ -1221,7 +1247,7 @@
       file.Seek(this.fSeekDir, this.fFile.ERelativeTo.kBeg);
       file.ReadBuffer(nbytes, function(blob1) {
          if (blob1==null) return JSROOT.CallBack(readkeys_callback,null);
-         var buf = new JSROOT.TBuffer(blob1, thisdir.fNbytesName, file);
+         var buf = JSROOT.CreateTBuffer(blob1, thisdir.fNbytesName, file);
 
          thisdir.StreamHeader(buf);
 
@@ -1247,7 +1273,7 @@
          file.ReadBuffer(thisdir.fNbytesKeys, function(blob2) {
             if (blob2 == null) return JSROOT.CallBack(readkeys_callback, null);
 
-            var buf = new JSROOT.TBuffer(blob2, 0, file);
+            var buf = JSROOT.CreateTBuffer(blob2, 0, file);
 
             var key = file.ReadKey(buf);
 
@@ -1500,12 +1526,12 @@
          var buf = null;
 
          if (key['fObjlen'] <= key['fNbytes']-key['fKeylen']) {
-            buf = new JSROOT.TBuffer(blob1, 0, file);
+            buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
             var hdrsize = JSROOT.R__unzip_header(blob1, 0);
             if (hdrsize<0) return callback(null);
             var objbuf = JSROOT.R__unzip(hdrsize, blob1, 0);
-            buf = new JSROOT.TBuffer(objbuf, 0, file);
+            buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
 
          buf.fTagOffset = key.fKeylen;
@@ -1606,7 +1632,7 @@
       var file = this;
 
       file.ReadBuffer(file.fNbytesInfo, function(blob1) {
-         var buf = new JSROOT.TBuffer(blob1, 0, file);
+         var buf = JSROOT.CreateTBuffer(blob1, 0, file);
          var key = file.ReadKey(buf);
          if (key == null) return si_callback(null);
          file.fKeys.push(key);
@@ -1634,7 +1660,7 @@
             return JSROOT.CallBack(readkeys_callback, null);
          }
 
-         var buf = new JSROOT.TBuffer(blob1, 4, file); // skip the "root" file identifier
+         var buf = JSROOT.CreateTBuffer(blob1, 4, file); // skip the "root" file identifier
          file.fVersion = buf.ntou4();
          file.fBEGIN = buf.ntou4();
          if (file.fVersion < 1000000) { //small file
@@ -1676,7 +1702,7 @@
          file.ReadBuffer(Math.max(300, nbytes), function(blob3) {
             if (blob3==null) return JSROOT.CallBack(readkeys_callback, null);
 
-            var buf3 = new JSROOT.TBuffer(blob3, file.fNbytesName, file);
+            var buf3 = JSROOT.CreateTBuffer(blob3, file.fNbytesName, file);
 
             // we call TDirectory method while TFile is just derived class
             JSROOT.TDirectory.prototype.StreamHeader.call(file, buf3);
@@ -1705,7 +1731,7 @@
             file.ReadBuffer(file.fNbytesKeys, function(blob4) {
                if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
 
-               var buf4 = new JSROOT.TBuffer(blob4, 0, file);
+               var buf4 = JSROOT.CreateTBuffer(blob4, 0, file);
 
                var key = file.ReadKey(buf4);
 

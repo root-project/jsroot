@@ -6789,6 +6789,18 @@
       while (options.length < items.length)
          options.push("");
 
+      if ((options.length == 1) &&( options[0] == "iotest")) {
+         h.clear();
+         d3.select("#" + h['disp_frameid']).html("<h2>Start I/O test </h2>")
+         var tm0 = new Date();
+         h.get(items[0], function(item, obj) {
+            var tm1 = new Date();
+            d3.select("#" + h['disp_frameid']).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
+            return JSROOT.CallBack(call_back);
+         });
+         return;
+      }
+
       var dropitems = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension

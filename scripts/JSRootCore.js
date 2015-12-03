@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 2/12/2015";
+   JSROOT.version = "dev 3/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -371,7 +371,8 @@
       // Create asynchronous XMLHttpRequest object.
       // One should call req.send() to submit request
       // kind of the request can be:
-      //  "bin" - abstract binary data (default)
+      //  "bin" - abstract binary data, result as string (default)
+      //  "buf" - abstract binary data, result as BufferArray (if supported)
       //  "text" - returns req.responseText
       //  "object" - returns JSROOT.parse(req.responseText)
       //  "xml" - returns res.responseXML
@@ -404,10 +405,16 @@
             if (kind == "object") return callback(pthis.parse(xhr.responseText));
             if (kind == "head") return callback(xhr);
 
-            var filecontent = new String("");
-            var array = new VBArray(xhr.responseBody).toArray();
-            for (var i = 0; i < array.length; i++) {
-               filecontent = filecontent + String.fromCharCode(array[i]);
+            var filecontent;
+
+            if ((kind == "buf") && ('responseType' in xhr) && (xhr.responseType == 'arraybuffer') &&
+                ('response' in xhr)) {
+               filecontent = xhr.response;
+            } else {
+               filecontent = new String("");
+               var array = new VBArray(xhr.responseBody).toArray();
+               for (var i = 0; i < array.length; i++)
+                  filecontent = filecontent + String.fromCharCode(array[i]);
             }
 
             callback(filecontent);
@@ -415,6 +422,11 @@
          }
 
          xhr.open(kind == 'head' ? 'HEAD' : 'GET', url, true);
+
+         if (kind=="buf") {
+            if (('ArrayBuffer' in window) && ('Uint8Array' in window) && ('responseType' in xhr))
+              xhr.responseType = 'arraybuffer';
+         }
 
       } else {
 
@@ -443,7 +455,7 @@
                HasArrayBuffer = false;
             }
 
-            if (HasArrayBuffer) {
+            if (HasArrayBuffer && (kind!="buf")) {
                filecontent = new String("");
                var bLen = Buf.byteLength;
                var u8Arr = new Uint8Array(Buf, 0, bLen);
@@ -462,7 +474,7 @@
 
          xhr.open(kind == 'head' ? 'HEAD' : 'GET', url, true);
 
-         if (kind == "bin") {
+         if ((kind == "bin") || (kind=="buf")) {
             var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
             if (HasArrayBuffer && 'mozResponseType' in xhr) {
                xhr.mozResponseType = 'arraybuffer';
@@ -473,6 +485,7 @@
                xhr.overrideMimeType("text/plain; charset=x-user-defined");
             }
          }
+
       }
       return xhr;
    }
