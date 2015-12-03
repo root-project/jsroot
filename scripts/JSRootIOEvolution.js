@@ -44,7 +44,7 @@
       JSROOT.fUserStreamers[type] = user_streamer;
    }
 
-   JSROOT.R__unzip = function(str, off, noalert) {
+   JSROOT.R__unzip = function(str, tgtsize, noalert) {
       // Reads header envelope, determines zipped size and unzip content
 
       var isarr = (typeof str != 'string') && ('byteLength' in str);
@@ -59,31 +59,42 @@
          return isarr ? str.getUint8(o) : str.charCodeAt(o);
       }
 
-      if (off + JSROOT.IO.Z_HDRSIZE > len) {
+      if (JSROOT.IO.Z_HDRSIZE > len) {
          if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
          return null;
       }
 
       /*   C H E C K   H E A D E R   */
-      if (!(getChar(off) == 'Z' && getChar(off+1) == 'L' && getCode(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(getChar(off) == 'C' && getChar(off+1) == 'S' && getCode(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(getChar(off) == 'X' && getChar(off+1) == 'Z' && getCode(off+2) == 0)) {
+      if (!(getChar(0) == 'Z' && getChar(1) == 'L' && getCode(2) == JSROOT.IO.Z_DEFLATED) &&
+          !(getChar(0) == 'C' && getChar(1) == 'S' && getCode(2) == JSROOT.IO.Z_DEFLATED) &&
+          !(getChar(0) == 'X' && getChar(1) == 'Z' && getCode(2) == 0)) {
          if (!noalert) alert("Error R__unzip: error in header");
          return null;
       }
 
-      if (getChar(off) != 'Z' && getCharAt(off+1) != 'L') {
+      if (getChar(0) != 'Z' && getCharAt(1) != 'L') {
          if (!noalert) alert("R__unzip: Old zlib format is not supported!");
          return null;
       }
 
       var srcsize = JSROOT.IO.Z_HDRSIZE +
-                      ((getCode(off+3) & 0xff) | ((getCode(off+4) & 0xff) << 8) | ((getCode(off+5) & 0xff) << 16));
+                      ((getCode(3) & 0xff) | ((getCode(4) & 0xff) << 8) | ((getCode(5) & 0xff) << 16));
 
-      if (isarr) return null;
+      if (!isarr)
+         return window.RawInflate.inflate(str.substr(JSROOT.IO.Z_HDRSIZE + 2, srcsize));
 
-      return window.RawInflate.inflate(str.substr(off + JSROOT.IO.Z_HDRSIZE + 2, srcsize));
+      var uint8arr = new Uint8Array(str.buffer, str.byteOffset + JSROOT.IO.Z_HDRSIZE + 2, str.byteLength - JSROOT.IO.Z_HDRSIZE - 2);
 
+      var tgtbuf = new ArrayBuffer(tgtsize);
+
+      var res = window.RawInflate.zip_inflate_arr(uint8arr, new Uint8Array(tgtbuf));
+
+      if (res != tgtsize) {
+         if (!noalert) alert("R__unzip: mismatch between unpacked size and keys info " + res + " - " + tgtsize);
+         return null;
+      }
+
+      return DataView(tgtbuf);
    }
 
    // =================================================================================
@@ -1534,7 +1545,7 @@
          if (key['fObjlen'] <= key['fNbytes']-key['fKeylen']) {
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
-            var objbuf = JSROOT.R__unzip(blob1, 0);
+            var objbuf = JSROOT.R__unzip(blob1, key['fObjlen']);
             if (objbuf==null) return callback(null);
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
