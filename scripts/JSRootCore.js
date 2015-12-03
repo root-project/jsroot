@@ -405,26 +405,23 @@
             if (kind == "object") return callback(pthis.parse(xhr.responseText));
             if (kind == "head") return callback(xhr);
 
-            var filecontent;
+            if ((kind == "buf") && ('responseType' in xhr) &&
+                (xhr.responseType == 'arraybuffer') && ('response' in xhr))
+               return callback(xhr.response);
 
-            if ((kind == "buf") && ('responseType' in xhr) && (xhr.responseType == 'arraybuffer') &&
-                ('response' in xhr)) {
-               filecontent = xhr.response;
-            } else {
-               filecontent = new String("");
-               var array = new VBArray(xhr.responseBody).toArray();
-               for (var i = 0; i < array.length; i++)
-                  filecontent = filecontent + String.fromCharCode(array[i]);
-            }
 
+            var filecontent = new String("");
+            var array = new VBArray(xhr.responseBody).toArray();
+            for (var i = 0; i < array.length; i++)
+               filecontent = filecontent + String.fromCharCode(array[i]);
+            delete array;
             callback(filecontent);
-            filecontent = null;
          }
 
          xhr.open(kind == 'head' ? 'HEAD' : 'GET', url, true);
 
          if (kind=="buf") {
-            if (('ArrayBuffer' in window) && ('Uint8Array' in window) && ('responseType' in xhr))
+            if (('Uint8Array' in window) && ('responseType' in xhr))
               xhr.responseType = 'arraybuffer';
          }
 
@@ -442,43 +439,28 @@
             if (kind == "object") return callback(pthis.parse(xhr.responseText));
             if (kind == "head") return callback(xhr);
 
-            var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
-            var Buf, filecontent;
-            if (HasArrayBuffer && 'mozResponse' in xhr) {
-               Buf = xhr.mozResponse;
-            } else if (HasArrayBuffer && xhr.mozResponseArrayBuffer) {
-               Buf = xhr.mozResponseArrayBuffer;
-            } else if ('responseType' in xhr) {
-               Buf = xhr.response;
-            } else {
-               Buf = xhr.responseText;
-               HasArrayBuffer = false;
-            }
+            // if no response type is supported, return as text (most probably, will fail)
+            if (! ('responseType' in xhr))
+               return callback(xhr.responseText);
 
-            if (HasArrayBuffer && (kind!="buf")) {
-               filecontent = new String("");
-               var bLen = Buf.byteLength;
-               var u8Arr = new Uint8Array(Buf, 0, bLen);
-               for (var i = 0; i < u8Arr.length; ++i) {
+            if ((kind=="str") && ('Uint8Array' in window) && ('byteLength' in xhr.response)) {
+               // if string representation in requested - provide it
+               var filecontent = "";
+               var u8Arr = new Uint8Array(xhr.response, 0, xhr.response.byteLength);
+               for (var i = 0; i < u8Arr.length; ++i)
                   filecontent = filecontent + String.fromCharCode(u8Arr[i]);
-               }
                delete u8Arr;
-            } else {
-               filecontent = Buf;
+
+               return callback(filecontent);
             }
 
-            callback(filecontent);
-
-            filecontent = null;
+            callback(xhr.response);
          }
 
          xhr.open(kind == 'head' ? 'HEAD' : 'GET', url, true);
 
          if ((kind == "bin") || (kind == "buf")) {
-            var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
-            if (HasArrayBuffer && 'mozResponseType' in xhr) {
-               xhr.mozResponseType = 'arraybuffer';
-            } else if (HasArrayBuffer && 'responseType' in xhr) {
+            if (('Uint8Array' in window) && ('responseType' in xhr)) {
                xhr.responseType = 'arraybuffer';
             } else {
                //XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
