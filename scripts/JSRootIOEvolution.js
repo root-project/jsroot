@@ -44,62 +44,46 @@
       JSROOT.fUserStreamers[type] = user_streamer;
    }
 
-   JSROOT.R__unzip_header = function(str, off, noalert) {
-      // Reads header envelope, and determines target size.
+   JSROOT.R__unzip = function(str, off, noalert) {
+      // Reads header envelope, determines zipped size and unzip content
 
-      if (off + JSROOT.IO.Z_HDRSIZE > str.length) {
-         if (!noalert) alert("Error R__unzip_header: header size exceeds buffer size");
-         return -1;
+      var isarr = (typeof str != 'string') && ('byteLength' in str);
+
+      var len = isarr ? str.byteLength : str.length;
+
+      function getChar(o) {
+         return isarr ? String.fromCharCode(str.getUint8(o)) : str.charAt(o);
       }
 
-      /*   C H E C K   H E A D E R   */
-      if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
-         if (!noalert) alert("Error R__unzip_header: error in header");
-         return -1;
+      function getCode(o) {
+         return isarr ? str.getUint8(o) : str.charCodeAt(o);
       }
-      return JSROOT.IO.Z_HDRSIZE +
-                ((str.charCodeAt(off+3) & 0xff) |
-                 ((str.charCodeAt(off+4) & 0xff) << 8) |
-                 ((str.charCodeAt(off+5) & 0xff) << 16));
-   }
 
-   JSROOT.R__unzip = function(srcsize, str, off, noalert) {
-
-      /*   C H E C K   H E A D E R   */
-      if (srcsize < JSROOT.IO.Z_HDRSIZE) {
-         if (!noalert) alert("R__unzip: too small source");
+      if (off + JSROOT.IO.Z_HDRSIZE > len) {
+         if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
          return null;
       }
 
       /*   C H E C K   H E A D E R   */
-      if (!(str.charAt(off) == 'Z' && str.charAt(off+1) == 'L' && str.charCodeAt(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(str.charAt(off) == 'C' && str.charAt(off+1) == 'S' && str.charCodeAt(off+2) == JSROOT.IO.Z_DEFLATED) &&
-          !(str.charAt(off) == 'X' && str.charAt(off+1) == 'Z' && str.charCodeAt(off+2) == 0)) {
+      if (!(getChar(off) == 'Z' && getChar(off+1) == 'L' && getCode(off+2) == JSROOT.IO.Z_DEFLATED) &&
+          !(getChar(off) == 'C' && getChar(off+1) == 'S' && getCode(off+2) == JSROOT.IO.Z_DEFLATED) &&
+          !(getChar(off) == 'X' && getChar(off+1) == 'Z' && getCode(off+2) == 0)) {
          if (!noalert) alert("Error R__unzip: error in header");
          return null;
       }
-      var ibufcnt = ((str.charCodeAt(off+3) & 0xff) |
-                    ((str.charCodeAt(off+4) & 0xff) << 8) |
-                    ((str.charCodeAt(off+5) & 0xff) << 16));
-      if (ibufcnt + JSROOT.IO.Z_HDRSIZE != srcsize) {
-         if (!noalert) alert("R__unzip: discrepancy in source length");
-         return null;
-      }
 
-      /*   D E C O M P R E S S   D A T A  */
-      if (str.charAt(off) == 'Z' && str.charAt(off+1) == 'L') {
-         /* New zlib format */
-         var data = str.substr(off + JSROOT.IO.Z_HDRSIZE + 2, srcsize);
-         return window.RawInflate.inflate(data);
-      }
-      /* Old zlib format */
-      else {
+      if (getChar(off) != 'Z' && getCharAt(off+1) != 'L') {
          if (!noalert) alert("R__unzip: Old zlib format is not supported!");
          return null;
       }
-      return null;
+
+      var srcsize = JSROOT.IO.Z_HDRSIZE +
+                      ((getCode(off+3) & 0xff) | ((getCode(off+4) & 0xff) << 8) | ((getCode(off+5) & 0xff) << 16));
+
+      if (isarr) return null;
+
+      return window.RawInflate.inflate(str.substr(off + JSROOT.IO.Z_HDRSIZE + 2, srcsize));
+
    }
 
    // =================================================================================
@@ -670,6 +654,14 @@
 
    JSROOT.TStrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
 
+   JSROOT.TStrBuffer.prototype.totalLength = function() {
+      return this.b ? this.b.length : 0;
+   }
+
+   JSROOT.TStrBuffer.prototype.extract = function(off,len) {
+      return this.b.substr(off, len);
+   }
+
    JSROOT.TStrBuffer.prototype.ntou1 = function() {
       return (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
    }
@@ -886,11 +878,21 @@
    // =======================================================================
 
    JSROOT.TArrBuffer = function(arr, pos, file) {
+      // buffer should work with DataView as first argument
       JSROOT.TBuffer.call(this, pos, file);
       this.arr = arr;
    }
 
    JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
+
+   JSROOT.TArrBuffer.prototype.totalLength = function() {
+      return this.arr && this.arr.buffer ? this.arr.buffer.byteLength : 0;
+   }
+
+   JSROOT.TArrBuffer.prototype.extract = function(off,len) {
+      if (!this.arr || !this.arr.buffer || (this.arr.buffer.byteLength < off+len)) return null;
+      return new DataView(this.arr.buffer, off,  len);
+   }
 
    // =======================================================================
 
@@ -1272,7 +1274,6 @@
          file.Seek(thisdir.fSeekKeys, file.ERelativeTo.kBeg);
          file.ReadBuffer(thisdir.fNbytesKeys, function(blob2) {
             if (blob2 == null) return JSROOT.CallBack(readkeys_callback, null);
-
             var buf = JSROOT.CreateTBuffer(blob2, 0, file);
 
             var key = file.ReadKey(buf);
@@ -1343,7 +1344,8 @@
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fFileContent = ""; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
+      this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
+                                // stored as TBuffer instance
 
       this.ERelativeTo = { kBeg : 0, kCur : 1, kEnd : 2 };
       this.fDirectories = new Array();
@@ -1391,8 +1393,8 @@
 
    JSROOT.TFile.prototype.ReadBuffer = function(len, callback) {
 
-      if ((this.fFileContent.length>0) && (!this.fAcceptRanges || (this.fOffset+len <= this.fFileContent.length)))
-         return callback(this.fFileContent.substr(this.fOffset, len));
+      if (this.fFileContent && (!this.fAcceptRanges || (this.fOffset+len <= this.fFileContent.totalLength())))
+         return callback(this.fFileContent.extract(this.fOffset, len));
 
       var file = this;
 
@@ -1405,7 +1407,7 @@
 
       function read_callback(res) {
          if ((res==null) && file.fUseStampPar && (file.fOffset==0)) {
-            // if fail to read file with stamp parameter, try once to avoid it
+            // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
             var xhr2 = JSROOT.NewHttpRequest(this.fURL, "bin", read_callback);
             if (this.fAcceptRanges)
@@ -1413,16 +1415,20 @@
             xhr2.send(null);
             return;
          } else
-         if ((res!=null) && (file.fOffset==0) && (file.fFileContent.length == 0)) {
-            // special case - read content all at once
-            file.fFileContent = res;
+         if ((res!=null) && (file.fOffset==0) && (file.fFileContent == null)) {
+            // special case - keep content of first request (could be complete file) in memory
+            file.fFileContent = JSROOT.CreateTBuffer(res);
             if (!this.fAcceptRanges) {
-               file.fEND = res.length;
-               res = file.fFileContent.substr(file.fOffset, len);
+               file.fEND = file.fFileContent.totalLength();
+               return callback(file.fFileContent.extract(file.fOffset, len));
             }
          }
 
-         callback(res);
+         if ((res==null) || (res === undefined) || (typeof res == 'string'))
+            return callback(null);
+
+         // return data view with binary data
+         callback(new DataView(res));
       }
 
       var xhr = JSROOT.NewHttpRequest(url, "bin", read_callback);
@@ -1528,9 +1534,8 @@
          if (key['fObjlen'] <= key['fNbytes']-key['fKeylen']) {
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
-            var hdrsize = JSROOT.R__unzip_header(blob1, 0);
-            if (hdrsize<0) return callback(null);
-            var objbuf = JSROOT.R__unzip(hdrsize, blob1, 0);
+            var objbuf = JSROOT.R__unzip(blob1, 0);
+            if (objbuf==null) return callback(null);
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
 
