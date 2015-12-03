@@ -459,7 +459,7 @@
                filecontent = new String("");
                var bLen = Buf.byteLength;
                var u8Arr = new Uint8Array(Buf, 0, bLen);
-               for (var i = 0; i < u8Arr.length; i++) {
+               for (var i = 0; i < u8Arr.length; ++i) {
                   filecontent = filecontent + String.fromCharCode(u8Arr[i]);
                }
                delete u8Arr;
@@ -474,7 +474,7 @@
 
          xhr.open(kind == 'head' ? 'HEAD' : 'GET', url, true);
 
-         if ((kind == "bin") || (kind=="buf")) {
+         if ((kind == "bin") || (kind == "buf")) {
             var HasArrayBuffer = ('ArrayBuffer' in window && 'Uint8Array' in window);
             if (HasArrayBuffer && 'mozResponseType' in xhr) {
                xhr.mozResponseType = 'arraybuffer';

@@ -996,7 +996,7 @@
       // read array of n values from the I/O buffer
 
       return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
-
+/*
       var array = null;
       switch (array_type) {
          case JSROOT.IO.kDouble:
@@ -1061,6 +1061,7 @@
          break;
       }
       return array;
+*/
    }
 
 
@@ -1562,7 +1563,7 @@
 
    JSROOT.TFile.prototype.ReadBuffer = function(len, callback) {
 
-      if (this.fFileContent && (!this.fAcceptRanges || (this.fOffset+len <= this.fFileContent.totalLength())))
+      if ((this.fFileContent!=null) && (!this.fAcceptRanges || (this.fOffset+len <= this.fFileContent.totalLength())))
          return callback(this.fFileContent.extract(this.fOffset, len));
 
       var file = this;
@@ -1597,7 +1598,7 @@
          }
 
          if ((res==null) || (res === undefined) || (typeof res == 'string'))
-            return callback(null);
+            return callback(res);
 
          // return data view with binary data
          callback(new DataView(res));
@@ -1908,6 +1909,7 @@
 
             file.Seek(file.fSeekKeys, file.ERelativeTo.kBeg);
             file.ReadBuffer(file.fNbytesKeys, function(blob4) {
+
                if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
 
                var buf4 = JSROOT.CreateTBuffer(blob4, 0, file);
@@ -1915,6 +1917,7 @@
                var key = file.ReadKey(buf4);
 
                var nkeys = buf4.ntoi4();
+
                for (var i = 0; i < nkeys; ++i) {
                   key = file.ReadKey(buf4);
                   file.fKeys.push(key);

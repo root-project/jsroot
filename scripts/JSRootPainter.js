@@ -6406,7 +6406,7 @@
 
       function find_in_hierarchy(top, fullname) {
 
-         if (!fullname || fullname.length == 0) return top;
+         if (!fullname || fullname.length == 0 || (top==null)) return top;
 
          var pos = -1;
 
@@ -6562,7 +6562,7 @@
 
          if (last_parent==null) last_parent = this.h;
 
-         if ('_get' in last_parent)
+         if ((last_parent!=null) && ('_get' in last_parent))
             return last_parent._get(null, itemname, callback, options);
       }
 
@@ -6959,26 +6959,25 @@
 
    JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
       // first check that file with such URL already opened
+
       var isfileopened = false;
       this.ForEachRootFile(function(item) { if (item._fullurl==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
 
-      JSROOT.AssertPrerequisites('io', function() {
-         new JSROOT.TFile(filepath, function(file) {
-            if (file == null) return JSROOT.CallBack(call_back);
-            var h1 = pthis.FileHierarchy(file);
-            h1._isopen = true;
-            if (pthis.h == null) pthis.h = h1; else
-               if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
-                  var h0 = pthis.h;
-                  var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-                  pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
-               }
+      JSROOT.OpenFile(filepath, function(file) {
+         if (file == null) return JSROOT.CallBack(call_back);
+         var h1 = pthis.FileHierarchy(file);
+         h1._isopen = true;
+         if (pthis.h == null) pthis.h = h1; else
+            if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
+               var h0 = pthis.h;
+               var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+               pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
+            }
 
-            pthis.RefreshHtml(call_back);
-         });
+         pthis.RefreshHtml(call_back);
       });
    }
 
