@@ -125,9 +125,9 @@
       var ver = this.ReadVersion();
       var res = null;
 
-      if (typname == "vector<double>") res = this.ReadFastArray(this.ntoi4(),'D'); else
-      if (typname == "vector<int>") res = this.ReadFastArray(this.ntoi4(),'I'); else
-      if (typname == "vector<float>") res = this.ReadFastArray(this.ntoi4(),'F'); else
+      if (typname == "vector<double>") res = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kDouble); else
+      if (typname == "vector<int>") res = this.ReadFastArray(this.ntoi4(),JSROOT.IO.kInt); else
+      if (typname == "vector<float>") res = this.ReadFastArray(this.ntoi4(),JSROOT.IO.kFloat); else
       if (typname == "vector<TObject*>") {
          var n = this.ntoi4();
          res = [];
@@ -220,51 +220,73 @@
    }
 
    JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n integers from the I/O buffer
+      // read array of n values from the I/O buffer
       var array = new Array(n);
       switch (array_type) {
-      case 'D':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntod();
+         case JSROOT.IO.kDouble:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntod();
+            break;
+         case JSROOT.IO.kFloat:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntof();
+            break;
+         case JSROOT.IO.kLong64:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi8();
+            break;
+         case JSROOT.IO.kULong64:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou8();
+            break;
+         case JSROOT.IO.kInt:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi4();
+            break;
+         case JSROOT.IO.kUInt:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+            break;
+         case JSROOT.IO.kShort:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi2();
+            break;
+         case JSROOT.IO.kUShort:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou2();
+            break;
+         case JSROOT.IO.kChar:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kUChar:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kTString:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ReadTString();
+            break;
+         default:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
          break;
-      case 'F':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntof();
-         break;
-      case 'L':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi8();
-         break;
-      case 'LU':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou8();
-         break;
-      case 'I':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi4();
-         break;
-      case 'U':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-         break;
-      case 'S':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi2();
-         break;
-      case 'C':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou1();
-         break;
-      case 'TString':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ReadTString();
-         break;
-      default:
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-      break;
       }
       return array;
+   }
+
+   JSROOT.TBuffer.prototype.ReadTArray = function(type_name, n) {
+      var array_type = JSROOT.IO.kInt;
+      switch (type_name.charAt(6)) {
+         case 'I' : array_type = JSROOT.IO.kInt; break;
+         case 'D' : array_type = JSROOT.IO.kDouble; break;
+         case 'F' : array_type = JSROOT.IO.kFloat; break;
+         case 'S' : array_type = JSROOT.IO.kShort; break;
+         case 'C' : array_type = JSROOT.IO.kChar; break;
+         case 'L' : array_type = JSROOT.IO.kLong; break;
+         default: alert('unsupported array type ' + this[prop]['class']); break;
+      }
+      return this.ReadFastArray(n, array_type);
    }
 
    JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
@@ -385,7 +407,7 @@
 
       marker['fN'] = this.ntoi4();
 
-      marker['fP'] = this.ReadFastArray(marker['fN']*3, 'F');
+      marker['fP'] = this.ReadFastArray(marker['fN']*3, JSROOT.IO.kFloat);
 
       marker['fOption'] = this.ReadTString();
 
@@ -532,9 +554,9 @@
       element['dim'] = this.ntou4();
       if (R__v['val'] == 1) {
          var n = this.ntou4();
-         element['maxindex'] = this.ReadFastArray(n, 'U');
+         element['maxindex'] = this.ReadFastArray(n, JSROOT.IO.kUInt);
       } else {
-         element['maxindex'] = this.ReadFastArray(5, 'U');
+         element['maxindex'] = this.ReadFastArray(5, JSROOT.IO.kUInt);
       }
       element['fTypeName'] = this.ReadTString();
       element['typename'] = element['fTypeName']; // TODO - should be removed
@@ -1024,8 +1046,7 @@
          case JSROOT.IO.kOffsetP:
             break;
          case JSROOT.IO.kCharStar:
-            var n_el = obj[this[prop]['cntname']];
-            obj[prop] = buf.ReadBasicPointer(n_el, 'C');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kChar);
             break;
          case JSROOT.IO.kChar:
          case JSROOT.IO.kLegacyChar:
@@ -1116,58 +1137,64 @@
             obj[prop] = buf.ReadSpecial(this[prop]['type'], this[prop]['typename']);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kShort);
+            break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'S');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kUShort);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'I');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kInt);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'U');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kUInt);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'LU');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kULong64);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'L');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kLong64);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'F');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kFloat);
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
-            obj[prop] = buf.ReadFastArray(this[prop]['length'], 'D');
+            obj[prop] = buf.ReadFastArray(this[prop]['length'], JSROOT.IO.kDouble);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kUChar);
+            break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'C');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kChar);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kShort);
+            break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'S');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kUShort);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'I');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kInt);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'U');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kUInt);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'LU');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kULong64);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'L');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kLong64);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'F');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kFloat);
             break;
          case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
-            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], 'D');
+            obj[prop] = buf.ReadBasicPointer(obj[this[prop]['cntname']], JSROOT.IO.kDouble);
             break;
          default:
             alert('failed to stream ' + prop + ' (' + this[prop]['typename'] + ')  typ = ' + this[prop]['type']);
@@ -1186,9 +1213,7 @@
 
          var clname = this[prop]['class'];
          if (this[prop]['class'].indexOf("TArray") == 0) {
-            var array_type = this[prop]['class'].charAt(6);
-            var len = buf.ntou4();
-            obj['fArray'] = buf.ReadFastArray(len, array_type);
+            obj['fArray'] = buf.ReadTArray(this[prop]['class'], buf.ntou4());
          } else {
             buf.ClassStreamer(obj, this[prop]['class']);
          }
@@ -1228,9 +1253,7 @@
             case "TArrayL":
             case "TArrayL64":
             case "TArrayS":
-               var array_type = this[prop]['typename'].charAt(6);
-               var n = buf.ntou4();
-               obj[prop] = buf.ReadFastArray(n, array_type);
+               obj[prop] = buf.ReadTArray(prop_typename, buf.ntou4());
                break;
             case "TObject":
                // TODO: check why it is here
