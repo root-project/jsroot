@@ -6798,6 +6798,8 @@
             var tm1 = new Date();
             d3.select("#" + h['disp_frameid']).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
 
+            global_IO_object = obj;
+
             return JSROOT.CallBack(call_back);
          });
       }

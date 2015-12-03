@@ -131,12 +131,12 @@
       if (typname == "vector<TObject*>") {
          var n = this.ntoi4();
          res = [];
-         for (var i=0;i<n;i++) res.push(this.ReadObjectAny());
+         for (var i=0;i<n;++i) res.push(this.ReadObjectAny());
       }  else
       if (typname.indexOf("map<TString,int")==0) {
          var n = this.ntoi4();
          res = [];
-         for (var i=0;i<n;i++) {
+         for (var i=0;i<n;++i) {
             var str = this.ReadTString();
             var val = this.ntoi4();
             res.push({ first: str, second: val});
@@ -217,62 +217,6 @@
       this.o += len;
 
       return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
-   }
-
-   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n values from the I/O buffer
-      var array = new Array(n);
-      switch (array_type) {
-         case JSROOT.IO.kDouble:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntod();
-            break;
-         case JSROOT.IO.kFloat:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntof();
-            break;
-         case JSROOT.IO.kLong64:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi8();
-            break;
-         case JSROOT.IO.kULong64:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou8();
-            break;
-         case JSROOT.IO.kInt:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi4();
-            break;
-         case JSROOT.IO.kUInt:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-            break;
-         case JSROOT.IO.kShort:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi2();
-            break;
-         case JSROOT.IO.kUShort:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou2();
-            break;
-         case JSROOT.IO.kChar:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kUChar:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kTString:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ReadTString();
-            break;
-         default:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-         break;
-      }
-      return array;
    }
 
    JSROOT.TBuffer.prototype.ReadTArray = function(type_name, n) {
@@ -552,12 +496,11 @@
       element['size'] = this.ntou4();
       element['length'] = this.ntou4();
       element['dim'] = this.ntou4();
-      if (R__v['val'] == 1) {
-         var n = this.ntou4();
-         element['maxindex'] = this.ReadFastArray(n, JSROOT.IO.kUInt);
-      } else {
+      if (R__v['val'] == 1)
+         element['maxindex'] = this.ReadFastArray(this.ntou4(), JSROOT.IO.kUInt);
+      else
          element['maxindex'] = this.ReadFastArray(5, JSROOT.IO.kUInt);
-      }
+
       element['fTypeName'] = this.ReadTString();
       element['typename'] = element['fTypeName']; // TODO - should be removed
       if ((element['type'] == 11) && (element['typename'] == "Bool_t" ||
@@ -847,11 +790,11 @@
       var inString = this.b.substring(this.o, this.o + 4); this.o+=4;
       if (inString.length < 4) return Number.NaN;
       var bits = "";
-      for (var i=0; i<4; i++) {
+      for (var i=0; i<4; ++i) {
          var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
          var byteLen = curByte.length;
          if (byteLen < 8) {
-            for (var bit=0; bit<(8-byteLen); bit++)
+            for (var bit=0; bit<(8-byteLen); ++bit)
                curByte = '0' + curByte;
          }
          bits = bits + curByte;
@@ -864,7 +807,7 @@
          bman = 0;
       else {
          bman = 1;
-         for (var i=0; i<23; i++) {
+         for (var i=0; i<23; ++i) {
             if (parseInt(bits.substr(9+i, 1)) == 1)
                bman = bman + 1 / Math.pow(2, i+1);
          }
@@ -878,11 +821,11 @@
       var inString = this.b.substring(this.o, this.o + 8); this.o+=8;
       if (inString.length < 8) return Number.NaN;
       var bits = "";
-      for (var i=0; i<8; i++) {
+      for (var i=0; i<8; ++i) {
          var curByte = (inString.charCodeAt(i) & 0xff).toString(2);
          var byteLen = curByte.length;
          if (byteLen < 8) {
-            for (var bit=0; bit<(8-byteLen); bit++)
+            for (var bit=0; bit<(8-byteLen); ++bit)
                curByte = '0' + curByte;
          }
          bits = bits + curByte;
@@ -895,7 +838,7 @@
          bman = 0;
       else {
          bman = 1;
-         for (var i=0; i<52; i++) {
+         for (var i=0; i<52; ++i) {
             if (parseInt(bits.substr(12+i, 1)) == 1)
                bman = bman + 1 / Math.pow(2, i+1);
          }
@@ -910,6 +853,62 @@
 
    JSROOT.TStrBuffer.prototype.substring = function(beg, end) {
       return this.b.substring(beg, end);
+   }
+
+   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n values from the I/O buffer
+      var array = new Array(n);
+      switch (array_type) {
+         case JSROOT.IO.kDouble:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntod();
+            break;
+         case JSROOT.IO.kFloat:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntof();
+            break;
+         case JSROOT.IO.kLong64:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi8();
+            break;
+         case JSROOT.IO.kULong64:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou8();
+            break;
+         case JSROOT.IO.kInt:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi4();
+            break;
+         case JSROOT.IO.kUInt:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+            break;
+         case JSROOT.IO.kShort:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi2();
+            break;
+         case JSROOT.IO.kUShort:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou2();
+            break;
+         case JSROOT.IO.kChar:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kUChar:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kTString:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ReadTString();
+            break;
+         default:
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+         break;
+      }
+      return array;
    }
 
    // =======================================================================
@@ -937,7 +936,7 @@
 
    JSROOT.TArrBuffer.prototype.substring = function(beg, end) {
       var res = "";
-      for (var n=beg;n<end;n++)
+      for (var n=beg;n<end;++n)
          res += String.fromCharCode(this.arr.getUint8(n));
       return res;
    }
@@ -992,6 +991,78 @@
       var o = this.o; this.o+=8;
       return this.arr.getFloat64(o);
    }
+
+   JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n values from the I/O buffer
+
+      return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
+
+      var array = null;
+      switch (array_type) {
+         case JSROOT.IO.kDouble:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntod();
+            break;
+         case JSROOT.IO.kFloat:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntof();
+            break;
+         case JSROOT.IO.kLong64:
+            array = new Float64Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi8();
+            break;
+         case JSROOT.IO.kULong64:
+            array = new Float64Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou8();
+            break;
+         case JSROOT.IO.kInt:
+            array = new Int32Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi4();
+            break;
+         case JSROOT.IO.kUInt:
+            array = new Uint32Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+            break;
+         case JSROOT.IO.kShort:
+            array = new Int16Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi2();
+            break;
+         case JSROOT.IO.kUShort:
+            array = new Uint16Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou2();
+            break;
+         case JSROOT.IO.kChar:
+            array = new Int8Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kUChar:
+            array = new Uint8Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kTString:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ReadTString();
+            break;
+         default:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+         break;
+      }
+      return array;
+   }
+
 
    // =======================================================================
 
@@ -1377,7 +1448,7 @@
             var key = file.ReadKey(buf);
 
             var nkeys = buf.ntoi4();
-            for (var i = 0; i < nkeys; i++) {
+            for (var i = 0; i < nkeys; ++i) {
                key = file.ReadKey(buf);
                thisdir.fKeys.push(key);
             }
@@ -1844,7 +1915,7 @@
                var key = file.ReadKey(buf4);
 
                var nkeys = buf4.ntoi4();
-               for (var i = 0; i < nkeys; i++) {
+               for (var i = 0; i < nkeys; ++i) {
                   key = file.ReadKey(buf4);
                   file.fKeys.push(key);
                }
