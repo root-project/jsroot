@@ -268,6 +268,15 @@
       return array;
    }
 
+   JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
+      var isArray = this.ntou1();
+
+      if (isArray === 1)
+         return this.ReadFastArray(len, array_type);
+
+      return new Array();
+   }
+
    JSROOT.TBuffer.prototype.ReadTObject = function(tobj) {
       this.o += 2; // skip version
       if ((!'_typename' in tobj) || (tobj['_typename'] == ''))
@@ -872,15 +881,6 @@
       }
       var res = (bsign * Math.pow(2, bexp) * bman);
       return (Math.abs(res) < 1e-300) ? 0.0 : res;
-   }
-
-   JSROOT.TStrBuffer.prototype.ReadBasicPointer = function(len, array_type) {
-      var isArray = this.b.charCodeAt(this.o++);
-
-      if (isArray === 1)
-         return this.ReadFastArray(len, array_type);
-
-      return new Array();
    }
 
    JSROOT.TStrBuffer.prototype.codeAt = function(pos) {
