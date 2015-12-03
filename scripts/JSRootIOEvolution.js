@@ -254,7 +254,7 @@
          break;
       case 'C':
          for (var i = 0; i < n; ++i)
-            array[i] = this.CodeAt(this.o++);
+            array[i] = this.ntou1();
          break;
       case 'TString':
          for (var i = 0; i < n; ++i)
