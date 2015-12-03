@@ -322,7 +322,7 @@ var zip_GET_STR_BYTE = function() {
 var zip_GET_ARR_BYTE = function() {
    if (zip_inflate_pos == zip_inflate_data.byteLength)
       return -1;
-   return zip_inflate_data.getUint8(zip_inflate_pos);
+   return zip_inflate_data[zip_inflate_pos++];
 }
 
 var zip_GET_BYTE = zip_GET_STR_BYTE;
@@ -761,6 +761,8 @@ var zip_inflate = function(str)
 var zip_inflate_arr = function(arr, tgt)
 {
    var i, j;
+
+   console.log('arr length = ' + arr.byteLength + "   tgt = " + tgt.byteLength);
 
    zip_inflate_start();
    zip_inflate_data = arr;

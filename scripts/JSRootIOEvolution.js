@@ -89,14 +89,14 @@
 
       var tgtbuf = new ArrayBuffer(tgtsize);
 
-      var res = window.RawInflate.zip_inflate_arr(uint8arr, new Uint8Array(tgtbuf));
+      var res = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf));
 
       if (res != tgtsize) {
          if (!noalert) alert("R__unzip: mismatch between unpacked size and keys info " + res + " - " + tgtsize);
          return null;
       }
 
-      return DataView(tgtbuf);
+      return new DataView(tgtbuf);
    }
 
    // =================================================================================
@@ -212,11 +212,60 @@
       var len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
+      if (len==0) return "";
 
       var pos = this.o;
       this.o += len;
 
       return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
+   }
+
+   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n integers from the I/O buffer
+      var array = new Array(n);
+      switch (array_type) {
+      case 'D':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntod();
+         break;
+      case 'F':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntof();
+         break;
+      case 'L':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi8();
+         break;
+      case 'LU':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou8();
+         break;
+      case 'I':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi4();
+         break;
+      case 'U':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou4();
+         break;
+      case 'S':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntoi2();
+         break;
+      case 'C':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.CodeAt(this.o++);
+         break;
+      case 'TString':
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ReadTString();
+         break;
+      default:
+         for (var i = 0; i < n; ++i)
+            array[i] = this.ntou4();
+      break;
+      }
+      return array;
    }
 
    JSROOT.TBuffer.prototype.ReadTObject = function(tobj) {
@@ -790,7 +839,8 @@
                bman = bman + 1 / Math.pow(2, i+1);
          }
       }
-      return (bsign * Math.pow(2, bexp) * bman);
+      var res = bsign * Math.pow(2, bexp) * bman;
+      return (Math.abs(res) < 1e-300) ? 0.0 : res;
    }
 
    JSROOT.TStrBuffer.prototype.ntod = function() {
@@ -820,59 +870,8 @@
                bman = bman + 1 / Math.pow(2, i+1);
          }
       }
-      return (bsign * Math.pow(2, bexp) * bman);
-   }
-
-   JSROOT.TStrBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n integers from the I/O buffer
-      var array = new Array();
-      switch (array_type) {
-      case 'D':
-         for (var i = 0; i < n; ++i) {
-            array[i] = this.ntod();
-            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
-         }
-         break;
-      case 'F':
-         for (var i = 0; i < n; ++i) {
-            array[i] = this.ntof();
-            if (Math.abs(array[i]) < 1e-300) array[i] = 0.0;
-         }
-         break;
-      case 'L':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi8();
-         break;
-      case 'LU':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou8();
-         break;
-      case 'I':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi4();
-         break;
-      case 'U':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-         break;
-      case 'S':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntoi2();
-         break;
-      case 'C':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.b.charCodeAt(this.o++) & 0xff;
-         break;
-      case 'TString':
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ReadTString();
-         break;
-      default:
-         for (var i = 0; i < n; ++i)
-            array[i] = this.ntou4();
-         break;
-      }
-      return array;
+      var res = (bsign * Math.pow(2, bexp) * bman);
+      return (Math.abs(res) < 1e-300) ? 0.0 : res;
    }
 
    JSROOT.TStrBuffer.prototype.ReadBasicPointer = function(len, array_type) {
@@ -885,7 +884,7 @@
    }
 
    JSROOT.TStrBuffer.prototype.codeAt = function(pos) {
-      return this.b.charCodeAt(pos);
+      return this.b.charCodeAt(pos) & 0xff;
    }
 
    JSROOT.TStrBuffer.prototype.substring = function(beg, end) {
@@ -936,7 +935,7 @@
       return this.arr.getUint32(o);
    }
 
-   JSROOT.TStrBuffer.prototype.ntou8 = function() {
+   JSROOT.TArrBuffer.prototype.ntou8 = function() {
       var high = this.arr.getUint32(o); this.o+=4;
       var low = this.arr.getUint32(o); this.o+=4;
       return high * 0x100000000 + low;
@@ -956,11 +955,21 @@
       return this.arr.getInt32(o);
    }
 
-   JSROOT.TStrBuffer.prototype.ntoi8 = function() {
+   JSROOT.TArrBuffer.prototype.ntoi8 = function() {
       var high = this.arr.getUint32(o); this.o+=4;
       var low = this.arr.getUint32(o); this.o+=4;
       if (high < 0x80000000) return high * 0x100000000 + low;
       return -1 - ((~high) * 0x100000000 + ~low);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntof = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getFloat32(o);
+   }
+
+   JSROOT.TArrBuffer.prototype.ntod = function() {
+      var o = this.o; this.o+=8;
+      return this.arr.getFloat64(o);
    }
 
    // =======================================================================
@@ -1036,11 +1045,9 @@
          case JSROOT.IO.kFloat:
          case JSROOT.IO.kDouble32:
             obj[prop] = buf.ntof();
-            if (Math.abs(obj[prop]) < 1e-300) obj[prop] = 0.0;
             break;
          case JSROOT.IO.kDouble:
             obj[prop] = buf.ntod();
-            if (Math.abs(obj[prop]) < 1e-300) obj[prop] = 0.0;
             break;
          case JSROOT.IO.kUChar:
             obj[prop] = (buf.b.charCodeAt(buf.o++) & 0xff) >>> 0;
@@ -1488,7 +1495,9 @@
          if ((res!=null) && (file.fOffset==0) && (file.fFileContent == null)) {
             // special case - keep content of first request (could be complete file) in memory
 
-            file.fFileContent = JSROOT.CreateTBuffer(typeof res == 'string' ? res : new DataView(res));
+            file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
+
+            console.log('content length = ' + file.fFileContent.totalLength());
 
             if (!this.fAcceptRanges)
                file.fEND = file.fFileContent.totalLength();
