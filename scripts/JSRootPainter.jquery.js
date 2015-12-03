@@ -501,27 +501,20 @@
          } else
          if (onlineprop != null) {
             painter.FillOnlineMenu(menu, onlineprop, itemname);
-         } else
-         if (fileprop != null) {
-            var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
-
-            if (opts!=null)
-               menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
-
-            var filepath = qualifyURL(fileprop.fileurl);
-            if (filepath.indexOf(JSROOT.source_dir) == 0)
-               filepath = filepath.slice(JSROOT.source_dir.length);
-
-            if (opts!=null)
-               menu.addDrawMenu("Draw in new window", opts, function(arg) {
-                  window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
-               });
          } else {
-            // this is standard menu for any object
             var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
 
             if (opts!=null)
                menu.addDrawMenu("Draw", opts, function(arg) { this.display(itemname, arg); });
+
+            if ((fileprop!=null) && (opts!=null)) {
+               var filepath = qualifyURL(fileprop.fileurl);
+               if (filepath.indexOf(JSROOT.source_dir) == 0)
+                  filepath = filepath.slice(JSROOT.source_dir.length);
+               menu.addDrawMenu("Draw in new window", opts, function(arg) {
+                  window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
+               });
+            }
 
             if (!('_childs' in hitem)) {
                var handle = JSROOT.getDrawHandle(hitem._kind);
