@@ -46,7 +46,7 @@
       Zooming : true,
       MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
       DragAndDrop : true,  // enables drag and drop functionality
-      OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 bins) histograms, 2 - always
+      OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
       DefaultCol : 1,  // default col option 1-svg, 2-canvas
       AutoStat : true,
       OptStat  : 1111,
@@ -4027,6 +4027,7 @@
       this.xmax = this.histo['fXaxis']['fXmax'];
 
       if (this.histo['fXaxis'].fXbins.length == this.nbinsx+1) {
+         this.regularx = false;
          this['GetBinX'] = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.xmin;
@@ -4041,6 +4042,7 @@
             return this.nbinsx;
          };
       } else {
+         this.regularx = true;
          this.binwidthx = (this.xmax - this.xmin);
          if (this.nbinsx > 0)
             this.binwidthx = this.binwidthx / this.nbinsx;
@@ -4055,6 +4057,7 @@
       if (!with_y_axis || (this.nbinsy==0)) return;
 
       if (this.histo['fYaxis'].fXbins.length == this.nbinsy+1) {
+         this.regulary = false;
          this['GetBinY'] = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
@@ -4069,6 +4072,7 @@
             return this.nbinsy;
          };
       } else {
+         this.regulary = true;
          this.binwidthy = (this.ymax - this.ymin);
          if (this.nbinsy > 0)
             this.binwidthy = this.binwidthy / this.nbinsy

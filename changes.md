@@ -13,6 +13,8 @@
 9. Significant I/O performance improvement. Big objects decoded 2-3 times faster than before. 
    Use DataView and ArrayBuffer for decoding of binrary data.
    Still old method with JS String supported (add &iomode=str to URL)
+10. TH2 drawing optimization - do not show by default more than 50 bins/axis
+    Mode can be disabled by providing &optimize=0 in URL. 
 
 
 ## Changes in 3.9

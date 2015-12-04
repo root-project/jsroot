@@ -2199,6 +2199,44 @@
       return this.fPalette[theColor];
    }
 
+   JSROOT.TH2Painter.prototype.CompressAxis = function(arr, maxlen, regular) {
+      if (arr.length <= maxlen) return;
+
+      function RemoveNulls() {
+         var j = arr.length-2;
+         while (j>0) {
+            while ((j>0) && (arr[j]!=null)) --j;
+            var j2 = j;
+            while ((j>0) && (arr[j]==null)) --j;
+            if (j < j2) arr.splice(j+1, j2-j);
+            --j;
+         }
+      };
+
+      if (!regular) {
+         var grdist = Math.abs(arr[arr.length-1].gr - arr[0].gr) / maxlen;
+         var i = 0;
+         while (i < arr.length-1) {
+            var gr0 = arr[i++].gr;
+            // remove points which are not far away from current
+            while ((i < arr.length-1) && (Math.abs(arr[i+1].gr - gr0) < grdist)) arr[i++] = null;
+         }
+         RemoveNulls();
+      }
+
+      if (regular || (arr.length > 1.5*maxlen)) {
+         // just remove regular number of bins
+         var period = Math.floor(arr.length / maxlen);
+         if (period<2) period = 2;
+         var i = 0;
+         while (++i < arr.length) {
+            for (var k=1;k<period;++k)
+               if (++i < arr.length - 1) arr[i] = null;
+         }
+         RemoveNulls();
+      }
+   }
+
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
       var i1 = this.GetSelectIndex("x", "left", 0);
       var i2 = this.GetSelectIndex("x", "right", 1);
@@ -2208,6 +2246,35 @@
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.histo.fName;
       if (name.length > 0) name += "\n";
+
+      // var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy, zdiff;
+
+      var xx = [], yy = [];
+      for (var i = i1; i <= i2; i++) {
+         var x = this.GetBinX(i);
+         if (this.options.Logx && (x <= 0)) continue;
+         xx.push({indx:i, axis: x, gr: this.grx(x)});
+      }
+
+      for (var j = j1; j <= j2; j++) {
+         var y = this.GetBinY(j);
+         if (this.options.Logy && (y <= 0)) continue;
+         yy.push({indx:j, axis: y, gr: this.gry(y)});
+      }
+
+      if (JSROOT.gStyle.OptimizeDraw > 0) {
+         var numx = 40, numy = 40;
+
+         var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
+         if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
+                   else numx = Math.max(10, Math.round(numy * coef));
+
+         if ((JSROOT.gStyle.OptimizeDraw > 1) || (xx.length > 50))
+            this.CompressAxis(xx, numx, !this.options.Logx && this.regularx);
+
+         if ((JSROOT.gStyle.OptimizeDraw > 1) || (yy.length > 50))
+            this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
+      }
 
       // first found min/max values in selected range
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
@@ -2235,40 +2302,30 @@
       this.fContour = null; // z-scale ranges when drawing with color
       this.fUserContour = false;
 
-      var local_bins = new Array;
+      var local_bins = [];
 
-      var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy, zdiff;
+      for (var i = 0; i < xx.length-1; ++i) {
+         var grx1 = xx[i].gr, grx2 = xx[i+1].gr;
 
-      x2 = this.GetBinX(i1);
-      grx2 = -11111;
-      for (var i = i1; i < i2; i++) {
-         x1 = x2;
-         x2 = this.GetBinX(i+1);
+         for (var j = 0; j < yy.length-1; ++j) {
+            var gry1 = yy[j].gr, gry2 = yy[j+1].gr;
 
-         if (this.options.Logx && (x1 <= 0)) continue;
+            var binz = this.histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
 
-         grx1 = grx2;
-         if (grx1 < 0) grx1 = this.grx(x1);
-         grx2 = this.grx(x2);
+            if ((xx[i+1].indx > xx[i].indx+1) || (yy[j+1].indx > yy[j].indx+1)) {
+               // check all other pixels inside range
+               for (var i1 = xx[i].indx;i1 < xx[i+1].indx;++i1)
+                  for (var j1 = yy[j].indx;j1 < yy[j+1].indx;++j1)
+                     binz = Math.max(binz, this.histo.getBinContent(i1 + 1, j1 + 1));
+            }
 
-         y2 = this.GetBinY(j1);
-         gry2 = -1111;
-         for (var j = j1; j < j2; j++) {
-            y1 = y2;
-            y2 = this.GetBinY(j+1);
-            if (this.options.Logy && (y1 <= 0)) continue;
-            gry1 = gry2;
-            if (gry1 < 0) gry1 = this.gry(y1);
-            gry2 = this.gry(y2);
-
-            binz = this.histo.getBinContent(i + 1, j + 1);
             if ((binz == 0) || (binz < this.minbin)) continue;
 
-            point = null;
+            var point = null, zdiff = 0;
 
             switch (coordinates_kind) {
             case 0: {
-               fillcol = this.getValueColor(binz);
+               var fillcol = this.getValueColor(binz);
                if (fillcol!=null)
                  point = {
                    x : grx1,
@@ -2282,11 +2339,7 @@
                break;
             }
             case 1:
-               if (uselogz) {
-                  zdiff = logmax - ((binz>0) ? Math.log(binz) : logmin);
-               } else {
-                  zdiff = this.maxbin - binz;
-               }
+               zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
 
                point = {
                   x : grx1 + xfactor * zdiff,
@@ -2302,8 +2355,8 @@
 
             case 2:
                point = {
-                  x : (x1 + x2) / 2,
-                  y : (y1 + y2) / 2,
+                  x : (xx[i].axis + xx[i+1].axis) / 2,
+                  y : (yy[j].axis + yy[j+1].axis) / 2,
                   z : binz
                }
                break;
@@ -2313,19 +2366,19 @@
 
             if (tipkind == 1) {
                if (this.x_kind=='labels')
-                  point['tip'] = name + "x = " + this.AxisAsText("x", x1) + "\n";
+                  point['tip'] = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
                else
-                  point['tip'] = name + "x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n";
+                  point['tip'] = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + "]\n";
                if (this.y_kind=='labels')
-                  point['tip'] += "y = " + this.AxisAsText("y", y1) + "\n";
+                  point['tip'] += "y = " + this.AxisAsText("y", yy[j].axis) + "\n";
                else
-                  point['tip'] += "y = [" + this.AxisAsText("y", y1) + ", " + this.AxisAsText("y", y2) + "]\n";
+                  point['tip'] += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + "]\n";
 
                point['tip'] += "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
             } else if (tipkind == 2)
                point['tip'] = name +
-                              "x = " + this.AxisAsText("x", x1) + "\n" +
-                              "y = " + this.AxisAsText("y", y1) + "\n" +
+                              "x = " + this.AxisAsText("x", xx[i].axis) + "\n" +
+                              "y = " + this.AxisAsText("y", yy[j].axis) + "\n" +
                               "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
 
             local_bins.push(point);
