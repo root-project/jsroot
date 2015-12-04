@@ -677,15 +677,16 @@
       return mesh;
    }
 
+   JSROOT.TGeoPainter.prototype.TestAttBit = function(volume, f) {
+      if (!('fGeoAtt' in volume)) return false;
+      return (volume['fGeoAtt'] & f) != 0;
+   }
+
    JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node) {
       var container = toplevel;
       var volume = node['fVolume'];
-      if (('fGeoAtt' in volume) && !('TestAttBit' in volume)) {
-         volume['TestAttBit'] = function (f) {
-            return ((volume['fGeoAtt'] & f) != 0);
-         };
-      }
       var shape = volume['fShape'];
+
       var translation_matrix = [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
       if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] != null) {
@@ -747,12 +748,9 @@
       }
       var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
 
-      var _transparent = true,
-          _helper = false,
-          _opacity = 0.0,
-          _isdrawn = false;
+      var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
       if (this._debug) _helper = true;
-      if (volume.TestAttBit(JSROOT.BIT(7))) {
+      if (this.TestAttBit(volume, JSROOT.BIT(7))) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
