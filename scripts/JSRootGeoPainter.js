@@ -1141,19 +1141,41 @@
    JSROOT.expandGeoList = function(item, lst) {
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
 
-      item['_childs'] = [];
-      for (var n in lst.arr) {
-         var obj = lst.arr[n];
-         var sub = {
-            _kind : "ROOT." + obj._typename,
-            _name : obj.fName,
-            _title : obj.fTitle
-         };
+      item['_more'] = true;
+      item['_geolst'] = lst;
 
-         if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
-         if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium";
+      item['_get'] = function(item, itemname, callback) {
+         if ('_geolst' in item)
+            JSROOT.CallBack(callback, item, item._geolst);
 
-         item['_childs'].push(sub);
+         if ('_geoobj' in item)
+            return JSROOT.CallBack(callback, item, item._geoobj);
+
+         JSROOT.CallBack(callback, item, null);
+      }
+      item['_expand'] = function(node, lst) {
+         // only childs
+         if (!('arr' in lst)) return false;
+
+         node['_childs'] = [];
+
+         for (var n in lst.arr) {
+            var obj = lst.arr[n];
+            var sub = {
+               _kind : "ROOT." + obj._typename,
+               _name : obj.fName,
+               _title : obj.fTitle,
+               _geoobj : obj
+            };
+
+            if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
+            if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
+            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture";
+
+            node['_childs'].push(sub);
+         }
+
+         return true;
       }
    }
 
@@ -1168,6 +1190,10 @@
          _volume : volume // keep direct reference
       };
 
+      if (typeof arg == 'string') {
+         item._name = arg; arg = null;
+      }
+
       if (arg == null) {
          // this is special case of expand of geo volume
          item['_get'] = function(item, itemname, callback) {
@@ -1176,11 +1202,15 @@
 
             JSROOT.CallBack(callback, item, null);
          }
+         item['_expand'] = function(node, obj) {
+            // only childs
+            var subnodes = obj['fNodes']['arr'];
+            for (var i in subnodes)
+               JSROOT.expandGeoVolume(node, subnodes[i]['fVolume'], 1);
+            return true;
+         }
+
         arg = 0;
-      } else
-      if (typeof arg == 'string') {
-         item._name = arg;
-         arg = 0;
       }
 
       if (item._title == "")
@@ -1221,10 +1251,17 @@
       if ((typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null)) {
          if (!('_icon' in item))
             item._icon = "img_geocombi";
-         var subnodes = volume['fNodes']['arr'];
-         for (var i in subnodes)
-            JSROOT.expandGeoVolume(item, subnodes[i]['fVolume'], arg+1);
+
+         item['_more'] = true;
+         if (arg==0) {
+            var subnodes = volume['fNodes']['arr'];
+            for (var i in subnodes)
+               JSROOT.expandGeoVolume(item, subnodes[i]['fVolume'], arg+1);
+         }
       } else {
+
+        item['_more'] = false; // do not let browser expand item
+
         if (!('_icon' in item))
            item._icon = "img_geobbox";
       }
@@ -1237,29 +1274,21 @@
          return false;
       }
 
-      hitem['_get'] = function(item, itemname, callback) {
-         if ((item!=null) && (item._volume != null))
-            return JSROOT.CallBack(callback, item, item._volume);
-
-         JSROOT.CallBack(callback, item, null);
-      }
-
       hitem['_childs'] = [];
 
-      item = { _name : "Materials", _kind : "ROOT.TFolder", _title : "list of materials" };
-      JSROOT.expandGeoList(item, obj.fMaterials);
-      hitem['_childs'].push(item);
+      var item1 = { _name : "Materials", _kind : "Folder", _title : "list of materials" };
+      JSROOT.expandGeoList(item1, obj.fMaterials);
+      hitem['_childs'].push(item1);
 
-      item = { _name : "Media", _kind : "ROOT.TFolder", _title : "list of media" };
-      JSROOT.expandGeoList(item, obj.fMedia);
-      hitem['_childs'].push(item);
+      var item2 = { _name : "Media", _kind : "Folder", _title : "list of media" };
+      JSROOT.expandGeoList(item2, obj.fMedia);
+      hitem['_childs'].push(item2);
 
-      item = { _name : "Tracks", _kind : "ROOT.TFolder", _title : "list of tracks" };
-      JSROOT.expandGeoList(item, obj.fTracks);
-      hitem['_childs'].push(item);
+      var item3 = { _name : "Tracks", _kind : "Folder", _title : "list of tracks" };
+      JSROOT.expandGeoList(item3, obj.fTracks);
+      hitem['_childs'].push(item3);
 
       JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Master volume");
-
 
       return true;
    }

@@ -160,7 +160,7 @@
       if ((img1.length==0) && ('_online' in hitem)) img1 = "img_globe";
       if ((img1.length==0) && isroot) img1 = "img_base";
 
-      if ('_more' in hitem) {
+      if (hitem['_more']) {
          can_click = true;
          if (img1.length == 0) {
             img1 = 'img_folder';
@@ -199,6 +199,10 @@
       } else
       if (has_childs) {
          icon_class = hitem._isopen ? "img_minus" : "img_plus";
+         plusminus = true;
+      } else
+      if (hitem['_more']) {
+         icon_class = "img_plus"; // should be special plus ???
          plusminus = true;
       } else {
          icon_class = "img_join";
@@ -400,6 +404,10 @@
       var hitem = this.Find(itemname);
       if (hitem==null) return;
 
+      // special case - one should expand item
+      if (plusminus && !('_childs' in hitem) && hitem['_more'])
+         return this.expand(itemname, hitem, node.parent());
+
       if (!plusminus) {
 
          if ('_player' in hitem)
@@ -420,7 +428,7 @@
                return this.expand(itemname, hitem, node.parent());
          }
 
-         if ((hitem['_childs'] == null) && ('_more' in hitem))
+         if ((hitem['_childs'] == null))
             return this.expand(itemname, hitem, node.parent());
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
@@ -516,7 +524,7 @@
                });
             }
 
-            if (!('_childs' in hitem)) {
+            if (!('_childs' in hitem) && (hitem['_more'] || !('_more' in hitem))) {
                var handle = JSROOT.getDrawHandle(hitem._kind);
                if (handle && ('expand' in handle))
                   menu.add("Expand", function() { this.expand(itemname); });
@@ -539,6 +547,9 @@
 
       if (item0==null) item0 = this.Find(itemname);
       if (item0==null) return false;
+
+      // mark that item cannot be longer expand
+      if (('_more' in item0) && !item0['_more']) return false;
 
       if (!('_more' in item0)) {
          var handle = JSROOT.getDrawHandle(item0._kind);

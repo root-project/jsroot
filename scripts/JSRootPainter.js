@@ -7223,7 +7223,7 @@
       if (opts != null)
          menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
 
-      if ((node['_childs'] == null) && (('_more' in node) || root_type))
+      if ((node['_childs'] == null) && (node['_more'] || root_type))
          menu.add("Expand", function() { painter.expand(itemname); });
 
       if (handle && ('execute' in handle))
@@ -7868,6 +7868,7 @@
    JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file" });
    JSROOT.addDrawFunc({ name: "Session", icon:"img_globe" });
    JSROOT.addDrawFunc({ name: "kind:TopFolder", icon:"img_base" });
+   JSROOT.addDrawFunc({ name: "kind:Folder", icon:"img_folder", icon2:"img_folderopen" });
 
    JSROOT.getDrawHandle = function(kind, selector) {
       // return draw handle for specified item kind
