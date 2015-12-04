@@ -3433,7 +3433,8 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0, Palette:0
+         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0,
+         Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
       var chopt = opt.toUpperCase();
@@ -5328,8 +5329,14 @@
          if (this.Dimension() == 2)
             menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
       }
-      if (this.draw_content)
+      if (this.draw_content) {
+         menu.addchk((this.options.Optimize>0), "Optimize drawing", function() {
+            this.options.Optimize = (this.options.Optimize>0) ? 0 : 2;
+            this.RedrawPad();
+         });
+
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", this.ToggleStat.bind(this));
+      }
    }
 
    // ======= TH1 painter================================================
@@ -5609,8 +5616,8 @@
 
       var draw_bins = new Array;
 
-      var can_optimize = ((JSROOT.gStyle.OptimizeDraw > 0) && (right-left > 5000)) ||
-                         ((JSROOT.gStyle.OptimizeDraw > 1) && (right-left > 2*width));
+      var can_optimize = ((this.options.Optimize > 0) && (right-left > 5000)) ||
+                         ((this.options.Optimize > 1) && (right-left > 2*width));
 
       var x1, x2 = this.GetBinX(left);
       var grx1 = -1111, grx2 = -1111, gry;

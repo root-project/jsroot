@@ -2258,17 +2258,17 @@
          yy.push({indx:j, axis: y, gr: this.gry(y)});
       }
 
-      if (JSROOT.gStyle.OptimizeDraw > 0) {
+      if (this.options.Optimize > 0) {
          var numx = 40, numy = 40;
 
          var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
          if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
                    else numx = Math.max(10, Math.round(numy * coef));
 
-         if ((JSROOT.gStyle.OptimizeDraw > 1) || (xx.length > 50))
+         if ((this.options.Optimize > 1) || (xx.length > 50))
             this.CompressAxis(xx, numx, !this.options.Logx && this.regularx);
 
-         if ((JSROOT.gStyle.OptimizeDraw > 1) || (yy.length > 50))
+         if ((this.options.Optimize > 1) || (yy.length > 50))
             this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
       }
 
