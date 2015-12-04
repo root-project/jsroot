@@ -682,10 +682,9 @@
       return (volume['fGeoAtt'] & f) != 0;
    }
 
-   JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node) {
+   JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node, visible) {
       var container = toplevel;
       var volume = node['fVolume'];
-      var shape = volume['fShape'];
 
       var translation_matrix = [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -750,7 +749,7 @@
 
       var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
       if (this._debug) _helper = true;
-      if (this.TestAttBit(volume, JSROOT.BIT(7))) {
+      if (this.TestAttBit(volume, JSROOT.BIT(7)) || (visible>0)) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
@@ -777,7 +776,7 @@
          material.depthTest = false;
          material.visible = false;
       }
-      var mesh = this.createMesh(shape, material, rotation_matrix);
+      var mesh = this.createMesh(volume['fShape'], material, rotation_matrix);
       if (typeof mesh != 'undefined' && mesh != null) {
          mesh.position.x = 0.5 * translation_matrix[0];
          mesh.position.y = 0.5 * translation_matrix[1];
@@ -812,7 +811,7 @@
       if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
          var nodes = volume['fNodes']['arr'];
          for (var i in nodes)
-            this.drawNode(scene, container, nodes[i]);
+            this.drawNode(scene, container, nodes[i], visible-1);
       }
    }
 
@@ -906,7 +905,7 @@
       return bbox;
    }
 
-   JSROOT.TGeoPainter.prototype.drawGeometry = function() {
+   JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
       var rect = this.select_main().node().getBoundingClientRect();
 
       var w = rect.width, h = rect.height, size = 100;
@@ -971,13 +970,8 @@
                   visible: false, transparent: true, opacity: 0.0 } ) );
          toplevel.add(cube);
 
-         //this.drawVolume(this._scene, toplevel, this._geometry);
-         if (typeof this._geometry['fNodes'] != 'undefined' && this._geometry['fNodes'] != null) {
-            var nodes = this._geometry['fNodes']['arr'];
-            for (var i in nodes)
-               this.drawNode(this._scene, cube, nodes[i]);
-         } else
-            this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"direct" } );
+         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, opt=="all" ? 9999 : 0);
+
          //top.computeBoundingBox();
          //var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
          //                                 Math.abs(top.boundingBox.max.z));
@@ -1133,7 +1127,7 @@
 
       this.SetDivId(divid);
 
-      return this.drawGeometry();
+      return this.drawGeometry(opt);
    }
 
    JSROOT.expandGeoList = function(item, lst) {
