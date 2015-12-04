@@ -995,17 +995,17 @@
    JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
       // read array of n values from the I/O buffer
 
-      return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
-/*
+//      return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
+
       var array = null;
       switch (array_type) {
          case JSROOT.IO.kDouble:
-            array = new Array(n);
+            array = new Float64Array(n);
             for (var i = 0; i < n; ++i)
                array[i] = this.ntod();
             break;
          case JSROOT.IO.kFloat:
-            array = new Array(n);
+            array = new Float32Array(n);
             for (var i = 0; i < n; ++i)
                array[i] = this.ntof();
             break;
@@ -1061,7 +1061,6 @@
          break;
       }
       return array;
-*/
    }
 
 
@@ -1830,10 +1829,10 @@
       var file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
-      this.ReadBuffer(1024, function(blob1) {
-         if (blob1==null) return JSROOT.CallBack(readkeys_callback, null);
+      this.ReadBuffer(1024, function(blob) {
+         if (blob==null) return JSROOT.CallBack(readkeys_callback, null);
 
-         var buf = JSROOT.CreateTBuffer(blob1, 0, file);
+         var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
          if (buf.substring(0, 4)!='root') {
             alert("NOT A ROOT FILE! " + file.fURL);
@@ -1913,21 +1912,21 @@
                if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
 
                var buf4 = JSROOT.CreateTBuffer(blob4, 0, file);
-
                var key = file.ReadKey(buf4);
-
                var nkeys = buf4.ntoi4();
-
                for (var i = 0; i < nkeys; ++i) {
                   key = file.ReadKey(buf4);
                   file.fKeys.push(key);
                }
                file.ReadStreamerInfos(readkeys_callback);
                delete buf4;
+               delete blob4;
             });
             delete buf3;
+            delete blob3;
          });
          delete buf;
+         delete blob;
       });
    };
 
