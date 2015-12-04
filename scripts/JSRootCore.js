@@ -414,7 +414,6 @@
                 (xhr.responseType == 'arraybuffer') && ('response' in xhr))
                return callback(xhr.response);
 
-
             var filecontent = new String("");
             var array = new VBArray(xhr.responseBody).toArray();
             for (var i = 0; i < array.length; i++)
@@ -448,7 +447,7 @@
             if (! ('responseType' in xhr))
                return callback(xhr.responseText);
 
-            if ((kind=="str") && ('Uint8Array' in window) && ('byteLength' in xhr.response)) {
+            if ((kind=="bin") && ('Uint8Array' in window) && ('byteLength' in xhr.response)) {
                // if string representation in requested - provide it
                var filecontent = "";
                var u8Arr = new Uint8Array(xhr.response, 0, xhr.response.byteLength);
