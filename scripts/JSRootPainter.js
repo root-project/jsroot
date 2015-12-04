@@ -3433,7 +3433,7 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0
+         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0, Palette:0
       };
       // check for graphical cuts
       var chopt = opt.toUpperCase();
@@ -3441,6 +3441,16 @@
       if (hdim > 1) option.Scat = 1;
       if ((hdim==1) && (this.histo.fSumw2.length>0)) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
+
+      var i = chopt.indexOf('PAL');
+      if (i>=0) {
+         var i2 = i+3;
+         while ((i2<chopt.length) && (chopt.charCodeAt(i2)>=48) && (chopt.charCodeAt(i2)<58)) ++i2;
+         if (i2>i+3) {
+            option.Palette = parseInt(chopt.substring(i+3,i2));
+            chopt = chopt.replace(chopt.substring(i,i2),"");
+         }
+      }
 
       if (chopt.indexOf('AUTOCOL') != -1) {
          option.AutoColor = 1;

@@ -75,12 +75,11 @@
        return palette;
    }
 
-   JSROOT.Painter.GetColorPalette = function(ncol, alfa) {
-      if ((ncol==null) || (ncol === undefined)) ncol = JSROOT.gStyle.Palette;
-      if ((ncol < 51) || (ncol>112)) ncol = JSROOT.gStyle.Palette;
+   JSROOT.Painter.GetColorPalette = function(col,alfa) {
+      if ((col == null) || (col==0)) col = JSROOT.gStyle.Palette;
       var stops = [ 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 ];
       var red, green, blue;
-      switch(ncol) {
+      switch(col) {
          // Deep Sea
          case 51:
             var red   = [ 0,  9, 13, 17, 24,  32,  27,  25,  29];
@@ -510,7 +509,6 @@
                green = [  9, 24,  55,  87, 118, 150, 180, 200, 222];
                blue = [ 30, 96, 112, 114, 112, 101,  72,  35,   0];
             break;
-
 
          default:
             return JSROOT.Painter.CreateDefaultPalette();
@@ -2137,8 +2135,7 @@
          // if not initialized, first create controur array
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
          this.fUserContour = false;
-
-         if ((this.histo.fContour!=null) && (this.histo.fContour.length>0) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+         if ((this.histo.fContour!=null) && (this.histo.fContour.length>1) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
             this.fContour = JSROOT.clone(this.histo.fContour);
             this.fUserContour = true;
          } else {
@@ -2190,9 +2187,8 @@
          color = 0;
       }
 
-      if (this.fPalette == null) {
-         this.fPalette = JSROOT.Painter.GetColorPalette(this.fContour.length);
-      }
+      if (this.fPalette == null)
+         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
 
       var theColor = Math.floor((color+0.99)*this.fPalette.length/(this.fContour.length-1));
       if (theColor > this.fPalette.length-1) theColor = this.fPalette.length-1;
