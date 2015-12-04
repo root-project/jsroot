@@ -2437,31 +2437,31 @@
          if (JSROOT.gStyle.Tooltip)
             markers.append("svg:title").text(function(d) { return d.tip; });
       } else {
-         var drawn_bins = this.draw_g.selectAll(".bins")
-                           .data(local_bins).enter()
-                           .append("svg:rect")
-                           .attr("class", "bins")
-                           .attr("x", function(d) { return d.x.toFixed(1); })
-                           .attr("y", function(d) { return d.y.toFixed(1); })
-                           .attr("width", function(d) { return d.width.toFixed(1); })
-                           .attr("height", function(d) { return d.height.toFixed(1); })
-                           .style("stroke", function(d) { return d.stroke; })
-                           .style("fill", function(d) {
-                               this['f0'] = d.fill;
-                               this['f1'] = d.tipcolor;
-                               return d.fill;
-                            });
 
-         if (JSROOT.gStyle.Tooltip)
-            drawn_bins
-              .on('mouseover', function() {
-                   if (JSROOT.gStyle.Tooltip)
-                      d3.select(this).transition().duration(100).style("fill", this['f1']);
-              })
-              .on('mouseout', function() {
-                   d3.select(this).transition().duration(100).style("fill", this['f0']);
-              })
-              .append("svg:title").text(function(d) { return d.tip; });
+         this.draw_g.selectAll(".bins")
+             .data(local_bins).enter()
+             .append("svg:rect")
+             .attr("class", "bins")
+             .attr("x", function(d) { return d.x.toFixed(1); })
+             .attr("y", function(d) { return d.y.toFixed(1); })
+             .attr("width", function(d) { return d.width.toFixed(1); })
+             .attr("height", function(d) { return d.height.toFixed(1); })
+             .style("stroke", function(d) { return d.stroke; })
+             .style("fill", function(d) {
+                this['f0'] = d.fill;
+                this['f1'] = d.tipcolor;
+                return d.fill;
+             })
+             .filter(function() { return JSROOT.gStyle.Tooltip ? this : null } )
+             .on('mouseover', function() {
+                if (JSROOT.gStyle.Tooltip)
+                   d3.select(this).transition().duration(100).style("fill", this['f1']);
+             })
+             .on('mouseout', function() {
+                d3.select(this).transition().duration(100).style("fill", this['f0']);
+             })
+             .append("svg:title").text(function(d) { return d.tip; });
+
       }
 
       delete local_bins;
