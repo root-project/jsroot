@@ -35,7 +35,8 @@
          kClassMask : 0x80000000,
          Z_DEFLATED : 8,
          Z_HDRSIZE : 9,
-         Mode : "array" // could be string or array
+         Mode : "array", // could be string or array, enable usage of ArrayBuffer in http requests
+         NativeArray : true // when true, native arrays like Int32Array or Float64Array are used
    };
 
    JSROOT.fUserStreamers = null; // map of user-streamer function like func(buf,obj,prop,streamerinfo)
@@ -217,6 +218,75 @@
       this.o += len;
 
       return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
+   }
+
+   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n values from the I/O buffer
+
+      var array = null;
+      switch (array_type) {
+         case JSROOT.IO.kDouble:
+            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntod();
+            break;
+         case JSROOT.IO.kFloat:
+            array = JSROOT.IO.NativeArray ? new Float32Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntof();
+            break;
+         case JSROOT.IO.kLong64:
+            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi8();
+            break;
+         case JSROOT.IO.kULong64:
+            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou8();
+            break;
+         case JSROOT.IO.kInt:
+            array = JSROOT.IO.NativeArray ? new Int32Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi4();
+            break;
+         case JSROOT.IO.kUInt:
+            array = JSROOT.IO.NativeArray ? new Uint32Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+            break;
+         case JSROOT.IO.kShort:
+            array = JSROOT.IO.NativeArray ? new Int16Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi2();
+            break;
+         case JSROOT.IO.kUShort:
+            array = JSROOT.IO.NativeArray ? new Uint16Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou2();
+            break;
+         case JSROOT.IO.kChar:
+            array = JSROOT.IO.NativeArray ? new Int8Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kUChar:
+            array = JSROOT.IO.NativeArray ? new Uint8Array(n) : new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntoi1();
+            break;
+         case JSROOT.IO.kTString:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ReadTString();
+            break;
+         default:
+            array = new Array(n);
+            for (var i = 0; i < n; ++i)
+               array[i] = this.ntou4();
+         break;
+      }
+      return array;
    }
 
    JSROOT.TBuffer.prototype.ReadTArray = function(type_name, n) {
@@ -855,62 +925,6 @@
       return this.b.substring(beg, end);
    }
 
-   JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n values from the I/O buffer
-      var array = new Array(n);
-      switch (array_type) {
-         case JSROOT.IO.kDouble:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntod();
-            break;
-         case JSROOT.IO.kFloat:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntof();
-            break;
-         case JSROOT.IO.kLong64:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi8();
-            break;
-         case JSROOT.IO.kULong64:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou8();
-            break;
-         case JSROOT.IO.kInt:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi4();
-            break;
-         case JSROOT.IO.kUInt:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-            break;
-         case JSROOT.IO.kShort:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi2();
-            break;
-         case JSROOT.IO.kUShort:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou2();
-            break;
-         case JSROOT.IO.kChar:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kUChar:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kTString:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ReadTString();
-            break;
-         default:
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-         break;
-      }
-      return array;
-   }
-
    // =======================================================================
 
    JSROOT.TArrBuffer = function(arr, pos, file) {
@@ -991,78 +1005,6 @@
       var o = this.o; this.o+=8;
       return this.arr.getFloat64(o);
    }
-
-   JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n values from the I/O buffer
-
-//      return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
-
-      var array = null;
-      switch (array_type) {
-         case JSROOT.IO.kDouble:
-            array = new Float64Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntod();
-            break;
-         case JSROOT.IO.kFloat:
-            array = new Float32Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntof();
-            break;
-         case JSROOT.IO.kLong64:
-            array = new Float64Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi8();
-            break;
-         case JSROOT.IO.kULong64:
-            array = new Float64Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou8();
-            break;
-         case JSROOT.IO.kInt:
-            array = new Int32Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi4();
-            break;
-         case JSROOT.IO.kUInt:
-            array = new Uint32Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-            break;
-         case JSROOT.IO.kShort:
-            array = new Int16Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi2();
-            break;
-         case JSROOT.IO.kUShort:
-            array = new Uint16Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou2();
-            break;
-         case JSROOT.IO.kChar:
-            array = new Int8Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kUChar:
-            array = new Uint8Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
-            break;
-         case JSROOT.IO.kTString:
-            array = new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ReadTString();
-            break;
-         default:
-            array = new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-         break;
-      }
-      return array;
-   }
-
 
    // =======================================================================
 
@@ -1999,6 +1941,7 @@
      var iomode = JSROOT.GetUrlOption("iomode");
      if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
      if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
+     JSROOT.IO.NativeArray = ('Float64Array' in window);
    })();
 
    return JSROOT;
