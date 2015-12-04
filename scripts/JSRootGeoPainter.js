@@ -1204,6 +1204,7 @@
          }
          item['_expand'] = function(node, obj) {
             // only childs
+
             var subnodes = obj['fNodes']['arr'];
             for (var i in subnodes)
                JSROOT.expandGeoVolume(node, subnodes[i]['fVolume'], 1);
@@ -1248,23 +1249,10 @@
       if (!('_childs' in parent)) parent['_childs'] = [];
       parent['_childs'].push(item);
 
-      if ((typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null)) {
-         if (!('_icon' in item))
-            item._icon = "img_geocombi";
+      item['_more'] = (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null);
 
-         item['_more'] = true;
-         if (arg==0) {
-            var subnodes = volume['fNodes']['arr'];
-            for (var i in subnodes)
-               JSROOT.expandGeoVolume(item, subnodes[i]['fVolume'], arg+1);
-         }
-      } else {
-
-        item['_more'] = false; // do not let browser expand item
-
-        if (!('_icon' in item))
-           item._icon = "img_geobbox";
-      }
+      if (!('_icon' in item))
+         item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";
 
       return true;
    }
