@@ -2288,17 +2288,17 @@
             uselogz = true;
             logmax = Math.log(this.maxbin);
             logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
-            xfactor = 0.5 * w / (i2 - i1) / (logmax - logmin);
-            yfactor = 0.5 * h / (j2 - j1) / (logmax - logmin);
+            xfactor = 0.5 / (logmax - logmin);
+            yfactor = 0.5 / (logmax - logmin);
          } else {
-            xfactor = 0.5 * w / (i2 - i1) / (this.maxbin - this.minbin);
-            yfactor = 0.5 * h / (j2 - j1) / (this.maxbin - this.minbin);
+            xfactor = 0.5 / (this.maxbin - this.minbin);
+            yfactor = 0.5 / (this.maxbin - this.minbin);
          }
 
       this.fContour = null; // z-scale ranges when drawing with color
       this.fUserContour = false;
 
-      var local_bins = [];
+      var local_bins = [], zdiff, dgrx, dgry;
 
       for (var i = 0; i < xx.length-1; ++i) {
          var grx1 = xx[i].gr, grx2 = xx[i+1].gr;
@@ -2317,7 +2317,7 @@
 
             if ((binz == 0) || (binz < this.minbin)) continue;
 
-            var point = null, zdiff = 0;
+            var point = null;
 
             switch (coordinates_kind) {
             case 0: {
@@ -2336,12 +2336,13 @@
             }
             case 1:
                zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
-
+               dgrx = zdiff * xfactor * (grx2 - grx1);
+               dgry = zdiff * yfactor * (gry1 - gry2);
                point = {
-                  x : grx1 + xfactor * zdiff,
-                  y : gry2 + yfactor * zdiff,
-                  width : grx2 - grx1 - 2 * xfactor * zdiff,
-                  height : gry1 - gry2 - 2 * yfactor * zdiff,
+                  x : grx1 + dgrx,
+                  y : gry2 + dgry,
+                  width : grx2 - grx1 - 2 * dgrx,
+                  height : gry1 - gry2 - 2 * dgry,
                   stroke : this.attline.color,
                   fill : this.fillcolor,
                   tipcolor: this.fillcolor == 'black' ? "grey" : "black"
