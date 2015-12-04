@@ -3453,6 +3453,16 @@
          }
       }
 
+      if (chopt.indexOf('NOOPTIMIZE') != -1) {
+         option.Optimize = 0;
+         chopt = chopt.replace('NOOPTIMIZE', '');
+      }
+
+      if (chopt.indexOf('OPTIMIZE') != -1) {
+         option.Optimize = 2;
+         chopt = chopt.replace('OPTIMIZE', '');
+      }
+
       if (chopt.indexOf('AUTOCOL') != -1) {
          option.AutoColor = 1;
          option.Hist = 1;
