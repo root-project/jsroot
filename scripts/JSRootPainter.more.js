@@ -2301,9 +2301,8 @@
                   dgry = zdiff * yfactor;
 
                   if (((1 - 2*zdiff*xfactor)*(xx[i-i1+1].gr - xx[i-i1].gr) > 0.05) ||
-                      ((1 - 2*zdiff*yfactor)*(yy[i-i1].gr - yy[i-i1+1].gr) > 0.05)) nbins++;
+                      ((1 - 2*zdiff*yfactor)*(yy[j-j1].gr - yy[j-j1+1].gr) > 0.05)) nbins++;
                }
-
             }
          }
       }
