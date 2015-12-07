@@ -6290,7 +6290,6 @@
             if (dir == null) {
                item["_more"] = true;
                item['_expand'] = function(node, obj) {
-                  console.log('Expand dir ' + node._name);
                   painter.KeysHierarchy(node, obj.fKeys);
                   return true;
                }

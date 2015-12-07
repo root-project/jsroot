@@ -2258,7 +2258,7 @@
 
       // first found min/max values in selected range, and number of non-zero bins
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
-      var nbins = 0, binz = 0, zdiff, dgrx, dgry;
+      var nbins = 0, binz = 0, sumz = 0, zdiff, dgrx, dgry;
       for (var i = i1; i < i2; ++i) {
          for (var j = j1; j < j2; ++j) {
             binz = this.histo.getBinContent(i + 1, j + 1);
@@ -2307,7 +2307,7 @@
          }
       }
 
-      if ((this.options.Optimize > 0) && (nbins>1000)) {
+      if ((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) {
          var numx = 40, numy = 40;
 
          var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
@@ -2332,13 +2332,17 @@
          for (var j = 0; j < yy.length-1; ++j) {
             var gry1 = yy[j].gr, gry2 = yy[j+1].gr;
 
-            binz = this.histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
+            sumz = binz = this.histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
 
             if ((xx[i+1].indx > xx[i].indx+1) || (yy[j+1].indx > yy[j].indx+1)) {
+               sumz = 0;
                // check all other pixels inside range
                for (var i1 = xx[i].indx;i1 < xx[i+1].indx;++i1)
-                  for (var j1 = yy[j].indx;j1 < yy[j+1].indx;++j1)
-                     binz = Math.max(binz, this.histo.getBinContent(i1 + 1, j1 + 1));
+                  for (var j1 = yy[j].indx;j1 < yy[j+1].indx;++j1) {
+                     var morez = this.histo.getBinContent(i1 + 1, j1 + 1);
+                     binz = Math.max(binz, morez);
+                     sumz += morez;
+                  }
             }
 
             if ((binz == 0) || (binz < this.minbin)) continue;
@@ -2390,19 +2394,34 @@
             if (tipkind == 1) {
                if (this.x_kind == 'labels')
                   point['tip'] = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
-               else
-                  point['tip'] = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + "]\n";
+               else {
+                  point['tip'] = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + "]";
+
+                  if (xx[i].indx + 1 == xx[i+1].indx)
+                     point['tip'] += " bin=" + xx[i].indx + "\n";
+                  else
+                     point['tip'] += " bins=[" + xx[i].indx + "," + (xx[i+1].indx-1) + "]\n";
+               }
                if (this.y_kind == 'labels')
                   point['tip'] += "y = " + this.AxisAsText("y", yy[j].axis) + "\n";
-               else
-                  point['tip'] += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + "]\n";
+               else {
+                  point['tip'] += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + "]";
+                  if (yy[j].indx + 1 == yy[j+1].indx)
+                     point['tip'] += " bin=" + yy[j].indx + "\n";
+                  else
+                     point['tip'] += " bins=[" + yy[j].indx + "," + (yy[j+1].indx-1) + "]\n";
+               }
 
-               point['tip'] += "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+               if (sumz == binz)
+                  point['tip'] += "entries = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat);
+               else
+                  point['tip'] += "sum = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat) +
+                                  " max = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
             } else if (tipkind == 2)
                point['tip'] = name +
                               "x = " + this.AxisAsText("x", xx[i].axis) + "\n" +
                               "y = " + this.AxisAsText("y", yy[j].axis) + "\n" +
-                              "entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+                              "entries = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat);
 
             local_bins.push(point);
          }
