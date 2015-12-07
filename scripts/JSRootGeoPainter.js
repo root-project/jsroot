@@ -49,6 +49,11 @@
       return (volume['fGeoAtt'] & f) != 0;
    }
 
+   JSROOT.ToggleGeoAttBit = function(volume, f) {
+      if (!('fGeoAtt' in volume)) return false;
+
+      volume['fGeoAtt'] = volume['fGeoAtt'] ^ (f & 0xffffff);
+   }
 
    JSROOT.TGeoPainter = function( geometry ) {
       JSROOT.TBasePainter.call( this, geometry );
@@ -1188,30 +1193,42 @@
       }
    };
 
-   JSROOT.toggleGeoAttBit = function(arg) {
-      // 'this' should be set on the volume
+   JSROOT.provideGeoVisStyle = function(volume) {
+      var res = "";
 
-      if (!('fGeoAtt' in this)) return false;
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.EGeoVisibilityAtt.kVisThis))
+         res += " geovis_this";
 
-      this['fGeoAtt'] = this['fGeoAtt'] ^ (arg & 0xffffff);
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.EGeoVisibilityAtt.kVisDaughters))
+         res += " geovis_daughters";
 
-     // console.log('toggle bit ' + arg);
+      return res;
    }
 
-   JSROOT.provideGeoMenu = function(menu, item) {
-       menu.add("separator");
-       var vol = item._volume;
+   JSROOT.provideGeoMenu = function(menu, item, hpainter) {
+      if (! ('_volume' in item)) return false;
 
-       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisNone), "Invisible",
-                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisNone));
-       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisThis), "Visible",
-                    JSROOT.toggleGeoAttBit.bind(vol,JSROOT.EGeoVisibilityAtt.kVisThis));
-       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters), "Daughters",
-                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters));
-       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel), "1lvl daughters",
-                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel));
+      menu.add("separator");
+      var vol = item._volume;
 
-       return true;
+      function ToggleMenuBit(arg) {
+         JSROOT.ToggleGeoAttBit(vol, arg);
+         console.log("OLD ICON = " + item._icon);
+         item._icon = item._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(vol);
+         console.log("NEW ICON = " + item._icon);
+         hpainter.UpdateTreeNode(item);
+      }
+
+      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisNone), "Invisible",
+            JSROOT.EGeoVisibilityAtt.kVisNone, ToggleMenuBit);
+      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisThis), "Visible",
+            JSROOT.EGeoVisibilityAtt.kVisThis, ToggleMenuBit);
+      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters), "Daughters",
+            JSROOT.EGeoVisibilityAtt.kVisDaughters, ToggleMenuBit);
+      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel), "1lvl daughters",
+            JSROOT.EGeoVisibilityAtt.kVisOneLevel, ToggleMenuBit);
+
+      return true;
    }
 
    JSROOT.expandGeoVolume = function(parent, volume, arg) {
@@ -1277,6 +1294,11 @@
 
       if (!('_childs' in parent)) parent['_childs'] = [];
 
+      if (!('_icon' in item))
+         item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";
+
+      item._icon += JSROOT.provideGeoVisStyle(volume);
+
       // avoid name duplication of the items
       for (var cnt=0;cnt<1000000;cnt++) {
          var curr_name = item._name;
@@ -1295,9 +1317,6 @@
       }
 
       parent['_childs'].push(item);
-
-      if (!('_icon' in item))
-         item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";
 
       return true;
    }

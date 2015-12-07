@@ -157,15 +157,13 @@
       }
       if ('_icon' in hitem) img1 = hitem['_icon'];
       if ('_icon2' in hitem) img2 = hitem['_icon2'];
-      if ((img1.length==0) && ('_online' in hitem)) img1 = "img_globe";
-      if ((img1.length==0) && isroot) img1 = "img_base";
+      if ((img1.length==0) && ('_online' in hitem))
+         hitem['_icon'] = img1 = "img_globe";
+      if ((img1.length==0) && isroot)
+         hitem['_icon'] = img1 = "img_base";
 
       if (hitem['_more']) {
          can_click = true;
-         if (img1.length == 0) {
-            img1 = 'img_folder';
-            img2 = 'img_folderopen';
-         }
       }
 
       if ('_player' in hitem) {
@@ -173,11 +171,8 @@
       }
 
       if (img2.length==0) img2 = img1;
-      if (img1.length==0) img1 = has_childs ? "img_folder" : "img_page";
-      if (img2.length==0) img2 = has_childs ? "img_folderopen" : "img_page";
-
-      hitem['_img1'] = img1;
-      hitem['_img2'] = img2;
+      if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";
+      if (img2.length==0) img2 = (has_childs || hitem['_more']) ? "img_folderopen" : "img_page";
 
       var itemname = this.itemFullName(hitem);
 
@@ -217,7 +212,7 @@
 
       // make node icons
 
-      var icon_name = hitem._isopen ? hitem._img2 : hitem._img1;
+      var icon_name = hitem._isopen ? img2 : img1;
 
       if (icon_name.indexOf("img_")==0)
          this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
@@ -339,6 +334,7 @@
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, node, set_attr) {
       if (node==null) {
          node = $("#" + this.frameid).find("[item='" + this.itemFullName(hitem) + "']");
+         console.log('Update item  ' + this.itemFullName(hitem) + "  len " + node.length);
          if (node.length == 0) return;
       }
 
@@ -347,19 +343,22 @@
          node.find("a").text(hitem._name);
       }
 
-      var has_childs = '_childs' in hitem;
+      // better search for images again, but not store them extra
+      var img1 = "", img2 = "", has_childs = ('_childs' in hitem);
+      if ('_icon' in hitem) img1 = hitem['_icon'];
+      if ('_icon2' in hitem) img2 = hitem['_icon2'];
+      if (img2.length==0) img2 = img1;
+      if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";
+      if (img2.length==0) img2 = (has_childs || hitem['_more']) ? "img_folderopen" : "img_page";
 
-      var newname = hitem._isopen ? hitem._img2 : hitem._img1;
-      var oldname = hitem._isopen ? hitem._img1 : hitem._img2;
+      var newname = hitem._isopen ? img2 : img1;
 
       var img = node.find("a").first().prev();
 
-      if (newname.indexOf("img_")<0) {
+      if (newname.indexOf("img_")==0)
+         img.attr("class", newname);
+      else
          img.attr("src", newname);
-      } else {
-         if (newname!=oldname)
-            img.switchClass(oldname, newname);
-      }
 
       img = img.prev();
 
@@ -545,7 +544,7 @@
          }
 
          if (('_menu' in hitem) && (typeof hitem['_menu'] == 'function'))
-            hitem['_menu'](menu, hitem);
+            hitem['_menu'](menu, hitem, painter);
 
          if (menu.size() > 0) {
             menu['tree_node'] = node;
