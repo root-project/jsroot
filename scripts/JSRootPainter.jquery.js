@@ -409,10 +409,13 @@
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, plusminus) {
       var itemname = node.parent().attr('item');
 
-      if (itemname==null) return;
+      if (itemname == null) return;
 
       var hitem = this.Find(itemname);
-      if (hitem==null) return;
+      if (hitem == null) return;
+
+      // special feature - all items with '_expand' function are not drawn by click
+      if (!plusminus && ('_expand' in hitem)) plusminus = true;
 
       // special case - one should expand item
       if (plusminus && !('_childs' in hitem) && hitem['_more'])
@@ -424,7 +427,7 @@
             return this.player(itemname);
 
          var handle = JSROOT.getDrawHandle(hitem._kind);
-         if (handle!=null) {
+         if (handle != null) {
             if ('aslink' in handle)
                return window.open(itemname + "/");
 

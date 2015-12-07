@@ -1220,35 +1220,29 @@
 
       var item = {
          _kind : "ROOT.TGeoVolume",
-         _name : volume.fName,
+         _name : (arg!=null) ? arg : volume.fName,
          _title : volume.fTitle,
          _parent : parent,
-         _volume : volume // keep direct reference
-      };
-
-      if (typeof arg == 'string') {
-         item._name = arg; arg = null;
-      }
-
-      if (arg == null) {
+         _volume : volume, // keep direct reference
+         _more : (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null),
+         _menu : JSROOT.provideGeoMenu,
          // this is special case of expand of geo volume
-         item['_get'] = function(item, itemname, callback) {
+         _get : function(item, itemname, callback) {
             if ((item!=null) && (item._volume != null))
                return JSROOT.CallBack(callback, item, item._volume);
 
             JSROOT.CallBack(callback, item, null);
-         }
-         item['_expand'] = function(node, obj) {
-            // only childs
+         },
 
-            var subnodes = obj['fNodes']['arr'];
-            for (var i in subnodes)
-               JSROOT.expandGeoVolume(node, subnodes[i]['fVolume'], 1);
-            return true;
-         }
-
-        arg = 0;
       }
+
+      if (item['_more'])
+        item['_expand'] = function(node, obj) {
+           var subnodes = obj['fNodes']['arr'];
+           for (var i in subnodes)
+              JSROOT.expandGeoVolume(node, subnodes[i]['fVolume']);
+           return true;
+        }
 
       if (item._title == "")
          if (volume._typename != "TGeoVolume") item._title = volume._typename;
@@ -1284,10 +1278,6 @@
 
       if (!('_childs' in parent)) parent['_childs'] = [];
       parent['_childs'].push(item);
-
-      item['_more'] = (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null);
-
-      item['_menu'] = JSROOT.provideGeoMenu;
 
       if (!('_icon' in item))
          item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";
