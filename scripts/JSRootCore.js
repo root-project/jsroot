@@ -105,7 +105,29 @@
 
    JSROOT.function_list = []; // do we really need it here?
 
-   JSROOT.MathJax = 0; // indicate usage of mathjax 0 - off, 1 - on
+   // default draw styles, can be changed after loading of JSRootCore.js
+   JSROOT.gStyle = {
+         Tooltip : true, // tooltip on/off
+         ContextMenu : true,
+         Zooming : true,
+         MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
+         DragAndDrop : true,  // enables drag and drop functionality
+         OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
+         DefaultCol : 1,  // default col option 1-svg, 2-canvas
+         AutoStat : true,
+         OptStat  : 1111,
+         OptFit   : 0,
+         FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
+         StatNDC  : { fX1NDC: 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
+         StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
+         StatFill : { fFillColor: 0, fFillStyle: 1001 },
+         TimeOffset : 788918400000, // UTC time at 01/01/95
+         StatFormat : "6.4g",
+         FitFormat : "5.4g",
+         Palette : 57,
+         MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
+         Interpolate : "basis" // d3.js interpolate methods, used in TGraph and TF1 painters
+      };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
 
@@ -684,7 +706,7 @@
             mainfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
                           jsroot.source_dir + "scripts/mathjax_config.js;";
          }
-         if (JSROOT.MathJax == 0) JSROOT.MathJax = 1;
+         if (JSROOT.gStyle.MathJax == 0) JSROOT.gStyle.MathJax = 1;
          modules.push('MathJax');
       }
 

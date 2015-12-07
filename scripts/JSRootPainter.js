@@ -40,29 +40,6 @@
       return handle;
    }
 
-   JSROOT.gStyle = {
-      Tooltip : true, // tooltip on/off
-      ContextMenu : true,
-      Zooming : true,
-      MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
-      DragAndDrop : true,  // enables drag and drop functionality
-      OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
-      DefaultCol : 1,  // default col option 1-svg, 2-canvas
-      AutoStat : true,
-      OptStat  : 1111,
-      OptFit   : 0,
-      FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
-      StatNDC  : { fX1NDC: 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
-      StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
-      StatFill : { fFillColor: 0, fFillStyle: 1001 },
-      TimeOffset : 788918400000, // UTC time at 01/01/95
-      StatFormat : "6.4g",
-      FitFormat : "5.4g",
-      Palette : 57,
-      MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
-      Interpolate : "basis" // d3.js interpolate methods, used in TGraph and TF1 painters
-   };
-
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
@@ -109,7 +86,7 @@
       }
 
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
-      if ((mathjax!=null) && (mathjax!="0")) JSROOT.MathJax = 1;
+      if ((mathjax!=null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
 
@@ -1692,7 +1669,7 @@
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      var use_normal_text = ((JSROOT.MathJax<1) && (latex_kind!=2)) || (latex_kind<1);
+      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!=2)) || (latex_kind<1);
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
