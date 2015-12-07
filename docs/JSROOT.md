@@ -48,11 +48,14 @@ One can very easy integrate JSROOT graphic into other HTML pages using a __ifram
 <iframe width="600" height="500" src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
 </iframe>
 
+
+## Reading ROOT files from other servers {#jsroot_cors}
+
 In principle, one could open any ROOT file placed in the web, providing the full URL to it like:
 
 <https://jsroot.gsi.de/latest/?file=https://root.cern.ch/js/files/hsimple.root&item=hpx>
 
-But one should be aware of [Cross-Origin Request blocking](https://developer.mozilla.org/en/http_access_control), when the browser blocks requests to files from domains other than current web page.
+But one should be aware of [Same-origin policy](https://en.wikipedia.org/wiki/Same-origin_policy), when the browser blocks requests to files from domains other than current web page.
 To enable CORS on Apache web server, hosting ROOT files, one should add following lines to `.htaccess` file:
 
     <IfModule mod_headers.c>
@@ -64,6 +67,7 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
       </FilesMatch>
     </IfModule>
 
+Mode details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
 Other solution - copy all JSROOT files to the same location than where the data files are located.
 In such case one could use the server with its default settings.
@@ -83,7 +87,7 @@ In such case one can also specify a custom files list:
     ...
 
 
-## JSROOT with THttpServer
+## JSROOT with THttpServer 
 
 THttpServer provides http access to objects from running ROOT application.
 JSROOT is used to implement the user interface in the web browsers.
