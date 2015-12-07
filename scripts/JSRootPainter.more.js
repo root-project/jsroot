@@ -2243,40 +2243,26 @@
       if ((name==null) || (name=="")) name = this.histo.fName;
       if (name.length > 0) name += "\n";
 
-      // var x1, y1, x2, y2, grx1, gry1, grx2, gry2, fillcol, shrx, shry, binz, point, wx ,wy, zdiff;
-
       var xx = [], yy = [];
-      for (var i = i1; i <= i2; i++) {
+      for (var i = i1; i <= i2; ++i) {
          var x = this.GetBinX(i);
          if (this.options.Logx && (x <= 0)) continue;
          xx.push({indx:i, axis: x, gr: this.grx(x)});
       }
 
-      for (var j = j1; j <= j2; j++) {
+      for (var j = j1; j <= j2; ++j) {
          var y = this.GetBinY(j);
          if (this.options.Logy && (y <= 0)) continue;
          yy.push({indx:j, axis: y, gr: this.gry(y)});
       }
 
-      if (this.options.Optimize > 0) {
-         var numx = 40, numy = 40;
-
-         var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
-         if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
-                   else numx = Math.max(10, Math.round(numy * coef));
-
-         if ((this.options.Optimize > 1) || (xx.length > 50))
-            this.CompressAxis(xx, numx, !this.options.Logx && this.regularx);
-
-         if ((this.options.Optimize > 1) || (yy.length > 50))
-            this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
-      }
-
-      // first found min/max values in selected range
+      // first found min/max values in selected range, and number of non-zero bins
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
-      for (var i = i1; i < i2; i++) {
-         for (var j = j1; j < j2; j++) {
+      var nbins = 0, binz = 0, zdiff, dgrx, dgry;
+      for (var i = i1; i < i2; ++i) {
+         for (var j = j1; j < j2; ++j) {
             binz = this.histo.getBinContent(i + 1, j + 1);
+            if (binz != 0) nbins++;
             if (binz>this.maxbin) this.maxbin = binz; else
             if (binz<this.minbin) this.minbin = binz;
          }
@@ -2295,10 +2281,51 @@
             yfactor = 0.5 / (this.maxbin - this.minbin);
          }
 
+      if ((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) {
+         // if there are many non-empty points, check if all of them are selected
+         // probably we do not need to optimize axis
+
+         this.fContour = null; // z-scale ranges when drawing with color
+         this.fUserContour = false;
+         nbins = 0;
+         for (var i = i1; i < i2; ++i) {
+            for (var j = j1; j < j2; ++j) {
+               binz = this.histo.getBinContent(i + 1, j + 1);
+               if ((binz == 0) || (binz < this.minbin)) continue;
+
+               if (coordinates_kind == 0) {
+                  if (this.getValueColor(binz) != null) nbins++;
+               } else {
+                  zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
+                  dgrx = zdiff * xfactor;
+                  dgry = zdiff * yfactor;
+
+                  if (((1 - 2*zdiff*xfactor)*(xx[i-i1+1].gr - xx[i-i1].gr) > 0.05) ||
+                      ((1 - 2*zdiff*yfactor)*(yy[i-i1].gr - yy[i-i1+1].gr) > 0.05)) nbins++;
+               }
+
+            }
+         }
+      }
+
+      if ((this.options.Optimize > 0) && (nbins>1000)) {
+         var numx = 40, numy = 40;
+
+         var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
+         if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
+                   else numx = Math.max(10, Math.round(numy * coef));
+
+         if ((this.options.Optimize > 1) || (xx.length > 50))
+            this.CompressAxis(xx, numx, !this.options.Logx && this.regularx);
+
+         if ((this.options.Optimize > 1) || (yy.length > 50))
+            this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
+      }
+
       this.fContour = null; // z-scale ranges when drawing with color
       this.fUserContour = false;
 
-      var local_bins = [], zdiff, dgrx, dgry;
+      var local_bins = [];
 
       for (var i = 0; i < xx.length-1; ++i) {
          var grx1 = xx[i].gr, grx2 = xx[i+1].gr;
@@ -2306,7 +2333,7 @@
          for (var j = 0; j < yy.length-1; ++j) {
             var gry1 = yy[j].gr, gry2 = yy[j+1].gr;
 
-            var binz = this.histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
+            binz = this.histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
 
             if ((xx[i+1].indx > xx[i].indx+1) || (yy[j+1].indx > yy[j].indx+1)) {
                // check all other pixels inside range
@@ -2362,11 +2389,11 @@
             if (point==null) continue;
 
             if (tipkind == 1) {
-               if (this.x_kind=='labels')
+               if (this.x_kind == 'labels')
                   point['tip'] = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
                else
                   point['tip'] = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + "]\n";
-               if (this.y_kind=='labels')
+               if (this.y_kind == 'labels')
                   point['tip'] += "y = " + this.AxisAsText("y", yy[j].axis) + "\n";
                else
                   point['tip'] += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + "]\n";
