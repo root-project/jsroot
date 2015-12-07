@@ -6287,9 +6287,10 @@
             var dir = null;
             if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key['fName']);
             item["_isdir"] = true;
-            if (dir==null) {
+            if (dir == null) {
                item["_more"] = true;
                item['_expand'] = function(node, obj) {
+                  console.log('Expand dir ' + node._name);
                   painter.KeysHierarchy(node, obj.fKeys);
                   return true;
                }
@@ -6348,14 +6349,14 @@
                   // if object was read even when item didnot exist try to reconstruct new hierarchy
                   if ((item==null) && (obj!=null)) {
                      // first try to found last read directory
-                     var diritem = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
-                     if ((diritem!=null) && (diritem!=fff)) {
+                     var d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
+                     if ((d!=null) && ('last' in d) && (d.last!=fff)) {
                         // reconstruct only subdir hierarchy
-                        var dir = file.GetDir(painter.itemFullName(diritem, fff));
+                        var dir = file.GetDir(painter.itemFullName(d.last, fff));
                         if (dir) {
-                           diritem['_name'] = diritem['_keyname'];
-                           var dirname = painter.itemFullName(diritem, fff);
-                           painter.KeysHierarchy(diritem, dir.fKeys, file, dirname + "/");
+                           d.last['_name'] = d.last['_keyname'];
+                           var dirname = painter.itemFullName(d.last, fff);
+                           painter.KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
@@ -6414,7 +6415,7 @@
 
       function find_in_hierarchy(top, fullname) {
 
-         if (!fullname || fullname.length == 0 || (top==null)) return top;
+         if (!fullname || (fullname.length == 0) || (top==null)) return top;
 
          var pos = -1;
 
@@ -6453,7 +6454,7 @@
             }
          } while (pos > 0);
 
-         return ('last_exists' in arg) ? top : null;
+         return ('last_exists' in arg) && (top!=null) ? { last : top, rest : fullname } : null;
       }
 
       var top = this.h;
@@ -6545,66 +6546,48 @@
       this.RefreshHtml();
    }
 
-   JSROOT.HierarchyPainter.prototype.get = function(itemname, callback, options) {
+   JSROOT.HierarchyPainter.prototype.get = function(arg, call_back, options) {
       // get object item with specified name
       // depending from provided option, same item can generate different object types
 
+      var itemname = (typeof arg == 'object') ? arg.arg : arg;
+
       var item = this.Find(itemname);
 
-      // if item not found, try to get object via central function
+      // if item not found, try to find nearest parent which could allow us to get inside
+      var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true });
+
+      // if item not found, try to expand hierarchy central function
       // implements not process get in central method of hierarchy item (if exists)
-      if (item == null) {
-         var last_parent = this.Find({ name: itemname, last_exists: true });
+      // if last_parent found, try to expand it
+      if ((d!=null) && ('last' in d) && (d.last!=null)) {
+         var hpainter = this;
+         var parentname = this.itemFullName(d.last);
 
-         // if lat exist parent has expand function, try to activate it
+         // this is indication that expand does not give us better path to searched item
+         if ((typeof arg == 'object') && ('rest' in arg))
+            if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
+               return JSROOT.CallBack(call_back);
 
-         if ('_expand' in last_parent) {
-            var hpainter = this;
-            var parentname = this.itemFullName(last_parent);
-            return this.expand(parentname, function(res) {
-               if (hpainter.Find(itemname) != null)
-                  return hpainter.get(itemname, callback, options);
+         // console.log('Find potential parent ' + parentname + " rest = " + d.rest);
 
-               if (!res) JSROOT.CallBack(callback);
-
-               // we try to analyze that new parent is really closer to our searched item
-               var new_parent = hpainter.Find({ name: itemname, last_exists: true });
-               var new_name = hpainter.itemFullName(new_parent);
-               if ((new_name == parentname) || (new_name.length <= parentname.length)) JSROOT.CallBack(callback);
-
-               hpainter.get(itemname, callback, options);
-            });
-         }
-
-
-         while (last_parent!=null) {
-            if ('_get' in last_parent) {
-               var parentname = this.itemFullName(last_parent);
-               // remove parent name with slash after it
-               if (parentname.length>0)
-                  itemname = itemname.substr(parentname.length+1);
-               break;
-            }
-            if (!('_parent' in last_parent)) { last_parent = null; break; }
-            last_parent = last_parent._parent;
-         }
-
-         if (last_parent==null) last_parent = this.h;
-
-         if ((last_parent!=null) && ('_get' in last_parent))
-            return last_parent._get(null, itemname, callback, options);
+         return this.expand(parentname, function(res) {
+            if (!res) JSROOT.CallBack(call_back);
+            var newparentname = hpainter.itemFullName(d.last);
+            // console.log('New parent name ' + newparentname + " sub = " + d.rest);
+            hpainter.get( { arg : newparentname + "/" + d.rest, rest : d.rest }, call_back, options);
+         });
       }
-
 
       // normally search _get method in the parent items
       var curr = item;
       while (curr != null) {
          if (('_get' in curr) && (typeof (curr._get) == 'function'))
-            return curr._get(item, null, callback, options);
+            return curr._get(item, null, call_back, options);
          curr = ('_parent' in curr) ? curr['_parent'] : null;
       }
 
-      JSROOT.CallBack(callback, item, null);
+      JSROOT.CallBack(call_back, item, null);
    }
 
    JSROOT.HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {

@@ -1157,6 +1157,7 @@
                _kind : "ROOT." + obj._typename,
                _name : obj.fName,
                _title : obj.fTitle,
+               _parent : node,
                _geoobj : obj
             };
 
@@ -1179,6 +1180,7 @@
          _kind : "ROOT.TGeoVolume",
          _name : volume.fName,
          _title : volume.fTitle,
+         _parent : parent,
          _volume : volume // keep direct reference
       };
 
