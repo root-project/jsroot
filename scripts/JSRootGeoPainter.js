@@ -1233,8 +1233,7 @@
 
             JSROOT.CallBack(callback, item, null);
          },
-
-      }
+      };
 
       if (item['_more'])
         item['_expand'] = function(node, obj) {
@@ -1277,6 +1276,24 @@
       }
 
       if (!('_childs' in parent)) parent['_childs'] = [];
+
+      // avoid name duplication of the items
+      for (var cnt=0;cnt<1000000;cnt++) {
+         var curr_name = item._name;
+         if (curr_name.length == 0) curr_name = "item";
+         if (cnt>0) curr_name+= "_"+cnt;
+         // avoid name duplication
+         for (var n in parent['_childs']) {
+            if (parent['_childs'][n]['_name'] == curr_name) {
+               curr_name = ""; break;
+            }
+         }
+         if (curr_name.length > 0) {
+            if (cnt>0) item._name = curr_name;
+            break;
+         }
+      }
+
       parent['_childs'].push(item);
 
       if (!('_icon' in item))
