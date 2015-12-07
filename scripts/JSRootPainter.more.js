@@ -1530,12 +1530,12 @@
          this.AddDrag({ obj:pave, redraw: this.Redraw.bind(this) });
 
          // rescale after all entries are shown
-         this.FinishTextDrawing(null, this.DrawingReady.bind(this));
+         this.FinishTextDrawing();
       }
 
       this.Redraw();
 
-      return this; // ready will be called
+      return this.DrawingReady();
    }
 
    // ===========================================================================

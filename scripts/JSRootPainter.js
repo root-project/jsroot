@@ -6023,7 +6023,7 @@
 
       this.AddDrag({ obj : pavelabel, redraw: this.drawPaveLabel.bind(this) });
 
-      this.FinishTextDrawing(null, this.DrawingReady.bind(this));
+      this.FinishTextDrawing();
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
@@ -6062,7 +6062,7 @@
 
       this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, latex_kind);
 
-      this.FinishTextDrawing(null, this.DrawingReady.bind(this));
+      this.FinishTextDrawing();
    }
 
    JSROOT.TTextPainter.prototype.UpdateObject = function(obj) {
@@ -6087,7 +6087,7 @@
       var painter = new JSROOT.TTextPainter(text);
       painter.SetDivId(divid);
       painter.Redraw();
-      return painter;
+      return painter.DrawingReady();
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
