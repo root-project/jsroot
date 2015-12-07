@@ -313,26 +313,27 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
 /* routines (inflate) */
 
-var zip_GET_STR_BYTE = function() {
+var zip_GET_BYTE = function() {
    if (zip_inflate_data.length == zip_inflate_pos)
       return -1;
    return zip_inflate_data.charCodeAt(zip_inflate_pos++) & 0xff;
 }
-
-var zip_GET_ARR_BYTE = function() {
-   if (zip_inflate_pos == zip_inflate_data.byteLength)
-      return -1;
-   return zip_inflate_data[zip_inflate_pos++];
-}
-
-var zip_GET_BYTE = zip_GET_STR_BYTE;
-
-var zip_NEEDBITS = function(n) {
+var zip_NEEDBITS_DFLT = function(n) {
    while (zip_bit_len < n) {
       zip_bit_buf |= zip_GET_BYTE() << zip_bit_len;
       zip_bit_len += 8;
    }
 }
+
+var zip_NEEDBITS_ARR = function(n) {
+   while (zip_bit_len < n) {
+      if (zip_inflate_pos < zip_inflate_data.byteLength)
+         zip_bit_buf |= zip_inflate_data[zip_inflate_pos++] << zip_bit_len;
+      zip_bit_len += 8;
+   }
+}
+
+var zip_NEEDBITS = zip_NEEDBITS_DFLT;
 
 var zip_GETBITS = function(n) {
    return zip_bit_buf & zip_MASK_BITS[n];
@@ -743,7 +744,7 @@ var zip_inflate = function(str)
    zip_inflate_data = str;
    zip_inflate_pos = 0;
 
-   zip_GET_BYTE = zip_GET_STR_BYTE;
+   zip_NEEDBITS = zip_NEEDBITS_DFLT;
 
    var buff = new Array(1024);
    var aout = [];
@@ -765,7 +766,7 @@ var zip_inflate_arr = function(arr, tgt)
    zip_inflate_start();
    zip_inflate_data = arr;
    zip_inflate_pos = 0;
-   zip_GET_BYTE = zip_GET_ARR_BYTE;
+   zip_NEEDBITS = zip_NEEDBITS_ARR;
 
    var cnt = 0;
    while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
