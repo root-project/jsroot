@@ -6893,8 +6893,51 @@
          });
    }
 
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname) {
-      // alert('expand ' + itemname + ' can be used only jquery part loaded');
+   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, tree_node) {
+      var hpainter = this;
+
+      var hitem = this.Find(itemname);
+      if (hitem==null) return JSROOT.CallBack(call_back);
+
+      // mark that item cannot be longer expand
+      if (('_more' in hitem) && !hitem['_more']) return JSROOT.CallBack(call_back);
+
+      if (!('_more' in hitem)) {
+         var handle = JSROOT.getDrawHandle(hitem._kind);
+         if ((handle!=null) && ('expand' in handle)) {
+            return JSROOT.AssertPrerequisites(handle['prereq'], function() {
+               hitem['_expand'] = JSROOT.findFunction(handle['expand']);
+               if (typeof hitem['_expand'] == 'function') {
+                  hitem['_more'] = true; // use as workaround - not try to repeat same action
+                  hpainter.expand(itemname, call_back, tree_node);
+                  delete hitem['_more'];
+               }
+            });
+         }
+      }
+
+      hitem['_doing_expand'] = true;
+
+      this.get(itemname, function(item, obj) {
+         delete hitem['_doing_expand'];
+
+         var curr = item;
+
+         while ((curr != null) && (obj != null)) {
+            if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
+                if (curr['_expand'](item, obj)) {
+                   item._isopen = true;
+
+                   if (typeof hpainter['UpdateTreeNode'] == 'function')
+                      hpainter.UpdateTreeNode(item, tree_node, true);
+                   break;
+                }
+            }
+            curr = ('_parent' in curr) ? curr['_parent'] : null;
+         }
+         JSROOT.CallBack(call_back);
+      });
+
    }
 
    JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function(item) {
@@ -7391,11 +7434,11 @@
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
+         else if (expanditems.length>0)
+            hpainter.expand(expanditems.shift(), OpenAllFiles);
          else
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
-
-               for (var n in expanditems) hpainter.expand(expanditems[n]);
 
                JSROOT.RegisterForResize(hpainter);
 

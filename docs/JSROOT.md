@@ -49,7 +49,7 @@ One can very easy integrate JSROOT graphic into other HTML pages using a __ifram
 </iframe>
 
 
-## Reading ROOT files from other servers {#jsroot_cors}
+## Reading ROOT files from other servers
 
 In principle, one could open any ROOT file placed in the web, providing the full URL to it like:
 

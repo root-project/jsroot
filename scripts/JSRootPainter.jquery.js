@@ -336,7 +336,17 @@
       JSROOT.CallBack(callback);
    }
 
-   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(node, hitem) {
+   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, node, set_attr) {
+      if (node==null) {
+         node = $("#" + this.frameid).find("[item='" + this.itemFullName(hitem) + "']");
+         if (node.length == 0) return;
+      }
+
+      if (set_attr) {
+         node.attr('item', this.itemFullName(hitem));
+         node.find("a").text(hitem._name);
+      }
+
       var has_childs = '_childs' in hitem;
 
       var newname = hitem._isopen ? hitem._img2 : hitem._img1;
@@ -406,7 +416,7 @@
 
       // special case - one should expand item
       if (plusminus && !('_childs' in hitem) && hitem['_more'])
-         return this.expand(itemname, hitem, node.parent());
+         return this.expand(itemname, null, node.parent());
 
       if (!plusminus) {
 
@@ -425,11 +435,11 @@
                return this.ExecuteCommand(itemname, node);
 
             if (('expand' in handle) && (hitem['_childs'] == null))
-               return this.expand(itemname, hitem, node.parent());
+               return this.expand(itemname, null, node.parent());
          }
 
          if ((hitem['_childs'] == null))
-            return this.expand(itemname, hitem, node.parent());
+            return this.expand(itemname, null, node.parent());
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
@@ -439,7 +449,7 @@
       else
          hitem._isopen = true;
 
-      this.UpdateTreeNode(node.parent(), hitem);
+      this.UpdateTreeNode(hitem, node.parent());
    }
 
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(node, event) {
@@ -540,57 +550,6 @@
       }); // end menu creation
 
       return false;
-   }
-
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname, item0, node) {
-      var painter = this;
-
-      if (item0==null) item0 = this.Find(itemname);
-      if (item0==null) return false;
-
-      // mark that item cannot be longer expand
-      if (('_more' in item0) && !item0['_more']) return false;
-
-      if (!('_more' in item0)) {
-         var handle = JSROOT.getDrawHandle(item0._kind);
-         if ((handle!=null) && ('expand' in handle)) {
-            return JSROOT.AssertPrerequisites(handle['prereq'], function() {
-               item0['_expand'] = JSROOT.findFunction(handle['expand']);
-               if (typeof item0['_expand'] == 'function') {
-                  item0['_more'] = true; // use as workaround - not try to repeat same action
-                  painter.expand(itemname, item0, node);
-                  delete item0['_more'];
-               }
-            });
-         }
-      }
-
-      var tree_node = node;
-      if (tree_node==null)
-         tree_node = $("#" + this.frameid).find("[item='" + itemname + "']");
-      if (tree_node.length==0) return false;
-
-      item0['_doing_expand'] = true;
-
-      this.get(itemname, function(item, obj) {
-         delete item0['_doing_expand'];
-
-         if ((item == null) || (obj == null)) return;
-
-         var curr = item;
-         while (curr != null) {
-            if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
-                if (curr['_expand'](item, obj)) {
-                   tree_node.attr('item', painter.itemFullName(item));
-                   tree_node.find("a").text(item._name);
-                   item._isopen = true;
-                   painter.UpdateTreeNode(tree_node, item);
-                }
-                return;
-            }
-            curr = ('_parent' in curr) ? curr['_parent'] : null;
-         }
-      });
    }
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
