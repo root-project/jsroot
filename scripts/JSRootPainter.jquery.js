@@ -220,9 +220,9 @@
       var icon_name = hitem._isopen ? hitem._img2 : hitem._img1;
 
       if (icon_name.indexOf("img_")==0)
-         this['html'] += '<div class="' + icon_name + '"/>';
+         this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
       else
-         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px"/>';
+         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + hitem._kind +'"/>';
 
       this['html'] += '<a';
       if (can_click || has_childs) this['html'] +=' class="h_item"';
