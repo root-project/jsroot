@@ -6554,7 +6554,28 @@
       // if item not found, try to get object via central function
       // implements not process get in central method of hierarchy item (if exists)
       if (item == null) {
-         var last_parent = this.Find({ name: itemname, last_exists: true});
+         var last_parent = this.Find({ name: itemname, last_exists: true });
+
+         // if lat exist parent has expand function, try to activate it
+
+         if ('_expand' in last_parent) {
+            var hpainter = this;
+            var parentname = this.itemFullName(last_parent);
+            return this.expand(parentname, function(res) {
+               if (hpainter.Find(itemname) != null)
+                  return hpainter.get(itemname, callback, options);
+
+               if (!res) JSROOT.CallBack(callback);
+
+               // we try to analyze that new parent is really closer to our searched item
+               var new_parent = hpainter.Find({ name: itemname, last_exists: true });
+               var new_name = hpainter.itemFullName(new_parent);
+               if ((new_name == parentname) || (new_name.length <= parentname.length)) JSROOT.CallBack(callback);
+
+               hpainter.get(itemname, callback, options);
+            });
+         }
+
 
          while (last_parent!=null) {
             if ('_get' in last_parent) {
@@ -6921,13 +6942,13 @@
       this.get(itemname, function(item, obj) {
          delete hitem['_doing_expand'];
 
-         var curr = item;
+         var curr = item, is_ok = false;
 
          while ((curr != null) && (obj != null)) {
             if (('_expand' in curr) && (typeof (curr['_expand']) == 'function')) {
                 if (curr['_expand'](item, obj)) {
                    item._isopen = true;
-
+                   is_ok = true;
                    if (typeof hpainter['UpdateTreeNode'] == 'function')
                       hpainter.UpdateTreeNode(item, tree_node, true);
                    break;
@@ -6935,7 +6956,7 @@
             }
             curr = ('_parent' in curr) ? curr['_parent'] : null;
          }
-         JSROOT.CallBack(call_back);
+         JSROOT.CallBack(call_back, is_ok);
       });
 
    }

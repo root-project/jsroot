@@ -121,7 +121,7 @@
             for (var i in arrFiles)
                guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
             guiCode += '</select><br/>'
-               +'<p><small>Read <a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">docu</a>'
+               +'<p><small><a href="https://github.com/linev/jsroot/blob/ver4/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
                +'<input style="padding:2px; margin-top:5px;"'
                +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'

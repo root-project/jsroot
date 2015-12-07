@@ -1268,7 +1268,7 @@
       JSROOT.expandGeoList(item3, obj.fTracks);
       hitem['_childs'].push(item3);
 
-      JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Master volume");
+      JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
 
       return true;
    }
