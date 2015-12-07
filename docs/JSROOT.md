@@ -67,7 +67,7 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
       </FilesMatch>
     </IfModule>
 
-Mode details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
+More details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
 Other solution - copy all JSROOT files to the same location than where the data files are located.
 In such case one could use the server with its default settings.
@@ -192,17 +192,22 @@ Here, the default location of JSROOT is specified. One could have a local copy o
 
 In URL string with JSRootCore.js script one should specify which JSROOT functionality will be loaded:
 
-    + '2d' normal drawing for 1D/2D objects
+    + '2d' normal drawing for objects like TH1/TCanvas/TGraph
+    + 'more2d' more classes for 2D drawing like TH2/TF1/TEllipse
     + '3d' 3D drawing for 2D/3D histograms
+    + 'geo' 3D drawing of TGeo classes
     + 'io' binary file I/O
-    + 'mathjax' loads MathJax and uses for latex output
+    + 'math' advanced mathemathical functions
+    + 'mathjax' loads MathJax.js and use it for latex output
     + 'gui' default gui for offline/online applications
     + 'load' name of user script(s) to load
     + 'onload' name of function to call when scripts loading completed
 
 For instance, to load functionality with normal 2D graphics and binary ROOT files support, one should specify:
 
-    <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.js?2d&io"></script>
+    <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.min.js?2d&io"></script>
+
+One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly. 
 
 
 ### Use of JSON
