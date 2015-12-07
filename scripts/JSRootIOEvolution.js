@@ -970,8 +970,8 @@
    }
 
    JSROOT.TArrBuffer.prototype.ntou8 = function() {
-      var high = this.arr.getUint32(o); this.o+=4;
-      var low = this.arr.getUint32(o); this.o+=4;
+      var high = this.arr.getUint32(this.o); this.o+=4;
+      var low = this.arr.getUint32(this.o); this.o+=4;
       return high * 0x100000000 + low;
    }
 
@@ -990,8 +990,8 @@
    }
 
    JSROOT.TArrBuffer.prototype.ntoi8 = function() {
-      var high = this.arr.getUint32(o); this.o+=4;
-      var low = this.arr.getUint32(o); this.o+=4;
+      var high = this.arr.getUint32(this.o); this.o+=4;
+      var low = this.arr.getUint32(this.o); this.o+=4;
       if (high < 0x80000000) return high * 0x100000000 + low;
       return -1 - ((~high) * 0x100000000 + ~low);
    }
