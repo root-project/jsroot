@@ -29,6 +29,27 @@
 
    // ======= Geometry painter================================================
 
+   JSROOT.EGeoVisibilityAtt = {
+         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
+         kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
+         kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
+         kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
+         kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+         kVisStreamed     : JSROOT.BIT(5),           // true if attributes have been streamed
+         kVisTouched      : JSROOT.BIT(6),           // true if attributes are changed after closing geom
+         kVisOnScreen     : JSROOT.BIT(7),           // true if volume is visible on screen
+         kVisContainers   : JSROOT.BIT(12),          // all containers visible
+         kVisOnly         : JSROOT.BIT(13),          // just this visible
+         kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
+         kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
+      };
+
+   JSROOT.TestGeoAttBit = function(volume, f) {
+      if (!('fGeoAtt' in volume)) return false;
+      return (volume['fGeoAtt'] & f) != 0;
+   }
+
+
    JSROOT.TGeoPainter = function( geometry ) {
       JSROOT.TBasePainter.call( this, geometry );
       this._debug = false;
@@ -677,11 +698,6 @@
       return mesh;
    }
 
-   JSROOT.TGeoPainter.prototype.TestAttBit = function(volume, f) {
-      if (!('fGeoAtt' in volume)) return false;
-      return (volume['fGeoAtt'] & f) != 0;
-   }
-
    JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node, visible) {
       var container = toplevel;
       var volume = node['fVolume'];
@@ -749,7 +765,7 @@
 
       var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
       if (this._debug) _helper = true;
-      if (this.TestAttBit(volume, JSROOT.BIT(7)) || (visible>0)) {
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || (visible>0)) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
@@ -1170,6 +1186,32 @@
 
          return true;
       }
+   };
+
+   JSROOT.toggleGeoAttBit = function(arg) {
+      // 'this' should be set on the volume
+
+      if (!('fGeoAtt' in this)) return false;
+
+      this['fGeoAtt'] = this['fGeoAtt'] ^ (arg & 0xffffff);
+
+     // console.log('toggle bit ' + arg);
+   }
+
+   JSROOT.provideGeoMenu = function(menu, item) {
+       menu.add("separator");
+       var vol = item._volume;
+
+       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisNone), "Invisible",
+                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisNone));
+       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisThis), "Visible",
+                    JSROOT.toggleGeoAttBit.bind(vol,JSROOT.EGeoVisibilityAtt.kVisThis));
+       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters), "Daughters",
+                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters));
+       menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel), "1lvl daughters",
+                    JSROOT.toggleGeoAttBit.bind(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel));
+
+       return true;
    }
 
    JSROOT.expandGeoVolume = function(parent, volume, arg) {
@@ -1244,6 +1286,8 @@
       parent['_childs'].push(item);
 
       item['_more'] = (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null);
+
+      item['_menu'] = JSROOT.provideGeoMenu;
 
       if (!('_icon' in item))
          item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";

@@ -33,10 +33,10 @@
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       if (!menuname) menuname = "root_ctx_menu";
 
-      var menu = { divid: menuname, code:"", cnt: 1, funcs : {} };
+      var menu = { divid: menuname, code:"", cnt: 1, funcs : {}, separ : false };
 
       menu.add = function(name, arg, func) {
-         if (name == "separator") { this.code += "<li>-</li>"; return; }
+         if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
 
          if (name.indexOf("header:")==0) {
             this.code += "<li class='ui-widget-header' style='padding-left:5px'>"+name.substr(7)+"</li>";
@@ -541,8 +541,12 @@
             }
          }
 
+         if (('_menu' in hitem) && (typeof hitem['_menu'] == 'function'))
+            hitem['_menu'](menu, hitem);
+
          if (menu.size() > 0) {
             menu['tree_node'] = node;
+            if (menu.separ) menu.add("separator"); // add separator at the end
             menu.add("Close");
             menu.show(event);
          }
