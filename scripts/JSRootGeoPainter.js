@@ -991,7 +991,7 @@
                   visible: false, transparent: true, opacity: 0.0 } ) );
          toplevel.add(cube);
 
-         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, opt=="norm" ? 0 : 9999);
+         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, opt=="all" ? 9999 : 0);
 
          //top.computeBoundingBox();
          //var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),

@@ -196,10 +196,10 @@
          icon_class = hitem._isopen ? "img_minus" : "img_plus";
          plusminus = true;
       } else
-      if (hitem['_more']) {
+      /*if (hitem['_more']) {
          icon_class = "img_plus"; // should be special plus ???
          plusminus = true;
-      } else {
+      } else */ {
          icon_class = "img_join";
       }
 
