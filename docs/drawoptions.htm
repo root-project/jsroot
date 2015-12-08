@@ -17,7 +17,7 @@
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
       if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://jsroot.gsi.de/files/"; else
-      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
+      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "http://jsroot.gsi.de/files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
