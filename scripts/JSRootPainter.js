@@ -1272,7 +1272,7 @@
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
-         else if ('which' in event) return event.which === 2;
+         else if ('which' in event) return event.which === 3;
          else if ('button' in event) return event.button === 2;
          return false;
       }
@@ -2917,6 +2917,7 @@
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
+
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
