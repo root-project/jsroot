@@ -1213,9 +1213,7 @@
 
       function ToggleMenuBit(arg) {
          JSROOT.ToggleGeoAttBit(vol, arg);
-         console.log("OLD ICON = " + item._icon);
          item._icon = item._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(vol);
-         console.log("NEW ICON = " + item._icon);
          hpainter.UpdateTreeNode(item);
       }
 
@@ -1231,6 +1229,13 @@
       return true;
    }
 
+   JSROOT.geoIconClick = function(hitem) {
+      if ((hitem==null) || (hitem._volume == null)) return false;
+      JSROOT.ToggleGeoAttBit(hitem._volume, JSROOT.EGeoVisibilityAtt.kVisDaughters);
+      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(hitem._volume);
+      return true; // hpainter.UpdateTreeNode(hitem);
+   }
+
    JSROOT.expandGeoVolume = function(parent, volume, arg) {
 
       if ((parent == null) || (volume==null)) return false;
@@ -1243,6 +1248,7 @@
          _volume : volume, // keep direct reference
          _more : (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null),
          _menu : JSROOT.provideGeoMenu,
+         _icon_click : JSROOT.geoIconClick,
          // this is special case of expand of geo volume
          _get : function(item, itemname, callback) {
             if ((item!=null) && (item._volume != null))

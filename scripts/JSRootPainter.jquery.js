@@ -214,9 +214,10 @@
 
       var icon_name = hitem._isopen ? img2 : img1;
 
-      if (icon_name.indexOf("img_")==0)
+      if (icon_name.indexOf("img_")==0) {
+         if ('_icon_click' in hitem) icon_name+= " icon_click";
          this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
-      else
+      } else
          this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + hitem._kind +'"/>';
 
       this['html'] += '<a';
@@ -304,7 +305,9 @@
       }
 
       // d3elem.selectAll(".plus_minus").on("click", function(d) { h.tree_click($(d),true); });
-      elem.find(".plus_minus").click(function() { h.tree_click($(this),true); });
+      elem.find(".plus_minus").click(function() { h.tree_click($(this), "plusminus"); });
+
+      elem.find(".icon_click").click(function() { h.tree_click($(this), "icon"); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
@@ -355,10 +358,12 @@
 
       var img = node.find("a").first().prev();
 
-      if (newname.indexOf("img_")==0)
+      if (newname.indexOf("img_")==0) {
+         if ('_icon_click' in hitem) newname += " icon_click";
          img.attr("class", newname);
-      else
+      } else {
          img.attr("src", newname);
+      }
 
       img = img.prev();
 
@@ -373,7 +378,7 @@
       if (has_childs) {
          img.attr('class', new_class + " plus_minus");
          img.css('cursor', 'pointer');
-         img.click(function() { h.tree_click($(this), true); });
+         img.click(function() { h.tree_click($(this), "plusminus"); });
       }
 
       var childs = node.children().last();
@@ -400,12 +405,12 @@
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
       }
 
-      // d3.select(node.get()).selectAll(".plus_minus").on("click", function(d) { h.tree_click($(d), true); });
+      childs.find(".plus_minus").click(function() { h.tree_click($(this), "plusminus"); });
 
-      childs.find(".plus_minus").click(function() { h.tree_click($(this), true); });
+      childs.find(".icon_click").click(function() { h.tree_click($(this), "icon"); });
    }
 
-   JSROOT.HierarchyPainter.prototype.tree_click = function(node, plusminus) {
+   JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
       var itemname = node.parent().attr('item');
 
       if (itemname == null) return;
@@ -413,15 +418,23 @@
       var hitem = this.Find(itemname);
       if (hitem == null) return;
 
+      if (!place || (place=="")) place = "item";
+
+      if (place == "icon") {
+         if (('_icon_click' in hitem) && (typeof hitem['_icon_click'] == 'function'))
+            if (hitem['_icon_click'](hitem))
+               this.UpdateTreeNode(hitem, node.parent());
+         return;
+      }
+
       // special feature - all items with '_expand' function are not drawn by click
-      if (!plusminus && ('_expand' in hitem)) plusminus = true;
+      if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
 
       // special case - one should expand item
-      if (plusminus && !('_childs' in hitem) && hitem['_more'])
+      if ((place == "plusminus") && !('_childs' in hitem) && hitem['_more'])
          return this.expand(itemname, null, node.parent());
 
-      if (!plusminus) {
-
+      if (place == "item") {
          if ('_player' in hitem)
             return this.player(itemname);
 
