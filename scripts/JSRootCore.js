@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 7/12/2015";
+   JSROOT.version = "dev 8/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1198,7 +1198,6 @@
 
       JSROOT.lastFFormat = "";
 
-      if (!fmt) fmt = "6.4g";
       fmt = fmt.trim();
       var len = fmt.length;
       if (len<2) return value.toFixed(4);
@@ -1208,6 +1207,9 @@
       var prec = fmt.indexOf(".");
       if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
       if (isNaN(prec) || (prec<0) || (prec==null)) prec = 4;
+
+      if ((prec>20) || (prec<0)) console.log("1.prec = "  + prec +  "  fmt = " + fmt + last);
+
       var significance = false;
       if ((last=='e') || (last=='E')) { isexp = true; } else
       if (last=='Q') { isexp = true; significance = true; } else
@@ -1244,7 +1246,7 @@
 
          // when using fixed representation, one could get 0.0
          if ((value!=0) && (Number(sg)==0.) && (prec>0)) {
-            prec = 40; sg = value.toFixed(prec);
+            prec = 20; sg = value.toFixed(prec);
          }
 
          var l = 0;
@@ -1254,7 +1256,8 @@
          if (sg.indexOf(".")>l) diff--;
 
          if (diff != 0) {
-            prec-=diff; if (prec<0) prec = 0;
+            prec-=diff;
+            if (prec<0) prec = 0; else if (prec>20) prec = 20;
             sg = value.toFixed(prec);
          }
       }
