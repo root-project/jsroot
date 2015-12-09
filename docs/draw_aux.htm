@@ -17,17 +17,19 @@
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
       if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://jsroot.gsi.de/files/"; else
-      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
+      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "http://jsroot.gsi.de/files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
          file.ReadObject(itemname, function(obj) {
             if (obj==null) return file_error("In file " + file.fURL + " item " + itemname + " cannot be find");
-            JSROOT.draw(divid, obj, drawopt);
+            JSROOT.draw(divid, obj, drawopt); 
          });
       }
+      
+      var class_list = {};
 
-      function draw_item_options(file, itemname, divid, options, factor) {
+      function draw_item_options(file, itemname, divid, options, class_name) {
          var comment = null;
          var pos = options.indexOf("comment:");
          if (pos >= 0) {
@@ -45,12 +47,22 @@
 
          var html = "";
          if (!is_minimal) html += '<br/><br/>';
-         html += 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
+         html += 'File: <a href="../index.htm?';
+         if (fname.indexOf(".json")>0) 
+            html += 'json=' + fname;
+         else
+            html += 'file=' + fname;
+         
+         html += '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
-            html += '<a href="../index.htm?nobrowser&file=' + fname; 
-            html += '&item=' + itemname + '&';
+            html += '<a href="../index.htm?nobrowser&';
+            if (fname.indexOf(".json")>0) {
+               html += 'json=' + fname + '&';
+            } else {
+               html += 'file=' + fname + '&item=' + itemname + '&';
+            }
 
             if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
                                   else { html += arr[i]; has_equal = true; } 
@@ -72,13 +84,21 @@
          // special case - do not draw on main page
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
-         if (factor != null) h = w * factor;
 
          for (var i in arr) {
+            if (class_name!=null) {
+               if ((JSROOT.GetUrlOption("default")!=null) && (class_name in class_list)) {
+                  console.log("skip " + class_name + " display");
+                  return;
+               }
+               class_list[class_name] = true;
+            }
+         
             var subid = divid + "_" + i;
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
             document.getElementById(divid).innerHTML += html;
             draw_item(file, itemname, subid, arr[i]);
+            
             if (has_equal || (JSROOT.GetUrlOption("all")==null)) return;
          }
       }
@@ -114,11 +134,11 @@
          document.getElementById('debug').innerHTML += "<a href='draw_aux.htm?all" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("ellipse.root", function(file) {
-            draw_item_options(file, "c1;1", "ellipse_draw", "");
+            draw_item_options(file, "c1;1", "ellipse_draw", "", "TElipse");
          });
 
          LoadFile("arrow.root", function(file) {
-            draw_item_options(file, "c1;1", "arrow_draw", "");
+            draw_item_options(file, "c1;1", "arrow_draw", "", "TArrow");
          });
       }
 

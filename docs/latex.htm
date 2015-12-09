@@ -40,7 +40,7 @@
       function CreateGui() {
 
          if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://jsroot.gsi.de/files/"; else
-         if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
+         if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "http://jsroot.gsi.de/files/"; else
          if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
          if (JSROOT.GetUrlOption('mathjax')!=null)

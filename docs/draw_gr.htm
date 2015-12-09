@@ -17,7 +17,7 @@
       var is_minimal = JSROOT.GetUrlOption('all')==null && JSROOT.GetUrlOption('default')==null; 
 
       if (JSROOT.source_dir.indexOf("rawgit")>=0) global_dir = "http://jsroot.gsi.de/files/"; else
-      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "files/"; else
+      if (JSROOT.source_dir.indexOf("file:///")==0) global_dir = "http://jsroot.gsi.de/files/"; else
       if (JSROOT.source_dir.indexOf("http")==0) global_dir = "../../files/";
 
       function draw_item(file, itemname, divid, drawopt) {
@@ -26,8 +26,10 @@
             JSROOT.draw(divid, obj, drawopt); 
          });
       }
+      
+      var class_list = {};
 
-      function draw_item_options(file, itemname, divid, options, factor) {
+      function draw_item_options(file, itemname, divid, options, class_name) {
          var comment = null;
          var pos = options.indexOf("comment:");
          if (pos >= 0) {
@@ -45,12 +47,22 @@
 
          var html = "";
          if (!is_minimal) html += '<br/><br/>';
-         html += 'File: <a href="../index.htm?file=' + fname + '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
+         html += 'File: <a href="../index.htm?';
+         if (fname.indexOf(".json")>0) 
+            html += 'json=' + fname;
+         else
+            html += 'file=' + fname;
+         
+         html += '" target="_blank">' + fname.slice(fname.lastIndexOf('/')+1) + '</a>';
          for (var i in arr) {
             if (i==0) html += " Item: "; else
             if (i==1) html += " Options: "; else html += ", ";
-            html += '<a href="../index.htm?nobrowser&file=' + fname; 
-            html += '&item=' + itemname + '&';
+            html += '<a href="../index.htm?nobrowser&';
+            if (fname.indexOf(".json")>0) {
+               html += 'json=' + fname + '&';
+            } else {
+               html += 'file=' + fname + '&item=' + itemname + '&';
+            }
 
             if (arr[i].indexOf("=")<0) html += 'opt=' + arr[i];
                                   else { html += arr[i]; has_equal = true; } 
@@ -60,11 +72,10 @@
             if (arr[i] == "") html += '&lt;default&gt;'; else html += arr[i]; 
             html += '</a>'; 
          }
-         
+
          if (comment != null) html += comment;
-         
+
          html += "<br/><br/>";
-         
 
          document.getElementById(divid).innerHTML += html;
 
@@ -73,16 +84,25 @@
          // special case - do not draw on main page
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
-         if (factor != null) h = w * factor;
 
          for (var i in arr) {
+            if (class_name!=null) {
+               if ((JSROOT.GetUrlOption("default")!=null) && (class_name in class_list)) {
+                  console.log("skip " + class_name + " display");
+                  return;
+               }
+               class_list[class_name] = true;
+            }
+         
             var subid = divid + "_" + i;
             var html = '<div id="' + subid + '" style="width:'+w+'px; height:'+h+'px"></div>';
             document.getElementById(divid).innerHTML += html;
             draw_item(file, itemname, subid, arr[i]);
+            
             if (has_equal || (JSROOT.GetUrlOption("all")==null)) return;
          }
       }
+
 
       function LoadFile(filename, filecallback) {
 
@@ -115,36 +135,36 @@
          document.getElementById('debug').innerHTML += "<a href='draw_gr.htm?all" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("graph.root", function(file) {
-            draw_item_options(file, "Graph;1", "gr1_draw", ";L;P;*;LP;B;B1");
-            draw_item_options(file, "GraphErrors;1", "gr2_draw", ";0;3;4");
-            draw_item_options(file, "GraphAsymmErrors;1", "gr3_draw", ";2");
+            draw_item_options(file, "Graph;1", "gr1_draw", ";L;P;*;LP;B;B1", "TGraph");
+            draw_item_options(file, "GraphErrors;1", "gr2_draw", ";0;3;4", "TGraphErrors");
+            draw_item_options(file, "GraphAsymmErrors;1", "gr3_draw", ";2", "TGraphAsymmErrors");
             draw_item_options(file, "c1;1", "docu_c1", "comment: <b>defaulf example with &quot;ACP&quot; option</b>");
             draw_item_options(file, "c47;1", "docu_c47", "comment: <b>comparasion of &quot;B&quot; and &quot;B1&quot;option</b>");
-            draw_item_options(file, "exclusion;1", "docu_excl", "comment: <b>exclusion example</b>");
-            draw_item_options(file, "c4;1", "docu_c4", "comment: <b>TGraphErrors example, &quot;AP&quot; option </b>");
-            draw_item_options(file, "c48;1", "docu_c48", "comment: <b>demo for &quot;0P&quot; option</b>");
-            draw_item_options(file, "c41;1", "docu_c41", "comment: <b>demo for &quot;3&quot; option</b>");
-            draw_item_options(file, "c42;1", "docu_c42", "comment: <b>demo for &quot;4&quot; option</b>");
-            draw_item_options(file, "c43;1", "docu_c43", "comment: <b>demo for &quot;[]&quot; option</b>");
-            draw_item_options(file, "c44;1", "docu_c44", "comment: <b>TGraphAssymErrors example, &quot;p2&quot; option</b>");
-            draw_item_options(file, "c45;1", "docu_c45", "comment: <b>TGraphBentErrors example</b>");
-            draw_item_options(file, "c46;1", "docu_c46", "comment: <b>TGraphPolar example</b> <small>&lt;not yet working&gt;</small>");
+            draw_item_options(file, "exclusion;1", "docu_excl", "comment: <b>exclusion example</b>", "TGraphExclusion");
+            draw_item_options(file, "c4;1", "docu_c4", "comment: <b>TGraphErrors example, &quot;AP&quot; option </b>", "TGraphErrors");
+            draw_item_options(file, "c48;1", "docu_c48", "comment: <b>demo for &quot;0P&quot; option</b>", "TGraph");
+            draw_item_options(file, "c41;1", "docu_c41", "comment: <b>demo for &quot;3&quot; option</b>", "TGraph");
+            draw_item_options(file, "c42;1", "docu_c42", "comment: <b>demo for &quot;4&quot; option</b>", "TGraph");
+            draw_item_options(file, "c43;1", "docu_c43", "comment: <b>demo for &quot;[]&quot; option</b>", "TGraph");
+            draw_item_options(file, "c44;1", "docu_c44", "comment: <b>TGraphAssymErrors example, &quot;p2&quot; option</b>", "TGraphAsymmErrors");
+            draw_item_options(file, "c45;1", "docu_c45", "comment: <b>TGraphBentErrors example</b>", "TGraphBentErrors");
+            draw_item_options(file, "c46;1", "docu_c46", "comment: <b>TGraphPolar example</b> <small>&lt;not yet working&gt;</small>", "TGraphPolar");
          });
 
          LoadFile("macro2.root", function(file) {
-            draw_item_options(file, "c1;1", "can1_draw", "");
+            draw_item_options(file, "c1;1", "can1_draw", "", "TCanvas");
          });
          
          LoadFile("gr2.root", function(file) {
-            draw_item_options(file, "c1equi;1", "can2_draw", ";mathjax=1 comment:<b>#splitline in the legend</b>");
+            draw_item_options(file, "c1equi;1", "can2_draw", ";mathjax=1 comment:<b>#splitline in the legend</b>", "TCanvas");
          });
 
          LoadFile("multigraph.root", function(file) {
-            draw_item_options(file, "c1;1", "mg_c1_draw", "");
-            draw_item_options(file, "c2;1", "mg_c2_draw", "");
-            draw_item_options(file, "c3;1", "mg_c3_draw", "");
-            draw_item_options(file, "c4;1", "mg_c4_draw", "");
-            draw_item_options(file, "c5;1", "mg_c5_draw", "");
+            draw_item_options(file, "c1;1", "mg_c1_draw", "", "TMultiGraph");
+            draw_item_options(file, "c2;1", "mg_c2_draw", "", "TMultiGraph");
+            draw_item_options(file, "c3;1", "mg_c3_draw", "", "TMultiGraph");
+            draw_item_options(file, "c4;1", "mg_c4_draw", "", "TMultiGraph");
+            draw_item_options(file, "c5;1", "mg_c5_draw", "", "TMultiGraph");
          });
 
       }

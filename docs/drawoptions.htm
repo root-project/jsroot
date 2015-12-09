@@ -29,7 +29,7 @@
       
       var class_list = {};
 
-      function draw_item_options(file, itemname, divid, options, factor, class_name) {
+      function draw_item_options(file, itemname, divid, options, class_name) {
          var comment = null;
          var pos = options.indexOf("comment:");
          if (pos >= 0) {
@@ -84,7 +84,6 @@
          // special case - do not draw on main page
          var w = JSROOT.GetUrlOption("w", null, "800");
          var h = JSROOT.GetUrlOption("h", null, "600");
-         if (factor != null) h = w * factor;
 
          for (var i in arr) {
             if (class_name!=null) {
@@ -109,11 +108,8 @@
          var dir = JSROOT.GetUrlOption("path");
          if (dir==null) dir = global_dir;
          
-         if (filename.indexOf(".json")>0) {
-            if (JSROOT.source_dir.indexOf("file:///")!=0)             
-               return filecallback({ fURL: dir+filename+'.gz' });
+         if (filename.indexOf(".json")>0)
             return filecallback({ fURL: dir+filename });
-         }
 
          // do not read file when not required - create only fake instance
          if (is_minimal) return filecallback({ fURL: dir+filename });
@@ -143,100 +139,100 @@
          document.getElementById('debug').innerHTML += "<a href='drawoptions.htm?all&" + arg + "'>Drawings for all supported options</a><br/>";
 
          LoadFile("hsimple.root", function(file) {
-            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;pE2", 0., "TH1");
-            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL0Z;COL2;COL3;LEGO;colpal79", 0., "TH2");
-            draw_item_options(file, "hprof;1", "prof_draw", ";E;E1;pE2;hist", 0., "TProfile");
+            draw_item_options(file, "hpx;1", "h1_draw", ";P;P0;E;E1;pE2", "TH1");
+            draw_item_options(file, "hpxpy;1", "h2_draw", ";COL;COLZ;COL0Z;COL2;COL3;LEGO;colpal79", "TH2");
+            draw_item_options(file, "hprof;1", "prof_draw", ";E;E1;pE2;hist", "TProfile");
          });
 
          if (extra_drawing) {
             LoadFile("hbins.root", function(file) {
-               draw_item_options(file, "SpectraPions;1", "hbins_draw", ";mathjax=1", 0., "TH1");
+               draw_item_options(file, "SpectraPions;1", "hbins_draw", ";mathjax=1", "TH1");
             });
             LoadFile("hitmap.root", function(file) {
-               draw_item_options(file, "HitMap;1", "atlas1_draw", "colz", 0., "TH2");
-               draw_item_options(file, "EnergyMeanAsyLo;1", "atlas2_draw", "hist", 0., "TH1");
+               draw_item_options(file, "HitMap;1", "atlas1_draw", "colz", "TH2");
+               draw_item_options(file, "EnergyMeanAsyLo;1", "atlas2_draw", "hist", "TH1");
             });
 
             LoadFile("atlas.root", function(file) {
-               draw_item_options(file, "LEDShapeHeightCorr_Gain0;1", "atlas3_draw", "col", 0., "TH2");
+               draw_item_options(file, "LEDShapeHeightCorr_Gain0;1", "atlas3_draw", "col", "TH2");
             });
 
             LoadFile("QAresults.root", function(file) {
-               draw_item_options(file, "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1", "qares_2d_draw", "hist;colz", 0., "TH2");
+               draw_item_options(file, "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1", "qares_2d_draw", "hist;colz", "TH2");
             });
             
          }
 
          LoadFile("glbox.root", function(file) {
-            draw_item_options(file, "h31;1", "h3_draw", "", 0., "TH3");
+            draw_item_options(file, "h31;1", "h3_draw", "", "TH3");
          });
 
          LoadFile("fillrandom.root", function(file) {
-            draw_item_options(file, "sqroot;1", "f1_draw", "", 0., "TF1");
+            draw_item_options(file, "sqroot;1", "f1_draw", "", "TF1");
          });
 
          LoadFile("ip0.root", function(file) {
-            draw_item_options(file, "c;1", "f1_draw2", "", 0., "TF1");
+            draw_item_options(file, "c;1", "f1_draw2", "", "TF1");
          });
 
          LoadFile("danilo5.root", function(file) {
-            draw_item_options(file, "canvas;1", "f1_draw3", "", 0., "TF1");
+            draw_item_options(file, "canvas;1", "f1_draw3", "", "TF1");
          });
 
          LoadFile("danilo6.root", function(file) {
-            draw_item_options(file, "canvas;1", "f1_draw4", "", 0., "TF1");
+            draw_item_options(file, "canvas;1", "f1_draw4", "", "TF1");
          });
 
          if (extra_drawing) {
             LoadFile("ff2.root", function(file) {
-               draw_item_options(file, "c1Dia;1", "f1_draw5", "", 0., "TF1");
+               draw_item_options(file, "c1Dia;1", "f1_draw5", "", "TF1");
             });
             LoadFile("ff3.root", function(file) {
-               draw_item_options(file, "c1Dia;1", "f1_draw6", "", 0., "TF1");
+               draw_item_options(file, "c1Dia;1", "f1_draw6", "", "TF1");
             });
          }
 
          LoadFile("rf107.root", function(file) {
-            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", 0., "TCanvas");
+            draw_item_options(file, "rf107_plotstyles;1", "can_draw", "", "TCanvas");
          });
 
          LoadFile("ct.root", function(file) {
-            draw_item_options(file, "ct;1", "can2_draw", "", 0. , "TCanvas");
+            draw_item_options(file, "ct;1", "can2_draw", "", "TCanvas");
          });
 
          LoadFile("zdemo.root", function(file) {
-            draw_item_options(file, "zdemo;1", "can3_draw", ";mathjax=1", 0. , "TCanvas");
+            draw_item_options(file, "zdemo;1", "can3_draw", ";mathjax=1", "TCanvas");
          });
 
          if (extra_drawing)
             LoadFile("JPsi_evolution.root", function(file) {
-               draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", 0., "TCanvas");
+               draw_item_options(file, "CutTrees/cut1/C_cut1 < 2.85714;1", "can4_draw", "", "TCanvas");
             });
 
          LoadFile("stacks.root", function(file) {
-            draw_item_options(file, "stacks;1", "can5_draw", "", 0., "TCanvas");
+            draw_item_options(file, "stacks;1", "can5_draw", "", "TCanvas");
          });
 
          LoadFile("legends.root", function(file) {
-            draw_item_options(file, "legends;1", "can6_draw", ";mathjax=1", 0., "TCanvas");
+            draw_item_options(file, "legends;1", "can6_draw", ";mathjax=1", "TCanvas");
          });
 
-         LoadFile("rootgeom.json", function(file) {
-            draw_item_options(file, "json", "geo1_draw", "", 0., "TGeo");
+         LoadFile("rootgeom.json.gz", function(file) {
+            draw_item_options(file, "json", "geo1_draw", "", "TGeo");
          });
-         LoadFile("atlas_cryo.json", function(file) {
-            draw_item_options(file, "json", "geo2_draw", "", 0., "TGeo");
+         LoadFile("atlas_cryo.json.gz", function(file) {
+            draw_item_options(file, "json", "geo2_draw", "", "TGeo");
          });
-         LoadFile("simple_alice.json", function(file) {
-            draw_item_options(file, "json", "geo3_draw", "", 0., "TGeo");
+         LoadFile("simple_alice.json.gz", function(file) {
+            draw_item_options(file, "json", "geo3_draw", "", "TGeo");
          });
 
          if (extra_drawing) {
             LoadFile("can4.root", function(file) {
-               draw_item_options(file, "c1;1", "can7_draw", "", 0., "TCanvas");
+               draw_item_options(file, "c1;1", "can7_draw", "", "TCanvas");
             });
             LoadFile("higgs_c.root", function(file) {
-               draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", 0., "TCanvas");
+               draw_item_options(file, "c;1", "can8_draw", "col=1;col=2;col=3;mathjax=1", "TCanvas");
             });
          }
 
