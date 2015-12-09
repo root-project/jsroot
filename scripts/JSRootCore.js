@@ -9,7 +9,7 @@
 
       var dir = "scripts", ext = "";
       var scripts = document.getElementsByTagName('script');
-      for (var n in scripts) {
+      for (var n = 0; n < scripts.length; ++n) {
          if (scripts[n]['type'] != 'text/javascript') continue;
          var src = scripts[n]['src'];
          if ((src == null) || (src.length == 0)) continue;
@@ -42,7 +42,7 @@
          };
 
       // check if modules are already loaded
-      for (var module in paths)
+      for (var module = 0; module < paths.length; ++module)
         if (requirejs.defined(module))
            delete paths[module];
 
@@ -330,7 +330,7 @@
       // try to parse ourself
       var arr = val.substr(1, val.length-2).split(","); // remove brackets
 
-      for (var i in arr) {
+      for (var i = 0; i < arr.length; ++i) {
          var sub = arr[i].trim();
          if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
             sub = sub.substr(1, sub.length-2);
@@ -543,7 +543,7 @@
 
       if (isstyle) {
          var styles = document.getElementsByTagName('link');
-         for (var n in styles) {
+         for (var n = 0; n < styles.length; ++n) {
             if ((styles[n]['type'] != 'text/css') || (styles[n]['rel'] != 'stylesheet')) continue;
 
             var href = styles[n]['href'];
@@ -555,7 +555,7 @@
       } else {
          var scripts = document.getElementsByTagName('script');
 
-         for (var n in scripts) {
+         for (var n = 0; n < scripts.length; ++n) {
             if (scripts[n]['type'] != 'text/javascript') continue;
 
             var src = scripts[n]['src'];
@@ -1289,7 +1289,7 @@
 
       var scripts = document.getElementsByTagName('script');
 
-      for (var n in scripts) {
+      for (var n = 0; n < scripts.length; ++n) {
          if (scripts[n]['type'] != 'text/javascript') continue;
 
          var src = scripts[n]['src'];

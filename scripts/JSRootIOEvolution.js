@@ -1900,7 +1900,7 @@
             member['type']     = element['type'];
             member['length']   = element['length'];
 
-            streamer[element['fName']] = member; // keep for backward compability
+            // streamer[element['fName']] = member; // keep for backward compability
 
             if (element['typename'] === 'BASE') {
                this.GetStreamer(element['fName']);

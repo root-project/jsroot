@@ -1013,7 +1013,7 @@
 
             //hnext.add(hprev);
             // trivial sum of histograms
-            for (var n in hnext.fArray)
+            for (var n = 0; n < hnext.fArray.length; ++n)
                hnext.fArray[n] += hprev.fArray[n];
 
             lst.Add(hnext);
@@ -1210,7 +1210,7 @@
          if (this.firstpainter && histo)
             if (this.firstpainter.UpdateObject(histo)) isany = true;
 
-         for (var i in graphs.arr) {
+         for (var i = 0; i <  graphs.arr.length; ++i) {
             if (i>=this.painters.length) break;
             if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
          }
@@ -1226,7 +1226,7 @@
             res.ymin = res.ymax = gr.fY[0];
             res.first = false;
          }
-         for (var i=0; i < gr.fNpoints; i++) {
+         for (var i=0; i < gr.fNpoints; ++i) {
             if (gr.fX[i] < res.xmin) res.xmin = gr.fX[i];
             if (gr.fX[i] > res.xmax) res.xmax = gr.fX[i];
             if (gr.fY[i] < res.ymin) res.ymin = gr.fY[i];
@@ -1271,7 +1271,7 @@
                uxmax = this.padtoX(pad, rw.xmax);
             }
          } else {
-            for (var i in graphs.arr)
+            for (var i = 0; i < graphs.arr.length; ++i)
                this.ComputeGraphRange(rw, graphs.arr[i]);
 
             if (rw.xmin == rw.xmax) rw.xmax += 1.;
@@ -1956,7 +1956,7 @@
                   .range([ height, 0 ]).nice().ticks(axis['fNdiv'] % 100);
 
       var maxlen = 0;
-      for (var i in ticks) {
+      for (var i = 0; i < ticks.length; ++i) {
          var len = axisfont.stringWidth(this.svg_frame(), ticks[i]);
          if (len > maxlen) maxlen = len;
       }
@@ -2485,7 +2485,7 @@
 
       var ctx = canvas.node().getContext("2d");
 
-      for (var i in local_bins) {
+      for (var i = 0; i < local_bins.length; ++i) {
          var bin = local_bins[i];
          ctx.fillStyle = bin.fill;
          ctx.fillRect(bin.x,bin.y,bin.width,bin.height);
