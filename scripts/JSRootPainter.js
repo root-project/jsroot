@@ -8102,10 +8102,13 @@
 
       if ((typeof msg == "undefined") || (msg==null)) {
          if (box.empty()) return;
+
          box.property('stack').pop();
+
          if (box.property('stack').length==0)
             return box.remove();
          msg = box.property('stack')[box.property('stack').length-1]; // show prvious message
+         newmsg = false;
       } else
       if (typeof msg != 'string') {
          // this is progress value, should be add to last message

@@ -120,7 +120,7 @@
    }
 
    JSROOT.TBuffer.prototype.EnableProgress = function() {
-      JSROOT.progress(0.);
+      // JSROOT.progress(0.);
 
       if (this.totalLength() < 1e4) return;
 
@@ -135,7 +135,7 @@
    JSROOT.TBuffer.prototype.CheckProgress = function() {
       if (this.o < this.progress_limit) return;
 
-      JSROOT.progress(this.o/this.totalLength());
+      // JSROOT.progress(this.o/this.totalLength());
 
       var step = this.totalLength() / 20;
       if (step > 1e5) step = 1e5; else
@@ -670,8 +670,7 @@
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
       // read class definition from I/O buffer
-      var classInfo = {};
-      classInfo['name'] = -1;
+      var classInfo = { name: -1 };
       var tag = 0;
       var bcnt = this.ntou4();
 
@@ -1311,11 +1310,11 @@
          }
       }
 
-      if (('fBits' in obj) && !('TestBit' in obj)) {
-         obj['TestBit'] = function (f) {
-            return ((obj['fBits'] & f) != 0);
-         };
-      }
+//      if (('fBits' in obj) && !('TestBit' in obj)) {
+//         obj['TestBit'] = function (f) {
+//            return ((obj['fBits'] & f) != 0);
+//         };
+//      }
 
       buf.CheckBytecount(ver, "TStreamer.Stream");
 
