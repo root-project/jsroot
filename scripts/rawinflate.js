@@ -132,15 +132,15 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
    var tail;      // (zip_HuftList)
 
    tail = this.root = null;
-   for (i = 0; i < c.length; i++)
+   for (i = 0; i < c.length; ++i)
       c[i] = 0;
-   for (i = 0; i < lx.length; i++)
+   for (i = 0; i < lx.length; ++i)
       lx[i] = 0;
-   for (i = 0; i < u.length; i++)
+   for (i = 0; i < u.length; ++i)
       u[i] = null;
-   for (i = 0; i < v.length; i++)
+   for (i = 0; i < v.length; ++i)
       v[i] = 0;
-   for (i = 0; i < x.length; i++)
+   for (i = 0; i < x.length; ++i)
       x[i] = 0;
 
    // Generate counts for each bit length
@@ -160,7 +160,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
    }
 
    // Find minimum and maximum length, bound *m by those
-   for (j = 1; j <= this.BMAX; j++)
+   for (j = 1; j <= this.BMAX; ++j)
       if (c[j] != 0)
          break;
    k = j;         // minimum code length
@@ -174,7 +174,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
       mm = i;
 
    // Adjust last length count to fill out codes, if needed
-   for (y = 1 << j; j < i; j++, y <<= 1) {
+   for (y = 1 << j; j < i; ++j, y <<= 1) {
       if ((y -= c[j]) < 0) {
          this.status = 2;  // bad input: more codes than bits
          this.m = mm;
@@ -214,7 +214,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
    z = 0;         // ditto
 
    // go through the bit lengths (k already is bits in shortest code)
-   for (; k <= g; k++) {
+   for (; k <= g; ++k) {
       a = c[k];
       while (a-- > 0) {
          // here i is the Huffman code of length k bits for value p[pidx]
@@ -471,13 +471,13 @@ var zip_inflate_fixed = function(buff, off, size) {
       var h;   // zip_HuftBuild
 
       // literal table
-      for (i = 0; i < 144; i++)
+      for (i = 0; i < 144; ++i)
          l[i] = 8;
-      for (; i < 256; i++)
+      for (; i < 256; ++i)
          l[i] = 9;
-      for (; i < 280; i++)
+      for (; i < 280; ++i)
          l[i] = 7;
-      for (; i < 288; i++)  // make a complete, but wrong code set
+      for (; i < 288; ++i)  // make a complete, but wrong code set
          l[i] = 8;
       zip_fixed_bl = 7;
 
@@ -491,7 +491,7 @@ var zip_inflate_fixed = function(buff, off, size) {
       zip_fixed_bl = h.m;
 
       // distance table
-      for (i = 0; i < 30; i++) // make an incomplete code set
+      for (i = 0; i < 30; ++i) // make an incomplete code set
          l[i] = 5;
       zip_fixed_bd = 5;
 
@@ -526,7 +526,7 @@ var zip_inflate_dynamic = function(buff, off, size) {
    var ll = new Array(286+30); // literal/length and distance code lengths
    var h;     // (zip_HuftBuild)
 
-   for (i = 0; i < ll.length; i++)
+   for (i = 0; i < ll.length; ++i)
       ll[i] = 0;
 
    // read in table lengths
@@ -543,12 +543,12 @@ var zip_inflate_dynamic = function(buff, off, size) {
       return -1;     // bad lengths
 
    // read in bit-length-code lengths
-   for (j = 0; j < nb; j++) {
+   for (j = 0; j < nb; ++j) {
       zip_NEEDBITS(3);
       ll[zip_border[j]] = zip_GETBITS(3);
       zip_DUMPBITS(3);
    }
-   for (; j < 19; j++)
+   for (; j < 19; ++j)
       ll[zip_border[j]] = 0;
 
    // build decoding table for trees--single level, 7 bit lookup
@@ -613,7 +613,7 @@ var zip_inflate_dynamic = function(buff, off, size) {
    zip_tl = h.root;
    zip_bl = h.m;
 
-   for (i = 0; i < nd; i++)
+   for (i = 0; i < nd; ++i)
       ll[i] = ll[i + nl];
    zip_bd = zip_dbits;
    h = new zip_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
@@ -750,7 +750,7 @@ var zip_inflate = function(str)
    var aout = [];
    while ((i = zip_inflate_internal(buff, 0, buff.length)) > 0) {
       var cbuf = new Array(i);
-      for (j = 0; j < i; j++) {
+      for (j = 0; j < i; ++j) {
          cbuf[j] = String.fromCharCode(buff[j]);
       }
       aout[aout.length] = cbuf.join("");

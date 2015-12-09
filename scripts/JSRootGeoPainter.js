@@ -198,12 +198,12 @@
       thetaLength *= (Math.PI / 180.0);
       var geometry = new THREE.Geometry();
 
-      for (var i=0; i<shape['fNz']; i++) {
+      for (var i=0; i<shape['fNz']; ++i) {
          outerRadius[i] = shape['fRmax'][i]/2;
          innerRadius[i] = shape['fRmin'][i]/2;
          if (innerRadius[i] <= 0) innerRadius[i] = 0.0000001;
       }
-      for (var n=0; n<shape['fNz']; n++) {
+      for (var n=0; n<shape['fNz']; ++n) {
          var seg = n*2;
          var DZ = (shape['fZ'][n+1]-shape['fZ'][n])/2;
          tube[seg] = new THREE.CylinderGeometry(outerRadius[n+1], outerRadius[n],
@@ -223,7 +223,7 @@
 
          if ( n >= (shape['fNz']-2) ) {
             end[seg] = new THREE.Geometry();
-            for (i = 0; i < radiusSegments; i++){
+            for (i = 0; i < radiusSegments; ++i){
                var j = i;
                var k = i*6;
                end[seg].vertices.push(tube[seg].vertices[j+0]/*.clone()*/);
@@ -272,7 +272,7 @@
          }
          if ( n == 0 ) {
             end[seg+1] = new THREE.Geometry();
-            for (i = 0; i < radiusSegments; i++) {
+            for (i = 0; i < radiusSegments; ++i) {
                var j = i;
                var k = i*6;
                end[seg+1].vertices.push(tube[seg].vertices[tube[seg].vertices.length-2-j+0]/*.clone()*/);
@@ -340,7 +340,7 @@
       var innerSphereMesh = new THREE.Mesh( innerSphere, material );
 
       var first = new THREE.Geometry();
-      for (i = 0; i < widthSegments; i++){
+      for (i = 0; i < widthSegments; ++i){
          var j = i;
          var k = i*6;
          first.vertices.push(outerSphere.vertices[j+0]/*.clone()*/);
@@ -357,7 +357,7 @@
       var firstMesh = new THREE.Mesh( first, material );
 
       var second = new THREE.Geometry();
-      for (i = 0; i < widthSegments; i++) {
+      for (i = 0; i < widthSegments; ++i) {
          var j = i;
          var k = i*6;
          second.vertices.push(outerSphere.vertices[outerSphere.vertices.length-2-j+0]/*.clone()*/);
@@ -374,7 +374,7 @@
       var secondMesh = new THREE.Mesh( second, material );
 
       var face1 = new THREE.Geometry();
-      for (i = 0; i < widthSegments; i++){
+      for (i = 0; i < widthSegments; ++i){
          var j = widthSegments*i;
          var k = i*6;
          face1.vertices.push(outerSphere.vertices[j+i]/*.clone()*/);
@@ -391,7 +391,7 @@
       var face1Mesh = new THREE.Mesh( face1, material );
 
       var face2 = new THREE.Geometry();
-      for (i = 0; i < widthSegments; i++){
+      for (i = 0; i < widthSegments; ++i){
          var j = widthSegments*(i+1);
          var k = i*6;
          face2.vertices.push(outerSphere.vertices[j+i]/*.clone()*/);
@@ -446,7 +446,7 @@
       var innerTorusMesh = new THREE.Mesh( innerTorus, material );
 
       var first = new THREE.Geometry();
-      for (i = 0; i < radialSegments; i++) {
+      for (i = 0; i < radialSegments; ++i) {
          var j = i*(tubularSegments+1);
          var k = i*6;
          var l = (i+1)*(tubularSegments+1);
@@ -464,7 +464,7 @@
       var firstMesh = new THREE.Mesh( first, material );
 
       var second = new THREE.Geometry();
-      for (i = 0; i < radialSegments; i++) {
+      for (i = 0; i < radialSegments; ++i) {
          var j = (i+1)*tubularSegments;
          var k = i*6;
          var l = (i+2)*tubularSegments;
@@ -592,7 +592,7 @@
       var innerTubeMesh = new THREE.Mesh( innerTube, material );
 
       var first = new THREE.Geometry();
-      for (i = 0; i < radiusSegments; i++){
+      for (i = 0; i < radiusSegments; ++i){
          var j = i;
          var k = i*6;
          first.vertices.push(outerTube.vertices[j+0]/*.clone()*/);
@@ -640,7 +640,7 @@
       }
 
       var second = new THREE.Geometry();
-      for (i = 0; i < radiusSegments; i++) {
+      for (i = 0; i < radiusSegments; ++i) {
          var j = i;
          var k = i*6;
          second.vertices.push(outerTube.vertices[outerTube.vertices.length-2-j+0]/*.clone()*/);
@@ -753,7 +753,7 @@
          if (node['fFinder']['_typename'] == 'TGeoPatternCylPhi') {
             if (typeof node['fFinder']['fSinCos'] === 'undefined') {
                node['fFinder']['fSinCos'] = [];
-               for (var i = 0; i<node['fFinder']['fNdivisions']; i++) {
+               for (var i = 0; i<node['fFinder']['fNdivisions']; ++i) {
                   node['fFinder']['fSinCos'][2*i] = Math.sin((Math.PI / 180.0)*(node['fFinder']['fStart']+0.5*node['fFinder']['fStep']+i*node['fFinder']['fStep']));
                   node['fFinder']['fSinCos'][2*i+1] = Math.cos((Math.PI / 180.0)*(node['fFinder']['fStart']+0.5*node['fFinder']['fStep']+i*node['fFinder']['fStep']));
                }

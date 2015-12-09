@@ -48,7 +48,7 @@
 
       var palette = [];
       var saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
-      for (var i = 0; i < maxPretty; i++) {
+      for (var i = 0; i < maxPretty; ++i) {
          var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360.0;
          var rgbval = HLStoRGB(hue, lightness, saturation);
          palette.push(rgbval);
@@ -998,7 +998,7 @@
          if (nhists <= 0) return false;
          var lst = JSROOT.Create("TList");
          lst.Add(JSROOT.clone(this.stack['fHists'].arr[0]));
-         for (var i=1;i<nhists;i++) {
+         for (var i=1;i<nhists;++i) {
             var hnext = JSROOT.clone(this.stack['fHists'].arr[i]);
             var hprev = lst.arr[i-1];
 
@@ -1041,7 +1041,7 @@
                left = hist.fXaxis.fFirst;
                right = hist.fXaxis.fLast;
             }
-            for (var bin = left; bin<=right; bin++) {
+            for (var bin = left; bin<=right; ++bin) {
                var val = hist.getBinContent(bin);
                var err = witherr ? hist.getBinError(bin) : 0;
                if (domin && ((bin==left) || (val-err < res.min))) res.min = val-err;
@@ -1617,7 +1617,7 @@
                 .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
                 .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-         for (var i=0;i<contour.length-1;i++) {
+         for (var i=0;i<contour.length-1;++i) {
             var z0 = z(contour[i]);
             var z1 = z(contour[i+1]);
             var col = this.main_painter().getValueColor(contour[i]);
@@ -1845,16 +1845,16 @@
 
       // first find minimum
       var min = this.histo.getBinContent(i1 + 1, j1 + 1);
-      for (var i = i1; i < i2; i++)
-         for (var j = j1; j < j2; j++)
+      for (var i = i1; i < i2; ++i)
+         for (var j = j1; j < j2; ++j)
             if (this.histo.getBinContent(i + 1, j + 1) < min)
                min = this.histo.getBinContent(i + 1, j + 1);
       if (min>0) return; // if all points positive, no chance for autoscale
 
       var ileft = i2, iright = i1, jleft = j2, jright = j1;
 
-      for (var i = i1; i < i2; i++)
-         for (var j = j1; j < j2; j++)
+      for (var i = i1; i < i2; ++i)
+         for (var j = j1; j < j2; ++j)
             if (this.histo.getBinContent(i + 1, j + 1) > min) {
                if (i < ileft) ileft = i;
                if (i >= iright) iright = i + 1;
@@ -2006,7 +2006,7 @@
       var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0;
 
       var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null };
-      for (var n = 0; n < 9; n++) res.matrix.push(0);
+      for (var n = 0; n < 9; ++n) res.matrix.push(0);
 
       var xleft = this.GetSelectIndex("x", "left");
       var xright = this.GetSelectIndex("x", "right");
@@ -2014,11 +2014,11 @@
       var yleft = this.GetSelectIndex("y", "left");
       var yright = this.GetSelectIndex("y", "right");
 
-      for (var xi = 0; xi <= this.nbinsx + 1; xi++) {
+      for (var xi = 0; xi <= this.nbinsx + 1; ++xi) {
          var xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
          var xx = this.GetBinX(xi - 0.5);
 
-         for (var yi = 0; yi <= this.nbinsx + 1; yi++) {
+         for (var yi = 0; yi <= this.nbinsx + 1; ++yi) {
             var yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
             var yy = this.ymin + this.GetBinY(yi - 0.5);
 
@@ -2437,8 +2437,8 @@
       var j2 = this.GetSelectIndex("y", "right", 1);
 
       this.maxbin = this.minbin = this.histo.getBinContent(i1 + 1, j1 + 1);
-      for (var i = i1; i < i2; i++) {
-         for (var j = j1; j < j2; j++) {
+      for (var i = i1; i < i2; ++i) {
+         for (var j = j1; j < j2; ++j) {
             binz = this.histo.getBinContent(i + 1, j + 1);
             if (binz>this.maxbin) this.maxbin = binz; else
             if (binz<this.minbin) this.minbin = binz;
@@ -2460,7 +2460,7 @@
       var p = -1;
 
       for (var j = j2-1; j >= j1; j--) {
-         for (var i = i1; i < i2; i++) {
+         for (var i = i1; i < i2; ++i) {
             var bin = this.histo.getBinContent(i + 1, j + 1);
             var col = bin>this.minbin ? this.getValueColor(bin) : 'white';
             var c = d3.rgb(col);

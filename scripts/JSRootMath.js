@@ -130,7 +130,7 @@
       if (N==0) return a[0];
       else {
          var pom = a[0];
-         for (var i=1; i <= N; i++)
+         for (var i=1; i <= N; ++i)
             pom = pom *x + a[i];
          return pom;
       }
@@ -144,7 +144,7 @@
       if (N==0) return a[0];
       else {
          var pom = x + a[0];
-         for (var i=1; i < N; i++)
+         for (var i=1; i < N; ++i)
             pom = pom *x + a[i];
          return pom;
       }
@@ -387,7 +387,7 @@
 
       lgm = this.lgam(a);
 
-      for( i=0; i<10; i++ ) {
+      for( i=0; i<10; ++i ) {
          if ( x > x0 || x < x1 )
             break;
          y = this.igamc(a,x);
@@ -431,7 +431,7 @@
       d = 0.5;
       dir = 0;
 
-      for( i=0; i<400; i++ ) {
+      for( i=0; i<400; ++i ) {
          x = x1  +  d * (x0 - x1);
          y = this.igamc( a, x );
          lgm = (x0 - x1)/(x1 + x0);

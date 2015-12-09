@@ -284,7 +284,7 @@
       var left = chopt.indexOf('[');
       var right = chopt.indexOf(']');
       if ((left>=0) && (right>=0) && (left<right))
-          for (var i = left; i <= right; i++) chopt[i] = ' ';
+          for (var i = left; i <= right; ++i) chopt[i] = ' ';
       return chopt;
    }
 
@@ -2111,7 +2111,7 @@
          bins[0].xl = bins[0].x - binwidthx/2;
          bins[0].xr = bins[0].x + binwidthx/2;
       } else
-      for (var n=0;n<bins.length;n++) {
+      for (var n=0;n<bins.length;++n) {
          if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
          if (n<bins.length-1)
             bins[n].xr = (bins[n].x + bins[n+1].x)/2;
@@ -2443,7 +2443,7 @@
 
       var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
           ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
-      for (i = 0; i < n; i++) {
+      for (i = 0; i < n; ++i) {
          xo[i] = (this.graph['fX'][i] - xmin) / (xmax - xmin);
          yo[i] = (this.graph['fY'][i] - ymin) / (ymax - ymin);
          if (w > h)
@@ -2456,7 +2456,7 @@
       xf[0] = xo[0];
       yf[0] = yo[0];
       nf = 0;
-      for (i = 1; i < n; i++) {
+      for (i = 1; i < n; ++i) {
          if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
          nf++;
          xf[nf] = xo[i];
@@ -2494,7 +2494,7 @@
       }
 
       var a1, a2, a3, xi0, yi0, xi1, yi1, xi2, yi2;
-      for (i = 1; i < nf; i++) {
+      for (i = 1; i < nf; ++i) {
          xi0 = xf[i];
          yi0 = yf[i];
          xi1 = xf[i + 1];
@@ -2612,7 +2612,7 @@
       yf[nf] = yt[0];
       nf++;
 
-      for (i = 0; i < nf; i++) {
+      for (i = 0; i < nf; ++i) {
          if (w > h) {
             xf[i] = xmin + (xf[i] * (xmax - xmin));
             yf[i] = ymin + (yf[i] * (ymax - ymin)) * ratio;
@@ -2825,7 +2825,7 @@
             if (this.IsStats()) {
                if ((first_stat > 0) && (j >= first_stat)) {
                   var parts = lines[j].split("|");
-                  for (var n = 0; n < parts.length; n++)
+                  for (var n = 0; n < parts.length; ++n)
                      this.DrawText("middle",
                                     width * n / num_cols, posy,
                                     width/num_cols, stepy, parts[n], jcolor);
@@ -2835,7 +2835,7 @@
                                  margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
                } else {
                   var parts = lines[j].split("="), sumw = 0;
-                  for (var n = 0; n < 2; n++)
+                  for (var n = 0; n < 2; ++n)
                      sumw += this.DrawText((n == 0) ? "start" : "end",
                                       margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
                   this.TextScaleFactor(sumw/(width-2*margin_x), this.draw_g);
@@ -4038,7 +4038,7 @@
             return this.histo['fXaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fXbins[indx2] * Math.abs(bin-indx);
          };
          this['GetIndexX'] = function(x,add) {
-            for (var k = 1; k < this.histo['fXaxis'].fXbins.length; k++)
+            for (var k = 1; k < this.histo['fXaxis'].fXbins.length; ++k)
                if (x < this.histo['fXaxis'].fXbins[k]) return Math.floor(k-1+add);
             return this.nbinsx;
          };
@@ -4068,7 +4068,7 @@
             return this.histo['fYaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fYbins[indx2] * Math.abs(bin-indx);
          };
          this['GetIndexY'] = function(y,add) {
-            for (var k = 1; k < this.histo['fYaxis'].fXbins.length; k++)
+            for (var k = 1; k < this.histo['fYaxis'].fXbins.length; ++k)
                if (y < this.histo['fYaxis'].fXbins[k]) return Math.floor(k-1+add);
             return this.nbinsy;
          };
@@ -4126,7 +4126,7 @@
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
 
          if ((this.scale_xmin <= 0) && (this.nbinsx>0))
-            for (var i=0;i<this.nbinsx;i++) {
+            for (var i=0;i<this.nbinsx;++i) {
                var left = this.GetBinX(i);
                if (left>0) { this.scale_xmin = left; break; }
             }
@@ -4174,7 +4174,7 @@
          if (this.scale_ymax <= 0) this.scale_ymax = 1;
 
          if ((this.scale_ymin <= 0) && (this.nbinsy>0))
-            for (var i=0;i<this.nbinsy;i++) {
+            for (var i=0;i<this.nbinsy;++i) {
                var down = this.GetBinY(i);
                if (down>0) { this.scale_ymin = down; break; }
             }
@@ -5437,7 +5437,7 @@
 
       var xx = 0, w = 0, xmax = null, wmax = null;
 
-      for (var i = left; i < right; i++) {
+      for (var i = left; i < right; ++i) {
          xx = this.GetBinX(i+0.5);
 
          if ((cond!=null) && !cond(xx)) continue;
@@ -5566,7 +5566,7 @@
             if (print_fprob > 0)
                stat.AddLine("Prob = "  + (('Math' in JSROOT) ? stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
             if (print_fval > 0) {
-               for(var n=0;n<f1.fNpar;n++) {
+               for(var n=0;n<f1.fNpar;++n) {
                   var parname = f1.GetParName(n);
                   var parvalue = f1.GetParValue(n);
                   if (parvalue != null) parvalue = stat.Format(Number(parvalue),"fit");
@@ -5620,7 +5620,7 @@
       if ((name==null) || (name=="")) name = this.histo.fName;
       if (name.length > 0) name += "\n";
 
-      for (var i = left; i < right; i++) {
+      for (var i = left; i < right; ++i) {
          // if interval wider than specified range, make it shorter
          x1 = x2;
          x2 = this.GetBinX(i+1);
@@ -5638,7 +5638,7 @@
 
             // consider all points which are not far than 0.5 pixel away
             while ((i+1<right) && (pmain.grx(this.GetBinX(i+2)) < grx2 + 0.5)) {
-               i++; x2 = this.GetBinX(i+1);
+               ++i; x2 = this.GetBinX(i+1);
                var ccc = this.histo.getBinContent(i + 1);
                if (searchmax ? ccc>cont : ccc<cont) {
                   cont = ccc;
@@ -7640,7 +7640,7 @@
 
    JSROOT.CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var ks = Object.keys(this.frames);
-      for (var k = 0; k < ks.length; k++) {
+      for (var k = 0; k < ks.length; ++k) {
          var node = d3.select("#"+ks[k]);
          if (!node.empty())
             JSROOT.CallBack(userfunc, node.node());
@@ -7649,7 +7649,7 @@
 
    JSROOT.CustomDisplay.prototype.CreateFrame = function(title) {
       var ks = Object.keys(this.frames);
-      for (var k = 0; k < ks.length; k++) {
+      for (var k = 0; k < ks.length; ++k) {
          var items = this.frames[ks[k]];
          if (items.indexOf(title+";")>=0)
             return d3.select("#"+ks[k]).node();
@@ -7762,9 +7762,9 @@
             var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>";
                content += "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed; border-collapse: collapse;'>";
             var cnt = 0;
-            for (var i = 0; i < this.sizey; i++) {
+            for (var i = 0; i < this.sizey; ++i) {
                content += "<tr>";
-               for (var j = 0; j < this.sizex; j++)
+               for (var j = 0; j < this.sizex; ++j)
                   content += "<td><div id='" + topid + "_" + cnt++ + "' class='grid_cell'></div></td>";
                content += "</tr>";
             }

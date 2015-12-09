@@ -77,7 +77,7 @@
          this.add((opts.length > 1) ? ("sub:" + menu_name) : menu_name, opts[0], call_back);
          if (opts.length<2) return;
 
-         for (var i=0;i<opts.length;i++) {
+         for (var i=0;i<opts.length;++i) {
             var name = opts[i];
             if (name=="") name = '&lt;dflt&gt;';
             this.add(name, opts[i], call_back);

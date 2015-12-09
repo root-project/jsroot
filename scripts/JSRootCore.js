@@ -193,7 +193,7 @@
          if (value !== null) {
 
             if (Object.prototype.toString.apply(value) === '[object Array]') {
-               for (i = 0; i < value.length; i++) {
+               for (i = 0; i < value.length; ++i) {
                   value[i] = this.JSONR_unref(value[i], dy);
                }
             } else {
@@ -207,7 +207,7 @@
                if ('_typename' in value) this.addMethods(value);
 
                ks = Object.keys(value);
-               for (i = 0; i < ks.length; i++) {
+               for (i = 0; i < ks.length; ++i) {
                   k = ks[i];
                   value[k] = this.JSONR_unref(value[k], dy);
                }
@@ -239,7 +239,7 @@
                map.clones.push(tgt);
             }
 
-            for (i = 0; i < src.length; i++)
+            for (i = 0; i < src.length; ++i)
                tgt.push(JSROOT.extend(null, src[i], map));
 
             return tgt;
@@ -439,7 +439,7 @@
 
             var filecontent = new String("");
             var array = new VBArray(xhr.responseBody).toArray();
-            for (var i = 0; i < array.length; i++)
+            for (var i = 0; i < array.length; ++i)
                filecontent = filecontent + String.fromCharCode(array[i]);
             delete array;
             callback(filecontent);
@@ -949,7 +949,7 @@
 
       if (nbinsx!=null) {
          histo['fNcells'] = nbinsx+2;
-         for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
+         for (var i=0;i<histo['fNcells'];++i) histo['fArray'].push(0);
          JSROOT.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
       }
       return histo;
@@ -961,7 +961,7 @@
 
       if ((nbinsx!=null) && (nbinsy!=null)) {
          histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
-         for (var i=0;i<histo['fNcells'];i++) histo['fArray'].push(0);
+         for (var i=0;i<histo['fNcells'];++i) histo['fArray'].push(0);
          JSROOT.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
          JSROOT.extend(histo['fYaxis'], { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
       }
@@ -974,7 +974,7 @@
 
       if (npoints>0) {
          graph['fMaxSize'] = graph['fNpoints'] = npoints;
-         for (var i=0;i<npoints;i++) {
+         for (var i=0;i<npoints;++i) {
             graph['fX'].push(i/npoints);
             graph['fY'].push(i/npoints);
          }
@@ -1093,7 +1093,7 @@
             var j = this['fNpoints'] - 1, x = this['fX'], y = this['fY'];
             var oddNodes = false;
 
-            for (var i=0; i<this['fNpoints']; i++) {
+            for (var i=0; i<this['fNpoints']; ++i) {
                if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
                   if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
                      oddNodes = !oddNodes;

@@ -366,7 +366,7 @@
          list['name'] = this.ReadTString();
       var nobjects = this.ntou4();
       var lowerbound = this.ntou4();
-      for (var i = 0; i < nobjects; i++) {
+      for (var i = 0; i < nobjects; ++i) {
          var obj = this.ReadObjectAny();
          list['arr'].push(obj);
       }
@@ -394,7 +394,7 @@
       var nobjects = this.ntou4();
       if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
       var lowerbound = this.ntou4();
-      for (var i = 0; i < nobjects; i++) {
+      for (var i = 0; i < nobjects; ++i) {
          var obj = {};
 
          this.ClassStreamer(obj, classv);
@@ -435,7 +435,7 @@
       if (ver['val'] > 1)
          list['name'] = this.ReadTString();
       var nobjects = this.ntou4();
-      for (var i = 0; i < nobjects; i++) {
+      for (var i = 0; i < nobjects; ++i) {
          o += 10; // skip object bits & unique id
          list['arr'].push(null);
       }
