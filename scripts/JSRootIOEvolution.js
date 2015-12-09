@@ -281,18 +281,21 @@
       return array;
    }
 
-   JSROOT.TBuffer.prototype.ReadTArray = function(type_name, n) {
-      var array_type = JSROOT.IO.kInt;
-      switch (type_name.charAt(6)) {
-         case 'I' : array_type = JSROOT.IO.kInt; break;
-         case 'D' : array_type = JSROOT.IO.kDouble; break;
-         case 'F' : array_type = JSROOT.IO.kFloat; break;
-         case 'S' : array_type = JSROOT.IO.kShort; break;
-         case 'C' : array_type = JSROOT.IO.kChar; break;
-         case 'L' : array_type = JSROOT.IO.kLong; break;
-         default: alert('unsupported array type ' + type_name); break;
-      }
-      return this.ReadFastArray(n, array_type);
+   JSROOT.IO.GetArrayKind = function(type_name) {
+      if (type_name.length < 7) return -1;
+      if (type_name.indexOf("TArray")!=0) return -1;
+      if (type_name.length == 7)
+         switch (type_name.charAt(6)) {
+            case 'I': return JSROOT.IO.kInt;
+            case 'D': return JSROOT.IO.kDouble;
+            case 'F': return JSROOT.IO.kFloat;
+            case 'S': return JSROOT.IO.kShort;
+            case 'C': return JSROOT.IO.kChar;
+            case 'L': return JSROOT.IO.kLong;
+            default: return -1;
+         }
+
+      return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
    JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
@@ -1170,8 +1173,10 @@
                if (classname.charAt(classname.length-1) == "*")
                   classname = classname.substr(0, classname.length - 1);
 
-               if (classname.indexOf("TArray")==0)
-                  obj[prop] = buf.ReadTArray(classname, buf.ntou4());
+               var arrkind = JSROOT.IO.GetArrayKind(classname);
+
+               if (arrkind > 0)
+                  obj[prop] = buf.ReadFastArray(buf.ntou4(), arrkind);
                else
                   obj[prop] = buf.ClassStreamer({}, classname);
 
@@ -1894,7 +1899,7 @@
             // streamer[element['fName']] = member; // keep for backward compability
 
             if (element['typename'] === 'BASE') {
-               if (member['name'].indexOf("TArray")==0) {
+               if (JSROOT.IO.GetArrayKind(member['name']) > 0) {
                   // this is workaround for arrays as base class
                   // we create 'fArray' member, which read as any other data member
                   member['type'] = JSROOT.IO.kAny;
