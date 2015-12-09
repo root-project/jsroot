@@ -1888,43 +1888,35 @@
       var streamer = this.fStreamers[clname];
       if (typeof(streamer) != 'undefined') return streamer;
 
-      var s_i;
-
+      var s_i = null;
       if (this.fStreamerInfos)
          for (var i in this.fStreamerInfos.arr)
             if (this.fStreamerInfos.arr[i].fName == clname)  {
-               s_i = this.fStreamerInfos.arr[i];
-               break;
+               s_i = this.fStreamerInfos.arr[i]; break;
             }
-      if (typeof s_i == 'undefined') return null;
+      if (s_i == null) return null;
 
-      this.fStreamers[clname] = new JSROOT.TStreamer(this);
+      this.fStreamers[clname] = streamer = new JSROOT.TStreamer(this);
+
       if (typeof(s_i['fElements']) != 'undefined') {
-         var n_el = s_i['fElements']['arr'].length;
-         for (var j=0;j<n_el;++j) {
-            var element = s_i['fElements']['arr'][j];
-            if (element['typename'] === 'BASE') {
-               // generate streamer for the base classes
-               this.GetStreamer(element['fName']);
-            }
-         }
-      }
-      if (typeof(s_i['fElements']) != 'undefined') {
-         var n_el = s_i['fElements']['arr'].length;
-         for (var j=0;j<n_el;++j) {
+         for (var j=0; j<s_i['fElements']['arr'].length; ++j) {
             // extract streamer info for each class member
             var element = s_i['fElements']['arr'][j];
-            var streamer = {};
-            streamer['typename'] = element['typename'];
-            streamer['class']    = element['fName'];
-            streamer['cntname']  = element['countName'];
-            streamer['type']     = element['type'];
-            streamer['length']   = element['length'];
 
-            this.fStreamers[clname][element['fName']] = streamer;
+            var member = {};
+            member['typename'] = element['typename'];
+            member['class']    = element['fName'];
+            member['cntname']  = element['countName'];
+            member['type']     = element['type'];
+            member['length']   = element['length'];
+
+            streamer[element['fName']] = member;
+
+            if (element['typename'] === 'BASE')
+               this.GetStreamer(element['fName']);
          }
       }
-      return this.fStreamers[clname];
+      return streamer;
    };
 
    JSROOT.TFile.prototype.Delete = function() {
