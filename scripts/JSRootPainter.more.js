@@ -1057,7 +1057,7 @@
          var iserr = opt.indexOf('e')>=0;
 
          if (this.nostack) {
-            for (var i in this.stack['fHists'].arr) {
+            for (var i = 0; i < this.stack['fHists'].arr.length; ++i) {
                var resh = this.GetHistMinMax(this.stack['fHists'].arr[i], iserr);
                if (i==0) res = resh; else {
                   if (resh.min < res.min) res.min = resh.min;
@@ -1804,7 +1804,7 @@
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
       if ('fFunctions' in this.histo)
-         for (var i in this.histo.fFunctions.arr) {
+         for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
             var func = this.histo.fFunctions.arr[i];
             if (func['_typename'] != 'TPaletteAxis') continue;
             if (remove) {
@@ -2174,7 +2174,7 @@
 
       var color = -1;
       if (this.fUserContour || this.options.Logz) {
-         for (var k in this.fContour) {
+         for (var k = 0; k < this.fContour.length; ++k) {
             if (zc >= this.fContour[k]) color++;
          }
       } else {

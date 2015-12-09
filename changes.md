@@ -10,7 +10,7 @@
 6. TGeo support
 7. New ROOT6-like color palette
 8. Significant improve in TF1::Eval performance 
-9. Significant I/O performance improvement. Big objects decoded 2-3 times faster than before. 
+9. Significant I/O performance improvement. Big objects decoded 4-5 times faster than before. 
    Use DataView and ArrayBuffer for decoding of binrary data.
    Still old method with JS String supported (add &iomode=str to URL)
 10. TH2 drawing optimization - do not show by default more than 50 bins/axis

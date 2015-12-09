@@ -131,7 +131,7 @@
         {col:791,str:'ffcd9acd9a669a66339a6600cd9a33ffcd66ff9a00ffcd33cd9a00ffcd00ff9a33cd66006633009a3300cd6633ff9a66ff6600ff6633cd3300ff33009aff3366cd00336600339a0066cd339aff6666ff0066ff3333cd0033ff00cdff9a9acd66669a33669a009acd33cdff669aff00cdff339acd00cdff009affcd66cd9a339a66009a6633cd9a66ffcd00ff6633ffcd00cd9a00ffcd33ff9a00cd66006633009a3333cd6666ff9a00ff9a33ff6600cd3300ff339acdff669acd33669a00339a3366cd669aff0066ff3366ff0033cd0033ff339aff0066cd00336600669a339acd66cdff009aff33cdff009acd00cdffcd9aff9a66cd66339a66009a9a33cdcd66ff9a00ffcd33ff9a00cdcd00ff9a33ff6600cd33006633009a6633cd9a66ff6600ff6633ff3300cd3300ffff339acd00666600339a0033cd3366ff669aff0066ff3366cd0033ff0033ff9acdcd669a9a33669a0066cd339aff66cdff009acd009aff33cdff009a'},
         {col:920,str:'cdcdcd9a9a9a666666333333'}];
 
-      for (var indx in moreCol) {
+      for (var indx = 0; indx < moreCol.length; ++indx) {
          var entry = moreCol[indx];
          for (var n=0; n < entry.str.length; n+=6) {
             var num = parseInt(entry.col) + parseInt(n/6);
@@ -145,7 +145,7 @@
    JSROOT.Painter.adoptRootColors = function(objarr) {
       if (!objarr || !objarr.arr) return;
 
-      for (var n in objarr.arr) {
+      for (var n = 0; n < objarr.arr.length; ++n) {
          var col = objarr.arr[n];
          if ((col==null) || (col['_typename'] != 'TColor')) continue;
 
@@ -1246,7 +1246,8 @@
 
       userfunc(pad_painter);
       if ('painters' in pad_painter)
-         for (var k in pad_painter.painters) userfunc(pad_painter.painters[k]);
+         for (var k = 0; k < pad_painter.painters.length; ++k)
+            userfunc(pad_painter.painters[k]);
    }
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
@@ -1485,7 +1486,7 @@
       var painters = painter==null ? null : painter.painters;
       if (painters == null) return null;
 
-      for (var n in painters) {
+      for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
          if (pobj==null) continue;
 
@@ -2061,7 +2062,7 @@
       if (this.bins==null) {
          xmin = 0; xmax = 1; ymin = 0; ymax = 1;
       } else
-      for (var n in this.bins) {
+      for (var n = 0; n < this.bins.length; ++n) {
          var pnt = this.bins[n];
          if ((xmin==null) || (pnt.x < xmin)) xmin = pnt.x;
          if ((xmax==null) || (pnt.x > xmax)) xmax = pnt.x;
@@ -2240,7 +2241,7 @@
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets) {
          var draw_bins = new Array;
-         for (var i in this.bins) {
+         for (var i = 0; i < this.bins.length; ++i) {
             var pnt = this.bins[i];
             var grx = pmain.grx(pnt.x);
             var gry = pmain.gry(pnt.y);
@@ -2671,7 +2672,7 @@
 
       if (axis!="x") return false;
 
-      for (var n in this.bins)
+      for (var n=0; n < this.bins.length; ++n)
          if ((min<this.bins[n].x) && (max>this.bins[n].x)) return true;
 
       return false;
@@ -3251,7 +3252,7 @@
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
       if (can==null) return;
-      for (var i in can.fPrimitives.arr) {
+      for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
          var obj = can.fPrimitives.arr[i];
          if (obj==null) continue;
          if ((obj._typename=="TObjArray") && (obj.name == "ListOfColors")) {
@@ -3284,7 +3285,7 @@
          this.CreatePadSvg(true);
 
       // at the moment canvas painter donot redraw its subitems
-      for (var i in this.painters)
+      for (var i = 0; i < this.painters.length; ++i)
          this.painters[i].Redraw();
    }
 
@@ -3295,7 +3296,7 @@
 
       // at the moment canvas painter donot redraw its subitems
       if (changed)
-         for (var i in this.painters)
+         for (var i = 0; i < this.painters.length; ++i)
             this.painters[i].Redraw();
    }
 
@@ -4271,7 +4272,7 @@
          if (this.x_kind == 'labels') {
             var indx = parseInt(value) + 1;
             if ((indx<1) || (indx>this.histo['fXaxis'].fNbins)) return null;
-            for (var i in this.histo['fXaxis'].fLabels.arr) {
+            for (var i = 0; i < this.histo['fXaxis'].fLabels.arr.length; ++i) {
                var tstr = this.histo['fXaxis'].fLabels.arr[i];
                if (tstr.fUniqueID == indx) return tstr.fString;
             }
@@ -4286,7 +4287,7 @@
          if (this.y_kind == 'labels') {
             var indx = parseInt(value) + 1;
             if ((indx<1) || (indx>this.histo['fYaxis'].fNbins)) return null;
-            for (var i in this.histo['fYaxis'].fLabels.arr) {
+            for (var i=0; i < this.histo['fYaxis'].fLabels.arr.length; ++i) {
                var tstr = this.histo['fYaxis'].fLabels.arr[i];
                if (tstr.fUniqueID == indx) return tstr.fString;
             }
@@ -4739,7 +4740,7 @@
    JSROOT.THistPainter.prototype.FindStat = function() {
 
       if ('fFunctions' in this.histo)
-         for ( var i in this.histo.fFunctions.arr) {
+         for (var i=0; i < this.histo.fFunctions.arr.length; ++i) {
 
             var func = this.histo.fFunctions.arr[i];
 
@@ -4782,7 +4783,7 @@
    JSROOT.THistPainter.prototype.FindF1 = function() {
       // search for TF1 object in list of functions, it is fitted function
       if (!('fFunctions' in this.histo))  return null;
-      for ( var i in this.histo.fFunctions.arr) {
+      for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
          var func = this.histo.fFunctions.arr[i];
          if (func['_typename'] == 'TF1') return func;
       }
@@ -6123,7 +6124,7 @@
 
       if (!mathjax && !('as_is' in this.txt)) {
          var arr = txt.split("\n"); txt = "";
-         for (var i in arr)
+         for (var i = 0; i < arr.length; ++i)
             txt += "<pre>" + arr[i] + "</pre>";
       }
 
@@ -6185,7 +6186,7 @@
 
    JSROOT.HierarchyPainter.prototype.ListHierarchy = function(folder, lst) {
       folder['_childs'] = [];
-      for ( var i in lst.arr) {
+      for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
          var item = {
             _name : obj['fName'],
@@ -6199,7 +6200,7 @@
    JSROOT.HierarchyPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
       folder['_childs'] = [];
 
-      for ( var i in lst.arr) {
+      for ( var i = 0; i < lst.arr.length; ++i) {
          var entry = lst.arr[i]
 
          if (typeof (entry['fName']) == 'undefined') {
@@ -6219,7 +6220,7 @@
          item._childs.push({ _name : 'Class version: ' + entry['fClassVersion'] });
          if (entry['fTitle'] != '') item._childs.push({ _name : 'Title: ' + entry['fTitle'] });
          if (typeof entry['fElements'] == 'undefined') continue;
-         for ( var l in entry['fElements']['arr']) {
+         for ( var l = 0; l < entry['fElements']['arr'].length; ++l) {
             var elem = entry['fElements']['arr'][l];
             if ((elem == null) || (typeof (elem['fName']) == 'undefined')) continue;
             var info = elem['fTypeName'] + " " + elem['fName'] + ";";
@@ -6232,7 +6233,7 @@
    JSROOT.HierarchyPainter.prototype.TreeHierarchy = function(node, obj) {
       node._childs = [];
 
-      for ( var i in obj['fBranches'].arr) {
+      for ( var i = 0; i < obj['fBranches'].arr.length; ++i) {
          var branch = obj['fBranches'].arr[i];
          var nb_leaves = branch['fLeaves'].arr.length;
 
@@ -6263,7 +6264,7 @@
       folder['_childs'] = [];
 
       var painter = this;
-      for (var i in keys) {
+      for (var i = 0; i < keys.length; ++i) {
          var key = keys[i];
 
          var item = {
@@ -6397,7 +6398,7 @@
       function each_item(item) {
          callback(item);
          if ('_childs' in item)
-            for (var n in item._childs) {
+            for (var n = 0; n < item._childs.length; ++n) {
                item._childs[n]._parent = item;
                each_item(item._childs[n]);
             }
@@ -6435,13 +6436,14 @@
             var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
 
             // first try to find direct matched item
-            for (var i in top._childs)
-               if (top._childs[i]._name == localname)
-                  return process_child(top._childs[i]);
+            if (typeof top['_childs'] != 'undefined')
+               for (var i = 0; i < top._childs.length; ++i)
+                  if (top._childs[i]._name == localname)
+                     return process_child(top._childs[i]);
 
             // if allowed, try to found item with key
-            if ('check_keys' in arg)
-               for (var i in top._childs) {
+            if (('check_keys' in arg) && (typeof top['_childs'] != 'undefined'))
+               for (var i = 0; i < top._childs.length; ++i) {
                   if (top._childs[i]._name.indexOf(localname + ";")==0)
                      return process_child(top._childs[i]);
                }
@@ -6491,7 +6493,7 @@
       var pthis = this;
 
       if ('_numargs' in hitem)
-         for (var n=0;n<hitem._numargs;n++) {
+         for (var n = 0; n < hitem._numargs; ++n) {
             var argname = "arg" + (n+1);
             var argvalue = null;
             if (n+2<arguments.length) argvalue = arguments[n+2];
@@ -6538,7 +6540,7 @@
                delete hitem._isopen;
 
          if ('_childs' in hitem)
-            for ( var i in hitem._childs)
+            for (var i=0; i < hitem._childs.length; ++i)
                toggleItem(hitem._childs[i]);
       }
 
@@ -6828,7 +6830,7 @@
       var dropitems = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension
-      for (var i in items) {
+      for (var i = 0; i < items.length; ++i) {
          dropitems[i] = null;
          if (h.Find(items[i])) continue;
          if (h.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
@@ -6838,7 +6840,7 @@
             dropitems[i] = items[i].split("+");
             items[i] = dropitems[i].shift();
             // allow to specify _same_ item in different file
-            for (var j in dropitems[i]) {
+            for (var j = 0; j < dropitems[i].length; ++j) {
                var pos = dropitems[i][j].indexOf("_same_");
                if ((pos>0) && (h.Find(dropitems[i][j])==null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
@@ -6868,12 +6870,12 @@
          if (!mdi) return JSROOT.CallBack(call_back);
 
          // Than create empty frames for each item
-         for (var i in items)
+         for (var i = 0; i < items.length; ++i)
             if (options[i].indexOf('update:')!=0)
                mdi.CreateFrame(items[i]);
 
          // We start display of all items parallel
-         for (var i in items)
+         for (var i = 0; i < items.length; ++i)
             h.display(items[i], options[i], function(painter, itemname) {
                // one cannot use index i in callback - it is asynchron
                var indx = items.indexOf(itemname);
@@ -6886,7 +6888,7 @@
                      return h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem);
 
                   var isany = false;
-                  for (var cnt in items)
+                  for (var cnt = 0; cnt < items.length; ++cnt)
                      if (items[cnt]!='---') isany = true;
 
                   // only when items drawn and all sub-items dropped, one could perform call-back
@@ -6977,7 +6979,7 @@
          return JSROOT.CallBack(call_back, this.h);
 
       if (this.h._childs!=null)
-         for (var n in this.h._childs) {
+         for (var n = 0; n < this.h._childs.length; ++n) {
             var item = this.h._childs[n];
             if ('_jsonfile' in item) JSROOT.CallBack(call_back, item);
          }
@@ -7018,8 +7020,8 @@
       if ((this.h._kind == "ROOT.TFile") && (this.h._file!=null))
          return JSROOT.CallBack(call_back, this.h);
 
-      if (this.h._childs!=null)
-         for (var n in this.h._childs) {
+      if (this.h._childs != null)
+         for (var n = 0; n < this.h._childs.length; ++n) {
             var item = this.h._childs[n];
             if ((item._kind == 'ROOT.TFile') && ('_fullurl' in item))
                JSROOT.CallBack(call_back, item);
@@ -7189,7 +7191,7 @@
          painter.ForEach(function(item) {
             if ('_autoload' in item) {
                var arr = item._autoload.split(";");
-               for (var n in arr)
+               for (var n = 0; n < arr.length; ++n)
                   if ((arr[n].length>3) &&
                       ((arr[n].lastIndexOf(".js")==arr[n].length-3) ||
                       (arr[n].lastIndexOf(".css")==arr[n].length-4))) {
@@ -7415,8 +7417,8 @@
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand")=="")) expanditems.push("");
 
       if (filesdir!=null) {
-         for (var i in filesarr) filesarr[i] = filesdir + filesarr[i];
-         for (var i in jsonarr) jsonarr[i] = filesdir + jsonarr[i];
+         for (var i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
+         for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
       var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
@@ -7926,7 +7928,7 @@
       var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind;
 
       var counter = 0;
-      for (var i in JSROOT.DrawFuncs.lst) {
+      for (var i=0; i<JSROOT.DrawFuncs.lst.length; ++i) {
          var h = JSROOT.DrawFuncs.lst[i];
          if (typeof h.name == "string") {
             if (h.name != search) continue;
@@ -7944,7 +7946,7 @@
             // if drawoption specified, check it present in the list
             if ('opt' in h) {
                var opts = h.opt.split(';');
-               for (var j in opts) opts[j] = opts[j].toLowerCase();
+               for (var j=0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
                if (opts.indexOf(selector.toLowerCase())>=0) return h;
             }
          } else {
@@ -7966,7 +7968,7 @@
          isany = true;
          if (! ('opt' in h)) continue;
          var opts = h.opt.split(';');
-         for (var i in opts) {
+         for (var i = 0; i < opts.length; ++i) {
             opts[i] = opts[i].toLowerCase();
             if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
 
@@ -8074,7 +8076,7 @@
             return can_painter;
          }
 
-         for (var i in can_painter.painters) {
+         for (var i = 0; i < can_painter.painters.length; ++i) {
             var obj0 = can_painter.painters[i].GetObject();
 
             if ((obj0 != null) && (obj0._typename == obj._typename))
