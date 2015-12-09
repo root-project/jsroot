@@ -337,7 +337,6 @@
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, node, set_attr) {
       if (node==null) {
          node = $("#" + this.frameid).find("[item='" + this.itemFullName(hitem) + "']");
-         console.log('Update item  ' + this.itemFullName(hitem) + "  len " + node.length);
          if (node.length == 0) return;
       }
 

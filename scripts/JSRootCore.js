@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 8/12/2015";
+   JSROOT.version = "dev 9/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -126,7 +126,8 @@
          FitFormat : "5.4g",
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
-         Interpolate : "basis" // d3.js interpolate methods, used in TGraph and TF1 painters
+         Interpolate : "basis", // d3.js interpolate methods, used in TGraph and TF1 painters
+         ProgressBox : true  // show progress box
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -1270,6 +1271,9 @@
    JSROOT.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    }
+
+   // dummy function, will be redefined when JSRootPainter is loaded
+   JSROOT.progress = function() {}
 
    JSROOT.Initialize = function() {
 

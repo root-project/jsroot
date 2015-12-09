@@ -107,6 +107,7 @@
       this.fFile = _file;
       this.ClearObjectMap();
       this.fTagOffset = 0;
+      this.progress = false;
       return this;
    }
 
@@ -116,6 +117,30 @@
 
    JSROOT.TBuffer.prototype.shift = function(cnt) {
       this.o += cnt;
+   }
+
+   JSROOT.TBuffer.prototype.EnableProgress = function() {
+      JSROOT.progress(0.);
+
+      if (this.totalLength() < 1e4) return;
+
+      this.progress = true;
+
+      var step = this.totalLength() / 20;
+      if (step > 1e5) step = 1e5; else
+      if (step < 1e3) step = 1e3;
+      this.progress_limit = step;
+   }
+
+   JSROOT.TBuffer.prototype.CheckProgress = function() {
+      if (this.o < this.progress_limit) return;
+
+      JSROOT.progress(this.o/this.totalLength());
+
+      var step = this.totalLength() / 20;
+      if (step > 1e5) step = 1e5; else
+      if (step < 1e3) step = 1e3;
+      this.progress_limit+=step;
    }
 
    JSROOT.TBuffer.prototype.ReadSpecial = function(typ, typname)
@@ -704,6 +729,9 @@
    }
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
+
+      if (this.progress) this.CheckProgress();
+
       if (! ('_typename' in obj))  obj['_typename'] = classname;
 
       if (classname == 'TObject' || classname == 'TMethodCall') {
@@ -1714,7 +1742,9 @@
 
             var obj = {};
             buf.MapObject(1, obj); // tag object itself with id==1
+            //buf.EnableProgress();
             buf.ClassStreamer(obj, key['fClassName']);
+            //JSROOT.progress(1.);
 
             JSROOT.CallBack(user_call_back, obj);
          }); // end of ReadObjBuffer callback

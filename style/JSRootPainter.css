@@ -296,3 +296,27 @@ svg:not(:root) { overflow: hidden; }
   overflow: visible;
   font-size: 11px;
 }
+
+/*--------------------------------------------------|
+| progress message                                  |
+|--------------------------------------------------*/
+
+.progressbox {
+  position:absolute;
+  min-width:100px;
+  height:auto;
+  overflow: visible;
+  z-index:11;
+  border: 1px solid #999;
+  background: #F8F8F8;
+  left: 10px;
+  bottom: 10px;
+}
+
+.progressbox p {
+   font-size: 10px;
+   margin-left : 10px;
+   margin-right : 10px;
+   margin-top : 3px;
+   margin-bottom : 3px;
+}

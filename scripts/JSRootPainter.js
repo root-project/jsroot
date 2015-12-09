@@ -89,6 +89,7 @@
       if ((mathjax!=null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
+      if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
 
       JSROOT.gStyle.OptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.OptStat);
       JSROOT.gStyle.OptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.OptFit);
@@ -6661,10 +6662,16 @@
             drawopt = drawopt.slice(0, pos);
          }
 
+         JSROOT.progress("Loading " + itemname);
+
          h.get(itemname, function(item, obj) {
+
+            JSROOT.progress();
 
             if (updating && item) delete item['_doing_update'];
             if (obj==null) return display_callback();
+
+            JSROOT.progress("Drawing " + itemname);
 
             if (divid.length > 0) {
                painter = updating ? h.redraw(divid, obj, drawopt) : h.draw(divid, obj, drawopt);
@@ -6692,6 +6699,8 @@
             }
 
             if (painter) painter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
+
+            JSROOT.progress();
 
             display_callback();
          }, drawopt);
@@ -6920,10 +6929,15 @@
          }
       }
 
+      JSROOT.progress("Loading " + itemname);
+
       hitem['_doing_expand'] = true;
 
       this.get(itemname, function(item, obj) {
+
          delete hitem['_doing_expand'];
+
+         JSROOT.progress();
 
          var curr = item, is_ok = false;
 
@@ -8076,6 +8090,49 @@
 
       dummy.select_main().html("");
       return JSROOT.draw(divid, obj, opt);
+   }
+
+   JSROOT.progress = function(msg) {
+      var id = "jsroot_progressbox";
+      var box = d3.select("#"+id);
+
+      if (!JSROOT.gStyle.ProgressBox) return box.remove();
+
+      var newmsg = true;
+
+      if ((typeof msg == "undefined") || (msg==null)) {
+         if (box.empty()) return;
+         box.property('stack').pop();
+         if (box.property('stack').length==0)
+            return box.remove();
+         msg = box.property('stack')[box.property('stack').length-1]; // show prvious message
+      } else
+      if (typeof msg != 'string') {
+         // this is progress value, should be add to last message
+         if (box.empty()) return;
+         newmsg = false;
+         var now = new Date;
+         if (now.getTime() - box.property("showtm").getTime < 200) return;
+
+         msg = box.property('stack')[box.property('stack').length-1] + " " + (msg*100).toFixed(1) + "%";
+         box.property("showtm", now);
+      }
+
+      if (box.empty()) {
+         box = d3.select(document.body)
+           .append("div")
+           .attr("id", id)
+           .attr("class","progressbox")
+           .property("stack",new Array);
+
+         box.append("p");
+      }
+
+      box.select("p").html(msg);
+      if (newmsg) {
+         box.property('stack').push(msg);
+         box.property("showtm", new Date);
+      }
    }
 
    return JSROOT;
