@@ -1305,7 +1305,7 @@
 
    JSROOT.TDirectory.prototype.GetKey = function(keyname, cycle, call_back) {
       // retrieve a key by its name and cycle in the list of keys
-      for (var i in this.fKeys) {
+      for (var i=0; i < this.fKeys.length; ++i) {
          if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle) {
             JSROOT.CallBack(call_back, this.fKeys[i]);
             return this.fKeys[i];
@@ -1578,7 +1578,7 @@
          if (pos>0) { cycle = dirname.substr(pos+1); dirname = dirname.substr(0,pos); }
       }
 
-      for (var j in this.fDirectories) {
+      for (var j=0; j < this.fDirectories.length; ++j) {
          var dir = this.fDirectories[j];
          if (dir['dir_name'] != dirname) continue;
          if ((cycle!=null) && (dir['dir_cycle']!=cycle)) continue;
@@ -1591,7 +1591,7 @@
       // retrieve a key by its name and cycle in the list of keys
       // one should call_back when keys must be read first from the directory
 
-      for (var i in this.fKeys) {
+      for (var i=0; i < this.fKeys.length; ++i) {
          if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle) {
             JSROOT.CallBack(getkey_callback, this.fKeys[i]);
             return this.fKeys[i];
@@ -1729,10 +1729,10 @@
 
    JSROOT.TFile.prototype.ReadFormulas = function()
    {
-      for (var i in this.fKeys)
+      for (var i=0; i < this.fKeys.length; ++i)
         if (this.fKeys[i]['fClassName'] == 'TFormula')
           this.ReadObject(this.fKeys[i]['fName'], this.fKeys[i]['fCycle'], function(obj) {
-               JSROOT.addFormula(obj);
+             JSROOT.addFormula(obj);
          });
    }
 
@@ -1881,7 +1881,7 @@
 
       var s_i = null;
       if (this.fStreamerInfos)
-         for (var i in this.fStreamerInfos.arr)
+         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
             if (this.fStreamerInfos.arr[i].fName == clname)  {
                s_i = this.fStreamerInfos.arr[i]; break;
             }
