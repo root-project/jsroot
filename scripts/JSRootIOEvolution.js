@@ -1080,24 +1080,13 @@
    JSROOT.TStreamerInfo = function(file) {
       this.fFile = file;
       this._typename = "TStreamerInfo";
-      this._base_classes = []; // list of base classes
-      this._class_members = []; // list of members
+      this._class_members = []; // list of all members
       return this;
    }
 
    JSROOT.TStreamerInfo.prototype.Stream = function(obj, buf) {
 
       var ver = buf.ReadVersion();
-
-      // first base classes
-      for (var n = 0; n < this._base_classes.length; ++n) {
-         var clname = this._base_classes[n]['classname'];
-         if (clname.indexOf("TArray") == 0) {
-            obj['fArray'] = buf.ReadTArray(clname, buf.ntou4());
-         } else {
-            buf.ClassStreamer(obj, clname);
-         }
-      }
 
       // then class members
       for (var n = 0; n < this._class_members.length; ++n) {
@@ -1115,6 +1104,7 @@
 
          switch (member['type']) {
             case JSROOT.IO.kBase:
+               buf.ClassStreamer(obj, prop);
                break;
             case JSROOT.IO.kOffsetL:
                break;
@@ -1895,6 +1885,7 @@
             var element = s_i['fElements']['arr'][j];
 
             var member = {};
+            member['name'] = element['fName'];
             member['typename'] = element['typename'];
             member['cntname']  = element['countName'];
             member['type']     = element['type'];
@@ -1903,13 +1894,22 @@
             // streamer[element['fName']] = member; // keep for backward compability
 
             if (element['typename'] === 'BASE') {
-               this.GetStreamer(element['fName']);
-               member['classname'] = element['fName'];
-               streamer._base_classes.push(member);
+               if (member['name'].indexOf("TArray")==0) {
+                  // this is workaround for arrays as base class
+                  // we create 'fArray' member, which read as any other data member
+                  member['type'] = JSROOT.IO.kAny;
+                  member['typename'] = member['name'];
+                  member['name'] = 'fArray'; //
+               } else {
+                  // create streamer for base class
+                  member['type'] = JSROOT.IO.kBase;
+                  this.GetStreamer(element['fName']);
+               }
             } else {
-               member['name'] = element['fName'];
-               streamer._class_members.push(member);
+
             }
+
+            streamer._class_members.push(member);
 
          }
       }
