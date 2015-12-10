@@ -1011,7 +1011,6 @@
                return false;
             }
 
-            //hnext.add(hprev);
             // trivial sum of histograms
             for (var n = 0; n < hnext.fArray.length; ++n)
                hnext.fArray[n] += hprev.fArray[n];
@@ -1162,6 +1161,8 @@
             else
                histo['fMinimum'] = mm.min;
          }
+
+         console.log('Drawing histograms ' + !lsame);
 
          this.DrawNextHisto(!lsame ? -1 : 0, opt);
          return this;

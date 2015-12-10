@@ -229,16 +229,26 @@
          var i = map.obj.indexOf(src);
          if (i>=0) return map.clones[i];
 
-         // process array
-         if (Object.prototype.toString.apply(src) === '[object Array]') {
-            if ((tgt==null) || (Object.prototype.toString.apply(tgt) != '[object Array]')) {
-               tgt = [];
-               map.obj.push(src);
-               map.clones.push(tgt);
-            }
+         var proto = Object.prototype.toString.apply(src);
 
+         // process normal array
+         if (proto === '[object Array]') {
+            tgt = [];
+            map.obj.push(src);
+            map.clones.push(tgt);
             for (i = 0; i < src.length; ++i)
-               tgt.push(JSROOT.extend(null, src[i], map));
+               tgt.push(JSROOT.extend(null, src[i], map, deep_copy));
+
+            return tgt;
+         }
+
+         // process typed array
+         if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]')==proto.length-6)) {
+            tgt = [];
+            map.obj.push(src);
+            map.clones.push(tgt);
+            for (i = 0; i < src.length; ++i)
+               tgt.push(src[i]);
 
             return tgt;
          }
