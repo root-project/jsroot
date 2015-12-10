@@ -303,15 +303,6 @@
       return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
-   JSROOT.TBuffer.prototype.ReadBasicPointer = function(len, array_type) {
-      var isArray = this.ntou1();
-
-      if (isArray === 1)
-         return this.ReadFastArray(len, array_type);
-
-      return new Array();
-   }
-
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       key['fNbytes'] = this.ntoi4();
       key['fVersion'] = this.ntoi2();
@@ -1461,19 +1452,14 @@
             // extract streamer info for each class member
             var element = s_i['fElements']['arr'][j];
 
-            var member = {};
-            member['name'] = element['fName'];
-            member['typename'] = element['typename'];
-            member['type']     = element['type'];
-            member['length']   = element['length'];
+            var member = { name: element['fName'], type: element['fType'] };
 
-            if (element['typename'] === 'BASE') {
+            if (element['fTypeName'] === 'BASE') {
                if (JSROOT.IO.GetArrayKind(member['name']) > 0) {
                   // this is workaround for arrays as base class
                   // we create 'fArray' member, which read as any other data member
+                  member['name'] = 'fArray';
                   member['type'] = JSROOT.IO.kAny;
-                  member['typename'] = member['name'];
-                  member['name'] = 'fArray'; //
                } else {
                   // create streamer for base class
                   member['type'] = JSROOT.IO.kBase;
@@ -1481,7 +1467,7 @@
                }
             }
 
-            switch (member['type']) {
+            switch (member.type) {
                case JSROOT.IO.kBase:
                   member['func'] =  function(buf, obj) {
                      buf.ClassStreamer(obj, this.name);
@@ -1503,8 +1489,9 @@
                case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
+                  member['arrlength'] = element['fArrayLength'];
                   member['func'] = function(buf, obj) {
-                     obj[this.name] = buf.ReadFastArray(this.length, this.type - JSROOT.IO.kOffsetL);
+                     obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
                   };
                   break;
                case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
@@ -1520,16 +1507,19 @@
                case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
                case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
                case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
-                  member['cntname'] = element['countName'];
+                  member['cntname'] = element['fCountName'];
                   member['func'] = function(buf, obj) {
-                     obj[this.name] = buf.ReadBasicPointer(obj[this.cntname], this.type - JSROOT.IO.kOffsetP);
+                     if (buf.ntou1() === 1)
+                        obj[this.name] = buf.ReadFastArray(obj[this.cntname], this.type - JSROOT.IO.kOffsetP);
+                     else
+                        obj[this.name] = new Array();
                   };
                   break;
                case JSROOT.IO.kAny:
                case JSROOT.IO.kAnyp:
                case JSROOT.IO.kObjectp:
                case JSROOT.IO.kObject:
-                  var classname = member['typename'];
+                  var classname = element['fTypeName'] === 'BASE' ? element['fName'] : element['fTypeName'];
                   if (classname.charAt(classname.length-1) == "*")
                      classname = classname.substr(0, classname.length - 1);
 
@@ -1577,17 +1567,18 @@
                   member['func'] = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
                case JSROOT.IO.kStreamLoop:
                case JSROOT.IO.kStreamer:
-                  member['cntname'] = element['countName'];
+                  member['cntname'] = element['fCountName'];
+                  member['typename'] = element['fTypeName'];
                   member['func'] = function(buf,obj) {
                      obj[this.name] = buf.ReadSpecial(this.type, this.typename, obj[this.cntname]);
                   };
                   break;
                default:
                   if (JSROOT.fUserStreamers !== null)
-                     member['func'] = JSROOT.fUserStreamers[member['typename']];
+                     member['func'] = JSROOT.fUserStreamers[element['fTypeName']];
 
                   if (typeof member['func'] != 'function') {
-                     alert('failed to provide function for ' + member.name + ' (' + member['typename'] + ')  typ = ' + member['type']);
+                     alert('failed to provide function for ' + element.fName + ' (' + element['fTypeName'] + ')  typ = ' + element['fType']);
                      member['func'] = function(buf,obj) {};  // do nothing, fix in the future
                   }
             }
@@ -1748,22 +1739,20 @@
 
       var ver = buf.last_read_version;
       buf.ClassStreamer(element, "TNamed");
-      element['type'] = buf.ntou4();
-      element['size'] = buf.ntou4();
-      element['length'] = buf.ntou4();
-      element['dim'] = buf.ntou4();
+      element['fType'] = buf.ntou4();
+      element['fSize'] = buf.ntou4();
+      element['fArrayLength'] = buf.ntou4();
+      element['fArrayDim'] = buf.ntou4();
       if (ver == 1)
-         element['maxindex'] = buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kUInt);
+         element['fMaxIndex'] = buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kUInt);
       else
-         element['maxindex'] = buf.ReadFastArray(5, JSROOT.IO.kUInt);
+         element['fMaxIndex'] = buf.ReadFastArray(5, JSROOT.IO.kUInt);
 
       element['fTypeName'] = buf.ReadTString();
-      element['typename'] = element['fTypeName']; // TODO - should be removed
-      if ((element['type'] == 11) && (element['typename'] == "Bool_t" ||
-            element['typename'] == "bool"))
-         element['type'] = 18;
+      if ((element['fType'] == 11) && (element['fTypeName'] == "Bool_t" ||
+            element['fTypeName'] == "bool"))
+         element['fType'] = JSROOT.IO.kBool;
       if (ver > 1) {
-         element['uuid'] = 0;
       }
       if (ver <= 2) {
          // In TStreamerElement v2, fSize was holding the size of
@@ -1771,9 +1760,9 @@
          // the full length of the data member.
       }
       if (ver == 3) {
-         element['xmin'] = buf.ntou4();
-         element['xmax'] = buf.ntou4();
-         element['factor'] = buf.ntou4();
+         element['fXmin'] = buf.ntod();
+         element['fXmax'] = buf.ntod();
+         element['fFactor'] = buf.ntod();
          //if (element['factor'] > 0) SetBit(kHasRange);
       }
       if (ver > 3) {
@@ -1786,7 +1775,7 @@
       var ver = buf.last_read_version;
       buf.ClassStreamer(elem, "TStreamerElement");
       if (ver > 2) {
-         elem['baseversion'] = buf.ntou4();
+         elem['fBaseVersion'] = buf.ntou4();
       }
    }
 
@@ -1801,9 +1790,9 @@
       // stream an object of class TStreamerBasicPointer
       if (buf.last_read_version > 1) {
          buf.ClassStreamer(elem, "TStreamerElement");
-         elem['countversion'] = buf.ntou4();
-         elem['countName'] = buf.ReadTString();
-         elem['countClass'] = buf.ReadTString();
+         elem['fCountVersion'] = buf.ntou4();
+         elem['fCountName'] = buf.ReadTString();
+         elem['fCountClass'] = buf.ReadTString();
       }
    }
 
@@ -1812,8 +1801,8 @@
 
       if (buf.last_read_version > 1) {
          buf.ClassStreamer(elem, "TStreamerElement");
-         elem['stltype'] = buf.ntou4();
-         elem['ctype'] = buf.ntou4();
+         elem['fSTLtype'] = buf.ntou4();
+         elem['fCtype'] = buf.ntou4();
       }
    };
 
