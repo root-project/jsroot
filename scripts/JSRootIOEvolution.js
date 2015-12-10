@@ -352,23 +352,6 @@
       return this.CheckBytecount(ver, "ReadTPolyMarker3D");
    }
 
-   JSROOT.TBuffer.prototype.ReadTCollection = function(list, str, o) {
-      list['_typename'] = "TCollection";
-      list['name'] = "";
-      list['arr'] = new Array();
-      var ver = this.ReadVersion();
-      if (ver['val'] > 2)
-         this.ReadTObject(list);
-      if (ver['val'] > 1)
-         list['name'] = this.ReadTString();
-      var nobjects = this.ntou4();
-      for (var i = 0; i < nobjects; ++i) {
-         o += 10; // skip object bits & unique id
-         list['arr'].push(null);
-      }
-      return this.CheckBytecount(ver,"ReadTCollection");
-   }
-
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       key['fNbytes'] = this.ntoi4();
       key['fVersion'] = this.ntoi2();
@@ -670,9 +653,6 @@
       }
       else if (classname == 'TQObject') {
          // skip TQObject
-      }
-      else if (classname == 'TCollection') {
-         this.ReadTCollection(obj);
       }
       else if (classname == 'TCanvas') {
          this.ReadTCanvas(obj);
