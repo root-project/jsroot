@@ -331,27 +331,6 @@
       return this.CheckBytecount(ver, "ReadTNamed");
    }
 
-   JSROOT.TBuffer.prototype.ReadTPolyMarker3D = function(marker) {
-      var ver = this.ReadVersion();
-
-      this.ReadTObject(marker);
-
-      this.ClassStreamer(marker, "TAttMarker");
-
-      marker['fN'] = this.ntoi4();
-
-      marker['fP'] = this.ReadFastArray(marker['fN']*3, JSROOT.IO.kFloat);
-
-      marker['fOption'] = this.ReadTString();
-
-      if (ver['val'] > 1)
-         marker['fName'] = this.ReadTString();
-      else
-         marker['fName'] = "TPolyMarker3D";
-
-      return this.CheckBytecount(ver, "ReadTPolyMarker3D");
-   }
-
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       key['fNbytes'] = this.ntoi4();
       key['fVersion'] = this.ntoi2();
@@ -619,9 +598,6 @@
       }
       else if (classname == 'TQObject') {
          // skip TQObject
-      }
-      else if (classname == 'TPolyMarker3D') {
-         this.ReadTPolyMarker3D(obj);
       }
       else if (classname == "TStreamerInfo") {
          this.ReadTStreamerInfo(obj);
@@ -1558,6 +1534,11 @@
          return streamer;
       }
 
+      if (clname == 'TPolyMarker3D') {
+         streamer.push({ func : JSROOT.IO.ReadTPolyMarker3D });
+         return streamer;
+      }
+
       var s_i = null;
       if (this.fStreamerInfos)
          for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
@@ -1820,6 +1801,25 @@
       buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
       buf.ntou1();   // ignore b << TestBit(kAutoExec);
       buf.ntou1();   // ignore b << TestBit(kMenuBar);
+   }
+
+   JSROOT.IO.ReadTPolyMarker3D = function(buf, marker) {
+      var ver = buf.last_read_version;
+
+      buf.ReadTObject(marker);
+
+      buf.ClassStreamer(marker, "TAttMarker");
+
+      marker['fN'] = buf.ntoi4();
+
+      marker['fP'] = buf.ReadFastArray(marker['fN']*3, JSROOT.IO.kFloat);
+
+      marker['fOption'] = buf.ReadTString();
+
+      if (ver > 1)
+         marker['fName'] = buf.ReadTString();
+      else
+         marker['fName'] = "TPolyMarker3D";
    }
 
    JSROOT.IO.ReadMember = function(buf, obj) {
