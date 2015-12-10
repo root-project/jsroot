@@ -1058,7 +1058,7 @@
                        _func = _func.replace(this.formulas[i].fName, this.formulas[i].fTitle);
                    }
                }
-
+              _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs');
               _func = _func.replace('TMath::Exp(', 'Math.exp(');
               _func = _func.replace('TMath::Abs(', 'Math.abs(');
               _func = _func.replace('TMath::Prob(', 'JSROOT.Math.Prob(');
@@ -1072,12 +1072,12 @@
                  while(_func.indexOf('['+i+']') != -1)
                     _func = _func.replace('['+i+']', this['fParams'][i]);
               }
-              // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
-              _func = _func.replace(/\b(abs)\b/gi, 'Math.abs');
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
               _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
+
+              // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
                this['_func'] = new Function("x", "return " + _func).bind(this);
                this['_title'] = this['fTitle'];
             }
