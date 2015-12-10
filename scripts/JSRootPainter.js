@@ -6821,6 +6821,8 @@
             var tm1 = new Date();
             d3.select("#" + h['disp_frameid']).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
 
+            // d3.select("#" + h['disp_frameid']).append("p").html(JSON.stringify(obj));
+
             if ('iomap' in JSROOT)
               for (var code in JSROOT.iomap)
                 d3.select("#" + h['disp_frameid']).append("p").html(code + " = " + JSROOT.iomap[code]);
