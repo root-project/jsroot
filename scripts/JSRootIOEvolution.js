@@ -447,9 +447,8 @@
 
    JSROOT.TStrBuffer.prototype.ntou2 = function() {
       // convert (read) two bytes of buffer b into a UShort_t
-      var n = ((this.b.charCodeAt(this.o) & 0xff) << 8) >>> 0;
-      n += (this.b.charCodeAt(this.o+1) & 0xff) >>> 0;
-      this.o += 2;
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 8) >>> 0;
+         n += (this.b.charCodeAt(this.o++) & 0xff) >>> 0;
       return n;
    }
 
@@ -481,9 +480,9 @@
 
    JSROOT.TStrBuffer.prototype.ntoi2 = function() {
       // convert (read) two bytes of buffer b into a Short_t
-      var n = (this.b.charCodeAt(this.o++) & 0xff) << 8;
-      n += (this.b.charCodeAt(this.o++) & 0xff);
-      return n;
+      var n = ((this.b.charCodeAt(this.o++) & 0xff) << 8);
+      n += ((this.b.charCodeAt(this.o++) & 0xff));
+      return (n < 0x8000) ? n : -1 - (~n &0xFFFF);
    }
 
    JSROOT.TStrBuffer.prototype.ntoi4 = function() {

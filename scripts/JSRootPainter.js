@@ -2198,7 +2198,7 @@
             nodes.append("svg:title").text(TooltipText);
       }
 
-      if (this.lineatt.width > 99) {
+      if (Math.abs(this.lineatt.width) > 99) {
          /* first draw exclusion area, and then the line */
          this.optionMark = 0;
 
@@ -2429,8 +2429,8 @@
       // negative value means another side of the line...
 
       var a, i, j, nf, wk = 1;
-      if (this.lineatt.width > 32767) {
-         this.lineatt.width = 65536 - this.lineatt.width;
+      if (this.lineatt.width < 0) {
+         this.lineatt.width = -this.lineatt.width;
          wk = -1;
       }
       wk *= (this.lineatt.width / 100) * 0.005;
