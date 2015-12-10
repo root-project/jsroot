@@ -108,6 +108,7 @@
       this.ClearObjectMap();
       this.fTagOffset = 0;
       this.progress = false;
+      this.last_read_version = 0;
       return this;
    }
 
@@ -175,7 +176,8 @@
          ver['bytecnt'] = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
       else
          this.o -= 4; // rollback read bytes, this is old buffer without bytecount
-      ver['val'] = this.ntou2();
+
+      this.last_read_version = ver['val'] = this.ntou2();
       ver['off'] = this.o;
       return ver;
    }
@@ -327,87 +329,6 @@
       tobj['fName'] = this.ReadTString();
       tobj['fTitle'] = this.ReadTString();
       return this.CheckBytecount(ver, "ReadTNamed");
-   }
-
-   JSROOT.TBuffer.prototype.ReadTObjString = function(tobj) {
-      // read a TObjString definition from I/O buffer
-      var ver = this.ReadVersion();
-      this.ReadTObject(tobj);
-      tobj['fString'] = this.ReadTString();
-      return this.CheckBytecount(ver, "ReadTObjString");
-   }
-
-   JSROOT.TBuffer.prototype.ReadTList = function(list) {
-      // stream all objects in the list from the I/O buffer
-      list['_typename'] = "TList";
-      list['name'] = "";
-      list['arr'] = new Array;
-      list['opt'] = new Array;
-      var ver = this.ReadVersion();
-      if (ver['val'] > 3) {
-         this.ReadTObject(list);
-         list['name'] = this.ReadTString();
-         var nobjects = this.ntou4();
-         for (var i = 0; i < nobjects; ++i) {
-
-            var obj = this.ReadObjectAny();
-            list['arr'].push(obj);
-
-            var opt = this.ReadTString();
-            list['opt'].push(opt);
-         }
-      }
-
-      return this.CheckBytecount(ver);
-   }
-
-   JSROOT.TBuffer.prototype.ReadTObjArray = function(list) {
-      list['_typename'] = "TObjArray";
-      list['name'] = "";
-      list['arr'] = new Array();
-      var ver = this.ReadVersion();
-      if (ver['val'] > 2)
-         this.ReadTObject(list);
-      if (ver['val'] > 1)
-         list['name'] = this.ReadTString();
-      var nobjects = this.ntou4();
-      var lowerbound = this.ntou4();
-      for (var i = 0; i < nobjects; ++i) {
-         var obj = this.ReadObjectAny();
-         list['arr'].push(obj);
-      }
-      return this.CheckBytecount(ver, "ReadTObjArray");
-   }
-
-   JSROOT.TBuffer.prototype.ReadTClonesArray = function(list) {
-      list['_typename'] = "TClonesArray";
-      list['name'] = "";
-      list['arr'] = new Array();
-      var ver = this.ReadVersion();
-      if (ver['val'] > 2)
-         this.ReadTObject(list);
-      if (ver['val'] > 1)
-         list['name'] = this.ReadTString();
-      var s = this.ReadTString();
-      var classv = s;
-      var clv = 0;
-      var pos = s.indexOf(";");
-      if (pos != -1) {
-         classv = s.slice(0, pos);
-         s = s.slice(pos+1, s.length()-pos-1);
-         clv = parseInt(s);
-      }
-      var nobjects = this.ntou4();
-      if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
-      var lowerbound = this.ntou4();
-      for (var i = 0; i < nobjects; ++i) {
-         var obj = {};
-
-         this.ClassStreamer(obj, classv);
-
-         list['arr'].push(obj);
-      }
-      return this.CheckBytecount(ver, "ReadTClonesArray");
    }
 
    JSROOT.TBuffer.prototype.ReadTPolyMarker3D = function(marker) {
@@ -750,21 +671,8 @@
       else if (classname == 'TQObject') {
          // skip TQObject
       }
-      else if (classname == 'TObjString') {
-         this.ReadTObjString(obj);
-      }
-      else if (classname == 'TObjArray') {
-         this.ReadTObjArray(obj);
-      }
-      else if (classname == 'TClonesArray') {
-         this.ReadTClonesArray(obj);
-      }
-      else if ((classname == 'TList') || (classname == 'THashList')) {
-         this.ReadTList(obj);
-      }
       else if (classname == 'TCollection') {
          this.ReadTCollection(obj);
-         alert("Trying to read TCollection - wrong!!!");
       }
       else if (classname == 'TCanvas') {
          this.ReadTCanvas(obj);
@@ -797,13 +705,20 @@
       }
       else {
          var streamer = this.fFile.GetStreamer(classname);
-         if (streamer != null) {
-            streamer.Stream(obj, this);
-         } else {
-            JSROOT.console("Did not found streamer for class " + classname + " try to skip data");
-            var ver = this.ReadVersion();
-            this.CheckBytecount(ver);
-         }
+
+         var ver = this.ReadVersion();
+
+         if (streamer!=null)
+            for (var n = 0; n < streamer.length; ++n) {
+               var member = streamer[n];
+
+               if ('short' in member)
+                  obj[member.name] = this[member.short]();
+               else
+                  member.func(this, obj);
+            }
+
+         this.CheckBytecount(ver, streamer ? classname : null);
       }
 
       JSROOT.addMethods(obj);
@@ -1083,238 +998,6 @@
    // ==============================================================================
 
    // ctor
-   JSROOT.TStreamerInfo = function(file) {
-      this.fFile = file;
-      this._typename = "TStreamerInfo";
-      this._class_members = []; // list of all members
-      return this;
-   }
-
-   //JSROOT.iomap = {};
-
-   JSROOT.IO.ReadBase = function(buf, obj, member) {
-      buf.ClassStreamer(obj, member.name);
-   }
-
-   JSROOT.IO.ReadTString = function(buf, obj, member) {
-      obj[member.name] = buf.ReadTString();
-   }
-
-   JSROOT.IO.ReadObjectAny = function(buf, obj, member) {
-      obj[member.name] = buf.ReadObjectAny();
-   }
-
-   JSROOT.IO.ReadFastArray = function(buf, obj, member) {
-      obj[member.name] = buf.ReadFastArray(member.length, member.type - JSROOT.IO.kOffsetL);
-   }
-
-   JSROOT.IO.ReadBasicPointer = function(buf, obj, member) {
-      obj[member.name] = buf.ReadBasicPointer(obj[member.cntname], member.type - JSROOT.IO.kOffsetP);
-   }
-
-   JSROOT.IO.ReadObjectMember = function(buf, obj, member) {
-      obj[member.name] = buf.ClassStreamer({}, member.classname);
-   }
-
-   JSROOT.IO.ReadTArrayMember = function(buf, obj, member) {
-      obj[member.name] = buf.ReadFastArray(buf.ntou4(), member.arrkind);
-   }
-
-   JSROOT.IO.ReadMember = function(buf, obj, member) {
-      var prop = member.name;
-
-      if (JSROOT.fUserStreamers !== null) {
-         var user_func = JSROOT.fUserStreamers[member.typename];
-
-         if (user_func !== undefined)
-            return user_func(buf, obj, prop, this);
-      }
-
-      //if (! (member['type'] in JSROOT.iomap)) JSROOT.iomap[member['type']] = 0;
-      //JSROOT.iomap[member['type']]++;
-
-      switch (member['type']) {
-         case JSROOT.IO.kShort:
-            obj[prop] = buf.ntoi2();
-            break;
-         case JSROOT.IO.kInt:
-         case JSROOT.IO.kCounter:
-            obj[prop] = buf.ntoi4();
-            break;
-         case JSROOT.IO.kDouble:
-            obj[prop] = buf.ntod();
-            break;
-         case JSROOT.IO.kLong:
-            obj[prop] = buf.ntoi8();
-            break;
-         case JSROOT.IO.kFloat:
-         case JSROOT.IO.kDouble32:
-            obj[prop] = buf.ntof();
-            break;
-         case JSROOT.IO.kBase:
-            buf.ClassStreamer(obj, prop);
-            break;
-         case JSROOT.IO.kTString:
-            obj[prop] = buf.ReadTString();
-            break;
-         case JSROOT.IO.kAnyP:
-         case JSROOT.IO.kObjectP:
-            obj[prop] = buf.ReadObjectAny();
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kInt);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kDouble);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kInt);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kDouble);
-            break;
-         case JSROOT.IO.kCharStar:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kChar);
-            break;
-         case JSROOT.IO.kChar:
-         case JSROOT.IO.kLegacyChar:
-            obj[prop] = buf.ntou1();
-            break;
-         case JSROOT.IO.kUChar:
-            obj[prop] = buf.ntou1();
-            break;
-         case JSROOT.IO.kUShort:
-            obj[prop] = buf.ntou2();
-            break;
-         case JSROOT.IO.kUInt:
-            obj[prop] = buf.ntou4();
-            break;
-         case JSROOT.IO.kULong:
-            obj[prop] = buf.ntou8();
-            break;
-         case JSROOT.IO.kBits:
-            alert('failed to stream bits ' + prop + ' (' + member['typename'] + ')');
-            break;
-         case JSROOT.IO.kLong64:
-            obj[prop] = buf.ntoi8();
-            break;
-         case JSROOT.IO.kULong64:
-            obj[prop] = buf.ntou8();
-            break;
-         case JSROOT.IO.kBool:
-            obj[prop] = buf.ntou1() != 0;
-            break;
-         case JSROOT.IO.kFloat16:
-            obj[prop] = 0;
-            buf.o += 2;
-            break;
-         case JSROOT.IO.kAny:
-         case JSROOT.IO.kAnyp:
-         case JSROOT.IO.kObjectp:
-         case JSROOT.IO.kObject:
-            var classname = member['typename'];
-            if (classname.charAt(classname.length-1) == "*")
-               classname = classname.substr(0, classname.length - 1);
-
-            var arrkind = JSROOT.IO.GetArrayKind(classname);
-
-            if (arrkind > 0)
-               obj[prop] = buf.ReadFastArray(buf.ntou4(), arrkind);
-            else
-               obj[prop] = buf.ClassStreamer({}, classname);
-
-            break;
-
-         case JSROOT.IO.kTObject:
-            buf.ReadTObject(obj);
-            break;
-         case JSROOT.IO.kTNamed:
-            buf.ReadTNamed(obj);
-            break;
-            //case JSROOT.IO.kAnyPnoVT:
-            //case JSROOT.IO.kSTLp:
-            //case JSROOT.IO.kSTL:
-            //case JSROOT.IO.kSkip:
-            //case JSROOT.IO.kSkipL:
-            //case JSROOT.IO.kSkipP:
-            //case JSROOT.IO.kConv:
-            //case JSROOT.IO.kConvL:
-            //case JSROOT.IO.kConvP:
-            //case JSROOT.IO.kSTLstring:
-         case JSROOT.IO.kStreamLoop:
-         case JSROOT.IO.kStreamer:
-            obj[prop] = buf.ReadSpecial(member['type'], member['typename'], obj[member['cntname']]);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kShort);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kUShort);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kUInt);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kULong64);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kLong64);
-            break;
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kFloat);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUChar);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kChar);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kShort);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUShort);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUInt);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kULong64);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kLong64);
-            break;
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
-            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kFloat);
-            break;
-         case JSROOT.IO.kOffsetL:
-            break;
-         case JSROOT.IO.kOffsetP:
-            break;
-         default:
-            alert('failed to stream ' + prop + ' (' + member['typename'] + ')  typ = ' + member['type']);
-      }
-   }
-
-   JSROOT.TStreamerInfo.prototype.Stream = function(obj, buf) {
-
-      var ver = buf.ReadVersion();
-
-      // then class members
-      for (var n = 0; n < this._class_members.length; ++n) {
-         this._class_members[n].func(buf, obj, this._class_members[n]);
-      }
-
-      buf.CheckBytecount(ver, "TStreamer.Stream");
-
-      return buf.o;
-   }
 
 
    // ==============================================================================
@@ -1910,15 +1593,33 @@
       var streamer = this.fStreamers[clname];
       if (typeof(streamer) != 'undefined') return streamer;
 
+      this.fStreamers[clname] = streamer = new Array;
+
+      if ((clname == 'TList') || (clname == 'THashList')) {
+         streamer.push({ classname: clname, func : JSROOT.IO.ReadTList });
+         return streamer;
+      }
+
+      if (clname == 'TClonesArray') {
+         streamer.push({ func : JSROOT.IO.ReadTClonesArray });
+         return streamer;
+      }
+
+      if (clname == 'TObjArray') {
+         streamer.push({ func : JSROOT.IO.ReadTObjArray });
+         return streamer;
+      }
+
       var s_i = null;
       if (this.fStreamerInfos)
          for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
             if (this.fStreamerInfos.arr[i].fName == clname)  {
                s_i = this.fStreamerInfos.arr[i]; break;
             }
-      if (s_i == null) return null;
-
-      this.fStreamers[clname] = streamer = new JSROOT.TStreamerInfo(this);
+      if (s_i == null) {
+         delete this.fStreamers[clname];
+         return null;
+      }
 
       if (typeof(s_i['fElements']) != 'undefined') {
          for (var j=0; j<s_i['fElements']['arr'].length; ++j) {
@@ -1949,10 +1650,13 @@
             }
 
             switch (member['type']) {
-               case JSROOT.IO.kBase: member['func'] = JSROOT.IO.ReadBase; break;
-               case JSROOT.IO.kTString: member['func'] = JSROOT.IO.ReadTString; break;
+               case JSROOT.IO.kBase:
+                  member['func'] = JSROOT.IO.ReadBase; break;
+               case JSROOT.IO.kTString:
+                  member['short'] = 'ReadTString'; break;
                case JSROOT.IO.kAnyP:
-               case JSROOT.IO.kObjectP: member['func'] = JSROOT.IO.ReadObjectAny; break;
+               case JSROOT.IO.kObjectP:
+                  member['short'] = 'ReadObjectAny'; break;
                case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
@@ -1998,12 +1702,40 @@
                   }
 
                   break;
-
+               case JSROOT.IO.kShort:
+                  member['short'] = 'ntoi2'; break;
+               case JSROOT.IO.kInt:
+               case JSROOT.IO.kCounter:
+                  member['short'] = 'ntoi4'; break;
+               case JSROOT.IO.kDouble:
+                  member['short'] = 'ntod'; break;
+               case JSROOT.IO.kLong:
+                  member['short'] = 'ntoi8'; break;
+               case JSROOT.IO.kFloat:
+               case JSROOT.IO.kDouble32:
+                  member['short'] = 'ntof'; break;
+               case JSROOT.IO.kChar:
+               case JSROOT.IO.kLegacyChar:
+                  member['short'] = 'ntou1'; break;
+               case JSROOT.IO.kUChar:
+                  member['short'] = 'ntou1'; break;
+               case JSROOT.IO.kUShort:
+                  member['short'] = 'ntou2'; break;
+               case JSROOT.IO.kUInt:
+                  member['short'] = 'ntou4'; break;
+               case JSROOT.IO.kULong:
+                  member['short'] = 'ntou8'; break;
+               case JSROOT.IO.kLong64:
+                  member['short'] = 'ntoi8'; break;
+               case JSROOT.IO.kULong64:
+                  member['short'] = 'ntou8'; break;
+               case JSROOT.IO.kBool:
+                  member['short'] = 'ntou1'; break;
                default:
                   member['func'] = JSROOT.IO.ReadMember; break;
             }
 
-            streamer._class_members.push(member);
+            streamer.push(member);
          }
       }
       return streamer;
@@ -2017,6 +1749,282 @@
       this.fSeekInfo = 0;
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
+   };
+
+   //JSROOT.iomap = {};
+
+   // following functions called as function of streamer element
+   // means this pointer set to meber of streamed class
+
+   JSROOT.IO.ReadBase = function(buf, obj) {
+      buf.ClassStreamer(obj, this.name);
+   }
+
+   JSROOT.IO.ReadFastArray = function(buf, obj) {
+      obj[this.name] = buf.ReadFastArray(this.length, this.type - JSROOT.IO.kOffsetL);
+   }
+
+   JSROOT.IO.ReadBasicPointer = function(buf, obj) {
+      obj[this.name] = buf.ReadBasicPointer(obj[this.cntname], this.type - JSROOT.IO.kOffsetP);
+   }
+
+   JSROOT.IO.ReadObjectMember = function(buf, obj) {
+      obj[this.name] = buf.ClassStreamer({}, this.classname);
+   }
+
+   JSROOT.IO.ReadTArrayMember = function(buf, obj) {
+      obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
+   }
+
+   JSROOT.IO.ReadTList = function(buf, obj) {
+      // stream all objects in the list from the I/O buffer
+      obj['_typename'] = this.classname;
+      obj['name'] = "";
+      obj['arr'] = new Array;
+      obj['opt'] = new Array;
+      if (buf.last_read_version > 3) {
+         buf.ReadTObject(obj);
+         obj['name'] = buf.ReadTString();
+         var nobjects = buf.ntou4();
+         for (var i = 0; i < nobjects; ++i) {
+            var item = buf.ReadObjectAny();
+            obj['arr'].push(item);
+
+            var opt = buf.ReadTString();
+            obj['opt'].push(opt);
+         }
+      }
+   }
+
+   JSROOT.IO.ReadTObjArray = function(buf, list) {
+      list['_typename'] = "TObjArray";
+      list['name'] = "";
+      list['arr'] = new Array();
+      var ver = buf.last_read_version;
+      if (ver > 2)
+         buf.ReadTObject(list);
+      if (ver > 1)
+         list['name'] = buf.ReadTString();
+      var nobjects = buf.ntou4();
+      var lowerbound = buf.ntou4();
+      for (var i = 0; i < nobjects; ++i) {
+         var obj = buf.ReadObjectAny();
+         list['arr'].push(obj);
+      }
+   }
+
+   JSROOT.IO.ReadTClonesArray = function(buf, list) {
+      list['_typename'] = "TClonesArray";
+      list['name'] = "";
+      list['arr'] = new Array();
+      var ver = buf.last_read_version;
+      if (ver > 2)
+         buf.ReadTObject(list);
+      if (ver > 1)
+         list['name'] = buf.ReadTString();
+      var s = buf.ReadTString();
+      var classv = s;
+      var clv = 0;
+      var pos = s.indexOf(";");
+      if (pos != -1) {
+         classv = s.slice(0, pos);
+         s = s.slice(pos+1, s.length-pos-1);
+         clv = parseInt(s);
+      }
+
+      var nobjects = buf.ntou4();
+      if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
+      var lowerbound = buf.ntou4();
+
+      // TO BE DONE - READING OF CLONES ARRAY!!!
+
+      //for (var i = 0; i < nobjects; ++i) {
+      //   var obj = buf.ClassStreamer({}, classv);
+      //   list['arr'].push(obj);
+      //}
+   }
+
+   JSROOT.IO.ReadMember = function(buf, obj) {
+      var member = this;
+      var prop = member.name;
+
+      if (JSROOT.fUserStreamers !== null) {
+         var user_func = JSROOT.fUserStreamers[member.typename];
+
+         if (user_func !== undefined)
+            return user_func(buf, obj, prop, this);
+      }
+
+      //if (! (member['type'] in JSROOT.iomap)) JSROOT.iomap[member['type']] = 0;
+      //JSROOT.iomap[member['type']]++;
+
+      switch (member['type']) {
+         case JSROOT.IO.kShort:
+            obj[prop] = buf.ntoi2();
+            break;
+         case JSROOT.IO.kInt:
+         case JSROOT.IO.kCounter:
+            obj[prop] = buf.ntoi4();
+            break;
+         case JSROOT.IO.kDouble:
+            obj[prop] = buf.ntod();
+            break;
+         case JSROOT.IO.kLong:
+            obj[prop] = buf.ntoi8();
+            break;
+         case JSROOT.IO.kFloat:
+         case JSROOT.IO.kDouble32:
+            obj[prop] = buf.ntof();
+            break;
+         case JSROOT.IO.kBase:
+            buf.ClassStreamer(obj, prop);
+            break;
+         case JSROOT.IO.kTString:
+            obj[prop] = buf.ReadTString();
+            break;
+         case JSROOT.IO.kAnyP:
+         case JSROOT.IO.kObjectP:
+            obj[prop] = buf.ReadObjectAny();
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kInt);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kDouble);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kInt);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kDouble);
+            break;
+         case JSROOT.IO.kCharStar:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kChar);
+            break;
+         case JSROOT.IO.kChar:
+         case JSROOT.IO.kLegacyChar:
+            obj[prop] = buf.ntou1();
+            break;
+         case JSROOT.IO.kUChar:
+            obj[prop] = buf.ntou1();
+            break;
+         case JSROOT.IO.kUShort:
+            obj[prop] = buf.ntou2();
+            break;
+         case JSROOT.IO.kUInt:
+            obj[prop] = buf.ntou4();
+            break;
+         case JSROOT.IO.kULong:
+            obj[prop] = buf.ntou8();
+            break;
+         case JSROOT.IO.kBits:
+            alert('failed to stream bits ' + prop + ' (' + member['typename'] + ')');
+            break;
+         case JSROOT.IO.kLong64:
+            obj[prop] = buf.ntoi8();
+            break;
+         case JSROOT.IO.kULong64:
+            obj[prop] = buf.ntou8();
+            break;
+         case JSROOT.IO.kBool:
+            obj[prop] = buf.ntou1() != 0;
+            break;
+         case JSROOT.IO.kFloat16:
+            obj[prop] = 0;
+            buf.o += 2;
+            break;
+         case JSROOT.IO.kAny:
+         case JSROOT.IO.kAnyp:
+         case JSROOT.IO.kObjectp:
+         case JSROOT.IO.kObject:
+            var classname = member['typename'];
+            if (classname.charAt(classname.length-1) == "*")
+               classname = classname.substr(0, classname.length - 1);
+
+            var arrkind = JSROOT.IO.GetArrayKind(classname);
+
+            if (arrkind > 0)
+               obj[prop] = buf.ReadFastArray(buf.ntou4(), arrkind);
+            else
+               obj[prop] = buf.ClassStreamer({}, classname);
+
+            break;
+
+         case JSROOT.IO.kTObject:
+            buf.ReadTObject(obj);
+            break;
+         case JSROOT.IO.kTNamed:
+            buf.ReadTNamed(obj);
+            break;
+            //case JSROOT.IO.kAnyPnoVT:
+            //case JSROOT.IO.kSTLp:
+            //case JSROOT.IO.kSTL:
+            //case JSROOT.IO.kSkip:
+            //case JSROOT.IO.kSkipL:
+            //case JSROOT.IO.kSkipP:
+            //case JSROOT.IO.kConv:
+            //case JSROOT.IO.kConvL:
+            //case JSROOT.IO.kConvP:
+            //case JSROOT.IO.kSTLstring:
+         case JSROOT.IO.kStreamLoop:
+         case JSROOT.IO.kStreamer:
+            obj[prop] = buf.ReadSpecial(member['type'], member['typename'], obj[member['cntname']]);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kShort);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kUShort);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kUInt);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kULong64);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kLong64);
+            break;
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
+            obj[prop] = buf.ReadFastArray(member['length'], JSROOT.IO.kFloat);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUChar);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kChar);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kShort);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUShort);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kUInt);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kULong64);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kLong64);
+            break;
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
+            obj[prop] = buf.ReadBasicPointer(obj[member['cntname']], JSROOT.IO.kFloat);
+            break;
+         case JSROOT.IO.kOffsetL:
+            break;
+         case JSROOT.IO.kOffsetP:
+            break;
+         default:
+            alert('failed to stream ' + prop + ' (' + member['typename'] + ')  typ = ' + member['type']);
+      }
    };
 
    (function() {
