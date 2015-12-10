@@ -1329,6 +1329,7 @@
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
             histo = JSROOT.Create("TH1I");
+            histo['fTitle'] = this.mgraph['fTitle'];
             histo['fXaxis']['fXmin'] = rw.xmin;
             histo['fXaxis']['fXmax'] = rw.xmax;
             histo['fYaxis']['fXmin'] = rw.ymin;
