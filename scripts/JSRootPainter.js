@@ -2188,9 +2188,6 @@
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
-      // use smoothing of the line by basic spline interpolation
-      if (this.optionCurve == 1)
-         line = line.interpolate(JSROOT.gStyle.Interpolate);
 
       if (this.optionBar) {
          var nodes = this.DrawBars();
@@ -2203,7 +2200,9 @@
          this.optionMark = 0;
 
          this.DrawExclusion(line);
-      }
+      } else
+      if (this.optionCurve == 1) // do not use smoothing with exclusion
+         line = line.interpolate(JSROOT.gStyle.Interpolate);
 
       if (this.optionLine == 1 || this.optionFill == 1) {
 
@@ -2430,10 +2429,10 @@
 
       var a, i, j, nf, wk = 1;
       if (this.lineatt.width < 0) {
-         this.lineatt.width = -this.lineatt.width;
+         this.lineatt.width = - this.lineatt.width;
          wk = -1;
       }
-      wk *= (this.lineatt.width / 100) * 0.005;
+      wk *= Math.floor(this.lineatt.width / 100) * 0.005;
       this.lineatt.width = this.lineatt.width % 100; // line width
       if (this.lineatt.width > 0) this.optionLine = 1;
 
@@ -2443,7 +2442,7 @@
 
       var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
           ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
-      for (i = 0; i < n; ++i) {
+      for (i = 0; i < n; i++) {
          xo[i] = (this.graph['fX'][i] - xmin) / (xmax - xmin);
          yo[i] = (this.graph['fY'][i] - ymin) / (ymax - ymin);
          if (w > h)
@@ -2456,7 +2455,7 @@
       xf[0] = xo[0];
       yf[0] = yo[0];
       nf = 0;
-      for (i = 1; i < n; ++i) {
+      for (i = 1; i < n; i++) {
          if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
          nf++;
          xf[nf] = xo[i];
@@ -2494,7 +2493,7 @@
       }
 
       var a1, a2, a3, xi0, yi0, xi1, yi1, xi2, yi2;
-      for (i = 1; i < nf; ++i) {
+      for (i = 1; i < nf; i++) {
          xi0 = xf[i];
          yi0 = yf[i];
          xi1 = xf[i + 1];
@@ -2612,7 +2611,7 @@
       yf[nf] = yt[0];
       nf++;
 
-      for (i = 0; i < nf; ++i) {
+      for (i = 0; i < nf; i++) {
          if (w > h) {
             xf[i] = xmin + (xf[i] * (xmax - xmin));
             yf[i] = ymin + (yf[i] * (ymax - ymin)) * ratio;
