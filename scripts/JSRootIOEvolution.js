@@ -107,7 +107,6 @@
       this.fFile = _file;
       this.ClearObjectMap();
       this.fTagOffset = 0;
-      this.progress = false;
       this.last_read_version = 0;
       return this;
    }
@@ -118,30 +117,6 @@
 
    JSROOT.TBuffer.prototype.shift = function(cnt) {
       this.o += cnt;
-   }
-
-   JSROOT.TBuffer.prototype.EnableProgress = function() {
-      // JSROOT.progress(0.);
-
-      if (this.totalLength() < 1e4) return;
-
-      this.progress = true;
-
-      var step = this.totalLength() / 20;
-      if (step > 1e5) step = 1e5; else
-      if (step < 1e3) step = 1e3;
-      this.progress_limit = step;
-   }
-
-   JSROOT.TBuffer.prototype.CheckProgress = function() {
-      if (this.o < this.progress_limit) return;
-
-      // JSROOT.progress(this.o/this.totalLength());
-
-      var step = this.totalLength() / 20;
-      if (step > 1e5) step = 1e5; else
-      if (step < 1e3) step = 1e3;
-      this.progress_limit+=step;
    }
 
    JSROOT.TBuffer.prototype.GetMappedObject = function(tag) {
@@ -421,8 +396,6 @@
    }
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
-
-      // if (this.progress) this.CheckProgress();
 
       if (! ('_typename' in obj)) obj['_typename'] = classname;
 
@@ -1146,11 +1119,31 @@
             buf.MapObject(1, obj); // tag object itself with id==1
             //buf.EnableProgress();
             buf.ClassStreamer(obj, key['fClassName']);
-            //JSROOT.progress(1.);
+
+            if (key['fClassName']=='TF1')
+               return file.ReadFormulas(obj, user_call_back, -1);
 
             JSROOT.CallBack(user_call_back, obj);
          }); // end of ReadObjBuffer callback
       }); // end of GetKey callback
+   }
+
+   JSROOT.TFile.prototype.ReadFormulas = function(tf1, user_call_back, cnt) {
+
+      var indx = cnt;
+      while (++indx < this.fKeys.length) {
+         if (this.fKeys[indx]['fClassName'] == 'TFormula') break;
+      }
+
+      if (indx >= this.fKeys.length)
+         return JSROOT.CallBack(user_call_back, tf1);
+
+      var file = this;
+
+      this.ReadObject(this.fKeys[indx]['fName'], this.fKeys[indx]['fCycle'], function(formula) {
+          tf1.addFormula(formula);
+          file.ReadFormulas(tf1, user_call_back, indx);
+      });
    }
 
    JSROOT.TFile.prototype.ExtractStreamerInfos = function(buf)
@@ -1166,14 +1159,6 @@
       this.fStreamerInfos = lst;
    }
 
-   JSROOT.TFile.prototype.ReadFormulas = function()
-   {
-      for (var i=0; i < this.fKeys.length; ++i)
-        if (this.fKeys[i]['fClassName'] == 'TFormula')
-          this.ReadObject(this.fKeys[i]['fName'], this.fKeys[i]['fCycle'], function(obj) {
-             JSROOT.addFormula(obj);
-         });
-   }
 
    JSROOT.TFile.prototype.ReadStreamerInfos = function(si_callback)
    {
@@ -1191,7 +1176,6 @@
          file.ReadObjBuffer(key, function(blob2) {
             if (blob2==null) return si_callback(null);
             file.ExtractStreamerInfos(blob2);
-            file.ReadFormulas();
             si_callback(file);
          });
       });
@@ -1294,13 +1278,10 @@
                }
                file.ReadStreamerInfos(readkeys_callback);
                delete buf4;
-               delete blob4;
             });
             delete buf3;
-            delete blob3;
          });
          delete buf;
-         delete blob;
       });
    };
 

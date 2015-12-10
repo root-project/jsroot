@@ -103,8 +103,6 @@
    JSROOT.browser.isIE = false || !!document.documentMode;
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
 
-   JSROOT.function_list = []; // do we really need it here?
-
    // default draw styles, can be changed after loading of JSRootCore.js
    JSROOT.gStyle = {
          Tooltip : true, // tooltip on/off
@@ -820,24 +818,7 @@
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'BuildSimpleGUI'));
          JSROOT.CallBack(andThen);
       }, debugout);
-   }
-
-   JSROOT.addFormula = function(obj) {
-      var formula = obj['fTitle'];
-      formula = formula.replace('abs(', 'Math.abs(');
-      formula = formula.replace('sin(', 'Math.sin(');
-      formula = formula.replace('cos(', 'Math.cos(');
-      formula = formula.replace('exp(', 'Math.exp(');
-      var code = obj['fName'] + " = function(x) { return " + formula + " };";
-      eval(code);
-      var sig = obj['fName']+'(x)';
-
-      var pos = JSROOT.function_list.indexOf(sig);
-      if (pos >= 0) {
-         JSROOT.function_list.splice(pos, 1);
-      }
-      JSROOT.function_list.push(sig);
-   }
+   };
 
    JSROOT.Create = function(typename, target) {
       var obj = target;
@@ -1050,23 +1031,39 @@
       }
 
       if ((obj_typename.indexOf("TFormula") != -1) || (obj_typename.indexOf("TF1") == 0)) {
+         obj['addFormula'] = function(obj) {
+            if (obj==null) return;
+            if (!('formulas' in this)) this['formulas'] = [];
+            this['formulas'].push(obj);
+         }
+
          obj['evalPar'] = function(x) {
             if (! ('_func' in this) || (this['_title'] != this['fTitle'])) {
+
               var _func = this['fTitle'];
+
+              if ('formulas' in this)
+                 for (var i=0;i<this.formulas.length;++i) {
+                    while (_func.indexOf(this.formulas[i].fName) >= 0) {
+                       _func = _func.replace(this.formulas[i].fName, this.formulas[i].fTitle);
+                   }
+               }
+
               _func = _func.replace('TMath::Exp(', 'Math.exp(');
               _func = _func.replace('TMath::Abs(', 'Math.abs(');
               _func = _func.replace('TMath::Prob(', 'JSROOT.Math.Prob(');
-              _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, ' + x + ', ');
-              _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, ' + x + ', ');
-              _func = _func.replace('expo(', 'JSROOT.Math.expo(this, ' + x + ', ');
-              _func = _func.replace('landau(', 'JSROOT.Math.landau(this, ' + x + ', ');
-              _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, ' + x + ', ');
+              _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, x, ');
+              _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, x, ');
+              _func = _func.replace('expo(', 'JSROOT.Math.expo(this, x, ');
+              _func = _func.replace('landau(', 'JSROOT.Math.landau(this, x, ');
+              _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, x, ');
               _func = _func.replace('pi', 'Math.PI');
               for (var i=0;i<this['fNpar'];++i) {
                  while(_func.indexOf('['+i+']') != -1)
                     _func = _func.replace('['+i+']', this['fParams'][i]);
               }
               // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
+              _func = _func.replace(/\b(abs)\b/gi, 'Math.abs');
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
