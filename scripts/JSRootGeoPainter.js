@@ -1023,6 +1023,14 @@
          this._renderer.domElement._translationSnap = Math.ceil( overall_size ) / 50;
          if ( this._renderer.domElement.transformControl !== null )
             this._renderer.domElement.transformControl.attach( toplevel );
+         if (typeof JSROOT.progress === "function") {
+            //JSROOT.progress("Press 'T' for translation, 'R' for rotation, or 'S' for scaling");
+            JSROOT.progress("<center>Transform Controls</center>" +
+                            "<center>'T' translate | 'R' rotate | 'S' scale</center>" +
+                            "<center>'+' increase size | '-' decrease size</center>" +
+                            "<center>'W' toggle wireframe/solid display</center>"+
+                            "<center>keep 'Ctrl' down to snap to grid</center>");
+         }
       }
       this._camera.near = overall_size / 200;
       this._camera.far = overall_size * 500;
