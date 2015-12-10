@@ -514,6 +514,8 @@
 
          if (debugout)
             document.getElementById(debugout).innerHTML = "";
+         else
+            JSROOT.progress();
 
          JSROOT.CallBack(callback);
       }
@@ -572,7 +574,10 @@
 
       var element = null;
 
-      JSROOT.console("loading " + filename + " ...", debugout);
+      if (debugout)
+         document.getElementById(debugout).innerHTML = "loading " + filename + " ...";
+      else
+         JSROOT.progress("loading " + filename + " ...");
 
       if (isstyle) {
          element = document.createElement("link");
@@ -1273,7 +1278,9 @@
    }
 
    // dummy function, will be redefined when JSRootPainter is loaded
-   JSROOT.progress = function() {}
+   JSROOT.progress = function(msg) {
+      if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
+   }
 
    JSROOT.Initialize = function() {
 
