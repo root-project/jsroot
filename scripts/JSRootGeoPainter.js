@@ -993,13 +993,13 @@
 
          this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, opt=="all" ? 9999 : 0);
 
-         //top.computeBoundingBox();
-         //var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
-         //                                 Math.abs(top.boundingBox.max.z));
-         var boundingBox = this.computeBoundingBox(toplevel, false);
-         if (boundingBox!=null)
-            overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
-                                         Math.abs(boundingBox.max.z));
+         top.computeBoundingBox();
+         var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
+                                          Math.abs(top.boundingBox.max.z));
+         //var boundingBox = this.computeBoundingBox(toplevel, false);
+         //if (boundingBox!=null)
+         //   overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
+         //                                Math.abs(boundingBox.max.z));
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
@@ -1024,7 +1024,7 @@
          if ( this._renderer.domElement.transformControl !== null )
             this._renderer.domElement.transformControl.attach( toplevel );
          if (typeof JSROOT.progress === "function") {
-            //JSROOT.progress("Press 'T' for translation, 'R' for rotation, or 'S' for scaling");
+            JSROOT.progress();
             JSROOT.progress("<center>Transform Controls</center>" +
                             "<center>'T' translate | 'R' rotate | 'S' scale</center>" +
                             "<center>'+' increase size | '-' decrease size</center>" +
