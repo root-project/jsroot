@@ -410,40 +410,6 @@
       return this.CheckBytecount(ver,"ReadTBasket");
    }
 
-   JSROOT.TBuffer.prototype.ReadTCanvas = function(obj) {
-      // stream all objects in the list from the I/O buffer
-      var ver = this.ReadVersion();
-
-      this.ClassStreamer(obj, "TPad");
-
-      obj['fDISPLAY'] = this.ReadTString();
-      obj['fDoubleBuffer'] = this.ntoi4();
-      obj['fRetained'] = this.ntou1()!=0;
-      obj['fXsizeUser'] = this.ntoi4();
-      obj['fYsizeUser'] = this.ntoi4();
-      obj['fXsizeReal'] = this.ntoi4();
-      obj['fYsizeReal'] = this.ntoi4();
-      obj['fWindowTopX'] = this.ntoi4();
-      obj['fWindowTopY'] = this.ntoi4();
-      obj['fWindowWidth'] = this.ntoi4();
-      obj['fWindowHeight'] = this.ntoi4();
-      obj['fCw'] = this.ntou4();
-      obj['fCh'] = this.ntou4();
-
-      obj['fCatt'] = {};
-      this.ClassStreamer(obj['fCatt'], "TAttCanvas");
-      this.ntou1(); // ignore b << TestBit(kMoveOpaque);
-      this.ntou1(); // ignore b << TestBit(kResizeOpaque);
-      obj['fHighLightColor'] = this.ntoi2();
-      obj['fBatch'] = this.ntou1()!=0;
-      this.ntou1();   // ignore b << TestBit(kShowEventStatus);
-      this.ntou1();   // ignore b << TestBit(kAutoExec);
-      this.ntou1();   // ignore b << TestBit(kMenuBar);
-
-      // now TCanvas streamer should be complete - verify that bytecount is correct
-      return this.CheckBytecount(ver, "TCanvas");
-   }
-
    JSROOT.TBuffer.prototype.ReadTStreamerInfo = function(streamerinfo) {
       // stream an object of class TStreamerInfo from the I/O buffer
 
@@ -653,9 +619,6 @@
       }
       else if (classname == 'TQObject') {
          // skip TQObject
-      }
-      else if (classname == 'TCanvas') {
-         this.ReadTCanvas(obj);
       }
       else if (classname == 'TPolyMarker3D') {
          this.ReadTPolyMarker3D(obj);
@@ -1585,6 +1548,11 @@
          return streamer;
       }
 
+      if (clname == 'TCanvas') {
+         streamer.push({ func : JSROOT.IO.ReadTCanvas });
+         return streamer;
+      }
+
       if (clname == 'TObjArray') {
          streamer.push({ func : JSROOT.IO.ReadTObjArray });
          return streamer;
@@ -1822,6 +1790,36 @@
       //   var obj = buf.ClassStreamer({}, classv);
       //   list['arr'].push(obj);
       //}
+   }
+
+   JSROOT.IO.ReadTCanvas = function(buf, obj) {
+      obj['_typename'] = "TCanvas";
+
+      buf.ClassStreamer(obj, "TPad");
+
+      obj['fDISPLAY'] = buf.ReadTString();
+      obj['fDoubleBuffer'] = buf.ntoi4();
+      obj['fRetained'] = buf.ntou1()!=0;
+      obj['fXsizeUser'] = buf.ntoi4();
+      obj['fYsizeUser'] = buf.ntoi4();
+      obj['fXsizeReal'] = buf.ntoi4();
+      obj['fYsizeReal'] = buf.ntoi4();
+      obj['fWindowTopX'] = buf.ntoi4();
+      obj['fWindowTopY'] = buf.ntoi4();
+      obj['fWindowWidth'] = buf.ntoi4();
+      obj['fWindowHeight'] = buf.ntoi4();
+      obj['fCw'] = buf.ntou4();
+      obj['fCh'] = buf.ntou4();
+
+      obj['fCatt'] = buf.ClassStreamer({}, "TAttCanvas");
+
+      buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
+      buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
+      obj['fHighLightColor'] = buf.ntoi2();
+      obj['fBatch'] = buf.ntou1()!=0;
+      buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
+      buf.ntou1();   // ignore b << TestBit(kAutoExec);
+      buf.ntou1();   // ignore b << TestBit(kMenuBar);
    }
 
    JSROOT.IO.ReadMember = function(buf, obj) {
