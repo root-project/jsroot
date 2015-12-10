@@ -420,44 +420,6 @@
       return obj;
    }
 
-   JSROOT.TBuffer.prototype.ReadSpecial = function(typ, typname, cnt) {
-      // For the moment only few cases are supported,
-      // later one could made more generic approach here
-
-      var ver = this.ReadVersion();
-      var res = null;
-
-      if (typname == "TString*") {
-         if (cnt === undefined) cnt = 0;
-         res = new Array(cnt);
-         for (var i = 0; i < cnt; ++i )
-            res[i] = this.ReadTString();
-      } else
-      if (typname == "vector<double>") res = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kDouble); else
-      if (typname == "vector<int>") res = this.ReadFastArray(this.ntoi4(),JSROOT.IO.kInt); else
-      if (typname == "vector<float>") res = this.ReadFastArray(this.ntoi4(),JSROOT.IO.kFloat); else
-      if (typname == "vector<TObject*>") {
-         var n = this.ntoi4();
-         res = [];
-         for (var i=0;i<n;++i) res.push(this.ReadObjectAny());
-      }  else
-      if (typname.indexOf("map<TString,int")==0) {
-         var n = this.ntoi4();
-         res = [];
-         for (var i=0;i<n;++i) {
-            var str = this.ReadTString();
-            var val = this.ntoi4();
-            res.push({ first: str, second: val});
-         }
-      } else {
-         JSROOT.console('failed to stream element of type ' + typname);
-      }
-
-      if (!this.CheckBytecount(ver,"Reading " + typname)) res = null;
-
-      return res;
-   }
-
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
       // if (this.progress) this.CheckProgress();
@@ -466,7 +428,7 @@
 
       var streamer = this.fFile.GetStreamer(classname);
 
-      if (streamer!=null) {
+      if (streamer != null) {
          var ver = this.ReadVersion();
          for (var n = 0; n < streamer.length; ++n)
             streamer[n].func(this, obj);
@@ -1757,7 +1719,38 @@
                   member['cntname'] = element['fCountName'];
                   member['typename'] = element['fTypeName'];
                   member['func'] = function(buf,obj) {
-                     obj[this.name] = buf.ReadSpecial(this.type, this.typename, obj[this.cntname]);
+                     var ver = buf.ReadVersion();
+                     var res = null;
+
+                     if (this.typename == "TString*") {
+                        var cnt = obj[this.cntname];
+                        res = new Array(cnt);
+                        for (var i = 0; i < cnt; ++i )
+                           res[i] = buf.ReadTString();
+                     } else
+                     if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kDouble); else
+                     if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kInt); else
+                     if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kFloat); else
+                     if (this.typename == "vector<TObject*>") {
+                        var n = buf.ntoi4();
+                        res = [];
+                        for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
+                     }  else
+                     if (this.typename.indexOf("map<TString,int")==0) {
+                        var n = buf.ntoi4();
+                        res = [];
+                        for (var i=0;i<n;++i) {
+                           var str = buf.ReadTString();
+                           var val = buf.ntoi4();
+                           res.push({ first: str, second: val});
+                        }
+                     } else {
+                        JSROOT.console('failed to stream element of type ' + this.typename);
+                     }
+
+                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
+
+                     obj[this.name] = res;
                   };
                   break;
                default:
@@ -1785,8 +1778,6 @@
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
    };
-
-   //JSROOT.iomap = {};
 
    // following functions are custom streamers for appropriate classes
 

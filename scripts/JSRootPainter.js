@@ -6823,12 +6823,6 @@
 
             // d3.select("#" + h['disp_frameid']).append("p").html(JSON.stringify(obj));
 
-            if ('iomap' in JSROOT)
-              for (var code in JSROOT.iomap)
-                d3.select("#" + h['disp_frameid']).append("p").html(code + " = " + JSROOT.iomap[code]);
-
-            // global_IO_object = obj;
-
             return JSROOT.CallBack(call_back);
          });
       }
