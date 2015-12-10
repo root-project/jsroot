@@ -313,13 +313,10 @@
    }
 
    JSROOT.TBuffer.prototype.ReadTObject = function(tobj) {
-      this.o += 2; // skip version
-      if ((!'_typename' in tobj) || (tobj['_typename'] == ''))
-         tobj['_typename'] = "TObject";
-
+      var ver = this.ReadVersion();
       tobj['fUniqueID'] = this.ntou4();
       tobj['fBits'] = this.ntou4();
-      return true;
+      return this.CheckBytecount(ver, "ReadTObject");
    }
 
    JSROOT.TBuffer.prototype.ReadTNamed = function(tobj) {
@@ -377,8 +374,8 @@
       var flag = this.ntoi1();
       // here we implement only data skipping, no real I/O for TBasket is performed
       if ((flag % 10) != 2) {
-         var sz = this.ntoi4(); this.o += sz*4; // fEntryOffset
-         if (flag>40) { sz = this.ntoi4(); this.o += sz*4; } // fDisplacement
+         var sz = this.ntoi4(); this.shift(sz*4); // fEntryOffset
+         if (flag>40) { sz = this.ntoi4(); this.shift(sz*4); } // fDisplacement
       }
 
       if (flag == 1 || flag > 10) {
@@ -490,8 +487,23 @@
 
       // if (this.progress) this.CheckProgress();
 
-      if (! ('_typename' in obj))  obj['_typename'] = classname;
+      if (! ('_typename' in obj)) obj['_typename'] = classname;
 
+      var streamer = this.fFile.GetStreamer(classname);
+
+      if (streamer!=null) {
+         var ver = this.ReadVersion();
+         for (var n = 0; n < streamer.length; ++n) {
+            var member = streamer[n];
+
+            if ('short' in member)
+               obj[member.name] = this[member.short]();
+            else
+               member.func(this, obj);
+         }
+
+         this.CheckBytecount(ver, classname);
+      } else
       if (classname == 'TObject' || classname == 'TMethodCall') {
          this.ReadTObject(obj);
       }
@@ -500,23 +512,9 @@
       }
       else if (classname == "TBasket") {
          this.ReadTBasket(obj);
-      }
-      else {
-         var streamer = this.fFile.GetStreamer(classname);
-
+      } else {
          var ver = this.ReadVersion();
-
-         if (streamer!=null)
-            for (var n = 0; n < streamer.length; ++n) {
-               var member = streamer[n];
-
-               if ('short' in member)
-                  obj[member.name] = this[member.short]();
-               else
-                  member.func(this, obj);
-            }
-
-         this.CheckBytecount(ver, streamer ? classname : null);
+         this.CheckBytecount(ver);
       }
 
       JSROOT.addMethods(obj);
@@ -1389,9 +1387,28 @@
       // or generate it from the streamer infos and add it to the list
 
       var streamer = this.fStreamers[clname];
-      if (typeof(streamer) != 'undefined') return streamer;
+      if (streamer !== undefined) return streamer;
+
+      if (clname == 'TQObject' || clname == "TBasket") {
+         // these are special cases, which are handled separately
+         this.fStreamers[clname] = null;
+         return null;
+      }
 
       this.fStreamers[clname] = streamer = new Array;
+
+      if (clname == 'TObject'|| clname == 'TMethodCall') {
+         streamer.push({ name: 'fUniqueID', short : 'ntou4' });
+         streamer.push({ name: 'fBits', short : 'ntou4' });
+         return streamer;
+      }
+
+      if (clname == 'TNamed') {
+         streamer.push({ name: 'TObject', func : JSROOT.IO.ReadBase });
+         streamer.push({ name: 'fName', short : 'ReadTString' });
+         streamer.push({ name: 'fTitle', short : 'ReadTString' });
+         return streamer;
+      }
 
       if ((clname == 'TList') || (clname == 'THashList')) {
          streamer.push({ classname: clname, func : JSROOT.IO.ReadTList });
@@ -1742,7 +1759,7 @@
       // stream an object of class TStreamerElement
 
       var ver = buf.last_read_version;
-      buf.ReadTNamed(element);
+      buf.ClassStreamer(element, "TNamed");
       element['type'] = buf.ntou4();
       element['size'] = buf.ntou4();
       element['length'] = buf.ntou4();
@@ -1815,7 +1832,7 @@
    JSROOT.IO.ReadTStreamerInfo = function(buf, streamerinfo) {
       // stream an object of class TStreamerInfo from the I/O buffer
       if (buf.last_read_version > 1) {
-         buf.ReadTNamed(streamerinfo);
+         buf.ClassStreamer(streamerinfo, "TNamed");
 
          streamerinfo['fCheckSum'] = buf.ntou4();
          streamerinfo['fClassVersion'] = buf.ntou4();
@@ -1934,7 +1951,7 @@
             buf.ReadTObject(obj);
             break;
          case JSROOT.IO.kTNamed:
-            buf.ReadTNamed(obj);
+            buf.ClassStreamer(obj, "TNamed");
             break;
             //case JSROOT.IO.kAnyPnoVT:
             //case JSROOT.IO.kSTLp:
