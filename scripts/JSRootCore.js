@@ -507,13 +507,13 @@
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
       function completeLoad() {
-         if ((urllist!=null) && (urllist.length>0))
-            return JSROOT.loadScript(urllist, callback, debugout);
-
          if (debugout)
             document.getElementById(debugout).innerHTML = "";
          else
             JSROOT.progress();
+
+         if ((urllist!=null) && (urllist.length>0))
+            return JSROOT.loadScript(urllist, callback, debugout);
 
          JSROOT.CallBack(callback);
       }
