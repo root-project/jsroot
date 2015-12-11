@@ -2844,7 +2844,7 @@
       }
 
       if ((first_stat > 0) && (num_cols > 1)) {
-         for (var nrow = first_stat; nrow < nlines; nrow++)
+         for (var nrow = first_stat; nrow < nlines; ++nrow)
             this.draw_g.append("svg:line")
                        .attr("x1", 0)
                        .attr("y1", (nrow * stepy).toFixed(1))
@@ -2852,7 +2852,7 @@
                        .attr("y2", (nrow * stepy).toFixed(1))
                        .call(attline.func);
 
-         for (var ncol = 0; ncol < num_cols - 1; ncol++)
+         for (var ncol = 0; ncol < num_cols - 1; ++ncol)
             this.draw_g.append("svg:line")
                         .attr("x1", (width / num_cols * (ncol + 1)).toFixed(1))
                         .attr("y1", (first_stat * stepy).toFixed(1))
@@ -3724,10 +3724,10 @@
       if (l!=-1) {
          var name = 'COL';
 
-         if (chopt.charAt(l+3)=='0') { option.Color = 111; name += "0"; l++; } else
-         if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; l++; } else
-         if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; l++; } else
-         if (chopt.charAt(l+3)=='3') { option.Color = 3; name += "3"; l++; } else
+         if (chopt.charAt(l+3)=='0') { option.Color = 111; name += "0"; ++l; } else
+         if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; ++l; } else
+         if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; ++l; } else
+         if (chopt.charAt(l+3)=='3') { option.Color = 3; name += "3"; ++l; } else
             option.Color = JSROOT.gStyle.DefaultCol;
 
          if (chopt.charAt(l+4)=='Z') { option.Zscale = 1; name += 'Z'; }
@@ -4514,7 +4514,7 @@
          xlabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
             if (box.width > maxwidth) maxwidth = box.width;
-            cnt++;
+            ++cnt;
          });
 
          if ((cnt>0) && (maxwidth>0)) {
@@ -4562,7 +4562,7 @@
          ylabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
             if (box.height > maxh) maxh = box.height;
-            cnt++;
+            ++cnt;
          });
 
          if ((cnt>0) && (maxh>0)) {
@@ -5869,13 +5869,13 @@
 
       // first find minimum
       var min = this.histo.getBinContent(left + 1);
-      for (var indx = left; indx < right; indx++)
+      for (var indx = left; indx < right; ++indx)
          if (this.histo.getBinContent(indx + 1) < min)
             min = this.histo.getBinContent(indx + 1);
       if (min>0) return; // if all points positive, no chance for autoscale
 
-      while ((left < right) && (this.histo.getBinContent(left + 1) <= min)) left++;
-      while ((left < right) && (this.histo.getBinContent(right) <= min)) right--;
+      while ((left < right) && (this.histo.getBinContent(left + 1) <= min)) ++left;
+      while ((left < right) && (this.histo.getBinContent(right) <= min)) --right;
 
       if ((right - left < dist) && (left < right))
          this.Zoom(this.GetBinX(left), this.GetBinX(right), 0, 0);
@@ -7575,7 +7575,7 @@
 
    JSROOT.MDIDisplay.prototype.NumDraw = function() {
       var cnt = 0;
-      this.ForEachFrame(function() { cnt++; });
+      this.ForEachFrame(function() { ++cnt; });
       return cnt;
    }
 
@@ -7753,7 +7753,7 @@
    }
 
    JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      for (var cnt = 0; cnt < this.sizex * this.sizey; cnt++) {
+      for (var cnt = 0; cnt < this.sizex * this.sizey; ++cnt) {
          var elem = this.IsSingle() ? d3.select("#"+this.frameid) : d3.select("#" + this.frameid + "_grid_" + cnt);
 
          if (!elem.empty() && elem.property('title') != '')
@@ -7964,7 +7964,7 @@
          } else {
             if (selector === counter) return h;
          }
-         counter++;
+         ++counter;
       }
 
       return first;
@@ -7974,7 +7974,7 @@
    JSROOT.getDrawOptions = function(kind, selector) {
       if (typeof kind != 'string') return null;
       var allopts = null, isany = false;
-      for (var cnt=0;cnt<1000;cnt++) {
+      for (var cnt=0;cnt<1000;++cnt) {
          var h = JSROOT.getDrawHandle(kind, cnt);
          if ((h==null) || !('func' in h)) break;
          isany = true;
