@@ -894,7 +894,9 @@
             },
             stop: function(event, ui) {
                var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
-               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), rect);
+               var draw = $(this).find(".flex_draw");
+               draw.width(rect.width).height(rect.height);
+               JSROOT.CheckElementResize(draw.get(0), rect);
             }
           })
           .draggable({

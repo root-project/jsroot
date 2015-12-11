@@ -306,14 +306,16 @@ svg:not(:root) { overflow: hidden; }
 }
 
 .flex_header {
+   height:auto;
    display: table-row;
 }
 
 .flex_draw {
    display: table-row; 
-   height:100%; 
    width:100%;
+   height:100%;
    background-color:white;
+   overflow:hidden;
 }
 
 /*--------------------------------------------------|
