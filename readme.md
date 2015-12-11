@@ -8,9 +8,8 @@ user interface for THttpServer class.
 
 ## Links
 
-Official project web page on [root.cern.ch/js/](https://root.cern.ch/js/) 
-
-Mirror on [jsroot.gsi.de](http://jsroot.gsi.de/)
+Project web pages [https://root.cern.ch/js/](https://root.cern.ch/js/) and  
+[http://jsroot.gsi.de](http://jsroot.gsi.de/)
 
 # Documentation
 
@@ -23,8 +22,8 @@ JavaScript ROOT [changelog](changes.md)
 
 ## Examples
 
-Default [user interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://jsroot.gsi.de/files/) via rawgit.com
+[JSROOT interface](http://rawgit.com/linev/jsroot/master/index.htm?path=http://jsroot.gsi.de/files/) via rawgit.com
 
-[List of all supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm)
+[Supported draw options](http://rawgit.com/linev/jsroot/master/docs/drawoptions.htm)
 
-Standalone [example](http://rawgit.com/linev/jsroot/master/docs/example.htm) of JSROOT usage
+[Standalone example](http://rawgit.com/linev/jsroot/master/docs/example.htm) of JSROOT usage
