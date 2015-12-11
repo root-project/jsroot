@@ -1221,7 +1221,7 @@
       }
 
       patt.selectAll('line').style("stroke",line_color).style("stroke-width", 1);
-      patt.selectAll("rect").style('fill',line_color);
+      patt.selectAll('rect').style("fill",line_color);
 
       return fill;
    }
@@ -2434,7 +2434,7 @@
 
       var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
           ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
-      for (i = 0; i < n; i++) {
+      for (i = 0; i < n; ++i) {
          xo[i] = (this.graph['fX'][i] - xmin) / (xmax - xmin);
          yo[i] = (this.graph['fY'][i] - ymin) / (ymax - ymin);
          if (w > h)
@@ -2447,10 +2447,9 @@
       xf[0] = xo[0];
       yf[0] = yo[0];
       nf = 0;
-      for (i = 1; i < n; i++) {
+      for (i = 1; i < n; ++i) {
          if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
-         nf++;
-         xf[nf] = xo[i];
+         xf[++nf] = xo[i];
          if (xf[i] == xf[i - 1])
             xf[i] += 0.000001; // add an epsilon to avoid exact vertical
                                  // lines.
@@ -2485,7 +2484,7 @@
       }
 
       var a1, a2, a3, xi0, yi0, xi1, yi1, xi2, yi2;
-      for (i = 1; i < nf; i++) {
+      for (i = 1; i < nf; ++i) {
          xi0 = xf[i];
          yi0 = yf[i];
          xi1 = xf[i + 1];
@@ -2575,11 +2574,9 @@
                      && yc < Math.max(yt[i], yt[i - 1])
                      && yc > Math.min(yt[j], yt[j - 1])
                      && yc < Math.max(yt[j], yt[j - 1])) {
-                  nf++;
-                  xf[nf] = xt[i];
+                  xf[++nf] = xt[i];
                   yf[nf] = yt[i];
-                  nf++;
-                  xf[nf] = xc;
+                  xf[++nf] = xc;
                   yf[nf] = yc;
                   i = j;
                   cross = true;
@@ -2592,18 +2589,16 @@
             }
          }
          if (!cross) {
-            nf++;
-            xf[nf] = xt[i];
+            xf[++nf] = xt[i];
             yf[nf] = yt[i];
          }
          cross = false;
       }
-      nf++;
-      xf[nf] = xt[0];
+      xf[++nf] = xt[0];
       yf[nf] = yt[0];
-      nf++;
+      ++nf;
 
-      for (i = 0; i < nf; i++) {
+      for (i = 0; i < nf; ++i) {
          if (w > h) {
             xf[i] = xmin + (xf[i] * (xmax - xmin));
             yf[i] = ymin + (yf[i] * (ymax - ymin)) * ratio;
