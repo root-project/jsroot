@@ -822,7 +822,7 @@
 
       var subid = topid + "_frame" + this.cnt;
 
-      var entry ='<div id="' + subid + '" class="flex_frame">' +
+      var entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
                   '<div class="ui-widget-header flex_header">'+
                     '<h3 style="float:left; padding-left:5px">'+title+'</h3>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +

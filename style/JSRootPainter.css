@@ -303,7 +303,6 @@ svg:not(:root) { overflow: hidden; }
 
 .flex_frame {
    display: table; 
-   position:absolute;
 }
 
 .flex_header {
