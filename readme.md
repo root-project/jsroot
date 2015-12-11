@@ -8,8 +8,7 @@ user interface for THttpServer class.
 
 ## Links
 
-Project web pages [https://root.cern.ch/js/](https://root.cern.ch/js/) and  
-[http://jsroot.gsi.de](http://jsroot.gsi.de/)
+Project web pages [https://root.cern.ch/js/](https://root.cern.ch/js/) and [http://jsroot.gsi.de](http://jsroot.gsi.de/)
 
 # Documentation
 
