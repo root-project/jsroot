@@ -821,7 +821,8 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.CheckResize = function(force) {
+   JSROOT.TBasePainter.prototype.CheckResize = function(size) {
+      return false; // indicate if resize is processed
    }
 
    JSROOT.TBasePainter.prototype.select_main = function() {
@@ -892,10 +893,14 @@
       return can.empty() ? null : can.property('pad_painter');
    }
 
-   JSROOT.TObjectPainter.prototype.CheckResize = function(force) {
+   JSROOT.TObjectPainter.prototype.CheckResize = function(size) {
       // no painter - no resize
       var pad_painter = this.pad_painter();
-      if (pad_painter) pad_painter.CheckCanvasResize();
+      if (pad_painter) {
+         pad_painter.CheckCanvasResize(size);
+         return true;
+      }
+      return false;
    }
 
    JSROOT.TObjectPainter.prototype.RemoveDrawG = function() {
@@ -3099,7 +3104,7 @@
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize) {
+   JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
       var render_to = this.select_main();
 
@@ -3108,6 +3113,11 @@
       // this is size where canvas should be rendered
       var w = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right')),
           h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
+
+      if ((typeof new_size == 'object') && ('width' in new_size) && ('height' in new_size)) {
+         w = new_size.width;
+         h = new_size.height;
+      }
 
       var factor = null, svg = null;
 
@@ -3131,6 +3141,7 @@
          factor = svg.property('height_factor');
 
          if (factor!=null) {
+            console.log('change ratio!!!');
             // if canvas was resize when created, resize height also now
             h = Math.round(w * factor);
             render_to.style('height', h+'px');
@@ -3140,6 +3151,12 @@
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
                // not significant change in actual sizes, keep as it is
                // let browser scale SVG without out help
+
+               if (typeof new_size == 'object') {
+                  // force canvas to specified size
+                  svg.attr("width", w).attr("height", h);
+               }
+
                return false;
             }
 
@@ -3191,7 +3208,9 @@
          svg.attr("visibility", "visible");
       }
 
-      svg.attr("width", "100%")
+      svg.attr("x", 0)
+         .attr("y", 0)
+         .attr("width", "100%")
          .attr("height", "100%")
          .attr("viewBox", "0 0 " + w + " " + h)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
@@ -3288,10 +3307,10 @@
          this.painters[i].Redraw();
    }
 
-   JSROOT.TPadPainter.prototype.CheckCanvasResize = function() {
+   JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size) {
       if (!this.iscan) return;
 
-      var changed = this.CreateCanvasSvg(1);
+      var changed = this.CreateCanvasSvg(1, size);
 
       // at the moment canvas painter donot redraw its subitems
       if (changed)
@@ -6092,13 +6111,6 @@
       return painter.DrawingReady();
    }
 
-   JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
-      d3.select("#" + divid).style( 'overflow' , 'auto' );
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
-      painter.ShowStreamerInfo(obj);
-      return painter.DrawingReady();
-   }
-
    // ================= painer of raw text ========================================
 
    JSROOT.RawTextPainter = function(txt) {
@@ -7288,9 +7300,6 @@
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStreamerInfo = function(sinfo) {
-      this.h = { _name : "StreamerInfo" };
-      this.StreamerInfoHierarchy(this.h, sinfo);
-      this.RefreshHtml();
    }
 
    JSROOT.HierarchyPainter.prototype.Adopt = function(h) {
@@ -7402,9 +7411,17 @@
       return isany;
    }
 
-   JSROOT.HierarchyPainter.prototype.CheckResize = function(force) {
+   JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
+
       if ('disp' in this)
-         this['disp'].CheckResize();
+         this['disp'].CheckMDIResize(null, size);
+      else
+      if ((typeof size == 'object') && ('width' in size) && ('height' in size)) {
+         d3.select("#" + this.frameid)
+            .style('width', size.width+"px")
+            .style('height', size.height+"px")
+            .style('display', 'block');
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
@@ -7531,6 +7548,20 @@
       });
    }
 
+   JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
+      d3.select("#" + divid).style( 'overflow' , 'auto' );
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+
+      painter.h = { _name : "StreamerInfo" };
+      painter.StreamerInfoHierarchy(painter.h, obj);
+      painter.RefreshHtml(function() {
+         painter.SetDivId(divid);
+         painter.DrawingReady();
+      });
+
+      return painter;
+   }
+
    // ================================================================
 
    // JSROOT.MDIDisplay - class to manage multiple document interface for drawings
@@ -7582,7 +7613,7 @@
       // do nothing by default
    }
 
-   JSROOT.MDIDisplay.prototype.CheckResize = function(only_frame_id) {
+   JSROOT.MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
       var resized_frame = null;
 
@@ -7593,7 +7624,7 @@
          if ((painter.GetItemName()!=null) && (typeof painter['CheckResize'] == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
-            painter.CheckResize();
+            painter.CheckResize(size);
             resized_frame = frame;
          }
       });
@@ -7787,7 +7818,7 @@
       this.cnt = 0;
    }
 
-   JSROOT.GridDisplay.prototype.CheckResize = function() {
+   JSROOT.GridDisplay.prototype.CheckMDIResize = function(frame_id, size) {
 
       if (!this.IsSingle()) {
          var main = d3.select("#" + this.frameid);
@@ -7797,20 +7828,18 @@
          main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px'});
       }
 
-      JSROOT.MDIDisplay.prototype.CheckResize.call(this);
+      JSROOT.MDIDisplay.prototype.CheckMDIResize.call(this, frame_id, size);
    }
 
    // =========================================================================
 
-   JSROOT.CheckElementResize = function(dom_node, force, size) {
+   JSROOT.CheckElementResize = function(dom_node, size) {
       if (dom_node==null) return;
-      var dummy = new JSROOT.TObjectPainter(), first = true;
+      var dummy = new JSROOT.TObjectPainter(), done = false;
       dummy.SetDivId(dom_node, -1);
       dummy.ForEachPainter(function(painter) {
-         if (!first) return;
-         if (typeof painter['CheckResize'] != 'function') return;
-         first = false;
-         painter.CheckResize(force, size);
+         if (!done && typeof painter['CheckResize'] == 'function')
+            done = painter.CheckResize(size);
       });
    }
 
@@ -7847,7 +7876,7 @@
             if (!node.empty()) {
                var mdi = node.property('mdi');
                if (mdi) {
-                  mdi.CheckResize();
+                  mdi.CheckMDIResize();
                } else {
                   JSROOT.CheckElementResize(node.node());
                }

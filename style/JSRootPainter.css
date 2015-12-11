@@ -298,6 +298,26 @@ svg:not(:root) { overflow: hidden; }
 }
 
 /*--------------------------------------------------|
+| Flexible MDI display                              |
+|--------------------------------------------------*/
+
+.flex_frame {
+   display: table; 
+   position:absolute;
+}
+
+.flex_header {
+   display: table-row;
+}
+
+.flex_draw {
+   display: table-row; 
+   height:100%; 
+   width:100%;
+   background-color:white;
+}
+
+/*--------------------------------------------------|
 | progress message                                  |
 |--------------------------------------------------*/
 

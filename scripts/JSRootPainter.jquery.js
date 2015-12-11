@@ -822,14 +822,14 @@
 
       var subid = topid + "_frame" + this.cnt;
 
-      var entry ='<div id="' + subid + '" class="flex_frame" style="display: table; position:absolute">' +
-                  '<div class="ui-widget-header flex_header" style="display: table-row">'+
+      var entry ='<div id="' + subid + '" class="flex_frame">' +
+                  '<div class="ui-widget-header flex_header">'+
                     '<h3 style="float:left; padding-left:5px">'+title+'</h3>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
                    '</div>' +
-                  '<div id="' + subid + '_cont" class="flex_draw" style="display: table-row; height:100%; width:100%"></div>' +
+                  '<div id="' + subid + '_cont" class="flex_draw"></div>' +
                  '</div>';
 
       top.append(entry);
@@ -893,7 +893,8 @@
                $(this).appendTo($(this).parent());
             },
             stop: function(event, ui) {
-               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), false, ui.size);
+               var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
+               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), rect);
             }
           })
           .draggable({
@@ -902,7 +903,7 @@
                // bring element to front when start dragging
                $(this).appendTo($(this).parent());
             }
-          })
+         })
        .find('.flex_header')
          // .hover(function() { $(this).toggleClass("ui-state-hover"); })
          .click(function() {

@@ -1088,7 +1088,7 @@
       return this.DrawingReady();
    }
 
-   JSROOT.TGeoPainter.prototype.CheckResize = function(force, size) {
+   JSROOT.TGeoPainter.prototype.CheckResize = function(size) {
 
       var rect = this.select_main().node().getBoundingClientRect();
 
