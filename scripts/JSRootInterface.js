@@ -110,7 +110,7 @@
          var arrFiles = files.split(';');
 
          guiCode += "<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
-            + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
+            + "<p><font face='Verdana' size='1px'><a href='https://root.cern.ch/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
 
          if (JSROOT.GetUrlOption("noselect")==null) {
             guiCode += '<form name="ex">'
@@ -121,7 +121,7 @@
             for (var i in arrFiles)
                guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
             guiCode += '</select><br/>'
-               +'<p><small><a href="https://github.com/linev/jsroot/blob/ver4/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+               +'<p><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
                +'<input style="padding:2px; margin-top:5px;"'
                +'       onclick="ReadFile()" type="button" title="Read the Selected File" value="Load"/>'
