@@ -3055,6 +3055,7 @@
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
       // if pavetext artificially disabled, do not redraw it
+
       if (this.Enabled) {
          this.FillStatistic();
          this.DrawPaveText();
@@ -3064,6 +3065,7 @@
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
+
       var painter = new JSROOT.TPavePainter(pavetext);
       painter.SetDivId(divid);
 
@@ -3123,7 +3125,6 @@
          factor = svg.property('height_factor');
 
          if (factor!=null) {
-            console.log('change ratio!!!');
             // if canvas was resize when created, resize height also now
             h = Math.round(w * factor);
             render_to.style('height', h+'px');
@@ -4667,6 +4668,7 @@
    JSROOT.THistPainter.prototype.ToggleStat = function(arg) {
 
       var stat = this.FindStat();
+
       if (stat == null) {
          if (arg=='only-check') return false;
          // when statbox created first time, one need to draw it
@@ -4681,7 +4683,6 @@
       if (arg=='only-check') return statpainter.Enabled;
 
       statpainter.Enabled = !statpainter.Enabled;
-
       // when stat box is drawed, it always can be draw individualy while it
       // should be last for colz RedrawPad is used
       statpainter.Redraw();
@@ -4741,12 +4742,10 @@
 
       if ('fFunctions' in this.histo)
          for (var i=0; i < this.histo.fFunctions.arr.length; ++i) {
-
             var func = this.histo.fFunctions.arr[i];
 
-            if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
-               return func;
-            }
+            if ((func._typename == 'TPaveStats') &&
+                (func.fName == 'stats')) return func;
          }
 
       return null;
@@ -5325,7 +5324,7 @@
             this.RedrawPad();
          });
 
-         menu.addchk(this.ToggleStat('only-check'), "Show statbox", this.ToggleStat.bind(this));
+         menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
       }
    }
 
@@ -6567,12 +6566,9 @@
             if ((arg.rest == d.rest) || (arg.rest.length <= d.rest.length))
                return JSROOT.CallBack(call_back);
 
-         // console.log('Find potential parent ' + parentname + " rest = " + d.rest);
-
          return this.expand(parentname, function(res) {
             if (!res) JSROOT.CallBack(call_back);
             var newparentname = hpainter.itemFullName(d.last);
-            // console.log('New parent name ' + newparentname + " sub = " + d.rest);
             hpainter.get( { arg : newparentname + "/" + d.rest, rest : d.rest }, call_back, options);
          });
       }
