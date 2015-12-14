@@ -1581,13 +1581,14 @@
 
          if (fo_g.property('_scale')) {
             var box = painter.GetBoundarySizes(fo_g.node());
-            painter.TextScaleFactor(1.* box.width / parseInt(fo_g.attr('width')), draw_g);
+            painter.TextScaleFactor(1.05* box.width / parseInt(fo_g.attr('width')), draw_g);
             painter.TextScaleFactor(1.* box.height / parseInt(fo_g.attr('height')), draw_g);
          }
       });
 
       // adjust font size
       var f = draw_g.property('text_factor');
+
       var font = draw_g.property('text_font');
       if ((f>0) && ((f<0.9) || (f>1.))) {
          font.size = Math.floor(font.size/f);
@@ -1708,7 +1709,7 @@
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if ((w>0) && scale) this.TextScaleFactor(1.*box.width / w, draw_g);
+         if ((w>0) && scale) this.TextScaleFactor(1.05*box.width / w, draw_g);
          if ((h>0) && scale) this.TextScaleFactor(1.*box.height / h, draw_g);
 
          return box.width;
@@ -2824,7 +2825,7 @@
                   for (var n = 0; n < 2; ++n)
                      sumw += this.DrawText((n == 0) ? "start" : "end",
                                       margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
-                  this.TextScaleFactor(sumw/(width-2*margin_x), this.draw_g);
+                  this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
                }
             } else {
                this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
