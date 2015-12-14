@@ -2200,10 +2200,16 @@
    JSROOT.TH2Painter.prototype.CompressAxis = function(arr, maxlen, regular) {
       if (arr.length <= maxlen) return;
 
+      // check filled bins
+      var left = 0, right = arr.length-2;
+      while ((left < right) && (arr[left].cnt===0)) ++left;
+      while ((left < right) && (arr[right].cnt===0)) --right;
+      if ((left==right) || (right-left < maxlen)) return;
+
       function RemoveNulls() {
-         var j = arr.length-2;
-         while (j>0) {
-            while ((j>0) && (arr[j]!=null)) --j;
+         var j = right;
+         while (j>left) {
+            while ((j>left) && (arr[j]!=null)) --j;
             var j2 = j;
             while ((j>0) && (arr[j]==null)) --j;
             if (j < j2) arr.splice(j+1, j2-j);
@@ -2212,24 +2218,24 @@
       };
 
       if (!regular) {
-         var grdist = Math.abs(arr[arr.length-1].gr - arr[0].gr) / maxlen;
+         var grdist = Math.abs(arr[right+1].gr - arr[left].gr) / maxlen;
          var i = 0;
-         while (i < arr.length-1) {
+         while (i <= right) {
             var gr0 = arr[i++].gr;
             // remove points which are not far away from current
-            while ((i < arr.length-1) && (Math.abs(arr[i+1].gr - gr0) < grdist)) arr[i++] = null;
+            while ((i <= right) && (Math.abs(arr[i+1].gr - gr0) < grdist)) arr[i++] = null;
          }
          RemoveNulls();
       }
 
-      if (regular || (arr.length > 1.5*maxlen)) {
+      if (regular || ((right-left) > 1.5*maxlen)) {
          // just remove regular number of bins
-         var period = Math.floor(arr.length / maxlen);
+         var period = Math.floor((right-left) / maxlen);
          if (period<2) period = 2;
-         var i = 0;
-         while (++i < arr.length) {
+         var i = left;
+         while (++i <= right) {
             for (var k=1;k<period;++k)
-               if (++i < arr.length - 1) arr[i] = null;
+               if (++i <= right) arr[i] = null;
          }
          RemoveNulls();
       }
@@ -2249,13 +2255,13 @@
       for (var i = i1; i <= i2; ++i) {
          var x = this.GetBinX(i);
          if (this.options.Logx && (x <= 0)) continue;
-         xx.push({indx:i, axis: x, gr: this.grx(x)});
+         xx.push({indx:i, axis: x, gr: this.grx(x), cnt:0});
       }
 
       for (var j = j1; j <= j2; ++j) {
          var y = this.GetBinY(j);
          if (this.options.Logy && (y <= 0)) continue;
-         yy.push({indx:j, axis: y, gr: this.gry(y)});
+         yy.push({indx:j, axis: y, gr: this.gry(y), cnt:0});
       }
 
       // first found min/max values in selected range, and number of non-zero bins
@@ -2295,15 +2301,23 @@
                binz = this.histo.getBinContent(i + 1, j + 1);
                if ((binz == 0) || (binz < this.minbin)) continue;
 
+               var show = false;
+
                if (coordinates_kind == 0) {
-                  if (this.getValueColor(binz) != null) nbins++;
+                  if (this.getValueColor(binz) != null) show = true;
                } else {
                   zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
                   dgrx = zdiff * xfactor;
                   dgry = zdiff * yfactor;
 
                   if (((1 - 2*zdiff*xfactor)*(xx[i-i1+1].gr - xx[i-i1].gr) > 0.05) ||
-                      ((1 - 2*zdiff*yfactor)*(yy[j-j1].gr - yy[j-j1+1].gr) > 0.05)) nbins++;
+                      ((1 - 2*zdiff*yfactor)*(yy[j-j1].gr - yy[j-j1+1].gr) > 0.05)) show = true;
+               }
+
+               if (show) {
+                  nbins++;
+                  xx[i-i1].cnt+=1;
+                  yy[j-j1].cnt+=1;
                }
             }
          }
