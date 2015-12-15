@@ -7613,8 +7613,8 @@
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
       this.ForEachPainter(function(painter) {
-         if ((painter.GetItemName()!=null) && (typeof painter['Clenaup'] == 'function'))
-            painter.Clenaup();
+         if ((painter.GetItemName()!=null) && (typeof painter['Cleanup'] == 'function'))
+            painter.Cleanup();
       });
 
       d3.select("#"+this.frameid).html('').property('mdi', null);

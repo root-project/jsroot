@@ -1023,14 +1023,11 @@
          this._renderer.domElement._translationSnap = Math.ceil( overall_size ) / 50;
          if ( this._renderer.domElement.transformControl !== null )
             this._renderer.domElement.transformControl.attach( toplevel );
-         if (typeof JSROOT.progress === "function") {
-            JSROOT.progress();
-            JSROOT.progress("<center>Transform Controls</center>" +
-                            "<center>'T' translate | 'R' rotate | 'S' scale</center>" +
-                            "<center>'+' increase size | '-' decrease size</center>" +
-                            "<center>'W' toggle wireframe/solid display</center>"+
-                            "<center>keep 'Ctrl' down to snap to grid</center>");
-         }
+         this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
+                       "'T' translate | 'R' rotate | 'S' scale<br>" +
+                       "'+' increase size | '-' decrease size<br>" +
+                       "'W' toggle wireframe/solid display<br>"+
+                       "keep 'Ctrl' down to snap to grid</center></font>");
       }
       this._camera.near = overall_size / 200;
       this._camera.far = overall_size * 500;
@@ -1057,35 +1054,59 @@
       dom.onclick = function(e) {
          this.focus();
       };
-      //dom.onmouseenter = function(e) {
-      //   this.focus();
-      //};
-      //dom.onmouseleave = function(e) {
-      //   this.blur();
-      //};
-      dom.onremove = function () {
-         if (pthis._scene === null ) return;
-
-         pthis._renderer.domElement.clock = null;
-         if (pthis._renderer.domElement._timeoutFunc != null)
-            clearTimeout( pthis._renderer.domElement._timeoutFunc );
-         if (pthis._renderer.domElement._animationId != null)
-            cancelAnimationFrame( pthis._renderer.domElement._animationId );
-
-         pthis.deleteChildren(pthis._scene);
-         pthis._renderer.initWebGLObjects(pthis._scene);
-         delete pthis._scene;
-         pthis._scene = null;
-         if ( pthis._renderer.domElement.transformControl !== null )
-            pthis._renderer.domElement.transformControl.dispose();
-         pthis._renderer.domElement.transformControl = null;
-         pthis._renderer.domElement.trackballControls = null;
-         pthis._renderer.domElement.render = null;
-         pthis._renderer = null;
-         pthis = null;
-      };
 
       return this.DrawingReady();
+   }
+
+   JSROOT.TGeoPainter.prototype.Cleanup = function() {
+      this.helpText();
+      if (this._scene === null ) return;
+
+      this._renderer.domElement.clock = null;
+      if (this._renderer.domElement._timeoutFunc != null)
+         clearTimeout( this._renderer.domElement._timeoutFunc );
+      if (this._renderer.domElement._animationId != null)
+         cancelAnimationFrame( this._renderer.domElement._animationId );
+
+      this.deleteChildren(this._scene);
+      //this._renderer.initWebGLObjects(this._scene);
+      delete this._scene;
+      this._scene = null;
+      if ( this._renderer.domElement.transformControl !== null )
+         this._renderer.domElement.transformControl.dispose();
+      this._renderer.domElement.transformControl = null;
+      this._renderer.domElement.trackballControls = null;
+      this._renderer.domElement.render = null;
+      this._renderer = null;
+   }
+
+   JSROOT.TGeoPainter.prototype.helpText = function(msg) {
+      var id = "jsroot_helptext";
+      var box = d3.select("#"+id);
+      var newmsg = true;
+      if ((typeof msg == "undefined") || (msg==null)) {
+         if (box.empty())
+            return;
+         box.property('stack').pop();
+         if (box.property('stack').length==0)
+            return box.remove();
+         msg = box.property('stack')[box.property('stack').length-1]; // show prvious message
+         newmsg = false;
+      }
+      if (box.empty()) {
+         box = d3.select(document.body)
+           .append("div")
+           .attr("id", id)
+           .attr("class","progressbox")
+           .property("stack",new Array);
+
+         box.append("p");
+      }
+      box.select("p").html(msg);
+      if (newmsg) {
+         box.property('stack').push(msg);
+         box.property("showtm", new Date);
+      }
    }
 
    JSROOT.TGeoPainter.prototype.CheckResize = function(size) {
