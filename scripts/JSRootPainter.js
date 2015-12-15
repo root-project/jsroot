@@ -6619,6 +6619,7 @@
 
    JSROOT.HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
       if (item == null) return false;
+      if ('_player' in item) return true;
       var handle = JSROOT.getDrawHandle(item._kind, drawopt);
       return (handle!=null) && ('func' in handle);
    }
@@ -6630,6 +6631,7 @@
       function display_callback() { JSROOT.CallBack(call_back, painter, itemname); }
 
       h.CreateDisplay(function(mdi) {
+
          if (!mdi) return display_callback();
 
          var item = h.Find(itemname);
