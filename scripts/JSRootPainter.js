@@ -3970,16 +3970,20 @@
       this['zoom_zmax'] = 0;
 
       if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
-         this['zoom_xmin'] = pad.fUxmin;
-         this['zoom_xmax'] = pad.fUxmax;
-         this['zoom_ymin'] = pad.fUymin;
-         this['zoom_ymax'] = pad.fUymax;
-
+         if (pad.fUxmin !== this['histo']['fXaxis']['fXmin'] &&
+             pad.fUxmax !== this['histo']['fXaxis']['fXmax']) {
+            this['zoom_xmin'] = pad.fUxmin;
+            this['zoom_xmax'] = pad.fUxmax;
+         }
+         if (pad.fUymin !== this['histo']['fYaxis']['fXmin'] &&
+             pad.fUymax !== this['histo']['fYaxis']['fXmax']) {
+            this['zoom_ymin'] = pad.fUymin;
+            this['zoom_ymax'] = pad.fUymax;
+         }
          if (pad.fLogx > 0) {
             this['zoom_xmin'] = Math.exp(this['zoom_xmin'] * Math.log(10));
             this['zoom_xmax'] = Math.exp(this['zoom_xmax'] * Math.log(10));
          }
-
          if (pad.fLogy > 0) {
             this['zoom_ymin'] = Math.exp(this['zoom_ymin'] * Math.log(10));
             this['zoom_ymax'] = Math.exp(this['zoom_ymax'] * Math.log(10));
