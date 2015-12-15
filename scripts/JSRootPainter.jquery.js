@@ -347,6 +347,11 @@
 
       // better search for images again, but not store them extra
       var img1 = "", img2 = "", has_childs = ('_childs' in hitem);
+      var handle = JSROOT.getDrawHandle(hitem._kind);
+      if (handle!=null) {
+         if ('icon' in handle) img1 = handle.icon;
+         if ('icon2' in handle) img2 = handle.icon2;
+      }
       if ('_icon' in hitem) img1 = hitem['_icon'];
       if ('_icon2' in hitem) img2 = hitem['_icon2'];
       if (img2.length==0) img2 = img1;
