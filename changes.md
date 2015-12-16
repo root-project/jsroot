@@ -1,20 +1,38 @@
 # JSROOT changelog
 
 ## Changes in master
-1. New JSRootMath.js script, all JSROOT.Math methods placed there
-2. Move TF1, THStack and TMultiGraph painters into JSRootPainter.more.js script
-3. Draw functions list from TGraph and TMultiGraph 
-4. Update all basic libraries:
-     d3.js - v3.5.9, jquery.js - v2.1.4, jquery-ui.js - v1.11.4, three.js - r73  
-5. New 'flex' layout - MDI-like desktop 
-6. TGeo support
-7. New ROOT6-like color palette
-8. Significant improve in TF1::Eval performance 
-9. Significant I/O performance improvement. Big objects decoded 4-5 times faster than before. 
-   Use DataView and ArrayBuffer for decoding of binrary data.
-   Still old method with JS String supported (add &iomode=str to URL)
-10. TH2 drawing optimization - do not show by default more than 50 bins/axis
-    Mode can be disabled by providing &optimize=0 in URL. 
+1. New TGeo classes support:
+   - browsing  through volumes hieararchy
+   - changing visibility flags
+   - drawing of selected volumes
+2. New 'flex' layout:
+   - create frames like in Multi Document Interface
+   - one could move/resize/minimize/maximize such frames
+3. Significant (factor 4) I/O performance improvement:
+   - use ArrayBuffer class in HTTP requests instead of String
+   - use native arrays (like Int32Array) for array data members
+   - highly optimize streamer infos handling 
+4. TH2 drawing optimization:
+   - if there are too many non-empty bins, combine them together
+   - when zoom-in, all original bins will be displayed separately
+   - let draw big TH2 histogram faster than in 1 sec
+   - optimization can be disabled by providing '&optimize=0' in URL             
+5. TF1 drawing optimization:
+   - function 'compiled' only once
+6. Reorganize scripts structure:
+   - move all math functions to JSRootMath.js
+   - TH2, TF1, THStack and TMultiGraph painters moved into JSRootPainter.more.js script
+   - reduce size of scripts required for default functionality
+7. Update all basic libraries:
+    - d3.js - v3.5.9, 
+    - jquery.js - v2.1.4, 
+    - jquery-ui.js - v1.11.4, 
+    - three.js - r73  
+8. Implement ROOT6-like color palettes:
+    - all palettes in range 51...112 are implemented 
+    - by default palette 57 is used
+    - one could change default palette with '&palette=111' in URL
+    - or palette can be specified in draw option like '&opt=colz,pal77'
 
 
 ## Changes in 3.9
