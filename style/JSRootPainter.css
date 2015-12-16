@@ -306,7 +306,7 @@ svg:not(:root) { overflow: hidden; }
 }
 
 .flex_header {
-   height:auto;
+   height:1em;
    display: table-row;
 }
 
