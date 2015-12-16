@@ -4005,6 +4005,7 @@
 
       // this.histo = obj;
 
+      this.histo['fEntries'] = obj['fEntries'];
       this.histo['fArray'] = obj['fArray'];
       this.histo['fNcells'] = obj['fNcells'];
       this.histo['fTitle'] = obj['fTitle'];
