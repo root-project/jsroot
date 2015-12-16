@@ -3970,12 +3970,12 @@
       this['zoom_zmax'] = 0;
 
       if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
-         if (pad.fUxmin !== this['histo']['fXaxis']['fXmin'] &&
+         if (pad.fUxmin !== this['histo']['fXaxis']['fXmin'] ||
              pad.fUxmax !== this['histo']['fXaxis']['fXmax']) {
             this['zoom_xmin'] = pad.fUxmin;
             this['zoom_xmax'] = pad.fUxmax;
          }
-         if (pad.fUymin !== this['histo']['fYaxis']['fXmin'] &&
+         if (pad.fUymin !== this['histo']['fYaxis']['fXmin'] ||
              pad.fUymax !== this['histo']['fYaxis']['fXmax']) {
             this['zoom_ymin'] = pad.fUymin;
             this['zoom_ymax'] = pad.fUymax;
