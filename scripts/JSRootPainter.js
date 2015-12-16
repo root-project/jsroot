@@ -4006,6 +4006,14 @@
       // this.histo = obj;
 
       this.histo['fEntries'] = obj['fEntries'];
+      this.histo['fTsumw'] = obj['fTsumw'];
+      this.histo['fTsumwx'] = obj['fTsumwx'];
+      this.histo['fTsumwx2'] = obj['fTsumwx2'];
+      if (this.Dimension() == 2) {
+         this.histo['fTsumwy'] = obj['fTsumwy'];
+         this.histo['fTsumwy2'] = obj['fTsumwy2'];
+         this.histo['fTsumwxy'] = obj['fTsumwxy'];
+      }
       this.histo['fArray'] = obj['fArray'];
       this.histo['fNcells'] = obj['fNcells'];
       this.histo['fTitle'] = obj['fTitle'];
