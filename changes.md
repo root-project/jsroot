@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 4.0
 1. New TGeo classes support:
    - browsing  through volumes hieararchy
    - changing visibility flags
