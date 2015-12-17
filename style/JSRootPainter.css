@@ -317,7 +317,6 @@ svg:not(:root) { overflow: hidden; }
 }
 
 .flex_draw {
-   background-color:white;
    overflow:hidden;
    width : 100%;
    height : calc( 100% - 26px );

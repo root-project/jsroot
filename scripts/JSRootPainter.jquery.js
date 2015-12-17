@@ -266,7 +266,9 @@
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
 
-      this['html'] = "<div style='overflow:auto; width:100%; height:100%;'>";
+      this['html'] = "<div style='overflow:auto; width:100%; height:100%;"
+      if (this.background) this['html']+="background-color:"+this.background + ";";
+      this['html']+="'>";
       if (factcmds.length>0) {
          for (var n in factcmds)
             this['html'] += "<button class='fast_command'> </button>";

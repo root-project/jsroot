@@ -6166,10 +6166,11 @@
 
    JSROOT.hpainter = null; // global pointer
 
-   JSROOT.HierarchyPainter = function(name, frameid) {
+   JSROOT.HierarchyPainter = function(name, frameid, backgr) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.h = null; // hierarchy
+      this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       if (frameid != null) this.SetDivId(frameid);
 
@@ -7534,7 +7535,7 @@
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
@@ -7547,7 +7548,7 @@
    }
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
-      var painter = new JSROOT.HierarchyPainter('inspector', divid);
+      var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
