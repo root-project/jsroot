@@ -6170,6 +6170,7 @@
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.h = null; // hierarchy
+      this.with_icons = true;
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       if (frameid != null) this.SetDivId(frameid);
@@ -6186,7 +6187,7 @@
       this.clear(true);
    }
 
-   JSROOT.HierarchyPainter.prototype.ListHierarchy = function(folder, lst) {
+   JSROOT.Painter.ListHierarchy = function(folder, lst) {
       folder['_childs'] = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
@@ -6197,9 +6198,10 @@
          };
          folder._childs.push(item);
       }
+      return true;
    }
 
-   JSROOT.HierarchyPainter.prototype.StreamerInfoHierarchy = function(folder, lst) {
+   JSROOT.Painter.StreamerInfoHierarchy = function(folder, lst) {
       folder['_childs'] = [];
 
       for ( var i = 0; i < lst.arr.length; ++i) {
@@ -6234,15 +6236,19 @@
       }
    }
 
-   JSROOT.ObjectHierarchy = function(top, obj) {
+   JSROOT.Painter.ObjectHierarchy = function(top, obj) {
       if ((top==null) || (obj==null)) return false;
+
+      // if ('_value' in top) top._value = "";
 
       top['_childs'] = [];
       top['_obj'] = obj;
-
       top['_get'] = function(item, itemname, callback) {
          JSROOT.CallBack(callback, item, this._obj[item._name]);
       };
+
+      if (!('_title' in top) && ('_typename' in obj))
+         top['_title'] = "ROOT." + obj['_typename'];
 
       for (var key in obj) {
          if (key == '_typename') continue;
@@ -6250,17 +6256,55 @@
          if (typeof fld == 'function') continue;
 
          var item = {
-            _name : key,
-            _kind : ""
+            _parent : top,
+            _name : key
          };
 
          top._childs.push(item);
 
-         if ((typeof fld == 'object' ) && (fld != null)) {
+         if (fld === null) {
+            item._value = "null";
+            continue;
+         }
+
+         var proto = Object.prototype.toString.apply(fld);
+
+         if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+            if (fld.length == 0) {
+               item._value = "[ ]";
+            } else {
+               item._value = "[...]";
+               item['_more'] = true;
+               item['_expand'] = JSROOT.Painter.ObjectHierarchy;
+            }
+         } else
+         if (typeof fld == 'object' ) {
             if ('_typename' in fld)
-               item['_kind'] = "ROOT." + fld._typename;
-            item['_expand'] = JSROOT.ObjectHierarchy;
-            item['_more'] = true;
+               item['_title'] = "ROOT." + fld._typename;
+
+            // check if object already shown in hierarchy (circular dependency)
+            var curr = top, inparent = false;
+            while ((curr != null) && !inparent) {
+               inparent = (('_obj' in curr) && (curr._obj === fld));
+               curr = ('_parent' in curr) ? curr._parent : null;
+            }
+
+            if (inparent) {
+               item._value = "{ prnt }";
+            } else {
+               item['_expand'] = JSROOT.Painter.ObjectHierarchy;
+               item['_more'] = true;
+               item._value = "{ }";
+            }
+         } else
+         if (typeof fld == 'number') {
+            if (key == 'fBits')
+               item._value = "0x" + fld.toString(16);
+            else
+               item._value = fld.toString();
+         } else
+         if (typeof fld == 'string') {
+            item._value = '"' + fld + '"';
          }
       }
       return true;
@@ -6347,10 +6391,7 @@
                || key['fClassName'] == 'TObjArray'
                || key['fClassName'] == 'TClonesArray') {
                 item["_more"] = true;
-                item['_expand'] = function(node, obj) {
-                   painter.ListHierarchy(node, obj);
-                   return true;
-                }
+                item['_expand'] = JSROOT.Painter.ListHierarchy;
          }
 
          folder._childs.push(item);
@@ -6565,25 +6606,26 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.toggle = function(status) {
-      var painter = this;
+   JSROOT.HierarchyPainter.prototype.toggle = function(status, h) {
+      var hitem = (h==null) ? this.h : h;
 
-      var toggleItem = function(hitem) {
-
-         if (hitem != painter.h)
-            if (status)
-               hitem._isopen = true;
-            else
-               delete hitem._isopen;
-
-         if ('_childs' in hitem)
-            for (var i=0; i < hitem._childs.length; ++i)
-               toggleItem(hitem._childs[i]);
+      if (!('_childs' in hitem)) {
+         if (!status || this.with_icons || ((typeof hitem['_expand']) !== 'function')) return;
+         this.expand(this.itemFullName(hitem));
+         if ('_childs' in hitem) hitem._isopen = true;
+         return;
       }
 
-      toggleItem(this.h);
+      if (hitem != this.h)
+         if (status)
+            hitem._isopen = true;
+         else
+            delete hitem._isopen;
 
-      this.RefreshHtml();
+      for (var i=0; i < hitem._childs.length; ++i)
+         this.toggle(status, hitem._childs[i]);
+
+      if (h==null) this.RefreshHtml();
    }
 
    JSROOT.HierarchyPainter.prototype.get = function(arg, call_back, options) {
@@ -7570,7 +7612,7 @@
       var painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
 
       painter.h = { _name : "StreamerInfo" };
-      painter.StreamerInfoHierarchy(painter.h, obj);
+      JSROOT.Painter.StreamerInfoHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
          painter.DrawingReady();
@@ -7581,9 +7623,9 @@
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
-
+      painter.with_icons = false;
       painter.h = { _name : "Object" };
-      JSROOT.ObjectHierarchy(painter.h, obj);
+      JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
          painter.DrawingReady();

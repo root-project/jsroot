@@ -207,13 +207,16 @@
 
       // make node icons
 
-      var icon_name = hitem._isopen ? img2 : img1;
+      if (this.with_icons) {
+         var icon_name = hitem._isopen ? img2 : img1;
 
-      if (icon_name.indexOf("img_")==0) {
-         if ('_icon_click' in hitem) icon_name+= " icon_click";
-         this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
-      } else
-         this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + hitem._kind +'"/>';
+         if (icon_name.indexOf("img_")==0) {
+            if ('_icon_click' in hitem) icon_name+= " icon_click";
+            this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
+         } else {
+           this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + hitem._kind +'"/>';
+         }
+      }
 
       this['html'] += '<a';
       if (can_click || has_childs) this['html'] +=' class="h_item"';
@@ -233,6 +236,11 @@
 
       this['html'] += ' title="' + element_title + '"';
       this['html'] += '>' + element_name + '</a>';
+      if ('_value' in hitem) {
+         this['html'] += "<p>";
+         if ((hitem._value != "") && ! hitem['_isopen']) this['html'] += ": " + hitem._value;
+         this['html'] += "</p>";
+      }
 
       if (has_childs && (isroot || hitem._isopen)) {
          this['html'] += '<div class="h_childs">';
@@ -359,18 +367,28 @@
       if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";
       if (img2.length==0) img2 = (has_childs || hitem['_more']) ? "img_folderopen" : "img_page";
 
-      var newname = hitem._isopen ? img2 : img1;
+      var a_node = node.find("a").first();
 
-      var img = node.find("a").first().prev();
-
-      if (newname.indexOf("img_")==0) {
-         if ('_icon_click' in hitem) newname += " icon_click";
-         img.attr("class", newname);
-      } else {
-         img.attr("src", newname);
+      if ('_value' in hitem) {
+         var p_node = a_node.next();
+         if ((hitem._value=="") || hitem._isopen)
+            p_node.html("");
+         else
+            p_node.html(": " + hitem._value);
       }
 
-      img = img.prev();
+      var img = a_node.prev();
+
+      if (this.with_icons) {
+         var newname = hitem._isopen ? img2 : img1;
+         if (newname.indexOf("img_")==0) {
+            if ('_icon_click' in hitem) newname += " icon_click";
+            img.attr("class", newname);
+         } else {
+            img.attr("src", newname);
+         }
+         img = img.prev();
+      }
 
       var h = this;
 
