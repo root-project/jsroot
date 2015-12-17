@@ -7349,7 +7349,7 @@
       }
 
       if (withbrowser) {
-         d3.select_main().html("");
+         this.select_main().html("");
          delete this.h;
       } else {
          // when only display cleared, try to clear all browser items
@@ -7412,7 +7412,7 @@
          this['disp'].CheckMDIResize(null, size);
       else
       if ((typeof size == 'object') && ('width' in size) && ('height' in size)) {
-         d3.select_main()
+         this.select_main()
             .style('width', size.width+"px")
             .style('height', size.height+"px")
             .style('display', 'block');
@@ -7544,8 +7544,8 @@
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
-      d3.select("#" + divid).style( 'overflow' , 'auto' );
       var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+      painter.select_main().style( 'overflow' , 'auto' );
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
@@ -7558,8 +7558,8 @@
    }
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
-      d3.select("#" + divid).style('overflow' , 'auto');
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+      var painter = new JSROOT.HierarchyPainter('inspector', divid);
+      painter.select_main().style( 'overflow' , 'auto' );
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
