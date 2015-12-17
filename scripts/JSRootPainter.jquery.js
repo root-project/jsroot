@@ -235,10 +235,12 @@
       if (element_title.length == 0) element_title = element_name;
 
       this['html'] += ' title="' + element_title + '"';
-      this['html'] += '>' + element_name + '</a>';
+      this['html'] += '>' + element_name + ('_value' in hitem ? ":" : "") + '</a>';
       if ('_value' in hitem) {
-         this['html'] += "<p>";
-         if ((hitem._value != "") && ! hitem['_isopen']) this['html'] += ": " + hitem._value;
+         this['html'] += "<p";
+         if ('_vclass' in hitem) this['html'] += " class='" + hitem._vclass + "'";
+         this['html'] += ">";
+         if (!hitem['_isopen']) this['html'] += hitem._value;
          this['html'] += "</p>";
       }
 
@@ -271,6 +273,8 @@
 
       this['html'] = "<div style='overflow:auto; width:100%; height:100%;"
       if (this.background) this['html']+="background-color:"+this.background + ";";
+      if (this.with_icons) this['html']+="font-size:12px;";
+                      else this['html']+="font-size:15px;";
       this['html']+="'>";
       if (factcmds.length>0) {
          for (var n in factcmds)
@@ -370,11 +374,7 @@
       var a_node = node.find("a").first();
 
       if ('_value' in hitem) {
-         var p_node = a_node.next();
-         if ((hitem._value=="") || hitem._isopen)
-            p_node.html("");
-         else
-            p_node.html(": " + hitem._value);
+         var p_node = a_node.next().html(hitem._isopen ? "" : hitem._value);
       }
 
       var img = a_node.prev();

@@ -6290,21 +6290,23 @@
             }
 
             if (inparent) {
-               item._value = "{ prnt }";
+               item['_value'] = "{ prnt }";
             } else {
                item['_expand'] = JSROOT.Painter.ObjectHierarchy;
                item['_more'] = true;
-               item._value = "{ }";
+               item['_value'] = "{ }";
             }
          } else
          if (typeof fld == 'number') {
             if (key == 'fBits')
-               item._value = "0x" + fld.toString(16);
+               item['_value'] = "0x" + fld.toString(16);
             else
-               item._value = fld.toString();
+               item['_value'] = fld.toString();
+            item['_vclass'] = 'h_value_num';
          } else
          if (typeof fld == 'string') {
-            item._value = '"' + fld + '"';
+            item['_value'] = '"' + fld + '"';
+            item['_vclass'] = 'h_value_str';
          }
       }
       return true;
