@@ -6234,6 +6234,38 @@
       }
    }
 
+   JSROOT.ObjectHierarchy = function(top, obj) {
+      if ((top==null) || (obj==null)) return false;
+
+      top['_childs'] = [];
+      top['_obj'] = obj;
+
+      top['_get'] = function(item, itemname, callback) {
+         JSROOT.CallBack(callback, item, this._obj[item._name]);
+      };
+
+      for (var key in obj) {
+         if (key == '_typename') continue;
+         var fld = obj[key];
+         if (typeof fld == 'function') continue;
+
+         var item = {
+            _name : key,
+            _kind : ""
+         };
+
+         top._childs.push(item);
+
+         if ((typeof fld == 'object' ) && (fld != null)) {
+            if ('_typename' in fld)
+               item['_kind'] = "ROOT." + fld._typename;
+            item['_expand'] = JSROOT.ObjectHierarchy;
+            item['_more'] = true;
+         }
+      }
+      return true;
+   }
+
    JSROOT.HierarchyPainter.prototype.TreeHierarchy = function(node, obj) {
       node._childs = [];
 
@@ -7550,8 +7582,8 @@
    JSROOT.Painter.drawInspector = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
 
-      painter.h = { _name : "StreamerInfo" };
-      painter.StreamerInfoHierarchy(painter.h, obj);
+      painter.h = { _name : "Object" };
+      JSROOT.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
          painter.DrawingReady();
@@ -8020,6 +8052,9 @@
 
    JSROOT.draw = function(divid, obj, opt) {
       if ((obj==null) || (typeof obj != 'object')) return null;
+
+      if (opt == 'inspect')
+         return JSROOT.Painter.drawInspector(divid, obj);
 
       var handle = null, painter = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj['_typename'], opt);

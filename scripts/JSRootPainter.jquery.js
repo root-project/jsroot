@@ -162,13 +162,8 @@
       if ((img1.length==0) && isroot)
          hitem['_icon'] = img1 = "img_base";
 
-      if (hitem['_more']) {
+      if (hitem['_more'] || ('_expand' in hitem) || ('_player' in hitem))
          can_click = true;
-      }
-
-      if ('_player' in hitem) {
-         can_click = true;
-      }
 
       if (img2.length==0) img2 = img1;
       if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";

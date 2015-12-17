@@ -1278,7 +1278,6 @@
          _more : (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null),
          _menu : JSROOT.provideGeoMenu,
          _icon_click : JSROOT.geoIconClick,
-         // this is special case of expand of geo volume
          _get : function(item, itemname, callback) {
             if ((item!=null) && (item._volume != null))
                return JSROOT.CallBack(callback, item, item._volume);

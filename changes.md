@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in master
+1. Fix several problems with TH1 update
+2. Fix problems and improve flex layout
+3. Introduce object inspector
+
+
 ## Changes in 4.0
 1. New TGeo classes support:
    - browsing  through volumes hieararchy
