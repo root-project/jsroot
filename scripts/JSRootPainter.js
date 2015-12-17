@@ -6297,7 +6297,7 @@
                item['_value'] = "{ }";
             }
          } else
-         if (typeof fld == 'number') {
+         if (typeof fld == 'number'|| typeof fld == 'boolean') {
             if (key == 'fBits')
                item['_value'] = "0x" + fld.toString(16);
             else
@@ -6307,6 +6307,8 @@
          if (typeof fld == 'string') {
             item['_value'] = '"' + fld + '"';
             item['_vclass'] = 'h_value_str';
+         } else {
+            alert('miss ' + key + '  ' + typeof fld);
          }
       }
       return true;

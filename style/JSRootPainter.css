@@ -13,13 +13,18 @@
    white-space: nowrap;
 }
 
+.h_tree * {
+   padding: 0;
+   margin: 0;
+   font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+}
+
 .h_tree img {
    border: 0px;
    vertical-align: middle;
 }
 
 .h_tree a  {
-   font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
    white-space: nowrap;
    text-decoration: none;
    vertical-align: top; 
@@ -30,7 +35,6 @@
 }
 
 .h_tree p {
-   font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
    font-weight: bold;
    white-space: nowrap;
    text-decoration: none;
