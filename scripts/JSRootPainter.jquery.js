@@ -251,14 +251,14 @@
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
 
-      if (this.frameid == null) return JSROOT.CallBack(callback);
-      var elem = $("#" + this.frameid);
-      if ((this.h == null) || (elem.length == 0)) {
-         elem.html("");
+      if (this.divid == null) return JSROOT.CallBack(callback);
+      var d3elem = this.select_main();
+      if ((this.h == null) || d3elem.empty()) {
+         d3elem.html("");
          return JSROOT.CallBack(callback);
       }
 
-      var d3elem = d3.select("#" + this.frameid);
+      var elem = $(d3elem.node());
 
       var factcmds = [], status_item = null;
       this.ForEach(function(item) {
@@ -336,7 +336,10 @@
 
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, node, set_attr) {
       if (node==null) {
-         node = $("#" + this.frameid).find("[item='" + this.itemFullName(hitem) + "']");
+         var name = this.itemFullName(hitem);
+         node = $(this.select_main().node()).find("[item='" + name + "']");
+         if ((node.length == 0) && ('_cycle' in hitem))
+            node = $(this.select_main().node()).find("[item='" + name + ";" + hitem._cycle + "']");
          if (node.length == 0) return;
       }
 
@@ -556,7 +559,7 @@
             if (!('_childs' in hitem) && (hitem['_more'] || !('_more' in hitem))) {
                var handle = JSROOT.getDrawHandle(hitem._kind);
                if (handle && ('expand' in handle))
-                  menu.add("Expand", function() { this.expand(itemname); });
+                  menu.add("Expand", function() { painter.expand(itemname); });
             }
          }
 

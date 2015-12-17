@@ -840,9 +840,7 @@
          this['divid'] = divid;
       var main = this.select_main();
       var chld = main.node() ? main.node().firstChild : null;
-      if (chld) {
-         chld['painter'] = this;
-      }
+      if (chld) chld['painter'] = this;
    }
 
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
@@ -6174,9 +6172,9 @@
    JSROOT.HierarchyPainter = function(name, frameid) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
-      this.frameid = frameid;
       this.h = null; // hierarchy
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
+      if (frameid != null) this.SetDivId(frameid);
 
       // remember only very first instance
       if (JSROOT.hpainter == null)
@@ -6277,6 +6275,7 @@
 
          var item = {
             _name : key['fName'] + ";" + key['fCycle'],
+            _cycle : key['fCycle'],
             _kind : "ROOT." + key['fClassName'],
             _title : key['fTitle'],
             _keyname : key['fName'],
@@ -6529,7 +6528,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
-      if (this.frameid == null) return JSROOT.CallBack(callback);
+      if (this.divid == null) return JSROOT.CallBack(callback);
       var hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
           hpainter.RefreshHtml(callback);
@@ -7350,7 +7349,7 @@
       }
 
       if (withbrowser) {
-         d3.select("#" + this.frameid).html("");
+         d3.select_main().html("");
          delete this.h;
       } else {
          // when only display cleared, try to clear all browser items
@@ -7413,7 +7412,7 @@
          this['disp'].CheckMDIResize(null, size);
       else
       if ((typeof size == 'object') && ('width' in size) && ('height' in size)) {
-         d3.select("#" + this.frameid)
+         d3.select_main()
             .style('width', size.width+"px")
             .style('height', size.height+"px")
             .style('display', 'block');
@@ -7546,6 +7545,20 @@
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
       d3.select("#" + divid).style( 'overflow' , 'auto' );
+      var painter = new JSROOT.HierarchyPainter('sinfo', divid);
+
+      painter.h = { _name : "StreamerInfo" };
+      painter.StreamerInfoHierarchy(painter.h, obj);
+      painter.RefreshHtml(function() {
+         painter.SetDivId(divid);
+         painter.DrawingReady();
+      });
+
+      return painter;
+   }
+
+   JSROOT.Painter.drawInspector = function(divid, obj) {
+      d3.select("#" + divid).style('overflow' , 'auto');
       var painter = new JSROOT.HierarchyPainter('sinfo', divid);
 
       painter.h = { _name : "StreamerInfo" };

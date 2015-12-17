@@ -1357,9 +1357,7 @@
    }
 
    JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
-      if ((hitem==null) || (obj==null)) {
-         return false;
-      }
+      if ((hitem==null) || (obj==null)) return false;
 
       hitem['_childs'] = [];
 
