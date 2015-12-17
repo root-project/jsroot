@@ -302,20 +302,25 @@ svg:not(:root) { overflow: hidden; }
 |--------------------------------------------------*/
 
 .flex_frame {
-   display: table; 
 }
 
 .flex_header {
-   height:1em;
-   display: table-row;
+   height:23px;
+   overflow:hidden;
+}
+
+.flex_header p {
+   margin: 1px;
+   float:left; 
+   font-size: 14px;
+   padding-left:5px;
 }
 
 .flex_draw {
-   display: table-row; 
-   width:100%;
-   height:100%;
    background-color:white;
    overflow:hidden;
+   width : 100%;
+   height : calc( 100% - 26px );
 }
 
 /*--------------------------------------------------|

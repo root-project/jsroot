@@ -266,7 +266,7 @@
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
 
-      this['html'] = "";
+      this['html'] = "<div style='overflow:auto; width:100%; height:100%;'>";
       if (factcmds.length>0) {
          for (var n in factcmds)
             this['html'] += "<button class='fast_command'> </button>";
@@ -288,6 +288,7 @@
 
       this['html'] += '<div class="h_tree">';
       this.addItemHtml(this.h, null);
+      this['html'] += '</div>';
       this['html'] += '</div>';
 
       var h = this;
@@ -832,7 +833,7 @@
 
       var entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
                   '<div class="ui-widget-header flex_header">'+
-                    '<h3 style="float:left; padding-left:5px">'+title+'</h3>' +
+                    '<p>'+title+'</p>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
@@ -872,11 +873,11 @@
                break;
             case "maximal" :
                main.height("100%").width("100%").css('left','').css('top','');
-               main.find(".flex_draw").css("display","table-row");
+               main.find(".flex_draw").css("display","");
                main.find(".ui-resizable-handle").css("display","none");
                break;
             default:
-               main.find(".flex_draw").css("display","table-row");
+               main.find(".flex_draw").css("display","");
                main.find(".ui-resizable-handle").css("display","");
                main.height(main.prop('original_height'))
                    .width(main.prop('original_width'));
@@ -892,8 +893,8 @@
       $("#" + subid)
          .css('left', parseInt(w * (this.cnt % 5)/10))
          .css('top', parseInt(h * (this.cnt % 5)/10))
-         .css('width', parseInt(w * 0.58))
-         .css('height', parseInt(h * 0.58))
+         .width(Math.round(w * 0.58))
+         .height(Math.round(h * 0.58))
          .resizable({
             helper: "jsroot-resizable-helper",
             start: function(event, ui) {
@@ -902,9 +903,7 @@
             },
             stop: function(event, ui) {
                var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
-               var draw = $(this).find(".flex_draw");
-               draw.width(rect.width).height(rect.height);
-               JSROOT.CheckElementResize(draw.get(0), rect);
+               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), rect);
             }
           })
           .draggable({
@@ -947,6 +946,9 @@
       // set default z-index to avoid overlap of these special elements
       $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
 
+      //var draw_w = $("#" + subid).width() - 1;
+      //var draw_h = $("#" + subid).height() - $("#" + subid).find(".flex_header").height()-1;
+      //$("#" + subid).find(".flex_draw").width(draw_w).height(draw_h);
       this.cnt++;
 
       return $("#" + subid + "_cont").prop('title', title).get(0);

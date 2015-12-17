@@ -3102,6 +3102,9 @@
          h = new_size.height;
       }
 
+      console.log('check w = ' + w + '   h = ' + h);
+
+
       var factor = null, svg = null;
 
       if (check_resize > 0) {
@@ -3132,13 +3135,7 @@
          if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
             if ((w/oldw>0.5) && (w/oldw<2) && (h/oldh>0.5) && (h/oldh<2)) {
                // not significant change in actual sizes, keep as it is
-               // let browser scale SVG without out help
-
-               if (typeof new_size == 'object') {
-                  // force canvas to specified size
-                  svg.attr("width", w).attr("height", h);
-               }
-
+               // let browser scale SVG without our help
                return false;
             }
 
@@ -3168,7 +3165,7 @@
          else
             fill = this.createAttFill('white');
 
-         render_to.style("background-color", fill.color);
+         // render_to.style("background-color", fill.color);
 
          svg = this.select_main()
              .append("svg")
@@ -7410,13 +7407,6 @@
 
       if ('disp' in this)
          this['disp'].CheckMDIResize(null, size);
-      else
-      if ((typeof size == 'object') && ('width' in size) && ('height' in size)) {
-         this.select_main()
-            .style('width', size.width+"px")
-            .style('height', size.height+"px")
-            .style('display', 'block');
-      }
    }
 
    JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
@@ -7545,7 +7535,6 @@
 
    JSROOT.Painter.drawStreamerInfo = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('sinfo', divid);
-      painter.select_main().style( 'overflow' , 'auto' );
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
@@ -7559,7 +7548,6 @@
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('inspector', divid);
-      painter.select_main().style( 'overflow' , 'auto' );
 
       painter.h = { _name : "StreamerInfo" };
       painter.StreamerInfoHierarchy(painter.h, obj);
