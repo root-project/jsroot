@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "4.0 16/12/2015";
+   JSROOT.version = "dev 17/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -999,12 +999,6 @@
          obj_typename = obj['_typename'];
       }
 
-      var EBinErrorOpt = {
-          kNormal : 0,    // errors with Normal (Wald) approximation: errorUp=errorLow= sqrt(N)
-          kPoisson : 1,   // errors from Poisson interval at 68.3% (1 sigma)
-          kPoisson2 : 2   // errors from Poisson interval at 95% CL (~ 2 sigma)
-       };
-
       var EErrorType = {
           kERRORMEAN : 0,
           kERRORSPREAD : 1,
@@ -1077,7 +1071,6 @@
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
               _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
 
-              // use regex to replace ONLY the x variable (i.e. not 'x' in Math.exp...)
                this['_func'] = new Function("x", "return " + _func).bind(this);
                this['_title'] = this['fTitle'];
             }
