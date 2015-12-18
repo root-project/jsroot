@@ -28,6 +28,7 @@
             'touch-punch'          : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate'+ext,
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+            'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'THREE'                : dir+'three'+ext,
             'three.extra'          : dir+'three.extra'+ext,
             'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
@@ -676,6 +677,8 @@
          modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
+         modules.push('saveSvgAsPng');
+         mainfiles += '$$$scripts/saveSvgAsPng' + ext + ".js;";
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;

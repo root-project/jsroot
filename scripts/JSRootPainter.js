@@ -5299,6 +5299,16 @@
             menu.add("header:"+ this.histo['fName']);
             this.FillContextMenu(menu);
          }
+         menu.add("separator");
+         menu.add("Save As...", function() {
+            // todo - use jqury dialog here
+            var file_name = "d3_canvas";
+            if (typeof (this.histo.fName) != 'undefined')
+               file_name = this.histo.fName;
+            var el = d3.select("#" + this['divid']);
+            if (el && el[0][0]['firstChild'])
+               saveSvgAsPng(el[0][0]['firstChild'], file_name + ".png");
+         });
 
          menu.show(this.ctx_menu_evnt);
          delete this.ctx_menu_evnt; // delete temporary variable
