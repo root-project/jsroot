@@ -1051,7 +1051,9 @@
       // Assigns id of top element (normally <div></div> where drawing is done
       // is_main - -1 - not add to painters list,
       //            0 - normal painter,
-      //            1 - major objects like TH1/TH2
+      //            1 - major objects like TH1/TH2,
+      //            2 - if canvas missing, create it, but not set as main object
+      //            3 - if canvas and (or) frame missing, create them, but not set as main object
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
       // In such case the only painter will be assigned to the first element
 
@@ -1064,16 +1066,14 @@
       // SVG element where canvas is drawn
       var svg_c = this.svg_canvas();
 
-      if (svg_c.empty() && (is_main>0)) {
-         JSROOT.Painter.drawCanvas(divid, null);
+      if (svg_c.empty() && (is_main > 0)) {
+         JSROOT.Painter.drawCanvas(divid, null, (is_main==2 ? "noframe" : ""));
          svg_c = this.svg_canvas();
          this['create_canvas'] = true;
       }
 
       if (svg_c.empty()) {
-
          if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
-
          JSROOT.console("Special case for " + this.obj_typename + " assign painter to first DOM element");
          var main = d3.select("#" + divid);
          if (main.node() && main.node().firstChild)
@@ -1087,7 +1087,7 @@
       if (is_main < 0) return;
 
       // create TFrame element if not exists when
-      if ((is_main > 0) && this.svg_frame().empty()) {
+      if (this.svg_frame().empty() && ((is_main == 1) || (is_main == 3))) {
          JSROOT.Painter.drawFrame(divid, null);
          if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
          this['create_canvas'] = true;
@@ -1099,7 +1099,7 @@
       if (svg_p.property('pad_painter') != this)
          svg_p.property('pad_painter').painters.push(this);
 
-      if ((is_main > 0) && (svg_p.property('mainpainter') == null))
+      if ((is_main == 1) && (svg_p.property('mainpainter') == null))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
    }
@@ -3066,7 +3066,7 @@
    JSROOT.Painter.drawPaveText = function(divid, pavetext) {
 
       var painter = new JSROOT.TPavePainter(pavetext);
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, 2);
 
       // refill statistic in any case
       painter.FillStatistic();
@@ -3322,14 +3322,15 @@
       return isany;
    }
 
-   JSROOT.Painter.drawCanvas = function(divid, can) {
+   JSROOT.Painter.drawCanvas = function(divid, can, opt) {
       var painter = new JSROOT.TPadPainter(can, true);
       painter.SetDivId(divid, -1); // just assign id
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
       if (can==null) {
-         JSROOT.Painter.drawFrame(divid, null);
+         if (opt.indexOf("noframe")<0)
+            JSROOT.Painter.drawFrame(divid, null);
          return painter.DrawingReady();
       }
 
