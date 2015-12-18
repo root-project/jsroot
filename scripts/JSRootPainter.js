@@ -6245,10 +6245,21 @@
       }
    }
 
-   JSROOT.Painter.ObjectHierarchy = function(top, obj) {
+   JSROOT.Painter.ObjectHierarchy = function(top, obj, nosimple) {
       if ((top==null) || (obj==null)) return false;
 
       // if ('_value' in top) top._value = "";
+
+      if (nosimple) {
+         top['_nosimple'] = true;
+      } else {
+         // check if parent has such property
+         var prnt = top;
+         while (prnt!=null) {
+            if ('_nosimple' in prnt) { nosimple = true; break; }
+            prnt = ('_parent' in prnt) ? prnt._parent : null;
+         }
+      }
 
       top['_childs'] = [];
       if (!('_obj' in top))
@@ -6269,10 +6280,9 @@
             _name : key
          };
 
-         top._childs.push(item);
-
          if (fld === null) {
             item._value = "null";
+            top._childs.push(item);
             continue;
          }
 
@@ -6283,8 +6293,10 @@
          }
 
          var proto = Object.prototype.toString.apply(fld);
+         var simple  = false;
 
          if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+            simple = (proto != '[object Array]');
             if (fld.length == 0) {
                item._value = "[ ]";
             } else {
@@ -6321,6 +6333,7 @@
             }
          } else
          if (typeof fld == 'number'|| typeof fld == 'boolean') {
+            simple = true;
             if (key == 'fBits')
                item['_value'] = "0x" + fld.toString(16);
             else
@@ -6328,11 +6341,16 @@
             item['_vclass'] = 'h_value_num';
          } else
          if (typeof fld == 'string') {
+            simple = true;
             item['_value'] = '"' + fld + '"';
             item['_vclass'] = 'h_value_str';
          } else {
+            simple = true;
             alert('miss ' + key + '  ' + typeof fld);
          }
+
+         if (!simple || !nosimple)
+            top._childs.push(item);
       }
       return true;
    }
@@ -7062,7 +7080,7 @@
          }
 
          if (!is_ok && (obj!=null)) {
-            if (JSROOT.Painter.ObjectHierarchy(item, obj)) {
+            if (JSROOT.Painter.ObjectHierarchy(item, obj, true)) {
                item._isopen = true;
                is_ok = true;
                if (typeof hpainter['UpdateTreeNode'] == 'function')
