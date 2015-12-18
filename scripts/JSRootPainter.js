@@ -5307,7 +5307,9 @@
                file_name = this.histo.fName;
             var el = d3.select("#" + this['divid']);
             if (el && el[0][0]['firstChild'])
-               saveSvgAsPng(el[0][0]['firstChild'], file_name + ".png");
+               JSROOT.AssertPrerequisites("savepng", function() {
+                  saveSvgAsPng(el[0][0]['firstChild'], file_name + ".png");
+               });
          });
 
          menu.show(this.ctx_menu_evnt);

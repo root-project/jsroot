@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 17/12/2015";
+   JSROOT.version = "dev 18/12/2015";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -677,6 +677,9 @@
          modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
+      }
+
+      if (kind.indexOf('savepng;')>=0) {
          modules.push('saveSvgAsPng');
          mainfiles += '$$$scripts/saveSvgAsPng' + ext + ".js;";
       }

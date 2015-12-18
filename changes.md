@@ -4,6 +4,7 @@
 1. Fix several problems with TH1 update
 2. Fix problems and improve flex layout
 3. Introduce object inspector
+4. Provide possibility to save drawn object as PNG 
 
 
 ## Changes in 4.0
