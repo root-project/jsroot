@@ -5,6 +5,7 @@
 2. Fix problems and improve flex layout
 3. Introduce object inspector
 4. Provide possibility to save drawn object as PNG 
+5. Let draw selected sub-pad from TCanvas list of primitives.  
 
 
 ## Changes in 4.0

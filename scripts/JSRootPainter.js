@@ -3083,6 +3083,7 @@
       this.pad = pad;
       this.iscan = iscan; // indicate if workign with canvas
       this.painters = new Array; // complete list of all painters in the pad
+      this.has_canvas = true;
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3200,6 +3201,9 @@
 
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
+      if (!this.has_canvas)
+         return this.CreateCanvasSvg(only_resize ? 2 : 0);
+
       var width = this.svg_canvas().property("draw_width"),
           height = this.svg_canvas().property("draw_height"),
           x = Math.round(this.pad['fAbsXlowNDC'] * width),
@@ -3336,15 +3340,22 @@
 
    JSROOT.Painter.drawPad = function(divid, pad) {
       var painter = new JSROOT.TPadPainter(pad, false);
-      painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
+      painter.SetDivId(divid, -1); // pad painter will be registered in the canvas painters list
+      if (painter.svg_canvas().empty()) {
+         painter.has_canvas = false;
+      }
 
       painter.CreatePadSvg();
+      painter.SetDivId(divid);
 
-      painter.pad_name = pad['fName'];
+      var prev_name = "";
 
-      // we select current pad, where all drawing is performed
-      var prev_name = painter.svg_canvas().property('current_pad');
-      painter.svg_canvas().property('current_pad', pad['fName']);
+      if (painter.has_canvas) {
+         painter.pad_name = pad['fName'];
+         // we select current pad, where all drawing is performed
+         prev_name = painter.svg_canvas().property('current_pad');
+         painter.svg_canvas().property('current_pad', pad['fName']);
+      }
 
       painter.DrawPrimitive(0, function() {
          // we restore previous pad name
@@ -8023,7 +8034,7 @@
    }
 
    JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func:JSROOT.Painter.drawCanvas });
-   JSROOT.addDrawFunc({ name: "TPad", func:JSROOT.Painter.drawPad });
+   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func:JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", func:JSROOT.Painter.drawFrame });
    JSROOT.addDrawFunc({ name: "TPaveText", func:JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveStats", func:JSROOT.Painter.drawPaveText });
