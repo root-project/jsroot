@@ -7008,7 +7008,7 @@
       var hitem = this.Find(itemname);
       if (hitem==null) return JSROOT.CallBack(call_back);
 
-      // mark that item cannot be longer expand
+      // item marked as it cannot be expanded
       if (('_more' in hitem) && !hitem['_more']) return JSROOT.CallBack(call_back);
 
       if (!('_more' in hitem)) {
@@ -7049,6 +7049,16 @@
             }
             curr = ('_parent' in curr) ? curr['_parent'] : null;
          }
+
+         if (!is_ok && (obj!=null)) {
+            if (JSROOT.Painter.ObjectHierarchy(item, obj)) {
+               item._isopen = true;
+               is_ok = true;
+               if (typeof hpainter['UpdateTreeNode'] == 'function')
+                  hpainter.UpdateTreeNode(item, tree_node, true);
+            }
+         }
+
          JSROOT.CallBack(call_back, is_ok);
       });
 
@@ -8015,16 +8025,16 @@
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon:"img_execute", execute: true });
-   JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen" });
-   JSROOT.addDrawFunc({ name: "TTree", icon:"img_tree" });
-   JSROOT.addDrawFunc({ name: "TNtuple", icon:"img_tree" });
-   JSROOT.addDrawFunc({ name: "TBranch", icon:"img_branch" });
+   JSROOT.addDrawFunc({ name: "TFolder", icon:"img_folder", icon2:"img_folderopen", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TTree", icon:"img_tree", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon:"img_tree", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TBranch", icon:"img_branch", noinspect:true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon:"img_leaf" });
-   JSROOT.addDrawFunc({ name: "TFile", icon:"img_file" });
-   JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file" });
+   JSROOT.addDrawFunc({ name: "TFile", icon:"img_file", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "Session", icon:"img_globe" });
    JSROOT.addDrawFunc({ name: "kind:TopFolder", icon:"img_base" });
-   JSROOT.addDrawFunc({ name: "kind:Folder", icon:"img_folder", icon2:"img_folderopen" });
+   JSROOT.addDrawFunc({ name: "kind:Folder", icon:"img_folder", icon2:"img_folderopen", noinspect:true });
 
    JSROOT.getDrawHandle = function(kind, selector) {
       // return draw handle for specified item kind
@@ -8077,10 +8087,12 @@
    // returns array with supported draw options for the specified class
    JSROOT.getDrawOptions = function(kind, selector) {
       if (typeof kind != 'string') return null;
-      var allopts = null, isany = false;
+      var allopts = null, isany = false, noinspect = false;
       for (var cnt=0;cnt<1000;++cnt) {
          var h = JSROOT.getDrawHandle(kind, cnt);
-         if ((h==null) || !('func' in h)) break;
+         if (h==null) break;
+         if (h['noinspect']) noinspect = true;
+         if (!('func' in h)) break;
          isany = true;
          if (! ('opt' in h)) continue;
          var opts = h.opt.split(';');
@@ -8097,6 +8109,9 @@
          allopts = new Array;
          allopts.push("");
       }
+
+      if (!noinspect && allopts)
+         allopts.push("inspect");
 
       return allopts;
    }

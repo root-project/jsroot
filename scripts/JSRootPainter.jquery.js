@@ -572,11 +572,8 @@
                });
             }
 
-            if (!('_childs' in hitem) && (hitem['_more'] || !('_more' in hitem))) {
-               var handle = JSROOT.getDrawHandle(hitem._kind);
-               if (handle && ('expand' in handle))
-                  menu.add("Expand", function() { painter.expand(itemname); });
-            }
+            if (!('_childs' in hitem) && (hitem['_more'] || !('_more' in hitem)))
+               menu.add("Expand", function() { painter.expand(itemname); });
          }
 
          if (('_menu' in hitem) && (typeof hitem['_menu'] == 'function'))
