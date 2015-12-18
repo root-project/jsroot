@@ -466,8 +466,10 @@
             if ('aslink' in handle)
                return window.open(itemname + "/");
 
-            if ('func' in handle)
+            if ('func' in handle) {
+               console.log('display');
                return this.display(itemname);
+            }
 
             if ('execute' in handle)
                return this.ExecuteCommand(itemname, node);

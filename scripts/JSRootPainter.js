@@ -3102,9 +3102,6 @@
          h = new_size.height;
       }
 
-      console.log('check w = ' + w + '   h = ' + h);
-
-
       var factor = null, svg = null;
 
       if (check_resize > 0) {
@@ -6254,10 +6251,10 @@
       // if ('_value' in top) top._value = "";
 
       top['_childs'] = [];
-      top['_obj'] = obj;
-      top['_get'] = function(item, itemname, callback) {
-         JSROOT.CallBack(callback, item, this._obj[item._name]);
-      };
+      if (!('_obj' in top))
+         top['_obj'] = obj;
+      else
+      if (top['_obj'] !== obj) alert('object missmatch');
 
       if (!('_title' in top) && ('_typename' in obj))
          top['_title'] = "ROOT." + obj['_typename'];
@@ -6279,6 +6276,12 @@
             continue;
          }
 
+         if ((typeof fld == 'object') && ('_typename' in fld)
+             && ((fld['_typename']=='TList') || (fld['_typename']=='TObjArray')) ) {
+               item['_kind'] = item['_title'] = "ROOT." + fld._typename;
+               fld = fld.arr;
+         }
+
          var proto = Object.prototype.toString.apply(fld);
 
          if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
@@ -6287,12 +6290,16 @@
             } else {
                item._value = "[...]";
                item['_more'] = true;
+               item['_obj'] = fld;
                item['_expand'] = JSROOT.Painter.ObjectHierarchy;
+               item['_get'] = function(item, itemname, callback) {
+                  JSROOT.CallBack(callback, item, this._obj);
+               };
             }
          } else
-         if (typeof fld == 'object' ) {
+         if (typeof fld == 'object') {
             if ('_typename' in fld)
-               item['_title'] = "ROOT." + fld._typename;
+               item['_kind'] = item['_title'] = "ROOT." + fld._typename;
 
             // check if object already shown in hierarchy (circular dependency)
             var curr = top, inparent = false;
@@ -6307,6 +6314,10 @@
                item['_expand'] = JSROOT.Painter.ObjectHierarchy;
                item['_more'] = true;
                item['_value'] = "{ }";
+               item['_obj'] = fld;
+               item['_get'] = function(item, itemname, callback) {
+                  JSROOT.CallBack(callback, item, this._obj);
+               };
             }
          } else
          if (typeof fld == 'number'|| typeof fld == 'boolean') {
