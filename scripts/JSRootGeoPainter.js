@@ -770,7 +770,7 @@
 
       var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
       if (this._debug) _helper = true;
-      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || (visible>0)) {
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(2)) || (visible > 0)) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
