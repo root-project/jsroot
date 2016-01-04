@@ -5,7 +5,8 @@
 2. Fix problems and improve flex layout
 3. Introduce object inspector
 4. Provide possibility to save drawn object as PNG 
-5. Let draw selected sub-pad from TCanvas list of primitives.  
+5. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
+6. Optimize TGrapth drawing - web browsers have problem to draw 10000 pixels at the same time   
 
 
 ## Changes in 4.0

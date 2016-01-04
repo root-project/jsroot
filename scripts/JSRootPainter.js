@@ -2039,25 +2039,25 @@
             function(p) {
                if (kind == 1)
                   return {
-                     x : gr['fX'][p],
-                     y : gr['fY'][p],
-                     exlow : gr['fEX'][p],
-                     exhigh : gr['fEX'][p],
-                     eylow : gr['fEY'][p],
-                     eyhigh : gr['fEY'][p]
+                     x : gr.fX[p],
+                     y : gr.fY[p],
+                     exlow : gr.fEX[p],
+                     exhigh : gr.fEX[p],
+                     eylow : gr.fEY[p],
+                     eyhigh : gr.fEY[p]
                   };
                if (kind == 2)
                   return {
-                     x : gr['fX'][p],
-                     y : gr['fY'][p],
-                     exlow : gr['fEXlow'][p],
-                     exhigh : gr['fEXhigh'][p],
-                     eylow : gr['fEYlow'][p],
-                     eyhigh : gr['fEYhigh'][p]
+                     x : gr.fX[p],
+                     y : gr.fY[p],
+                     exlow : gr.fEXlow[p],
+                     exhigh : gr.fEXhigh[p],
+                     eylow : gr.fEYlow[p],
+                     eyhigh : gr.fEYhigh[p]
                   };
                return {
-                     x : gr['fX'][p],
-                     y : gr['fY'][p]
+                     x : gr.fX[p],
+                     y : gr.fY[p]
                   };
             });
    }
@@ -2065,27 +2065,29 @@
    JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
       // bins should be created
 
-      var xmin, xmax, ymin, ymax;
+      var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
 
-      if (this.bins==null) {
-         xmin = 0; xmax = 1; ymin = 0; ymax = 1;
-      } else
-      for (var n = 0; n < this.bins.length; ++n) {
-         var pnt = this.bins[n];
-         if ((xmin==null) || (pnt.x < xmin)) xmin = pnt.x;
-         if ((xmax==null) || (pnt.x > xmax)) xmax = pnt.x;
-         if ((ymin==null) || (pnt.y < ymin)) ymin = pnt.y;
-         if ((ymax==null) || (pnt.y > ymax)) ymax = pnt.y;
-         if ('exlow' in pnt) {
-            xmin = Math.min(xmin, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
-            xmax = Math.max(xmax, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
-            ymin = Math.min(ymin, pnt.y - pnt.eylow, pnt.y + pnt.eylow);
-            ymax = Math.max(ymax, pnt.y - pnt.eylow, pnt.y + pnt.eylow);
+      if (this.bins!=null) {
+         xmin = xmax = this.bins[0].x;
+         ymin = ymax = this.bins[0].y;
+         for (var n = 0; n < this.bins.length; ++n) {
+            var pnt = this.bins[n];
+            if ('exlow' in pnt) {
+               xmin = Math.min(xmin, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+               xmax = Math.max(xmax, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+               ymin = Math.min(ymin, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
+               ymax = Math.max(ymax, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
+            } else {
+               xmin = Math.min(xmin, pnt.x);
+               xmax = Math.max(xmax, pnt.x);
+               ymin = Math.min(ymin, pnt.y);
+               ymax = Math.max(ymax, pnt.y);
+            }
          }
       }
 
-      if (xmin == xmax) xmax+=1;
-      if (ymin == ymax) ymax+=1;
+      if (xmin <= xmax) xmax=xmin+1;
+      if (ymin <= ymax) ymax=ymin+1;
       var dx = (xmax - xmin)*0.1;
       var dy = (ymax - ymin)*0.1;
       var uxmin = xmin - dx, uxmax = xmax + dx;
@@ -2110,6 +2112,32 @@
       return histo;
    }
 
+   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
+      if (this.bins.length < 30) return this.bins;
+
+      var selbins = null;
+      if (typeof filter_func == 'function') {
+         for (var n = 0; n < this.bins.length; ++n) {
+            if (filter_func(this.bins[n])) {
+               if (selbins==null)
+                  selbins = (n==0) ? [] : this.bins.slice(0, n);
+            } else {
+               if (selbins != null) selbins.push(this.bins[n]);
+            }
+         }
+      }
+      if (selbins == null) selbins = this.bins;
+
+      if ((selbins.length < 2000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
+      var step = Math.floor(selbins.length / 2000);
+      if (step < 2) step = 2;
+      var optbins = [];
+      for (var n = 0; n < selbins.length; n+=step)
+         optbins.push(selbins[n]);
+
+      return optbins;
+   }
+
    JSROOT.TGraphPainter.prototype.DrawBars = function() {
       var bins = this.bins;
       if (bins.length == 1) {
@@ -2119,7 +2147,7 @@
          bins[0].xl = bins[0].x - binwidthx/2;
          bins[0].xr = bins[0].x + binwidthx/2;
       } else
-      for (var n=0;n<bins.length;++n) {
+      for (var n=0; n < bins.length; ++n) {
          if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
          if (n<bins.length-1)
             bins[n].xr = (bins[n].x + bins[n+1].x)/2;
@@ -2128,19 +2156,21 @@
          if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
       }
 
-      var h = this.frame_height();
+      var w = this.frame_width(),  h = this.frame_height();
       var normal = (this.optionBar != 1);
       var pmain = this.main_painter();
 
+      var selbins = this.OptimizeBins(function(d) { return (pmain.grx(d.xr) < 0) || (pmain.grx(d.xl) > w); });
+
       return this.draw_g.selectAll("bar_graph")
-               .data(bins).enter()
+               .data(selbins).enter()
                .append("svg:rect")
                .attr("x", function(d) { return (pmain.grx(d.xl)+0.5).toFixed(1); })
                .attr("y", function(d) {
                   if (normal || (d.y>=0)) return pmain.gry(d.y).toFixed(1);
                   return pmain.gry(0).toFixed(1);
                 })
-               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl)-1).toFixed(1); })
+               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl) - 1).toFixed(1); })
                .attr("height", function(d) {
                   var hh = pmain.gry(d.y);
                   if (normal) return hh>h ? 0 : (h - hh).toFixed(1);
@@ -2179,6 +2209,8 @@
       this.lineatt = JSROOT.Painter.createAttLine(this.graph);
       this.fillatt = this.createAttFill(this.graph);
 
+      var drawbins = null;
+
       if (this.optionEF > 0) {
          var area = d3.svg.area()
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
@@ -2186,8 +2218,11 @@
                         .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
          if (this.optionEF > 1)
             area = area.interpolate(JSROOT.gStyle.Interpolate);
+
+         drawbins = this.OptimizeBins();
+
          this.draw_g.append("svg:path")
-                    .attr("d", area(this.bins))
+                    .attr("d", area(drawbins))
                     .style("stroke", "none")
                     .call(this.fillatt.func);
       }
@@ -2195,7 +2230,6 @@
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
-
 
       if (this.optionBar) {
          var nodes = this.DrawBars();
@@ -2220,12 +2254,15 @@
          var lineatt = this.lineatt;
          if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
 
-         if (this.optionFill != 1) {
+         if (this.optionFill == 1)
+            close_symbol = " Z"; // always close area if we want to fill it
+         else
             this.fillatt.color = 'none';
-         }
+
+         if (drawbins==null) drawbins = this.OptimizeBins();
 
          this.draw_g.append("svg:path")
-               .attr("d", line(pthis.bins) + close_symbol)
+               .attr("d", line(drawbins) + close_symbol)
                .attr("class", "draw_line")
                .style("pointer-events","none")
                .call(lineatt.func)
@@ -2234,7 +2271,7 @@
          // do not add tooltip for line, when we wants to add markers
          if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
             this.draw_g.selectAll("draw_line")
-                       .data(pthis.bins).enter()
+                       .data(linebins).enter()
                        .append("svg:circle")
                        .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
                        .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
@@ -2247,12 +2284,20 @@
       var nodes = null;
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets) {
-         var draw_bins = new Array;
-         for (var i = 0; i < this.bins.length; ++i) {
-            var pnt = this.bins[i];
+
+         if (drawbins==null)
+            drawbins = this.OptimizeBins(function(pnt) {
+               var grx = pmain.grx(pnt.x);
+               if ((grx<0) || (grx>w)) return true; // exclude point out of X range
+               if (this.out_of_range) return false; // allow to draw points out of Y range
+               var gry = pmain.gry(pnt.y);
+               return (gry<0) || (gry>h); // exclude point out of Y range
+            });
+
+         for (var i = 0; i < drawbins.length; ++i) {
+            var pnt = drawbins[i];
             var grx = pmain.grx(pnt.x);
             var gry = pmain.gry(pnt.y);
-            if (!this.out_of_range && ((grx<0) || (grx>w) || (gry<0) || (gry>h))) continue;
 
             // caluclate graphical coordinates
             pnt['grx1'] = grx.toFixed(1);
@@ -2276,12 +2321,10 @@
                   pnt['grdy2'] = 0; // in x direction
                }
             }
-
-            draw_bins.push(pnt);
          }
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll("g.node")
-                     .data(draw_bins)
+                     .data(drawbins)
                      .enter()
                      .append("svg:g")
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
@@ -2672,10 +2715,11 @@
    JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
       // allow to zoom TGraph only when at least one point in the range
 
-      if (axis!="x") return false;
+      var gr = this.graph;
+      if ((gr==null) || (axis!="x")) return false;
 
-      for (var n=0; n < this.bins.length; ++n)
-         if ((min<this.bins[n].x) && (max>this.bins[n].x)) return true;
+      for (var n=0; n < gr.fNpoints; ++n)
+         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
 
       return false;
    }
@@ -2702,6 +2746,7 @@
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       if (painter.main_painter() == null) {
+         console.log('draw histogram');
          if (graph['fHistogram']==null)
             graph['fHistogram'] = painter.CreateHistogram();
          JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram'], "AXIS");
