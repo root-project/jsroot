@@ -272,6 +272,13 @@
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEECTc01vBgywAAAE9JREFUOMu1k8ERwDAMwqRc9l/Z/eeRpKZlABkOLFD0JQGgAAah5kp8Y30F2HEwDhGTCG6tX5yqtAV/acEdwHQHl0Y8RbA7pLIxRPziGyM9xLEOKSpp/5AAAAAASUVORK5CYII=');
 }
 
+.img_color {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAAAA4xcavGZGS1xZT79lW+9wdvFz/3N6fo3RISTZwXbyniXz80v/AAD/zAD/66v//6vGWiYeAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAADswAAA7MAbGhBn4AAAAHdElNRQfgAQQLLBhOmhPcAAAAIklEQVQY02NgRgEMDAzMnLzcfDwC7IxMbKwsQ10A3XMEAQA3JQVNowlkTAAAAABJRU5ErkJggg==');
+}
+
 
 /*--------------------------------------------------|
 | tooltip style                                     |

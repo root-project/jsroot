@@ -8075,6 +8075,7 @@
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon:"img_leaf" });
    JSROOT.addDrawFunc({ name: "TList", icon:"img_list" });
    JSROOT.addDrawFunc({ name: "TObjArray", icon:"img_list" });
+   JSROOT.addDrawFunc({ name: "TColor", icon:"img_color" });
    JSROOT.addDrawFunc({ name: "TFile", icon:"img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "Session", icon:"img_globe" });
