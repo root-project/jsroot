@@ -142,6 +142,22 @@
       return colorMap;
    }();
 
+   JSROOT.Painter.MakeColorRGB = function(col) {
+      if ((col==null) || (col['_typename'] != 'TColor')) return null;
+      var rgb = "rgb(" + (col.fRed*255).toFixed(0) + "," + (col.fGreen*255).toFixed(0) + "," + (col.fBlue*255).toFixed(0) + ")";
+      switch (rgb) {
+         case 'rgb(255,255,255)' : rgb = 'white'; break;
+         case 'rgb(0,0,0)' : rgb = 'black'; break;
+         case 'rgb(255,0,0)' : rgb = 'red'; break;
+         case 'rgb(0,255,0)' : rgb = 'green'; break;
+         case 'rgb(0,0,255)' : rgb = 'blue'; break;
+         case 'rgb(255,255,0)' : rgb = 'yellow'; break;
+         case 'rgb(255,0,255)' : rgb = 'magenta'; break;
+         case 'rgb(0,255,255)' : rgb = 'cyan'; break;
+      }
+      return rgb;
+   }
+
    JSROOT.Painter.adoptRootColors = function(objarr) {
       if (!objarr || !objarr.arr) return;
 
@@ -152,8 +168,9 @@
          var num = col.fNumber;
          if ((num<0) || (num>4096)) continue;
 
-         var rgb = "rgb(" + (col.fRed*255).toFixed(0) + "," + (col.fGreen*255).toFixed(0) + "," + (col.fBlue*255).toFixed(0) + ")";
-         if (rgb == 'rgb(255,255,255)') rgb = 'white';
+         var rgb = JSROOT.Painter.MakeColorRGB(col);
+         if (rgb == null) continue;
+
          if (JSROOT.Painter.root_colors[num] != rgb)
             JSROOT.Painter.root_colors[num] = rgb;
       }
@@ -6296,7 +6313,8 @@
 
          if (fld === null) {
             item._value = "null";
-            top._childs.push(item);
+            if (!nosimple)
+               top._childs.push(item);
             continue;
          }
 
@@ -6336,6 +6354,7 @@
 
             if (inparent) {
                item['_value'] = "{ prnt }";
+               simple = true;
             } else {
                item['_expand'] = JSROOT.Painter.ObjectHierarchy;
                item['_more'] = true;
@@ -6344,9 +6363,20 @@
                item['_get'] = function(item, itemname, callback) {
                   JSROOT.CallBack(callback, item, this._obj);
                };
+               if (nosimple) {
+                  // check if object can be expand
+                  var test = {};
+                  JSROOT.Painter.ObjectHierarchy(test, fld, true);
+                  if (test._childs.length == 0) {
+                     delete item['_expand'];
+                     delete item['_more'];
+                     if (fld['_typename'] == 'TColor') item['_value'] = JSROOT.Painter.MakeColorRGB(fld);
+                  }
+                  delete test;
+               }
             }
          } else
-         if (typeof fld == 'number'|| typeof fld == 'boolean') {
+         if ((typeof fld == 'number') || (typeof fld == 'boolean')) {
             simple = true;
             if (key == 'fBits')
                item['_value'] = "0x" + fld.toString(16);
