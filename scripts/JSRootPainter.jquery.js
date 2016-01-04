@@ -274,7 +274,7 @@
       this['html'] = "<div style='overflow:auto; width:100%; height:100%;"
       if (this.background) this['html']+="background-color:"+this.background + ";";
       if (this.with_icons) this['html']+="font-size:12px;";
-                      else this['html']+="font-size:15px;";
+                      else this['html']+="font-size:14px;";
       this['html']+="'>";
       if (factcmds.length>0) {
          for (var n in factcmds)

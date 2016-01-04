@@ -8037,12 +8037,12 @@
    JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func:JSROOT.Painter.drawCanvas });
    JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func:JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", func:JSROOT.Painter.drawFrame });
-   JSROOT.addDrawFunc({ name: "TPaveText", func:JSROOT.Painter.drawPaveText });
-   JSROOT.addDrawFunc({ name: "TPaveStats", func:JSROOT.Painter.drawPaveText });
+   JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func:JSROOT.Painter.drawPaveText });
+   JSROOT.addDrawFunc({ name: "TPaveStats", icon: "img_pavetext", func:JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TLatex", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", func:JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TPaveLabel", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func:JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func:JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func:"JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;COL3;LEGO;same" });
@@ -8071,6 +8071,8 @@
    JSROOT.addDrawFunc({ name: "TNtuple", icon:"img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TBranch", icon:"img_branch", noinspect:true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon:"img_leaf" });
+   JSROOT.addDrawFunc({ name: "TList", icon:"img_list" });
+   JSROOT.addDrawFunc({ name: "TObjArray", icon:"img_list" });
    JSROOT.addDrawFunc({ name: "TFile", icon:"img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "TMemFile", icon:"img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "Session", icon:"img_globe" });
