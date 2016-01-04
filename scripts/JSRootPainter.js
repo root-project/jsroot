@@ -3027,7 +3027,7 @@
 
       var main = this.main_painter();
 
-      if (!('FillStatistic' in main)) return false;
+      if ((main==null) || !('FillStatistic' in main)) return false;
 
       // no need to refill statistic if histogram is dummy
       if (main.IsDummyHisto()) return true;
@@ -6077,9 +6077,11 @@
          pos_x = this.ConvertToNDC("x", pos_x) * w;
          pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
       } else {
-         JSROOT.console("Cannot draw text at x/y coordinates without real TPad object");
+         this.text.fTextAlign = 22;
          pos_x = w/2;
          pos_y = h/2;
+         if (this.text['fTextSize'] == 0) this.text['fTextSize'] = 0.05;
+         if (this.text['fTextColor'] == 0) this.text['fTextColor'] = 1;
       }
 
       this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer", true);
@@ -6117,7 +6119,7 @@
 
    JSROOT.Painter.drawText = function(divid, text) {
       var painter = new JSROOT.TTextPainter(text);
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, 2);
       painter.Redraw();
       return painter.DrawingReady();
    }
@@ -8039,9 +8041,9 @@
    JSROOT.addDrawFunc({ name: "TFrame", func:JSROOT.Painter.drawFrame });
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func:JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveStats", icon: "img_pavetext", func:JSROOT.Painter.drawPaveText });
-   JSROOT.addDrawFunc({ name: "TLatex", func:JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TMathText", func:JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TText", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func:JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func:JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func:JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func:JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
