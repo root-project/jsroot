@@ -7,6 +7,7 @@
 4. Provide possibility to save drawn object as PNG 
 5. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
 6. Optimize TGrapth drawing - web browsers have problem to draw 10000 pixels at the same time   
+7. Implement painter for TPolyMarker3D, works only with canvas
 
 
 ## Changes in 4.0
