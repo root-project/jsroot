@@ -785,10 +785,12 @@
       }
 
       if (typeof color != 'string') return "\\(" + str + "\\)";
-      color = color.replace(/rgb/g, "[RGB]")
-                   .replace(/\(/g, '{')
-                   .replace(/\)/g, '}');
-      return "\\(\\color " + color + str + "\\)";
+
+      if (color.indexOf("rgb(")>=0)
+         color = color.replace(/rgb/g, "[RGB]")
+                      .replace(/\(/g, '{')
+                      .replace(/\)/g, '}');
+      return "\\(\\color{" + color + '}' + str + "\\)";
    }
 
    // ==============================================================================
@@ -1751,6 +1753,8 @@
                        .property('_align', align);
 
       if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
+
+      console.log('math = ' + JSROOT.Painter.translateMath(label, latex_kind, tcolor));
 
       var element = document.createElement("div");
       d3.select(element).style("visibility", "hidden")
