@@ -798,6 +798,12 @@
       });
    }
 
+   JSROOT.redraw = function(divid, obj, opt) {
+      JSROOT.AssertPrerequisites("2d", function() {
+         JSROOT.redraw(divid, obj, opt);
+      });
+   }
+
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
       if (typeof user_scripts == 'function') {
          andThen = user_scripts;
@@ -933,8 +939,13 @@
          JSROOT.Create("TAttLine", obj);
          JSROOT.Create("TAttFill", obj);
          JSROOT.Create("TAttMarker", obj);
-         JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: JSROOT.CreateTH1(),
-                              fMaxSize: 0, fMaximum:0, fMinimum:0, fNpoints: 0, fX: [], fY: [] });
+         JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: null,
+                              fMaxSize: 0, fMaximum:-1111, fMinimum:-1111, fNpoints: 0, fX: [], fY: [] });
+      } else
+      if (typename == 'TMultiGraph') {
+         JSROOT.Create("TNamed", obj);
+         JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
+                              fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
       }
 
       JSROOT.addMethods(obj, typename);
@@ -970,28 +981,31 @@
       return histo;
    }
 
-   JSROOT.CreateTGraph = function(npoints) {
+   JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
       var graph = JSROOT.Create("TGraph");
       JSROOT.extend(graph, { fBits: 0x3000408, fName: "dummy_graph_" + this.id_counter++, fTitle: "dummytitle" });
 
       if (npoints>0) {
          graph['fMaxSize'] = graph['fNpoints'] = npoints;
+
+         var usex = (typeof xpts == 'object') && (xpts.length === npoints);
+         var usey = (typeof ypts == 'object') && (ypts.length === npoints);
+
          for (var i=0;i<npoints;++i) {
-            graph['fX'].push(i/npoints);
-            graph['fY'].push(i/npoints);
+            graph['fX'].push(usex ? xpts[i] : i/npoints);
+            graph['fY'].push(usey ? ypts[i] : i/npoints);
          }
-
-         graph['fHistogram'] = JSROOT.CreateTH1(npoints);
-         graph['fHistogram'].fTitle = graph.fTitle;
-
-         graph['fHistogram']['fXaxis']['fXmin'] = 0;
-         graph['fHistogram']['fXaxis']['fXmax'] = 1;
-         graph['fHistogram']['fYaxis']['fXmin'] = 0;
-         graph['fHistogram']['fYaxis']['fXmax'] = 1;
       }
 
       return graph;
    }
+
+   JSROOT.CreateTMultiGraph = function() {
+      var mgraph = JSROOT.Create("TMultiGraph");
+      for(var i=0; i<arguments.length; ++i)
+          mgraph.fGraphs.Add(arguments[i], "");
+      return mgraph;
+    }
 
    JSROOT.addMethods = function(obj, obj_typename) {
       // check object type and add methods if needed

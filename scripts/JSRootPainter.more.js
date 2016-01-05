@@ -1191,10 +1191,12 @@
       // function call with bind(painter)
 
       this.mgraph = mgraph;
+
       this.firstpainter = null;
+      this.autorange = false;
       this.painters = new Array; // keep painters to be able update objects
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, -1); // it may be no element to set divid
 
       this['GetObject'] = function() {
          return this.mgraph;
@@ -1204,16 +1206,20 @@
 
          if ((obj==null) || (obj['_typename'] != 'TMultiGraph')) return false;
 
-         var histo = obj['fHistogram'];
+         this.mgraph.fTitle = obj.fTitle;
          var graphs = obj['fGraphs'];
 
          var isany = false;
-         if (this.firstpainter && histo)
+         if (this.firstpainter) {
+            var histo = obj['fHistogram'];
+            if (this.autorange && (histo == null))
+               histo = this.ScanGraphsRange(graphs);
             if (this.firstpainter.UpdateObject(histo)) isany = true;
+         }
 
          for (var i = 0; i <  graphs.arr.length; ++i) {
-            if (i>=this.painters.length) break;
-            if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
+            if (i<this.painters.length)
+               if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
          }
 
          return isany;
@@ -1243,26 +1249,20 @@
          return x;
       }
 
-      this['DrawAxis'] = function() {
-         // draw special histogram
+      this['ScanGraphsRange'] = function(graphs, histo, pad) {
          var maximum, minimum, dx, dy;
-
-         var rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
          var uxmin = 0, uxmax = 0;
-         var scalex = 1, scaley = 1, logx = false, logy = false;
-         var histo = this.mgraph['fHistogram'];
-         var graphs = this.mgraph['fGraphs'];
-
-         var pad = this.root_pad();
+         var logx = false, logy = false;
+         var rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
          if (pad!=null) {
+            logx = pad['fLogx'];
+            logy = pad['fLogy'];
             rw.xmin = pad.fUxmin;
             rw.xmax = pad.fUxmax;
             rw.ymin = pad.fUymin;
             rw.ymax = pad.fUymax;
             rw.first = false;
-            logx = pad['fLogx'];
-            logy = pad['fLogy'];
          }
          if (histo!=null) {
             minimum = histo['fYaxis']['fXmin'];
@@ -1272,6 +1272,8 @@
                uxmax = this.padtoX(pad, rw.xmax);
             }
          } else {
+            this.autorange = true;
+
             for (var i = 0; i < graphs.arr.length; ++i)
                this.ComputeGraphRange(rw, graphs.arr[i]);
 
@@ -1294,17 +1296,21 @@
             if (maximum > 0 && rw.ymax <= 0)
                maximum = 0;
          }
+
+         if (uxmin < 0 && rw.xmin >= 0) {
+            if (logx) uxmin = 0.9 * rw.xmin;
+                 else uxmin = 0;
+         }
+         if (uxmax > 0 && rw.xmax <= 0) {
+            if (logx) uxmax = 1.1 * rw.xmax;
+                 else uxmax = 0;
+         }
+
          if (this.mgraph['fMinimum'] != -1111)
             rw.ymin = minimum = this.mgraph['fMinimum'];
          if (this.mgraph['fMaximum'] != -1111)
             rw.ymax = maximum = this.mgraph['fMaximum'];
-         if (uxmin < 0 && rw.xmin >= 0) {
-            if (logx) uxmin = 0.9 * rw.xmin;
-            // else uxmin = 0;
-         }
-         if (uxmax > 0 && rw.xmax <= 0) {
-            if (logx) uxmax = 1.1 * rw.xmax;
-         }
+
          if (minimum < 0 && rw.ymin >= 0) {
             if (logy) minimum = 0.9 * rw.ymin;
          }
@@ -1319,22 +1325,25 @@
             else
                uxmin = 0.001 * uxmax;
          }
-         rw.ymin = minimum;
-         rw.ymax = maximum;
-         if (histo!=null) {
-            histo['fYaxis']['fXmin'] = rw.ymin;
-            histo['fYaxis']['fXmax'] = rw.ymax;
-         }
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
             histo = JSROOT.Create("TH1I");
             histo['fTitle'] = this.mgraph['fTitle'];
-            histo['fXaxis']['fXmin'] = rw.xmin;
-            histo['fXaxis']['fXmax'] = rw.xmax;
-            histo['fYaxis']['fXmin'] = rw.ymin;
-            histo['fYaxis']['fXmax'] = rw.ymax;
+            histo['fXaxis']['fXmin'] = uxmin;
+            histo['fXaxis']['fXmax'] = uxmax;
          }
+
+         histo['fYaxis']['fXmin'] = minimum;
+         histo['fYaxis']['fXmax'] = maximum;
+
+         return histo;
+      }
+
+      this['DrawAxis'] = function() {
+         // draw special histogram
+
+         var histo = this.ScanGraphsRange(this.mgraph.fGraphs, this.mgraph.fHistogram, this.root_pad());
 
          // histogram painter will be first in the pad, will define axis and
          // interactive actions
@@ -1374,10 +1383,13 @@
 
       if (opt.indexOf("A") < 0) {
          if (this.main_painter()==null)
-            JSROOT.console('Most probably, drawing of multigraph will fail')
+            JSROOT.console('Most probably, drawing of multigraph will fail');
+         else
+            this.SetDivId(divid);
       } else {
          opt = opt.replace("A","");
          this.DrawAxis();
+         this.SetDivId(divid);
       }
 
       this.DrawNextGraph(0, opt);
