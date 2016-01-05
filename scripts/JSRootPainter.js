@@ -2067,7 +2067,7 @@
 
       var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
 
-      if (this.bins!=null) {
+      if (this.bins != null) {
          xmin = xmax = this.bins[0].x;
          ymin = ymax = this.bins[0].y;
          for (var n = 0; n < this.bins.length; ++n) {
@@ -2086,8 +2086,8 @@
          }
       }
 
-      if (xmin <= xmax) xmax=xmin+1;
-      if (ymin <= ymax) ymax=ymin+1;
+      if (xmin > xmax) xmax = xmin+1;
+      if (ymin > ymax) ymax = ymin+1;
       var dx = (xmax - xmin)*0.1;
       var dy = (ymax - ymin)*0.1;
       var uxmin = xmin - dx, uxmax = xmax + dx;
@@ -2106,8 +2106,8 @@
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = minimum;
       histo.fYaxis.fXmax = maximum;
-      histo.fXaxis.fMinimum = minimum;
-      histo.fXaxis.fMaximum = maximum;
+      histo.fMinimum = minimum;
+      histo.fMaximum = maximum;
       histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
       return histo;
    }
@@ -6429,7 +6429,7 @@
             item['_vclass'] = 'h_value_num';
          } else
          if (typeof fld == 'string') {
-            simple = true;
+            simple = (key != 'fName');
             item['_value'] = '"' + fld + '"';
             item['_vclass'] = 'h_value_str';
          } else {
@@ -8129,7 +8129,7 @@
    JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P" });
    JSROOT.addDrawFunc({ name: /^RooCurve/, icon:"img_graph", func:JSROOT.Painter.drawGraph, opt:";L;P" });
    JSROOT.addDrawFunc({ name: "THStack", prereq: "more2d", func: "JSROOT.Painter.drawHStack" });
-   JSROOT.addDrawFunc({ name: "TMultiGraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph" });
+   JSROOT.addDrawFunc({ name: "TMultiGraph", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph" });
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func:JSROOT.Painter.drawStreamerInfo });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func:JSROOT.Painter.drawRawText });
@@ -8137,7 +8137,7 @@
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
-   JSROOT.addDrawFunc({ name: "TLegend", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
+   JSROOT.addDrawFunc({ name: "TLegend", icon: "img_pavelabel", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt:"all;" });
    JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", painter_kind : "base"  });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });

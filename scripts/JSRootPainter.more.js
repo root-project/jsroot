@@ -1228,10 +1228,10 @@
             res.first = false;
          }
          for (var i=0; i < gr.fNpoints; ++i) {
-            if (gr.fX[i] < res.xmin) res.xmin = gr.fX[i];
-            if (gr.fX[i] > res.xmax) res.xmax = gr.fX[i];
-            if (gr.fY[i] < res.ymin) res.ymin = gr.fY[i];
-            if (gr.fY[i] > res.ymax) res.ymax = gr.fY[i];
+            res.xmin = Math.min(res.xmin, gr.fX[i]);
+            res.xmax = Math.max(res.xmax, gr.fX[i]);
+            res.ymin = Math.min(res.ymin, gr.fY[i]);
+            res.ymax = Math.max(res.ymax, gr.fY[i]);
          }
          return res;
       }
