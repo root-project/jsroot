@@ -6,7 +6,7 @@
 
    <title>JSROOT drawing inside HTML page</title>
 
-   <script src="../scripts/JSRootCore.js?2d&onload=updateGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.js?2d&onload=startGUI" type="text/javascript"></script>
 
    <script type='text/javascript'>
 
@@ -30,10 +30,17 @@
                histo.setBinContent(bin, val);
             }
 
-         JSROOT.redraw('object_draw', histo, "colz");
+         histo.fName = "generated";
+         histo.fTitle = "Drawing " + cnt++;
 
-         if (cnt++ == 0) setInterval(updateGUI, 3000); 
+         JSROOT.redraw('object_draw', histo, "colz");
       }
+
+      function startGUI() {
+         updateGUI();
+         setInterval(updateGUI, 3000); 
+      }
+
 
    </script>
 
