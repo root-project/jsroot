@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 4/01/2016";
+   JSROOT.version = "dev 5/01/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -918,7 +918,7 @@
       } else
       if (typename == 'TH1I' || typename == 'TH1F' || typename == 'TH1D' || typename == 'TH1S' || typename == 'TH1C') {
          JSROOT.Create("TH1", obj);
-         JSROOT.extend(obj, { fArray: [] });
+         obj.fArray = [];
       } else
       if (typename == 'TH2') {
          JSROOT.Create("TH1", obj);
@@ -926,7 +926,7 @@
       } else
       if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
          JSROOT.Create("TH2", obj);
-         JSROOT.extend(obj, { fArray: [] });
+         obj.fArray = [];
       } else
       if (typename == 'TGraph') {
          JSROOT.Create("TNamed", obj);

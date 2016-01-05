@@ -2271,7 +2271,7 @@
          // do not add tooltip for line, when we wants to add markers
          if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
             this.draw_g.selectAll("draw_line")
-                       .data(linebins).enter()
+                       .data(drawbins).enter()
                        .append("svg:circle")
                        .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
                        .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
@@ -2746,7 +2746,6 @@
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       if (painter.main_painter() == null) {
-         console.log('draw histogram');
          if (graph['fHistogram']==null)
             graph['fHistogram'] = painter.CreateHistogram();
          JSROOT.Painter.drawHistogram1D(divid, graph['fHistogram'], "AXIS");

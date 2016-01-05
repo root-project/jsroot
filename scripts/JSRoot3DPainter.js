@@ -883,8 +883,8 @@
       var cnt = poly.fP.length;
       var step = 3;
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && (cnt > 100*3)) {
-         step = Math.floor(cnt / 100 / 3) * 3;
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && (cnt > 300*3)) {
+         step = Math.floor(cnt / 300 / 3) * 3;
          if (step <= 6) step = 6;
       }
 
