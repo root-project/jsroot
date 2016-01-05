@@ -1381,16 +1381,11 @@
       if (opt == null) opt = "";
       opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
 
-      if (opt.indexOf("A") < 0) {
-         if (this.main_painter()==null)
-            JSROOT.console('Most probably, drawing of multigraph will fail');
-         else
-            this.SetDivId(divid);
-      } else {
+      if ((opt.indexOf("A") >= 0) || (this.main_painter()==null)) {
          opt = opt.replace("A","");
          this.DrawAxis();
-         this.SetDivId(divid);
       }
+      this.SetDivId(divid);
 
       this.DrawNextGraph(0, opt);
 

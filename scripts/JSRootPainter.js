@@ -1754,8 +1754,6 @@
 
       if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
 
-      console.log('math = ' + JSROOT.Painter.translateMath(label, latex_kind, tcolor));
-
       var element = document.createElement("div");
       d3.select(element).style("visibility", "hidden")
                         .style("overflow", "hidden")
