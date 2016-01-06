@@ -1797,18 +1797,21 @@
 
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
-      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
-      menu.add("Draw in 3D", this.Draw3D.bind(this));
-      menu.add("Toggle col", function() {
-         if (this.options.Color == 0)
-            this.options.Color = JSROOT.gStyle.DefaultCol;
-         else
-            this.options.Color = - this.options.Color;
-         this.RedrawPad();
-      });
-
-      if (this.options.Color > 0)
-         menu.add("Toggle colz", this.ToggleColz.bind(this));
+      if (this.options.Lego > 0) {
+         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.Draw2D(); });
+      } else {
+         menu.add("Auto zoom-in", function() { this.AutoZoom(); });
+         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.Draw3D();});
+         menu.add("Toggle col", function() {
+            if (this.options.Color == 0)
+               this.options.Color = JSROOT.gStyle.DefaultCol;
+            else
+               this.options.Color = - this.options.Color;
+            this.RedrawPad();
+         });
+         if (this.options.Color > 0)
+            menu.add("Toggle colz", this.ToggleColz.bind(this));
+      }
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
@@ -2614,6 +2617,16 @@
       JSROOT.AssertPrerequisites('3d', function() {
          this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
          this['Draw3D'](call_back);
+      }.bind(this));
+   }
+
+   JSROOT.TH2Painter.prototype.Redraw = function() {
+      this.CreateXY();
+
+      var func_name = this.options.Lego > 0 ? "Draw3D" : "Draw2D";
+
+      this[func_name](function() {
+         if (this.create_canvas) this.DrawTitle();
       }.bind(this));
    }
 

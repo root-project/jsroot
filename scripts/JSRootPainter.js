@@ -4953,14 +4953,6 @@
       this.DrawNextFunction(indx+1, callback);
    }
 
-   JSROOT.THistPainter.prototype.Redraw = function() {
-      this.CreateXY();
-      this.DrawAxes();
-      this.DrawGrids();
-      this.DrawBins();
-      if (this.create_canvas) this.DrawTitle();
-   }
-
    JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
       var obj = this.main_painter();
       if (!obj) obj = this;
@@ -6032,6 +6024,14 @@
 
       // check if it makes sense to zoom inside specified axis range
       return false;
+   }
+
+   JSROOT.TH1Painter.prototype.Redraw = function() {
+      this.CreateXY();
+      this.DrawAxes();
+      this.DrawGrids();
+      this.DrawBins();
+      if (this.create_canvas) this.DrawTitle();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {

@@ -227,21 +227,15 @@
 
          if (JSROOT.gStyle.Tooltip) tooltip.hide();
 
-         JSROOT.Painter.createMenu(function(menu) {
-            if (painter)
-               menu.add("header:"+ painter.histo['fName']);
+         if (painter)
+            return painter.ShowContextMenu("hist", e.originalEvent);
 
+         JSROOT.Painter.createMenu(function(menu) {
             menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
                JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
                tooltip.hide();
             });
 
-            if (painter)
-               menu.add("Switch to 2D", function() {
-                  $(painter.svg_pad().node()).show().parent().find(renderer.domElement).remove();
-                  tooltip.hide();
-                  painter.Draw2D();
-               });
             menu.add("Close");
 
             menu.show(e.originalEvent);
