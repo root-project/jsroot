@@ -250,52 +250,56 @@
       });
    }
 
-   JSROOT.Painter.real_drawHistogram2D = function(painter, opt) {
+   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
 
-      var w = painter.pad_width(), h = painter.pad_height(), size = 100;
+      // function called with this as painter
 
-      var xmin = painter.xmin, xmax = painter.xmax;
-      if (painter.zoom_xmin != painter.zoom_xmax) {
-         xmin = painter.zoom_xmin;
-         xmax = painter.zoom_xmax;
+      var ddd = this.size_for_3d();
+
+      var w = ddd.width, h = ddd.height, size = 100;
+
+      var xmin = this.xmin, xmax = this.xmax;
+      if (this.zoom_xmin != this.zoom_xmax) {
+         xmin = this.zoom_xmin;
+         xmax = this.zoom_xmax;
       }
-      var ymin = painter.ymin, ymax = painter.ymax;
-      if (painter.zoom_ymin != painter.zoom_ymax) {
-         ymin = painter.zoom_ymin;
-         ymax = painter.zoom_ymax;
+      var ymin = this.ymin, ymax = this.ymax;
+      if (this.zoom_ymin != this.zoom_ymax) {
+         ymin = this.zoom_ymin;
+         ymax = this.zoom_ymax;
       }
 
       var tx, utx, ty, uty, tz, utz;
 
-      if (painter.options.Logx) {
+      if (this.options.Logx) {
          tx = d3.scale.log().domain([ xmin, xmax ]).range([ -size, size ]);
          utx = d3.scale.log().domain([ -size, size ]).range([ xmin, xmax ]);
       } else {
          tx = d3.scale.linear().domain([ xmin, xmax ]).range([ -size, size ]);
          utx = d3.scale.linear().domain([ -size, size ]).range([ xmin, xmax ]);
       }
-      if (painter.options.Logy) {
+      if (this.options.Logy) {
          ty = d3.scale.log().domain([ ymin, ymax ]).range([ -size, size ]);
          uty = d3.scale.log().domain([ size, -size ]).range([ ymin, ymax ]);
       } else {
          ty = d3.scale.linear().domain([ ymin, ymax ]).range([ -size, size ]);
          uty = d3.scale.linear().domain([ size, -size ]).range([ ymin, ymax ]);
       }
-      if (painter.options.Logz) {
-         tz = d3.scale.log().domain([ painter.gminbin, Math.ceil(painter.gmaxbin / 100) * 105 ]).range([ 0, size * 2 ]);
-         utz = d3.scale.log().domain([ 0, size * 2 ]).range([ painter.gminbin, Math.ceil(painter.gmaxbin / 100) * 105 ]);
+      if (this.options.Logz) {
+         tz = d3.scale.log().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range([ 0, size * 2 ]);
+         utz = d3.scale.log().domain([ 0, size * 2 ]).range([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
       } else {
-         tz = d3.scale.linear().domain([ painter.gminbin, Math.ceil(painter.gmaxbin / 100) * 105 ]).range( [ 0, size * 2 ]);
-         utz = d3.scale.linear().domain([ 0, size * 2 ]).range( [ painter.gminbin, Math.ceil(painter.gmaxbin / 100) * 105 ]);
+         tz = d3.scale.linear().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range( [ 0, size * 2 ]);
+         utz = d3.scale.linear().domain([ 0, size * 2 ]).range( [ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
       }
 
-      var constx = (size * 2 / painter.nbinsx) / painter.gmaxbin;
-      var consty = (size * 2 / painter.nbinsy) / painter.gmaxbin;
+      var constx = (size * 2 / this.nbinsx) / this.gmaxbin;
+      var consty = (size * 2 / this.nbinsy) / this.gmaxbin;
 
-      var colorFlag = (painter.options.Color > 0);
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[painter.histo['fFillColor']]);
+      var colorFlag = (this.options.Color > 0);
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
 
-      var local_bins = painter.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
+      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
 
       // three.js 3D drawing
       var scene = new THREE.Scene();
@@ -480,7 +484,7 @@
          wei = tz(hh.z);
 
          // create a new mesh with cube geometry
-         bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / painter.nbinsx, wei, 2 * size / painter.nbinsy),
+         bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / this.nbinsx, wei, 2 * size / this.nbinsy),
                                new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
 
          bin.position.x = tx(hh.x);
@@ -528,10 +532,14 @@
                                       new THREE.CanvasRenderer({ antialias : true });
       renderer.setClearColor(0xffffff, 1);
       renderer.setSize(w, h);
-      $(painter.svg_pad().node()).hide().parent().append(renderer.domElement);
+
+      this.add_3d_canvas(renderer.domElement);
+
       renderer.render(scene, camera);
 
-      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, painter);
+      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, this);
+
+      JSROOT.CallBack(call_back);
    }
 
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {

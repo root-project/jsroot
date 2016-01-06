@@ -2596,28 +2596,8 @@
       return false;
    }
 
-   JSROOT.TH2Painter.prototype.Draw2D = function() {
-
-      if (this.options.Lego>0) this.options.Lego = 0;
-
-      if (this['done2d']) return;
-
-      // check if we need to create palette
-      if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
-         // create pallette
-
-         var shrink = this.CreatePalette(0.04);
-         this.svg_frame().property('frame_painter').Shrink(0, shrink);
-         this.svg_frame().property('frame_painter').Redraw();
-         this.CreateXY();
-      } else if (this.options.Zscale == 0) {
-         // delete palette - it may appear there due to previous draw options
-         this.FindPalette(true);
-      }
-
-      // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas)
-         this.CreateStat();
+   JSROOT.TH2Painter.prototype.Draw2D = function(call_back) {
+      this.clear_3d_canvas();
 
       this.DrawAxes();
 
@@ -2625,29 +2605,16 @@
 
       this.DrawBins();
 
-      if (this.create_canvas) this.DrawTitle();
+      this.AddInteractive();
 
-      this.DrawNextFunction(0, function() {
-         this.AddInteractive();
-         if (this.options.AutoZoom) this.AutoZoom();
-         this['done2d'] = true; // indicate that 2d drawing was once done
-         this.DrawingReady();
-      }.bind(this));
-
-      return this;
+      JSROOT.CallBack(call_back);
    }
 
-   JSROOT.TH2Painter.prototype.Draw3D = function(opt) {
-
-      if (this.options.Lego<=0) this.options.Lego = 1;
-      var painter = this;
-
+   JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
-         JSROOT.Painter.real_drawHistogram2D(painter, opt);
-         painter.DrawingReady();
-      });
-
-      return painter;
+         this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
+         this['Draw3D'](call_back);
+      }.bind(this));
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
@@ -2666,10 +2633,38 @@
 
       this.CreateXY();
 
-      if (this.options.Lego > 0)
-         return this.Draw3D(opt);
+      // check if we need to create palette
+      if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
+         // create pallette
 
-      return this.Draw2D();
+         var shrink = this.CreatePalette(0.04);
+         this.svg_frame().property('frame_painter').Shrink(0, shrink);
+         this.svg_frame().property('frame_painter').Redraw();
+         this.CreateXY();
+      } else if (this.options.Zscale == 0) {
+         // delete palette - it may appear there due to previous draw options
+         this.FindPalette(true);
+      }
+
+      // check if we need to create statbox
+      if (JSROOT.gStyle.AutoStat && this.create_canvas)
+         this.CreateStat();
+
+      var func_name = this.options.Lego > 0 ? "Draw3D" : "Draw2D";
+
+      this[func_name](function() {
+         if (this.create_canvas) this.DrawTitle();
+
+         this.DrawNextFunction(0, function() {
+            if (this.options.Lego == 0) {
+               if (this.options.AutoZoom) this.AutoZoom();
+            }
+            this.DrawingReady();
+         }.bind(this));
+
+      }.bind(this));
+
+      return this;
    }
 
 

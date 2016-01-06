@@ -48,14 +48,13 @@
          graph2.fMarkerSize = 2;
 
          var mgraph = JSROOT.CreateTMultiGraph(graph1, graph2);
-         mgraph.fTitle = "Drawing " + cnt;
+         mgraph.fTitle = "Drawing " + cnt++;
          
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
          
          JSROOT.redraw('object_draw', mgraph);
-         cnt++;
       }
       
       updateGUI();

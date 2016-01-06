@@ -1053,6 +1053,56 @@
       return isNaN(res) ? 0 : res;
    }
 
+   JSROOT.TObjectPainter.prototype.embed_3d = function() {
+      // returns true if one can embed 3D drawings (three.js) inside SVG
+      // this is possible now only in Firefox and WebKit bowsers via ForeginObjects
+
+      if (JSROOT.browser.isFirefox) return 1;
+      if (JSROOT.browser.isWebKit) return 2; // one should use workaround with positioning
+      return 0;
+   }
+
+   JSROOT.TObjectPainter.prototype.size_for_3d = function() {
+      // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
+      if (this.embed_3d() > 0) return { width: this.frame_width(), height: this.frame_height() };
+      return { width: this.pad_width(), height: this.pad_height() };
+   }
+
+   JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
+      if (this.svg_pad().empty()) return;
+
+      if (this.svg_pad().property('can3d')) {
+         this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
+         this.svg_pad().select(".frame_layer foreignObject").remove();
+
+         this.svg_pad().property('can3d', null);
+      }
+
+   }
+
+   JSROOT.TObjectPainter.prototype.add_3d_canvas = function(canv) {
+      this.clear_3d_canvas();
+
+      if ((canv == null) || this.svg_pad().empty()) return;
+
+      this.svg_pad().property('can3d', true);
+
+      // first hide normal frame
+      var frame = this.svg_pad().select(".frame_layer").select(".root_frame");
+      frame.style('display', 'none');
+
+      var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+
+      // set frame dimension
+      fo.attr('width', this.frame_width())
+        .attr('height', this.frame_height());
+
+      // and position
+      this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));
+
+      fo.node().appendChild(canv);
+   }
+
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    JSROOT.TObjectPainter.prototype.main_painter = function() {
       if (!this.main) {
@@ -1132,10 +1182,10 @@
       if (JSROOT.browser.isWebKit) {
          // force canvas redraw when foreign object used - it is not correctly scaled
          this.svg_canvas().property('redraw_by_resize', true);
-         while (sel && sel.attr('class') != 'root_canvas') {
+         while (!sel.empty() && sel.attr('class') != 'root_canvas') {
             if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
-              x += parseInt(sel.attr("x"));
-              y += parseInt(sel.attr("y"));
+              x += sel.property("draw_x");
+              y += sel.property("draw_y");
             }
             sel = d3.select(sel.node().parentNode);
          }
@@ -1759,7 +1809,7 @@
                         .style("overflow", "hidden")
                         .style("position", "absolute")
                         .html(JSROOT.Painter.translateMath(label, latex_kind, tcolor));
-      document.body.appendChild(element)
+      document.body.appendChild(element);
 
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
@@ -1901,6 +1951,8 @@
              .attr("y", tm)
              .attr("width", w)
              .attr("height", h)
+             .property('draw_x', lm)
+             .property('draw_y', tm)
              .attr("transform", "translate(" + lm + "," + tm + ")");
 
       top_rect.attr("x", 0)
@@ -3295,11 +3347,10 @@
          svg_pad.append("svg:g").attr("class","stat_layer");
       }
 
-      svg_pad.attr("width", w) // this is for SVG drawing
-             .attr("height", h)
-             .attr("viewBox", x + " " + y + " " + (x+w) + " " + (y+h))
-             .attr("transform", "translate(" + x + "," + y + ")")
-             .property('draw_width', w) // this is to make similar with canvas
+      svg_pad.attr("transform", "translate(" + x + "," + y + ")")
+             .property('draw_x', x) // this is to make similar with canvas
+             .property('draw_y', y)
+             .property('draw_width', w)
              .property('draw_height', h);
 
       svg_rect.attr("x", 0)

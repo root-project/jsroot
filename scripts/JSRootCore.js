@@ -388,9 +388,9 @@
       // { obj: object_pointer, func: name of method to call }
       // arg1, arg2 are optional arguments of the callback
 
-      if (func == null) return;
-
       if (typeof func == 'string') func = JSROOT.findFunction(func);
+
+      if (func == null) return;
 
       if (typeof func == 'function') return func(arg1,arg2);
 
