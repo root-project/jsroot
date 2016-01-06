@@ -244,14 +244,7 @@
       });
    }
 
-   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
-
-      // function called with this as painter
-
-      var ddd = this.size_for_3d();
-
-      var w = ddd.width, h = ddd.height, size = 100;
-
+   JSROOT.Painter.TH2Painter_CreateXYZ = function(size) {
       var xmin = this.xmin, xmax = this.xmax;
       if (this.zoom_xmin != this.zoom_xmax) {
          xmin = this.zoom_xmin;
@@ -263,29 +256,38 @@
          ymax = this.zoom_ymax;
       }
 
-      var tx, utx, ty, uty, tz, utz;
-
       if (this.options.Logx) {
-         tx = d3.scale.log().domain([ xmin, xmax ]).range([ -size, size ]);
-         utx = d3.scale.log().domain([ -size, size ]).range([ xmin, xmax ]);
+         this.tx = d3.scale.log().domain([ xmin, xmax ]).range([ -size, size ]);
+         this.utx = d3.scale.log().domain([ -size, size ]).range([ xmin, xmax ]);
       } else {
-         tx = d3.scale.linear().domain([ xmin, xmax ]).range([ -size, size ]);
-         utx = d3.scale.linear().domain([ -size, size ]).range([ xmin, xmax ]);
+         this.tx = d3.scale.linear().domain([ xmin, xmax ]).range([ -size, size ]);
+         this.utx = d3.scale.linear().domain([ -size, size ]).range([ xmin, xmax ]);
       }
       if (this.options.Logy) {
-         ty = d3.scale.log().domain([ ymin, ymax ]).range([ -size, size ]);
-         uty = d3.scale.log().domain([ size, -size ]).range([ ymin, ymax ]);
+         this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ -size, size ]);
+         this.uty = d3.scale.log().domain([ size, -size ]).range([ ymin, ymax ]);
       } else {
-         ty = d3.scale.linear().domain([ ymin, ymax ]).range([ -size, size ]);
-         uty = d3.scale.linear().domain([ size, -size ]).range([ ymin, ymax ]);
+         this.ty = d3.scale.linear().domain([ ymin, ymax ]).range([ -size, size ]);
+         this.uty = d3.scale.linear().domain([ size, -size ]).range([ ymin, ymax ]);
       }
       if (this.options.Logz) {
-         tz = d3.scale.log().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range([ 0, size * 2 ]);
-         utz = d3.scale.log().domain([ 0, size * 2 ]).range([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
+         this.tz = d3.scale.log().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range([ 0, size * 2 ]);
+         this.utz = d3.scale.log().domain([ 0, size * 2 ]).range([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
       } else {
-         tz = d3.scale.linear().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range( [ 0, size * 2 ]);
-         utz = d3.scale.linear().domain([ 0, size * 2 ]).range( [ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
+         this.tz = d3.scale.linear().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range( [ 0, size * 2 ]);
+         this.utz = d3.scale.linear().domain([ 0, size * 2 ]).range( [ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
       }
+   }
+
+   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
+
+      // function called with this as painter
+
+      var ddd = this.size_for_3d();
+
+      var w = ddd.width, h = ddd.height, size = 100;
+
+      this.CreateXYZ(size);
 
       var constx = (size * 2 / this.nbinsx) / this.gmaxbin;
       var consty = (size * 2 / this.nbinsy) / this.gmaxbin;
@@ -333,11 +335,11 @@
       var ticks = new Array();
       var imax, istep, len = 3, plen, sin45 = Math.sin(45);
       var text3d, text;
-      var xmajors = tx.ticks(8);
-      var xminors = tx.ticks(50);
+      var xmajors = this.tx.ticks(8);
+      var xminors = this.tx.ticks(50);
       for (var i = -size, j = 0, k = 0; i < size; ++i) {
-         var is_major = (utx(i) <= xmajors[j] && utx(i + 1) > xmajors[j]) ? true : false;
-         var is_minor = (utx(i) <= xminors[k] && utx(i + 1) > xminors[k]) ? true : false;
+         var is_major = (this.utx(i) <= xmajors[j] && this.utx(i + 1) > xmajors[j]) ? true : false;
+         var is_minor = (this.utx(i) <= xminors[k] && this.utx(i + 1) > xminors[k]) ? true : false;
          plen = (is_major ? len + 2 : len) * sin45;
          if (is_major) {
             text3d = new THREE.TextGeometry(xmajors[j], { size : 7, height : 0, curveSegments : 10 });
@@ -369,11 +371,11 @@
             ticks.push(geometry);
          }
       }
-      var ymajors = ty.ticks(8);
-      var yminors = ty.ticks(50);
+      var ymajors = this.ty.ticks(8);
+      var yminors = this.ty.ticks(50);
       for (var i = size, j = 0, k = 0; i > -size; --i) {
-         var is_major = (uty(i) <= ymajors[j] && uty(i - 1) > ymajors[j]) ? true : false;
-         var is_minor = (uty(i) <= yminors[k] && uty(i - 1) > yminors[k]) ? true : false;
+         var is_major = (this.uty(i) <= ymajors[j] && this.uty(i - 1) > ymajors[j]) ? true : false;
+         var is_minor = (this.uty(i) <= yminors[k] && this.uty(i - 1) > yminors[k]) ? true : false;
          plen = (is_major ? len + 2 : len) * sin45;
          if (is_major) {
             text3d = new THREE.TextGeometry(ymajors[j], { size : 7, height : 0, curveSegments : 10 });
@@ -406,11 +408,11 @@
             ticks.push(geometry);
          }
       }
-      var zmajors = tz.ticks(8);
-      var zminors = tz.ticks(50);
+      var zmajors = this.tz.ticks(8);
+      var zminors = this.tz.ticks(50);
       for (var i = 0, j = 0, k = 0; i < (size * 2); ++i) {
-         var is_major = (utz(i) <= zmajors[j] && utz(i + 1) > zmajors[j]) ? true : false;
-         var is_minor = (utz(i) <= zminors[k] && utz(i + 1) > zminors[k]) ? true : false;
+         var is_major = (this.utz(i) <= zmajors[j] && this.utz(i + 1) > zmajors[j]) ? true : false;
+         var is_minor = (this.utz(i) <= zminors[k] && this.utz(i + 1) > zminors[k]) ? true : false;
          plen = (is_major ? len + 2 : len) * sin45;
          if (is_major) {
             text3d = new THREE.TextGeometry(zmajors[j], { size : 7, height : 0, curveSegments : 10 });
@@ -475,15 +477,15 @@
 
       for (var i = 0; i < local_bins.length; ++i) {
          hh = local_bins[i];
-         wei = tz(hh.z);
+         wei = this.tz(hh.z);
 
          // create a new mesh with cube geometry
          bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / this.nbinsx, wei, 2 * size / this.nbinsy),
                                new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
 
-         bin.position.x = tx(hh.x);
+         bin.position.x = this.tx(hh.x);
          bin.position.y = wei / 2;
-         bin.position.z = -(ty(hh.y));
+         bin.position.z = -(this.ty(hh.y));
 
          if (JSROOT.gStyle.Tooltip)
             bin.name = hh.tip;
@@ -524,9 +526,8 @@
 
       var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
                                       new THREE.CanvasRenderer({ antialias : true, alpha: true  });
-      console.log('webgl = '  + Detector.webgl);
       //renderer.setClearColor(0xffffff, 1);
-      renderer.setClearColor(0x0, 0);
+      // renderer.setClearColor(0x0, 0);
       renderer.setSize(w, h);
 
       this.add_3d_canvas(renderer.domElement);

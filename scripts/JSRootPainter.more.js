@@ -2615,6 +2615,7 @@
 
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
+         this['CreateXYZ'] = JSROOT.Painter.TH2Painter_CreateXYZ;
          this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
          this['Draw3D'](call_back);
       }.bind(this));
