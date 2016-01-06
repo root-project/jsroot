@@ -1095,7 +1095,9 @@
 
       // set frame dimension
       fo.attr('width', this.frame_width())
-        .attr('height', this.frame_height());
+        .attr('height', this.frame_height())
+        .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
+        .attr('preserveAspectRatio','none');
 
       // and position
       this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));

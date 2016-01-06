@@ -528,9 +528,11 @@
             fileapi : window.File && window.FileReader && window.FileList && window.Blob
       };
 
-      var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true }) :
-                                      new THREE.CanvasRenderer({ antialias : true });
-      renderer.setClearColor(0xffffff, 1);
+      var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                                      new THREE.CanvasRenderer({ antialias : true, alpha: true  });
+      console.log('webgl = '  + Detector.webgl);
+      //renderer.setClearColor(0xffffff, 1);
+      renderer.setClearColor(0x0, 0);
       renderer.setSize(w, h);
 
       this.add_3d_canvas(renderer.domElement);
