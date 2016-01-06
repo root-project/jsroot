@@ -279,59 +279,12 @@
       }
    }
 
-   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
-
-      // function called with this as painter
-
-      var ddd = this.size_for_3d();
-
-      var w = ddd.width, h = ddd.height, size = 100;
-
-      this.CreateXYZ(size);
-
-      var constx = (size * 2 / this.nbinsx) / this.gmaxbin;
-      var consty = (size * 2 / this.nbinsy) / this.gmaxbin;
-
-      var colorFlag = (this.options.Color > 0);
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
-
-      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
-
-      // three.js 3D drawing
-      var scene = new THREE.Scene();
-      //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
-
-      var toplevel = new THREE.Object3D();
-      toplevel.rotation.x = 30 * Math.PI / 180;
-      toplevel.rotation.y = 30 * Math.PI / 180;
-      scene.add(toplevel);
-
-      var wireMaterial = new THREE.MeshBasicMaterial({
-         color : 0x000000,
-         wireframe : true,
-         wireframeLinewidth : 0.5,
-         side : THREE.DoubleSide
-      });
-
-      // create a new mesh with cube geometry
-      var cube = new THREE.Mesh(new THREE.BoxGeometry(size * 2, size * 2, size * 2), wireMaterial);
-      //cube.position.y = size;
-
-      var helper = new THREE.BoxHelper(cube);
-      helper.material.color.set(0x000000);
-
-      var box = new THREE.Object3D();
-      box.add(helper);
-      box.position.y = size;
-
-      // add the cube to the scene
-      toplevel.add(box);
+   JSROOT.Painter.TH2Painter_DrawXYZ = function(size) {
+      // add the calibration vectors and texts
 
       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
       var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
 
-      // add the calibration vectors and texts
-      var geometry;
       var ticks = new Array();
       var imax, istep, len = 3, plen, sin45 = Math.sin(45);
       var text3d, text;
@@ -350,24 +303,24 @@
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(i - centerOffset, -13, size + plen);
-            toplevel.add(text);
+            this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(i + centerOffset, -13, -size - plen);
             text.rotation.y = Math.PI;
-            toplevel.add(text);
+            this.toplevel.add(text);
          }
          if (is_major || is_minor) {
             ++k;
-            geometry = new THREE.Geometry();
+            var geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(i, 0, size));
             geometry.vertices.push(new THREE.Vector3(i, -plen, size + plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
             geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(i, 0, -size));
             geometry.vertices.push(new THREE.Vector3(i, -plen, -size - plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
          }
       }
@@ -387,24 +340,24 @@
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(size + plen, -13, i + centerOffset);
             text.rotation.y = Math.PI / 2;
-            toplevel.add(text);
+            this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(-size - plen, -13, i - centerOffset);
             text.rotation.y = -Math.PI / 2;
-            toplevel.add(text);
+            this.toplevel.add(text);
          }
          if (is_major || is_minor) {
             ++k;
-            geometry = new THREE.Geometry();
+            var geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(size, 0, i));
             geometry.vertices.push(new THREE.Vector3(size + plen, -plen, i));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
             geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(-size, 0, i));
             geometry.vertices.push(new THREE.Vector3(-size - plen, -plen, i));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
          }
       }
@@ -424,89 +377,75 @@
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(size + offset + 5, i - 2.5, size + offset + 5);
             text.rotation.y = Math.PI * 3 / 4;
-            toplevel.add(text);
+            this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(size + offset + 5, i - 2.5, -size - offset - 5);
             text.rotation.y = -Math.PI * 3 / 4;
-            toplevel.add(text);
+            this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(-size - offset - 5, i - 2.5, size + offset + 5);
             text.rotation.y = Math.PI / 4;
-            toplevel.add(text);
+            this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(-size - offset - 5, i - 2.5, -size - offset - 5);
             text.rotation.y = -Math.PI / 4;
-            toplevel.add(text);
+            this.toplevel.add(text);
          }
          if (is_major || is_minor) {
             ++k;
-            geometry = new THREE.Geometry();
+            var geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(size, i, size));
             geometry.vertices.push(new THREE.Vector3(size + plen, i, size + plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
             geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(size, i, -size));
             geometry.vertices.push(new THREE.Vector3(size + plen, i, -size - plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
             geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(-size, i, size));
             geometry.vertices.push(new THREE.Vector3(-size - plen, i, size + plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
             geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(-size, i, -size));
             geometry.vertices.push(new THREE.Vector3(-size - plen, i, -size - plen));
-            toplevel.add(new THREE.Line(geometry, lineMaterial));
+            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
             ticks.push(geometry);
          }
       }
-      var t = 0;
-      while (ticks[t]) {
+
+      for (var t=0; t < ticks.length; ++t)
          ticks[t].dispose();
-         t++;
-      }
-      // create the bin cubes
-      var fillcolor = new THREE.Color(0xDDDDDD);
-      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
-      var bin, mesh, wei, hh;
+   }
 
-      for (var i = 0; i < local_bins.length; ++i) {
-         hh = local_bins[i];
-         wei = this.tz(hh.z);
+   JSROOT.Painter.TH2Painter_Create3DScene = function() {
+      var ddd = this.size_for_3d();
 
-         // create a new mesh with cube geometry
-         bin = new THREE.Mesh(new THREE.BoxGeometry(2 * size / this.nbinsx, wei, 2 * size / this.nbinsy),
-                               new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
+      var w = ddd.width, h = ddd.height;
 
-         bin.position.x = this.tx(hh.x);
-         bin.position.y = wei / 2;
-         bin.position.z = -(this.ty(hh.y));
+      this.size3d = 100;
 
-         if (JSROOT.gStyle.Tooltip)
-            bin.name = hh.tip;
-         toplevel.add(bin);
+      // three.js 3D drawing
+      this.scene = new THREE.Scene();
+      //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
 
-         helper = new THREE.BoxHelper(bin);
-         helper.material.color.set(0x000000);
-         helper.material.linewidth = 1.0;
-         toplevel.add(helper);
-      }
+      this.toplevel = new THREE.Object3D();
+      this.toplevel.rotation.x = 30 * Math.PI / 180;
+      this.toplevel.rotation.y = 30 * Math.PI / 180;
+      this.scene.add(this.toplevel);
 
-      delete local_bins;
-      local_bins = null;
 
-      var camera = new THREE.PerspectiveCamera(45, w / h, 1, 4000);
+      this.camera = new THREE.PerspectiveCamera(45, w / h, 1, 4000);
       var pointLight = new THREE.PointLight(0xcfcfcf);
-      camera.add( pointLight );
+      this.camera.add( pointLight );
       pointLight.position.set( 10, 10, 10 );
-      camera.position.set(0, size / 2, 500);
-      camera.lookat = cube;
-      scene.add( camera );
+      this.camera.position.set(0, this.size3d / 2, 500);
+      this.scene.add( this.camera );
 
       /**
        * @author alteredq / http://alteredqualia.com/
@@ -524,17 +463,89 @@
             fileapi : window.File && window.FileReader && window.FileList && window.Blob
       };
 
-      var renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                      new THREE.CanvasRenderer({ antialias : true, alpha: true  });
+      this.renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                                       new THREE.CanvasRenderer({ antialias : true, alpha: true  });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
-      renderer.setSize(w, h);
+      this.renderer.setSize(w, h);
+   }
 
-      this.add_3d_canvas(renderer.domElement);
+   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
 
-      renderer.render(scene, camera);
+      // function called with this as painter
 
-      JSROOT.Painter.add3DInteraction(renderer, scene, camera, toplevel, this);
+      this.Create3DScene();
+
+      this.CreateXYZ(this.size3d);
+
+      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
+      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
+
+      var colorFlag = (this.options.Color > 0);
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+
+      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
+
+      this.DrawXYZ(this.size3d);
+
+      var wireMaterial = new THREE.MeshBasicMaterial({
+         color : 0x000000,
+         wireframe : true,
+         wireframeLinewidth : 0.5,
+         side : THREE.DoubleSide
+      });
+
+      // create a new mesh with cube geometry
+      var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);
+      //cube.position.y = size;
+
+      var helper = new THREE.BoxHelper(cube);
+      helper.material.color.set(0x000000);
+
+      var box = new THREE.Object3D();
+      box.add(helper);
+      box.position.y = this.size3d;
+
+      // add the cube to the scene
+      this.toplevel.add(box);
+
+      // create the bin cubes
+      var fillcolor = new THREE.Color(0xDDDDDD);
+      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
+      var bin, mesh, wei, hh;
+
+      for (var i = 0; i < local_bins.length; ++i) {
+         hh = local_bins[i];
+         wei = this.tz(hh.z);
+
+         // create a new mesh with cube geometry
+         bin = new THREE.Mesh(new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, wei, 2 * this.size3d / this.nbinsy),
+                               new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
+
+         bin.position.x = this.tx(hh.x);
+         bin.position.y = wei / 2;
+         bin.position.z = -(this.ty(hh.y));
+
+         if (JSROOT.gStyle.Tooltip)
+            bin.name = hh.tip;
+         this.toplevel.add(bin);
+
+         helper = new THREE.BoxHelper(bin);
+         helper.material.color.set(0x000000);
+         helper.material.linewidth = 1.0;
+         this.toplevel.add(helper);
+      }
+
+      delete local_bins;
+      local_bins = null;
+
+      this.camera.lookat = cube;
+
+      this.add_3d_canvas(this.renderer.domElement);
+
+      this.renderer.render(this.scene, this.camera);
+
+      JSROOT.Painter.add3DInteraction(this.renderer, this.scene, this.camera, this.toplevel, this);
 
       JSROOT.CallBack(call_back);
    }
