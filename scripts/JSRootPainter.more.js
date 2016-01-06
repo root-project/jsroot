@@ -2618,6 +2618,7 @@
          this['Create3DScene'] = JSROOT.Painter.TH2Painter_Create3DScene;
          this['CreateXYZ'] = JSROOT.Painter.TH2Painter_CreateXYZ;
          this['DrawXYZ'] = JSROOT.Painter.TH2Painter_DrawXYZ;
+         this['Draw3DBins'] = JSROOT.Painter.TH2Painter_Draw3DBins;
          this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
          this['Draw3D'](call_back);
       }.bind(this));
