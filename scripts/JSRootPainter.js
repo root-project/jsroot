@@ -5421,10 +5421,10 @@
             var file_name = "d3_canvas";
             if (typeof (this.histo.fName) != 'undefined')
                file_name = this.histo.fName;
-            var el = d3.select("#" + this['divid']);
-            if (el && el[0][0]['firstChild'])
+            var top = this.svg_canvas().node();
+            if (top != null)
                JSROOT.AssertPrerequisites("savepng", function() {
-                  saveSvgAsPng(el[0][0]['firstChild'], file_name + ".png");
+                  saveSvgAsPng(top, file_name + ".png");
                });
          });
 
