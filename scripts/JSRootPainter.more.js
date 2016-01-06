@@ -2000,8 +2000,8 @@
 
       this.CreateAxisFuncs(true);
 
-      this.gmaxbin = this.histo.getBinContent(1, 1);
-      this.gminbin = this.gmaxbin; // global min/max, used at the moment in 3D drawing
+      // global min/max, used at the moment in 3D drawing
+      this.gminbin = this.gmaxbin = this.histo.getBinContent(1, 1);
       for (var i = 0; i < this.nbinsx; ++i) {
          for (var j = 0; j < this.nbinsy; ++j) {
             var bin_content = this.histo.getBinContent(i + 1, j + 1);

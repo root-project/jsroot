@@ -3830,8 +3830,8 @@
       if (l != -1) {
          chopt = chopt.replace('BOX', '   ');
          if (hdim > 1) {
-            Hoption.Scat = 0;
-            Hoption.Box = 1;
+            option.Scat = 0;
+            option.Box = 1;
             if (chopt[l + 3] == '1') {
                option.Box = 11;
                chopt[l + 3] = ' ';
@@ -3947,7 +3947,7 @@
       }
       l = chopt.indexOf('AITOFF');
       if (l != -1) {
-         Hoption.Proj = 1;
+         option.Proj = 1;
          chopt = chopt.replace('AITOFF', '      '); // Aitoff projection
       }
       l = chopt.indexOf('MERCATOR');

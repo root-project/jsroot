@@ -302,6 +302,13 @@
          ymin = this.zoom_ymin;
          ymax = this.zoom_ymax;
       }
+      var zmin = this.gminbin, zmax = this.gmaxbin;
+      if (('zmin' in this) && ('zmax' in this) && (this.Dimension()==3)) {
+         zmin = this.zmin;
+         zmax = this.zmax;
+      } else {
+         zmax = Math.ceil(zmax / 100) * 105; // not very nice
+      }
 
       if (this.options.Logx) {
          this.tx = d3.scale.log().domain([ xmin, xmax ]).range([ -this.size3d, this.size3d ]);
@@ -318,11 +325,11 @@
          this.uty = d3.scale.linear().domain([ this.size3d, -this.size3d ]).range([ ymin, ymax ]);
       }
       if (this.options.Logz) {
-         this.tz = d3.scale.log().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range([ 0, this.size3d * 2 ]);
-         this.utz = d3.scale.log().domain([ 0, this.size3d * 2 ]).range([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
+         this.tz = d3.scale.log().domain([ zmin, zmax]).range([ 0, this.size3d * 2 ]);
+         this.utz = d3.scale.log().domain([ 0, this.size3d * 2 ]).range([ zmin, zmax ]);
       } else {
-         this.tz = d3.scale.linear().domain([ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]).range( [ 0, this.size3d * 2 ]);
-         this.utz = d3.scale.linear().domain([ 0, this.size3d * 2 ]).range( [ this.gminbin, Math.ceil(this.gmaxbin / 100) * 105 ]);
+         this.tz = d3.scale.linear().domain([ zmin, zmax ]).range( [ 0, this.size3d * 2 ]);
+         this.utz = d3.scale.linear().domain([ 0, this.size3d * 2 ]).range( [ zmin, zmax ]);
       }
    }
 
@@ -503,7 +510,7 @@
       // create the bin cubes
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
-      var bin, mesh, wei, hh;
+      var bin, wei, hh;
 
       for (var i = 0; i < local_bins.length; ++i) {
          hh = local_bins[i];
@@ -554,7 +561,138 @@
       JSROOT.CallBack(call_back);
    }
 
+   // ==============================================================================
+
+
+   JSROOT.TH3Painter = function(histo) {
+      JSROOT.THistPainter.call(this, histo);
+
+      this['Create3DScene'] = JSROOT.Painter.TH2Painter_Create3DScene;
+      this['CreateXYZ'] = JSROOT.Painter.TH2Painter_CreateXYZ;
+      this['DrawXYZ'] = JSROOT.Painter.TH2Painter_DrawXYZ;
+   }
+
+   JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+
+   JSROOT.TH3Painter.prototype.ScanContent = function() {
+      this.nbinsx = this.histo['fXaxis']['fNbins'];
+      this.nbinsy = this.histo['fYaxis']['fNbins'];
+      this.nbinsz = this.histo['fZaxis']['fNbins'];
+
+      this.xmin = this.histo['fXaxis']['fXmin'];
+      this.xmax = this.histo['fXaxis']['fXmax'];
+
+      this.ymin = this.histo['fYaxis']['fXmin'];
+      this.ymax = this.histo['fYaxis']['fXmax'];
+
+      this.zmin = this.histo['fZaxis']['fXmin'];
+      this.zmax = this.histo['fZaxis']['fXmax'];
+
+      // global min/max, used at the moment in 3D drawing
+
+      this.gminbin = this.gmaxbin = this.histo.getBinContent(1, 1, 1);
+      for (var i = 0; i < this.nbinsx; ++i)
+         for (var j = 0; j < this.nbinsy; ++j)
+            for (var k = 0; k < this.nbinsz; ++k) {
+               var bin_content = this.histo.getBinContent(i + 1, j + 1, k + 1);
+               if (bin_content < this.gminbin) this.gminbin = bin_content; else
+               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+            }
+
+      this.draw_content = this.gmaxbin > 0;
+   }
+
+   JSROOT.TH3Painter.prototype.CreateBins = function() {
+      var bins = [];
+      for (var i = 0; i < this.nbinsx; ++i)
+         for (var j = 0; j < this.nbinsy; ++j)
+            for (var k = 0; k < this.nbinsz; ++k) {
+               var bin_content = this.histo.getBinContent(i + 1, j + 1, k + 1);
+               if (bin_content > this.gminbin) {
+                  bins.push({
+                     x : this.xmin + (i + 0.5) / this.nbinsx * (this.xmax - this.xmin),
+                     y : this.ymin + (j + 0.5) / this.nbinsy * (this.ymax - this.ymin),
+                     z : this.zmin + (k + 0.5) / this.nbinsz * (this.zmax - this.zmin),
+                     n : bin_content,
+                     name : 'title'
+                  });
+               }
+            }
+
+      return bins;
+   }
+
+   JSROOT.TH3Painter.prototype.Draw3DBins = function() {
+      if (!this.draw_content) return;
+
+      var bins = this.CreateBins();
+
+      // create the bin cubes
+      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
+      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
+      var constz = (this.size3d * 2 / this.nbinsz) / this.gmaxbin;
+
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+      var fillcolor = new THREE.Color(0xDDDDDD);
+      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
+      var bin, wei;
+      for (var i = 0; i < bins.length; ++i) {
+         wei = (this.options.Color > 0 ? this.gmaxbin : bins[i].n);
+         if (this.options.Box == 11) {
+            bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx),
+                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f }));
+         } else {
+            bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
+                                 new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
+         }
+         bin.position.x = this.tx(bins[i].x);
+         bin.position.y = this.tz(bins[i].z);
+         bin.position.z = -(this.ty(bins[i].y));
+         bin.name = bins[i].name;
+
+         this.toplevel.add(bin);
+
+         if (this.options.Box != 11) {
+            var helper = new THREE.BoxHelper(bin);
+            helper.material.color.set(0x000000);
+            helper.material.linewidth = 1.0;
+            this.toplevel.add(helper);
+         }
+      }
+   }
+
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
+      // when called, *this* set to painter instance
+
+      // create painter and add it to canvas
+      JSROOT.extend(this, new JSROOT.TH3Painter(histo));
+
+      this.SetDivId(divid, 1);
+
+      this.options = this.DecodeOptions(opt);
+
+      this.CheckPadOptions();
+
+      this.ScanContent();
+
+      this.Create3DScene();
+
+      this.CreateXYZ();
+
+      this.DrawXYZ();
+
+      this.Draw3DBins();
+
+      this.add_3d_canvas(this.renderer.domElement);
+
+      this.renderer.render(this.scene, this.camera);
+
+      JSROOT.Painter.add3DInteraction(this.renderer, this.scene, this.camera, this.toplevel, this);
+
+      return this.DrawingReady();
+   }
+
+   JSROOT.Painter.drawHistogram3Dold = function(divid, histo, opt) {
       // when called, *this* set to painter instance
 
       var logx = false, logy = false, logz = false, gridx = false, gridy = false, gridz = false;
