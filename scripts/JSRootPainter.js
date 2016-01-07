@@ -192,7 +192,6 @@
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
-
       if (style==null) style = attmarker['fMarkerStyle'];
 
       var marker_name = (style < JSROOT.Painter.root_markers.length) ? JSROOT.Painter.root_markers[style] : "fcircle";
@@ -223,8 +222,6 @@
          case 7: markerSize = 3; break;
       }
 
-      console.log(' marker kind = ' + shape + '  marker size ' + markerSize);
-
       var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
 
       var res = { stroke: marker_color, fill: marker_color, marker: "" };
@@ -251,6 +248,9 @@
                      .style("pointer-events","visibleFill");
          }.bind(res);
          break;
+      case 2: // diamond
+         res['marker'] = "M -" + half + ",0  L 0,-" + half +
+                         " L " + half + ",0  L 0," + half + " z"; break;
       case 3: // square
          res['kind'] = 'svg:rect';
          res['pos'] = "-" + half;
@@ -265,8 +265,14 @@
                      .style("pointer-events","visibleFill");
          }.bind(res);
          break;
+      case 4: // triangle-up
+         res['marker'] = "M 0," + half + " L -" + half + ",-" + half +
+                         " L " + half + ",-" + half + " z"; break;
+      case 5: // triangle-down
+         res['marker'] = "M 0,-" + half + " L -" + half + "," + half +
+                         " L " + half + "," + half + " z"; break;
       case 6: // star
-         res['marker'] = "M-" + half + "," + (-markerSize/8).toFixed(1) +
+         res['marker'] = "M -" + half + "," + (-markerSize/8).toFixed(1) +
                         " L" + half + "," + (-markerSize/8).toFixed(1) +
                         " L" + (-markerSize/3.3).toFixed(1) + "," + half +
                         " L0,-" + half +
@@ -287,7 +293,7 @@
                         " M "  + half + ",-" + half +
                         " L -" + half + "," + half; break;
       default:
-         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize);
+         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize*8);
       }
 
       if (res['kind'] == 'svg:path')
