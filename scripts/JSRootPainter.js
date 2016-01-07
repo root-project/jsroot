@@ -1064,8 +1064,28 @@
 
    JSROOT.TObjectPainter.prototype.size_for_3d = function() {
       // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
-      if (this.embed_3d() > 0) return { width: this.frame_width(), height: this.frame_height() };
-      return { width: this.pad_width(), height: this.pad_height() };
+
+      var pad = this.svg_pad();
+      var frame = this.svg_frame();
+
+      if (pad.empty() && frame.empty()) return { x:0, y:0, width:100, height:100 };
+
+      var elem = pad;
+      if ((this.embed_3d() > 0) && !frame.empty()) elem = frame;
+
+      var size = { x: elem.property("draw_x"),
+                   y: elem.property("draw_y"),
+                   width: elem.property("draw_width"),
+                   height: elem.property("draw_height") };
+
+      if (frame.empty() && (this.embed_3d() > 0)) {
+         size.x = Math.floor(size.x + size.width*0.1);
+         size.y = Math.floor(size.y + size.height*0.1);
+         size.width = Math.floor(size.width*0.8);
+         size.height = Math.floor(size.height*0.8);
+      }
+
+      return size;
    }
 
    JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
@@ -1111,15 +1131,16 @@
          frame.style('display', 'none');
 
          var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+         var size = this.size_for_3d();
 
          // set frame dimensions
-         fo.attr('width', this.frame_width())
-           .attr('height', this.frame_height())
-           .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
+         fo.attr('width', size.width)
+           .attr('height', size.height)
+           .attr('viewBox', "0 0 " + size.width + " " + size.height)
            .attr('preserveAspectRatio','xMidYMid');
 
          // and position
-         this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));
+         this.SetForeignObjectPosition(fo, size.x, size.y);
 
          fo.node().appendChild(canv);
       }
@@ -1142,9 +1163,10 @@
       // Assigns id of top element (normally <div></div> where drawing is done
       // is_main - -1 - not add to painters list,
       //            0 - normal painter (default),
-      //            1 - major objects like TH1/TH2,
+      //            1 - major objects like TH1/TH2 (required canvas with frame)
       //            2 - if canvas missing, create it, but not set as main object
       //            3 - if canvas and (or) frame missing, create them, but not set as main object
+      //            4 - major objects like TH3 (required canvas, but no frame)
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
       // In such case the only painter will be assigned to the first element
 
@@ -1158,7 +1180,7 @@
       var svg_c = this.svg_canvas();
 
       if (svg_c.empty() && (is_main > 0)) {
-         JSROOT.Painter.drawCanvas(divid, null, (is_main==2 ? "noframe" : ""));
+         JSROOT.Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
          svg_c = this.svg_canvas();
          this['create_canvas'] = true;
       }
@@ -1177,11 +1199,10 @@
 
       if (is_main < 0) return;
 
-      // create TFrame element if not exists when
+      // create TFrame element if not exists
       if (this.svg_frame().empty() && ((is_main == 1) || (is_main == 3))) {
          JSROOT.Painter.drawFrame(divid, null);
          if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
-         this['create_canvas'] = true;
       }
 
       var svg_p = this.svg_pad();
@@ -1190,7 +1211,7 @@
       if (svg_p.property('pad_painter') != this)
          svg_p.property('pad_painter').painters.push(this);
 
-      if ((is_main == 1) && (svg_p.property('mainpainter') == null))
+      if (((is_main == 1) || (is_main == 4)) && (svg_p.property('mainpainter') == null))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
    }
@@ -1975,6 +1996,8 @@
              .attr("height", h)
              .property('draw_x', lm)
              .property('draw_y', tm)
+             .property('draw_width', w)
+             .property('draw_height', h)
              .attr("transform", "translate(" + lm + "," + tm + ")");
 
       top_rect.attr("x", 0)
@@ -3328,6 +3351,8 @@
          .attr("viewBox", "0 0 " + w + " " + h)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
+         .property('draw_x', 0)
+         .property('draw_y', 0)
          .property('draw_width', w)
          .property('draw_height', h)
          .property('redraw_by_resize', false);
@@ -3464,7 +3489,7 @@
       painter.SetDivId(divid);  // now add to painters list
 
       if (can==null) {
-         if (opt.indexOf("noframe")<0)
+         if (opt.indexOf("noframe") < 0)
             JSROOT.Painter.drawFrame(divid, null);
          return painter.DrawingReady();
       }
@@ -4113,19 +4138,19 @@
              pad.fUxmax !== this['histo']['fXaxis']['fXmax']) {
             this['zoom_xmin'] = pad.fUxmin;
             this['zoom_xmax'] = pad.fUxmax;
+            if (pad.fLogx > 0) {
+               this['zoom_xmin'] = Math.exp(this['zoom_xmin'] * Math.log(10));
+               this['zoom_xmax'] = Math.exp(this['zoom_xmax'] * Math.log(10));
+            }
          }
          if (pad.fUymin !== this['histo']['fYaxis']['fXmin'] ||
              pad.fUymax !== this['histo']['fYaxis']['fXmax']) {
             this['zoom_ymin'] = pad.fUymin;
             this['zoom_ymax'] = pad.fUymax;
-         }
-         if (pad.fLogx > 0) {
-            this['zoom_xmin'] = Math.exp(this['zoom_xmin'] * Math.log(10));
-            this['zoom_xmax'] = Math.exp(this['zoom_xmax'] * Math.log(10));
-         }
-         if (pad.fLogy > 0) {
-            this['zoom_ymin'] = Math.exp(this['zoom_ymin'] * Math.log(10));
-            this['zoom_ymax'] = Math.exp(this['zoom_ymax'] * Math.log(10));
+            if (pad.fLogy > 0) {
+               this['zoom_ymin'] = Math.exp(this['zoom_ymin'] * Math.log(10));
+               this['zoom_ymax'] = Math.exp(this['zoom_ymax'] * Math.log(10));
+            }
          }
       }
    }
@@ -4462,6 +4487,9 @@
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
+
+      if (this.svg_frame().empty())
+         JSROOT.Painter.drawFrame(this.divid, null);
 
       var w = this.frame_width(), h = this.frame_height();
 

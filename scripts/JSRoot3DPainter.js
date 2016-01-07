@@ -251,9 +251,7 @@
       }
 
 
-      var ddd = this.size_for_3d();
-
-      var w = ddd.width, h = ddd.height;
+      var size = this.size_for_3d();
 
       this.size3d = 100;
 
@@ -266,7 +264,7 @@
       this.toplevel.rotation.y = 30 * Math.PI / 180;
       this.scene.add(this.toplevel);
 
-      this.camera = new THREE.PerspectiveCamera(45, w / h, 1, 4000);
+      this.camera = new THREE.PerspectiveCamera(45, size.width / size.height, 1, 4000);
       var pointLight = new THREE.PointLight(0xcfcfcf);
       this.camera.add( pointLight );
       pointLight.position.set( 10, 10, 10 );
@@ -293,7 +291,7 @@
                                        new THREE.CanvasRenderer({ antialias : true, alpha: true  });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
-      this.renderer.setSize(w, h);
+      this.renderer.setSize(size.width, size.height);
 
       this.add_3d_canvas(this.renderer.domElement);
 
@@ -306,16 +304,17 @@
    }
 
    JSROOT.Painter.HPainter_CreateXYZ = function() {
+
       var xmin = this.xmin, xmax = this.xmax;
-      if (this.zoom_xmin != this.zoom_xmax) {
-         xmin = this.zoom_xmin;
-         xmax = this.zoom_xmax;
-      }
+      //if (this.zoom_xmin != this.zoom_xmax) {
+      //   xmin = this.zoom_xmin;
+      //   xmax = this.zoom_xmax;
+      //}
       var ymin = this.ymin, ymax = this.ymax;
-      if (this.zoom_ymin != this.zoom_ymax) {
-         ymin = this.zoom_ymin;
-         ymax = this.zoom_ymax;
-      }
+      //if (this.zoom_ymin != this.zoom_ymax) {
+      //   ymin = this.zoom_ymin;
+      //   ymax = this.zoom_ymax;
+      //}
       var zmin = this.gminbin, zmax = this.gmaxbin;
       if (('zmin' in this) && ('zmax' in this) && (this.Dimension()==3)) {
          zmin = this.zmin;
@@ -829,7 +828,7 @@
       // create painter and add it to canvas
       JSROOT.extend(this, new JSROOT.TH3Painter(histo));
 
-      this.SetDivId(divid, 1);
+      this.SetDivId(divid, 4);
 
       this.options = this.DecodeOptions(opt);
 
