@@ -1112,11 +1112,11 @@
 
          var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
 
-         // set frame dimension
+         // set frame dimensions
          fo.attr('width', this.frame_width())
-         .attr('height', this.frame_height())
-         .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
-         .attr('preserveAspectRatio','none');
+           .attr('height', this.frame_height())
+           .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
+           .attr('preserveAspectRatio','xMidYMid');
 
          // and position
          this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));
@@ -4892,7 +4892,6 @@
    }
 
    JSROOT.THistPainter.prototype.FindStat = function() {
-
       if ('fFunctions' in this.histo)
          for (var i=0; i < this.histo.fFunctions.arr.length; ++i) {
             var func = this.histo.fFunctions.arr[i];
@@ -4907,9 +4906,11 @@
    JSROOT.THistPainter.prototype.CreateStat = function() {
 
       if (!this.draw_content) return null;
-      if (this.FindStat() != null) return null;
 
-      var stats = JSROOT.Create('TPaveStats');
+      var stats = this.FindStat();
+      if (stats != null) return stats;
+
+      stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { _AutoCreated: true,
                              fName : 'stats',
                              fOptStat: JSROOT.gStyle.OptStat,
@@ -4927,7 +4928,7 @@
       if (!'fFunctions' in this.histo)
          this.histo['fFunctions'] = JSROOT.Create("TList");
 
-      this.histo.fFunctions.arr.push(stats);
+      this.histo.fFunctions.Add(stats,"");
 
       return stats;
    }

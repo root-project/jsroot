@@ -228,20 +228,7 @@
 
          if (JSROOT.gStyle.Tooltip) tooltip.hide();
 
-         if (painter)
-            return painter.ShowContextMenu("hist", e.originalEvent);
-
-         JSROOT.Painter.createMenu(function(menu) {
-            menu.add(JSROOT.gStyle.Tooltip ? "Disable tooltip" : "Enable tooltip", function() {
-               JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
-               tooltip.hide();
-            });
-
-            menu.add("Close");
-
-            menu.show(e.originalEvent);
-         });
-
+         return painter.ShowContextMenu("hist", e.originalEvent);
       });
    }
 
@@ -645,6 +632,117 @@
       this.draw_content = this.gmaxbin > 0;
    }
 
+   JSROOT.TH3Painter.prototype.CountStat = function() {
+      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
+
+      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 };
+
+      for (var xi = 0; xi < this.nbinsx+2; ++xi) {
+
+         var xx = this.xmin + (xi - 0.5) / this.nbinsx * (this.xmax - this.xmin);
+         var xside = (xi === 0) ? 0 : (xi === this.nbinsx+1 ? 2 : 1);
+
+         for (var yi = 0; yi < this.nbinsy+2; ++yi) {
+
+            var yy = this.ymin + (yi - 0.5) / this.nbinsy * (this.ymax - this.ymin);
+            var yside = (yi === 0) ? 0 : (yi === this.nbinsy+1 ? 2 : 1);
+
+            for (var zi = 0; zi < this.nbinsz+2; ++zi) {
+
+               var zz = this.zmin + (zi - 0.5) / this.nbinsz * (this.zmax - this.zmin);
+               var zside = (zi === 0) ? 0 : (zi === this.nbinsz+1 ? 2 : 1);
+
+               var cont = this.histo.getBinContent(xi, yi, zi);
+               res.entries += cont;
+
+               if ((xside==1) && (yside==1) && (zside==1)) {
+                  stat_sum0 += cont;
+                  stat_sumx1 += xx * cont;
+                  stat_sumy1 += yy * cont;
+                  stat_sumz1 += zz * cont;
+                  stat_sumx2 += xx * xx * cont;
+                  stat_sumy2 += yy * yy * cont;
+                  stat_sumz2 += zz * zz * cont;
+               }
+            }
+         }
+      }
+
+      if (this.histo.fTsumw>0) {
+         stat_sum0 = this.histo.fTsumw;
+         stat_sumx1 = this.histo.fTsumwx;
+         stat_sumx2 = this.histo.fTsumwx2;
+         stat_sumy1 = this.histo.fTsumwy;
+         stat_sumy2 = this.histo.fTsumwy2;
+         stat_sumz1 = this.histo.fTsumwz;
+         stat_sumz2 = this.histo.fTsumwz2;
+      }
+
+      if (stat_sum0 > 0) {
+         res.meanx = stat_sumx1 / stat_sum0;
+         res.meany = stat_sumy1 / stat_sum0;
+         res.meanz = stat_sumz1 / stat_sum0;
+         res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
+         res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
+         res.rmsz = Math.sqrt(stat_sumz2 / stat_sum0 - res.meanz * res.meanz);
+      }
+
+      res.integral = stat_sum0;
+
+      if (this.histo.fEntries > 1) res.entries = this.histo.fEntries;
+
+      return res;
+   }
+
+   JSROOT.TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+      if (!this.histo) return false;
+
+      var data = this.CountStat();
+
+      var print_name = dostat % 10;
+      var print_entries = Math.floor(dostat / 10) % 10;
+      var print_mean = Math.floor(dostat / 100) % 10;
+      var print_rms = Math.floor(dostat / 1000) % 10;
+      var print_under = Math.floor(dostat / 10000) % 10;
+      var print_over = Math.floor(dostat / 100000) % 10;
+      var print_integral = Math.floor(dostat / 1000000) % 10;
+      //var print_skew = Math.floor(dostat / 10000000) % 10;
+      //var print_kurt = Math.floor(dostat / 100000000) % 10;
+
+      if (print_name > 0)
+         stat.AddLine(this.histo['fName']);
+
+      if (print_entries > 0)
+         stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
+
+      if (print_mean > 0) {
+         stat.AddLine("Mean x = " + stat.Format(data.meanx));
+         stat.AddLine("Mean y = " + stat.Format(data.meany));
+         stat.AddLine("Mean z = " + stat.Format(data.meanz));
+      }
+
+      if (print_rms > 0) {
+         stat.AddLine("Std Dev x = " + stat.Format(data.rmsx));
+         stat.AddLine("Std Dev y = " + stat.Format(data.rmsy));
+         stat.AddLine("Std Dev z = " + stat.Format(data.rmsz));
+      }
+
+      if (print_integral > 0) {
+         stat.AddLine("Integral = " + stat.Format(data.integral,"entries"));
+      }
+
+      // adjust the size of the stats box with the number of lines
+      var nlines = stat.pavetext['fLines'].arr.length;
+      var stath = nlines * JSROOT.gStyle.StatFontSize;
+      if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
+         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
+         stat.pavetext['fY1NDC'] = 0.93 - stath;
+         stat.pavetext['fY2NDC'] = 0.93;
+      }
+
+      return true;
+   }
+
    JSROOT.TH3Painter.prototype.CreateBins = function() {
       var bins = [];
 
@@ -740,6 +838,13 @@
       this.ScanContent();
 
       this.Redraw();
+
+      if (this.create_canvas) this.DrawTitle();
+
+      if (JSROOT.gStyle.AutoStat && this.create_canvas) {
+         var stats = this.CreateStat();
+         if (stats) JSROOT.draw(this.divid, stats, "");
+      }
 
       return this.DrawingReady();
    }
