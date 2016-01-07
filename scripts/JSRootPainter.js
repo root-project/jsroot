@@ -1073,10 +1073,14 @@
       var elem = pad;
       if ((this.embed_3d() > 0) && !frame.empty()) elem = frame;
 
-      var size = { x: elem.property("draw_x"),
-                   y: elem.property("draw_y"),
+      var size = { x: 0, y: 0,
                    width: elem.property("draw_width"),
                    height: elem.property("draw_height") };
+
+      if (elem === frame) {
+         size.x = frame.property("draw_x");
+         size.y = frame.property("draw_y");
+      }
 
       if (frame.empty() && (this.embed_3d() > 0)) {
          size.x = Math.floor(size.x + size.width*0.1);
