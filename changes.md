@@ -9,6 +9,8 @@
 6. Optimize TGrapth drawing - web browsers have problem to draw 10000 pixels at the same time   
 7. Implement painter for TPolyMarker3D, works only with canvas
 8. Improve drawing and update of TMultiGraph 
+9. Reorganize 3D drawing of TH2/TH3 histograms, in Firefox/Chrome one can draw title and statbox 
+
 
 
 ## Changes in 4.0

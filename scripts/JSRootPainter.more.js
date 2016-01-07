@@ -2620,6 +2620,7 @@
          this['DrawXYZ'] = JSROOT.Painter.TH2Painter_DrawXYZ;
          this['Draw3DBins'] = JSROOT.Painter.TH2Painter_Draw3DBins;
          this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
+         this['Render3D'] =JSROOT.Painter.Render3D;
          this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
          this['Draw3D'](call_back);
       }.bind(this));

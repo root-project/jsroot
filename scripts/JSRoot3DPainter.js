@@ -120,7 +120,7 @@
          if (mouseDowned) {
             if (INTERSECTED) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               painter.renderer.render(painter.scene, painter.camera);
+               painter.Render3D();
             }
             INTERSECTED = null;
             if (JSROOT.gStyle.Tooltip)
@@ -143,7 +143,7 @@
                INTERSECTED = pick.object;
                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                INTERSECTED.material.emissive.setHex(0x5f5f5f);
-               painter.renderer.render(painter.scene, painter.camera);
+               painter.Render3D();
                if (JSROOT.gStyle.Tooltip)
                   tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name
                         : INTERSECTED.parent.name, 200);
@@ -151,7 +151,7 @@
          } else {
             if (INTERSECTED) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               painter.renderer.render(painter.scene, painter.camera);
+               painter.Render3D();
             }
             INTERSECTED = null;
             if (JSROOT.gStyle.Tooltip)
@@ -196,11 +196,11 @@
             var moveY = touch.pageY - mouseY;
             // limited X rotate in -45 to 135 deg
             if ((moveY > 0 && painter.toplevel.rotation.x < Math.PI * 3 / 4)
-                  || (moveY < 0 && toplevel.rotation.x > -Math.PI / 4)) {
+                  || (moveY < 0 && painter.toplevel.rotation.x > -Math.PI / 4)) {
                painter.toplevel.rotation.x += moveY * 0.02;
             }
             painter.toplevel.rotation.y += moveX * 0.02;
-            painter.renderer.render(painter.scene, painter.camera);
+            painter.Render3D();
             mouseX = touch.pageX;
             mouseY = touch.pageY;
          } else {
@@ -220,7 +220,7 @@
       $(painter.renderer.domElement).on('mousewheel', function(e, d) {
          e.preventDefault();
          painter.camera.position.z += d * 20;
-         painter.renderer.render(painter.scene, painter.camera);
+         painter.Render3D();
       });
 
       $(painter.renderer.domElement).on('contextmenu', function(e) {
@@ -539,6 +539,27 @@
       local_bins = null;
    }
 
+   JSROOT.Painter.Render3D = function(tmout) {
+      if (tmout==null) tmout = 10; // by default, rendering happens later
+
+      if (tmout<=0) {
+         if ('render_tmout' in this)
+            clearTimeout(this['render_tmout']);
+
+         // do rendering, most consuming time
+         this.renderer.render(this.scene, this.camera);
+
+         delete this['render_tmout'];
+
+         return;
+      }
+
+      // no need to shoot rendering once again
+      if ('render_tmout' in this) return;
+
+      this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
+   }
+
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
 
       // function called with this as painter
@@ -553,7 +574,7 @@
 
       this.add_3d_canvas(this.renderer.domElement);
 
-      this.renderer.render(this.scene, this.camera);
+      this.Render3D();
 
       this.Add3DInteraction();
 
@@ -569,6 +590,7 @@
       this['Create3DScene'] = JSROOT.Painter.TH2Painter_Create3DScene;
       this['CreateXYZ'] = JSROOT.Painter.TH2Painter_CreateXYZ;
       this['DrawXYZ'] = JSROOT.Painter.TH2Painter_DrawXYZ;
+      this['Render3D'] =JSROOT.Painter.Render3D;
       this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
    }
 
@@ -685,7 +707,7 @@
 
       this.add_3d_canvas(this.renderer.domElement);
 
-      this.renderer.render(this.scene, this.camera);
+      this.Render3D();
 
       this.Add3DInteraction();
 
@@ -722,7 +744,7 @@
          main.toplevel.add(bin);
       }
 
-      main.renderer.render(main.scene, main.camera);
+      main.Render3D();
 
       return this.DrawingReady();
    }
