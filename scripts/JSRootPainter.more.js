@@ -2030,7 +2030,7 @@
          var xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
          var xx = this.GetBinX(xi - 0.5);
 
-         for (var yi = 0; yi <= this.nbinsx + 1; ++yi) {
+         for (var yi = 0; yi <= this.nbinsy + 1; ++yi) {
             var yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
             var yy = this.ymin + this.GetBinY(yi - 0.5);
 
