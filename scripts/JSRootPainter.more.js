@@ -1509,7 +1509,7 @@
             // Draw Polymarker
             if (lopt.indexOf('p') != -1) {
                var marker = JSROOT.Painter.createAttMarker(attmarker);
-               this.draw_g.append("svg:path")
+               this.draw_g.append(marker.kind)
                    .attr("transform", function(d) { return "translate(" + (x0 + tpos_x)/2 + "," + mid_y + ")"; })
                    .call(marker.func);
             }
@@ -2550,7 +2550,7 @@
          var markers =
             this.draw_g.selectAll(".marker")
                   .data(local_bins)
-                  .enter().append("svg:path")
+                  .enter().append(marker.kind)
                   .attr("class", "marker")
                   .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
                   .call(marker.func);

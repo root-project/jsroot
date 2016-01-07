@@ -216,49 +216,88 @@
          }
       }
 
-      var markerSize = attmarker['fMarkerSize'];
+      var markerSize = attmarker['fMarkerSize'] * 8;
+      switch(style) {
+         case 1: markerSize = 1; break;
+         case 6: markerSize = 2; break;
+         case 7: markerSize = 3; break;
+      }
 
-      var markerScale = 64;
-      if (style == 1) markerScale = 1;
+      console.log(' marker kind = ' + shape + '  marker size ' + markerSize);
 
       var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
 
       var res = { stroke: marker_color, fill: marker_color, marker: "" };
       if (!toFill) res['fill'] = 'none';
 
+      res['kind'] = 'svg:path';
+
+      var half = markerSize/2;
+      if (half == Math.round(half))
+         half = half.toFixed(0);
+      else
+         half = half.toFixed(1);
+
       switch(shape) {
+      case 0: // circle
+         res['kind'] = 'svg:circle';
+         res['size'] = half;
+         res.func = function(selection) {
+            selection.style("fill", this.fill)
+                     .attr("cx", 0)
+                     .attr("cy", 0)
+                     .attr("r", this.size)
+                     .style("stroke", this.stroke)
+                     .style("pointer-events","visibleFill");
+         }.bind(res);
+         break;
+      case 3: // square
+         res['kind'] = 'svg:rect';
+         res['pos'] = "-" + half;
+         res['size'] = markerSize.toFixed(1);
+         res.func = function(selection) {
+            selection.style("fill", this.fill)
+                     .attr("x", this.pos)
+                     .attr("y", this.pos)
+                     .attr("width", this.size)
+                     .attr("height", this.size)
+                     .style("stroke", this.stroke)
+                     .style("pointer-events","visibleFill");
+         }.bind(res);
+         break;
       case 6: // star
-         res['marker'] = "M" + (-4*markerSize) + "," + (-1*markerSize) +
-                        " L" + 4*markerSize + "," + (-1*markerSize) +
-                        " L" + (-2.4*markerSize) + "," + 4*markerSize +
-                        " L0," + (-4*markerSize) +
-                        " L" + 2.8*markerSize + "," + 4*markerSize + " z"; break;
+         res['marker'] = "M-" + half + "," + (-markerSize/8).toFixed(1) +
+                        " L" + half + "," + (-markerSize/8).toFixed(1) +
+                        " L" + (-markerSize/3.3).toFixed(1) + "," + half +
+                        " L0,-" + half +
+                        " L" + (markerSize/2.8).toFixed(1) + "," + half + " z"; break;
       case 7: // asterisk
-         res['marker'] = "M " + (-4*markerSize) + "," + (-4*markerSize) +
-                        " L" + 4*markerSize + "," + 4*markerSize +
-                        " M 0," + (-4*markerSize) + " L 0," + 4*markerSize +
-                        " M "  + 4*markerSize + "," + (-4*markerSize) +
-                        " L " + (-4*markerSize) + "," + 4*markerSize +
-                        " M " + (-4*markerSize) + ",0 L " + 4*markerSize + ",0"; break;
+         res['marker'] = "M -" + half + ",-" + half +
+                        " L" + half + "," + half +
+                        " M 0,-" + half + " L 0," + half +
+                        " M "  + half + ",-" + half +
+                        " L -" + half + "," + half +
+                        " M -" + half + ",0 L " + half + ",0"; break;
       case 8: // plus
-         res['marker'] = "M 0," + (-4*markerSize) + " L 0," + 4*markerSize +
-                        " M " + (-4*markerSize) + ",0 L " + 4*markerSize + ",0"; break;
+         res['marker'] = "M 0,-" + half + " L 0," + half +
+                        " M -" + half + ",0 L " + half + ",0"; break;
       case 9: // mult
-         res['marker'] = "M " + (-4*markerSize) + "," + (-4*markerSize) +
-                        " L" + 4*markerSize + "," + 4*markerSize +
-                        " M "  + 4*markerSize + "," + (-4*markerSize) +
-                        " L " + (-4*markerSize) + "," + 4*markerSize; break;
+         res['marker'] = "M -" + half + ",-" + half +
+                        " L" + half + "," + half +
+                        " M "  + half + ",-" + half +
+                        " L -" + half + "," + half; break;
       default:
-         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize * markerScale);
+         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize);
       }
 
-      res.SetMarker = function(selection) {
-         selection.style("fill", this.fill)
-                  .style("stroke", this.stroke)
-                  .style("pointer-events","visibleFill") // even if not filled, get events
-                  .attr("d", this.marker);
-      }
-      res.func = res.SetMarker.bind(res);
+      if (res['kind'] == 'svg:path')
+         res.func =
+            function(selection) {
+              selection.style("fill", this.fill)
+                       .style("stroke", this.stroke)
+                       .style("pointer-events","visibleFill") // even if not filled, get events
+                       .attr("d", this.marker);
+            }.bind(res);
 
       return res;
    }
@@ -2227,12 +2266,16 @@
       }
       if (selbins == null) selbins = this.bins;
 
-      if ((selbins.length < 2000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
-      var step = Math.floor(selbins.length / 2000);
+      console.log('selbins length = ' + selbins.length);
+
+      if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
+      var step = Math.floor(selbins.length / 5000);
       if (step < 2) step = 2;
       var optbins = [];
       for (var n = 0; n < selbins.length; n+=step)
          optbins.push(selbins[n]);
+
+      console.log('optbins length = ' + optbins.length);
 
       return optbins;
    }
@@ -2561,8 +2604,7 @@
          var style = (this.optionMark == 2) ? 3 : null;
 
          var marker = JSROOT.Painter.createAttMarker(this.graph, style);
-
-         nodes.append("svg:path").call(marker.func);
+         nodes.append(marker.kind).call(marker.func);
       }
    }
 
@@ -2853,7 +2895,10 @@
 
       painter.SetDivId(divid);
       painter.DecodeOptions(opt);
+      var d1 = new Date;
       painter.DrawBins();
+      var d2 = new Date;
+      console.log('draw bins = ' + (d2.getTime() - d1.getTime()));
 
       painter.DrawNextFunction(0, painter.DrawingReady.bind(painter));
 
@@ -5966,7 +6011,7 @@
       if (this.options.Mark > 0) {
          // draw markers also when e2 option was specified
          var marker = JSROOT.Painter.createAttMarker(this.histo);
-         nodes.append("svg:path").call(marker.func);
+         nodes.append(marker.kind).call(marker.func, null, true);
       }
    }
 
