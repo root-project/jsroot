@@ -475,16 +475,6 @@
 
       for (var t=0; t < ticks.length; ++t)
          ticks[t].dispose();
-   }
-
-   JSROOT.Painter.TH2Painter_Draw3DBins = function() {
-      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
-      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
-
-      var colorFlag = (this.options.Color > 0);
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
-
-      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
 
       var wireMaterial = new THREE.MeshBasicMaterial({
          color : 0x000000,
@@ -507,17 +497,28 @@
       // add the cube to the scene
       this.toplevel.add(box);
 
+      this.camera.lookat = cube;
+   }
+
+   JSROOT.Painter.TH2Painter_Draw3DBins = function() {
+      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
+      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
+
+      var colorFlag = (this.options.Color > 0);
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+
+      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
+
       // create the bin cubes
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
-      var bin, wei, hh;
 
       for (var i = 0; i < local_bins.length; ++i) {
-         hh = local_bins[i];
-         wei = this.tz(hh.z);
+         var hh = local_bins[i];
+         var wei = this.tz(hh.z);
 
          // create a new mesh with cube geometry
-         bin = new THREE.Mesh(new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, wei, 2 * this.size3d / this.nbinsy),
+         var bin = new THREE.Mesh(new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, wei, 2 * this.size3d / this.nbinsy),
                                new THREE.MeshLambertMaterial({ color : fillcolor.getHex() /*, shading : THREE.NoShading */ }));
 
          bin.position.x = this.tx(hh.x);
@@ -528,7 +529,7 @@
             bin.name = hh.tip;
          this.toplevel.add(bin);
 
-         helper = new THREE.BoxHelper(bin);
+         var helper = new THREE.BoxHelper(bin);
          helper.material.color.set(0x000000);
          helper.material.linewidth = 1.0;
          this.toplevel.add(helper);
@@ -536,8 +537,6 @@
 
       delete local_bins;
       local_bins = null;
-
-      this.camera.lookat = cube;
    }
 
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
