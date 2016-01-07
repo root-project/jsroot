@@ -1103,15 +1103,12 @@
       } else {
          if (this.svg_pad().empty()) return;
 
-         if (this.svg_pad().property('can3d')) {
-            this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
-            this.svg_pad().select(".frame_layer foreignObject").remove();
-         }
+         this.svg_pad().select(".frame_layer foreignObject").remove();
+         this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
       }
    }
 
    JSROOT.TObjectPainter.prototype.add_3d_canvas = function(canv) {
-      this.clear_3d_canvas();
 
       var can3d = this.embed_3d();
 
@@ -4487,9 +4484,6 @@
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
-
-      if (this.svg_frame().empty())
-         JSROOT.Painter.drawFrame(this.divid, null);
 
       var w = this.frame_width(), h = this.frame_height();
 

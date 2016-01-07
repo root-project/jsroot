@@ -1798,10 +1798,10 @@
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.options.Lego > 0) {
-         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.Draw2D(); });
+         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.Redraw(); });
       } else {
          menu.add("Auto zoom-in", function() { this.AutoZoom(); });
-         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.Draw3D();});
+         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.Redraw(); });
          menu.add("Toggle col", function() {
             if (this.options.Color == 0)
                this.options.Color = JSROOT.gStyle.DefaultCol;
@@ -2600,7 +2600,8 @@
    }
 
    JSROOT.TH2Painter.prototype.Draw2D = function(call_back) {
-      this.clear_3d_canvas();
+      if (typeof this['Create3DScene'] == 'function')
+         this.Create3DScene(-1);
 
       this.DrawAxes();
 

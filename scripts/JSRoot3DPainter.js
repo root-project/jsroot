@@ -232,7 +232,17 @@
       });
    }
 
-   JSROOT.Painter.HPainter_Create3DScene = function() {
+   JSROOT.Painter.HPainter_Create3DScene = function(arg) {
+
+      if ((arg!=null) && (arg<0)) {
+         this.clear_3d_canvas();
+         delete this.size3d;
+         delete this.scene;
+         delete this.toplevel;
+         delete this.camera;
+         delete this.renderer;
+         return;
+      }
 
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty
@@ -249,7 +259,6 @@
          this.toplevel = newtop;
          return;
       }
-
 
       var size = this.size_for_3d();
 
