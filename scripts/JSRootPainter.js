@@ -1069,40 +1069,60 @@
    }
 
    JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
-      if (this.svg_pad().empty()) return;
 
-      if (this.svg_pad().property('can3d')) {
-         this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
-         this.svg_pad().select(".frame_layer foreignObject").remove();
+      var can3d = this.svg_pad().property('can3d');
+      if (can3d == null) return;
 
-         this.svg_pad().property('can3d', null);
+      this.svg_pad().property('can3d', null);
+
+      if (can3d == 0) {
+         d3.select(this.svg_canvas().node().nextSibling).remove(); // remove html5 canvas
+
+         this.svg_canvas().style('display', null); // show SVG canvas
+
+      } else {
+         if (this.svg_pad().empty()) return;
+
+         if (this.svg_pad().property('can3d')) {
+            this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
+            this.svg_pad().select(".frame_layer foreignObject").remove();
+         }
       }
-
    }
 
    JSROOT.TObjectPainter.prototype.add_3d_canvas = function(canv) {
       this.clear_3d_canvas();
 
-      if ((canv == null) || this.svg_pad().empty()) return;
+      var can3d = this.embed_3d();
 
-      this.svg_pad().property('can3d', true);
+      if ((canv == null) || (can3d < 0)) return;
 
-      // first hide normal frame
-      var frame = this.svg_pad().select(".frame_layer").select(".root_frame");
-      frame.style('display', 'none');
+      this.svg_pad().property('can3d', can3d);
 
-      var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+      if (can3d === 0) {
+         this.svg_canvas().style('display', 'none'); // hide SVG canvas
 
-      // set frame dimension
-      fo.attr('width', this.frame_width())
-        .attr('height', this.frame_height())
-        .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
-        .attr('preserveAspectRatio','none');
+         this.svg_canvas().node().parentNode.appendChild(canv); // add
+      } else {
+         if (this.svg_pad().empty()) return;
 
-      // and position
-      this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));
+         // first hide normal frame
+         var frame = this.svg_pad().select(".frame_layer").select(".root_frame");
+         frame.style('display', 'none');
 
-      fo.node().appendChild(canv);
+         var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+
+         // set frame dimension
+         fo.attr('width', this.frame_width())
+         .attr('height', this.frame_height())
+         .attr('viewBox', "0 0 " + this.frame_width() + " " + this.frame_height())
+         .attr('preserveAspectRatio','none');
+
+         // and position
+         this.SetForeignObjectPosition(fo, frame.property('draw_x'), frame.property('draw_y'));
+
+         fo.node().appendChild(canv);
+      }
    }
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
