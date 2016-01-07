@@ -245,7 +245,25 @@
       });
    }
 
-   JSROOT.Painter.TH2Painter_Create3DScene = function() {
+   JSROOT.Painter.HPainter_Create3DScene = function() {
+
+      if ('toplevel' in this) {
+         // it is indication that all 3D object created, just replace it with empty
+
+         var newtop = new THREE.Object3D();
+
+         newtop.rotation.x = this.toplevel.rotation.x;
+         newtop.rotation.y = this.toplevel.rotation.y;
+
+         this.scene.remove(this.toplevel);
+
+         this.scene.add(newtop);
+
+         this.toplevel = newtop;
+         return;
+      }
+
+
       var ddd = this.size_for_3d();
 
       var w = ddd.width, h = ddd.height;
@@ -260,7 +278,6 @@
       this.toplevel.rotation.x = 30 * Math.PI / 180;
       this.toplevel.rotation.y = 30 * Math.PI / 180;
       this.scene.add(this.toplevel);
-
 
       this.camera = new THREE.PerspectiveCamera(45, w / h, 1, 4000);
       var pointLight = new THREE.PointLight(0xcfcfcf);
@@ -290,9 +307,18 @@
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(w, h);
+
+      this.add_3d_canvas(this.renderer.domElement);
+
+      this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
+      this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
+      this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
+      this['Render3D'] =JSROOT.Painter.Render3D;
+
+      this.Add3DInteraction();
    }
 
-   JSROOT.Painter.TH2Painter_CreateXYZ = function() {
+   JSROOT.Painter.HPainter_CreateXYZ = function() {
       var xmin = this.xmin, xmax = this.xmax;
       if (this.zoom_xmin != this.zoom_xmax) {
          xmin = this.zoom_xmin;
@@ -312,6 +338,7 @@
       }
 
       if (this.options.Logx) {
+         if (xmin <= 0) xmin = 1e-6*xmax;
          this.tx = d3.scale.log().domain([ xmin, xmax ]).range([ -this.size3d, this.size3d ]);
          this.utx = d3.scale.log().domain([ -this.size3d, this.size3d ]).range([ xmin, xmax ]);
       } else {
@@ -319,6 +346,7 @@
          this.utx = d3.scale.linear().domain([ -this.size3d, this.size3d ]).range([ xmin, xmax ]);
       }
       if (this.options.Logy) {
+         if (ymin <= 0) ymin = 1e-6*ymax;
          this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ -this.size3d, this.size3d ]);
          this.uty = d3.scale.log().domain([ this.size3d, -this.size3d ]).range([ ymin, ymax ]);
       } else {
@@ -326,6 +354,7 @@
          this.uty = d3.scale.linear().domain([ this.size3d, -this.size3d ]).range([ ymin, ymax ]);
       }
       if (this.options.Logz) {
+         if (zmin <= 0) zmin = 1e-6*zmax;
          this.tz = d3.scale.log().domain([ zmin, zmax]).range([ 0, this.size3d * 2 ]);
          this.utz = d3.scale.log().domain([ 0, this.size3d * 2 ]).range([ zmin, zmax ]);
       } else {
@@ -334,7 +363,7 @@
       }
    }
 
-   JSROOT.Painter.TH2Painter_DrawXYZ = function() {
+   JSROOT.Painter.HPainter_DrawXYZ = function() {
       // add the calibration vectors and texts
 
       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
@@ -572,11 +601,7 @@
 
       this.Draw3DBins();
 
-      this.add_3d_canvas(this.renderer.domElement);
-
       this.Render3D();
-
-      this.Add3DInteraction();
 
       JSROOT.CallBack(call_back);
    }
@@ -587,11 +612,7 @@
    JSROOT.TH3Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
 
-      this['Create3DScene'] = JSROOT.Painter.TH2Painter_Create3DScene;
-      this['CreateXYZ'] = JSROOT.Painter.TH2Painter_CreateXYZ;
-      this['DrawXYZ'] = JSROOT.Painter.TH2Painter_DrawXYZ;
-      this['Render3D'] =JSROOT.Painter.Render3D;
-      this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
+      this['Create3DScene'] = JSROOT.Painter.HPainter_Create3DScene;
    }
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -626,19 +647,31 @@
 
    JSROOT.TH3Painter.prototype.CreateBins = function() {
       var bins = [];
+
+      var name = this.GetItemName();
+      if ((name==null) || (name=="")) name = this.histo.fName;
+      if (name.length > 0) name += "\n";
+
       for (var i = 0; i < this.nbinsx; ++i)
          for (var j = 0; j < this.nbinsy; ++j)
             for (var k = 0; k < this.nbinsz; ++k) {
                var bin_content = this.histo.getBinContent(i + 1, j + 1, k + 1);
-               if (bin_content > this.gminbin) {
-                  bins.push({
+               if (bin_content <= this.gminbin) continue;
+
+               var bin = {
                      x : this.xmin + (i + 0.5) / this.nbinsx * (this.xmax - this.xmin),
                      y : this.ymin + (j + 0.5) / this.nbinsy * (this.ymax - this.ymin),
                      z : this.zmin + (k + 0.5) / this.nbinsz * (this.zmax - this.zmin),
-                     n : bin_content,
-                     name : 'title'
-                  });
-               }
+                     n : bin_content
+                  };
+
+               if (JSROOT.gStyle.Tooltip)
+                  bin.tip = name + 'x=' + bin.x + ' bin=' + (i+1) + '\n'
+                                 + 'y=' + bin.y + ' bin=' + (j+1) + '\n'
+                                 + 'z=' + bin.z + ' bin=' + (k+1) + '\n'
+                                 + 'entries=' + bin.n;
+
+               bins.push(bin);
             }
 
       return bins;
@@ -670,7 +703,8 @@
          bin.position.x = this.tx(bins[i].x);
          bin.position.y = this.tz(bins[i].z);
          bin.position.z = -(this.ty(bins[i].y));
-         bin.name = bins[i].name;
+         if ('tip' in bins[i])
+           bin.name = bins[i].tip;
 
          this.toplevel.add(bin);
 
@@ -681,6 +715,14 @@
             this.toplevel.add(helper);
          }
       }
+   }
+
+   JSROOT.TH3Painter.prototype.Redraw = function() {
+      this.Create3DScene();
+      this.CreateXYZ();
+      this.DrawXYZ();
+      this.Draw3DBins();
+      this.Render3D();
    }
 
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
@@ -697,19 +739,7 @@
 
       this.ScanContent();
 
-      this.Create3DScene();
-
-      this.CreateXYZ();
-
-      this.DrawXYZ();
-
-      this.Draw3DBins();
-
-      this.add_3d_canvas(this.renderer.domElement);
-
-      this.Render3D();
-
-      this.Add3DInteraction();
+      this.Redraw();
 
       return this.DrawingReady();
    }
