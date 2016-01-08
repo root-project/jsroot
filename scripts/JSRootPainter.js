@@ -188,11 +188,13 @@
          'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 15..19
          'fcircle', 'fsquare', 'ftriangle-down', 'ftriangle-up', 'ocircle', // 20..24
          'osquare', 'otriangle-up', 'odiamond', 'ocross', 'fstar',     // 25..29
-         'ostar', 'dcross', 'otriangle-down', 'fdiamond', 'fcross');   // 30..34
+         'ostar', 'oasterisk', 'otriangle-down', 'fdiamond', 'fcross');   // 30..34
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
       if (style==null) style = attmarker['fMarkerStyle'];
+
+      style = 34;
 
       var marker_name = (style < JSROOT.Painter.root_markers.length) ? JSROOT.Painter.root_markers[style] : "fcircle";
 
@@ -229,11 +231,7 @@
 
       res['kind'] = 'svg:path';
 
-      var half = markerSize/2;
-      if (half == Math.round(half))
-         half = half.toFixed(0);
-      else
-         half = half.toFixed(1);
+      var half = (markerSize/2).toFixed(1);
 
       switch(shape) {
       case 0: // circle
@@ -248,6 +246,12 @@
                      .style("pointer-events","visibleFill");
          }.bind(res);
          break;
+      case 1: // cross
+         var quat = (markerSize/6).toFixed(1);
+         res['marker'] = "M -" + quat+","+half+ " L " + quat+","+half + " L " + quat+","+quat +
+                        " L " + half+","+quat + " L " + half + ",-" + quat + " L " + quat+",-"+quat +
+                        " L " + quat+",-"+half + " L -" + quat+",-"+half + " L -" + quat+",-"+quat +
+                        " L -" + half+",-"+quat + " L -" + half+","+quat + " L -" + quat+","+quat + " z"; break;
       case 2: // diamond
          res['marker'] = "M -" + half + ",0  L 0,-" + half +
                          " L " + half + ",0  L 0," + half + " z"; break;
@@ -293,7 +297,8 @@
                         " M "  + half + ",-" + half +
                         " L -" + half + "," + half; break;
       default:
-         res['marker'] = d3.svg.symbol().type(d3.svg.symbolTypes[shape]).size(markerSize*8);
+         res['marker'] = "M -" + half + ",0  L 0,-" + half +
+                         " L " + half + ",0  L 0," + half + " z"; break;
       }
 
       if (res['kind'] == 'svg:path')
