@@ -1163,9 +1163,7 @@
          var fo;
 
          if (can3d == 1) {
-            this.CalcAbsolutePosition(frame, size);
-
-            console.log('size  = ' + JSON.stringify(size));
+            size = this.CalcAbsolutePosition(frame.empty() ? this.svg_pad() : frame, size);
 
             // force redraw by resize
             this.svg_canvas().property('redraw_by_resize', true);

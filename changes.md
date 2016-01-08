@@ -10,6 +10,7 @@
 7. Implement painter for TPolyMarker3D
 8. Improve drawing and update of TMultiGraph 
 9. Reorganize 3D drawing of TH2/TH3 histograms, allow to mix 2D and 3D display together  
+10. Support overlay of 3D graphic over SVG canvas (used with IE)
 
 
 ## Changes in 4.0
