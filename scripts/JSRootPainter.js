@@ -182,40 +182,21 @@
 
    // Initialize ROOT markers
    JSROOT.Painter.root_markers = new Array(
-         'fcircle', 'fcircle', 'oplus', 'oasterisk', 'ocircle',        // 0..4
-         'omult', 'fcircle', 'fcircle', 'fcircle', 'fcircle',          // 5..9
-         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 10..14
-         'fcircle', 'fcircle', 'fcircle', 'fcircle', 'fcircle',        // 15..19
-         'fcircle', 'fsquare', 'ftriangle-down', 'ftriangle-up', 'ocircle', // 20..24
-         'osquare', 'otriangle-up', 'odiamond', 'ocross', 'fstar',     // 25..29
-         'ostar', 'oasterisk', 'otriangle-down', 'fdiamond', 'fcross');   // 30..34
+           0, 100,   8,   7,   0,  //  0..4
+           9, 100, 100, 100, 100,  //  5..9
+         100, 100, 100, 100, 100,  // 10..14
+         100, 100, 100, 100, 100,  // 15..19
+         100, 103, 105, 104,   0,  // 20..24
+           3,   4,   2,   1, 106,  // 25..29
+           6,   7,   5, 102, 101); // 30..34
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
       if (style==null) style = attmarker['fMarkerStyle'];
 
-      style = 34;
+      var marker_kind = ((style>0) && (style < JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
 
-      var marker_name = (style < JSROOT.Painter.root_markers.length) ? JSROOT.Painter.root_markers[style] : "fcircle";
-
-      var shape = 0, toFill = true;
-
-      if (typeof (marker_name) != 'undefined') {
-         if (marker_name.charAt(0) == '0') toFill = false;
-
-         switch (marker_name.substr(1)) {
-           case "circle":  shape = 0; break;
-           case "cross":   shape = 1; break;
-           case "diamond": shape = 2; break;
-           case "square":  shape = 3; break;
-           case "triangle-up": shape = 4; break;
-           case "triangle-down": shape = 5; break;
-           case "star":    shape = 6; break;
-           case "asterisk":  shape = 7; break;
-           case "plus":     shape = 8; break;
-           case "mult":     shape = 9; break;
-         }
-      }
+      var shape = marker_kind % 100, toFill = (marker_kind>=100);
 
       var markerSize = attmarker['fMarkerSize'] * 8;
       switch(style) {
