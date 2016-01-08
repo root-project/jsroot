@@ -4182,25 +4182,28 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         // set zoom values if only inside range
-         if (min >= this['histo']['fXaxis']['fXmin'] && max <= this['histo']['fXaxis']['fXmax']) {
-            this['zoom_xmin'] = min;
-            this['zoom_xmax'] = max;
-         }
+         if (min !== this['histo']['fXaxis']['fXmin'] || max !== this['histo']['fXaxis']['fXmax'])
+            if (min >= this['histo']['fXaxis']['fXmin'] && max <= this['histo']['fXaxis']['fXmax']) {
+               // set zoom values if only inside range
+               this['zoom_xmin'] = min;
+               this['zoom_xmax'] = max;
+            }
       }
 
       min = pad.fUymin; max = pad.fUymax;
 
-      if ((min !== 0) || (max !== 1)) {
+      if ((this.Dimension() > 1) && ((min !== 0) || (max !== 1))) {
          if (pad.fLogy > 0) {
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min >= this['histo']['fYaxis']['fXmin'] && max <= this['histo']['fYaxis']['fXmax']) {
-            this['zoom_ymin'] = min;
-            this['zoom_ymax'] = max;
-         }
+         if (min !== this['histo']['fYaxis']['fXmin'] || max !== this['histo']['fYaxis']['fXmax'])
+            if (min >= this['histo']['fYaxis']['fXmin'] && max <= this['histo']['fYaxis']['fXmax']) {
+               // set zoom values if only inside range
+               this['zoom_ymin'] = min;
+               this['zoom_ymax'] = max;
+            }
       }
    }
 
