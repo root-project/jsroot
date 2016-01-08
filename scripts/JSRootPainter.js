@@ -218,8 +218,8 @@
       case 0: // circle
          res['kind'] = 'svg:circle';
          res['size'] = half;
-         res.func = function(selection) {
-            selection.style("fill", this.fill)
+         res.func = function(selection, d) {
+            return selection.style("fill", this.fill)
                      .attr("cx", 0)
                      .attr("cy", 0)
                      .attr("r", this.size)
@@ -2258,16 +2258,12 @@
       }
       if (selbins == null) selbins = this.bins;
 
-      console.log('selbins length = ' + selbins.length);
-
       if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
       var step = Math.floor(selbins.length / 5000);
       if (step < 2) step = 2;
       var optbins = [];
       for (var n = 0; n < selbins.length; n+=step)
          optbins.push(selbins[n]);
-
-      console.log('optbins length = ' + optbins.length);
 
       return optbins;
    }
@@ -2456,6 +2452,7 @@
                }
             }
          }
+
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll("g.node")
                      .data(drawbins)
@@ -2887,10 +2884,7 @@
 
       painter.SetDivId(divid);
       painter.DecodeOptions(opt);
-      var d1 = new Date;
       painter.DrawBins();
-      var d2 = new Date;
-      console.log('draw bins = ' + (d2.getTime() - d1.getTime()));
 
       painter.DrawNextFunction(0, painter.DrawingReady.bind(painter));
 
