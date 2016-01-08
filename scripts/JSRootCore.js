@@ -126,7 +126,8 @@
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
          Interpolate : "basis", // d3.js interpolate methods, used in TGraph and TF1 painters
-         ProgressBox : true  // show progress box
+         ProgressBox : true,  // show progress box
+         Embed3DinSVG : true  // if true, embed 3D graphics from three.js into canvas, works only with Firefox and Chrome
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -291,6 +292,7 @@
       // In case of opt1 empty string will be returned, in case of opt2 '3'
       // If option not found, null is returned (or provided default value)
 
+      if (arguments.length < 3) dflt = null;
       if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
 
       if (!url) url = document.URL;

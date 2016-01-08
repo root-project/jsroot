@@ -63,7 +63,7 @@
    JSROOT.Painter.readStyleFromURL = function(url) {
       var optimize = JSROOT.GetUrlOption("optimize", url);
       if (optimize=="") JSROOT.gStyle.OptimizeDraw = 2; else
-      if (optimize!=null) {
+      if (optimize!==null) {
          JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
          if (isNaN(JSROOT.gStyle.OptimizeDraw)) JSROOT.gStyle.OptimizeDraw = 2;
       }
@@ -80,13 +80,13 @@
       }
 
       var col = JSROOT.GetUrlOption("col", url);
-      if (col!=null) {
+      if (col!==null) {
          col = parseInt(col);
          if (!isNaN(col) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
       }
 
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
-      if ((mathjax!=null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
+      if ((mathjax!==null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
@@ -97,13 +97,16 @@
       JSROOT.gStyle.FitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.FitFormat);
 
       var interpolate = JSROOT.GetUrlOption("interpolate", url);
-      if (interpolate!=null) JSROOT.gStyle.Interpolate = interpolate;
+      if (interpolate!==null) JSROOT.gStyle.Interpolate = interpolate;
 
       var palette = JSROOT.GetUrlOption("palette", url);
-      if (palette!=null) {
+      if (palette!==null) {
          palette = parseInt(palette);
          if (!isNaN(palette) && (palette>0) && (palette<113)) JSROOT.gStyle.Palette = palette;
       }
+
+      var embed3d = JSROOT.GetUrlOption("embed3d", url);
+      if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = (embed3d!='false') && (parseInt(embed3d) !== 0);
    }
 
    JSROOT.Painter.Coord = {
@@ -1068,6 +1071,7 @@
       // returns true if one can embed 3D drawings (three.js) inside SVG
       // this is possible now only in Firefox and WebKit bowsers via ForeginObjects
 
+      if (!JSROOT.gStyle.Embed3DinSVG) return 0;
       if (JSROOT.browser.isFirefox) return 1;
       if (JSROOT.browser.isWebKit) return 2; // one should use workaround with positioning
       return 0;
@@ -1765,6 +1769,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g) {
+
       if (!draw_g) draw_g = this.draw_g;
       var align;
 
