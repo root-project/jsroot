@@ -2474,7 +2474,7 @@
       var dx = i2-i1, dy = j2-j1;
 
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo, 0, 0);
+      this.SetForeignObjectPosition(fo);
 
       var canvas = fo.append("xhtml:canvas")
                      .attr("width", dx).attr("height", dy)
@@ -2505,7 +2505,7 @@
       var local_bins = this.CreateDrawBins(w, h, 0, 0);
 
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo, 0, 0);
+      this.SetForeignObjectPosition(fo);
 
       var canvas = fo.append("xhtml:canvas").attr("width", w).attr("height", h);
 

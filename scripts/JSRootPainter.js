@@ -106,7 +106,7 @@
       }
 
       var embed3d = JSROOT.GetUrlOption("embed3d", url);
-      if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = (embed3d!='false') && (parseInt(embed3d) !== 0);
+      if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = parseInt(embed3d);
    }
 
    JSROOT.Painter.Coord = {
@@ -1068,13 +1068,15 @@
    }
 
    JSROOT.TObjectPainter.prototype.embed_3d = function() {
-      // returns true if one can embed 3D drawings (three.js) inside SVG
-      // this is possible now only in Firefox and WebKit bowsers via ForeginObjects
+      // returns embed mode for 3D drawings (three.js) inside SVG
+      // 0 - no embedding,  3D drawing take full size of canvas
+      // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
+      // 2 - normall embedding via ForeginObject, works only with Firefox and WebKit
 
-      if (!JSROOT.gStyle.Embed3DinSVG) return 0;
-      if (JSROOT.browser.isFirefox) return 1;
-      if (JSROOT.browser.isWebKit) return 2; // one should use workaround with positioning
-      return 0;
+      if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
+      if (JSROOT.browser.isFirefox || JSROOT.browser.isWebKit)
+         return JSROOT.gStyle.Embed3DinSVG; // use specified mode
+      return 1; // default is overlay
    }
 
    JSROOT.TObjectPainter.prototype.size_for_3d = function() {
@@ -1086,7 +1088,10 @@
       if (pad.empty() && frame.empty()) return { x:0, y:0, width:100, height:100 };
 
       var elem = pad;
-      if ((this.embed_3d() > 0) && !frame.empty()) elem = frame;
+      if (this.embed_3d() == 0)
+         elem = this.svg_canvas();
+      else
+      if (!frame.empty()) elem = frame;
 
       var size = { x: 0, y: 0,
                    width: elem.property("draw_width"),
@@ -1122,7 +1127,14 @@
       } else {
          if (this.svg_pad().empty()) return;
 
-         this.svg_pad().select(".frame_layer foreignObject").remove();
+         if (can3d>1) {
+            this.svg_pad().select(".frame_layer foreignObject").remove();
+         } else {
+            var name = this.pad_name;
+            if (name == "") name = 'canvas';
+            d3.select(this.svg_canvas().node().parentNode).select('.draw3d_' + name).remove();
+         }
+
          this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
       }
    }
@@ -1146,17 +1158,40 @@
          var frame = this.svg_pad().select(".frame_layer").select(".root_frame");
          frame.style('display', 'none');
 
-         var fo = this.svg_pad().select(".frame_layer").append("foreignObject");
          var size = this.size_for_3d();
 
-         // set frame dimensions
-         fo.attr('width', size.width)
-           .attr('height', size.height)
-           .attr('viewBox', "0 0 " + size.width + " " + size.height)
-           .attr('preserveAspectRatio','xMidYMid');
+         var fo;
 
-         // and position
-         this.SetForeignObjectPosition(fo, size.x, size.y);
+         if (can3d == 1) {
+            this.CalcAbsolutePosition(frame, size);
+
+            console.log('size  = ' + JSON.stringify(size));
+
+            // force redraw by resize
+            this.svg_canvas().property('redraw_by_resize', true);
+
+            var name = this.pad_name;
+            if (name == '') name = 'canvas';
+
+            fo = d3.select(this.svg_canvas().node().parentNode).append('div');
+            fo.attr('class','draw3d_' + name)
+              .style('position','absolute')
+              .style('left', size.x + 'px')
+              .style('top', size.y + 'px')
+              .style('width', size.width + 'px')
+              .style('height', size.height + 'px');
+         } else {
+            fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+
+            // set frame dimensions
+            fo.attr('width', size.width)
+              .attr('height', size.height)
+              .attr('viewBox', "0 0 " + size.width + " " + size.height)
+              .attr('preserveAspectRatio','xMidYMid');
+
+            // and position
+            this.SetForeignObjectPosition(fo, size);
+         }
 
          fo.node().appendChild(canv);
       }
@@ -1232,25 +1267,30 @@
          svg_p.property('mainpainter', this);
    }
 
-   JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, x, y) {
+   JSROOT.TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
+      while (!sel.empty() && sel.attr('class') != 'root_canvas') {
+         if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
+           pos.x += sel.property("draw_x");
+           pos.y += sel.property("draw_y");
+         }
+         sel = d3.select(sel.node().parentNode);
+      }
+      return pos;
+   }
+
+   JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, pos) {
       // method used to set absolute coordinates for foreignObject
       // it is known problem of WebKit http://bit.ly/1wjqCQ9
 
-      var sel = fo;
+      if (!pos) pos = { x: 0, y: 0 };
 
       if (JSROOT.browser.isWebKit) {
          // force canvas redraw when foreign object used - it is not correctly scaled
          this.svg_canvas().property('redraw_by_resize', true);
-         while (!sel.empty() && sel.attr('class') != 'root_canvas') {
-            if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
-              x += sel.property("draw_x");
-              y += sel.property("draw_y");
-            }
-            sel = d3.select(sel.node().parentNode);
-         }
+         pos = this.CalcAbsolutePosition(fo, pos);
       }
 
-      fo.attr("x",x).attr("y",y);
+      fo.attr("x",pos.x).attr("y",pos.y);
    }
 
 
