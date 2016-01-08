@@ -549,8 +549,8 @@
          bin.position.y = wei / 2;
          bin.position.z = -(this.ty(hh.y));
 
-         if (JSROOT.gStyle.Tooltip)
-            bin.name = hh.tip;
+         if (JSROOT.gStyle.Tooltip && ('tip' in hh))
+            bin.name = hh.tip.replace(/(?:\r\n|\r|\n)/g, '<br/>');
          this.toplevel.add(bin);
 
          var helper = new THREE.BoxHelper(bin);
@@ -756,7 +756,7 @@
 
       var name = this.GetItemName();
       if ((name==null) || (name=="")) name = this.histo.fName;
-      if (name.length > 0) name += "\n";
+      if (name.length > 0) name += "<br/>";
 
       for (var i = 0; i < this.nbinsx; ++i)
          for (var j = 0; j < this.nbinsy; ++j)
@@ -772,10 +772,10 @@
                   };
 
                if (JSROOT.gStyle.Tooltip)
-                  bin.tip = name + 'x=' + bin.x + ' bin=' + (i+1) + '\n'
-                                 + 'y=' + bin.y + ' bin=' + (j+1) + '\n'
-                                 + 'z=' + bin.z + ' bin=' + (k+1) + '\n'
-                                 + 'entries=' + bin.n;
+                  bin.tip = name + 'x=' + JSROOT.FFormat(bin.x,"6.4g") + ' bin=' + (i+1) + '<br/>'
+                                 + 'y=' + JSROOT.FFormat(bin.y,"6.4g") + ' bin=' + (j+1) + '<br/>'
+                                 + 'z=' + JSROOT.FFormat(bin.z,"6.4g") + ' bin=' + (k+1) + '<br/>'
+                                 + 'entries=' + JSROOT.FFormat(bin.n, "7.0g");
 
                bins.push(bin);
             }
