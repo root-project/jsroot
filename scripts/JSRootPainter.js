@@ -4185,24 +4185,35 @@
       this['zoom_zmin'] = 0;
       this['zoom_zmax'] = 0;
 
-      if ((pad!=null) && ('fUxmin' in pad) && !this.create_canvas) {
-         if (pad.fUxmin !== this['histo']['fXaxis']['fXmin'] ||
-             pad.fUxmax !== this['histo']['fXaxis']['fXmax']) {
-            this['zoom_xmin'] = pad.fUxmin;
-            this['zoom_xmax'] = pad.fUxmax;
-            if (pad.fLogx > 0) {
-               this['zoom_xmin'] = Math.exp(this['zoom_xmin'] * Math.log(10));
-               this['zoom_xmax'] = Math.exp(this['zoom_xmax'] * Math.log(10));
-            }
+      if ((pad==null) || !('fUxmin' in pad) || this.create_canvas) return;
+
+      var min = pad.fUxmin, max = pad.fUxmax;
+
+      // first check that non-default values are there
+      if ((min !== 0) || (max !== 1)) {
+         if (pad.fLogx > 0) {
+            min = Math.exp(min * Math.log(10));
+            max = Math.exp(max * Math.log(10));
          }
-         if (pad.fUymin !== this['histo']['fYaxis']['fXmin'] ||
-             pad.fUymax !== this['histo']['fYaxis']['fXmax']) {
-            this['zoom_ymin'] = pad.fUymin;
-            this['zoom_ymax'] = pad.fUymax;
-            if (pad.fLogy > 0) {
-               this['zoom_ymin'] = Math.exp(this['zoom_ymin'] * Math.log(10));
-               this['zoom_ymax'] = Math.exp(this['zoom_ymax'] * Math.log(10));
-            }
+
+         // set zoom values if only inside range
+         if (min >= this['histo']['fXaxis']['fXmin'] && max <= this['histo']['fXaxis']['fXmax']) {
+            this['zoom_xmin'] = min;
+            this['zoom_xmax'] = max;
+         }
+      }
+
+      min = pad.fUymin; max = pad.fUymax;
+
+      if ((min !== 0) || (max !== 1)) {
+         if (pad.fLogy > 0) {
+            min = Math.exp(min * Math.log(10));
+            max = Math.exp(max * Math.log(10));
+         }
+
+         if (min >= this['histo']['fYaxis']['fXmin'] && max <= this['histo']['fYaxis']['fXmax']) {
+            this['zoom_ymin'] = min;
+            this['zoom_ymax'] = max;
          }
       }
    }
