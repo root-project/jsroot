@@ -7,10 +7,9 @@
 4. Provide possibility to save drawn object as PNG 
 5. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
 6. Optimize TGrapth drawing - web browsers have problem to draw 10000 pixels at the same time   
-7. Implement painter for TPolyMarker3D, works only with canvas
+7. Implement painter for TPolyMarker3D
 8. Improve drawing and update of TMultiGraph 
-9. Reorganize 3D drawing of TH2/TH3 histograms, in Firefox/Chrome one can draw title and statbox 
-
+9. Reorganize 3D drawing of TH2/TH3 histograms, allow to mix 2D and 3D display together  
 
 
 ## Changes in 4.0

@@ -878,7 +878,7 @@
       this['DrawBins'] = function() {
          var w = this.frame_width(), h = this.frame_height();
 
-         this.RecreateDrawG(false, ".main_layer", false);
+         this.RecreateDrawG(false, ".main_layer");
 
          // recalculate drawing bins when necessary
          if ((this['bins']==null) || (this.tf1['fSave'].length==0)) this.CreateBins();
@@ -2522,7 +2522,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG(false, ".main_layer", false);
+      this.RecreateDrawG(false, ".main_layer");
 
       var w = this.frame_width(), h = this.frame_height();
 

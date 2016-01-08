@@ -964,38 +964,18 @@
    /** function (re)creates svg:g element used for specific object drawings
      *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
      *  svg:g element can be attached to different layers */
-   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer, normalg) {
+   JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
       if (this.draw_g)
-         this.draw_g.selectAll("*").remove();
-
-      if (normalg == null) normalg = true;
+         return this.draw_g.selectAll("*").remove();
 
       if (take_pad) {
          if (layer==null) layer = ".text_layer";
-         if (!this.draw_g)
-            this.draw_g = this.svg_pad().select(layer).append("svg:g");
+         this.draw_g = this.svg_pad().select(layer).append("svg:g");
       } else {
-         var frame = this.svg_frame();
-
-         var w = frame.attr("width");
-         var h = frame.attr("height");
-
-         if (!this.draw_g) {
-            if (layer==null) layer = ".main_layer";
-            if (normalg)
-               this.draw_g = frame.select(layer).append("g");
-            else
-               this.draw_g = frame.select(layer).append("svg");
-         }
-
-         if (!normalg)
-            this.draw_g.attr("x", 0)
-                       .attr("y", 0)
-                       .attr("width",w)
-                       .attr("height", h)
-                       .attr("viewBox", "0 0 " + w + " " + h)
-                       .attr('overflow', 'hidden');
+         if (layer==null) layer = ".main_layer";
+         this.draw_g = this.svg_frame().select(layer).append("svg:g");
       }
+      return this.draw_g;
    }
 
    /** This is main graphical SVG element, where all Canvas drawing are performed */
@@ -2001,7 +1981,15 @@
 
          // append for the moment three layers - for drawing and axis
          frame_g.append('svg:g').attr('class','grid_layer');
-         frame_g.append('svg:g').attr('class','main_layer');
+
+         frame_g.append('svg:svg').attr('class','main_layer')
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", Math.round(w))
+                .attr("height", Math.round(h))
+                .attr("viewBox", "0 0 " + Math.round(w) + " " + Math.round(h))
+                .attr('overflow', 'hidden');
+
          frame_g.append('svg:g').attr('class','axis_layer');
          frame_g.append('svg:g').attr('class','upper_layer');
       } else {
@@ -2312,7 +2300,7 @@
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
       var w = this.frame_width(), h = this.frame_height();
 
-      this.RecreateDrawG(false, ".main_layer", false);
+      this.RecreateDrawG(false, ".main_layer");
 
       var pthis = this;
       var pmain = this.main_painter();
@@ -6024,7 +6012,7 @@
          return;
       }
 
-      this.RecreateDrawG(false, ".main_layer", false);
+      this.RecreateDrawG(false, ".main_layer");
 
       if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
@@ -6291,7 +6279,7 @@
          if (this.text['fTextColor'] == 0) this.text['fTextColor'] = 1;
       }
 
-      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer", true);
+      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
 
       var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
 
