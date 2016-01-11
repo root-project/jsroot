@@ -2274,7 +2274,7 @@
    }
 
    JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
-      if (this.bins.length < 30) return this.bins;
+      if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       var selbins = null;
       if (typeof filter_func == 'function') {
@@ -2446,11 +2446,11 @@
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets) {
 
-         if (drawbins==null)
+         if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
                var grx = pmain.grx(pnt.x);
                if ((grx<0) || (grx>w)) return true; // exclude point out of X range
-               if (this.out_of_range) return false; // allow to draw points out of Y range
+               if (pthis.out_of_range) return false; // allow to draw points out of Y range
                var gry = pmain.gry(pnt.y);
                return (gry<0) || (gry>h); // exclude point out of Y range
             });
