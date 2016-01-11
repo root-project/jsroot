@@ -1,16 +1,15 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Fix several problems with TH1 update
-2. Fix problems and improve flex layout
-3. Introduce object inspector
-4. Provide possibility to save drawn object as PNG 
-5. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
-6. Optimize TGrapth drawing - web browsers have problem to draw 10000 pixels at the same time   
-7. Implement painter for TPolyMarker3D
-8. Improve drawing and update of TMultiGraph 
-9. Reorganize 3D drawing of TH2/TH3 histograms, allow to mix 2D and 3D display together  
-10. Support overlay of 3D graphic over SVG canvas (used with IE)
+1. Introduce object inspector - one could browse all object members
+2. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
+3. Provide possibility to save drawn SVG canvas as PNG 
+4. TGrapth drawing optimization - limit number of drawn points   
+5. Implement painter for TPolyMarker3D
+6. Improve drawing and update of TMultiGraph 
+7. Reorganize 3D drawing of TH2/TH3 histograms, allow to mix 2D and 3D display together  
+8. Support overlay of 3D graphic over SVG canvas (used with IE)
+9. Fix problems and improve flex(ible) layout
 
 
 ## Changes in 4.0
