@@ -7903,7 +7903,7 @@
 
          if (entry._typename == "TList") continue;
 
-         if (typeof (entry['fName']) == 'undefined') {
+         if (typeof (entry.fName) == 'undefined') {
             JSROOT.console("strange element in StreamerInfo with type " + entry._typename);
             continue;
          }
@@ -7920,14 +7920,15 @@
 
          painter.h._childs.push(item);
 
-         if (typeof entry['fElements'] == 'undefined') continue;
+         if (typeof entry.fElements == 'undefined') continue;
          for ( var l = 0; l < entry.fElements.arr.length; ++l) {
             var elem = entry.fElements.arr[l];
             if ((elem == null) || (typeof (elem.fName) == 'undefined')) continue;
-            var info = elem['fTypeName'] + " " + elem['fName'] + ";";
-            if (elem['fTitle'] != '') info += " // " + elem['fTitle'];
+            var info = elem.fTypeName + " " + elem.fName + ";";
+            if (elem.fTitle != '') info += " // " + elem.fTitle;
             item._childs.push({ _name : info, _title: elem.fTypeName, _kind:elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
+         if (item._childs.length == 0) delete item._childs;
       }
 
 
