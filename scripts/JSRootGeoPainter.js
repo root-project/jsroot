@@ -706,6 +706,7 @@
    JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node, visible) {
       var container = toplevel;
       var volume = node['fVolume'];
+      if (visible==0) return; // cut all volumes below 0 level
 
       var translation_matrix = [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -961,20 +962,35 @@
 
       var dom = this.select_main().node();
 
-      if (opt == 'count') {
+      var maxlvl = opt=="all" ? 9999 : -1;
+
+      if ((opt == 'count') || (opt == 'limit')) {
          var arr = [];
          for (var lvl=0;lvl<100;++lvl) arr.push(0);
 
          var cnt = this.CountVolumes(this._geometry, 0, arr);
 
-         var res = 'Total number: ' + cnt + '<br/>';
-         for (var lvl=0;lvl<arr.length;++lvl) {
-            if (arr[lvl] !== 0)
-               res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
+         if (opt == 'count') {
+            var res = 'Total number: ' + cnt + '<br/>';
+            for (var lvl=0;lvl<arr.length;++lvl) {
+               if (arr[lvl] !== 0)
+                  res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
+            }
+
+            dom.innerHTML = res;
+            return this.DrawingReady();
          }
 
-         dom.innerHTML = res;
-         return this.DrawingReady();
+         var sum = 0;
+         for (var lvl=1;lvl<arr.length;++lvl) {
+            sum += arr[lvl];
+            if (sum > 10000) {
+               maxlvl = lvl - 1;
+               console.log('set level on ' + maxlvl);
+               break;
+            }
+         }
+
       }
 
       // three.js 3D drawing
@@ -1033,7 +1049,7 @@
                   visible: false, transparent: true, opacity: 0.0 } ) );
          toplevel.add(cube);
 
-         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, opt=="all" ? 9999 : 0);
+         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, maxlvl);
 
          top.computeBoundingBox();
          var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
@@ -1419,7 +1435,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;limit;" });
 
 
    return JSROOT.Painter;
