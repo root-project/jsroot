@@ -967,10 +967,10 @@
 
          var cnt = this.CountVolumes(this._geometry, 0, arr);
 
-         var res = 'Counting elements = ' + cnt + '<br/>';
+         var res = 'Total number: ' + cnt + '<br/>';
          for (var lvl=0;lvl<arr.length;++lvl) {
             if (arr[lvl] !== 0)
-               res += ('  lvl' + lvl + ' = ' + arr[lvl] + '<br/>');
+               res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
          }
 
          dom.innerHTML = res;
@@ -1419,7 +1419,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;" });
 
 
    return JSROOT.Painter;
