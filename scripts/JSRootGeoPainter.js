@@ -926,6 +926,32 @@
       return bbox;
    }
 
+   JSROOT.TGeoPainter.prototype.CountVolumes = function(obj, lvl, mmm) {
+      var res = 0;
+
+      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return 0;
+
+      if ((obj['_typename'] == 'TGeoVolume') || (obj['_typename'] == 'TGeoVolumeAssembly'))
+         return this.CountVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, mmm);
+
+      res += 1;
+      if (mmm!=null) mmm[lvl] += 1;
+
+      if (('fVolume' in obj) && (obj.fVolume!=null) && (obj.fVolume.fNodes!=null)) {
+        var arr = obj.fVolume['fNodes']['arr'];
+        for (var i = 0; i < arr.length; ++i)
+           res += this.CountVolumes(arr[i], lvl+1, mmm);
+      }
+
+      if (('fElements' in obj) && (obj.fElements != null)) {
+        var arr = obj['fElements']['arr'];
+        for (var i = 0; i < arr.length; ++i)
+           res += this.CountVolumes(arr[i], lvl+1, mmm);
+      }
+
+      return res;
+   }
+
    JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
       var rect = this.select_main().node().getBoundingClientRect();
 
@@ -934,6 +960,22 @@
       if (h < 10) { h = parseInt(0.66*w); this.select_main().style('height', h +"px"); }
 
       var dom = this.select_main().node();
+
+      if (opt == 'count') {
+         var arr = [];
+         for (var lvl=0;lvl<100;++lvl) arr.push(0);
+
+         var cnt = this.CountVolumes(this._geometry, 0, arr);
+
+         var res = 'Counting elements = ' + cnt + '<br/>';
+         for (var lvl=0;lvl<arr.length;++lvl) {
+            if (arr[lvl] !== 0)
+               res += ('  lvl' + lvl + ' = ' + arr[lvl] + '<br/>');
+         }
+
+         dom.innerHTML = res;
+         return this.DrawingReady();
+      }
 
       // three.js 3D drawing
       this._scene = new THREE.Scene();
