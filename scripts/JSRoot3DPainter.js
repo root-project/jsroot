@@ -120,7 +120,7 @@
          if (mouseDowned) {
             if (INTERSECTED) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               painter.Render3D();
+               painter.Render3D(0);
             }
             INTERSECTED = null;
             if (JSROOT.gStyle.Tooltip)
@@ -143,7 +143,7 @@
                INTERSECTED = pick.object;
                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                INTERSECTED.material.emissive.setHex(0x5f5f5f);
-               painter.Render3D();
+               painter.Render3D(0);
                if (JSROOT.gStyle.Tooltip)
                   tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name
                         : INTERSECTED.parent.name, 200);
@@ -151,7 +151,7 @@
          } else {
             if (INTERSECTED) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               painter.Render3D();
+               painter.Render3D(0);
             }
             INTERSECTED = null;
             if (JSROOT.gStyle.Tooltip)
@@ -200,7 +200,7 @@
                painter.toplevel.rotation.x += moveY * 0.02;
             }
             painter.toplevel.rotation.y += moveX * 0.02;
-            painter.Render3D();
+            painter.Render3D(0);
             mouseX = touch.pageX;
             mouseY = touch.pageY;
          } else {
@@ -220,7 +220,7 @@
       $(painter.renderer.domElement).on('mousewheel', function(e, d) {
          e.preventDefault();
          painter.camera.position.z += d * 20;
-         painter.Render3D();
+         painter.Render3D(0);
       });
 
       $(painter.renderer.domElement).on('contextmenu', function(e) {
@@ -564,9 +564,9 @@
    }
 
    JSROOT.Painter.Render3D = function(tmout) {
-      if (tmout==null) tmout = 10; // by default, rendering happens later
+      if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if (tmout<=0) {
+      if (tmout <= 0) {
          if ('render_tmout' in this)
             clearTimeout(this['render_tmout']);
 
