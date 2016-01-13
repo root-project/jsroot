@@ -237,7 +237,7 @@
    }
 
    // Make deep clone of the object, including all sub-objects
-   JSROOT.clone = function(src, nofunc, map) {
+   JSROOT.clone = function(src, map) {
       if (src === null) return null;
 
       if (!map) {
@@ -255,7 +255,7 @@
          map.obj.push(src);
          map.clones.push(tgt);
          for (var i = 0; i < src.length; ++i)
-            tgt.push(JSROOT.clone(src[i], nofunc, map));
+            tgt.push(JSROOT.clone(src[i], map));
 
          return tgt;
       }
@@ -277,14 +277,42 @@
 
       for (var k in src) {
          if (typeof src[k] === 'object')
-            tgt[k] = JSROOT.clone(src[k], nofunc, map);
+            tgt[k] = JSROOT.clone(src[k], map);
          else
-         if (!nofunc || (typeof src[k] !== 'function'))
             tgt[k] = src[k];
       }
 
       return tgt;
    }
+
+   // method can be used to delete all functions from objects
+   // only such objects can be cloned when transfer to Worker
+   JSROOT.clear_func = function(src, map) {
+      if (src === null) return;
+
+      var proto = Object.prototype.toString.apply(src);
+
+      if (proto === '[object Array]') {
+         for (var n=0;n<src.length;n++)
+            if (typeof src[n] === 'object')
+               JSROOT.clear_func(src[n], map);
+         return;
+      }
+
+      if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) return;
+
+      if (!map) map = [];
+      if (map.indexOf(src)>=0) return;
+      map.push(src);
+
+      for (var k in src) {
+         if (typeof src[k] === 'object')
+            JSROOT.clear_func(src[k], map);
+         else
+         if (typeof src[k] === 'function') delete src[k];
+      }
+   }
+
 
    JSROOT.parse = function(arg) {
       if ((arg==null) || (arg=="")) return null;
