@@ -954,6 +954,8 @@
    }
 
    JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
+      if (typeof opt != 'string') opt = "";
+
       var rect = this.select_main().node().getBoundingClientRect();
 
       var w = rect.width, h = rect.height, size = 100;
@@ -962,8 +964,10 @@
 
       var dom = this.select_main().node();
 
-      var maxlvl = opt=="all" ? 9999 : -1;
+      var maxlvl = -1; // use only visible flag, set in ROOT when geometry is displayed
 
+      if (opt=="all") maxlvl = 9999; else
+      if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
       if ((opt == 'count') || (opt == 'limit')) {
          var arr = [];
          for (var lvl=0;lvl<100;++lvl) arr.push(0);
@@ -981,16 +985,15 @@
             return this.DrawingReady();
          }
 
+         maxlvl = 9999;
          var sum = 0;
          for (var lvl=1;lvl<arr.length;++lvl) {
             sum += arr[lvl];
             if (sum > 10000) {
                maxlvl = lvl - 1;
-               console.log('set level on ' + maxlvl);
                break;
             }
          }
-
       }
 
       // three.js 3D drawing
@@ -1333,7 +1336,7 @@
          _title : volume.fTitle,
          _parent : parent,
          _volume : volume, // keep direct reference
-         _more : (typeof volume['fNodes'] != 'undefined') && (volume['fNodes']!=null),
+         _more : (volume['fNodes'] !== undefined) && (volume['fNodes'] !== null),
          _menu : JSROOT.provideGeoMenu,
          _icon_click : JSROOT.geoIconClick,
          _get : function(item, itemname, callback) {
@@ -1435,7 +1438,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;limit;" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;limit;maxlvl2" });
 
 
    return JSROOT.Painter;
