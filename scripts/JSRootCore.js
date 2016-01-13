@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 13/01/2016";
+   JSROOT.version = "4.1 13/01/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -94,7 +94,7 @@
    JSROOT.id_counter = 0;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari: false, isChrome: false, isIE: false };
+   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported

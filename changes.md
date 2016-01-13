@@ -1,14 +1,14 @@
 # JSROOT changelog
 
-## Changes in master
-1. Introduce object inspector - one could browse all object members
+## Changes in 4.1
+1. Introduce object inspector - one could browse object members of any class
 2. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
 3. Provide possibility to save drawn SVG canvas as PNG 
-4. TGrapth drawing optimization - limit number of drawn points   
+4. TGraph drawing optimization - limit number of drawn points   
 5. Implement painter for TPolyMarker3D
 6. Improve drawing and update of TMultiGraph 
 7. Reorganize 3D drawing of TH2/TH3 histograms, allow to mix 2D and 3D display together  
-8. Support overlay of 3D graphic over SVG canvas (used with IE)
+8. Support overlay of 3D graphic over SVG canvas (used for IE)
 9. Fix problems and improve flex(ible) layout
 
 
