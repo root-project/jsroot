@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "4.1 13/01/2016";
+   JSROOT.version = "dev 13/01/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -94,7 +94,7 @@
    JSROOT.id_counter = 0;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false };
+   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari: false, isChrome: false, isIE: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
@@ -224,75 +224,66 @@
 
    JSROOT.debug = 0;
 
-   // This should be similar to the jQuery.extend method
+   // This is simple replacement of jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src, map, deep_copy) {
       if ((src === null) || (typeof src !== 'object')) return src;
-
-      if (typeof deep_copy === "undefined") deep_copy = 0;
-
-      if (deep_copy > 0) {
-         if (!map) map = { obj:[], clones:[] };
-         var i = map.obj.indexOf(src);
-         if (i>=0) return map.clones[i];
-
-         var proto = Object.prototype.toString.apply(src);
-
-         // process normal array
-         if (proto === '[object Array]') {
-            tgt = [];
-            map.obj.push(src);
-            map.clones.push(tgt);
-            for (i = 0; i < src.length; ++i)
-               tgt.push(JSROOT.extend(null, src[i], map, deep_copy));
-
-            return tgt;
-         }
-
-         // process typed array
-         if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]')==proto.length-6)) {
-            tgt = [];
-            map.obj.push(src);
-            map.clones.push(tgt);
-            for (i = 0; i < src.length; ++i)
-               tgt.push(src[i]);
-
-            return tgt;
-         }
-
-         if ((tgt==null) || (typeof tgt != 'object')) {
-            tgt = {};
-            map.obj.push(src);
-            map.clones.push(tgt);
-         }
-      } else {
-         if ((tgt===null) || (typeof tgt !== 'object')) tgt = {};
-      }
+      if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
 
       for (var k in src)
-         switch (deep_copy) {
-            case 0:
-               tgt[k] = src[k];
-               break;
-            case 1:
-               tgt[k] = JSROOT.extend(tgt[k], src[k], map, deep_copy);
-               break;
-            case 2:
-               if (typeof(src[k]) !== 'function')
-                  tgt[k] = JSROOT.extend(tgt[k], src[k], map, deep_copy);
-               break;
-
-            default:
-               tgt[k] = src[k];
-         }
+         tgt[k] = src[k];
 
       return tgt;
    }
 
-   // Instead of jquery use JSROOT.extend function
-   // Make deep_copy of the object, including all sub-objects
-   JSROOT.clone = function(obj, nofunc) {
-      return JSROOT.extend(null, obj, null, nofunc ? 2 : 1);
+   // Make deep clone of the object, including all sub-objects
+   JSROOT.clone = function(src, nofunc, map) {
+      if (src === null) return null;
+
+      if (!map) {
+         map = { obj:[], clones:[] };
+      } else {
+         var i = map.obj.indexOf(src);
+         if (i>=0) return map.clones[i];
+      }
+
+      var proto = Object.prototype.toString.apply(src);
+
+      // process normal array
+      if (proto === '[object Array]') {
+         var tgt = [];
+         map.obj.push(src);
+         map.clones.push(tgt);
+         for (var i = 0; i < src.length; ++i)
+            tgt.push(JSROOT.clone(src[i], nofunc, map));
+
+         return tgt;
+      }
+
+      // process typed array
+      if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
+         var tgt = [];
+         map.obj.push(src);
+         map.clones.push(tgt);
+         for (var i = 0; i < src.length; ++i)
+            tgt.push(src[i]);
+
+         return tgt;
+      }
+
+      var tgt = {};
+      map.obj.push(src);
+      map.clones.push(tgt);
+
+      for (var k in src) {
+         if (typeof src[k] === 'object')
+            tgt[k] = JSROOT.clone(src[k], nofunc, map);
+         else
+         if (!nofunc || (typeof src[k] !== 'function'))
+            tgt[k] = src[k];
+      }
+
+      return tgt;
    }
 
    JSROOT.parse = function(arg) {
