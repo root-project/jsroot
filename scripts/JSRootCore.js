@@ -227,9 +227,11 @@
    // This should be similar to the jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src, map, deep_copy) {
-      if ((src == null) || (typeof src != 'object')) return src;
+      if ((src === null) || (typeof src !== 'object')) return src;
 
-      if (deep_copy) {
+      if (typeof deep_copy === "undefined") deep_copy = 0;
+
+      if (deep_copy > 0) {
          if (!map) map = { obj:[], clones:[] };
          var i = map.obj.indexOf(src);
          if (i>=0) return map.clones[i];
@@ -264,22 +266,33 @@
             map.clones.push(tgt);
          }
       } else {
-         if ((tgt==null) || (typeof tgt != 'object')) tgt = {};
+         if ((tgt===null) || (typeof tgt !== 'object')) tgt = {};
       }
 
       for (var k in src)
-         if (deep_copy)
-            tgt[k] = JSROOT.extend(tgt[k], src[k], map, true);
-         else
-            tgt[k] = src[k];
+         switch (deep_copy) {
+            case 0:
+               tgt[k] = src[k];
+               break;
+            case 1:
+               tgt[k] = JSROOT.extend(tgt[k], src[k], map, deep_copy);
+               break;
+            case 2:
+               if (typeof(src[k]) !== 'function')
+                  tgt[k] = JSROOT.extend(tgt[k], src[k], map, deep_copy);
+               break;
+
+            default:
+               tgt[k] = src[k];
+         }
 
       return tgt;
    }
 
    // Instead of jquery use JSROOT.extend function
    // Make deep_copy of the object, including all sub-objects
-   JSROOT.clone = function(obj) {
-      return JSROOT.extend(null, obj, null, true);
+   JSROOT.clone = function(obj, nofunc) {
+      return JSROOT.extend(null, obj, null, nofunc ? 2 : 1);
    }
 
    JSROOT.parse = function(arg) {
