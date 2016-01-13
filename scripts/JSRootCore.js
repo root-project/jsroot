@@ -302,8 +302,11 @@
       if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) return;
 
       if (!map) map = [];
-      if (map.indexOf(src)>=0) return;
+      var nomap = (map.length == 0);
+      if ('__clean_func__' in src) return;
+
       map.push(src);
+      src['__clean_func__'] = true;
 
       for (var k in src) {
          if (typeof src[k] === 'object')
@@ -311,6 +314,10 @@
          else
          if (typeof src[k] === 'function') delete src[k];
       }
+
+      if (nomap)
+         for (var n=0;n<map.length;++n)
+            delete map[n]['__clean_func__'];
    }
 
 
