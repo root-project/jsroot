@@ -543,7 +543,7 @@
 
          // create a new mesh with cube geometry
          var bin = new THREE.Mesh(new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, wei, 2 * this.size3d / this.nbinsy),
-                               new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
+                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
 
          bin.position.x = this.tx(hh.x);
          bin.position.y = wei / 2;
@@ -801,7 +801,7 @@
          wei = (this.options.Color > 0 ? this.gmaxbin : bins[i].n);
          if (this.options.Box == 11) {
             bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx),
-                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f }));
+                                 new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f }));
          } else {
             bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
