@@ -93,15 +93,18 @@
 
    JSROOT.id_counter = 0;
 
-   JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
+   JSROOT.touches = false;
+   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari: false, isChrome: false, isIE: false };
 
-   JSROOT.browser = {};
+   if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
+      JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
+      JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+      JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
+      JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+      JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
+      JSROOT.browser.isIE = false || !!document.documentMode;
+   }
 
-   JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-   JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
-   JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-   JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
-   JSROOT.browser.isIE = false || !!document.documentMode;
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
 
    // default draw styles, can be changed after loading of JSRootCore.js
@@ -1306,6 +1309,12 @@
 
    JSROOT.Initialize = function() {
 
+      if (typeof document === "undefined") {
+         JSROOT.source_dir = "";
+         JSROOT.source_min = false;
+         return this;
+      }
+
       function window_on_load(func) {
          if (func!=null) {
             if (document.attachEvent ? document.readyState === 'complete' : document.readyState !== 'loading')
@@ -1332,7 +1341,7 @@
 
          JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
-         if (JSROOT.GetUrlOption('gui', src)!=null)
+         if (JSROOT.GetUrlOption('gui', src) !== null)
             return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
 
          if ( typeof define === "function" && define.amd )
