@@ -23,6 +23,32 @@
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 
+   JSROOT.GeoWorker = null;
+
+   if(false && (typeof(Worker) !== "undefined") && (typeof document !== "undefined")) {
+
+      JSROOT.GeoWorker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
+
+
+      JSROOT.GeoWorkerFirst = 0;
+
+      JSROOT.GeoWorker.onmessage = function(event) {
+          console.log('Get worker message ' + event.data);
+
+          if ((typeof JSROOT.GeoWorkerFirst === 'object') && (JSROOT.GeoWorkerFirst!==null)) {
+
+             var obj = { geom : JSROOT.GeoWorkerFirst, dt: new Date };
+
+             JSROOT.GeoWorker.postMessage(obj);
+          }
+
+          JSROOT.GeoWorkerFirst = null;
+
+      };
+
+      JSROOT.GeoWorker.postMessage("Initialize");
+   }
+
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
@@ -927,34 +953,60 @@
       return bbox;
    }
 
-   JSROOT.TGeoPainter.prototype.CountVolumes = function(obj, lvl, mmm) {
+   JSROOT.Painter.CountGeoVolumes = function(obj, lvl, mmm) {
       var res = 0;
 
       if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return 0;
 
       if ((obj['_typename'] == 'TGeoVolume') || (obj['_typename'] == 'TGeoVolumeAssembly'))
-         return this.CountVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, mmm);
+         return JSROOT.Painter.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, mmm);
 
       res += 1;
       if (mmm!=null) mmm[lvl] += 1;
 
-      if (('fVolume' in obj) && (obj.fVolume!=null) && (obj.fVolume.fNodes!=null)) {
-        var arr = obj.fVolume['fNodes']['arr'];
+      if (('fVolume' in obj) && (obj.fVolume != null) && (obj.fVolume.fNodes != null)) {
+        var arr = obj.fVolume.fNodes.arr;
+        if (arr === undefined) console.log('undefined lvl' + lvl + '  typename' + obj['_typename'] + ' nodes = ' + obj.fVolume.fNodes + '  name = ' + obj.fVolume.fName);
         for (var i = 0; i < arr.length; ++i)
-           res += this.CountVolumes(arr[i], lvl+1, mmm);
+           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, mmm);
       }
 
       if (('fElements' in obj) && (obj.fElements != null)) {
-        var arr = obj['fElements']['arr'];
+        var arr = obj.fElements.arr;
         for (var i = 0; i < arr.length; ++i)
-           res += this.CountVolumes(arr[i], lvl+1, mmm);
+           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, mmm);
       }
 
       return res;
    }
 
    JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
-      if (typeof opt != 'string') opt = "";
+      if (typeof opt !== 'string') opt = "";
+
+      if (JSROOT.GeoWorker) {
+         var arr = [];
+         var dt1 = new Date();
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
+         var dt2 = new Date();
+
+         console.log('count = ' + cnt + ' tm = ' + (dt2.getTime() - dt1.getTime()));
+
+         dt1 = new Date();
+         var map = [];
+         JSROOT.clear_func(this._geometry, map);
+         dt2 = new Date();
+
+         console.log('clear tm = ' + (dt2.getTime() - dt1.getTime()) + '  len = ' + map.length);
+
+         if (JSROOT.GeoWorkerFirst === null)
+            JSROOT.GeoWorker.postMessage({ geom : this._geometry, dt: new Date });
+         else
+            JSROOT.GeoWorkerFirst = this._geometry;
+
+         // JSROOT.GeoWorker.postMessage(this._geometry, [ this._geometry ]);
+         // return this;
+      }
+
 
       var rect = this.select_main().node().getBoundingClientRect();
 
@@ -972,7 +1024,7 @@
          var arr = [];
          for (var lvl=0;lvl<100;++lvl) arr.push(0);
 
-         var cnt = this.CountVolumes(this._geometry, 0, arr);
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
 
          if (opt == 'count') {
             var res = 'Total number: ' + cnt + '<br/>';
