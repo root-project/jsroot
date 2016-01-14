@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['jquery', 'jquery-ui', 'd3', 'JSRootPainter', 'THREE', 'three.extra', 'THREE_ALL', 'JSRootPainter.jquery'], factory );
+      define( ['d3', 'JSRootPainter', 'THREE', 'THREE_ALL'], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -19,9 +19,9 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
-      factory(jQuery, jQuery.ui, d3, JSROOT);
+      factory(d3, JSROOT);
    }
-} (function($, myui, d3, JSROOT) {
+} (function(d3, JSROOT) {
 
    JSROOT.Painter.add3DInteraction = function() {
       // add 3D mouse interactive functions

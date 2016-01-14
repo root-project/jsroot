@@ -30,8 +30,7 @@
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'THREE'                : dir+'three'+ext,
-            'three.extra'          : dir+'three.extra'+ext,
-            'THREE_ALL'            : dir+'jquery.mousewheel'+ext,
+            'THREE_ALL'            : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -52,8 +51,7 @@
        paths: paths,
        shim: {
          'touch-punch': { deps: ['jquery'] },
-         'three.extra': { deps: ['THREE'] },
-         'THREE_ALL': { deps: ['jquery', 'jquery-ui', 'THREE', 'three.extra'] },
+         'THREE_ALL': { deps: ['THREE'] },
          'MathJax': {
              exports: 'MathJax',
              init: function () {
@@ -753,9 +751,7 @@
       }
 
       if (kind.indexOf("3d;")>=0) {
-         need_jquery = true;
-         mainfiles += "$$$scripts/jquery.mousewheel" + ext + ".js;" +
-                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+         mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('THREE_ALL', 'JSRoot3DPainter');
       }
 
