@@ -106,7 +106,7 @@
                   return;
                clearInterval(tt.timer);
                tt.timer = setInterval(function() {
-                  tooltip.fade(-1)
+                  tooltip.fade(-1);
                }, timer);
             }
          };
@@ -159,8 +159,8 @@
          }
       };
 
-      $(painter.renderer.domElement).on('touchstart mousedown', function(e) {
-         // var touch = e.changedTouches[0] || {};
+
+      function mousedown(e) {
          if (JSROOT.gStyle.Tooltip)
             tooltip.hide();
          e.preventDefault();
@@ -169,29 +169,21 @@
             touch = e.changedTouches[0];
          else if ('touches' in e)
             touch = e.touches[0];
-         else if ('originalEvent' in e) {
-            if ('changedTouches' in e.originalEvent)
-               touch = e.originalEvent.changedTouches[0];
-            else if ('touches' in e.originalEvent)
-               touch = e.originalEvent.touches[0];
-         }
          mouseX = touch.pageX;
          mouseY = touch.pageY;
          mouseDowned = true;
-      });
-      $(painter.renderer.domElement).on('touchmove mousemove',  function(e) {
+      }
+
+      painter.renderer.domElement.addEventListener('touchstart', mousedown);
+      painter.renderer.domElement.addEventListener('mousedown', mousedown);
+
+      function mousemove(e) {
          if (mouseDowned) {
             var touch = e;
             if ('changedTouches' in e)
                touch = e.changedTouches[0];
             else if ('touches' in e)
                touch = e.touches[0];
-            else if ('originalEvent' in e) {
-               if ('changedTouches' in e.originalEvent)
-                  touch = e.originalEvent.changedTouches[0];
-               else if ('touches' in e.originalEvent)
-                  touch = e.originalEvent.touches[0];
-            }
             var moveX = touch.pageX - mouseX;
             var moveY = touch.pageY - mouseY;
             // limited X rotate in -45 to 135 deg
@@ -205,31 +197,61 @@
             mouseY = touch.pageY;
          } else {
             e.preventDefault();
-            var mouse_x = 'offsetX' in e.originalEvent ? e.originalEvent.offsetX : e.originalEvent.layerX;
-            var mouse_y = 'offsetY' in e.originalEvent ? e.originalEvent.offsetY : e.originalEvent.layerY;
+            var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
+            var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
             mouse.x = (mouse_x / painter.renderer.domElement.width) * 2 - 1;
             mouse.y = -(mouse_y / painter.renderer.domElement.height) * 2 + 1;
             // enable picking once tootips are available...
             findIntersection();
          }
-      });
-      $(painter.renderer.domElement).on('touchend mouseup', function(e) {
+      }
+
+      painter.renderer.domElement.addEventListener('touchmove', mousemove);
+      painter.renderer.domElement.addEventListener('mousemove', mousemove);
+
+
+      function mouseup(e) {
          mouseDowned = false;
-      });
+      }
 
-      $(painter.renderer.domElement).on('mousewheel', function(e, d) {
-         e.preventDefault();
-         painter.camera.position.z += d * 20;
+      painter.renderer.domElement.addEventListener('touchend', mouseup);
+      painter.renderer.domElement.addEventListener('mouseup', mouseup);
+
+      function mousewheel(event) {
+         event.preventDefault();
+         event.stopPropagation();
+
+         var delta = 0;
+         if ( event.wheelDelta ) {
+            // WebKit / Opera / Explorer 9
+            delta = event.wheelDelta / 40;
+         } else if ( event.detail ) {
+            // Firefox
+            delta = - event.detail / 3;
+         }
+         painter.camera.position.z += delta * 10;
          painter.Render3D(0);
+      }
+
+      painter.renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
+      painter.renderer.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
+
+
+      painter.renderer.domElement.addEventListener('mouseleave', function() {
+         if (JSROOT.gStyle.Tooltip) tooltip.hide();
       });
 
-      $(painter.renderer.domElement).on('contextmenu', function(e) {
+
+      painter.renderer.domElement.addEventListener('contextmenu', function(e) {
          e.preventDefault();
 
          if (JSROOT.gStyle.Tooltip) tooltip.hide();
 
          return painter.ShowContextMenu("hist", e.originalEvent);
       });
+
+
+
    }
 
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
@@ -306,10 +328,9 @@
 
       this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
-      this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
       this['Render3D'] =JSROOT.Painter.Render3D;
 
-      this.Add3DInteraction();
+      this.first_render = true;
    }
 
    JSROOT.Painter.HPainter_CreateXYZ = function() {
@@ -570,10 +591,21 @@
          if ('render_tmout' in this)
             clearTimeout(this['render_tmout']);
 
+         var tm1 = new Date();
+
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
 
+         var tm2 = new Date();
+         // console.log('Render tm = ' + (tm2.getTime() - tm1.getTime()));
+
          delete this['render_tmout'];
+
+         if (this.first_render) {
+            this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
+            this.Add3DInteraction();
+            this.first_render = false;
+         }
 
          return;
       }
@@ -796,15 +828,17 @@
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
+      var tm1 = new Date();
+
       var bin, wei;
       for (var i = 0; i < bins.length; ++i) {
-         wei = (this.options.Color > 0 ? this.gmaxbin : bins[i].n);
+         wei = (this.options.Color > 0) ? this.gmaxbin : bins[i].n;
          if (this.options.Box == 11) {
             bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx),
                                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f }));
          } else {
             bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
-                                 new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
+                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
          }
          bin.position.x = this.tx(bins[i].x);
          bin.position.y = this.tz(bins[i].z);
@@ -818,9 +852,12 @@
             var helper = new THREE.BoxHelper(bin);
             helper.material.color.set(0x000000);
             helper.material.linewidth = 1.0;
-            this.toplevel.add(helper);
+            this.toplevel.add(helper)
          }
       }
+
+      var tm2 = new Date();
+      console.log('Create tm = ' + (tm2.getTime() - tm1.getTime()) + '  bins = ' + bins.length);
    }
 
    JSROOT.TH3Painter.prototype.Redraw = function() {
