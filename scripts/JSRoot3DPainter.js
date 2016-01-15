@@ -200,7 +200,7 @@
                distXY = dist;
                if (delta === 1.) return;
 
-               painter.camera.position.z -= delta * 1000;
+               painter.camera.position.z -= delta * painter.size3d * 10;
             } else {
                var moveX = arr[0].pageX - mouseX;
                var moveY = arr[0].pageY - mouseY;
@@ -244,12 +244,12 @@
          var delta = 0;
          if ( event.wheelDelta ) {
             // WebKit / Opera / Explorer 9
-            delta = event.wheelDelta / 40;
+            delta = event.wheelDelta / 400;
          } else if ( event.detail ) {
             // Firefox
-            delta = - event.detail / 3;
+            delta = - event.detail / 30;
          }
-         painter.camera.position.z += delta * 10;
+         painter.camera.position.z += delta * painter.size3d;
          painter.Render3D(0);
       }
 
