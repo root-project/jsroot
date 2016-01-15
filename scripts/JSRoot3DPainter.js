@@ -28,105 +28,60 @@
 
       var painter = this;
       var mouseX, mouseY, distXY = 0, mouseDowned = false;
-      var mouse = { x : 0, y : 0 }, INTERSECTED;
+      var mouse = { x : 0, y : 0 }, INTERSECTED = null;
 
-      var tooltip = function() {
-         var id = 'tt';
-         var top = 3;
-         var left = 3;
-         var maxw = 150;
-         var speed = 10;
-         var timer = 20;
-         var endalpha = 95;
-         var alpha = 0;
-         var tt = null, t, c, b, h;
-         var ie = document.all ? true : false;
+      var tooltip = {
+         tt: null, cont: null, listener: null,
+         pos : function(e) {
+            if (this.tt === null) return;
+            var u = JSROOT.browser.isIE ? (event.clientY + document.documentElement.scrollTop) : e.pageY;
+            var l = JSROOT.browser.isIE ? (event.clientX + document.documentElement.scrollLeft) : e.pageX;
 
-         return {
-            show : function(v, w) {
-               if (!JSROOT.gStyle.Tooltip) return;
-               if (tt === null) {
-                  tt = document.createElement('div');
-                  tt.setAttribute('id', id);
-                  t = document.createElement('div');
-                  t.setAttribute('id', id + 'top');
-                  c = document.createElement('div');
-                  c.setAttribute('id', id + 'cont');
-                  b = document.createElement('div');
-                  b.setAttribute('id', id + 'bot');
-                  tt.appendChild(t);
-                  tt.appendChild(c);
-                  tt.appendChild(b);
-                  document.body.appendChild(tt);
-                  tt.style.opacity = 1;
-                  tt.style.filter = 'alpha(opacity=1)';
-                  document.addEventListener('mousemove', this.pos);
-               }
-               tt.style.display = 'block';
-               c.innerHTML = v;
-               tt.style.width = w ? w + 'px' : 'auto';
-               tt.style.width = 'auto'; // let it be automatically resizing...
-               if (!w && ie) {
-                  t.style.display = 'none';
-                  b.style.display = 'none';
-                  tt.style.width = tt.offsetWidth;
-                  t.style.display = 'block';
-                  b.style.display = 'block';
-               }
-               // if (tt.offsetWidth > maxw) { tt.style.width = maxw + 'px'; }
-               h = parseInt(tt.offsetHeight) + top;
-               clearInterval(tt.timer);
-               tt.timer = setInterval(function() { tooltip.fade(1) }, timer);
-            },
-            pos : function(e) {
-               if (tt === null) return;
-               var u = ie ? event.clientY + document.documentElement.scrollTop : e.pageY;
-               var l = ie ? event.clientX + document.documentElement.scrollLeft : e.pageX;
-
-               tt.style.top = u + 15 + 'px';// (u - h) + 'px';
-               tt.style.left = (l + left) + 'px';
-            },
-            fade : function(d) {
-               if (tt === null) return;
-               var a = alpha;
-               if ((a != endalpha && d == 1) || (a != 0 && d == -1)) {
-                  var i = speed;
-                  if (endalpha - a < speed && d == 1) {
-                     i = endalpha - a;
-                  } else if (alpha < speed && d == -1) {
-                     i = a;
-                  }
-                  alpha = a + (i * d);
-                  tt.style.opacity = alpha * .01;
-                  tt.style.filter = 'alpha(opacity=' + alpha + ')';
-               } else {
-                  clearInterval(tt.timer);
-                  tt.timer = null;
-                  if (d == -1) {
-                     tt.style.display = 'none';
-                  }
-               }
-            },
-            hide : function() {
-               if (tt === null) return;
-               clearInterval(tt.timer);
-               document.body.removeChild(tt);
-               document.removeEventListener('mousemove', this.pos);
-               alpha = 0;
-               tt = null;
+            this.tt.style.top = (u + 15) + 'px';
+            this.tt.style.left = (l + 3) + 'px';
+         },
+         show : function(v) {
+            if (!JSROOT.gStyle.Tooltip) return;
+            if (this.listener === null)
+               this.listener = this.pos.bind(this);
+            if (this.tt === null) {
+               this.tt = document.createElement('div');
+               var t = document.createElement('div');
+               t.setAttribute('class', 'tt3d_border');
+               this.cont = document.createElement('div');
+               this.cont.setAttribute('class', 'tt3d_cont');
+               var b = document.createElement('div');
+               b.setAttribute('class', 'tt3d_border');
+               this.tt.appendChild(t);
+               this.tt.appendChild(this.cont);
+               this.tt.appendChild(b);
+               document.body.appendChild(this.tt);
+               this.tt.style.opacity = 1;
+               this.tt.style.filter = 'alpha(opacity=1)';
+               this.tt.style.position = 'absolute';
+               this.tt.style.display = 'block';
+               document.addEventListener('mousemove', this.listener);
             }
-         };
-      }();
+            this.cont.innerHTML = v;
+            this.tt.style.width = 'auto'; // let it be automatically resizing...
+            if (JSROOT.browser.isIE)
+               this.tt.style.width = tt.offsetWidth;
+         },
+         hide : function() {
+            if (this.tt === null) return;
+            document.body.removeChild(this.tt);
+            document.removeEventListener('mousemove', this.listener);
+            this.tt = null;
+         }
+      };
 
-      var radius = 100;
-      var theta = 0;
       var raycaster = new THREE.Raycaster();
-      var dotooltiphighlight = painter.first_render_tm < 1000;
+      var do_bins_highlight = painter.first_render_tm < 1200;
 
       function findIntersection() {
          // find intersections
          if (mouseDowned) {
-            if (INTERSECTED && dotooltiphighlight) {
+            if (INTERSECTED && do_bins_highlight) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                painter.Render3D(0);
             }
@@ -147,10 +102,10 @@
                }
             }
             if (pick && INTERSECTED != pick.object) {
-               if (INTERSECTED && dotooltiphighlight)
+               if (INTERSECTED && do_bins_highlight)
                   INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                INTERSECTED = pick.object;
-               if (dotooltiphighlight) {
+               if (do_bins_highlight) {
                   INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                   INTERSECTED.material.emissive.setHex(0x5f5f5f);
                   painter.Render3D(0);
@@ -159,7 +114,7 @@
                              : INTERSECTED.parent.name, 200);
             }
          } else {
-            if (INTERSECTED && dotooltiphighlight) {
+            if (INTERSECTED && do_bins_highlight) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                painter.Render3D(0);
             }
@@ -223,6 +178,7 @@
             var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
             mouse.x = (mouse_x / painter.renderer.domElement.width) * 2 - 1;
             mouse.y = -(mouse_y / painter.renderer.domElement.height) * 2 + 1;
+
             // enable picking once tootips are available...
             findIntersection();
          }
@@ -620,12 +576,13 @@
          this.renderer.render(this.scene, this.camera);
 
          var tm2 = new Date();
-         // console.log('Render tm = ' + (tm2.getTime() - tm1.getTime()));
+
 
          delete this['render_tmout'];
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
+            console.log('First render tm = ' + this.first_render_tm);
             this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
             this.Add3DInteraction();
          }

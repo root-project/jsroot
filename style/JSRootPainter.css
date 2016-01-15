@@ -317,32 +317,23 @@
 
 
 /*--------------------------------------------------|
-| tooltip style                                     |
+| tooltip style for 3d drawings                     |
 |--------------------------------------------------*/
 
-#tt {
-   position:absolute;
-   display:block;
-}
-#tttop {
+.tt3d_border {
    display:block;
    height:5px;
    margin-left:5px;
    overflow:hidden;
 }
-#ttcont {
+
+.tt3d_cont {
    display:block;
    padding:2px 12px 3px 7px;
    margin-left:5px;
    font-size: 11px;
    background:#777;
    color:#fff;
-}
-#ttbot {
-   display:block;
-   height:5px;
-   margin-left:5px;
-   overflow:hidden;
 }
 
 /* from JSRootD3Painter */
@@ -362,6 +353,7 @@ rect.zoom {
     stroke: steelblue;
     fill-opacity: 0.1;
 }
+
 /* Correct overflow not hidden in IE9 */
 svg:not(:root) { overflow: hidden; }
 
