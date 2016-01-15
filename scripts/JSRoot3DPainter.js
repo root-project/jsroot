@@ -121,10 +121,12 @@
       var radius = 100;
       var theta = 0;
       var raycaster = new THREE.Raycaster();
+      var dotooltiphighlight = painter.first_render_tm < 1000;
+
       function findIntersection() {
          // find intersections
          if (mouseDowned) {
-            if (INTERSECTED) {
+            if (INTERSECTED && dotooltiphighlight) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                painter.Render3D(0);
             }
@@ -145,17 +147,19 @@
                }
             }
             if (pick && INTERSECTED != pick.object) {
-               if (INTERSECTED)
+               if (INTERSECTED && dotooltiphighlight)
                   INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                INTERSECTED = pick.object;
-               INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-               INTERSECTED.material.emissive.setHex(0x5f5f5f);
-               painter.Render3D(0);
+               if (dotooltiphighlight) {
+                  INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                  INTERSECTED.material.emissive.setHex(0x5f5f5f);
+                  painter.Render3D(0);
+               }
                tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name
                              : INTERSECTED.parent.name, 200);
             }
          } else {
-            if (INTERSECTED) {
+            if (INTERSECTED && dotooltiphighlight) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                painter.Render3D(0);
             }
@@ -349,7 +353,7 @@
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
       this['Render3D'] =JSROOT.Painter.Render3D;
 
-      this.first_render = true;
+      this.first_render_tm = 0;
    }
 
    JSROOT.Painter.HPainter_CreateXYZ = function() {
@@ -620,10 +624,10 @@
 
          delete this['render_tmout'];
 
-         if (this.first_render) {
+         if (this.first_render_tm === 0) {
+            this.first_render_tm = tm2.getTime() - tm1.getTime();
             this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
             this.Add3DInteraction();
-            this.first_render = false;
          }
 
          return;
