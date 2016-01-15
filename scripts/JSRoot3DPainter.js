@@ -27,8 +27,8 @@
       // add 3D mouse interactive functions
 
       var painter = this;
-      var mouseX, mouseY, mouseDowned = false;
-      var mouse = {  x : 0, y : 0 }, INTERSECTED;
+      var mouseX, mouseY, distXY = 0, mouseDowned = false;
+      var mouse = { x : 0, y : 0 }, INTERSECTED;
 
       var tooltip = function() {
          var id = 'tt';
@@ -39,11 +39,13 @@
          var timer = 20;
          var endalpha = 95;
          var alpha = 0;
-         var tt, t, c, b, h;
+         var tt = null, t, c, b, h;
          var ie = document.all ? true : false;
+
          return {
             show : function(v, w) {
-               if (tt == null) {
+               if (!JSROOT.gStyle.Tooltip) return;
+               if (tt === null) {
                   tt = document.createElement('div');
                   tt.setAttribute('id', id);
                   t = document.createElement('div');
@@ -56,9 +58,9 @@
                   tt.appendChild(c);
                   tt.appendChild(b);
                   document.body.appendChild(tt);
-                  tt.style.opacity = 0;
-                  tt.style.filter = 'alpha(opacity=0)';
-                  document.onmousemove = this.pos;
+                  tt.style.opacity = 1;
+                  tt.style.filter = 'alpha(opacity=1)';
+                  document.addEventListener('mousemove', this.pos);
                }
                tt.style.display = 'block';
                c.innerHTML = v;
@@ -77,12 +79,15 @@
                tt.timer = setInterval(function() { tooltip.fade(1) }, timer);
             },
             pos : function(e) {
+               if (tt === null) return;
                var u = ie ? event.clientY + document.documentElement.scrollTop : e.pageY;
                var l = ie ? event.clientX + document.documentElement.scrollLeft : e.pageX;
+
                tt.style.top = u + 15 + 'px';// (u - h) + 'px';
                tt.style.left = (l + left) + 'px';
             },
             fade : function(d) {
+               if (tt === null) return;
                var a = alpha;
                if ((a != endalpha && d == 1) || (a != 0 && d == -1)) {
                   var i = speed;
@@ -96,18 +101,19 @@
                   tt.style.filter = 'alpha(opacity=' + alpha + ')';
                } else {
                   clearInterval(tt.timer);
+                  tt.timer = null;
                   if (d == -1) {
                      tt.style.display = 'none';
                   }
                }
             },
             hide : function() {
-               if (tt == null)
-                  return;
+               if (tt === null) return;
                clearInterval(tt.timer);
-               tt.timer = setInterval(function() {
-                  tooltip.fade(-1);
-               }, timer);
+               document.body.removeChild(tt);
+               document.removeEventListener('mousemove', this.pos);
+               alpha = 0;
+               tt = null;
             }
          };
       }();
@@ -123,10 +129,11 @@
                painter.Render3D(0);
             }
             INTERSECTED = null;
-            if (JSROOT.gStyle.Tooltip)
-               tooltip.hide();
-            return;
+            return tooltip.hide();
          }
+
+         if (!JSROOT.gStyle.Tooltip) return tooltip.hide();
+
          raycaster.setFromCamera( mouse, painter.camera );
          var intersects = raycaster.intersectObjects(painter.scene.children, true);
          if (intersects.length > 0) {
@@ -144,9 +151,8 @@
                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                INTERSECTED.material.emissive.setHex(0x5f5f5f);
                painter.Render3D(0);
-               if (JSROOT.gStyle.Tooltip)
-                  tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name
-                        : INTERSECTED.parent.name, 200);
+               tooltip.show(INTERSECTED.name.length > 0 ? INTERSECTED.name
+                             : INTERSECTED.parent.name, 200);
             }
          } else {
             if (INTERSECTED) {
@@ -154,24 +160,30 @@
                painter.Render3D(0);
             }
             INTERSECTED = null;
-            if (JSROOT.gStyle.Tooltip)
-               tooltip.hide();
+            tooltip.hide();
          }
       };
 
+      function coordinates(e) {
+         if ('changedTouches' in e) return e.changedTouches;
+         if ('touches' in e) return e.touches;
+         return [e];
+      }
 
       function mousedown(e) {
-         if (JSROOT.gStyle.Tooltip)
-            tooltip.hide();
+         tooltip.hide();
          e.preventDefault();
-         var touch = e;
-         if ('changedTouches' in e)
-            touch = e.changedTouches[0];
-         else if ('touches' in e)
-            touch = e.touches[0];
-         mouseX = touch.pageX;
-         mouseY = touch.pageY;
+
+         var arr = coordinates(e);
+         if (arr.length == 2) {
+            distXY = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
+            alert('double touch ' + distXY.toFixed(1));
+         } else {
+            mouseX = arr[0].pageX;
+            mouseY = arr[0].pageY;
+         }
          mouseDowned = true;
+
       }
 
       painter.renderer.domElement.addEventListener('touchstart', mousedown);
@@ -179,22 +191,28 @@
 
       function mousemove(e) {
          if (mouseDowned) {
-            var touch = e;
-            if ('changedTouches' in e)
-               touch = e.changedTouches[0];
-            else if ('touches' in e)
-               touch = e.touches[0];
-            var moveX = touch.pageX - mouseX;
-            var moveY = touch.pageY - mouseY;
-            // limited X rotate in -45 to 135 deg
-            if ((moveY > 0 && painter.toplevel.rotation.x < Math.PI * 3 / 4)
-                  || (moveY < 0 && painter.toplevel.rotation.x > -Math.PI / 4)) {
-               painter.toplevel.rotation.x += moveY * 0.02;
+            var arr = coordinates(e);
+
+            if (arr.length == 2) {
+               var dist = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
+
+               var delta = (dist-distXY)/(dist+distXY);
+               distXY = dist;
+               if (delta === 1.) return;
+
+               painter.camera.position.z -= delta * 1000;
+            } else {
+               var moveX = arr[0].pageX - mouseX;
+               var moveY = arr[0].pageY - mouseY;
+               // limited X rotate in -45 to 135 deg
+               if ((moveY > 0 && painter.toplevel.rotation.x < Math.PI * 3 / 4)
+                     || (moveY < 0 && painter.toplevel.rotation.x > -Math.PI / 4))
+                  painter.toplevel.rotation.x += moveY * 0.02;
+               painter.toplevel.rotation.y += moveX * 0.02;
+               mouseX = arr[0].pageX;
+               mouseY = arr[0].pageY;
             }
-            painter.toplevel.rotation.y += moveX * 0.02;
             painter.Render3D(0);
-            mouseX = touch.pageX;
-            mouseY = touch.pageY;
          } else {
             e.preventDefault();
             var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
@@ -212,9 +230,11 @@
 
       function mouseup(e) {
          mouseDowned = false;
+         distXY = 0;
       }
 
       painter.renderer.domElement.addEventListener('touchend', mouseup);
+      painter.renderer.domElement.addEventListener('touchcancel', mouseup);
       painter.renderer.domElement.addEventListener('mouseup', mouseup);
 
       function mousewheel(event) {
@@ -238,14 +258,13 @@
 
 
       painter.renderer.domElement.addEventListener('mouseleave', function() {
-         if (JSROOT.gStyle.Tooltip) tooltip.hide();
+         tooltip.hide();
       });
 
 
       painter.renderer.domElement.addEventListener('contextmenu', function(e) {
          e.preventDefault();
-
-         if (JSROOT.gStyle.Tooltip) tooltip.hide();
+         tooltip.hide();
 
          return painter.ShowContextMenu("hist", e.originalEvent);
       });
