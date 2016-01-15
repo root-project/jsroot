@@ -734,7 +734,13 @@
       var volume = node['fVolume'];
       if (visible==0) return; // cut all volumes below 0 level
 
-      var translation_matrix = [0, 0, 0];
+      if ('_mesh' in node) {
+         // reuse mesh already created for the node
+         toplevel.add(node._mesh);
+         return;
+      }
+
+      var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
       if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] != null) {
          if (node['fMatrix']['_typename'] == 'TGeoTranslation') {
@@ -826,9 +832,11 @@
       }
       var mesh = this.createMesh(volume['fShape'], material, rotation_matrix);
       if (typeof mesh != 'undefined' && mesh != null) {
-         mesh.position.x = 0.5 * translation_matrix[0];
-         mesh.position.y = 0.5 * translation_matrix[1];
-         mesh.position.z = 0.5 * translation_matrix[2];
+         if (translation_matrix !== null) {
+            mesh.position.x = 0.5 * translation_matrix[0];
+            mesh.position.y = 0.5 * translation_matrix[1];
+            mesh.position.z = 0.5 * translation_matrix[2];
+         }
 
          if (rotation_matrix !== null) {
             mesh.rotation.setFromRotationMatrix(
@@ -852,9 +860,14 @@
          mesh['name'] = node['fName'];
          // add the mesh to the scene
          toplevel.add(mesh);
+
+         node['_mesh'] = mesh;
+
          //if ( this._debug && this._renderer.domElement.transformControl !== null)
          //   this._renderer.domElement.transformControl.attach( mesh );
          container = mesh;
+
+         if (JSROOT.geocnt++ % 100 === 50) console.log(JSROOT.geocnt + '  next 100 ');
       }
       if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
          var nodes = volume['fNodes']['arr'];
@@ -862,6 +875,8 @@
             this.drawNode(scene, container, nodes[i], visible-1);
       }
    }
+
+   JSROOT.geocnt = 0;
 
    JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
       var container = toplevel;
@@ -927,6 +942,7 @@
          //   renderer.domElement.transformControl.attach( mesh );
          container = mesh;
       }
+
       if (typeof node['fElements'] != 'undefined' && node['fElements'] != null) {
          var nodes = node['fElements']['arr'];
          for (var i = 0; i < nodes.length; ++i) {
@@ -953,29 +969,40 @@
       return bbox;
    }
 
-   JSROOT.Painter.CountGeoVolumes = function(obj, lvl, mmm) {
+   JSROOT.Painter.CountGeoVolumes = function(obj, lvl, cnt, map) {
       var res = 0;
 
       if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return 0;
 
       if ((obj['_typename'] == 'TGeoVolume') || (obj['_typename'] == 'TGeoVolumeAssembly'))
-         return JSROOT.Painter.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, mmm);
+         return JSROOT.Painter.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, cnt, map);
+
+      if (!map) map = [];
+      var clear = (map.length == 0);
 
       res += 1;
-      if (mmm!=null) mmm[lvl] += 1;
+      if (cnt!=null) cnt[lvl]+=1;
+
+      if (! ('_unique' in obj)) {
+         obj._unique = true;
+         map.push(obj);
+      }
 
       if (('fVolume' in obj) && (obj.fVolume != null) && (obj.fVolume.fNodes != null)) {
         var arr = obj.fVolume.fNodes.arr;
-        if (arr === undefined) console.log('undefined lvl' + lvl + '  typename' + obj['_typename'] + ' nodes = ' + obj.fVolume.fNodes + '  name = ' + obj.fVolume.fName);
         for (var i = 0; i < arr.length; ++i)
-           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, mmm);
+           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, cnt, map);
       }
 
       if (('fElements' in obj) && (obj.fElements != null)) {
         var arr = obj.fElements.arr;
         for (var i = 0; i < arr.length; ++i)
-           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, mmm);
+           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, cnt, map);
       }
+
+      if (clear)
+         for (var n=0;n<map.length;n++)
+            delete map[n]._unique;
 
       return res;
    }
@@ -1021,10 +1048,10 @@
       if (opt=="all") maxlvl = 9999; else
       if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
       if ((opt == 'count') || (opt == 'limit')) {
-         var arr = [];
+         var arr = [], map = [];
          for (var lvl=0;lvl<100;++lvl) arr.push(0);
 
-         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr, map);
 
          if (opt == 'count') {
             var res = 'Total number: ' + cnt + '<br/>';
@@ -1032,6 +1059,8 @@
                if (arr[lvl] !== 0)
                   res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
             }
+
+            res += "Unique volumes: " + map.length + '<br/>';
 
             dom.innerHTML = res;
             return this.DrawingReady();
@@ -1104,7 +1133,14 @@
                   visible: false, transparent: true, opacity: 0.0 } ) );
          toplevel.add(cube);
 
+         var t1 = new Date().getTime();
+
          this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, maxlvl);
+
+         var t2 = new Date().getTime();
+
+         console.log('Create tm = ' + (t2-t1));
+
 
          top.computeBoundingBox();
          var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
@@ -1148,7 +1184,13 @@
       this._camera.position.x = overall_size * Math.cos( 135.0 );
       this._camera.position.y = overall_size * Math.cos( 45.0 );
       this._camera.position.z = overall_size * Math.sin( 45.0 );
+
+      var t1 = new Date().getTime();
       this._renderer.render(this._scene, this._camera);
+      var t2 = new Date().getTime();
+
+      console.log('Render tm = ' + (t2-t1));
+
 
       // pointer used in the event handlers
       var pthis = this;
