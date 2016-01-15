@@ -866,8 +866,6 @@
          //if ( this._debug && this._renderer.domElement.transformControl !== null)
          //   this._renderer.domElement.transformControl.attach( mesh );
          container = mesh;
-
-         if (JSROOT.geocnt++ % 100 === 50) console.log(JSROOT.geocnt + '  next 100 ');
       }
       if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
          var nodes = volume['fNodes']['arr'];
@@ -875,8 +873,6 @@
             this.drawNode(scene, container, nodes[i], visible-1);
       }
    }
-
-   JSROOT.geocnt = 0;
 
    JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
       var container = toplevel;
@@ -1007,76 +1003,7 @@
       return res;
    }
 
-   JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
-      if (typeof opt !== 'string') opt = "";
-
-      if (JSROOT.GeoWorker) {
-         var arr = [];
-         var dt1 = new Date();
-         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
-         var dt2 = new Date();
-
-         console.log('count = ' + cnt + ' tm = ' + (dt2.getTime() - dt1.getTime()));
-
-         dt1 = new Date();
-         var map = [];
-         JSROOT.clear_func(this._geometry, map);
-         dt2 = new Date();
-
-         console.log('clear tm = ' + (dt2.getTime() - dt1.getTime()) + '  len = ' + map.length);
-
-         if (JSROOT.GeoWorkerFirst === null)
-            JSROOT.GeoWorker.postMessage({ geom : this._geometry, dt: new Date });
-         else
-            JSROOT.GeoWorkerFirst = this._geometry;
-
-         // JSROOT.GeoWorker.postMessage(this._geometry, [ this._geometry ]);
-         // return this;
-      }
-
-
-      var rect = this.select_main().node().getBoundingClientRect();
-
-      var w = rect.width, h = rect.height, size = 100;
-
-      if (h < 10) { h = parseInt(0.66*w); this.select_main().style('height', h +"px"); }
-
-      var dom = this.select_main().node();
-
-      var maxlvl = -1; // use only visible flag, set in ROOT when geometry is displayed
-
-      if (opt=="all") maxlvl = 9999; else
-      if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
-      if ((opt == 'count') || (opt == 'limit')) {
-         var arr = [], map = [];
-         for (var lvl=0;lvl<100;++lvl) arr.push(0);
-
-         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr, map);
-
-         if (opt == 'count') {
-            var res = 'Total number: ' + cnt + '<br/>';
-            for (var lvl=0;lvl<arr.length;++lvl) {
-               if (arr[lvl] !== 0)
-                  res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
-            }
-
-            res += "Unique volumes: " + map.length + '<br/>';
-
-            dom.innerHTML = res;
-            return this.DrawingReady();
-         }
-
-         maxlvl = 9999;
-         var sum = 0;
-         for (var lvl=1;lvl<arr.length;++lvl) {
-            sum += arr[lvl];
-            if (sum > 10000) {
-               maxlvl = lvl - 1;
-               break;
-            }
-         }
-      }
-
+   JSROOT.TGeoPainter.prototype.createScene = function(w,h,pixel_ratio) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
@@ -1107,31 +1034,28 @@
             && window.FileList && window.Blob
       };
 
-      this._renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
-                       new THREE.CanvasRenderer({antialias : true });
-      this._renderer.setPixelRatio( window.devicePixelRatio );
+      this._renderer = Detector.webgl ?
+                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
+                        new THREE.CanvasRenderer({antialias : true });
+      this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
-      dom.appendChild(this._renderer.domElement);
+      this._toplevel = new THREE.Object3D();
+      //this._toplevel.rotation.x = 30 * Math.PI / 180;
+      this._toplevel.rotation.y = 90 * Math.PI / 180;
+      this._scene.add(this._toplevel);
 
-      this.SetDivId(); // now one could set painter pointer in child element
+      this._overall_size = 10;
+   }
 
-      this.addControls(this._renderer, this._scene, this._camera);
-
-      var toplevel = new THREE.Object3D();
-      //toplevel.rotation.x = 30 * Math.PI / 180;
-      toplevel.rotation.y = 90 * Math.PI / 180;
-      this._scene.add(toplevel);
-
-      var overall_size = 10;
-
+   JSROOT.TGeoPainter.prototype.createDrawGeometry = function(maxlvl) {
       if ((this._geometry['_typename'] == 'TGeoVolume') || (this._geometry['_typename'] == 'TGeoVolumeAssembly'))  {
          var shape = this._geometry['fShape'];
          var top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
          var cube = new THREE.Mesh( top, new THREE.MeshBasicMaterial( {
                   visible: false, transparent: true, opacity: 0.0 } ) );
-         toplevel.add(cube);
+         this._toplevel.add(cube);
 
          var t1 = new Date().getTime();
 
@@ -1141,56 +1065,139 @@
 
          console.log('Create tm = ' + (t2-t1));
 
-
          top.computeBoundingBox();
-         var overall_size = 3 * Math.max( Math.max(Math.abs(top.boundingBox.max.x), Math.abs(top.boundingBox.max.y)),
-                                          Math.abs(top.boundingBox.max.z));
-         //var boundingBox = this.computeBoundingBox(toplevel, false);
-         //if (boundingBox!=null)
-         //   overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
-         //                                Math.abs(boundingBox.max.z));
+         var max = top.boundingBox.max;
+         this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
             var nodes = this._geometry['fElements']['arr'];
             for (var i = 0; i < nodes.length; ++i) {
                var node = this._geometry['fElements']['arr'][i];
-               this.drawEveNode(this._scene, toplevel, node)
+               this.drawEveNode(this._scene, this._toplevel, node);
             }
          }
-         var boundingBox = this.computeBoundingBox(toplevel, true);
-         overall_size = 10 * Math.max( Math.max(Math.abs(boundingBox.max.x), Math.abs(boundingBox.max.y)),
-                                       Math.abs(boundingBox.max.z));
+         var max = this.computeBoundingBox(this._toplevel, true).max;
+         this._overall_size = 10 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
       }
+
+      this._camera.near = this._overall_size / 200;
+      this._camera.far = this._overall_size * 500;
+      this._camera.updateProjectionMatrix();
+      this._camera.position.x = this._overall_size * Math.cos( 135.0 );
+      this._camera.position.y = this._overall_size * Math.cos( 45.0 );
+      this._camera.position.z = this._overall_size * Math.sin( 45.0 );
+   }
+
+   JSROOT.TGeoPainter.prototype.completeScene = function() {
       if ( this._debug || this._grid ) {
          if ( this._full ) {
             var boxHelper = new THREE.BoxHelper( cube );
             this._scene.add( boxHelper );
          }
-         this._scene.add( new THREE.AxisHelper( 2 * overall_size ) );
-         this._scene.add( new THREE.GridHelper( Math.ceil( overall_size), Math.ceil( overall_size ) / 50 ) );
-         this._renderer.domElement._translationSnap = Math.ceil( overall_size ) / 50;
+         this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
+         this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
+         this._renderer.domElement._translationSnap = Math.ceil( this._overall_size ) / 50;
          if ( this._renderer.domElement.transformControl !== null )
-            this._renderer.domElement.transformControl.attach( toplevel );
+            this._renderer.domElement.transformControl.attach( this._toplevel );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
-                       "'T' translate | 'R' rotate | 'S' scale<br>" +
-                       "'+' increase size | '-' decrease size<br>" +
-                       "'W' toggle wireframe/solid display<br>"+
-                       "keep 'Ctrl' down to snap to grid</center></font>");
+               "'T' translate | 'R' rotate | 'S' scale<br>" +
+               "'+' increase size | '-' decrease size<br>" +
+               "'W' toggle wireframe/solid display<br>"+
+         "keep 'Ctrl' down to snap to grid</center></font>");
       }
-      this._camera.near = overall_size / 200;
-      this._camera.far = overall_size * 500;
-      this._camera.updateProjectionMatrix();
-      this._camera.position.x = overall_size * Math.cos( 135.0 );
-      this._camera.position.y = overall_size * Math.cos( 45.0 );
-      this._camera.position.z = overall_size * Math.sin( 45.0 );
+   }
+
+   JSROOT.TGeoPainter.prototype.drawCount = function() {
+      var arr = [], map = [];
+      for (var lvl=0;lvl<100;++lvl) arr.push(0);
+
+      var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr, map);
+
+      var res = 'Total number: ' + cnt + '<br/>';
+      for (var lvl=0;lvl<arr.length;++lvl) {
+         if (arr[lvl] !== 0)
+            res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
+      }
+
+      res += "Unique volumes: " + map.length + '<br/>';
+
+      this.select_main().node().innerHTML = res;
+
+      return this.DrawingReady();
+   }
+
+
+   JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
+      if (typeof opt !== 'string') opt = "";
+
+      if (JSROOT.GeoWorker) {
+         var arr = [];
+         var dt1 = new Date();
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
+         var dt2 = new Date();
+
+         console.log('count = ' + cnt + ' tm = ' + (dt2.getTime() - dt1.getTime()));
+
+         dt1 = new Date();
+         var map = [];
+         JSROOT.clear_func(this._geometry, map);
+         dt2 = new Date();
+
+         console.log('clear tm = ' + (dt2.getTime() - dt1.getTime()) + '  len = ' + map.length);
+
+         if (JSROOT.GeoWorkerFirst === null)
+            JSROOT.GeoWorker.postMessage({ geom : this._geometry, dt: new Date });
+         else
+            JSROOT.GeoWorkerFirst = this._geometry;
+
+         // JSROOT.GeoWorker.postMessage(this._geometry, [ this._geometry ]);
+         // return this;
+      }
+
+      var dom = this.select_main().node();
+      var rect = dom.getBoundingClientRect();
+      var w = rect.width, h = rect.height, size = 100;
+      if (h < 10) { h = parseInt(0.66*w); d.style.height = h +"px"; }
+
+      if (opt == 'count') return this.drawCount();
+
+      var maxlvl = -1; // use only visible flag, set in ROOT when geometry is displayed
+
+      if (opt=="all") maxlvl = 9999; else
+      if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
+      if (opt == 'limit') {
+         var arr = [];
+         for (var lvl=0;lvl<100;++lvl) arr.push(0);
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
+         maxlvl = 9999;
+         var sum = 0;
+         for (var lvl=1;lvl<arr.length;++lvl) {
+            sum += arr[lvl];
+            if (sum > 10000) {
+               maxlvl = lvl - 1;
+               break;
+            }
+         }
+      }
+
+      this.createScene(w,h,window.devicePixelRatio);
+
+      dom.appendChild(this._renderer.domElement);
+
+      this.SetDivId(); // now one could set painter pointer in child element
+
+      this.createDrawGeometry(maxlvl);
+
+      this.addControls(this._renderer, this._scene, this._camera);
+
+      this.completeScene();
 
       var t1 = new Date().getTime();
       this._renderer.render(this._scene, this._camera);
       var t2 = new Date().getTime();
 
       console.log('Render tm = ' + (t2-t1));
-
 
       // pointer used in the event handlers
       var pthis = this;
