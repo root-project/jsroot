@@ -743,6 +743,18 @@
       }
 
       var node = arg.node;
+
+      if ('_mesh' in node) {
+
+         // console.log('add again ' + node.fName + ' to parent ' + arg.toplevel['name']);
+
+         arg.toplevel.add(node._mesh.clone());
+
+         this._stack.pop();
+
+         return true;
+      }
+
       var volume = node['fVolume'];
 
       var translation_matrix = null; // [0, 0, 0];
@@ -867,6 +879,8 @@
          arg.toplevel.add(mesh);
 
          arg.mesh = mesh;
+
+         node._mesh = mesh;
 
          //if ( this._debug && this._renderer.domElement.transformControl !== null)
          //   this._renderer.domElement.transformControl.attach( mesh );
