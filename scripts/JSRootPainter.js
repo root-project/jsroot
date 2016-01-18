@@ -8531,44 +8531,18 @@
 
       if (!JSROOT.gStyle.ProgressBox) return box.remove();
 
-      var newmsg = true;
-
-      if ((typeof msg == "undefined") || (msg==null)) {
-         if (box.empty()) return;
-
-         box.property('stack').pop();
-
-         if (box.property('stack').length==0)
-            return box.remove();
-         msg = box.property('stack')[box.property('stack').length-1]; // show prvious message
-         newmsg = false;
-      } else
-      if (typeof msg != 'string') {
-         // this is progress value, should be add to last message
-         if (box.empty()) return;
-         newmsg = false;
-         var now = new Date;
-         if (now.getTime() - box.property("showtm").getTime < 200) return;
-
-         msg = box.property('stack')[box.property('stack').length-1] + " " + (msg*100).toFixed(1) + "%";
-         box.property("showtm", now);
-      }
+      if ((arguments.length == 0) || (msg === undefined) || (msg === null))
+         return box.remove();
 
       if (box.empty()) {
          box = d3.select(document.body)
-           .append("div")
-           .attr("id", id)
-           .attr("class","progressbox")
-           .property("stack",new Array);
-
+                .append("div")
+                .attr("id", id)
+                .attr("class","progressbox");
          box.append("p");
       }
 
       box.select("p").html(msg);
-      if (newmsg) {
-         box.property('stack').push(msg);
-         box.property("showtm", new Date);
-      }
    }
 
    return JSROOT;

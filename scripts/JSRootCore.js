@@ -84,7 +84,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 15/01/2016";
+   JSROOT.version = "dev 18/01/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -335,7 +335,10 @@
       if (arguments.length < 3) dflt = null;
       if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
 
-      if (!url) url = document.URL;
+      if (!url) {
+         if (typeof document === 'undefined') return dflt;
+         url = document.URL;
+      }
 
       var pos = url.indexOf("?");
       if (pos<0) return dflt;

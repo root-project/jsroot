@@ -23,32 +23,6 @@
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 
-   JSROOT.GeoWorker = null;
-
-   if(false && (typeof(Worker) !== "undefined") && (typeof document !== "undefined")) {
-
-      JSROOT.GeoWorker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
-
-
-      JSROOT.GeoWorkerFirst = 0;
-
-      JSROOT.GeoWorker.onmessage = function(event) {
-          console.log('Get worker message ' + event.data);
-
-          if ((typeof JSROOT.GeoWorkerFirst === 'object') && (JSROOT.GeoWorkerFirst!==null)) {
-
-             var obj = { geom : JSROOT.GeoWorkerFirst, dt: new Date };
-
-             JSROOT.GeoWorker.postMessage(obj);
-          }
-
-          JSROOT.GeoWorkerFirst = null;
-
-      };
-
-      JSROOT.GeoWorker.postMessage("Initialize");
-   }
-
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
@@ -83,6 +57,8 @@
 
    JSROOT.TGeoPainter = function( geometry ) {
       JSROOT.TBasePainter.call( this, geometry );
+      this._worker = null;
+      this._isworker = false;
       this._debug = false;
       this._full = false;
       this._bound = false;
@@ -92,6 +68,8 @@
       this._geometry = geometry;
       this._scene = null;
       this._renderer = null;
+      this._toplevel = null;
+
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") this._grid = true;
       var _opt = JSROOT.GetUrlOption('_debug');
@@ -105,6 +83,20 @@
    JSROOT.TGeoPainter.prototype.GetObject = function() {
       return this._geometry;
    }
+
+   JSROOT.TGeoPainter.prototype.StartWorker = function() {
+
+      this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
+
+      this._worker.onmessage = function(event) {
+         if ('log' in event) {
+            return JSROOT.console('geo: ' + event.log);
+         }
+      };
+
+      this._worker.postMessage('init');
+   }
+
 
    JSROOT.TGeoPainter.prototype.addControls = function(renderer, scene, camera) {
 
@@ -729,16 +721,27 @@
       return mesh;
    }
 
-   JSROOT.TGeoPainter.prototype.drawNode = function(scene, toplevel, node, visible) {
-      var container = toplevel;
-      var volume = node['fVolume'];
-      if (visible==0) return; // cut all volumes below 0 level
+   JSROOT.TGeoPainter.prototype.drawNode = function() {
 
-      if ('_mesh' in node) {
-         // reuse mesh already created for the node
-         toplevel.add(node._mesh);
-         return;
+      if (this._stack.length == 0) return false;
+
+      var arg = this._stack[this._stack.length - 1];
+
+      if ('nchild' in arg) {
+         // add next child
+         if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
+            this._stack.pop();
+         } else {
+            this._stack.push({ toplevel: arg.mesh, lvl: arg.lvl-1, node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
+         }
+         return true;
       }
+
+      // cut all volumes below 0 level
+      if (arg.lvl===0) { this._stack.pop(); return true; }
+
+      var node = arg.node;
+      var volume = node['fVolume'];
 
       var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -791,7 +794,7 @@
                   node['fFinder']['fSinCos'][2*i+1] = Math.cos((Math.PI / 180.0)*(node['fFinder']['fStart']+0.5*node['fFinder']['fStep']+i*node['fFinder']['fStep']));
                }
             }
-            if (rotation_matrix == null)
+            if (rotation_matrix === null)
                rotation_matrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
             rotation_matrix[0] = node['fFinder']['fSinCos'][(2*node['fIndex'])+1];
             rotation_matrix[1] = -node['fFinder']['fSinCos'][(2*node['fIndex'])];
@@ -803,7 +806,7 @@
 
       var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
       if (this._debug) _helper = true;
-      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || (visible > 0 && JSROOT.TestGeoAttBit(volume, JSROOT.BIT(2)))) {
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || (arg.lvl > 0 && JSROOT.TestGeoAttBit(volume, JSROOT.BIT(2)))) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
@@ -849,29 +852,31 @@
             var helper = new THREE.WireframeHelper(mesh);
             helper.material.color.set(JSROOT.Painter.root_colors[volume['fLineColor']]);
             helper.material.linewidth = volume['fLineWidth'];
-            scene.add(helper);
+            this._scene.add(helper);
          }
          if (this._debug && this._bound) {
             if (_isdrawn || this._full) {
                var boxHelper = new THREE.BoxHelper( mesh );
-               toplevel.add( boxHelper );
+               arg.toplevel.add( boxHelper );
             }
          }
          mesh['name'] = node['fName'];
          // add the mesh to the scene
-         toplevel.add(mesh);
+         arg.toplevel.add(mesh);
 
-         node['_mesh'] = mesh;
+         arg.mesh = mesh;
 
          //if ( this._debug && this._renderer.domElement.transformControl !== null)
          //   this._renderer.domElement.transformControl.attach( mesh );
-         container = mesh;
       }
-      if (typeof volume['fNodes'] != 'undefined' && volume['fNodes'] != null) {
-         var nodes = volume['fNodes']['arr'];
-         for (var i in nodes)
-            this.drawNode(scene, container, nodes[i], visible-1);
+      if ((arg.lvl === 1) || (typeof volume.fNodes === 'undefined') || (volume.fNodes === null) || (volume.fNodes.arr.length == 0)) {
+         // do not draw childs
+         this._stack.pop();
+      } else {
+         arg.nchild = 0; // specify that childs should be extracted
       }
+
+      return true;
    }
 
    JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
@@ -1003,7 +1008,7 @@
       return res;
    }
 
-   JSROOT.TGeoPainter.prototype.createScene = function(w,h,pixel_ratio) {
+   JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
@@ -1014,27 +1019,7 @@
       pointLight.position.set( 10, 10, 10 );
       this._scene.add( this._camera );
 
-      /**
-       * @author alteredq / http://alteredqualia.com/
-       * @author mr.doob / http://mrdoob.com/
-       */
-      var Detector = {
-            canvas : !!window.CanvasRenderingContext2D,
-            webgl : (function() {
-               try {
-                  return !!window.WebGLRenderingContext
-                  && !!document.createElement('canvas')
-                  .getContext('experimental-webgl');
-               } catch (e) {
-                  return false;
-               }
-            })(),
-            workers : !!window.Worker,
-            fileapi : window.File && window.FileReader
-            && window.FileList && window.Blob
-      };
-
-      this._renderer = Detector.webgl ?
+      this._renderer = webgl ?
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio(pixel_ratio);
@@ -1053,13 +1038,17 @@
       if ((this._geometry['_typename'] == 'TGeoVolume') || (this._geometry['_typename'] == 'TGeoVolumeAssembly'))  {
          var shape = this._geometry['fShape'];
          var top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
-         var cube = new THREE.Mesh( top, new THREE.MeshBasicMaterial( {
-                  visible: false, transparent: true, opacity: 0.0 } ) );
+         var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
+         var cube = new THREE.Mesh( top, material );
          this._toplevel.add(cube);
+
+         this._stack = [];
+         this._stack.push({ toplevel: cube, lvl: maxlvl,
+                            node: { _typename:"TGeoNode", fVolume: this._geometry, fName: "TopLevel" }});
 
          var t1 = new Date().getTime();
 
-         this.drawNode(this._scene, cube, { _typename:"TGeoNode", fVolume:this._geometry, fName:"TopLevel" }, maxlvl);
+         while (this.drawNode());
 
          var t2 = new Date().getTime();
 
@@ -1131,30 +1120,6 @@
    JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-      if (JSROOT.GeoWorker) {
-         var arr = [];
-         var dt1 = new Date();
-         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
-         var dt2 = new Date();
-
-         console.log('count = ' + cnt + ' tm = ' + (dt2.getTime() - dt1.getTime()));
-
-         dt1 = new Date();
-         var map = [];
-         JSROOT.clear_func(this._geometry, map);
-         dt2 = new Date();
-
-         console.log('clear tm = ' + (dt2.getTime() - dt1.getTime()) + '  len = ' + map.length);
-
-         if (JSROOT.GeoWorkerFirst === null)
-            JSROOT.GeoWorker.postMessage({ geom : this._geometry, dt: new Date });
-         else
-            JSROOT.GeoWorkerFirst = this._geometry;
-
-         // JSROOT.GeoWorker.postMessage(this._geometry, [ this._geometry ]);
-         // return this;
-      }
-
       var dom = this.select_main().node();
       var rect = dom.getBoundingClientRect();
       var w = rect.width, h = rect.height, size = 100;
@@ -1181,7 +1146,32 @@
          }
       }
 
-      this.createScene(w,h,window.devicePixelRatio);
+      var webgl  = (function() {
+         try {
+            return !!window.WebGLRenderingContext
+            && !!document.createElement('canvas')
+            .getContext('experimental-webgl');
+         } catch (e) {
+            return false;
+         }
+       })();
+
+      if (opt === 'worker') {
+         JSROOT.progress('Starting geo worker...');
+
+         this.StartWorker();
+
+         // do clear all functions from geometry parallel to worker start
+         JSROOT.clear_func(this._geometry);
+
+         this._worker.postMessage({ geom: this._geometry });
+
+         this._worker.postMessage({ build : { webgl: webgl, w: w, h: h, pixratio: window.devicePixelRatio, maxlvl: maxlvl } });
+
+         return this;
+      }
+
+      this.createScene(webgl, w, h, window.devicePixelRatio);
 
       dom.appendChild(this._renderer.domElement);
 
