@@ -69,6 +69,7 @@
       this._scene = null;
       this._renderer = null;
       this._toplevel = null;
+      this._stack = null;
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") this._grid = true;
@@ -723,22 +724,23 @@
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
-      if (this._stack.length == 0) return false;
+      if ((this._stack == null) || (this._stack.length == 0)) return false;
 
       var arg = this._stack[this._stack.length - 1];
+
+      // cut all volumes below 0 level
+      if (arg.lvl===0) { this._stack.pop(); return true; }
 
       if ('nchild' in arg) {
          // add next child
          if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
             this._stack.pop();
          } else {
-            this._stack.push({ toplevel: arg.mesh, lvl: arg.lvl-1, node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
+            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel, lvl: arg.lvl-1,
+                               node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
          }
          return true;
       }
-
-      // cut all volumes below 0 level
-      if (arg.lvl===0) { this._stack.pop(); return true; }
 
       var node = arg.node;
       var volume = node['fVolume'];
@@ -1034,31 +1036,23 @@
       this._overall_size = 10;
    }
 
-   JSROOT.TGeoPainter.prototype.createDrawGeometry = function(maxlvl) {
+
+   JSROOT.TGeoPainter.prototype.startDrawGeometry = function(maxlvl) {
       if ((this._geometry['_typename'] == 'TGeoVolume') || (this._geometry['_typename'] == 'TGeoVolumeAssembly'))  {
+         this._nodedraw = true;
+
          var shape = this._geometry['fShape'];
-         var top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
+         this._top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
-         var cube = new THREE.Mesh( top, material );
+         var cube = new THREE.Mesh(this._top, material );
          this._toplevel.add(cube);
 
          this._stack = [];
          this._stack.push({ toplevel: cube, lvl: maxlvl,
                             node: { _typename:"TGeoNode", fVolume: this._geometry, fName: "TopLevel" }});
-
-         var t1 = new Date().getTime();
-
-         while (this.drawNode());
-
-         var t2 = new Date().getTime();
-
-         console.log('Create tm = ' + (t2-t1));
-
-         top.computeBoundingBox();
-         var max = top.boundingBox.max;
-         this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
+         this._nodedraw = false;
          if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
             var nodes = this._geometry['fElements']['arr'];
             for (var i = 0; i < nodes.length; ++i) {
@@ -1066,6 +1060,17 @@
                this.drawEveNode(this._scene, this._toplevel, node);
             }
          }
+      }
+   }
+
+   JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
+
+      if (this._nodedraw) {
+         this._top.computeBoundingBox();
+         var max = this._top.boundingBox.max;
+         this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
+
+      } else {
          var max = this.computeBoundingBox(this._toplevel, true).max;
          this._overall_size = 10 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
       }
@@ -1146,7 +1151,7 @@
          }
       }
 
-      var webgl  = (function() {
+      var webgl = (function() {
          try {
             return !!window.WebGLRenderingContext
             && !!document.createElement('canvas')
@@ -1156,28 +1161,60 @@
          }
        })();
 
-      if (opt === 'worker') {
-         JSROOT.progress('Starting geo worker...');
-
-         this.StartWorker();
-
-         // do clear all functions from geometry parallel to worker start
-         JSROOT.clear_func(this._geometry);
-
-         this._worker.postMessage({ geom: this._geometry });
-
-         this._worker.postMessage({ build : { webgl: webgl, w: w, h: h, pixratio: window.devicePixelRatio, maxlvl: maxlvl } });
-
-         return this;
-      }
-
       this.createScene(webgl, w, h, window.devicePixelRatio);
 
       dom.appendChild(this._renderer.domElement);
 
       this.SetDivId(); // now one could set painter pointer in child element
 
-      this.createDrawGeometry(maxlvl);
+      this.startDrawGeometry(maxlvl);
+
+      this._startm = new Date().getTime();
+      this._drawcnt = 0;
+
+      while (this.drawNode()) {
+         var now = new Date().getTime();
+         this._drawcnt++;
+
+         if (now - this._startm > 300) {
+            JSROOT.progress('Creating geometry ' + this._drawcnt);
+            // console.log('go in timeout ' + this._drawcnt);
+            setTimeout(this.contineDraw.bind(this), 0);
+            return this;
+         }
+      }
+
+      var t2 = new Date().getTime();
+
+      console.log('Create tm = ' + (t2-this._startm));
+      return this.completeDraw();
+   }
+
+   JSROOT.TGeoPainter.prototype.contineDraw = function() {
+      var curr = new Date().getTime();
+      while (this.drawNode()) {
+         this._drawcnt++;
+         var now = new Date().getTime();
+         if (now - curr > 300) {
+            // console.log('again timeout ' + this._drawcnt);
+            JSROOT.progress('Creating geometry ' + this._drawcnt);
+            setTimeout(this.contineDraw.bind(this), 0);
+            return this;
+         }
+
+         // stop creation, render as is
+         if ((now - this._startm > 10000) || (this._drawcnt > 3000)) break;
+      }
+
+      var t2 = new Date().getTime();
+      console.log('Create tm = ' + (t2-this._startm));
+
+      JSROOT.progress('Rendering geometry');
+      setTimeout(this.completeDraw.bind(this, true), 0);
+   }
+
+   JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
+      this.finishDrawGeometry();
 
       this.addControls(this._renderer, this._scene, this._camera);
 
@@ -1187,10 +1224,14 @@
       this._renderer.render(this._scene, this._camera);
       var t2 = new Date().getTime();
 
+      if (close_progress) JSROOT.progress();
+
       console.log('Render tm = ' + (t2-t1));
 
       // pointer used in the event handlers
       var pthis = this;
+
+      var dom = this.select_main().node();
 
       dom.tabIndex = 0;
       dom.focus();
@@ -1209,6 +1250,7 @@
 
       return this.DrawingReady();
    }
+
 
    JSROOT.TGeoPainter.prototype.Cleanup = function() {
       this.helpText();
