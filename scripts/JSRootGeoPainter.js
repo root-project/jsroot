@@ -59,24 +59,12 @@
       JSROOT.TBasePainter.call( this, geometry );
       this._worker = null;
       this._isworker = false;
-      this._debug = false;
-      this._full = false;
-      this._bound = false;
-      this._grid = false;
-      //this._transformControl = null;
-      //this._translationSnap = 100;
+
       this._geometry = geometry;
       this._scene = null;
       this._renderer = null;
       this._toplevel = null;
       this._stack = null;
-
-      var _opt = JSROOT.GetUrlOption('_grid');
-      if (_opt !== null && _opt == "true") this._grid = true;
-      var _opt = JSROOT.GetUrlOption('_debug');
-      if (_opt !== null && _opt == "true") { this._debug = true; this._grid = true; }
-      if (_opt !== null && _opt == "bound") { this._debug = true; this._grid = true; this._bound = true; }
-      if (_opt !== null && _opt == "full") { this._debug = true; this._grid = true; this._full = true; this._bound = true; }
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
@@ -84,6 +72,42 @@
    JSROOT.TGeoPainter.prototype.GetObject = function() {
       return this._geometry;
    }
+
+   JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1 };
+
+      var _opt = JSROOT.GetUrlOption('_grid');
+      if (_opt !== null && _opt == "true") res._grid = true;
+      var _opt = JSROOT.GetUrlOption('_debug');
+      if (_opt !== null && _opt == "true") { res._debug = true; res._grid = true; }
+      if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
+      if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
+
+      opt = opt.toLowerCase();
+
+      if (opt.indexOf("all")>=0) {
+         res.maxlvl = 9999;
+         opt = opt.replace("all", " ");
+      }
+      if (opt.indexOf("limit")>=0) {
+         res.maxlvl = 1111;
+         opt = opt.replace("limit", " ");
+      }
+
+      var p = opt.indexOf("maxlvl");
+      if (p>=0) {
+         res.maxlvl = parseInt(opt.substr(p+6, 1));
+         opt = opt.replace("maxlvl" + res.maxlvl, " ");
+      }
+
+      if (opt.indexOf("d")>=0) res._debug = true;
+      if (opt.indexOf("g")>=0) res._grid = true;
+      if (opt.indexOf("b")>=0) res._bound = true;
+      if (opt.indexOf("f")>=0) res._full = true;
+
+      return res;
+   }
+
 
    JSROOT.TGeoPainter.prototype.startWorker = function() {
 
@@ -135,7 +159,7 @@
          renderer.render(scene, camera);
       }
 
-      if ( this._debug || this._grid ) {
+      if ( this.options._debug || this.options._grid ) {
          renderer.domElement.transformControl = new THREE.TransformControls( camera, renderer.domElement );
          renderer.domElement.transformControl.addEventListener( 'change', renderer.domElement.render );
          scene.add( renderer.domElement.transformControl );
@@ -201,39 +225,7 @@
       animate();
    }
 
-   JSROOT.TGeoPainter.prototype.drawNode = function() {
-
-      if ((this._stack == null) || (this._stack.length == 0)) return false;
-
-      var arg = this._stack[this._stack.length - 1];
-
-      // cut all volumes below 0 level
-      if (arg.lvl===0) { this._stack.pop(); return true; }
-
-      if ('nchild' in arg) {
-         // add next child
-         if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
-            this._stack.pop();
-         } else {
-            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel, lvl: arg.lvl-1,
-                               node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
-         }
-         return true;
-      }
-
-      var node = arg.node;
-
-      if ('_mesh' in node) {
-
-         // console.log('add again ' + node.fName + ' to parent ' + arg.toplevel['name']);
-
-         arg.toplevel.add(node._mesh.clone());
-
-         this._stack.pop();
-
-         return true;
-      }
-
+   JSROOT.GEO.createNodeMesh = function(node, lvl) {
       var volume = node['fVolume'];
 
       var translation_matrix = null; // [0, 0, 0];
@@ -295,11 +287,15 @@
             rotation_matrix[4] = node['fFinder']['fSinCos'][(2*node['fIndex'])+1];
          }
       }
-      var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
 
-      var _transparent = true, _helper = false, _opacity = 0.0, _isdrawn = false;
-      if (this._debug) _helper = true;
-      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || (arg.lvl > 0 && JSROOT.TestGeoAttBit(volume, JSROOT.BIT(2)))) {
+      var fillcolor = 'black';
+      if ('_fillcolor' in node) fillcolor = node._fillcolor;
+
+      // var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
+
+      var _transparent = true, _opacity = 0.0, _isdrawn = false;
+
+      if (JSROOT.TestGeoAttBit(volume, JSROOT.BIT(7)) || ((lvl > 0) && JSROOT.TestGeoAttBit(volume, JSROOT.BIT(2)))) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
@@ -313,8 +309,8 @@
             _transparent = true;
             _opacity = (100.0 - transparency) / 100.0;
          }
-         if (typeof fillcolor == "undefined")
-            fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
+         //if (typeof fillcolor == "undefined")
+         //   fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
       }
 
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
@@ -326,8 +322,11 @@
          material.depthTest = false;
          material.visible = false;
       }
+
       var mesh = JSROOT.GEO.createMesh(volume['fShape'], material, rotation_matrix);
+
       if (typeof mesh != 'undefined' && mesh != null) {
+
          if (translation_matrix !== null) {
             mesh.position.x = 0.5 * translation_matrix[0];
             mesh.position.y = 0.5 * translation_matrix[1];
@@ -341,18 +340,65 @@
                                         rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
                                         0,                                   0,                  0,   1 ) );
          }
-         if (_isdrawn && _helper) {
+
+         mesh._isdrawn = _isdrawn; // extra flag
+      }
+
+      return mesh;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawNode = function() {
+
+      if ((this._stack == null) || (this._stack.length == 0)) return false;
+
+      var arg = this._stack[this._stack.length - 1];
+
+      // cut all volumes below 0 level
+      if (arg.lvl===0) { this._stack.pop(); return true; }
+
+      if ('nchild' in arg) {
+         // add next child
+         if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
+            this._stack.pop();
+         } else {
+            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel, lvl: arg.lvl-1,
+                               node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
+         }
+         return true;
+      }
+
+      var node = arg.node;
+
+      if ('_mesh' in node) {
+
+         // console.log('add again ' + node.fName + ' to parent ' + arg.toplevel['name']);
+
+         arg.toplevel.add(node._mesh.clone());
+
+         this._stack.pop();
+
+         return true;
+      }
+
+      node._fillcolor = JSROOT.Painter.root_colors[node.fVolume['fLineColor']];
+
+      var mesh = JSROOT.GEO.createNodeMesh(node, arg.lvl);
+
+      if ((typeof mesh != 'undefined') && (mesh !== null)) {
+
+         if (this.options._debug &&  mesh._isdrawn) {
             var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(JSROOT.Painter.root_colors[volume['fLineColor']]);
-            helper.material.linewidth = volume['fLineWidth'];
+            helper.material.color.set(JSROOT.Painter.root_colors[node.fVolume['fLineColor']]);
+            helper.material.linewidth = node.fVolume['fLineWidth'];
             this._scene.add(helper);
          }
-         if (this._debug && this._bound) {
-            if (_isdrawn || this._full) {
+         if (this.options._debug && this.options._bound) {
+            if (mesh._isdrawn || this.options._full) {
                var boxHelper = new THREE.BoxHelper( mesh );
                arg.toplevel.add( boxHelper );
             }
          }
+
          mesh['name'] = node['fName'];
          // add the mesh to the scene
          arg.toplevel.add(mesh);
@@ -361,10 +407,10 @@
 
          node._mesh = mesh;
 
-         //if ( this._debug && this._renderer.domElement.transformControl !== null)
+         //if ( this.options._debug && this._renderer.domElement.transformControl !== null)
          //   this._renderer.domElement.transformControl.attach( mesh );
       }
-      if ((arg.lvl === 1) || (typeof volume.fNodes === 'undefined') || (volume.fNodes === null) || (volume.fNodes.arr.length == 0)) {
+      if ((arg.lvl === 1) || (typeof node.fVolume.fNodes === 'undefined') || (node.fVolume.fNodes === null) || (node.fVolume.fNodes.arr.length == 0)) {
          // do not draw childs
          this._stack.pop();
       } else {
@@ -383,7 +429,7 @@
       var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
       var _transparent = true;
       var _helper = false;
-      if (this._debug) _helper = true;
+      if (this.options._debug) _helper = true;
       var _opacity = 0.0;
       var _isdrawn = false;
       if (node['fRnrSelf'] == true) {
@@ -425,8 +471,8 @@
             helper.material.linewidth = volume['fLineWidth'];
             scene.add(helper);
          }
-         if (this._debug && this._bound) {
-            if (_isdrawn || this._full) {
+         if (this.options._debug && this.options._bound) {
+            if (_isdrawn || this.options._full) {
                var boxHelper = new THREE.BoxHelper( mesh );
                toplevel.add( boxHelper );
             }
@@ -434,7 +480,7 @@
          mesh['name'] = node['fName'];
          // add the mesh to the scene
          toplevel.add(mesh);
-         //if ( this._debug && renderer.domElement.transformControl !== null)
+         //if ( this.options._debug && renderer.domElement.transformControl !== null)
          //   renderer.domElement.transformControl.attach( mesh );
          container = mesh;
       }
@@ -593,11 +639,11 @@
          var shape = this._geometry['fShape'];
          this._top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
-         var cube = new THREE.Mesh(this._top, material );
-         this._toplevel.add(cube);
+         this._cube = new THREE.Mesh(this._top, material );
+         this._toplevel.add(this._cube);
 
          this._stack = [];
-         this._stack.push({ toplevel: cube, lvl: maxlvl,
+         this._stack.push({ toplevel: this._cube, lvl: maxlvl,
                             node: { _typename:"TGeoNode", fVolume: this._geometry, fName: "TopLevel" }});
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
@@ -633,9 +679,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
-      if ( this._debug || this._grid ) {
-         if ( this._full ) {
-            var boxHelper = new THREE.BoxHelper( cube );
+      if ( this.options._debug || this.options._grid ) {
+         if ( this.options._full ) {
+            var boxHelper = new THREE.BoxHelper(this._cube);
             this._scene.add( boxHelper );
          }
          this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
@@ -707,19 +753,17 @@
          return this.drawCount();
       }
 
-      var maxlvl = -1; // use only visible flag, set in ROOT when geometry is displayed
+      this.options = this.decodeOptions(opt);
 
-      if (opt=="all") maxlvl = 9999; else
-      if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
-      if (opt == 'limit') {
+      if (this.options.maxlvl === 1111) {
          var arg = {};
          var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arg);
-         maxlvl = 9999;
+         this.options.maxlvl = 9999;
          var sum = 0;
          for (var lvl=1; lvl < arg.cnt.length;++lvl) {
             sum += arg.cnt[lvl];
             if (sum > 10000) {
-               maxlvl = lvl - 1;
+               this.options.maxlvl = lvl - 1;
                break;
             }
          }
@@ -742,7 +786,7 @@
 
       this.SetDivId(); // now one could set painter pointer in child element
 
-      this.startDrawGeometry(maxlvl);
+      this.startDrawGeometry(this.options.maxlvl);
 
       this._startm = new Date().getTime();
       this._drawcnt = 0;

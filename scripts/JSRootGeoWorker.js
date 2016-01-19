@@ -1,7 +1,10 @@
-// this is web worker, used to offload TGeo functionality in other thread
+// @file JSRootGeoWorker.js
+// this is web worker, used to offload TGeo functionality in other thread(s)
 
 
-importScripts('three.min.js');
+JSROOT = {}; // just place holder for JSROOT.GEO functions
+
+importScripts('three.min.js', "JSRootGeoBase.js");
 
 
 onmessage = function(e) {
