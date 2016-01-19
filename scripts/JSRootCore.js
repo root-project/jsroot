@@ -38,7 +38,9 @@
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext
+            'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
+            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
+            'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
       // check if modules are already loaded
@@ -759,9 +761,10 @@
       }
 
       if (kind.indexOf("geom;")>=0) {
-         mainfiles += "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+         mainfiles += "$$$scripts/JSRootGeoBase" + ext + ".js;" +
+                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('JSRootGeoPainter');
+         modules.push('JSRootGeoBase', 'JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
