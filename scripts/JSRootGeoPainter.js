@@ -289,7 +289,6 @@
       }
 
       var fillcolor = 'black';
-      if ('_fillcolor' in node) fillcolor = node._fillcolor;
 
       // var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
 
@@ -323,7 +322,7 @@
          material.visible = false;
       }
 
-      var mesh = JSROOT.GEO.createMesh(volume['fShape'], material, rotation_matrix);
+      var mesh = JSROOT.GEO.createMesh(volume['fShape'], material, rotation_matrix, _isdrawn);
 
       if (typeof mesh != 'undefined' && mesh != null) {
 
@@ -380,11 +379,13 @@
          return true;
       }
 
-      node._fillcolor = JSROOT.Painter.root_colors[node.fVolume['fLineColor']];
+      // node._fillcolor = JSROOT.Painter.root_colors[node.fVolume['fLineColor']];
 
       var mesh = JSROOT.GEO.createNodeMesh(node, arg.lvl);
 
       if ((typeof mesh != 'undefined') && (mesh !== null)) {
+
+         mesh.material.color.set(JSROOT.Painter.root_colors[node.fVolume['fLineColor']]);
 
          if (this.options._debug &&  mesh._isdrawn) {
             var helper = new THREE.WireframeHelper(mesh);
@@ -432,7 +433,7 @@
       if (this.options._debug) _helper = true;
       var _opacity = 0.0;
       var _isdrawn = false;
-      if (node['fRnrSelf'] == true) {
+      if (node['fRnrSelf'] === true) {
          _transparent = false;
          _opacity = 1.0;
          _isdrawn = true;
@@ -453,7 +454,7 @@
       material.polygonOffset = true;
       material.polygonOffsetFactor = -1;
       if (shape !== null)
-         mesh = JSROOT.GEO.createMesh(shape, material, rotation_matrix);
+         mesh = JSROOT.GEO.createMesh(shape, material, rotation_matrix, _isdrawn);
       if (typeof mesh != 'undefined' && mesh != null) {
          mesh.position.x = 0.5 * node['fTrans'][12];
          mesh.position.y = 0.5 * node['fTrans'][13];
@@ -637,9 +638,14 @@
          this._nodedraw = true;
 
          var shape = this._geometry['fShape'];
-         this._top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
+
+         // console.log('Box geometry ' + shape['fDX'] + '  ' + shape['fDY'] + '  ' +  shape['fDZ']);
+
+         // this._top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
+
+         var geom = new THREE.Geometry();
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
-         this._cube = new THREE.Mesh(this._top, material );
+         this._cube = new THREE.Mesh(geom, material );
          this._toplevel.add(this._cube);
 
          this._stack = [];
@@ -661,8 +667,11 @@
    JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
 
       if (this._nodedraw) {
-         this._top.computeBoundingBox();
-         var max = this._top.boundingBox.max;
+
+         var max = new THREE.Box3().setFromObject(this._cube).max;
+
+         // this._top.computeBoundingBox();
+         // var max = this._top.boundingBox.max;
          this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
 
       } else {

@@ -528,8 +528,14 @@
       return new THREE.Mesh( geometry, material );
    }
 
-   JSROOT.GEO.createMesh = function( shape, material, rotation_matrix ) {
+   JSROOT.GEO.createMesh = function( shape, material, rotation_matrix, is_drawn ) {
       var mesh = null;
+
+      if (!is_drawn) {
+         var geometry = new THREE.Geometry();
+         return new THREE.Mesh( geometry, material );
+      }
+
       if (shape['_typename'] == "TGeoBBox") {
          // Cube
          mesh = JSROOT.GEO.createCube( shape, material );
