@@ -85,17 +85,27 @@
       return this._geometry;
    }
 
-   JSROOT.TGeoPainter.prototype.StartWorker = function() {
+   JSROOT.TGeoPainter.prototype.startWorker = function() {
 
-      this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
+      this._worker = [];
 
-      this._worker.onmessage = function(event) {
-         if ('log' in event) {
-            return JSROOT.console('geo: ' + event.log);
-         }
-      };
+      for (var n=0;n<4;n++) {
 
-      this._worker.postMessage('init');
+         this._worker[n] = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
+
+         this._worker[n].onmessage = function(e) {
+
+            if (typeof e.data !== 'object') return;
+
+            if ('log' in e.data)
+               return JSROOT.console('geo: ' + e.data.log);
+
+            if ('init' in e.data)
+               return JSROOT.console('full init tm: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+         };
+
+         this._worker[n].postMessage( { init: true, tm0: new Date() } );
+      }
    }
 
 
@@ -986,40 +996,96 @@
       return bbox;
    }
 
-   JSROOT.Painter.CountGeoVolumes = function(obj, lvl, cnt, map) {
-      var res = 0;
-
+   JSROOT.Painter.CountGeoVolumes = function(obj, lvl, arg) {
       if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return 0;
 
       if ((obj['_typename'] == 'TGeoVolume') || (obj['_typename'] == 'TGeoVolumeAssembly'))
-         return JSROOT.Painter.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, cnt, map);
+         return JSROOT.Painter.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, arg);
 
-      if (!map) map = [];
-      var clear = (map.length == 0);
-
-      res += 1;
-      if (cnt!=null) cnt[lvl]+=1;
-
-      if (! ('_unique' in obj)) {
-         obj._unique = true;
-         map.push(obj);
+      if (lvl === 0) {
+         if (!arg) arg = { erase: true };
+         if (!('second' in arg)) arg.second = false;
+         if (!('cnt' in arg)) arg.cnt = [];
+         if (!('map' in arg)) arg.map = [];
+         if (!('proc' in arg)) arg.proc = [];
+         if (!('clear' in arg))
+            arg.clear = function(onlyproc) {
+               for (var n=0;n<this.map.length;++n) {
+                  delete this.map[n]._proc;
+                  if (onlyproc) continue;
+                  delete this.map[n]._refcnt;
+                  delete this.map[n]._numchld;
+               }
+               if (onlyproc) this.proc = [];
+            };
       }
 
-      if (('fVolume' in obj) && (obj.fVolume != null) && (obj.fVolume.fNodes != null)) {
-        var arr = obj.fVolume.fNodes.arr;
-        for (var i = 0; i < arr.length; ++i)
-           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, cnt, map);
+      var res = 1;
+
+      var arr = null;
+
+      if (('fVolume' in obj) && (obj.fVolume !== null) && (obj.fVolume.fNodes !== null))
+         arr = obj.fVolume.fNodes.arr;
+
+      if (!arg.second) {
+
+         if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
+         arg.cnt[lvl] += 1;
+
+         var isref = ('_refcnt' in obj);
+
+         if ('_refcnt' in obj) {
+            obj._refcnt++;
+         } else {
+            obj._refcnt = 1;
+            obj._numchld = 0;
+            arg.map.push(obj);
+            if (arr !== null)
+               for (var i = 0; i < arr.length; ++i)
+                  obj._numchld += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, arg);
+         }
+
+         res += obj._numchld;
+
+      } else {
+         var isany = false, isproc = false;
+
+         if (arr !== null)
+            for (var i = 0; i < arr.length; ++i) {
+               if ('_mesh' in arr[i]) continue; // we have ready mesh, will clone/copy when required
+               JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, arg);
+               if ('_proc' in arr[i]) isproc = true;
+               if (arr[i]._refcnt > 1) isany = true;
+            }
+
+         if (isproc) {
+            // if any child should be process, when nothing can be done with the parent
+            obj._proc = true;
+         } else
+         if (isany) {
+            // if any child has multiple reference, parent could not be processed before child is ready
+            obj._proc = true;
+            for (var i = 0; i < arr.length; ++i) {
+               if (!('_proc' in arr[i])) {
+                  arg.proc.push(arr[i]);
+                  arr[i]._proc = true;
+               }
+            }
+         } else
+         if ((obj._refcnt > 1) && !('_proc' in obj)) {
+            arg.proc.push(obj);
+            obj._proc = true;
+         }
       }
 
-      if (('fElements' in obj) && (obj.fElements != null)) {
-        var arr = obj.fElements.arr;
-        for (var i = 0; i < arr.length; ++i)
-           res += JSROOT.Painter.CountGeoVolumes(arr[i], lvl+1, cnt, map);
-      }
+      if ((lvl==0) && !arg.second) {
 
-      if (clear)
-         for (var n=0;n<map.length;n++)
-            delete map[n]._unique;
+         arg.second = true;
+
+         JSROOT.Painter.CountGeoVolumes(obj, lvl, arg);
+
+         if (arg.erase) arg.clear();
+      }
 
       return res;
    }
@@ -1117,18 +1183,34 @@
    }
 
    JSROOT.TGeoPainter.prototype.drawCount = function() {
-      var arr = [], map = [];
-      for (var lvl=0;lvl<100;++lvl) arr.push(0);
+      var arg = { };
 
-      var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr, map);
+      var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arg);
 
       var res = 'Total number: ' + cnt + '<br/>';
-      for (var lvl=0;lvl<arr.length;++lvl) {
-         if (arr[lvl] !== 0)
-            res += ('  lvl' + lvl + ': ' + arr[lvl] + '<br/>');
+      for (var lvl=0;lvl<arg.cnt.length;++lvl) {
+         if (arg.cnt[lvl] !== 0)
+            res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
 
-      res += "Unique volumes: " + map.length + '<br/>';
+      res += "Unique volumes: " + arg.map.length + '<br/>';
+
+
+      for (var niter = 0; niter < 10; ++ niter) {
+         res += "Proc" + niter + " volumes: " + arg.proc.length + '<br/>';
+
+         var proccnt = 0;
+         for (var n=0;n<arg.proc.length;++n) {
+             proccnt += arg.proc[n]._refcnt * (arg.proc[n]._numchld + 1);
+             arg.proc[n]._mesh = {}; // emulate mesh
+         }
+         res += "Proc" + niter + " total cnt: " + proccnt + '<br/>';
+
+         if (arg.proc.length == 0) break;
+
+         arg.clear(true);
+         JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arg);
+      }
 
       this.select_main().node().innerHTML = res;
 
@@ -1144,25 +1226,28 @@
       var w = rect.width, h = rect.height, size = 100;
       if (h < 10) { h = parseInt(0.66*w); d.style.height = h +"px"; }
 
-      if (opt == 'count') return this.drawCount();
+      if (opt == 'count') {
+         // this.startWorker();
+         return this.drawCount();
+      }
 
       var maxlvl = -1; // use only visible flag, set in ROOT when geometry is displayed
 
       if (opt=="all") maxlvl = 9999; else
       if (opt.indexOf("maxlvl")==0) maxlvl = parseInt(opt.substr(6)); else
       if (opt == 'limit') {
-         var arr = [];
-         for (var lvl=0;lvl<100;++lvl) arr.push(0);
-         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arr);
+         var arg = {};
+         var cnt = JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arg);
          maxlvl = 9999;
          var sum = 0;
-         for (var lvl=1;lvl<arr.length;++lvl) {
-            sum += arr[lvl];
+         for (var lvl=1; lvl < arg.cnt.length;++lvl) {
+            sum += arg.cnt[lvl];
             if (sum > 10000) {
                maxlvl = lvl - 1;
                break;
             }
          }
+         arg.clear();
       }
 
       var webgl = (function() {

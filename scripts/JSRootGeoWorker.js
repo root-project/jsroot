@@ -1,7 +1,7 @@
 // this is web worker, used to offload TGeo functionality in other thread
 
 
-importScripts('JSRootCore.js', 'd3.v3.min.js', 'JSRootPainter.js', 'three.min.js', 'three.extra.js', 'JSRootGeoPainter.js');
+importScripts('three.min.js');
 
 
 onmessage = function(e) {
@@ -9,14 +9,17 @@ onmessage = function(e) {
    if (typeof e.data == 'string') {
       console.log('Worker get message ' + e.data);
 
-      if (e.data=='init')
-         postMessage({ log : "worker ready" });
-
       return;
    }
 
    if (typeof e.data != 'object') return;
 
-   postMessage({ log : "jsroot:" + JSROOT.version + '  three:' + THREE.REVISION });
+   if ('init' in e.data) {
+      e.data.tm1 = new Date();
+      console.log('start worker ' +  (e.data.tm1.getTime() -  e.data.tm0.getTime()));
+      postMessage(e.data);
+   }
+
+   postMessage({ log : "geoworker three.js " + THREE.REVISION });
 }
 

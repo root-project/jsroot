@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in master
+1. Use clone for duplication of geometries, significantly improves performance
+  
+
 ## Changes in 4.1
 1. Introduce object inspector - one could browse object members of any class
 2. Let draw sub-items from TCanvas list of primitives like sub-pad or TLatex
