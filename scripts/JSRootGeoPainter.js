@@ -242,8 +242,9 @@
                 node['fMatrix']['fTranslation'] != null)
                translation_matrix = node['fMatrix']['fTranslation'];
             if (typeof node['fMatrix']['fRotation'] != 'undefined' &&
-                node['fMatrix']['fRotation'] != null)
+                node['fMatrix']['fRotation'] != null) {
                rotation_matrix = node['fMatrix']['fRotation']['fRotationMatrix'];
+            }
          }
       }
       if (node['_typename'] == "TGeoNodeOffset") {
@@ -322,7 +323,7 @@
          material.visible = false;
       }
 
-      var mesh = JSROOT.GEO.createMesh(volume['fShape'], material, rotation_matrix, _isdrawn);
+      var mesh = JSROOT.GEO.createMesh(volume['fShape'], material, _isdrawn);
 
       if (typeof mesh != 'undefined' && mesh != null) {
 
@@ -333,11 +334,16 @@
          }
 
          if (rotation_matrix !== null) {
-            mesh.rotation.setFromRotationMatrix(
-               new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                                        rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                                        rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                        0,                                   0,                  0,   1 ) );
+            var m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                                             rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                                             rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                             0,                                   0,                  0,   1 );
+
+            if ((rotation_matrix[4] === -1) && (rotation_matrix[0] === 1) && (rotation_matrix[8] === 1)) {
+               m = new THREE.Matrix4().makeRotationZ(Math.PI);
+            }
+
+            mesh.rotation.setFromRotationMatrix(m);
          }
 
          mesh._isdrawn = _isdrawn; // extra flag
@@ -427,7 +433,6 @@
    JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
       var container = toplevel;
       var shape = node['fShape'];
-      var rotation_matrix = null;
       var mesh = null;
       var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
       var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
@@ -457,7 +462,7 @@
       material.polygonOffset = true;
       material.polygonOffsetFactor = -1;
       if (shape !== null)
-         mesh = JSROOT.GEO.createMesh(shape, material, rotation_matrix, _isdrawn);
+         mesh = JSROOT.GEO.createMesh(shape, material, _isdrawn);
       if (typeof mesh != 'undefined' && mesh != null) {
          mesh.position.x = 0.5 * node['fTrans'][12];
          mesh.position.y = 0.5 * node['fTrans'][13];

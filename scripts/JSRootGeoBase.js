@@ -193,7 +193,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createTube = function( shape, rotation_matrix ) {
+   JSROOT.GEO.createTube = function( shape ) {
       var radiusSegments = 60;
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg")) {
@@ -214,9 +214,6 @@
            (shape['_typename'] == "TGeoCtub")) {
          thetaStart = shape['fPhi1'] + 90;
          thetaLength = shape['fPhi2'] - shape['fPhi1'];
-         if (rotation_matrix !== null && rotation_matrix[4] === -1 &&
-             rotation_matrix[0] === 1 && rotation_matrix[8] === 1)
-            thetaStart += 180;
       }
       thetaStart *= (Math.PI / 180.0);
       thetaLength *= (Math.PI / 180.0);
@@ -391,7 +388,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createPolygon = function( shape, rotation_matrix ) {
+   JSROOT.GEO.createPolygon = function( shape ) {
       var radiusSegments = 60;
       if ( shape['_typename'] == "TGeoPgon" )
          radiusSegments = shape['fNedges'];
@@ -405,9 +402,6 @@
       thetaStart = shape['fPhi1'] + 90;
       thetaLength = shape['fDphi'];
       var draw_faces = (thetaLength < 360) ? true : false;
-      if (rotation_matrix !== null && rotation_matrix[4] === -1 &&
-          rotation_matrix[0] === 1 && rotation_matrix[8] === 1)
-         thetaStart += 180;
       thetaStart *= (Math.PI / 180.0);
       thetaLength *= (Math.PI / 180.0);
       var geometry = new THREE.Geometry();
@@ -527,7 +521,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createGeometry = function( shape, rotation_matrix) {
+   JSROOT.GEO.createGeometry = function( shape ) {
 
       if (shape['_typename'] == "TGeoBBox")
          return JSROOT.GEO.createCube( shape );  // Cube
@@ -541,24 +535,24 @@
 
       if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg") ||
           (shape['_typename'] == "TGeoTube") || (shape['_typename'] == "TGeoTubeSeg"))
-         return JSROOT.GEO.createTube( shape, rotation_matrix );
+         return JSROOT.GEO.createTube( shape );
 
 
       if (shape['_typename'] == "TGeoTorus")
          return JSROOT.GEO.createTorus( shape );
 
       if ( shape['_typename'] == "TGeoPcon" || shape['_typename'] == "TGeoPgon" )
-         return JSROOT.GEO.createPolygon( shape, rotation_matrix );
+         return JSROOT.GEO.createPolygon( shape );
 
       return null;
    }
 
-   JSROOT.GEO.createMesh = function( shape, material, rotation_matrix, is_drawn ) {
+   JSROOT.GEO.createMesh = function( shape, material, is_drawn ) {
 
       var geometry = null;
 
       if (is_drawn)
-         geometry = JSROOT.GEO.createGeometry(shape, rotation_matrix);
+         geometry = JSROOT.GEO.createGeometry(shape);
 
       if (geometry === null) {
          geometry = new THREE.Geometry();
