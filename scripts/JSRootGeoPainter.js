@@ -383,6 +383,10 @@
 
       var mesh = JSROOT.GEO.createNodeMesh(node, arg.lvl);
 
+      //var json = mesh.toJSON();
+      //var loader = new THREE.ObjectLoader();
+      // mesh = loader.parse(json);
+
       if ((typeof mesh != 'undefined') && (mesh !== null)) {
 
          mesh.material.color.set(JSROOT.Painter.root_colors[node.fVolume['fLineColor']]);
@@ -742,6 +746,8 @@
          res += "Proc" + niter + " total cnt: " + proccnt + '<br/>';
 
          if (arg.proc.length == 0) break;
+
+         JSROOT.Painter.CountGeoVolumes(this._geometry, 0, arg);
 
          arg.clearproc();
       }

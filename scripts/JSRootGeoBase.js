@@ -23,12 +23,11 @@
 
    JSROOT.GEO = {};
 
-   JSROOT.GEO.createCube = function( shape, material, volume ) {
-      var geometry = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
-      return new THREE.Mesh( geometry, material );
+   JSROOT.GEO.createCube = function( shape ) {
+      return new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
    }
 
-   JSROOT.GEO.createTrapezoid = function( shape, material ) {
+   JSROOT.GEO.createTrapezoid = function( shape ) {
       if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap") {
          // Arb8
          var verticesOfShape = [
@@ -80,10 +79,10 @@
          geometry.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
       }
       geometry.computeFaceNormals();
-      return new THREE.Mesh( geometry, material );
+      return geometry;
    }
 
-   JSROOT.GEO.createSphere = function( shape, material ) {
+   JSROOT.GEO.createSphere = function( shape ) {
       var widthSegments = 32;
       var heightSegments = 32;
       var outerRadius = shape['fRmax'];
@@ -102,12 +101,12 @@
       var outerSphere = new THREE.SphereGeometry( outerRadius/2, widthSegments,
             heightSegments, phiStart, phiLength, thetaStart, thetaLength );
       outerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-      var outerSphereMesh = new THREE.Mesh( outerSphere, material );
+      var outerSphereMesh = new THREE.Mesh( outerSphere );
 
       var innerSphere = new THREE.SphereGeometry( innerRadius/2, widthSegments,
             heightSegments, phiStart, phiLength, thetaStart, thetaLength );
       innerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-      var innerSphereMesh = new THREE.Mesh( innerSphere, material );
+      var innerSphereMesh = new THREE.Mesh( innerSphere );
 
       var first = new THREE.Geometry();
       for (i = 0; i < widthSegments; ++i){
@@ -124,7 +123,7 @@
       };
       first.mergeVertices();
       first.computeFaceNormals();
-      var firstMesh = new THREE.Mesh( first, material );
+      var firstMesh = new THREE.Mesh( first );
 
       var second = new THREE.Geometry();
       for (i = 0; i < widthSegments; ++i) {
@@ -141,7 +140,7 @@
       };
       second.mergeVertices();
       second.computeFaceNormals();
-      var secondMesh = new THREE.Mesh( second, material );
+      var secondMesh = new THREE.Mesh( second );
 
       var face1 = new THREE.Geometry();
       for (i = 0; i < widthSegments; ++i){
@@ -158,7 +157,7 @@
       }
       face1.mergeVertices();
       face1.computeFaceNormals();
-      var face1Mesh = new THREE.Mesh( face1, material );
+      var face1Mesh = new THREE.Mesh( face1 );
 
       var face2 = new THREE.Geometry();
       for (i = 0; i < widthSegments; ++i){
@@ -175,7 +174,7 @@
       }
       face2.mergeVertices();
       face2.computeFaceNormals();
-      var face2Mesh = new THREE.Mesh( face2, material );
+      var face2Mesh = new THREE.Mesh( face2 );
 
       outerSphereMesh.updateMatrix();
       geometry.merge(outerSphereMesh.geometry, outerSphereMesh.matrix);
@@ -191,10 +190,10 @@
       geometry.merge(face2Mesh.geometry, face2Mesh.matrix);
       //geometry.computeFaceNormals();
 
-      return new THREE.Mesh( geometry, material );
+      return geometry;
    }
 
-   JSROOT.GEO.createTube = function( shape, material, rotation_matrix ) {
+   JSROOT.GEO.createTube = function( shape, rotation_matrix ) {
       var radiusSegments = 60;
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg")) {
@@ -227,13 +226,13 @@
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
       outerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
-      var outerTubeMesh = new THREE.Mesh( outerTube, material );
+      var outerTubeMesh = new THREE.Mesh( outerTube );
 
       var innerTube = new THREE.CylinderGeometry(innerRadius1/2, innerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       innerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
       innerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
-      var innerTubeMesh = new THREE.Mesh( innerTube, material );
+      var innerTubeMesh = new THREE.Mesh( innerTube );
 
       var first = new THREE.Geometry();
       for (i = 0; i < radiusSegments; ++i){
@@ -250,7 +249,7 @@
       };
       first.mergeVertices();
       first.computeFaceNormals();
-      var firstMesh = new THREE.Mesh( first, material );
+      var firstMesh = new THREE.Mesh( first );
 
       var face1Mesh, face2Mesh;
 
@@ -267,7 +266,7 @@
          face1.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face1.mergeVertices();
          face1.computeFaceNormals();
-         face1Mesh = new THREE.Mesh( face1, material );
+         face1Mesh = new THREE.Mesh( face1 );
 
          var face2 = new THREE.Geometry();
          face2.vertices.push(outerTube.vertices[radiusSegments]/*.clone()*/);
@@ -280,7 +279,7 @@
          face2.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face2.mergeVertices();
          face2.computeFaceNormals();
-         face2Mesh = new THREE.Mesh( face2, material );
+         face2Mesh = new THREE.Mesh( face2 );
       }
 
       var second = new THREE.Geometry();
@@ -299,7 +298,7 @@
       };
       second.mergeVertices();
       second.computeFaceNormals();
-      var secondMesh = new THREE.Mesh( second, material );
+      var secondMesh = new THREE.Mesh( second );
 
       outerTubeMesh.updateMatrix();
       geometry.merge(outerTubeMesh.geometry, outerTubeMesh.matrix);
@@ -318,10 +317,10 @@
       geometry.merge(secondMesh.geometry, secondMesh.matrix);
       //geometry.computeFaceNormals();
 
-      return new THREE.Mesh( geometry, material );
+      return geometry;
    }
 
-   JSROOT.GEO.createTorus = function( shape, material ) {
+   JSROOT.GEO.createTorus = function( shape ) {
       var radius = shape['fR'];
       var innerTube = shape['fRmin'];
       var outerTube = shape['fRmax'];
@@ -336,11 +335,11 @@
 
       var outerTorus = new THREE.TorusGeometry( radius/2, outerTube/2, radialSegments, tubularSegments, arc );
       outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation ) );
-      var outerTorusMesh = new THREE.Mesh( outerTorus, material );
+      var outerTorusMesh = new THREE.Mesh( outerTorus );
 
       var innerTorus = new THREE.TorusGeometry( radius/2, innerTube/2, radialSegments, tubularSegments, arc );
       innerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation ) );
-      var innerTorusMesh = new THREE.Mesh( innerTorus, material );
+      var innerTorusMesh = new THREE.Mesh( innerTorus );
 
       var first = new THREE.Geometry();
       for (i = 0; i < radialSegments; ++i) {
@@ -358,7 +357,7 @@
       }
       first.mergeVertices();
       first.computeFaceNormals();
-      var firstMesh = new THREE.Mesh( first, material );
+      var firstMesh = new THREE.Mesh( first );
 
       var second = new THREE.Geometry();
       for (i = 0; i < radialSegments; ++i) {
@@ -377,7 +376,7 @@
 
       second.mergeVertices();
       second.computeFaceNormals();
-      var secondMesh = new THREE.Mesh( second, material );
+      var secondMesh = new THREE.Mesh( second );
 
       outerTorusMesh.updateMatrix();
       geometry.merge(outerTorusMesh.geometry, outerTorusMesh.matrix);
@@ -389,10 +388,10 @@
       geometry.merge(secondMesh.geometry, secondMesh.matrix);
       //geometry.computeFaceNormals();
 
-      return new THREE.Mesh( geometry, material );
+      return geometry;
    }
 
-   JSROOT.GEO.createPolygon = function( shape, material, rotation_matrix ) {
+   JSROOT.GEO.createPolygon = function( shape, rotation_matrix ) {
       var radiusSegments = 60;
       if ( shape['_typename'] == "TGeoPgon" )
          radiusSegments = shape['fNedges'];
@@ -425,7 +424,7 @@
                   DZ, radiusSegments, 1, true, thetaStart, thetaLength);
          tube[seg].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          tube[seg].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
-         tubeMesh[seg] = new THREE.Mesh( tube[seg], material );
+         tubeMesh[seg] = new THREE.Mesh( tube[seg] );
          tubeMesh[seg].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
          tube[seg+1] = new THREE.CylinderGeometry(innerRadius[n+1], innerRadius[n],
@@ -433,7 +432,7 @@
          tube[seg+1].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          tube[seg+1].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
 
-         tubeMesh[seg+1] = new THREE.Mesh( tube[seg+1], material );
+         tubeMesh[seg+1] = new THREE.Mesh( tube[seg+1] );
          tubeMesh[seg+1].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
          if ( n >= (shape['fNz']-2) ) {
@@ -452,7 +451,7 @@
             };
             end[seg].mergeVertices();
             end[seg].computeFaceNormals();
-            endMesh[seg] = new THREE.Mesh( end[seg], material );
+            endMesh[seg] = new THREE.Mesh( end[seg] );
             endMesh[seg].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
          }
 
@@ -468,7 +467,7 @@
             face[seg].faces.push( new THREE.Face3( 3, 4, 5 ) );
             face[seg].mergeVertices();
             face[seg].computeFaceNormals();
-            faceMesh[seg] = new THREE.Mesh( face[seg], material );
+            faceMesh[seg] = new THREE.Mesh( face[seg] );
             faceMesh[seg].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
             face[seg+1] = new THREE.Geometry();
@@ -482,7 +481,7 @@
             face[seg+1].faces.push( new THREE.Face3( 3, 4, 5 ) );
             face[seg+1].mergeVertices();
             face[seg+1].computeFaceNormals();
-            faceMesh[seg+1] = new THREE.Mesh( face[seg+1], material );
+            faceMesh[seg+1] = new THREE.Mesh( face[seg+1] );
             faceMesh[seg+1].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
          }
          if ( n == 0 ) {
@@ -501,7 +500,7 @@
             }
             end[seg+1].mergeVertices();
             end[seg+1].computeFaceNormals();
-            endMesh[seg+1] = new THREE.Mesh( end[seg+1], material );
+            endMesh[seg+1] = new THREE.Mesh( end[seg+1] );
             endMesh[seg+1].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
          }
 
@@ -525,39 +524,46 @@
          }
       }
       //geometry.computeFaceNormals();
-      return new THREE.Mesh( geometry, material );
+      return geometry;
+   }
+
+   JSROOT.GEO.createGeometry = function( shape, rotation_matrix) {
+
+      if (shape['_typename'] == "TGeoBBox")
+         return JSROOT.GEO.createCube( shape);  // Cube
+
+      if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
+          (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap"))
+         return JSROOT.GEO.createTrapezoid( shape);
+
+      if ((shape['_typename'] == "TGeoSphere"))
+         return JSROOT.GEO.createSphere( shape );
+
+      if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg") ||
+          (shape['_typename'] == "TGeoTube") || (shape['_typename'] == "TGeoTubeSeg"))
+         return JSROOT.GEO.createTube( shape, rotation_matrix );
+
+
+      if (shape['_typename'] == "TGeoTorus")
+         return JSROOT.GEO.createTorus( shape );
+
+      if ( shape['_typename'] == "TGeoPcon" || shape['_typename'] == "TGeoPgon" )
+         return JSROOT.GEO.createPolygon( shape, rotation_matrix );
+
+      return null;
    }
 
    JSROOT.GEO.createMesh = function( shape, material, rotation_matrix, is_drawn ) {
-      var mesh = null;
 
-      if (!is_drawn) {
-         var geometry = new THREE.Geometry();
-         return new THREE.Mesh( geometry, material );
-      }
+      var geometry = null;
 
-      if (shape['_typename'] == "TGeoBBox") {
-         // Cube
-         mesh = JSROOT.GEO.createCube( shape, material );
-      }
-      else if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
-          (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap")) {
-         mesh = JSROOT.GEO.createTrapezoid( shape, material );
-      }
-      else if ((shape['_typename'] == "TGeoSphere")) {
-         mesh = JSROOT.GEO.createSphere( shape, material );
-      }
-      else if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg") ||
-          (shape['_typename'] == "TGeoTube") || (shape['_typename'] == "TGeoTubeSeg")) {
-         mesh = JSROOT.GEO.createTube( shape, material, rotation_matrix );
-      }
-      else if (shape['_typename'] == "TGeoTorus") {
-         mesh = JSROOT.GEO.createTorus( shape, material );
-      }
-      else if ( shape['_typename'] == "TGeoPcon" || shape['_typename'] == "TGeoPgon" ) {
-         mesh = JSROOT.GEO.createPolygon( shape, material, rotation_matrix );
-      }
-      return mesh;
+      if (is_drawn)
+         geometry = JSROOT.GEO.createGeometry(shape, rotation_matrix);
+
+      if (geometry === null)
+         geometry = new THREE.Geometry();
+
+      return new THREE.Mesh( geometry, material );
    }
 
 
