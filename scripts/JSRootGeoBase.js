@@ -560,8 +560,16 @@
       if (is_drawn)
          geometry = JSROOT.GEO.createGeometry(shape, rotation_matrix);
 
-      if (geometry === null)
+      if (geometry === null) {
          geometry = new THREE.Geometry();
+      } else {
+         /* var bufgeom = new THREE.BufferGeometry();
+         bufgeom.fromGeometry(geometry);
+
+         var json = bufgeom.toJSON();
+         var loader = new THREE.BufferGeometryLoader();
+         geometry = loader.parse(json); */
+      }
 
       return new THREE.Mesh( geometry, material );
    }
