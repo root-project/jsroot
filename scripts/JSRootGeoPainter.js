@@ -288,7 +288,7 @@
          }
       }
 
-      var fillcolor = 'black';
+      var fillcolor = 'lightgrey';
 
       // var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
 

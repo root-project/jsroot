@@ -530,11 +530,11 @@
    JSROOT.GEO.createGeometry = function( shape, rotation_matrix) {
 
       if (shape['_typename'] == "TGeoBBox")
-         return JSROOT.GEO.createCube( shape);  // Cube
+         return JSROOT.GEO.createCube( shape );  // Cube
 
       if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
           (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap"))
-         return JSROOT.GEO.createTrapezoid( shape);
+         return JSROOT.GEO.createTrapezoid( shape );
 
       if ((shape['_typename'] == "TGeoSphere"))
          return JSROOT.GEO.createSphere( shape );
