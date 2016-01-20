@@ -248,44 +248,43 @@
          }
       }
       if (node['_typename'] == "TGeoNodeOffset") {
-         if (node['fFinder']['_typename'] == 'TGeoPatternX') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternY') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternZ') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternParaX') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternParaY') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternParaZ') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternTrapZ') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternCylR') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternSphR') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternSphTheta') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternSphPhi') {
-         }
-         if (node['fFinder']['_typename'] == 'TGeoPatternHoneycomb') {
-         }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternX') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternY') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternZ') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternParaX') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternParaY') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternParaZ') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternTrapZ') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternCylR') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternSphR') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternSphTheta') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternSphPhi') { }
+         // if (node['fFinder']['_typename'] == 'TGeoPatternHoneycomb') { }
          if (node['fFinder']['_typename'] == 'TGeoPatternCylPhi') {
+
+            var _cos = 1., _sin = 0.;
+
             if (typeof node['fFinder']['fSinCos'] === 'undefined') {
-               node['fFinder']['fSinCos'] = [];
-               for (var i = 0; i<node['fFinder']['fNdivisions']; ++i) {
-                  node['fFinder']['fSinCos'][2*i] = Math.sin((Math.PI / 180.0)*(node['fFinder']['fStart']+0.5*node['fFinder']['fStep']+i*node['fFinder']['fStep']));
-                  node['fFinder']['fSinCos'][2*i+1] = Math.cos((Math.PI / 180.0)*(node['fFinder']['fStart']+0.5*node['fFinder']['fStep']+i*node['fFinder']['fStep']));
-               }
+               _cos = Math.cos((Math.PI / 180.0)*(node['fFinder']['fStart']+(node.fIndex+0.5)*node['fFinder']['fStep']));
+               _sin = Math.sin((Math.PI / 180.0)*(node['fFinder']['fStart']+(node.fIndex+0.5)*node['fFinder']['fStep']));
+            } else {
+               _cos = node['fFinder']['fSinCos'][2*node.fIndex+1];
+               _sin = node['fFinder']['fSinCos'][2*node.fIndex];
             }
-            if (rotation_matrix === null)
-               rotation_matrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-            rotation_matrix[0] = node['fFinder']['fSinCos'][(2*node['fIndex'])+1];
-            rotation_matrix[1] = -node['fFinder']['fSinCos'][(2*node['fIndex'])];
-            rotation_matrix[3] = node['fFinder']['fSinCos'][(2*node['fIndex'])];
-            rotation_matrix[4] = node['fFinder']['fSinCos'][(2*node['fIndex'])+1];
+
+            if (rotation_matrix === null) {
+               rotation_matrix = [_cos, -_sin, 0,
+                                  _sin,  _cos, 0,
+                                     0,     0, 1];
+            } else {
+               console.warn('should we multiply rotation matrixes here??');
+               rotation_matrix[0] = _cos;
+               rotation_matrix[1] = -_sin;
+               rotation_matrix[3] = _sin;
+               rotation_matrix[4] = _cos;
+            }
+         } else {
+            console.warn('Unsupported pattern type ' + node['fFinder']['_typename']);
          }
       }
 
