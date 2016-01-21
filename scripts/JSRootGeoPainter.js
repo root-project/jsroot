@@ -304,30 +304,29 @@
          }
       }
 
-      var fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
-
-      var _transparent = true, _opacity = 0.0, _isdrawn = false;
+      var _transparent = true, _opacity = 0.0, _isdrawn = false, fillcolor;
 
       if (node._visible) {
+         _isdrawn = true;
          _transparent = false;
          _opacity = 1.0;
-         _isdrawn = true;
-      }
-
-      if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] !== null &&
-          typeof volume['fMedium']['fMaterial'] != 'undefined' &&
-          volume['fMedium']['fMaterial'] !== null) {
-         var fillstyle = volume['fMedium']['fMaterial']['fFillStyle'];
-         var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
-         if (transparency > 0) {
-            _transparent = true;
-            _opacity = (100.0 - transparency) / 100.0;
+         if (volume['fLineColor'] >= 0)
+            fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
+         if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] !== null &&
+               typeof volume['fMedium']['fMaterial'] != 'undefined' &&
+               volume['fMedium']['fMaterial'] !== null) {
+            var fillstyle = volume['fMedium']['fMaterial']['fFillStyle'];
+            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+            if (transparency > 0) {
+               _transparent = true;
+               _opacity = (100.0 - transparency) / 100.0;
+            }
+            if (fillcolor === undefined)
+               fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
          }
-         if (typeof fillcolor == "undefined")
-           fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
       }
 
-      if (typeof fillcolor == "undefined")
+      if (fillcolor === undefined)
          fillcolor = "lightgrey";
 
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
@@ -384,14 +383,14 @@
       var arg = this._stack[this._stack.length - 1];
 
       // cut all volumes below 0 level
-      if (arg.lvl===0) { this._stack.pop(); return true; }
+      // if (arg.lvl===0) { this._stack.pop(); return true; }
 
       if ('nchild' in arg) {
          // add next child
          if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
             this._stack.pop();
          } else {
-            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel, lvl: arg.lvl-1,
+            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel,
                                node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
          }
          return true;
@@ -743,22 +742,18 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.startDrawGeometry = function(maxlvl) {
+   JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
       if (this._geometry['_typename'] == "TGeoNode")  {
          this._nodedraw = true;
 
          var shape = this._geometry['fShape'];
-
-         // console.log('Box geometry ' + shape['fDX'] + '  ' + shape['fDY'] + '  ' +  shape['fDZ']);
-
-         // this._top = new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
 
          var geom = new THREE.Geometry();
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
          this._cube = new THREE.Mesh(geom, material );
          this._toplevel.add(this._cube);
 
-         this._stack = [ { toplevel: this._cube, lvl: maxlvl, node: this._geometry } ];
+         this._stack = [ { toplevel: this._cube, node: this._geometry } ];
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          this._nodedraw = false;
@@ -948,12 +943,12 @@
 
       this.SetDivId(); // now one could set painter pointer in child element
 
-      this.startDrawGeometry(this.options.maxlvl);
+      this.startDrawGeometry();
 
       this._startm = new Date().getTime();
 
       this._geomcnt = 0; // counter used to create single geometries
-      this._drawcnt = 0; // such counter used to build meshes
+      this._drawcnt = 0; // counter used to build final meshes
 
       return this.continueDraw();
    }
