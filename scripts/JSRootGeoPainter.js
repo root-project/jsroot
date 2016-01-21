@@ -907,25 +907,6 @@
 
       this.options = this.decodeOptions(opt);
 
-      if (this.options.maxlvl === 1111) {
-         var arg = { cnt : [] }; // use for counting
-         this.CountGeoVolumes(this._geometry, arg);
-         this.options.maxlvl = 9999;
-         var sum = 0;
-         for (var lvl=1; lvl < arg.cnt.length;++lvl) {
-            sum += arg.cnt[lvl];
-            if (sum > 10000) {
-               this.options.maxlvl = lvl - 1;
-               break;
-            }
-         }
-         arg.clear();
-      }
-
-      var data = { maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
-
-      var total = this.CountGeoVolumes(this._geometry, data);
-
       var webgl = (function() {
          try {
             return !!window.WebGLRenderingContext &&
@@ -934,6 +915,32 @@
             return false;
          }
        })();
+
+      this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
+
+      var total = this.CountGeoVolumes(this._geometry, this._data);
+
+      // if no any volume was selected, probably it is because of visibility flags
+      if ((total>0) && (this._data.vis.length == 0) && (this.options.maxlvl < 0)) {
+         this._data.clear();
+         this._data.maxlvl = 1111;
+         total = this.CountGeoVolumes(this._geometry, this._data);
+      }
+
+      var maxlimit = webgl ? 1e7 : 1e4;
+
+      if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
+         var sum = 0;
+         for (var lvl=1; lvl < this._data.cnt.length; ++lvl) {
+            sum += this._data.cnt.cnt[lvl];
+            if (sum > maxlimit) {
+               this._data.maxlvl = lvl - 1;
+               this._data.clear();
+               this.CountGeoVolumes(this._geometry, this._data);
+               break;
+            }
+         }
+      }
 
       this.createScene(webgl, w, h, window.devicePixelRatio);
 
@@ -945,42 +952,34 @@
 
       this._startm = new Date().getTime();
 
-      for (var n=0;n < data.vis.length; ++n)
-         data.vis[n]._geom = JSROOT.GEO.createGeometry(data.vis[n].fVolume.fShape);
+      this._geomcnt = 0; // counter used to create single geometries
+      this._drawcnt = 0; // such counter used to build meshes
 
-      var t1 = new Date().getTime();
-
-      console.log('Create geom tm = ' + (t1-this._startm));
-
-      this._drawcnt = 0;
-
-      while (this.drawNode()) {
-         var now = new Date().getTime();
-         this._drawcnt++;
-
-         if (now - this._startm > 300) {
-            JSROOT.progress('Creating geometry ' + this._drawcnt);
-            // console.log('go in timeout ' + this._drawcnt);
-            setTimeout(this.contineDraw.bind(this), 0);
-            return this;
-         }
-      }
-
-      var t2 = new Date().getTime();
-
-      console.log('Create tm = ' + (t2-this._startm));
-      return this.completeDraw();
+      return this.continueDraw();
    }
 
-   JSROOT.TGeoPainter.prototype.contineDraw = function() {
+   JSROOT.TGeoPainter.prototype.continueDraw = function() {
       var curr = new Date().getTime();
-      while (this.drawNode()) {
-         this._drawcnt++;
+
+      var log = "";
+
+      while(true) {
+         if (this._geomcnt < this._data.vis.length) {
+            this._data.vis[this._geomcnt]._geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+            this._geomcnt++;
+            log = "Creating geometries " + this._geomcnt + "/" + this._data.vis.length;
+         } else
+         if (this.drawNode()) {
+            this._drawcnt++;
+            log = "Creating meshes " + this._drawcnt;
+         } else
+            break;
+
          var now = new Date().getTime();
          if (now - curr > 300) {
             // console.log('again timeout ' + this._drawcnt);
-            JSROOT.progress('Creating geometry ' + this._drawcnt);
-            setTimeout(this.contineDraw.bind(this), 0);
+            JSROOT.progress(log);
+            setTimeout(this.continueDraw.bind(this), 0);
             return this;
          }
 
@@ -991,8 +990,13 @@
       var t2 = new Date().getTime();
       console.log('Create tm = ' + (t2-this._startm));
 
-      JSROOT.progress('Rendering geometry');
-      setTimeout(this.completeDraw.bind(this, true), 0);
+      if (t2 - this._startm > 300) {
+         JSROOT.progress('Rendering geometry');
+         setTimeout(this.completeDraw.bind(this, true), 0);
+         return this;
+      }
+
+      return this.completeDraw();
    }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
