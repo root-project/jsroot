@@ -521,6 +521,15 @@
       return geometry;
    }
 
+   JSROOT.GEO.isShapeSupported = function ( shape ) {
+      if ((shape === undefined) || ( shape === null )) return false;
+      if (! ('supported_shapes' in this))
+         this.supported_shapes =
+            [ "TGeoBBox", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoSphere",
+              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon" ];
+      return this.supported_shapes.indexOf(shape._typename) >= 0;
+   }
+
    JSROOT.GEO.createGeometry = function( shape ) {
 
       if (shape['_typename'] == "TGeoBBox")

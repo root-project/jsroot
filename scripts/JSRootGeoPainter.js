@@ -60,6 +60,9 @@
       this._worker = null;
       this._isworker = false;
 
+      if ((geometry !== null) && (geometry['_typename'].indexOf('TGeoVolume') === 0))
+         geometry = { _typename:"TGeoNode", fVolume: geometry, fName:"TopLevel" };
+
       this._geometry = geometry;
       this._scene = null;
       this._renderer = null;
@@ -300,9 +303,9 @@
          _isdrawn = true;
       }
 
-      if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] != null &&
+      if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] !== null &&
           typeof volume['fMedium']['fMaterial'] != 'undefined' &&
-          volume['fMedium']['fMaterial'] != null) {
+          volume['fMedium']['fMaterial'] !== null) {
          var fillstyle = volume['fMedium']['fMaterial']['fFillStyle'];
          var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
          if (transparency > 0) {
@@ -312,6 +315,9 @@
          if (typeof fillcolor == "undefined")
            fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
       }
+
+      if (typeof fillcolor == "undefined")
+         fillcolor = "lightgrey";
 
       var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                opacity: _opacity, wireframe: false, color: fillcolor,
@@ -518,42 +524,32 @@
       return bbox;
    }
 
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, lvl, arg) {
-      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return 0;
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, dupl) {
+      // count number of volumes, numver per hierarchy level, reference count, number of childs
+      // also check if volume shape can be drawn
 
-      if (obj['_typename'].indexOf('TGeoVolume') === 0)
-         return this.CountGeoVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, arg);
+      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object') ||
+          (obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
 
-      if (lvl === 0) {
+      if (lvl === undefined) {
+         lvl = 0; dupl = false;
          if (!arg) arg = { erase: true };
-         if (!('vis' in arg)) arg.vis = [];
          if (!('map' in arg)) arg.map = [];
+         if (!('vis' in arg)) arg.vis = [];
          if (!('clear' in arg))
             arg.clear = function() {
                for (var n=0;n<this.map.length;++n) {
                   delete this.map[n]._refcnt;
                   delete this.map[n]._numchld;
+                  delete this.map[n]._canshow;
+                  delete this.map[n]._visible;
                }
+               this.map = [];
+               this.vis = [];
             };
       }
 
-      var res = 1;
-
-      // this checks visibility flag for the node
-      if ('maxlvl' in arg) {
-         if (!('_visible' in obj))
-           if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(7)) || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(2)))) {
-               obj._visible = true;
-               arg.vis.push(obj);
-           }
-
-         res = obj._visible ? 1 : 0;
-      }
-
-      var arr = null;
-
-      if (('fVolume' in obj) && (obj.fVolume !== null) && (obj.fVolume.fNodes !== null))
-         arr = obj.fVolume.fNodes.arr;
+      var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
 
       if ('cnt' in arg) {
          if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
@@ -561,32 +557,107 @@
       }
 
       if ('_refcnt' in obj) {
-          obj._refcnt++;
+          if (!dupl) obj._refcnt++;
+          dupl = true;
       } else {
          obj._refcnt = 1;
+         obj._numchld = 0;
+         obj._canshow = JSROOT.GEO.isShapeSupported(obj.fVolume.fShape);
          arg.map.push(obj);
       }
 
-      var nchld = 0;
+      if (!('_visible' in obj) && obj._canshow)
+         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(7)) || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(2)))) {
+            obj._visible = true;
+            arg.vis.push(obj);
+         }
 
+      var numchld = 0;
       if (arr !== null)
          for (var i = 0; i < arr.length; ++i)
-            nchld += this.CountGeoVolumes(arr[i], lvl+1, arg);
+            numchld += this.CountGeoVolumes(arr[i], arg, lvl+1, dupl);
 
-      obj._numchld = nchld;
+      if (obj._refcnt === 1) obj._numchld = numchld;
 
       if ((lvl === 0) && arg.erase) arg.clear();
 
-      return res + nchld;
+      return 1 + numchld;
+   }
+
+   JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
+
+      if ((node1===null) || (node2===null)) return node1 === node2;
+
+      if (node1.fVolume.fLineColor >= 0)
+         return (node1.fVolume.fLineColor === node2.fVolume.fLineColor);
+
+       var m1 = (node1.fVolume['fMedium'] !== null) ? node1.fVolume['fMedium']['fMaterial'] : null;
+       var m2 = (node2.fVolume['fMedium'] !== null) ? node2.fVolume['fMedium']['fMaterial'] : null;
+
+       if (m1 === m2) return true;
+
+       if ((m1 === null) || (m2 === null)) return false;
+
+       return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
+    }
+
+   JSROOT.TGeoPainter.prototype.ScanUniqueVisVolumes = function(obj, lvl, arg) {
+      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object') ||
+          (obj.fVolume === undefined) || (obj.fVolume == null)) return 0;
+
+      if (lvl === 0) {
+         arg.master = null;
+         arg.vis_unique = true;
+         arg.vis_master = null; // master used to verify material attributes
+         arg.same_material = true;
+      }
+
+      var res = obj._visible ? 1 : 0;
+
+      if (obj._refcnt > 1) arg.vis_unique = false;
+      if (arg.master!==null)
+         if (!this.SameMaterial(arg.master, obj)) arg.same_material = false;
+
+      var top_unique = arg.vis_unique;
+      arg.vis_unique = true;
+
+      var top_master = arg.master, top_same = arg.same_material;
+
+      arg.master = obj._visible ? obj : null;
+      arg.same_material = true;
+
+      var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
+
+      var numvis = 0;
+      if (arr !== null)
+         for (var i = 0; i < arr.length; ++i)
+            numvis += this.ScanUniqueVisVolumes(arr[i], lvl+1, arg);
+
+      obj._numvis = numvis;
+      obj._visunique  = arg.vis_unique;
+      obj._samematerial = arg.same_material;
+
+      if (obj._samematerial) {
+         if (top_same && (top_master!=null) && (arg.master!==null))
+            arg.same_material = this.SameMaterial(top_master, arg.master);
+         else
+            arg.same_material = top_same;
+
+         if (top_master !== null) arg.master = top_master;
+      } else {
+         arg.master = null; // when material differ, no need to preserve master
+         arg.same_material = false;
+      }
+
+      arg.vis_unique = top_unique && obj._visunique;
+
+      return res + numvis;
    }
 
 
    JSROOT.Painter.SelectProcVolumes = function(obj, lvl, arg) {
       if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return;
       if (arg === null) return;
-
-      if (obj['_typename'].indexOf('TGeoVolume') === 0)
-         return JSROOT.Painter.SelectProcVolumes({ _typename:"TGeoNode", fVolume: obj, fName:"TopLevel" }, lvl, arg);
 
       if (lvl === 0) {
          if (!('proc' in arg)) arg.proc = [];
@@ -662,7 +733,7 @@
 
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function(maxlvl) {
-      if ((this._geometry['_typename'] == 'TGeoVolume') || (this._geometry['_typename'] == 'TGeoVolumeAssembly'))  {
+      if (this._geometry['_typename'] == "TGeoNode")  {
          this._nodedraw = true;
 
          var shape = this._geometry['fShape'];
@@ -676,9 +747,7 @@
          this._cube = new THREE.Mesh(geom, material );
          this._toplevel.add(this._cube);
 
-         this._stack = [];
-         this._stack.push({ toplevel: this._cube, lvl: maxlvl,
-                            node: { _typename:"TGeoNode", fVolume: this._geometry, fName: "TopLevel" }});
+         this._stack = [ { toplevel: this._cube, lvl: maxlvl, node: this._geometry } ];
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          this._nodedraw = false;
@@ -693,7 +762,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
-
       if (this._nodedraw) {
 
          var max = new THREE.Box3().setFromObject(this._cube).max;
@@ -738,17 +806,48 @@
 
       var tm1 = new Date();
 
-      var arg = { cnt : [], maxlvl: -1 };
-      var cnt = this.CountGeoVolumes(this._geometry, 0, arg);
+      var arg = { cnt : [] };
+      var cnt = this.CountGeoVolumes(this._geometry, arg);
 
       var res = 'Total number: ' + cnt + '<br/>';
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
          if (arg.cnt[lvl] !== 0)
             res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
-
       res += "Unique volumes: " + arg.map.length + '<br/>';
+      arg.clear();
+
+      arg = { maxlvl: -1 };
+      cnt = this.CountGeoVolumes(this._geometry, arg);
+
+      if (arg.vis.length === 0) {
+         arg.maxlvl = 9999;
+         cnt = this.CountGeoVolumes(this._geometry, arg);
+      }
+
       res += "Visible volumes: " + arg.vis.length + '<br/>';
+      if (arg.vis.length < 200) {
+         res += "Visible refs: [";
+         for (var n=0;n<arg.vis.length;++n)
+            res += " " + arg.vis[n]._refcnt;
+         res += " ]<br/>";
+      }
+
+      this.ScanUniqueVisVolumes(this._geometry, 0, arg);
+
+      for (var n=0;n<arg.map.length;++n)
+         if (arg.map[n]._refcnt > 1) {
+            res += (arg.map[n]._visible ? "vis" : "map") + n + " " + arg.map[n].fName + "  nref:"+arg.map[n]._refcnt +
+                    ' chld:'+ arg.map[n]._numvis + "(" + arg.map[n]._numchld + ')' +
+                    " unique:" + arg.map[n]._visunique + " same:" + arg.map[n]._samematerial;
+
+            if (arg.map[n]._samematerial) {
+               if (arg.map[n]._visunique && (arg.map[n]._numvis>0)) res+=" (can merge with childs in Worker)"; else
+               if ((arg.map[n]._refcnt > 4) && (arg.map[n]._numvis>1)) res+=" (make sense merge in main thread)";
+            }
+
+            res += "<br/>";
+         }
 
       for (var niter = 0; niter < 10; ++niter) {
 
@@ -767,7 +866,7 @@
 
          if (arg.proc.length == 0) break;
 
-//         this.CountGeoVolumes(this._geometry, 0, arg);
+//         this.CountGeoVolumes(this._geometry, arg);
 
          arg.clearproc();
       }
@@ -776,7 +875,7 @@
 
       res +=  "Elapsed time: " + (tm2.getTime() - tm1.getTime()) + "ms <br/>";
 
-      this.select_main().node().innerHTML = res;
+      this.select_main().style('overflow', 'auto').html(res);
 
       return this.DrawingReady();
    }
@@ -799,7 +898,7 @@
 
       if (this.options.maxlvl === 1111) {
          var arg = { cnt : [] }; // use for counting
-         this.CountGeoVolumes(this._geometry, 0, arg);
+         this.CountGeoVolumes(this._geometry, arg);
          this.options.maxlvl = 9999;
          var sum = 0;
          for (var lvl=1; lvl < arg.cnt.length;++lvl) {
@@ -814,7 +913,7 @@
 
       var data = { maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
 
-      var total = this.CountGeoVolumes(this._geometry, 0, data);
+      var total = this.CountGeoVolumes(this._geometry, data);
 
       var webgl = (function() {
          try {
@@ -985,7 +1084,7 @@
 
    }
 
-   ownedByTransformControls = function(child) {
+   JSROOT.TGeoPainter.prototype.ownedByTransformControls = function(child) {
       var obj = child.parent;
       while (obj && !(obj instanceof THREE.TransformControls) ) {
          obj = obj.parent;
@@ -996,7 +1095,7 @@
    JSROOT.TGeoPainter.prototype.toggleWireFrame = function(obj) {
       var f = function(obj2) {
          if ( obj2.hasOwnProperty("material") && !(obj2 instanceof THREE.GridHelper) ) {
-            if (!ownedByTransformControls(obj2))
+            if (!this.ownedByTransformControls(obj2))
                obj2.material.wireframe = !obj2.material.wireframe;
          }
       }
