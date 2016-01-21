@@ -252,10 +252,7 @@
             }
          }
       }
-      if (node['_typename'] == "TGeoNodeOffset") {
-         // if (node['fFinder']['_typename'] == 'TGeoPatternX') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternY') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternZ') { }
+      if ((node['_typename'] == "TGeoNodeOffset") && (node['fFinder'] != null)) {
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaX') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaY') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaZ') { }
@@ -265,6 +262,20 @@
          // if (node['fFinder']['_typename'] == 'TGeoPatternSphTheta') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternSphPhi') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternHoneycomb') { }
+         if ((node['fFinder']['_typename'] == 'TGeoPatternX') ||
+             (node['fFinder']['_typename'] == 'TGeoPatternY') ||
+             (node['fFinder']['_typename'] == 'TGeoPatternZ')) {
+            var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
+
+            if (translation_matrix !== null)
+               console.warn('translation exists - should we combine with ' + node['fFinder']['_typename']);
+            else
+            switch (node['fFinder']['_typename'].charAt(11)) {
+               case 'X': translation_matrix = [_shift, 0, 0]; break;
+               case 'Y': translation_matrix = [0, _shift, 0]; break;
+               case 'Z': translation_matrix = [0, 0, _shift,]; break;
+            }
+         } else
          if (node['fFinder']['_typename'] == 'TGeoPatternCylPhi') {
 
             var _cos = 1., _sin = 0.;
@@ -932,10 +943,15 @@
 
       this.startDrawGeometry(this.options.maxlvl);
 
+      this._startm = new Date().getTime();
+
       for (var n=0;n < data.vis.length; ++n)
          data.vis[n]._geom = JSROOT.GEO.createGeometry(data.vis[n].fVolume.fShape);
 
-      this._startm = new Date().getTime();
+      var t1 = new Date().getTime();
+
+      console.log('Create geom tm = ' + (t1-this._startm));
+
       this._drawcnt = 0;
 
       while (this.drawNode()) {
