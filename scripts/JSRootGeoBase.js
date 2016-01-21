@@ -527,7 +527,15 @@
          this.supported_shapes =
             [ "TGeoBBox", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoSphere",
               "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon" ];
-      return this.supported_shapes.indexOf(shape._typename) >= 0;
+      if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
+
+      if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
+      if (this.unsupported_shapes.indexOf(shape._typename) < 0) {
+         this.unsupported_shapes.push(shape._typename);
+         console.warn('Not supported ' + shape._typename);
+      }
+
+      return false;
    }
 
    JSROOT.GEO.createGeometry = function( shape ) {

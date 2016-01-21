@@ -28,10 +28,10 @@
 
       var painter = this;
       var mouseX, mouseY, distXY = 0, mouseDowned = false;
-      var mouse = { x : 0, y : 0 }, INTERSECTED = null;
+      var INTERSECTED = null;
 
       var tooltip = {
-         tt: null, cont: null, listener: null,
+         tt: null, cont: null,
          pos : function(e) {
             if (this.tt === null) return;
             var u = JSROOT.browser.isIE ? (event.clientY + document.documentElement.scrollTop) : e.pageY;
@@ -42,8 +42,6 @@
          },
          show : function(v) {
             if (!JSROOT.gStyle.Tooltip) return;
-            if (this.listener === null)
-               this.listener = this.pos.bind(this);
             if (this.tt === null) {
                this.tt = document.createElement('div');
                var t = document.createElement('div');
@@ -60,7 +58,6 @@
                this.tt.style.filter = 'alpha(opacity=1)';
                this.tt.style.position = 'absolute';
                this.tt.style.display = 'block';
-               document.addEventListener('mousemove', this.listener);
             }
             this.cont.innerHTML = v;
             this.tt.style.width = 'auto'; // let it be automatically resizing...
@@ -68,9 +65,8 @@
                this.tt.style.width = tt.offsetWidth;
          },
          hide : function() {
-            if (this.tt === null) return;
-            document.body.removeChild(this.tt);
-            document.removeEventListener('mousemove', this.listener);
+            if (this.tt !== null)
+               document.body.removeChild(this.tt);
             this.tt = null;
          }
       };
@@ -78,16 +74,8 @@
       var raycaster = new THREE.Raycaster();
       var do_bins_highlight = painter.first_render_tm < 1200;
 
-      function findIntersection() {
+      function findIntersection(mouse) {
          // find intersections
-         if (mouseDowned) {
-            if (INTERSECTED && do_bins_highlight) {
-               INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               painter.Render3D(0);
-            }
-            INTERSECTED = null;
-            return tooltip.hide();
-         }
 
          if (!JSROOT.gStyle.Tooltip) return tooltip.hide();
 
@@ -136,7 +124,6 @@
          var arr = coordinates(e);
          if (arr.length == 2) {
             distXY = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
-            alert('double touch ' + distXY.toFixed(1));
          } else {
             mouseX = arr[0].pageX;
             mouseY = arr[0].pageY;
@@ -149,9 +136,9 @@
       painter.renderer.domElement.addEventListener('mousedown', mousedown);
 
       function mousemove(e) {
-         if (mouseDowned) {
-            var arr = coordinates(e);
+         var arr = coordinates(e);
 
+         if (mouseDowned) {
             if (arr.length == 2) {
                var dist = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
 
@@ -172,16 +159,20 @@
                mouseY = arr[0].pageY;
             }
             painter.Render3D(0);
+         } else
+         if (arr.length == 1) {
+            var mouse_x = ('offsetX' in arr[0]) ? arr[0].offsetX : arr[0].layerX;
+            var mouse_y = ('offsetY' in arr[0]) ? arr[0].offsetY : arr[0].layerY;
+            mouse = { x: (mouse_x / painter.renderer.domElement.width) * 2 - 1,
+                      y: -(mouse_y / painter.renderer.domElement.height) * 2 + 1 };
+            findIntersection(mouse);
+            tooltip.pos(arr[0]);
          } else {
-            e.preventDefault();
-            var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
-            var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
-            mouse.x = (mouse_x / painter.renderer.domElement.width) * 2 - 1;
-            mouse.y = -(mouse_y / painter.renderer.domElement.height) * 2 + 1;
-
-            // enable picking once tootips are available...
-            findIntersection();
+            tooltip.hide();
          }
+
+         e.stopPropagation();
+         e.preventDefault();
       }
 
       painter.renderer.domElement.addEventListener('touchmove', mousemove);
@@ -190,6 +181,7 @@
 
       function mouseup(e) {
          mouseDowned = false;
+         tooltip.hide();
          distXY = 0;
       }
 
@@ -576,7 +568,6 @@
          this.renderer.render(this.scene, this.camera);
 
          var tm2 = new Date();
-
 
          delete this['render_tmout'];
 
