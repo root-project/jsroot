@@ -218,10 +218,8 @@
          e.preventDefault();
          tooltip.hide();
 
-         return painter.ShowContextMenu("hist", e.originalEvent);
+         painter.ShowContextMenu("hist", e);
       });
-
-
 
    }
 
