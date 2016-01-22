@@ -304,12 +304,11 @@
          }
       }
 
-      var _transparent = true, _opacity = 0.0, _isdrawn = false, fillcolor;
+      var _isdrawn = false, material = null, geom = null;
 
       if (node._visible) {
          _isdrawn = true;
-         _transparent = false;
-         _opacity = 1.0;
+         var _transparent = false, _opacity = 1.0, fillcolor;
          if (volume['fLineColor'] >= 0)
             fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
          if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] !== null &&
@@ -324,15 +323,26 @@
             if (fillcolor === undefined)
                fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
          }
+         if (fillcolor === undefined)
+            fillcolor = "lightgrey";
+
+         material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: fillcolor,
+                              side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
+                              overdraw: false } );
+
+      } else {
+
+         if (this._dummy_material === undefined)
+            this._dummy_material =
+               new THREE.MeshLambertMaterial( { transparent: true,
+                                             opacity: 0, wireframe: false, color: 'none',
+                                             side: THREE.FrontSide, vertexColors: THREE.NoColors,
+                                             overdraw: false, depthWrite : false, depthTest: false, visible: false } );
+
+         material = this._dummy_material;
       }
 
-      if (fillcolor === undefined)
-         fillcolor = "lightgrey";
-
-      var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-               opacity: _opacity, wireframe: false, color: fillcolor,
-               side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-               overdraw: false } );
 
       var geom = null;
 
@@ -342,10 +352,6 @@
             node._geom = JSROOT.GEO.createGeometry(volume.fShape);
          }
          geom = node._geom;
-      } else {
-         material.depthWrite = false;
-         material.depthTest = false;
-         material.visible = false;
       }
 
       if (geom === null) geom = new THREE.Geometry();
