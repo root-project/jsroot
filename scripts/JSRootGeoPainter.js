@@ -335,10 +335,9 @@
 
          if (this._dummy_material === undefined)
             this._dummy_material =
-               new THREE.MeshLambertMaterial( { transparent: true,
-                                             opacity: 0, wireframe: false, color: 'none',
-                                             side: THREE.FrontSide, vertexColors: THREE.NoColors,
-                                             overdraw: false, depthWrite : false, depthTest: false, visible: false } );
+               new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
+                                                color: 'white', vertexColors: THREE.NoColors,
+                                                overdraw: false, depthWrite : false, depthTest: false, visible: false } );
 
          material = this._dummy_material;
       }
@@ -540,7 +539,7 @@
       return bbox;
    }
 
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, dupl) {
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
 
@@ -548,7 +547,7 @@
           (obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
 
       if (lvl === undefined) {
-         lvl = 0; dupl = false;
+         lvl = 0;
          if (!arg) arg = { erase: true };
          if (!('map' in arg)) arg.map = [];
          if (!('vis' in arg)) arg.vis = [];
@@ -565,39 +564,56 @@
             };
       }
 
-      var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
       if ('cnt' in arg) {
          if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
          arg.cnt[lvl] += 1;
       }
 
       if ('_refcnt' in obj) {
-          if (!dupl) obj._refcnt++;
-          dupl = true;
+          obj._refcnt++;
       } else {
          obj._refcnt = 1;
          obj._numchld = 0;
          obj._canshow = JSROOT.GEO.isShapeSupported(obj.fVolume.fShape);
          arg.map.push(obj);
-      }
 
-      if (!('_visible' in obj) && obj._canshow)
-         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(7)) || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.BIT(2)))) {
+         /*
+         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
+         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
+         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
+         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+
+         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisNone))
+            console.log('not visible');
+         else
+         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel))
+            console.log('only one level');
+
+         if (obj.fVolume.fShape._typename === 'TGeoPara') {
+            console.log('got parall vis = ' + JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen));
             obj._visible = true;
             arg.vis.push(obj);
          }
+         */
 
-      var numchld = 0;
-      if (arr !== null)
-         for (var i = 0; i < arr.length; ++i)
-            numchld += this.CountGeoVolumes(arr[i], arg, lvl+1, dupl);
 
-      if (obj._refcnt === 1) obj._numchld = numchld;
+         if (!('_visible' in obj) && obj._canshow)
+            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
+               || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis))) {
+               obj._visible = true;
+               arg.vis.push(obj);
+            }
+
+         var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
+
+         if (arr !== null)
+            for (var i = 0; i < arr.length; ++i)
+               obj._numchld += this.CountGeoVolumes(arr[i], arg, lvl+1);
+      }
 
       if ((lvl === 0) && arg.erase) arg.clear();
 
-      return 1 + numchld;
+      return 1 + obj._numchld;
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -671,55 +687,6 @@
    }
 
 
-   JSROOT.Painter.SelectProcVolumes = function(obj, lvl, arg) {
-      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object')) return;
-      if (arg === null) return;
-
-      if (lvl === 0) {
-         if (!('proc' in arg)) arg.proc = [];
-         if (!('clearproc' in arg))
-            arg.clearproc = function() {
-               for (var n=0;n<this.map.length;++n) {
-                  delete this.map[n]._proc;
-               }
-               this.proc = [];
-            };
-      }
-
-      var arr = null;
-
-      if (('fVolume' in obj) && (obj.fVolume !== null) && (obj.fVolume.fNodes !== null))
-         arr = obj.fVolume.fNodes.arr;
-
-      var isany = false, isproc = false;
-
-      if (arr !== null)
-         for (var i = 0; i < arr.length; ++i) {
-            if ('_mesh' in arr[i]) continue; // we have ready mesh, will clone/copy when required
-            JSROOT.Painter.SelectProcVolumes(arr[i], lvl+1, arg);
-            if ('_proc' in arr[i]) isproc = true;
-            if (arr[i]._refcnt > 1) isany = true;
-         }
-
-      if (isproc) {
-         // if any child should be process, when nothing can be done with the parent
-         obj._proc = true;
-      } else
-      if (isany) {
-         // if any child has multiple reference, parent could not be processed before child is ready
-         obj._proc = true;
-         for (var i = 0; i < arr.length; ++i) {
-            if (!('_proc' in arr[i]) /* && arr[i]._visible*/) {
-               arg.proc.push(arr[i]);
-               arr[i]._proc = true;
-            }
-         }
-      } else
-      if ((obj._refcnt > 1) && !('_proc' in obj)/* && obj._visible*/) {
-         arg.proc.push(obj);
-         obj._proc = true;
-      }
-   }
 
    JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
@@ -818,7 +785,7 @@
 
       var tm1 = new Date();
 
-      var arg = { cnt : [] };
+      var arg = { cnt : [], maxlvl: -1 };
       var cnt = this.CountGeoVolumes(this._geometry, arg);
 
       var res = 'Total number: ' + cnt + '<br/>';
@@ -827,13 +794,9 @@
             res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
       res += "Unique volumes: " + arg.map.length + '<br/>';
-      arg.clear();
-
-      arg = { maxlvl: -1 };
-      cnt = this.CountGeoVolumes(this._geometry, arg);
 
       if (arg.vis.length === 0) {
-         arg.maxlvl = 9999;
+         arg.clear(); arg.maxlvl = 9999;
          cnt = this.CountGeoVolumes(this._geometry, arg);
       }
 
@@ -845,42 +808,22 @@
          res += " ]<br/>";
       }
 
-      this.ScanUniqueVisVolumes(this._geometry, 0, arg);
+      if (cnt<200000) {
+         this.ScanUniqueVisVolumes(this._geometry, 0, arg);
 
-      for (var n=0;n<arg.map.length;++n)
-         if (arg.map[n]._refcnt > 1) {
-            res += (arg.map[n]._visible ? "vis" : "map") + n + " " + arg.map[n].fName + "  nref:"+arg.map[n]._refcnt +
-                    ' chld:'+ arg.map[n]._numvis + "(" + arg.map[n]._numchld + ')' +
-                    " unique:" + arg.map[n]._visunique + " same:" + arg.map[n]._samematerial;
+         for (var n=0;n<arg.map.length;++n)
+            if (arg.map[n]._refcnt > 1) {
+               res += (arg.map[n]._visible ? "vis" : "map") + n + " " + arg.map[n].fName + "  nref:"+arg.map[n]._refcnt +
+               ' chld:'+ arg.map[n]._numvis + "(" + arg.map[n]._numchld + ')' +
+               " unique:" + arg.map[n]._visunique + " same:" + arg.map[n]._samematerial;
 
-            if (arg.map[n]._samematerial) {
-               if (arg.map[n]._visunique && (arg.map[n]._numvis>0)) res+=" (can merge with childs in Worker)"; else
-               if ((arg.map[n]._refcnt > 4) && (arg.map[n]._numvis>1)) res+=" (make sense merge in main thread)";
+               if (arg.map[n]._samematerial) {
+                  if (arg.map[n]._visunique && (arg.map[n]._numvis>0)) res+=" (can merge with childs in Worker)"; else
+                     if ((arg.map[n]._refcnt > 4) && (arg.map[n]._numvis>1)) res+=" (make sense merge in main thread)";
+               }
+
+               res += "<br/>";
             }
-
-            res += "<br/>";
-         }
-
-      for (var niter = 0; niter < 10; ++niter) {
-
-         JSROOT.Painter.SelectProcVolumes(this._geometry, 0, arg);
-
-         res += "Proc" + niter + " volumes: " + arg.proc.length + '<br/>';
-
-         var proccnt = 0, chldcnt = 0;
-         for (var n=0;n<arg.proc.length;++n) {
-             chldcnt += arg.proc[n]._numchld;
-             proccnt += arg.proc[n]._refcnt * (arg.proc[n]._numchld + 1);
-             arg.proc[n]._mesh = {}; // emulate mesh
-         }
-         res += "Proc" + niter + " childs: " + chldcnt + '<br/>';
-         res += "Proc" + niter + " total cnt: " + proccnt + '<br/>';
-
-         if (arg.proc.length == 0) break;
-
-//         this.CountGeoVolumes(this._geometry, arg);
-
-         arg.clearproc();
       }
 
       var tm2 = new Date();
@@ -966,7 +909,12 @@
 
       while(true) {
          if (this._geomcnt < this._data.vis.length) {
-            this._data.vis[this._geomcnt]._geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+            if (this._geomcnt < 8000) {
+               this._data.vis[this._geomcnt]._geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+            } else {
+               if (this._dummy_geom === undefined) this._dummy_geom = new THREE.Geometry();
+               this._data.vis[this._geomcnt]._geom = this._dummy_geom;
+            }
             this._geomcnt++;
             log = "Creating geometries " + this._geomcnt + "/" + this._data.vis.length;
          } else
@@ -977,6 +925,10 @@
             break;
 
          var now = new Date().getTime();
+
+         if (this._drawcnt === 1)
+            console.log('Create geom time = ' + (now - this._startm));
+
          if (now - curr > 300) {
             // console.log('again timeout ' + this._drawcnt);
             JSROOT.progress(log);
@@ -985,7 +937,7 @@
          }
 
          // stop creation, render as is
-         if ((now - this._startm > 10000) || (this._drawcnt > 3000)) break;
+         if (now - this._startm > 1e5) break;
       }
 
       var t2 = new Date().getTime();

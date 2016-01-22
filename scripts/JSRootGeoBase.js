@@ -24,13 +24,48 @@
    JSROOT.GEO = {};
 
    JSROOT.GEO.createCube = function( shape ) {
+
       return new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
    }
 
+   JSROOT.GEO.createPara = function( shape ) {
+
+      var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
+
+      var verticesOfShape = [
+          -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY-shape.fX, +shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY+shape.fX, +shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
+          +shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,  +shape.fZ,
+          +shape.fZ*txz+txy*shape.fY-shape.fX, +shape.fY+shape.fZ*tyz,  +shape.fZ,
+          +shape.fZ*txz+txy*shape.fY+shape.fX, +shape.fY+shape.fZ*tyz,  +shape.fZ,
+          +shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,  +shape.fZ ];
+
+      var indicesOfFaces = [ 4,5,6,   4,7,6,   0,3,7,   7,4,0,
+                             4,5,1,   1,0,4,   6,2,1,   1,5,6,
+                             7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      var geom = new THREE.Geometry();
+
+      for (var i = 0; i < verticesOfShape.length; i += 3)
+         geom.vertices.push( new THREE.Vector3( 0.5*verticesOfShape[i], 0.5*verticesOfShape[i+1], 0.5*verticesOfShape[i+2] ) );
+
+      for (var i = 0; i < indicesOfFaces.length; i += 3)
+         geom.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
+
+      geom.computeFaceNormals();
+
+      return geom;
+   }
+
    JSROOT.GEO.createTrapezoid = function( shape ) {
+
+      var verticesOfShape;
+
       if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap") {
          // Arb8
-         var verticesOfShape = [
+         verticesOfShape = [
             shape['fXY'][0][0], shape['fXY'][0][1], -1*shape['fDZ'],
             shape['fXY'][1][0], shape['fXY'][1][1], -1*shape['fDZ'],
             shape['fXY'][2][0], shape['fXY'][2][1], -1*shape['fDZ'],
@@ -38,11 +73,11 @@
             shape['fXY'][4][0], shape['fXY'][4][1],    shape['fDZ'],
             shape['fXY'][5][0], shape['fXY'][5][1],    shape['fDZ'],
             shape['fXY'][6][0], shape['fXY'][6][1],    shape['fDZ'],
-            shape['fXY'][7][0], shape['fXY'][7][1],    shape['fDZ'],
+            shape['fXY'][7][0], shape['fXY'][7][1],    shape['fDZ']
          ];
       }
       else if (shape['_typename'] == "TGeoTrd1") {
-         var verticesOfShape = [
+         verticesOfShape = [
             -shape['fDx1'],  shape['fDY'], -shape['fDZ'],
              shape['fDx1'],  shape['fDY'], -shape['fDZ'],
              shape['fDx1'], -shape['fDY'], -shape['fDZ'],
@@ -54,7 +89,7 @@
          ];
       }
       else if (shape['_typename'] == "TGeoTrd2") {
-         var verticesOfShape = [
+         verticesOfShape = [
             -shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
              shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
              shape['fDx1'], -shape['fDy1'], -shape['fDZ'],
@@ -68,8 +103,7 @@
       var indicesOfFaces = [
           4,5,6,   4,7,6,   0,3,7,   7,4,0,
           4,5,1,   1,0,4,   6,2,1,   1,5,6,
-          7,3,2,   2,6,7,   1,2,3,   3,0,1,
-      ];
+          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
       var geometry = new THREE.Geometry();
       for (var i = 0; i < 24; i += 3) {
@@ -525,7 +559,7 @@
       if ((shape === undefined) || ( shape === null )) return false;
       if (! ('supported_shapes' in this))
          this.supported_shapes =
-            [ "TGeoBBox", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoSphere",
+            [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoSphere",
               "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon" ];
       if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
 
@@ -542,6 +576,9 @@
 
       if (shape['_typename'] == "TGeoBBox")
          return JSROOT.GEO.createCube( shape );  // Cube
+
+      if (shape['_typename'] == "TGeoPara")
+         return JSROOT.GEO.createPara( shape );  // Parallelepiped
 
       if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
           (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap"))
