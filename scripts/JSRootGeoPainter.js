@@ -938,6 +938,13 @@
       return this.completeDraw();
    }
 
+   JSROOT.TGeoPainter.prototype.Render3D = function() {
+      var t1 = new Date().getTime();
+      this._renderer.render(this._scene, this._camera);
+      var t2 = new Date().getTime();
+      console.log('Render tm = ' + (t2-t1));
+   }
+
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
       this.finishDrawGeometry();
 
@@ -945,15 +952,11 @@
 
       this.completeScene();
 
-      var t1 = new Date().getTime();
-      this._renderer.render(this._scene, this._camera);
-      var t2 = new Date().getTime();
+      this.Render3D();
 
       if (close_progress) JSROOT.progress();
 
       this._data.clear(); // clear original object, let it redraw again later
-
-      console.log('Render tm = ' + (t2-t1));
 
       // pointer used in the event handlers
       var pthis = this;
@@ -1141,7 +1144,14 @@
       this.size3d = 0; // use min/max values directly as graphical coordinates
 
       this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
+      this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
+
+      this.toplevel = main._toplevel;
+
       this.CreateXYZ();
+      this.DrawXYZ();
+
+      main.Render3D();
    }
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {

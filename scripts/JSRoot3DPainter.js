@@ -370,30 +370,34 @@
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
-          grminz = 0, grmaxz = 2*this.size3d;
+          grminz = 0, grmaxz = 2*this.size3d,
+          textsize = Math.round(this.size3d * 0.07);
 
       if (this.size3d === 0) {
          grminx = this.xmin; grmaxx = this.xmax;
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
+         textsize = (grmaxz - grminz) * 0.1;
       }
+
+      var ticklen = textsize * 0.5;
 
       for (var i = grminx, j = 0, k = 0; i < grmaxx; ++i) {
 
          var is_major = (this.utx(i) <= xmajors[j] && this.utx(i + 1) > xmajors[j]) ? true : false;
          var is_minor = (this.utx(i) <= xminors[k] && this.utx(i + 1) > xminors[k]) ? true : false;
-         plen = (is_major ? len + 2 : len) * sin45;
+         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
          if (is_major) {
-            text3d = new THREE.TextGeometry(xmajors[j], { size : 7, height : 0, curveSegments : 10 });
+            text3d = new THREE.TextGeometry(xmajors[j], { size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(i - centerOffset, -13, grmaxy + plen);
+            text.position.set(i - centerOffset, grminz - textsize*2, grmaxy + plen);
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(i + centerOffset, -13, grminy - plen);
+            text.position.set(i + centerOffset, grminz - textsize*2, grminy - plen);
             text.rotation.y = Math.PI;
             this.toplevel.add(text);
          }
@@ -418,21 +422,21 @@
       for (var i = grminy, j = 0, k = 0; i < grmaxy; ++i) {
          var is_major = (this.uty(i) <= ymajors[j] && this.uty(i + 1) > ymajors[j]) ? true : false;
          var is_minor = (this.uty(i) <= yminors[k] && this.uty(i + 1) > yminors[k]) ? true : false;
-         plen = (is_major ? len + 2 : len) * sin45;
+         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
          if (is_major) {
-            text3d = new THREE.TextGeometry(ymajors[j], { size : 7, height : 0, curveSegments : 10 });
+            text3d = new THREE.TextGeometry(ymajors[j], { size : textsize, height : 0, curveSegments : 10 });
             ++j;
 
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grmaxx + plen, grminz-13, i + centerOffset);
+            text.position.set(grmaxx + plen, grminz-textsize*2, i + centerOffset);
             text.rotation.y = Math.PI / 2;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - plen, grminz-13, i - centerOffset);
+            text.position.set(grminx - plen, grminz-textsize*2, i - centerOffset);
             text.rotation.y = -Math.PI / 2;
             this.toplevel.add(text);
          }
@@ -456,31 +460,32 @@
       for (var i = grminz, j = 0, k = 0; i < grmaxz; ++i) {
          var is_major = (this.utz(i) <= zmajors[j] && this.utz(i + 1) > zmajors[j]) ? true : false;
          var is_minor = (this.utz(i) <= zminors[k] && this.utz(i + 1) > zminors[k]) ? true : false;
-         plen = (is_major ? len + 2 : len) * sin45;
+         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
          if (is_major) {
-            text3d = new THREE.TextGeometry(zmajors[j], { size : 7, height : 0, curveSegments : 10 });
+            text3d = new THREE.TextGeometry(zmajors[j], { size : textsize, height : 0, curveSegments : 10 });
             ++j;
 
             text3d.computeBoundingBox();
-            var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+            var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
+            var textz = i - 0.4*textsize;
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grmaxx + offset + 5, i - 2.5, grmaxy + offset + 5);
+            text.position.set(grmaxx + offset, textz, grmaxy + offset);
             text.rotation.y = Math.PI * 3 / 4;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grmaxx + offset + 5, i - 2.5, grminy - offset - 5);
+            text.position.set(grmaxx + offset, textz, grminy - offset);
             text.rotation.y = -Math.PI * 3 / 4;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - offset - 5, i - 2.5, grmaxy + offset + 5);
+            text.position.set(grminx - offset, textz, grmaxy + offset);
             text.rotation.y = Math.PI / 4;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - offset - 5, i - 2.5, grminy - offset - 5);
+            text.position.set(grminx - offset, textz, grminy - offset);
             text.rotation.y = -Math.PI / 4;
             this.toplevel.add(text);
          }
@@ -518,6 +523,9 @@
          wireframeLinewidth : 0.5,
          side : THREE.DoubleSide
       });
+
+
+      if (this.size3d === 0) return;
 
       // create a new mesh with cube geometry
       var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);
@@ -558,7 +566,7 @@
 
          bin.position.x = this.tx(hh.x);
          bin.position.y = wei / 2;
-         bin.position.z = -(this.ty(hh.y));
+         bin.position.z = this.ty(hh.y);
 
          if (JSROOT.gStyle.Tooltip && ('tip' in hh))
             bin.name = hh.tip.replace(/(?:\r\n|\r|\n)/g, '<br/>');
@@ -832,7 +840,7 @@
          }
          bin.position.x = this.tx(bins[i].x);
          bin.position.y = this.tz(bins[i].z);
-         bin.position.z = -(this.ty(bins[i].y));
+         bin.position.z = this.ty(bins[i].y);
          if ('tip' in bins[i])
            bin.name = bins[i].tip;
 
