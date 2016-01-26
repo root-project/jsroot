@@ -522,21 +522,12 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.computeBoundingBox = function( mesh, any ) {
-      var bbox = null;
-      for (var i = 0; i < mesh.children.length; ++i) {
-         var node = mesh.children[i];
-         if ( node instanceof THREE.Mesh ) {
-            if ( any || node['material']['visible'] ) {
-               bbox = new THREE.Box3().setFromObject( node );
-               return bbox;
-            } else {
-               bbox = this.computeBoundingBox( node, any );
-               if (bbox != null) return bbox;
-            }
-         }
-      }
-      return bbox;
+   JSROOT.TGeoPainter.prototype.computeBoundingBox = function() {
+
+      if (this._nodedraw)
+         return new THREE.Box3().setFromObject(this._cube);
+      else
+         return new THREE.Box3().setFromObject(this._toplevel);
    }
 
    JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
@@ -741,18 +732,10 @@
    }
 
    JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
-      if (this._nodedraw) {
 
-         var max = new THREE.Box3().setFromObject(this._cube).max;
+      var max = this.computeBoundingBox().max;
 
-         // this._top.computeBoundingBox();
-         // var max = this._top.boundingBox.max;
-         this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
-
-      } else {
-         var max = this.computeBoundingBox(this._toplevel, true).max;
-         this._overall_size = 10 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
-      }
+      this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
 
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
@@ -1114,10 +1097,65 @@
       // create painter and add it to canvas
       JSROOT.extend(this, new JSROOT.TGeoPainter(geometry));
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 5);
 
       return this.drawGeometry(opt);
    }
+
+   // ===================================================================================
+
+   JSROOT.TAxis3DPainter = function( axis ) {
+      JSROOT.TObjectPainter.call( this, axis );
+
+      this.axis = axis;
+   }
+
+   JSROOT.TAxis3DPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
+
+   JSROOT.TAxis3DPainter.prototype.GetObject = function() {
+      return this.axis;
+   }
+
+   JSROOT.TAxis3DPainter.prototype.Dimension = function() {
+      return 3;
+   }
+
+   JSROOT.TAxis3DPainter.prototype.Draw3DAxis = function() {
+      var main = this.main_painter();
+      if ((main === null) || (main._geometry === undefined)) {
+         console.log('no geo objecty found for 3D axis drawing');
+      }
+      console.log('do 3D axis drawing');
+
+      var box = main.computeBoundingBox();
+
+      console.log('max: ' + JSON.stringify(box.max));
+      console.log('min: ' + JSON.stringify(box.min));
+
+      this.xmin = box.min.x; this.xmax = box.max.x;
+      this.ymin = box.min.y; this.ymax = box.max.y;
+      this.zmin = box.min.z; this.zmax = box.max.z;
+
+      this.options = { Logx: false, Logy: false, Logz: false };
+
+      this.size3d = 0; // use min/max values directly as graphical coordinates
+
+      this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
+      this.CreateXYZ();
+   }
+
+   JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
+
+      JSROOT.extend(this, new JSROOT.TAxis3DPainter(axis));
+
+      this.SetDivId(divid);
+
+      this.Draw3DAxis();
+
+      return this.DrawingReady();
+   }
+
+   // ===============================================================================
 
    JSROOT.expandGeoList = function(item, lst) {
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
@@ -1316,8 +1354,8 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", painter_kind : "base", opt : "all;count;limit;maxlvl2" });
-
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
+   JSROOT.addDrawFunc({ name: "TAxis3D", func: 'JSROOT.Painter.drawAxis3D', prereq: "3d" });
 
    return JSROOT.Painter;
 
