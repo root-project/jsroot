@@ -968,6 +968,8 @@
 
       if (close_progress) JSROOT.progress();
 
+      this._data.clear(); // clear original object, let it redraw again later
+
       console.log('Render tm = ' + (t2-t1));
 
       // pointer used in the event handlers
