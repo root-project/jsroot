@@ -363,10 +363,7 @@
       var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
 
       var ticks = new Array();
-      var imax, istep, len = 3, plen, sin45 = Math.sin(45);
-      var text3d, text;
-      var xmajors = this.tx.ticks(8);
-      var xminors = this.tx.ticks(50);
+      var sin45 = Math.sin(45);
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
@@ -382,94 +379,91 @@
 
       var ticklen = textsize * 0.5;
 
-      for (var i = grminx, j = 0, k = 0; i < grmaxx; ++i) {
+      var xmajors = this.tx.ticks(8);
+      var xminors = this.tx.ticks(50);
 
-         var is_major = (this.utx(i) <= xmajors[j] && this.utx(i + 1) > xmajors[j]) ? true : false;
-         var is_minor = (this.utx(i) <= xminors[k] && this.utx(i + 1) > xminors[k]) ? true : false;
-         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
+      for (var i = 0; i < xminors.length; ++i) {
+         var grx = this.tx(xminors[i]);
+         var is_major = xmajors.indexOf(xminors[i]) >= 0;
+         var plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
+
          if (is_major) {
-            text3d = new THREE.TextGeometry(xmajors[j], { size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(xminors[i], { size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
-            text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(i - centerOffset, grminz - textsize*2, grmaxy + plen);
+            var text = new THREE.Mesh(text3d, textMaterial);
+            text.position.set(grx - centerOffset, grminz - textsize*2, grmaxy + plen);
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(i + centerOffset, grminz - textsize*2, grminy - plen);
+            text.position.set(grx + centerOffset, grminz - textsize*2, grminy - plen);
             text.rotation.y = Math.PI;
             this.toplevel.add(text);
          }
-         if (is_major || is_minor) {
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(i, grminz, grmaxy));
-            geometry.vertices.push(new THREE.Vector3(i, grminz-plen, grmaxy + plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-            geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(i, grminz, grminy));
-            geometry.vertices.push(new THREE.Vector3(i, grminz-plen, grminy - plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-         }
-         if (is_minor) ++k;
-         if (is_major) ++j;
+         var geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grx, grminz, grmaxy));
+         geometry.vertices.push(new THREE.Vector3(grx, grminz-plen, grmaxy + plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
+
+         geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grx, grminz, grminy));
+         geometry.vertices.push(new THREE.Vector3(grx, grminz-plen, grminy - plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
       }
 
       var ymajors = this.ty.ticks(8);
       var yminors = this.ty.ticks(50);
-      for (var i = grminy, j = 0, k = 0; i < grmaxy; ++i) {
-         var is_major = (this.uty(i) <= ymajors[j] && this.uty(i + 1) > ymajors[j]) ? true : false;
-         var is_minor = (this.uty(i) <= yminors[k] && this.uty(i + 1) > yminors[k]) ? true : false;
-         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
+
+      for (var i = 0; i < yminors.length; ++i) {
+         var gry = this.ty(yminors[i]);
+         var is_major = ymajors.indexOf(yminors[i]) >= 0;
+         var plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
+
          if (is_major) {
-            text3d = new THREE.TextGeometry(ymajors[j], { size : textsize, height : 0, curveSegments : 10 });
-            ++j;
+            var text3d = new THREE.TextGeometry(yminors[i], { size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
-            text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grmaxx + plen, grminz-textsize*2, i + centerOffset);
+            var text = new THREE.Mesh(text3d, textMaterial);
+            text.position.set(grmaxx + plen, grminz-textsize*2, gry + centerOffset);
             text.rotation.y = Math.PI / 2;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - plen, grminz-textsize*2, i - centerOffset);
+            text.position.set(grminx - plen, grminz-textsize*2, gry - centerOffset);
             text.rotation.y = -Math.PI / 2;
             this.toplevel.add(text);
          }
-         if (is_major || is_minor) {
-            ++k;
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grmaxx, grminz, i));
-            geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grminz-plen, i));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-            geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grminx, grminz, i));
-            geometry.vertices.push(new THREE.Vector3(grminx - plen, grminz-plen, i));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-         }
+         var geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grmaxx, grminz, gry));
+         geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grminz-plen, gry));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
+         geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grminx, grminz, gry));
+         geometry.vertices.push(new THREE.Vector3(grminx - plen, grminz-plen, gry));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
       }
 
       var zmajors = this.tz.ticks(8);
       var zminors = this.tz.ticks(50);
-      for (var i = grminz, j = 0, k = 0; i < grmaxz; ++i) {
-         var is_major = (this.utz(i) <= zmajors[j] && this.utz(i + 1) > zmajors[j]) ? true : false;
-         var is_minor = (this.utz(i) <= zminors[k] && this.utz(i + 1) > zminors[k]) ? true : false;
-         plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
+      for (var i = 0; i < zminors.length; ++i) {
+         var grz = this.tz(zminors[i]);
+         var is_major = zmajors.indexOf(zminors[i]) >= 0;
+         var plen = (is_major ? ticklen : ticklen * 0.6) * sin45;
          if (is_major) {
-            text3d = new THREE.TextGeometry(zmajors[j], { size : textsize, height : 0, curveSegments : 10 });
-            ++j;
+            var text3d = new THREE.TextGeometry(zminors[i], { size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
             var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
-            var textz = i - 0.4*textsize;
+            var textz = grz - 0.4*textsize;
 
-            text = new THREE.Mesh(text3d, textMaterial);
+            var text = new THREE.Mesh(text3d, textMaterial);
             text.position.set(grmaxx + offset, textz, grmaxy + offset);
             text.rotation.y = Math.PI * 3 / 4;
             this.toplevel.add(text);
@@ -489,29 +483,26 @@
             text.rotation.y = -Math.PI / 4;
             this.toplevel.add(text);
          }
-         if (is_major || is_minor) {
-            ++k;
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grmaxx, i, grmaxy));
-            geometry.vertices.push(new THREE.Vector3(grmaxx + plen, i, grmaxy + plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-            geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grmaxx, i, grminy));
-            geometry.vertices.push(new THREE.Vector3(grmaxx + plen, i, grminy - plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-            geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grminx, i, grmaxy));
-            geometry.vertices.push(new THREE.Vector3(grminx - plen, i, grmaxy + plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-            geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(grminx, i, grminy));
-            geometry.vertices.push(new THREE.Vector3(grminx - plen, i, grminy - plen));
-            this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-            ticks.push(geometry);
-         }
+         var geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grmaxx, grz, grmaxy));
+         geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grz, grmaxy + plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
+         geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grmaxx, grz, grminy));
+         geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grz, grminy - plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
+         geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grminx, grz, grmaxy));
+         geometry.vertices.push(new THREE.Vector3(grminx - plen, grz, grmaxy + plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
+         geometry = new THREE.Geometry();
+         geometry.vertices.push(new THREE.Vector3(grminx, grz, grminy));
+         geometry.vertices.push(new THREE.Vector3(grminx - plen, grz, grminy - plen));
+         this.toplevel.add(new THREE.Line(geometry, lineMaterial));
+         ticks.push(geometry);
       }
 
       for (var t=0; t < ticks.length; ++t)
@@ -540,8 +531,6 @@
 
       // add the cube to the scene
       this.toplevel.add(box);
-
-      this.camera.lookat = cube;
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
