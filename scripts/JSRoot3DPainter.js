@@ -312,7 +312,7 @@
          grminx = this.xmin; grmaxx = this.xmax;
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
-         textsize = (grmaxz - grminz) * 0.1;
+         textsize = (grmaxz - grminz) * 0.05;
       }
 
       if (this.options.Logx) {

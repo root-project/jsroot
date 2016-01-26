@@ -1124,16 +1124,11 @@
       if ((main === null) || (main._geometry === undefined)) {
          console.log('no geo objecty found for 3D axis drawing');
       }
-      console.log('do 3D axis drawing');
-
       var box = main.computeBoundingBox();
 
-      console.log('max: ' + JSON.stringify(box.max));
-      console.log('min: ' + JSON.stringify(box.min));
-
-      this.xmin = box.min.x; this.xmax = box.max.x;
-      this.ymin = box.min.y; this.ymax = box.max.y;
-      this.zmin = box.min.z; this.zmax = box.max.z;
+      this.xmin = box.min.z; this.xmax = box.max.z;
+      this.ymin = box.min.x; this.ymax = box.max.x;
+      this.zmin = box.min.y; this.zmax = box.max.y;
 
       this.options = { Logx: false, Logy: false, Logz: false };
 
