@@ -1,7 +1,8 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Use clone for duplication of geometries, significantly improves performance
+1. Use clone for duplication of meshes, significantly improves performance
+2. Support array of objects in I/O (like in TAxis3D)
   
 
 ## Changes in 4.1

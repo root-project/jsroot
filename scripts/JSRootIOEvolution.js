@@ -1671,14 +1671,27 @@
                case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
                case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
                   member['arrlength'] = element['fArrayLength'];
-                  member['classname'] = element['fTypeName'];
-                  if (member.classname.charAt(member.classname.length-1) == "*")
-                     member.classname = member.classname.substr(0, member.classname.length - 1);
-                  member['func'] = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var k=0;k<this.arrlength;++k)
-                        obj[this.name].push(buf.ClassStreamer({}, this.classname));
-                  };
+                  var classname = element['fTypeName'];
+                  if (classname.charAt(classname.length-1) == "*")
+                     classname = classname.substr(0, classname.length - 1);
+
+                  var arrkind = JSROOT.IO.GetArrayKind(classname);
+
+                  if (arrkind > 0) {
+                     member['arrkind'] = arrkind;
+                     member['func'] = function(buf, obj) {
+                        obj[this.name] = [];
+                        for (var k=0;k<this.arrlength;++k)
+                           obj[this.name].push(buf.ReadFastArray(buf.ntou4(), this.arrkind));
+                     };
+                  } else {
+                     member['classname'] = classname;
+                     member['func'] = function(buf, obj) {
+                        obj[this.name] = [];
+                        for (var k=0;k<this.arrlength;++k)
+                           obj[this.name].push(buf.ClassStreamer({}, this.classname));
+                     };
+                  }
                   break;
                case JSROOT.IO.kChar:
                   member['func'] = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
