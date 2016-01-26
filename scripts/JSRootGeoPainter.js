@@ -56,7 +56,7 @@
    }
 
    JSROOT.TGeoPainter = function( geometry ) {
-      JSROOT.TBasePainter.call( this, geometry );
+      JSROOT.TObjectPainter.call( this, geometry );
       this._worker = null;
       this._isworker = false;
 
@@ -70,7 +70,7 @@
       this._stack = null;
    }
 
-   JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
+   JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TGeoPainter.prototype.GetObject = function() {
       return this._geometry;
@@ -839,10 +839,7 @@
    JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-      var dom = this.select_main().node();
-      var rect = dom.getBoundingClientRect();
-      var w = rect.width, h = rect.height, size = 100;
-      if (h < 10) { h = parseInt(0.66*w); d.style.height = h +"px"; }
+      var size = this.size_for_3d();
 
       if (opt == 'count') {
          // this.startWorker();
@@ -851,7 +848,7 @@
 
       this.options = this.decodeOptions(opt);
 
-      var webgl = (function() {
+      this._webgl = (function() {
          try {
             return !!window.WebGLRenderingContext &&
                    !!document.createElement('canvas').getContext('experimental-webgl');
@@ -871,7 +868,7 @@
          total = this.CountGeoVolumes(this._geometry, this._data);
       }
 
-      var maxlimit = webgl ? 1e7 : 1e4;
+      var maxlimit = this._webgl ? 1e7 : 1e4;
 
       if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
          var sum = 0;
@@ -886,11 +883,9 @@
          }
       }
 
-      this.createScene(webgl, w, h, window.devicePixelRatio);
+      this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
-      dom.appendChild(this._renderer.domElement);
-
-      this.SetDivId(); // now one could set painter pointer in child element
+      this.add_3d_canvas(this._renderer.domElement);
 
       this.startDrawGeometry();
 
@@ -909,12 +904,20 @@
 
       while(true) {
          if (this._geomcnt < this._data.vis.length) {
-            if (this._geomcnt < 8000) {
-               this._data.vis[this._geomcnt]._geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+            var geom = null;
+
+            if (this._geomcnt < 80000) {
+               geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+               if (this._webgl && false) {
+                  var bufgeom = new THREE.BufferGeometry();
+                  bufgeom.fromGeometry(geom);
+                  geom = bufgeom;
+               }
             } else {
                if (this._dummy_geom === undefined) this._dummy_geom = new THREE.Geometry();
-               this._data.vis[this._geomcnt]._geom = this._dummy_geom;
+               geom = this._dummy_geom;
             }
+            this._data.vis[this._geomcnt]._geom = geom;
             this._geomcnt++;
             log = "Creating geometries " + this._geomcnt + "/" + this._data.vis.length;
          } else
@@ -969,23 +972,24 @@
 
       // pointer used in the event handlers
       var pthis = this;
-
       var dom = this.select_main().node();
 
-      dom.tabIndex = 0;
-      dom.focus();
-      dom.onkeypress = function(e) {
-         if (!e) e = event;
-         switch ( e.keyCode ) {
-            case 87:  // W
-            case 119: // w
-               pthis.toggleWireFrame(pthis._scene);
-               break;
-         }
-      };
-      dom.onclick = function(e) {
-         this.focus();
-      };
+      if (dom !== null) {
+         dom.tabIndex = 0;
+         dom.focus();
+         dom.onkeypress = function(e) {
+            if (!e) e = event;
+            switch ( e.keyCode ) {
+               case 87:  // W
+               case 119: // w
+                  pthis.toggleWireFrame(pthis._scene);
+                  break;
+            }
+         };
+         dom.onclick = function(e) {
+            dom.focus();
+         };
+      }
 
       return this.DrawingReady();
    }

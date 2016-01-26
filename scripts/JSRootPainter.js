@@ -880,11 +880,26 @@
 
    JSROOT.TBasePainter.prototype.select_main = function() {
       // return d3.select for main element, defined with divid
-      if (this.divid==null) return d3.select(null);
+      if ((this.divid === null) || (this.divid === undefined)) return d3.select(null);
       if ((typeof this.divid == "string") &&
           (this.divid.charAt(0) != "#")) return d3.select("#" + this.divid);
       return d3.select(this.divid);
    }
+
+   JSROOT.TBasePainter.prototype.main_visible_rect = function() {
+      // return rect with width/height which correcpond to the visible area of drawing region
+
+      var render_to = this.select_main();
+
+      var rect = render_to.node().getBoundingClientRect();
+
+      // this is size where canvas should be rendered
+      rect.width = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
+      rect.height = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
+
+      return rect;
+   }
+
 
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
       // base painter does not creates canvas or frames
@@ -924,7 +939,6 @@
       value = parseFloat(value.replace("px",""));
       return isNaN(value) ? 0 : value;
    }
-
 
 
    // ==============================================================================
@@ -1086,7 +1100,18 @@
       var pad = this.svg_pad();
       var frame = this.svg_frame();
 
-      if (pad.empty() && frame.empty()) return { x:0, y:0, width:100, height:100 };
+      if (pad.empty() && frame.empty()) {
+         // this is a case when object drawn without canvas
+
+         var rect = this.main_visible_rect();
+
+         if ((rect.height < 10) && (rect.width>10)) {
+            rect.height = Math.round(0.66*rect.width);
+            this.select_main().style('height', rect.height + "px");
+         }
+
+         return { x: 0, y: 0, width: rect.width, height: rect.height };
+      }
 
       var elem = pad;
       if (this.embed_3d() == 0)
@@ -1145,6 +1170,18 @@
       var can3d = this.embed_3d();
 
       if ((canv == null) || (can3d < 0)) return;
+
+      if (this.svg_canvas().empty()) {
+         // case when 3D object drawn without canvas
+
+         var main = this.select_main().node();
+         if (main !== null) {
+            main.appendChild(canv);
+            canv['painter'] = this;
+         }
+
+         return;
+      }
 
       this.svg_pad().property('can3d', can3d);
 
@@ -1220,9 +1257,10 @@
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
       // In such case the only painter will be assigned to the first element
 
-      this['divid'] = divid;
+      if (divid !== undefined)
+         this['divid'] = divid;
 
-      if (is_main == null) is_main = 0;
+      if ((is_main === null) || (is_main === undefined)) is_main = 0;
 
       this['create_canvas'] = false;
 
@@ -1236,9 +1274,9 @@
       }
 
       if (svg_c.empty()) {
-         if ((is_main < 0) || (this.obj_typename=="TCanvas")) return;
+         if ((is_main < 0) || (this.obj_typename == "TCanvas")) return;
          JSROOT.console("Special case for " + this.obj_typename + " assign painter to first DOM element");
-         var main = d3.select("#" + divid);
+         var main = this.select_main();
          if (main.node() && main.node().firstChild)
             main.node().firstChild['painter'] = this;
          return;
@@ -3304,7 +3342,8 @@
       JSROOT.TObjectPainter.call(this, pad);
       if (this.obj_typename=="") this.obj_typename = iscan ? "TCanvas" : "TPad";
       this.pad = pad;
-      pad.fName = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
+      if ((pad !== undefined) && (pad !== null) && ('fName' in pad))
+         pad.fName = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.iscan = iscan; // indicate if workign with canvas
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
@@ -3316,11 +3355,10 @@
 
       var render_to = this.select_main();
 
-      var rect = render_to.node().getBoundingClientRect();
+      var rect = this.main_visible_rect();
 
       // this is size where canvas should be rendered
-      var w = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right')),
-          h = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
+      var w = rect.width, h = rect.height;
 
       if ((typeof new_size == 'object') && ('width' in new_size) && ('height' in new_size)) {
          w = new_size.width;
