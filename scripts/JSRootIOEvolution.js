@@ -1666,6 +1666,20 @@
                      };
                   }
                   break;
+               case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
+               case JSROOT.IO.kOffsetL + JSROOT.IO.kAny:
+               case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
+               case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
+                  member['arrlength'] = element['fArrayLength'];
+                  member['classname'] = element['fTypeName'];
+                  if (member.classname.charAt(member.classname.length-1) == "*")
+                     member.classname = member.classname.substr(0, member.classname.length - 1);
+                  member['func'] = function(buf, obj) {
+                     obj[this.name] = [];
+                     for (var k=0;k<this.arrlength;++k)
+                        obj[this.name].push(buf.ClassStreamer({}, this.classname));
+                  };
+                  break;
                case JSROOT.IO.kChar:
                   member['func'] = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
                case JSROOT.IO.kShort:
