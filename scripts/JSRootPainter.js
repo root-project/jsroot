@@ -989,8 +989,9 @@
    /** This is SVG element, correspondent to current pad */
    JSROOT.TObjectPainter.prototype.svg_pad = function() {
       var c = this.svg_canvas();
-      if ((this.pad_name != '') && !c.empty())
+      if ((this.pad_name.length > 0) && !c.empty()) {
          c = c.select("[pad=" + this.pad_name + ']');
+      }
       return c;
    }
 
@@ -3303,6 +3304,7 @@
       JSROOT.TObjectPainter.call(this, pad);
       if (this.obj_typename=="") this.obj_typename = iscan ? "TCanvas" : "TPad";
       this.pad = pad;
+      pad.fName = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.iscan = iscan; // indicate if workign with canvas
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
