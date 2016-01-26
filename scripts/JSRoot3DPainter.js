@@ -295,75 +295,13 @@
 
       this.add_3d_canvas(this.renderer.domElement);
 
-      this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
       this['Render3D'] =JSROOT.Painter.Render3D;
 
       this.first_render_tm = 0;
    }
 
-   JSROOT.Painter.HPainter_CreateXYZ = function() {
-
-      var xmin = this.xmin, xmax = this.xmax;
-      //if (this.zoom_xmin != this.zoom_xmax) {
-      //   xmin = this.zoom_xmin;
-      //   xmax = this.zoom_xmax;
-      //}
-      var ymin = this.ymin, ymax = this.ymax;
-      //if (this.zoom_ymin != this.zoom_ymax) {
-      //   ymin = this.zoom_ymin;
-      //   ymax = this.zoom_ymax;
-      //}
-      var zmin = this.gminbin, zmax = this.gmaxbin;
-      if (('zmin' in this) && ('zmax' in this) && (this.Dimension()==3)) {
-         zmin = this.zmin;
-         zmax = this.zmax;
-      } else {
-         zmax = Math.ceil(zmax / 100) * 105; // not very nice
-      }
-
-      var grmin = -this.size3d, grmax = this.size3d;
-      if (this.size3d === 0) { grmin = this.xmin; grmax = this.xmax; }
-
-      if (this.options.Logx) {
-         if (xmin <= 0) xmin = 1e-6*xmax;
-         this.tx = d3.scale.log().domain([ xmin, xmax ]).range([ grmin, grmax ]);
-         this.utx = d3.scale.log().domain([ grmin, grmax ]).range([ xmin, xmax ]);
-      } else {
-         this.tx = d3.scale.linear().domain([ xmin, xmax ]).range([ grmin, grmax ]);
-         this.utx = d3.scale.linear().domain([ grmin, grmax ]).range([ xmin, xmax ]);
-      }
-
-      if (this.size3d === 0) { grmin = this.ymin; grmax = this.ymax; }
-      if (this.options.Logy) {
-         if (ymin <= 0) ymin = 1e-6*ymax;
-         this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ grmin, grmax ]);
-         this.uty = d3.scale.log().domain([ grmin, grmax ]).range([ ymin, ymax ]);
-      } else {
-         this.ty = d3.scale.linear().domain([ ymin, ymax ]).range([ grmin, grmax ]);
-         this.uty = d3.scale.linear().domain([ grmin, grmax ]).range([ ymin, ymax ]);
-      }
-
-      grmin = 0; grmax = 2*this.size3d;
-      if (this.size3d === 0) { grmin = this.zmin; grmax = this.zmax; }
-      if (this.options.Logz) {
-         if (zmin <= 0) zmin = 1e-6*zmax;
-         this.tz = d3.scale.log().domain([ zmin, zmax]).range([ grmin, grmax ]);
-         this.utz = d3.scale.log().domain([ grmin, grmax ]).range([ zmin, zmax ]);
-      } else {
-         this.tz = d3.scale.linear().domain([ zmin, zmax ]).range( [ grmin, grmax ]);
-         this.utz = d3.scale.linear().domain([ grmin, grmax ]).range( [ zmin, zmax ]);
-      }
-   }
-
    JSROOT.Painter.HPainter_DrawXYZ = function() {
-      // add the calibration vectors and texts
-
-      var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
-      var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
-
-      var ticks = new Array();
-      var sin45 = Math.sin(45);
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
@@ -377,10 +315,40 @@
          textsize = (grmaxz - grminz) * 0.1;
       }
 
+      if (this.options.Logx) {
+         var xmax = this.xmax <= 0 ? 1 : this.xmax
+         var xmin = (this.xmin <= 0) ? 1e-6*xmax : this.xmin;
+         this.tx = d3.scale.log().domain([ min, max ]).range([ grminx, grmaxx ]);
+      } else {
+         this.tx = d3.scale.linear().domain([ this.xmin, this.xmax ]).range([ grminx, grmaxx ]);
+      }
+
+      if (this.options.Logy) {
+         var ymax = this.ymax <= 0 ? 1 : this.ymax
+         var ymin = (this.ymin <= 0) ? 1e-6*ymax : this.ymin;
+         this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
+      } else {
+         this.ty = d3.scale.linear().domain([ this.ymin, this.ymax ]).range([ grminy, grmaxy ]);
+      }
+
+      if (this.options.Logz) {
+         var zmax = this.zmax <= 0 ? 1 : this.zmax
+         var zmin = (this.zmin <= 0) ? 1e-6*zmax : this.zmin;
+         this.tz = d3.scale.log().domain([ zmin, zmax]).range([ grminz, grmaxz ]);
+      } else {
+         this.tz = d3.scale.linear().domain([ this.zmin, this.zmax ]).range( [ grminz, grmaxz ]);
+      }
+
+      var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
+      var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
+
+      var ticks = new Array();
+      var sin45 = Math.sin(45);
+
+
       var ticklen = textsize * 0.5;
 
-      var xmajors = this.tx.ticks(8);
-      var xminors = this.tx.ticks(50);
+      var xmajors = this.tx.ticks(8), xminors = this.tx.ticks(50);
 
       for (var i = 0; i < xminors.length; ++i) {
          var grx = this.tx(xminors[i]);
@@ -414,8 +382,7 @@
          ticks.push(geometry);
       }
 
-      var ymajors = this.ty.ticks(8);
-      var yminors = this.ty.ticks(50);
+      var ymajors = this.ty.ticks(8), yminors = this.ty.ticks(50);
 
       for (var i = 0; i < yminors.length; ++i) {
          var gry = this.ty(yminors[i]);
@@ -450,8 +417,7 @@
          ticks.push(geometry);
       }
 
-      var zmajors = this.tz.ticks(8);
-      var zminors = this.tz.ticks(50);
+      var zmajors = this.tz.ticks(8), zminors = this.tz.ticks(50);
       for (var i = 0; i < zminors.length; ++i) {
          var grz = this.tz(zminors[i]);
          var is_major = zmajors.indexOf(zminors[i]) >= 0;
@@ -609,7 +575,8 @@
 
       this.Create3DScene();
 
-      this.CreateXYZ();
+      this.zmin = this.gminbin;
+      this.zmax = Math.ceil(this.gmaxbin / 100) * 105; // not very nice
 
       this.DrawXYZ();
 
@@ -849,7 +816,6 @@
 
    JSROOT.TH3Painter.prototype.Redraw = function() {
       this.Create3DScene();
-      this.CreateXYZ();
       this.DrawXYZ();
       this.Draw3DBins();
       this.Render3D();

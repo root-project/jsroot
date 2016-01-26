@@ -1119,10 +1119,6 @@
       return this.axis;
    }
 
-   JSROOT.TAxis3DPainter.prototype.Dimension = function() {
-      return 3;
-   }
-
    JSROOT.TAxis3DPainter.prototype.Draw3DAxis = function() {
       var main = this.main_painter();
       if ((main === null) || (main._geometry === undefined)) {
@@ -1143,12 +1139,10 @@
 
       this.size3d = 0; // use min/max values directly as graphical coordinates
 
-      this['CreateXYZ'] = JSROOT.Painter.HPainter_CreateXYZ;
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
 
       this.toplevel = main._toplevel;
 
-      this.CreateXYZ();
       this.DrawXYZ();
 
       main.Render3D();
