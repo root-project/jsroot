@@ -665,9 +665,8 @@
       var pointLight = new THREE.PointLight(0xefefef);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
-      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,1,0);
+      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       this._scene.add( this._camera );
-
 
       this._toplevel = new THREE.Object3D();
 
@@ -708,7 +707,7 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
+   JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
 
       var box = new THREE.Box3().setFromObject(this._toplevel);
 
@@ -724,11 +723,6 @@
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
       this._camera.updateProjectionMatrix();
-      //this._camera.position.x = this._overall_size * Math.cos( 135.0/ Math.PI);
-      //this._camera.position.y = this._overall_size * Math.cos( 45.0/ Math.PI);
-      //this._camera.position.z = this._overall_size * Math.sin( 45.0/ Math.PI);
-
-      // this._camera.position.set(-4*sizex, sizey, 4*sizez);
 
       if (this.options._yup)
          this._camera.position.set(midx+this._overall_size, midy+this._overall_size, midz+this._overall_size);
@@ -738,10 +732,10 @@
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
 
-      console.log('lookat ' + JSON.stringify(this._lookat))
-
-      //this._camera.updateProjectionMatrix();
-      //this._camera.updateMatrixWorld();
+      if (this._controls !== null) {
+         this._controls.target.copy(this._lookat);
+         this._controls.update();
+      }
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -942,7 +936,8 @@
    }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
-      this.finishDrawGeometry();
+
+      this.adjustCameraPosition();
 
       this.completeScene();
 
@@ -1138,17 +1133,7 @@
 
       this.DrawXYZ();
 
-      if (main._controls !== null) {
-         main._controls.constraint.dollyIn(0.9);
-         main._controls.update();
-      } else {
-         main.Render3D();
-      }
-
-      //main._camera.position.x*=1.2;
-      //main._camera.position.y*=1.2;
-      //main._camera.position.z*=1.2;
-
+      main.adjustCameraPosition();
    }
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
