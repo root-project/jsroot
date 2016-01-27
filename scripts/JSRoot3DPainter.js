@@ -264,11 +264,11 @@
       this.toplevel.rotation.y = 30 * Math.PI / 180;
       this.scene.add(this.toplevel);
 
-      this.camera = new THREE.PerspectiveCamera(45, size.width / size.height, 1, 4000);
+      this.camera = new THREE.PerspectiveCamera(45, size.width / size.height, 1, 40*this.size3d);
       var pointLight = new THREE.PointLight(0xcfcfcf);
       this.camera.add( pointLight );
-      pointLight.position.set( 10, 10, 10 );
-      this.camera.position.set(0, this.size3d / 2, 500);
+      pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
+      this.camera.position.set(0, this.size3d / 2, this.size3d * 5);
       this.scene.add( this.camera );
 
       /**
@@ -303,15 +303,21 @@
 
    JSROOT.Painter.HPainter_DrawXYZ = function() {
 
+      // in webgl world X goes right, Y goes up and Z goes in direction from the screen
+      // therefore in TH2/TH3 drawing:
+      //  histogram AxisX -> webgl X axis
+      //  histogram AxisY -> webgl -Z axis
+      //  histogram AxisZ -> webgl Y axis
+
       var grminx = -this.size3d, grmaxx = this.size3d,
-          grminy = -this.size3d, grmaxy = this.size3d,
+          grminy = -this.size3d, grmaxy = this.size3d, ymin = this.ymax, ymax = this.ymin,
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.07);
 
       if (this.size3d === 0) {
-         grminx = this.xmin; grmaxx = this.xmax;
-         grminy = this.ymin; grmaxy = this.ymax;
-         grminz = this.zmin; grmaxz = this.zmax;
+         grminx = this.xmin/2; grmaxx = this.xmax/2;
+         grminy = this.ymin/2; grmaxy = this.ymax/2; ymin = this.ymax; ymax = this.ymin;
+         grminz = this.zmin/2; grmaxz = this.zmax/2;
          textsize = (grmaxz - grminz) * 0.05;
       }
 
@@ -324,11 +330,11 @@
       }
 
       if (this.options.Logy) {
-         var ymax = this.ymax <= 0 ? 1 : this.ymax
-         var ymin = (this.ymin <= 0) ? 1e-6*ymax : this.ymin;
+         if (ymin <= 0) ymin = 1;
+         if (ymax <= 0) ymax = 1e-6*ymin;
          this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
       } else {
-         this.ty = d3.scale.linear().domain([ this.ymin, this.ymax ]).range([ grminy, grmaxy ]);
+         this.ty = d3.scale.linear().domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
       }
 
       if (this.options.Logz) {
@@ -396,12 +402,12 @@
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
             var text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grmaxx + plen, grminz-textsize*2, gry + centerOffset);
+            text.position.set(grmaxx + plen, grminz - textsize*2, gry + centerOffset);
             text.rotation.y = Math.PI / 2;
             this.toplevel.add(text);
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - plen, grminz-textsize*2, gry - centerOffset);
+            text.position.set(grminx - plen, grminz - textsize*2, gry - centerOffset);
             text.rotation.y = -Math.PI / 2;
             this.toplevel.add(text);
          }
@@ -427,6 +433,7 @@
 
             text3d.computeBoundingBox();
             var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
+
             var textz = grz - 0.4*textsize;
 
             var text = new THREE.Mesh(text3d, textMaterial);
@@ -471,8 +478,11 @@
          ticks.push(geometry);
       }
 
-      for (var t=0; t < ticks.length; ++t)
-         ticks[t].dispose();
+      //for (var t=0; t < ticks.length; ++t)
+      //    ticks[t].dispose();
+
+      // for TAxis3D do not show final cube
+      if (this.size3d === 0) return;
 
       var wireMaterial = new THREE.MeshBasicMaterial({
          color : 0x000000,
@@ -481,8 +491,6 @@
          side : THREE.DoubleSide
       });
 
-
-      if (this.size3d === 0) return;
 
       // create a new mesh with cube geometry
       var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);

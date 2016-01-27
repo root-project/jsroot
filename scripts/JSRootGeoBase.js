@@ -30,6 +30,8 @@
 
    JSROOT.GEO.createPara = function( shape ) {
 
+      console.log('createPara');
+
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
 
       var verticesOfShape = [

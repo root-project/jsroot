@@ -523,7 +523,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.computeBoundingBox = function() {
-
       if (this._nodedraw)
          return new THREE.Box3().setFromObject(this._cube);
       else
@@ -698,8 +697,11 @@
       this._renderer.setSize(w, h);
 
       this._toplevel = new THREE.Object3D();
-      //this._toplevel.rotation.x = 30 * Math.PI / 180;
-      this._toplevel.rotation.y = 90 * Math.PI / 180;
+
+
+      // this is just initial rotation for better positioning relative to spectator
+      //this._toplevel.rotation.x = 45 * Math.PI / 180;
+      // this._toplevel.rotation.y = -45 * Math.PI / 180;
       this._scene.add(this._toplevel);
 
       this._overall_size = 10;
@@ -715,6 +717,14 @@
          var geom = new THREE.Geometry();
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
          this._cube = new THREE.Mesh(geom, material );
+
+         // this rotation is essential
+         // webgl coordinate system (X-right, Y-up, Z-to spectator) differs from standrd
+         // ROOT coordinates (X-right, Y-from spectator, Z-up)
+         // to bring geometry in ROOT way of drawing, we should rotate around axis X
+
+         this._cube.rotation.x = -Math.PI/2;
+         //this._cube.rotation.z = -Math.PI/2;
          this._toplevel.add(this._cube);
 
          this._stack = [ { toplevel: this._cube, node: this._geometry } ];
@@ -740,9 +750,11 @@
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
       this._camera.updateProjectionMatrix();
-      this._camera.position.x = this._overall_size * Math.cos( 135.0 );
-      this._camera.position.y = this._overall_size * Math.cos( 45.0 );
-      this._camera.position.z = this._overall_size * Math.sin( 45.0 );
+      //this._camera.position.x = this._overall_size * Math.cos( 135.0/ Math.PI);
+      //this._camera.position.y = this._overall_size * Math.cos( 45.0/ Math.PI);
+      //this._camera.position.z = this._overall_size * Math.sin( 45.0/ Math.PI);
+
+      this._camera.position.set(-this._overall_size, this._overall_size/2, this._overall_size);
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -1121,14 +1133,17 @@
 
    JSROOT.TAxis3DPainter.prototype.Draw3DAxis = function() {
       var main = this.main_painter();
-      if ((main === null) || (main._geometry === undefined)) {
-         console.log('no geo objecty found for 3D axis drawing');
-      }
+      if ((main === null) || (main._toplevel === undefined))
+         return console.warn('no geo objecty found for 3D axis drawing');
+
       var box = main.computeBoundingBox();
 
-      this.xmin = box.min.z; this.xmax = box.max.z;
-      this.ymin = box.min.x; this.ymax = box.max.x;
-      this.zmin = box.min.y; this.zmax = box.max.y;
+      // console.log('min = ' + JSON.stringify(box.min));
+      // console.log('max = ' + JSON.stringify(box.max));
+
+      this.xmin = box.min.x*2; this.xmax = box.max.x*2; // X always remain as is
+      this.ymin = box.min.z*2; this.ymax = box.max.z*2; // Y and Z ar replaced
+      this.zmin = box.min.y*2; this.zmax = box.max.y*2;
 
       this.options = { Logx: false, Logy: false, Logz: false };
 
@@ -1140,6 +1155,9 @@
 
       this.DrawXYZ();
 
+      main._camera.position.x*=1.2;
+      main._camera.position.y*=1.2;
+      main._camera.position.z*=1.2;
       main.Render3D();
    }
 
