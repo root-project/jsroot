@@ -68,6 +68,9 @@
       this._renderer = null;
       this._toplevel = null;
       this._stack = null;
+
+      this._controls = null;
+      this.transformControl = null;
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
@@ -138,69 +141,74 @@
 
    JSROOT.TGeoPainter.prototype.addControls = function(renderer, scene, camera) {
 
-      if (typeof renderer.domElement.trackballControls !== 'undefined' &&
-          renderer.domElement.trackballControls !== null) return;
+      if (this._controls !== null) return;
+
+      var painter = this;
+
+      this._controls = new THREE.OrbitControls(this._camera, this._renderer.domElement);
+      this._controls.addEventListener( 'change', function() { painter.Render3D(); } ); // add this only if there is no animation loop (requestAnimationFrame)
+      this._controls.enableDamping = true;
+      this._controls.dampingFactor = 0.25;
+      this._controls.enableZoom = true;
+
+
+      return;
 
       // add 3D mouse interactive functions
+
       renderer.domElement.clock = new THREE.Clock();
-      renderer.domElement.trackballControls = new THREE.TrackballControls(camera, renderer.domElement);
-      renderer.domElement.trackballControls.rotateSpeed = 5.0;
-      renderer.domElement.trackballControls.zoomSpeed = 0.8;
-      renderer.domElement.trackballControls.panSpeed = 0.2;
-      renderer.domElement.trackballControls.noZoom = false;
-      renderer.domElement.trackballControls.noPan = false;
-      renderer.domElement.trackballControls.staticMoving = false;
-      renderer.domElement.trackballControls.dynamicDampingFactor = 0.25;
-      renderer.domElement.trackballControls.target.set(0,0,0);
-      renderer.domElement.transformControl = null;
+
+
+      this.transformControl = null;
+
+      this._translationSnap = Math.ceil( this._overall_size ) / 50;
 
       renderer.domElement.render = function() {
          var delta = renderer.domElement.clock.getDelta();
-         if ( renderer.domElement.transformControl !== null )
-            renderer.domElement.transformControl.update();
-         renderer.domElement.trackballControls.update(delta);
-         renderer.render(scene, camera);
+         if ( painter.transformControl !== null )
+            painter.transformControl.update();
+         painter.Render3D();
       }
 
       if ( this.options._debug || this.options._grid ) {
-         renderer.domElement.transformControl = new THREE.TransformControls( camera, renderer.domElement );
-         renderer.domElement.transformControl.addEventListener( 'change', renderer.domElement.render );
-         scene.add( renderer.domElement.transformControl );
-         //renderer.domElement.transformControl.setSize( 1.1 );
+         this.transformControl = new THREE.TransformControls( camera, renderer.domElement );
+         this.transformControl.addEventListener( 'change', renderer.domElement.render );
+         scene.add( this.transformControl );
+         //this.transformControl.setSize( 1.1 );
 
          window.addEventListener( 'keydown', function ( event ) {
             switch ( event.keyCode ) {
                case 81: // Q
-                  renderer.domElement.transformControl.setSpace( renderer.domElement.transformControl.space === "local" ? "world" : "local" );
+                  painter.transformControl.setSpace( painter.transformControl.space === "local" ? "world" : "local" );
                   break;
                case 17: // Ctrl
-                  renderer.domElement.transformControl.setTranslationSnap( renderer.domElement._translationSnap );
-                  renderer.domElement.transformControl.setRotationSnap( THREE.Math.degToRad( 15 ) );
+                  painter.transformControl.setTranslationSnap( painter._translationSnap );
+                  painter.transformControl.setRotationSnap( THREE.Math.degToRad( 15 ) );
                   break;
                case 84: // T (Translate)
-                  renderer.domElement.transformControl.setMode( "translate" );
+                  painter.transformControl.setMode( "translate" );
                   break;
                case 82: // R (Rotate)
-                  renderer.domElement.transformControl.setMode( "rotate" );
+                  painter.transformControl.setMode( "rotate" );
                   break;
                case 83: // S (Scale)
-                  renderer.domElement.transformControl.setMode( "scale" );
+                  painter.transformControl.setMode( "scale" );
                   break;
                case 187:
                case 107: // +, =, num+
-                  renderer.domElement.transformControl.setSize( renderer.domElement.transformControl.size + 0.1 );
+                  painter.transformControl.setSize( painter.transformControl.size + 0.1 );
                   break;
                case 189:
                case 109: // -, _, num-
-                  renderer.domElement.transformControl.setSize( Math.max( renderer.domElement.transformControl.size - 0.1, 0.1 ) );
+                  painter.transformControl.setSize( Math.max( painter.transformControl.size - 0.1, 0.1 ) );
                   break;
             }
          });
          window.addEventListener( 'keyup', function ( event ) {
             switch ( event.keyCode ) {
                case 17: // Ctrl
-                  renderer.domElement.transformControl.setTranslationSnap( null );
-                  renderer.domElement.transformControl.setRotationSnap( null );
+                  painter.transformControl.setTranslationSnap( null );
+                  painter.transformControl.setRotationSnap( null );
                   break;
             }
          });
@@ -676,18 +684,12 @@
       return res + numvis;
    }
 
-
-
    JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
 
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set( 10, 10, 10 );
-      this._scene.add( this._camera );
 
       this._renderer = webgl ?
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
@@ -697,7 +699,6 @@
       this._renderer.setSize(w, h);
 
       this._toplevel = new THREE.Object3D();
-
 
       // this is just initial rotation for better positioning relative to spectator
       //this._toplevel.rotation.x = 45 * Math.PI / 180;
@@ -718,13 +719,8 @@
          var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
          this._cube = new THREE.Mesh(geom, material );
 
-         // this rotation is essential
-         // webgl coordinate system (X-right, Y-up, Z-to spectator) differs from standrd
-         // ROOT coordinates (X-right, Y-from spectator, Z-up)
-         // to bring geometry in ROOT way of drawing, we should rotate around axis X
-
-         this._cube.rotation.x = -Math.PI/2;
-         //this._cube.rotation.z = -Math.PI/2;
+         // this._cube.rotation.x = -Math.PI/2;
+         // this._cube.rotation.z = -Math.PI/2;
          this._toplevel.add(this._cube);
 
          this._stack = [ { toplevel: this._cube, node: this._geometry } ];
@@ -751,6 +747,10 @@
 
       this._overall_size = 4 * Math.max( sizex, sizey, sizez);
 
+      var pointLight = new THREE.PointLight(0xefefef);
+      this._camera.add( pointLight );
+      pointLight.position.set( this._overall_size, this._overall_size, this._overall_size );
+
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
       this._camera.updateProjectionMatrix();
@@ -763,18 +763,15 @@
       console.log('min = ' + JSON.stringify(box.min));
       console.log('max = ' + JSON.stringify(box.max));
 
-      this._camera.up = new THREE.Vector3(0,1,0);
       this._camera.position.set(-this._overall_size, this._overall_size, this._overall_size);
+      // this._camera.lookAt(new THREE.Vector3(100, -10000, 100));
 
-      this._camera.lookAt(new THREE.Vector3(100, -10000, 100));
-
+      this._camera.lookAt(new THREE.Vector3((box.max.x + box.min.x)/2, (box.max.y + box.min.y)/2), (box.max.z + box.min.z)/2);
 
       this._camera.updateProjectionMatrix();
       this._camera.updateMatrixWorld();
 
-      // this._camera.lookAt(new THREE.Vector3((box.max.x + box.min.x)/2, (box.max.y + box.min.y)/2), (box.max.z + box.min.z)/2);
-
-
+      this._scene.add( this._camera );
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -785,7 +782,6 @@
          }
          this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
          this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
-         this._renderer.domElement._translationSnap = Math.ceil( this._overall_size ) / 50;
          if ( this._renderer.domElement.transformControl !== null )
             this._renderer.domElement.transformControl.attach( this._toplevel );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
@@ -980,11 +976,11 @@
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
       this.finishDrawGeometry();
 
-      this.addControls(this._renderer, this._scene, this._camera);
-
       this.completeScene();
 
       this.Render3D();
+
+      this.addControls(this._renderer, this._scene, this._camera);
 
       if (close_progress) JSROOT.progress();
 
@@ -1029,10 +1025,14 @@
       //this._renderer.initWebGLObjects(this._scene);
       delete this._scene;
       this._scene = null;
-      if ( this._renderer.domElement.transformControl !== null )
-         this._renderer.domElement.transformControl.dispose();
-      this._renderer.domElement.transformControl = null;
-      this._renderer.domElement.trackballControls = null;
+      if ( this.transformControl !== null ) {
+         this.transformControl.dispose();
+         this.transformControl = null;
+      }
+      if (this._controls !== null) {
+         this._controls.dispose();
+         this._controls = null;
+      }
       this._renderer.domElement.render = null;
       this._renderer = null;
    }
@@ -1090,9 +1090,11 @@
    }
 
    JSROOT.TGeoPainter.prototype.toggleWireFrame = function(obj) {
+      var painter = this;
+
       var f = function(obj2) {
          if ( obj2.hasOwnProperty("material") && !(obj2 instanceof THREE.GridHelper) ) {
-            if (!this.ownedByTransformControls(obj2))
+            if (!painter.ownedByTransformControls(obj2))
                obj2.material.wireframe = !obj2.material.wireframe;
          }
       }
@@ -1161,10 +1163,9 @@
       // console.log('min = ' + JSON.stringify(box.min));
       // console.log('max = ' + JSON.stringify(box.max));
 
-      this.xmin = box.min.x*2; this.xmax = box.max.x*2; // X always remain as is
-      this.ymin = -box.max.z*2; this.ymax = -box.min.z*2; // Y and Z ar replaced
-      this.grminy = box.min.z; this.grmaxy = box.max.z;
-      this.zmin = box.min.y*2; this.zmax = box.max.y*2;
+      this.xmin = box.min.x*2; this.xmax = box.max.x*2;
+      this.ymin = box.min.y*2; this.ymax = box.max.y*2;
+      this.zmin = box.min.z*2; this.zmax = box.max.z*2;
 
       this.options = { Logx: false, Logy: false, Logz: false };
 

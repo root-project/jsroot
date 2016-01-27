@@ -278,7 +278,7 @@
       pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
       this.camera.position.set(-3*this.size3d, -3*this.size3d, 3*this.size3d);
       this.camera.up = new THREE.Vector3(0,0,1);
-      this.camera.lookAt(new THREE.Vector3(0,0,this.size3d/2));
+      this.camera.lookAt(new THREE.Vector3(0,0,this.size3d));
       this.scene.add( this.camera );
 
       /**
@@ -326,9 +326,7 @@
 
       if (this.size3d === 0) {
          grminx = this.xmin/2; grmaxx = this.xmax/2;
-
-         grminy = this.grminy; grmaxy = this.grmaxy;
-
+         grminy = this.ymin/2; grmaxy = this.ymax/2;
          grminz = this.zmin/2; grmaxz = this.zmax/2;
          textsize = (grmaxz - grminz) * 0.05;
       }
@@ -360,8 +358,6 @@
       var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
       var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
 
-      var ticks = new Array();
-
       var ticklen = textsize * 0.5;
 
       var xmajors = this.tx.ticks(8), xminors = this.tx.ticks(50);
@@ -372,7 +368,7 @@
          var plen = ((indx>=0) ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
          if (indx>=0) {
-            var lbl = indx === xmajors.length ? "x" : xminors[i];
+            var lbl = (indx === xmajors.length-1) ? "x" : xminors[i];
             var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
@@ -392,13 +388,11 @@
          geometry.vertices.push(new THREE.Vector3(grx, grmaxy, grminz));
          geometry.vertices.push(new THREE.Vector3(grx, grmaxy + plen, grminz - plen));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
 
          geometry = new THREE.Geometry();
          geometry.vertices.push(new THREE.Vector3(grx, grminy, grminz));
          geometry.vertices.push(new THREE.Vector3(grx, grminy - plen, grminz - plen));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
       }
 
       var ymajors = this.ty.ticks(8), yminors = this.ty.ticks(50);
@@ -431,12 +425,10 @@
          geometry.vertices.push(new THREE.Vector3(grmaxx, gry, grminz));
          geometry.vertices.push(new THREE.Vector3(grmaxx + plen, gry, grminz-plen));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
          geometry = new THREE.Geometry();
          geometry.vertices.push(new THREE.Vector3(grminx, gry, grminz));
          geometry.vertices.push(new THREE.Vector3(grminx - plen, gry, grminz-plen));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
       }
 
       var zmajors = this.tz.ticks(8), zminors = this.tz.ticks(50);
@@ -480,26 +472,19 @@
          geometry.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
          geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grmaxy + plen, grz));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
          geometry = new THREE.Geometry();
          geometry.vertices.push(new THREE.Vector3(grmaxx, grminy, grz));
          geometry.vertices.push(new THREE.Vector3(grmaxx + plen, grminy - plen, grz));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
          geometry = new THREE.Geometry();
          geometry.vertices.push(new THREE.Vector3(grminx, grmaxy, grz));
          geometry.vertices.push(new THREE.Vector3(grminx - plen, grmaxy + plen, grz));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
          geometry = new THREE.Geometry();
          geometry.vertices.push(new THREE.Vector3(grminx, grminy, grz));
          geometry.vertices.push(new THREE.Vector3(grminx - plen, grminy - plen, grz));
          this.toplevel.add(new THREE.Line(geometry, lineMaterial));
-         ticks.push(geometry);
       }
-
-      for (var t=0; t < ticks.length; ++t)
-          ticks[t].dispose(); // remove all events handlers
 
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
