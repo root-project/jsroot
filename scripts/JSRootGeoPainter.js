@@ -82,7 +82,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _yup: false };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _yup: false, _axis:false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -113,6 +113,7 @@
       if (opt.indexOf("b")>=0) res._bound = true;
       if (opt.indexOf("f")>=0) res._full = true;
       if (opt.indexOf("y")>=0) res._yup = true;
+      if (opt.indexOf("a")>=0) res._axis = true;
 
       return res;
    }
@@ -974,6 +975,13 @@
 
       this.completeScene();
 
+      if (this.options._axis) {
+         var axis = JSROOT.Create("TNamed");
+         axis._typename = "TAxis3D";
+         axis._main = this;
+         JSROOT.draw(this.divid, axis); // it will include drawing of
+      }
+
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
@@ -1141,14 +1149,16 @@
 
    JSROOT.TAxis3DPainter.prototype.Draw3DAxis = function() {
       var main = this.main_painter();
+
+      if ((main === null) && ('_main' in this.axis))
+         main = this.axis._main; // simple workaround to get geo painter
+
       if ((main === null) || (main._toplevel === undefined))
-         return console.warn('no geo objecty found for 3D axis drawing');
+         return console.warn('no geo object found for 3D axis drawing');
 
       var box = main.computeBoundingBox();
 
-      // console.log('min = ' + JSON.stringify(box.min));
-      // console.log('max = ' + JSON.stringify(box.max));
-
+      // TODO: factor 2 in geometries
       this.xmin = box.min.x*2; this.xmax = box.max.x*2;
       this.ymin = box.min.y*2; this.ymax = box.max.y*2;
       this.zmin = box.min.z*2; this.zmax = box.max.z*2;
