@@ -82,7 +82,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _yup: false, _axis:false };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _axis:false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -112,8 +112,9 @@
       if (opt.indexOf("g")>=0) res._grid = true;
       if (opt.indexOf("b")>=0) res._bound = true;
       if (opt.indexOf("f")>=0) res._full = true;
+      if (opt.indexOf("a")>=0) { res._axis = true; res._yup = false; }
       if (opt.indexOf("y")>=0) res._yup = true;
-      if (opt.indexOf("a")>=0) res._axis = true;
+      if (opt.indexOf("z")>=0) res._yup = false;
 
       return res;
    }
@@ -823,6 +824,9 @@
       }
 
       this.options = this.decodeOptions(opt);
+
+      if (!('_yup' in this.options))
+         this.options._yup = this.svg_canvas().empty();
 
       this._webgl = (function() {
          try {
