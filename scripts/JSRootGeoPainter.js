@@ -69,6 +69,8 @@
       this._toplevel = null;
       this._stack = null;
 
+      this.first_render_tm = 0;
+
       this._controls = null;
       this._tcontrols = null;
    }
@@ -153,7 +155,7 @@
       this._controls.target.copy(this._lookat);
       this._controls.update();
 
-      this._controls.addEventListener( 'change', function() { painter.Render3D(); } );
+      this._controls.addEventListener( 'change', function() { painter.Render3D(0); } );
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
@@ -198,7 +200,7 @@
             }
          });
 
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(); } );
+         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
    }
 
@@ -928,12 +930,43 @@
       return this.completeDraw();
    }
 
-   JSROOT.TGeoPainter.prototype.Render3D = function() {
+   JSROOT.TGeoPainter.prototype.Render3D = function(tmout) {
+      if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
+
+      if (tmout <= 0) {
+         if ('render_tmout' in this)
+            clearTimeout(this['render_tmout']);
+
+         var tm1 = new Date();
+
+         // do rendering, most consuming time
+         this._renderer.render(this._scene, this._camera);
+
+         var tm2 = new Date();
+
+         delete this['render_tmout'];
+
+         if (this.first_render_tm === 0) {
+            this.first_render_tm = tm2.getTime() - tm1.getTime();
+            console.log('First render tm = ' + this.first_render_tm);
+            this.addControls();
+         }
+
+         return;
+      }
+
+      // no need to shoot rendering once again
+      if ('render_tmout' in this) return;
+
+      this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
+   }
+
+   //JSROOT.TGeoPainter.prototype.Render3D = function() {
       //var t1 = new Date().getTime();
-      this._renderer.render(this._scene, this._camera);
+     // this._renderer.render(this._scene, this._camera);
       //var t2 = new Date().getTime();
       //console.log('Render tm = ' + (t2-t1));
-   }
+   //}
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
@@ -942,8 +975,6 @@
       this.completeScene();
 
       this.Render3D();
-
-      this.addControls();
 
       if (close_progress) JSROOT.progress();
 
@@ -1034,7 +1065,6 @@
       this._camera.updateProjectionMatrix();
 
       this._renderer.setSize( rect.width, rect.height );
-
    }
 
    JSROOT.TGeoPainter.prototype.ownedByTransformControls = function(child) {
@@ -1134,6 +1164,8 @@
       this.DrawXYZ();
 
       main.adjustCameraPosition();
+
+      main.Render3D();
    }
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
