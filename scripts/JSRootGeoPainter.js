@@ -146,11 +146,13 @@
       var painter = this;
 
       this._controls = new THREE.OrbitControls(this._camera, this._renderer.domElement);
-      this._controls.addEventListener( 'change', function() { painter.Render3D(); } ); // add this only if there is no animation loop (requestAnimationFrame)
       this._controls.enableDamping = true;
       this._controls.dampingFactor = 0.25;
       this._controls.enableZoom = true;
+      this._controls.target.copy(this._lookat);
+      this._controls.update();
 
+      this._controls.addEventListener( 'change', function() { painter.Render3D(); } );
 
       return;
 
@@ -698,6 +700,13 @@
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
+      var pointLight = new THREE.PointLight(0xefefef);
+      this._camera.add( pointLight );
+      pointLight.position.set(10, 10, 10);
+      this._camera.up = new THREE.Vector3(0,0,1);
+      this._scene.add( this._camera );
+
+
       this._toplevel = new THREE.Object3D();
 
       // this is just initial rotation for better positioning relative to spectator
@@ -741,15 +750,14 @@
 
       var box = new THREE.Box3().setFromObject(this._toplevel);
 
-      var sizex = Math.abs(box.max.x - box.min.x),
-          sizey = Math.abs(box.max.y - box.min.y),
-          sizez = Math.abs(box.max.z - box.min.z);
+      var sizex = box.max.x - box.min.x,
+          sizey = box.max.y - box.min.y,
+          sizez = box.max.z - box.min.z,
+          midx = (box.max.x + box.min.x)/2,
+          midy = (box.max.y + box.min.y)/2,
+          midz = (box.max.z + box.min.z)/2;
 
-      this._overall_size = 4 * Math.max( sizex, sizey, sizez);
-
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set( this._overall_size, this._overall_size, this._overall_size );
+      this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
@@ -760,18 +768,13 @@
 
       // this._camera.position.set(-4*sizex, sizey, 4*sizez);
 
-      console.log('min = ' + JSON.stringify(box.min));
-      console.log('max = ' + JSON.stringify(box.max));
+      this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
 
-      this._camera.position.set(-this._overall_size, this._overall_size, this._overall_size);
-      // this._camera.lookAt(new THREE.Vector3(100, -10000, 100));
+      this._lookat = new THREE.Vector3(midx, midy, midz);
+      this._camera.lookAt(this._lookat);
 
-      this._camera.lookAt(new THREE.Vector3((box.max.x + box.min.x)/2, (box.max.y + box.min.y)/2), (box.max.z + box.min.z)/2);
-
-      this._camera.updateProjectionMatrix();
-      this._camera.updateMatrixWorld();
-
-      this._scene.add( this._camera );
+      //this._camera.updateProjectionMatrix();
+      //this._camera.updateMatrixWorld();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -967,10 +970,10 @@
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function() {
-      var t1 = new Date().getTime();
+      //var t1 = new Date().getTime();
       this._renderer.render(this._scene, this._camera);
-      var t2 = new Date().getTime();
-      console.log('Render tm = ' + (t2-t1));
+      //var t2 = new Date().getTime();
+      //console.log('Render tm = ' + (t2-t1));
    }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
@@ -1177,10 +1180,17 @@
 
       this.DrawXYZ();
 
+      if (main._controls !== null) {
+         main._controls.constraint.dollyIn(0.9);
+         main._controls.update();
+      } else {
+         main.Render3D();
+      }
+
       //main._camera.position.x*=1.2;
       //main._camera.position.y*=1.2;
       //main._camera.position.z*=1.2;
-      main.Render3D();
+
    }
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
