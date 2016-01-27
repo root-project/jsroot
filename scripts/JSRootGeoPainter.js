@@ -1186,7 +1186,8 @@
 
       JSROOT.extend(this, new JSROOT.TAxis3DPainter(axis));
 
-      this.SetDivId(divid);
+      if (!('_main' in axis))
+         this.SetDivId(divid);
 
       this.Draw3DAxis();
 
