@@ -70,7 +70,7 @@
       this._stack = null;
 
       this._controls = null;
-      this.transformControl = null;
+      this._tcontrols = null;
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
@@ -139,7 +139,7 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.addControls = function(renderer, scene, camera) {
+   JSROOT.TGeoPainter.prototype.addControls = function() {
 
       if (this._controls !== null) return;
 
@@ -154,90 +154,50 @@
 
       this._controls.addEventListener( 'change', function() { painter.Render3D(); } );
 
-      return;
-
-      // add 3D mouse interactive functions
-
-      renderer.domElement.clock = new THREE.Clock();
-
-
-      this.transformControl = null;
-
-      this._translationSnap = Math.ceil( this._overall_size ) / 50;
-
-      renderer.domElement.render = function() {
-         var delta = renderer.domElement.clock.getDelta();
-         if ( painter.transformControl !== null )
-            painter.transformControl.update();
-         painter.Render3D();
-      }
-
       if ( this.options._debug || this.options._grid ) {
-         this.transformControl = new THREE.TransformControls( camera, renderer.domElement );
-         this.transformControl.addEventListener( 'change', renderer.domElement.render );
-         scene.add( this.transformControl );
-         //this.transformControl.setSize( 1.1 );
+         this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
+         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(); } );
+         this._scene.add( this._tcontrols );
+         //this._tcontrols.setSize( 1.1 );
 
          window.addEventListener( 'keydown', function ( event ) {
             switch ( event.keyCode ) {
                case 81: // Q
-                  painter.transformControl.setSpace( painter.transformControl.space === "local" ? "world" : "local" );
+                  painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
                   break;
                case 17: // Ctrl
-                  painter.transformControl.setTranslationSnap( painter._translationSnap );
-                  painter.transformControl.setRotationSnap( THREE.Math.degToRad( 15 ) );
+                  painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
+                  painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
                   break;
                case 84: // T (Translate)
-                  painter.transformControl.setMode( "translate" );
+                  painter._tcontrols.setMode( "translate" );
                   break;
                case 82: // R (Rotate)
-                  painter.transformControl.setMode( "rotate" );
+                  painter._tcontrols.setMode( "rotate" );
                   break;
                case 83: // S (Scale)
-                  painter.transformControl.setMode( "scale" );
+                  painter._tcontrols.setMode( "scale" );
                   break;
                case 187:
                case 107: // +, =, num+
-                  painter.transformControl.setSize( painter.transformControl.size + 0.1 );
+                  painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
                   break;
                case 189:
                case 109: // -, _, num-
-                  painter.transformControl.setSize( Math.max( painter.transformControl.size - 0.1, 0.1 ) );
+                  painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
                   break;
             }
          });
          window.addEventListener( 'keyup', function ( event ) {
             switch ( event.keyCode ) {
                case 17: // Ctrl
-                  painter.transformControl.setTranslationSnap( null );
-                  painter.transformControl.setRotationSnap( null );
+                  painter._tcontrols.setTranslationSnap( null );
+                  painter._tcontrols.setRotationSnap( null );
                   break;
             }
          });
 
       }
-      renderer.domElement._timeoutFunc = null;
-      renderer.domElement._animationId = null;
-      var mouseover = true;
-      function animate() {
-         if ( mouseover === true ) {
-            renderer.domElement._timeoutFunc = setTimeout(function() {
-               renderer.domElement._animationId = requestAnimationFrame(animate, renderer.domElement);
-            }, 1000 / 30);
-         }
-         renderer.domElement.render();
-      }
-
-      renderer.domElement.addEventListener('mouseover', function() {
-         mouseover = true;
-         animate();
-      });
-
-      renderer.domElement.addEventListener('mouseoout', function() {
-         mouseover = false;
-      });
-
-      animate();
    }
 
    JSROOT.GEO.createNodeMesh = function(node) {
@@ -518,8 +478,8 @@
          mesh['name'] = node['fName'];
          // add the mesh to the scene
          toplevel.add(mesh);
-         //if ( this.options._debug && renderer.domElement.transformControl !== null)
-         //   renderer.domElement.transformControl.attach( mesh );
+         //if ( this.options._debug && renderer.domElement._tcontrols !== null)
+         //   renderer.domElement._tcontrols.attach( mesh );
          container = mesh;
       }
 
@@ -785,8 +745,8 @@
          }
          this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
          this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
-         if ( this._renderer.domElement.transformControl !== null )
-            this._renderer.domElement.transformControl.attach( this._toplevel );
+         if ( this._renderer.domElement._tcontrols !== null )
+            this._renderer.domElement._tcontrols.attach( this._toplevel );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
                "'T' translate | 'R' rotate | 'S' scale<br>" +
                "'+' increase size | '-' decrease size<br>" +
@@ -983,7 +943,7 @@
 
       this.Render3D();
 
-      this.addControls(this._renderer, this._scene, this._camera);
+      this.addControls();
 
       if (close_progress) JSROOT.progress();
 
@@ -1016,27 +976,20 @@
 
    JSROOT.TGeoPainter.prototype.Cleanup = function() {
       this.helpText();
-      if (this._scene === null ) return;
-
-      this._renderer.domElement.clock = null;
-      if (this._renderer.domElement._timeoutFunc != null)
-         clearTimeout( this._renderer.domElement._timeoutFunc );
-      if (this._renderer.domElement._animationId != null)
-         cancelAnimationFrame( this._renderer.domElement._animationId );
+      if (this._scene === null) return;
 
       this.deleteChildren(this._scene);
       //this._renderer.initWebGLObjects(this._scene);
       delete this._scene;
       this._scene = null;
-      if ( this.transformControl !== null ) {
-         this.transformControl.dispose();
-         this.transformControl = null;
+      if ( this._tcontrols !== null ) {
+         this._tcontrols.dispose();
+         this._tcontrols = null;
       }
       if (this._controls !== null) {
          this._controls.dispose();
          this._controls = null;
       }
-      this._renderer.domElement.render = null;
       this._renderer = null;
    }
 
