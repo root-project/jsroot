@@ -235,7 +235,7 @@
 
       var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
-      if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] != null) {
+      if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] !== null) {
          if (node['fMatrix']['_typename'] == 'TGeoTranslation') {
             translation_matrix = node['fMatrix']['fTranslation'];
          }
@@ -743,9 +743,13 @@
 
    JSROOT.TGeoPainter.prototype.finishDrawGeometry = function() {
 
-      var max = this.computeBoundingBox().max;
+      var box = new THREE.Box3().setFromObject(this._toplevel);
 
-      this._overall_size = 4 * Math.max( Math.max(Math.abs(max.x), Math.abs(max.y)), Math.abs(max.z));
+      var sizex = Math.abs(box.max.x - box.min.x),
+          sizey = Math.abs(box.max.y - box.min.y),
+          sizez = Math.abs(box.max.z - box.min.z);
+
+      this._overall_size = 4 * Math.max( sizex, sizey, sizez);
 
       this._camera.near = this._overall_size / 200;
       this._camera.far = this._overall_size * 500;
@@ -754,7 +758,23 @@
       //this._camera.position.y = this._overall_size * Math.cos( 45.0/ Math.PI);
       //this._camera.position.z = this._overall_size * Math.sin( 45.0/ Math.PI);
 
-      this._camera.position.set(-this._overall_size, this._overall_size/2, this._overall_size);
+      // this._camera.position.set(-4*sizex, sizey, 4*sizez);
+
+      console.log('min = ' + JSON.stringify(box.min));
+      console.log('max = ' + JSON.stringify(box.max));
+
+      this._camera.up = new THREE.Vector3(0,1,0);
+      this._camera.position.set(-this._overall_size, this._overall_size, this._overall_size);
+
+      this._camera.lookAt(new THREE.Vector3(100, -10000, 100));
+
+
+      this._camera.updateProjectionMatrix();
+      this._camera.updateMatrixWorld();
+
+      // this._camera.lookAt(new THREE.Vector3((box.max.x + box.min.x)/2, (box.max.y + box.min.y)/2), (box.max.z + box.min.z)/2);
+
+
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -1142,7 +1162,8 @@
       // console.log('max = ' + JSON.stringify(box.max));
 
       this.xmin = box.min.x*2; this.xmax = box.max.x*2; // X always remain as is
-      this.ymin = box.min.z*2; this.ymax = box.max.z*2; // Y and Z ar replaced
+      this.ymin = -box.max.z*2; this.ymax = -box.min.z*2; // Y and Z ar replaced
+      this.grminy = box.min.z; this.grmaxy = box.max.z;
       this.zmin = box.min.y*2; this.zmax = box.max.y*2;
 
       this.options = { Logx: false, Logy: false, Logz: false };
@@ -1155,9 +1176,9 @@
 
       this.DrawXYZ();
 
-      main._camera.position.x*=1.2;
-      main._camera.position.y*=1.2;
-      main._camera.position.z*=1.2;
+      //main._camera.position.x*=1.2;
+      //main._camera.position.y*=1.2;
+      //main._camera.position.z*=1.2;
       main.Render3D();
    }
 
