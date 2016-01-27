@@ -1618,10 +1618,36 @@
                case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
                case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-                  member['arrlength'] = element['fArrayLength'];
-                  member['func'] = function(buf, obj) {
-                     obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
-                  };
+                  member['arrlength'] = element.fArrayLength;
+                  if (element.fArrayDim > 1) {
+                     member['maxdim'] = element.fArrayDim - 1;
+                     member['maxindx'] = element.fMaxIndex;
+                     member['func'] = function(buf, obj) {
+                        var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
+                        var indx = [], arr = [];
+                        for (var n=0; n<=this.maxdim; ++n) { indx[n] = 0; arr[n] = []; }
+                        for (var i=0;i<tmp.length;++i) {
+                           arr[this.maxdim].push(tmp[i]);
+                           ++indx[this.maxdim];
+                           var k = this.maxdim;
+                           while ((indx[k] === this.maxindx[k]) && (k>0)) {
+                              indx[k] = 0;
+                              arr[k-1].push(arr[k]);
+                              arr[k] = [];
+                              ++indx[--k];
+                           }
+                        }
+
+                        obj[this.name] = arr[0];
+                     };
+
+                  } else {
+                     member['func'] = function(buf, obj) {
+                        obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
+                     };
+                  }
+
+
                   break;
                case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
                case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
