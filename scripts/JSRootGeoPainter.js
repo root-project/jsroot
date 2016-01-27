@@ -729,7 +729,7 @@
       this._camera.updateProjectionMatrix();
 
       if (this.options._yup)
-         this._camera.position.set(midx+this._overall_size, midy+this._overall_size, midz+this._overall_size);
+         this._camera.position.set(midx-this._overall_size, midy+this._overall_size, midz-this._overall_size);
       else
          this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
 
