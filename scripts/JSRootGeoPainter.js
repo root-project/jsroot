@@ -80,7 +80,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1 };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _yup: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -110,6 +110,7 @@
       if (opt.indexOf("g")>=0) res._grid = true;
       if (opt.indexOf("b")>=0) res._bound = true;
       if (opt.indexOf("f")>=0) res._full = true;
+      if (opt.indexOf("y")>=0) res._yup = true;
 
       return res;
    }
@@ -156,8 +157,8 @@
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(); } );
          this._scene.add( this._tcontrols );
+         this._tcontrols.attach( this._toplevel );
          //this._tcontrols.setSize( 1.1 );
 
          window.addEventListener( 'keydown', function ( event ) {
@@ -197,6 +198,7 @@
             }
          });
 
+         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(); } );
       }
    }
 
@@ -663,7 +665,7 @@
       var pointLight = new THREE.PointLight(0xefefef);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
-      this._camera.up = new THREE.Vector3(0,0,1);
+      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,1,0);
       this._scene.add( this._camera );
 
 
@@ -728,10 +730,15 @@
 
       // this._camera.position.set(-4*sizex, sizey, 4*sizez);
 
-      this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
+      if (this.options._yup)
+         this._camera.position.set(midx+this._overall_size, midy+this._overall_size, midz+this._overall_size);
+      else
+         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
+
+      console.log('lookat ' + JSON.stringify(this._lookat))
 
       //this._camera.updateProjectionMatrix();
       //this._camera.updateMatrixWorld();
@@ -745,8 +752,6 @@
          }
          this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
          this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
-         if ( this._renderer.domElement._tcontrols !== null )
-            this._renderer.domElement._tcontrols.attach( this._toplevel );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
                "'T' translate | 'R' rotate | 'S' scale<br>" +
                "'+' increase size | '-' decrease size<br>" +
