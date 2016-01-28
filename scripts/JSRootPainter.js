@@ -961,10 +961,8 @@
    JSROOT.TObjectPainter.prototype.CheckResize = function(size) {
       // no painter - no resize
       var pad_painter = this.pad_painter();
-      if (pad_painter) {
-         pad_painter.CheckCanvasResize(size);
-         return true;
-      }
+      if (pad_painter)
+         return pad_painter.CheckCanvasResize(size, false);
       return false;
    }
 
@@ -3387,7 +3385,7 @@
 
          factor = svg.property('height_factor');
 
-         if (factor!=null) {
+         if (factor != null) {
             // if canvas was resize when created, resize height also now
             h = Math.round(w * factor);
             render_to.style('height', h+'px');
@@ -3550,15 +3548,17 @@
          this.painters[i].Redraw();
    }
 
-   JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size) {
-      if (!this.iscan) return;
+   JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
+      if (!this.iscan) return false;
 
-      var changed = this.CreateCanvasSvg(1, size);
+      var changed = this.CreateCanvasSvg(force ? 2 : 1, size);
 
       // at the moment canvas painter donot redraw its subitems
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
             this.painters[i].Redraw();
+
+      return changed;
    }
 
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
@@ -8050,9 +8050,9 @@
 
       this.ForEachPainter(function(painter, frame) {
 
-         if ((only_frame_id != null) && (d3.select(frame).attr('id') != only_frame_id)) return;
+         if ((only_frame_id !== null) && (d3.select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.GetItemName()!=null) && (typeof painter['CheckResize'] == 'function')) {
+         if ((painter.GetItemName()!==null) && (typeof painter['CheckResize'] == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.CheckResize(size);

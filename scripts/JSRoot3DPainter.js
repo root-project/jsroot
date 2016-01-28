@@ -271,8 +271,10 @@
       //this.toplevel.rotation.x = 30 * Math.PI / 180;
       //this.toplevel.rotation.y = 30 * Math.PI / 180;
       this.scene.add(this.toplevel);
+      this.scene_width = size.width;
+      this.scene_height = size.height
 
-      this.camera = new THREE.PerspectiveCamera(45, size.width / size.height, 1, 40*this.size3d);
+      this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
       var pointLight = new THREE.PointLight(0xcfcfcf);
       this.camera.add( pointLight );
       pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
@@ -301,12 +303,13 @@
                                        new THREE.CanvasRenderer({ antialias : true, alpha: true  });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
-      this.renderer.setSize(size.width, size.height);
+      this.renderer.setSize(this.scene_width, this.scene_height);
 
       this.add_3d_canvas(this.renderer.domElement);
 
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
-      this['Render3D'] =JSROOT.Painter.Render3D;
+      this['Render3D'] = JSROOT.Painter.Render3D;
+      this['Resize3D'] = JSROOT.Painter.Resize3D;
 
       this.first_render_tm = 0;
    }
@@ -600,6 +603,27 @@
       this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
+
+   JSROOT.Painter.Resize3D = function(size) {
+      var size3d = this.size_for_3d();
+
+      // console.log('new size3d = ' + JSON.stringify(size3d));
+
+      if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return;
+
+      if ((size3d.width<10) || (size3d.height<10)) return;
+
+      this.scene_width = size3d.width;
+      this.scene_height = size3d.height;
+
+      this.camera.aspect = this.scene_width / this.scene_height;
+      this.camera.updateProjectionMatrix();
+
+      this.renderer.setSize( this.scene_width, this.scene_height );
+
+      this.Render3D();
+   }
+
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
 
       // function called with this as painter
@@ -813,7 +837,6 @@
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
-      var tm1 = new Date();
 
       var bin, wei;
       for (var i = 0; i < bins.length; ++i) {
@@ -840,9 +863,6 @@
             this.toplevel.add(helper)
          }
       }
-
-      var tm2 = new Date();
-      console.log('Create tm = ' + (tm2.getTime() - tm1.getTime()) + '  bins = ' + bins.length);
    }
 
    JSROOT.TH3Painter.prototype.Redraw = function() {
@@ -850,6 +870,19 @@
       this.DrawXYZ();
       this.Draw3DBins();
       this.Render3D();
+   }
+
+   JSROOT.TH3Painter.prototype.CheckResize = function(size) {
+      var pad_painter = this.pad_painter();
+
+      var changed = true;
+
+      // firefox is the only browser which correctly supports resize of embedded canvas,
+      // for others we should force canvas redrawing at every step
+      if (pad_painter)
+         changed = pad_painter.CheckCanvasResize(size, JSROOT.browser.isFirefox ? false : true);
+
+      if (changed) this.Resize3D(size);
    }
 
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {

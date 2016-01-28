@@ -325,7 +325,7 @@
 
       if ( _isdrawn ) {
          if (typeof node._geom === 'undefined') {
-            console.log('why is not defined????');
+            console.warn('why geometry not created for the node ' + node.fName);
             node._geom = JSROOT.GEO.createGeometry(volume.fShape);
          }
          geom = node._geom;
@@ -1072,15 +1072,22 @@
 
    JSROOT.TGeoPainter.prototype.CheckResize = function() {
 
+      var pad_painter = this.pad_painter();
+
+      // firefox is the only browser which correctly supports resize of embedded canvas,
+      // for others we should force canvas redrawing at every step
+      if (pad_painter)
+         if (!pad_painter.CheckCanvasResize(size, JSROOT.browser.isFirefox ? false : true)) return false;
+
       var size3d = this.size_for_3d();
 
-      if ((this._scene_width === size3d.width) && (this._scene_height === size3d.height)) return;
+      if ((this._scene_width === size3d.width) && (this._scene_height === size3d.height)) return false;
       if ((size3d.width<10) || (size3d.height<10)) return;
 
       this._scene_width = size3d.width;
       this._scene_height = size3d.height;
 
-      console.log('new size3d = ' + JSON.stringify(size3d));
+      // console.log('new size3d = ' + JSON.stringify(size3d));
 
       this._camera.aspect = this._scene_width / this._scene_height;
       this._camera.updateProjectionMatrix();
@@ -1088,6 +1095,8 @@
       this._renderer.setSize( this._scene_width, this._scene_height );
 
       this.Render3D();
+
+      return true;
    }
 
    JSROOT.TGeoPainter.prototype.ownedByTransformControls = function(child) {

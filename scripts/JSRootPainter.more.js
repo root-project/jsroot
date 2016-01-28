@@ -1162,8 +1162,6 @@
                histo['fMinimum'] = mm.min;
          }
 
-         console.log('Drawing histograms ' + !lsame);
-
          this.DrawNextHisto(!lsame ? -1 : 0, opt);
          return this;
       }
