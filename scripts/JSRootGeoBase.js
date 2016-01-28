@@ -601,29 +601,6 @@
       return null;
    }
 
-   JSROOT.GEO.createMesh = function( shape, material, is_drawn ) {
-
-      var geometry = null;
-
-      if (is_drawn)
-         geometry = JSROOT.GEO.createGeometry(shape);
-
-      if (geometry === null) {
-         geometry = new THREE.Geometry();
-      } else {
-         /* var bufgeom = new THREE.BufferGeometry();
-         bufgeom.fromGeometry(geometry);
-
-         var json = bufgeom.toJSON();
-         var loader = new THREE.BufferGeometryLoader();
-         geometry = loader.parse(json); */
-      }
-
-      return new THREE.Mesh( geometry, material );
-   }
-
-
-
    return JSROOT.GEO;
 
 }));

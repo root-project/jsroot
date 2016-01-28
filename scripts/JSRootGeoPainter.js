@@ -495,86 +495,6 @@
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.drawEveNode = function(scene, toplevel, node) {
-      var container = toplevel;
-      var shape = node['fShape'];
-      var mesh = null;
-      var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
-      var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
-      var _transparent = true;
-      var _helper = false;
-      if (this.options._debug) _helper = true;
-      var _opacity = 0.0;
-      var _isdrawn = false;
-      if (node['fRnrSelf'] === true) {
-         _transparent = false;
-         _opacity = 1.0;
-         _isdrawn = true;
-      }
-      if ( node['fRGBA'][3] < 1.0) {
-         _transparent = true;
-         _opacity = node['fRGBA'][3];
-      }
-      var material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-               opacity: _opacity, wireframe: false, color: fillcolor,
-               side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-               overdraw: false } );
-      if ( !_isdrawn ) {
-         material.depthWrite = false;
-         material.depthTest = false;
-         material.visible = false;
-      }
-      material.polygonOffset = true;
-      material.polygonOffsetFactor = -1;
-      if (shape !== null)
-         mesh = JSROOT.GEO.createMesh(shape, material, _isdrawn);
-      if (typeof mesh != 'undefined' && mesh != null) {
-         mesh.position.x = 0.5 * node['fTrans'][12];
-         mesh.position.y = 0.5 * node['fTrans'][13];
-         mesh.position.z = 0.5 * node['fTrans'][14];
-
-         mesh.rotation.setFromRotationMatrix( new THREE.Matrix4().set(
-               node['fTrans'][0],  node['fTrans'][4],  node['fTrans'][8],  0,
-               node['fTrans'][1],  node['fTrans'][5],  node['fTrans'][9],  0,
-               node['fTrans'][2],  node['fTrans'][6],  node['fTrans'][10], 0,
-               0, 0, 0, 1 ) );
-
-         if (_isdrawn && _helper) {
-            var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(JSROOT.Painter.root_colors[volume['fLineColor']]);
-            helper.material.linewidth = volume['fLineWidth'];
-            scene.add(helper);
-         }
-         if (this.options._debug && this.options._bound) {
-            if (_isdrawn || this.options._full) {
-               var boxHelper = new THREE.BoxHelper( mesh );
-               toplevel.add( boxHelper );
-            }
-         }
-         mesh['name'] = node['fName'];
-         // add the mesh to the scene
-         toplevel.add(mesh);
-         //if ( this.options._debug && renderer.domElement._tcontrols !== null)
-         //   renderer.domElement._tcontrols.attach( mesh );
-         container = mesh;
-      }
-
-      if (typeof node['fElements'] != 'undefined' && node['fElements'] != null) {
-         var nodes = node['fElements']['arr'];
-         for (var i = 0; i < nodes.length; ++i) {
-            var inode = node['fElements']['arr'][i];
-            this.drawEveNode(scene, container, inode);
-         }
-      }
-   }
-
-   JSROOT.TGeoPainter.prototype.computeBoundingBox = function() {
-      if (this._nodedraw)
-         return new THREE.Box3().setFromObject(this._toplevel);
-      else
-         return new THREE.Box3().setFromObject(this._toplevel);
-   }
-
    JSROOT.TGeoPainter.prototype.NodeKind = function(obj) {
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
@@ -1244,7 +1164,7 @@
       if ((main === null) || (main._toplevel === undefined))
          return console.warn('no geo object found for 3D axis drawing');
 
-      var box = main.computeBoundingBox();
+      var box = new THREE.Box3().setFromObject(main._toplevel);
 
       // TODO: factor 2 in geometries
       this.xmin = box.min.x*2; this.xmax = box.max.x*2;
