@@ -502,17 +502,22 @@
 
    JSROOT.TGeoPainter.prototype.computeBoundingBox = function() {
       if (this._nodedraw)
-         return new THREE.Box3().setFromObject(this._cube);
+         return new THREE.Box3().setFromObject(this._toplevel);
       else
          return new THREE.Box3().setFromObject(this._toplevel);
+   }
+
+   JSROOT.TGeoPainter.prototype.NodeKind = function(obj) {
+      if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
+      return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
    JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
 
-      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object') ||
-          (obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
+      var kind = this.NodeKind(obj);
+      if (kind < 0) return 0;
 
       if (lvl === undefined) {
          lvl = 0;
@@ -532,6 +537,20 @@
             };
       }
 
+      var chlds = null, shape = null, vis = false;
+      if (kind === 0) {
+         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
+         shape = obj.fVolume.fShape;
+         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
+         vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
+                || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis));
+      } else {
+         if (obj.fShape === undefined) return 0;
+         shape = obj.fShape;
+         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
+         vis = obj['fRnrSelf'];
+      }
+
       if ('cnt' in arg) {
          if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
          arg.cnt[lvl] += 1;
@@ -542,7 +561,7 @@
       } else {
          obj._refcnt = 1;
          obj._numchld = 0;
-         obj._canshow = JSROOT.GEO.isShapeSupported(obj.fVolume.fShape);
+         obj._canshow = JSROOT.GEO.isShapeSupported(shape);
          arg.map.push(obj);
 
          /*
@@ -556,27 +575,17 @@
          else
          if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel))
             console.log('only one level');
-
-         if (obj.fVolume.fShape._typename === 'TGeoPara') {
-            console.log('got parall vis = ' + JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen));
-            obj._visible = true;
-            arg.vis.push(obj);
          }
          */
 
+         if (obj._canshow && vis && !('_visible' in obj)) {
+            obj._visible = true;
+            arg.vis.push(obj);
+         }
 
-         if (!('_visible' in obj) && obj._canshow)
-            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
-               || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis))) {
-               obj._visible = true;
-               arg.vis.push(obj);
-            }
-
-         var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
-         if (arr !== null)
-            for (var i = 0; i < arr.length; ++i)
-               obj._numchld += this.CountGeoVolumes(arr[i], arg, lvl+1);
+         if (chlds !== null)
+            for (var i = 0; i < chlds.length; ++i)
+               obj._numchld += this.CountGeoVolumes(chlds[i], arg, lvl+1);
       }
 
       if ((lvl === 0) && arg.erase) arg.clear();
@@ -691,18 +700,7 @@
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
       if (this._geometry['_typename'] == "TGeoNode")  {
          this._nodedraw = true;
-
-         var shape = this._geometry['fShape'];
-
-         var geom = new THREE.Geometry();
-         var material = new THREE.MeshBasicMaterial( { visible: false, transparent: true, opacity: 0.0 } );
-         this._cube = new THREE.Mesh(geom, material );
-
-         // this._cube.rotation.x = -Math.PI/2;
-         // this._cube.rotation.z = -Math.PI/2;
-         this._toplevel.add(this._cube);
-
-         this._stack = [ { toplevel: this._cube, node: this._geometry } ];
+         this._stack = [ { toplevel: this._toplevel, node: this._geometry } ];
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          this._nodedraw = false;
@@ -750,7 +748,7 @@
    JSROOT.TGeoPainter.prototype.completeScene = function() {
       if ( this.options._debug || this.options._grid ) {
          if ( this.options._full ) {
-            var boxHelper = new THREE.BoxHelper(this._cube);
+            var boxHelper = new THREE.BoxHelper(this._toplevel);
             this._scene.add( boxHelper );
          }
          this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
@@ -818,7 +816,7 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawGeometry = function(opt) {
+   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
       var size = this.size_for_3d();
@@ -1154,7 +1152,7 @@
 
       this.SetDivId(divid, 5);
 
-      return this.drawGeometry(opt);
+      return this.DrawGeometry(opt);
    }
 
    // ===================================================================================
