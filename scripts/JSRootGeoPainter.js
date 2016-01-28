@@ -65,6 +65,8 @@
 
       this._geometry = geometry;
       this._scene = null;
+      this._scene_width = 0;
+      this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
       this._stack = null;
@@ -657,6 +659,9 @@
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
 
+      this._scene_width = w;
+      this._scene_height = h;
+
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
 
       this._renderer = webgl ?
@@ -1065,18 +1070,24 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.CheckResize = function(size) {
+   JSROOT.TGeoPainter.prototype.CheckResize = function() {
 
-      var rect = this.select_main().node().getBoundingClientRect();
+      var size3d = this.size_for_3d();
 
-      if ((size!=null) && ('width' in size) && ('height' in size)) rect = size;
+      if ((this._scene_width === size3d.width) && (this._scene_height === size3d.height)) return;
+      if ((size3d.width<10) || (size3d.height<10)) return;
 
-      if ((rect.width<10) || (rect.height<10)) return;
+      this._scene_width = size3d.width;
+      this._scene_height = size3d.height;
 
-      this._camera.aspect = rect.width / rect.height;
+      console.log('new size3d = ' + JSON.stringify(size3d));
+
+      this._camera.aspect = this._scene_width / this._scene_height;
       this._camera.updateProjectionMatrix();
 
-      this._renderer.setSize( rect.width, rect.height );
+      this._renderer.setSize( this._scene_width, this._scene_height );
+
+      this.Render3D();
    }
 
    JSROOT.TGeoPainter.prototype.ownedByTransformControls = function(child) {
