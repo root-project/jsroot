@@ -333,7 +333,7 @@
 
       if (geom === null) geom = new THREE.Geometry();
 
-      var mesh = new THREE.Mesh( geom, material);
+      var mesh = new THREE.Mesh( geom, material );
 
       if (translation_matrix !== null) {
          mesh.position.x = 0.5 * translation_matrix[0];
@@ -359,6 +359,66 @@
       return mesh;
    }
 
+
+   JSROOT.GEO.createEveNodeMesh = function(node) {
+
+      var _isdrawn = false, material = null, geom = null;
+
+      if (node._visible) {
+         _isdrawn = true;
+         var _transparent = false, _opacity = 1.0;
+         if ( node['fRGBA'][3] < 1.0) {
+            _transparent = true;
+            _opacity = node['fRGBA'][3];
+         }
+         var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
+         var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
+         material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                          opacity: _opacity, wireframe: false, color: fillcolor,
+                          side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
+                          overdraw: false } );
+
+         material.polygonOffset = true; //???
+         material.polygonOffsetFactor = -1; ///????
+
+      } else {
+         if (this._dummy_material === undefined)
+            this._dummy_material =
+               new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
+                                                color: 'white', vertexColors: THREE.NoColors,
+                                                overdraw: false, depthWrite : false, depthTest: false, visible: false } );
+
+         material = this._dummy_material;
+      }
+
+      if ( _isdrawn ) {
+         if (typeof node._geom === 'undefined') {
+            console.warn('why geometry not created for the evenode ' + node.fName);
+            node._geom = JSROOT.GEO.createGeometry(node.fShape);
+         }
+         geom = node._geom;
+      }
+
+      if (geom === null) geom = new THREE.Geometry();
+
+      var mesh = new THREE.Mesh( geom, material );
+
+      mesh.position.x = 0.5 * node['fTrans'][12];
+      mesh.position.y = 0.5 * node['fTrans'][13];
+      mesh.position.z = 0.5 * node['fTrans'][14];
+
+      mesh.rotation.setFromRotationMatrix( new THREE.Matrix4().set(
+               node['fTrans'][0],  node['fTrans'][4],  node['fTrans'][8],  0,
+               node['fTrans'][1],  node['fTrans'][5],  node['fTrans'][9],  0,
+               node['fTrans'][2],  node['fTrans'][6],  node['fTrans'][10], 0,
+               0, 0, 0, 1 ) );
+
+      mesh._isdrawn = _isdrawn; // extra flag for mesh
+
+      return mesh;
+   }
+
+
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
       if ((this._stack == null) || (this._stack.length == 0)) return false;
@@ -368,32 +428,40 @@
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
 
+      var kind = this.NodeKind(arg.node);
+      if (kind < 0) return false;
+      var chlds = null;
+
+      if (kind === 0) {
+         chlds = (arg.node.fVolume.fNodes !== null) ? arg.node.fVolume.fNodes.arr : null;
+      } else {
+         chlds = (arg.node.fElements !== null) ? arg.node.fElements.arr : null;
+      }
+
       if ('nchild' in arg) {
          // add next child
-         if (arg.node.fVolume.fNodes.arr.length <= arg.nchild) {
+         if ((chlds===null) || (chlds.length <= arg.nchild)) {
             this._stack.pop();
          } else {
-            this._stack.push({ toplevel: arg.mesh ? arg.mesh : arg.toplevel,
-                               node: arg.node.fVolume.fNodes.arr[arg.nchild++] });
+            this._stack.push({ toplevel: (arg.mesh ? arg.mesh : arg.toplevel),
+                               node: chlds[arg.nchild++] });
          }
          return true;
       }
 
-      var node = arg.node;
+      if ('_mesh' in arg.node) {
 
-      if ('_mesh' in node) {
-
-         // console.log('add again ' + node.fName + ' to parent ' + arg.toplevel['name']);
-
-         arg.toplevel.add(node._mesh.clone());
+         arg.toplevel.add(arg.node._mesh.clone());
 
          this._stack.pop();
 
          return true;
       }
 
-
-      node._mesh = JSROOT.GEO.createNodeMesh(node);
+      if (kind === 0)
+         arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node);
+      else
+         arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node);
 
       //var json = mesh.toJSON();
       //var loader = new THREE.ObjectLoader();
@@ -411,13 +479,13 @@
          arg.toplevel.add( boxHelper );
       }
 
-      node._mesh['name'] = node['fName'];
+      arg.node._mesh['name'] = arg.node['fName'];
       // add the mesh to the scene
-      arg.toplevel.add(node._mesh);
+      arg.toplevel.add(arg.node._mesh);
 
-      arg.mesh = node._mesh;
+      arg.mesh = arg.node._mesh;
 
-      if ((typeof node.fVolume.fNodes === 'undefined') || (node.fVolume.fNodes === null) || (node.fVolume.fNodes.arr.length == 0)) {
+      if ((chlds === null) || (chlds.length == 0)) {
          // do not draw childs
          this._stack.pop();
       } else {
@@ -704,13 +772,7 @@
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          this._nodedraw = false;
-         if (typeof this._geometry['fElements'] != 'undefined' && this._geometry['fElements'] != null) {
-            var nodes = this._geometry['fElements']['arr'];
-            for (var i = 0; i < nodes.length; ++i) {
-               var node = this._geometry['fElements']['arr'][i];
-               this.drawEveNode(this._scene, this._toplevel, node);
-            }
-         }
+         this._stack = [ { toplevel: this._toplevel, node: this._geometry } ];
       }
    }
 
@@ -889,8 +951,12 @@
          if (this._geomcnt < this._data.vis.length) {
             var geom = null;
 
+            var node = this._data.vis[this._geomcnt];
             if (this._geomcnt < 80000) {
-               geom = JSROOT.GEO.createGeometry(this._data.vis[this._geomcnt].fVolume.fShape);
+               if (this.NodeKind(node) === 0)
+                  geom = JSROOT.GEO.createGeometry(node.fVolume.fShape);
+               else
+                  geom = JSROOT.GEO.createGeometry(node.fShape);
                if (this._webgl && false) {
                   var bufgeom = new THREE.BufferGeometry();
                   bufgeom.fromGeometry(geom);
@@ -900,7 +966,7 @@
                if (this._dummy_geom === undefined) this._dummy_geom = new THREE.Geometry();
                geom = this._dummy_geom;
             }
-            this._data.vis[this._geomcnt]._geom = geom;
+            node._geom = geom;
             this._geomcnt++;
             log = "Creating geometries " + this._geomcnt + "/" + this._data.vis.length;
          } else
