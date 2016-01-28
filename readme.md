@@ -6,12 +6,15 @@ from binary ROOT files. Or data can be obtained from JSON representation,
 produced with TBufferJSON class.  JSROOT also implements
 user interface for THttpServer class.   
 
-<div>
 <a href="http://jsroot.gsi.de/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=COLZ"><img src="http://jsroot.gsi.de/files/img/th2.png" align="left" hspace="10" vspace="6" alt="TH2 drawing" title="Draw TH2 histogram with COLZ options"></a>
 <a href="http://jsroot.gsi.de/latest/?nobrowser&file=../files/danilo6.root&item=canvas;1"><img src="http://jsroot.gsi.de/files/img/tf1.png" align="left" hspace="10" vspace="6" alt="TF1 drawing" title="Superimpose histogram with fit results"></a>
 <a href="http://jsroot.gsi.de/dev/?nobrowser&json=../files/simple_alice.json.gz"><img src="http://jsroot.gsi.de/files/img/tgeo.png" align="left" hspace="10" vspace="6" alt="TGeo drawing" title="Extraction from ALICE geometry"></a>
-</div>
-
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 <br/>
 
 
