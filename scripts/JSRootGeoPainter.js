@@ -75,9 +75,34 @@
 
       this._controls = null;
       this._tcontrols = null;
+      this._toolbar = null;
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
+
+   JSROOT.TGeoPainter.prototype.CreateToolbar = function(args) {
+      if ( this._toolbar === null ) {
+         var buttonList = [{
+            name: 'toImage',
+            title: 'Save as PNG',
+            icon: JSROOT.ToolbarIcons['camera'],
+            renderer: this._renderer,
+            click: function() {
+               var dataUrl = this.renderer.domElement.toDataURL("image/png");
+               dataUrl.replace("image/png", "image/octet-stream");
+               var link = document.createElement('a');
+               if (typeof link.download === 'string') {
+                  document.body.appendChild(link); //Firefox requires the link to be in the body
+                  link.download = "geometry.png";
+                  link.href = dataUrl;
+                  link.click();
+                  document.body.removeChild(link); //remove the link when done
+               }
+            }
+         }];
+         this._toolbar = new JSROOT.Toolbar({ container: args.container, buttons: [buttonList] });
+      }
+   }
 
    JSROOT.TGeoPainter.prototype.GetObject = function() {
       return this._geometry;
@@ -662,7 +687,8 @@
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
 
       this._renderer = webgl ?
-                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true  }) :
+                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
+                                                  preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
@@ -858,6 +884,8 @@
 
       this._geomcnt = 0; // counter used to create single geometries
       this._drawcnt = 0; // counter used to build final meshes
+
+      this.CreateToolbar( { container: this.select_main().node() } );
 
       return this.continueDraw();
    }
@@ -1101,6 +1129,7 @@
          }
       }
       obj.traverse(f);
+      this.Render3D();
    }
 
    JSROOT.TGeoPainter.prototype.deleteChildren = function(obj) {

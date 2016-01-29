@@ -40,6 +40,117 @@
       return handle;
    }
 
+   JSROOT.ToolbarIcons = {
+      'camera': {
+         'size': 512,
+         'path': 'M 152.00,304.00c0.00,57.438, 46.562,104.00, 104.00,104.00s 104.00-46.562, 104.00-104.00s-46.562-104.00-104.00-104.00S 152.00,246.562, 152.00,304.00z M 480.00,128.00L 368.00,128.00 c-8.00-32.00-16.00-64.00-48.00-64.00L 192.00,64.00 c-32.00,0.00-40.00,32.00-48.00,64.00L 32.00,128.00 c-17.60,0.00-32.00,14.40-32.00,32.00l0.00,288.00 c0.00,17.60, 14.40,32.00, 32.00,32.00l 448.00,0.00 c 17.60,0.00, 32.00-14.40, 32.00-32.00L 512.00,160.00 C 512.00,142.40, 497.60,128.00, 480.00,128.00z M 256.00,446.00c-78.425,0.00-142.00-63.574-142.00-142.00c0.00-78.425, 63.575-142.00, 142.00-142.00c 78.426,0.00, 142.00,63.575, 142.00,142.00 C 398.00,382.426, 334.427,446.00, 256.00,446.00z M 480.00,224.00l-64.00,0.00 l0.00-32.00 l 64.00,0.00 L 480.00,224.00 z',
+         'scale': 1
+      },
+      'disk': {
+         'size': 512,
+         'path': 'M384,0H128H32C14.336,0,0,14.336,0,32v448c0,17.656,14.336,32,32,32h448c17.656,0,32-14.344,32-32V96L416,0H384z M352,160   V32h32v128c0,17.664-14.344,32-32,32H160c-17.664,0-32-14.336-32-32V32h128v128H352z M96,288c0-17.656,14.336-32,32-32h256   c17.656,0,32,14.344,32,32v192H96V288z',
+         'scale': 1
+      },
+      'question': {
+         'size': 512,
+         'path': 'M256,512c141.375,0,256-114.625,256-256S397.375,0,256,0S0,114.625,0,256S114.625,512,256,512z M256,64   c63.719,0,128,36.484,128,118.016c0,47.453-23.531,84.516-69.891,110.016C300.672,299.422,288,314.047,288,320   c0,17.656-14.344,32-32,32c-17.664,0-32-14.344-32-32c0-40.609,37.25-71.938,59.266-84.031   C315.625,218.109,320,198.656,320,182.016C320,135.008,279.906,128,256,128c-30.812,0-64,20.227-64,64.672   c0,17.664-14.336,32-32,32s-32-14.336-32-32C128,109.086,193.953,64,256,64z M256,449.406c-18.211,0-32.961-14.75-32.961-32.969   c0-18.188,14.75-32.953,32.961-32.953c18.219,0,32.969,14.766,32.969,32.953C288.969,434.656,274.219,449.406,256,449.406z',
+         'scale': 1
+      },
+      'undo': {
+         'size': 512,
+         'path': 'M450.159,48.042c8.791,9.032,16.983,18.898,24.59,29.604c7.594,10.706,14.146,22.207,19.668,34.489  c5.509,12.296,9.82,25.269,12.92,38.938c3.113,13.669,4.663,27.834,4.663,42.499c0,14.256-1.511,28.863-4.532,43.822  c-3.009,14.952-7.997,30.217-14.953,45.795c-6.955,15.577-16.202,31.52-27.755,47.826s-25.88,32.9-42.942,49.807  c-5.51,5.444-11.787,11.67-18.834,18.651c-7.033,6.98-14.496,14.366-22.39,22.168c-7.88,7.802-15.955,15.825-24.187,24.069  c-8.258,8.231-16.333,16.203-24.252,23.888c-18.3,18.13-37.354,37.016-57.191,56.65l-56.84-57.445  c19.596-19.472,38.54-38.279,56.84-56.41c7.75-7.685,15.772-15.604,24.108-23.757s16.438-16.163,24.33-24.057  c7.894-7.893,15.356-15.33,22.402-22.312c7.034-6.98,13.312-13.193,18.821-18.651c22.351-22.402,39.165-44.648,50.471-66.738  c11.279-22.09,16.932-43.567,16.932-64.446c0-15.785-3.217-31.005-9.638-45.671c-6.422-14.665-16.229-28.504-29.437-41.529  c-3.282-3.282-7.358-6.395-12.217-9.325c-4.871-2.938-10.381-5.503-16.516-7.697c-6.121-2.201-12.815-3.992-20.058-5.373  c-7.242-1.374-14.9-2.064-23.002-2.064c-8.218,0-16.802,0.834-25.788,2.507c-8.961,1.674-18.053,4.429-27.222,8.271  c-9.189,3.842-18.456,8.869-27.808,15.089c-9.358,6.219-18.521,13.819-27.502,22.793l-59.92,60.271l93.797,94.058H0V40.91  l93.27,91.597l60.181-60.532c13.376-15.018,27.222-27.248,41.536-36.697c14.308-9.443,28.608-16.776,42.89-21.992  c14.288-5.223,28.505-8.74,42.623-10.557C294.645,0.905,308.189,0,321.162,0c13.429,0,26.389,1.185,38.84,3.562  c12.478,2.377,24.2,5.718,35.192,10.029c11.006,4.311,21.126,9.404,30.374,15.265C434.79,34.724,442.995,41.119,450.159,48.042z',
+         'scale': 1
+      },
+   };
+
+   JSROOT.Toolbar = function (opts) {
+      this.container = opts.container;
+      this.element = document.createElement('div');
+      this.addButtons(opts.buttons);
+      this.container.appendChild(this.element);
+   }
+
+   JSROOT.Toolbar.prototype.addButtons = function(buttons) {
+      var pthis = this;
+
+      this.buttons = buttons;
+      this.buttonElements = [];
+      this.buttonsNames = [];
+      this.buttons.forEach(function(buttonGroup) {
+         var group = pthis.createGroup();
+
+         buttonGroup.forEach(function(buttonConfig) {
+            var buttonName = buttonConfig.name;
+            if (!buttonName) {
+               throw new Error('must provide button \'name\' in button config');
+            }
+            if (pthis.buttonsNames.indexOf(buttonName) !== -1) {
+               throw new Error('button name \'' + buttonName + '\' is taken');
+            }
+            pthis.buttonsNames.push(buttonName);
+
+            var button = pthis.createButton(buttonConfig);
+            pthis.buttonElements.push(button);
+            group.appendChild(button);
+         });
+         pthis.element.appendChild(group);
+      });
+   };
+
+   JSROOT.Toolbar.prototype.createGroup = function() {
+      var group = document.createElement('div');
+      group.className = 'toolbar-group';
+      return group;
+   };
+
+   JSROOT.Toolbar.prototype.createButton = function(config) {
+      var pthis = this,
+          button = document.createElement('a');
+
+      button.setAttribute('rel', 'tooltip');
+      button.className = 'toolbar-btn';
+
+      var title = config.title;
+      if (title === undefined) title = config.name;
+      if (title || title === 0) button.setAttribute('data-title', title);
+
+      var click = config.click;
+      if (typeof click !== 'function') {
+         throw new Error('must provide button \'click\' function in button config');
+      }
+      else {
+         button.addEventListener('click', function(ev) {
+            config.click(pthis.graphInfo, ev);
+         });
+      }
+      button.appendChild(this.createIcon(config.icon || JSROOT.ToolbarIcons.question));
+
+      return button;
+   };
+
+   JSROOT.Toolbar.prototype.createIcon = function(thisIcon) {
+      var svgNS = 'http://www.w3.org/2000/svg',
+          icon = document.createElementNS(svgNS, 'svg'),
+          path = document.createElementNS(svgNS, 'path');
+
+      icon.setAttribute('height', '1em');
+      icon.setAttribute('width', '1em');
+      icon.setAttribute('viewBox', [0, 0, thisIcon.size, thisIcon.size].join(' '));
+
+      path.setAttribute('d', thisIcon.path);
+      if (thisIcon.scale !== 1)
+         path.setAttribute('transform', 'scale(' + thisIcon.scale + ' ' + thisIcon.scale +')');
+      icon.appendChild(path);
+
+      return icon;
+   };
+
+   JSROOT.Toolbar.prototype.removeAllButtons = function() {
+      while (this.element.firstChild) {
+         this.element.removeChild(this.element.firstChild);
+      }
+   };
+
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
@@ -3346,6 +3457,7 @@
       this.iscan = iscan; // indicate if workign with canvas
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
+      this.toolbar = null;
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3459,9 +3571,29 @@
          .property('draw_height', h)
          .property('redraw_by_resize', false);
 
+      this.CreateToolbar( { svg: svg, container: this.svg_canvas().node().parentNode } );
+
       return true;
    }
 
+   JSROOT.TPadPainter.prototype.CreateToolbar = function(args) {
+      if ( this.toolbar === null ) {
+         var buttonList = [{
+            name: 'toImage',
+            title: 'Save as PNG',
+            icon: JSROOT.ToolbarIcons.camera,
+            svg: args.svg[0][0],
+            click: function() {
+               var file_name = "d3_canvas";
+               var button = this;
+               JSROOT.AssertPrerequisites("savepng", function() {
+                  saveSvgAsPng(button.svg, file_name + ".png");
+               });
+            }
+         }];
+         this.toolbar = new JSROOT.Toolbar({ container: args.container, buttons: [buttonList] });
+      }
+   }
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
       if (!this.has_canvas)
