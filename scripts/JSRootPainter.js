@@ -22,7 +22,7 @@
 
    // do it here while require.js does not provide method to load css files
    if ( typeof define === "function" && define.amd )
-      JSROOT.loadScript('$$$style/JSRootPainter.css');
+      JSROOT.loadScript('$$$style/JSRootPainter.css;$$$style/toolbar.css');
 
    // list of user painters, called with arguments func(vis, obj, opt)
    JSROOT.DrawFuncs = {lst:[], cache:{}};
@@ -206,6 +206,10 @@
       JSROOT.gStyle.OptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.OptFit);
       JSROOT.gStyle.StatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.StatFormat);
       JSROOT.gStyle.FitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.FitFormat);
+
+      var toolbar = JSROOT.GetUrlOption("toolbar", url);
+      if (toolbar !== null)
+         JSROOT.gStyle.ToolBar = (toolbar !== "0") && (toolbar !== "false");
 
       var interpolate = JSROOT.GetUrlOption("interpolate", url);
       if (interpolate!==null) JSROOT.gStyle.Interpolate = interpolate;
@@ -3571,7 +3575,8 @@
          .property('draw_height', h)
          .property('redraw_by_resize', false);
 
-      this.CreateToolbar( { svg: svg, container: this.svg_canvas().node().parentNode } );
+      if (JSROOT.gStyle.ToolBar)
+         this.CreateToolbar( { svg: svg, container: this.svg_canvas().node().parentNode } );
 
       return true;
    }

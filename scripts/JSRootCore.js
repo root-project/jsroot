@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 28/01/2016";
+   JSROOT.version = "dev 2/02/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -114,6 +114,7 @@
          Zooming : true,
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
          DragAndDrop : true,  // enables drag and drop functionality
+         ToolBar : true,    // show additional tool buttons on the canvas
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          DefaultCol : 1,  // default col option 1-svg, 2-canvas
          AutoStat : true,
@@ -724,7 +725,7 @@
          modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
-         extrafiles += '$$$style/toolbar.css;';
+         extrafiles += '$$$style/toolbar' + ext + '.css;';
       }
 
       if (kind.indexOf('savepng;')>=0) {
