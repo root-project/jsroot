@@ -3,7 +3,9 @@
 ## Changes in master
 1. Use clone for duplication of meshes, significantly improves performance
 2. Support array of objects in I/O (like in TAxis3D)
-3. Correct reading of multi-dim arrays like Double_t fXY[8][2]; 
+3. Correct reading of multi-dim arrays like Double_t fXY[8][2];
+4. Provide canvas toolbar for actions like save_png or unzoom  
+ 
 
 ## Changes in 4.1
 1. Introduce object inspector - one could browse object members of any class
