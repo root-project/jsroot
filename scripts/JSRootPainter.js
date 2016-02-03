@@ -22,7 +22,7 @@
 
    // do it here while require.js does not provide method to load css files
    if ( typeof define === "function" && define.amd )
-      JSROOT.loadScript('$$$style/JSRootPainter.css;$$$style/toolbar.css');
+      JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    // list of user painters, called with arguments func(vis, obj, opt)
    JSROOT.DrawFuncs = {lst:[], cache:{}};

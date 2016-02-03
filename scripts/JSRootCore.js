@@ -725,7 +725,6 @@
          modules.push('JSRootPainter');
          mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
          extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
-         extrafiles += '$$$style/toolbar' + ext + '.css;';
       }
 
       if (kind.indexOf('savepng;')>=0) {
