@@ -2573,7 +2573,7 @@
          else
             this.fillatt.color = 'none';
 
-         if (drawbins==null) drawbins = this.OptimizeBins();
+         if (drawbins===null) drawbins = this.OptimizeBins();
 
          this.draw_g.append("svg:path")
                .attr("d", line(drawbins) + close_symbol)
@@ -8477,6 +8477,7 @@
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;COL3;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
+   JSROOT.addDrawFunc({ name: "TGraphPolargram" }); // just dummy entry to avoid drawing of this object
    JSROOT.addDrawFunc({ name: /^TGraph/, icon:"img_graph", func: JSROOT.Painter.drawGraph, opt:";L;P"});
    JSROOT.addDrawFunc({ name: "TCutG", icon:"img_graph", func: JSROOT.Painter.drawGraph, opt:";L;P"});
    JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", func: JSROOT.Painter.drawGraph, opt:";L;P" });
@@ -8522,7 +8523,7 @@
 
       var first = null;
 
-      if ((selector == null) && (kind in JSROOT.DrawFuncs.cache))
+      if ((selector === null) && (kind in JSROOT.DrawFuncs.cache))
          return JSROOT.DrawFuncs.cache[kind];
 
       var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind;
