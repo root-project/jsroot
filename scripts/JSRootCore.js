@@ -1386,6 +1386,14 @@
 
          JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
+         if (JSROOT.source_min) {
+            if ( typeof define === "function" && define.amd ) {
+               // all references are done with 'JSRootCore' name,
+               // define it directly, otherwise it will be loaded once again
+               define('JSRootCore', [], JSROOT);
+            }
+         }
+
          if (JSROOT.GetUrlOption('gui', src) !== null)
             return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
 
