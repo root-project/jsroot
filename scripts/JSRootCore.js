@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 2/02/2016";
+   JSROOT.version = "dev 3/02/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -754,12 +754,12 @@
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
          mainfiles += "$$$scripts/three" + ext + ".js;" +
                       "$$$scripts/three.extra" + ext + ".js;";
-         modules.push('THREE', "three.extra");
+         modules.push("THREE_ALL");
       }
 
       if (kind.indexOf("3d;")>=0) {
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
-         modules.push('THREE_ALL', 'JSRoot3DPainter');
+         modules.push('JSRoot3DPainter');
       }
 
       if (kind.indexOf("geom;")>=0) {
