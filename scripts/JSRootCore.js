@@ -1122,12 +1122,15 @@
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs');
               _func = _func.replace('TMath::Exp(', 'Math.exp(');
               _func = _func.replace('TMath::Abs(', 'Math.abs(');
-              _func = _func.replace('TMath::Prob(', 'JSROOT.Math.Prob(');
-              _func = _func.replace('gaus(', 'JSROOT.Math.gaus(this, x, ');
-              _func = _func.replace('gausn(', 'JSROOT.Math.gausn(this, x, ');
-              _func = _func.replace('expo(', 'JSROOT.Math.expo(this, x, ');
-              _func = _func.replace('landau(', 'JSROOT.Math.landau(this, x, ');
-              _func = _func.replace('landaun(', 'JSROOT.Math.landaun(this, x, ');
+              if (typeof JSROOT.Math == 'object') {
+                 this['_math'] = JSROOT.Math;
+                 _func = _func.replace('TMath::Prob(', 'this._math.Prob(');
+                 _func = _func.replace('gaus(', 'this._math.gaus(this, x, ');
+                 _func = _func.replace('gausn(', 'this._math.gausn(this, x, ');
+                 _func = _func.replace('expo(', 'this._math.expo(this, x, ');
+                 _func = _func.replace('landau(', 'this._math.landau(this, x, ');
+                 _func = _func.replace('landaun(', 'this._math.landaun(this, x, ');
+              }
               _func = _func.replace('pi', 'Math.PI');
               for (var i=0;i<this['fNpar'];++i) {
                  while(_func.indexOf('['+i+']') != -1)
@@ -1379,7 +1382,7 @@
          if (pos<0) continue;
 
          JSROOT.source_dir = src.substr(0, pos);
-         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js")>=0;
+         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
 
          JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
 
