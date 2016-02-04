@@ -86,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 3/02/2016";
+   JSROOT.version = "dev 4/02/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1384,7 +1384,7 @@
          JSROOT.source_dir = src.substr(0, pos);
          JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
 
-         JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir);
+         JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
 
          if (JSROOT.source_min) {
             if ( typeof define === "function" && define.amd ) {
