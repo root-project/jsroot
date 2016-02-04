@@ -989,7 +989,7 @@
       }
    }
 
-   JSROOT.TBasePainter.prototype.CheckResize = function(size) {
+   JSROOT.TBasePainter.prototype.CheckResize = function(arg) {
       return false; // indicate if resize is processed
    }
 
@@ -1073,11 +1073,11 @@
       return can.empty() ? null : can.property('pad_painter');
    }
 
-   JSROOT.TObjectPainter.prototype.CheckResize = function(size) {
+   JSROOT.TObjectPainter.prototype.CheckResize = function(arg) {
       // no painter - no resize
       var pad_painter = this.pad_painter();
       if (pad_painter)
-         return pad_painter.CheckCanvasResize(size, false);
+         return pad_painter.CheckCanvasResize(arg, false);
       return false;
    }
 
@@ -3475,7 +3475,7 @@
       // this is size where canvas should be rendered
       var w = rect.width, h = rect.height;
 
-      if ((typeof new_size == 'object') && ('width' in new_size) && ('height' in new_size)) {
+      if ((typeof new_size == 'object') && (new_size!==null) && ('width' in new_size) && ('height' in new_size)) {
          w = new_size.width;
          h = new_size.height;
       }
@@ -3688,9 +3688,11 @@
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
       if (!this.iscan) return false;
 
+      if ((size !== null) && (typeof size === 'object') && size.force) force = true;
+
       var changed = this.CreateCanvasSvg(force ? 2 : 1, size);
 
-      // at the moment canvas painter donot redraw its subitems
+      // if canvas changed, redraw all its subitems
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
             this.painters[i].Redraw();
@@ -8402,7 +8404,7 @@
    // =========================================================================
 
    JSROOT.CheckElementResize = function(dom_node, size) {
-      if (dom_node==null) return;
+      if (dom_node === null) return;
       var dummy = new JSROOT.TObjectPainter(), done = false;
       dummy.SetDivId(dom_node, -1);
       dummy.ForEachPainter(function(painter) {
@@ -8428,7 +8430,7 @@
          myCounter += 1;
          if (myCounter < 3) return;
 
-         if (myInterval != null) {
+         if (myInterval !== null) {
             clearInterval(myInterval);
             myInterval = null;
          }
@@ -8454,9 +8456,8 @@
       }
 
       function ProcessResize() {
-         if (myInterval == null) {
+         if (myInterval === null)
             myInterval = setInterval(ResizeTimer, myPeriod);
-         }
          myCounter = 0;
       }
 
@@ -8703,6 +8704,21 @@
       return JSROOT.draw(divid, obj, opt);
    }
 
+   // Check resize of drawn element
+   // As first argument divid one should use same argment as for the drawing
+   // As second argument, one could specify "true" value to force redrawing of
+   // the element even after minimal resize of the element
+   // Or one just supply object with exact sizes like { width:300, height:200, force:true };
+
+   JSROOT.resize = function(divid, arg) {
+      if (arg === true) arg = { force: true }; else
+      if (typeof arg !== 'object') arg = null;
+      JSROOT.CheckElementResize(divid, arg);
+   }
+
+   // function to display progress message in the left bottom corner
+   // previous message will be overwritten
+   // if no argument specified, any shown messages will be removed
    JSROOT.progress = function(msg) {
       var id = "jsroot_progressbox";
       var box = d3.select("#"+id);

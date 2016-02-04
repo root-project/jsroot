@@ -5,6 +5,7 @@
 2. Support array of objects in I/O (like in TAxis3D)
 3. Correct reading of multi-dim arrays like Double_t fXY[8][2];
 4. Provide canvas toolbar for actions like save_png or unzoom  
+5. Implement JSROOT.resize() function to let resize drawing after changes in page layout 
  
 
 ## Changes in 4.1
