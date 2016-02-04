@@ -238,20 +238,21 @@
 
       var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
+
       if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] !== null) {
-         if (node['fMatrix']['_typename'] == 'TGeoTranslation') {
-            translation_matrix = node['fMatrix']['fTranslation'];
+         if (node.fMatrix._typename == 'TGeoTranslation') {
+            translation_matrix = node.fMatrix.fTranslation;
          }
-         else if (node['fMatrix']['_typename'] == 'TGeoRotation') {
-            rotation_matrix = node['fMatrix']['fRotationMatrix'];
+         else if (node.fMatrix._typename == 'TGeoRotation') {
+            rotation_matrix = node.fMatrix.fRotationMatrix;
          }
-         else if (node['fMatrix']['_typename'] == 'TGeoCombiTrans') {
-            if (typeof node['fMatrix']['fTranslation'] != 'undefined' &&
-                node['fMatrix']['fTranslation'] != null)
-               translation_matrix = node['fMatrix']['fTranslation'];
-            if (typeof node['fMatrix']['fRotation'] != 'undefined' &&
-                node['fMatrix']['fRotation'] != null) {
-               rotation_matrix = node['fMatrix']['fRotation']['fRotationMatrix'];
+         else if (node.fMatrix._typename == 'TGeoCombiTrans') {
+            if (typeof node.fMatrix.fTranslation != 'undefined' &&
+                node.fMatrix.fTranslation !== null)
+               translation_matrix = node.fMatrix.fTranslation;
+            if (typeof node.fMatrix.fRotation != 'undefined' &&
+                node.fMatrix.fRotation !== null) {
+               rotation_matrix = node.fMatrix.fRotation.fRotationMatrix;
             }
          }
       }
@@ -360,6 +361,26 @@
 
       var mesh = new THREE.Mesh( geom, material );
 
+      var m = null;
+
+      if (rotation_matrix !== null) {
+         m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                                      rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                                      rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                      0,                                   0,                  0,   1 );
+      }
+
+      if (translation_matrix !== null) {
+         if (m === null)
+            m = new THREE.Matrix4().makeTranslation(0.5 * translation_matrix[0], 0.5 * translation_matrix[1], 0.5 * translation_matrix[2]);
+         else
+           m.setPosition({ x: 0.5 * translation_matrix[0], y: 0.5 * translation_matrix[1], z: 0.5 * translation_matrix[2] });
+      }
+
+      if (m!== null)
+         mesh.applyMatrix(m);
+
+/*
       if (translation_matrix !== null) {
          mesh.position.x = 0.5 * translation_matrix[0];
          mesh.position.y = 0.5 * translation_matrix[1];
@@ -367,17 +388,21 @@
       }
 
       if (rotation_matrix !== null) {
+
          var m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
                                           rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
                                           rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
                                           0,                                   0,                  0,   1 );
 
          if ((rotation_matrix[4] === -1) && (rotation_matrix[0] === 1) && (rotation_matrix[8] === 1)) {
+            console.log('Special case of rotation matrix ' + JSON.stringify(rotation_matrix) + ' det = ' + m.determinant());
+
             m = new THREE.Matrix4().makeRotationZ(Math.PI);
          }
 
          mesh.rotation.setFromRotationMatrix(m);
       }
+*/
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
 
