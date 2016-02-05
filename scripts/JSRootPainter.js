@@ -63,21 +63,17 @@
       }
    };
 
-   JSROOT.Toolbar = function (opts) {
-      this.container = opts.container;
-      this.element = document.createElement('div');
-      this.addButtons(opts.buttons);
-      this.container.appendChild(this.element);
+   JSROOT.Toolbar = function ( container, buttons) {
+      this.element = container.append("div");
+      this.addButtons(buttons);
    }
 
    JSROOT.Toolbar.prototype.addButtons = function(buttons) {
       var pthis = this;
 
-      this.buttons = buttons;
-      this.buttonElements = [];
       this.buttonsNames = [];
-      this.buttons.forEach(function(buttonGroup) {
-         var group = pthis.createGroup();
+      buttons.forEach(function(buttonGroup) {
+         var group = pthis.element.append('div').attr('class', 'toolbar-group');
 
          buttonGroup.forEach(function(buttonConfig) {
             var buttonName = buttonConfig.name;
@@ -89,66 +85,44 @@
             }
             pthis.buttonsNames.push(buttonName);
 
-            var button = pthis.createButton(buttonConfig);
-            pthis.buttonElements.push(button);
-            group.appendChild(button);
+            pthis.createButton(group, buttonConfig);
          });
-         pthis.element.appendChild(group);
       });
    };
 
-   JSROOT.Toolbar.prototype.createGroup = function() {
-      var group = document.createElement('div');
-      group.className = 'toolbar-group';
-      return group;
-   };
 
-   JSROOT.Toolbar.prototype.createButton = function(config) {
-      var pthis = this,
-          button = document.createElement('a');
-
-      button.setAttribute('rel', 'tooltip');
-      button.className = 'toolbar-btn';
+   JSROOT.Toolbar.prototype.createButton = function(group, config) {
 
       var title = config.title;
       if (title === undefined) title = config.name;
-      if (title || title === 0) button.setAttribute('data-title', title);
 
-      var click = config.click;
-      if (typeof click !== 'function') {
+      if (typeof config.click !== 'function')
          throw new Error('must provide button \'click\' function in button config');
-      }
-      else {
-         button.addEventListener('click', function(ev) {
-            config.click(pthis.graphInfo, ev);
-         });
-      }
-      button.appendChild(this.createIcon(config.icon || JSROOT.ToolbarIcons.question));
 
-      return button;
+      var button = group.append('a')
+                        .attr('class','toolbar-btn')
+                        .attr('rel', 'tooltip')
+                        .attr('data-title', title)
+                        .on('click', config.click);
+
+      this.createIcon(button, config.icon || JSROOT.ToolbarIcons.question);
    };
 
-   JSROOT.Toolbar.prototype.createIcon = function(thisIcon) {
-      var svgNS = 'http://www.w3.org/2000/svg',
-          icon = document.createElementNS(svgNS, 'svg'),
-          path = document.createElementNS(svgNS, 'path');
+   JSROOT.Toolbar.prototype.createIcon = function(button, thisIcon) {
 
-      icon.setAttribute('height', '1em');
-      icon.setAttribute('width', '1em');
-      icon.setAttribute('viewBox', [0, 0, thisIcon.size, thisIcon.size].join(' '));
+      var path = button.append("svg:svg")
+                 .attr('height', '1em')
+                 .attr('width', '1em')
+                 .attr('viewBox', [0, 0, thisIcon.size, thisIcon.size].join(' '))
+                 .append('svg:path')
+                 .attr('d',thisIcon.path);
 
-      path.setAttribute('d', thisIcon.path);
       if (thisIcon.scale !== 1)
-         path.setAttribute('transform', 'scale(' + thisIcon.scale + ' ' + thisIcon.scale +')');
-      icon.appendChild(path);
-
-      return icon;
+         path.attr('transform', 'scale(' + thisIcon.scale + ' ' + thisIcon.scale +')');
    };
 
    JSROOT.Toolbar.prototype.removeAllButtons = function() {
-      while (this.element.firstChild) {
-         this.element.removeChild(this.element.firstChild);
-      }
+      this.element.remove();
    };
 
    /**
@@ -5680,7 +5654,7 @@
             }
          });
 
-      this.toolbar = new JSROOT.Toolbar({ container: this.select_main().node(), buttons: [ buttons ] });
+      this.toolbar = new JSROOT.Toolbar( this.select_main(), [buttons] );
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
