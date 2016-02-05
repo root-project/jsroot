@@ -332,8 +332,8 @@
 
          material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: fillcolor,
-                              side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-                              overdraw: false } );
+                              side: THREE.DoubleSide, vertexColors: THREE.FaceColors,
+                              overdraw: 0. } );
 
       } else {
 
@@ -341,7 +341,7 @@
             this._dummy_material =
                new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
                                                 color: 'white', vertexColors: THREE.NoColors,
-                                                overdraw: false, depthWrite : false, depthTest: false, visible: false } );
+                                                overdraw: 0., depthWrite : false, depthTest: false, visible: false } );
 
          material = this._dummy_material;
       }
@@ -359,16 +359,34 @@
 
       if (geom === null) geom = new THREE.Geometry();
 
-      var mesh = new THREE.Mesh( geom, material );
-
       var m = null;
 
       if (rotation_matrix !== null) {
-         m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                                      rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                                      rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                      0,                                   0,                  0,   1 );
+
+         m = new THREE.Matrix4().set(
+               rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+               rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+               rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+               0,                                   0,                  0,   1 );
+
+         if ((rotation_matrix[0] < 0) || (rotation_matrix[4] < 0) || (rotation_matrix[8] < 0)) {
+            // flipping geometry and not the mesh
+            var scale = { x : 1, y: 1, z : 1 };
+
+            if (rotation_matrix[0] < 0)  scale.x = -1;
+            if (rotation_matrix[4] < 0)  scale.y = -1;
+            if (rotation_matrix[8] < 0)  scale.z = -1;
+            m.scale(scale);
+
+            geom.scale(scale.x, scale.y, scale.z);
+            geom.verticesNeedUpdate = true;
+            geom.normalsNeedUpdate = true;
+            geom.computeBoundingSphere();
+            geom.computeFaceNormals();
+            geom.computeVertexNormals();
+         }
       }
+
 
       if (translation_matrix !== null) {
          if (m === null)
@@ -377,10 +395,13 @@
            m.setPosition({ x: 0.5 * translation_matrix[0], y: 0.5 * translation_matrix[1], z: 0.5 * translation_matrix[2] });
       }
 
+      var mesh = new THREE.Mesh( geom, material );
+
       if (m!== null)
          mesh.applyMatrix(m);
 
-/*
+      /*
+
       if (translation_matrix !== null) {
          mesh.position.x = 0.5 * translation_matrix[0];
          mesh.position.y = 0.5 * translation_matrix[1];
