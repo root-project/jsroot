@@ -228,6 +228,9 @@
    }
 
    JSROOT.GEO.createTube = function( shape ) {
+
+      console.log('Create TUBE ' + shape['_typename']);
+
       var radiusSegments = 60;
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg")) {
@@ -256,6 +259,7 @@
       var outerTube = new THREE.CylinderGeometry(outerRadius1/2, outerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart, thetaLength);
       outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+
       outerTube.faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
       var outerTubeMesh = new THREE.Mesh( outerTube );
 
@@ -266,17 +270,15 @@
       var innerTubeMesh = new THREE.Mesh( innerTube );
 
       var first = new THREE.Geometry();
-      for (i = 0; i < radiusSegments; ++i){
-         var j = i;
-         var k = i*6;
-         first.vertices.push(outerTube.vertices[j+0]/*.clone()*/);
-         first.vertices.push(outerTube.vertices[j+1]/*.clone()*/);
-         first.vertices.push(innerTube.vertices[j+0]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         first.vertices.push(innerTube.vertices[j+0]/*.clone()*/);
-         first.vertices.push(innerTube.vertices[j+1]/*.clone()*/);
-         first.vertices.push(outerTube.vertices[j+1]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+      for (var i = 0; i < radiusSegments; ++i){
+         var k = i*4;
+         first.vertices.push(innerTube.vertices[i]);
+         first.vertices.push(innerTube.vertices[i+1]);
+         first.vertices.push(outerTube.vertices[i]);
+         first.vertices.push(outerTube.vertices[i+1]);
+
+         first.faces.push( new THREE.Face3( k+0, k+2, k+1 ) );
+         first.faces.push( new THREE.Face3( k+2, k+3, k+1 ) );
       };
       first.mergeVertices();
       first.computeFaceNormals();
@@ -287,26 +289,26 @@
       if ((shape['_typename'] == "TGeoConeSeg") || (shape['_typename'] == "TGeoTubeSeg") ||
           (shape['_typename'] == "TGeoCtub")) {
          var face1 = new THREE.Geometry();
-         face1.vertices.push(outerTube.vertices[0]/*.clone()*/);
-         face1.vertices.push(outerTube.vertices[outerTube.vertices.length/2]/*.clone()*/);
-         face1.vertices.push(innerTube.vertices[outerTube.vertices.length/2]/*.clone()*/);
+         face1.vertices.push(outerTube.vertices[0]);
+         face1.vertices.push(outerTube.vertices[outerTube.vertices.length/2]);
+         face1.vertices.push(innerTube.vertices[outerTube.vertices.length/2]);
          face1.faces.push( new THREE.Face3( 0, 1, 2 ) );
-         face1.vertices.push(innerTube.vertices[0]/*.clone()*/);
-         face1.vertices.push(innerTube.vertices[outerTube.vertices.length/2]/*.clone()*/);
-         face1.vertices.push(outerTube.vertices[0]/*.clone()*/);
+         face1.vertices.push(innerTube.vertices[0]);
+         face1.vertices.push(innerTube.vertices[outerTube.vertices.length/2]);
+         face1.vertices.push(outerTube.vertices[0]);
          face1.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face1.mergeVertices();
          face1.computeFaceNormals();
          face1Mesh = new THREE.Mesh( face1 );
 
          var face2 = new THREE.Geometry();
-         face2.vertices.push(outerTube.vertices[radiusSegments]/*.clone()*/);
-         face2.vertices.push(outerTube.vertices[outerTube.vertices.length-1]/*.clone()*/);
-         face2.vertices.push(innerTube.vertices[outerTube.vertices.length-1]/*.clone()*/);
+         face2.vertices.push(outerTube.vertices[radiusSegments]);
+         face2.vertices.push(outerTube.vertices[outerTube.vertices.length-1]);
+         face2.vertices.push(innerTube.vertices[outerTube.vertices.length-1]);
          face2.faces.push( new THREE.Face3( 0, 1, 2 ) );
-         face2.vertices.push(innerTube.vertices[radiusSegments]/*.clone()*/);
-         face2.vertices.push(innerTube.vertices[outerTube.vertices.length-1]/*.clone()*/);
-         face2.vertices.push(outerTube.vertices[radiusSegments]/*.clone()*/);
+         face2.vertices.push(innerTube.vertices[radiusSegments]);
+         face2.vertices.push(innerTube.vertices[outerTube.vertices.length-1]);
+         face2.vertices.push(outerTube.vertices[radiusSegments]);
          face2.faces.push( new THREE.Face3( 3, 4, 5 ) );
          face2.mergeVertices();
          face2.computeFaceNormals();
@@ -314,18 +316,15 @@
       }
 
       var second = new THREE.Geometry();
-      for (i = 0; i < radiusSegments; ++i) {
-         var j = i;
-         var k = i*6;
-         second.vertices.push(outerTube.vertices[outerTube.vertices.length-2-j+0]/*.clone()*/);
-         second.vertices.push(outerTube.vertices[outerTube.vertices.length-2-j+1]/*.clone()*/);
-         second.vertices.push(innerTube.vertices[outerTube.vertices.length-2-j+0]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         second.vertices.push(innerTube.vertices[outerTube.vertices.length-2-j+0]/*.clone()*/);
-         second.vertices.push(innerTube.vertices[outerTube.vertices.length-2-j+1]/*.clone()*/);
-         second.vertices.push(outerTube.vertices[outerTube.vertices.length-2-j+1]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
-
+      for (var i = 0; i < radiusSegments; ++i) {
+         var j = outerTube.vertices.length-2-i;
+         var k = i*4;
+         second.vertices.push(innerTube.vertices[j]);
+         second.vertices.push(innerTube.vertices[j+1]);
+         second.vertices.push(outerTube.vertices[j]);
+         second.vertices.push(outerTube.vertices[j+1]);
+         second.faces.push( new THREE.Face3( k+0, k+2, k+1 ) );
+         second.faces.push( new THREE.Face3( k+2, k+3, k+1 ) );
       };
       second.mergeVertices();
       second.computeFaceNormals();

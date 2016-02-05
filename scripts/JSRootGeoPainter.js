@@ -243,14 +243,41 @@
       // http://stackoverflow.com/a/16840273
 
 
-      console.log('flip ' + JSON.stringify(flip));
+if (false) {
+      console.log('new5 flip ' + JSON.stringify(flip));
+
+      //for (var n=0;n<geom.vertices.length;++n)
+      //   geom.vertices[n].multiply(flip);
+
+      console.log('faces = ' + geom.faces.length);
+
+      // geom.faces = geom.faces.slice(240+122);
+
+      var last = null;
+      for (var n=0;n<geom.faces.length;n+=1) {
+         var face = geom.faces[n];
+
+         var next = 0;
+
+         if (last !== null)
+            if ((last.b === face.a) && (last.c === face.c)) next = 1; else
+            if ((last.b === face.c) && (last.c === face.a)) next = 2; else
+            if ((last.c === face.a) && (last.b === face.b)) next = 3; else
+            if ((last.c === face.b) && (last.a === face.c)) next = 4;
+
+         // console.log(n + '  comp:' + next + ' a:' + face.a  + ' b:' + face.b + ' c:' + face.c);
+
+         last = face;
+      }
+}
 
       geom.scale(flip.x, flip.y, flip.z);
+
       geom.verticesNeedUpdate = true;
       geom.normalsNeedUpdate = true;
       geom.computeBoundingSphere();
       geom.computeFaceNormals();
-      geom.computeVertexNormals();
+      geom.computeVertexNormals(true);
    }
 
 
@@ -353,7 +380,7 @@
 
          material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: fillcolor,
-                              side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
+                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
 
       } else {
@@ -465,8 +492,8 @@
          var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
          material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: fillcolor,
-                          side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
-                          overdraw: false } );
+                          side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                          overdraw: 0. } );
 
          material.polygonOffset = true; //???
          material.polygonOffsetFactor = -1; ///????
@@ -476,7 +503,7 @@
             this._dummy_material =
                new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
                                                 color: 'white', vertexColors: THREE.NoColors,
-                                                overdraw: false, depthWrite : false, depthTest: false, visible: false } );
+                                                overdraw: 0., depthWrite : false, depthTest: false, visible: false } );
 
          material = this._dummy_material;
       }
