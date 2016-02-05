@@ -332,7 +332,7 @@
 
          material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: fillcolor,
-                              side: THREE.DoubleSide, vertexColors: THREE.FaceColors,
+                              side: THREE.DoubleSide, vertexColors: THREE.VertexColors,
                               overdraw: 0. } );
 
       } else {
@@ -369,16 +369,27 @@
                rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
                0,                                   0,                  0,   1 );
 
-         if ((rotation_matrix[0] < 0) || (rotation_matrix[4] < 0) || (rotation_matrix[8] < 0)) {
+         var flip = { x : 1, y: 1, z : 1 }, cnt = 0;
+
+         if (rotation_matrix[0] < 0) { flip.x = -1; ++cnt; }
+         if (rotation_matrix[4] < 0) { flip.y = -1; ++cnt; }
+         if (rotation_matrix[8] < 0) { flip.z = -1; ++cnt; }
+
+         if ((cnt === 1) || (cnt === 3)) {
             // flipping geometry and not the mesh
-            var scale = { x : 1, y: 1, z : 1 };
+            console.log('flip ' + JSON.stringify(flip));
 
-            if (rotation_matrix[0] < 0)  scale.x = -1;
-            if (rotation_matrix[4] < 0)  scale.y = -1;
-            if (rotation_matrix[8] < 0)  scale.z = -1;
-            m.scale(scale);
+            // first remove flipping from matrix
+            m.scale(flip);
 
-            geom.scale(scale.x, scale.y, scale.z);
+            // solution for flipping geometry found here
+            // http://stackoverflow.com/questions/25795538/flip-normals-three-js-after-flipping-geometry
+            // for the future one needs better method to flip axis
+            // webgl rendering often fails and shows black colors
+            // at the best one need manualy invert all faces as recommend here:
+            // http://stackoverflow.com/a/16840273
+
+            geom.scale(flip.x, flip.y, flip.z);
             geom.verticesNeedUpdate = true;
             geom.normalsNeedUpdate = true;
             geom.computeBoundingSphere();
@@ -472,17 +483,44 @@
 
       if (geom === null) geom = new THREE.Geometry();
 
+      var m = new THREE.Matrix4().set(
+                  node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                  node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                  node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                               0,               0,                0, 1);
+
+      var flip = { x : 1, y: 1, z : 1 }, cnt = 0;
+
+      if (node.fTrans[0] < 0) { flip.x = -1; ++cnt; }
+      if (node.fTrans[5] < 0) { flip.y = -1; ++cnt; }
+      if (node.fTrans[10] < 0) { flip.z = -1; ++cnt; }
+
+      if ((cnt === 1) || (cnt === 3)) {
+         // flipping geometry and not the mesh
+
+         // first remove flipping from matrix
+         m.scale(flip);
+
+         // solution for flipping geometry found here
+         // http://stackoverflow.com/questions/25795538/flip-normals-three-js-after-flipping-geometry
+         // for the future one needs better method to flip axis
+         // webgl rendering often fails and shows black colors
+         // at the best one need manualy invert all faces as recommend here:
+         // http://stackoverflow.com/a/16840273
+
+         geom.scale(flip.x, flip.y, flip.z);
+         geom.verticesNeedUpdate = true;
+         geom.normalsNeedUpdate = true;
+         geom.computeBoundingSphere();
+         geom.computeFaceNormals();
+         geom.computeVertexNormals();
+      }
+
+      m.setPosition({ x: 0.5*node.fTrans[12], y: 0.5*node.fTrans[13], z: 0.5*node.fTrans[14] });
+
       var mesh = new THREE.Mesh( geom, material );
 
-      mesh.position.x = 0.5 * node['fTrans'][12];
-      mesh.position.y = 0.5 * node['fTrans'][13];
-      mesh.position.z = 0.5 * node['fTrans'][14];
-
-      mesh.rotation.setFromRotationMatrix( new THREE.Matrix4().set(
-               node['fTrans'][0],  node['fTrans'][4],  node['fTrans'][8],  0,
-               node['fTrans'][1],  node['fTrans'][5],  node['fTrans'][9],  0,
-               node['fTrans'][2],  node['fTrans'][6],  node['fTrans'][10], 0,
-               0, 0, 0, 1 ) );
+      mesh.applyMatrix(m);
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
 
