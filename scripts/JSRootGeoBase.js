@@ -125,10 +125,10 @@
       var thetaStart = shape['fTheta1'];
       var thetaLength = shape['fTheta2'] - shape['fTheta1'];
 
-      var widthSegments = Math.floor(phiLength / 5);
+      var widthSegments = Math.floor(phiLength / 6);
       if (widthSegments < 8) widthSegments = 8;
 
-      var heightSegments = Math.floor(thetaLength / 5);
+      var heightSegments = Math.floor(thetaLength / 6);
       if (heightSegments < 8) heightSegments = 8;
       if (innerRadius <= 0) innerRadius = 0.0000001;
 
@@ -200,7 +200,6 @@
 
    JSROOT.GEO.createTube = function( shape ) {
 
-      var radiusSegments = 60;
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg")) {
          outerRadius1 = shape['fRmax2'];
@@ -219,6 +218,9 @@
          thetaStart = shape['fPhi1'] + 90;
          thetaLength = shape['fPhi2'] - shape['fPhi1'];
       }
+
+      var radiusSegments = Math.floor(thetaLength/6);
+      if (radiusSegments < 8) radiusSegments = 8;
 
       var outerTube = new THREE.CylinderGeometry(outerRadius1/2, outerRadius2/2,
                shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
