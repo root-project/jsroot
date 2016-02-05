@@ -5661,6 +5661,8 @@
 
       if ((buttons === null) || (buttons === undefined)) buttons = [];
 
+      this.FillToolbar(buttons);
+
       var painter = this;
 
       buttons.push({
@@ -5772,6 +5774,50 @@
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
       }
    }
+
+   JSROOT.THistPainter.prototype.FillToolbar = function(buttons) {
+      var painter = this;
+
+      buttons.push({
+         name: 'Unzoom',
+         title: 'Unzoom all axes',
+         icon: JSROOT.ToolbarIcons.undo,
+         click: function() { painter.Unzoom(true, true, true); }
+      });
+
+      buttons.push({
+         name: 'LogX',
+         title: 'Toggle log X',
+         icon: JSROOT.ToolbarIcons.camera,
+         click: function() { painter.ToggleLog("x"); }
+      });
+
+      buttons.push({
+         name: 'LogY',
+         title: 'Toggle log Y',
+         icon: JSROOT.ToolbarIcons.camera,
+         click: function() { painter.ToggleLog("y"); }
+      });
+
+      if (this.Dimension() == 2)
+         buttons.push({
+            name: 'LogZ',
+            title: 'Toggle log Z',
+            icon: JSROOT.ToolbarIcons.camera,
+            click: function() { painter.ToggleLog("z"); }
+         });
+
+      if (this.draw_content) {
+         buttons.push({
+            name: 'ToggleStat',
+            title: 'Toggle stat box',
+            icon: JSROOT.ToolbarIcons.camera,
+            click: function() { painter.ToggleStat(); }
+         });
+      }
+
+   }
+
 
    // ======= TH1 painter================================================
 
