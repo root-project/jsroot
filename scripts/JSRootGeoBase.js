@@ -117,112 +117,83 @@
    }
 
    JSROOT.GEO.createSphere = function( shape ) {
-      var widthSegments = 32;
-      var heightSegments = 32;
+
       var outerRadius = shape['fRmax'];
       var innerRadius = shape['fRmin'];
       var phiStart = shape['fPhi1'] + 180;
       var phiLength = shape['fPhi2'] - shape['fPhi1'];
       var thetaStart = shape['fTheta1'];
       var thetaLength = shape['fTheta2'] - shape['fTheta1'];
-      thetaStart *= (Math.PI / 180.0);
-      thetaLength *= (Math.PI / 180.0);
-      phiStart *= (Math.PI / 180.0);
-      phiLength *= (Math.PI / 180.0);
-      var geometry = new THREE.Geometry();
+
+      var widthSegments = Math.floor(phiLength / 5);
+      if (widthSegments < 8) widthSegments = 8;
+
+      var heightSegments = Math.floor(thetaLength / 5);
+      if (heightSegments < 8) heightSegments = 8;
       if (innerRadius <= 0) innerRadius = 0.0000001;
 
-      var outerSphere = new THREE.SphereGeometry( outerRadius/2, widthSegments,
-            heightSegments, phiStart, phiLength, thetaStart, thetaLength );
+      var outerSphere = new THREE.SphereGeometry( outerRadius/2, widthSegments, heightSegments,
+                                                 phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
       outerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-      var outerSphereMesh = new THREE.Mesh( outerSphere );
 
-      var innerSphere = new THREE.SphereGeometry( innerRadius/2, widthSegments,
-            heightSegments, phiStart, phiLength, thetaStart, thetaLength );
+      var innerSphere = new THREE.SphereGeometry( innerRadius/2, widthSegments, heightSegments,
+                                                phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
       innerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-      var innerSphereMesh = new THREE.Mesh( innerSphere );
 
-      var first = new THREE.Geometry();
-      for (i = 0; i < widthSegments; ++i){
-         var j = i;
-         var k = i*6;
-         first.vertices.push(outerSphere.vertices[j+0]/*.clone()*/);
-         first.vertices.push(outerSphere.vertices[j+1]/*.clone()*/);
-         first.vertices.push(innerSphere.vertices[j+0]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         first.vertices.push(innerSphere.vertices[j+0]/*.clone()*/);
-         first.vertices.push(innerSphere.vertices[j+1]/*.clone()*/);
-         first.vertices.push(outerSphere.vertices[j+1]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
-      };
-      first.mergeVertices();
-      first.computeFaceNormals();
-      var firstMesh = new THREE.Mesh( first );
+      var geometry = new THREE.Geometry();
 
-      var second = new THREE.Geometry();
-      for (i = 0; i < widthSegments; ++i) {
-         var j = i;
-         var k = i*6;
-         second.vertices.push(outerSphere.vertices[outerSphere.vertices.length-2-j+0]/*.clone()*/);
-         second.vertices.push(outerSphere.vertices[outerSphere.vertices.length-2-j+1]/*.clone()*/);
-         second.vertices.push(innerSphere.vertices[outerSphere.vertices.length-2-j+0]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         second.vertices.push(innerSphere.vertices[outerSphere.vertices.length-2-j+0]/*.clone()*/);
-         second.vertices.push(innerSphere.vertices[outerSphere.vertices.length-2-j+1]/*.clone()*/);
-         second.vertices.push(outerSphere.vertices[outerSphere.vertices.length-2-j+1]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
-      };
-      second.mergeVertices();
-      second.computeFaceNormals();
-      var secondMesh = new THREE.Mesh( second );
+      // add inner sphere
+      for (var n=0; n < innerSphere.vertices.length; ++n)
+         geometry.vertices.push(innerSphere.vertices[n]);
 
-      var face1 = new THREE.Geometry();
-      for (i = 0; i < widthSegments; ++i){
-         var j = widthSegments*i;
-         var k = i*6;
-         face1.vertices.push(outerSphere.vertices[j+i]/*.clone()*/);
-         face1.vertices.push(outerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face1.vertices.push(innerSphere.vertices[j+i]/*.clone()*/);
-         face1.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         face1.vertices.push(innerSphere.vertices[j+i]/*.clone()*/);
-         face1.vertices.push(outerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face1.vertices.push(innerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face1.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+      for (var n=0; n < innerSphere.faces.length; ++n)
+         geometry.faces.push(innerSphere.faces[n]);
+
+      var shift = geometry.vertices.length;
+
+      // add outer sphere
+      for (var n=0; n < outerSphere.vertices.length; ++n)
+         geometry.vertices.push(outerSphere.vertices[n]);
+
+      for (var n=0; n < outerSphere.faces.length; ++n) {
+         var face = outerSphere.faces[n];
+         face.a += shift; face.b += shift; face.c += shift;
+         geometry.faces.push(face);
       }
-      face1.mergeVertices();
-      face1.computeFaceNormals();
-      var face1Mesh = new THREE.Mesh( face1 );
 
-      var face2 = new THREE.Geometry();
-      for (i = 0; i < widthSegments; ++i){
-         var j = widthSegments*(i+1);
-         var k = i*6;
-         face2.vertices.push(outerSphere.vertices[j+i]/*.clone()*/);
-         face2.vertices.push(outerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face2.vertices.push(innerSphere.vertices[j+i]/*.clone()*/);
-         face2.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         face2.vertices.push(innerSphere.vertices[j+i]/*.clone()*/);
-         face2.vertices.push(outerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face2.vertices.push(innerSphere.vertices[j+widthSegments+i+1]/*.clone()*/);
-         face2.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+      // add top cap
+      for (var i = 0; i < widthSegments; ++i) {
+         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
       }
-      face2.mergeVertices();
-      face2.computeFaceNormals();
-      var face2Mesh = new THREE.Mesh( face2 );
 
-      outerSphereMesh.updateMatrix();
-      geometry.merge(outerSphereMesh.geometry, outerSphereMesh.matrix);
-      innerSphereMesh.updateMatrix();
-      geometry.merge(innerSphereMesh.geometry, innerSphereMesh.matrix);
-      firstMesh.updateMatrix();
-      geometry.merge(firstMesh.geometry, firstMesh.matrix);
-      secondMesh.updateMatrix();
-      geometry.merge(secondMesh.geometry, secondMesh.matrix);
-      face1Mesh.updateMatrix();
-      geometry.merge(face1Mesh.geometry, face1Mesh.matrix);
-      face2Mesh.updateMatrix();
-      geometry.merge(face2Mesh.geometry, face2Mesh.matrix);
-      //geometry.computeFaceNormals();
+      var dshift = outerSphere.vertices.length - widthSegments - 1;
+
+      // add bottom cap
+      for (var i = dshift; i < dshift + widthSegments; ++i) {
+         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
+      }
+
+      if (phiLength !== 360) {
+         // one cuted side
+         for (var j=0;j<heightSegments;j++) {
+            var i1 = j*(widthSegments+1);
+            var i2 = (j+1)*(widthSegments+1);
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+         }
+         // another cuted side
+         for (var j=0;j<heightSegments;j++) {
+            var i1 = (j+1)*(widthSegments+1) - 1;
+            var i2 = (j+2)*(widthSegments+1) - 1;
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+         }
+
+      }
+
+      geometry.computeFaceNormals();
 
       return geometry;
    }

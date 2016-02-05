@@ -407,6 +407,8 @@
             m.scale(flip);
 
             JSROOT.GEO.flipGeometry(geom, flip);
+
+            console.log('flip geometry for shape ' + volume.fShape._typename);
          }
       }
 

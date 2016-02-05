@@ -87,7 +87,6 @@
    };
 
    JSROOT.Toolbar = function(container, buttons) {
-      console.log('typeof ' + typeof container);
       if ((container !== undefined) && (typeof container.append == 'function'))  {
          this.element = container.append("div");
          this.addButtons(buttons);
