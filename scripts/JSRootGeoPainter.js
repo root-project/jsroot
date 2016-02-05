@@ -277,7 +277,7 @@
             switch (node['fFinder']['_typename'].charAt(11)) {
                case 'X': translation_matrix = [_shift, 0, 0]; break;
                case 'Y': translation_matrix = [0, _shift, 0]; break;
-               case 'Z': translation_matrix = [0, 0, _shift,]; break;
+               case 'Z': translation_matrix = [0, 0, _shift]; break;
             }
          } else
          if (node['fFinder']['_typename'] == 'TGeoPatternCylPhi') {

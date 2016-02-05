@@ -2609,6 +2609,8 @@
 
       this.AddInteractive();
 
+      this.CreateToolbar();
+
       JSROOT.CallBack(call_back);
    }
 

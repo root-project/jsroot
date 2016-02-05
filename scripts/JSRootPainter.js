@@ -3461,7 +3461,6 @@
       this.iscan = iscan; // indicate if workign with canvas
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
-      this.toolbar = null;
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3575,29 +3574,7 @@
          .property('draw_height', h)
          .property('redraw_by_resize', false);
 
-      if (JSROOT.gStyle.ToolBar)
-         this.CreateToolbar( { svg: svg, container: this.svg_canvas().node().parentNode } );
-
       return true;
-   }
-
-   JSROOT.TPadPainter.prototype.CreateToolbar = function(args) {
-      if ( this.toolbar === null ) {
-         var buttonList = [{
-            name: 'toImage',
-            title: 'Save as PNG',
-            icon: JSROOT.ToolbarIcons.camera,
-            svg: args.svg[0][0],
-            click: function() {
-               var file_name = "d3_canvas";
-               var button = this;
-               JSROOT.AssertPrerequisites("savepng", function() {
-                  saveSvgAsPng(button.svg, file_name + ".png");
-               });
-            }
-         }];
-         this.toolbar = new JSROOT.Toolbar({ container: args.container, buttons: [buttonList] });
-      }
    }
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
@@ -3780,6 +3757,7 @@
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.toolbar = null;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -5675,6 +5653,34 @@
       }
    }
 
+   JSROOT.THistPainter.prototype.CreateToolbar = function(buttons) {
+
+      if ( !JSROOT.gStyle.ToolBar || (this.toolbar !== null) ) return;
+
+      if (this.pad_name.length > 0) return; // do not create toolbar in subpad
+
+      if ((buttons === null) || (buttons === undefined)) buttons = [];
+
+      var painter = this;
+
+      buttons.push({
+            name: 'toImage',
+            title: 'Save as PNG',
+            icon: JSROOT.ToolbarIcons.camera,
+            click: function() {
+               var file_name = "d3_canvas";
+               if (typeof (painter.histo.fName) != 'undefined')
+                  file_name = painter.histo.fName;
+               var top = painter.svg_canvas().node();
+               JSROOT.AssertPrerequisites("savepng", function() {
+                  saveSvgAsPng(top, file_name + ".png");
+               });
+            }
+         });
+
+      this.toolbar = new JSROOT.Toolbar({ container: this.select_main().node(), buttons: [ buttons ] });
+   }
+
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
@@ -6367,6 +6373,8 @@
       painter.DrawNextFunction(0, function() {
 
          painter.AddInteractive();
+
+         painter.CreateToolbar();
 
          if (painter.options.AutoZoom) painter.AutoZoom();
 
