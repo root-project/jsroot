@@ -1286,9 +1286,9 @@
       var box = new THREE.Box3().setFromObject(main._toplevel);
 
       // TODO: factor 2 in geometries
-      this.xmin = box.min.x*2; this.xmax = box.max.x*2;
-      this.ymin = box.min.y*2; this.ymax = box.max.y*2;
-      this.zmin = box.min.z*2; this.zmax = box.max.z*2;
+      this.xmin = box.min.x; this.xmax = box.max.x;
+      this.ymin = box.min.y; this.ymax = box.max.y;
+      this.zmin = box.min.z; this.zmax = box.max.z;
 
       this.options = { Logx: false, Logy: false, Logz: false };
 

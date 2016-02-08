@@ -329,9 +329,9 @@
           bothsides = (this.size3d !== 0);
 
       if (this.size3d === 0) {
-         grminx = this.xmin/2; grmaxx = this.xmax/2;
-         grminy = this.ymin/2; grmaxy = this.ymax/2;
-         grminz = this.zmin/2; grmaxz = this.zmax/2;
+         grminx = this.xmin; grmaxx = this.xmax;
+         grminy = this.ymin; grmaxy = this.ymax;
+         grminz = this.zmin; grmaxz = this.zmax;
          textsize = (grmaxz - grminz) * 0.05;
       }
 

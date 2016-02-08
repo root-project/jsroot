@@ -25,7 +25,8 @@
 
    JSROOT.GEO.createCube = function( shape ) {
 
-      return new THREE.BoxGeometry( shape['fDX'], shape['fDY'], shape['fDZ'] );
+      return new THREE.BoxGeometry( 2*shape['fDX'], 2*shape['fDY'], 2*shape['fDZ'] );
+
    }
 
    JSROOT.GEO.createPara = function( shape ) {
@@ -34,13 +35,13 @@
 
       var verticesOfShape = [
           -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
-          -shape.fZ*txz+txy*shape.fY-shape.fX, +shape.fY-shape.fZ*tyz,  -shape.fZ,
-          -shape.fZ*txz+txy*shape.fY+shape.fX, +shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
           -shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
-          +shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,  +shape.fZ,
-          +shape.fZ*txz+txy*shape.fY-shape.fX, +shape.fY+shape.fZ*tyz,  +shape.fZ,
-          +shape.fZ*txz+txy*shape.fY+shape.fX, +shape.fY+shape.fZ*tyz,  +shape.fZ,
-          +shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,  +shape.fZ ];
+           shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
 
       var indicesOfFaces = [ 4,5,6,   4,7,6,   0,3,7,   7,4,0,
                              4,5,1,   1,0,4,   6,2,1,   1,5,6,
@@ -49,7 +50,7 @@
       var geom = new THREE.Geometry();
 
       for (var i = 0; i < verticesOfShape.length; i += 3)
-         geom.vertices.push( new THREE.Vector3( 0.5*verticesOfShape[i], 0.5*verticesOfShape[i+1], 0.5*verticesOfShape[i+2] ) );
+         geom.vertices.push( new THREE.Vector3( verticesOfShape[i], verticesOfShape[i+1], verticesOfShape[i+2] ) );
 
       for (var i = 0; i < indicesOfFaces.length; i += 3)
          geom.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
@@ -66,14 +67,14 @@
       if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap") {
          // Arb8
          verticesOfShape = [
-            shape['fXY'][0][0], shape['fXY'][0][1], -1*shape['fDZ'],
-            shape['fXY'][1][0], shape['fXY'][1][1], -1*shape['fDZ'],
-            shape['fXY'][2][0], shape['fXY'][2][1], -1*shape['fDZ'],
-            shape['fXY'][3][0], shape['fXY'][3][1], -1*shape['fDZ'],
-            shape['fXY'][4][0], shape['fXY'][4][1],    shape['fDZ'],
-            shape['fXY'][5][0], shape['fXY'][5][1],    shape['fDZ'],
-            shape['fXY'][6][0], shape['fXY'][6][1],    shape['fDZ'],
-            shape['fXY'][7][0], shape['fXY'][7][1],    shape['fDZ']
+            shape['fXY'][0][0], shape['fXY'][0][1], -shape['fDZ'],
+            shape['fXY'][1][0], shape['fXY'][1][1], -shape['fDZ'],
+            shape['fXY'][2][0], shape['fXY'][2][1], -shape['fDZ'],
+            shape['fXY'][3][0], shape['fXY'][3][1], -shape['fDZ'],
+            shape['fXY'][4][0], shape['fXY'][4][1],  shape['fDZ'],
+            shape['fXY'][5][0], shape['fXY'][5][1],  shape['fDZ'],
+            shape['fXY'][6][0], shape['fXY'][6][1],  shape['fDZ'],
+            shape['fXY'][7][0], shape['fXY'][7][1],  shape['fDZ']
          ];
       }
       else if (shape['_typename'] == "TGeoTrd1") {
@@ -106,12 +107,12 @@
           7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
       var geometry = new THREE.Geometry();
-      for (var i = 0; i < 24; i += 3) {
-         geometry.vertices.push( new THREE.Vector3( 0.5*verticesOfShape[i], 0.5*verticesOfShape[i+1], 0.5*verticesOfShape[i+2] ) );
-      }
-      for (var i = 0; i < 36; i += 3) {
+      for (var i = 0; i < 24; i += 3)
+         geometry.vertices.push( new THREE.Vector3( verticesOfShape[i], verticesOfShape[i+1], verticesOfShape[i+2] ) );
+
+      for (var i = 0; i < 36; i += 3)
          geometry.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
-      }
+
       geometry.computeFaceNormals();
       return geometry;
    }
@@ -132,11 +133,11 @@
       if (heightSegments < 8) heightSegments = 8;
       if (innerRadius <= 0) innerRadius = 0.0000001;
 
-      var outerSphere = new THREE.SphereGeometry( outerRadius/2, widthSegments, heightSegments,
+      var outerSphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
                                                  phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
       outerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
-      var innerSphere = new THREE.SphereGeometry( innerRadius/2, widthSegments, heightSegments,
+      var innerSphere = new THREE.SphereGeometry( innerRadius, widthSegments, heightSegments,
                                                 phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
       innerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
@@ -221,13 +222,13 @@
       var radiusSegments = Math.floor(thetaLength/6);
       if (radiusSegments < 8) radiusSegments = 8;
 
-      var outerTube = new THREE.CylinderGeometry(outerRadius1/2, outerRadius2/2,
-               shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
+      var outerTube = new THREE.CylinderGeometry(outerRadius1, outerRadius2,
+               2*shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
       outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
 
-      var innerTube = new THREE.CylinderGeometry(innerRadius1/2, innerRadius2/2,
-               shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
+      var innerTube = new THREE.CylinderGeometry(innerRadius1, innerRadius2,
+               2*shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
       innerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
       var geometry = new THREE.Geometry();
@@ -289,10 +290,10 @@
 
       var geometry = new THREE.Geometry();
 
-      var outerTorus = new THREE.TorusGeometry( radius/2, outerTube/2, radialSegments, tubularSegments, arc*Math.PI/180);
+      var outerTorus = new THREE.TorusGeometry( radius, outerTube, radialSegments, tubularSegments, arc*Math.PI/180);
       outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation*Math.PI/180) );
 
-      var innerTorus = new THREE.TorusGeometry( radius/2, innerTube/2, radialSegments, tubularSegments, arc*Math.PI/180);
+      var innerTorus = new THREE.TorusGeometry( radius, innerTube, radialSegments, tubularSegments, arc*Math.PI/180);
       innerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation*Math.PI/180 ) );
 
       // add inner torus
@@ -378,8 +379,7 @@
 
             if (only_end_sides && (thetaLength===360)) continue;
 
-            if (rad <= 0.) rad = 0.000001; else rad *= 0.5;
-            layerz *= 0.5;
+            if (rad <= 0.) rad = 0.000001;
 
             var curr_indx = geometry.vertices.length;
 
