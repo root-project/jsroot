@@ -352,6 +352,12 @@
       var geometry = new THREE.Geometry();
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
+      var _sin = [], _cos = []; // calculate all sin/cos tables in advance
+      for (var seg=0;seg<=radiusSegments;++seg) {
+         var phi = phi0 + seg*dphi;
+         _cos.push(Math.cos(phi));
+         _sin.push(Math.sin(phi));
+      }
 
       var indxs = [[],[]]; // remember indexes for each layer
 
@@ -377,27 +383,27 @@
                if ( (layer > 0) && (layer < shape.fNz-1) &&
                      ((shape[rside][layer+1] === rad) && (shape[rside][layer-1] === rad)) ) only_end_sides = true;
 
-            if (only_end_sides && (thetaLength===360)) continue;
-
             if (rad <= 0.) rad = 0.000001;
 
-            var curr_indx = geometry.vertices.length;
+            if (only_end_sides) {
+               if (thetaLength === 360) continue;
+               geometry.vertices.push( new THREE.Vector3( rad*_cos[0], rad*_sin[0], layerz ));
+               geometry.vertices.push( new THREE.Vector3( rad*_cos[radiusSegments], rad*_sin[radiusSegments], layerz ));
+            } else {
+               var curr_indx = geometry.vertices.length;
 
-            // create vertices for the layer
-            for (var seg=0;seg<=radiusSegments;++seg) {
-               var phi = phi0 + seg*dphi;
-               geometry.vertices.push( new THREE.Vector3( rad*Math.cos(phi), rad*Math.sin(phi), layerz ));
-               if (only_end_sides) seg+=(radiusSegments-1);
+               // create vertices for the layer
+               for (var seg=0; seg <= radiusSegments; ++seg)
+                  geometry.vertices.push( new THREE.Vector3( rad*_cos[seg], rad*_sin[seg], layerz ));
+
+               if (layer>0)  // create faces
+                  for (var seg=0;seg<radiusSegments;++seg) {
+                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg + 1 ) );
+                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg + 1, prev_indx + seg + 1));
+                  }
+
+                prev_indx = curr_indx;
             }
-
-            // create faces
-            if ((layer>0) && !only_end_sides)
-               for (var seg=0;seg<radiusSegments;++seg) {
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg + 1 ) );
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg + 1, prev_indx + seg + 1));
-               }
-
-            if (!only_end_sides) prev_indx = curr_indx;
          }
          indxs[side].push(geometry.vertices.length);
       }
@@ -412,7 +418,7 @@
          }
       }
 
-      // add faces for cuted faces
+      // add faces for cuted region
       if (thetaLength !== 360)
          for (var layer=1; layer < shape.fNz; ++layer) {
             if (shape['fZ'][layer-1] === shape['fZ'][layer]) continue;
