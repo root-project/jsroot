@@ -406,6 +406,8 @@
          gflip.x*=flip.x;
          gflip.y*=flip.y;
          gflip.z*=flip.z;
+
+         if ((gflip.x > 0) && (gflip.y > 0) && (gflip.z > 0)) gflip = null;
       }
 
       if (geom === null) geom = new THREE.Geometry();
