@@ -233,44 +233,13 @@
       }
    }
 
-   JSROOT.GEO.swapGeometry = function(geom) {
-      for (var n=0; n < geom.faces.length; ++n) {
-         var face = geom.faces[n];
-         var d = face.b; face.b = face.c; face.c = d;
-      }
-
-      geom.computeFaceNormals();
-   }
-
-
-   JSROOT.GEO.flipGeometry = function(geom, flip, doswap) {
-
-      // solution for flipping geometry found here
-      // http://stackoverflow.com/questions/25795538/flip-normals-three-js-after-flipping-geometry
-      // for the future one needs better method to flip axis
-      // webgl rendering often fails and shows black colors
-      // at the best one need manualy invert all faces as recommend here:
-      // http://stackoverflow.com/a/16840273
-
+   JSROOT.GEO.flipGeometry = function(geom, flip) {
       geom.scale(flip.x, flip.y, flip.z);
 
-      // for all triangles change order
-      if (doswap)
-         for (var n=0;n<geom.faces.length;n+=1) {
-            var face = geom.faces[n];
-            var d = face.b; face.b = face.c; face.c = d;
-         }
-
-//      geom.verticesNeedUpdate = true;
-//      geom.normalsNeedUpdate = true;
       geom.computeBoundingSphere();
       geom.computeFaceNormals();
-//      geom.computeVertexNormals();
    }
 
-
-   JSROOT.GEO.normal_cnt = 0;
-   JSROOT.GEO.flip_cnt = 0;
 
    JSROOT.GEO.createNodeMesh = function(node, parent) {
       var volume = node['fVolume'];
@@ -395,22 +364,7 @@
          geom = node._geom;
       }
 
-//      if (_isdrawn) {
-//         JSROOT.GEO.normal_cnt++;
-//         if ((JSROOT.GEO.normal_cnt<190) || (JSROOT.GEO.normal_cnt > 195)) return null;
-//         geom = JSROOT.GEO.createGeometry(volume.fShape);
-//      }
-
-//      if ((rotation_matrix===null) && (volume.fShape._typename=="TGeoConeSeg"))
-//         rotation_matrix = [1, 0, 0, 0, -1, 0, 0, 0, 1];
-
-      //var glevel = ((parent!==null) && ('_glevel' in parent)) ? parent._glevel + 1 : 0;
-
       var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
-
-      // gflip = null;
-
-//      console.log('lvl:' + glevel + 'get parent flip ' + JSON.stringify(gflip) + '  transl ' + JSON.stringify(translation_matrix));
 
       var m = null;
 
@@ -444,16 +398,6 @@
                   node[fname] = geom;
                }
             }
-
-            //if (cnt === 2)
-            //   JSROOT.GEO.swapGeometry(geom);
-            //else
-            //JSROOT.GEO.flipGeometry(geom, gflip, true);
-
-            //console.log("rotation " + JSON.stringify(rotation_matrix));
-            //console.log("matrix " + JSON.stringify(m.elements));
-
-            // if (cnt === 1) JSROOT.GEO.swapGeometry(geom);
          }
 
          if (translation_matrix !== null)
@@ -462,21 +406,6 @@
          gflip.x*=flip.x;
          gflip.y*=flip.y;
          gflip.z*=flip.z;
-
-//         if (gflip.x < 0) gcnt++;
-//         if (gflip.y < 0) gcnt++;
-//         if (gflip.z < 0) gcnt++;
-
-//         if ((gcnt > 0) || (cnt>0) || hasg)
-//            console.log('gflip ' + JSON.stringify(gflip));
-
-//         if ((gcnt > 0) && _isdrawn) {
-            //JSROOT.GEO.flipGeometry(geom, gflip, gcnt !== 2);
-//         }
-
-         // if (gcnt === 0) gflip = null;
-
-         //mesh.applyMatrix(m);
       }
 
       if (geom === null) geom = new THREE.Geometry();
@@ -487,25 +416,6 @@
          mesh.applyMatrix(m);
 
       if (gflip !== null) mesh._flip = gflip;
-
-
-/*
-      if (rotation_matrix !== null) {
-
-         var m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                                          rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                                          rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                          0,                                   0,                  0,   1 );
-
-         if ((rotation_matrix[4] === -1) && (rotation_matrix[0] === 1) && (rotation_matrix[8] === 1)) {
-            console.log('Special case of rotation matrix ' + JSON.stringify(rotation_matrix) + ' det = ' + m.determinant());
-
-            m = new THREE.Matrix4().makeRotationZ(Math.PI);
-         }
-
-         mesh.rotation.setFromRotationMatrix(m);
-      }
-*/
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
 
