@@ -292,58 +292,100 @@
 
       var outerTorus = new THREE.TorusGeometry( radius/2, outerTube/2, radialSegments, tubularSegments, arc );
       outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation ) );
-      var outerTorusMesh = new THREE.Mesh( outerTorus );
 
       var innerTorus = new THREE.TorusGeometry( radius/2, innerTube/2, radialSegments, tubularSegments, arc );
       innerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation ) );
-      var innerTorusMesh = new THREE.Mesh( innerTorus );
 
-      var first = new THREE.Geometry();
-      for (i = 0; i < radialSegments; ++i) {
-         var j = i*(tubularSegments+1);
-         var k = i*6;
-         var l = (i+1)*(tubularSegments+1);
-         first.vertices.push(outerTorus.vertices[j]/*.clone()*/);
-         first.vertices.push(outerTorus.vertices[l]/*.clone()*/);
-         first.vertices.push(innerTorus.vertices[j]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         first.vertices.push(innerTorus.vertices[j]/*.clone()*/);
-         first.vertices.push(innerTorus.vertices[l]/*.clone()*/);
-         first.vertices.push(outerTorus.vertices[l]/*.clone()*/);
-         first.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+      if (true) {
+
+         // add inner sphere
+         for (var n=0; n < innerTorus.vertices.length; ++n)
+            geometry.vertices.push(innerTorus.vertices[n]);
+
+         for (var n=0; n < innerTorus.faces.length; ++n)
+            geometry.faces.push(innerTorus.faces[n]);
+
+         var shift = geometry.vertices.length;
+
+         // add outer sphere
+         for (var n=0; n < outerTorus.vertices.length; ++n)
+            geometry.vertices.push(outerTorus.vertices[n]);
+
+         for (var n=0; n < outerTorus.faces.length; ++n) {
+            var face = outerTorus.faces[n];
+            face.a += shift; face.b += shift; face.c += shift;
+            geometry.faces.push(face);
+         }
+
+         // one cuted side
+         for (var j=0;j<radialSegments;j++) {
+            var i1 = j*(tubularSegments+1);
+            var i2 = (j+1)*(tubularSegments+1);
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+         }
+
+         // another cuted side
+         for (var j=0;j<radialSegments;j++) {
+            var i1 = (j+1)*(tubularSegments+1) - 1;
+            var i2 = (j+2)*(tubularSegments+1) - 1;
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+         }
+
+         geometry.computeFaceNormals();
+      } else {
+
+
+         var outerTorusMesh = new THREE.Mesh( outerTorus );
+         var innerTorusMesh = new THREE.Mesh( innerTorus );
+
+         var first = new THREE.Geometry();
+         for (i = 0; i < radialSegments; ++i) {
+            var j = i*(tubularSegments+1);
+            var k = i*6;
+            var l = (i+1)*(tubularSegments+1);
+            first.vertices.push(outerTorus.vertices[j]/*.clone()*/);
+            first.vertices.push(outerTorus.vertices[l]/*.clone()*/);
+            first.vertices.push(innerTorus.vertices[j]/*.clone()*/);
+            first.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
+            first.vertices.push(innerTorus.vertices[j]/*.clone()*/);
+            first.vertices.push(innerTorus.vertices[l]/*.clone()*/);
+            first.vertices.push(outerTorus.vertices[l]/*.clone()*/);
+            first.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+         }
+         first.mergeVertices();
+         first.computeFaceNormals();
+         var firstMesh = new THREE.Mesh( first );
+
+         var second = new THREE.Geometry();
+         for (i = 0; i < radialSegments; ++i) {
+            var j = (i+1)*tubularSegments;
+            var k = i*6;
+            var l = (i+2)*tubularSegments;
+            second.vertices.push(outerTorus.vertices[j+i]/*.clone()*/);
+            second.vertices.push(outerTorus.vertices[l+i+1]/*.clone()*/);
+            second.vertices.push(innerTorus.vertices[j+i]/*.clone()*/);
+            second.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
+            second.vertices.push(innerTorus.vertices[j+i]/*.clone()*/);
+            second.vertices.push(innerTorus.vertices[l+i+1]/*.clone()*/);
+            second.vertices.push(outerTorus.vertices[l+i+1]/*.clone()*/);
+            second.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
+         }
+
+         second.mergeVertices();
+         second.computeFaceNormals();
+         var secondMesh = new THREE.Mesh( second );
+
+         outerTorusMesh.updateMatrix();
+         geometry.merge(outerTorusMesh.geometry, outerTorusMesh.matrix);
+         innerTorusMesh.updateMatrix();
+         geometry.merge(innerTorusMesh.geometry, innerTorusMesh.matrix);
+         firstMesh.updateMatrix();
+         geometry.merge(firstMesh.geometry, firstMesh.matrix);
+         secondMesh.updateMatrix();
+         geometry.merge(secondMesh.geometry, secondMesh.matrix);
       }
-      first.mergeVertices();
-      first.computeFaceNormals();
-      var firstMesh = new THREE.Mesh( first );
-
-      var second = new THREE.Geometry();
-      for (i = 0; i < radialSegments; ++i) {
-         var j = (i+1)*tubularSegments;
-         var k = i*6;
-         var l = (i+2)*tubularSegments;
-         second.vertices.push(outerTorus.vertices[j+i]/*.clone()*/);
-         second.vertices.push(outerTorus.vertices[l+i+1]/*.clone()*/);
-         second.vertices.push(innerTorus.vertices[j+i]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+0, k+1, k+2 ) );
-         second.vertices.push(innerTorus.vertices[j+i]/*.clone()*/);
-         second.vertices.push(innerTorus.vertices[l+i+1]/*.clone()*/);
-         second.vertices.push(outerTorus.vertices[l+i+1]/*.clone()*/);
-         second.faces.push( new THREE.Face3( k+3, k+4, k+5 ) );
-      }
-
-      second.mergeVertices();
-      second.computeFaceNormals();
-      var secondMesh = new THREE.Mesh( second );
-
-      outerTorusMesh.updateMatrix();
-      geometry.merge(outerTorusMesh.geometry, outerTorusMesh.matrix);
-      innerTorusMesh.updateMatrix();
-      geometry.merge(innerTorusMesh.geometry, innerTorusMesh.matrix);
-      firstMesh.updateMatrix();
-      geometry.merge(firstMesh.geometry, firstMesh.matrix);
-      secondMesh.updateMatrix();
-      geometry.merge(secondMesh.geometry, secondMesh.matrix);
-      //geometry.computeFaceNormals();
 
       console.log('torus vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
