@@ -190,7 +190,6 @@
             geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
             geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
          }
-
       }
 
       geometry.computeFaceNormals();
@@ -346,6 +345,8 @@
       geometry.merge(secondMesh.geometry, secondMesh.matrix);
       //geometry.computeFaceNormals();
 
+      console.log('torus vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
+
       return geometry;
    }
 
@@ -479,6 +480,7 @@
          }
       }
       //geometry.computeFaceNormals();
+
       return geometry;
    }
 

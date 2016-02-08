@@ -637,6 +637,8 @@
 
       this.Draw3DBins();
 
+      this.DrawTitle();
+
       this.Render3D();
 
       JSROOT.CallBack(call_back);
@@ -901,7 +903,7 @@
 
       this.Redraw();
 
-      if (this.create_canvas) this.DrawTitle();
+      this.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && this.create_canvas) {
          var stats = this.CreateStat();

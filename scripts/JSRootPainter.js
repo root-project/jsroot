@@ -1784,6 +1784,21 @@
       delete this[fld];
    }
 
+   JSROOT.TObjectPainter.prototype.FindInPrimitives = function(objname) {
+      // try to find object by name in list of pad primitives
+      // used to find title drawing
+
+      var painter = this.pad_painter(true);
+      if ((painter === null) || (painter.pad === null)) return null;
+
+      if (painter.pad.fPrimitives !== null)
+         for (var n=0;n<painter.pad.fPrimitives.arr.length;++n) {
+            var prim = painter.pad.fPrimitives.arr[n];
+            if (('fName' in prim) && (prim.fName === objname)) return prim;
+         }
+
+      return null;
+   }
 
    JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
       // try to find painter for sepcified object
@@ -1800,7 +1815,7 @@
 
          if (selobj && (pobj === selobj)) return painters[n];
 
-         if (selname && ('fName' in pobj) && (pobj['fName']==selname)) return painters[n];
+         if (selname && ('fName' in pobj) && (pobj['fName'] == selname)) return painters[n];
       }
 
       return null;
@@ -5058,21 +5073,28 @@
 
    JSROOT.THistPainter.prototype.DrawTitle = function() {
 
-      var painter = this.FindPainterFor(null,"title");
+      // case when histogram drawn over other histogram (same option)
+      if (!this.is_main_painter()) return;
 
-      if (painter!=null) {
-         painter.pavetext.Clear();
-         painter.pavetext.AddText(this.histo['fTitle']);
-      } else {
+      var pavetext = this.FindInPrimitives("title");
+      if ((pavetext !== null) && (pavetext._typename !== "TPaveText")) pavetext = null;
 
-         var pavetext = JSROOT.Create("TPaveText");
+      var draw_title = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+
+      if (pavetext !== null) {
+         pavetext.Clear();
+         if (draw_title)
+            pavetext.AddText(this.histo.fTitle);
+      } else
+      if (draw_title) {
+         pavetext = JSROOT.Create("TPaveText");
 
          JSROOT.extend(pavetext, { fName: "title",
                                    fX1NDC: 0.2809483, fY1NDC: 0.9339831,
                                    fX2NDC: 0.7190517, fY2NDC: 0.995});
-         pavetext.AddText(this.histo['fTitle']);
+         pavetext.AddText(this.histo.fTitle);
 
-         painter = JSROOT.Painter.drawPaveText(this.divid, pavetext);
+         JSROOT.Painter.drawPaveText(this.divid, pavetext);
       }
    }
 
@@ -6384,7 +6406,7 @@
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
-      if (this.create_canvas) this.DrawTitle();
+      this.DrawTitle();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -6409,7 +6431,7 @@
 
       painter.DrawBins();
 
-      if (painter.create_canvas) painter.DrawTitle();
+      painter.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas) {
          painter.CreateStat();

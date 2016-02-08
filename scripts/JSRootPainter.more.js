@@ -2607,6 +2607,8 @@
 
       this.DrawBins();
 
+      this.DrawTitle();
+
       this.AddInteractive();
 
       this.CreateToolbar();
@@ -2640,9 +2642,7 @@
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
-      this[func_name](function() {
-         if (this.create_canvas) this.DrawTitle();
-      }.bind(this));
+      this[func_name]();
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
@@ -2681,8 +2681,6 @@
       var func_name = this.options.Lego > 0 ? "Draw3D" : "Draw2D";
 
       this[func_name](function() {
-         if (this.create_canvas) this.DrawTitle();
-
          this.DrawNextFunction(0, function() {
             if (this.options.Lego == 0) {
                if (this.options.AutoZoom) this.AutoZoom();
