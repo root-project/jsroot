@@ -406,7 +406,7 @@
 
       //var glevel = ((parent!==null) && ('_glevel' in parent)) ? parent._glevel + 1 : 0;
 
-      //var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
+      var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
 
       // gflip = null;
 
@@ -418,6 +418,7 @@
 
          m = new THREE.Matrix4();
          var cnt = 0, flip = new THREE.Vector3(1,1,1), fname = "geom_";
+         if (gflip === null) gflip = new THREE.Vector3(1,1,1);
 
          if (rotation_matrix !== null) {
              m.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
@@ -431,15 +432,6 @@
 
          if (cnt > 0) {
 
-            //isflip = true;
-
-            //console.log('flip ' + volume.fShape._typename + '  ' + JSON.stringify(flip) + " transl " + JSON.stringify(translation_matrix) + ' visible ' + _isdrawn + '  len = ' + geom.vertices.length);
-
-            // flipping geometry and not the mesh
-
-//            console.log('flip matrix ' + JSON.stringify(flip) + '  gflip ' + JSON.stringify(gflip) + '  transl ' + JSON.stringify(translation_matrix) );
-
-            // first remove flipping from matrix
             m.scale(flip);
 
             if (geom !== null) {
@@ -465,11 +457,11 @@
          }
 
          if (translation_matrix !== null)
-            m.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
+            m.setPosition(new THREE.Vector3(gflip.x*translation_matrix[0], gflip.y*translation_matrix[1], gflip.z*translation_matrix[2]));
 
-//         gflip.x*=flip.x;
-//         gflip.y*=flip.y;
-//         gflip.z*=flip.z;
+         gflip.x*=flip.x;
+         gflip.y*=flip.y;
+         gflip.z*=flip.z;
 
 //         if (gflip.x < 0) gcnt++;
 //         if (gflip.y < 0) gcnt++;
@@ -494,7 +486,7 @@
       if (m!==null)
          mesh.applyMatrix(m);
 
-
+      if (gflip !== null) mesh._flip = gflip;
 
 
 /*
