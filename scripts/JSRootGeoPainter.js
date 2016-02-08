@@ -418,9 +418,9 @@
 
       if (translation_matrix !== null) {
          if (m === null)
-            m = new THREE.Matrix4().makeTranslation(0.5 * translation_matrix[0], 0.5 * translation_matrix[1], 0.5 * translation_matrix[2]);
+            m = new THREE.Matrix4().makeTranslation(translation_matrix[0], translation_matrix[1], translation_matrix[2]);
          else
-           m.setPosition({ x: 0.5 * translation_matrix[0], y: 0.5 * translation_matrix[1], z: 0.5 * translation_matrix[2] });
+           m.setPosition({ x: translation_matrix[0], y: translation_matrix[1], z: translation_matrix[2] });
       }
 
       var mesh = new THREE.Mesh( geom, material );
@@ -521,7 +521,7 @@
          JSROOT.GEO.flipGeometry(geom, flip);
       }
 
-      m.setPosition({ x: 0.5*node.fTrans[12], y: 0.5*node.fTrans[13], z: 0.5*node.fTrans[14] });
+      m.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
 
       var mesh = new THREE.Mesh( geom, material );
 
