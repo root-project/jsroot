@@ -233,7 +233,17 @@
       }
    }
 
-   JSROOT.GEO.flipGeometry = function(geom, flip) {
+   JSROOT.GEO.swapGeometry = function(geom) {
+      for (var n=0; n < geom.faces.length; ++n) {
+         var face = geom.faces[n];
+         var d = face.b; face.b = face.c; face.c = d;
+      }
+
+      geom.computeFaceNormals();
+   }
+
+
+   JSROOT.GEO.flipGeometry = function(geom, flip, doswap) {
 
       // solution for flipping geometry found here
       // http://stackoverflow.com/questions/25795538/flip-normals-three-js-after-flipping-geometry
@@ -245,10 +255,11 @@
       geom.scale(flip.x, flip.y, flip.z);
 
       // for all triangles change order
-      for (var n=0;n<geom.faces.length;n+=1) {
-         var face = geom.faces[n];
-         var d = face.b; face.b = face.c; face.c = d;
-      }
+      if (doswap)
+         for (var n=0;n<geom.faces.length;n+=1) {
+            var face = geom.faces[n];
+            var d = face.b; face.b = face.c; face.c = d;
+         }
 
 //      geom.verticesNeedUpdate = true;
 //      geom.normalsNeedUpdate = true;
@@ -258,7 +269,10 @@
    }
 
 
-   JSROOT.GEO.createNodeMesh = function(node) {
+   JSROOT.GEO.normal_cnt = 0;
+   JSROOT.GEO.flip_cnt = 0;
+
+   JSROOT.GEO.createNodeMesh = function(node, parent) {
       var volume = node['fVolume'];
 
       var translation_matrix = null; // [0, 0, 0];
@@ -371,10 +385,9 @@
          material = this._dummy_material;
       }
 
-
       var geom = null;
 
-      if ( _isdrawn ) {
+      if ( _isdrawn) {
          if (typeof node._geom === 'undefined') {
             console.warn('why geometry not created for the node ' + node.fName);
             node._geom = JSROOT.GEO.createGeometry(volume.fShape);
@@ -382,60 +395,109 @@
          geom = node._geom;
       }
 
-      if (geom === null) geom = new THREE.Geometry();
-
-      var m = null;
+//      if (_isdrawn) {
+//         JSROOT.GEO.normal_cnt++;
+//         if ((JSROOT.GEO.normal_cnt<190) || (JSROOT.GEO.normal_cnt > 195)) return null;
+//         geom = JSROOT.GEO.createGeometry(volume.fShape);
+//      }
 
 //      if ((rotation_matrix===null) && (volume.fShape._typename=="TGeoConeSeg"))
 //         rotation_matrix = [1, 0, 0, 0, -1, 0, 0, 0, 1];
 
-      if (rotation_matrix !== null) {
+      //var glevel = ((parent!==null) && ('_glevel' in parent)) ? parent._glevel + 1 : 0;
 
-         m = new THREE.Matrix4().set(
-               rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-               rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-               rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-               0,                                   0,                  0,   1 );
+      //var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
 
-         var flip = new THREE.Vector3(1, 1, 1), cnt = 0;
+      // gflip = null;
 
-         if (rotation_matrix[0] < 0) { flip.x = -1; ++cnt; }
-         if (rotation_matrix[4] < 0) { flip.y = -1; ++cnt; }
-         if (rotation_matrix[8] < 0) { flip.z = -1; ++cnt; }
+//      console.log('lvl:' + glevel + 'get parent flip ' + JSON.stringify(gflip) + '  transl ' + JSON.stringify(translation_matrix));
 
-         if ((cnt === 1) || (cnt === 3)) {
+      var m = null;
+
+      if ((rotation_matrix !== null) || (translation_matrix !== null)) {
+
+         m = new THREE.Matrix4();
+         var cnt = 0, flip = new THREE.Vector3(1,1,1), fname = "geom_";
+
+         if (rotation_matrix !== null) {
+             m.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                   rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                   rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                   0,                                   0,                  0,   1 );
+             if (rotation_matrix[0] < 0) { flip.x = -1; cnt++; fname+="X"; }
+             if (rotation_matrix[4] < 0) { flip.y = -1; cnt++; fname+="Y"; }
+             if (rotation_matrix[8] < 0) { flip.z = -1; cnt++; fname+="Z"; }
+         }
+
+         if (cnt > 0) {
+
+            //isflip = true;
+
+            //console.log('flip ' + volume.fShape._typename + '  ' + JSON.stringify(flip) + " transl " + JSON.stringify(translation_matrix) + ' visible ' + _isdrawn + '  len = ' + geom.vertices.length);
+
             // flipping geometry and not the mesh
+
+//            console.log('flip matrix ' + JSON.stringify(flip) + '  gflip ' + JSON.stringify(gflip) + '  transl ' + JSON.stringify(translation_matrix) );
 
             // first remove flipping from matrix
             m.scale(flip);
 
-            JSROOT.GEO.flipGeometry(geom, flip);
+            if (geom !== null) {
 
-            console.log('flip geometry for shape ' + volume.fShape._typename);
+               if (fname in node) {
+                  geom = node[fname];
+               } else {
+                  geom = geom.clone(); //   JSROOT.GEO.createGeometry(volume.fShape);
+                  JSROOT.GEO.flipGeometry(geom, flip, false);
+                  node[fname] = geom;
+               }
+            }
+
+            //if (cnt === 2)
+            //   JSROOT.GEO.swapGeometry(geom);
+            //else
+            //JSROOT.GEO.flipGeometry(geom, gflip, true);
+
+            //console.log("rotation " + JSON.stringify(rotation_matrix));
+            //console.log("matrix " + JSON.stringify(m.elements));
+
+            // if (cnt === 1) JSROOT.GEO.swapGeometry(geom);
          }
+
+         if (translation_matrix !== null)
+            m.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
+
+//         gflip.x*=flip.x;
+//         gflip.y*=flip.y;
+//         gflip.z*=flip.z;
+
+//         if (gflip.x < 0) gcnt++;
+//         if (gflip.y < 0) gcnt++;
+//         if (gflip.z < 0) gcnt++;
+
+//         if ((gcnt > 0) || (cnt>0) || hasg)
+//            console.log('gflip ' + JSON.stringify(gflip));
+
+//         if ((gcnt > 0) && _isdrawn) {
+            //JSROOT.GEO.flipGeometry(geom, gflip, gcnt !== 2);
+//         }
+
+         // if (gcnt === 0) gflip = null;
+
+         //mesh.applyMatrix(m);
       }
 
-
-      if (translation_matrix !== null) {
-         if (m === null)
-            m = new THREE.Matrix4().makeTranslation(translation_matrix[0], translation_matrix[1], translation_matrix[2]);
-         else
-           m.setPosition({ x: translation_matrix[0], y: translation_matrix[1], z: translation_matrix[2] });
-      }
+      if (geom === null) geom = new THREE.Geometry();
 
       var mesh = new THREE.Mesh( geom, material );
 
-      if (m!== null)
+      if (m!==null)
          mesh.applyMatrix(m);
 
-      /*
 
-      if (translation_matrix !== null) {
-         mesh.position.x = 0.5 * translation_matrix[0];
-         mesh.position.y = 0.5 * translation_matrix[1];
-         mesh.position.z = 0.5 * translation_matrix[2];
-      }
 
+
+/*
       if (rotation_matrix !== null) {
 
          var m = new THREE.Matrix4().set( rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
@@ -554,7 +616,7 @@
 
       if ('nchild' in arg) {
          // add next child
-         if ((chlds===null) || (chlds.length <= arg.nchild)) {
+         if ((chlds === null) || (chlds.length <= arg.nchild)) {
             this._stack.pop();
          } else {
             this._stack.push({ toplevel: (arg.mesh ? arg.mesh : arg.toplevel),
@@ -562,18 +624,19 @@
          }
          return true;
       }
-
+/*
       if ('_mesh' in arg.node) {
 
-         arg.toplevel.add(arg.node._mesh.clone());
+         if (arg.node._mesh !== null)
+            arg.toplevel.add(arg.node._mesh.clone());
 
          this._stack.pop();
 
          return true;
       }
-
+*/
       if (kind === 0)
-         arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node);
+         arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
       else
          arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node);
 
@@ -593,9 +656,11 @@
          arg.toplevel.add( boxHelper );
       }
 
-      arg.node._mesh['name'] = arg.node['fName'];
-      // add the mesh to the scene
-      arg.toplevel.add(arg.node._mesh);
+      if (arg.node._mesh !== null) {
+         arg.node._mesh['name'] = arg.node['fName'];
+         // add the mesh to the scene
+         arg.toplevel.add(arg.node._mesh);
+      }
 
       arg.mesh = arg.node._mesh;
 
