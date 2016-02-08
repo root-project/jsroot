@@ -386,6 +386,10 @@
 
       var m = null;
 
+//      if ((rotation_matrix===null) && (volume.fShape._typename=="TGeoPgon") ||
+//         (volume.fShape._typename=="TGeoPcon"))
+//         rotation_matrix = [1, 0, 0, 0, -1, 0, 0, 0, 1];
+
       if (rotation_matrix !== null) {
 
          m = new THREE.Matrix4().set(
