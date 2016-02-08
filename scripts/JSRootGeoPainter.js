@@ -403,9 +403,9 @@
          if (translation_matrix !== null)
             m.setPosition(new THREE.Vector3(gflip.x*translation_matrix[0], gflip.y*translation_matrix[1], gflip.z*translation_matrix[2]));
 
-         gflip.x*=flip.x;
-         gflip.y*=flip.y;
-         gflip.z*=flip.z;
+         gflip.x *= flip.x;
+         gflip.y *= flip.y;
+         gflip.z *= flip.z;
 
          if ((gflip.x > 0) && (gflip.y > 0) && (gflip.z > 0)) gflip = null;
       }
@@ -425,7 +425,7 @@
    }
 
 
-   JSROOT.GEO.createEveNodeMesh = function(node) {
+   JSROOT.GEO.createEveNodeMesh = function(node, parent) {
 
       var _isdrawn = false, material = null, geom = null;
 
@@ -464,36 +464,53 @@
          geom = node._geom;
       }
 
-      if (geom === null) geom = new THREE.Geometry();
-
       var m = new THREE.Matrix4().set(
                   node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
                   node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
                   node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
                                0,               0,                0, 1);
 
-      var flip = new THREE.Vector3(1, 1, 1), cnt = 0;
+      var flip = new THREE.Vector3(1, 1, 1), cnt = 0, fname = "geom_";
 
-      if (node.fTrans[0] < 0) { flip.x = -1; ++cnt; }
-      if (node.fTrans[5] < 0) { flip.y = -1; ++cnt; }
-      if (node.fTrans[10] < 0) { flip.z = -1; ++cnt; }
+      if (node.fTrans[0] < 0) { flip.x = -1; fname+="X"; ++cnt; }
+      if (node.fTrans[5] < 0) { flip.y = -1; fname+="Y"; ++cnt; }
+      if (node.fTrans[10] < 0) { flip.z = -1; fname+="Z"; ++cnt; }
 
-      if ((cnt === 1) || (cnt === 3)) {
-         // flipping geometry and not the mesh
-
+      if (cnt > 0) {
          // first remove flipping from matrix
          m.scale(flip);
 
-         JSROOT.GEO.flipGeometry(geom, flip);
+         if (geom!==null) {
+            if (fname in node) {
+               geom = node[fname];
+            } else {
+               geom = geom.clone(); //   JSROOT.GEO.createGeometry(node.fShape);
+               JSROOT.GEO.flipGeometry(geom, flip, false);
+               node[fname] = geom;
+            }
+         }
       }
 
-      m.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+      var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
+      if (gflip === null) gflip = new THREE.Vector3(1, 1, 1);
+
+      m.setPosition({ x: gflip.x*node.fTrans[12], y: gflip.y*node.fTrans[13], z: gflip.z*node.fTrans[14] });
+
+      gflip.x *= flip.x;
+      gflip.y *= flip.y;
+      gflip.z *= flip.z;
+
+      if ((gflip.x > 0) && (gflip.y > 0) && (gflip.z > 0)) gflip = null;
+
+      if (geom === null) geom = new THREE.Geometry();
 
       var mesh = new THREE.Mesh( geom, material );
 
       mesh.applyMatrix(m);
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
+
+      if (gflip !== null) mesh._flip = gflip;
 
       return mesh;
    }
@@ -542,7 +559,7 @@
       if (kind === 0)
          arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
       else
-         arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node);
+         arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node, arg.toplevel);
 
       //var json = mesh.toJSON();
       //var loader = new THREE.ObjectLoader();
