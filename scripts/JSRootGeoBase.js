@@ -341,44 +341,50 @@
       var radiusSegments = 60;
       if ( shape['_typename'] == "TGeoPgon" )
          radiusSegments = shape['fNedges'];
+
       var outerRadius = [];
       var innerRadius = [];
       var tube = [], tubeMesh = [];
       var face = [], faceMesh = [];
       var end = [], endMesh = [];
-      var thetaStart = 0
-      var thetaLength = 360;
-      thetaStart = shape['fPhi1'] + 90;
-      thetaLength = shape['fDphi'];
+      var thetaStart = shape['fPhi1'] + 90;
+      var thetaLength = shape['fDphi'];
       var draw_faces = (thetaLength < 360) ? true : false;
-      thetaStart *= (Math.PI / 180.0);
-      thetaLength *= (Math.PI / 180.0);
+
       var geometry = new THREE.Geometry();
+
+      //console.log('Draw ' + shape['_typename'] + '  r_segm=' + shape['fNedges'] + '  faces = ' + draw_faces);
 
       for (var i=0; i<shape['fNz']; ++i) {
          outerRadius[i] = shape['fRmax'][i]/2;
          innerRadius[i] = shape['fRmin'][i]/2;
          if (innerRadius[i] <= 0) innerRadius[i] = 0.0000001;
+
+         //console.log(i + 'z = ' + shape['fZ'][i] +  ' outer = ' + outerRadius[i] + ' inner = ' + innerRadius[i]);
       }
-      for (var n=0; n<shape['fNz']; ++n) {
+      for (var n=0; n<shape['fNz']-1; ++n) {
+
          var seg = n*2;
          var DZ = (shape['fZ'][n+1]-shape['fZ'][n])/2;
+
+         //console.log('outer r1 = ' + outerRadius[n] + '  r2 = ' + outerRadius[n+1] + '  DZ = ' + DZ);
+
          tube[seg] = new THREE.CylinderGeometry(outerRadius[n+1], outerRadius[n],
-                  DZ, radiusSegments, 1, true, thetaStart, thetaLength);
+                  DZ, radiusSegments, 1, true, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
          tube[seg].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          tube[seg].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
          tubeMesh[seg] = new THREE.Mesh( tube[seg] );
          tubeMesh[seg].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
          tube[seg+1] = new THREE.CylinderGeometry(innerRadius[n+1], innerRadius[n],
-                  DZ, radiusSegments, 1, true, thetaStart, thetaLength);
+                  DZ, radiusSegments, 1, true, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
          tube[seg+1].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          tube[seg+1].faceVertexUvs[0] = [];  // workaround to avoid warnings from three.js
 
          tubeMesh[seg+1] = new THREE.Mesh( tube[seg+1] );
          tubeMesh[seg+1].translateZ( 0.5 * (shape['fZ'][n] + DZ) );
 
-         if ( n >= (shape['fNz']-2) ) {
+         if ( n == shape['fNz']-2 ) {
             end[seg] = new THREE.Geometry();
             for (i = 0; i < radiusSegments; ++i){
                var j = i;
@@ -467,6 +473,8 @@
          }
       }
       //geometry.computeFaceNormals();
+
+      // console.log('pgon vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
