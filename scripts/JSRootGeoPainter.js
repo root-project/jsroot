@@ -386,8 +386,7 @@
 
       var m = null;
 
-//      if ((rotation_matrix===null) && (volume.fShape._typename=="TGeoPgon") ||
-//         (volume.fShape._typename=="TGeoPcon"))
+//      if ((rotation_matrix===null) && (volume.fShape._typename=="TGeoConeSeg"))
 //         rotation_matrix = [1, 0, 0, 0, -1, 0, 0, 0, 1];
 
       if (rotation_matrix !== null) {

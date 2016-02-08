@@ -215,41 +215,51 @@
 
       var thetaStart = 0, thetaLength = 360;
       if ((shape['_typename'] == "TGeoConeSeg") || (shape['_typename'] == "TGeoTubeSeg") || (shape['_typename'] == "TGeoCtub")) {
-         thetaStart = shape['fPhi1'] + 90;
+         thetaStart = shape['fPhi1'];
          thetaLength = shape['fPhi2'] - shape['fPhi1'];
       }
 
       var radiusSegments = Math.floor(thetaLength/6);
-      if (radiusSegments < 8) radiusSegments = 8;
+      if (radiusSegments < 4) radiusSegments = 4;
 
-      var outerTube = new THREE.CylinderGeometry(outerRadius1, outerRadius2,
-               2*shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
-      outerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+      var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
 
-
-      var innerTube = new THREE.CylinderGeometry(innerRadius1, innerRadius2,
-               2*shape['fDZ'], radiusSegments, 1, true, thetaStart*Math.PI/180.0, thetaLength*Math.PI/180.0);
-      innerTube.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments+1),
+          _cos = new Float32Array(radiusSegments+1);
+      for (var seg=0; seg<=radiusSegments; ++seg) {
+         var phi = phi0 + seg*dphi;
+         _cos[seg] = Math.cos(phi);
+         _sin[seg] = Math.sin(phi);
+      }
 
       var geometry = new THREE.Geometry();
 
-      // add inner tube
-      for (var n=0; n < innerTube.vertices.length; ++n)
-         geometry.vertices.push(innerTube.vertices[n]);
-
-      for (var n=0; n < innerTube.faces.length; ++n)
-         geometry.faces.push(innerTube.faces[n]);
+      // add inner tube vertices
+      for (var seg=0; seg<=radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( innerRadius1*_cos[seg], innerRadius1*_sin[seg], shape['fDZ']));
+      for (var seg=0; seg<=radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( innerRadius2*_cos[seg], innerRadius2*_sin[seg], -shape['fDZ']));
 
       var shift = geometry.vertices.length;
 
-      // add outer tube
-      for (var n=0; n < outerTube.vertices.length; ++n)
-         geometry.vertices.push(outerTube.vertices[n]);
+      // add outer tube vertices
+      for (var seg=0; seg<=radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( outerRadius1*_cos[seg], outerRadius1*_sin[seg], shape['fDZ']));
+      for (var seg=0; seg<=radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( outerRadius2*_cos[seg], outerRadius2*_sin[seg], -shape['fDZ']));
 
-      for (var n=0; n < outerTube.faces.length; ++n) {
-         var face = outerTube.faces[n];
-         face.a += shift; face.b += shift; face.c += shift;
-         geometry.faces.push(face);
+
+      // add inner tube faces
+      for (var seg=0; seg<radiusSegments; ++seg) {
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg+radiusSegments+2 ) );
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+2, seg+1 ) );
+      }
+
+      // add outer tube faces
+      for (var seg=shift; seg < shift+radiusSegments; ++seg) {
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg+radiusSegments+2 ) );
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+2, seg+1 ) );
       }
 
       // add top cap
@@ -265,7 +275,7 @@
       }
 
       // close cut regions
-      if ((thetaStart !== 0) || (thetaLength !== 360)) {
+      if (thetaLength !== 360) {
           geometry.faces.push( new THREE.Face3( 0, radiusSegments+1 , shift+radiusSegments+1 ) );
           geometry.faces.push( new THREE.Face3( 0, shift+radiusSegments+1, shift ) );
 
@@ -274,6 +284,8 @@
       }
 
       geometry.computeFaceNormals();
+
+      console.log(shape['_typename'] + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
@@ -339,6 +351,10 @@
    }
 
    JSROOT.GEO.createPolygon = function( shape ) {
+
+      // TODO: if same in/out radius on the top/bottom,
+      //         skip duplicated vertices and zero faces
+
       var thetaStart = shape['fPhi1'], thetaLength = shape['fDphi'];
 
       var radiusSegments = 60;
@@ -352,11 +368,14 @@
       var geometry = new THREE.Geometry();
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
-      var _sin = [], _cos = []; // calculate all sin/cos tables in advance
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments+1),
+          _cos = new Float32Array(radiusSegments+1);
       for (var seg=0;seg<=radiusSegments;++seg) {
          var phi = phi0 + seg*dphi;
-         _cos.push(Math.cos(phi));
-         _sin.push(Math.sin(phi));
+         _cos[seg] = Math.cos(phi);
+         _sin[seg] = Math.sin(phi);
       }
 
       var indxs = [[],[]]; // remember indexes for each layer
