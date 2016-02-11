@@ -472,37 +472,40 @@
                   node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
                                0,               0,                0, 1);
 
-      var flip = new THREE.Vector3(1, 1, 1), cnt = 0, fname = "geom_";
+      var mflip = new THREE.Vector3(1, 1, 1), cnt = 0;
 
-      if (node.fTrans[0] < 0) { flip.x = -1; fname+="X"; ++cnt; }
-      if (node.fTrans[5] < 0) { flip.y = -1; fname+="Y"; ++cnt; }
-      if (node.fTrans[10] < 0) { flip.z = -1; fname+="Z"; ++cnt; }
+      if (node.fTrans[0] < 0) { mflip.x = -1; ++cnt; }
+      if (node.fTrans[5] < 0) { mflip.y = -1; ++cnt; }
+      if (node.fTrans[10] < 0) { mflip.z = -1; ++cnt; }
 
-      if (cnt > 0) {
-         // first remove flipping from matrix
-         m.scale(flip);
-
-         if (geom!==null) {
-            if (fname in node) {
-               geom = node[fname];
-            } else {
-               geom = geom.clone(); //   JSROOT.GEO.createGeometry(node.fShape);
-               JSROOT.GEO.flipGeometry(geom, flip, false);
-               node[fname] = geom;
-            }
-         }
-      }
+      // first remove flipping from matrix
+      if (cnt > 0) m.scale(mflip);
 
       var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
       if (gflip === null) gflip = new THREE.Vector3(1, 1, 1);
 
+      // second - set position with proper sign
       m.setPosition({ x: gflip.x*node.fTrans[12], y: gflip.y*node.fTrans[13], z: gflip.z*node.fTrans[14] });
 
-      gflip.x *= flip.x;
-      gflip.y *= flip.y;
-      gflip.z *= flip.z;
-
+      // third - calculate resulting flip
+      gflip.multiply(mflip);
       if ((gflip.x > 0) && (gflip.y > 0) && (gflip.z > 0)) gflip = null;
+
+      if ((geom !== null) && (gflip !== null)) {
+
+         var fname = "geom_";
+         if (gflip.x < 0) fname += "X";
+         if (gflip.y < 0) fname += "Y";
+         if (gflip.z < 0) fname += "Z";
+
+         if (fname in node) {
+            geom = node[fname];
+         } else {
+            // geom = JSROOT.GEO.createGeometry(volume.fShape);
+            geom = geom.clone();
+            JSROOT.GEO.flipGeometry(geom, gflip, false);
+         }
+      }
 
       if (geom === null) geom = new THREE.Geometry();
 
