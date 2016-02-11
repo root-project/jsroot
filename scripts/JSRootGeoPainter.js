@@ -233,8 +233,16 @@
       }
    }
 
-   JSROOT.GEO.flipGeometry = function(geom, flip) {
+   JSROOT.GEO.flipGeometry = function(geom, flip, doswap) {
       geom.scale(flip.x, flip.y, flip.z);
+
+      if (doswap) {
+         var face, d;
+         for (var n=0;n<geom.faces.length;++n) {
+            face = geom.faces[n];
+            d = face.b; face.b = face.c; face.c = d;
+         }
+      }
 
       geom.computeBoundingSphere();
       geom.computeFaceNormals();
@@ -398,17 +406,17 @@
 
       if ((geom !== null) && (gflip !== null)) {
 
-         var fname = "geom_";
-         if (gflip.x < 0) fname += "X";
-         if (gflip.y < 0) fname += "Y";
-         if (gflip.z < 0) fname += "Z";
+         var fname = "geom_", cnt = 0;
+         if (gflip.x < 0) { fname += "X"; ++cnt; }
+         if (gflip.y < 0) { fname += "Y"; ++cnt; }
+         if (gflip.z < 0) { fname += "Z"; ++cnt; }
 
          if (fname in node) {
             geom = node[fname];
          } else {
             // geom = JSROOT.GEO.createGeometry(volume.fShape);
             geom = geom.clone();
-            JSROOT.GEO.flipGeometry(geom, gflip, false);
+            JSROOT.GEO.flipGeometry(geom, gflip, (cnt==1) || (cnt==3));
          }
       }
 
@@ -493,17 +501,17 @@
 
       if ((geom !== null) && (gflip !== null)) {
 
-         var fname = "geom_";
-         if (gflip.x < 0) fname += "X";
-         if (gflip.y < 0) fname += "Y";
-         if (gflip.z < 0) fname += "Z";
+         var fname = "geom_", cnt = 0;
+         if (gflip.x < 0) { fname += "X"; ++cnt; }
+         if (gflip.y < 0) { fname += "Y"; ++cnt; }
+         if (gflip.z < 0) { fname += "Z"; ++cnt; }
 
          if (fname in node) {
             geom = node[fname];
          } else {
             // geom = JSROOT.GEO.createGeometry(volume.fShape);
             geom = geom.clone();
-            JSROOT.GEO.flipGeometry(geom, gflip, false);
+            JSROOT.GEO.flipGeometry(geom, gflip, (cnt === 1) || (cnt === 3));
          }
       }
 
