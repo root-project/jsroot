@@ -72,7 +72,7 @@
       };
 
       var raycaster = new THREE.Raycaster();
-      var do_bins_highlight = painter.first_render_tm < 1200;
+      var do_bins_highlight = painter.first_render_tm < 2000;
 
       function findIntersection(mouse) {
          // find intersections
