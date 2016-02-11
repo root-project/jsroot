@@ -5076,7 +5076,9 @@
       // case when histogram drawn over other histogram (same option)
       if (!this.is_main_painter()) return;
 
-      var pavetext = this.FindInPrimitives("title");
+      var tpainter = this.FindPainterFor(null, "title");
+      var pavetext = (tpainter !== null) ? tpainter.pavetext : null;
+      if (pavetext === null) pavetext = this.FindInPrimitives("title");
       if ((pavetext !== null) && (pavetext._typename !== "TPaveText")) pavetext = null;
 
       var draw_title = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
@@ -5086,7 +5088,7 @@
          if (draw_title)
             pavetext.AddText(this.histo.fTitle);
       } else
-      if (draw_title) {
+      if (draw_title && (tpainter === null)) {
          pavetext = JSROOT.Create("TPaveText");
 
          JSROOT.extend(pavetext, { fName: "title",
