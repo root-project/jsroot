@@ -70,6 +70,7 @@
       this._renderer = null;
       this._toplevel = null;
       this._stack = null;
+      this._camera = null;
 
       this.first_render_tm = 0;
 
@@ -230,6 +231,52 @@
 
          this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
+
+      var painter = this, raycaster = new THREE.Raycaster(), INTERSECTED = null;
+
+      function findIntersection(mouse) {
+         // find intersections
+
+         // if (!JSROOT.gStyle.Tooltip) return tooltip.hide();
+
+         raycaster.setFromCamera( mouse, painter._camera );
+         var intersects = raycaster.intersectObjects(painter._scene.children, true);
+         if (intersects.length > 0) {
+            var pick = null;
+            for (var i = 0; i < intersects.length; ++i) {
+               if ('emissive' in intersects[i].object.material) {
+                  pick = intersects[i].object;
+                  break;
+               }
+            }
+            if (pick && INTERSECTED != pick) {
+               INTERSECTED = pick;
+               console.log('intersect ' + INTERSECTED.name + ' gflip ' + JSON.stringify(pick._flip));
+
+               var p = INTERSECTED;
+               while ((p!==undefined) && (p!==null)) {
+                  console.log('parent ' + p.name + '  trans ' + JSON.stringify(p._trans) + "  mflip " + JSON.stringify(p._mflip) + "  gflip " + JSON.stringify(p._flip));
+                  p = p.parent;
+               }
+
+
+            }
+         } else {
+            // INTERSECTED = null;
+         }
+      };
+
+      function mousemove(e) {
+
+         var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
+         var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
+         var mouse = { x: (mouse_x / painter._renderer.domElement.width) * 2 - 1,
+                   y: -(mouse_y / painter._renderer.domElement.height) * 2 + 1 };
+
+         findIntersection(mouse);
+      }
+
+      this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
    JSROOT.GEO.swapGeometry = function(geom) {
@@ -384,12 +431,12 @@
 
       var gflip = ((parent!==null) && ('_flip' in parent)) ? parent._flip.clone() : null;
 
-      var m = null;
+      var m = null, mflip = null;
 
       if ((rotation_matrix !== null) || (translation_matrix !== null)) {
 
          m = new THREE.Matrix4();
-         var mflip = new THREE.Vector3(1,1,1);
+         mflip = new THREE.Vector3(1,1,1);
 
          if (rotation_matrix !== null) {
             var cnt = 0;
@@ -401,7 +448,10 @@
             if (rotation_matrix[4] < 0) { mflip.y = -mflip.y; cnt++; }
             if (rotation_matrix[8] < 0) { mflip.z = -mflip.z; cnt++; }
 
-            if (cnt>0) m.scale(mflip);
+            if ((cnt===1) || (cnt===3))
+               m.scale(mflip);
+            else
+               mflip.set(1,1,1);
          }
 
          if (gflip === null) gflip = new THREE.Vector3(1,1,1);
@@ -441,6 +491,11 @@
          mesh.applyMatrix(m);
 
       if (gflip !== null) mesh._flip = gflip;
+
+      if (translation_matrix!==null)
+         mesh._trans = translation_matrix;
+      if ((mflip !== null) && ((mflip.x<0) || (mflip.y<0) || (mflip.z<0)))
+         mesh._mflip = mflip;
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
 
