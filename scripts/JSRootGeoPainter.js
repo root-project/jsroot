@@ -371,43 +371,45 @@
       if ((rotation_matrix !== null) || (translation_matrix !== null)) {
 
          m = new THREE.Matrix4();
-         var cnt = 0, flip = new THREE.Vector3(1,1,1), fname = "geom_";
-         if (gflip === null) gflip = new THREE.Vector3(1,1,1);
+         var mflip = new THREE.Vector3(1,1,1);
 
          if (rotation_matrix !== null) {
-             m.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                   rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                   rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                   0,                                   0,                  0,   1 );
-             if (rotation_matrix[0] < 0) { flip.x = -1; cnt++; fname+="X"; }
-             if (rotation_matrix[4] < 0) { flip.y = -1; cnt++; fname+="Y"; }
-             if (rotation_matrix[8] < 0) { flip.z = -1; cnt++; fname+="Z"; }
+            var cnt = 0;
+            m.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                  rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                  rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                  0,                                   0,                  0,   1 );
+            if (rotation_matrix[0] < 0) { mflip.x = -mflip.x; cnt++; }
+            if (rotation_matrix[4] < 0) { mflip.y = -mflip.y; cnt++; }
+            if (rotation_matrix[8] < 0) { mflip.z = -mflip.z; cnt++; }
+
+            if (cnt>0) m.scale(mflip);
          }
 
-         if (cnt > 0) {
-
-            m.scale(flip);
-
-            if (geom !== null) {
-
-               if (fname in node) {
-                  geom = node[fname];
-               } else {
-                  geom = geom.clone(); //   JSROOT.GEO.createGeometry(volume.fShape);
-                  JSROOT.GEO.flipGeometry(geom, flip, false);
-                  node[fname] = geom;
-               }
-            }
-         }
+         if (gflip === null) gflip = new THREE.Vector3(1,1,1);
 
          if (translation_matrix !== null)
             m.setPosition(new THREE.Vector3(gflip.x*translation_matrix[0], gflip.y*translation_matrix[1], gflip.z*translation_matrix[2]));
 
-         gflip.x *= flip.x;
-         gflip.y *= flip.y;
-         gflip.z *= flip.z;
+         gflip.multiply(mflip);
 
          if ((gflip.x > 0) && (gflip.y > 0) && (gflip.z > 0)) gflip = null;
+      }
+
+      if ((geom !== null) && (gflip !== null)) {
+
+         var fname = "geom_";
+         if (gflip.x < 0) fname += "X";
+         if (gflip.y < 0) fname += "Y";
+         if (gflip.z < 0) fname += "Z";
+
+         if (fname in node) {
+            geom = node[fname];
+         } else {
+            // geom = JSROOT.GEO.createGeometry(volume.fShape);
+            geom = geom.clone();
+            JSROOT.GEO.flipGeometry(geom, gflip, false);
+         }
       }
 
       if (geom === null) geom = new THREE.Geometry();
