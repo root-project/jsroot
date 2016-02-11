@@ -81,27 +81,26 @@
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TGeoPainter.prototype.CreateToolbar = function(args) {
-      if ( this._toolbar === null ) {
-         var buttonList = [{
-            name: 'toImage',
-            title: 'Save as PNG',
-            icon: JSROOT.ToolbarIcons['camera'],
-            renderer: this._renderer,
-            click: function() {
-               var dataUrl = this.renderer.domElement.toDataURL("image/png");
-               dataUrl.replace("image/png", "image/octet-stream");
-               var link = document.createElement('a');
-               if (typeof link.download === 'string') {
-                  document.body.appendChild(link); //Firefox requires the link to be in the body
-                  link.download = "geometry.png";
-                  link.href = dataUrl;
-                  link.click();
-                  document.body.removeChild(link); //remove the link when done
-               }
+      if ( this._toolbar !== null ) return;
+      var painter = this;
+      var buttonList = [{
+         name: 'toImage',
+         title: 'Save as PNG',
+         icon: JSROOT.ToolbarIcons.camera,
+         click: function() {
+            var dataUrl = painter._renderer.domElement.toDataURL("image/png");
+            dataUrl.replace("image/png", "image/octet-stream");
+            var link = document.createElement('a');
+            if (typeof link.download === 'string') {
+               document.body.appendChild(link); //Firefox requires the link to be in the body
+               link.download = "geometry.png";
+               link.href = dataUrl;
+               link.click();
+               document.body.removeChild(link); //remove the link when done
             }
-         }];
-         this._toolbar = new JSROOT.Toolbar({ container: args.container, buttons: [buttonList] });
-      }
+         }
+      }];
+      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
    JSROOT.TGeoPainter.prototype.GetObject = function() {
@@ -232,6 +231,17 @@
          this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
    }
+
+   JSROOT.GEO.swapGeometry = function(geom) {
+      var face, d;
+      for (var n=0;n<geom.faces.length;++n) {
+         face = geom.faces[n];
+         d = face.b; face.b = face.c; face.c = d;
+      }
+      geom.computeBoundingSphere();
+      geom.computeFaceNormals();
+   }
+
 
    JSROOT.GEO.flipGeometry = function(geom, flip, doswap) {
       geom.scale(flip.x, flip.y, flip.z);
@@ -398,6 +408,7 @@
 
          if (translation_matrix !== null)
             m.setPosition(new THREE.Vector3(gflip.x*translation_matrix[0], gflip.y*translation_matrix[1], gflip.z*translation_matrix[2]));
+            //m.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
 
          gflip.multiply(mflip);
 
@@ -416,7 +427,9 @@
          } else {
             // geom = JSROOT.GEO.createGeometry(volume.fShape);
             geom = geom.clone();
-            JSROOT.GEO.flipGeometry(geom, gflip, (cnt==1) || (cnt==3));
+            // JSROOT.GEO.swapGeometry(geom);
+            JSROOT.GEO.flipGeometry(geom, gflip, cnt!==2);
+            // node[fname] = geom;
          }
       }
 
@@ -512,6 +525,7 @@
             // geom = JSROOT.GEO.createGeometry(volume.fShape);
             geom = geom.clone();
             JSROOT.GEO.flipGeometry(geom, gflip, (cnt === 1) || (cnt === 3));
+            // node[fname] = geom;
          }
       }
 
