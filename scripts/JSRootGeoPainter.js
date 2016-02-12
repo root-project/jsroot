@@ -251,12 +251,11 @@
             }
             if (pick && INTERSECTED != pick) {
                INTERSECTED = pick;
-               console.log('intersect ' + INTERSECTED.name + '  flip' + JSON.stringify(pick._flip));
-               console.log('  matrix ' + JSON.stringify(pick._matrix.elements));
+               console.log('intersect ' + INTERSECTED.name);
 
-               var p = INTERSECTED;
+               var p = INTERSECTED.parent;
                while ((p!==undefined) && (p!==null)) {
-                  console.log('obj ' + p.name + '  trans ' + JSON.stringify(p._trans) + "  rotation " + JSON.stringify(p._rotation));
+                  console.log('parent ' + p.name);
                   p = p.parent;
                }
 
@@ -280,34 +279,51 @@
       this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
-   JSROOT.GEO.swapGeometry = function(geom) {
-      var face, d , color = new THREE.Color(0x777777);
-      for (var n=0;n<geom.faces.length;n+=2) {
-         face = geom.faces[n];
-         d = face.a; face.a = face.c; face.c = d;
-         face.color = color;
-      }
-      geom.computeBoundingSphere();
-      geom.computeFaceNormals();
-      // geom.computeVertexNormals();
-   }
+   JSROOT.GEO.checkFlipping = function(parent, matrix, geom) {
+      // check if matrix of element should be flipped
 
+      var m = new THREE.Matrix4();
+      m.multiplyMatrices( parent.matrixWorld, matrix);
 
-   JSROOT.GEO.flipGeometry = function(geom, flip, doswap) {
-      geom.scale(flip.x, flip.y, flip.z);
+      if (m.determinant() > -0.9) return geom;
 
-      if (doswap) {
-         var face, d;
-         for (var n=0;n<geom.faces.length;++n) {
-            face = geom.faces[n];
-            d = face.b; face.b = face.c; face.c = d;
+      var cnt = 0, flip = new THREE.Vector3(1,1,1);
+
+      if (m.elements[0]===-1 &&  m.elements[1]=== 0 &&  m.elements[2]=== 0) { flip.x = -1; cnt++; }
+      if (m.elements[4]=== 0  && m.elements[5]===-1 &&  m.elements[6]=== 0) { flip.y = -1; cnt++; }
+      if (m.elements[8]=== 0  && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
+
+      if ((cnt===0) || (cnt ===2)) {
+         flip.set(1,1,1); cnt = 0;
+         if (m.elements[0] + m.elements[1] + m.elements[2] === -1) { flip.x = -1; cnt++; }
+         if (m.elements[4] + m.elements[5] + m.elements[6] === -1) { flip.y = -1; cnt++; }
+         if (m.elements[8] + m.elements[9] + m.elements[10] === -1) { flip.z = -1; cnt++; }
+         if ((cnt === 0) || (cnt === 2)) {
+            // console.log('not found proper axis, use Z ' + JSON.stringify(flip) + '  m = ' + JSON.stringify(m.elements));
+            flip.z = -flip.z;
          }
       }
 
+      matrix.scale(flip);
+      geom = geom.clone();
+
+      geom.scale(flip.x, flip.y, flip.z);
+
+      var face, d;
+      for (var n=0;n<geom.faces.length;++n) {
+         face = geom.faces[n];
+         d = face.b; face.b = face.c; face.c = d;
+      }
+
       geom.computeBoundingSphere();
       geom.computeFaceNormals();
-   }
 
+      return geom;
+
+      //if ((volume.fNodes !== null) && (volume.fNodes.arr.length > 0))
+      //   console.warn('FLIP geometry with child elements - need proper handling');
+      //}
+   }
 
    JSROOT.GEO.createNodeMesh = function(node, parent) {
       var volume = node['fVolume'];
@@ -432,81 +448,39 @@
          geom = node._geom;
       }
 
-      var m = new THREE.Matrix4(), flip = new THREE.Vector3(1,1,1);
+      var matrix = new THREE.Matrix4();
 
       if (rotation_matrix !== null) {
-         m.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+         matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
                rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
                rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
                0,                                   0,                  0,   1 );
       }
 
       if (translation_matrix !== null)
-         m.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
-
-      if (parent._matrix !== undefined) {
-         var worldmatrix = new THREE.Matrix4();
-         worldmatrix.multiplyMatrices( parent._matrix, m );
-         m = worldmatrix;
-      }
+         matrix.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
 
       if (_isdrawn) {
+         var geom0 = geom;
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, geom);
 
-         if (m.determinant() < -0.9) {
-            var cnt = 0;
-
-            if (m.elements[0]===-1 &&  m.elements[1]=== 0 &&  m.elements[2]=== 0) { flip.x = -1; cnt++; }
-            if (m.elements[4]=== 0  && m.elements[5]===-1 &&  m.elements[6]=== 0) { flip.y = -1; cnt++; }
-            if (m.elements[8]=== 0  && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
-
-            if ((cnt===0) || (cnt ===2)) {
-               flip.set(1,1,1); cnt = 0;
-               if (m.elements[0] + m.elements[1] + m.elements[2] === -1) { flip.x = -1; cnt++; }
-               if (m.elements[4] + m.elements[5] + m.elements[6] === -1) { flip.y = -1; cnt++; }
-               if (m.elements[8] + m.elements[9] + m.elements[10] === -1) { flip.z = -1; cnt++; }
-               if ((cnt === 0) || (cnt === 2)) {
-                  // console.log('not found proper axis, use Z ' + JSON.stringify(flip) + '  m = ' + JSON.stringify(m.elements));
-                  flip.z = -flip.z;
-               }
-            }
-
-            m.scale(flip);
-
-            geom = geom.clone();
-            // geom = JSROOT.GEO.createGeometry(volume.fShape);
-            JSROOT.GEO.flipGeometry(geom, flip, true);
-         }
+         if ((geom0 !== geom) && (volume.fNodes !== null) && (volume.fNodes.arr.length > 0))
+            console.warn('FLIP geometry with child elements - need proper handling');
       }
-
-
-      //if (geom !== null) {
-      //   geom = geom.clone();
-      //   JSROOT.GEO.flipGeometry(geom, gflip, false);
-      // }
 
       if (geom === null) geom = new THREE.Geometry();
 
       var mesh = new THREE.Mesh( geom, material );
 
-      if (_isdrawn)
-         mesh.applyMatrix(m);
-
-      mesh._matrix = m;
-      mesh._flip = flip;
-
-      if (translation_matrix!==null)
-         mesh._trans = translation_matrix;
-      if (rotation_matrix !== null)
-         mesh._rotation = rotation_matrix;
+      mesh.applyMatrix(matrix);
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
-
       mesh.name = node.fName;
 
       // add the mesh to the scene
       parent.add(mesh);
 
-      // mesh.updateMatrixWorld();
+      mesh.updateMatrixWorld();
 
       return mesh;
    }
@@ -551,29 +525,30 @@
          geom = node._geom;
       }
 
-      var m = new THREE.Matrix4().set(
+      var matrix = new THREE.Matrix4().set(
                   node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
                   node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
                   node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
                                0,               0,                0, 1);
 
       // second - set position with proper sign
-      m.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+      matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
 
-      // if ((geom !== null) && (gflip !== null)) {
-      //  // geom = JSROOT.GEO.createGeometry(volume.fShape);
-      //  geom = geom.clone();
-      //  JSROOT.GEO.flipGeometry(geom, gflip, (cnt === 1) || (cnt === 3));
-      // }
+      if (_isdrawn) {
+         var geom0 = geom;
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, geom);
+
+         if ((geom0 !== geom) && (node.fElements !== null) && (node.fElements.arr.length > 0))
+            console.warn('FLIP geometry with child elements - need proper handling');
+      }
 
       if (geom === null) geom = new THREE.Geometry();
 
       var mesh = new THREE.Mesh( geom, material );
 
-      mesh.applyMatrix(m);
+      mesh.applyMatrix(matrix);
 
       mesh._isdrawn = _isdrawn; // extra flag for mesh
-
       mesh.name = node.fName;
 
       // add the mesh to the scene
