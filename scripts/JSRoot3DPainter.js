@@ -830,11 +830,6 @@
 
       var bins = this.CreateBins();
 
-      // create the bin cubes
-      var constx = 2 * this.size3d / this.nbinsx;
-      var consty = this.nbinsx / this.nbinsy;
-      var constz = this.nbinsx / this.nbinsz;
-
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
@@ -843,10 +838,11 @@
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
-         geom = new THREE.SphereBufferGeometry(0.5 * constx);
+         geom = new THREE.SphereBufferGeometry(this.size3d / this.nbinsx);
+         geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-         geom = new THREE.BoxGeometry(constx, constx, constx);
+         geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 2 * this.size3d / this.nbinsz);
       }
 
       var bin, wei;
@@ -859,7 +855,7 @@
 
          bin.position.set( this.tx(bins[i].x), this.ty(bins[i].y),  this.tz(bins[i].z) );
 
-         bin.scale.set(wei, wei * consty, wei * constz);
+         bin.scale.set(wei, wei, wei);
 
          if ('tip' in bins[i])
            bin.name = bins[i].tip;
