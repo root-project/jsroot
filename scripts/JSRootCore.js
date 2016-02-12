@@ -39,7 +39,6 @@
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
-            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
             'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
@@ -762,10 +761,9 @@
       }
 
       if (kind.indexOf("geom;")>=0) {
-         mainfiles += "$$$scripts/JSRootGeoBase" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+         mainfiles += "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('JSRootGeoBase', 'JSRootGeoPainter');
+         modules.push('JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
