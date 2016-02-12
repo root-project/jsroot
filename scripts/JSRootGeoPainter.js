@@ -251,15 +251,16 @@
             }
             if (pick && INTERSECTED != pick) {
                INTERSECTED = pick;
-               console.log('intersect ' + INTERSECTED.name);
+
+               var name = INTERSECTED.name;
 
                var p = INTERSECTED.parent;
                while ((p!==undefined) && (p!==null)) {
-                  console.log('parent ' + p.name);
+                  if ('name' in p) name = p.name+'/'+name;
                   p = p.parent;
                }
 
-
+               console.log('intersect ' + name);
             }
          } else {
             // INTERSECTED = null;
@@ -279,13 +280,16 @@
       this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
-   JSROOT.GEO.checkFlipping = function(parent, matrix, node, geom) {
+   JSROOT.GEO.checkFlipping = function(parent, matrix, node, geom, mesh_has_childs) {
       // check if matrix of element should be flipped
 
       var m = new THREE.Matrix4();
       m.multiplyMatrices( parent.matrixWorld, matrix);
 
       if (m.determinant() > -0.9) return geom;
+
+      // we could not transform matrix of mesh with childs, need workaround
+      if (mesh_has_childs) return null;
 
       var cnt = 0, flip = new THREE.Vector3(1,1,1);
 
@@ -318,11 +322,11 @@
 
       geom.scale(flip.x, flip.y, flip.z);
 
-      //var face, d;
-      //for (var n=0;n<geom.faces.length;++n) {
-         // face = geom.faces[n];
-         // d = face.b; face.b = face.c; face.c = d;
-      //}
+      var face, d;
+      for (var n=0;n<geom.faces.length;++n) {
+         face = geom.faces[n];
+         d = face.b; face.b = face.c; face.c = d;
+      }
 
       //geom.computeBoundingSphere();
       geom.computeFaceNormals();
@@ -457,23 +461,21 @@
 
       var matrix = new THREE.Matrix4();
 
-      if (rotation_matrix !== null) {
+      if (rotation_matrix !== null)
          matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-               rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-               rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-               0,                                   0,                  0,   1 );
-      }
+                    rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                    rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                     0,                  0,                  0,   1);
 
       if (translation_matrix !== null)
          matrix.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
 
-      if (_isdrawn) {
-         var geom0 = geom;
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom);
+      var has_childs = (volume.fNodes !== null) && (volume.fNodes.arr.length > 0);
 
-         if ((geom0 !== geom) && (volume.fNodes !== null) && (volume.fNodes.arr.length > 0))
-            console.warn('FLIP geometry with child elements - need proper handling');
-      }
+      if (_isdrawn)
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom, has_childs);
+
+      var work_around = _isdrawn && has_childs && (geom === null);
 
       if (geom === null) geom = new THREE.Geometry();
 
@@ -488,6 +490,26 @@
       parent.add(mesh);
 
       mesh.updateMatrixWorld();
+
+      if (work_around) {
+         console.log('perform workaroud for mesh with childs');
+
+         matrix.identity(); // set to 1
+
+         geom = JSROOT.GEO.checkFlipping(mesh, matrix, node, node._geom);
+
+         var dmesh = new THREE.Mesh( geom, material );
+
+         dmesh.applyMatrix(matrix);
+
+         dmesh._isdrawn = _isdrawn; // extra flag for mesh
+         dmesh.name = "..";
+
+         // add the mesh to the scene
+         mesh.add(dmesh);
+
+         dmesh.updateMatrixWorld();
+      }
 
       return mesh;
    }
@@ -541,13 +563,12 @@
       // second - set position with proper sign
       matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
 
-      if (_isdrawn) {
-         var geom0 = geom;
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom);
+      var has_childs = (node.fElements !== null) && (node.fElements.arr.length > 0);
 
-         if ((geom0 !== geom) && (node.fElements !== null) && (node.fElements.arr.length > 0))
-            console.warn('FLIP geometry with child elements - need proper handling');
-      }
+      if (_isdrawn)
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom, has_childs);
+
+      var work_around = _isdrawn && has_childs && (geom === null);
 
       if (geom === null) geom = new THREE.Geometry();
 
@@ -560,6 +581,26 @@
 
       // add the mesh to the scene
       parent.add(mesh);
+
+      if (work_around) {
+         console.log('perform workaroud for mesh with childs');
+
+         matrix.identity(); // set to 1
+
+         geom = JSROOT.GEO.checkFlipping(mesh, matrix, node, node._geom);
+
+         var dmesh = new THREE.Mesh( geom, material );
+
+         dmesh.applyMatrix(matrix);
+
+         dmesh._isdrawn = _isdrawn; // extra flag for mesh
+         dmesh.name = "..";
+
+         // add the mesh to the scene
+         mesh.add(dmesh);
+
+         dmesh.updateMatrixWorld();
+      }
 
       return mesh;
    }
