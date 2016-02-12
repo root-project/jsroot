@@ -934,8 +934,8 @@
       var cnt = poly.fP.length;
       var step = 3;
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && (cnt > 300*3)) {
-         step = Math.floor(cnt / 300 / 3) * 3;
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && (cnt > 1000*3)) {
+         step = Math.floor(cnt / 1000 / 3) * 3;
          if (step <= 6) step = 6;
       }
 
@@ -943,12 +943,15 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
+      var material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f});
+
+      // var geom = new THREE.SphereBufferGeometry(1);
+      var geom = new THREE.BoxGeometry(1, 1, 1);
+
       for (var n=0; n<cnt; n+=step) {
-         var bin = new THREE.Mesh(new THREE.SphereGeometry(1),
-                                  new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f}));
-         bin.position.x = main.tx(poly.fP[n]);
-         bin.position.y = main.ty(poly.fP[n+1]);
-         bin.position.z = main.tz(poly.fP[n+2]);
+         var bin = new THREE.Mesh(geom, material.clone());
+         bin.position.set( main.tx(poly.fP[n]), main.ty(poly.fP[n+1]), main.tz(poly.fP[n+2]) );
+         bin.name =  poly.fName;
          main.toplevel.add(bin);
       }
 
