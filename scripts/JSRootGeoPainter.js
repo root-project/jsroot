@@ -280,7 +280,7 @@
       this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
-   JSROOT.GEO.checkFlipping = function(parent, matrix, node, geom, mesh_has_childs) {
+   JSROOT.GEO.checkFlipping = function(parent, matrix, shape, geom, mesh_has_childs) {
       // check if matrix of element should be flipped
 
       var m = new THREE.Matrix4();
@@ -316,7 +316,7 @@
       if (flip.z<0) gname += "Z";
 
       // if geometry with such flipping already was created - use it again
-      if (gname in node) return node[gname];
+      if (gname in shape) return shape[gname];
 
       geom = geom.clone();
 
@@ -331,13 +331,14 @@
       //geom.computeBoundingSphere();
       geom.computeFaceNormals();
 
-      node[gname] = geom;
+      shape[gname] = geom;
 
       return geom;
    }
 
    JSROOT.GEO.createNodeMesh = function(node, parent) {
       var volume = node['fVolume'];
+      var shape = volume.fShape;
 
       var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -452,10 +453,10 @@
       var geom = null;
 
       if ( _isdrawn) {
-         if (typeof node._geom === 'undefined')
-            node._geom = JSROOT.GEO.createGeometry(volume.fShape);
+         if (typeof shape._geom === 'undefined')
+            shape._geom = JSROOT.GEO.createGeometry(shape);
 
-         geom = node._geom;
+         geom = shape._geom;
       }
 
       var matrix = new THREE.Matrix4();
@@ -472,7 +473,7 @@
       var has_childs = (volume.fNodes !== null) && (volume.fNodes.arr.length > 0);
 
       if (_isdrawn)
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom, has_childs);
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, shape, geom, has_childs);
 
       var work_around = _isdrawn && has_childs && (geom === null);
 
@@ -518,6 +519,8 @@
 
       var _isdrawn = false, material = null, geom = null;
 
+      var shape = node.fShape;
+
       if (node._visible) {
          _isdrawn = true;
          var _transparent = false, _opacity = 1.0;
@@ -546,10 +549,10 @@
       }
 
       if ( _isdrawn ) {
-         if (typeof node._geom === 'undefined')
-            node._geom = JSROOT.GEO.createGeometry(node.fShape);
+         if (typeof shape._geom === 'undefined')
+            shape._geom = JSROOT.GEO.createGeometry(shape);
 
-         geom = node._geom;
+         geom = shape._geom;
       }
 
       var matrix = new THREE.Matrix4().set(
@@ -564,7 +567,7 @@
       var has_childs = (node.fElements !== null) && (node.fElements.arr.length > 0);
 
       if (_isdrawn)
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom, has_childs);
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, shape, geom, has_childs);
 
       var work_around = _isdrawn && has_childs && (geom === null);
 
@@ -685,7 +688,7 @@
          lvl = 0;
          if (!arg) arg = { erase: true };
          if (!('map' in arg)) arg.map = [];
-         if (!('vis' in arg)) arg.vis = [];
+         arg.viscnt = 0;
          if (!('clear' in arg))
             arg.clear = function() {
                for (var n=0;n<this.map.length;++n) {
@@ -695,7 +698,7 @@
                   delete this.map[n]._visible;
                }
                this.map = [];
-               this.vis = [];
+               this.viscnt = 0;
             };
       }
 
@@ -742,7 +745,7 @@
 
          if (obj._canshow && vis && !('_visible' in obj)) {
             obj._visible = true;
-            arg.vis.push(obj);
+            arg.viscnt++;
          }
 
          if (chlds !== null)
@@ -932,18 +935,12 @@
       }
       res += "Unique volumes: " + arg.map.length + '<br/>';
 
-      if (arg.vis.length === 0) {
+      if (arg.viscnt === 0) {
          arg.clear(); arg.maxlvl = 9999;
          cnt = this.CountGeoVolumes(this._geometry, arg);
       }
 
-      res += "Visible volumes: " + arg.vis.length + '<br/>';
-      if (arg.vis.length < 200) {
-         res += "Visible refs: [";
-         for (var n=0;n<arg.vis.length;++n)
-            res += " " + arg.vis[n]._refcnt;
-         res += " ]<br/>";
-      }
+      res += "Visible volumes: " + arg.viscnt + '<br/>';
 
       if (cnt<200000) {
          this.ScanUniqueVisVolumes(this._geometry, 0, arg);
@@ -997,27 +994,27 @@
          }
        })();
 
-      var _data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
+      this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
 
-      var total = this.CountGeoVolumes(this._geometry, _data);
+      var total = this.CountGeoVolumes(this._geometry, this._data);
 
       // if no any volume was selected, probably it is because of visibility flags
-      if ((total>0) && (_data.vis.length == 0) && (this.options.maxlvl < 0)) {
-         _data.clear();
-         _data.maxlvl = 1111;
-         total = this.CountGeoVolumes(this._geometry, _data);
+      if ((total>0) && (this._data.viscnt == 0) && (this.options.maxlvl < 0)) {
+         this._data.clear();
+         this._data.maxlvl = 1111;
+         total = this.CountGeoVolumes(this._geometry, this._data);
       }
 
       var maxlimit = this._webgl ? 1e7 : 1e4;
 
-      if ((_data.maxlvl === 1111) && (total > maxlimit))  {
+      if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
          var sum = 0;
-         for (var lvl=1; lvl < _data.cnt.length; ++lvl) {
-            sum += _data.cnt.cnt[lvl];
+         for (var lvl=1; lvl < this._data.cnt.length; ++lvl) {
+            sum += this._data.cnt.cnt[lvl];
             if (sum > maxlimit) {
-               _data.maxlvl = lvl - 1;
-               _data.clear();
-               this.CountGeoVolumes(this._geometry, _data);
+               this._data.maxlvl = lvl - 1;
+               this._data.clear();
+               this.CountGeoVolumes(this._geometry, this._data);
                break;
             }
          }
@@ -1129,6 +1126,8 @@
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
+
+      this._data.clear();
 
       // pointer used in the event handlers
       var pthis = this;
