@@ -252,26 +252,26 @@
 
       // add inner tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg+radiusSegments+2 ) );
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+2, seg+1 ) );
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg+1 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg+radiusSegments+2, seg+1 ) );
       }
 
       // add outer tube faces
       for (var seg=shift; seg < shift+radiusSegments; ++seg) {
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg+radiusSegments+2 ) );
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+2, seg+1 ) );
+         geometry.faces.push( new THREE.Face3( seg, seg+1, seg+radiusSegments+1 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg+1, seg+radiusSegments+2 ) );
       }
 
       // add top cap
       for (var i = 0; i < radiusSegments; ++i){
-         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+0, i+shift, i+1 ) );
+         geometry.faces.push( new THREE.Face3( i+shift, i+shift+1, i+1 ) );
       }
 
       // add endcap cap
       for (var i = radiusSegments+1; i < 2*radiusSegments+1; ++i){
          geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+shift, i+1, i+shift+1 ) );
       }
 
       // close cut regions
@@ -289,6 +289,7 @@
 
       return geometry;
    }
+
 
    JSROOT.GEO.createTorus = function( shape ) {
       var radius = shape['fR'];
