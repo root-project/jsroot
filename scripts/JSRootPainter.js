@@ -5678,7 +5678,7 @@
 
    JSROOT.THistPainter.prototype.CreateToolbar = function(buttons) {
 
-      if ( !JSROOT.gStyle.ToolBar || (this.toolbar !== null) ) return;
+      if ( !JSROOT.gStyle.ToolBar || (this.toolbar !== null) || !this.is_main_painter()) return;
 
       if (this.pad_name.length > 0) return; // do not create toolbar in subpad
 
