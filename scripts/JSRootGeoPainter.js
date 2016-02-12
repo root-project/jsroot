@@ -452,10 +452,9 @@
       var geom = null;
 
       if ( _isdrawn) {
-         if (typeof node._geom === 'undefined') {
-            console.warn('why geometry not created for the node ' + node.fName);
+         if (typeof node._geom === 'undefined')
             node._geom = JSROOT.GEO.createGeometry(volume.fShape);
-         }
+
          geom = node._geom;
       }
 
@@ -547,10 +546,9 @@
       }
 
       if ( _isdrawn ) {
-         if (typeof node._geom === 'undefined') {
-            console.warn('why geometry not created for the evenode ' + node.fName);
+         if (typeof node._geom === 'undefined')
             node._geom = JSROOT.GEO.createGeometry(node.fShape);
-         }
+
          geom = node._geom;
       }
 
@@ -635,25 +633,11 @@
          }
          return true;
       }
-/*
-      if ('_mesh' in arg.node) {
 
-         if (arg.node._mesh !== null)
-            arg.toplevel.add(arg.node._mesh.clone());
-
-         this._stack.pop();
-
-         return true;
-      }
-*/
       if (kind === 0)
          arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
       else
          arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node, arg.toplevel);
-
-      //var json = mesh.toJSON();
-      //var loader = new THREE.ObjectLoader();
-      // mesh = loader.parse(json);
 
       if (this.options._debug && (arg.node._mesh._isdrawn || this.options._full)) {
          var helper = new THREE.WireframeHelper(arg.node._mesh);
@@ -1013,27 +997,27 @@
          }
        })();
 
-      this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
+      var _data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
 
-      var total = this.CountGeoVolumes(this._geometry, this._data);
+      var total = this.CountGeoVolumes(this._geometry, _data);
 
       // if no any volume was selected, probably it is because of visibility flags
-      if ((total>0) && (this._data.vis.length == 0) && (this.options.maxlvl < 0)) {
-         this._data.clear();
-         this._data.maxlvl = 1111;
-         total = this.CountGeoVolumes(this._geometry, this._data);
+      if ((total>0) && (_data.vis.length == 0) && (this.options.maxlvl < 0)) {
+         _data.clear();
+         _data.maxlvl = 1111;
+         total = this.CountGeoVolumes(this._geometry, _data);
       }
 
       var maxlimit = this._webgl ? 1e7 : 1e4;
 
-      if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
+      if ((_data.maxlvl === 1111) && (total > maxlimit))  {
          var sum = 0;
-         for (var lvl=1; lvl < this._data.cnt.length; ++lvl) {
-            sum += this._data.cnt.cnt[lvl];
+         for (var lvl=1; lvl < _data.cnt.length; ++lvl) {
+            sum += _data.cnt.cnt[lvl];
             if (sum > maxlimit) {
-               this._data.maxlvl = lvl - 1;
-               this._data.clear();
-               this.CountGeoVolumes(this._geometry, this._data);
+               _data.maxlvl = lvl - 1;
+               _data.clear();
+               this.CountGeoVolumes(this._geometry, _data);
                break;
             }
          }
@@ -1047,8 +1031,7 @@
 
       this._startm = new Date().getTime();
 
-      this._geomcnt = 0; // counter used to create single geometries
-      this._drawcnt = 0; // counter used to build final meshes
+      this._drawcnt = 0; // counter used to build meshes
 
       this.CreateToolbar( { container: this.select_main().node() } );
 
@@ -1061,28 +1044,6 @@
       var log = "";
 
       while(true) {
-         if (this._geomcnt < this._data.vis.length) {
-            var geom = null;
-
-            var node = this._data.vis[this._geomcnt];
-            if (this._geomcnt < 80000) {
-               if (this.NodeKind(node) === 0)
-                  geom = JSROOT.GEO.createGeometry(node.fVolume.fShape);
-               else
-                  geom = JSROOT.GEO.createGeometry(node.fShape);
-               if (this._webgl && false) {
-                  var bufgeom = new THREE.BufferGeometry();
-                  bufgeom.fromGeometry(geom);
-                  geom = bufgeom;
-               }
-            } else {
-               if (this._dummy_geom === undefined) this._dummy_geom = new THREE.Geometry();
-               geom = this._dummy_geom;
-            }
-            node._geom = geom;
-            this._geomcnt++;
-            log = "Creating geometries " + this._geomcnt + "/" + this._data.vis.length;
-         } else
          if (this.drawNode()) {
             this._drawcnt++;
             log = "Creating meshes " + this._drawcnt;
@@ -1090,9 +1051,6 @@
             break;
 
          var now = new Date().getTime();
-
-         if (this._drawcnt === 1)
-            console.log('Create geom time = ' + (now - this._startm));
 
          if (now - curr > 300) {
             // console.log('again timeout ' + this._drawcnt);
@@ -1171,8 +1129,6 @@
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
-
-      this._data.clear(); // clear original object, let it redraw again later
 
       // pointer used in the event handlers
       var pthis = this;
