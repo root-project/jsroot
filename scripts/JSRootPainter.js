@@ -221,6 +221,11 @@
 
       var embed3d = JSROOT.GetUrlOption("embed3d", url);
       if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = parseInt(embed3d);
+
+      var webgl = JSROOT.GetUrlOption("webgl", url);
+      if ((webgl === "0") || (webgl === "false")) JSROOT.gStyle.NoWebGL = false; else
+      if (webgl === "ie") JSROOT.gStyle.NoWebGL = !JSROOT.browser.isIE;
+
    }
 
    JSROOT.Painter.Coord = {

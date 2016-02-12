@@ -130,7 +130,8 @@
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
          Interpolate : "basis", // d3.js interpolate methods, used in TGraph and TF1 painters
          ProgressBox : true,  // show progress box
-         Embed3DinSVG : 2  // 0 - no embed, 1 - overlay over SVG (IE), 2 - embed into SVG (works only with Firefox and Chrome)
+         Embed3DinSVG : 2,  // 0 - no embed, 1 - overlay over SVG (IE), 2 - embed into SVG (works only with Firefox and Chrome)
+         NoWebGL : false // if true, WebGL will be disabled
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }

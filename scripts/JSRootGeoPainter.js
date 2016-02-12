@@ -1392,14 +1392,7 @@
       if (!('_yup' in this.options))
          this.options._yup = this.svg_canvas().empty();
 
-      this._webgl = (function() {
-         try {
-            return !!window.WebGLRenderingContext &&
-                   !!document.createElement('canvas').getContext('experimental-webgl');
-         } catch (e) {
-            return false;
-         }
-       })();
+      this._webgl = JSROOT.Painter.TestWebGL();
 
       this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
 

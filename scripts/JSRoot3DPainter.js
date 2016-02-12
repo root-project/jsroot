@@ -23,6 +23,25 @@
    }
 } (function(d3, JSROOT) {
 
+   JSROOT.Painter.TestWebGL = function() {
+      // return true if WebGL should be used
+      /**
+       * @author alteredq / http://alteredqualia.com/
+       * @author mr.doob / http://mrdoob.com/
+       */
+
+      if (JSROOT.gStyle.NoWebGL) return false;
+
+      return (function() {
+            try {
+               return !!window.WebGLRenderingContext &&
+                      !!document.createElement('canvas').getContext('experimental-webgl');
+            } catch (e) {
+               return false;
+           }
+         })();
+   }
+
    JSROOT.Painter.add3DInteraction = function() {
       // add 3D mouse interactive functions
 
@@ -283,24 +302,10 @@
       this.camera.lookAt(new THREE.Vector3(0,0,this.size3d));
       this.scene.add( this.camera );
 
-      /**
-       * @author alteredq / http://alteredqualia.com/
-       * @author mr.doob / http://mrdoob.com/
-       */
-      var Detector = {
-            canvas : !!window.CanvasRenderingContext2D,
-            webgl : (function() { try {
-                  return !!window.WebGLRenderingContext && !!document.createElement('canvas').getContext('experimental-webgl');
-               } catch (e) {
-                  return false;
-               }
-            })(),
-            workers : !!window.Worker,
-            fileapi : window.File && window.FileReader && window.FileList && window.Blob
-      };
+      var webgl = JSROOT.Painter.TestWebGL();
 
-      this.renderer = Detector.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                       new THREE.CanvasRenderer({ antialias : true, alpha: true  });
+      this.renderer = webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                              new THREE.CanvasRenderer({ antialias : true, alpha: true  });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
