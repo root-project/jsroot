@@ -279,7 +279,7 @@
       this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
-   JSROOT.GEO.checkFlipping = function(parent, matrix, geom) {
+   JSROOT.GEO.checkFlipping = function(parent, matrix, node, geom) {
       // check if matrix of element should be flipped
 
       var m = new THREE.Matrix4();
@@ -305,24 +305,31 @@
       }
 
       matrix.scale(flip);
+
+      var gname = "_geom";
+      if (flip.x<0) gname += "X";
+      if (flip.y<0) gname += "Y";
+      if (flip.z<0) gname += "Z";
+
+      // if geometry with such flipping already was created - use it again
+      if (gname in node) return node[gname];
+
       geom = geom.clone();
 
       geom.scale(flip.x, flip.y, flip.z);
 
-      var face, d;
-      for (var n=0;n<geom.faces.length;++n) {
-         face = geom.faces[n];
-         d = face.b; face.b = face.c; face.c = d;
-      }
+      //var face, d;
+      //for (var n=0;n<geom.faces.length;++n) {
+         // face = geom.faces[n];
+         // d = face.b; face.b = face.c; face.c = d;
+      //}
 
-      geom.computeBoundingSphere();
+      //geom.computeBoundingSphere();
       geom.computeFaceNormals();
 
-      return geom;
+      node[gname] = geom;
 
-      //if ((volume.fNodes !== null) && (volume.fNodes.arr.length > 0))
-      //   console.warn('FLIP geometry with child elements - need proper handling');
-      //}
+      return geom;
    }
 
    JSROOT.GEO.createNodeMesh = function(node, parent) {
@@ -462,7 +469,7 @@
 
       if (_isdrawn) {
          var geom0 = geom;
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, geom);
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom);
 
          if ((geom0 !== geom) && (volume.fNodes !== null) && (volume.fNodes.arr.length > 0))
             console.warn('FLIP geometry with child elements - need proper handling');
@@ -536,7 +543,7 @@
 
       if (_isdrawn) {
          var geom0 = geom;
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, geom);
+         geom = JSROOT.GEO.checkFlipping(parent, matrix, node, geom);
 
          if ((geom0 !== geom) && (node.fElements !== null) && (node.fElements.arr.length > 0))
             console.warn('FLIP geometry with child elements - need proper handling');
