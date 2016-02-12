@@ -1954,7 +1954,7 @@
    }
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
-   JSROOT.addDrawFunc({ name: "TAxis3D", func: 'JSROOT.Painter.drawAxis3D', prereq: "3d" });
+   JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
 

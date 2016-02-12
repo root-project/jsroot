@@ -753,9 +753,6 @@
          mainfiles += "$$$scripts/three" + ext + ".js;" +
                       "$$$scripts/three.extra" + ext + ".js;";
          modules.push("THREE_ALL");
-      }
-
-      if (kind.indexOf("3d;")>=0) {
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
