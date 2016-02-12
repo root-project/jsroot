@@ -534,9 +534,6 @@
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
-      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
-      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
-
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
 
       var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
@@ -545,17 +542,19 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
 
+      var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
+
+      var geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 1);
+
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
          var wei = this.tz(hh.z);
 
          // create a new mesh with cube geometry
-         var bin = new THREE.Mesh(new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, wei),
-                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
+         var bin = new THREE.Mesh(geom, material.clone());
 
-         bin.position.x = this.tx(hh.x);
-         bin.position.y = this.ty(hh.y);
-         bin.position.z = wei / 2;
+         bin.position.set(this.tx(hh.x), this.ty(hh.y), wei / 2);
+         bin.scale.set(1,1,wei);
 
          if (JSROOT.gStyle.Tooltip && ('tip' in hh))
             bin.name = hh.tip.replace(/(?:\r\n|\r|\n)/g, '<br/>');
@@ -921,6 +920,8 @@
 
       return this.DrawingReady();
    }
+
+   // ===================================================================
 
    JSROOT.Painter.drawPolyMarker3D = function(divid, poly, opt) {
       // when called, *this* set to painter instance
