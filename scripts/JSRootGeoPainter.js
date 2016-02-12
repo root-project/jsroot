@@ -640,30 +640,6 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.startWorker = function() {
-
-      this._worker = [];
-
-      for (var n=0;n<4;n++) {
-
-         this._worker[n] = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
-
-         this._worker[n].onmessage = function(e) {
-
-            if (typeof e.data !== 'object') return;
-
-            if ('log' in e.data)
-               return JSROOT.console('geo: ' + e.data.log);
-
-            if ('init' in e.data)
-               return JSROOT.console('full init tm: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
-         };
-
-         this._worker[n].postMessage( { init: true, tm0: new Date() } );
-      }
-   }
-
-
    JSROOT.TGeoPainter.prototype.addControls = function() {
 
       if (this._controls !== null) return;
@@ -1408,7 +1384,6 @@
       var size = this.size_for_3d();
 
       if (opt == 'count') {
-         // this.startWorker();
          return this.drawCount();
       }
 
