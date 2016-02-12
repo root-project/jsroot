@@ -336,9 +336,12 @@
       return geom;
    }
 
-   JSROOT.GEO.createNodeMesh = function(node, parent) {
+   JSROOT.TGeoPainter.prototype.getNodeProperties = function(node, visible) {
+      // function return matrix, shape and material
+
       var volume = node['fVolume'];
-      var shape = volume.fShape;
+
+      var prop = { shape: volume.fShape };
 
       var translation_matrix = null; // [0, 0, 0];
       var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -412,10 +415,9 @@
          }
       }
 
-      var _isdrawn = false, material = null, geom = null;
+      prop.material = null;
 
-      if (node._visible) {
-         _isdrawn = true;
+      if (visible) {
          var _transparent = false, _opacity = 1.0, fillcolor;
          if (volume['fLineColor'] >= 0)
             fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
@@ -434,95 +436,33 @@
          if (fillcolor === undefined)
             fillcolor = "lightgrey";
 
-         material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: fillcolor,
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
-
-      } else {
-
-         if (this._dummy_material === undefined)
-            this._dummy_material =
-               new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
-                                                color: 'white', vertexColors: THREE.NoColors,
-                                                overdraw: 0., depthWrite : false, depthTest: false, visible: false } );
-
-         material = this._dummy_material;
       }
 
-      var geom = null;
-
-      if ( _isdrawn) {
-         if (typeof shape._geom === 'undefined')
-            shape._geom = JSROOT.GEO.createGeometry(shape);
-
-         geom = shape._geom;
-      }
-
-      var matrix = new THREE.Matrix4();
+      prop.matrix = new THREE.Matrix4();
 
       if (rotation_matrix !== null)
-         matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                    rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                    rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                     0,                  0,                  0,   1);
+         prop.matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                         rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                         rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                          0,                  0,                  0,   1);
 
       if (translation_matrix !== null)
-         matrix.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
+         prop.matrix.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
 
-      var has_childs = (volume.fNodes !== null) && (volume.fNodes.arr.length > 0);
-
-      if (_isdrawn)
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, shape, geom, has_childs);
-
-      var work_around = _isdrawn && has_childs && (geom === null);
-
-      if (geom === null) geom = new THREE.Geometry();
-
-      var mesh = new THREE.Mesh( geom, material );
-
-      mesh.applyMatrix(matrix);
-
-      mesh._isdrawn = _isdrawn; // extra flag for mesh
-      mesh.name = node.fName;
-
-      // add the mesh to the scene
-      parent.add(mesh);
-
-      mesh.updateMatrixWorld();
-
-      if (work_around) {
-         console.log('perform workaroud for mesh with childs');
-
-         matrix.identity(); // set to 1
-
-         geom = JSROOT.GEO.checkFlipping(mesh, matrix, node, node._geom);
-
-         var dmesh = new THREE.Mesh( geom, material );
-
-         dmesh.applyMatrix(matrix);
-
-         dmesh._isdrawn = _isdrawn; // extra flag for mesh
-         dmesh.name = "..";
-
-         // add the mesh to the scene
-         mesh.add(dmesh);
-
-         dmesh.updateMatrixWorld();
-      }
-
-      return mesh;
+      return prop;
    }
 
+   JSROOT.TGeoPainter.prototype.getEveNodeProperties = function(node, visible) {
 
-   JSROOT.GEO.createEveNodeMesh = function(node, parent) {
+      var prop = { shape: node.fShape };
 
-      var _isdrawn = false, material = null, geom = null;
+      prop.material = null;
 
-      var shape = node.fShape;
-
-      if (node._visible) {
-         _isdrawn = true;
+      if (visible) {
          var _transparent = false, _opacity = 1.0;
          if ( node['fRGBA'][3] < 1.0) {
             _transparent = true;
@@ -530,80 +470,21 @@
          }
          var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
          var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
-         material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: fillcolor,
                           side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                           overdraw: 0. } );
-
-         material.polygonOffset = true; //???
-         material.polygonOffsetFactor = -1; ///????
-
-      } else {
-         if (this._dummy_material === undefined)
-            this._dummy_material =
-               new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
-                                                color: 'white', vertexColors: THREE.NoColors,
-                                                overdraw: 0., depthWrite : false, depthTest: false, visible: false } );
-
-         material = this._dummy_material;
       }
 
-      if ( _isdrawn ) {
-         if (typeof shape._geom === 'undefined')
-            shape._geom = JSROOT.GEO.createGeometry(shape);
-
-         geom = shape._geom;
-      }
-
-      var matrix = new THREE.Matrix4().set(
-                  node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
-                  node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
-                  node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                               0,               0,                0, 1);
+      prop.matrix = new THREE.Matrix4().set(
+                           node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                           node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                           node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                                        0,               0,                0, 1);
 
       // second - set position with proper sign
-      matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
-
-      var has_childs = (node.fElements !== null) && (node.fElements.arr.length > 0);
-
-      if (_isdrawn)
-         geom = JSROOT.GEO.checkFlipping(parent, matrix, shape, geom, has_childs);
-
-      var work_around = _isdrawn && has_childs && (geom === null);
-
-      if (geom === null) geom = new THREE.Geometry();
-
-      var mesh = new THREE.Mesh( geom, material );
-
-      mesh.applyMatrix(matrix);
-
-      mesh._isdrawn = _isdrawn; // extra flag for mesh
-      mesh.name = node.fName;
-
-      // add the mesh to the scene
-      parent.add(mesh);
-
-      if (work_around) {
-         console.log('perform workaroud for mesh with childs');
-
-         matrix.identity(); // set to 1
-
-         geom = JSROOT.GEO.checkFlipping(mesh, matrix, node, node._geom);
-
-         var dmesh = new THREE.Mesh( geom, material );
-
-         dmesh.applyMatrix(matrix);
-
-         dmesh._isdrawn = _isdrawn; // extra flag for mesh
-         dmesh.name = "..";
-
-         // add the mesh to the scene
-         mesh.add(dmesh);
-
-         dmesh.updateMatrixWorld();
-      }
-
-      return mesh;
+      prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+      return prop;
    }
 
 
@@ -637,30 +518,88 @@
          return true;
       }
 
-      if (kind === 0)
-         arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
-      else
-         arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node, arg.toplevel);
+      var prop = null;
 
-      if (this.options._debug && (arg.node._mesh._isdrawn || this.options._full)) {
-         var helper = new THREE.WireframeHelper(arg.node._mesh);
+      //if (kind === 0)
+      //   arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
+      //else
+      //   arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node, arg.toplevel);
+
+      if (kind === 0)
+         prop = this.getNodeProperties(arg.node, arg.node._visible);
+      else
+         prop = this.getEveNodeProperties(arg.node, arg.node._visible);
+
+      var geom = null;
+
+      if (arg.node._visible) {
+         if (typeof prop.shape._geom === 'undefined')
+            prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
+
+         geom = prop.shape._geom;
+
+      } else {
+         if (this._dummy_material === undefined)
+            this._dummy_material =
+               new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
+                                                color: 'white', vertexColors: THREE.NoColors,
+                                                overdraw: 0., depthWrite : false, depthTest: false, visible: false } );
+
+         prop.material = this._dummy_material;
+      }
+
+      var has_childs = (chlds !== null) && (chlds.length > 0);
+
+      if (arg.node._visible)
+         geom = JSROOT.GEO.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
+
+      var work_around = arg.node._visible && has_childs && (geom === null);
+
+      if (geom === null) geom = new THREE.Geometry();
+
+      var mesh = new THREE.Mesh( geom, prop.material );
+
+      mesh.applyMatrix(prop.matrix);
+
+      mesh.name = arg.node.fName;
+
+      // add the mesh to the scene
+      arg.toplevel.add(mesh);
+
+      mesh.updateMatrixWorld();
+
+      if (work_around) {
+         console.log('perform workaroud for flipping mesh with childs');
+
+         prop.matrix.identity(); // set to 1
+
+         geom = JSROOT.GEO.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+
+         var dmesh = new THREE.Mesh( geom, prop.material );
+
+         dmesh.applyMatrix(prop.matrix);
+
+         dmesh.name = "..";
+
+         // add the mesh to the scene
+         mesh.add(dmesh);
+
+         dmesh.updateMatrixWorld();
+      }
+
+      if (this.options._debug && (arg.node._visible || this.options._full)) {
+         var helper = new THREE.WireframeHelper(mesh);
          helper.material.color.set(JSROOT.Painter.root_colors[arg.node.fVolume['fLineColor']]);
          helper.material.linewidth = arg.node.fVolume['fLineWidth'];
          arg.toplevel.add(helper);
       }
 
-      if (this.options._bound && (arg.node._mesh._isdrawn || this.options._full)) {
-         var boxHelper = new THREE.BoxHelper( arg.node._mesh );
+      if (this.options._bound && (arg.node._visible || this.options._full)) {
+         var boxHelper = new THREE.BoxHelper( mesh );
          arg.toplevel.add( boxHelper );
       }
 
-      if (arg.node._mesh !== null) {
-         arg.node._mesh['name'] = arg.node['fName'];
-         // add the mesh to the scene
-         arg.toplevel.add(arg.node._mesh);
-      }
-
-      arg.mesh = arg.node._mesh;
+      arg.mesh = mesh;
 
       if ((chlds === null) || (chlds.length == 0)) {
          // do not draw childs
