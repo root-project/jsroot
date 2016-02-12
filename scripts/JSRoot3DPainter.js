@@ -832,27 +832,36 @@
       var bins = this.CreateBins();
 
       // create the bin cubes
-      var constx = (this.size3d * 2 / this.nbinsx) / this.gmaxbin;
-      var consty = (this.size3d * 2 / this.nbinsy) / this.gmaxbin;
-      var constz = (this.size3d * 2 / this.nbinsz) / this.gmaxbin;
+      var constx = 2 * this.size3d / this.nbinsx;
+      var consty = this.nbinsx / this.nbinsy;
+      var constz = this.nbinsx / this.nbinsz;
 
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
+      var material = null, geom = null;
+
+      if (this.options.Box == 11) {
+         material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
+         geom = new THREE.SphereBufferGeometry(0.5 * constx);
+      } else {
+         material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
+         geom = new THREE.BoxGeometry(constx, constx, constx);
+      }
+
       var bin, wei;
       for (var i = 0; i < bins.length; ++i) {
-         wei = (this.options.Color > 0) ? this.gmaxbin : bins[i].n;
-         if (this.options.Box == 11) {
-            bin = new THREE.Mesh(new THREE.SphereGeometry(0.5 * wei * constx),
-                                 new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f }));
-         } else {
-            bin = new THREE.Mesh(new THREE.BoxGeometry(wei * constx, wei * constz, wei * consty),
-                                  new THREE.MeshLambertMaterial({ color : fillcolor.getHex() }));
-         }
-         bin.position.x = this.tx(bins[i].x);
-         bin.position.y = this.ty(bins[i].y);
-         bin.position.z = this.tz(bins[i].z);
+         wei = (this.options.Color > 0) ? 1. : bins[i].n / this.gmaxbin;
+
+         if (wei < 1e-5) continue; // do not show empty bins
+
+         bin = new THREE.Mesh(geom, material.clone());
+
+         bin.position.set( this.tx(bins[i].x), this.ty(bins[i].y),  this.tz(bins[i].z) );
+
+         bin.scale.set(wei, wei * consty, wei * constz);
+
          if ('tip' in bins[i])
            bin.name = bins[i].tip;
 
