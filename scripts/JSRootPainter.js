@@ -1323,6 +1323,7 @@
 
             fo = d3.select(this.svg_canvas().node().parentNode).append('div');
             fo.attr('class','draw3d_' + name)
+              .attr('title', "")
               .style('position','absolute')
               .style('left', size.x + 'px')
               .style('top', size.y + 'px')
@@ -1334,6 +1335,7 @@
             // set frame dimensions
             fo.attr('width', size.width)
               .attr('height', size.height)
+              .attr('title', "")
               .attr('viewBox', "0 0 " + size.width + " " + size.height)
               .attr('preserveAspectRatio','xMidYMid');
 
