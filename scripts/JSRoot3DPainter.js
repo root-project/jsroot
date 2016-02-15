@@ -408,14 +408,14 @@
             tick.position.set(grx,grmaxy, grminz);
             tick.scale.set(1,plen,plen);
             tick.rotation.z = Math.PI;
-            tick.name = "X axis";
+            tick.name = "X axis: " + xminors[i];
             this.toplevel.add(tick);
          }
 
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grx,grminy,grminz);
          tick.scale.set(1,plen,plen);
-         tick.name = "X axis";
+         tick.name = "X axis: " + xminors[i];
          this.toplevel.add(tick);
       }
 
@@ -457,13 +457,13 @@
             tick.position.set(grmaxx,gry,grminz);
             tick.scale.set(plen,1,plen);
             tick.rotation.z = Math.PI;
-            tick.name = "Y axis";
+            tick.name = "Y axis " + yminors[i];
             this.toplevel.add(tick);
          }
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grminx,gry,grminz);
          tick.scale.set(plen,1, plen);
-         tick.name = "Y axis";
+         tick.name = "Y axis " + yminors[i];
          this.toplevel.add(tick);
       }
 
@@ -518,28 +518,28 @@
             tick.position.set(grmaxx,grmaxy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = -Math.PI/2;
-            tick.name = "Z axis";
+            tick.name = "Z axis " + zminors[i];
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grmaxx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI;
-            tick.name = "Z axis";
+            tick.name = "Z axis " + zminors[i];
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grminx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI/2;
-            tick.name = "Z axis";
+            tick.name = "Z axis " + zminors[i];
             this.toplevel.add(tick);
          }
 
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grminx,grmaxy,grz);
          tick.scale.set(plen,plen,1);
-         tick.name = "Z axis";
+         tick.name = "Z axis " + zminors[i];
          this.toplevel.add(tick);
       }
 

@@ -1,11 +1,12 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Significant (orders of magnitude) improve in performance of TGeo drawing
+1. Significant performance improvements in 3D drawings - TGeo/TH2/TH3 
 2. Support array of objects in I/O (like in TAxis3D)
 3. Correct reading of multi-dim arrays like Double_t fXY[8][2];
 4. Provide canvas toolbar for actions like save_png or unzoom  
 5. Implement JSROOT.resize() function to let resize drawing after changes in page layout 
+6. Fix error with title display/update 
  
 
 ## Changes in 4.1

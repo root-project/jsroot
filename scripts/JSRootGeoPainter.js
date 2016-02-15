@@ -504,7 +504,6 @@
           (shape['_typename'] == "TGeoTube") || (shape['_typename'] == "TGeoTubeSeg"))
          return JSROOT.GEO.createTube( shape );
 
-
       if (shape['_typename'] == "TGeoTorus")
          return JSROOT.GEO.createTorus( shape );
 
