@@ -287,7 +287,7 @@
 
       geometry.computeFaceNormals();
 
-      console.log(shape['_typename'] + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
+      // console.log(shape['_typename'] + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
@@ -463,7 +463,7 @@
 
       geometry.computeFaceNormals();
 
-      console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
+      // console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
@@ -728,7 +728,7 @@
                   p = p.parent;
                }
 
-               console.log('intersect ' + name);
+               // console.log('intersect ' + name);
             }
          } else {
             // INTERSECTED = null;
@@ -748,7 +748,28 @@
       this._renderer.domElement.addEventListener('mousemove', mousemove);
    }
 
-   JSROOT.GEO.checkFlipping = function(parent, matrix, shape, geom, mesh_has_childs) {
+   JSROOT.TGeoPainter.prototype.accountClear = function() {
+      this._num_geom = 0;
+      this._num_vertices = 0;
+      this._num_faces = 0;
+      this._num_meshes = 0;
+   }
+
+   JSROOT.TGeoPainter.prototype.accountGeom = function(geom) {
+      // used to calculate statistic over created geometry
+      if (geom === null) return;
+
+      this._num_geom++;
+      this._num_vertices += geom.vertices.length;
+      this._num_faces += geom.faces.length;
+   }
+
+   JSROOT.TGeoPainter.prototype.accountMesh = function(mesh) {
+      // used to calculate statistic over created meshes
+      if (mesh !== null) this._num_meshes++;
+   }
+
+   JSROOT.TGeoPainter.prototype.checkFlipping = function(parent, matrix, shape, geom, mesh_has_childs) {
       // check if matrix of element should be flipped
 
       var m = new THREE.Matrix4();
@@ -800,6 +821,8 @@
       geom.computeFaceNormals();
 
       shape[gname] = geom;
+
+      this.accountGeom(geom);
 
       return geom;
    }
@@ -1001,8 +1024,10 @@
       var geom = null;
 
       if (arg.node._visible) {
-         if (typeof prop.shape._geom === 'undefined')
+         if (typeof prop.shape._geom === 'undefined') {
             prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
+            this.accountGeom(prop.shape._geom);
+         }
 
          geom = prop.shape._geom;
 
@@ -1019,7 +1044,7 @@
       var has_childs = (chlds !== null) && (chlds.length > 0);
 
       if (arg.node._visible)
-         geom = JSROOT.GEO.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
+         geom = this.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
 
       var work_around = arg.node._visible && has_childs && (geom === null);
 
@@ -1029,6 +1054,8 @@
 
       mesh.applyMatrix(prop.matrix);
 
+      this.accountMesh(mesh);
+
       mesh.name = arg.node.fName;
 
       // add the mesh to the scene
@@ -1037,11 +1064,11 @@
       mesh.updateMatrixWorld();
 
       if (work_around) {
-         console.log('perform workaroud for flipping mesh with childs');
+         JSROOT.console('perform workaroud for flipping mesh with childs');
 
          prop.matrix.identity(); // set to 1
 
-         geom = JSROOT.GEO.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+         geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
 
          var dmesh = new THREE.Mesh( geom, prop.material );
 
@@ -1279,6 +1306,8 @@
          this._nodedraw = false;
          this._stack = [ { toplevel: this._toplevel, node: this._geometry } ];
       }
+
+      this.accountClear();
    }
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
@@ -1449,7 +1478,6 @@
          var now = new Date().getTime();
 
          if (now - curr > 300) {
-            // console.log('again timeout ' + this._drawcnt);
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
             return this;
@@ -1460,7 +1488,7 @@
       }
 
       var t2 = new Date().getTime();
-      console.log('Create tm = ' + (t2-this._startm));
+      JSROOT.console('Create tm = ' + (t2-this._startm) + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces + ' meshes ' + this._num_meshes);
 
       if (t2 - this._startm > 300) {
          JSROOT.progress('Rendering geometry');
@@ -1489,7 +1517,7 @@
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
-            console.log('First render tm = ' + this.first_render_tm);
+            JSROOT.console('First render tm = ' + this.first_render_tm);
             this.addControls();
          }
 
@@ -1501,13 +1529,6 @@
 
       this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
    }
-
-   //JSROOT.TGeoPainter.prototype.Render3D = function() {
-      //var t1 = new Date().getTime();
-     // this._renderer.render(this._scene, this._camera);
-      //var t2 = new Date().getTime();
-      //console.log('Render tm = ' + (t2-t1));
-   //}
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
@@ -1617,8 +1638,6 @@
 
       this._scene_width = size3d.width;
       this._scene_height = size3d.height;
-
-      // console.log('new size3d = ' + JSON.stringify(size3d));
 
       this._camera.aspect = this._scene_width / this._scene_height;
       this._camera.updateProjectionMatrix();
