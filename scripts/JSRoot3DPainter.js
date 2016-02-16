@@ -32,14 +32,17 @@
 
       if (JSROOT.gStyle.NoWebGL) return false;
 
-      return (function() {
-            try {
-               return !!window.WebGLRenderingContext &&
-                      !!document.createElement('canvas').getContext('experimental-webgl');
-            } catch (e) {
-               return false;
-           }
-         })();
+      if ('_Detect_WebGL' in this) return this._Detect_WebGL;
+
+      try {
+         var canvas = document.createElement( 'canvas' );
+         this._Detect_WebGL = !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) ) );
+         //res = !!window.WebGLRenderingContext &&  !!document.createElement('canvas').getContext('experimental-webgl');
+       } catch (e) {
+           return false;
+       }
+
+       return this._Detect_WebGL;
    }
 
    JSROOT.Painter.add3DInteraction = function() {
