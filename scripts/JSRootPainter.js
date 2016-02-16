@@ -5756,11 +5756,13 @@
             this.FillContextMenu(menu);
          }
          menu.add("separator");
-         menu.add("Save As...", function() {
+
+         var file_name = "canvas";
+         if (typeof (this.histo.fName) != 'undefined')
+            file_name = this.histo.fName;
+
+         menu.add("Save as "+file_name+".png", function() {
             // todo - use jqury dialog here
-            var file_name = "d3_canvas";
-            if (typeof (this.histo.fName) != 'undefined')
-               file_name = this.histo.fName;
             var top = this.svg_canvas().node();
             if (top != null)
                JSROOT.AssertPrerequisites("savepng", function() {
