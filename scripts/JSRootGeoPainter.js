@@ -97,7 +97,7 @@
 
       var verticesOfShape;
 
-      if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap") {
+      if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap" || shape['_typename'] == "TGeoGtra") {
          // Arb8
          verticesOfShape = [
             shape['fXY'][0][0], shape['fXY'][0][1], -shape['fDZ'],
@@ -503,7 +503,7 @@
       if ((shape === undefined) || ( shape === null )) return false;
       if (! ('supported_shapes' in this))
          this.supported_shapes =
-            [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoSphere",
+            [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoGtra", "TGeoSphere",
               "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon" ];
       if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
 
@@ -525,7 +525,7 @@
          return JSROOT.GEO.createPara( shape );  // Parallelepiped
 
       if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
-          (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap"))
+          (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap") || (shape['_typename'] == "TGeoGtra"))
          return JSROOT.GEO.createTrapezoid( shape );
 
       if ((shape['_typename'] == "TGeoSphere"))

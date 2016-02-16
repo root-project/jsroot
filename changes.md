@@ -2,7 +2,7 @@
 
 ## Changes in master
 1. Significant performance improvements in 3D drawings - TGeo/TH2/TH3 
-2. Implement TGeoPara shape, optimize (reduce vertices number) for several other shapes 
+2. Implement TGeoPara and TGeoGtra shapes, optimize (reduce vertices number) for several other shapes 
 3. Correct rotation/translation/scaling of TGeo nodes 
 4. Workaround for axis reflection (not directly supported in three.js) 
 5. Support array of objects in I/O (like in TAxis3D)
