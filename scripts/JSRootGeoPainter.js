@@ -499,12 +499,44 @@
       return geometry;
    }
 
+   JSROOT.GEO.createXtru = function( shape ) {
+
+      var geometry = new THREE.Geometry();
+
+      var prev = 0, curr = 0;
+      for (var layer = 0; layer < shape.fNz; ++layer) {
+         var layerz = shape.fZ[layer], scale = shape.fScale[layer];
+
+         prev = curr;
+         curr = geometry.vertices.length;
+
+         // add vertices
+         for (var vert = 0; vert < shape.fNvert; ++vert)
+            geometry.vertices.push( new THREE.Vector3( scale * shape.fX[vert], scale * shape.fY[vert], layerz ));
+
+         if (layer>0)  // create faces for sides
+            for (var vert = 0; vert < shape.fNvert; ++vert) {
+               var vert1 = (vert + 1) % shape.fNvert;
+               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert, curr + vert1 ) );
+               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert1, prev + vert1));
+            }
+      }
+
+      geometry.computeFaceNormals();
+
+      console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
+
+      return geometry;
+
+   }
+
+
    JSROOT.GEO.isShapeSupported = function ( shape ) {
       if ((shape === undefined) || ( shape === null )) return false;
       if (! ('supported_shapes' in this))
          this.supported_shapes =
             [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoGtra", "TGeoSphere",
-              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon" ];
+              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon", "TGeoXtru" ];
       if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
 
       if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
@@ -540,6 +572,9 @@
 
       if ( shape['_typename'] == "TGeoPcon" || shape['_typename'] == "TGeoPgon" )
          return JSROOT.GEO.createPolygon( shape );
+
+      if ( shape['_typename'] == "TGeoXtru")
+         return JSROOT.GEO.createXtru(shape);
 
       return null;
    }
