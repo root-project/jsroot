@@ -503,6 +503,8 @@
 
       var geometry = new THREE.Geometry();
 
+      var fcolor = new THREE.Color();
+
       var prev = 0, curr = 0;
       for (var layer = 0; layer < shape.fNz; ++layer) {
          var layerz = shape.fZ[layer], scale = shape.fScale[layer];
@@ -517,19 +519,28 @@
          if (layer>0)  // create faces for sides
             for (var vert = 0; vert < shape.fNvert; ++vert) {
                var vert1 = (vert + 1) % shape.fNvert;
-               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert, curr + vert1 ) );
-               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert1, prev + vert1));
+               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert, curr + vert1, null, fcolor, 0 ) );
+               geometry.faces.push( new THREE.Face3( prev + vert, curr + vert1, prev + vert1, null, fcolor, 0 ));
             }
+      }
+
+      // now try to make shape - use standard THREE.js utils
+
+      var pnts = [];
+      for (var vert = 0; vert < shape.fNvert; ++vert)
+         pnts.push( new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
+      var faces = THREE.ShapeUtils.triangulateShape(pnts, []);
+
+      for (var i = 0; i < faces.length; ++i) {
+         face = faces[ i ];
+         geometry.faces.push( new THREE.Face3( face[0], face[1], face[2], null, fcolor, 0) );
+         geometry.faces.push( new THREE.Face3( face[0] + curr, face[1] + curr, face[2] + curr, null, fcolor, 0) );
       }
 
       geometry.computeFaceNormals();
 
-      console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
-
       return geometry;
-
    }
-
 
    JSROOT.GEO.isShapeSupported = function ( shape ) {
       if ((shape === undefined) || ( shape === null )) return false;
