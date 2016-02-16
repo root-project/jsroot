@@ -2,11 +2,14 @@
 
 ## Changes in master
 1. Significant performance improvements in 3D drawings - TGeo/TH2/TH3 
-2. Support array of objects in I/O (like in TAxis3D)
-3. Correct reading of multi-dim arrays like Double_t fXY[8][2];
-4. Provide canvas toolbar for actions like save_png or unzoom  
-5. Implement JSROOT.resize() function to let resize drawing after changes in page layout 
-6. Fix error with title display/update 
+2. Implement TGeoPara shape, optimize (reduce vertices number) for several other shapes 
+3. Correct rotation/translation/scaling of TGeo nodes 
+4. Workaround for axis reflection (not directly supported in three.js) 
+5. Support array of objects in I/O (like in TAxis3D)
+6. Correct reading of multi-dim arrays like Double_t fXY[8][2];
+7. Provide canvas toolbar for actions like savepng or unzoom  
+8. Implement JSROOT.resize() function to let resize drawing after changes in page layout 
+9. Fix error with title display/update 
  
 
 ## Changes in 4.1
