@@ -28,7 +28,38 @@
    JSROOT.GEO = {};
 
    JSROOT.GEO.createCube = function( shape ) {
-      return new THREE.BoxGeometry( 2*shape['fDX'], 2*shape['fDY'], 2*shape['fDZ'] );
+
+      // instead of BoxGeometry create all vertices and faces ourself
+      // reduce number of allocated objects
+
+      //return new THREE.BoxGeometry( 2*shape['fDX'], 2*shape['fDY'], 2*shape['fDZ'] );
+
+      var geom = new THREE.Geometry();
+
+      geom.vertices.push( new THREE.Vector3( shape.fDX,  shape.fDY,  shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3( shape.fDX,  shape.fDY, -shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3( shape.fDX, -shape.fDY,  shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3( shape.fDX, -shape.fDY, -shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3(-shape.fDX,  shape.fDY, -shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3(-shape.fDX,  shape.fDY,  shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3(-shape.fDX, -shape.fDY, -shape.fDZ ) );
+      geom.vertices.push( new THREE.Vector3(-shape.fDX, -shape.fDY,  shape.fDZ ) );
+
+      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
+
+      // set normal for pair of faces
+      var normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
+
+      var color = new THREE.Color();
+      var norm = null;
+      for (var n=0; n < indicies.length; n+=3) {
+          if (n % 6 === 0) norm = new THREE.Vector3(normals[n/2], normals[n/2+1], normals[n/2+2]);
+          var face = new THREE.Face3( indicies[n], indicies[n+1], indicies[n+2], norm, color, 0);
+          geom.faces.push(face);
+      }
+
+      return geom;
+
    }
 
    JSROOT.GEO.createPara = function( shape ) {
@@ -760,8 +791,20 @@
       if (geom === null) return;
 
       this._num_geom++;
-      this._num_vertices += geom.vertices.length;
-      this._num_faces += geom.faces.length;
+      if ('vertices' in geom) {
+         this._num_vertices += geom.vertices.length;
+         this._num_faces += geom.faces.length;
+      } else {
+
+         console.log('get attr ' + (typeof geom));
+
+         var attr = geom.getAttribute('position');
+
+         console.log('get position ' + (typeof attr));
+
+         // this._num_vertices += attr.count() / 3;
+         // this._num_faces += geom.index.count() / 3;
+      }
    }
 
    JSROOT.TGeoPainter.prototype.accountMesh = function(mesh) {
