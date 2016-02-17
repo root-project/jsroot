@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 4.2
 1. Significant performance improvements in 3D drawings - TGeo/TH2/TH3 
 2. Implement TGeoPara, TGeoGtra, TGeoXtru and TGeoEltu shapes
 3. Optimize (reduce vertices number) for others TGeo shapes 
