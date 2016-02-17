@@ -671,19 +671,26 @@
          if (shape.fB < zmax) zmax = shape.fB;
       }
 
+      var ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
+
       var prev_indx = 0, prev_radius = 0;
 
       for (var layer = 0; layer <= heightSegments + 1; ++layer) {
          var layerz = zmax, radius = 0;
 
-         if (layer === heightSegments + 1) {
-            // special layer to close figure
-            if (prev_radius === 0) break;
-         } else {
-            layerz = zmin + layer / heightSegments * (zmax - zmin);
-            var rad2 = (layerz - shape.fB) / shape.fA;
-            if (rad2 < 1e-6) rad2 = 0;
-            radius = Math.sqrt(rad2);
+         if ((layer === heightSegments + 1) && (prev_radius === 0)) break;
+
+         switch (layer) {
+            case 0: layerz = zmin; radius = rmin; break;
+            case heightSegments: layerz = zmax; radius = rmax; break;
+            case heightSegments + 1: layerz = zmax; radius = 0; break;
+            default: {
+               var tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
+               var delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+               radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
+               if (radius < 1e-6) radius = 0;
+               layerz = radius*tt;
+            }
          }
 
          var curr_indx = geometry.vertices.length;
