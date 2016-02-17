@@ -584,23 +584,6 @@
       return geometry;
    }
 
-   JSROOT.GEO.isShapeSupported = function ( shape ) {
-      if ((shape === undefined) || ( shape === null )) return false;
-      if (! ('supported_shapes' in this))
-         this.supported_shapes =
-            [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoGtra", "TGeoSphere",
-              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg", "TGeoEltu", "TGeoTorus", "TGeoPcon", "TGeoPgon", "TGeoXtru" ];
-      if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
-
-      if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
-      if (this.unsupported_shapes.indexOf(shape._typename) < 0) {
-         this.unsupported_shapes.push(shape._typename);
-         console.warn('Not supported ' + shape._typename);
-      }
-
-      return false;
-   }
-
    JSROOT.GEO.createGeometry = function( shape ) {
 
       switch (shape._typename) {
@@ -868,22 +851,24 @@
       this._num_meshes = 0;
    }
 
-   JSROOT.TGeoPainter.prototype.accountGeom = function(geom) {
+   JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
       // used to calculate statistic over created geometry
-      if (geom === null) return;
+      if (geom === null) {
+         if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
+         if ((shape_typename !== undefined) && (this.unsupported_shapes.indexOf(shape_typename) < 0)) {
+             this.unsupported_shapes.push(shape_typename);
+             console.warn('Not supported ' + shape_typename);
+         }
+         return;
+      }
 
       this._num_geom++;
-      if ('vertices' in geom) {
+      if (('vertices' in geom) && ('faces' in geom)) {
          this._num_vertices += geom.vertices.length;
          this._num_faces += geom.faces.length;
       } else {
 
-         console.log('get attr ' + (typeof geom));
-
          var attr = geom.getAttribute('position');
-
-         console.log('get position ' + (typeof attr));
-
          // this._num_vertices += attr.count() / 3;
          // this._num_faces += geom.index.count() / 3;
       }
@@ -1151,7 +1136,7 @@
       if (arg.node._visible) {
          if (typeof prop.shape._geom === 'undefined') {
             prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
-            this.accountGeom(prop.shape._geom);
+            this.accountGeom(prop.shape._geom, prop.shape._typename);
          }
 
          geom = prop.shape._geom;
@@ -1253,7 +1238,6 @@
                for (var n=0;n<this.map.length;++n) {
                   delete this.map[n]._refcnt;
                   delete this.map[n]._numchld;
-                  delete this.map[n]._canshow;
                   delete this.map[n]._visible;
                }
                this.map = [];
@@ -1285,7 +1269,6 @@
       } else {
          obj._refcnt = 1;
          obj._numchld = 0;
-         obj._canshow = JSROOT.GEO.isShapeSupported(shape);
          arg.map.push(obj);
 
          /*
@@ -1302,7 +1285,7 @@
          }
          */
 
-         if (obj._canshow && vis && !('_visible' in obj)) {
+         if (vis && !('_visible' in obj)) {
             obj._visible = true;
             arg.viscnt++;
          }
