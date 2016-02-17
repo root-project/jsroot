@@ -603,34 +603,25 @@
 
    JSROOT.GEO.createGeometry = function( shape ) {
 
-      if (shape._typename == "TGeoBBox")
-         return JSROOT.GEO.createCube( shape );  // Cube
-
-      if (shape._typename == "TGeoPara")
-         return JSROOT.GEO.createPara( shape );  // Parallelepiped
-
-      if ((shape._typename == "TGeoArb8") || (shape._typename == "TGeoTrd1") ||
-          (shape._typename == "TGeoTrd2") || (shape._typename == "TGeoTrap") || (shape._typename == "TGeoGtra"))
-         return JSROOT.GEO.createTrapezoid( shape );
-
-      if ((shape._typename == "TGeoSphere"))
-         return JSROOT.GEO.createSphere( shape );
-
-      if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg") ||
-          (shape._typename == "TGeoTube") || (shape._typename == "TGeoTubeSeg"))
-         return JSROOT.GEO.createTube( shape );
-
-      if (shape._typename == "TGeoEltu")
-         return JSROOT.GEO.createEltu( shape );
-
-      if (shape._typename == "TGeoTorus")
-         return JSROOT.GEO.createTorus( shape );
-
-      if ( shape._typename == "TGeoPcon" || shape._typename == "TGeoPgon" )
-         return JSROOT.GEO.createPolygon( shape );
-
-      if ( shape._typename == "TGeoXtru")
-         return JSROOT.GEO.createXtru(shape);
+      switch (shape._typename) {
+         case "TGeoBBox": return JSROOT.GEO.createCube( shape );
+         case "TGeoPara": return JSROOT.GEO.createPara( shape );
+         case "TGeoArb8":
+         case "TGeoTrd1":
+         case "TGeoTrd2":
+         case "TGeoTrap":
+         case "TGeoGtra": return JSROOT.GEO.createTrapezoid( shape );
+         case "TGeoSphere": return JSROOT.GEO.createSphere( shape );
+         case "TGeoCone":
+         case "TGeoConeSeg":
+         case "TGeoTube":
+         case "TGeoTubeSeg": return JSROOT.GEO.createTube( shape );
+         case "TGeoEltu": return JSROOT.GEO.createEltu( shape );
+         case "TGeoTorus": return JSROOT.GEO.createTorus( shape );
+         case "TGeoPcon":
+         case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
+         case "TGeoXtru": return JSROOT.GEO.createXtru(shape);
+      }
 
       return null;
    }
