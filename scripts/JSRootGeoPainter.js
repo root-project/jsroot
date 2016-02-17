@@ -662,7 +662,7 @@
       var geometry = new THREE.Geometry();
       var fcolor = new THREE.Color();
 
-      var zmin = -shape.fDZ, zmax = shape.fDZ;
+      var zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
 
       // if no radius at -z, find intersection
       if (shape.fA >= 0) {
@@ -674,23 +674,19 @@
       var prev_indx = 0, prev_radius = 0;
 
       for (var layer = 0; layer <= heightSegments + 1; ++layer) {
-         var layerz = zmin + layer / heightSegments * (zmax - zmin);
+         var layerz = zmax, radius = 0;
 
-         var rad2 = 0;
-
-         if (layer == heightSegments + 1) {
+         if (layer === heightSegments + 1) {
             // special layer to close figure
             if (prev_radius === 0) break;
-            layerz = zmax;
          } else {
-            rad2 = (layerz - shape.fB) / shape.fA;
+            layerz = zmin + layer / heightSegments * (zmax - zmin);
+            var rad2 = (layerz - shape.fB) / shape.fA;
             if (rad2 < 1e-6) rad2 = 0;
+            radius = Math.sqrt(rad2);
          }
 
          var curr_indx = geometry.vertices.length;
-
-         // calculate radius
-         var radius = Math.sqrt(rad2);
 
          if (radius === 0) {
             geometry.vertices.push( new THREE.Vector3( 0, 0, layerz ));
