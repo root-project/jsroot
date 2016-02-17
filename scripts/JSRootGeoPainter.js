@@ -97,7 +97,7 @@
 
       var verticesOfShape;
 
-      if (shape['_typename'] == "TGeoArb8" || shape['_typename'] == "TGeoTrap" || shape['_typename'] == "TGeoGtra") {
+      if (shape._typename == "TGeoArb8" || shape._typename == "TGeoTrap" || shape._typename == "TGeoGtra") {
          // Arb8
          verticesOfShape = [
             shape['fXY'][0][0], shape['fXY'][0][1], -shape['fDZ'],
@@ -110,7 +110,7 @@
             shape['fXY'][7][0], shape['fXY'][7][1],  shape['fDZ']
          ];
       }
-      else if (shape['_typename'] == "TGeoTrd1") {
+      else if (shape._typename == "TGeoTrd1") {
          verticesOfShape = [
             -shape['fDx1'],  shape['fDY'], -shape['fDZ'],
              shape['fDx1'],  shape['fDY'], -shape['fDZ'],
@@ -122,7 +122,7 @@
             -shape['fDx2'], -shape['fDY'],  shape['fDZ']
          ];
       }
-      else if (shape['_typename'] == "TGeoTrd2") {
+      else if (shape._typename == "TGeoTrd2") {
          verticesOfShape = [
             -shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
              shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
@@ -232,9 +232,8 @@
    }
 
    JSROOT.GEO.createTube = function( shape ) {
-
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
-      if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg")) {
+      if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
          outerRadius1 = shape['fRmax2'];
          innerRadius1 = shape['fRmin2'];
          outerRadius2 = shape['fRmax1'];
@@ -247,7 +246,7 @@
       if (innerRadius2 <= 0) innerRadius2 = 0.0000001;
 
       var thetaStart = 0, thetaLength = 360;
-      if ((shape['_typename'] == "TGeoConeSeg") || (shape['_typename'] == "TGeoTubeSeg") || (shape['_typename'] == "TGeoCtub")) {
+      if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
          thetaStart = shape['fPhi1'];
          thetaLength = shape['fPhi2'] - shape['fPhi1'];
       }
@@ -281,7 +280,6 @@
          geometry.vertices.push( new THREE.Vector3( outerRadius1*_cos[seg], outerRadius1*_sin[seg], shape['fDZ']));
       for (var seg=0; seg<=radiusSegments; ++seg)
          geometry.vertices.push( new THREE.Vector3( outerRadius2*_cos[seg], outerRadius2*_sin[seg], -shape['fDZ']));
-
 
       // add inner tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
@@ -318,10 +316,54 @@
 
       geometry.computeFaceNormals();
 
-      // console.log(shape['_typename'] + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
+      // console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
+
+   JSROOT.GEO.createEltu = function( shape ) {
+      var geometry = new THREE.Geometry();
+
+      var radiusSegments = Math.floor(360/6);
+
+      // calculate all sin/cos tables in advance
+      var x = new Float32Array(radiusSegments),
+          y = new Float32Array(radiusSegments);
+      for (var seg=0; seg<radiusSegments; ++seg) {
+         var phi = seg/radiusSegments*2*Math.PI;
+         x[seg] = shape.fRmin*Math.cos(phi);
+         y[seg] = shape.fRmax*Math.sin(phi);
+      }
+
+      // create vertices
+      for (var seg=0; seg<radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( x[seg], y[seg], -shape.fDZ));
+      geometry.vertices.push( new THREE.Vector3( 0, 0, -shape.fDZ));
+
+      for (var seg=0; seg<radiusSegments; ++seg)
+         geometry.vertices.push( new THREE.Vector3( x[seg], y[seg], +shape.fDZ));
+      geometry.vertices.push( new THREE.Vector3( 0, 0, shape.fDZ));
+
+      // create tube faces
+      for (var seg=0; seg<radiusSegments; ++seg) {
+         var seg1 = (seg + 1) % radiusSegments;
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg1 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg1+radiusSegments+1, seg1 ) );
+      }
+
+      // create bottom cap
+      for (var seg=0; seg<radiusSegments; ++seg)
+         geometry.faces.push( new THREE.Face3( seg, (seg + 1) % radiusSegments, radiusSegments));
+
+      // create upper cap
+      var shift = radiusSegments + 1;
+      for (var seg=0; seg<radiusSegments; ++seg)
+         geometry.faces.push( new THREE.Face3( shift+seg, shift+ (seg + 1) % radiusSegments, shift+radiusSegments));
+
+      geometry.computeFaceNormals();
+      return geometry;
+   }
+
 
    JSROOT.GEO.createTorus = function( shape ) {
       var radius = shape['fR'];
@@ -391,7 +433,7 @@
       var thetaStart = shape['fPhi1'], thetaLength = shape['fDphi'];
 
       var radiusSegments = 60;
-      if ( shape['_typename'] == "TGeoPgon" ) {
+      if ( shape._typename == "TGeoPgon" ) {
          radiusSegments = shape['fNedges'];
       } else {
          radiusSegments = Math.floor(thetaLength/6);
@@ -547,7 +589,7 @@
       if (! ('supported_shapes' in this))
          this.supported_shapes =
             [ "TGeoBBox", "TGeoPara", "TGeoArb8", "TGeoTrd1", "TGeoTrd2", "TGeoTrap", "TGeoGtra", "TGeoSphere",
-              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg","TGeoTorus", "TGeoPcon", "TGeoPgon", "TGeoXtru" ];
+              "TGeoCone", "TGeoConeSeg", "TGeoTube", "TGeoTubeSeg", "TGeoEltu", "TGeoTorus", "TGeoPcon", "TGeoPgon", "TGeoXtru" ];
       if (this.supported_shapes.indexOf(shape._typename) >= 0) return true;
 
       if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
@@ -561,30 +603,33 @@
 
    JSROOT.GEO.createGeometry = function( shape ) {
 
-      if (shape['_typename'] == "TGeoBBox")
+      if (shape._typename == "TGeoBBox")
          return JSROOT.GEO.createCube( shape );  // Cube
 
-      if (shape['_typename'] == "TGeoPara")
+      if (shape._typename == "TGeoPara")
          return JSROOT.GEO.createPara( shape );  // Parallelepiped
 
-      if ((shape['_typename'] == "TGeoArb8") || (shape['_typename'] == "TGeoTrd1") ||
-          (shape['_typename'] == "TGeoTrd2") || (shape['_typename'] == "TGeoTrap") || (shape['_typename'] == "TGeoGtra"))
+      if ((shape._typename == "TGeoArb8") || (shape._typename == "TGeoTrd1") ||
+          (shape._typename == "TGeoTrd2") || (shape._typename == "TGeoTrap") || (shape._typename == "TGeoGtra"))
          return JSROOT.GEO.createTrapezoid( shape );
 
-      if ((shape['_typename'] == "TGeoSphere"))
+      if ((shape._typename == "TGeoSphere"))
          return JSROOT.GEO.createSphere( shape );
 
-      if ((shape['_typename'] == "TGeoCone") || (shape['_typename'] == "TGeoConeSeg") ||
-          (shape['_typename'] == "TGeoTube") || (shape['_typename'] == "TGeoTubeSeg"))
+      if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg") ||
+          (shape._typename == "TGeoTube") || (shape._typename == "TGeoTubeSeg"))
          return JSROOT.GEO.createTube( shape );
 
-      if (shape['_typename'] == "TGeoTorus")
+      if (shape._typename == "TGeoEltu")
+         return JSROOT.GEO.createEltu( shape );
+
+      if (shape._typename == "TGeoTorus")
          return JSROOT.GEO.createTorus( shape );
 
-      if ( shape['_typename'] == "TGeoPcon" || shape['_typename'] == "TGeoPgon" )
+      if ( shape._typename == "TGeoPcon" || shape._typename == "TGeoPgon" )
          return JSROOT.GEO.createPolygon( shape );
 
-      if ( shape['_typename'] == "TGeoXtru")
+      if ( shape._typename == "TGeoXtru")
          return JSROOT.GEO.createXtru(shape);
 
       return null;
