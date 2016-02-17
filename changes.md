@@ -2,6 +2,7 @@
 
 ## Changes in master
 1. Implement TGeoCtub shape
+2. Support TGeoTube with Rmin==0 
 
 
 ## Changes in 4.2

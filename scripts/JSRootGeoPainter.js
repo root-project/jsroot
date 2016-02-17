@@ -242,8 +242,13 @@
          outerRadius1 = outerRadius2 = shape.fRmax;
          innerRadius1 = innerRadius2 = shape.fRmin;
       }
-      if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
-      if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
+
+      var hasrmin = (innerRadius1 > 0) && (innerRadius2 > 0);
+
+      if (hasrmin) {
+         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
+      }
 
       var thetaStart = 0, thetaLength = 360;
       if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
@@ -270,10 +275,16 @@
       var geometry = new THREE.Geometry();
 
       // add inner tube vertices
-      for (var seg=0; seg<nsegm; ++seg)
-         geometry.vertices.push( new THREE.Vector3( innerRadius1*_cos[seg], innerRadius1*_sin[seg], shape.fDZ));
-      for (var seg=0; seg<nsegm; ++seg)
-         geometry.vertices.push( new THREE.Vector3( innerRadius2*_cos[seg], innerRadius2*_sin[seg], -shape.fDZ));
+
+      if (hasrmin) {
+         for (var seg=0; seg<nsegm; ++seg)
+            geometry.vertices.push( new THREE.Vector3( innerRadius1*_cos[seg], innerRadius1*_sin[seg], shape.fDZ));
+         for (var seg=0; seg<nsegm; ++seg)
+            geometry.vertices.push( new THREE.Vector3( innerRadius2*_cos[seg], innerRadius2*_sin[seg], -shape.fDZ));
+      } else {
+         geometry.vertices.push( new THREE.Vector3( 0, 0, shape.fDZ));
+         geometry.vertices.push( new THREE.Vector3( 0, 0, -shape.fDZ));
+      }
 
       var shift = geometry.vertices.length;
 
@@ -294,11 +305,12 @@
       var color = new THREE.Color(); // make dummy color for all faces
 
       // add inner tube faces
-      for (var seg=0; seg<radiusSegments; ++seg) {
-         var seg1 = (extrapnt === 1) ? (seg + 1) : (seg + 1) % radiusSegments;
-         geometry.faces.push( new THREE.Face3( seg, nsegm + seg, seg1, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( nsegm + seg, nsegm + seg1, seg1, null, color, 0 ) );
-      }
+      if (hasrmin)
+         for (var seg=0; seg<radiusSegments; ++seg) {
+            var seg1 = (extrapnt === 1) ? (seg + 1) : (seg + 1) % radiusSegments;
+            geometry.faces.push( new THREE.Face3( seg, nsegm + seg, seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm + seg, nsegm + seg1, seg1, null, color, 0 ) );
+         }
 
       // add outer tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
@@ -307,32 +319,50 @@
          geometry.faces.push( new THREE.Face3( shift + nsegm + seg, shift + nsegm + seg1, shift + seg1, null, color, 0 ) );
       }
 
+
       // add top cap
       for (var i = 0; i < radiusSegments; ++i){
          var i1 = (extrapnt === 1) ? (i+1) : (i+1) % radiusSegments;
-         geometry.faces.push( new THREE.Face3( i, i+shift, i1, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( i+shift, i1+shift, i1, null, color, 0 ) );
+         if (hasrmin) {
+            geometry.faces.push( new THREE.Face3( i, i+shift, i1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i+shift, i1+shift, i1, null, color, 0 ) );
+         } else {
+            geometry.faces.push( new THREE.Face3( i+shift, 0, i1+shift, null, color, 0 ) );
+         }
       }
 
       // add bottom cap
       for (var i = 0; i < radiusSegments; ++i) {
          var i1 = (extrapnt === 1) ? (i+1) : (i+1) % radiusSegments;
-         geometry.faces.push( new THREE.Face3( nsegm+i, nsegm+i+shift, nsegm+i1, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( nsegm+i+shift, nsegm+i1+shift, nsegm+i1, null, color, 0 ) );
+         if (hasrmin) {
+            geometry.faces.push( new THREE.Face3( nsegm+i, nsegm+i+shift, nsegm+i1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm+i+shift, nsegm+i1+shift, nsegm+i1, null, color, 0 ) );
+         } else {
+            geometry.faces.push( new THREE.Face3( nsegm+i+shift, 1, nsegm+i1+shift, null, color, 0 ) );
+         }
       }
 
       // close cut regions
       if (extrapnt === 1) {
-          geometry.faces.push( new THREE.Face3( 0, nsegm , shift+nsegm, null, color, 0 ) );
-          geometry.faces.push( new THREE.Face3( 0, shift+nsegm, shift, null, color, 0 ) );
+          if (hasrmin) {
+             geometry.faces.push( new THREE.Face3( 0, nsegm, shift+nsegm, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( 0, shift+nsegm, shift, null, color, 0 ) );
+          } else {
+             geometry.faces.push( new THREE.Face3( 0, 1, shift+nsegm, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( 0, shift+nsegm, shift, null, color, 0 ) );
+             console.log('very special case of tube with cut');
+          }
 
-          geometry.faces.push( new THREE.Face3( radiusSegments, 2*radiusSegments+1, shift+2*radiusSegments+1, null, color, 0 ) );
-          geometry.faces.push( new THREE.Face3( radiusSegments, shift+2*radiusSegments+1, shift + radiusSegments, null, color, 0 ) );
+          if (hasrmin) {
+             geometry.faces.push( new THREE.Face3( radiusSegments, 2*radiusSegments+1, shift+2*radiusSegments+1, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( radiusSegments, shift+2*radiusSegments+1, shift + radiusSegments, null, color, 0 ) );
+          } else {
+             geometry.faces.push( new THREE.Face3( 0, 1, shift+2*radiusSegments+1, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( 0, shift+2*radiusSegments+1, shift + radiusSegments, null, color, 0 ) );
+          }
       }
 
       geometry.computeFaceNormals();
-
-      // console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
