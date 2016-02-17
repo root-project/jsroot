@@ -2189,7 +2189,7 @@
       // this is svg:g object - container for every other items belonging to frame
       var frame_g = this.svg_pad().select(".root_frame");
 
-      var top_rect = null;
+      var top_rect = null, main_svg = null;
 
       if (frame_g.empty()) {
          frame_g = this.svg_pad().select(".frame_layer").append("svg:g").attr("class", "root_frame");
@@ -2199,18 +2199,17 @@
          // append for the moment three layers - for drawing and axis
          frame_g.append('svg:g').attr('class','grid_layer');
 
-         frame_g.append('svg:svg').attr('class','main_layer')
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", Math.round(w))
-                .attr("height", Math.round(h))
-                .attr("viewBox", "0 0 " + Math.round(w) + " " + Math.round(h))
-                .attr('overflow', 'hidden');
+         main_svg = frame_g.append('svg:svg')
+                           .attr('class','main_layer')
+                           .attr("x", 0)
+                           .attr("y", 0)
+                           .attr('overflow', 'hidden');
 
          frame_g.append('svg:g').attr('class','axis_layer');
          frame_g.append('svg:g').attr('class','upper_layer');
       } else {
          top_rect = frame_g.select("rect");
+         main_svg = frame_g.select(".main_layer");
       }
 
       // calculate actual NDC coordinates, use them to properly locate PALETTE
@@ -2243,6 +2242,10 @@
               .attr("height", h)
               .call(framecolor.func)
               .call(lineatt.func);
+
+      main_svg.attr("width", w)
+              .attr("height", h)
+              .attr("viewBox", "0 0 " + w + " " + h);
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
