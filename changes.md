@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in master
+1. Implement TGeoCtub shape
+
+
 ## Changes in 4.2
 1. Significant performance improvements in 3D drawings - TGeo/TH2/TH3 
 2. Implement TGeoPara, TGeoGtra, TGeoXtru and TGeoEltu shapes

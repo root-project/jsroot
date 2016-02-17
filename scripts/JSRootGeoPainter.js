@@ -269,17 +269,27 @@
 
       // add inner tube vertices
       for (var seg=0; seg<=radiusSegments; ++seg)
-         geometry.vertices.push( new THREE.Vector3( innerRadius1*_cos[seg], innerRadius1*_sin[seg], shape['fDZ']));
+         geometry.vertices.push( new THREE.Vector3( innerRadius1*_cos[seg], innerRadius1*_sin[seg], shape.fDZ));
       for (var seg=0; seg<=radiusSegments; ++seg)
-         geometry.vertices.push( new THREE.Vector3( innerRadius2*_cos[seg], innerRadius2*_sin[seg], -shape['fDZ']));
+         geometry.vertices.push( new THREE.Vector3( innerRadius2*_cos[seg], innerRadius2*_sin[seg], -shape.fDZ));
 
       var shift = geometry.vertices.length;
 
       // add outer tube vertices
       for (var seg=0; seg<=radiusSegments; ++seg)
-         geometry.vertices.push( new THREE.Vector3( outerRadius1*_cos[seg], outerRadius1*_sin[seg], shape['fDZ']));
+         geometry.vertices.push( new THREE.Vector3( outerRadius1*_cos[seg], outerRadius1*_sin[seg], shape.fDZ));
       for (var seg=0; seg<=radiusSegments; ++seg)
-         geometry.vertices.push( new THREE.Vector3( outerRadius2*_cos[seg], outerRadius2*_sin[seg], -shape['fDZ']));
+         geometry.vertices.push( new THREE.Vector3( outerRadius2*_cos[seg], outerRadius2*_sin[seg], -shape.fDZ));
+
+
+      // recalculate Z of all vertices for ctub shape
+      if (shape._typename == "TGeoCtub")
+         for (var n=0;n<geometry.vertices.length;++n) {
+            var vertex = geometry.vertices[n];
+            if (vertex.z<0) vertex.z = -shape.fDz-(vertex.x*shape.fNlow[0]+vertex.x*shape.fNlow[1])/shape.fNlow[2];
+                       else vertex.z = shape.fDz-(vertex.y*shape.fNhigh[0]+vertex.y*shape.fNhigh[1])/shape.fNhigh[2];
+         }
+
 
       // add inner tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
@@ -598,7 +608,8 @@
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
-         case "TGeoTubeSeg": return JSROOT.GEO.createTube( shape );
+         case "TGeoTubeSeg":
+         case "TGeoCtub": return JSROOT.GEO.createTube( shape );
          case "TGeoEltu": return JSROOT.GEO.createEltu( shape );
          case "TGeoTorus": return JSROOT.GEO.createTorus( shape );
          case "TGeoPcon":
