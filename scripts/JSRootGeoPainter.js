@@ -32,7 +32,7 @@
       // instead of BoxGeometry create all vertices and faces ourself
       // reduce number of allocated objects
 
-      //return new THREE.BoxGeometry( 2*shape['fDX'], 2*shape['fDY'], 2*shape['fDZ'] );
+      //return new THREE.BoxGeometry( 2*shape.fDX, 2*shape.fDY, 2*shape.fDZ );
 
       var geom = new THREE.Geometry();
 
@@ -100,38 +100,38 @@
       if (shape._typename == "TGeoArb8" || shape._typename == "TGeoTrap" || shape._typename == "TGeoGtra") {
          // Arb8
          verticesOfShape = [
-            shape['fXY'][0][0], shape['fXY'][0][1], -shape['fDZ'],
-            shape['fXY'][1][0], shape['fXY'][1][1], -shape['fDZ'],
-            shape['fXY'][2][0], shape['fXY'][2][1], -shape['fDZ'],
-            shape['fXY'][3][0], shape['fXY'][3][1], -shape['fDZ'],
-            shape['fXY'][4][0], shape['fXY'][4][1],  shape['fDZ'],
-            shape['fXY'][5][0], shape['fXY'][5][1],  shape['fDZ'],
-            shape['fXY'][6][0], shape['fXY'][6][1],  shape['fDZ'],
-            shape['fXY'][7][0], shape['fXY'][7][1],  shape['fDZ']
+            shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
+            shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
+            shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
+            shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
+            shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
+            shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
+            shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
+            shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
          ];
       }
       else if (shape._typename == "TGeoTrd1") {
          verticesOfShape = [
-            -shape['fDx1'],  shape['fDY'], -shape['fDZ'],
-             shape['fDx1'],  shape['fDY'], -shape['fDZ'],
-             shape['fDx1'], -shape['fDY'], -shape['fDZ'],
-            -shape['fDx1'], -shape['fDY'], -shape['fDZ'],
-            -shape['fDx2'],  shape['fDY'],  shape['fDZ'],
-             shape['fDx2'],  shape['fDY'],  shape['fDZ'],
-             shape['fDx2'], -shape['fDY'],  shape['fDZ'],
-            -shape['fDx2'], -shape['fDY'],  shape['fDZ']
+            -shape.fDx1,  shape.fDY, -shape.fDZ,
+             shape.fDx1,  shape.fDY, -shape.fDZ,
+             shape.fDx1, -shape.fDY, -shape.fDZ,
+            -shape.fDx1, -shape.fDY, -shape.fDZ,
+            -shape.fDx2,  shape.fDY,  shape.fDZ,
+             shape.fDx2,  shape.fDY,  shape.fDZ,
+             shape.fDx2, -shape.fDY,  shape.fDZ,
+            -shape.fDx2, -shape.fDY,  shape.fDZ
          ];
       }
       else if (shape._typename == "TGeoTrd2") {
          verticesOfShape = [
-            -shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
-             shape['fDx1'],  shape['fDy1'], -shape['fDZ'],
-             shape['fDx1'], -shape['fDy1'], -shape['fDZ'],
-            -shape['fDx1'], -shape['fDy1'], -shape['fDZ'],
-            -shape['fDx2'],  shape['fDy2'],  shape['fDZ'],
-             shape['fDx2'],  shape['fDy2'],  shape['fDZ'],
-             shape['fDx2'], -shape['fDy2'],  shape['fDZ'],
-            -shape['fDx2'], -shape['fDy2'],  shape['fDZ']
+            -shape.fDx1,  shape.fDy1, -shape.fDZ,
+             shape.fDx1,  shape.fDy1, -shape.fDZ,
+             shape.fDx1, -shape.fDy1, -shape.fDZ,
+            -shape.fDx1, -shape.fDy1, -shape.fDZ,
+            -shape.fDx2,  shape.fDy2,  shape.fDZ,
+             shape.fDx2,  shape.fDy2,  shape.fDZ,
+             shape.fDx2, -shape.fDy2,  shape.fDZ,
+            -shape.fDx2, -shape.fDy2,  shape.fDZ
          ];
       }
       var indicesOfFaces = [
@@ -152,12 +152,12 @@
 
    JSROOT.GEO.createSphere = function( shape ) {
 
-      var outerRadius = shape['fRmax'];
-      var innerRadius = shape['fRmin'];
-      var phiStart = shape['fPhi1'] + 180;
-      var phiLength = shape['fPhi2'] - shape['fPhi1'];
-      var thetaStart = shape['fTheta1'];
-      var thetaLength = shape['fTheta2'] - shape['fTheta1'];
+      var outerRadius = shape.fRmax;
+      var innerRadius = shape.fRmin;
+      var phiStart = shape.fPhi1 + 180;
+      var phiLength = shape.fPhi2 - shape.fPhi1;
+      var thetaStart = shape.fTheta1;
+      var thetaLength = shape.fTheta2 - shape.fTheta1;
 
       var widthSegments = Math.floor(phiLength / 6);
       if (widthSegments < 8) widthSegments = 8;
@@ -234,21 +234,21 @@
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
-         outerRadius1 = shape['fRmax2'];
-         innerRadius1 = shape['fRmin2'];
-         outerRadius2 = shape['fRmax1'];
-         innerRadius2 = shape['fRmin1'];
+         outerRadius1 = shape.fRmax2;
+         innerRadius1 = shape.fRmin2;
+         outerRadius2 = shape.fRmax1;
+         innerRadius2 = shape.fRmin1;
       } else {
-         outerRadius1 = outerRadius2 = shape['fRmax'];
-         innerRadius1 = innerRadius2 = shape['fRmin'];
+         outerRadius1 = outerRadius2 = shape.fRmax;
+         innerRadius1 = innerRadius2 = shape.fRmin;
       }
       if (innerRadius1 <= 0) innerRadius1 = 0.0000001;
       if (innerRadius2 <= 0) innerRadius2 = 0.0000001;
 
       var thetaStart = 0, thetaLength = 360;
       if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
-         thetaStart = shape['fPhi1'];
-         thetaLength = shape['fPhi2'] - shape['fPhi1'];
+         thetaStart = shape.fPhi1;
+         thetaLength = shape.fPhi2 - shape.fPhi1;
       }
 
       var radiusSegments = Math.floor(thetaLength/6);
@@ -376,11 +376,11 @@
 
 
    JSROOT.GEO.createTorus = function( shape ) {
-      var radius = shape['fR'];
-      var innerTube = shape['fRmin'];
-      var outerTube = shape['fRmax'];
-      var arc = shape['fDphi'] - shape['fPhi1'];
-      var rotation = shape['fPhi1'];
+      var radius = shape.fR;
+      var innerTube = shape.fRmin;
+      var outerTube = shape.fRmax;
+      var arc = shape.fDphi - shape.fPhi1;
+      var rotation = shape.fPhi1;
       var radialSegments = 30;
       var tubularSegments = Math.floor(arc/6);
       if (tubularSegments < 8) tubularSegments = 8;
@@ -440,11 +440,11 @@
       // TODO: if same in/out radius on the top/bottom,
       //         skip duplicated vertices and zero faces
 
-      var thetaStart = shape['fPhi1'], thetaLength = shape['fDphi'];
+      var thetaStart = shape.fPhi1, thetaLength = shape.fDphi;
 
       var radiusSegments = 60;
       if ( shape._typename == "TGeoPgon" ) {
-         radiusSegments = shape['fNedges'];
+         radiusSegments = shape.fNedges;
       } else {
          radiusSegments = Math.floor(thetaLength/6);
          if (radiusSegments < 4) radiusSegments = 4;
@@ -534,7 +534,7 @@
       // add faces for cuted region
       if (len !== null) {
          for (var layer=1; layer < shape.fNz; ++layer) {
-            if (shape['fZ'][layer-1] === shape['fZ'][layer]) continue;
+            if (shape.fZ[layer-1] === shape.fZ[layer]) continue;
 
             geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer-1], indxs[1][layer] ) );
             geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer], indxs[0][layer]) );
