@@ -95,6 +95,7 @@
       return geom;
    }
 
+
    JSROOT.GEO.createTrapezoid = function( shape ) {
 
       var verticesOfShape;
@@ -153,6 +154,7 @@
       geometry.computeFaceNormals();
       return geometry;
    }
+
 
    JSROOT.GEO.createSphere = function( shape ) {
 
@@ -236,6 +238,7 @@
 
       return geometry;
    }
+
 
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
@@ -598,6 +601,7 @@
       return geometry;
    }
 
+
    JSROOT.GEO.createXtru = function( shape ) {
 
       var geometry = new THREE.Geometry();
@@ -641,6 +645,86 @@
       return geometry;
    }
 
+
+   JSROOT.GEO.createParaboloid = function( shape ) {
+
+      var radiusSegments = Math.round(360/6);
+      var heightSegments = 30;
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments), _cos = new Float32Array(radiusSegments);
+      for (var seg=0;seg<radiusSegments;++seg) {
+         var phi = seg/radiusSegments*2*Math.PI;
+         _cos[seg] = Math.cos(phi);
+         _sin[seg] = Math.sin(phi);
+      }
+
+      var geometry = new THREE.Geometry();
+      var fcolor = new THREE.Color();
+
+      var zmin = -shape.fDZ, zmax = shape.fDZ;
+
+      // if no radius at -z, find intersection
+      if (shape.fA >= 0) {
+         if (shape.fB > zmin) zmin = shape.fB;
+      } else {
+         if (shape.fB < zmax) zmax = shape.fB;
+      }
+
+      var prev_indx = 0, prev_radius = 0;
+
+      for (var layer = 0; layer <= heightSegments + 1; ++layer) {
+         var layerz = zmin + layer / heightSegments * (zmax - zmin);
+
+         var rad2 = 0;
+
+         if (layer == heightSegments + 1) {
+            // special layer to close figure
+            if (prev_radius === 0) break;
+            layerz = zmax;
+         } else {
+            rad2 = (layerz - shape.fB) / shape.fA;
+            if (rad2 < 1e-6) rad2 = 0;
+         }
+
+         var curr_indx = geometry.vertices.length;
+
+         // calculate radius
+         var radius = Math.sqrt(rad2);
+
+         if (radius === 0) {
+            geometry.vertices.push( new THREE.Vector3( 0, 0, layerz ));
+         } else {
+            for (var seg=0; seg<radiusSegments; ++seg)
+               geometry.vertices.push( new THREE.Vector3( radius*_cos[seg], radius*_sin[seg], layerz));
+         }
+
+         // add faces of next layer
+         if (layer>0) {
+            for (var seg=0; seg<radiusSegments; ++seg) {
+               var seg1 = (seg+1) % radiusSegments;
+               if (prev_radius === 0) {
+                  geometry.faces.push( new THREE.Face3( prev_indx, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
+               } else
+               if (radius == 0) {
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx, prev_indx + seg1, null, fcolor, 0) );
+               } else {
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, fcolor, 0) );
+               }
+            }
+         }
+
+         prev_radius = radius;
+         prev_indx = curr_indx;
+      }
+
+      geometry.computeFaceNormals();
+
+      return geometry;
+   }
+
+
    JSROOT.GEO.createGeometry = function( shape ) {
 
       switch (shape._typename) {
@@ -661,7 +745,8 @@
          case "TGeoTorus": return JSROOT.GEO.createTorus( shape );
          case "TGeoPcon":
          case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
-         case "TGeoXtru": return JSROOT.GEO.createXtru(shape);
+         case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
+         case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape );
       }
 
       return null;
