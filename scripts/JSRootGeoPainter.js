@@ -47,7 +47,7 @@
 
       var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
 
-      // set normal for pair of faces
+      // normals for each  pair of faces
       var normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
 
       var color = new THREE.Color();
@@ -85,8 +85,10 @@
       for (var i = 0; i < verticesOfShape.length; i += 3)
          geom.vertices.push( new THREE.Vector3( verticesOfShape[i], verticesOfShape[i+1], verticesOfShape[i+2] ) );
 
+      var color = new THREE.Color();
+
       for (var i = 0; i < indicesOfFaces.length; i += 3)
-         geom.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
+         geom.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2], null, color, 0 ) );
 
       geom.computeFaceNormals();
 
@@ -143,8 +145,10 @@
       for (var i = 0; i < 24; i += 3)
          geometry.vertices.push( new THREE.Vector3( verticesOfShape[i], verticesOfShape[i+1], verticesOfShape[i+2] ) );
 
+      var color = new THREE.Color();
+
       for (var i = 0; i < 36; i += 3)
-         geometry.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2] ) );
+         geometry.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2], null, color, 0 ) );
 
       geometry.computeFaceNormals();
       return geometry;
@@ -175,13 +179,16 @@
       innerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
       var geometry = new THREE.Geometry();
+      var color = new THREE.Color();
 
       // add inner sphere
       for (var n=0; n < innerSphere.vertices.length; ++n)
          geometry.vertices.push(innerSphere.vertices[n]);
 
-      for (var n=0; n < innerSphere.faces.length; ++n)
-         geometry.faces.push(innerSphere.faces[n]);
+      for (var n=0; n < innerSphere.faces.length; ++n) {
+         var face = innerSphere.faces[n];
+         geometry.faces.push(new THREE.Face3( face.a, face.b, face.c, null, color, 0 ) );
+      }
 
       var shift = geometry.vertices.length;
 
@@ -191,22 +198,21 @@
 
       for (var n=0; n < outerSphere.faces.length; ++n) {
          var face = outerSphere.faces[n];
-         face.a += shift; face.b += shift; face.c += shift;
-         geometry.faces.push(face);
+         geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
       }
 
       // add top cap
       for (var i = 0; i < widthSegments; ++i) {
-         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
+         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
       }
 
       var dshift = outerSphere.vertices.length - widthSegments - 1;
 
       // add bottom cap
       for (var i = dshift; i < dshift + widthSegments; ++i) {
-         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift ) );
+         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
+         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
       }
 
       if (phiLength !== 360) {
@@ -214,15 +220,15 @@
          for (var j=0;j<heightSegments;j++) {
             var i1 = j*(widthSegments+1);
             var i2 = (j+1)*(widthSegments+1);
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
          }
          // another cuted side
          for (var j=0;j<heightSegments;j++) {
             var i1 = (j+1)*(widthSegments+1) - 1;
             var i2 = (j+2)*(widthSegments+1) - 1;
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0));
          }
       }
 
@@ -243,7 +249,7 @@
          innerRadius1 = innerRadius2 = shape.fRmin;
       }
 
-      var hasrmin = (innerRadius1 > 0) && (innerRadius2 > 0);
+      var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
 
       if (hasrmin) {
          if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
@@ -367,6 +373,7 @@
       return geometry;
    }
 
+
    JSROOT.GEO.createEltu = function( shape ) {
       var geometry = new THREE.Geometry();
 
@@ -390,21 +397,23 @@
          geometry.vertices.push( new THREE.Vector3( x[seg], y[seg], +shape.fDZ));
       geometry.vertices.push( new THREE.Vector3( 0, 0, shape.fDZ));
 
+      var color = new THREE.Color();
+
       // create tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
          var seg1 = (seg + 1) % radiusSegments;
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg1 ) );
-         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg1+radiusSegments+1, seg1 ) );
+         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg1, null, color, 0 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg1+radiusSegments+1, seg1, null, color, 0 ) );
       }
 
       // create bottom cap
       for (var seg=0; seg<radiusSegments; ++seg)
-         geometry.faces.push( new THREE.Face3( seg, (seg + 1) % radiusSegments, radiusSegments));
+         geometry.faces.push( new THREE.Face3( seg, (seg + 1) % radiusSegments, radiusSegments, null, color, 0 ));
 
       // create upper cap
       var shift = radiusSegments + 1;
       for (var seg=0; seg<radiusSegments; ++seg)
-         geometry.faces.push( new THREE.Face3( shift+seg, shift+ (seg + 1) % radiusSegments, shift+radiusSegments));
+         geometry.faces.push( new THREE.Face3( shift+seg, shift+ (seg + 1) % radiusSegments, shift+radiusSegments, null, color, 0 ));
 
       geometry.computeFaceNormals();
       return geometry;
@@ -422,6 +431,7 @@
       if (tubularSegments < 8) tubularSegments = 8;
 
       var geometry = new THREE.Geometry();
+      var color = new THREE.Color();
 
       var outerTorus = new THREE.TorusGeometry( radius, outerTube, radialSegments, tubularSegments, arc*Math.PI/180);
       outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation*Math.PI/180) );
@@ -433,8 +443,10 @@
       for (var n=0; n < innerTorus.vertices.length; ++n)
          geometry.vertices.push(innerTorus.vertices[n]);
 
-      for (var n=0; n < innerTorus.faces.length; ++n)
-         geometry.faces.push(innerTorus.faces[n]);
+      for (var n=0; n < innerTorus.faces.length; ++n) {
+         var face = innerTorus.faces[n];
+         geometry.faces.push(new THREE.Face3( face.a, face.b, face.c, null, color, 0 ) );
+      }
 
       var shift = geometry.vertices.length;
 
@@ -444,8 +456,7 @@
 
       for (var n=0; n < outerTorus.faces.length; ++n) {
          var face = outerTorus.faces[n];
-         face.a += shift; face.b += shift; face.c += shift;
-         geometry.faces.push(face);
+         geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
       }
 
       if (arc !== 360) {
@@ -453,16 +464,16 @@
          for (var j=0;j<radialSegments;j++) {
             var i1 = j*(tubularSegments+1);
             var i2 = (j+1)*(tubularSegments+1);
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
          }
 
          // another cuted side
          for (var j=0;j<radialSegments;j++) {
             var i1 = (j+1)*(tubularSegments+1) - 1;
             var i2 = (j+2)*(tubularSegments+1) - 1;
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift));
+            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
          }
       }
 
@@ -487,6 +498,8 @@
       }
 
       var geometry = new THREE.Geometry();
+
+      var color = new THREE.Color();
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
 
@@ -548,8 +561,8 @@
 
                if (layer>0)  // create faces
                   for (var seg=0;seg<radiusSegments;++seg) {
-                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg + 1 ) );
-                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg + 1, prev_indx + seg + 1));
+                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg + 1, null, color, 0 ) );
+                     geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg + 1, prev_indx + seg + 1, null, color, 0 ));
                   }
 
                 prev_indx = curr_indx;
@@ -562,8 +575,8 @@
          var inside = (top === 0) ? indxs[1][0] : indxs[1][shape.fNz-1];
          var outside = (top === 0) ? indxs[0][0] : indxs[0][shape.fNz-1];
          for (var seg=0; seg<radiusSegments; ++seg) {
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg, inside + seg + 1 ) );
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg + 1, outside + seg + 1));
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg, inside + seg + 1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg + 1, outside + seg + 1, null, color, 0 ));
          }
       }
 
@@ -572,17 +585,15 @@
          for (var layer=1; layer < shape.fNz; ++layer) {
             if (shape.fZ[layer-1] === shape.fZ[layer]) continue;
 
-            geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer-1], indxs[1][layer] ) );
-            geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer], indxs[0][layer]) );
+            geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer-1], indxs[1][layer], null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( indxs[0][layer-1], indxs[1][layer], indxs[0][layer], null, color, 0 ) );
 
-            geometry.faces.push( new THREE.Face3( indxs[0][layer-1] + len[0][layer-1], indxs[1][layer-1] + len[1][layer-1], indxs[1][layer] + len[1][layer] ) );
-            geometry.faces.push( new THREE.Face3( indxs[0][layer-1] + len[0][layer-1], indxs[1][layer] + len[1][layer], indxs[0][layer] + len[0][layer]) );
+            geometry.faces.push( new THREE.Face3( indxs[0][layer-1] + len[0][layer-1], indxs[1][layer-1] + len[1][layer-1], indxs[1][layer] + len[1][layer], null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( indxs[0][layer-1] + len[0][layer-1], indxs[1][layer] + len[1][layer], indxs[0][layer] + len[0][layer], null, color, 0 ) );
          }
       }
 
       geometry.computeFaceNormals();
-
-      // console.log(shape._typename + ' vertices ' + geometry.vertices.length + ' faces ' + geometry.faces.length);
 
       return geometry;
    }
