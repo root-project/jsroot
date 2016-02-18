@@ -8234,7 +8234,7 @@
       // method dedicated to iterate over existing panels
       // provided userfunc is called with arguemnts (frame)
 
-      alert("ForEachFrame not implemented");
+      console.warn("ForEachFrame not implemented in MDIDisplay");
    }
 
    JSROOT.MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
@@ -8290,12 +8290,12 @@
    }
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
-      this.ForEachPainter(function(painter) {
-         if ((painter.GetItemName()!=null) && (typeof painter['Cleanup'] == 'function'))
-            painter.Cleanup();
+
+      this.ForEachFrame(function(frame) {
+         JSROOT.cleanup(frame);
       });
 
-      d3.select("#"+this.frameid).html('').property('mdi', null);
+      d3.select("#"+this.frameid).html("").property('mdi', null);
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
@@ -8369,6 +8369,8 @@
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
 
+      JSROOT.cleanup(this.frameid+"_simple_display");
+
       return d3.select("#"+this.frameid)
                .html("")
                .append("div")
@@ -8441,6 +8443,8 @@
       var main = d3.select("#" + this.frameid);
       if (main.empty()) return null;
 
+      var drawid = this.frameid;
+
       if (!this.IsSingle()) {
          var topid = this.frameid + '_grid';
          if (d3.select("#" + topid).empty()) {
@@ -8463,11 +8467,13 @@
             main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px', 'overflow' : 'hidden'});
          }
 
-         main = d3.select( "#" + topid + "_" + this.cnt);
+         drawid = topid + "_" + this.cnt;
          if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
       }
 
-      return main.html("").property('title', title).node();
+      JSROOT.cleanup(drawid);
+
+      return d3.select("#" + drawid).html("").property('title', title).node();
    }
 
    JSROOT.GridDisplay.prototype.Reset = function() {
@@ -8769,8 +8775,8 @@
       dummy.SetDivId(divid, -1);
       var can_painter = dummy.pad_painter();
 
-      if (can_painter != null) {
-         if (obj._typename=="TCanvas") {
+      if (can_painter !== null) {
+         if (obj._typename === "TCanvas") {
             can_painter.RedrawObject(obj);
             return can_painter;
          }
@@ -8803,6 +8809,17 @@
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
       JSROOT.CheckElementResize(divid, arg);
+   }
+
+   // safely remove all JSROOT objects from specified element
+   JSROOT.cleanup = function(divid) {
+      var dummy = new JSROOT.TObjectPainter();
+      dummy.SetDivId(divid, -1);
+      dummy.ForEachPainter(function(painter) {
+         if (typeof painter['Cleanup'] === 'function')
+            painter.Cleanup();
+      });
+      dummy.select_main().html("");
    }
 
    // function to display progress message in the left bottom corner

@@ -872,26 +872,13 @@
 
    JSROOT.TGeoPainter = function( geometry ) {
       JSROOT.TObjectPainter.call( this, geometry );
-      this._worker = null;
-      this._isworker = false;
+
+      this.Cleanup(true);
 
       if ((geometry !== null) && (geometry['_typename'].indexOf('TGeoVolume') === 0))
          geometry = { _typename:"TGeoNode", fVolume: geometry, fName:"TopLevel" };
 
       this._geometry = geometry;
-      this._scene = null;
-      this._scene_width = 0;
-      this._scene_height = 0;
-      this._renderer = null;
-      this._toplevel = null;
-      this._stack = null;
-      this._camera = null;
-
-      this.first_render_tm = 0;
-
-      this._controls = null;
-      this._tcontrols = null;
-      this._toolbar = null;
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
@@ -1913,23 +1900,32 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.Cleanup = function() {
-      this.helpText();
-      if (this._scene === null) return;
+   JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
-      this.deleteChildren(this._scene);
-      //this._renderer.initWebGLObjects(this._scene);
-      delete this._scene;
+      if (first_time === undefined) {
+         console.log('Cleanup geo painter');
+         this.helpText();
+         if (this._scene !== null)
+            this.deleteChildren(this._scene);
+         if ( this._tcontrols !== null)
+            this._tcontrols.dispose();
+         if (this._controls !== null)
+            this._controls.dispose();
+      }
+
       this._scene = null;
-      if ( this._tcontrols !== null ) {
-         this._tcontrols.dispose();
-         this._tcontrols = null;
-      }
-      if (this._controls !== null) {
-         this._controls.dispose();
-         this._controls = null;
-      }
+      this._scene_width = 0;
+      this._scene_height = 0;
       this._renderer = null;
+      this._toplevel = null;
+      this._stack = null;
+      this._camera = null;
+
+      this.first_render_tm = 0;
+
+      this._controls = null;
+      this._tcontrols = null;
+      this._toolbar = null;
    }
 
    JSROOT.TGeoPainter.prototype.helpText = function(msg) {

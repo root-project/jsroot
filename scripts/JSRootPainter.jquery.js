@@ -779,12 +779,13 @@
                           heightStyle : "fill",
                           activate : function (event,ui) {
                              $(ui.newPanel).css('overflow', 'hidden');
-                             pthis.CheckResize($(ui.newPanel).attr('id'));
+                             JSROOT.resize($(ui.newPanel).attr('id'));
                            }
                           });
 
          tabs.delegate("span.ui-icon-close", "click", function() {
             var panelId = $(this).closest("li").remove().attr("aria-controls");
+            JSROOT.cleanup(panelId);
             $("#" + panelId).remove();
             tabs.tabs("refresh");
             if ($('#' + topid + '> .tabs_draw').length == 0)
@@ -801,6 +802,8 @@
          .empty()
          .css('overflow', 'hidden')
          .prop('title', title);
+
+      console.log('create tab ' + hid);
 
       return $('#' + hid).get(0);
    }

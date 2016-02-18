@@ -3,6 +3,7 @@
 ## Changes in master
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
+3. Introduce JSROOT.cleanup() function to safely clear all drawn objects 
 
 
 ## Changes in 4.2
