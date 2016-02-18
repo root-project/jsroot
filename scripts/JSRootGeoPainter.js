@@ -925,7 +925,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _axis:false };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _axis:false, scale: new THREE.Vector3(1,1,1) };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -943,6 +943,18 @@
       if (opt.indexOf("limit")>=0) {
          res.maxlvl = 1111;
          opt = opt.replace("limit", " ");
+      }
+      if (opt.indexOf("invx")>=0) {
+         res.scale.x = -1;
+         opt = opt.replace("invx", " ");
+      }
+      if (opt.indexOf("invy")>=0) {
+         res.scale.y = -1;
+         opt = opt.replace("invy", " ");
+      }
+      if (opt.indexOf("invz")>=0) {
+         res.scale.z = -1;
+         opt = opt.replace("invz", " ");
       }
 
       var p = opt.indexOf("maxlvl");
@@ -1387,7 +1399,14 @@
       var has_childs = (chlds !== null) && (chlds.length > 0);
       var work_around = false;
 
-      if (arg.node._visible && (geom!==null)) {
+      // this is only for debugging - test invertion of whole geometry
+      if (arg.main && (this.options.scale !== null)) {
+         if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
+            prop.matrix.scale(this.options.scale);
+         }
+      }
+
+      if (arg.node._visible && (geom !== null)) {
          geom = this.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
          work_around = has_childs && (geom === null);
       }
@@ -1630,9 +1649,6 @@
 
       this._toplevel = new THREE.Object3D();
 
-      // this is just initial rotation for better positioning relative to spectator
-      //this._toplevel.rotation.x = 45 * Math.PI / 180;
-      // this._toplevel.rotation.y = -45 * Math.PI / 180;
       this._scene.add(this._toplevel);
 
       this._overall_size = 10;
@@ -1642,11 +1658,11 @@
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
       if (this._geometry['_typename'] == "TGeoNode")  {
          this._nodedraw = true;
-         this._stack = [ { toplevel: this._toplevel, node: this._geometry } ];
+         this._stack = [ { toplevel: this._toplevel, node: this._geometry, main: true } ];
       }
       else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
          this._nodedraw = false;
-         this._stack = [ { toplevel: this._toplevel, node: this._geometry } ];
+         this._stack = [ { toplevel: this._toplevel, node: this._geometry, main: true } ];
       }
 
       this.accountClear();
@@ -2082,7 +2098,6 @@
 
       var box = new THREE.Box3().setFromObject(main._toplevel);
 
-      // TODO: factor 2 in geometries
       this.xmin = box.min.x; this.xmax = box.max.x;
       this.ymin = box.min.y; this.ymax = box.max.y;
       this.zmin = box.min.z; this.zmax = box.max.z;
