@@ -207,39 +207,38 @@
       var heightSegments = Math.floor(thetaLength / 6);
       if (heightSegments < 8) heightSegments = 8;
 
-      var outerSphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
-                                                 phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
-      outerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+      var sphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
+                                             phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
+      sphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
       // simple sphere without inner cut
-      if ((innerRadius <= 0) && (thetaLength === 180) && (phiLength === 360)) return outerSphere;
+      if ((innerRadius <= 0) && (thetaLength === 180) && (phiLength === 360)) return sphere;
 
       if (innerRadius <= 0) innerRadius = 0.0000001;
-
-      var innerSphere = new THREE.SphereGeometry( innerRadius, widthSegments, heightSegments,
-                                                phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
-      innerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
       var geometry = new THREE.Geometry();
       var color = new THREE.Color();
 
       // add inner sphere
-      for (var n=0; n < innerSphere.vertices.length; ++n)
-         geometry.vertices.push(innerSphere.vertices[n]);
+      for (var n=0; n < sphere.vertices.length; ++n)
+         geometry.vertices.push(sphere.vertices[n]);
 
-      for (var n=0; n < innerSphere.faces.length; ++n) {
-         var face = innerSphere.faces[n];
+      for (var n=0; n < sphere.faces.length; ++n) {
+         var face = sphere.faces[n];
          geometry.faces.push(new THREE.Face3( face.a, face.b, face.c, null, color, 0 ) );
       }
 
       var shift = geometry.vertices.length;
+      var k = innerRadius / outerRadius;
 
       // add outer sphere
-      for (var n=0; n < outerSphere.vertices.length; ++n)
-         geometry.vertices.push(outerSphere.vertices[n]);
+      for (var n=0; n < sphere.vertices.length; ++n) {
+         var v = sphere.vertices[n];
+         geometry.vertices.push(new THREE.Vector3(k*v.x, k*v.y, k*v.z));
+      }
 
-      for (var n=0; n < outerSphere.faces.length; ++n) {
-         var face = outerSphere.faces[n];
+      for (var n=0; n < sphere.faces.length; ++n) {
+         var face = sphere.faces[n];
          geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
       }
 
@@ -250,7 +249,7 @@
             geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
          }
 
-         var dshift = outerSphere.vertices.length - widthSegments - 1;
+         var dshift = sphere.vertices.length - widthSegments - 1;
 
          // add bottom cap
          for (var i = dshift; i < dshift + widthSegments; ++i) {
@@ -261,7 +260,7 @@
 
       if (phiLength !== 360) {
          // one cuted side
-         for (var j=0;j<heightSegments;j++) {
+         for (var j=0; j<heightSegments; j++) {
             var i1 = j*(widthSegments+1);
             var i2 = (j+1)*(widthSegments+1);
             geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
