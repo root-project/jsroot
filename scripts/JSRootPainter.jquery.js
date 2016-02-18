@@ -702,7 +702,7 @@
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     pthis.CheckResize($(this).next().attr('id'));
+                     JSROOT.resize($(this).next().attr('id'));
                      return false;
                   })
             .next()
@@ -711,8 +711,10 @@
 
       $('#' + uid).find(" .jsroot_collaps_closebtn")
            .button({ icons: { primary: "ui-icon-close" }, text: false })
-           .click(function(){ $(this).parent().next().andSelf().remove(); });
-
+           .click(function(){
+              JSROOT.cleanup($(this).parent().next().attr('id'));
+              $(this).parent().next().andSelf().remove();
+           });
 
       $('#' + uid)
             .toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")

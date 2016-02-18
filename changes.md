@@ -4,6 +4,7 @@
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
 3. Introduce JSROOT.cleanup() function to safely clear all drawn objects 
+4. Fix errors with 'tabs' and 'collapsible' layouts.
 
 
 ## Changes in 4.2
