@@ -488,9 +488,6 @@
 
    JSROOT.GEO.createPolygon = function( shape ) {
 
-      // TODO: if same in/out radius on the top/bottom,
-      //         skip duplicated vertices and zero faces
-
       var thetaStart = shape.fPhi1, thetaLength = shape.fDphi;
 
       var radiusSegments = 60;
@@ -510,15 +507,17 @@
       // calculate all sin/cos tables in advance
       var _sin = new Float32Array(radiusSegments+1), _cos = new Float32Array(radiusSegments+1);
       for (var seg=0;seg<=radiusSegments;++seg) {
-         _cos[seg] = Math.cos(phi0 + seg*dphi);
-         _sin[seg] = Math.sin(phi0 + seg*dphi);
+         _cos[seg] = Math.cos(phi0+seg*dphi);
+         _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
       var indxs = [[],[]], pnts = null, edges = null; // remember indexes for each layer
+      var layerVerticies = radiusSegments; // how many verticies in one layer
 
       if (thetaLength !== 360) {
          pnts = []; // coordinate of point on cut edge (x,z)
          edges = [];  // number of layer for that points
+         layerVerticies+=1; // one need one more vertice
       }
 
       for (var side = 0; side < 2; ++side) {
@@ -547,11 +546,10 @@
 
             if (rad <= 0.) rad = 0.000001;
 
-            // if (len) len[side][layer] = radiusSegments;
             var curr_indx = geometry.vertices.length;
 
             // create vertices for the layer
-            for (var seg=0; seg <= radiusSegments; ++seg)
+            for (var seg=0; seg < layerVerticies; ++seg)
                geometry.vertices.push( new THREE.Vector3( rad*_cos[seg], rad*_sin[seg], layerz ));
 
             if (pnts !== null) {
@@ -565,9 +563,10 @@
             }
 
             if (layer>0)  // create faces
-               for (var seg=0;seg<radiusSegments;++seg) {
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg + 1, null, color, 0 ) );
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg + 1, prev_indx + seg + 1, null, color, 0 ));
+               for (var seg=0;seg < radiusSegments;++seg) {
+                  var seg1 = (seg + 1) % layerVerticies;
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, color, 0 ) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, color, 0 ));
                }
 
             prev_indx = curr_indx;
@@ -578,9 +577,10 @@
       for (var top = 0; top < 2; ++top) {
          var inside = (top === 0) ? indxs[1][0] : indxs[1][shape.fNz-1];
          var outside = (top === 0) ? indxs[0][0] : indxs[0][shape.fNz-1];
-         for (var seg=0; seg<radiusSegments; ++seg) {
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg, inside + seg + 1, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg + 1, outside + seg + 1, null, color, 0 ));
+         for (var seg=0; seg < radiusSegments; ++seg) {
+            var seg1 = (seg + 1) % layerVerticies;
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg, inside + seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg1, outside + seg1, null, color, 0 ));
          }
       }
 
