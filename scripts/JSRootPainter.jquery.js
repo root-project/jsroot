@@ -693,8 +693,6 @@
       entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
       $("#" + topid).append(entryInfo);
 
-      var pthis = this;
-
       $('#' + uid)
             .addClass("ui-accordion-header ui-helper-reset ui-state-default ui-corner-top ui-corner-bottom")
             .hover(function() { $(this).toggleClass("ui-state-hover"); })
@@ -769,8 +767,6 @@
       var li = '<li><a href="#' + hid + '">' + title
             + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>';
       var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
-
-      var pthis = this;
 
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
@@ -903,8 +899,8 @@
                       .css('top', main.prop('original_top'));
          }
 
-         if (state!="minimal")
-            JSROOT.CheckElementResize(main.find(".flex_draw").get(0));
+         if (state !== "minimal")
+            JSROOT.resize(main.find(".flex_draw").get(0));
       }
 
       $("#" + subid)
@@ -920,7 +916,7 @@
             },
             stop: function(event, ui) {
                var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
-               JSROOT.CheckElementResize($(this).find(".flex_draw").get(0), rect);
+               JSROOT.resize($(this).find(".flex_draw").get(0), rect);
             }
           })
           .draggable({
@@ -940,7 +936,11 @@
            .first()
            .attr('title','close canvas')
            .button({ icons: { primary: "ui-icon-close" }, text: false })
-           .click(function() { $(this).parent().parent().remove(); })
+           .click(function() {
+              var main = $(this).parent().parent();
+              JSROOT.cleanup(main.find(".flex_draw").get(0));
+              main.remove();
+           })
            .next()
            .attr('title','maximize canvas')
            .addClass('jsroot_maxbutton')

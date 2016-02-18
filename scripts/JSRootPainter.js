@@ -8498,16 +8498,6 @@
 
    // =========================================================================
 
-   JSROOT.CheckElementResize = function(dom_node, size) {
-      if (dom_node === null) return;
-      var dummy = new JSROOT.TObjectPainter(), done = false;
-      dummy.SetDivId(dom_node, -1);
-      dummy.ForEachPainter(function(painter) {
-         if (!done && typeof painter['CheckResize'] == 'function')
-            done = painter.CheckResize(size);
-      });
-   }
-
    JSROOT.RegisterForResize = function(handle, delay) {
       // function used to react on browser window resize event
       // While many resize events could come in short time,
@@ -8543,7 +8533,7 @@
                if (mdi) {
                   mdi.CheckMDIResize();
                } else {
-                  JSROOT.CheckElementResize(node.node());
+                  JSROOT.resize(node.node());
                }
             }
          }
@@ -8808,7 +8798,13 @@
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
-      JSROOT.CheckElementResize(divid, arg);
+
+      var dummy = new JSROOT.TObjectPainter(), done = false;
+      dummy.SetDivId(divid, -1);
+      dummy.ForEachPainter(function(painter) {
+         if (!done && typeof painter['CheckResize'] == 'function')
+            done = painter.CheckResize(arg);
+      });
    }
 
    // safely remove all JSROOT objects from specified element
