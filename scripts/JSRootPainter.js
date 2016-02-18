@@ -1012,11 +1012,13 @@
 
       var rect = render_to.node().getBoundingClientRect();
 
-      // this is size where canvas should be rendered
-      rect.width = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
-      rect.height = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
+      var res = {};
 
-      return rect;
+      // this is size where canvas should be rendered
+      res.width = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
+      res.height = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
+
+      return res;
    }
 
 
@@ -1222,12 +1224,12 @@
 
          var rect = this.main_visible_rect();
 
-         if ((rect.height < 10) && (rect.width>10)) {
+         if ((rect.height<10) && (rect.width>10)) {
             rect.height = Math.round(0.66*rect.width);
             this.select_main().style('height', rect.height + "px");
          }
-
-         return { x: 0, y: 0, width: rect.width, height: rect.height };
+         rect.x = 0; rect.y = 0;
+         return rect;
       }
 
       var elem = pad;

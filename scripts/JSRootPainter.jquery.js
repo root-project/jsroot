@@ -690,7 +690,7 @@
                         "<a> " + title + "</a>&nbsp; " +
                         "<button type='button' class='jsroot_collaps_closebtn' style='float:right; width:1.4em' title='close canvas'/>" +
                         " </h5>\n";
-      entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+      entryInfo += "<div class='collapsible_draw' style='overflow:hidden' id='" + hid + "'></div>\n";
       $("#" + topid).append(entryInfo);
 
       $('#' + uid)

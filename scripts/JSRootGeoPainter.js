@@ -1735,11 +1735,13 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
+      if (opt === 'count')
+         return this.drawCount();
+
       var size = this.size_for_3d();
 
-      if (opt == 'count') {
-         return this.drawCount();
-      }
+      console.log('size for geo = ' + JSON.stringify(size));
+
 
       this.options = this.decodeOptions(opt);
 
