@@ -206,11 +206,15 @@
 
       var heightSegments = Math.floor(thetaLength / 6);
       if (heightSegments < 8) heightSegments = 8;
-      if (innerRadius <= 0) innerRadius = 0.0000001;
 
       var outerSphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
                                                  phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
       outerSphere.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+
+      // simple sphere without inner cut
+      if ((innerRadius <= 0) && (thetaLength === 180) && (phiLength === 360)) return outerSphere;
+
+      if (innerRadius <= 0) innerRadius = 0.0000001;
 
       var innerSphere = new THREE.SphereGeometry( innerRadius, widthSegments, heightSegments,
                                                 phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
@@ -239,18 +243,20 @@
          geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
       }
 
-      // add top cap
-      for (var i = 0; i < widthSegments; ++i) {
-         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
-      }
+      if (thetaLength !== 180) {
+         // add top cap
+         for (var i = 0; i < widthSegments; ++i) {
+            geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
+         }
 
-      var dshift = outerSphere.vertices.length - widthSegments - 1;
+         var dshift = outerSphere.vertices.length - widthSegments - 1;
 
-      // add bottom cap
-      for (var i = dshift; i < dshift + widthSegments; ++i) {
-         geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
+         // add bottom cap
+         for (var i = dshift; i < dshift + widthSegments; ++i) {
+            geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
+         }
       }
 
       if (phiLength !== 360) {
@@ -858,6 +864,20 @@
    }
 
 
+   JSROOT.GEO.createComposite = function ( shape ) {
+
+      return null;
+
+      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft);
+
+      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight);
+
+      // var geometry = new THREE.Geometry();
+
+      return geom1;
+   }
+
+
    JSROOT.GEO.createGeometry = function( shape ) {
 
       switch (shape._typename) {
@@ -881,6 +901,7 @@
          case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
          case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape );
          case "TGeoHype": return JSROOT.GEO.createHype( shape );
+         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape );
       }
 
       return null;
