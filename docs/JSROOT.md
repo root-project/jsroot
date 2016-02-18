@@ -34,16 +34,15 @@ The following parameters can be specified in the URL string:
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 
-When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.
-One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`.
+When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`.
 
 Examples:
 
-- <https://root.cern.ch/js/latest/index.htm?file=../files/hsimple.root&item=hpx;1>
-- <https://root.cern.ch/js/latest/index.htm?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
-- <https://root.cern.ch/js/latest/index.htm?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
+- <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1>
+- <https://root.cern.ch/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
+- <https://root.cern.ch/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
-Many examples how URL string can be used can be found on [JSROOT examples](https://root.cern.ch/js/latest/examples.htm) page.   
+Many examples of URL string usage can be found on [JSROOT examples](https://root.cern.ch/js/latest/api.htm) page.   
 
 
 One can very easy integrate JSROOT graphic into other HTML pages using a __iframe__ tag:
@@ -264,6 +263,8 @@ one should call JSROOT.resize() to let JSROOT adjust drawing size. One should do
 To correctly cleanup JSROOT drawings from HTML element, one should call:
 
     JSROOT.cleanup("drawing");
+
+Many examples of supported ROOT classes and draw options can be found on [JSROOT examples](https://root.cern.ch/js/latest/examples.htm) page. 
 
 
 ### File API
