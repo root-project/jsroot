@@ -1907,7 +1907,6 @@
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (first_time === undefined) {
-         console.log('Cleanup geo painter');
          this.helpText();
          if (this._scene !== null)
             this.deleteChildren(this._scene);

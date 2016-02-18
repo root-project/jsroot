@@ -8809,6 +8809,9 @@
       });
    }
 
+   // for compatibility, keep old name
+   JSROOT.CheckElementResize = JSROOT.resize;
+
    // safely remove all JSROOT objects from specified element
    JSROOT.cleanup = function(divid) {
       var dummy = new JSROOT.TObjectPainter();

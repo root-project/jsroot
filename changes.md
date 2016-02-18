@@ -4,10 +4,10 @@
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
 3. Introduce JSROOT.cleanup() function to safely clear all drawn objects 
-4. Fix errors with 'tabs' and 'collapsible' layouts
-5. Fix error with canvas resize in flexible layout (issue #27)
-6. Fix error with geo drawings in collapsible layout 
-7. Fix problem with geo drawings in flexible layout
+4. Fix wrong resize method in 'tabs' and 'collapsible' layouts
+5. Fix canvas resize problem (issue #27)
+6. Fix zero-height canvas when draw TGgeo in collapsible layout
+7. Fix problem of simultaneous move TGeo drawings in flexible layout
  
 
 ## Changes in 4.2
