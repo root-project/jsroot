@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in master
-1. Implement TGeoCtub and TGeoParaboloid shape
+1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
 
 

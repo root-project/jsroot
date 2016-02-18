@@ -654,9 +654,8 @@
       // calculate all sin/cos tables in advance
       var _sin = new Float32Array(radiusSegments), _cos = new Float32Array(radiusSegments);
       for (var seg=0;seg<radiusSegments;++seg) {
-         var phi = seg/radiusSegments*2*Math.PI;
-         _cos[seg] = Math.cos(phi);
-         _sin[seg] = Math.sin(phi);
+         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
+         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
       var geometry = new THREE.Geometry();
@@ -728,6 +727,87 @@
    }
 
 
+   JSROOT.GEO.createHype = function( shape ) {
+
+      if ((shape.fTin===0) && (shape.fTout===0))
+         return JSROOT.GEO.createTube(shape);
+
+      var radiusSegments = Math.round(360/6);
+      var heightSegments = 30;
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments), _cos = new Float32Array(radiusSegments);
+      for (var seg=0;seg<radiusSegments;++seg) {
+         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
+         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
+      }
+
+      var geometry = new THREE.Geometry();
+      var fcolor = new THREE.Color();
+
+      var indexes = [[],[]];
+
+      // in-out side
+      for (var side=0;side<2;++side) {
+
+         // add only points, no faces
+         if ((side===0) && (shape.fRmin <= 0)) {
+            indexes[side][0] = geometry.vertices.length;
+            geometry.vertices.push( new THREE.Vector3( 0, 0, -shape.fDz ) );
+            indexes[side][heightSegments] = geometry.vertices.length;
+            geometry.vertices.push( new THREE.Vector3( 0, 0, shape.fDz ) );
+            continue;
+         }
+
+         var prev_indx = 0;
+         var r0 = (side===0) ? shape.fRmin : shape.fRmax;
+         var tsq = (side===0) ? shape.fTinsq : shape.fToutsq;
+
+         // vertical layers
+         for (var layer=0;layer<=heightSegments;++layer) {
+            var layerz = -shape.fDz + layer/heightSegments*2*shape.fDz;
+
+            var radius = Math.sqrt(r0*r0+tsq*layerz*layerz);
+            var curr_indx = geometry.vertices.length;
+
+            indexes[side][layer] = curr_indx;
+
+            for (var seg=0; seg<radiusSegments; ++seg)
+               geometry.vertices.push( new THREE.Vector3( radius*_cos[seg], radius*_sin[seg], layerz));
+
+            // add faces of next layer
+            if (layer>0) {
+               for (var seg=0; seg<radiusSegments; ++seg) {
+                  var seg1 = (seg+1) % radiusSegments;
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, fcolor, 0) );
+               }
+            }
+
+            prev_indx = curr_indx;
+         }
+      }
+
+      // add caps
+      for(var layer=0; layer<=heightSegments; layer+=heightSegments) {
+         var inside = indexes[0][layer], outside = indexes[1][layer];
+         for (var seg=0; seg<radiusSegments; ++seg) {
+            var seg1 = (seg+1) % radiusSegments;
+            if (shape.fRmin <= 0) {
+               geometry.faces.push( new THREE.Face3( inside, outside + seg, outside + seg1, null, fcolor, 0) );
+            } else {
+               geometry.faces.push( new THREE.Face3( inside + seg, outside + seg, outside + seg1, null, fcolor, 0) );
+               geometry.faces.push( new THREE.Face3( inside + seg, outside + seg1, inside + seg1, null, fcolor, 0) );
+            }
+         }
+      }
+
+      geometry.computeFaceNormals();
+
+      return geometry;
+   }
+
+
    JSROOT.GEO.createGeometry = function( shape ) {
 
       switch (shape._typename) {
@@ -750,6 +830,7 @@
          case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
          case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
          case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape );
+         case "TGeoHype": return JSROOT.GEO.createHype( shape );
       }
 
       return null;
