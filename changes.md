@@ -4,7 +4,7 @@
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
 3. Exclude empty faces in TGeoArb8  
-4. Improve TGeoSphere creation
+4. Improve TGeoSphere creation - handle all parameters combinations  
 5. Introduce JSROOT.cleanup() function to safely clear all drawn objects 
 6. Fix wrong resize method in 'tabs' and 'collapsible' layouts
 7. Fix canvas resize problem (issue #27)
