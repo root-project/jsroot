@@ -100,20 +100,7 @@
 
       var verticesOfShape;
 
-      if (shape._typename == "TGeoArb8" || shape._typename == "TGeoTrap" || shape._typename == "TGeoGtra") {
-         // Arb8
-         verticesOfShape = [
-            shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
-            shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
-            shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
-            shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
-            shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
-            shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
-            shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
-            shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
-         ];
-      }
-      else if (shape._typename == "TGeoTrd1") {
+      if (shape._typename == "TGeoTrd1")
          verticesOfShape = [
             -shape.fDx1,  shape.fDY, -shape.fDZ,
              shape.fDx1,  shape.fDY, -shape.fDZ,
@@ -124,8 +111,7 @@
              shape.fDx2, -shape.fDY,  shape.fDZ,
             -shape.fDx2, -shape.fDY,  shape.fDZ
          ];
-      }
-      else if (shape._typename == "TGeoTrd2") {
+      else
          verticesOfShape = [
             -shape.fDx1,  shape.fDy1, -shape.fDZ,
              shape.fDx1,  shape.fDy1, -shape.fDZ,
@@ -136,7 +122,7 @@
              shape.fDx2, -shape.fDy2,  shape.fDZ,
             -shape.fDx2, -shape.fDy2,  shape.fDZ
          ];
-      }
+
       var indicesOfFaces = [
           4,5,6,   4,7,6,   0,3,7,   7,4,0,
           4,5,1,   1,0,4,   6,2,1,   1,5,6,
@@ -150,6 +136,56 @@
 
       for (var i = 0; i < 36; i += 3)
          geometry.faces.push( new THREE.Face3( indicesOfFaces[i], indicesOfFaces[i+1], indicesOfFaces[i+2], null, color, 0 ) );
+
+      geometry.computeFaceNormals();
+      return geometry;
+   }
+
+
+   JSROOT.GEO.createArb8 = function( shape ) {
+
+      var verticesOfShape = [
+            shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
+            shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
+            shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
+            shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
+            shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
+            shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
+            shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
+            shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
+         ];
+
+      var indicies = [];
+
+      var indicesOfFaces = [
+          4,5,6,   4,7,6,   0,3,7,   7,4,0,
+          4,5,1,   1,0,4,   6,2,1,   1,5,6,
+          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      var geometry = new THREE.Geometry();
+      for (var i = 0; i < 8; ++i) {
+         var ii = i*3;
+         if ((i>0) && (verticesOfShape[ii] === verticesOfShape[ii-3]) &&
+             (verticesOfShape[ii+1] === verticesOfShape[ii-2]) &&
+             (verticesOfShape[ii+2] === verticesOfShape[ii-1])) {
+            indicies[i] = indicies[i-1];
+            continue;
+         }
+
+         indicies[i] = geometry.vertices.length;
+
+         geometry.vertices.push( new THREE.Vector3( verticesOfShape[ii], verticesOfShape[ii+1], verticesOfShape[ii+2] ) );
+      }
+
+      var color = new THREE.Color();
+
+      for (var i = 0; i < 36; i += 3) {
+         var a = indicies[indicesOfFaces[i]],
+             b = indicies[indicesOfFaces[i+1]],
+             c = indicies[indicesOfFaces[i+2]];
+         if ((a!==b) && (b!==c) && (a!==c))
+            geometry.faces.push( new THREE.Face3( a, b, c, null, color, 0 ) );
+      }
 
       geometry.computeFaceNormals();
       return geometry;
@@ -827,11 +863,11 @@
       switch (shape._typename) {
          case "TGeoBBox": return JSROOT.GEO.createCube( shape );
          case "TGeoPara": return JSROOT.GEO.createPara( shape );
-         case "TGeoArb8":
          case "TGeoTrd1":
-         case "TGeoTrd2":
+         case "TGeoTrd2": return JSROOT.GEO.createTrapezoid( shape );
+         case "TGeoArb8":
          case "TGeoTrap":
-         case "TGeoGtra": return JSROOT.GEO.createTrapezoid( shape );
+         case "TGeoGtra": return JSROOT.GEO.createArb8( shape );
          case "TGeoSphere": return JSROOT.GEO.createSphere( shape );
          case "TGeoCone":
          case "TGeoConeSeg":
