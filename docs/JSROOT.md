@@ -43,6 +43,9 @@ Examples:
 - <https://root.cern.ch/js/latest/index.htm?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern.ch/js/latest/index.htm?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
+Many examples how URL string can be used can be found on [JSROOT examples](https://root.cern.ch/js/latest/examples.htm) page.   
+
+
 One can very easy integrate JSROOT graphic into other HTML pages using a __iframe__ tag:
 
 <iframe width="600" height="500" src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
@@ -278,6 +281,6 @@ For example, reading an object from a file and displaying it will look like:
     });
 
 
-## More examples
+## More API examples
 
-Many different examples of JSROOT usage can be found on [JSROOT](https://root.cern.ch/js/latest/api.htm) page
+Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page

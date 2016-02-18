@@ -955,6 +955,8 @@
 
       var painter = this;
 
+      this.select_main().property('flex_block_drag', true);
+
       this._controls = new THREE.OrbitControls(this._camera, this._renderer.domElement);
       this._controls.enableDamping = true;
       this._controls.dampingFactor = 0.25;
@@ -1010,7 +1012,7 @@
          this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
 
-      var painter = this, raycaster = new THREE.Raycaster(), INTERSECTED = null;
+      var raycaster = new THREE.Raycaster(), INTERSECTED = null;
 
       function findIntersection(mouse) {
          // find intersections
@@ -1046,13 +1048,13 @@
       };
 
       function mousemove(e) {
-
          var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
          var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
          var mouse = { x: (mouse_x / painter._renderer.domElement.width) * 2 - 1,
                    y: -(mouse_y / painter._renderer.domElement.height) * 2 + 1 };
 
          findIntersection(mouse);
+         e.preventDefault();
       }
 
       this._renderer.domElement.addEventListener('mousemove', mousemove);

@@ -7,6 +7,7 @@
 4. Fix errors with 'tabs' and 'collapsible' layouts
 5. Fix error with canvas resize in flexible layout (issue #27)
 6. Fix error with geo drawings in collapsible layout 
+7. Fix problem with geo drawings in flexible layout
  
 
 ## Changes in 4.2
