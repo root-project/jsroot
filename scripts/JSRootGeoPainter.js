@@ -192,7 +192,7 @@
    }
 
 
-   JSROOT.GEO.createSphere = function( shape ) {
+   JSROOT.GEO.createSphere = function( shape, faces_limit ) {
       var outerRadius = shape.fRmax;
       var innerRadius = shape.fRmin;
       var phiStart = shape.fPhi1 + 180;
@@ -201,6 +201,15 @@
       var thetaLength = shape.fTheta2 - shape.fTheta1;
       var widthSegments = shape.fNseg;
       var heightSegments = shape.fNz;
+
+      if ((faces_limit !== undefined) && (2*widthSegments*heightSegments > faces_limit)) {
+         var d1 = phiLength / 6, d2 = thetaLength / 6;
+         while (2*d1*d2 > faces_limit) {
+            d1 *= 0.75; d2 *= 0.75;
+         }
+         widthSegments = Math.round(d1);
+         heightSegments = Math.round(d2);
+      }
 
       var sphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
                                              phiStart*Math.PI/180, phiLength*Math.PI/180, thetaStart*Math.PI/180, thetaLength*Math.PI/180);
@@ -240,7 +249,7 @@
          }
          for (var n=0; n < sphere.faces.length; ++n) {
             var face = sphere.faces[n];
-            geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
+            geometry.faces.push(new THREE.Face3( shift+face.b, shift+face.a, shift+face.c, null, color, 0 ) );
          }
       }
 
@@ -262,8 +271,8 @@
             if (noInside) {
                geometry.faces.push( new THREE.Face3( i+0, i+1, shift, null, color, 0 ) );
             } else {
-               geometry.faces.push( new THREE.Face3( i+0, i+1, i+shift, null, color, 0 ) );
-               geometry.faces.push( new THREE.Face3( i+1, i+shift+1, i+shift, null, color, 0 ) );
+               geometry.faces.push( new THREE.Face3( i+1, i+0, i+shift, null, color, 0 ) );
+               geometry.faces.push( new THREE.Face3( i+shift+1, i+1, i+shift, null, color, 0 ) );
             }
          }
       }
@@ -276,8 +285,8 @@
             if (noInside) {
                geometry.faces.push( new THREE.Face3( i1, i2, shift, null, color, 0 ) );
             } else {
-               geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
-               geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
+               geometry.faces.push( new THREE.Face3( i2, i1, i1+shift, null, color, 0 ) );
+               geometry.faces.push( new THREE.Face3( i2+shift, i2, i1+shift, null, color, 0 ));
             }
          }
          // another cuted side
@@ -885,17 +894,43 @@
 
       return null;
 
-      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft);
+      // var geom1 = new THREE.SphereGeometry( 50, 40, 40 );
+      // geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, 20) );
 
-      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight);
 
-      // var geometry = new THREE.Geometry();
+      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, 1000);
+
+      geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, shape.fNode.fLeftMat.fTranslation[2]));
+
+      geom1.computeVertexNormals();
+      //var mesh1 = new THREE.Mesh(geom1);
+      //mesh1.position.z = 25;
+      var bsp1  = new ThreeBSP(geom1);
+
+      // var geom2 = new THREE.BoxGeometry( 80, 80, 80 )
+      geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, 1000);
+      geom2.computeVertexNormals();
+      //var mesh2 = new THREE.Mesh(geom2);
+
+      var bsp2 = new ThreeBSP(geom2);
+
+      // var bsp = bsp1.union(bsp2); // "+"
+      //var bsp = bsp1.subtract(bsp2); // "/"
+      var bsp = bsp1.intersect(bsp2);  // "*"
+
+      var res = bsp.toGeometry();
+
+      // res.computeFaceNormals();
+
+      console.log('g1 ' + geom1.faces.length + ' g2 ' + geom2.faces.length + '  res ' + res.faces.length);
+
+      return res;
 
       return geom1;
    }
 
 
-   JSROOT.GEO.createGeometry = function( shape ) {
+   JSROOT.GEO.createGeometry = function( shape, limit ) {
 
       switch (shape._typename) {
          case "TGeoBBox": return JSROOT.GEO.createCube( shape );
@@ -905,7 +940,7 @@
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": return JSROOT.GEO.createArb8( shape );
-         case "TGeoSphere": return JSROOT.GEO.createSphere( shape );
+         case "TGeoSphere": return JSROOT.GEO.createSphere( shape, limit );
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
@@ -1355,7 +1390,7 @@
 
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: fillcolor,
-                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
 
@@ -1389,7 +1424,7 @@
          var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: fillcolor,
-                          side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                          side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                           overdraw: 0. } );
       }
 

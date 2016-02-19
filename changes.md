@@ -8,7 +8,7 @@
 5. Introduce JSROOT.cleanup() function to safely clear all drawn objects 
 6. Fix wrong resize method in 'tabs' and 'collapsible' layouts
 7. Fix canvas resize problem (issue #27)
-8. Fix zero-height canvas when draw TGgeo in collapsible layout
+8. Fix zero-height canvas when draw TGeo in collapsible layout
 9. Fix problem of simultaneous move TGeo drawings and canvas in flexible layout
  
 
