@@ -465,13 +465,13 @@
       // create tube faces
       for (var seg=0; seg<radiusSegments; ++seg) {
          var seg1 = (seg + 1) % radiusSegments;
-         geometry.faces.push( new THREE.Face3( seg, seg+radiusSegments+1, seg1, null, color, 0 ) );
-         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg1+radiusSegments+1, seg1, null, color, 0 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg, seg1, null, color, 0 ) );
+         geometry.faces.push( new THREE.Face3( seg+radiusSegments+1, seg1, seg1+radiusSegments+1, null, color, 0 ) );
       }
 
       // create bottom cap
       for (var seg=0; seg<radiusSegments; ++seg)
-         geometry.faces.push( new THREE.Face3( seg, (seg + 1) % radiusSegments, radiusSegments, null, color, 0 ));
+         geometry.faces.push( new THREE.Face3( seg, radiusSegments, (seg + 1) % radiusSegments, null, color, 0 ));
 
       // create upper cap
       var shift = radiusSegments + 1;
