@@ -588,6 +588,8 @@
          layerVerticies+=1; // one need one more vertice
       }
 
+      var a,b,c,d,e; // used for face swapping
+
       for (var side = 0; side < 2; ++side) {
 
          var rside = (side === 0) ? 'fRmax' : 'fRmin';
@@ -633,8 +635,8 @@
             if (layer>0)  // create faces
                for (var seg=0;seg < radiusSegments;++seg) {
                   var seg1 = (seg + 1) % layerVerticies;
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, color, 0 ) );
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, color, 0 ));
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, (side === 0) ? (prev_indx + seg1) : (curr_indx + seg) , curr_indx + seg1, null, color, 0 ) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, (side === 0) ? (curr_indx + seg) : prev_indx + seg1, null, color, 0 ));
                }
 
             prev_indx = curr_indx;
@@ -647,8 +649,8 @@
          var outside = (top === 0) ? indxs[0][0] : indxs[0][shape.fNz-1];
          for (var seg=0; seg < radiusSegments; ++seg) {
             var seg1 = (seg + 1) % layerVerticies;
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg, inside + seg1, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg1, outside + seg1, null, color, 0 ));
+            geometry.faces.push( new THREE.Face3( outside + seg, (top===0) ? (inside + seg) : (outside + seg1), inside + seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg1, (top===0) ? (outside + seg1) : (inside + seg), null, color, 0 ));
          }
       }
 
@@ -670,11 +672,11 @@
 
          for (var i = 0; i < faces.length; ++i) {
             var f = faces[i];
-            geometry.faces.push( new THREE.Face3( edges[f[0]], edges[f[1]], edges[f[2]], null, color, 0) );
+            geometry.faces.push( new THREE.Face3( edges[f[0]], edges[f[2]], edges[f[1]], null, color, 0) );
          }
          for (var i = 0; i < faces.length; ++i) {
             var f = faces[i];
-            geometry.faces.push( new THREE.Face3( edges[f[0]] + radiusSegments, edges[f[2]] + radiusSegments, edges[f[1]] + radiusSegments, null, color, 0) );
+            geometry.faces.push( new THREE.Face3( edges[f[0]] + radiusSegments, edges[f[1]] + radiusSegments, edges[f[2]] + radiusSegments, null, color, 0) );
          }
       }
 
