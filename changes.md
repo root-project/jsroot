@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 4.3
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
 3. Exclude empty faces in TGeoArb8  

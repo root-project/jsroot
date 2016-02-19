@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 18/02/2016";
+   JSROOT.version = "4.3 19/02/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -760,7 +760,7 @@
 
       if (kind.indexOf("geom;")>=0) {
          //mainfiles += "$$$scripts/csg.js;" +
-         //             "$$$scripts/ThreeCSG.js;" +
+         //             "$$$scripts/ThreeCSG.js;";
          mainfiles += "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
          modules.push('JSRootGeoPainter');
