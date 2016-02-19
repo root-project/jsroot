@@ -834,13 +834,20 @@
    }
 
 
-   JSROOT.GEO.createHype = function( shape ) {
+   JSROOT.GEO.createHype = function( shape, faces_limit ) {
 
       if ((shape.fTin===0) && (shape.fTout===0))
          return JSROOT.GEO.createTube(shape);
 
-      var radiusSegments = Math.round(360/6);
-      var heightSegments = 30;
+      var radiusSegments = Math.round(360/6), heightSegments = 30;
+
+      if (faces_limit !== undefined) {
+         var fact = ((shape.fRmin <= 0) ? 2 : 4) * (radiusSegments+1) * (heightSegments+2) / faces_limit;
+         if (fact > 1.) {
+            radiusSegments = Math.round(radiusSegments/Math.sqrt(fact));
+            heightSegments = Math.round(heightSegments/Math.sqrt(fact));
+         }
+      }
 
       // calculate all sin/cos tables in advance
       var _sin = new Float32Array(radiusSegments), _cos = new Float32Array(radiusSegments);
@@ -886,8 +893,8 @@
             if (layer>0) {
                for (var seg=0; seg<radiusSegments; ++seg) {
                   var seg1 = (seg+1) % radiusSegments;
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, (side===0) ? (curr_indx + seg) : (prev_indx + seg1), curr_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, (side===0) ? (prev_indx + seg1) : (curr_indx + seg), null, fcolor, 0) );
                }
             }
 
@@ -901,10 +908,10 @@
          for (var seg=0; seg<radiusSegments; ++seg) {
             var seg1 = (seg+1) % radiusSegments;
             if (shape.fRmin <= 0) {
-               geometry.faces.push( new THREE.Face3( inside, outside + seg, outside + seg1, null, fcolor, 0) );
+               geometry.faces.push( new THREE.Face3( inside, outside + (layer===0 ? seg1 : seg), outside + (layer===0 ? seg : seg1), null, fcolor, 0) );
             } else {
-               geometry.faces.push( new THREE.Face3( inside + seg, outside + seg, outside + seg1, null, fcolor, 0) );
-               geometry.faces.push( new THREE.Face3( inside + seg, outside + seg1, inside + seg1, null, fcolor, 0) );
+               geometry.faces.push( new THREE.Face3( inside + seg, (layer===0) ? (inside + seg1) : (outside + seg), outside + seg1, null, fcolor, 0) );
+               geometry.faces.push( new THREE.Face3( inside + seg, outside + seg1, (layer===0) ? (outside + seg) : (inside + seg1), null, fcolor, 0) );
             }
          }
       }
@@ -975,8 +982,8 @@
          case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
          case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
          case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape, limit );
-         case "TGeoHype": return JSROOT.GEO.createHype( shape );
-         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape );
+         case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
+         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
       }
 
       return null;
