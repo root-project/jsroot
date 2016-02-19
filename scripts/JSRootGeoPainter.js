@@ -1019,6 +1019,7 @@
          case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape, limit );
          case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
          case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
+         case "TGeoShapeAssembly": return new THREE.Geometry();
       }
 
       return null;
@@ -1307,9 +1308,9 @@
 
       var cnt = 0, flip = new THREE.Vector3(1,1,1);
 
-      if (m.elements[0]===-1 &&  m.elements[1]=== 0 &&  m.elements[2]=== 0) { flip.x = -1; cnt++; }
-      if (m.elements[4]=== 0  && m.elements[5]===-1 &&  m.elements[6]=== 0) { flip.y = -1; cnt++; }
-      if (m.elements[8]=== 0  && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
+      if (m.elements[0]===-1 && m.elements[1]=== 0 && m.elements[2] === 0) { flip.x = -1; cnt++; }
+      if (m.elements[4]=== 0 && m.elements[5]===-1 && m.elements[6] === 0) { flip.y = -1; cnt++; }
+      if (m.elements[8]=== 0 && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
 
       if ((cnt===0) || (cnt ===2)) {
          flip.set(1,1,1); cnt = 0;
