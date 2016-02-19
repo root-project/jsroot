@@ -931,10 +931,10 @@
             translation_matrix = matrix.fTranslation;
          }
          else if (matrix._typename == 'TGeoRotation') {
-            rotation_matrix = node.fMatrix.fRotationMatrix;
+            rotation_matrix = matrix.fRotationMatrix;
          }
          else if (matrix._typename == 'TGeoCombiTrans') {
-            translation_matrix = node.fMatrix.fTranslation;
+            translation_matrix = matrix.fTranslation;
             if (matrix.fRotation !== null)
                rotation_matrix = matrix.fRotation.fRotationMatrix;
          }
@@ -943,10 +943,10 @@
       var res = new THREE.Matrix4();
 
       if (rotation_matrix !== null)
-         res.matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                         rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                         rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                          0,                  0,                  0,   1);
+         res.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                 rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                 rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                  0,                  0,                  0,   1);
 
       if (translation_matrix !== null)
          res.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
@@ -957,7 +957,7 @@
 
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      if (faces_limit === undefined) faces_limit = 3000;
+      if (faces_limit === undefined) faces_limit = 10000;
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
@@ -989,7 +989,7 @@
 
       var res = bsp.toGeometry();
 
-      console.log('left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
+      console.log('Composite shape left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
 
       return res;
    }
@@ -1357,29 +1357,12 @@
 
       var volume = node['fVolume'];
 
-      var prop = { shape: volume.fShape };
+      var prop = { shape: volume.fShape, matrix: null };
 
-      var translation_matrix = null; // [0, 0, 0];
-      var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
-
-      if (typeof node['fMatrix'] != 'undefined' && node['fMatrix'] !== null) {
-         if (node.fMatrix._typename == 'TGeoTranslation') {
-            translation_matrix = node.fMatrix.fTranslation;
-         }
-         else if (node.fMatrix._typename == 'TGeoRotation') {
-            rotation_matrix = node.fMatrix.fRotationMatrix;
-         }
-         else if (node.fMatrix._typename == 'TGeoCombiTrans') {
-            if (typeof node.fMatrix.fTranslation != 'undefined' &&
-                node.fMatrix.fTranslation !== null)
-               translation_matrix = node.fMatrix.fTranslation;
-            if (typeof node.fMatrix.fRotation != 'undefined' &&
-                node.fMatrix.fRotation !== null) {
-               rotation_matrix = node.fMatrix.fRotation.fRotationMatrix;
-            }
-         }
-      }
-      if ((node['_typename'] == "TGeoNodeOffset") && (node['fFinder'] != null)) {
+      if (('fMatrix' in node) && (node.fMatrix !== null))
+         prop.matrix = JSROOT.GEO.createMatrix(node.fMatrix);
+      else
+      if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaX') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaY') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternParaZ') { }
@@ -1389,22 +1372,20 @@
          // if (node['fFinder']['_typename'] == 'TGeoPatternSphTheta') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternSphPhi') { }
          // if (node['fFinder']['_typename'] == 'TGeoPatternHoneycomb') { }
-         if ((node['fFinder']['_typename'] == 'TGeoPatternX') ||
-             (node['fFinder']['_typename'] == 'TGeoPatternY') ||
-             (node['fFinder']['_typename'] == 'TGeoPatternZ')) {
+         if ((node.fFinder._typename === 'TGeoPatternX') ||
+             (node.fFinder._typename === 'TGeoPatternY') ||
+             (node.fFinder._typename === 'TGeoPatternZ')) {
             var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
-            if (translation_matrix !== null)
-               console.warn('translation exists - should we combine with ' + node['fFinder']['_typename']);
-            else
-            switch (node['fFinder']['_typename'].charAt(11)) {
-               case 'X': translation_matrix = [_shift, 0, 0]; break;
-               case 'Y': translation_matrix = [0, _shift, 0]; break;
-               case 'Z': translation_matrix = [0, 0, _shift]; break;
+            prop.matrix = new THREE.Matrix4();
+
+            switch (node.fFinder._typename.charAt(11)) {
+               case 'X': prop.matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
+               case 'Y': prop.matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
+               case 'Z': prop.matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
             }
          } else
-         if (node['fFinder']['_typename'] == 'TGeoPatternCylPhi') {
-
+         if (node.fFinder._typename === 'TGeoPatternCylPhi') {
             var _cos = 1., _sin = 0.;
 
             if (typeof node['fFinder']['fSinCos'] === 'undefined') {
@@ -1415,19 +1396,14 @@
                _sin = node['fFinder']['fSinCos'][2*node.fIndex];
             }
 
-            if (rotation_matrix === null) {
-               rotation_matrix = [_cos, -_sin, 0,
-                                  _sin,  _cos, 0,
-                                     0,     0, 1];
-            } else {
-               console.warn('should we multiply rotation matrixes here??');
-               rotation_matrix[0] = _cos;
-               rotation_matrix[1] = -_sin;
-               rotation_matrix[3] = _sin;
-               rotation_matrix[4] = _cos;
-            }
+            prop.matrix = new THREE.Matrix4();
+
+            prop.matrix.set(_cos, -_sin, 0,  0,
+                            _sin,  _cos, 0,  0,
+                               0,     0, 1,  0,
+                               0,     0, 0,  1);
          } else {
-            console.warn('Unsupported pattern type ' + node['fFinder']['_typename']);
+            console.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
       }
 
@@ -1457,17 +1433,6 @@
                               side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
-
-      prop.matrix = new THREE.Matrix4();
-
-      if (rotation_matrix !== null)
-         prop.matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
-                         rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
-                         rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
-                                          0,                  0,                  0,   1);
-
-      if (translation_matrix !== null)
-         prop.matrix.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
 
       return prop;
    }
@@ -1579,7 +1544,7 @@
          }
       }
 
-      if (arg.node._visible && (geom !== null)) {
+      if (arg.node._visible && (geom !== null) && (prop.matrix!==null)) {
          geom = this.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
          work_around = has_childs && (geom === null);
       }
@@ -1588,7 +1553,8 @@
 
       var mesh = new THREE.Mesh( geom, prop.material );
 
-      mesh.applyMatrix(prop.matrix);
+      if (prop.matrix !== null)
+         mesh.applyMatrix(prop.matrix);
 
       this.accountMesh(mesh);
 
