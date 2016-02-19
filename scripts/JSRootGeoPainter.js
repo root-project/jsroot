@@ -378,8 +378,8 @@
       if (hasrmin)
          for (var seg=0; seg<radiusSegments; ++seg) {
             var seg1 = (extrapnt === 1) ? (seg + 1) : (seg + 1) % radiusSegments;
-            geometry.faces.push( new THREE.Face3( seg, nsegm + seg, seg1, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( nsegm + seg, nsegm + seg1, seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm + seg, seg,  seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm + seg, seg1, nsegm + seg1, null, color, 0 ) );
          }
 
       // add outer tube faces
@@ -397,7 +397,7 @@
             geometry.faces.push( new THREE.Face3( i, i+shift, i1, null, color, 0 ) );
             geometry.faces.push( new THREE.Face3( i+shift, i1+shift, i1, null, color, 0 ) );
          } else {
-            geometry.faces.push( new THREE.Face3( i+shift, 0, i1+shift, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( 0, i+shift, i1+shift, null, color, 0 ) );
          }
       }
 
@@ -405,8 +405,8 @@
       for (var i = 0; i < radiusSegments; ++i) {
          var i1 = (extrapnt === 1) ? (i+1) : (i+1) % radiusSegments;
          if (hasrmin) {
-            geometry.faces.push( new THREE.Face3( nsegm+i, nsegm+i+shift, nsegm+i1, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( nsegm+i+shift, nsegm+i1+shift, nsegm+i1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm+i+shift, nsegm+i,  nsegm+i1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( nsegm+i+shift, nsegm+i1, nsegm+i1+shift, null, color, 0 ) );
          } else {
             geometry.faces.push( new THREE.Face3( nsegm+i+shift, 1, nsegm+i1+shift, null, color, 0 ) );
          }
@@ -420,15 +420,14 @@
           } else {
              geometry.faces.push( new THREE.Face3( 0, 1, shift+nsegm, null, color, 0 ) );
              geometry.faces.push( new THREE.Face3( 0, shift+nsegm, shift, null, color, 0 ) );
-             console.log('very special case of tube with cut');
           }
 
           if (hasrmin) {
-             geometry.faces.push( new THREE.Face3( radiusSegments, 2*radiusSegments+1, shift+2*radiusSegments+1, null, color, 0 ) );
-             geometry.faces.push( new THREE.Face3( radiusSegments, shift+2*radiusSegments+1, shift + radiusSegments, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( radiusSegments, shift+2*radiusSegments+1, 2*radiusSegments+1, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( radiusSegments, shift + radiusSegments, shift+2*radiusSegments+1, null, color, 0 ) );
           } else {
-             geometry.faces.push( new THREE.Face3( 0, 1, shift+2*radiusSegments+1, null, color, 0 ) );
-             geometry.faces.push( new THREE.Face3( 0, shift+2*radiusSegments+1, shift + radiusSegments, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( 0, shift+2*radiusSegments+1, 1, null, color, 0 ) );
+             geometry.faces.push( new THREE.Face3( 0, shift + radiusSegments, shift+2*radiusSegments+1,  null, color, 0 ) );
           }
       }
 
