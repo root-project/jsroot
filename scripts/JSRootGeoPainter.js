@@ -661,8 +661,8 @@
             for (var layer = shape.fNz-1; layer>0; --layer) {
                if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
                var right = 2*shape.fNz - 1 - layer;
-               faces.push([right, layer, layer - 1]);
-               faces.push([right, layer-1, right + 1]);
+               faces.push([right, layer - 1, layer]);
+               faces.push([right, right + 1, layer-1]);
             }
 
          } else {
@@ -672,11 +672,11 @@
 
          for (var i = 0; i < faces.length; ++i) {
             var f = faces[i];
-            geometry.faces.push( new THREE.Face3( edges[f[0]], edges[f[2]], edges[f[1]], null, color, 0) );
+            geometry.faces.push( new THREE.Face3( edges[f[0]], edges[f[1]], edges[f[2]], null, color, 0) );
          }
          for (var i = 0; i < faces.length; ++i) {
             var f = faces[i];
-            geometry.faces.push( new THREE.Face3( edges[f[0]] + radiusSegments, edges[f[1]] + radiusSegments, edges[f[2]] + radiusSegments, null, color, 0) );
+            geometry.faces.push( new THREE.Face3( edges[f[0]] + radiusSegments, edges[f[2]] + radiusSegments, edges[f[1]] + radiusSegments, null, color, 0) );
          }
       }
 
