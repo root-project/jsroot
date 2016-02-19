@@ -1767,9 +1767,12 @@
       }
 
       this['Redraw'] = function() {
+
          var enabled = true;
-         if ('options' in this.main_painter())
-            enabled = (this.main_painter().options.Zscale > 0) && (this.main_painter().options.Color > 0);
+         var main = this.main_painter();
+
+         if ((main !== null) && ('options' in main))
+            enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
 
          if (enabled)
             this.DrawPalette();
@@ -1796,10 +1799,10 @@
    JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
       if (this.options.Lego > 0) {
-         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.Redraw(); });
+         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.RedrawPad(); });
       } else {
          menu.add("Auto zoom-in", function() { this.AutoZoom(); });
-         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.Redraw(); });
+         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.RedrawPad(); });
          menu.add("Toggle col", function() {
             if (this.options.Color == 0)
                this.options.Color = JSROOT.gStyle.DefaultCol;
@@ -1816,7 +1819,7 @@
       if ('fFunctions' in this.histo)
          for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
             var func = this.histo.fFunctions.arr[i];
-            if (func['_typename'] != 'TPaletteAxis') continue;
+            if (func['_typename'] !== 'TPaletteAxis') continue;
             if (remove) {
                this.histo.fFunctions.RemoveAt(i);
                return null;
@@ -1829,7 +1832,9 @@
    }
 
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
-      if (this.FindPalette() == null) {
+      if (this.FindPalette() === null) {
+         console.log('NOT FOUND PALETTE');
+
          var shrink = this.CreatePalette(0.04);
          this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.options.Zscale = 1;
@@ -1888,7 +1893,7 @@
    }
 
    JSROOT.TH2Painter.prototype.CreatePalette = function(rel_width) {
-      if (this.FindPalette() != null) return 0.;
+      if (this.FindPalette() !== null) return 0.;
 
       if (!rel_width || rel_width <= 0) rel_width = 0.04;
 
@@ -2598,6 +2603,7 @@
    }
 
    JSROOT.TH2Painter.prototype.Draw2D = function(call_back) {
+
       if (typeof this['Create3DScene'] == 'function')
          this.Create3DScene(-1);
 
@@ -2662,7 +2668,7 @@
       this.CreateXY();
 
       // check if we need to create palette
-      if ((this.FindPalette() == null) && this.create_canvas && (this.options.Zscale > 0)) {
+      if ((this.FindPalette() === null) && this.create_canvas && (this.options.Zscale > 0)) {
          // create pallette
 
          var shrink = this.CreatePalette(0.04);

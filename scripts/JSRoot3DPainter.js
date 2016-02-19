@@ -206,7 +206,6 @@
       painter.renderer.domElement.addEventListener('touchmove', mousemove);
       painter.renderer.domElement.addEventListener('mousemove', mousemove);
 
-
       function mouseup(e) {
          mouseDowned = false;
          tooltip.hide();
@@ -255,7 +254,7 @@
 
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
 
-      if ((arg!=null) && (arg<0)) {
+      if ((arg!==null) && (arg<0)) {
          this.clear_3d_canvas();
          delete this.size3d;
          delete this.scene;
@@ -663,7 +662,6 @@
    }
 
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
-
       // function called with this as painter
 
       this.Create3DScene();

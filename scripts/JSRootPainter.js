@@ -1258,26 +1258,23 @@
    }
 
    JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
-
       var can3d = this.svg_pad().property('can3d');
-      if (can3d == null) return;
+      if (can3d === null) return;
 
       this.svg_pad().property('can3d', null);
 
-      if (can3d == 0) {
+      if (can3d === 0) {
          d3.select(this.svg_canvas().node().nextSibling).remove(); // remove html5 canvas
-
          this.svg_canvas().style('display', null); // show SVG canvas
-
       } else {
          if (this.svg_pad().empty()) return;
-
-         if (can3d>1) {
-            this.svg_pad().select(".frame_layer foreignObject").remove();
+         var clname = this.pad_name;
+         if (clname == "") clname = 'canvas';
+         clname = ".draw3d_" + clname;
+         if (can3d > 1) {
+            this.svg_pad().select(".frame_layer").select(clname).remove();
          } else {
-            var name = this.pad_name;
-            if (name == "") name = 'canvas';
-            d3.select(this.svg_canvas().node().parentNode).select('.draw3d_' + name).remove();
+            d3.select(this.svg_canvas().node().parentNode).select(clname).remove();
          }
 
          this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
@@ -1319,19 +1316,18 @@
 
          var fo;
 
+         var clname = this.pad_name;
+         if (clname == '') clname = 'canvas';
+         clname = "draw3d_" + clname;
+
          if (can3d == 1) {
             size = this.CalcAbsolutePosition(frame.empty() ? this.svg_pad() : frame, size);
 
             // force redraw by resize
             this.svg_canvas().property('redraw_by_resize', true);
 
-            var name = this.pad_name;
-            if (name == '') name = 'canvas';
-
             fo = d3.select(this.svg_canvas().node().parentNode).append('div');
-            fo.attr('class','draw3d_' + name)
-              .attr('title', "")
-              .style('position','absolute')
+            fo.style('position','absolute')
               .style('left', size.x + 'px')
               .style('top', size.y + 'px')
               .style('width', size.width + 'px')
@@ -1342,7 +1338,6 @@
             // set frame dimensions
             fo.attr('width', size.width)
               .attr('height', size.height)
-              .attr('title', "")
               .attr('viewBox', "0 0 " + size.width + " " + size.height)
               .attr('preserveAspectRatio','xMidYMid');
 
@@ -1350,7 +1345,8 @@
             this.SetForeignObjectPosition(fo, size);
          }
 
-         fo.node().appendChild(canv);
+         fo.attr('class',clname)
+           .attr('title', "").node().appendChild(canv);
       }
    }
 
@@ -1815,12 +1811,12 @@
       // histogram functions
 
       var painter = this.pad_painter(true);
-      var painters = painter==null ? null : painter.painters;
+      var painters = (painter===null) ? null : painter.painters;
       if (painters == null) return null;
 
       for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
-         if (pobj==null) continue;
+         if (pobj===null) continue;
 
          if (selobj && (pobj === selobj)) return painters[n];
 

@@ -4,6 +4,7 @@
 1. Fix faces orientation for all TGeo shapes. 
 2. Improve TGeoTorus creation - handle all parameters combinations
 3. Implement TGeoCompositeShape, using ThreeCSG.js
+4. Fix problem with color pallete when switch to 3D mode (#28)
 
 
 ## Changes in 4.3
