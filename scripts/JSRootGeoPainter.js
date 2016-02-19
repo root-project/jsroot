@@ -923,22 +923,26 @@
 
    JSROOT.GEO.createMatrix = function(matrix) {
 
-      var translation_matrix = null; // [0, 0, 0];
-      var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
+      if (matrix === null) return null;
 
-      if (matrix !== null) {
-         if (matrix._typename == 'TGeoTranslation') {
-            translation_matrix = matrix.fTranslation;
-         }
-         else if (matrix._typename == 'TGeoRotation') {
-            rotation_matrix = matrix.fRotationMatrix;
-         }
-         else if (matrix._typename == 'TGeoCombiTrans') {
-            translation_matrix = matrix.fTranslation;
-            if (matrix.fRotation !== null)
-               rotation_matrix = matrix.fRotation.fRotationMatrix;
-         }
+      var translation_matrix = null, rotation_matrix = null;
+
+      if (matrix._typename == 'TGeoTranslation') {
+         translation_matrix = matrix.fTranslation;
       }
+      else if (matrix._typename == 'TGeoRotation') {
+         rotation_matrix = matrix.fRotationMatrix;
+      }
+      else if (matrix._typename == 'TGeoCombiTrans') {
+         translation_matrix = matrix.fTranslation;
+         if (matrix.fRotation !== null)
+            rotation_matrix = matrix.fRotation.fRotationMatrix;
+      }
+      else if (matrix._typename !== 'TGeoIdentity') {
+         console.log('unsupported matrix ' + matrix._typename);
+      }
+
+      if ((translation_matrix === null) && (rotation_matrix === null)) return null;
 
       var res = new THREE.Matrix4();
 
@@ -954,20 +958,23 @@
       return res;
    }
 
-
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
       if (faces_limit === undefined) faces_limit = 10000;
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
-      if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
-      geom1.applyMatrix(matrix1);
+      if (matrix1!==null) {
+         if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         geom1.applyMatrix(matrix1);
+      }
 
       var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2);
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
-      if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
-      geom2.applyMatrix(matrix2);
+      if (matrix2 !== null) {
+         if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         geom2.applyMatrix(matrix2);
+      }
 
       var bsp1  = new ThreeBSP(geom1);
       var bsp2 = new ThreeBSP(geom2);
@@ -1300,7 +1307,6 @@
 
       var m = new THREE.Matrix4();
       m.multiplyMatrices( parent.matrixWorld, matrix);
-
       if (m.determinant() > -0.9) return geom;
 
       // we could not transform matrix of mesh with childs, need workaround
@@ -1501,6 +1507,8 @@
 
       var geom = null;
 
+      if (prop.matrix === null) prop.matrix = new THREE.Matrix4();
+
       if ((prop.shape === null) && arg.node._visible)
          arg.node._visible = false;
 
@@ -1532,7 +1540,7 @@
          }
       }
 
-      if (arg.node._visible && (geom !== null) && (prop.matrix!==null)) {
+      if (arg.node._visible && (geom !== null)) {
          geom = this.checkFlipping(arg.toplevel, prop.matrix, prop.shape, geom, has_childs);
          work_around = has_childs && (geom === null);
       }
@@ -1541,8 +1549,7 @@
 
       var mesh = new THREE.Mesh( geom, prop.material );
 
-      if (prop.matrix !== null)
-         mesh.applyMatrix(prop.matrix);
+      mesh.applyMatrix(prop.matrix);
 
       this.accountMesh(mesh);
 
