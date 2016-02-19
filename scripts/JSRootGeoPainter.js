@@ -1355,7 +1355,7 @@
    JSROOT.TGeoPainter.prototype.getNodeProperties = function(node, visible) {
       // function return matrix, shape and material
 
-      var volume = node['fVolume'];
+      var volume = node.fVolume;
 
       var prop = { shape: volume.fShape, matrix: null };
 
@@ -1386,15 +1386,8 @@
             }
          } else
          if (node.fFinder._typename === 'TGeoPatternCylPhi') {
-            var _cos = 1., _sin = 0.;
-
-            if (typeof node['fFinder']['fSinCos'] === 'undefined') {
-               _cos = Math.cos((Math.PI / 180.0)*(node['fFinder']['fStart']+(node.fIndex+0.5)*node['fFinder']['fStep']));
-               _sin = Math.sin((Math.PI / 180.0)*(node['fFinder']['fStart']+(node.fIndex+0.5)*node['fFinder']['fStep']));
-            } else {
-               _cos = node['fFinder']['fSinCos'][2*node.fIndex+1];
-               _sin = node['fFinder']['fSinCos'][2*node.fIndex];
-            }
+            var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep);
+            var _cos = Math.cos(phi), _sin = Math.sin(phi);
 
             prop.matrix = new THREE.Matrix4();
 
@@ -1410,26 +1403,25 @@
       prop.material = null;
 
       if (visible) {
-         var _transparent = false, _opacity = 1.0, fillcolor;
-         if (volume['fLineColor'] >= 0)
-            fillcolor = JSROOT.Painter.root_colors[volume['fLineColor']];
-         if (typeof volume['fMedium'] != 'undefined' && volume['fMedium'] !== null &&
-               typeof volume['fMedium']['fMaterial'] != 'undefined' &&
-               volume['fMedium']['fMaterial'] !== null) {
-            var fillstyle = volume['fMedium']['fMaterial']['fFillStyle'];
+         var _transparent = false, _opacity = 1.0;
+         if (volume.fLineColor >= 0)
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+         if (('fMedium' in volume) && (volume.fMedium !== null) &&
+             ('fMaterial' in volume.fMedium) && (volume.fMedium.fMaterial !== null)) {
+            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
             var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
             if (transparency > 0) {
                _transparent = true;
                _opacity = (100.0 - transparency) / 100.0;
             }
-            if (fillcolor === undefined)
-               fillcolor = JSROOT.Painter.root_colors[volume['fMedium']['fMaterial']['fFillColor']];
+            if (prop.fillcolor === undefined)
+               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
          }
-         if (fillcolor === undefined)
-            fillcolor = "lightgrey";
+         if (prop.fillcolor === undefined)
+            prop.fillcolor = "lightgrey";
 
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                              opacity: _opacity, wireframe: false, color: fillcolor,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
@@ -1445,14 +1437,14 @@
 
       if (visible) {
          var _transparent = false, _opacity = 1.0;
-         if ( node['fRGBA'][3] < 1.0) {
+         if ( node.fRGBA[3] < 1.0) {
             _transparent = true;
-            _opacity = node['fRGBA'][3];
+            _opacity = node.fRGBA[3];
          }
-         var linecolor = new THREE.Color( node['fRGBALine'][0], node['fRGBALine'][1], node['fRGBALine'][2] );
-         var fillcolor = new THREE.Color( node['fRGBA'][0], node['fRGBA'][1], node['fRGBA'][2] );
+         // var linecolor = new THREE.Color( node.fRGBALine[0], node.fRGBALine[1], node.fRGBALine[2] );
+         prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                          opacity: _opacity, wireframe: false, color: fillcolor,
+                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                           overdraw: 0. } );
       }
@@ -1500,11 +1492,6 @@
       }
 
       var prop = null;
-
-      //if (kind === 0)
-      //   arg.node._mesh = JSROOT.GEO.createNodeMesh(arg.node, arg.toplevel);
-      //else
-      //   arg.node._mesh = JSROOT.GEO.createEveNodeMesh(arg.node, arg.toplevel);
 
       if (kind === 0)
          prop = this.getNodeProperties(arg.node, arg.node._visible);
@@ -1586,8 +1573,8 @@
 
       if (this.options._debug && (arg.node._visible || this.options._full)) {
          var helper = new THREE.WireframeHelper(mesh);
-         helper.material.color.set(JSROOT.Painter.root_colors[arg.node.fVolume['fLineColor']]);
-         helper.material.linewidth = arg.node.fVolume['fLineWidth'];
+         helper.material.color.set(prop.fillcolor);
+         helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
          arg.toplevel.add(helper);
       }
 
