@@ -76,7 +76,7 @@
            shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
            shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
 
-      var indicesOfFaces = [ 4,5,6,   4,7,6,   0,3,7,   7,4,0,
+      var indicesOfFaces = [ 4,6,5,   4,7,6,   0,3,7,   7,4,0,
                              4,5,1,   1,0,4,   6,2,1,   1,5,6,
                              7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
@@ -98,33 +98,26 @@
 
    JSROOT.GEO.createTrapezoid = function( shape ) {
 
-      var verticesOfShape;
+      var y1, y2;
+      if (shape._typename == "TGeoTrd1") {
+         y1 = y2 = shape.fDY;
+      } else {
+         y1 = shape.fDy1; y2 = shape.fDy2;
+      }
 
-      if (shape._typename == "TGeoTrd1")
-         verticesOfShape = [
-            -shape.fDx1,  shape.fDY, -shape.fDZ,
-             shape.fDx1,  shape.fDY, -shape.fDZ,
-             shape.fDx1, -shape.fDY, -shape.fDZ,
-            -shape.fDx1, -shape.fDY, -shape.fDZ,
-            -shape.fDx2,  shape.fDY,  shape.fDZ,
-             shape.fDx2,  shape.fDY,  shape.fDZ,
-             shape.fDx2, -shape.fDY,  shape.fDZ,
-            -shape.fDx2, -shape.fDY,  shape.fDZ
-         ];
-      else
-         verticesOfShape = [
-            -shape.fDx1,  shape.fDy1, -shape.fDZ,
-             shape.fDx1,  shape.fDy1, -shape.fDZ,
-             shape.fDx1, -shape.fDy1, -shape.fDZ,
-            -shape.fDx1, -shape.fDy1, -shape.fDZ,
-            -shape.fDx2,  shape.fDy2,  shape.fDZ,
-             shape.fDx2,  shape.fDy2,  shape.fDZ,
-             shape.fDx2, -shape.fDy2,  shape.fDZ,
-            -shape.fDx2, -shape.fDy2,  shape.fDZ
+      var verticesOfShape = [
+            -shape.fDx1,  y1, -shape.fDZ,
+             shape.fDx1,  y1, -shape.fDZ,
+             shape.fDx1, -y1, -shape.fDZ,
+            -shape.fDx1, -y1, -shape.fDZ,
+            -shape.fDx2,  y2,  shape.fDZ,
+             shape.fDx2,  y2,  shape.fDZ,
+             shape.fDx2, -y2,  shape.fDZ,
+            -shape.fDx2, -y2,  shape.fDZ
          ];
 
       var indicesOfFaces = [
-          4,5,6,   4,7,6,   0,3,7,   7,4,0,
+          4,6,5,   4,7,6,   0,3,7,   7,4,0,
           4,5,1,   1,0,4,   6,2,1,   1,5,6,
           7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
@@ -894,13 +887,11 @@
 
    JSROOT.GEO.createComposite = function ( shape ) {
 
-      return null;
-
       // var geom1 = new THREE.SphereGeometry( 50, 40, 40 );
       // geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, 20) );
 
 
-      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, 1000);
+      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, 1000);
 
       geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, shape.fNode.fLeftMat.fTranslation[2]));
 
@@ -910,7 +901,7 @@
       var bsp1  = new ThreeBSP(geom1);
 
       // var geom2 = new THREE.BoxGeometry( 80, 80, 80 )
-      geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, 1000);
+      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, 1000);
       geom2.computeVertexNormals();
       //var mesh2 = new THREE.Mesh(geom2);
 
