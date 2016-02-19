@@ -736,7 +736,7 @@
 
       for (var i = 0; i < faces.length; ++i) {
          face = faces[ i ];
-         geometry.faces.push( new THREE.Face3( face[0], face[1], face[2], null, fcolor, 0) );
+         geometry.faces.push( new THREE.Face3( face[1], face[0], face[2], null, fcolor, 0) );
          geometry.faces.push( new THREE.Face3( face[0] + curr, face[1] + curr, face[2] + curr, null, fcolor, 0) );
       }
 
