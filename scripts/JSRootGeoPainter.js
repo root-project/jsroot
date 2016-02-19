@@ -746,10 +746,17 @@
    }
 
 
-   JSROOT.GEO.createParaboloid = function( shape ) {
+   JSROOT.GEO.createParaboloid = function( shape, faces_limit ) {
 
-      var radiusSegments = Math.round(360/6);
-      var heightSegments = 30;
+      var radiusSegments = Math.round(360/6), heightSegments = 30;
+
+      if (faces_limit !== undefined) {
+         var fact = 2 * (radiusSegments+1) * (heightSegments+1) / faces_limit;
+         if (fact > 1.) {
+            radiusSegments = Math.round(radiusSegments/Math.sqrt(fact));
+            heightSegments = Math.round(heightSegments/Math.sqrt(fact));
+         }
+      }
 
       // calculate all sin/cos tables in advance
       var _sin = new Float32Array(radiusSegments), _cos = new Float32Array(radiusSegments);
@@ -806,13 +813,13 @@
             for (var seg=0; seg<radiusSegments; ++seg) {
                var seg1 = (seg+1) % radiusSegments;
                if (prev_radius === 0) {
-                  geometry.faces.push( new THREE.Face3( prev_indx, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx, curr_indx + seg1, curr_indx + seg, null, fcolor, 0) );
                } else
                if (radius == 0) {
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx, prev_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, prev_indx + seg1, curr_indx, null, fcolor, 0) );
                } else {
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg, curr_indx + seg1, null, fcolor, 0) );
-                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, prev_indx + seg1, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, curr_indx + seg1, curr_indx + seg, null, fcolor, 0) );
+                  geometry.faces.push( new THREE.Face3( prev_indx + seg, prev_indx + seg1, curr_indx + seg1,  null, fcolor, 0) );
                }
             }
          }
@@ -967,7 +974,7 @@
          case "TGeoPcon":
          case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
          case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
-         case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape );
+         case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape, limit );
          case "TGeoHype": return JSROOT.GEO.createHype( shape );
          case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape );
       }
