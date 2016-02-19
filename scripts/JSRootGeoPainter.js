@@ -195,13 +195,14 @@
       var widthSegments = shape.fNseg;
       var heightSegments = shape.fNz;
 
-      if ((faces_limit !== undefined) && (2*widthSegments*heightSegments > faces_limit)) {
-         var d1 = phiLength / 6, d2 = thetaLength / 6;
-         while (2*d1*d2 > faces_limit) {
-            d1 *= 0.75; d2 *= 0.75;
+      var noInside = (innerRadius <= 0);
+
+      if (faces_limit !== undefined) {
+         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+         if (fact > 1.) {
+            widthSegments = Math.round(widthSegments/Math.sqrt(fact));
+            heightSegments = Math.round(heightSegments/Math.sqrt(fact));
          }
-         widthSegments = Math.round(d1);
-         heightSegments = Math.round(d2);
       }
 
       var sphere = new THREE.SphereGeometry( outerRadius, widthSegments, heightSegments,
@@ -222,7 +223,6 @@
       }
 
       var shift = geometry.vertices.length;
-      var noInside = (innerRadius <= 0);
 
       if (noInside) {
          // simple sphere without inner cut
@@ -483,7 +483,7 @@
    }
 
 
-   JSROOT.GEO.createTorus = function( shape ) {
+   JSROOT.GEO.createTorus = function( shape, faces_limit ) {
       var radius = shape.fR;
       var innerTube = shape.fRmin;
       var outerTube = shape.fRmax;
@@ -493,25 +493,21 @@
       var tubularSegments = Math.floor(arc/6);
       if (tubularSegments < 8) tubularSegments = 8;
 
+      var hasrmin = innerTube > 0, hascut = arc !== 360;
+
+      if (faces_limit !== undefined) {
+         var fact = (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments / faces_limit;
+         if (fact > 1.) {
+            radialSegments = Math.round(radialSegments/Math.sqrt(fact));
+            tubularSegments = Math.round(tubularSegments/Math.sqrt(fact));
+         }
+      }
+
       var geometry = new THREE.Geometry();
       var color = new THREE.Color();
 
       var outerTorus = new THREE.TorusGeometry( radius, outerTube, radialSegments, tubularSegments, arc*Math.PI/180);
-      outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation*Math.PI/180) );
-
-      var innerTorus = new THREE.TorusGeometry( radius, innerTube, radialSegments, tubularSegments, arc*Math.PI/180);
-      innerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ( rotation*Math.PI/180 ) );
-
-      // add inner torus
-      for (var n=0; n < innerTorus.vertices.length; ++n)
-         geometry.vertices.push(innerTorus.vertices[n]);
-
-      for (var n=0; n < innerTorus.faces.length; ++n) {
-         var face = innerTorus.faces[n];
-         geometry.faces.push(new THREE.Face3( face.a, face.b, face.c, null, color, 0 ) );
-      }
-
-      var shift = geometry.vertices.length;
+      outerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ(rotation*Math.PI/180) );
 
       // add outer torus
       for (var n=0; n < outerTorus.vertices.length; ++n)
@@ -519,7 +515,27 @@
 
       for (var n=0; n < outerTorus.faces.length; ++n) {
          var face = outerTorus.faces[n];
-         geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.b, shift+face.c, null, color, 0 ) );
+         geometry.faces.push(new THREE.Face3( face.a, face.b, face.c, null, color, 0 ) );
+      }
+
+      var shift = geometry.vertices.length;
+
+      if (hasrmin) {
+         var innerTorus = new THREE.TorusGeometry( radius, innerTube, radialSegments, tubularSegments, arc*Math.PI/180);
+         innerTorus.applyMatrix( new THREE.Matrix4().makeRotationZ(rotation*Math.PI/180) );
+
+         // add inner torus
+         for (var n=0; n < innerTorus.vertices.length; ++n)
+            geometry.vertices.push(innerTorus.vertices[n]);
+
+         for (var n=0; n < innerTorus.faces.length; ++n) {
+            var face = innerTorus.faces[n];
+            geometry.faces.push(new THREE.Face3( shift+face.a, shift+face.c, shift+face.b, null, color, 0 ) );
+         }
+      } else
+      if (hascut) {
+         geometry.vertices.push(new THREE.Vector3(radius*Math.cos(rotation*Math.PI/180), radius*Math.sin(rotation*Math.PI/180),0));
+         geometry.vertices.push(new THREE.Vector3(radius*Math.cos((rotation+arc)*Math.PI/180), radius*Math.sin((rotation+arc)*Math.PI/180),0));
       }
 
       if (arc !== 360) {
@@ -527,16 +543,24 @@
          for (var j=0;j<radialSegments;j++) {
             var i1 = j*(tubularSegments+1);
             var i2 = (j+1)*(tubularSegments+1);
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
+            if (hasrmin) {
+               geometry.faces.push( new THREE.Face3( i2, i1+shift, i1, null, color, 0 ) );
+               geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift,  null, color, 0 ));
+            } else {
+               geometry.faces.push( new THREE.Face3( shift, i1, i2, null, color, 0 ));
+            }
          }
 
          // another cuted side
          for (var j=0;j<radialSegments;j++) {
-            var i1 = (j+1)*(tubularSegments+1) - 1;
-            var i2 = (j+2)*(tubularSegments+1) - 1;
-            geometry.faces.push( new THREE.Face3( i1, i2, i1+shift, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( i2, i2+shift, i1+shift, null, color, 0 ));
+            var i1 = (j+1)*(tubularSegments+1)-1;
+            var i2 = (j+2)*(tubularSegments+1)-1;
+            if (hasrmin) {
+               geometry.faces.push( new THREE.Face3( i2, i1, i1+shift, null, color, 0 ) );
+               geometry.faces.push( new THREE.Face3( i2, i1+shift, i2+shift, null, color, 0 ));
+            } else {
+               geometry.faces.push( new THREE.Face3( shift+1, i2, i1, null, color, 0 ));
+            }
          }
       }
 
@@ -939,7 +963,7 @@
          case "TGeoTubeSeg":
          case "TGeoCtub": return JSROOT.GEO.createTube( shape );
          case "TGeoEltu": return JSROOT.GEO.createEltu( shape );
-         case "TGeoTorus": return JSROOT.GEO.createTorus( shape );
+         case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
          case "TGeoPcon":
          case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
          case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
