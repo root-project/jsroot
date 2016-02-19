@@ -799,8 +799,6 @@
          .css('overflow', 'hidden')
          .prop('title', title);
 
-      console.log('create tab ' + hid);
-
       return $('#' + hid).get(0);
    }
 

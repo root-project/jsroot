@@ -921,42 +921,77 @@
       return geometry;
    }
 
+   JSROOT.GEO.createMatrix = function(matrix) {
 
-   JSROOT.GEO.createComposite = function ( shape ) {
+      var translation_matrix = null; // [0, 0, 0];
+      var rotation_matrix = null;//[1, 0, 0, 0, 1, 0, 0, 0, 1];
 
-      // var geom1 = new THREE.SphereGeometry( 50, 40, 40 );
-      // geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, 20) );
+      if (matrix !== null) {
+         if (matrix._typename == 'TGeoTranslation') {
+            translation_matrix = matrix.fTranslation;
+         }
+         else if (matrix._typename == 'TGeoRotation') {
+            rotation_matrix = node.fMatrix.fRotationMatrix;
+         }
+         else if (matrix._typename == 'TGeoCombiTrans') {
+            translation_matrix = node.fMatrix.fTranslation;
+            if (matrix.fRotation !== null)
+               rotation_matrix = matrix.fRotation.fRotationMatrix;
+         }
+      }
+
+      var res = new THREE.Matrix4();
+
+      if (rotation_matrix !== null)
+         res.matrix.set(rotation_matrix[0], rotation_matrix[1], rotation_matrix[2],   0,
+                         rotation_matrix[3], rotation_matrix[4], rotation_matrix[5],   0,
+                         rotation_matrix[6], rotation_matrix[7], rotation_matrix[8],   0,
+                                          0,                  0,                  0,   1);
+
+      if (translation_matrix !== null)
+         res.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
+
+      return res;
+   }
 
 
-      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, 1000);
+   JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      geom1.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, shape.fNode.fLeftMat.fTranslation[2]));
+      if (faces_limit === undefined) faces_limit = 3000;
 
-      geom1.computeVertexNormals();
-      //var mesh1 = new THREE.Mesh(geom1);
-      //mesh1.position.z = 25;
+      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
+      var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
+      if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+      geom1.applyMatrix(matrix1);
+
+      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2);
+      var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
+      if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+      geom2.applyMatrix(matrix2);
+
       var bsp1  = new ThreeBSP(geom1);
-
-      // var geom2 = new THREE.BoxGeometry( 80, 80, 80 )
-      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, 1000);
-      geom2.computeVertexNormals();
-      //var mesh2 = new THREE.Mesh(geom2);
-
       var bsp2 = new ThreeBSP(geom2);
+      var bsp = null;
 
-      // var bsp = bsp1.union(bsp2); // "+"
-      //var bsp = bsp1.subtract(bsp2); // "/"
-      var bsp = bsp1.intersect(bsp2);  // "*"
+      if (shape.fNode._typename === 'TGeoIntersection')
+         bsp = bsp1.intersect(bsp2);  // "*"
+      else
+      if (shape.fNode._typename === 'TGeoUnion')
+         bsp = bsp1.union(bsp2);   // "+"
+      else
+      if (shape.fNode._typename === 'TGeoSubtraction')
+         bsp = bsp1.subtract(bsp2); // "/"
+
+      if (bsp === null) {
+         console.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+         return geom1;
+      }
 
       var res = bsp.toGeometry();
 
-      // res.computeFaceNormals();
-
-      console.log('g1 ' + geom1.faces.length + ' g2 ' + geom2.faces.length + '  res ' + res.faces.length);
+      console.log('left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
 
       return res;
-
-      return geom1;
    }
 
 
@@ -994,7 +1029,6 @@
     */
 
    // ======= Geometry painter================================================
-
 
 
    JSROOT.EGeoVisibilityAtt = {

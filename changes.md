@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in master
+1. Fix faces orientation for all TGeo shapes. 
+2. Improve TGeoTorus creation - handle all parameters combinations
+3. Implement TGeoCompositeShape, using ThreeCSG.js
+
+
 ## Changes in 4.3
 1. Implement TGeoCtub, TGeoParaboloid and TGeoHype shapes
 2. Support TGeoTube with Rmin==0 
