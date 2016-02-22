@@ -1547,10 +1547,11 @@
 
    // ===========================================================================
 
-   JSROOT.Painter.drawPaletteAxis = function(divid, palette) {
+   JSROOT.Painter.drawPaletteAxis = function(divid, palette,opt) {
 
       this.palette = palette;
       this.SetDivId(divid);
+      this.can_move = (opt === 'canmove');
 
       this['GetObject'] = function() {
          return this.palette;
@@ -1558,24 +1559,30 @@
 
       this['DrawPalette'] = function() {
          var palette = this.palette;
-         var axis = palette['fAxis'];
+         var axis = palette.fAxis;
 
-         var nbr1 = axis['fNdiv'] % 100;
+         var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
 
          var width = this.pad_width(), height = this.pad_height();
 
-         var s_height = Math.round(Math.abs(palette['fY2NDC'] - palette['fY1NDC']) * height);
+         var s_height = Math.round(Math.abs(palette.fY2NDC - palette.fY1NDC) * height);
 
-         var axisOffset = axis['fLabelOffset'] * width;
-         var tickSize = axis['fTickSize'] * width;
-
-         // force creation of contour array if missing
-         if (this.main_painter().fContour == null)
-            this.main_painter().getValueColor(this.main_painter().minbin);
+         var axisOffset = axis.fLabelOffset * width;
+         var tickSize = axis.fTickSize * width;
 
          var contour = this.main_painter().fContour;
-         var zmin = contour[0], zmax = contour[contour.length-1];
+
+         // force creation of contour array if missing
+         //if (this.main_painter().fContour == null)
+         //   this.main_painter().getValueColor(this.main_painter().minbin);
+
+         var zmin = 0, zmax = this.main_painter().gmaxbin;
+
+         if (contour!==null) {
+            zmin = contour[0];
+            zmax = contour[contour.length-1];
+         }
 
          var z = null;
 
@@ -1607,12 +1614,13 @@
          }
          z.domain([zmin, zmax]).range([s_height,0]);
 
-         var labelfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
+         var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, axis.fLabelSize * height);
 
-         var pos_x = Math.round(palette['fX1NDC'] * width);
-         var pos_y = Math.round(height*(1 - palette['fY1NDC']));
+         var pos_x = Math.round(palette.fX1NDC * width);
+         var pos_y = Math.round(height*(1 - palette.fY1NDC));
 
-         var s_width = Math.round(Math.abs(palette['fX2NDC'] - palette['fX1NDC']) * width);
+
+         var s_width = Math.round(Math.abs(palette.fX2NDC - palette.fX1NDC) * width);
          pos_y -= s_height;
          if (tickSize > s_width*0.8) tickSize = s_width*0.8;
 
@@ -1624,11 +1632,21 @@
                 .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
                 .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-         for (var i=0;i<contour.length-1;++i) {
-            var z0 = z(contour[i]);
-            var z1 = z(contour[i+1]);
-            var col = this.main_painter().getValueColor(contour[i]);
-            var r = this.draw_g
+         if (contour==null)
+            // we need such rect to correctly calculate size
+            this.draw_g.append("svg:rect")
+                       .attr("x", 0)
+                       .attr("y",  0)
+                       .attr("width", s_width)
+                       .attr("height", s_height)
+                       .attr("fill", 'white');
+         else
+            for (var i=0;i<contour.length-1;++i) {
+               var z0 = z(contour[i]);
+               var z1 = z(contour[i+1]);
+
+               var col = this.main_painter().getValueColor(contour[i]);
+               var r = this.draw_g
                .append("svg:rect")
                .attr("x", 0)
                .attr("y",  z1.toFixed(1))
@@ -1638,14 +1656,14 @@
                .property("fill0", col)
                .attr("stroke", col);
 
-            if (JSROOT.gStyle.Tooltip)
-               r.on('mouseover', function() {
-                  if (JSROOT.gStyle.Tooltip)
-                     d3.select(this).transition().duration(100).style("fill", 'grey');
-               }).on('mouseout', function() {
-                  d3.select(this).transition().duration(100).style("fill", this['fill0']);
-               }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
-         }
+               if (JSROOT.gStyle.Tooltip)
+                  r.on('mouseover', function() {
+                     if (JSROOT.gStyle.Tooltip)
+                        d3.select(this).transition().duration(100).style("fill", 'grey');
+                  }).on('mouseout', function() {
+                     d3.select(this).transition().duration(100).style("fill", this['fill0']);
+                  }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+            }
 
          // Build and draw axes
          var z_axis = d3.svg.axis().scale(z)
@@ -1665,7 +1683,7 @@
                  .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
 
          /** Add palette axis title */
-         if ((axis['fTitle'] != "") && (typeof axis['fTextFont'] != 'undefined')) {
+         if ((axis.fTitle != "") && (typeof axis['fTextFont'] != 'undefined')) {
             // offest in width of colz drawings
             var xoffset = axis['fTitleOffset'] * s_width;
             if ('getBoundingClientRect' in this.draw_g.node()) {
@@ -1680,6 +1698,24 @@
             this.StartTextDrawing(axis['fTextFont'], axis['fTitleSize'] * height);
             this.DrawText(33, 0, xoffset, 0, -270, axis['fTitle'], tcolor);
             this.FinishTextDrawing();
+         }
+
+
+         if (contour === null) {
+            if ('getBoundingClientRect' in this.draw_g.node()) {
+               var rect1 = this.draw_g.node().getBoundingClientRect();
+
+               var shift = (pos_x + parseInt(rect1.width)) - parseInt(0.995*width) + 3;
+
+               if ((shift>0) && this.can_move) {
+                  this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
+                             .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
+                  palette.fX1NDC -= shift/width;
+                  palette.fX2NDC -= shift/width;
+                  this.can_move = false; // can move only once
+               }
+            }
+            return;
          }
 
          this.AddDrag({ obj: palette, redraw: this.DrawPalette.bind(this), ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
@@ -1780,6 +1816,9 @@
             this.RemoveDrawG(); // if palette artificially disabled, do not redraw it
       }
 
+      // workaround to let copmlete pallete draw when actual palette colors already there
+      this['CompleteDraw'] = this['Redraw'];
+
       this.DrawPalette();
 
       return this.DrawingReady();
@@ -1834,13 +1873,24 @@
       return null;
    }
 
+   JSROOT.TH2Painter.prototype.DrawNewPalette = function() {
+      // only when create new palette, one could change frame size
+      var pal = this.CreatePalette();
+
+      var pp = JSROOT.draw(this.divid, pal, "canmove");
+      var ndc = this.svg_frame().property('NDC');
+
+      if (pp.palette.fX1NDC < ndc.fX2NDC) {
+         var fp = this.svg_frame().property('frame_painter');
+         fp.Shrink(0, ndc.fX2NDC - pp.palette.fX1NDC + 0.01);
+         fp.Redraw();
+      }
+   }
+
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
       if (this.FindPalette() === null) {
-         var shrink = this.CreatePalette(0.04);
-         this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.options.Zscale = 1;
-         // one should draw palette
-         JSROOT.draw(this.divid, this.FindPalette());
+         this.DrawNewPalette();
       } else {
          if (this.options.Zscale > 0)
             this.options.Zscale = 0;
@@ -1893,22 +1943,20 @@
       this.Zoom(xmin, xmax, ymin, ymax);
    }
 
-   JSROOT.TH2Painter.prototype.CreatePalette = function(rel_width) {
-      if (this.FindPalette() !== null) return 0.;
+   JSROOT.TH2Painter.prototype.CreatePalette = function() {
 
-      if (!rel_width || rel_width <= 0) rel_width = 0.04;
+      var pal = this.FindPalette();
+      if (pal !== null) return pal;
 
-      var pal = {};
-      pal['_typename'] = 'TPaletteAxis';
-      pal['fName'] = 'palette';
+      pal = { _typename:'TPaletteAxis', fName: 'palette' };
 
       pal['_AutoCreated'] = true;
 
       var ndc = this.svg_frame().property('NDC');
 
-      pal['fX1NDC'] = ndc.fX2NDC - rel_width;
+      pal['fX1NDC'] = ndc.fX2NDC  + 0.01;
       pal['fY1NDC'] = ndc.fY1NDC;
-      pal['fX2NDC'] = ndc.fX2NDC;
+      pal['fX2NDC'] = ndc.fX2NDC + 0.05;
       pal['fY2NDC'] = ndc.fY2NDC;
       pal['fInit'] = 1;
       pal['fShadowColor'] = 1;
@@ -1952,42 +2000,15 @@
 
       pal['fAxis'] = axis;
 
-      if (!'fFunctions' in this.histo)
-         this.histo['fFunctions'] = JSROOT.Create("TList");
+      if (! ('fFunctions' in this.histo) || (this.histo.fFunctions === null))
+         this.histo.fFunctions = JSROOT.Create("TList");
 
       // place colz in the beginning, that stat box is always drawn on the top
       this.histo.fFunctions.AddFirst(pal);
 
       // and at the end try to check how much place will be used by the labels
       // in the palette
-
-      var width = this.frame_width(), height = this.frame_height();
-
-      var axisOffset = Math.round(axis['fLabelOffset'] * width);
-      var tickSize = Math.round(axis['fTickSize'] * width);
-      var axisfont = JSROOT.Painter.getFontDetails(axis['fLabelFont'], axis['fLabelSize'] * height);
-
-      var ticks = d3.scale.linear().clamp(true)
-                  .domain([ this.gminbin, this.gmaxbin ])
-                  .range([ height, 0 ]).nice().ticks(axis['fNdiv'] % 100);
-
-      var maxlen = 0;
-      for (var i = 0; i < ticks.length; ++i) {
-         var len = axisfont.stringWidth(this.svg_frame(), ticks[i]);
-         if (len > maxlen) maxlen = len;
-      }
-
-      var rel = (maxlen + 5 + axisOffset) / width;
-
-      if (pal['fX2NDC'] + rel > 0.98) {
-         var shift = pal['fX2NDC'] + rel - 0.98;
-
-         pal['fX1NDC'] -= shift;
-         pal['fX2NDC'] -= shift;
-         rel_width += shift;
-      }
-
-      return rel_width + 0.01;
+      return pal;
    }
 
    JSROOT.TH2Painter.prototype.ScanContent = function() {
@@ -2668,19 +2689,11 @@
 
       // check if we need to create palette
       if (this.create_canvas && (this.options.Zscale > 0)) {
-         // create pallette
 
-         var pal = this.FindPalette(), shrink = 0;
-         if (pal === null)
-            shrink = this.CreatePalette(0.04);
-         else
-         if (this.pad_painter() && (this.pad_painter().FindPrimitive(pal)===null))
-            shrink = 0.04;
+         var pal = this.FindPalette();
 
-         if (shrink > 0) {
-            this.svg_frame().property('frame_painter').Shrink(0, shrink);
-            this.svg_frame().property('frame_painter').Redraw();
-         }
+         if (pal === null) this.DrawNewPalette();
+
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
          this.FindPalette(true);

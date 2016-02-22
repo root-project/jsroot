@@ -2119,9 +2119,9 @@
       var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
-      if (ndc == null) {
+      if (ndc === null) {
          var pad = this.root_pad();
-         if (pad==null)
+         if (pad === null)
             ndc = JSROOT.clone(JSROOT.gStyle.FrameNDC);
          else
             ndc = {
@@ -3688,13 +3688,17 @@
    }
 
    JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
-      if ((this.pad==null) || (indx>=this.pad.fPrimitives.arr.length))
+      if ((this.pad===null) || (indx>=this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);
 
-      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
-      if (pp) {
-         pp['_primitive'] = true; // mark painter as belonging to primitive
-         return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
+      var pp = this.FindPainterFor(this.pad.fPrimitives.arr[indx]);
+
+      if (pp === null) {
+         pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
+         if (pp) {
+            pp['_primitive'] = true; // mark painter as belonging to primitive
+            return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
+         }
       }
 
       this.DrawPrimitive(indx+1, callback);
@@ -5271,9 +5275,12 @@
 
       var do_draw = false;
 
+      var func_painter = this.FindPainterFor(func);
+
+
       // no need to do something if painter for object was already done
       // object will be redraw automatically
-      if (this.FindPainterFor(func) == null) {
+      if (func_painter === null) {
          if (func['_typename'] == 'TPaveText' || func['_typename'] == 'TPaveStats') {
             do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && (this.options.NoStat!=1);
          } else
@@ -5281,7 +5288,9 @@
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
             do_draw = true;
-      }
+      } else
+      if (('CompleteDraw' in func_painter) && (typeof func_painter['CompleteDraw'] == 'function'))
+         func_painter['CompleteDraw']();
 
       if (do_draw) {
          var painter = JSROOT.draw(this.divid, func, opt);
