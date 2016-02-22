@@ -6,6 +6,7 @@
 3. Implement TGeoCompositeShape, using ThreeCSG.js
 4. Fix problem with color pallete when switch to 3D mode (#28)
 5. Use nested CSS classes to avoid conflicts with other libraries (#29)
+6. Let resize TFrame
 
 
 ## Changes in 4.3

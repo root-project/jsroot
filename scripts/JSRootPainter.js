@@ -1593,9 +1593,10 @@
          return false;
       }
 
-      var resize_rect =
-         this.draw_g.append("rect")
-                  .style("opacity", "0")
+      var resize_rect1 = this.draw_g.select('.resize_rect1');
+      if (resize_rect1.empty())
+         resize_rect1 = this.draw_g.append("rect").attr('class','resize_rect1');
+      resize_rect1.style("opacity", "0")
                   .style("cursor", "se-resize")
                   .attr("x", rect_width() - 20)
                   .attr("y", rect_height() - 20)
@@ -1664,20 +1665,20 @@
                pthis.draw_g.attr("x", x).attr("y", y)
                            .attr("transform", "translate(" + x + "," + y + ")");
 
-               resize_rect.attr("x", rect_width() - 20)
-                          .attr("y", rect_height() - 20);
+               resize_rect1.attr("x", rect_width() - 20)
+                           .attr("y", rect_height() - 20);
 
                if ('move' in callback) callback.move(x, y, dx, dy);
                else if ('obj' in callback) {
-                  callback.obj['fX1NDC'] += dx / pthis.pad_width();
-                  callback.obj['fX2NDC'] += dx / pthis.pad_width();
-                  callback.obj['fY1NDC'] -= dy / pthis.pad_height();
-                  callback.obj['fY2NDC'] -= dy / pthis.pad_height();
+                  callback.obj.fX1NDC += dx / pthis.pad_width();
+                  callback.obj.fX2NDC += dx / pthis.pad_width();
+                  callback.obj.fY1NDC -= dy / pthis.pad_height();
+                  callback.obj.fY2NDC -= dy / pthis.pad_height();
                }
 
                if((dx==0) && (dy==0) && callback['ctxmenu'] &&
                         ((new Date()).getTime() - drag_tm.getTime() > 600)) {
-                  var rrr = resize_rect.node().getBoundingClientRect();
+                  var rrr = resize_rect1.node().getBoundingClientRect();
                   pthis.ShowContextMenu('main', { clientX: rrr.left + 20, clientY : rrr.top + 20 } );
                }
             });
@@ -1732,21 +1733,24 @@
             drag_rect.remove();
             drag_rect = null;
 
-            resize_rect.attr("x", newwidth - 20)
-                       .attr("y", newheight - 20);
+            resize_rect1.attr("x", newwidth - 20)
+                        .attr("y", newheight - 20);
 
             if ('resize' in callback) callback.resize(newwidth, newheight); else {
                 if ('obj' in callback) {
-                   callback.obj['fX2NDC'] = callback.obj['fX1NDC'] + newwidth  / pthis.pad_width();
-                   callback.obj['fY1NDC'] = callback.obj['fY2NDC'] - newheight / pthis.pad_height();
+                   callback.obj.fX2NDC = callback.obj.fX1NDC + newwidth  / pthis.pad_width();
+                   callback.obj.fY1NDC = callback.obj.fY2NDC - newheight / pthis.pad_height();
                 }
                 if ('redraw' in callback) callback.redraw();
             }
          });
 
-      this.draw_g.style("cursor", "move").call(drag_move);
+      if ('only_resize' in callback) {
+      } else {
+         this.draw_g.style("cursor", "move").call(drag_move);
+      }
 
-      resize_rect.call(drag_resize);
+      resize_rect1.call(drag_resize);
    }
 
    JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind) {
@@ -2116,9 +2120,10 @@
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
       var width = this.pad_width(), height = this.pad_height();
-      var w = width, h = height;
 
       var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
+      var has_ndc = (ndc !== null);
+
       if (ndc === null) {
          var pad = this.root_pad();
          if (pad === null)
@@ -2134,53 +2139,41 @@
 
       var root_pad = this.root_pad();
 
-      var lm = width * ndc.fX1NDC;
-      var rm = width * (1 - ndc.fX2NDC);
-      var tm = height * ndc.fY1NDC;
-      var bm = height * (1 - ndc.fY2NDC);
-
       var framecolor = this.createAttFill('white'),
           lineatt = JSROOT.Painter.createAttLine('black'),
           bordermode = 0, bordersize = 0;
 
-      if (this.tframe) {
-         bordermode = this.tframe['fBorderMode'];
-         bordersize = this.tframe['fBorderSize'];
+      if (this.tframe !== null) {
+         bordermode = this.tframe.fBorderMode;
+         bordersize = this.tframe.fBorderSize;
          lineatt = JSROOT.Painter.createAttLine(this.tframe);
-         if (root_pad) {
-            var xspan = width / Math.abs(root_pad['fX2'] - root_pad['fX1']);
-            var yspan = height / Math.abs(root_pad['fY2'] - root_pad['fY1']);
-            var px1 = (this.tframe['fX1'] - root_pad['fX1']) * xspan;
-            var py1 = (this.tframe['fY1'] - root_pad['fY1']) * yspan;
-            var px2 = (this.tframe['fX2'] - root_pad['fX1']) * xspan;
-            var py2 = (this.tframe['fY2'] - root_pad['fY1']) * yspan;
+         framecolor = this.createAttFill(this.tframe);
+         if (!has_ndc && (root_pad!==null)) {
+            var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1);
+            var yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1);
+            var px1 = (this.tframe.fX1 - root_pad.fX1) * xspan;
+            var py1 = (this.tframe.fY1 - root_pad.fY1) * yspan;
+            var px2 = (this.tframe.fX2 - root_pad.fX1) * xspan;
+            var py2 = (this.tframe.fY2 - root_pad.fY1) * yspan;
             var pxl, pxt, pyl, pyt;
             if (px1 < px2) { pxl = px1; pxt = px2; }
                       else { pxl = px2; pxt = px1; }
             if (py1 < py2) { pyl = py1; pyt = py2; }
                       else { pyl = py2; pyt = py1; }
-            lm = pxl;
-            bm = pyl;
-            w = pxt - pxl;
-            h = pyt - pyl;
-            tm = height - pyt;
-            rm = width - pxt;
-         } else {
-            lm = this.tframe['fX1'] * width;
-            tm = this.tframe['fY1'] * height;
-            bm = (1.0 - this.tframe['fY2']) * height;
-            rm = (1.0 - this.tframe['fX2'] + shrink_right) * width;
-            w -= (lm + rm);
-            h -= (tm + bm);
+            ndc.fX1NDC = pxl / width;
+            ndc.fY1NDC = pyl / height;
+            ndc.fX2NDC = pxt / width;
+            ndc.fY2NDC = pyt / height;
          }
-         framecolor = this.createAttFill(this.tframe);
       } else {
-         if (root_pad) {
-            framecolor = this.createAttFill(null, root_pad['fFrameFillStyle'], root_pad['fFrameFillColor']);
-         }
-         w -= (lm + rm);
-         h -= (tm + bm);
+         if (root_pad)
+            framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
       }
+
+      var lm = Math.round(width * ndc.fX1NDC),
+          w = Math.round(width * (ndc.fX2NDC - ndc.fX1NDC)),
+          tm = Math.round(height * (1 - ndc.fY2NDC)),
+          h = Math.round(height * (ndc.fY2NDC - ndc.fY1NDC));
 
       // force white color for the frame
       if (framecolor.color == 'none') framecolor.color = 'white';
@@ -2211,19 +2204,11 @@
          main_svg = frame_g.select(".main_layer");
       }
 
-      // calculate actual NDC coordinates, use them to properly locate PALETTE
-      frame_g.property('NDC', {
-         fX1NDC : lm / width,
-         fX2NDC : (lm + w) / width,
-         fY1NDC : tm / height,
-         fY2NDC : (tm + h) / height
-      });
+      // set back NDC, used to properely locate PALETTE
+      frame_g.property('NDC', ndc);
 
       // simple workaround to access painter via frame container
       frame_g.property('frame_painter', this);
-
-      lm = Math.round(lm); tm = Math.round(tm);
-      w = Math.round(w); h = Math.round(h);
 
       frame_g.attr("x", lm)
              .attr("y", tm)
@@ -2245,6 +2230,10 @@
       main_svg.attr("width", w)
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
+
+      this.draw_g = frame_g;
+
+      this.AddDrag({ obj: ndc, only_resize:true, redraw: this.RedrawPad.bind(this) });
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -3113,6 +3102,7 @@
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveText = function() {
+
       var pavetext = this.pavetext;
 
       var w = this.pad_width(), h = this.pad_height();
@@ -3129,23 +3119,23 @@
                if (pavetext.fY1 > 0) pavetext.fY1 = JSROOT.log10(pavetext.fY1);
                if (pavetext.fY2 > 0) pavetext.fY2 = JSROOT.log10(pavetext.fY2);
             }
-            pavetext['fX1NDC'] = (pavetext.fX1-pad['fX1'])/(pad['fX2'] - pad['fX1']);
-            pavetext['fY1NDC'] = (pavetext.fY1-pad['fY1'])/(pad['fY2'] - pad['fY1']);
-            pavetext['fX2NDC'] = (pavetext.fX2-pad['fX1'])/(pad['fX2'] - pad['fX1']);
-            pavetext['fY2NDC'] = (pavetext.fY2-pad['fY1'])/(pad['fY2'] - pad['fY1']);
+            pavetext.fX1NDC = (pavetext.fX1-pad.fX1)/(pad.fX2 - pad.fX1);
+            pavetext.fY1NDC = (pavetext.fY1-pad.fY1)/(pad.fY2 - pad.fY1);
+            pavetext.fX2NDC = (pavetext.fX2-pad.fX1)/(pad.fX2 - pad.fX1);
+            pavetext.fY2NDC = (pavetext.fY2-pad.fY1)/(pad.fY2 - pad.fY1);
 
          } else {
-            pavetext['fX1NDC'] = 0.1;
-            pavetext['fX2NDC'] = 0.9;
-            pavetext['fY1NDC'] = 0.1;
-            pavetext['fY2NDC'] = 0.9;
+            pavetext.fX1NDC = 0.1;
+            pavetext.fX2NDC = 0.9;
+            pavetext.fY1NDC = 0.1;
+            pavetext.fY2NDC = 0.9;
          }
       }
 
-      var pos_x = Math.round(pavetext['fX1NDC'] * w);
-      var pos_y = Math.round((1.0 - pavetext['fY1NDC']) * h);
-      var width = Math.round(Math.abs(pavetext['fX2NDC'] - pavetext['fX1NDC']) * w);
-      var height = Math.round(Math.abs(pavetext['fY2NDC'] - pavetext['fY1NDC']) * h);
+      var pos_x = Math.round(pavetext.fX1NDC * w);
+      var pos_y = Math.round((1.0 - pavetext.fY1NDC) * h);
+      var width = Math.round(Math.abs(pavetext.fX2NDC - pavetext.fX1NDC) * w);
+      var height = Math.round(Math.abs(pavetext.fY2NDC - pavetext.fY1NDC) * h);
 
       pos_y -= height;
       var nlines = pavetext['fLines'].arr.length;
@@ -3298,7 +3288,7 @@
          this.FinishTextDrawing(lbl_g);
       }
 
-      this.AddDrag({ obj:pavetext, redraw: this.DrawPaveText.bind(this), ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
+      this.AddDrag({ obj: pavetext, redraw: this.DrawPaveText.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu });
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
@@ -5130,9 +5120,7 @@
       if (draw_title && (tpainter === null)) {
          pavetext = JSROOT.Create("TPaveText");
 
-         JSROOT.extend(pavetext, { fName: "title",
-                                   fX1NDC: 0.2809483, fY1NDC: 0.9339831,
-                                   fX2NDC: 0.7190517, fY2NDC: 0.995});
+         JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
          pavetext.AddText(this.histo.fTitle);
 
          JSROOT.Painter.drawPaveText(this.divid, pavetext);
@@ -6519,13 +6507,15 @@
 
    JSROOT.TTextPainter.prototype.drawPaveLabel = function() {
 
+      console.log('DRAW PAVE TEXT');
+
       this.RecreateDrawG(true, ".text_layer");
 
       var pavelabel = this.text;
 
       var w = this.pad_width(), h = this.pad_height();
 
-      if (pavelabel.fInit == 0) {
+      if (pavelabel.fInit === 0) {
          // recalculate NDC coordiantes if not yet done
          pavelabel.fInit = 1;
          var isndc = (pavelabel.fOption.indexOf("NDC") >= 0);
@@ -6598,12 +6588,14 @@
 
       var pave_painter = this;
 
-      this.AddDrag({ obj : pavelabel, redraw: this.drawPaveLabel.bind(this) });
+      this.AddDrag({ obj: pavelabel, redraw: this.drawPaveLabel.bind(this) });
 
       this.FinishTextDrawing();
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
+
+      console.log('DRAW TEXT');
 
       var kTextNDC = JSROOT.BIT(14);
 
