@@ -155,12 +155,12 @@
     */
    JSROOT.Painter = {};
 
-   JSROOT.Painter.createMenu = function(maincallback, menuname) {
+   JSROOT.Painter.createMenu = function(maincallback, menuholder) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       JSROOT.AssertPrerequisites('jq2d', function() {
          document.body.style.cursor = 'auto';
-         JSROOT.Painter.createMenu(maincallback, menuname);
+         JSROOT.Painter.createMenu(maincallback, menuholder);
       });
    }
 
@@ -3416,7 +3416,7 @@
          AddStatOpt(13, "Probability");
 
          menu.show(evnt);
-      });
+      }); // end menu creation
    }
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
@@ -5809,7 +5809,7 @@
 
          menu.show(this.ctx_menu_evnt);
          delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(this));
+      }.bind(this), this.select_main().node());  // end menu creation
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
@@ -8875,8 +8875,7 @@
       if (box.empty()) {
          box = d3.select(document.body)
                 .append("div")
-                .attr("id", id)
-                .attr("class","progressbox");
+                .attr("id", id);
          box.append("p");
       }
 

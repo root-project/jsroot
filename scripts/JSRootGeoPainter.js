@@ -2096,32 +2096,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.helpText = function(msg) {
-      var id = "jsroot_helptext";
-      var box = d3.select("#"+id);
-      var newmsg = true;
-      if ((typeof msg == "undefined") || (msg==null)) {
-         if (box.empty())
-            return;
-         box.property('stack').pop();
-         if (box.property('stack').length==0)
-            return box.remove();
-         msg = box.property('stack')[box.property('stack').length-1]; // show prvious message
-         newmsg = false;
-      }
-      if (box.empty()) {
-         box = d3.select(document.body)
-           .append("div")
-           .attr("id", id)
-           .attr("class","progressbox")
-           .property("stack",new Array);
-
-         box.append("p");
-      }
-      box.select("p").html(msg);
-      if (newmsg) {
-         box.property('stack').push(msg);
-         box.property("showtm", new Date);
-      }
+      JSROOT.progress(msg);
    }
 
    JSROOT.TGeoPainter.prototype.CheckResize = function() {

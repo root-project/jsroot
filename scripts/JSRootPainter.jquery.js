@@ -31,9 +31,9 @@
       JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
-      if (!menuname) menuname = "root_ctx_menu";
+      if (!menuname) menuname = 'root_ctx_menu';
 
-      var menu = { divid: menuname, code:"", cnt: 1, funcs : {}, separ : false };
+      var menu = { element:null, code:"", cnt: 1, funcs : {}, separ : false };
 
       menu.add = function(name, arg, func) {
          if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
@@ -85,19 +85,24 @@
          this.add("endsub:");
       }
 
-      menu.remove = function() { $("#"+menuname).remove(); }
+      menu.remove = function() {
+         if (this.element!==null) this.element.remove();
+         this.element = null;
+      }
 
       menu.show = function(event) {
-         menu.remove();
+         this.remove();
 
          document.body.onclick = function(e) { menu.remove(); }
 
-         $(document.body).append('<ul id="' + menuname + '">' + this.code + '</ul>');
+         $(document.body).append('<ul class="jsroot ctxmenu">' + this.code + '</ul>');
 
-         $("#" + menuname)
+         this.element = $(document.body).find('.ctxmenu');
+
+         this.element
+            .attr('id', menuname)
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
-            .addClass('jsroot ctxmenu')
             .css('font-size', '80%')
             .css('position', 'absolute') // this overrides ui-menu-items class property
             .menu({
@@ -114,15 +119,15 @@
                         func(arg);
                   }
               }
-         });
+            });
 
          var newx = null, newy = null;
 
-         if (event.clientX + $("#" + menuname).width() > $(window).width()) newx = $(window).width() - $("#" + menuname).width() - 20;
-         if (event.clientY + $("#" + menuname).height() > $(window).height()) newy = $(window).height() - $("#" + menuname).height() - 20;
+         if (event.clientX + this.element.width() > $(window).width()) newx = $(window).width() - this.element.width() - 20;
+         if (event.clientY + this.element.height() > $(window).height()) newy = $(window).height() - this.element.height() - 20;
 
-         if (newx!==null) $("#" + menuname).css('left', (newx>0 ? newx : 0) + window.pageXOffset);
-         if (newy!==null) $("#" + menuname).css('top', (newy>0 ? newy : 0) + window.pageYOffset);
+         if (newx!==null) this.element.css('left', (newx>0 ? newx : 0) + window.pageXOffset);
+         if (newy!==null) this.element.css('top', (newy>0 ? newy : 0) + window.pageYOffset);
       }
 
       JSROOT.CallBack(maincallback, menu);

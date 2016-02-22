@@ -5,6 +5,7 @@
 2. Improve TGeoTorus creation - handle all parameters combinations
 3. Implement TGeoCompositeShape, using ThreeCSG.js
 4. Fix problem with color pallete when switch to 3D mode (#28)
+5. Use nested CSS classes to avoid conflicts with other libraries (#29)
 
 
 ## Changes in 4.3

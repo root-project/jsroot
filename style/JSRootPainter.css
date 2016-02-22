@@ -403,7 +403,7 @@
   progress message
   --------------------------------------------------*/
 
-.jsroot .progressbox {
+#jsroot_progressbox {
     position: absolute;
     min-width: 100px;
     height: auto;
@@ -415,7 +415,7 @@
     bottom: 10px;
 }
 
-.jsroot .progressbox p {
+#jsroot_progressbox p {
     font-size: 10px;
     margin-left: 10px;
     margin-right: 10px;
