@@ -876,7 +876,8 @@
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
-         geom = new THREE.SphereBufferGeometry(this.size3d / this.nbinsx);
+         geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
+         geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });

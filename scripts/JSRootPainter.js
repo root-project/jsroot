@@ -6226,7 +6226,9 @@
          this.options.Mark = 1;
 
       /* Calculate coordinates for each point, exclude zeros if not p0 or e0 option */
-      var draw_bins = this.CreateDrawBins(w, h, (this.options.Error!=10) && (this.options.Mark!=10));
+      var draw_bins = this.CreateDrawBins(w, h, (this.options.Error!==10) && (this.options.Mark!==10));
+
+      var show_markers = this.options.Mark > 0;
 
       // here are up to five elements are collected, try to group them
       var nodes = this.draw_g.selectAll("g")
@@ -6240,6 +6242,9 @@
 
       if (this.options.Error == 12) {
          // draw as rectangles
+
+         // when no any marker is show, use at least non-empty fill color
+         if (this.fill.color === 'none') show_markers = true;
 
          nodes.append("svg:rect")
             .attr("x", function(d) { return (-d.xerr).toFixed(1); })
@@ -6304,7 +6309,7 @@
                  .call(this.attline.func);
       }
 
-      if (this.options.Mark > 0) {
+      if (show_markers) {
          // draw markers also when e2 option was specified
          var marker = JSROOT.Painter.createAttMarker(this.histo);
          nodes.append(marker.kind).call(marker.func, null, true);
