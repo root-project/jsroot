@@ -155,12 +155,12 @@
     */
    JSROOT.Painter = {};
 
-   JSROOT.Painter.createMenu = function(maincallback, menuholder) {
+   JSROOT.Painter.createMenu = function(maincallback, menuname) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       JSROOT.AssertPrerequisites('jq2d', function() {
          document.body.style.cursor = 'auto';
-         JSROOT.Painter.createMenu(maincallback, menuholder);
+         JSROOT.Painter.createMenu(maincallback, menuname);
       });
    }
 
@@ -5809,7 +5809,7 @@
 
          menu.show(this.ctx_menu_evnt);
          delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(this), this.select_main().node());  // end menu creation
+      }.bind(this) /*, this.select_main().node() */);  // end menu creation
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {

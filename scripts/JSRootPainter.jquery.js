@@ -31,7 +31,7 @@
       JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
-      if (!menuname) menuname = 'root_ctx_menu';
+      if (!menuname || (typeof menuname !== 'string')) menuname = 'root_ctx_menu';
 
       var menu = { element:null, code:"", cnt: 1, funcs : {}, separ : false };
 
@@ -95,9 +95,8 @@
 
          document.body.onclick = function(e) { menu.remove(); }
 
-         $(document.body).append('<ul class="jsroot ctxmenu">' + this.code + '</ul>');
-
-         this.element = $(document.body).find('.ctxmenu');
+         this.element = $(document.body).append('<ul class="jsroot ctxmenu">' + this.code + '</ul>')
+                                        .find('.ctxmenu');
 
          this.element
             .attr('id', menuname)
