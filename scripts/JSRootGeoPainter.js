@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['JSRootPainter', 'THREE_ALL'], factory );
+      define( [ 'd3', 'JSRootPainter', 'JSRoot3DPainter', 'ThreeCSG' ], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -13,12 +13,15 @@
       if (typeof JSROOT.Painter != 'object')
          throw new Error('JSROOT.Painter is not defined', 'JSRootGeoPainter.js');
 
+      if (typeof d3 == 'undefined')
+         throw new Error('d3 is not defined', 'JSRootGeoPainter.js');
+
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
 
-      factory(JSROOT);
+      factory( d3, JSROOT);
    }
-} (function(JSROOT) {
+} (function( d3, JSROOT ) {
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');

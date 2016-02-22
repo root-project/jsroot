@@ -39,6 +39,7 @@
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
+            'ThreeCSG'             : dir+'ThreeCSG'+ext,
             'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
@@ -85,7 +86,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 19/02/2016";
+   JSROOT.version = "dev 22/02/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -762,7 +763,7 @@
          mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('JSRootGeoPainter');
+         modules.push('ThreeCSG', 'JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
