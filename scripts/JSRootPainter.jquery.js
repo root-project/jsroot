@@ -97,7 +97,7 @@
          $("#" + menuname)
             .css('left', event.clientX + window.pageXOffset)
             .css('top', event.clientY + window.pageYOffset)
-            .attr('class', 'ctxmenu')
+            .addClass('jsroot ctxmenu')
             .css('font-size', '80%')
             .css('position', 'absolute') // this overrides ui-menu-items class property
             .menu({
@@ -121,8 +121,8 @@
          if (event.clientX + $("#" + menuname).width() > $(window).width()) newx = $(window).width() - $("#" + menuname).width() - 20;
          if (event.clientY + $("#" + menuname).height() > $(window).height()) newy = $(window).height() - $("#" + menuname).height() - 20;
 
-         if (newx!=null) $("#" + menuname).css('left',(newx>0 ? newx : 0) + window.pageXOffset);
-         if (newy!=null) $("#" + menuname).css('top',(newy>0 ? newy : 0) + window.pageYOffset);
+         if (newx!==null) $("#" + menuname).css('left', (newx>0 ? newx : 0) + window.pageXOffset);
+         if (newy!==null) $("#" + menuname).css('top', (newy>0 ? newy : 0) + window.pageYOffset);
       }
 
       JSROOT.CallBack(maincallback, menu);
