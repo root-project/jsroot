@@ -66,6 +66,7 @@
             if (!JSROOT.gStyle.Tooltip) return;
             if (this.tt === null) {
                this.tt = document.createElement('div');
+               tt.setAttribute('class', 'jsroot');
                var t = document.createElement('div');
                t.setAttribute('class', 'tt3d_border');
                this.cont = document.createElement('div');

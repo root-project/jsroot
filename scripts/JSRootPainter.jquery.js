@@ -271,7 +271,7 @@
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
 
-      this['html'] = "<div style='overflow:auto; width:100%; height:100%;"
+      this['html'] = "<div class='jsroot' style='overflow:auto; width:100%; height:100%;"
       if (this.background) this['html']+="background-color:"+this.background + ";";
       if (this.with_icons) this['html']+="font-size:12px;";
                       else this['html']+="font-size:15px;";

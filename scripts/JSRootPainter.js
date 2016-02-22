@@ -88,7 +88,7 @@
 
    JSROOT.Toolbar = function(container, buttons) {
       if ((container !== undefined) && (typeof container.append == 'function'))  {
-         this.element = container.append("div");
+         this.element = container.append("div").attr('class','jsroot');
          this.addButtons(buttons);
       }
    }
@@ -1346,7 +1346,8 @@
          }
 
          fo.attr('class',clname)
-           .attr('title', "").node().appendChild(canv);
+           .attr('title', "")
+           .node().appendChild(canv);
       }
    }
 
@@ -1423,8 +1424,8 @@
    }
 
    JSROOT.TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
-      while (!sel.empty() && sel.attr('class') != 'root_canvas') {
-         if ((sel.attr('class') == 'root_frame') || (sel.attr('class') == 'root_pad')) {
+      while (!sel.empty() && !sel.classed('root_canvas')) {
+         if (sel.classed('root_frame') || sel.classed('root_pad')) {
            pos.x += sel.property("draw_x");
            pos.y += sel.property("draw_y");
          }
@@ -3565,7 +3566,7 @@
 
          svg = this.select_main()
              .append("svg")
-             .attr("class", "root_canvas")
+             .attr("class", "jsroot root_canvas")
              .style("background-color", fill.color)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
