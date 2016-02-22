@@ -3661,6 +3661,32 @@
       }
    }
 
+   JSROOT.TPadPainter.prototype.RemovePrimitive = function(obj) {
+      if ((this.pad===null) || (this.pad.fPrimitives === null)) return;
+      var indx = this.pad.fPrimitives.arr.indexOf(obj);
+      if (indx>=0) this.pad.fPrimitives.RemoveAt(indx);
+   }
+
+   JSROOT.TPadPainter.prototype.FindPrimitive = function(exact_obj, classname, name) {
+      if ((this.pad===null) || (this.pad.fPrimitives === null)) return null;
+
+      for (var i=0; i < this.pad.fPrimitives.arr.length; i++) {
+         var obj = this.pad.fPrimitives.arr[i];
+
+         if ((exact_obj!==null) && (obj !== exact_obj)) continue;
+
+         if ((classname !== undefined) && (classname !== null))
+            if (obj._typename !== classname) continue;
+
+         if ((name !== undefined) && (name !== null))
+            if (obj.fName !== name) continue;
+
+         return obj;
+      }
+
+      return null;
+   }
+
    JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
       if ((this.pad==null) || (indx>=this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);

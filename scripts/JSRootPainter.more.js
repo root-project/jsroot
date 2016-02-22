@@ -1815,13 +1815,16 @@
       }
    }
 
+
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
-      if ('fFunctions' in this.histo)
+      if (('fFunctions' in this.histo) && (this.histo.fFunctions !== null))
          for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
             var func = this.histo.fFunctions.arr[i];
             if (func['_typename'] !== 'TPaletteAxis') continue;
             if (remove) {
                this.histo.fFunctions.RemoveAt(i);
+               if (this.pad_painter())
+                  this.pad_painter().RemovePrimitive(func);
                return null;
             }
 
@@ -1833,8 +1836,6 @@
 
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
       if (this.FindPalette() === null) {
-         console.log('NOT FOUND PALETTE');
-
          var shrink = this.CreatePalette(0.04);
          this.svg_frame().property('frame_painter').Shrink(0, shrink);
          this.options.Zscale = 1;
@@ -2665,20 +2666,28 @@
 
       this.ScanContent();
 
-      this.CreateXY();
-
       // check if we need to create palette
-      if ((this.FindPalette() === null) && this.create_canvas && (this.options.Zscale > 0)) {
+      if (this.create_canvas && (this.options.Zscale > 0)) {
          // create pallette
 
-         var shrink = this.CreatePalette(0.04);
-         this.svg_frame().property('frame_painter').Shrink(0, shrink);
-         this.svg_frame().property('frame_painter').Redraw();
-         this.CreateXY();
+         var pal = this.FindPalette(), shrink = 0;
+         if (pal === null)
+            shrink = this.CreatePalette(0.04);
+         else
+         if (this.pad_painter() && (this.pad_painter().FindPrimitive(pal)===null))
+            shrink = 0.04;
+
+         if (shrink > 0) {
+            this.svg_frame().property('frame_painter').Shrink(0, shrink);
+            this.svg_frame().property('frame_painter').Redraw();
+         }
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
          this.FindPalette(true);
       }
+
+      // create X/Y only when frame is adjusted, probably should be done differently
+      this.CreateXY();
 
       // check if we need to create statbox
       if (JSROOT.gStyle.AutoStat && this.create_canvas)
