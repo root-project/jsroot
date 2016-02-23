@@ -1593,18 +1593,30 @@
          return false;
       }
 
-      var resize_rect1 = this.draw_g.select('.resize_rect1');
-      if (resize_rect1.empty()) {
-         resize_rect1 = this.draw_g.append("path").attr('class','resize_rect1');
+      var resize_corner1 = this.draw_g.select('.resize_corner1');
+      if (resize_corner1.empty()) {
+         resize_corner1 = this.draw_g.append("path").attr('class','resize_corner1');
          if (JSROOT.touches)
-            resize_rect1.attr("d","M0,0 h-20 v-20 h20 Z");
+            resize_corner1.attr("d","M0,0 h20 v20 h-20 Z");
          else
-            resize_rect1.attr("d","M0,0 h-15 v5 h20 v-20 h-5 Z");
+            resize_corner1.attr("d","M0,0 h15 v-5 h-20 v20 h5 Z");
       }
 
-      resize_rect1.style("opacity", "0")
-                  .style("cursor", "se-resize")
-                  .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
+      var resize_corner2 = this.draw_g.select('.resize_corner2');
+      if (resize_corner2.empty()) {
+         resize_corner2 = this.draw_g.append("path").attr('class','resize_corner2');
+         if (JSROOT.touches)
+            resize_corner2.attr("d","M0,0 h-20 v-20 h20 Z");
+         else
+            resize_corner2.attr("d","M0,0 h-15 v5 h20 v-20 h-5 Z");
+      }
+
+      resize_corner1.style("opacity", "0")
+                    .style("cursor", "nw-resize");
+
+      resize_corner2.style("opacity", "0")
+                    .style("cursor", "se-resize")
+                    .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
       var drag_rect = null;
 
@@ -1668,8 +1680,7 @@
                pthis.draw_g.attr("x", x).attr("y", y)
                            .attr("transform", "translate(" + x + "," + y + ")");
 
-               resize_rect1.attr("x", rect_width() - 20)
-                           .attr("y", rect_height() - 20);
+               resize_corner2.attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
                if ('move' in callback) callback.move(x, y, dx, dy);
                else if ('obj' in callback) {
@@ -1681,8 +1692,8 @@
 
                if((dx==0) && (dy==0) && callback['ctxmenu'] &&
                         ((new Date()).getTime() - drag_tm.getTime() > 600)) {
-                  var rrr = resize_rect1.node().getBoundingClientRect();
-                  pthis.ShowContextMenu('main', { clientX: rrr.left + 20, clientY : rrr.top + 20 } );
+                  var rrr = resize_corner2.node().getBoundingClientRect();
+                  pthis.ShowContextMenu('main', { clientX: rrr.left, clientY : rrr.top } );
                }
             });
 
@@ -1694,31 +1705,39 @@
            d3.event.sourceEvent.preventDefault();
 
            acc_x = 0; acc_y = 0;
-           pad_w = pthis.pad_width() - Number(pthis.draw_g.attr("x"));
-           pad_h = pthis.pad_height() - Number(pthis.draw_g.attr("y"));
+           pad_w = pthis.pad_width();
+           pad_h = pthis.pad_height();
            drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
-                .classed("zoom",true)
-                .attr("x",  pthis.draw_g.attr("x"))
-                .attr("y", pthis.draw_g.attr("y"))
-                .attr("width", rect_width())
-                .attr("height", rect_height())
-                .style("cursor", "se-resize");
+                        .classed("zoom", true)
+                        .attr("x",  pthis.draw_g.attr("x"))
+                        .attr("y", pthis.draw_g.attr("y"))
+                        .attr("width", rect_width())
+                        .attr("height", rect_height())
+                        .style("cursor", d3.select(this).style("cursor"));
          }).on("drag", function() {
             if (drag_rect == null) return;
 
             d3.event.sourceEvent.preventDefault();
 
-            var w = Number(drag_rect.attr("width")), h = Number(drag_rect.attr("height"));
+            var w = Number(drag_rect.attr("width")), h = Number(drag_rect.attr("height")),
+                x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y"));
             var dx = d3.event.dx, dy = d3.event.dy;
             if ((acc_x<0) && (dx>0)) { acc_x+=dx; dx=0; if (acc_x>0) { dx=acc_x; acc_x=0; }}
             if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
             if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
             if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
-            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w; } else
-            if (w+dx<0) { acc_x += (w+dx); w=0; } else w+=dx;
-            if (h+dy>pad_h) { acc_y += (h+dy-pad_h); h=pad_h; } else
-            if (h+dy<0) { acc_y += (h+dy); h=0; } else h+=dy;
-            drag_rect.attr("width", w).attr("height", h);
+
+            if (d3.select(this).classed('resize_corner1')) {
+               if (x+dx < 0) { acc_x += x+dx; w += x; x = 0; }
+
+            } else {
+               if (x+w+dx > pad_w) { acc_x += (x+w+dx-pad_w); w = pad_w-x; } else
+               if (w+dx < 0) { acc_x += (w+dx); w = 0; } else w += dx;
+               if (y+h+dy > pad_h) { acc_y += (y+h+dy-pad_h); h = pad_h-y; } else
+               if (h+dy < 0) { acc_y += (h+dy); h=0; } else h += dy;
+            }
+
+            drag_rect.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
 
             d3.event.sourceEvent.stopPropagation();
          }).on( "dragend", function() {
@@ -1728,15 +1747,17 @@
 
             drag_rect.style("cursor", "auto");
 
-            var newwidth = Number(drag_rect.attr("width"));
-            var newheight = Number(drag_rect.attr("height"));
+            var newx = Number(drag_rect.attr("x")),
+                newy = Number(drag_rect.attr("y")),
+                newwidth = Number(drag_rect.attr("width")),
+                newheight = Number(drag_rect.attr("height"));
 
             pthis.draw_g.attr('width', newwidth).attr('height', newheight);
 
             drag_rect.remove();
             drag_rect = null;
 
-            resize_rect1.attr("transform", "translate(" + newwidth + "," + newheight + ")");
+            resize_corner2.attr("transform", "translate(" + newwidth + "," + newheight + ")");
 
             if ('resize' in callback) callback.resize(newwidth, newheight); else {
                 if ('obj' in callback) {
@@ -1752,7 +1773,8 @@
          this.draw_g.style("cursor", "move").call(drag_move);
       }
 
-      resize_rect1.call(drag_resize);
+      resize_corner1.call(drag_resize);
+      resize_corner2.call(drag_resize);
    }
 
    JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind) {
@@ -8709,8 +8731,6 @@
 
    JSROOT.draw = function(divid, obj, opt) {
       if ((obj===null) || (typeof obj !== 'object')) return null;
-
-      console.log('DRAW ' + obj._typename);
 
       if (opt == 'inspect')
          return JSROOT.Painter.drawInspector(divid, obj);

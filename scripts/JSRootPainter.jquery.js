@@ -684,7 +684,7 @@
       var topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null)
-         $("#"+this.frameid).append('<div id="'+ topid  + '" class="ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
+         $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
       var hid = topid + "_sub" + this.cnt++;
       var uid = hid + "h";
@@ -771,7 +771,7 @@
       var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
       if (document.getElementById(topid) == null) {
-         $("#" + this.frameid).append('<div id="' + topid + '">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
+         $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
 
          var tabs = $("#" + topid)
                        .css('overflow','hidden')
@@ -836,7 +836,7 @@
       var topid = this.frameid + '_flex';
 
       if (document.getElementById(topid) == null)
-         $("#" + this.frameid).append('<div id="'+ topid  + '" style="overflow:none; height:100%; width:100%"></div>');
+         $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
 
       var top = $("#" + topid);
 
@@ -879,8 +879,7 @@
 
          switch (state) {
             case "minimal" :
-               main.height(main.find('.flex_header').height())
-                   .width("auto")
+               main.height(main.find('.flex_header').height()).width("auto");
                main.find(".flex_draw").css("display","none");
                main.find(".ui-resizable-handle").css("display","none");
                break;
@@ -909,7 +908,7 @@
          .width(Math.round(w * 0.58))
          .height(Math.round(h * 0.58))
          .resizable({
-            helper: "jsroot-resizable-helper",
+            helper: "flex-resizable-helper",
             start: function(event, ui) {
                // bring element to front when start resizing
                $(this).appendTo($(this).parent());

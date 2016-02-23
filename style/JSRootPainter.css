@@ -58,10 +58,6 @@
     display: block;
 }
 
-.jsroot .jsroot-resizable-helper {
-    border: 2px dotted #00F;
-}
-
 .jsroot .img_minus {
     display: inline-block;
     height: 18px;
@@ -397,6 +393,11 @@
     width: 100%;
     height: calc(100% - 26px);
 }
+
+.jsroot .flex-resizable-helper {
+    border: 2px dotted #00F;
+}
+
 
 
 /*--------------------------------------------------
