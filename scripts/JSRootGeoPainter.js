@@ -2196,14 +2196,9 @@
       if (obj === null) return this.DrawingReady();
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         console.log('Try to draw shape ' + obj._typename);
 
          var node = JSROOT.Create("TEveGeoShapeExtract");
-         node.fTrans = null;
-         node.fShape = obj;
-         node.fRGBA = [ 0, 1, 0, 1];
-         node.fElements = null;
-         node.fRnrSelf = true;
+         JSROOT.extend(node, { fTrans:null, fShape: obj, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
@@ -2407,6 +2402,11 @@
 
       if ((parent == null) || (volume==null)) return false;
 
+      // avoid duplication
+      if ('_childs' in parent)
+         for (var n=0;n<parent._childs.length;++n)
+            if (volume === parent._childs[n]._volume) return true;
+
       var item = {
          _kind : "ROOT.TGeoVolume",
          _name : (arg!=null) ? arg : volume.fName,
@@ -2432,7 +2432,7 @@
            return true;
         }
       } else
-      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape")) {
+      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
          item['_more'] = true;
          item['_expand'] = function(node, obj) {
             JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
