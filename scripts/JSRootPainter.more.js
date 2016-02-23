@@ -1844,7 +1844,11 @@
             if (this.options.Color == 0)
                this.options.Color = JSROOT.gStyle.DefaultCol;
             else
-               this.options.Color = - this.options.Color;
+               this.options.Color = -this.options.Color;
+
+            if ((this.options.Color > 0) && (this.options.Zscale > 0))
+               this.DrawNewPalette(true);
+
             this.RedrawPad();
          });
          if (this.options.Color > 0)
@@ -1878,7 +1882,7 @@
 
       if ((pal !== null) && !force_resize) return;
 
-      var ndc = this.svg_frame().property('NDC');
+      var frame_painter = this.svg_frame().property('frame_painter');
 
       if (pal === null) {
          pal = JSROOT.Create('TPaletteAxis');
@@ -1905,10 +1909,10 @@
       }
 
       // keep palette width
-      pal.fX2NDC = ndc.fX2NDC  + 0.01 + (pal.fX2NDC - pal.fX1NDC)
-      pal.fX1NDC = ndc.fX2NDC  + 0.01;
-      pal.fY1NDC = ndc.fY1NDC;
-      pal.fY2NDC = ndc.fY2NDC;
+      pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC)
+      pal.fX1NDC = frame_painter.fX2NDC + 0.01;
+      pal.fY1NDC = frame_painter.fY1NDC;
+      pal.fY2NDC = frame_painter.fY2NDC;
 
       var pal_painter = this.FindPainterFor(pal);
 
@@ -1917,10 +1921,10 @@
       else
          pal_painter.DrawPalette(true);
 
-      if (pal.fX1NDC < ndc.fX2NDC) {
-         var fp = this.svg_frame().property('frame_painter');
-         fp.Shrink(0, ndc.fX2NDC - pal.fX1NDC + 0.01);
-         fp.Redraw();
+      if (pal.fX1NDC < frame_painter.fX2NDC) {
+         frame_painter.fX2NDC = pal.fX1NDC - 0.01;
+         console.log('set frame 2 NDC ' + frame_painter.fX2NDC);
+         frame_painter.Redraw();
       }
    }
 

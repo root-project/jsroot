@@ -2111,30 +2111,26 @@
    }
 
    JSROOT.TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
-      var ndc = this.svg_frame().property('NDC');
-      if (ndc) {
-         ndc.fX1NDC += shrink_left;
-         ndc.fX2NDC -= shrink_right;
-      }
+      this.fX1NDC += shrink_left;
+      this.fX2NDC -= shrink_right;
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
       var width = this.pad_width(), height = this.pad_height();
 
-      var ndc = this.svg_frame().empty() ? null : this.svg_frame().property('NDC');
-      var has_ndc = (ndc !== null);
+      var has_ndc = ('fX1NDC' in this);
 
-      if (ndc === null) {
+      if (!has_ndc) {
          var pad = this.root_pad();
          if (pad === null)
-            ndc = JSROOT.clone(JSROOT.gStyle.FrameNDC);
+            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          else
-            ndc = {
+            JSROOT.extend(this, {
                fX1NDC: pad.fLeftMargin,
                fX2NDC: 1 - pad.fRightMargin,
                fY1NDC: pad.fTopMargin,
                fY2NDC: 1 - pad.fBottomMargin
-            }
+            });
       }
 
       var root_pad = this.root_pad();
@@ -2148,7 +2144,7 @@
          bordersize = this.tframe.fBorderSize;
          lineatt = JSROOT.Painter.createAttLine(this.tframe);
          framecolor = this.createAttFill(this.tframe);
-         if (!has_ndc && (root_pad!==null)) {
+         if (!has_ndc && (root_pad !== null)) {
             var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1);
             var yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1);
             var px1 = (this.tframe.fX1 - root_pad.fX1) * xspan;
@@ -2160,20 +2156,20 @@
                       else { pxl = px2; pxt = px1; }
             if (py1 < py2) { pyl = py1; pyt = py2; }
                       else { pyl = py2; pyt = py1; }
-            ndc.fX1NDC = pxl / width;
-            ndc.fY1NDC = pyl / height;
-            ndc.fX2NDC = pxt / width;
-            ndc.fY2NDC = pyt / height;
+            this.fX1NDC = pxl / width;
+            this.fY1NDC = pyl / height;
+            this.fX2NDC = pxt / width;
+            this.fY2NDC = pyt / height;
          }
       } else {
          if (root_pad)
             framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
       }
 
-      var lm = Math.round(width * ndc.fX1NDC),
-          w = Math.round(width * (ndc.fX2NDC - ndc.fX1NDC)),
-          tm = Math.round(height * (1 - ndc.fY2NDC)),
-          h = Math.round(height * (ndc.fY2NDC - ndc.fY1NDC));
+      var lm = Math.round(width * this.fX1NDC),
+          w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
+          tm = Math.round(height * (1 - this.fY2NDC)),
+          h = Math.round(height * (this.fY2NDC - this.fY1NDC));
 
       // force white color for the frame
       if (framecolor.color == 'none') framecolor.color = 'white';
@@ -2204,10 +2200,7 @@
          main_svg = frame_g.select(".main_layer");
       }
 
-      // set back NDC, used to properely locate PALETTE
-      frame_g.property('NDC', ndc);
-
-      // simple workaround to access painter via frame container
+      // simple way to access painter via frame container
       frame_g.property('frame_painter', this);
 
       frame_g.attr("x", lm)
@@ -2233,7 +2226,7 @@
 
       this.draw_g = frame_g;
 
-      this.AddDrag({ obj: ndc, only_resize:true, redraw: this.RedrawPad.bind(this) });
+      this.AddDrag({ obj: this, only_resize:true, redraw: this.RedrawPad.bind(this) });
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -6504,8 +6497,6 @@
    }
 
    JSROOT.TTextPainter.prototype.drawPaveLabel = function() {
-
-      console.log('DRAW PAVE TEXT');
 
       this.RecreateDrawG(true, ".text_layer");
 
