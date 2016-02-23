@@ -966,6 +966,7 @@
       if (faces_limit === undefined) faces_limit = 10000;
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
+      geom1.computeVertexNormals();
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
       if (matrix1!==null) {
          if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
@@ -973,13 +974,14 @@
       }
 
       var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2);
+      geom2.computeVertexNormals();
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
       if (matrix2 !== null) {
          if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
          geom2.applyMatrix(matrix2);
       }
 
-      var bsp1  = new ThreeBSP(geom1);
+      var bsp1 = new ThreeBSP(geom1);
       var bsp2 = new ThreeBSP(geom2);
       var bsp = null;
 
