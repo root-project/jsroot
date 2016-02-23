@@ -5220,8 +5220,7 @@
       if (stats != null) return stats;
 
       stats = JSROOT.Create('TPaveStats');
-      JSROOT.extend(stats, { _AutoCreated: true,
-                             fName : 'stats',
+      JSROOT.extend(stats, { fName : 'stats',
                              fOptStat: JSROOT.gStyle.OptStat,
                              fOptFit: JSROOT.gStyle.OptFit,
                              fBorderSize : 1} );
@@ -5264,7 +5263,6 @@
       var do_draw = false;
 
       var func_painter = this.FindPainterFor(func);
-
 
       // no need to do something if painter for object was already done
       // object will be redraw automatically

@@ -1551,13 +1551,12 @@
 
       this.palette = palette;
       this.SetDivId(divid);
-      this.can_move = (opt === 'canmove');
 
       this['GetObject'] = function() {
          return this.palette;
       }
 
-      this['DrawPalette'] = function() {
+      this['DrawPalette'] = function(can_move) {
          var palette = this.palette;
          var axis = palette.fAxis;
 
@@ -1632,7 +1631,7 @@
                 .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
                 .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
 
-         if (contour==null)
+         if ((contour==null) || can_move)
             // we need such rect to correctly calculate size
             this.draw_g.append("svg:rect")
                        .attr("x", 0)
@@ -1701,18 +1700,17 @@
          }
 
 
-         if (contour === null) {
+         if (can_move) {
             if ('getBoundingClientRect' in this.draw_g.node()) {
                var rect1 = this.draw_g.node().getBoundingClientRect();
 
                var shift = (pos_x + parseInt(rect1.width)) - parseInt(0.995*width) + 3;
 
-               if ((shift>0) && this.can_move) {
+               if (shift>0) {
                   this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
                              .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
                   palette.fX1NDC -= shift/width;
                   palette.fX2NDC -= shift/width;
-                  this.can_move = false; // can move only once
                }
             }
             return;
@@ -1811,7 +1809,7 @@
             enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
 
          if (enabled)
-            this.DrawPalette();
+            this.DrawPalette(false);
          else
             this.RemoveDrawG(); // if palette artificially disabled, do not redraw it
       }
@@ -1819,7 +1817,7 @@
       // workaround to let copmlete pallete draw when actual palette colors already there
       this['CompleteDraw'] = this['Redraw'];
 
-      this.DrawPalette();
+      this.DrawPalette(opt === 'canmove');
 
       return this.DrawingReady();
    }
@@ -1873,29 +1871,65 @@
       return null;
    }
 
-   JSROOT.TH2Painter.prototype.DrawNewPalette = function() {
+   JSROOT.TH2Painter.prototype.DrawNewPalette = function(force_resize) {
       // only when create new palette, one could change frame size
-      var pal = this.CreatePalette();
 
-      var pp = JSROOT.draw(this.divid, pal, "canmove");
+      var pal = this.FindPalette();
+
+      if ((pal !== null) && !force_resize) return;
+
       var ndc = this.svg_frame().property('NDC');
 
-      if (pp.palette.fX1NDC < ndc.fX2NDC) {
+      if (pal === null) {
+         pal = JSROOT.Create('TPaletteAxis');
+
+         JSROOT.extend(pal, { fName: "TPave", fOption: "br",
+            fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1,
+            fShadowColor: 1, fCorenerRadius: 0, fResizing: false, fBorderSize: 4,
+            fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fFillColor: 1, fFillSyle: 1
+         });
+
+         pal.fAxis = JSROOT.Create('TGaxis');
+         JSROOT.extend(pal.fAxis, { fName: "", fTitle: this.histo.fZaxis.fTitle,
+            fTickSize: 0.03, fLabelOffset: 0.005, fLabelSize: 0.035, fTitleOffset: 1, fTitleSize: 0.035,
+            fNdiv: 8, fLabelColor: 1, fLabelFont: 42, fChopt: "", fTimeFormat: "", fFunctionName: "",
+            fWmin: 0, fWmax: 100, fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
+            fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
+         });
+
+         if (! ('fFunctions' in this.histo) || (this.histo.fFunctions === null))
+            this.histo.fFunctions = JSROOT.Create("TList");
+
+         // place colz in the beginning, that stat box is always drawn on the top
+         this.histo.fFunctions.AddFirst(pal);
+      }
+
+      // keep palette width
+      pal.fX2NDC = ndc.fX2NDC  + 0.01 + (pal.fX2NDC - pal.fX1NDC)
+      pal.fX1NDC = ndc.fX2NDC  + 0.01;
+      pal.fY1NDC = ndc.fY1NDC;
+      pal.fY2NDC = ndc.fY2NDC;
+
+      var pal_painter = this.FindPainterFor(pal);
+
+      if (pal_painter === null)
+         pal_painter = JSROOT.draw(this.divid, pal, "canmove");
+      else
+         pal_painter.DrawPalette(true);
+
+      if (pal.fX1NDC < ndc.fX2NDC) {
          var fp = this.svg_frame().property('frame_painter');
-         fp.Shrink(0, ndc.fX2NDC - pp.palette.fX1NDC + 0.01);
+         fp.Shrink(0, ndc.fX2NDC - pal.fX1NDC + 0.01);
          fp.Redraw();
       }
    }
 
    JSROOT.TH2Painter.prototype.ToggleColz = function() {
-      if (this.FindPalette() === null) {
-         this.options.Zscale = 1;
-         this.DrawNewPalette();
+      if (this.options.Zscale > 0) {
+         this.options.Zscale = 0;
       } else {
-         if (this.options.Zscale > 0)
-            this.options.Zscale = 0;
-         else
-            this.options.Zscale = 1;
+         this.options.Zscale = 1;
+         this.DrawNewPalette(true);
       }
 
       this.RedrawPad();
@@ -1948,63 +1982,6 @@
       var pal = this.FindPalette();
       if (pal !== null) return pal;
 
-      pal = { _typename:'TPaletteAxis', fName: 'palette' };
-
-      pal['_AutoCreated'] = true;
-
-      var ndc = this.svg_frame().property('NDC');
-
-      pal['fX1NDC'] = ndc.fX2NDC  + 0.01;
-      pal['fY1NDC'] = ndc.fY1NDC;
-      pal['fX2NDC'] = ndc.fX2NDC + 0.05;
-      pal['fY2NDC'] = ndc.fY2NDC;
-      pal['fInit'] = 1;
-      pal['fShadowColor'] = 1;
-      pal['fCorenerRadius'] = 0;
-      pal['fResizing'] = false;
-      pal['fBorderSize'] = 4;
-      pal['fName'] = "TPave";
-      pal['fOption'] = "br";
-      pal['fLineColor'] = 1;
-      pal['fLineSyle'] = 1;
-      pal['fLineWidth'] = 1;
-      pal['fFillColor'] = 1;
-      pal['fFillSyle'] = 1;
-
-      var axis = {};
-
-      axis['_typename'] = 'TGaxis';
-      axis['fTickSize'] = 0.03;
-      axis['fLabelOffset'] = 0.005;
-      axis['fLabelSize'] = 0.035;
-      axis['fTitleOffset'] = 1;
-      axis['fTitleSize'] = 0.035;
-      axis['fNdiv'] = 8;
-      axis['fLabelColor'] = 1;
-      axis['fLabelFont'] = 42;
-      axis['fChopt'] = "";
-      axis['fName'] = "";
-      axis['fTitle'] = this.histo.fZaxis.fTitle;
-      axis['fTimeFormat'] = "";
-      axis['fFunctionName'] = "";
-      axis['fWmin'] = 0;
-      axis['fWmax'] = 100;
-      axis['fLineColor'] = 1;
-      axis['fLineSyle'] = 1;
-      axis['fLineWidth'] = 1;
-      axis['fTextAngle'] = 0;
-      axis['fTextSize'] = 0.04;
-      axis['fTextAlign'] = 11;
-      axis['fTextColor'] = 1;
-      axis['fTextFont'] = 42;
-
-      pal['fAxis'] = axis;
-
-      if (! ('fFunctions' in this.histo) || (this.histo.fFunctions === null))
-         this.histo.fFunctions = JSROOT.Create("TList");
-
-      // place colz in the beginning, that stat box is always drawn on the top
-      this.histo.fFunctions.AddFirst(pal);
 
       // and at the end try to check how much place will be used by the labels
       // in the palette
@@ -2689,11 +2666,8 @@
 
       // check if we need to create palette
       if (this.create_canvas && (this.options.Zscale > 0)) {
-
-         var pal = this.FindPalette();
-
-         if (pal === null) this.DrawNewPalette();
-
+         // draw new palette, resize frame if required
+         this.DrawNewPalette(false);
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
          this.FindPalette(true);
