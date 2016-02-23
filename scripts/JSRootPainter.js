@@ -1599,7 +1599,7 @@
          if (JSROOT.touches)
             resize_corner1.attr("d","M0,0 h20 v20 h-20 Z");
          else
-            resize_corner1.attr("d","M0,0 h15 v-5 h-20 v20 h5 Z");
+            resize_corner1.attr("d","M2,2 h15 v-5 h-20 v20 h5 Z");
       }
 
       var resize_corner2 = this.draw_g.select('.resize_corner2');
@@ -1608,7 +1608,7 @@
          if (JSROOT.touches)
             resize_corner2.attr("d","M0,0 h-20 v-20 h20 Z");
          else
-            resize_corner2.attr("d","M0,0 h-15 v5 h20 v-20 h-5 Z");
+            resize_corner2.attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
       }
 
       resize_corner1.style("opacity", "0")
@@ -1619,6 +1619,46 @@
                     .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
       var drag_rect = null;
+
+      function comple_drag() {
+         drag_rect.style("cursor", "auto");
+
+         var oldx = Number(pthis.draw_g.attr("x")),
+         oldy = Number(pthis.draw_g.attr("y")),
+         newx = Number(drag_rect.attr("x")),
+         newy = Number(drag_rect.attr("y")),
+         newwidth = Number(drag_rect.attr("width")),
+         newheight = Number(drag_rect.attr("height"));
+
+         var change_size = (newwidth !== rect_width()) || (newheight !== rect_height());
+         var change_pos = (newx !== oldx) || (newy !== oldy);
+
+         pthis.draw_g.attr('x', newx).attr('y', newy)
+                     .attr("transform", "translate(" + newx + "," + newy + ")")
+                     .attr('width', newwidth).attr('height', newheight);
+
+         drag_rect.remove();
+         drag_rect = null;
+
+         resize_corner2.attr("transform", "translate(" + newwidth + "," + newheight + ")");
+
+         if (change_size || change_pos) {
+            if (change_size && ('resize' in callback)) callback.resize(newwidth, newheight);
+            if (change_pos && ('move' in callback)) callback.move(newx, newy, newx - oldxx, newy-oldy);
+
+            if (change_size || change_pos) {
+               if ('obj' in callback) {
+                  callback.obj.fX1NDC = newx / pthis.pad_width();
+                  callback.obj.fX2NDC = (newx + newwidth)  / pthis.pad_width();
+                  callback.obj.fY1NDC = 1 - (newy + newheight) / pthis.pad_height();
+                  callback.obj.fY2NDC = 1 - newy / pthis.pad_height();
+               }
+               if ('redraw' in callback) callback.redraw();
+            }
+         }
+
+         return change_size || change_pos;
+      }
 
       var drag_move = d3.behavior.drag().origin(Object)
          .on("dragstart",  function() {
@@ -1669,32 +1709,11 @@
 
                d3.event.sourceEvent.preventDefault();
 
-               drag_rect.style("cursor", "auto");
-
-               var x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y"));
-               var dx = x - Number(pthis.draw_g.attr("x")), dy = y - Number(pthis.draw_g.attr("y"));
-
-               drag_rect.remove();
-               drag_rect = null;
-
-               pthis.draw_g.attr("x", x).attr("y", y)
-                           .attr("transform", "translate(" + x + "," + y + ")");
-
-               resize_corner2.attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
-
-               if ('move' in callback) callback.move(x, y, dx, dy);
-               else if ('obj' in callback) {
-                  callback.obj.fX1NDC += dx / pthis.pad_width();
-                  callback.obj.fX2NDC += dx / pthis.pad_width();
-                  callback.obj.fY1NDC -= dy / pthis.pad_height();
-                  callback.obj.fY2NDC -= dy / pthis.pad_height();
-               }
-
-               if((dx==0) && (dy==0) && callback['ctxmenu'] &&
-                        ((new Date()).getTime() - drag_tm.getTime() > 600)) {
-                  var rrr = resize_corner2.node().getBoundingClientRect();
-                  pthis.ShowContextMenu('main', { clientX: rrr.left, clientY : rrr.top } );
-               }
+               if (comple_drag() === false)
+                  if(callback['ctxmenu'] && ((new Date()).getTime() - drag_tm.getTime() > 600)) {
+                     var rrr = resize_corner2.node().getBoundingClientRect();
+                     pthis.ShowContextMenu('main', { clientX: rrr.left, clientY : rrr.top } );
+                  }
             });
 
       var drag_resize = d3.behavior.drag().origin(Object)
@@ -1709,7 +1728,7 @@
            pad_h = pthis.pad_height();
            drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
                         .classed("zoom", true)
-                        .attr("x",  pthis.draw_g.attr("x"))
+                        .attr("x", pthis.draw_g.attr("x"))
                         .attr("y", pthis.draw_g.attr("y"))
                         .attr("width", rect_width())
                         .attr("height", rect_height())
@@ -1728,8 +1747,10 @@
             if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
 
             if (d3.select(this).classed('resize_corner1')) {
-               if (x+dx < 0) { acc_x += x+dx; w += x; x = 0; }
-
+               if (x+dx < 0) { acc_x += (x+dx); w += x; x = 0; } else
+               if (w-dx < 0) { acc_x -= (w-dx); x += w; w = 0; } else { x+=dx; w-=dx; }
+               if (y+dy < 0) { acc_y += (y+dy); h += y; y = 0; } else
+               if (h-dy < 0) { acc_y -= (h-dy); y += h; h = 0; } else { y+=dy; h-=dy; }
             } else {
                if (x+w+dx > pad_w) { acc_x += (x+w+dx-pad_w); w = pad_w-x; } else
                if (w+dx < 0) { acc_x += (w+dx); w = 0; } else w += dx;
@@ -1745,31 +1766,11 @@
 
             d3.event.sourceEvent.preventDefault();
 
-            drag_rect.style("cursor", "auto");
+            comple_drag();
 
-            var newx = Number(drag_rect.attr("x")),
-                newy = Number(drag_rect.attr("y")),
-                newwidth = Number(drag_rect.attr("width")),
-                newheight = Number(drag_rect.attr("height"));
-
-            pthis.draw_g.attr('width', newwidth).attr('height', newheight);
-
-            drag_rect.remove();
-            drag_rect = null;
-
-            resize_corner2.attr("transform", "translate(" + newwidth + "," + newheight + ")");
-
-            if ('resize' in callback) callback.resize(newwidth, newheight); else {
-                if ('obj' in callback) {
-                   callback.obj.fX2NDC = callback.obj.fX1NDC + newwidth  / pthis.pad_width();
-                   callback.obj.fY1NDC = callback.obj.fY2NDC - newheight / pthis.pad_height();
-                }
-                if ('redraw' in callback) callback.redraw();
-            }
          });
 
-      if ('only_resize' in callback) {
-      } else {
+      if (!('only_resize' in callback)) {
          this.draw_g.style("cursor", "move").call(drag_move);
       }
 
