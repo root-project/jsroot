@@ -2197,11 +2197,16 @@
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (obj === null) return this.DrawingReady();
 
+      var node = null;
+
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-
-         var node = JSROOT.Create("TEveGeoShapeExtract");
+         node = JSROOT.Create("TEveGeoShapeExtract");
          JSROOT.extend(node, { fTrans:null, fShape: obj, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
+      } else
+      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume'))
+         node = obj;
 
+      if (node !== null) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt);
