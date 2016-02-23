@@ -22,6 +22,10 @@
    }
 } (function(d3, JSROOT) {
 
+   JSROOT.ToolbarIcons.th2color = {
+            recs: [{x:0,y:256,w:13,h:39,f:'rgb(38,62,168)'},{x:13,y:371,w:39,h:39},{y:294,h:39},{y:256,h:39},{y:218,h:39},{x:51,y:410,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:90,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294},{y:256,h:39,f:'rgb(16,100,220)'},{y:218,h:39},{y:179,h:39,f:'rgb(22,82,205)'},{y:141,h:39},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:0,h:27},{x:128,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294,f:'rgb(20,129,214)'},{y:256,h:39,f:'rgb(9,157,204)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(20,129,214)'},{y:141,h:39,f:'rgb(16,100,220)'},{y:102,h:39,f:'rgb(22,82,205)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{y:0,h:27},{x:166,y:486,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(82,186,146)'},{y:256,h:39,f:'rgb(179,189,101)'},{y:218,h:39,f:'rgb(116,189,129)'},{y:179,h:39,f:'rgb(82,186,146)'},{y:141,h:39,f:'rgb(14,143,209)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:205,y:486,w:39,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(16,100,220)'},{y:333,h:39,f:'rgb(9,157,204)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(244,198,59)'},{y:218,h:39},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(13,167,195)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(22,82,205)'},{y:26,h:39,f:'rgb(38,62,168)'},{x:243,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(30,175,179)'},{y:294,f:'rgb(209,187,89)'},{y:256,h:39,f:'rgb(251,230,29)'},{y:218,h:39,f:'rgb(249,249,15)'},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(30,175,179)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:282,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(14,143,209)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(226,192,75)'},{y:218,h:39,f:'rgb(244,198,59)'},{y:179,h:39,f:'rgb(149,190,113)'},{y:141,h:39,f:'rgb(9,157,204)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:320,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(46,183,164)'},{y:256,h:39},{y:218,h:39,f:'rgb(82,186,146)'},{y:179,h:39,f:'rgb(9,157,204)'},{y:141,h:39,f:'rgb(20,129,214)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:358,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39},{y:294,f:'rgb(16,100,220)'},{y:256,h:39,f:'rgb(20,129,214)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(18,114,217)'},{y:141,h:39,f:'rgb(22,82,205)'},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:26,h:39},{x:397,y:448,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294,f:'rgb(22,82,205)'},{y:256,h:39},{y:218,h:39},{y:179,h:39,f:'rgb(38,62,168)'},{y:141,h:39},{y:102,h:39},{y:64},{y:26,h:39},{x:435,y:410,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:474,y:256,h:39},{y:179,h:39}]
+         };
+
    JSROOT.Painter.CreateDefaultPalette = function() {
 
       function HLStoRGB(h, l, s) {
@@ -1682,7 +1686,7 @@
                  .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
 
          /** Add palette axis title */
-         if ((axis.fTitle != "") && (typeof axis['fTextFont'] != 'undefined')) {
+         if ((axis.fTitle != "") && (typeof axis['fTextFont'] !== 'undefined')) {
             // offest in width of colz drawings
             var xoffset = axis['fTitleOffset'] * s_width;
             if ('getBoundingClientRect' in this.draw_g.node()) {
@@ -1840,22 +1844,34 @@
       } else {
          menu.add("Auto zoom-in", function() { this.AutoZoom(); });
          menu.add("Draw in 3D", function() { this.options.Lego = 1; this.RedrawPad(); });
-         menu.add("Toggle col", function() {
-            if (this.options.Color == 0)
-               this.options.Color = JSROOT.gStyle.DefaultCol;
-            else
-               this.options.Color = -this.options.Color;
-
-            if ((this.options.Color > 0) && (this.options.Zscale > 0))
-               this.DrawNewPalette(true);
-
-            this.RedrawPad();
-         });
+         menu.add("Toggle col", function() { this.ToggleColor(); });
          if (this.options.Color > 0)
             menu.add("Toggle colz", this.ToggleColz.bind(this));
       }
    }
 
+   JSROOT.TH2Painter.prototype.FillToolbar = function(buttons) {
+      JSROOT.THistPainter.prototype.FillToolbar.call(this, buttons);
+      var painter = this;
+      buttons.push({
+         name: 'ToggleCol',
+         title: 'Toggle color options',
+         icon: JSROOT.ToolbarIcons.th2color,
+         click: function() { painter.ToggleColor(); }
+      });
+   }
+
+   JSROOT.TH2Painter.prototype.ToggleColor = function() {
+      if (this.options.Color == 0)
+         this.options.Color = JSROOT.gStyle.DefaultCol;
+      else
+         this.options.Color = -this.options.Color;
+
+      if ((this.options.Color > 0) && (this.options.Zscale > 0))
+         this.DrawNewPalette(true);
+
+      this.RedrawPad();
+   }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
       if (('fFunctions' in this.histo) && (this.histo.fFunctions !== null))
@@ -2219,7 +2235,7 @@
       var left = 0, right = arr.length-2;
       while ((left < right) && (arr[left].cnt===0)) ++left;
       while ((left < right) && (arr[right].cnt===0)) --right;
-      if ((left==right) || (right-left < maxlen)) return;
+      if (right-left < maxlen) return;
 
       function RemoveNulls() {
          var j = right;
@@ -2304,7 +2320,7 @@
             yfactor = 0.5 / (this.maxbin - this.minbin);
          }
 
-      if ((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) {
+      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) || (this.options.Optimize > 10)) {
          // if there are many non-empty points, check if all of them are selected
          // probably we do not need to optimize axis
 
@@ -2338,8 +2354,8 @@
          }
       }
 
-      if ((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) {
-         var numx = 40, numy = 40;
+      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) || (this.options.Optimize > 10)) {
+         var numx = (this.options.Optimize > 10) ? 10 : 40, numy = numx;
 
          var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
          if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
@@ -2525,7 +2541,45 @@
       ctx.stroke();
    }
 
+   JSROOT.TH2Painter.prototype.MakeIcon = function() {
+      this.options.Optimize = 100;
+
+      var w = this.frame_width(), h = this.frame_height();
+
+      var bins = this.CreateDrawBins(w, h, 0, 0);
+
+      var prev = { x : -1, y : -1, width: 0, height: 0, fill:"" };
+      var res = "";
+      for (var i=0;i<bins.length;++i) {
+         var pnt = bins[i];
+
+         pnt.x *= 512/w;
+         pnt.width *= 512/w;
+         pnt.y *= 512/h;
+         pnt.height *= 512/h;
+
+         if (res.length == 0) res = "["; else res+=",";
+
+         var separ = "{";
+         if (pnt.x != prev.x) { res += separ + "x:" + Math.round(pnt.x); separ =","; }
+         if (pnt.y != prev.y) { res += separ + "y:" + Math.round(pnt.y); separ =","; }
+         if (pnt.width != prev.width) { res += separ + "w:" + Math.round(pnt.width); separ =","; }
+         if (pnt.height != prev.height) { res += separ + "h:" + Math.round(pnt.height); separ =","; }
+         if (pnt.fill != prev.fill) { res += separ + "f:'" + pnt.fill + "'"; separ =","; }
+         res += "}";
+
+         prev = pnt;
+      }
+
+      res += "]";
+
+      console.log('len = ',res.length);
+      console.log(res);
+   }
+
+
    JSROOT.TH2Painter.prototype.DrawBins = function() {
+      // this.MakeIcon();
 
       this.RecreateDrawG(false, ".main_layer");
 
