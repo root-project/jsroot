@@ -1594,14 +1594,17 @@
       }
 
       var resize_rect1 = this.draw_g.select('.resize_rect1');
-      if (resize_rect1.empty())
-         resize_rect1 = this.draw_g.append("rect").attr('class','resize_rect1');
+      if (resize_rect1.empty()) {
+         resize_rect1 = this.draw_g.append("path").attr('class','resize_rect1');
+         if (JSROOT.touches)
+            resize_rect1.attr("d","M0,0 h-20 v-20 h20 Z");
+         else
+            resize_rect1.attr("d","M0,0 h-15 v5 h20 v-20 h-5 Z");
+      }
+
       resize_rect1.style("opacity", "0")
                   .style("cursor", "se-resize")
-                  .attr("x", rect_width() - 20)
-                  .attr("y", rect_height() - 20)
-                  .attr("width", 20)
-                  .attr("height", 20);
+                  .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
       var drag_rect = null;
 
@@ -1711,8 +1714,8 @@
             if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
             if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
             if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
-            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w;} else
-            if (w+dx<0) { acc_x += (w+dx); w=0;} else w+=dx;
+            if (w+dx>pad_w) { acc_x += (w+dx-pad_w); w=pad_w; } else
+            if (w+dx<0) { acc_x += (w+dx); w=0; } else w+=dx;
             if (h+dy>pad_h) { acc_y += (h+dy-pad_h); h=pad_h; } else
             if (h+dy<0) { acc_y += (h+dy); h=0; } else h+=dy;
             drag_rect.attr("width", w).attr("height", h);
@@ -1733,8 +1736,7 @@
             drag_rect.remove();
             drag_rect = null;
 
-            resize_rect1.attr("x", newwidth - 20)
-                        .attr("y", newheight - 20);
+            resize_rect1.attr("transform", "translate(" + newwidth + "," + newheight + ")");
 
             if ('resize' in callback) callback.resize(newwidth, newheight); else {
                 if ('obj' in callback) {

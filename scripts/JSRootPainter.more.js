@@ -1923,7 +1923,6 @@
 
       if (pal.fX1NDC < frame_painter.fX2NDC) {
          frame_painter.fX2NDC = pal.fX1NDC - 0.01;
-         console.log('set frame 2 NDC ' + frame_painter.fX2NDC);
          frame_painter.Redraw();
       }
    }
