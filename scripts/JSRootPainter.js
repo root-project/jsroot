@@ -8603,6 +8603,7 @@
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", opt:"all;count;limit;maxlvl2;" });
    JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", opt: ";count;limit;maxlvl2"  });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });
+   JSROOT.addDrawFunc({ name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: "all" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true });
@@ -8700,14 +8701,16 @@
    }
 
    JSROOT.canDraw = function(classname) {
-      return JSROOT.getDrawOptions("ROOT." + classname) != null;
+      return JSROOT.getDrawOptions("ROOT." + classname) !== null;
    }
 
    /** @fn JSROOT.draw(divid, obj, opt)
     * Draw object in specified HTML element with given draw options  */
 
    JSROOT.draw = function(divid, obj, opt) {
-      if ((obj==null) || (typeof obj != 'object')) return null;
+      if ((obj===null) || (typeof obj !== 'object')) return null;
+
+      console.log('DRAW ' + obj._typename);
 
       if (opt == 'inspect')
          return JSROOT.Painter.drawInspector(divid, obj);

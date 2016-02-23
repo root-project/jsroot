@@ -1451,7 +1451,6 @@
             _transparent = true;
             _opacity = node.fRGBA[3];
          }
-         // var linecolor = new THREE.Color( node.fRGBALine[0], node.fRGBALine[1], node.fRGBALine[2] );
          prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -1459,14 +1458,16 @@
                           overdraw: 0. } );
       }
 
-      prop.matrix = new THREE.Matrix4().set(
-                           node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
-                           node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
-                           node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                        0,               0,                0, 1);
+      prop.matrix = new THREE.Matrix4();
 
-      // second - set position with proper sign
-      prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+      if (node.fTrans!==null) {
+         prop.matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                         node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                         node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                                      0,               0,                0, 1);
+         // second - set position with proper sign
+         prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+      }
       return prop;
    }
 
@@ -1818,14 +1819,20 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._camera.near = this._overall_size / 200;
+      this._camera.near = this._overall_size / 500;
       this._camera.far = this._overall_size * 500;
       this._camera.updateProjectionMatrix();
 
+//      if (this.options._yup)
+//         this._camera.position.set(midx-this._overall_size, midy+this._overall_size, midz-this._overall_size);
+//      else
+//         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
+
       if (this.options._yup)
-         this._camera.position.set(midx-this._overall_size, midy+this._overall_size, midz-this._overall_size);
-      else
-         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
+         this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+       else
+          this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
@@ -2185,6 +2192,27 @@
       return this.DrawGeometry(opt);
    }
 
+   JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
+      if (obj === null) return this.DrawingReady();
+
+      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+         console.log('Try to draw shape ' + obj._typename);
+
+         var node = JSROOT.Create("TEveGeoShapeExtract");
+         node.fTrans = null;
+         node.fShape = obj;
+         node.fRGBA = [ 0, 1, 0, 1];
+         node.fElements = null;
+         node.fRnrSelf = true;
+
+         JSROOT.extend(this, new JSROOT.TGeoPainter(node));
+         this.SetDivId(divid, 5);
+         return this.DrawGeometry(opt);
+      }
+
+      return this.DrawingReady();
+   }
+
    // ===================================================================================
 
    JSROOT.TAxis3DPainter = function( axis ) {
@@ -2328,6 +2356,53 @@
       return true; // hpainter.UpdateTreeNode(hitem);
    }
 
+   JSROOT.getGeoShapeIcon = function(shape) {
+      switch (shape._typename) {
+         case "TGeoArb8" : return "img_geoarb8"; break;
+         case "TGeoCone" : return "img_geocone"; break;
+         case "TGeoConeSeg" : return "img_geoconeseg"; break;
+         case "TGeoCompositeShape" : return "img_geocomposite"; break;
+         case "TGeoTube" : return "img_geotube"; break;
+         case "TGeoTubeSeg" : return "img_geotubeseg"; break;
+         case "TGeoPara" : return "img_geopara"; break;
+         case "TGeoParaboloid" : return "img_geoparab"; break;
+         case "TGeoPcon" : return "img_geopcon"; break;
+         case "TGeoPgon" : return "img_geopgon"; break;
+         case "TGeoShapeAssembly" : return "img_geoassembly"; break;
+         case "TGeoSphere" : return "img_geosphere"; break;
+         case "TGeoTorus" : return "img_geotorus"; break;
+         case "TGeoTrd1" : return "img_geotrd1"; break;
+         case "TGeoTrd2" : return "img_geotrd2"; break;
+         case "TGeoXtru" : return "img_geoxtru"; break;
+         case "TGeoTrap" : return "img_geotrap"; break;
+         case "TGeoGtra" : return "img_geogtra"; break;
+         case "TGeoEltu" : return "img_geoeltu"; break;
+         case "TGeoHype" : return "img_geohype"; break;
+         case "TGeoCtub" : return "img_geoctub"; break;
+      }
+      return "img_geotube";
+   }
+
+   JSROOT.expandGeoShape = function(parent, shape, itemname) {
+      var item = {
+            _kind : "ROOT." + shape._typename,
+            _name : itemname,
+            _title : shape._typename,
+            _icon : JSROOT.getGeoShapeIcon(shape),
+            _parent : parent,
+            _shape : shape,
+            _get : function(item, itemname, callback) {
+               if ((item!==null) && ('_shape' in item))
+                  return JSROOT.CallBack(callback, item, item._shape);
+               JSROOT.CallBack(callback, item, null);
+            }
+         };
+
+      if (!('_childs' in parent)) parent['_childs'] = [];
+      parent._childs.push(item);
+      return true;
+   }
+
    JSROOT.expandGeoVolume = function(parent, volume, arg) {
 
       if ((parent == null) || (volume==null)) return false;
@@ -2338,55 +2413,42 @@
          _title : volume.fTitle,
          _parent : parent,
          _volume : volume, // keep direct reference
-         _more : (volume['fNodes'] !== undefined) && (volume['fNodes'] !== null),
+         _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
          _menu : JSROOT.provideGeoMenu,
          _icon_click : JSROOT.geoIconClick,
          _get : function(item, itemname, callback) {
-            if ((item!=null) && (item._volume != null))
+            if ((item!=null) && ('_volume' in item))
                return JSROOT.CallBack(callback, item, item._volume);
 
             JSROOT.CallBack(callback, item, null);
-         },
+         }
       };
 
-      if (item['_more'])
+      if (item['_more']) {
         item['_expand'] = function(node, obj) {
-           var subnodes = obj['fNodes']['arr'];
+           var subnodes = obj.fNodes.arr;
            for (var i in subnodes)
-              JSROOT.expandGeoVolume(node, subnodes[i]['fVolume']);
+              JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
            return true;
         }
+      } else
+      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape")) {
+         item['_more'] = true;
+         item['_expand'] = function(node, obj) {
+            JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
+            JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
+            return true;
+         }
+      }
 
       if (item._title == "")
          if (volume._typename != "TGeoVolume") item._title = volume._typename;
 
-      if (volume['fShape']!=null) {
+      if (volume.fShape !== null) {
          if (item._title == "")
-            item._title = volume['fShape']._typename;
+            item._title = volume.fShape._typename;
 
-         switch (volume['fShape']._typename) {
-            case "TGeoArb8" : item._icon = "img_geoarb8"; break;
-            case "TGeoCone" : item._icon = "img_geocone"; break;
-            case "TGeoConeSeg" : item._icon = "img_geoconeseg"; break;
-            case "TGeoCompositeShape" : item._icon = "img_geocomposite"; break;
-            case "TGeoTube" : item._icon = "img_geotube"; break;
-            case "TGeoTubeSeg" : item._icon = "img_geotubeseg"; break;
-            case "TGeoPara" : item._icon = "img_geopara"; break;
-            case "TGeoParaboloid" : item._icon = "img_geoparab"; break;
-            case "TGeoPcon" : item._icon = "img_geopcon"; break;
-            case "TGeoPgon" : item._icon = "img_geopgon"; break;
-            case "TGeoShapeAssembly" : item._icon = "img_geoassembly"; break;
-            case "TGeoSphere" : item._icon = "img_geosphere"; break;
-            case "TGeoTorus" : item._icon = "img_geotorus"; break;
-            case "TGeoTrd1" : item._icon = "img_geotrd1"; break;
-            case "TGeoTrd2" : item._icon = "img_geotrd2"; break;
-            case "TGeoXtru" : item._icon = "img_geoxtru"; break;
-            case "TGeoTrap" : item._icon = "img_geotrap"; break;
-            case "TGeoGtra" : item._icon = "img_geogtra"; break;
-            case "TGeoEltu" : item._icon = "img_geoeltu"; break;
-            case "TGeoHype" : item._icon = "img_geohype"; break;
-            case "TGeoCtub" : item._icon = "img_geoctub"; break;
-         }
+         item._icon = JSROOT.getGeoShapeIcon(volume.fShape);
       }
 
       if (!('_childs' in parent)) parent['_childs'] = [];
