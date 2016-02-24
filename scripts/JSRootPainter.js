@@ -168,7 +168,7 @@
       var inter = JSROOT.GetUrlOption("interactive", url);
       if ((inter=="") || (inter=="1")) inter = "11111"; else
       if (inter=="0") inter = "00000";
-      if ((inter!=null) && (inter.length==5)) {
+      if ((inter!==null) && (inter.length==5)) {
          JSROOT.gStyle.Tooltip =     parseInt(inter.charAt(0));
          JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0');
          JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
@@ -2121,6 +2121,7 @@
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
       this.tframe = tframe;
+      this.listeners = null;
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2214,6 +2215,8 @@
 
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
+
+         this.listeners = null; // clear list
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
@@ -2250,13 +2253,33 @@
       this.DrawFrameSvg();
    }
 
+   JSROOT.TFramePainter.prototype.HideActiveTooltips = function() {
+      if (this.listeners!==null)
+         this.listeners.forEach(function(obj) { obj.HideToolTip(); });
+   }
+
    JSROOT.TFramePainter.prototype.InstallEventListener = function(listener) {
       if (this.draw_g.empty() || (listener === undefined)) return;
+
+      if (this.listeners!==null) {
+         if (this.listeners.indexOf(listener)<0) this.listeners.push(listener);
+         return;
+      }
+
+      this.listeners = [ listener ];
 
       var top_rect = this.draw_g.select("rect");
       var main_svg = this.draw_g.select(".main_layer");
 
+      var painter = this;
+
+      function HideEvent() {
+         painter.HideActiveTooltips();
+      };
+
       function ProcessEvent() {
+         if (JSROOT.gStyle.Tooltip <= 0) return HideEvent();
+
          var evnt = d3.event;
 
          var point = main_svg.node().createSVGPoint();
@@ -2268,20 +2291,21 @@
 
          var p = point.matrixTransform(inverse);
 
-         listener.ShowToolTip(p.x, p.y);
+         painter.listeners.forEach(function(obj) { obj.ShowToolTip(p.x, p.y); });
       };
+
 
       main_svg
         .attr("title","-")
         .on('mousemove', ProcessEvent)
-        .on('mouseleave', function() { listener.HideToolTip(); });
+        .on('mouseleave', HideEvent);
 
 
       top_rect
         .attr("title","-")
         .style("pointer-events","visibleFill")
         .on('mousemove', ProcessEvent)
-        .on('mouseleave', function() { listener.HideToolTip(); });
+        .on('mouseleave', HideEvent);
    }
 
    JSROOT.Painter.drawFrame = function(divid, obj) {
@@ -5443,10 +5467,17 @@
       this.zoom_rect = this.svg_frame()
                         .append("rect")
                         .attr("class", "zoom")
-                        .attr("id", "zoomRect");
+                        .attr("id", "zoomRect")
+                        .attr("pointer-events","none");
 
       d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
                        .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
+
+      if (JSROOT.gStyle.Tooltip > 0) {
+         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
+         this.frame_painter().HideActiveTooltips();
+         this.disable_tooltip = true;
+      }
 
       d3.event.stopPropagation();
    }
@@ -5471,10 +5502,11 @@
                      .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
                      .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
 
-      if ((JSROOT.gStyle.Tooltip > 0) && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
-         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.disable_tooltip = true;
-      }
+//      if ((JSROOT.gStyle.Tooltip > 0) && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
+//         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
+//         this.frame_painter().HideActiveTooltips();
+//         this.disable_tooltip = true;
+//      }
    }
 
    JSROOT.THistPainter.prototype.endRectSel = function() {
@@ -5638,6 +5670,7 @@
       if ((JSROOT.gStyle.Tooltip>0) && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
                 || (this.zoom_origin[1] - this.zoom_curr[1] > 10))) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
+         this.frame_painter().HideActiveTooltips();
          this.disable_tooltip = true;
       }
 
@@ -6445,31 +6478,26 @@
                .attr("d", res /*line(draw_bins)*/)
                .call(this.attline.func)
                .style("fill", "none");
-
-         console.log('DRAW LINE ' + res.length + '  ttt = ' + JSROOT.gStyle.Tooltip );
-
       }
 
       if (JSROOT.gStyle.Tooltip === 2)
          this.InstallLineTooltip(draw_bins);
       else
       if (JSROOT.gStyle.Tooltip === 1)
-         this.draw_g.selectAll("line")
-                    .data(draw_bins).enter()
-                    .append("svg:line")
-                    .attr("x1", function(d) { return (d.x + d.width/2).toFixed(1); })
-                    .attr("y1", function(d) { return Math.max(0, d.y).toFixed(1); })
-                    .attr("x2", function(d) { return (d.x + d.width/2).toFixed(1); })
-                    .attr("y2", function(d) { return height.toFixed(1); })
-                    .style("opacity", "0")
-                    .style("stroke", "#4572A7")
-                    .style("stroke-width", function(d) { return d.width.toFixed(1); })
+         this.draw_g.selectAll("rect")
+                    .data(draw_bins.filter(function(d) { return d.y < height - 0.1; }))
+                    .enter().append("svg:rect")
+                    .attr("class", "h1bin")
+                    .attr("x", function(d) { return d.x.toFixed(1); })
+                    .attr("y", function(d) { return d.y.toFixed(1); })
+                    .attr("width", function(d) { return d.width.toFixed(1); })
+                    .attr("height", function(d) { return (height - d.y).toFixed(1); })
                     .on('mouseover', function() {
-                        if (d3.select(this).style("opacity")=="0")
+                        if ((JSROOT.gStyle.Tooltip>0) && (d3.select(this).style("opacity")!="0.3"))
                           d3.select(this).transition().duration(100).style("opacity", "0.3");
                      })
                      .on('mouseout', function() {
-                        d3.select(this).transition().duration(100).style("opacity", "0");
+                        d3.select(this).transition().duration(100).style("opacity", "");
                      })
                      .append("svg:title").text(function(d) { return d.tip; });
    }
@@ -6478,17 +6506,21 @@
    JSROOT.TH1Painter.prototype.InstallLineTooltip = function(bins) {
       // method to show tool tip ourself, not involving special SVG elements, which could be very costly
 
-      console.log('InstallLineTooltip ' + bins.length);
-
       this.tooltip_bins = bins; // keep bins to show tooltips, later we could use histogram itself
 
       this.frame_painter().InstallEventListener(this);
    }
 
    JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
+
       var l = 0, r = this.tooltip_bins.length -1, m;
 
       if ((x < this.tooltip_bins[l].x) || (x > this.tooltip_bins[r].x)) return this.HideToolTip();
+
+      if (JSROOT.gStyle.Tooltip <= 0) {
+         console.log('STRANGE!!!');
+         return this.HideToolTip();
+      }
 
       while (l < r-1) {
          m = Math.round((l+r)/2);
@@ -6505,26 +6537,36 @@
 
       var pnt = this.tooltip_bins[l];
 
-      var ttrect = this.draw_g.select(".tooltip_rect");
-      if (ttrect.empty())
-         ttrect = this.draw_g.append("svg:rect").attr("class","tooltip_rect");
+      var height = this.frame_height();
 
-      ttrect.style("fill", "#4572A7")
-            .style("stroke", "#4572A7")
-            .style("opacity", "0.3")
-            .attr("x", pnt.x.toFixed(1))
-            .attr("y", pnt.y.toFixed(1))
-            .attr("width", pnt.width.toFixed(1))
-            .attr("height", (this.frame_height() - pnt.y).toFixed(1));
+      var show = pnt.y < height - 0.1;
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (pnt.y > height - 0.1) {
+         ttrect.remove(); // do not highlight for minimal bins
+      } else {
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:rect").attr("class","h1bin tooltip_bin");
+
+         if (ttrect.property("current_bin") !== l)
+            ttrect.style("opacity", "0.3")
+                  .style("pointer-events","none")
+                  .attr("x", pnt.x.toFixed(1))
+                  .attr("y", pnt.y.toFixed(1))
+                  .attr("width", pnt.width.toFixed(1))
+                  .attr("height", (height - pnt.y).toFixed(1))
+                  .attr("title", pnt.tip)
+                  .property("current_bin", l);
+      }
 
       JSROOT.progress("  SVG " + x.toFixed(1) + ',' + y.toFixed(1) + ' lr ' + l + ','+r);
-
    }
 
    JSROOT.TH1Painter.prototype.HideToolTip = function() {
       JSROOT.progress();
 
-      this.draw_g.select(".tooltip_line").remove();
+      this.draw_g.select(".tooltip_bin").remove();
    }
 
 

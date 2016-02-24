@@ -341,6 +341,12 @@
     shape-rendering: crispEdges;
 }
 
+.jsroot rect.h1bin {
+    stroke: #4572A7;
+    fill: #4572A7;
+    opacity: 0;
+}
+
 .jsroot rect.zoom {
     stroke: steelblue;
     fill-opacity: 0.1;
