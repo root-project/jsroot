@@ -95,8 +95,8 @@
 
          document.body.onclick = function(e) { menu.remove(); }
 
-         this.element = $(document.body).append('<ul class="jsroot ctxmenu">' + this.code + '</ul>')
-                                        .find('.ctxmenu');
+         this.element = $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>')
+                                        .find('.jsroot_ctxmenu');
 
          this.element
             .attr('id', menuname)

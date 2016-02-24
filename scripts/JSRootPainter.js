@@ -169,12 +169,15 @@
       if ((inter=="") || (inter=="1")) inter = "11111"; else
       if (inter=="0") inter = "00000";
       if ((inter!=null) && (inter.length==5)) {
-         JSROOT.gStyle.Tooltip =     (inter.charAt(0) != '0');
+         JSROOT.gStyle.Tooltip =     parseInt(inter.charAt(0));
          JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0');
          JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
          JSROOT.gStyle.MoveResize =  (inter.charAt(3) != '0');
          JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
       }
+
+      var tt = JSROOT.GetUrlOption("tooltip", url);
+      if (tt !== null) JSROOT.gStyle.Tooltip = parseInt(tt);
 
       var col = JSROOT.GetUrlOption("col", url);
       if (col!==null) {
@@ -1156,6 +1159,10 @@
    /** This is SVG element with current frame */
    JSROOT.TObjectPainter.prototype.svg_frame = function() {
       return this.svg_pad().select(".root_frame");
+   }
+
+   JSROOT.TObjectPainter.prototype.frame_painter = function() {
+      return this.svg_frame().property('frame_painter');
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function() {
@@ -2187,35 +2194,35 @@
       if (framecolor.color == 'none') framecolor.color = 'white';
 
       // this is svg:g object - container for every other items belonging to frame
-      var frame_g = this.svg_pad().select(".root_frame");
+      this.draw_g = this.svg_pad().select(".root_frame");
 
       var top_rect = null, main_svg = null;
 
-      if (frame_g.empty()) {
-         frame_g = this.svg_pad().select(".frame_layer").append("svg:g").attr("class", "root_frame");
+      if (this.draw_g.empty()) {
+         this.draw_g = this.svg_pad().select(".frame_layer").append("svg:g").attr("class", "root_frame");
 
-         top_rect = frame_g.append("svg:rect");
+         top_rect = this.draw_g.append("svg:rect");
 
          // append for the moment three layers - for drawing and axis
-         frame_g.append('svg:g').attr('class','grid_layer');
+         this.draw_g.append('svg:g').attr('class','grid_layer');
 
-         main_svg = frame_g.append('svg:svg')
+         main_svg = this.draw_g.append('svg:svg')
                            .attr('class','main_layer')
                            .attr("x", 0)
                            .attr("y", 0)
                            .attr('overflow', 'hidden');
 
-         frame_g.append('svg:g').attr('class','axis_layer');
-         frame_g.append('svg:g').attr('class','upper_layer');
+         this.draw_g.append('svg:g').attr('class','axis_layer');
+         this.draw_g.append('svg:g').attr('class','upper_layer');
       } else {
-         top_rect = frame_g.select("rect");
-         main_svg = frame_g.select(".main_layer");
+         top_rect = this.draw_g.select("rect");
+         main_svg = this.draw_g.select(".main_layer");
       }
 
       // simple way to access painter via frame container
-      frame_g.property('frame_painter', this);
+      this.draw_g.property('frame_painter', this);
 
-      frame_g.attr("x", lm)
+      this.draw_g.attr("x", lm)
              .attr("y", tm)
              .attr("width", w)
              .attr("height", h)
@@ -2236,13 +2243,45 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      this.draw_g = frame_g;
-
       this.AddDrag({ obj: this, only_resize:true, redraw: this.RedrawPad.bind(this) });
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
       this.DrawFrameSvg();
+   }
+
+   JSROOT.TFramePainter.prototype.InstallEventListener = function(listener) {
+      if (this.draw_g.empty() || (listener === undefined)) return;
+
+      var top_rect = this.draw_g.select("rect");
+      var main_svg = this.draw_g.select(".main_layer");
+
+      function ProcessEvent() {
+         var evnt = d3.event;
+
+         var point = main_svg.node().createSVGPoint();
+
+         point.x = evnt.clientX;
+         point.y = evnt.clientY;
+         var ctm = top_rect.node().getScreenCTM();
+         var inverse = ctm.inverse();
+
+         var p = point.matrixTransform(inverse);
+
+         listener.ShowToolTip(p.x, p.y);
+      };
+
+      main_svg
+        .attr("title","-")
+        .on('mousemove', ProcessEvent)
+        .on('mouseleave', function() { listener.HideToolTip(); });
+
+
+      top_rect
+        .attr("title","-")
+        .style("pointer-events","visibleFill")
+        .on('mousemove', ProcessEvent)
+        .on('mouseleave', function() { listener.HideToolTip(); });
    }
 
    JSROOT.Painter.drawFrame = function(divid, obj) {
@@ -2564,7 +2603,7 @@
 
       if (this.optionBar) {
          var nodes = this.DrawBars();
-         if (JSROOT.gStyle.Tooltip)
+         if (JSROOT.gStyle.Tooltip > 0)
             nodes.append("svg:title").text(TooltipText);
       }
 
@@ -2600,7 +2639,7 @@
                .call(this.fillatt.func);
 
          // do not add tooltip for line, when we wants to add markers
-         if (JSROOT.gStyle.Tooltip && (this.optionMark==0))
+         if ((JSROOT.gStyle.Tooltip>0) && (this.optionMark==0))
             this.draw_g.selectAll("draw_line")
                        .data(drawbins).enter()
                        .append("svg:circle")
@@ -2662,7 +2701,7 @@
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
-      if (JSROOT.gStyle.Tooltip && nodes)
+      if ((JSROOT.gStyle.Tooltip>0) && nodes)
          nodes.append("svg:title").text(TooltipText);
 
       if (this.optionRect) {
@@ -5097,8 +5136,8 @@
          }
 
          if (shrink != 0) {
-            this.svg_frame().property('frame_painter').Shrink(shrink, 0);
-            this.svg_frame().property('frame_painter').Redraw();
+            this.frame_painter().Shrink(shrink, 0);
+            this.frame_painter().Redraw();
             this.CreateXY();
             this.DrawAxes(true);
          }
@@ -5353,7 +5392,7 @@
       if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
       if (this.disable_tooltip) {
-         JSROOT.gStyle.Tooltip = true;
+         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.disable_tooltip = false;
       }
    }
@@ -5432,8 +5471,8 @@
                      .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
                      .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
 
-      if (JSROOT.gStyle.Tooltip && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
-         JSROOT.gStyle.Tooltip = false;
+      if ((JSROOT.gStyle.Tooltip > 0) && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
+         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.disable_tooltip = true;
       }
    }
@@ -5596,9 +5635,9 @@
                      .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
                      .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
 
-      if (JSROOT.gStyle.Tooltip && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+      if ((JSROOT.gStyle.Tooltip>0) && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
                 || (this.zoom_origin[1] - this.zoom_curr[1] > 10))) {
-         JSROOT.gStyle.Tooltip = false;
+         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.disable_tooltip = true;
       }
 
@@ -5812,8 +5851,8 @@
          menu.add("Unzoom Z", function() { this.Unzoom(false, false, true); });
       menu.add("Unzoom", function() { this.Unzoom(true, true, true); });
 
-      menu.addchk(JSROOT.gStyle.Tooltip, "Show tooltips", function() {
-         JSROOT.gStyle.Tooltip = !JSROOT.gStyle.Tooltip;
+      menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
+         JSROOT.gStyle.Tooltip = JSROOT.gStyle.Tooltip == 0 ? 1 : -JSROOT.gStyle.Tooltip;
          this.RedrawPad();
       });
 
@@ -6263,7 +6302,7 @@
                      .append("svg:g")
                      .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")";});
 
-      if (JSROOT.gStyle.Tooltip)
+      if (JSROOT.gStyle.Tooltip > 0)
          nodes.append("svg:title").text(function(d) { return d.tip; });
 
       if (this.options.Error == 12) {
@@ -6282,7 +6321,7 @@
             .style("pointer-events","visibleFill") // even when fill attribute not specified, get mouse events
             .property("fill0", this.fill.color) // remember color
             .on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip)
+               if (JSROOT.gStyle.Tooltip>0)
                  d3.select(this).transition().duration(100).style("fill", "grey");
             })
             .on('mouseout', function() {
@@ -6374,10 +6413,10 @@
                     .call(this.fill.func);
       } else {
 
-         var line = d3.svg.line()
-                          .x(function(d) { return d.x.toFixed(1); })
-                          .y(function(d) { return d.y.toFixed(1); })
-                          .interpolate("step-after");
+         //var line = d3.svg.line()
+         //                 .x(function(d) { return d.x.toFixed(1); })
+         //                 .y(function(d) { return d.y.toFixed(1); })
+         //                 .interpolate("step-after");
 
          // use not d3.svg.line, but own method to minimize produced path
          // instead of absolute position use difference
@@ -6390,12 +6429,13 @@
 
          var currx = draw_bins[0].x.toFixed(1), curry = draw_bins[0].y.toFixed(1);
          var res = "M"+currx+","+curry;
-         for (var n=1;n<draw_bins.length;n++) {
-            var pnt = draw_bins[n], nx = Number(currx), ny = Number(curry);
-            var dx = (pnt.x - nx).toFixed(1);
-            var dy = (pnt.y - ny).toFixed(1);
-            if (dx!=="0.0") res+="h"+short_value(dx);
-            if (dy!=="0.0") res+="v"+short_value(dy);
+         for (var n=1;n<draw_bins.length;++n) {
+            var nx = Number(currx),
+                ny = Number(curry);
+            var dx = (draw_bins[n].x - nx).toFixed(1),
+                dy = (draw_bins[n].y - ny).toFixed(1);
+            if (dx!=="0.0") res += "h"+short_value(dx);
+            if (dy!=="0.0") res += "v"+short_value(dy);
             currx = (nx + Number(dx)).toFixed(1);
             curry = (ny + Number(dy)).toFixed(1);
          }
@@ -6405,10 +6445,15 @@
                .attr("d", res /*line(draw_bins)*/)
                .call(this.attline.func)
                .style("fill", "none");
+
+         console.log('DRAW LINE ' + res.length + '  ttt = ' + JSROOT.gStyle.Tooltip );
+
       }
 
-      if (JSROOT.gStyle.Tooltip) {
-         // TODO: limit number of tooltips by number of visible pixels
+      if (JSROOT.gStyle.Tooltip === 2)
+         this.InstallLineTooltip(draw_bins);
+      else
+      if (JSROOT.gStyle.Tooltip === 1)
          this.draw_g.selectAll("line")
                     .data(draw_bins).enter()
                     .append("svg:line")
@@ -6416,7 +6461,7 @@
                     .attr("y1", function(d) { return Math.max(0, d.y).toFixed(1); })
                     .attr("x2", function(d) { return (d.x + d.width/2).toFixed(1); })
                     .attr("y2", function(d) { return height.toFixed(1); })
-                    .style("opacity", 0)
+                    .style("opacity", "0")
                     .style("stroke", "#4572A7")
                     .style("stroke-width", function(d) { return d.width.toFixed(1); })
                     .on('mouseover', function() {
@@ -6427,8 +6472,61 @@
                         d3.select(this).transition().duration(100).style("opacity", "0");
                      })
                      .append("svg:title").text(function(d) { return d.tip; });
-      }
    }
+
+
+   JSROOT.TH1Painter.prototype.InstallLineTooltip = function(bins) {
+      // method to show tool tip ourself, not involving special SVG elements, which could be very costly
+
+      console.log('InstallLineTooltip ' + bins.length);
+
+      this.tooltip_bins = bins; // keep bins to show tooltips, later we could use histogram itself
+
+      this.frame_painter().InstallEventListener(this);
+   }
+
+   JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
+      var l = 0, r = this.tooltip_bins.length -1, m;
+
+      if ((x < this.tooltip_bins[l].x) || (x > this.tooltip_bins[r].x)) return this.HideToolTip();
+
+      while (l < r-1) {
+         m = Math.round((l+r)/2);
+         var mx = this.tooltip_bins[m].x;
+         if (mx < x - 0.5) { l = m; continue; }
+         if (mx > x + 0.5) { r = m; continue; }
+
+         // we hit interval, check if many points has closer interval
+         l = r = m;
+         while ((l>0) && (this.tooltip_bins[l-1].x > x-0.5)) --l;
+         while ((r< this.tooltip_bins.length-1) && (this.tooltip_bins[r+1].x < x+0.5)) ++r;
+         break;
+      }
+
+      var pnt = this.tooltip_bins[l];
+
+      var ttrect = this.draw_g.select(".tooltip_rect");
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:rect").attr("class","tooltip_rect");
+
+      ttrect.style("fill", "#4572A7")
+            .style("stroke", "#4572A7")
+            .style("opacity", "0.3")
+            .attr("x", pnt.x.toFixed(1))
+            .attr("y", pnt.y.toFixed(1))
+            .attr("width", pnt.width.toFixed(1))
+            .attr("height", (this.frame_height() - pnt.y).toFixed(1));
+
+      JSROOT.progress("  SVG " + x.toFixed(1) + ',' + y.toFixed(1) + ' lr ' + l + ','+r);
+
+   }
+
+   JSROOT.TH1Painter.prototype.HideToolTip = function() {
+      JSROOT.progress();
+
+      this.draw_g.select(".tooltip_line").remove();
+   }
+
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);

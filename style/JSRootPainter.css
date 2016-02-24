@@ -355,7 +355,7 @@
   context menu
   --------------------------------------------------*/
 
-.jsroot .ctxmenu {
+.jsroot_ctxmenu {
     position: absolute;
     min-width: 64px;
     height: auto;

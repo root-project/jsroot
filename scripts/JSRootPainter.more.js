@@ -935,7 +935,7 @@
                    .call(fill.func);
 
          // add tooltips
-         if (JSROOT.gStyle.Tooltip)
+         if (JSROOT.gStyle.Tooltip > 0)
             this.draw_g.selectAll()
                       .data(this.bins).enter()
                       .append("svg:circle")
@@ -1696,7 +1696,7 @@
                           .style("fill", col)
                           .style("stroke", col);
 
-               if (JSROOT.gStyle.Tooltip)
+               if (JSROOT.gStyle.Tooltip > 0)
                   r.on('mouseover', function() {
                      d3.select(this).transition().duration(100).style("stroke", "black").style("stroke-width", "2");
                   }).on('mouseout', function() {
@@ -1951,7 +1951,7 @@
 
       if ((pal !== null) && !force_resize) return;
 
-      var frame_painter = this.svg_frame().property('frame_painter');
+      var frame_painter = this.frame_painter();
 
       if (pal === null) {
          pal = JSROOT.Create('TPaletteAxis');
@@ -2651,7 +2651,7 @@
       var normal_coordinates = (this.options.Color > 0) || draw_markers;
 
       var tipkind = 0;
-      if (JSROOT.gStyle.Tooltip) tipkind = draw_markers ? 2 : 1;
+      if (JSROOT.gStyle.Tooltip > 0) tipkind = draw_markers ? 2 : 1;
 
       var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
 
@@ -2667,7 +2667,7 @@
                   .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
                   .call(marker.func);
 
-         if (JSROOT.gStyle.Tooltip)
+         if (JSROOT.gStyle.Tooltip > 0)
             markers.append("svg:title").text(function(d) { return d.tip; });
       } else {
 
@@ -2685,9 +2685,9 @@
                 this['f1'] = d.tipcolor;
                 return d.fill;
              })
-             .filter(function() { return JSROOT.gStyle.Tooltip ? this : null } )
+             .filter(function() { return JSROOT.gStyle.Tooltip > 0 ? this : null } )
              .on('mouseover', function() {
-                if (JSROOT.gStyle.Tooltip)
+                if (JSROOT.gStyle.Tooltip > 0)
                    d3.select(this).transition().duration(100).style("fill", this['f1']);
              })
              .on('mouseout', function() {

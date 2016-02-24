@@ -1229,7 +1229,7 @@
       function findIntersection(mouse) {
          // find intersections
 
-         // if (!JSROOT.gStyle.Tooltip) return tooltip.hide();
+         // if (JSROOT.gStyle.Tooltip<=0) return tooltip.hide();
 
          raycaster.setFromCamera( mouse, painter._camera );
          var intersects = raycaster.intersectObjects(painter._scene.children, true);

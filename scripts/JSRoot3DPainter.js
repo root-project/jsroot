@@ -63,7 +63,7 @@
             this.tt.style.left = (l + 3) + 'px';
          },
          show : function(v) {
-            if (!JSROOT.gStyle.Tooltip) return;
+            if (JSROOT.gStyle.Tooltip <= 0) return;
             if (this.tt === null) {
                this.tt = document.createElement('div');
                this.tt.setAttribute('class', 'jsroot');
@@ -100,7 +100,7 @@
       function findIntersection(mouse) {
          // find intersections
 
-         if (!JSROOT.gStyle.Tooltip) return tooltip.hide();
+         if (JSROOT.gStyle.Tooltip <= 0) return tooltip.hide();
 
          raycaster.setFromCamera( mouse, painter.camera );
          var intersects = raycaster.intersectObjects(painter.scene.children, true);
@@ -575,7 +575,7 @@
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
 
-      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip ? 1 : 0));
+      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip>0 ? 1 : 0));
 
       // create the bin cubes
       var fillcolor = new THREE.Color(0xDDDDDD);
@@ -595,7 +595,7 @@
          bin.position.set(this.tx(hh.x), this.ty(hh.y), wei / 2);
          bin.scale.set(1,1,wei);
 
-         if (JSROOT.gStyle.Tooltip && ('tip' in hh))
+         if ((JSROOT.gStyle.Tooltip > 0) && ('tip' in hh))
             bin.name = hh.tip.replace(/(?:\r\n|\r|\n)/g, '<br/>');
          this.toplevel.add(bin);
 
@@ -851,7 +851,7 @@
                      n : bin_content
                   };
 
-               if (JSROOT.gStyle.Tooltip)
+               if (JSROOT.gStyle.Tooltip > 0)
                   bin.tip = name + 'x=' + JSROOT.FFormat(bin.x,"6.4g") + ' bin=' + (i+1) + '<br/>'
                                  + 'y=' + JSROOT.FFormat(bin.y,"6.4g") + ' bin=' + (j+1) + '<br/>'
                                  + 'z=' + JSROOT.FFormat(bin.z,"6.4g") + ' bin=' + (k+1) + '<br/>'
