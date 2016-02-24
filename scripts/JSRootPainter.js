@@ -2296,13 +2296,13 @@
 
 
       main_svg
-        .attr("title","-")
+        .attr("title","")
         .on('mousemove', ProcessEvent)
         .on('mouseleave', HideEvent);
 
 
       top_rect
-        .attr("title","-")
+        .attr("title","")
         .style("pointer-events","visibleFill")
         .on('mousemove', ProcessEvent)
         .on('mouseleave', HideEvent);
@@ -6518,7 +6518,6 @@
       if ((x < this.tooltip_bins[l].x) || (x > this.tooltip_bins[r].x)) return this.HideToolTip();
 
       if (JSROOT.gStyle.Tooltip <= 0) {
-         console.log('STRANGE!!!');
          return this.HideToolTip();
       }
 
@@ -6556,7 +6555,6 @@
                   .attr("y", pnt.y.toFixed(1))
                   .attr("width", pnt.width.toFixed(1))
                   .attr("height", (height - pnt.y).toFixed(1))
-                  .attr("title", pnt.tip)
                   .property("current_bin", l);
       }
 
