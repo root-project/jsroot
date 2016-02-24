@@ -6379,27 +6379,48 @@
                           .y(function(d) { return d.y.toFixed(1); })
                           .interpolate("step-after");
 
+         // use not d3.svg.line, but own method to minimize produced path
+         // instead of absolute position use difference
+
+         function short_value(v) {
+            if (v.indexOf("0.") === 0) return v.substr(1);
+            if (v.indexOf("-0.") === 0) return "-"+v.substr(2);
+            return v;
+         }
+
+         var currx = draw_bins[0].x.toFixed(1), curry = draw_bins[0].y.toFixed(1);
+         var res = "M"+currx+","+curry;
+         for (var n=1;n<draw_bins.length;n++) {
+            var pnt = draw_bins[n], nx = Number(currx), ny = Number(curry);
+            var dx = (pnt.x - nx).toFixed(1);
+            var dy = (pnt.y - ny).toFixed(1);
+            if (dx!=="0.0") res+="h"+short_value(dx);
+            if (dy!=="0.0") res+="v"+short_value(dy);
+            currx = (nx + Number(dx)).toFixed(1);
+            curry = (ny + Number(dy)).toFixed(1);
+         }
+
          this.draw_g
                .append("svg:path")
-               .attr("d", line(draw_bins))
+               .attr("d", res /*line(draw_bins)*/)
                .call(this.attline.func)
                .style("fill", "none");
       }
 
       if (JSROOT.gStyle.Tooltip) {
          // TODO: limit number of tooltips by number of visible pixels
-         this.draw_g.selectAll("selections")
+         this.draw_g.selectAll("line")
                     .data(draw_bins).enter()
                     .append("svg:line")
-                    .attr("x1", function(d) { return d.x + d.width / 2; })
-                    .attr("y1", function(d) { return Math.max(0, d.y); })
-                    .attr("x2", function(d) { return d.x + d.width / 2; })
-                    .attr("y2", function(d) { return height; })
+                    .attr("x1", function(d) { return (d.x + d.width/2).toFixed(1); })
+                    .attr("y1", function(d) { return Math.max(0, d.y).toFixed(1); })
+                    .attr("x2", function(d) { return (d.x + d.width/2).toFixed(1); })
+                    .attr("y2", function(d) { return height.toFixed(1); })
                     .style("opacity", 0)
                     .style("stroke", "#4572A7")
-                    .style("stroke-width", function(d) { return d.width; })
+                    .style("stroke-width", function(d) { return d.width.toFixed(1); })
                     .on('mouseover', function() {
-                        if (JSROOT.gStyle.Tooltip && (d3.select(this).style("opacity")=="0"))
+                        if (d3.select(this).style("opacity")=="0")
                           d3.select(this).transition().duration(100).style("opacity", "0.3");
                      })
                      .on('mouseout', function() {
