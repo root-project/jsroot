@@ -1688,22 +1688,19 @@
                var z0 = z(contour[i]);
                var z1 = z(contour[i+1]);
                var col = this.main_painter().getValueColor(contour[i]);
-               var r = this.draw_g
-                   .append("svg:rect")
-                   .attr("x", 0)
-                   .attr("y",  z1.toFixed(1))
-                   .attr("width", s_width)
-                   .attr("height", (z0-z1).toFixed(1))
-                   .attr("fill", col)
-                   .property("fill0", col)
-                   .attr("stroke", col);
+               var r = this.draw_g.append("svg:rect")
+                          .attr("x", 0)
+                          .attr("y",  z1.toFixed(1))
+                          .attr("width", s_width)
+                          .attr("height", (z0-z1).toFixed(1))
+                          .style("fill", col)
+                          .style("stroke", col);
 
                if (JSROOT.gStyle.Tooltip)
                   r.on('mouseover', function() {
-                     if (JSROOT.gStyle.Tooltip)
-                        d3.select(this).transition().duration(100).style("fill", 'grey');
+                     d3.select(this).transition().duration(100).style("stroke", "black").style("stroke-width", "2");
                   }).on('mouseout', function() {
-                     d3.select(this).transition().duration(100).style("fill", this['fill0']);
+                     d3.select(this).transition().duration(100).style("stroke", d3.select(this).style('fill')).style("stroke-width", "");
                   }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
             }
 
