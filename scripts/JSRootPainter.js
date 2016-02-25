@@ -2026,7 +2026,7 @@
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!=2)) || (latex_kind<1);
+      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!==2)) || (latex_kind<1);
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
@@ -2256,6 +2256,8 @@
    JSROOT.TFramePainter.prototype.HideActiveTooltips = function() {
       if (this.listeners!==null)
          this.listeners.forEach(function(obj) { obj.HideToolTip(); });
+
+      this.draw_g.select(".upper_layer").select(".objects_hints").remove();
    }
 
    JSROOT.TFramePainter.prototype.InstallEventListener = function(listener) {
@@ -2289,17 +2291,91 @@
          var ctm = top_rect.node().getScreenCTM();
          var inverse = ctm.inverse();
 
-         var p = point.matrixTransform(inverse);
+         var pnt = point.matrixTransform(inverse);
 
-         painter.listeners.forEach(function(obj) { obj.ShowToolTip(p.x, p.y); });
+         var hints = [], maxlen = 0, lastcolor1 = 0, usecolor1 = false;
+         var textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = painter.frame_height();
+
+         for (var n = 0; n < painter.listeners.length; ++n) {
+            var hint = hints[n] = painter.listeners[n].ShowToolTip(pnt.x, pnt.y);
+            if (hint === null) continue;
+
+            for (var l=0;l<hint.lines.length;++l)
+               if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
+
+            hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
+
+            if ((hint.color1!== undefined) && (hint.color1!=='none')) {
+               if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+               lastcolor1 = hint.color1;
+            }
+         }
+         // resort y position of all hints, starting from down
+         if (hints.length > 1) {
+            var curry = height + 10;
+            for (var n = 0; n < hints.length; ++n) {
+               var p = -1;
+               for (var k = 0; k < hints.length; ++k) {
+                  if ((hints[k] === null) || ('checked' in hints[k])) continue;
+                  if ((p<0) || (hints[k].y > hints[p].y)) p = k;
+               }
+               if (p<0) break;
+               hints[p].checked = true;
+               if (hints[p].y + hints[p].height > curry) hints[p].y = curry - hints[p].height;
+               curry = hints[p].y - 2*hmargin;
+            }
+         } else
+         if ((hints[0] !== null) && (pnt.y > hint.y))
+            hint.y = pnt.y;
+
+         var layer = painter.draw_g.select(".upper_layer");
+
+         var hintsg = layer.select(".objects_hints");
+
+         if (hintsg.empty()) {
+            if (maxlen === 0) return;
+            hintsg = layer.append("svg:g")
+                          .attr("class", "objects_hints")
+                          .style("pointer-events","none");
+            for (var n=0;n< painter.listeners.length; ++n)
+               hintsg.append("svg:g").attr("class", "painter_hint_"+n);
+         } else {
+            if (maxlen === 0) return hintsg.style("display","none");
+            hintsg.style("display",null); // let draw
+         }
+
+         var maxwidth = textheight * maxlen * 0.7;
+         if (maxwidth < 50) maxwidth = 50;
+
+         for (var n=0; n < hints.length; ++n) {
+            var hint = hints[n];
+            var group = hintsg.select(".painter_hint_"+n);
+            group.selectAll("*").remove();
+            if (hint===null) continue;
+
+            var r = group.append("svg:rect").attr("x", pnt.x+10)
+                                            .attr("y", hint.y)
+                                            .attr("width", maxwidth + 2*wmargin)
+                                            .attr("height", hint.height)
+                                            .attr("fill","lightgrey");
+            if (hints.length > 1)
+               r.style("stroke", usecolor1 ? hint.color1 : hint.color2).style("stroke-width", 2);
+
+            painter.StartTextDrawing(42, textheight, group);
+
+            if (hint !== null)
+               for (var l=0;l<hint.lines.length;l++)
+                  if (hint.lines[l]!==null)
+                     painter.DrawText(12, pnt.x+10+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
+
+            painter.FinishTextDrawing(group);
+         }
       };
-
 
       main_svg
         .attr("title","")
         .on('mousemove', ProcessEvent)
         .on('mouseleave', HideEvent);
-
 
       top_rect
         .attr("title","")
@@ -3251,16 +3327,16 @@
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       var stepy = height / nlines, has_head = false;
-      var margin_x = pavetext['fMargin'] * width;
+      var margin_x = pavetext.fMargin * width;
 
-      this.StartTextDrawing(pavetext['fTextFont'], height/(nlines * 1.2));
+      this.StartTextDrawing(pavetext.fTextFont, height/(nlines * 1.2));
 
       if (nlines == 1) {
-         this.DrawText(pavetext['fTextAlign'], 0, 0, width, height, lines[0], tcolor);
+         this.DrawText(pavetext.fTextAlign, 0, 0, width, height, lines[0], tcolor);
       } else {
          for (var j = 0; j < nlines; ++j) {
-            var jcolor = JSROOT.Painter.root_colors[pavetext['fLines'].arr[j]['fTextColor']];
-            if (pavetext['fLines'].arr[j]['fTextColor'] == 0) jcolor = tcolor;
+            var jcolor = JSROOT.Painter.root_colors[pavetext.fLines.arr[j].fTextColor];
+            if (pavetext.fLines.arr[j].fTextColor == 0) jcolor = tcolor;
             var posy = j*stepy;
 
             if (this.IsStats()) {
@@ -3349,7 +3425,7 @@
                .call(fcolor.func)
                .call(attline.func);
 
-         this.StartTextDrawing(pavetext['fTextFont'], h*0.04/1.5, lbl_g);
+         this.StartTextDrawing(pavetext.fTextFont, h*0.04/1.5, lbl_g);
 
          this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);
 
@@ -6299,7 +6375,7 @@
 
             point['tip'] = name + "bin = " + (pmax + 1) + "\n";
 
-            if (pmain.x_kind=='labels')
+            if (pmain.x_kind === 'labels')
                point['tip'] += ("x = " + this.AxisAsText("x", x1) + "\n");
             else
                point['tip'] += ("x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n");
@@ -6480,7 +6556,7 @@
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
-                 .attr("stroke-linejoin","miter")
+                 .style("stroke-linejoin","miter")
                  .call(this.attline.func)
                  .call(this.fill.func);
 
@@ -6497,7 +6573,7 @@
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
-          grx, grx2, gry;
+          painter = this;
 
       var l = left, r = right;
 
@@ -6507,64 +6583,89 @@
          var mx = this.GetBinX(m);
          if ((mx<0) && this.options.Logx) { l = m; continue; }
 
-         grx = pmain.grx(mx);
+         var grx = pmain.grx(mx);
 
          if (grx < x - 0.5) l = m; else
          if (grx > x + 0.5) r = m; else { l++; r--; }
       }
 
       var bin = l;
-      grx = pmain.grx(this.GetBinX(bin));
+      var grx = pmain.grx(this.GetBinX(bin));
 
       l = r = bin;
-      while ((l>left) && (pmain.grx(this.GetBinX(l-1)) > grx - 0.7)) --l;
-      while ((r<right) && (pmain.grx(this.GetBinX(r+1)) < grx + 0.7)) ++r;
+      while ((l>left) && (pmain.grx(this.GetBinX(l-1)) > grx - 1.0)) --l;
+      while ((r<right) && (pmain.grx(this.GetBinX(r+1)) < grx + 1.0)) ++r;
+
+      function GetBinGrY(i) {
+         var y = painter.histo.getBinContent(i + 1);
+         if (painter.options.Logy && (y < painter.scale_ymin))
+            return 10*height;
+         return Math.round(pmain.gry(y));
+      }
 
       if (l < r) {
          // many points can be assigned with the same cursor position
          // first try point around mouse y
          var best = height;
          for (var m=l;m<=r;m++) {
-            var dist = Math.abs(pmain.gry(this.histo.getBinContent(m+1)) - y);
+            var dist = Math.abs(GetBinGrY(m) - y);
             if (dist < best) { best = dist; bin = m; }
          }
 
          // if best distance still too far from mouse position, just take from between
-         if (best > height/20)
+         if (best > height/10)
             bin = Math.round(l + (r-l) / height * y);
 
          grx = pmain.grx(this.GetBinX(bin));
       }
 
-      gry = Math.round(pmain.gry(this.histo.getBinContent(bin+1)));
-      grx2 = pmain.grx(this.GetBinX(bin+1));
+      var gry = GetBinGrY(bin);
+      var grx2 = pmain.grx(this.GetBinX(bin+1));
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
       if (gry > height - 1) {
          ttrect.remove(); // do not highlight for minimal bins
-      } else {
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:circle")
-                                .attr("class","tooltip_bin")
-                                .style("pointer-events","none")
-                                .attr("r", this.attline.width + 3)
-                                .call(this.attline.func)
-                                .call(this.fill.func);
-
-         if (ttrect.property("current_bin") !== bin)
-            ttrect.attr("cx", Math.round((grx + grx2)/2))
-                  .attr("cy", gry)
-                  .property("current_bin", bin);
+         return null; // nothing to show
       }
 
-      // JSROOT.progress("  SVG " + x.toFixed(1) + ',' + y.toFixed(1) + ' BIN ' + (bin+1) + " GRX " + grx.toFixed(1));
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:circle")
+                             .attr("class","tooltip_bin")
+                             .style("pointer-events","none")
+                             .attr("r", this.attline.width + 3)
+                             .call(this.attline.func)
+                             .call(this.fill.func);
+
+      if (ttrect.property("current_bin") !== bin)
+         ttrect.attr("cx", Math.round((grx + grx2)/2))
+               .attr("cy", gry)
+               .property("current_bin", bin);
+
+      var res = { x: Math.round((grx + grx2)/2), y: gry, color1: this.attline.color, color2: this.fill.color,  lines: [] };
+
+      if ((this.GetItemName()!=="") && (this.GetItemName()!==null))
+         res.lines.push(this.GetItemName());
+      else
+      if (this.histo.fName !== "")
+         res.lines.push(this.histo.fName);
+
+      res.lines.push("bin = " + (bin+1));
+
+      if (pmain.x_kind === 'labels')
+         res.lines.push("x = " + this.AxisAsText("x", this.GetBinX(bin)));
+      else
+         res.lines.push("x = [" + this.AxisAsText("x", this.GetBinX(bin)) + ", " + this.AxisAsText("x", this.GetBinX(bin+1)) + "]");
+
+      res.lines.push("entries = " + JSROOT.FFormat(this.histo.getBinContent(bin+1), JSROOT.gStyle.StatFormat));
+
+      return res;
    }
 
    JSROOT.TH1Painter.prototype.HideToolTip = function() {
-      // JSROOT.progress();
-
       this.draw_g.select(".tooltip_bin").remove();
+
+      return null;
    }
 
 
@@ -6748,17 +6849,17 @@
          // recalculate NDC coordiantes if not yet done
          pavelabel.fInit = 1;
          var isndc = (pavelabel.fOption.indexOf("NDC") >= 0);
-         pavelabel['fX1NDC'] = this.ConvertToNDC("x", pavelabel['fX1'], isndc);
-         pavelabel['fX2NDC'] = this.ConvertToNDC("x", pavelabel['fX2'], isndc);
-         pavelabel['fY1NDC'] = this.ConvertToNDC("y", pavelabel['fY1'], isndc);
-         pavelabel['fY2NDC'] = this.ConvertToNDC("y", pavelabel['fY2'], isndc);
+         pavelabel.fX1NDC = this.ConvertToNDC("x", pavelabel.fX1, isndc);
+         pavelabel.fX2NDC = this.ConvertToNDC("x", pavelabel.fX2, isndc);
+         pavelabel.fY1NDC = this.ConvertToNDC("y", pavelabel.fY1, isndc);
+         pavelabel.fY2NDC = this.ConvertToNDC("y", pavelabel.fY2, isndc);
       }
 
-      var pos_x = pavelabel['fX1NDC'] * w;
-      var pos_y = (1.0 - pavelabel['fY1NDC']) * h;
+      var pos_x = pavelabel.fX1NDC * w;
+      var pos_y = (1.0 - pavelabel.fY1NDC) * h;
 
-      var width = Math.abs(pavelabel['fX2NDC'] - pavelabel['fX1NDC']) * w;
-      var height = Math.abs(pavelabel['fY2NDC'] - pavelabel['fY1NDC']) * h;
+      var width = Math.abs(pavelabel.fX2NDC - pavelabel.fX1NDC) * w;
+      var height = Math.abs(pavelabel.fY2NDC - pavelabel.fY1NDC) * h;
       pos_y -= height;
       var fcolor = this.createAttFill(pavelabel);
       var tcolor = JSROOT.Painter.root_colors[pavelabel['fTextColor']];
@@ -6767,8 +6868,8 @@
       // align = 10*HorizontalAlign + VerticalAlign
       // 1=left adjusted, 2=centered, 3=right adjusted
       // 1=bottom adjusted, 2=centered, 3=top adjusted
-      var align = 'start', halign = Math.round(pavelabel['fTextAlign'] / 10);
-      var baseline = 'bottom', valign = pavelabel['fTextAlign'] % 10;
+      var align = 'start', halign = Math.round(pavelabel.fTextAlign / 10);
+      var baseline = 'bottom', valign = pavelabel.fTextAlign % 10;
       if (halign == 1) align = 'start';
       else if (halign == 2) align = 'middle';
       else if (halign == 3) align = 'end';
@@ -6776,7 +6877,7 @@
       else if (valign == 2) baseline = 'middle';
       else if (valign == 3) baseline = 'top';
 
-      var lwidth = pavelabel['fBorderSize'] ? pavelabel['fBorderSize'] : 0;
+      var lwidth = pavelabel.fBorderSize ? pavelabel.fBorderSize : 0;
 
       var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
 
@@ -6796,9 +6897,9 @@
              .style("stroke-width", lwidth ? 1 : 0)
              .style("stroke", lcolor.color);
 
-      this.StartTextDrawing(pavelabel['fTextFont'], height / 1.7);
+      this.StartTextDrawing(pavelabel.fTextFont, height / 1.7);
 
-      this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel['fLabel'], tcolor);
+      this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel.fLabel, tcolor);
 
       if (lwidth && lwidth > 1) {
          pave.append("svg:line")
@@ -6823,8 +6924,6 @@
    }
 
    JSROOT.TTextPainter.prototype.drawText = function() {
-
-      console.log('DRAW TEXT');
 
       var kTextNDC = JSROOT.BIT(14);
 
