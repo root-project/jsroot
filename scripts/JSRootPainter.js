@@ -6417,19 +6417,16 @@
    }
 
    JSROOT.TH1Painter.prototype.DrawDirectAsPath = function() {
-      // new method, create path expression ourself directly from histogram
+      // new method, create svg:path expression ourself directly from histogram
+      // all points will be used, compress expression when too large
 
-      var width = this.frame_width(), height = this.frame_height();
-
-      var left = this.GetSelectIndex("x", "left", -1);
-
-      var right = this.GetSelectIndex("x", "right", 2);
-
-      var pmain = this.main_painter();
-
-      var res = "";
-
-      var startx, currx, curry, x, grx = -1, y, gry, istep = 1;
+      var width = this.frame_width(),
+          height = this.frame_height(),
+          left = this.GetSelectIndex("x", "left", -1),
+          right = this.GetSelectIndex("x", "right", 2),
+          pmain = this.main_painter(),
+          res = "", istep = 1,
+          startx, currx, curry, x, grx, y, gry;
 
       for (var i = left; i < right; i+=istep) {
          if ((res.length > 100000) && (istep === 1)) {
@@ -6449,7 +6446,6 @@
          if (this.options.Logy && (y < this.scale_ymin))
             gry = height + 10;
          else
-            // gry = pmain.gry(cont).toFixed(1);
             gry = Math.round(pmain.gry(y));
 
          if (res.length === 0) {
@@ -6458,15 +6454,8 @@
             res = "M"+currx+","+curry;
          } else
          if (gry !== curry) {
-            //if (grx1 != currx) res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
-            //res += "v" + (Number(gry) - Number(curry)).toFixed(1);
-
             if (grx != currx) res += "h"+(grx-currx);
             res += "v" + (gry - curry);
-
-            //if (grx1 != currx) res += "H"+grx1;
-            //res += "V" + gry;
-
             curry = gry;
             currx = grx;
          }
@@ -6477,15 +6466,13 @@
          grx = Math.round(pmain.grx(x));
 
       if (grx !== currx) {
-         //res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
          res += "h"+(grx - currx);
-         //res += "H"+grx2;
          currx = grx;
       }
 
       if (this.fill.color !== 'none') {
-         res+="L"+currx+","+height;
-         res+="L"+startx+","+height;
+         res+="L"+currx+","+(height+5);
+         res+="L"+startx+","+(height+5);
          res+="Z";
       }
 
@@ -6497,8 +6484,89 @@
                  .call(this.attline.func)
                  .call(this.fill.func);
 
-      // this.InstallLineTooltip(draw_bins);
+      this.frame_painter().InstallEventListener(this);
    }
+
+   JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
+
+      if (JSROOT.gStyle.Tooltip <= 0)
+         return this.HideToolTip();
+
+      var width = this.frame_width(),
+          height = this.frame_height(),
+          left = this.GetSelectIndex("x", "left", -1),
+          right = this.GetSelectIndex("x", "right", 2),
+          pmain = this.main_painter(),
+          grx, grx2, gry;
+
+      var l = left, r = right;
+
+      while (l < r-1) {
+         var m = Math.round((l+r)*0.5);
+
+         var mx = this.GetBinX(m);
+         if ((mx<0) && this.options.Logx) { l = m; continue; }
+
+         grx = pmain.grx(mx);
+
+         if (grx < x - 0.5) l = m; else
+         if (grx > x + 0.5) r = m; else { l++; r--; }
+      }
+
+      var bin = l;
+      grx = pmain.grx(this.GetBinX(bin));
+
+      l = r = bin;
+      while ((l>left) && (pmain.grx(this.GetBinX(l-1)) > grx - 0.7)) --l;
+      while ((r<right) && (pmain.grx(this.GetBinX(r+1)) < grx + 0.7)) ++r;
+
+      if (l < r) {
+         // many points can be assigned with the same cursor position
+         // first try point around mouse y
+         var best = height;
+         for (var m=l;m<=r;m++) {
+            var dist = Math.abs(pmain.gry(this.histo.getBinContent(m+1)) - y);
+            if (dist < best) { best = dist; bin = m; }
+         }
+
+         // if best distance still too far from mouse position, just take from between
+         if (best > height/20)
+            bin = Math.round(l + (r-l) / height * y);
+
+         grx = pmain.grx(this.GetBinX(bin));
+      }
+
+      gry = Math.round(pmain.gry(this.histo.getBinContent(bin+1)));
+      grx2 = pmain.grx(this.GetBinX(bin+1));
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (gry > height - 1) {
+         ttrect.remove(); // do not highlight for minimal bins
+      } else {
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:circle")
+                                .attr("class","tooltip_bin")
+                                .style("pointer-events","none")
+                                .attr("r", this.attline.width + 3)
+                                .call(this.attline.func)
+                                .call(this.fill.func);
+
+         if (ttrect.property("current_bin") !== bin)
+            ttrect.attr("cx", Math.round((grx + grx2)/2))
+                  .attr("cy", gry)
+                  .property("current_bin", bin);
+      }
+
+      // JSROOT.progress("  SVG " + x.toFixed(1) + ',' + y.toFixed(1) + ' BIN ' + (bin+1) + " GRX " + grx.toFixed(1));
+   }
+
+   JSROOT.TH1Painter.prototype.HideToolTip = function() {
+      // JSROOT.progress();
+
+      this.draw_g.select(".tooltip_bin").remove();
+   }
+
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
@@ -6566,71 +6634,6 @@
                         d3.select(this).transition().duration(100).style("opacity", "");
                      })
                      .append("svg:title").text(function(d) { return d.tip; });
-   }
-
-
-   JSROOT.TH1Painter.prototype.InstallLineTooltip = function(bins) {
-      // method to show tool tip ourself, not involving special SVG elements, which could be very costly
-
-      this.tooltip_bins = bins; // keep bins to show tooltips, later we could use histogram itself
-
-      this.frame_painter().InstallEventListener(this);
-   }
-
-   JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
-
-      var l = 0, r = this.tooltip_bins.length -1, m;
-
-      if ((x < this.tooltip_bins[l].x) || (x > this.tooltip_bins[r].x)) return this.HideToolTip();
-
-      if (JSROOT.gStyle.Tooltip <= 0) {
-         return this.HideToolTip();
-      }
-
-      while (l < r-1) {
-         m = Math.round((l+r)/2);
-         var mx = this.tooltip_bins[m].x;
-         if (mx < x - 0.5) { l = m; continue; }
-         if (mx > x + 0.5) { r = m; continue; }
-
-         // we hit interval, check if many points has closer interval
-         l = r = m;
-         while ((l>0) && (this.tooltip_bins[l-1].x > x-0.5)) --l;
-         while ((r< this.tooltip_bins.length-1) && (this.tooltip_bins[r+1].x < x+0.5)) ++r;
-         break;
-      }
-
-      var pnt = this.tooltip_bins[l];
-
-      var height = this.frame_height();
-
-      var show = pnt.y < height - 0.1;
-
-      var ttrect = this.draw_g.select(".tooltip_bin");
-
-      if (pnt.y > height - 0.1) {
-         ttrect.remove(); // do not highlight for minimal bins
-      } else {
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:rect").attr("class","h1bin tooltip_bin");
-
-         if (ttrect.property("current_bin") !== l)
-            ttrect.style("opacity", "0.3")
-                  .style("pointer-events","none")
-                  .attr("x", pnt.x.toFixed(1))
-                  .attr("y", pnt.y.toFixed(1))
-                  .attr("width", pnt.width.toFixed(1))
-                  .attr("height", (height - pnt.y).toFixed(1))
-                  .property("current_bin", l);
-      }
-
-      JSROOT.progress("  SVG " + x.toFixed(1) + ',' + y.toFixed(1) + ' lr ' + l + ','+r);
-   }
-
-   JSROOT.TH1Painter.prototype.HideToolTip = function() {
-      JSROOT.progress();
-
-      this.draw_g.select(".tooltip_bin").remove();
    }
 
 
