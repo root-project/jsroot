@@ -6421,30 +6421,57 @@
 
       var width = this.frame_width(), height = this.frame_height();
 
-      var draw_bins = this.CreateDrawBins(width, height);
+      var left = this.GetSelectIndex("x", "left", -1);
 
-      function short_value(v) {
-         if (v.indexOf("0.") === 0) return v.substr(1);
-         if (v.indexOf("-0.") === 0) return "-"+v.substr(2);
-         return v;
+      var right = this.GetSelectIndex("x", "right", 2);
+
+      var pmain = this.main_painter();
+
+      var res = "";
+
+      var x1, x2 = this.GetBinX(left);
+      var grx1 = -1111, grx2 = -1111, gry;
+
+      var startx, currx, curry;
+
+      for (var i = left; i < right; ++i) {
+         x1 = x2;
+         x2 = this.GetBinX(i+1);
+
+         if (this.options.Logx && (x1 <= 0)) continue;
+
+         grx1 = grx2;
+         grx2 = pmain.grx(x2).toFixed(1);
+         if (grx1 === -1111) grx1 = pmain.grx(x1).toFixed(1);
+
+         var cont = this.histo.getBinContent(i + 1);
+
+         if (this.options.Logy && (cont < this.scale_ymin))
+            gry = height + 10;
+         else
+            gry = pmain.gry(cont).toFixed(1);
+
+         if (res.length === 0) {
+            startx = currx = grx1;
+            curry = gry;
+            res = "M"+currx+","+curry;
+         } else
+         if (gry !== curry) {
+            if (grx1 != currx) res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
+            res += "v" + (Number(gry) - Number(curry)).toFixed(1);
+            curry = gry;
+            currx = grx1;
+         }
       }
 
-      var currx = draw_bins[0].x.toFixed(1), curry = draw_bins[0].y.toFixed(1);
-      var res = "M"+currx+","+curry;
-      for (var n=1;n<draw_bins.length;++n) {
-         var nx = Number(currx),
-             ny = Number(curry);
-         var dx = (draw_bins[n].x - nx).toFixed(1),
-             dy = (draw_bins[n].y - ny).toFixed(1);
-         if (dx!=="0.0") res += "h"+short_value(dx);
-         if (dy!=="0.0") res += "v"+short_value(dy);
-         currx = (nx + Number(dx)).toFixed(1);
-         curry = (ny + Number(dy)).toFixed(1);
+      if (grx1 !== currx) {
+         res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
+         currx = grx1;
       }
 
       if (this.fill.color !== 'none') {
          res+="L"+currx+","+height;
-         res+="L"+draw_bins[0].x.toFixed(1)+","+height;
+         res+="L"+startx+","+height;
          res+="Z";
       }
 
@@ -6455,8 +6482,7 @@
                  .call(this.attline.func)
                  .call(this.fill.func);
 
-      this.InstallLineTooltip(draw_bins);
-
+      // this.InstallLineTooltip(draw_bins);
    }
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
