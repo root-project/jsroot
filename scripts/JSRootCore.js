@@ -50,8 +50,8 @@
 
       // configure all dependencies
       requirejs.config({
-       paths: paths,
-       shim: {
+        paths: paths,
+        shim: {
          'touch-punch': { deps: ['jquery'] },
          'THREE_ALL': { deps: ['THREE'] },
          'MathJax': {
@@ -81,7 +81,6 @@
 
       JSROOT = {};
 
-      // Browser globals
       factory(JSROOT);
    }
 } (function(JSROOT) {
@@ -94,7 +93,7 @@
    JSROOT.id_counter = 0;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari: false, isChrome: false, isIE: false };
+   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported

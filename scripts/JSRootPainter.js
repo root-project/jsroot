@@ -1400,7 +1400,7 @@
       if (is_main < 0) return;
 
       // create TFrame element if not exists
-      if (this.svg_frame().empty() && ((is_main == 1) || (is_main == 3))) {
+      if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3))) {
          JSROOT.Painter.drawFrame(divid, null);
          if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
@@ -1880,11 +1880,13 @@
       // getBBox does not work in mozilla when object is not displayed or not visisble :(
       // getBoundingClientRect() returns wrong sizes for MathJax
       // are there good solution?
+
+      if (elem===null) { console.warn('empty node in GetBoundarySizes'); return { width:0, height:0 }; }
       var box = elem.getBoundingClientRect(); // works always, but returns sometimes wrong results
       if (parseInt(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
       var res = { width : parseInt(box.width), height : parseInt(box.height) };
-      if ('left' in box) { res['x'] = parseInt(box.left); res['y'] = parseInt(box.right); } else
-      if ('x' in box) { res['x'] = parseInt(box.x); res['y'] = parseInt(box.y); }
+      if ('left' in box) { res.x = parseInt(box.left); res.y = parseInt(box.right); } else
+      if ('x' in box) { res.x = parseInt(box.x); res.y = parseInt(box.y); }
       return res;
    }
 
@@ -6414,23 +6416,67 @@
       }
    }
 
+   JSROOT.TH1Painter.prototype.DrawDirectAsPath = function() {
+      // new method, create path expression ourself directly from histogram
+
+      var width = this.frame_width(), height = this.frame_height();
+
+      var draw_bins = this.CreateDrawBins(width, height);
+
+      function short_value(v) {
+         if (v.indexOf("0.") === 0) return v.substr(1);
+         if (v.indexOf("-0.") === 0) return "-"+v.substr(2);
+         return v;
+      }
+
+      var currx = draw_bins[0].x.toFixed(1), curry = draw_bins[0].y.toFixed(1);
+      var res = "M"+currx+","+curry;
+      for (var n=1;n<draw_bins.length;++n) {
+         var nx = Number(currx),
+             ny = Number(curry);
+         var dx = (draw_bins[n].x - nx).toFixed(1),
+             dy = (draw_bins[n].y - ny).toFixed(1);
+         if (dx!=="0.0") res += "h"+short_value(dx);
+         if (dy!=="0.0") res += "v"+short_value(dy);
+         currx = (nx + Number(dx)).toFixed(1);
+         curry = (ny + Number(dy)).toFixed(1);
+      }
+
+      if (this.fill.color !== 'none') {
+         res+="L"+currx+","+height;
+         res+="L"+draw_bins[0].x.toFixed(1)+","+height;
+         res+="Z";
+      }
+
+      console.log('path len = ' + res.length);
+
+      this.draw_g.append("svg:path")
+                 .attr("d", res)
+                 .call(this.attline.func)
+                 .call(this.fill.func);
+
+      this.InstallLineTooltip(draw_bins);
+
+   }
+
    JSROOT.TH1Painter.prototype.DrawBins = function() {
 
       var width = this.frame_width(), height = this.frame_height();
 
-      if (!this.draw_content || (width<=0) || (height<=0)) {
-         this.RemoveDrawG();
-         return;
-      }
+      if (!this.draw_content || (width<=0) || (height<=0))
+         return this.RemoveDrawG();
 
       this.RecreateDrawG(false, ".main_layer");
 
       if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
+      if (JSROOT.gStyle.Tooltip === 2)
+         return this.DrawDirectAsPath();
+
       var draw_bins = this.CreateDrawBins(width, height);
 
-      if (this.fill.color != 'none') {
+      if (this.fill.color !== 'none') {
 
          // histogram filling
          var area = d3.svg.area()
@@ -6439,6 +6485,8 @@
                     .y1(function(d) { return height; })
                     .interpolate("step-after");
 
+         console.log('area len ' +  area(draw_bins).length);
+
          this.draw_g.append("svg:path")
                     .attr("d", area(draw_bins))
                     .style("pointer-events","none")
@@ -6446,44 +6494,21 @@
                     .call(this.fill.func);
       } else {
 
-         //var line = d3.svg.line()
-         //                 .x(function(d) { return d.x.toFixed(1); })
-         //                 .y(function(d) { return d.y.toFixed(1); })
-         //                 .interpolate("step-after");
+         var line = d3.svg.line()
+                          .x(function(d) { return d.x.toFixed(1); })
+                          .y(function(d) { return d.y.toFixed(1); })
+                          .interpolate("step-after");
 
-         // use not d3.svg.line, but own method to minimize produced path
-         // instead of absolute position use difference
-
-         function short_value(v) {
-            if (v.indexOf("0.") === 0) return v.substr(1);
-            if (v.indexOf("-0.") === 0) return "-"+v.substr(2);
-            return v;
-         }
-
-         var currx = draw_bins[0].x.toFixed(1), curry = draw_bins[0].y.toFixed(1);
-         var res = "M"+currx+","+curry;
-         for (var n=1;n<draw_bins.length;++n) {
-            var nx = Number(currx),
-                ny = Number(curry);
-            var dx = (draw_bins[n].x - nx).toFixed(1),
-                dy = (draw_bins[n].y - ny).toFixed(1);
-            if (dx!=="0.0") res += "h"+short_value(dx);
-            if (dy!=="0.0") res += "v"+short_value(dy);
-            currx = (nx + Number(dx)).toFixed(1);
-            curry = (ny + Number(dy)).toFixed(1);
-         }
+         console.log('line len ' +  line(draw_bins).length);
 
          this.draw_g
                .append("svg:path")
-               .attr("d", res /*line(draw_bins)*/)
+               .attr("d", line(draw_bins))
                .call(this.attline.func)
                .style("fill", "none");
       }
 
-      if (JSROOT.gStyle.Tooltip === 2)
-         this.InstallLineTooltip(draw_bins);
-      else
-      if (JSROOT.gStyle.Tooltip === 1)
+      if (JSROOT.gStyle.Tooltip > 0)
          this.draw_g.selectAll("rect")
                     .data(draw_bins.filter(function(d) { return d.y < height - 0.1; }))
                     .enter().append("svg:rect")
