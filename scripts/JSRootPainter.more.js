@@ -1895,7 +1895,7 @@
          name: 'ToggleCol',
          title: 'Toggle color options',
          icon: JSROOT.ToolbarIcons.th2color,
-         click: function() { if (painter.options.Lego == 0) painter.ToggleColor(); }
+         click: function() { painter.ToggleColor(); }
       });
 
       buttons.push({
@@ -1915,10 +1915,18 @@
    }
 
    JSROOT.TH2Painter.prototype.ToggleColor = function() {
+
+      var toggle = true;
+
+      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; }
+
       if (this.options.Color == 0)
          this.options.Color = JSROOT.gStyle.DefaultCol;
       else
+      if (toggle)
          this.options.Color = -this.options.Color;
+      else
+         this.options.Color = Math.abs(this.options.Color);
 
       if ((this.options.Color > 0) && (this.options.Zscale > 0))
          this.DrawNewPalette(true);
