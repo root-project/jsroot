@@ -6429,44 +6429,58 @@
 
       var res = "";
 
-      var x1, x2 = this.GetBinX(left);
-      var grx1 = -1111, grx2 = -1111, gry;
+      var startx, currx, curry, x, grx = -1, y, gry, istep = 1;
 
-      var startx, currx, curry;
+      for (var i = left; i < right; i+=istep) {
+         if ((res.length > 100000) && (istep === 1)) {
+            istep = Math.max(2, Math.round((right-left)/(i-left)));
+            res = ""; i = left;
+            console.warn('draw TH1, protection against very large path, step = '+istep);
+         }
 
-      for (var i = left; i < right; ++i) {
-         x1 = x2;
-         x2 = this.GetBinX(i+1);
+         x = this.GetBinX(i);
 
-         if (this.options.Logx && (x1 <= 0)) continue;
+         if (this.options.Logx && (x <= 0)) continue;
 
-         grx1 = grx2;
-         grx2 = pmain.grx(x2).toFixed(1);
-         if (grx1 === -1111) grx1 = pmain.grx(x1).toFixed(1);
+         grx = Math.round(pmain.grx(x));
 
-         var cont = this.histo.getBinContent(i + 1);
+         y = this.histo.getBinContent(i + 1);
 
-         if (this.options.Logy && (cont < this.scale_ymin))
+         if (this.options.Logy && (y < this.scale_ymin))
             gry = height + 10;
          else
-            gry = pmain.gry(cont).toFixed(1);
+            // gry = pmain.gry(cont).toFixed(1);
+            gry = Math.round(pmain.gry(y));
 
          if (res.length === 0) {
-            startx = currx = grx1;
+            startx = currx = grx;
             curry = gry;
             res = "M"+currx+","+curry;
          } else
          if (gry !== curry) {
-            if (grx1 != currx) res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
-            res += "v" + (Number(gry) - Number(curry)).toFixed(1);
+            //if (grx1 != currx) res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
+            //res += "v" + (Number(gry) - Number(curry)).toFixed(1);
+
+            if (grx != currx) res += "h"+(grx-currx);
+            res += "v" + (gry - curry);
+
+            //if (grx1 != currx) res += "H"+grx1;
+            //res += "V" + gry;
+
             curry = gry;
-            currx = grx1;
+            currx = grx;
          }
       }
 
-      if (grx1 !== currx) {
-         res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
-         currx = grx1;
+      x = this.GetBinX(right);
+      if (!this.options.Logx || (x > 0))
+         grx = Math.round(pmain.grx(x));
+
+      if (grx !== currx) {
+         //res += "h"+(Number(grx1) - Number(currx)).toFixed(1);
+         res += "h"+(grx - currx);
+         //res += "H"+grx2;
+         currx = grx;
       }
 
       if (this.fill.color !== 'none') {
@@ -6479,6 +6493,7 @@
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
+                 .attr("stroke-linejoin","miter")
                  .call(this.attline.func)
                  .call(this.fill.func);
 
