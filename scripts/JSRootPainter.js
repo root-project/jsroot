@@ -1266,12 +1266,12 @@
          if (clname == "") clname = 'canvas';
          clname = ".draw3d_" + clname;
          if (can3d > 1) {
-            this.svg_pad().select(".frame_layer").select(clname).remove();
+            this.svg_pad().select(".special_layer").select(clname).remove();
          } else {
             d3.select(this.svg_canvas().node().parentNode).select(clname).remove();
          }
 
-         this.svg_pad().select(".frame_layer").select(".root_frame").style('display', null);
+         this.svg_frame().style('display', null);
       }
    }
 
@@ -1303,8 +1303,7 @@
          if (this.svg_pad().empty()) return;
 
          // first hide normal frame
-         var frame = this.svg_pad().select(".frame_layer").select(".root_frame");
-         frame.style('display', 'none');
+         this.svg_frame().style('display', 'none');
 
          var size = this.size_for_3d();
 
@@ -1315,7 +1314,7 @@
          clname = "draw3d_" + clname;
 
          if (can3d == 1) {
-            size = this.CalcAbsolutePosition(frame.empty() ? this.svg_pad() : frame, size);
+            size = this.CalcAbsolutePosition(this.svg_frame(), size);
 
             // force redraw by resize
             this.svg_canvas().property('redraw_by_resize', true);
@@ -1327,7 +1326,7 @@
               .style('width', size.width + 'px')
               .style('height', size.height + 'px');
          } else {
-            fo = this.svg_pad().select(".frame_layer").append("foreignObject");
+            fo = this.svg_pad().select(".special_layer").append("foreignObject");
 
             // set frame dimensions
             fo.attr('width', size.width)
@@ -2195,13 +2194,15 @@
       if (framecolor.color == 'none') framecolor.color = 'white';
 
       // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.svg_pad().select(".root_frame");
+      this.draw_g = this.svg_frame();
+      if (this.draw_g.empty())
+         return console.error('did not found frame layer');
 
-      var top_rect = null, main_svg = null;
 
-      if (this.draw_g.empty()) {
-         this.draw_g = this.svg_pad().select(".frame_layer").append("svg:g").attr("class", "root_frame");
+      var top_rect = this.draw_g.select("rect"),
+          main_svg = this.draw_g.select(".main_layer");
 
+      if (main_svg.empty()) {
          top_rect = this.draw_g.append("svg:rect");
 
          // append for the moment three layers - for drawing and axis
@@ -2217,9 +2218,6 @@
          this.draw_g.append('svg:g').attr('class','upper_layer');
 
          this.listeners = null; // clear list
-      } else {
-         top_rect = this.draw_g.select("rect");
-         main_svg = this.draw_g.select(".main_layer");
       }
 
       // simple way to access painter via frame container
@@ -3630,7 +3628,8 @@
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
 
-          svg.append("svg:g").attr("class","frame_layer");
+          svg.append("svg:g").attr("class","root_frame");
+          svg.append("svg:g").attr("class","special_layer");
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
       }
@@ -3686,7 +3685,8 @@
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
-         svg_pad.append("svg:g").attr("class","frame_layer");
+         svg_pad.append("svg:g").attr("class","root_frame");
+         svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
       }
