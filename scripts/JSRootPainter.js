@@ -2344,8 +2344,9 @@
             hintsg.style("display",null); // let draw
          }
 
-         var maxwidth = textheight * maxlen * 0.7;
+         var maxwidth = textheight * maxlen * 0.5;
          if (maxwidth < 50) maxwidth = 50;
+         var actualw = 0;
 
          for (var n=0; n < hints.length; ++n) {
             var hint = hints[n];
@@ -2358,8 +2359,11 @@
                                             .attr("width", maxwidth + 2*wmargin)
                                             .attr("height", hint.height)
                                             .attr("fill","lightgrey");
-            if (hints.length > 1)
-               r.style("stroke", usecolor1 ? hint.color1 : hint.color2).style("stroke-width", 2);
+            if (hints.length > 1) {
+               var col = usecolor1 ? hint.color1 : hint.color2;
+               if ((col !== undefined) && (col!=='none'))
+                  r.style("stroke", col).style("stroke-width", 2);
+            }
 
             painter.StartTextDrawing(42, textheight, group);
 
@@ -2368,8 +2372,11 @@
                   if (hint.lines[l]!==null)
                      painter.DrawText(12, pnt.x+10+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
 
-            painter.FinishTextDrawing(group);
+            actualw = Math.max(actualw, painter.FinishTextDrawing(group));
          }
+
+         if (actualw > 10)
+            hintsg.selectAll("rect").attr("width", actualw + 4*wmargin);
       };
 
       main_svg
