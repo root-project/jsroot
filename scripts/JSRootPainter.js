@@ -1835,8 +1835,8 @@
       // histogram functions
 
       var painter = this.pad_painter(true);
-      var painters = (painter===null) ? null : painter.painters;
-      if (painters == null) return null;
+      var painters = (painter === null) ? null : painter.painters;
+      if (painters === null) return null;
 
       for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
@@ -2221,7 +2221,7 @@
          var painter = this;
 
          function HideEvent() {
-            painter.HideActiveTooltips();
+            painter.ProcessTooltipEvent(null);
          };
 
          function ProcessEvent() {
@@ -2285,41 +2285,41 @@
       this.DrawFrameSvg();
    }
 
-   JSROOT.TFramePainter.prototype.HideActiveTooltips = function() {
-
-      this.pad_painter(true).painters.forEach(function(obj) {
-         if ('HideToolTip' in obj) obj.HideToolTip();
-      });
-
-      this.draw_g.select(".upper_layer").select(".objects_hints").remove();
-   }
-
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
-      if (JSROOT.gStyle.Tooltip < 2)
-         return this.HideActiveTooltips();
+      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
       var hints = [], maxlen = 0, lastcolor1 = 0, usecolor1 = false;
       var textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = this.frame_height();
 
-      this.pad_painter(true).painters.forEach(function(obj) {
-         var hint = null;
+      var pp = this.pad_painter(true);
+      var painters = (pp === null) ? null : pp.painters;
+      if (painters !== null)
+        painters.forEach(function(obj) {
+          var hint = null;
 
-         if ('ShowToolTip' in obj)
-            hint = obj.ShowToolTip(pnt.x, pnt.y);
+          if ('ProcessTooltip' in obj)
+             hint = obj.ProcessTooltip(pnt);
 
-         hints.push(hint);
-         if (hint === null) return;
+          hints.push(hint);
+          if ((hint === null) || (pnt === null)) return;
 
-         for (var l=0;l<hint.lines.length;++l)
-            if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
+          for (var l=0;l<hint.lines.length;++l)
+             if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
 
-         hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
+          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
-         if ((hint.color1!== undefined) && (hint.color1!=='none')) {
-            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
-            lastcolor1 = hint.color1;
-         }
-      });
+          if ((hint.color1!== undefined) && (hint.color1!=='none')) {
+             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+             lastcolor1 = hint.color1;
+          }
+        });
+
+      // end of closing tooltips
+      if (pnt === null) {
+         this.draw_g.select(".upper_layer").select(".objects_hints").remove();
+         return;
+      }
+
       // resort y position of all hints, starting from down
       if (hints.length > 1) {
          var curry = height + 10;
@@ -5563,7 +5563,7 @@
 
       if (JSROOT.gStyle.Tooltip > 0) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.frame_painter().HideActiveTooltips();
+         this.frame_painter().ProcessTooltipEvent(null);
          this.disable_tooltip = true;
       }
 
@@ -5592,7 +5592,7 @@
 
 //      if ((JSROOT.gStyle.Tooltip > 0) && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
 //         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-//         this.frame_painter().HideActiveTooltips();
+//         this.frame_painter().ProcessTooltipEvent(null);
 //         this.disable_tooltip = true;
 //      }
    }
@@ -5758,7 +5758,7 @@
       if ((JSROOT.gStyle.Tooltip>0) && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
                 || (this.zoom_origin[1] - this.zoom_curr[1] > 10))) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.frame_painter().HideActiveTooltips();
+         this.frame_painter().ProcessTooltipEvent(null);
          this.disable_tooltip = true;
       }
 
@@ -6051,7 +6051,6 @@
 
    JSROOT.TH1Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
-      this.new_tooltip = false;
    }
 
    JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -6611,12 +6610,16 @@
                  .call(this.attline.func)
                  .call(this.fill.func);
 
-      this.new_tooltip = true;
+      this['ProcessTooltip'] = this.ProcessTooltipFunc;
    }
 
-   JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
+   JSROOT.TH1Painter.prototype.ProcessTooltipFunc = function(pnt) {
 
-      if (!this.new_tooltip) return null;
+      if (pnt === null) {
+         if (this.draw_g !== null)
+            this.draw_g.select(".tooltip_bin").remove();
+         return null;
+      }
 
       var width = this.frame_width(),
           height = this.frame_height(),
@@ -6635,8 +6638,8 @@
 
          var grx = pmain.grx(mx);
 
-         if (grx < x - 0.5) l = m; else
-         if (grx > x + 0.5) r = m; else { l++; r--; }
+         if (grx < pnt.x - 0.5) l = m; else
+         if (grx > pnt.x + 0.5) r = m; else { l++; r--; }
       }
 
       var bin = l;
@@ -6658,13 +6661,13 @@
          // first try point around mouse y
          var best = height;
          for (var m=l;m<=r;m++) {
-            var dist = Math.abs(GetBinGrY(m) - y);
+            var dist = Math.abs(GetBinGrY(m) - pnt.y);
             if (dist < best) { best = dist; bin = m; }
          }
 
          // if best distance still too far from mouse position, just take from between
          if (best > height/10)
-            bin = Math.round(l + (r-l) / height * y);
+            bin = Math.round(l + (r-l) / height * pnt.y);
 
          grx = pmain.grx(this.GetBinX(bin));
       }
@@ -6712,14 +6715,9 @@
       return res;
    }
 
-   JSROOT.TH1Painter.prototype.HideToolTip = function() {
-      if (this.new_tooltip && (this.draw_g!==null))
-         this.draw_g.select(".tooltip_bin").remove();
-      return null;
-   }
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
-      this.new_tooltip = false;
+      delete this['ProcessTooltip'];
 
       var width = this.frame_width(), height = this.frame_height();
 
