@@ -7,6 +7,15 @@
 4. Fix problem with color pallete when switch to 3D mode (#28)
 5. Use nested CSS classes to avoid conflicts with other libraries (#29)
 6. Let move and resize TFrame
+7. Improve TH1 drawings
+   - always draw all histograms points in the range (no any skipped bins)
+   - minimize SVG code for drawing (up to factor 100)
+   - finally, significant speedup in drawings
+8. Comparable improvements for TF1
+9. Provide new tooltip kind
+   - created only when needed (minimize SVG code)
+   - tooltip can be drawn for every object in the frame
+   - touch devices could be easily supported 
 
 
 ## Changes in 4.3
