@@ -891,10 +891,70 @@
          return res;
       }
 
+      this['ProcessTooltipFunc'] = function(pnt) {
+         var cleanup = false;
+
+         if ((pnt === null) || (this.bins===null)) {
+            cleanup = true;
+         } else
+         if ((pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
+            cleanup = true;
+         }
+
+         if (cleanup) {
+            if (this.draw_g !== null)
+               this.draw_g.select(".tooltip_bin").remove();
+            return null;
+         }
+
+         var min = 100000, best = -1, bin;
+
+         for(var n=0; n<this.bins.length; ++n) {
+            bin = this.bins[n];
+            var dist = Math.abs(bin.grx - pnt.x);
+            if (dist < min) { min = dist; best = n; }
+         }
+
+         bin = this.bins[best];
+
+         var gbin = this.draw_g.select(".tooltip_bin");
+         if (gbin.empty())
+            gbin = this.draw_g.append("svg:circle")
+                              .attr("class","tooltip_bin")
+                              .style("pointer-events","none")
+                              .attr("r", this.lineatt.width + 3)
+                              .call(this.lineatt.func)
+                              .call(this.fillatt.func);
+
+         if (gbin.property("current_bin") !== best)
+            gbin.attr("cx", bin.grx)
+                .attr("cy", bin.gry)
+                .property("current_bin", best);
+
+         var res = { x: bin.grx,
+                     y: bin.gry,
+                     color1: this.lineatt.color,
+                     color2: this.fillatt.color,
+                     lines: [] };
+
+         if ((this.GetItemName()!=="") && (this.GetItemName()!==null))
+            res.lines.push(this.GetItemName());
+         else
+         if (this.tf1.fName !== "")
+            res.lines.push(this.tf1.fName);
+
+         res.lines.push("x = " + res.x + " y = " + res.y);
+
+         return res;
+      }
+
+
       this['DrawBins'] = function() {
 
          //if (JSROOT.gStyle.Tooltip > 1)
          //   return this.DrawDirectAsPath();
+
+         delete this['ProcessTooltip'];
 
          var w = this.frame_width(), h = this.frame_height();
 
@@ -910,9 +970,9 @@
          if ((name==null) || (name=="")) name = this.tf1.fName;
          if (name.length > 0) name += "\n";
 
-         var lineatt = JSROOT.Painter.createAttLine(this.tf1);
-         var fillatt = this.createAttFill(this.tf1);
-         if (fillatt.color == 'white') fillatt.color = 'none';
+         this.lineatt = JSROOT.Painter.createAttLine(this.tf1);
+         this.fillatt = this.createAttFill(this.tf1);
+         if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
          if ((JSROOT.gStyle.Tooltip > 1) && (this.bins.length > 2)) {
 
@@ -924,6 +984,7 @@
                bin.gry = Math.round(pmain.gry(bin.y));
             }
 
+            // code taken from d3.js to calculate parameters for Bezier curves
             function d3_svg_lineSlope(p0, p1) {
               return (p1.gry - p0.gry) / (p1.grx - p0.grx);
             }
@@ -935,7 +996,7 @@
                m[i] = d;
                return m;
              }
-             function d3_svg_lineMonotoneTangents(points) {
+             function myd3_svg_lineMonotoneTangents(points) {
                var d, a, b, s, m = d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
                while (++i < j) {
                  d = d3_svg_lineSlope(points[i], points[i + 1]);
@@ -958,10 +1019,9 @@
                   points[i].tanx = Math.round(s || 0);
                   points[i].tany = Math.round(m[i]*s || 0);
                }
-               return points;
              }
 
-             d3_svg_lineMonotoneTangents(this.bins);
+             myd3_svg_lineMonotoneTangents(this.bins);
 
              var currx = this.bins[0].grx,
                  curry = this.bins[0].gry;
@@ -991,20 +1051,22 @@
 
             console.log('tf1 line ' + path.length);
 
-            if (lineatt.color != "none")
+            if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "line")
                   .attr("d", path)
                   .style("fill", "none")
-                  .call(lineatt.func);
+                  .call(this.lineatt.func);
 
-            if (fillatt.color != "none")
+            if (this.fillatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "area")
                   .attr("d", path + close_path)
                   .style("stroke", "none")
                   .style("pointer-events", "none")
-                  .call(fillatt.func);
+                  .call(this.fillatt.func);
+
+            this['ProcessTooltip'] = this['ProcessTooltipFunc'];
 
          } else {
 
@@ -1020,20 +1082,20 @@
 
             console.log('tf1 line ' + line(this.bins).length + ' area ' + area(pthis.bins).length);
 
-            if (lineatt.color != "none")
+            if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "line")
                   .attr("d",line(this.bins))
                   .style("fill", "none")
-                  .call(lineatt.func);
+                  .call(this.lineatt.func);
 
-            if (fillatt.color != "none")
+            if (this.fillatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "area")
                   .attr("d",area(this.bins))
                   .style("stroke", "none")
                   .style("pointer-events", "none")
-                  .call(fillatt.func);
+                  .call(this.fillatt.func);
 
             // add tooltips
             if (JSROOT.gStyle.Tooltip > 0)
