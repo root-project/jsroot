@@ -1409,7 +1409,7 @@
       var svg_p = this.svg_pad();
       if (svg_p.empty()) return;
 
-      if (svg_p.property('pad_painter') != this)
+      if (svg_p.property('pad_painter') !== this)
          svg_p.property('pad_painter').painters.push(this);
 
       if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && (svg_p.property('mainpainter') == null))
@@ -2123,7 +2123,6 @@
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
       this.tframe = tframe;
-      this.listeners = null;
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2201,7 +2200,6 @@
       if (this.draw_g.empty())
          return console.error('did not found frame layer');
 
-
       var top_rect = this.draw_g.select("rect"),
           main_svg = this.draw_g.select(".main_layer");
 
@@ -2220,7 +2218,40 @@
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
 
-         this.listeners = null; // clear list
+         var painter = this;
+
+         function HideEvent() {
+            painter.HideActiveTooltips();
+         };
+
+         function ProcessEvent() {
+            var evnt = d3.event;
+
+            var point = main_svg.node().createSVGPoint();
+
+            point.x = evnt.clientX;
+            point.y = evnt.clientY;
+            var ctm = top_rect.node().getScreenCTM();
+            var inverse = ctm.inverse();
+
+            var pnt = point.matrixTransform(inverse);
+
+            painter.ProcessTooltipEvent(pnt);
+         };
+
+         if (JSROOT.gStyle.Tooltip > 1) {
+            // install events handler for special tooltip kinds
+            main_svg
+              .attr("title","")
+              .on('mousemove', ProcessEvent)
+              .on('mouseleave', HideEvent);
+
+            top_rect
+              .attr("title","")
+              .style("pointer-events","visibleFill")
+              .on('mousemove', ProcessEvent)
+              .on('mouseleave', HideEvent);
+         }
       }
 
       // simple way to access painter via frame container
@@ -2255,142 +2286,113 @@
    }
 
    JSROOT.TFramePainter.prototype.HideActiveTooltips = function() {
-      if (this.listeners!==null)
-         this.listeners.forEach(function(obj) { obj.HideToolTip(); });
+
+      this.pad_painter(true).painters.forEach(function(obj) {
+         if ('HideToolTip' in obj) obj.HideToolTip();
+      });
 
       this.draw_g.select(".upper_layer").select(".objects_hints").remove();
    }
 
-   JSROOT.TFramePainter.prototype.InstallEventListener = function(listener) {
-      if (this.draw_g.empty() || (listener === undefined)) return;
+   JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
+      if (JSROOT.gStyle.Tooltip < 2)
+         return this.HideActiveTooltips();
 
-      if (this.listeners!==null) {
-         if (this.listeners.indexOf(listener)<0) this.listeners.push(listener);
-         return;
+      var hints = [], maxlen = 0, lastcolor1 = 0, usecolor1 = false;
+      var textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = this.frame_height();
+
+      this.pad_painter(true).painters.forEach(function(obj) {
+         var hint = null;
+
+         if ('ShowToolTip' in obj)
+            hint = obj.ShowToolTip(pnt.x, pnt.y);
+
+         hints.push(hint);
+         if (hint === null) return;
+
+         for (var l=0;l<hint.lines.length;++l)
+            if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
+
+         hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
+
+         if ((hint.color1!== undefined) && (hint.color1!=='none')) {
+            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+            lastcolor1 = hint.color1;
+         }
+      });
+      // resort y position of all hints, starting from down
+      if (hints.length > 1) {
+         var curry = height + 10;
+         for (var n = 0; n < hints.length; ++n) {
+            var p = -1;
+            for (var k = 0; k < hints.length; ++k) {
+               if ((hints[k] === null) || ('checked' in hints[k])) continue;
+               if ((p<0) || (hints[k].y > hints[p].y)) p = k;
+            }
+            if (p<0) break;
+            hints[p].checked = true;
+            if (hints[p].y + hints[p].height > curry) hints[p].y = curry - hints[p].height;
+            curry = hints[p].y - 2*hmargin;
+         }
+      } else
+      if ((hints[0] !== null) && (pnt.y > hint.y))
+         hint.y = pnt.y;
+
+      var layer = this.draw_g.select(".upper_layer");
+
+      var hintsg = layer.select(".objects_hints");
+
+      if (hintsg.empty()) {
+         if (maxlen === 0) return;
+         hintsg = layer.append("svg:g")
+                       .attr("class", "objects_hints")
+                       .style("pointer-events","none");
+      } else {
+         if (maxlen === 0) return hintsg.style("display","none");
+         hintsg.style("display",null); // let draw
       }
 
-      this.listeners = [ listener ];
+      var maxwidth = textheight * maxlen * 0.5;
+      if (maxwidth < 50) maxwidth = 50;
+      var actualw = 0;
 
-      var top_rect = this.draw_g.select("rect");
-      var main_svg = this.draw_g.select(".main_layer");
-
-      var painter = this;
-
-      function HideEvent() {
-         painter.HideActiveTooltips();
-      };
-
-      function ProcessEvent() {
-         if (JSROOT.gStyle.Tooltip <= 0) return HideEvent();
-
-         var evnt = d3.event;
-
-         var point = main_svg.node().createSVGPoint();
-
-         point.x = evnt.clientX;
-         point.y = evnt.clientY;
-         var ctm = top_rect.node().getScreenCTM();
-         var inverse = ctm.inverse();
-
-         var pnt = point.matrixTransform(inverse);
-
-         var hints = [], maxlen = 0, lastcolor1 = 0, usecolor1 = false;
-         var textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = painter.frame_height();
-
-         for (var n = 0; n < painter.listeners.length; ++n) {
-            var hint = hints[n] = painter.listeners[n].ShowToolTip(pnt.x, pnt.y);
-            if (hint === null) continue;
-
-            for (var l=0;l<hint.lines.length;++l)
-               if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
-
-            hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
-
-            if ((hint.color1!== undefined) && (hint.color1!=='none')) {
-               if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
-               lastcolor1 = hint.color1;
-            }
-         }
-         // resort y position of all hints, starting from down
-         if (hints.length > 1) {
-            var curry = height + 10;
-            for (var n = 0; n < hints.length; ++n) {
-               var p = -1;
-               for (var k = 0; k < hints.length; ++k) {
-                  if ((hints[k] === null) || ('checked' in hints[k])) continue;
-                  if ((p<0) || (hints[k].y > hints[p].y)) p = k;
-               }
-               if (p<0) break;
-               hints[p].checked = true;
-               if (hints[p].y + hints[p].height > curry) hints[p].y = curry - hints[p].height;
-               curry = hints[p].y - 2*hmargin;
-            }
-         } else
-         if ((hints[0] !== null) && (pnt.y > hint.y))
-            hint.y = pnt.y;
-
-         var layer = painter.draw_g.select(".upper_layer");
-
-         var hintsg = layer.select(".objects_hints");
-
-         if (hintsg.empty()) {
-            if (maxlen === 0) return;
-            hintsg = layer.append("svg:g")
-                          .attr("class", "objects_hints")
-                          .style("pointer-events","none");
-            for (var n=0;n< painter.listeners.length; ++n)
-               hintsg.append("svg:g").attr("class", "painter_hint_"+n);
-         } else {
-            if (maxlen === 0) return hintsg.style("display","none");
-            hintsg.style("display",null); // let draw
-         }
-
-         var maxwidth = textheight * maxlen * 0.5;
-         if (maxwidth < 50) maxwidth = 50;
-         var actualw = 0;
-
-         for (var n=0; n < hints.length; ++n) {
-            var hint = hints[n];
-            var group = hintsg.select(".painter_hint_"+n);
+      for (var n=0; n < hints.length; ++n) {
+         var hint = hints[n];
+         var group = hintsg.select(".painter_hint_"+n);
+         if (hint===null) {
             group.selectAll("*").remove();
-            if (hint===null) continue;
+            continue;
+         }
+         if (group.empty())
+            group = hintsg.append("svg:g").attr("class", "painter_hint_"+n);
+         else
+            group.selectAll("*").remove();
 
-            var r = group.append("svg:rect").attr("x", pnt.x+10)
-                                            .attr("y", hint.y)
-                                            .attr("width", maxwidth + 2*wmargin)
-                                            .attr("height", hint.height)
-                                            .attr("fill","lightgrey");
-            if (hints.length > 1) {
-               var col = usecolor1 ? hint.color1 : hint.color2;
-               if ((col !== undefined) && (col!=='none'))
-                  r.style("stroke", col).style("stroke-width", 2);
-            }
-
-            painter.StartTextDrawing(42, textheight, group);
-
-            if (hint !== null)
-               for (var l=0;l<hint.lines.length;l++)
-                  if (hint.lines[l]!==null)
-                     painter.DrawText(12, pnt.x+10+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
-
-            actualw = Math.max(actualw, painter.FinishTextDrawing(group));
+         var r = group.append("svg:rect").attr("x", pnt.x+10)
+                                         .attr("y", hint.y)
+                                         .attr("width", maxwidth + 2*wmargin)
+                                         .attr("height", hint.height)
+                                         .attr("fill","lightgrey");
+         if (hints.length > 1) {
+            var col = usecolor1 ? hint.color1 : hint.color2;
+            if ((col !== undefined) && (col!=='none'))
+               r.style("stroke", col).style("stroke-width", 2);
          }
 
-         if (actualw > 10)
-            hintsg.selectAll("rect").attr("width", actualw + 4*wmargin);
-      };
+         this.StartTextDrawing(42, textheight, group);
 
-      main_svg
-        .attr("title","")
-        .on('mousemove', ProcessEvent)
-        .on('mouseleave', HideEvent);
+         if (hint !== null)
+            for (var l=0;l<hint.lines.length;l++)
+               if (hint.lines[l]!==null)
+                  this.DrawText(12, pnt.x+10+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
 
-      top_rect
-        .attr("title","")
-        .style("pointer-events","visibleFill")
-        .on('mousemove', ProcessEvent)
-        .on('mouseleave', HideEvent);
+         actualw = Math.max(actualw, this.FinishTextDrawing(group));
+      }
+
+      if (actualw > 10)
+         hintsg.selectAll("rect").attr("width", actualw + 4*wmargin);
    }
+
 
    JSROOT.Painter.drawFrame = function(divid, obj) {
       var p = new JSROOT.TFramePainter(obj);
@@ -6049,6 +6051,7 @@
 
    JSROOT.TH1Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
+      this.new_tooltip = false;
    }
 
    JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -6601,7 +6604,6 @@
       }
 
       console.log('path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
-      // console.log('res = ' + res);
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
@@ -6609,13 +6611,12 @@
                  .call(this.attline.func)
                  .call(this.fill.func);
 
-      this.frame_painter().InstallEventListener(this);
+      this.new_tooltip = true;
    }
 
    JSROOT.TH1Painter.prototype.ShowToolTip = function(x,y) {
 
-      if (JSROOT.gStyle.Tooltip <= 0)
-         return this.HideToolTip();
+      if (!this.new_tooltip) return null;
 
       var width = this.frame_width(),
           height = this.frame_height(),
@@ -6712,13 +6713,13 @@
    }
 
    JSROOT.TH1Painter.prototype.HideToolTip = function() {
-      this.draw_g.select(".tooltip_bin").remove();
-
+      if (this.new_tooltip && (this.draw_g!==null))
+         this.draw_g.select(".tooltip_bin").remove();
       return null;
    }
 
-
    JSROOT.TH1Painter.prototype.DrawBins = function() {
+      this.new_tooltip = false;
 
       var width = this.frame_width(), height = this.frame_height();
 
