@@ -916,15 +916,12 @@
 
          if ((JSROOT.gStyle.Tooltip > 1) && (this.bins.length > 2)) {
 
-            //if ('DDDD' in JSROOT) return;
-            //JSROOT.DDDD = true;
-
             var bin;
             // first calculate graphical coordinates
             for(var n=0; n<this.bins.length; ++n) {
                bin = this.bins[n];
-               bin.grx = pmain.grx(bin.x);
-               bin.gry = pmain.gry(bin.y);
+               bin.grx = Math.round(pmain.grx(bin.x));
+               bin.gry = Math.round(pmain.gry(bin.y));
             }
 
             function d3_svg_lineSlope(p0, p1) {
@@ -958,8 +955,8 @@
                i = -1;
                while (++i <= j) {
                   s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-                  points[i].tanx = s || 0;
-                  points[i].tany = m[i]*s || 0;
+                  points[i].tanx = Math.round(s || 0);
+                  points[i].tany = Math.round(m[i]*s || 0);
                }
                return points;
              }
@@ -971,21 +968,18 @@
 
              var path = "M" + currx + "," + curry;
 
+             bin = this.bins[0];
+             path += "C" + (bin.grx + bin.tanx) + "," + (bin.gry + bin.tany) + ",";
+
              for(var n=1; n<this.bins.length; ++n) {
 
                bin = this.bins[n];
                var x = bin.grx;
                var y = bin.gry;
 
-               if (n===1) {
-                  var bin0 = this.bins[0];
-                  path += " C " + (bin0.grx + bin0.tanx) + " " + (bin0.gry + bin0.tany) + ", ";
-               } else {
-                  path += " S ";
-               }
+               if (n > 1) path += "S";
 
-               //path += "c" + dx1 + "," + dy1 + ",";
-               path += (x-bin.tanx) + " " + (y-bin.tany) + ", " + x + " " + y;
+               path += (x-bin.tanx) + "," + (y-bin.tany) + "," + x + "," + y;
 
                currx = x;
                curry = y;
