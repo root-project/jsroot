@@ -759,8 +759,8 @@
 
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
 
-      this['tf1'] = tf1;
-      this['bins'] = null;
+      this.tf1 = tf1;
+      this.bins = null;
 
       this['GetObject'] = function() {
          return this.tf1;
@@ -776,27 +776,22 @@
 
       this['CreateDummyHisto'] = function() {
          var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-         if (this.tf1['fSave'].length > 0) {
+         if (this.tf1.fSave.length > 0) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
-            var nb_points = this.tf1['fNpx'];
+            var nb_points = this.tf1.fNpx;
             for (var i = 0; i < nb_points; ++i) {
-               var h = this.tf1['fSave'][i];
-               if ((i == 0) || (h > ymax))
-                  ymax = h;
-               if ((i == 0) || (h < ymin))
-                  ymin = h;
+               var h = this.tf1.fSave[i];
+               if ((i == 0) || (h > ymax)) ymax = h;
+               if ((i == 0) || (h < ymin)) ymin = h;
             }
-            xmin = this.tf1['fSave'][nb_points + 1];
-            xmax = this.tf1['fSave'][nb_points + 2];
+            xmin = this.tf1.fSave[nb_points + 1];
+            xmax = this.tf1.fSave[nb_points + 2];
          } else {
             // we don't have the points, so let's try to interpret the function
-            // use fNpfits instead of fNpx if possible (to use more points)
-            if (this.tf1['fNpfits'] <= 103)
-               this.tf1['fNpfits'] = 103;
-            xmin = this.tf1['fXmin'];
-            xmax = this.tf1['fXmax'];
-            var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
+            xmin = this.tf1.fXmin;
+            xmax = this.tf1.fXmax;
+            var nb_points = Math.max(this.tf1.fNpx, this.tf1.fNpfits, 103);
 
             var binwidthx = (xmax - xmin) / nb_points;
             var left = -1, right = -1;
@@ -809,8 +804,7 @@
                   ymax = h;
                   ymin = h;
                }
-               if ((right < 0) || (right == i - 1))
-                  right = i;
+               if ((right < 0) || (right === i - 1)) right = i;
 
                if (h > ymax) ymax = h;
                if (h < ymin) ymin = h;
@@ -827,76 +821,96 @@
 
          var histo = JSROOT.Create("TH1I");
 
-         histo['fName'] = this.tf1['fName'] + "_hist";
-         histo['fTitle'] = this.tf1['fTitle'];
+         histo.fName = this.tf1.fName + "_hist";
+         histo.fTitle = this.tf1.fTitle;
 
-         histo['fXaxis']['fXmin'] = xmin;
-         histo['fXaxis']['fXmax'] = xmax;
-         histo['fYaxis']['fXmin'] = ymin;
-         histo['fYaxis']['fXmax'] = ymax;
+         histo.fXaxis.fXmin = xmin;
+         histo.fXaxis.fXmax = xmax;
+         histo.fYaxis.fXmin = ymin;
+         histo.fYaxis.fXmax = ymax;
 
          return histo;
       }
 
       this['CreateBins'] = function() {
 
-         var pthis = this;
+         var main = this.main_painter(), gxmin = 0, gxmax = 0;
 
-         if (this.tf1['fSave'].length > 0) {
+         if (main!==null)  {
+            if (main.zoom_xmin !== main.zoom_xmax) {
+               gxmin = main.zoom_xmin;
+               gxmax = main.zoom_xmax;
+            } else {
+               gxmin = main.xmin;
+               gxmax = main.xmax;
+            }
+         }
+
+         if (this.tf1.fSave.length > 0) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
-            var nb_points = this.tf1['fNpx'];
+            var np = this.tf1.fSave.length - 2;
+            var xmin = this.tf1.fSave[np],
+                xmax = this.tf1.fSave[np+1];
+            var dx = (xmax - xmin) / (np-1);
 
-            var xmin = this.tf1['fSave'][nb_points + 1];
-            var xmax = this.tf1['fSave'][nb_points + 2];
-            var binwidthx = (xmax - xmin) / nb_points;
+            var res = [];
+            for (var n=0; n < np; ++n) {
+               var xx = xmin + dx*n;
+               // check if points need to be displayed at all
+               if ((gxmin !== gxmax) && ((xx + dx < gxmin) || (xx - dx > gxmax))) continue;
 
-            this['bins'] = d3.range(nb_points).map(function(p) {
-               return {
-                  x : xmin + (p * binwidthx),
-                  y : pthis.tf1['fSave'][p]
-               };
-            });
-            this['interpolate_method'] = 'monotone';
-         } else {
-            var main = this.main_painter();
-
-            if (this.tf1['fNpfits'] <= 103)
-               this.tf1['fNpfits'] = 333;
-            var xmin = this.tf1['fXmin'], xmax = this.tf1['fXmax'], logx = false;
-
-            if (main['zoom_xmin'] != main['zoom_xmax']) {
-               if (main['zoom_xmin'] > xmin) xmin = main['zoom_xmin'];
-               if (main['zoom_xmax'] < xmax) xmax = main['zoom_xmax'];
+               res.push({ x : xx, y : this.tf1.fSave[n] });
             }
-
-            if (main.options.Logx && (xmin>0) && (xmax>0)) {
-               logx = true;
-               xmin = Math.log(xmin);
-               xmax = Math.log(xmax);
-            }
-
-            var nb_points = Math.max(this.tf1['fNpx'], this.tf1['fNpfits']);
-            var binwidthx = (xmax - xmin) / nb_points;
-            this['bins'] = d3.range(nb_points).map(function(p) {
-               var xx = xmin + (p * binwidthx);
-               if (logx) xx = Math.exp(xx);
-               var yy = pthis.Eval(xx);
-               if (isNaN(yy)) yy = 0;
-               return { x : xx, y : yy };
-            });
-
-            this['interpolate_method'] = 'monotone';
+            return res;
          }
+
+         var xmin = this.tf1.fXmin, xmax = this.tf1.fXmax, logx = false;
+
+         if (gxmin !== gxmax) {
+            if (gxmin > xmin) xmin = gxmin;
+            if (gxmax < xmax) xmax = gxmax;
+         }
+
+         if ((main!==null) && main.options.Logx && (xmin>0) && (xmax>0)) {
+            logx = true;
+            xmin = Math.log(xmin);
+            xmax = Math.log(xmax);
+         }
+
+         var np = Math.max(this.tf1.fNpx, 101);
+         var dx = (xmax - xmin) / (np - 1);
+
+         var res = [];
+         for (var n=0; n < np; n++) {
+            var xx = xmin + n*dx;
+            if (logx) xx = Math.exp(xx);
+            var yy = this.Eval(xx);
+            if (!isNaN(yy)) res.push({ x : xx, y : yy });
+         }
+         return res;
       }
 
+      this['DrawDirectAsPath'] = function() {
+         var w = this.frame_width(), h = this.frame_height();
+         this.RecreateDrawG(false, ".main_layer");
+
+         this.drawbins = this.CreateBins();
+
+      }
+
+
       this['DrawBins'] = function() {
+
+         //if (JSROOT.gStyle.Tooltip > 1)
+         //   return this.DrawDirectAsPath();
+
          var w = this.frame_width(), h = this.frame_height();
 
          this.RecreateDrawG(false, ".main_layer");
 
          // recalculate drawing bins when necessary
-         if ((this['bins']==null) || (this.tf1['fSave'].length==0)) this.CreateBins();
+         this.bins = this.CreateBins();
 
          var pthis = this;
          var pmain = this.main_painter();
@@ -905,26 +919,28 @@
          if ((name==null) || (name=="")) name = this.tf1.fName;
          if (name.length > 0) name += "\n";
 
-         var attline = JSROOT.Painter.createAttLine(this.tf1);
+         var lineatt = JSROOT.Painter.createAttLine(this.tf1);
          var fill = this.createAttFill(this.tf1);
          if (fill.color == 'white') fill.color = 'none';
 
          var line = d3.svg.line()
                       .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                       .y(function(d) { return pmain.gry(d.y).toFixed(1); })
-                      .interpolate(this.interpolate_method);
+                      .interpolate('monotone');
 
          var area = d3.svg.area()
                      .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                      .y1(h)
                      .y0(function(d) { return pmain.gry(d.y).toFixed(1); });
 
-         if (attline.color != "none")
+         console.log('tf1 line ' + line(this.bins).length + ' area ' + area(pthis.bins).length);
+
+         if (lineatt.color != "none")
             this.draw_g.append("svg:path")
                .attr("class", "line")
                .attr("d",line(pthis.bins))
                .style("fill", "none")
-               .call(attline.func);
+               .call(lineatt.func);
 
          if (fill.color != "none")
             this.draw_g.append("svg:path")
@@ -955,15 +971,15 @@
       }
 
       this['CanZoomIn'] = function(axis,min,max) {
-         if (axis!="x") return false;
+         if (axis!=="x") return false;
 
-         if (this.tf1['fSave'].length > 0) {
+         if (this.tf1.fSave.length > 0) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
-            var nb_points = this.tf1['fNpx'];
+            var nb_points = this.tf1.fNpx;
 
-            var xmin = this.tf1['fSave'][nb_points + 1];
-            var xmax = this.tf1['fSave'][nb_points + 2];
+            var xmin = this.tf1.fSave[nb_points + 1];
+            var xmax = this.tf1.fSave[nb_points + 2];
 
             return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
          }
@@ -973,7 +989,7 @@
       }
 
       this.SetDivId(divid, -1);
-      if (this.main_painter() == null) {
+      if (this.main_painter() === null) {
          var histo = this.CreateDummyHisto();
          JSROOT.Painter.drawHistogram1D(divid, histo, "AXIS");
       }
