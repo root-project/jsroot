@@ -6517,15 +6517,14 @@
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
-          res = "", istep = 1,
-          startx, currx, curry, x, grx, y, gry;
+          res = "", lastbin = false,
+          startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx;
 
-      for (var i = left; i < right; i+=istep) {
-         if ((res.length > 100000) && (istep === 1)) {
-            istep = Math.max(2, Math.round((right-left)/(i-left)));
-            res = ""; i = left;
-            console.warn('draw TH1, protection against very large path, step = '+istep);
-         }
+      // if there are too many points, exclude many vertical drawings at the same X position
+      // instead define min and max value and made min-max drawing
+      var use_minmax = (right-left) > 3*width && (JSROOT.gStyle.Tooltip === 3);
+
+      for (var i = left; i <= right; ++i) {
 
          x = this.GetBinX(i);
 
@@ -6533,42 +6532,76 @@
 
          grx = Math.round(pmain.grx(x));
 
-         y = this.histo.getBinContent(i + 1);
-
-         if (this.options.Logy && (y < this.scale_ymin))
-            gry = height + 10;
-         else
-            gry = Math.round(pmain.gry(y));
+         if (i === right) {
+            lastbin = true;
+            gry = curry;
+         } else {
+            y = this.histo.getBinContent(i + 1);
+            if (this.options.Logy && (y < this.scale_ymin))
+               gry = height + 1;
+            else
+               gry = Math.round(pmain.gry(y));
+         }
 
          if (res.length === 0) {
-            startx = currx = grx;
-            curry = gry;
+            prevx = startx = currx = grx;
+            prevy = curry_min = curry_max = curry = gry;
             res = "M"+currx+","+curry;
          } else
-         if (gry !== curry) {
-            if (grx != currx) res += "h"+(grx-currx);
-            res += "v" + (gry - curry);
+         if (use_minmax) {
+            if ((grx === currx) && !lastbin) {
+               curry_min = Math.min(curry_min, gry);
+               curry_max = Math.max(curry_max, gry);
+               curry = gry;
+            } else {
+
+               // when several points as same X differs, need complete logic
+               if ((curry_min !== curry_max) || (prevy !== curry_min)) {
+
+                  if (prevx !== currx)
+                     res += "h"+(currx-prevx);
+
+                  if (curry === curry_min) {
+                     if (curry_max !== prevy)
+                        res += "v" + (curry_max - prevy);
+                     if (curry_min !== curry_max)
+                        res += "v" + (curry_min - curry_max);
+                  } else {
+                     if (curry_min !== prevy)
+                        res += "v" + (curry_min - prevy);
+                     if (curry_max !== curry_min)
+                        res += "v" + (curry_max - curry_min);
+                     if (curry !== curry_max)
+                       res += "v" + (curry - curry_max);
+                  }
+
+                  prevx = currx;
+                  prevy = curry;
+               }
+
+               if (lastbin && (prevx !== grx))
+                  res += "h"+(grx-prevx);
+
+               curry_min = curry_max = curry = gry;
+               currx = grx;
+            }
+         } else
+         if ((gry !== curry) || lastbin) {
+            if (grx !== currx) res += "h"+(grx-currx);
+            if (gry !== curry) res += "v"+(gry-curry);
             curry = gry;
             currx = grx;
          }
       }
 
-      x = this.GetBinX(right);
-      if (!this.options.Logx || (x > 0))
-         grx = Math.round(pmain.grx(x));
-
-      if (grx !== currx) {
-         res += "h"+(grx - currx);
-         currx = grx;
-      }
-
       if (this.fill.color !== 'none') {
-         res+="L"+currx+","+(height+5);
-         res+="L"+startx+","+(height+5);
+         res+="L"+currx+","+(height+3);
+         res+="L"+startx+","+(height+3);
          res+="Z";
       }
 
-      console.log('path len = ' + res.length);
+      console.log('path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
+      // console.log('res = ' + res);
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
@@ -6697,7 +6730,7 @@
       if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
-      if (JSROOT.gStyle.Tooltip === 2)
+      if (JSROOT.gStyle.Tooltip > 1)
          return this.DrawDirectAsPath();
 
       var draw_bins = this.CreateDrawBins(width, height);
