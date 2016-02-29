@@ -2072,8 +2072,8 @@
       this.fillcolor = JSROOT.Painter.root_colors[this.histo['fFillColor']];
       // if (this.histo['fFillColor'] == 0) this.fillcolor = '#4572A7'; // why?
 
-      this.attline = JSROOT.Painter.createAttLine(this.histo);
-      if (this.attline.color == 'none') this.attline.color = '#4572A7';
+      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+      if (this.lineatt.color == 'none') this.lineatt.color = '#4572A7';
 
       this.nbinsx = this.histo['fXaxis']['fNbins'];
       this.nbinsy = this.histo['fYaxis']['fNbins'];
@@ -2481,7 +2481,7 @@
                   y : gry2 + dgry,
                   width : grx2 - grx1 - 2 * dgrx,
                   height : gry1 - gry2 - 2 * dgry,
-                  stroke : this.attline.color,
+                  stroke : this.lineatt.color,
                   fill : this.fillcolor,
                   tipcolor: this.fillcolor == 'black' ? "grey" : "black"
                }

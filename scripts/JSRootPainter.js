@@ -6058,18 +6058,18 @@
    JSROOT.TH1Painter.prototype.ScanContent = function() {
       // from here we analyze object content
       // therefore code will be moved
-      this.fill = this.createAttFill(this.histo);
-      if (this.fill.color == 'white') this.fill.color = 'none';
+      this.fillatt = this.createAttFill(this.histo);
+      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
-      this.attline = JSROOT.Painter.createAttLine(this.histo);
+      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
       var main = this.main_painter();
-      if (main!=null) this.attline.color = main.GetAutoColor(this.attline.color);
+      if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
 
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
       var profile = this.IsTProfile();
 
-      this.nbinsx = this.histo['fXaxis']['fNbins'];
+      this.nbinsx = this.histo.fXaxis.fNbins;
       this.nbinsy = 0;
 
       for (var i = 0; i < this.nbinsx; ++i) {
@@ -6116,15 +6116,15 @@
 
       hmin = hmax = null;
       var set_zoom = false;
-      if (this.histo['fMinimum'] != -1111) {
-         hmin = this.histo['fMinimum'];
+      if (this.histo.fMinimum != -1111) {
+         hmin = this.histo.fMinimum;
          if (hmin < this.ymin)
             this.ymin = hmin;
          else
             set_zoom = true;
       }
-      if (this.histo['fMaximum'] != -1111) {
-         hmax = this.histo['fMaximum'];
+      if (this.histo.fMaximum != -1111) {
+         hmax = this.histo.fMaximum;
          if (hmax > this.ymax)
             this.ymax = hmax;
          else
@@ -6438,17 +6438,17 @@
          // draw as rectangles
 
          // when no any marker is show, use at least non-empty fill color
-         if (this.fill.color === 'none') show_markers = true;
+         if (this.fillatt.color === 'none') show_markers = true;
 
          nodes.append("svg:rect")
             .attr("x", function(d) { return (-d.xerr).toFixed(1); })
             .attr("y", function(d) { return (-d.yerr).toFixed(1); })
             .attr("width", function(d) { return (2*d.xerr).toFixed(1); })
             .attr("height", function(d) { return (2*d.yerr).toFixed(1); })
-            // .call(this.attline.func)
-            .call(this.fill.func)
+            // .call(this.lineatt.func)
+            .call(this.fillatt.func)
             .style("pointer-events","visibleFill") // even when fill attribute not specified, get mouse events
-            .property("fill0", this.fill.color) // remember color
+            .property("fill0", this.fillatt.color) // remember color
             .on('mouseover', function() {
                if (JSROOT.gStyle.Tooltip>0)
                  d3.select(this).transition().duration(100).style("fill", "grey");
@@ -6467,13 +6467,13 @@
               .attr("y1", 0)
               .attr("x2", function(d) { return d.xerr.toFixed(1); })
               .attr("y2", 0)
-              .call(this.attline.func);
+              .call(this.lineatt.func);
          nodes.append("svg:line")  // y indicator
               .attr("x1", 0)
               .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
               .attr("x2", 0)
               .attr("y2", function(d) { return d.yerr.toFixed(1); })
-              .call(this.attline.func);
+              .call(this.lineatt.func);
       }
 
       if (this.options.Error == 11) {
@@ -6482,25 +6482,25 @@
                 .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
                 .attr("y2", 3)
                 .attr("x2", function(d) { return (-d.xerr).toFixed(1); })
-                .call(this.attline.func);
+                .call(this.lineatt.func);
          nodes.append("svg:line")
                 .attr("y1", -3)
                 .attr("x1", function(d) { return d.xerr.toFixed(1); })
                 .attr("y2", 3)
                 .attr("x2", function(d) { return d.xerr.toFixed(1); })
-                .call(this.attline.func);
+                .call(this.lineatt.func);
          nodes.append("svg:line")
                 .attr("x1", -3)
                 .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
                 .attr("x2", 3)
                 .attr("y2", function(d) { return (-d.yerr).toFixed(1); })
-                .call(this.attline.func);
+                .call(this.lineatt.func);
          nodes.append("svg:line")
                  .attr("x1", -3)
                  .attr("y1", function(d) { return d.yerr.toFixed(1); })
                  .attr("x2", 3)
                  .attr("y2", function(d) { return d.yerr.toFixed(1); })
-                 .call(this.attline.func);
+                 .call(this.lineatt.func);
       }
 
       if (show_markers) {
@@ -6596,19 +6596,19 @@
          }
       }
 
-      if (this.fill.color !== 'none') {
+      if (this.fillatt.color !== 'none') {
          res+="L"+currx+","+(height+3);
          res+="L"+startx+","+(height+3);
          res+="Z";
       }
 
-      console.log('path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
+      console.log('th1 path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
                  .style("stroke-linejoin","miter")
-                 .call(this.attline.func)
-                 .call(this.fill.func);
+                 .call(this.lineatt.func)
+                 .call(this.fillatt.func);
 
       this['ProcessTooltip'] = this.ProcessTooltipFunc;
    }
@@ -6686,16 +6686,16 @@
          ttrect = this.draw_g.append("svg:circle")
                              .attr("class","tooltip_bin")
                              .style("pointer-events","none")
-                             .attr("r", this.attline.width + 3)
-                             .call(this.attline.func)
-                             .call(this.fill.func);
+                             .attr("r", this.lineatt.width + 3)
+                             .call(this.lineatt.func)
+                             .call(this.fillatt.func);
 
       if (ttrect.property("current_bin") !== bin)
          ttrect.attr("cx", Math.round((grx + grx2)/2))
                .attr("cy", gry)
                .property("current_bin", bin);
 
-      var res = { x: Math.round((grx + grx2)/2), y: gry, color1: this.attline.color, color2: this.fill.color,  lines: [] };
+      var res = { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: [] };
 
       if ((this.GetItemName()!=="") && (this.GetItemName()!==null))
          res.lines.push(this.GetItemName());
@@ -6734,7 +6734,7 @@
 
       var draw_bins = this.CreateDrawBins(width, height);
 
-      if (this.fill.color !== 'none') {
+      if (this.fillatt.color !== 'none') {
 
          // histogram filling
          var area = d3.svg.area()
@@ -6743,13 +6743,13 @@
                     .y1(function(d) { return height; })
                     .interpolate("step-after");
 
-         console.log('area len ' +  area(draw_bins).length);
+         console.log('th1 area len ' +  area(draw_bins).length);
 
          this.draw_g.append("svg:path")
                     .attr("d", area(draw_bins))
                     .style("pointer-events","none")
-                    .call(this.attline.func)
-                    .call(this.fill.func);
+                    .call(this.lineatt.func)
+                    .call(this.fillatt.func);
       } else {
 
          var line = d3.svg.line()
@@ -6757,12 +6757,12 @@
                           .y(function(d) { return d.y.toFixed(1); })
                           .interpolate("step-after");
 
-         console.log('line len ' +  line(draw_bins).length);
+         console.log('th1 line len ' +  line(draw_bins).length);
 
          this.draw_g
                .append("svg:path")
                .attr("d", line(draw_bins))
-               .call(this.attline.func)
+               .call(this.lineatt.func)
                .style("fill", "none");
       }
 
