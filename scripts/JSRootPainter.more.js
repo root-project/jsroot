@@ -969,7 +969,7 @@
              var path = "M" + currx + "," + curry;
 
              bin = this.bins[0];
-             path += "C" + (bin.grx + bin.tanx) + "," + (bin.gry + bin.tany) + ",";
+             path += "c" + bin.tanx + "," + bin.tany + ",";
 
              for(var n=1; n<this.bins.length; ++n) {
 
@@ -977,9 +977,9 @@
                var x = bin.grx;
                var y = bin.gry;
 
-               if (n > 1) path += "S";
+               if (n > 1) path += "s";
 
-               path += (x-bin.tanx) + "," + (y-bin.tany) + "," + x + "," + y;
+               path += (x-bin.tanx-currx) + "," + (y-bin.tany-curry) + "," + (x-currx) + "," + (y-curry);
 
                currx = x;
                curry = y;
@@ -987,7 +987,7 @@
 
 
             var close_path = "L" + currx +"," + (h+3) +
-                             "L" + this.bins[0].grx +"," + (h+3) + " Z";
+                             "L" + this.bins[0].grx +"," + (h+3) + "Z";
 
             console.log('tf1 line ' + path.length);
 
