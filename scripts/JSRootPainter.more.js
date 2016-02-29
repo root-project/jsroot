@@ -891,15 +891,6 @@
          return res;
       }
 
-      this['DrawDirectAsPath'] = function() {
-         var w = this.frame_width(), h = this.frame_height();
-         this.RecreateDrawG(false, ".main_layer");
-
-         this.drawbins = this.CreateBins();
-
-      }
-
-
       this['DrawBins'] = function() {
 
          //if (JSROOT.gStyle.Tooltip > 1)
@@ -920,47 +911,148 @@
          if (name.length > 0) name += "\n";
 
          var lineatt = JSROOT.Painter.createAttLine(this.tf1);
-         var fill = this.createAttFill(this.tf1);
-         if (fill.color == 'white') fill.color = 'none';
+         var fillatt = this.createAttFill(this.tf1);
+         if (fillatt.color == 'white') fillatt.color = 'none';
 
-         var line = d3.svg.line()
-                      .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                      .y(function(d) { return pmain.gry(d.y).toFixed(1); })
-                      .interpolate('monotone');
+         if ((JSROOT.gStyle.Tooltip > 1) && (this.bins.length > 2)) {
 
-         var area = d3.svg.area()
-                     .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                     .y1(h)
-                     .y0(function(d) { return pmain.gry(d.y).toFixed(1); });
+            //if ('DDDD' in JSROOT) return;
+            //JSROOT.DDDD = true;
 
-         console.log('tf1 line ' + line(this.bins).length + ' area ' + area(pthis.bins).length);
+            var bin;
+            // first calculate graphical coordinates
+            for(var n=0; n<this.bins.length; ++n) {
+               bin = this.bins[n];
+               bin.grx = pmain.grx(bin.x);
+               bin.gry = pmain.gry(bin.y);
+            }
 
-         if (lineatt.color != "none")
-            this.draw_g.append("svg:path")
-               .attr("class", "line")
-               .attr("d",line(pthis.bins))
-               .style("fill", "none")
-               .call(lineatt.func);
+            function d3_svg_lineSlope(p0, p1) {
+              return (p1.gry - p0.gry) / (p1.grx - p0.grx);
+            }
+             function d3_svg_lineFiniteDifferences(points) {
+               var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = d3_svg_lineSlope(p0, p1);
+               while (++i < j) {
+                 m[i] = (d + (d = d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
+               }
+               m[i] = d;
+               return m;
+             }
+             function d3_svg_lineMonotoneTangents(points) {
+               var d, a, b, s, m = d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
+               while (++i < j) {
+                 d = d3_svg_lineSlope(points[i], points[i + 1]);
+                 if (Math.abs(d) < 1e-6) {
+                   m[i] = m[i + 1] = 0;
+                 } else {
+                   a = m[i] / d;
+                   b = m[i + 1] / d;
+                   s = a * a + b * b;
+                   if (s > 9) {
+                     s = d * 3 / Math.sqrt(s);
+                     m[i] = s * a;
+                     m[i + 1] = s * b;
+                   }
+                 }
+               }
+               i = -1;
+               while (++i <= j) {
+                  s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
+                  points[i].tanx = s || 0;
+                  points[i].tany = m[i]*s || 0;
+               }
+               return points;
+             }
 
-         if (fill.color != "none")
-            this.draw_g.append("svg:path")
-                   .attr("class", "area")
-                   .attr("d",area(pthis.bins))
-                   .style("stroke", "none")
-                   .style("pointer-events", "none")
-                   .call(fill.func);
+             d3_svg_lineMonotoneTangents(this.bins);
 
-         // add tooltips
-         if (JSROOT.gStyle.Tooltip > 0)
-            this.draw_g.selectAll()
-                      .data(this.bins).enter()
-                      .append("svg:circle")
-                      .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                      .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
-                      .attr("r", 4)
-                      .style("opacity", 0)
-                      .append("svg:title")
-                      .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
+             var currx = this.bins[0].grx,
+                 curry = this.bins[0].gry;
+
+             var path = "M" + currx + "," + curry;
+
+             for(var n=1; n<this.bins.length; ++n) {
+
+               bin = this.bins[n];
+               var x = bin.grx;
+               var y = bin.gry;
+
+               if (n===1) {
+                  var bin0 = this.bins[0];
+                  path += " C " + (bin0.grx + bin0.tanx) + " " + (bin0.gry + bin0.tany) + ", ";
+               } else {
+                  path += " S ";
+               }
+
+               //path += "c" + dx1 + "," + dy1 + ",";
+               path += (x-bin.tanx) + " " + (y-bin.tany) + ", " + x + " " + y;
+
+               currx = x;
+               curry = y;
+            }
+
+
+            var close_path = "L" + currx +"," + (h+3) +
+                             "L" + this.bins[0].grx +"," + (h+3) + " Z";
+
+            console.log('tf1 line ' + path.length);
+
+            if (lineatt.color != "none")
+               this.draw_g.append("svg:path")
+                  .attr("class", "line")
+                  .attr("d", path)
+                  .style("fill", "none")
+                  .call(lineatt.func);
+
+            if (fillatt.color != "none")
+               this.draw_g.append("svg:path")
+                  .attr("class", "area")
+                  .attr("d", path + close_path)
+                  .style("stroke", "none")
+                  .style("pointer-events", "none")
+                  .call(fillatt.func);
+
+         } else {
+
+            var line = d3.svg.line()
+                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                         .y(function(d) { return pmain.gry(d.y).toFixed(1); })
+                         .interpolate('monotone');
+
+            var area = d3.svg.area()
+                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                        .y1(h)
+                        .y0(function(d) { return pmain.gry(d.y).toFixed(1); });
+
+            console.log('tf1 line ' + line(this.bins).length + ' area ' + area(pthis.bins).length);
+
+            if (lineatt.color != "none")
+               this.draw_g.append("svg:path")
+                  .attr("class", "line")
+                  .attr("d",line(this.bins))
+                  .style("fill", "none")
+                  .call(lineatt.func);
+
+            if (fillatt.color != "none")
+               this.draw_g.append("svg:path")
+                  .attr("class", "area")
+                  .attr("d",area(this.bins))
+                  .style("stroke", "none")
+                  .style("pointer-events", "none")
+                  .call(fillatt.func);
+
+            // add tooltips
+            if (JSROOT.gStyle.Tooltip > 0)
+               this.draw_g.selectAll()
+                  .data(this.bins).enter()
+                  .append("svg:circle")
+                  .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
+                  .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
+                  .attr("r", 4)
+                  .style("opacity", 0)
+                  .append("svg:title")
+                  .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
+         }
       }
 
       this['UpdateObject'] = function(obj) {
