@@ -943,18 +943,15 @@
          if (this.tf1.fName !== "")
             res.lines.push(this.tf1.fName);
 
-         res.lines.push("x = " + res.x + " y = " + res.y);
+         var pmain = this.main_painter();
+         if (pmain!==null)
+            res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
 
          return res;
       }
 
 
       this['DrawBins'] = function() {
-
-         //if (JSROOT.gStyle.Tooltip > 1)
-         //   return this.DrawDirectAsPath();
-
-         delete this['ProcessTooltip'];
 
          var w = this.frame_width(), h = this.frame_height();
 
@@ -974,21 +971,22 @@
          this.fillatt = this.createAttFill(this.tf1);
          if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
-         if ((JSROOT.gStyle.Tooltip > 1) && (this.bins.length > 2)) {
+         var bin;
+         // first calculate graphical coordinates
+         for(var n=0; n<this.bins.length; ++n) {
+            bin = this.bins[n];
+            bin.grx = Math.round(pmain.grx(bin.x));
+            bin.gry = Math.round(pmain.gry(bin.y));
+         }
 
-            var bin;
-            // first calculate graphical coordinates
-            for(var n=0; n<this.bins.length; ++n) {
-               bin = this.bins[n];
-               bin.grx = Math.round(pmain.grx(bin.x));
-               bin.gry = Math.round(pmain.gry(bin.y));
-            }
+         if (this.bins.length > 2) {
 
             // code taken from d3.js to calculate parameters for Bezier curves
+            // here we using rounded values, plus we want to use delta values in svg:path (more compact)
             function d3_svg_lineSlope(p0, p1) {
               return (p1.gry - p0.gry) / (p1.grx - p0.grx);
             }
-             function d3_svg_lineFiniteDifferences(points) {
+            function d3_svg_lineFiniteDifferences(points) {
                var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = d3_svg_lineSlope(p0, p1);
                while (++i < j) {
                  m[i] = (d + (d = d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
@@ -1016,8 +1014,8 @@
                i = -1;
                while (++i <= j) {
                   s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-                  points[i].tanx = Math.round(s || 0);
-                  points[i].tany = Math.round(m[i]*s || 0);
+                  points[i].dgrx = Math.round(s || 0);
+                  points[i].dgry = Math.round(m[i]*s || 0);
                }
              }
 
@@ -1029,22 +1027,17 @@
              var path = "M" + currx + "," + curry;
 
              bin = this.bins[0];
-             path += "c" + bin.tanx + "," + bin.tany + ",";
+             path += "c" + bin.dgrx + "," + bin.dgry + ",";
 
              for(var n=1; n<this.bins.length; ++n) {
-
                bin = this.bins[n];
                var x = bin.grx;
                var y = bin.gry;
-
                if (n > 1) path += "s";
-
-               path += (x-bin.tanx-currx) + "," + (y-bin.tany-curry) + "," + (x-currx) + "," + (y-curry);
-
+               path += (x-bin.dgrx-currx) + "," + (y-bin.dgry-curry) + "," + (x-currx) + "," + (y-curry);
                currx = x;
                curry = y;
             }
-
 
             var close_path = "L" + currx +"," + (h+3) +
                              "L" + this.bins[0].grx +"," + (h+3) + "Z";
@@ -1066,49 +1059,23 @@
                   .style("pointer-events", "none")
                   .call(this.fillatt.func);
 
-            this['ProcessTooltip'] = this['ProcessTooltipFunc'];
-
-         } else {
-
-            var line = d3.svg.line()
-                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                         .y(function(d) { return pmain.gry(d.y).toFixed(1); })
-                         .interpolate('monotone');
-
-            var area = d3.svg.area()
-                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                        .y1(h)
-                        .y0(function(d) { return pmain.gry(d.y).toFixed(1); });
-
-            console.log('tf1 line ' + line(this.bins).length + ' area ' + area(pthis.bins).length);
-
-            if (this.lineatt.color != "none")
-               this.draw_g.append("svg:path")
-                  .attr("class", "line")
-                  .attr("d",line(this.bins))
-                  .style("fill", "none")
-                  .call(this.lineatt.func);
-
-            if (this.fillatt.color != "none")
-               this.draw_g.append("svg:path")
-                  .attr("class", "area")
-                  .attr("d",area(this.bins))
-                  .style("stroke", "none")
-                  .style("pointer-events", "none")
-                  .call(this.fillatt.func);
-
-            // add tooltips
-            if (JSROOT.gStyle.Tooltip > 0)
-               this.draw_g.selectAll()
-                  .data(this.bins).enter()
-                  .append("svg:circle")
-                  .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
-                  .attr("r", 4)
-                  .style("opacity", 0)
-                  .append("svg:title")
-                  .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
          }
+
+         delete this['ProcessTooltip'];
+
+        if (JSROOT.gStyle.Tooltip > 1)
+           this['ProcessTooltip'] = this['ProcessTooltipFunc'];
+        else
+        if (JSROOT.gStyle.Tooltip > 0)
+           this.draw_g.selectAll()
+               .data(this.bins).enter()
+               .append("svg:circle")
+               .attr("cx", function(d) { return d.grx; })
+               .attr("cy", function(d) { return d.gry; })
+               .attr("r", 4)
+               .style("opacity", 0)
+               .append("svg:title")
+               .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
       }
 
       this['UpdateObject'] = function(obj) {
@@ -2044,7 +2011,6 @@
          icon: JSROOT.ToolbarIcons.th2draw3d,
          click: function() { painter.options.Lego = painter.options.Lego > 0 ? 0 : 1; painter.RedrawPad(); }
       });
-
    }
 
    JSROOT.TH2Painter.prototype.ToggleColor = function() {
@@ -2092,8 +2058,6 @@
 
       if ((pal !== null) && !force_resize) return;
 
-      var frame_painter = this.frame_painter();
-
       if (pal === null) {
          pal = JSROOT.Create('TPave');
 
@@ -2114,12 +2078,14 @@
             fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
          });
 
-         if (! ('fFunctions' in this.histo) || (this.histo.fFunctions === null))
+         if (this.histo.fFunctions == null)
             this.histo.fFunctions = JSROOT.Create("TList");
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.histo.fFunctions.AddFirst(pal);
       }
+
+      var frame_painter = this.frame_painter();
 
       // keep palette width
       pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
@@ -2129,9 +2095,9 @@
 
       var pal_painter = this.FindPainterFor(pal);
 
-      if (pal_painter === null)
+      if (pal_painter === null) {
          pal_painter = JSROOT.draw(this.divid, pal, "canmove");
-      else {
+      } else {
          pal_painter._can_move = true;
          pal_painter.Redraw();
       }
