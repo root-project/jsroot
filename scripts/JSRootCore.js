@@ -966,12 +966,12 @@
                fXaxis: JSROOT.Create("TAxis"),
                fYaxis: JSROOT.Create("TAxis"),
                fZaxis: JSROOT.Create("TAxis"),
-               fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,
-               fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0.,
-               fMaximum : -1111., fMinimum : -1111, fNormFactor : 0., fContour : [],
-               fSumw2 : [], fOption : "",
-               fFunctions : JSROOT.Create("TList"),
-               fBufferSize : 0, fBuffer : [], fBinStatErrOpt : 0 });
+               fBarOffset: 0, fBarWidth: 1000, fEntries: 0.,
+               fTsumw: 0., fTsumw2: 0., fTsumwx: 0., fTsumwx2: 0.,
+               fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
+               fSumw2: [], fOption: "",
+               fFunctions: JSROOT.Create("TList"),
+               fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0 });
             break;
          case 'TH1I':
          case 'TH1F':
@@ -1243,34 +1243,33 @@
                // this can happen  when reading an old file
                return sumOfWeights;
             }
-            var sumOfWeightsSquare = this['fSumw2'][bin];
+            var sumOfWeightsSquare = this.fSumw2[bin];
             return ( sumOfWeightsSquare > 0 ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0 );
          };
          obj['getBinError'] = function(bin) {
-            if (bin < 0 || bin >= this['fNcells']) return 0;
-            var cont = this['fArray'][bin];               // sum of bin w *y
-            var sum  = this['fBinEntries'][bin];          // sum of bin weights
-            var err2 = this['fSumw2'][bin];               // sum of bin w * y^2
+            if (bin < 0 || bin >= this.fNcells) return 0;
+            var cont = this.fArray[bin];               // sum of bin w *y
+            var sum  = this.fBinEntries[bin];          // sum of bin weights
+            var err2 = this.fSumw2[bin];               // sum of bin w * y^2
             var neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
             if (sum < 1e-300) return 0;                  // for empty bins
             // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
-            if (this['fErrorMode'] == EErrorType.kERRORSPREADG) {
-               return (1.0/Math.sqrt(sum));
-            }
+            if (this.fErrorMode === EErrorType.kERRORSPREADG)
+               return 1.0/Math.sqrt(sum);
             // compute variance in y (eprim2) and standard deviation in y (eprim)
             var contsum = cont/sum;
             var eprim2  = Math.abs(err2/sum - contsum*contsum);
             var eprim   = Math.sqrt(eprim2);
-            if (this['fErrorMode'] == EErrorType.kERRORSPREADI) {
+            if (this.fErrorMode === EErrorType.kERRORSPREADI) {
                if (eprim != 0) return eprim/Math.sqrt(neff);
                // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
                // when the std(y) is zero
-               return (1.0/Math.sqrt(12*neff));
+               return 1.0/Math.sqrt(12*neff);
             }
             // if approximate compute the sums (of w, wy and wy2) using all the bins
             //  when the variance in y is zero
             // case option "S" return standard deviation in y
-            if (this['fErrorMode'] == EErrorType.kERRORSPREAD) return eprim;
+            if (this.fErrorMode === EErrorType.kERRORSPREAD) return eprim;
             // default case : fErrorMode = kERRORMEAN
             // return standard error on the mean of y
             return (eprim/Math.sqrt(neff));

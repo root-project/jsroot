@@ -4624,29 +4624,29 @@
 
       // this.histo = obj;
 
-      this.histo['fEntries'] = obj['fEntries'];
-      this.histo['fTsumw'] = obj['fTsumw'];
-      this.histo['fTsumwx'] = obj['fTsumwx'];
-      this.histo['fTsumwx2'] = obj['fTsumwx2'];
+      this.histo.fEntries = obj.fEntries;
+      this.histo.fTsumw = obj.fTsumw;
+      this.histo.fTsumwx = obj.fTsumwx;
+      this.histo.fTsumwx2 = obj.fTsumwx2;
       if (this.Dimension() == 2) {
-         this.histo['fTsumwy'] = obj['fTsumwy'];
-         this.histo['fTsumwy2'] = obj['fTsumwy2'];
-         this.histo['fTsumwxy'] = obj['fTsumwxy'];
+         this.histo.fTsumwy = obj.fTsumwy;
+         this.histo.fTsumwy2 = obj.fTsumwy2;
+         this.histo.fTsumwxy = obj.fTsumwxy;
       }
-      this.histo['fArray'] = obj['fArray'];
-      this.histo['fNcells'] = obj['fNcells'];
-      this.histo['fTitle'] = obj['fTitle'];
-      this.histo['fMinimum'] = obj['fMinimum'];
-      this.histo['fMaximum'] = obj['fMaximum'];
-      this.histo['fXaxis']['fNbins'] = obj['fXaxis']['fNbins'];
-      this.histo['fXaxis']['fXmin'] = obj['fXaxis']['fXmin'];
-      this.histo['fXaxis']['fXmax'] = obj['fXaxis']['fXmax'];
-      this.histo['fYaxis']['fXmin'] = obj['fYaxis']['fXmin'];
-      this.histo['fYaxis']['fXmax'] = obj['fYaxis']['fXmax'];
+      this.histo.fArray = obj.fArray;
+      this.histo.fNcells = obj.fNcells;
+      this.histo.fTitle = obj.fTitle;
+      this.histo.fMinimum = obj.fMinimum;
+      this.histo.fMaximum = obj.fMaximum;
+      this.histo.fXaxis.fNbins = obj.fXaxis.fNbins;
+      this.histo.fXaxis.fXmin = obj.fXaxis.fXmin;
+      this.histo.fXaxis.fXmax = obj.fXaxis.fXmax;
+      this.histo.fYaxis.fXmin = obj.fYaxis.fXmin;
+      this.histo.fYaxis.fXmax = obj.fYaxis.fXmax;
 
       if (this.IsTProfile()) {
-         this.histo['fBinEntries'] = obj['fBinEntries'];
-         this.histo['fSumw2'] = obj['fSumw2'];
+         this.histo.fBinEntries = obj.fBinEntries;
+         this.histo.fSumw2 = obj.fSumw2;
       }
 
       this.ScanContent();
@@ -4658,22 +4658,22 @@
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
 
-      this.xmin = this.histo['fXaxis']['fXmin'];
-      this.xmax = this.histo['fXaxis']['fXmax'];
+      this.xmin = this.histo.fXaxis.fXmin;
+      this.xmax = this.histo.fXaxis.fXmax;
 
-      if (this.histo['fXaxis'].fXbins.length == this.nbinsx+1) {
+      if (this.histo.fXaxis.fXbins.length == this.nbinsx+1) {
          this.regularx = false;
          this['GetBinX'] = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.xmin;
             if (indx > this.nbinsx) this.xmax;
-            if (indx==bin) return this.histo['fXaxis'].fXbins[indx];
+            if (indx==bin) return this.histo.fXaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo['fXaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fXbins[indx2] * Math.abs(bin-indx);
+            return this.histo.fXaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fXbins[indx2] * Math.abs(bin-indx);
          };
          this['GetIndexX'] = function(x,add) {
-            for (var k = 1; k < this.histo['fXaxis'].fXbins.length; ++k)
-               if (x < this.histo['fXaxis'].fXbins[k]) return Math.floor(k-1+add);
+            for (var k = 1; k < this.histo.fXaxis.fXbins.length; ++k)
+               if (x < this.histo.fXaxis.fXbins[k]) return Math.floor(k-1+add);
             return this.nbinsx;
          };
       } else {
@@ -4686,24 +4686,24 @@
          this['GetIndexX'] = function(x,add) { return Math.floor((x - this.xmin) / this.binwidthx + add); };
       }
 
-      this.ymin = this.histo['fYaxis']['fXmin'];
-      this.ymax = this.histo['fYaxis']['fXmax'];
+      this.ymin = this.histo.fYaxis.fXmin;
+      this.ymax = this.histo.fYaxis.fXmax;
 
       if (!with_y_axis || (this.nbinsy==0)) return;
 
-      if (this.histo['fYaxis'].fXbins.length == this.nbinsy+1) {
+      if (this.histo.fYaxis.fXbins.length == this.nbinsy+1) {
          this.regulary = false;
          this['GetBinY'] = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
             if (indx > this.nbinsx) this.ymax;
-            if (indx==bin) return this.histo['fYaxis'].fXbins[indx];
+            if (indx==bin) return this.histo.fYaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo['fYaxis'].fXbins[indx] * Math.abs(bin-indx2) + this.histo['fXaxis'].fYbins[indx2] * Math.abs(bin-indx);
+            return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fYbins[indx2] * Math.abs(bin-indx);
          };
          this['GetIndexY'] = function(y,add) {
-            for (var k = 1; k < this.histo['fYaxis'].fXbins.length; ++k)
-               if (y < this.histo['fYaxis'].fXbins[k]) return Math.floor(k-1+add);
+            for (var k = 1; k < this.histo.fYaxis.fXbins.length; ++k)
+               if (y < this.histo.fYaxis.fXbins[k]) return Math.floor(k-1+add);
             return this.nbinsy;
          };
       } else {
@@ -4736,13 +4736,13 @@
 
       var w = this.frame_width(), h = this.frame_height();
 
-      if (this.histo['fXaxis']['fTimeDisplay']) {
+      if (this.histo.fXaxis.fTimeDisplay) {
          this.x_kind = 'time';
-         this['timeoffsetx'] = JSROOT.Painter.getTimeOffset(this.histo['fXaxis']);
+         this['timeoffsetx'] = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
          this['ConvertX'] = function(x) { return new Date(this.timeoffsetx + x*1000); };
          this['RevertX'] = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
       } else {
-         this.x_kind = (this.histo['fXaxis'].fLabels==null) ? 'normal' : 'labels';
+         this.x_kind = (this.histo.fXaxis.fLabels==null) ? 'normal' : 'labels';
          this['ConvertX'] = function(x) { return x; };
          this['RevertX'] = function(grx) { return this.x.invert(grx); };
       }
@@ -4793,13 +4793,13 @@
          this['scale_ymax'] = this.zoom_ymax;
       }
 
-      if (this.histo['fYaxis']['fTimeDisplay']) {
+      if (this.histo.fYaxis.fTimeDisplay) {
          this.y_kind = 'time';
-         this['timeoffsety'] = JSROOT.Painter.getTimeOffset(this.histo['fYaxis']);
+         this['timeoffsety'] = JSROOT.Painter.getTimeOffset(this.histo.fYaxis);
          this['ConvertY'] = function(y) { return new Date(this.timeoffsety + y*1000); };
          this['RevertY'] = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
-         this.y_kind = ((this.Dimension()==2) && (this.histo['fYaxis'].fLabels!=null)) ? 'labels' : 'normal';
+         this.y_kind = ((this.Dimension()==2) && (this.histo.fYaxis.fLabels!=null)) ? 'labels' : 'normal';
          this['ConvertY'] = function(y) { return y; };
          this['RevertY'] = function(gry) { return this.y.invert(gry); };
       }
@@ -4905,9 +4905,9 @@
 
          if (this.x_kind == 'labels') {
             var indx = parseInt(value) + 1;
-            if ((indx<1) || (indx>this.histo['fXaxis'].fNbins)) return null;
-            for (var i = 0; i < this.histo['fXaxis'].fLabels.arr.length; ++i) {
-               var tstr = this.histo['fXaxis'].fLabels.arr[i];
+            if ((indx<1) || (indx>this.histo.fXaxis.fNbins)) return null;
+            for (var i = 0; i < this.histo.fXaxis.fLabels.arr.length; ++i) {
+               var tstr = this.histo.fXaxis.fLabels.arr[i];
                if (tstr.fUniqueID == indx) return tstr.fString;
             }
          }
@@ -4920,9 +4920,9 @@
       if (axis == "y") {
          if (this.y_kind == 'labels') {
             var indx = parseInt(value) + 1;
-            if ((indx<1) || (indx>this.histo['fYaxis'].fNbins)) return null;
-            for (var i=0; i < this.histo['fYaxis'].fLabels.arr.length; ++i) {
-               var tstr = this.histo['fYaxis'].fLabels.arr[i];
+            if ((indx<1) || (indx>this.histo.fYaxis.fNbins)) return null;
+            for (var i=0; i < this.histo.fYaxis.fLabels.arr.length; ++i) {
+               var tstr = this.histo.fYaxis.fLabels.arr[i];
                if (tstr.fUniqueID == indx) return tstr.fString;
             }
             return null;
@@ -4956,32 +4956,32 @@
       if (yax_g.empty()) yax_g = this.svg_frame().select(".axis_layer").append("svg:g").attr("class", "yaxis_container");
       yax_g.selectAll("*").remove();
 
-      var ndivx = this.histo['fXaxis']['fNdivisions'];
+      var ndivx = this.histo.fXaxis.fNdivisions;
       this['x_nticks'] = ndivx % 100; // used also to draw grids
       var n2ax = (ndivx % 10000 - this.x_nticks) / 100;
       var n3ax = ndivx / 10000;
 
-      var ndivy = this.histo['fYaxis']['fNdivisions'];
+      var ndivy = this.histo.fYaxis['fNdivisions'];
       this['y_nticks'] = ndivy % 100; // used also to draw grids
       var n2ay = (ndivy % 10000 - this.y_nticks) / 100;
       var n3ay = ndivy / 10000;
 
       /* X-axis label */
-      var xlabelfont = JSROOT.Painter.getFontDetails(this.histo['fXaxis']['fLabelFont'], this.histo['fXaxis']['fLabelSize'] * h);
+      var xlabelfont = JSROOT.Painter.getFontDetails(this.histo.fXaxis.fLabelFont, this.histo.fXaxis.fLabelSize * h);
 
-      var xAxisLabelOffset = 3 + (this.histo['fXaxis']['fLabelOffset'] * h);
+      var xAxisLabelOffset = 3 + (this.histo.fXaxis.fLabelOffset * h);
 
-      if (this.histo['fXaxis']['fTitle'].length > 0) {
-          this.StartTextDrawing(this.histo['fXaxis']['fTitleFont'], this.histo['fXaxis']['fTitleSize'] * h, xax_g);
+      if (this.histo.fXaxis.fTitle.length > 0) {
+          this.StartTextDrawing(this.histo.fXaxis.fTitleFont, this.histo.fXaxis.fTitleSize * h, xax_g);
 
-          var center = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
-          var rotate = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1. : 1.;
+          var center = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+          var rotate = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1. : 1.;
 
           var res = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
                                  (center ? w/2 : w)*rotate,
-                                  rotate*(xAxisLabelOffset + xlabelfont.size * (1.+this.histo['fXaxis']['fTitleOffset'])),
+                                  rotate*(xAxisLabelOffset + xlabelfont.size * (1.+this.histo.fXaxis.fTitleOffset)),
                                   0, (rotate<0) ? -180 : 0,
-                                  this.histo['fXaxis']['fTitle'], null, 1, xax_g);
+                                  this.histo.fXaxis.fTitle, null, 1, xax_g);
 
           if (res<=0) shrink_forbidden = true;
 
@@ -4989,33 +4989,32 @@
       }
 
       /* Y-axis label */
-      var yAxisLabelOffset = 3 + (this.histo['fYaxis']['fLabelOffset'] * w);
+      var yAxisLabelOffset = 3 + (this.histo.fYaxis.fLabelOffset * w);
 
-      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo['fYaxis']['fLabelFont'], this.histo['fYaxis']['fLabelSize'] * h);
+      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo.fYaxis.fLabelFont, this.histo.fYaxis.fLabelSize * h);
 
-      if (this.histo['fYaxis']['fTitle'].length > 0) {
-         this.StartTextDrawing(this.histo['fYaxis']['fTitleFont'], this.histo['fYaxis']['fTitleSize'] * h, yax_g);
+      if (this.histo.fYaxis.fTitle.length > 0) {
+         this.StartTextDrawing(this.histo.fYaxis.fTitleFont, this.histo.fYaxis.fTitleSize * h, yax_g);
 
-         var center = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterTitle);
-         var rotate = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kRotateTitle) ? 1 : -1;
+         var center = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+         var rotate = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? 1 : -1;
 
          var res = this.DrawText(center ? "middle" : ((rotate<0) ? "end" : "begin"),
                                  (center ? h/2 : 0) * rotate,
-                                 rotate * (yAxisLabelOffset + (1 + this.histo['fYaxis']['fTitleOffset']) * ylabelfont.size + yax_g.property('text_font').size),
+                                 rotate * (yAxisLabelOffset + (1 + this.histo.fYaxis.fTitleOffset) * ylabelfont.size + yax_g.property('text_font').size),
                                  0, (rotate<0 ? -270 : -90),
-                                 this.histo['fYaxis']['fTitle'], null, 1, yax_g);
+                                 this.histo.fYaxis.fTitle, null, 1, yax_g);
 
          if (res<=0) shrink_forbidden = true;
 
          this.FinishTextDrawing(yax_g);
       }
 
-      var xAxisColor = this.histo['fXaxis']['fAxisColor'];
-      var xDivLength = this.histo['fXaxis']['fTickLength'] * h;
-      var yAxisColor = this.histo['fYaxis']['fAxisColor'];
-      var yDivLength = this.histo['fYaxis']['fTickLength'] * w;
-
-      var pthis = this;
+      var xAxisColor = this.histo.fXaxis.fAxisColor,
+          xDivLength = this.histo.fXaxis.fTickLength * h,
+          yAxisColor = this.histo.fYaxis.fAxisColor,
+          yDivLength = this.histo.fYaxis.fTickLength * w,
+          pthis = this;
 
       /* Define the scales, according to the information from the pad */
 
@@ -5025,7 +5024,7 @@
          if (this.x_nticks > 8) this.x_nticks = 8;
 
          var scale_xrange = this.scale_xmax - this.scale_xmin;
-         var timeformatx = JSROOT.Painter.getTimeFormat(this.histo['fXaxis']);
+         var timeformatx = JSROOT.Painter.getTimeFormat(this.histo.fXaxis);
          if ((timeformatx.length == 0) || (scale_xrange < 0.1 * (this.xmax - this.xmin)))
             timeformatx = JSROOT.Painter.chooseTimeFormat(scale_xrange, this.x_nticks);
 
@@ -5034,9 +5033,9 @@
 
       } else if (this.options.Logx) {
 
-         this['noexpx'] = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+         this['noexpx'] = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kNoExponent);
          if ((this.scale_xmax < 300) && (this.scale_xmin > 0.3)) this['noexpx'] = true;
-         this['moreloglabelsx'] = this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+         this['moreloglabelsx'] = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
          this['formatx'] = function(d) {
             var val = parseFloat(d);
@@ -5081,7 +5080,7 @@
       if (this.y_kind=='time') {
          if (this.y_nticks > 8)  this.y_nticks = 8;
 
-         var timeformaty = JSROOT.Painter.getTimeFormat(this.histo['fYaxis']);
+         var timeformaty = JSROOT.Painter.getTimeFormat(this.histo.fYaxis);
 
          if ((timeformaty.length == 0) || (scale_yrange < 0.1 * (this.ymax - this.ymin)))
             timeformaty = JSROOT.Painter.chooseTimeFormat(scale_yrange, this.y_nticks);
@@ -5090,9 +5089,9 @@
             this['formaty'] = d3.time.format(timeformaty);
 
       } else if (this.options.Logy) {
-         this['noexpy'] = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kNoExponent);
+         this['noexpy'] = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kNoExponent);
          if ((this.scale_ymax < 300) && (this.scale_ymin > 0.3)) this['noexpy'] = true;
-         this['moreloglabelsy'] = this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+         this['moreloglabelsy'] = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
          this['formaty'] = function(d) {
             var val = parseFloat(d);
@@ -5139,7 +5138,7 @@
                        .call(x_axis).call(xlabelfont.func);
 
       if ((this.x_kind == 'labels') ||
-          (!this.options.Logx && this.histo['fXaxis'].TestBit(JSROOT.EAxisBits.kCenterLabels))) {
+          (!this.options.Logx && this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterLabels))) {
          // caluclate label widths to adjust font size
 
          var maxwidth = 0, cnt = 0, shift = 10;
@@ -5191,7 +5190,7 @@
       var drawy = yax_g.append("svg:g").attr("class", "yaxis").call(y_axis).call(ylabelfont.func);
 
       if ((this.y_kind == 'labels') ||
-           (!this.options.Logy && this.histo['fYaxis'].TestBit(JSROOT.EAxisBits.kCenterLabels))) {
+           (!this.options.Logy && this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kCenterLabels))) {
          var maxh = 0, cnt = 0, shift = 3, ylabels = drawy.selectAll(".tick text");
          ylabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
