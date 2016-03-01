@@ -1448,8 +1448,10 @@
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
-      if ((pattern==null) && attfill) pattern = attfill['fFillStyle'];
-      if ((color==null) && attfill) color = attfill['fFillColor'];
+      if ((attfill!==null) && (typeof attfill == 'object')) {
+         if (pattern===undefined) pattern = attfill.fFillStyle;
+         if (color===undefined) color = attfill.fFillColor;
+      }
 
       var fill = { color: "none" };
       fill.SetFill = function(selection) {
@@ -3710,8 +3712,8 @@
             factor = 0.66;
 
             // for TCanvas reconstruct ratio between width and height
-            if ((this.pad!=null) && ('fCw' in this.pad) && ('fCh' in this.pad) && (this.pad['fCw'] > 0)) {
-               factor = this.pad['fCh'] / this.pad['fCw'];
+            if ((this.pad!==null) && ('fCw' in this.pad) && ('fCh' in this.pad) && (this.pad.fCw > 0)) {
+               factor = this.pad.fCh / this.pad.fCw;
                if ((factor < 0.1) || (factor > 10))
                   factor = 0.66;
             }
@@ -3721,19 +3723,21 @@
             render_to.style('height', h+'px');
          }
 
-         var fill = null;
-
-         if (this.pad && 'fFillColor' in this.pad)
-            fill = this.createAttFill(this.pad);
-         else
-            fill = this.createAttFill('white');
+         var fillcolor = 'white';
+         if ((this.pad!==null) && ('fFillColor' in this.pad)) {
+            if ((this.pad.fFillColor > 1) && (this.pad.fFillColor < 1000))
+               fillcolor = JSROOT.Painter.root_colors[this.pad.fFillColor];
+            else
+               if (this.pad.fFillColor === 1001)
+                  console.warn('this is known I/O error, please contact developers');
+         }
 
          // render_to.style("background-color", fill.color);
 
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
-             .style("background-color", fill.color)
+             .style("background-color", fillcolor)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -3773,15 +3777,14 @@
 
       var width = this.svg_canvas().property("draw_width"),
           height = this.svg_canvas().property("draw_height"),
-          x = Math.round(this.pad['fAbsXlowNDC'] * width),
-          y = Math.round(height - this.pad['fAbsYlowNDC'] * height),
-          w = Math.round(this.pad['fAbsWNDC'] * width),
-          h = Math.round(this.pad['fAbsHNDC'] * height);
-      y -= h;
+          w = Math.round(this.pad.fAbsWNDC * width),
+          h = Math.round(this.pad.fAbsHNDC * height),
+          x = Math.round(this.pad.fAbsXlowNDC * width),
+          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h,
+          fillatt = this.createAttFill(this.pad),
+          lineatt = JSROOT.Painter.createAttLine(this.pad);
 
-      var fill = this.createAttFill(this.pad);
-      var attline = JSROOT.Painter.createAttLine(this.pad)
-      if (this.pad['fBorderMode'] == 0) attline.color = 'none';
+      if (this.pad.fBorderMode == 0) lineatt.color = 'none';
 
       var svg_pad = null, svg_rect = null;
 
@@ -3811,8 +3814,8 @@
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
-              .call(fill.func)
-              .call(attline.func);
+              .call(fillatt.func)
+              .call(lineatt.func);
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
@@ -3861,14 +3864,11 @@
 
       // var pp = this.FindPainterFor(this.pad.fPrimitives.arr[indx]);
 
-      var pp = null;
+      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
 
-      if (pp === null) {
-         pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
-         if (pp) {
-            pp['_primitive'] = true; // mark painter as belonging to primitive
-            return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
-         }
+      if (pp) {
+         pp['_primitive'] = true; // mark painter as belonging to primitives
+         return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
       }
 
       this.DrawPrimitive(indx+1, callback);
@@ -3906,17 +3906,14 @@
 
       if (this.iscan) this.CheckColors(obj);
 
-      if (obj.fPrimitives.arr.length != this.pad.fPrimitives.arr.length) return false;
+      if (obj.fPrimitives.arr.length !== this.pad.fPrimitives.arr.length) return false;
 
       var isany = false, p = 0;
-
-      for (var n in obj.fPrimitives.arr) {
-         var sub = obj.fPrimitives.arr[n];
-
-         while (p<this.painters.length) {
+      for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
+         while (p < this.painters.length) {
             var pp = this.painters[p++];
             if (!('_primitive' in pp)) continue;
-            if (pp.UpdateObject(sub)) isany = true;
+            if (pp.UpdateObject(obj.fPrimitives.arr[n])) isany = true;
             break;
          }
       }
