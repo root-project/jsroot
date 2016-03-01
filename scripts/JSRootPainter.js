@@ -216,7 +216,6 @@
       var webgl = JSROOT.GetUrlOption("webgl", url);
       if ((webgl === "0") || (webgl === "false")) JSROOT.gStyle.NoWebGL = false; else
       if (webgl === "ie") JSROOT.gStyle.NoWebGL = !JSROOT.browser.isIE;
-
    }
 
    JSROOT.Painter.Coord = {
@@ -305,20 +304,20 @@
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
-      if (style==null) style = attmarker['fMarkerStyle'];
+      if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
 
       var marker_kind = ((style>0) && (style < JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
 
       var shape = marker_kind % 100, toFill = (marker_kind>=100);
 
-      var markerSize = attmarker['fMarkerSize'] * 8;
+      var markerSize = attmarker.fMarkerSize * 8;
       switch(style) {
          case 1: markerSize = 1; break;
          case 6: markerSize = 2; break;
          case 7: markerSize = 3; break;
       }
 
-      var marker_color = JSROOT.Painter.root_colors[attmarker['fMarkerColor']];
+      var marker_color = JSROOT.Painter.root_colors[attmarker.fMarkerColor];
 
       var res = { stroke: marker_color, fill: marker_color, marker: "" };
       if (!toFill) res['fill'] = 'none';
@@ -3259,25 +3258,22 @@
 
       var pavetext = this.pavetext;
 
-      var w = this.pad_width(), h = this.pad_height();
-
       if ((pavetext.fOption.indexOf("NDC")<0) && !pavetext.fInit) {
          pavetext.fInit = 1;
          var pad = this.root_pad();
-         if (pad!=null) {
-            if (pad['fLogx']) {
+         if (pad !== null) {
+            if (pad.fLogx) {
                if (pavetext.fX1 > 0) pavetext.fX1 = JSROOT.log10(pavetext.fX1);
                if (pavetext.fX2 > 0) pavetext.fX2 = JSROOT.log10(pavetext.fX2);
             }
-            if (pad['fLogy']) {
+            if (pad.fLogy) {
                if (pavetext.fY1 > 0) pavetext.fY1 = JSROOT.log10(pavetext.fY1);
                if (pavetext.fY2 > 0) pavetext.fY2 = JSROOT.log10(pavetext.fY2);
             }
-            pavetext.fX1NDC = (pavetext.fX1-pad.fX1)/(pad.fX2 - pad.fX1);
-            pavetext.fY1NDC = (pavetext.fY1-pad.fY1)/(pad.fY2 - pad.fY1);
-            pavetext.fX2NDC = (pavetext.fX2-pad.fX1)/(pad.fX2 - pad.fX1);
-            pavetext.fY2NDC = (pavetext.fY2-pad.fY1)/(pad.fY2 - pad.fY1);
-
+            pavetext.fX1NDC = (pavetext.fX1-pad.fX1) / (pad.fX2 - pad.fX1);
+            pavetext.fY1NDC = (pavetext.fY1-pad.fY1) / (pad.fY2 - pad.fY1);
+            pavetext.fX2NDC = (pavetext.fX2-pad.fX1) / (pad.fX2 - pad.fX1);
+            pavetext.fY2NDC = (pavetext.fY2-pad.fY1) / (pad.fY2 - pad.fY1);
          } else {
             pavetext.fX1NDC = 0.1;
             pavetext.fX2NDC = 0.9;
@@ -3286,26 +3282,23 @@
          }
       }
 
-      var pos_x = Math.round(pavetext.fX1NDC * w);
-      var pos_y = Math.round((1.0 - pavetext.fY1NDC) * h);
-      var width = Math.round(Math.abs(pavetext.fX2NDC - pavetext.fX1NDC) * w);
-      var height = Math.round(Math.abs(pavetext.fY2NDC - pavetext.fY1NDC) * h);
-
-      pos_y -= height;
-      var nlines = pavetext['fLines'].arr.length;
-      var tcolor = JSROOT.Painter.root_colors[pavetext['fTextColor']];
-      var scolor = JSROOT.Painter.root_colors[pavetext['fShadowColor']];
-      var fcolor = this.createAttFill(pavetext);
-
-      var lwidth = pavetext['fBorderSize'] ? pavetext['fBorderSize'] : 0;
-      var attline = JSROOT.Painter.createAttLine(pavetext, lwidth>0 ? 1 : 0);
-
-      var first_stat = 0, num_cols = 0;
-      var lines = new Array;
+      var pos_x = Math.round(pavetext.fX1NDC * this.pad_width()),
+          pos_y = Math.round((1.0 - pavetext.fY2NDC) * this.pad_height()),
+          width = Math.round((pavetext.fX2NDC - pavetext.fX1NDC) * this.pad_width()),
+          height = Math.round((pavetext.fY2NDC - pavetext.fY1NDC) * this.pad_height()),
+          nlines = pavetext.fLines.arr.length,
+          tcolor = JSROOT.Painter.root_colors[pavetext.fTextColor],
+          scolor = JSROOT.Painter.root_colors[pavetext.fShadowColor],
+          fcolor = this.createAttFill(pavetext),
+          lwidth = pavetext.fBorderSize,
+          attline = JSROOT.Painter.createAttLine(pavetext, lwidth>0 ? 1 : 0),
+          first_stat = 0,
+          num_cols = 0,
+          lines = [];
 
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
-         var line = pavetext['fLines'].arr[j]['fTitle'];
+         var line = pavetext.fLines.arr[j].fTitle;
          lines.push(line);
          if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
@@ -3327,7 +3320,14 @@
            .attr("height", height)
            .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
-      var rect = this.draw_g.append("rect")
+      // add decoration before main rect
+      if (lwidth > 1)
+         this.draw_g.append("svg:path")
+             .attr("d","M" + (lwidth+1) + "," + (height+lwidth/2) +
+                       " H" + (width+lwidth/2) + " V" + (lwidth+1))
+            .call(JSROOT.Painter.createAttLine(pavetext,lwidth).func);
+
+      this.draw_g.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", width)
@@ -3336,8 +3336,7 @@
           .call(attline.func);
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-      var stepy = height / nlines, has_head = false;
-      var margin_x = pavetext.fMargin * width;
+      var stepy = height / nlines, has_head = false, margin_x = pavetext.fMargin * width;
 
       this.StartTextDrawing(pavetext.fTextFont, height/(nlines * 1.2));
 
@@ -3368,14 +3367,14 @@
                   this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
                }
             } else {
-               this.DrawText(pavetext['fTextAlign'], margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
+               this.DrawText(pavetext.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
             }
          }
       }
 
       var maxtw = this.FinishTextDrawing();
 
-      if (pavetext['fBorderSize'] && has_head) {
+      if ((lwidth > 0) && has_head) {
          this.draw_g.append("svg:line")
                     .attr("x1", 0)
                     .attr("y1", stepy.toFixed(1))
@@ -3402,42 +3401,25 @@
                         .call(attline.func);
       }
 
-      if (lwidth && lwidth > 1) {
-         this.draw_g.append("svg:line")
-                    .attr("x1", width + (lwidth / 2))
-                    .attr("y1", lwidth + 1)
-                    .attr("x2", width + (lwidth / 2))
-                    .attr("y2", height + lwidth - 1)
-                    .style("stroke", attline.color)
-                    .style("stroke-width", lwidth);
-         this.draw_g.append("svg:line")
-                    .attr("x1", lwidth + 1)
-                    .attr("y1", height + (lwidth / 2))
-                    .attr("x2", width + lwidth - 1)
-                    .attr("y2", height + (lwidth / 2))
-                    .style("stroke", attline.color)
-                    .style("stroke-width", lwidth);
-      }
-
       if ((pavetext.fLabel.length>0) && !this.IsStats()) {
-         var lbl_g = this.draw_g.append("svg:g")
-               .attr("x", width*0.25)
-               .attr("y", -h*0.02)
-               .attr("width", width*0.5)
-               .attr("height", h*0.04)
-               .attr("transform", "translate(" + width*0.25 + "," + -h*0.02 + ")");
+         var x = Math.round(width*0.25),
+             y = Math.round(-height*0.02),
+             w = Math.round(width*0.5),
+             h = Math.round(height*0.04);
 
-         var lbl_rect = lbl_g.append("rect")
-               .attr("x", 0)
-               .attr("y", 0)
-               .attr("width", width*0.5)
-               .attr("height", h*0.04)
+         var lbl_g = this.draw_g.append("svg:g");
+
+         lbl_g.append("rect")
+               .attr("x", x)
+               .attr("y", y)
+               .attr("width", w)
+               .attr("height", h)
                .call(fcolor.func)
                .call(attline.func);
 
-         this.StartTextDrawing(pavetext.fTextFont, h*0.04/1.5, lbl_g);
+         this.StartTextDrawing(pavetext.fTextFont, h/1.5, lbl_g);
 
-         this.DrawText(22, 0, 0, width*0.5, h*0.04, pavetext.fLabel, tcolor, 1, lbl_g);
+         this.DrawText(22, x, y, w, h, pavetext.fLabel, tcolor, 1, lbl_g);
 
          this.FinishTextDrawing(lbl_g);
       }
@@ -3446,7 +3428,6 @@
 
       if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {

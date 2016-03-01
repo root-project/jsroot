@@ -1599,7 +1599,7 @@
              h = Math.round((pave.fY2NDC - pave.fY1NDC) * this.pad_height()),
              lwidth = pave.fBorderSize,
              boxfill = this.createAttFill(pave),
-             lineatt = JSROOT.Painter.createAttLine(pave, lwidth),
+             lineatt = JSROOT.Painter.createAttLine(pave),
              ncols = pave.fNColumns,
              nlines = pave.fPrimitives.arr.length,
              nrows = nlines;
@@ -1617,7 +1617,7 @@
             this.draw_g.append("svg:path")
                 .attr("d","M" + (lwidth+1) + "," + (h+lwidth/2) +
                           " H" + (w+lwidth/2) + " V" + (lwidth+1))
-               .call(lineatt.func);
+               .call(JSROOT.Painter.createAttLine(pave,lwidth).func);
 
          this.draw_g.append("svg:rect")
               .attr("x", 0)
@@ -1625,8 +1625,7 @@
               .attr("width", w)
               .attr("height", h)
               .call(boxfill.func)
-              .style("stroke-width", (lwidth > 0) ? 1 : 0)
-              .style("stroke", lineatt.color);
+              .call(lineatt.func);
 
          this.StartTextDrawing(pave.fTextFont, h / (nlines * 1.2));
 
