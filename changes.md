@@ -16,6 +16,7 @@
    - created only when needed (minimize SVG code)
    - tooltip can be drawn for every object in the frame
    - touch devices could be easily supported 
+10. Fix - let draw same object on the canvas with different options
 
 
 ## Changes in 4.3
