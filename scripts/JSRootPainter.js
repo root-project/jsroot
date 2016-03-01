@@ -3309,7 +3309,7 @@
            .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
       // add shadow decoration before main rect
-      if ((lwidth > 1) && (pt.fShadowColor>0))
+      if ((lwidth > 1) && (pt.fShadowColor > 0))
          this.draw_g.append("svg:path")
              .attr("d","M" + width + "," + height +
                       " v" + (-height + lwidth) + " h" + lwidth +
@@ -3856,10 +3856,12 @@
    }
 
    JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
-      if ((this.pad===null) || (indx>=this.pad.fPrimitives.arr.length))
+      if ((this.pad===null) || (indx >= this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);
 
-      var pp = this.FindPainterFor(this.pad.fPrimitives.arr[indx]);
+      // var pp = this.FindPainterFor(this.pad.fPrimitives.arr[indx]);
+
+      var pp = null;
 
       if (pp === null) {
          pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
@@ -4027,7 +4029,7 @@
       var chopt = opt.toUpperCase();
       chopt = JSROOT.Painter.clearCuts(chopt);
       if (hdim > 1) option.Scat = 1;
-      if ((hdim==1) && (this.histo.fSumw2.length>0)) option.Error = 2;
+      if ((hdim===1) && (this.histo.fSumw2.length > 0)) option.Error = 2;
       if ('fFunctions' in this.histo) option.Func = 1;
 
       var i = chopt.indexOf('PAL');
@@ -4643,10 +4645,10 @@
       this.histo.fXaxis.fXmax = obj.fXaxis.fXmax;
       this.histo.fYaxis.fXmin = obj.fYaxis.fXmin;
       this.histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+      this.histo.fSumw2 = obj.fSumw2;
 
       if (this.IsTProfile()) {
          this.histo.fBinEntries = obj.fBinEntries;
-         this.histo.fSumw2 = obj.fSumw2;
       }
 
       this.ScanContent();
@@ -4747,11 +4749,11 @@
          this['RevertX'] = function(grx) { return this.x.invert(grx); };
       }
 
-      this['scale_xmin'] = this.xmin;
-      this['scale_xmax'] = this.xmax;
+      this.scale_xmin = this.xmin;
+      this.scale_xmax = this.xmax;
       if (this.zoom_xmin != this.zoom_xmax) {
-         this['scale_xmin'] = this.zoom_xmin;
-         this['scale_xmax'] = this.zoom_xmax;
+         this.scale_xmin = this.zoom_xmin;
+         this.scale_xmax = this.zoom_xmax;
       }
       if (this.x_kind == 'time') {
          this['x'] = d3.time.scale();
@@ -4786,11 +4788,11 @@
          this['grx'] = this.x;
       }
 
-      this['scale_ymin'] = this.ymin;
-      this['scale_ymax'] = this.ymax;
+      this.scale_ymin = this.ymin;
+      this.scale_ymax = this.ymax;
       if (this.zoom_ymin != this.zoom_ymax) {
-         this['scale_ymin'] = this.zoom_ymin;
-         this['scale_ymax'] = this.zoom_ymax;
+         this.scale_ymin = this.zoom_ymin;
+         this.scale_ymax = this.zoom_ymax;
       }
 
       if (this.histo.fYaxis.fTimeDisplay) {

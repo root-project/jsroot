@@ -1660,7 +1660,11 @@
 
    // ===========================================================================
 
-   JSROOT.Painter.drawPaletteAxis = function(divid, palette,opt) {
+   JSROOT.Painter.drawPaletteAxis = function(divid,palette,opt) {
+
+      // disable draw of shadow element of TPave
+      palette.fBorderSize = 1;
+      palette.fShadowColor = 0;
 
       JSROOT.extend(this, new JSROOT.TPavePainter(palette));
 
