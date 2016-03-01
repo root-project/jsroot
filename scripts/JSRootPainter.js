@@ -5575,9 +5575,6 @@
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      // d3.select("body").classed("noselect", true);
-      // d3.select("body").style("-webkit-user-select", "none");
-
       this.zoom_rect = this.svg_frame()
                         .append("rect")
                         .attr("class", "zoom")
@@ -5597,6 +5594,7 @@
    }
 
    JSROOT.THistPainter.prototype.moveRectSel = function() {
+
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       d3.event.preventDefault();
@@ -5612,26 +5610,18 @@
       }
 
       this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
-                     .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
-                     .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
-                     .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
-
-//      if ((JSROOT.gStyle.Tooltip > 0) && ((Math.abs(this.zoom_curr[0] - this.zoom_origin[0])>10) || (Math.abs(this.zoom_curr[1] - this.zoom_origin[1])>10))) {
-//         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-//         this.frame_painter().ProcessTooltipEvent(null);
-//         this.disable_tooltip = true;
-//      }
+                    .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
+                    .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
+                    .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
    }
 
    JSROOT.THistPainter.prototype.endRectSel = function() {
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       d3.event.preventDefault();
-      // d3.select(window).on("touchmove.zoomRect",
-      // null).on("touchend.zoomRect", null);
+
       d3.select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
-      // d3.select("body").classed("noselect", false);
 
       var m = d3.mouse(this.last_mouse_tgt);
 
@@ -5659,8 +5649,6 @@
          ymax = Math.max(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
          isany = true;
       }
-
-      d3.select("body").style("-webkit-user-select", "auto");
 
       this.clearInteractiveElements();
 
@@ -5737,9 +5725,6 @@
          this.zoom_kind = 101; // x and y
       }
 
-      // d3.select("body").classed("noselect", true);
-      // d3.select("body").style("-webkit-user-select", "none");
-
       this.zoom_rect = this.svg_frame().append("rect")
             .attr("class", "zoom")
             .attr("id", "zoomRect")
@@ -5796,15 +5781,10 @@
       this.svg_frame().on("touchcancel", null)
                       .on("touchend", null, true);
 
-      if (this.zoom_kind == 0) {
+      if (this.zoom_kind === 0) {
          // special case - single touch can ends up with context menu
 
          d3.event.preventDefault();
-
-         // var arr = d3.touches(this.last_touch_tgt);
-
-         //if (arr.length == 1) {
-            // this is touch with single element
 
          var now = new Date();
 
@@ -5824,7 +5804,6 @@
       d3.select(window).on("touchmove.zoomRect", null)
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
-      // d3.select("body").classed("noselect", false);
 
       var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
 
@@ -5841,8 +5820,6 @@
          ymax = Math.max(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
          isany = true;
       }
-
-      d3.select("body").style("-webkit-user-select", "auto");
 
       this.clearInteractiveElements();
       this.last_touch = new Date(0);

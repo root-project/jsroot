@@ -1919,12 +1919,8 @@
             if (!doing_zoom) return;
 
             d3.event.preventDefault();
-            // d3.select(window).on("touchmove.zoomRect",
-            // null).on("touchend.zoomRect", null);
             d3.select(window).on("mousemove.colzoomRect", null)
                              .on("mouseup.colzoomRect", null);
-            // d3.select("body").classed("noselect", false);
-            // d3.select("body").style("-webkit-user-select", "auto");
             zoom_rect.remove();
             zoom_rect = null;
             doing_zoom = false;
