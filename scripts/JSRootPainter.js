@@ -3250,6 +3250,7 @@
       JSROOT.TObjectPainter.call(this, pave);
       this.pave = pave;
       this.Enabled = true;
+      this.UseContextMenu = false;
    }
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3297,7 +3298,7 @@
           lwidth = pt.fBorderSize;
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true, ".stat_layer");
+      this.RecreateDrawG(true, this.IsStats() ? ".stat_layer" : ".text_layer");
 
       // position and size required only for drag functions
       this.draw_g
@@ -3331,15 +3332,13 @@
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, refill);
 
-      this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.IsStats() });
+      this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
-      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
+      if (this.UseContextMenu && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveLabel = function(width, height) {
-
       this.StartTextDrawing(this.pave.fTextFont, height/1.2);
 
       this.DrawText(this.pave.fTextAlign, 0, 0, width, height, this.pave.fLabel, JSROOT.Painter.root_colors[this.pave.fTextColor]);
@@ -3614,10 +3613,8 @@
       return false;
    }
 
-
    JSROOT.TPavePainter.prototype.Redraw = function() {
       // if pavetext artificially disabled, do not redraw it
-
       this.DrawPave(true);
    }
 
@@ -3627,9 +3624,14 @@
       painter.SetDivId(divid, 2);
 
       switch (pave._typename) {
-         case "TPaveLabel": painter['PaveDrawFunc'] = painter.DrawPaveLabel; break;
+         case "TPaveLabel":
+            painter['PaveDrawFunc'] = painter.DrawPaveLabel;
+            break;
          case "TPaveStats":
-         case "TPaveText": painter['PaveDrawFunc'] = painter.DrawPaveText; break;
+         case "TPaveText":
+            painter.UseContextMenu = painter.IsStats();
+            painter['PaveDrawFunc'] = painter.DrawPaveText;
+            break;
       }
 
       painter.Redraw();

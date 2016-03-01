@@ -1719,12 +1719,9 @@
 
    JSROOT.Painter.drawPaletteAxis = function(divid, palette,opt) {
 
-      this.palette = palette;
-      this.SetDivId(divid);
+      JSROOT.extend(this, new JSROOT.TPavePainter(palette));
 
-      this['GetObject'] = function() {
-         return this.palette;
-      }
+      this.SetDivId(divid);
 
       this['MakeIcon'] = function(contour, z) {
          var h = this.frame_height();
@@ -1755,16 +1752,18 @@
          console.log(res);
       }
 
-      this['DrawPalette'] = function(can_move) {
-         var palette = this.palette;
+      this['DrawAxisPalette'] = function(s_width, s_height) {
+
+         var palette = this.pave;
          var axis = palette.fAxis;
 
          var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
 
-         var width = this.pad_width(), height = this.pad_height();
-
-         var s_height = Math.round(Math.abs(palette.fY2NDC - palette.fY1NDC) * height);
+         var pos_x = parseInt(this.draw_g.attr("x")), // pave position
+             pos_y = parseInt(this.draw_g.attr("y")),
+             width = this.pad_width(),
+             height = this.pad_height();
 
          var axisOffset = axis.fLabelOffset * width;
          var tickSize = axis.fTickSize * width;
@@ -1786,13 +1785,13 @@
 
          if (this.main_painter().options.Logz) {
             z = d3.scale.log();
-            this['noexpz'] = ((zmax < 300) && (zmin > 0.3));
+            this.noexpz = ((zmax < 300) && (zmin > 0.3));
 
             this['formatz'] = function(d) {
                var val = parseFloat(d);
                var vlog = JSROOT.log10(val);
                if (Math.abs(vlog - Math.round(vlog))<0.001) {
-                  if (!this['noexpz'])
+                  if (!this.noexpz)
                      return JSROOT.Painter.formatExp(val.toExponential(0));
                   else
                   if (vlog<0)
@@ -1814,23 +1813,9 @@
 
          var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, axis.fLabelSize * height);
 
-         var pos_x = Math.round(palette.fX1NDC * width);
-         var pos_y = Math.round(height*(1 - palette.fY1NDC));
+         if (tickSize > s_width*0.6) tickSize = s_width*0.6;
 
-
-         var s_width = Math.round(Math.abs(palette.fX2NDC - palette.fX1NDC) * width);
-         pos_y -= s_height;
-         if (tickSize > s_width*0.8) tickSize = s_width*0.8;
-
-         // Draw palette pad
-         this.RecreateDrawG(true, ".text_layer");
-
-         this.draw_g
-                .attr("x", pos_x).attr("y", pos_y)               // position required only for drag functions
-                .attr("width", s_width).attr("height", s_height) // dimension required only for drag functions
-                .attr("transform", "translate(" + pos_x + ", " + pos_y + ")");
-
-         if ((contour==null) || can_move)
+         if ((contour==null) || this._can_move)
             // we need such rect to correctly calculate size
             this.draw_g.append("svg:rect")
                        .attr("x", 0)
@@ -1874,30 +1859,29 @@
 
          zax.selectAll("text")
                  .call(labelfont.func)
-                 .attr("fill", JSROOT.Painter.root_colors[axis['fLabelColor']]);
+                 .attr("fill", JSROOT.Painter.root_colors[axis.fLabelColor]);
 
-         // if ((contour!==null) && !can_move) this.MakeIcon(contour,z);
+         // if ((contour!==null) && !this._can_move) this.MakeIcon(contour,z);
 
          /** Add palette axis title */
-         if ((axis.fTitle != "") && (typeof axis['fTextFont'] !== 'undefined')) {
+         if ((axis.fTitle != "") && (typeof axis.fTextFont !== 'undefined')) {
             // offest in width of colz drawings
-            var xoffset = axis['fTitleOffset'] * s_width;
+            var xoffset = axis.fTitleOffset * s_width;
             if ('getBoundingClientRect' in this.draw_g.node()) {
                var rect1 = this.draw_g.node().getBoundingClientRect();
                // offset in portion of real text width produced by axis
-               xoffset = axis['fTitleOffset'] * (rect1.width-s_width);
+               xoffset = axis.fTitleOffset * (rect1.width-s_width);
             }
             // add font size
-            xoffset += s_width + axis['fTitleSize'] * height * 1.3;
+            xoffset += s_width + axis.fTitleSize * height * 1.3;
             if (pos_x + xoffset > width-3) xoffset = width - 3 - pos_x;
-            var tcolor = JSROOT.Painter.root_colors[axis['fTextColor']];
-            this.StartTextDrawing(axis['fTextFont'], axis['fTitleSize'] * height);
-            this.DrawText(33, 0, xoffset, 0, -270, axis['fTitle'], tcolor);
+            var tcolor = JSROOT.Painter.root_colors[axis.fTextColor];
+            this.StartTextDrawing(axis.fTextFont, axis.fTitleSize * height);
+            this.DrawText(33, 0, xoffset, 0, -270, axis.fTitle, tcolor);
             this.FinishTextDrawing();
          }
 
-
-         if (can_move) {
+         if (this._can_move) {
             if ('getBoundingClientRect' in this.draw_g.node()) {
                var rect1 = this.draw_g.node().getBoundingClientRect();
 
@@ -1910,13 +1894,9 @@
                   palette.fX2NDC -= shift/width;
                }
             }
+            this._can_move = false; // do it once
             return;
          }
-
-         this.AddDrag({ obj: palette, redraw: this.DrawPalette.bind(this), ctxmenu : JSROOT.touches && JSROOT.gStyle.ContextMenu });
-
-         if (JSROOT.gStyle.ContextMenu && !JSROOT.touches)
-            this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
 
          if (!JSROOT.gStyle.Zooming) return;
 
@@ -1998,23 +1978,23 @@
       }
 
       this['Redraw'] = function() {
-
-         var enabled = true;
+         this.Enabled = true;
          var main = this.main_painter();
-
+         this.UseContextMenu = (main !== null);
          if ((main !== null) && ('options' in main))
-            enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
+            this.Enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
 
-         if (enabled)
-            this.DrawPalette(false);
-         else
-            this.RemoveDrawG(); // if palette artificially disabled, do not redraw it
+         this.DrawPave();
       }
+
+      this['PaveDrawFunc'] = this.DrawAxisPalette;
 
       // workaround to let copmlete pallete draw when actual palette colors already there
       this['CompleteDraw'] = this['Redraw'];
 
-      this.DrawPalette(opt === 'canmove');
+      this._can_move = (opt === 'canmove');
+
+      this.Redraw();
 
       return this.DrawingReady();
    }
@@ -2090,19 +2070,19 @@
    }
 
    JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
-      if (('fFunctions' in this.histo) && (this.histo.fFunctions !== null))
-         for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
-            var func = this.histo.fFunctions.arr[i];
-            if (func['_typename'] !== 'TPaletteAxis') continue;
-            if (remove) {
-               this.histo.fFunctions.RemoveAt(i);
-               if (this.pad_painter())
-                  this.pad_painter().RemovePrimitive(func);
-               return null;
-            }
+      if (this.histo.fFunctions === null) return null;
 
-            return func;
+      for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
+         var func = this.histo.fFunctions.arr[i];
+         if (func._typename !== 'TPaletteAxis') continue;
+         if (remove) {
+            this.histo.fFunctions.RemoveAt(i);
+            if (this.pad_painter())
+               this.pad_painter().RemovePrimitive(func);
+            return null;
          }
+         return func;
+      }
 
       return null;
    }
@@ -2153,8 +2133,10 @@
 
       if (pal_painter === null)
          pal_painter = JSROOT.draw(this.divid, pal, "canmove");
-      else
-         pal_painter.DrawPalette(true);
+      else {
+         pal_painter._can_move = true;
+         pal_painter.Redraw();
+      }
 
       if (pal.fX1NDC < frame_painter.fX2NDC) {
          frame_painter.fX2NDC = pal.fX1NDC - 0.01;
