@@ -1346,15 +1346,18 @@
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    JSROOT.TObjectPainter.prototype.main_painter = function() {
-      if (!this.main) {
+      if (this.main === null) {
          var svg_p = this.svg_pad();
-         if (!svg_p.empty()) this.main = svg_p.property('mainpainter');
+         if (!svg_p.empty()) {
+            this.main = svg_p.property('mainpainter');
+            if (this.main === undefined) this.main = null;
+         }
       }
       return this.main;
    }
 
    JSROOT.TObjectPainter.prototype.is_main_painter = function() {
-      return this == this.main_painter();
+      return this === this.main_painter();
    }
 
    JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main) {
@@ -6855,168 +6858,174 @@
 
    // =====================================================================================
 
-   JSROOT.TTextPainter = function(text) {
-      JSROOT.TObjectPainter.call(this, text);
-      this.text = text;
-   }
-
-   JSROOT.TTextPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TTextPainter.prototype.GetObject = function() {
-      return this.text;
-   }
-
-   JSROOT.TTextPainter.prototype.drawPaveLabel = function() {
-
-      this.RecreateDrawG(true, ".text_layer");
-
-      var pavelabel = this.text;
-
-      var w = this.pad_width(), h = this.pad_height();
-
-      if (pavelabel.fInit === 0) {
-         // recalculate NDC coordiantes if not yet done
-         pavelabel.fInit = 1;
-         var isndc = (pavelabel.fOption.indexOf("NDC") >= 0);
-         pavelabel.fX1NDC = this.ConvertToNDC("x", pavelabel.fX1, isndc);
-         pavelabel.fX2NDC = this.ConvertToNDC("x", pavelabel.fX2, isndc);
-         pavelabel.fY1NDC = this.ConvertToNDC("y", pavelabel.fY1, isndc);
-         pavelabel.fY2NDC = this.ConvertToNDC("y", pavelabel.fY2, isndc);
-      }
-
-      var pos_x = pavelabel.fX1NDC * w;
-      var pos_y = (1.0 - pavelabel.fY1NDC) * h;
-
-      var width = Math.abs(pavelabel.fX2NDC - pavelabel.fX1NDC) * w;
-      var height = Math.abs(pavelabel.fY2NDC - pavelabel.fY1NDC) * h;
-      pos_y -= height;
-      var fcolor = this.createAttFill(pavelabel);
-      var tcolor = JSROOT.Painter.root_colors[pavelabel['fTextColor']];
-      var scolor = JSROOT.Painter.root_colors[pavelabel['fShadowColor']];
-
-      // align = 10*HorizontalAlign + VerticalAlign
-      // 1=left adjusted, 2=centered, 3=right adjusted
-      // 1=bottom adjusted, 2=centered, 3=top adjusted
-      var align = 'start', halign = Math.round(pavelabel.fTextAlign / 10);
-      var baseline = 'bottom', valign = pavelabel.fTextAlign % 10;
-      if (halign == 1) align = 'start';
-      else if (halign == 2) align = 'middle';
-      else if (halign == 3) align = 'end';
-      if (valign == 1) baseline = 'bottom';
-      else if (valign == 2) baseline = 'middle';
-      else if (valign == 3) baseline = 'top';
-
-      var lwidth = pavelabel.fBorderSize ? pavelabel.fBorderSize : 0;
-
-      var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
-
-      var pave = this.draw_g
-                   .attr("x", pos_x.toFixed(1))
-                   .attr("y", pos_y.toFixed(1))
-                   .attr("width", width.toFixed(1))
-                   .attr("height", height.toFixed(1))
-                   .attr("transform", "translate(" + pos_x.toFixed(1) + "," + pos_y.toFixed(1) + ")");
-
-      pave.append("svg:rect")
-             .attr("x", 0)
-             .attr("y", 0)
-             .attr("width", width.toFixed(1))
-             .attr("height", height.toFixed(1))
-             .call(fcolor.func)
-             .style("stroke-width", lwidth ? 1 : 0)
-             .style("stroke", lcolor.color);
-
-      this.StartTextDrawing(pavelabel.fTextFont, height / 1.7);
-
-      this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel.fLabel, tcolor);
-
-      if (lwidth && lwidth > 1) {
-         pave.append("svg:line")
-               .attr("x1", width + (lwidth / 2))
-               .attr("y1", lwidth + 1)
-               .attr("x2", width + (lwidth / 2))
-               .attr("y2", height + lwidth - 1)
-               .call(lcolor.func);
-         pave.append("svg:line")
-               .attr("x1", lwidth + 1)
-               .attr("y1", height + (lwidth / 2))
-               .attr("x2", width + lwidth - 1)
-               .attr("y2", height + (lwidth / 2))
-               .call(lcolor.func);
-      }
-
-      var pave_painter = this;
-
-      this.AddDrag({ obj: pavelabel, redraw: this.drawPaveLabel.bind(this) });
-
-      this.FinishTextDrawing();
-   }
-
-   JSROOT.TTextPainter.prototype.drawText = function() {
-
-      var kTextNDC = JSROOT.BIT(14);
-
-      var w = this.pad_width(), h = this.pad_height(), use_pad = true;
-      var pos_x = this.text['fX'], pos_y = this.text['fY'];
-      if (this.text.TestBit(kTextNDC)) {
-         pos_x = pos_x * w;
-         pos_y = (1 - pos_y) * h;
-      } else
-      if (this.main_painter() != null) {
-         w = this.frame_width(); h = this.frame_height(); use_pad = false;
-         pos_x = this.main_painter().grx(pos_x);
-         pos_y = this.main_painter().gry(pos_y);
-      } else
-      if (this.root_pad() != null) {
-         pos_x = this.ConvertToNDC("x", pos_x) * w;
-         pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
-      } else {
-         this.text.fTextAlign = 22;
-         pos_x = w/2;
-         pos_y = h/2;
-         if (this.text['fTextSize'] == 0) this.text['fTextSize'] = 0.05;
-         if (this.text['fTextColor'] == 0) this.text['fTextColor'] = 1;
-      }
-
-      this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
-
-      var tcolor = JSROOT.Painter.root_colors[this.text['fTextColor']];
-
-      var latex_kind = 0, fact = 1.;
-      if (this.text['_typename'] == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-      if (this.text['_typename'] == 'TMathText') { latex_kind = 2; fact = 0.8; }
-
-      this.StartTextDrawing(this.text['fTextFont'], this.text['fTextSize'] * Math.min(w,h) * fact);
-
-      this.DrawText(this.text.fTextAlign, pos_x, pos_y, 0, 0, this.text['fTitle'], tcolor, latex_kind);
-
-      this.FinishTextDrawing();
-   }
-
-   JSROOT.TTextPainter.prototype.UpdateObject = function(obj) {
-      if (this.text['_typename'] != obj['_typename']) return false;
-      if (this.text['_typename'] == 'TPaveLabel') {
-         this.text['fLabel'] = obj['fLabel'];
-      } else {
-         this.text['fTitle'] = obj['fTitle'];
-      }
-
-      return true;
-   }
-
-   JSROOT.TTextPainter.prototype.Redraw = function() {
-      if (this.text['_typename'] == 'TPaveLabel')
-         this.drawPaveLabel();
-      else
-         this.drawText();
-   }
-
    JSROOT.Painter.drawText = function(divid, text) {
-      var painter = new JSROOT.TTextPainter(text);
+      var painter = new JSROOT.TObjectPainter(text);
+      painter.text = text;
       painter.SetDivId(divid, 2);
+
+      painter['Redraw'] = function() {
+         var w = this.pad_width(),
+             h = this.pad_height(),
+             use_pad = true,
+             pos_x = this.text.fX,
+             pos_y = this.text.fY;
+
+         if (this.text.TestBit(JSROOT.BIT(14))) {
+            // NDC coordiantes
+            pos_x = pos_x * w;
+            pos_y = (1 - pos_y) * h;
+         } else
+            if (this.main_painter() !== null) {
+               w = this.frame_width(); h = this.frame_height(); use_pad = false;
+               pos_x = this.main_painter().grx(pos_x);
+               pos_y = this.main_painter().gry(pos_y);
+            } else
+               if (this.root_pad() !== null) {
+                  pos_x = this.ConvertToNDC("x", pos_x) * w;
+                  pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
+               } else {
+                  this.text.fTextAlign = 22;
+                  pos_x = w/2;
+                  pos_y = h/2;
+                  if (this.text.fTextSize === 0) this.text.fTextSize = 0.05;
+                  if (this.text.fTextColor === 0) this.text.fTextColor = 1;
+               }
+
+         this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
+
+         var tcolor = JSROOT.Painter.root_colors[this.text.fTextColor],
+         latex_kind = 0, fact = 1.;
+
+         if (this.text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
+            if (this.text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+
+         this.StartTextDrawing(this.text.fTextFont, this.text.fTextSize*Math.min(w,h)*fact);
+
+         this.DrawText(this.text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, this.text.fTitle, tcolor, latex_kind);
+
+         this.FinishTextDrawing();
+      }
+
+      painter['UpdateObject'] = function(obj) {
+         if (this.text._typename !== obj._typename) return false;
+         this.text.fTitle = obj.fTitle;
+         return true;
+      }
+
+      painter['GetObject'] = function() {
+         return this.text;
+      }
+
       painter.Redraw();
       return painter.DrawingReady();
    }
+
+   // =============================================================================
+
+   JSROOT.Painter.drawPaveLabel = function(divid, text) {
+      var painter = new JSROOT.TObjectPainter(text);
+      painter.text = text;
+      painter.SetDivId(divid, 2);
+
+      painter['Redraw'] = function() {
+         this.RecreateDrawG(true, ".text_layer");
+
+         var pavelabel = this.text;
+
+         var w = this.pad_width(), h = this.pad_height();
+
+         if (pavelabel.fInit === 0) {
+            // recalculate NDC coordiantes if not yet done
+            pavelabel.fInit = 1;
+            var isndc = (pavelabel.fOption.indexOf("NDC") >= 0);
+            pavelabel.fX1NDC = this.ConvertToNDC("x", pavelabel.fX1, isndc);
+            pavelabel.fX2NDC = this.ConvertToNDC("x", pavelabel.fX2, isndc);
+            pavelabel.fY1NDC = this.ConvertToNDC("y", pavelabel.fY1, isndc);
+            pavelabel.fY2NDC = this.ConvertToNDC("y", pavelabel.fY2, isndc);
+         }
+
+         var pos_x = pavelabel.fX1NDC * w;
+         var pos_y = (1.0 - pavelabel.fY2NDC) * h;
+
+         var width = (pavelabel.fX2NDC - pavelabel.fX1NDC) * w;
+         var height = (pavelabel.fY2NDC - pavelabel.fY1NDC) * h;
+         var fcolor = this.createAttFill(pavelabel);
+         var tcolor = JSROOT.Painter.root_colors[pavelabel.fTextColor];
+         var scolor = JSROOT.Painter.root_colors[pavelabel.fShadowColor];
+
+         // align = 10*HorizontalAlign + VerticalAlign
+         // 1=left adjusted, 2=centered, 3=right adjusted
+         // 1=bottom adjusted, 2=centered, 3=top adjusted
+         var align = 'start', halign = Math.round(pavelabel.fTextAlign / 10);
+         var baseline = 'bottom', valign = pavelabel.fTextAlign % 10;
+         if (halign == 1) align = 'start';
+         else if (halign == 2) align = 'middle';
+         else if (halign == 3) align = 'end';
+         if (valign == 1) baseline = 'bottom';
+         else if (valign == 2) baseline = 'middle';
+         else if (valign == 3) baseline = 'top';
+
+         var lwidth = pavelabel.fBorderSize ? pavelabel.fBorderSize : 0;
+
+         var lcolor = JSROOT.Painter.createAttLine(pavelabel, lwidth);
+
+         var pave = this.draw_g
+                      .attr("x", pos_x.toFixed(1))
+                      .attr("y", pos_y.toFixed(1))
+                      .attr("width", width.toFixed(1))
+                      .attr("height", height.toFixed(1))
+                      .attr("transform", "translate(" + pos_x.toFixed(1) + "," + pos_y.toFixed(1) + ")");
+
+         pave.append("svg:rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width.toFixed(1))
+                .attr("height", height.toFixed(1))
+                .call(fcolor.func)
+                .style("stroke-width", lwidth ? 1 : 0)
+                .style("stroke", lcolor.color);
+
+         this.StartTextDrawing(pavelabel.fTextFont, height / 1.7);
+
+         this.DrawText(align, 0.02*width, 0, 0.96*width, height, pavelabel.fLabel, tcolor);
+
+         if (lwidth && lwidth > 1) {
+            pave.append("svg:line")
+                  .attr("x1", width + (lwidth / 2))
+                  .attr("y1", lwidth + 1)
+                  .attr("x2", width + (lwidth / 2))
+                  .attr("y2", height + lwidth - 1)
+                  .call(lcolor.func);
+            pave.append("svg:line")
+                  .attr("x1", lwidth + 1)
+                  .attr("y1", height + (lwidth / 2))
+                  .attr("x2", width + lwidth - 1)
+                  .attr("y2", height + (lwidth / 2))
+                  .call(lcolor.func);
+         }
+
+         var pave_painter = this;
+
+         this.AddDrag({ obj: pavelabel, redraw: this.Redraw.bind(this) });
+
+         this.FinishTextDrawing();
+      }
+
+      painter['UpdateObject'] = function(obj) {
+         if (this.text._typename !== obj._typename) return false;
+         this.text.fLabel = obj.fLabel;
+         return true;
+      }
+
+      painter['GetObject'] = function() {
+         return this.text;
+      }
+
+      painter.Redraw();
+
+      return painter.DrawingReady();
+   }
+
 
    // ================= painer of raw text ========================================
 
@@ -8945,7 +8954,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func: JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func: JSROOT.Painter.drawPaveLabel });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;COL3;LEGO;same" });
