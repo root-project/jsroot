@@ -774,69 +774,9 @@
          return this.tf1.evalPar(x);
       }
 
-      this['CreateDummyHisto'] = function() {
-         var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-         if (this.tf1.fSave.length > 0) {
-            // in the case where the points have been saved, useful for example
-            // if we don't have the user's function
-            var nb_points = this.tf1.fNpx;
-            for (var i = 0; i < nb_points; ++i) {
-               var h = this.tf1.fSave[i];
-               if ((i == 0) || (h > ymax)) ymax = h;
-               if ((i == 0) || (h < ymin)) ymin = h;
-            }
-            xmin = this.tf1.fSave[nb_points + 1];
-            xmax = this.tf1.fSave[nb_points + 2];
-         } else {
-            // we don't have the points, so let's try to interpret the function
-            xmin = this.tf1.fXmin;
-            xmax = this.tf1.fXmax;
-            var nb_points = Math.max(this.tf1.fNpx, this.tf1.fNpfits, 103);
-
-            var binwidthx = (xmax - xmin) / nb_points;
-            var left = -1, right = -1;
-            for (var i = 0; i < nb_points; ++i) {
-               var h = this.Eval(xmin + (i * binwidthx));
-               if (isNaN(h)) continue;
-
-               if (left < 0) {
-                  left = i;
-                  ymax = h;
-                  ymin = h;
-               }
-               if ((right < 0) || (right === i - 1)) right = i;
-
-               if (h > ymax) ymax = h;
-               if (h < ymin) ymin = h;
-            }
-
-            if (left < right) {
-               xmax = xmin + right * binwidthx;
-               xmin = xmin + left * binwidthx;
-            }
-         }
-
-         if (ymax > 0.0) ymax *= 1.05;
-         if (ymin < 0.0) ymin *= 1.05;
-
-         var histo = JSROOT.Create("TH1I");
-
-         histo.fName = this.tf1.fName + "_hist";
-         histo.fTitle = this.tf1.fTitle;
-
-         histo.fXaxis.fXmin = xmin;
-         histo.fXaxis.fXmax = xmax;
-         histo.fYaxis.fXmin = ymin;
-         histo.fYaxis.fXmax = ymax;
-
-         return histo;
-      }
-
-      this['CreateBins'] = function() {
-
+      this['CreateBins'] = function(ignore_zoom) {
          var main = this.main_painter(), gxmin = 0, gxmax = 0;
-
-         if (main!==null)  {
+         if ((main!==null) && !ignore_zoom)  {
             if (main.zoom_xmin !== main.zoom_xmax) {
                gxmin = main.zoom_xmin;
                gxmax = main.zoom_xmax;
@@ -857,8 +797,8 @@
             var res = [];
             for (var n=0; n < np; ++n) {
                var xx = xmin + dx*n;
-               // check if points need to be displayed at all
-               if ((gxmin !== gxmax) && ((xx + dx < gxmin) || (xx - dx > gxmax))) continue;
+               // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
+               if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
 
                res.push({ x : xx, y : this.tf1.fSave[n] });
             }
@@ -890,6 +830,42 @@
          }
          return res;
       }
+
+      this['CreateDummyHisto'] = function() {
+
+         var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
+
+         var bins = this.CreateBins(true);
+
+         if (bins!==null) {
+
+            xmin = xmax = bins[0].x;
+            ymin = ymax = bins[0].y;
+
+            bins.forEach(function(bin) {
+               xmin = Math.min(bin.x, xmin);
+               xmax = Math.max(bin.x, xmax);
+               ymin = Math.min(bin.y, ymin);
+               ymax = Math.max(bin.y, ymax);
+            });
+
+            if (ymax > 0.0) ymax *= 1.05;
+            if (ymin < 0.0) ymin *= 1.05;
+         }
+
+         var histo = JSROOT.Create("TH1I");
+
+         histo.fName = this.tf1.fName + "_hist";
+         histo.fTitle = this.tf1.fTitle;
+
+         histo.fXaxis.fXmin = xmin;
+         histo.fXaxis.fXmax = xmax;
+         histo.fYaxis.fXmin = ymin;
+         histo.fYaxis.fXmax = ymax;
+
+         return histo;
+      }
+
 
       this['ProcessTooltipFunc'] = function(pnt) {
          var cleanup = false;
@@ -958,7 +934,7 @@
          this.RecreateDrawG(false, ".main_layer");
 
          // recalculate drawing bins when necessary
-         this.bins = this.CreateBins();
+         this.bins = this.CreateBins(false);
 
          var pthis = this;
          var pmain = this.main_painter();
