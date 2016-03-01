@@ -5468,19 +5468,22 @@
       var obj = this.main_painter();
       if (!obj) obj = this;
 
+      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+
       var changed = false;
 
       if (dox) {
-         if (obj['zoom_xmin'] != obj['zoom_xmax']) changed = true;
-         obj['zoom_xmin'] = obj['zoom_xmax'] = 0;
+         if (obj.zoom_xmin !== obj.zoom_xmax) changed = true;
+         obj.zoom_xmin = obj.zoom_xmax = 0;
       }
       if (doy) {
-         if (obj['zoom_ymin'] != obj['zoom_ymax']) changed = true;
-         obj['zoom_ymin'] = obj['zoom_ymax'] = 0;
+         if (obj.zoom_ymin !== obj.zoom_ymax) changed = true;
+         obj.zoom_ymin = obj.zoom_ymax = 0;
       }
       if (doz) {
-         if (obj['zoom_zmin'] != obj['zoom_zmax']) changed = true;
-         obj['zoom_zmin'] = obj['zoom_zmax'] = 0;
+         if (obj.zoom_zmin !== obj.zoom_zmax) changed = true;
+         obj.zoom_zmin = obj.zoom_zmax = 0;
       }
       if (changed) this.RedrawPad();
    }
@@ -5535,9 +5538,10 @@
       d3.event.preventDefault();
       var m = d3.mouse(this.last_mouse_tgt);
       this.clearInteractiveElements();
-      if (m[0] < 0) this.Unzoom(false, true, false); else
-      if (m[1] > this.frame_height()) this.Unzoom(true, false, false); else
-         this.Unzoom(true, true, true);
+      var kind = "xyz";
+      if (m[0] < 0) kind = "y"; else
+      if (m[1] > this.frame_height()) kind = "x";
+      this.Unzoom(kind);
    }
 
    JSROOT.THistPainter.prototype.startRectSel = function(tgt) {
@@ -5691,7 +5695,7 @@
             d3.event.stopPropagation();
 
             this.clearInteractiveElements();
-            this.Unzoom(true, true, true);
+            this.Unzoom("xyz");
 
             this.last_touch = new Date(0);
 
@@ -5942,12 +5946,12 @@
       JSROOT.Painter.createMenu(function(menu) {
          menu['painter'] = this;
 
-         if ((kind=="x") || (kind=='y') || (kind=='z')) {
-            var faxis = null;
-            if (kind=="x") faxis = this.histo['fXaxis']; else
-            if (kind=="y") faxis = this.histo['fYaxis'];
+         if ((kind==="x") || (kind==="y") || (kind==="z")) {
+            var faxis = this.histo.fXaxis;
+            if (kind=="y") faxis = this.histo.fYaxis; else
+            if (kind=="z") faxis = this.histo.fZaxis;
             menu.add("header: " + kind.toUpperCase() + " axis");
-            menu.add("Unzoom", function() { this.Unzoom(kind=="x", kind=="y", kind=="z"); });
+            menu.add("Unzoom", function() { this.Unzoom(kind); });
             menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
             if (faxis != null) {
                menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
@@ -5986,13 +5990,13 @@
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
-      if (this.zoom_xmin!=this.zoom_xmax)
-         menu.add("Unzoom X", function() { this.Unzoom(true, false, false); });
-      if (this.zoom_ymin!=this.zoom_ymax)
-         menu.add("Unzoom Y", function() { this.Unzoom(false, true, false); });
-      if (this.zoom_zmin!=this.zoom_zmax)
-         menu.add("Unzoom Z", function() { this.Unzoom(false, false, true); });
-      menu.add("Unzoom", function() { this.Unzoom(true, true, true); });
+      if (this.zoom_xmin !== this.zoom_xmax)
+         menu.add("Unzoom X", function() { this.Unzoom("x"); });
+      if (this.zoom_ymin !== this.zoom_ymax)
+         menu.add("Unzoom Y", function() { this.Unzoom("y"); });
+      if (this.zoom_zmin !== this.zoom_zmax)
+         menu.add("Unzoom Z", function() { this.Unzoom("z"); });
+      menu.add("Unzoom", function() { this.Unzoom(); });
 
       menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
          JSROOT.gStyle.Tooltip = JSROOT.gStyle.Tooltip == 0 ? 1 : -JSROOT.gStyle.Tooltip;
@@ -6024,7 +6028,7 @@
          name: 'Unzoom',
          title: 'Unzoom all axes',
          icon: JSROOT.ToolbarIcons.undo,
-         click: function() { painter.Unzoom(true, true, true); }
+         click: function() { painter.Unzoom(); }
       });
 
       if (('AutoZoom' in this) && (this.Dimension() < 3))

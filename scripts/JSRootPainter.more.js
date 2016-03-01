@@ -1841,7 +1841,7 @@
                   }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
                if (JSROOT.gStyle.Zooming)
-                  r.on("dblclick", function() { pthis.main_painter().Unzoom(false, false, true); });
+                  r.on("dblclick", function() { pthis.main_painter().Unzoom("z"); });
             }
 
          // Build and draw axes
@@ -1971,7 +1971,7 @@
                     .style("cursor", "crosshair")
                     .style("opacity", "0")
                     .on("mousedown", startRectSel)
-                    .on("dblclick", function() { pthis.main_painter().Unzoom(false, false, true); });
+                    .on("dblclick", function() { pthis.main_painter().Unzoom("z"); });
 
       }
 
