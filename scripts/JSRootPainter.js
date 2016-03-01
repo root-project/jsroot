@@ -3258,7 +3258,11 @@
       return this.pave;
    }
 
-   JSROOT.TPavePainter.prototype.DrawPaveText = function() {
+   JSROOT.TPavePainter.prototype.DrawPave = function(refill) {
+      // this draw only basic TPave
+
+      if (!this.Enabled)
+         return this.RemoveDrawG();
 
       var pt = this.pave;
 
@@ -3290,30 +3294,7 @@
           pos_y = Math.round((1.0 - pt.fY2NDC) * this.pad_height()),
           width = Math.round((pt.fX2NDC - pt.fX1NDC) * this.pad_width()),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * this.pad_height()),
-          tcolor = JSROOT.Painter.root_colors[pt.fTextColor],
-          fcolor = this.createAttFill(pt),
-          lwidth = pt.fBorderSize,
-          attline = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0),
-          first_stat = 0,
-          num_cols = 0,
-          nlines = 0, lines = [];
-
-      if (pt._typename === "TPaveLabel") {
-         nlines = 1;
-         lines.push(pt.fLabel);
-      } else {
-         nlines = pt.fLines.arr.length
-         // adjust font size
-         for (var j = 0; j < nlines; ++j) {
-            var line = pt.fLines.arr[j].fTitle;
-            lines.push(line);
-            if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
-            if (first_stat === 0) first_stat = j;
-            var parts = line.split("|");
-            if (parts.length > num_cols)
-               num_cols = parts.length;
-         }
-      }
+          lwidth = pt.fBorderSize;
 
       // container used to recalculate coordinates
       this.RecreateDrawG(true, ".stat_layer");
@@ -3337,13 +3318,57 @@
             .style("stroke", JSROOT.Painter.root_colors[pt.fShadowColor])
             .style("stroke-width", "1px");
 
+      this.lineatt = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0);
+
       this.draw_g.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", width)
           .attr("height", height)
-          .call(fcolor.func)
-          .call(attline.func);
+          .call(this.createAttFill(pt).func)
+          .call(this.lineatt.func);
+
+      if ('PaveDrawFunc' in this)
+         this.PaveDrawFunc(width, height, refill);
+
+      this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.IsStats() });
+
+      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
+         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
+
+   }
+
+   JSROOT.TPavePainter.prototype.DrawPaveLabel = function(width, height) {
+
+      this.StartTextDrawing(this.pave.fTextFont, height/1.2);
+
+      this.DrawText(this.pave.fTextAlign, 0, 0, width, height, this.pave.fLabel, JSROOT.Painter.root_colors[this.pave.fTextColor]);
+
+      this.FinishTextDrawing();
+   }
+
+   JSROOT.TPavePainter.prototype.DrawPaveText = function(width, height, refill) {
+
+      if (refill && this.IsStats()) this.FillStatistic();
+
+      var pt = this.pave,
+          tcolor = JSROOT.Painter.root_colors[pt.fTextColor],
+          lwidth = pt.fBorderSize,
+          first_stat = 0,
+          num_cols = 0,
+          nlines = pt.fLines.arr.length,
+          lines = [];
+
+      // adjust font size
+      for (var j = 0; j < nlines; ++j) {
+         var line = pt.fLines.arr[j].fTitle;
+         lines.push(line);
+         if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
+         if (first_stat === 0) first_stat = j;
+         var parts = line.split("|");
+         if (parts.length > num_cols)
+            num_cols = parts.length;
+      }
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
@@ -3390,7 +3415,7 @@
                     .attr("y1", stepy.toFixed(1))
                     .attr("x2", width)
                     .attr("y2", stepy.toFixed(1))
-                    .call(attline.func);
+                    .call(this.lineatt.func);
       }
 
       if ((first_stat > 0) && (num_cols > 1)) {
@@ -3400,7 +3425,7 @@
                        .attr("y1", (nrow * stepy).toFixed(1))
                        .attr("x2", width)
                        .attr("y2", (nrow * stepy).toFixed(1))
-                       .call(attline.func);
+                       .call(this.lineatt.func);
 
          for (var ncol = 0; ncol < num_cols - 1; ++ncol)
             this.draw_g.append("svg:line")
@@ -3408,10 +3433,10 @@
                         .attr("y1", (first_stat * stepy).toFixed(1))
                         .attr("x2", (width / num_cols * (ncol + 1)).toFixed(1))
                         .attr("y2", height)
-                        .call(attline.func);
+                        .call(this.lineatt.func);
       }
 
-      if ((pt._typename !== "TPaveLabel") && (pt.fLabel.length>0) && !this.IsStats()) {
+      if ((pt.fLabel.length>0) && !this.IsStats()) {
          var x = Math.round(width*0.25),
              y = Math.round(-height*0.02),
              w = Math.round(width*0.5),
@@ -3433,19 +3458,6 @@
 
          this.FinishTextDrawing(lbl_g);
       }
-
-      this.AddDrag({ obj: pt, redraw: this.DrawPaveText.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu });
-
-      if (this.IsStats() && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
-   }
-
-   JSROOT.TPavePainter.prototype.AddLine = function(txt) {
-      this.pave.AddText(txt);
-   }
-
-   JSROOT.TPavePainter.prototype.IsStats = function() {
-      return this.pave ? (this.pave._typename === 'TPaveStats') : false;
    }
 
    JSROOT.TPavePainter.prototype.Format = function(value, fmt) {
@@ -3553,13 +3565,22 @@
       }); // end menu creation
    }
 
+   JSROOT.TPavePainter.prototype.IsStats = function() {
+      return this.pave ? (this.pave._typename === 'TPaveStats') : false;
+   }
+
+   JSROOT.TPavePainter.prototype.AddLine = function(txt) {
+      // used when fill statistic
+      if (this.IsStats())
+         this.pave.AddText(txt);
+   }
+
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
-      if (!this.IsStats()) return false;
       if (this.pave.fName !== "stats") return false;
 
       var main = this.main_painter();
 
-      if ((main==null) || !('FillStatistic' in main)) return false;
+      if ((main===null) || !('FillStatistic' in main)) return false;
 
       // no need to refill statistic if histogram is dummy
       if (main.IsDummyHisto()) return true;
@@ -3593,25 +3614,25 @@
       return false;
    }
 
+
    JSROOT.TPavePainter.prototype.Redraw = function() {
       // if pavetext artificially disabled, do not redraw it
 
-      if (this.Enabled) {
-         this.FillStatistic();
-         this.DrawPaveText();
-      } else {
-         this.RemoveDrawG();
-      }
+      this.DrawPave(true);
    }
 
-   JSROOT.Painter.drawPaveText = function(divid, pavetext) {
+   JSROOT.Painter.drawPaveText = function(divid, pave) {
 
-      var painter = new JSROOT.TPavePainter(pavetext);
+      var painter = new JSROOT.TPavePainter(pave);
       painter.SetDivId(divid, 2);
 
-      // refill statistic in any case
-      painter.FillStatistic();
-      painter.DrawPaveText();
+      switch (pave._typename) {
+         case "TPaveLabel": painter['PaveDrawFunc'] = painter.DrawPaveLabel; break;
+         case "TPaveStats":
+         case "TPaveText": painter['PaveDrawFunc'] = painter.DrawPaveText; break;
+      }
+
+      painter.Redraw();
 
       return painter.DrawingReady();
    }
