@@ -279,36 +279,36 @@
    }
 
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
-      key['fNbytes'] = this.ntoi4();
-      key['fVersion'] = this.ntoi2();
-      key['fObjlen'] = this.ntou4();
+      key.fNbytes = this.ntoi4();
+      key.fVersion = this.ntoi2();
+      key.fObjlen = this.ntou4();
       var datime = this.ntou4();
-      key['fDatime'] = new Date();
-      key['fDatime'].setFullYear((datime >>> 26) + 1995);
-      key['fDatime'].setMonth((datime << 6) >>> 28);
-      key['fDatime'].setDate((datime << 10) >>> 27);
-      key['fDatime'].setHours((datime << 15) >>> 27);
-      key['fDatime'].setMinutes((datime << 20) >>> 26);
-      key['fDatime'].setSeconds((datime << 26) >>> 26);
-      key['fDatime'].setMilliseconds(0);
-      key['fKeylen'] = this.ntou2();
-      key['fCycle'] = this.ntou2();
-      if (key['fVersion'] > 1000) {
-         key['fSeekKey'] = this.ntou8();
+      key.fDatime = new Date();
+      key.fDatime.setFullYear((datime >>> 26) + 1995);
+      key.fDatime.setMonth((datime << 6) >>> 28);
+      key.fDatime.setDate((datime << 10) >>> 27);
+      key.fDatime.setHours((datime << 15) >>> 27);
+      key.fDatime.setMinutes((datime << 20) >>> 26);
+      key.fDatime.setSeconds((datime << 26) >>> 26);
+      key.fDatime.setMilliseconds(0);
+      key.fKeylen = this.ntou2();
+      key.fCycle = this.ntou2();
+      if (key.fVersion > 1000) {
+         key.fSeekKey = this.ntou8();
          this.shift(8); // skip seekPdir
       } else {
-         key['fSeekKey'] = this.ntou4();
+         key.fSeekKey = this.ntou4();
          this.shift(4); // skip seekPdir
       }
-      key['fClassName'] = this.ReadTString();
-      key['fName'] = this.ReadTString();
-      key['fTitle'] = this.ReadTString();
+      key.fClassName = this.ReadTString();
+      key.fName = this.ReadTString();
+      key.fTitle = this.ReadTString();
 
-      var name = key['fName'].replace(/['"]/g,'');
+      var name = key.fName.replace(/['"]/g,'');
 
-      if (name != key['fName']) {
-         key['fRealName'] = key['fName'];
-         key['fName'] = name;
+      if (name !== key.fName) {
+         key.fRealName = key.fName;
+         key.fName = name;
       }
 
       return true;
@@ -317,10 +317,10 @@
    JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
       this.ReadTKey(obj);
       var ver = this.ReadVersion();
-      obj['fBufferSize'] = this.ntoi4();
-      obj['fNevBufSize'] = this.ntoi4();
-      obj['fNevBuf'] = this.ntoi4();
-      obj['fLast'] = this.ntoi4();
+      obj.fBufferSize = this.ntoi4();
+      obj.fNevBufSize = this.ntoi4();
+      obj.fNevBuf = this.ntoi4();
+      obj.fLast = this.ntoi4();
       var flag = this.ntoi1();
       // here we implement only data skipping, no real I/O for TBasket is performed
       if ((flag % 10) != 2) {
@@ -329,8 +329,8 @@
       }
 
       if (flag == 1 || flag > 10) {
-         var sz = obj['fLast'];
-         if (ver['val'] <=1) sz = this.ntoi4();
+         var sz = obj.fLast;
+         if (ver.val <= 1) sz = this.ntoi4();
          this.o += sz; // fBufferRef
       }
       return this.CheckBytecount(ver,"ReadTBasket");
@@ -356,17 +356,17 @@
       }
       if (tag == JSROOT.IO.kNewClassTag) {
          // got a new class description followed by a new object
-         classInfo['name'] = this.ReadString();
+         classInfo.name = this.ReadString();
 
-         if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset)==-1)
-            this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo['name']);
+         if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset) === -1)
+            this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
       }
       else {
          // got a tag to an already seen class
          var clTag = (tag & ~JSROOT.IO.kClassMask);
-         classInfo['name'] = this.GetMappedClass(clTag);
+         classInfo.name = this.GetMappedClass(clTag);
 
-         if (classInfo['name']==-1) {
+         if (classInfo.name === -1) {
             alert("Did not found class with tag " + clTag);
          }
 
@@ -397,12 +397,13 @@
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
-      if (! ('_typename' in obj)) obj['_typename'] = classname;
+      if (! ('_typename' in obj)) obj._typename = classname;
 
       var streamer = this.fFile.GetStreamer(classname);
 
-      if (streamer != null) {
+      if (streamer !== null) {
          var ver = this.ReadVersion();
+
          for (var n = 0; n < streamer.length; ++n)
             streamer[n].func(this, obj);
 
@@ -1003,7 +1004,7 @@
       // one should call_back when keys must be read first from the directory
 
       for (var i=0; i < this.fKeys.length; ++i) {
-         if (this.fKeys[i]['fName'] == keyname && this.fKeys[i]['fCycle'] == cycle) {
+         if (this.fKeys[i].fName === keyname && this.fKeys[i].fCycle === cycle) {
             JSROOT.CallBack(getkey_callback, this.fKeys[i]);
             return this.fKeys[i];
          }
@@ -1019,7 +1020,7 @@
          if (dir!=null) return dir.GetKey(subname, cycle, getkey_callback);
 
          var dirkey = this.GetKey(dirname, 1);
-         if ((dirkey!=null) && (getkey_callback != null) &&
+         if ((dirkey !== null) && (getkey_callback != null) &&
              (dirkey['fClassName'].indexOf("TDirectory")==0)) {
 
             this.ReadObject(dirname, function(newdir) {
@@ -1040,24 +1041,25 @@
 
       var file = this;
 
-      this.Seek(key['fSeekKey'] + key['fKeylen'], this.ERelativeTo.kBeg);
-      this.ReadBuffer(key['fNbytes'] - key['fKeylen'], function(blob1) {
+      this.Seek(key.fSeekKey + key.fKeylen, this.ERelativeTo.kBeg);
+
+      this.ReadBuffer(key.fNbytes - key.fKeylen, function(blob1) {
 
          if (blob1==null) callback(null);
 
          var buf = null;
 
-         if (key['fObjlen'] <= key['fNbytes']-key['fKeylen']) {
+         if (key.fObjlen <= key.fNbytes - key.fKeylen) {
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
-            var objbuf = JSROOT.R__unzip(blob1, key['fObjlen']);
+            var objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
             if (objbuf==null) return callback(null);
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
 
          buf.fTagOffset = key.fKeylen;
+
          callback(buf);
-         delete buf;
       });
    }
 
@@ -1088,11 +1090,11 @@
          if (key == null)
             return JSROOT.CallBack(user_call_back, null);
 
-         if ((obj_name=="StreamerInfo") && (key['fClassName']=="TList"))
+         if ((obj_name=="StreamerInfo") && (key.fClassName=="TList"))
             return file.fStreamerInfos;
 
          var isdir = false;
-         if ((key['fClassName'] == 'TDirectory' || key['fClassName'] == 'TDirectoryFile')) {
+         if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             isdir = true;
             var dir = file.GetDir(obj_name, cycle);
             if (dir!=null)
@@ -1116,10 +1118,9 @@
 
             var obj = {};
             buf.MapObject(1, obj); // tag object itself with id==1
-            //buf.EnableProgress();
-            buf.ClassStreamer(obj, key['fClassName']);
+            buf.ClassStreamer(obj, key.fClassName);
 
-            if (key['fClassName']=='TF1')
+            if (key.fClassName==='TF1')
                return file.ReadFormulas(obj, user_call_back, -1);
 
             JSROOT.CallBack(user_call_back, obj);
@@ -1308,8 +1309,8 @@
 
       if (clname == 'TObject'|| clname == 'TMethodCall') {
          streamer.push({ func: function(buf,obj) {
-            obj['fUniqueID'] = buf.ntou4();
-            obj['fBits'] = buf.ntou4();
+            obj.fUniqueID = buf.ntou4();
+            obj.fBits = buf.ntou4();
          } });
          return streamer;
       }
@@ -1317,10 +1318,10 @@
       if (clname == 'TNamed') {
          streamer.push({ func : function(buf,obj) {
             buf.ReadVersion(); // ignore TObject version
-            obj['fUniqueID'] = buf.ntou4();
-            obj['fBits'] = buf.ntou4();
-            obj['fName'] = buf.ReadTString();
-            obj['fTitle'] = buf.ReadTString();
+            obj.fUniqueID = buf.ntou4();
+            obj.fBits = buf.ntou4();
+            obj.fName = buf.ReadTString();
+            obj.fTitle = buf.ReadTString();
          } });
          return streamer;
       }
@@ -1329,20 +1330,17 @@
          streamer.push({ classname: clname,
                          func : function(buf, obj) {
             // stream all objects in the list from the I/O buffer
-            obj['_typename'] = this.classname;
-            obj['name'] = "";
-            obj['arr'] = new Array;
-            obj['opt'] = new Array;
+            obj._typename = this.classname;
+            obj.name = "";
+            obj.arr = new Array;
+            obj.opt = new Array;
             if (buf.last_read_version > 3) {
                buf.ClassStreamer(obj, "TObject");
-               obj['name'] = buf.ReadTString();
+               obj.name = buf.ReadTString();
                var nobjects = buf.ntou4();
                for (var i = 0; i < nobjects; ++i) {
-                  var item = buf.ReadObjectAny();
-                  obj['arr'].push(item);
-
-                  var opt = buf.ReadTString();
-                  obj['opt'].push(opt);
+                  obj.arr.push(buf.ReadObjectAny());
+                  obj.opt.push(buf.ReadTString());
                }
             }
          } });
@@ -1351,14 +1349,14 @@
 
       if (clname == 'TClonesArray') {
          streamer.push({ func : function(buf, list) {
-            list['_typename'] = "TClonesArray";
-            list['name'] = "";
-            list['arr'] = new Array();
+            list._typename = "TClonesArray";
+            list.name = "";
+            list.arr = new Array();
             var ver = buf.last_read_version;
             if (ver > 2)
                buf.buf.ClassStreamer(list, "TObject");
             if (ver > 1)
-               list['name'] = buf.ReadTString();
+               list.name = buf.ReadTString();
             var s = buf.ReadTString();
             var classv = s;
             var clv = 0;
@@ -1385,30 +1383,31 @@
 
       if (clname == 'TCanvas') {
          streamer.push({ func : function(buf, obj) {
-            obj['_typename'] = "TCanvas";
+
+            obj._typename = "TCanvas";
 
             buf.ClassStreamer(obj, "TPad");
 
-            obj['fDISPLAY'] = buf.ReadTString();
-            obj['fDoubleBuffer'] = buf.ntoi4();
-            obj['fRetained'] = buf.ntou1()!=0;
-            obj['fXsizeUser'] = buf.ntoi4();
-            obj['fYsizeUser'] = buf.ntoi4();
-            obj['fXsizeReal'] = buf.ntoi4();
-            obj['fYsizeReal'] = buf.ntoi4();
-            obj['fWindowTopX'] = buf.ntoi4();
-            obj['fWindowTopY'] = buf.ntoi4();
-            obj['fWindowWidth'] = buf.ntoi4();
-            obj['fWindowHeight'] = buf.ntoi4();
-            obj['fCw'] = buf.ntou4();
-            obj['fCh'] = buf.ntou4();
+            obj.fDISPLAY = buf.ReadTString();
+            obj.fDoubleBuffer = buf.ntoi4();
+            obj.fRetained = (buf.ntou1() !== 0);
+            obj.fXsizeUser = buf.ntoi4();
+            obj.fYsizeUser = buf.ntoi4();
+            obj.fXsizeReal = buf.ntoi4();
+            obj.fYsizeReal = buf.ntoi4();
+            obj.fWindowTopX = buf.ntoi4();
+            obj.fWindowTopY = buf.ntoi4();
+            obj.fWindowWidth = buf.ntoi4();
+            obj.fWindowHeight = buf.ntoi4();
+            obj.fCw = buf.ntou4();
+            obj.fCh = buf.ntou4();
 
-            obj['fCatt'] = buf.ClassStreamer({}, "TAttCanvas");
+            obj.fCatt = buf.ClassStreamer({}, "TAttCanvas");
 
             buf.ntou1(); // ignore b << TestBit(kMoveOpaque);
             buf.ntou1(); // ignore b << TestBit(kResizeOpaque);
-            obj['fHighLightColor'] = buf.ntoi2();
-            obj['fBatch'] = buf.ntou1()!=0;
+            obj.fHighLightColor = buf.ntoi2();
+            obj.fBatch = (buf.ntou1() !== 0);
             buf.ntou1();   // ignore b << TestBit(kShowEventStatus);
             buf.ntou1();   // ignore b << TestBit(kAutoExec);
             buf.ntou1();   // ignore b << TestBit(kMenuBar);
@@ -1418,20 +1417,18 @@
 
       if (clname == 'TObjArray') {
          streamer.push({ func : function(buf, list) {
-            list['_typename'] = "TObjArray";
-            list['name'] = "";
-            list['arr'] = new Array();
+            list._typename = "TObjArray";
+            list.name = "";
+            list.arr = new Array();
             var ver = buf.last_read_version;
             if (ver > 2)
                buf.ClassStreamer(list, "TObject");
             if (ver > 1)
-               list['name'] = buf.ReadTString();
+               list.name = buf.ReadTString();
             var nobjects = buf.ntou4();
             var lowerbound = buf.ntou4();
-            for (var i = 0; i < nobjects; ++i) {
-               var obj = buf.ReadObjectAny();
-               list['arr'].push(obj);
-            }
+            for (var i = 0; i < nobjects; ++i)
+               list.arr.push(buf.ReadObjectAny());
          }});
          return streamer;
       }

@@ -3725,14 +3725,9 @@
 
          var fillcolor = 'white';
          if ((this.pad!==null) && ('fFillColor' in this.pad)) {
-            if ((this.pad.fFillColor > 1) && (this.pad.fFillColor < 1000))
-               fillcolor = JSROOT.Painter.root_colors[this.pad.fFillColor];
-            else
-               if (this.pad.fFillColor === 1001)
-                  console.warn('this is known I/O error, please contact developers');
+            fillcolor = JSROOT.Painter.root_colors[this.pad.fFillColor];
+            if (fillcolor === undefined) fillcolor = 'white';
          }
-
-         // render_to.style("background-color", fill.color);
 
          svg = this.select_main()
              .append("svg")
