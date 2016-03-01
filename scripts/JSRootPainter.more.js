@@ -2117,19 +2117,22 @@
       var frame_painter = this.frame_painter();
 
       if (pal === null) {
-         pal = JSROOT.Create('TPaletteAxis');
+         pal = JSROOT.Create('TPave');
 
-         JSROOT.extend(pal, { fName: "TPave", fOption: "br",
-            fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1,
-            fShadowColor: 1, fCorenerRadius: 0, fResizing: false, fBorderSize: 4,
-            fLineColor: 1, fLineSyle: 1, fLineWidth: 1, fFillColor: 1, fFillSyle: 1
-         });
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: null,
+                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
-         pal.fAxis = JSROOT.Create('TGaxis');
-         JSROOT.extend(pal.fAxis, { fName: "", fTitle: this.histo.fZaxis.fTitle,
-            fTickSize: 0.03, fLabelOffset: 0.005, fLabelSize: 0.035, fTitleOffset: 1, fTitleSize: 0.035,
-            fNdiv: 8, fLabelColor: 1, fLabelFont: 42, fChopt: "", fTimeFormat: "", fFunctionName: "",
-            fWmin: 0, fWmax: 100, fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
+         pal.fAxis = JSROOT.Create('TLine');
+         JSROOT.Create('TAttText', pal.fAxis);
+
+         JSROOT.extend(pal.fAxis, { _typename: "TGaxis",
+            fChopt: "", fFunctionName: "", fGridLength: 0,
+            fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
+            fName: "", fNdiv: 8, fTickSize: 0.03, fTimeFormat: "",
+            fTitle: this.histo.fZaxis.fTitle, fTitleOffset: 1, fTitleSize: 0.035,
+            fWmax: 100, fWmin: 0,
+            // set values from base classes
+            fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
             fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
          });
 
@@ -2141,7 +2144,7 @@
       }
 
       // keep palette width
-      pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC)
+      pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
       pal.fX1NDC = frame_painter.fX2NDC + 0.01;
       pal.fY1NDC = frame_painter.fY1NDC;
       pal.fY2NDC = frame_painter.fY2NDC;

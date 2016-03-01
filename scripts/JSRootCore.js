@@ -891,108 +891,125 @@
       if (obj == null)
          obj = { _typename: typename };
 
-      if (typename == 'TObject')
-         JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008 });
-      else
-      if (typename == 'TNamed')
-         JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008, fName: "", fTitle: "" });
-      else
-      if ((typename == 'TList') || (typename == 'THashList'))
-         JSROOT.extend(obj, { name: typename, arr : [], opt : [] });
-      else
-      if (typename == 'TAttAxis') {
-         JSROOT.extend(obj, { fNdivisions: 510, fAxisColor: 1,
-            fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
-            fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont : 42 });
-      } else
-      if (typename == 'TAxis') {
-         JSROOT.Create("TNamed", obj);
-         JSROOT.Create("TAttAxis", obj);
-         JSROOT.extend(obj, { fNbins: 0, fXmin: 0, fXmax: 0, fXbins : [], fFirst: 0, fLast: 0,
-                              fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null });
-      } else
-      if (typename == 'TAttLine') {
-         JSROOT.extend(obj, { fLineColor: 1, fLineStyle : 1, fLineWidth : 1 });
-      } else
-      if (typename == 'TAttFill') {
-         JSROOT.extend(obj, { fFillColor: 0, fFillStyle : 0 } );
-      } else
-      if (typename == 'TAttMarker') {
-         JSROOT.extend(obj, { fMarkerColor: 1, fMarkerStyle : 1, fMarkerSize : 1. });
-      } else
-      if (typename == 'TBox') {
-         JSROOT.Create("TObject", obj);
-         JSROOT.Create("TAttLine", obj);
-         JSROOT.Create("TAttFill", obj);
-         JSROOT.extend(obj, { fX1: 0, fY1: 0, fX2: 1, fY2: 1 });
-      } else
-      if (typename == 'TPave') {
-         JSROOT.Create("TBox", obj);
-         JSROOT.extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
-                              fBorderSize: 0, fInit: 1, fShadowColor: 1,
-                              fCornerRadius: 0, fOption: "blNDC", fName: "title" });
-      } else
-      if (typename == 'TAttText') {
-         JSROOT.extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
-      } else
-      if (typename == 'TPaveText') {
-         JSROOT.Create("TPave", obj);
-         JSROOT.Create("TAttText", obj);
-         JSROOT.extend(obj, { fLabel: "", fLongest: 27, fMargin: 0.05, fLines: JSROOT.Create("TList") });
-      } else
-      if (typename == 'TPaveStats') {
-         JSROOT.Create("TPaveText", obj);
-         JSROOT.extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
-      } else
-      if (typename == 'TObjString') {
-         JSROOT.Create("TObject", obj);
-         JSROOT.extend(obj, { fString: ""});
-      } else
-      if (typename == 'TH1') {
-         JSROOT.Create("TNamed", obj);
-         JSROOT.Create("TAttLine", obj);
-         JSROOT.Create("TAttFill", obj);
-         JSROOT.Create("TAttMarker", obj);
+      switch (typename) {
+         case 'TObject':
+             JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008 });
+             break;
+         case 'TNamed':
+            JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008, fName: "", fTitle: "" });
+            break;
+         case 'TList':
+         case 'THashList':
+            JSROOT.extend(obj, { name: typename, arr : [], opt : [] });
+            break;
+         case 'TAttAxis':
+            JSROOT.extend(obj, { fNdivisions: 510, fAxisColor: 1,
+                                 fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03,
+                                 fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 1, fTitleFont : 42 });
+            break;
+         case 'TAxis':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.Create("TAttAxis", obj);
+            JSROOT.extend(obj, { fNbins: 0, fXmin: 0, fXmax: 0, fXbins : [], fFirst: 0, fLast: 0,
+                                 fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null });
+            break;
+         case 'TAttLine':
+            JSROOT.extend(obj, { fLineColor: 1, fLineStyle : 1, fLineWidth : 1 });
+            break;
+         case 'TAttFill':
+            JSROOT.extend(obj, { fFillColor: 0, fFillStyle : 0 } );
+            break;
+         case 'TAttMarker':
+            JSROOT.extend(obj, { fMarkerColor: 1, fMarkerStyle : 1, fMarkerSize : 1. });
+            break;
+         case 'TLine':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
+            break;
+         case 'TBox':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.extend(obj, { fX1: 0, fX2: 1, fY1: 0, fY2: 1 });
+            break;
+         case 'TPave':
+            JSROOT.Create("TBox", obj);
+            JSROOT.extend(obj, { fX1NDC : 0., fY1NDC: 0, fX2NDC: 1, fY2NDC: 1,
+                                 fBorderSize: 0, fInit: 1, fShadowColor: 1,
+                                 fCornerRadius: 0, fOption: "blNDC", fName: "title" });
+            break;
+         case 'TAttText':
+            JSROOT.extend(obj, { fTextAngle: 0, fTextSize: 0, fTextAlign: 22, fTextColor: 1, fTextFont: 42});
+            break;
+         case 'TPaveText':
+            JSROOT.Create("TPave", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.extend(obj, { fLabel: "", fLongest: 27, fMargin: 0.05, fLines: JSROOT.Create("TList") });
+            break;
+         case 'TPaveStats':
+            JSROOT.Create("TPaveText", obj);
+            JSROOT.extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
+            break;
+         case 'TObjString':
+            JSROOT.Create("TObject", obj);
+            JSROOT.extend(obj, { fString: "" });
+            break;
+         case 'TH1':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.Create("TAttMarker", obj);
 
-         JSROOT.extend(obj, {
-            fNcells : 0,
-            fXaxis: JSROOT.Create("TAxis"),
-            fYaxis: JSROOT.Create("TAxis"),
-            fZaxis: JSROOT.Create("TAxis"),
-            fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,
-            fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0.,
-            fMaximum : -1111., fMinimum : -1111, fNormFactor : 0., fContour : [],
-            fSumw2 : [], fOption : "",
-            fFunctions : JSROOT.Create("TList"),
-            fBufferSize : 0, fBuffer : [], fBinStatErrOpt : 0 });
-      } else
-      if (typename == 'TH1I' || typename == 'TH1F' || typename == 'TH1D' || typename == 'TH1S' || typename == 'TH1C') {
-         JSROOT.Create("TH1", obj);
-         obj.fArray = [];
-      } else
-      if (typename == 'TH2') {
-         JSROOT.Create("TH1", obj);
-         JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy : 0});
-      } else
-      if (typename == 'TH2I' || typename == 'TH2F' || typename == 'TH2D' || typename == 'TH2S' || typename == 'TH2C') {
-         JSROOT.Create("TH2", obj);
-         obj.fArray = [];
-      } else
-      if (typename == 'TGraph') {
-         JSROOT.Create("TNamed", obj);
-         JSROOT.Create("TAttLine", obj);
-         JSROOT.Create("TAttFill", obj);
-         JSROOT.Create("TAttMarker", obj);
-         JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: null,
-                              fMaxSize: 0, fMaximum:-1111, fMinimum:-1111, fNpoints: 0, fX: [], fY: [] });
-      } else
-      if (typename == 'TMultiGraph') {
-         JSROOT.Create("TNamed", obj);
-         JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
-                              fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+            JSROOT.extend(obj, {
+               fNcells : 0,
+               fXaxis: JSROOT.Create("TAxis"),
+               fYaxis: JSROOT.Create("TAxis"),
+               fZaxis: JSROOT.Create("TAxis"),
+               fBarOffset : 0, fBarWidth : 1000, fEntries : 0.,
+               fTsumw : 0., fTsumw2 : 0., fTsumwx : 0., fTsumwx2 : 0.,
+               fMaximum : -1111., fMinimum : -1111, fNormFactor : 0., fContour : [],
+               fSumw2 : [], fOption : "",
+               fFunctions : JSROOT.Create("TList"),
+               fBufferSize : 0, fBuffer : [], fBinStatErrOpt : 0 });
+            break;
+         case 'TH1I':
+         case 'TH1F':
+         case 'TH1D':
+         case 'TH1S':
+         case 'TH1C':
+            JSROOT.Create("TH1", obj);
+            obj.fArray = [];
+            break;
+         case 'TH2':
+            JSROOT.Create("TH1", obj);
+            JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy : 0});
+            break;
+         case 'TH2I':
+         case 'TH2F':
+         case 'TH2D':
+         case 'TH2S':
+         case 'TH2C':
+            JSROOT.Create("TH2", obj);
+            obj.fArray = [];
+            break;
+         case 'TGraph':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.Create("TAttMarker", obj);
+            JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: null,
+                                 fMaxSize: 0, fMaximum:-1111, fMinimum:-1111, fNpoints: 0, fX: [], fY: [] });
+            break;
+         case 'TMultiGraph':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
+                                 fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+            break;
       }
 
       JSROOT.addMethods(obj, typename);
+      obj._typename = typename;
       return obj;
    }
 
@@ -1060,7 +1077,7 @@
 
       if (!obj_typename) {
          if (!('_typename' in obj)) return;
-         obj_typename = obj['_typename'];
+         obj_typename = obj._typename;
       }
 
       var EErrorType = {
