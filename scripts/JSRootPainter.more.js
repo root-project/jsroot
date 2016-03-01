@@ -1585,48 +1585,55 @@
 
          var pave = this.legend;
 
-         var x = 0, y = 0, w = 0, h = 0;
-
-         if (pave['fInit'] == 0) {
-            x = pave['fX1'] * this.pad_width();
-            y = (1 - pave['fY2']) * this.pad_height();
-            w = (pave['fX2'] - pave['fX1']) * this.pad_width();
-            h = (pave['fY2'] - pave['fY1']) * this.pad_height();
-         } else {
-            x = pave['fX1NDC'] * this.pad_width();
-            y = (1 - pave['fY2NDC']) * this.pad_height();
-            w = (pave['fX2NDC'] - pave['fX1NDC']) * this.pad_width();
-            h = (pave['fY2NDC'] - pave['fY1NDC']) * this.pad_height();
+         if (pave.fInit === 0) {
+            pave.fInit = 1;
+            pave.fX1NDC = pave.fX1;
+            pave.fX2NDC = pave.fX2;
+            pave.fY1NDC = pave.fY1;
+            pave.fY2NDC = pave.fY2;
          }
-         var lwidth = pave['fBorderSize'] ? pave['fBorderSize'] : 0;
-         var boxfill = this.createAttFill(pave);
-         var lineatt = JSROOT.Painter.createAttLine(pave, lwidth);
-         var ncols = pave.fNColumns, nlines = pave.fPrimitives.arr.length;
-         var nrows = nlines;
-         if (ncols>1) { while ((nrows-1)*ncols>=nlines) nrows--; } else ncols = 1;
 
-         this.draw_g.attr("x", x.toFixed(1))
-                    .attr("y", y.toFixed(1))
-                    .attr("width", w.toFixed(1))
-                    .attr("height", h.toFixed(1))
-                    .attr("transform", "translate(" + x.toFixed(1) + "," + y.toFixed(1) + ")");
+         var x = Math.round(pave.fX1NDC * this.pad_width()),
+             y = Math.round((1 - pave.fY2NDC) * this.pad_height()),
+             w = Math.round((pave.fX2NDC - pave.fX1NDC) * this.pad_width()),
+             h = Math.round((pave.fY2NDC - pave.fY1NDC) * this.pad_height()),
+             lwidth = pave.fBorderSize,
+             boxfill = this.createAttFill(pave),
+             lineatt = JSROOT.Painter.createAttLine(pave, lwidth),
+             ncols = pave.fNColumns,
+             nlines = pave.fPrimitives.arr.length,
+             nrows = nlines;
 
-         this.StartTextDrawing(pave['fTextFont'], h / (nlines * 1.2));
+         if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
 
-         this.draw_g
-              .append("svg:rect")
+         this.draw_g.attr("x", x)
+                    .attr("y", y)
+                    .attr("width", w)
+                    .attr("height", h)
+                    .attr("transform", "translate(" + x + "," + y + ")");
+
+         // add decoration before main rect
+         if (lwidth > 1)
+            this.draw_g.append("svg:path")
+                .attr("d","M" + (lwidth+1) + "," + (h+lwidth/2) +
+                          " H" + (w+lwidth/2) + " V" + (lwidth+1))
+               .call(lineatt.func);
+
+         this.draw_g.append("svg:rect")
               .attr("x", 0)
               .attr("y", 0)
-              .attr("width", w.toFixed(1))
-              .attr("height", h.toFixed(1))
+              .attr("width", w)
+              .attr("height", h)
               .call(boxfill.func)
-              .style("stroke-width", lwidth ? 1 : 0)
+              .style("stroke-width", (lwidth > 0) ? 1 : 0)
               .style("stroke", lineatt.color);
 
-         var tcolor = JSROOT.Painter.root_colors[pave['fTextColor']];
-         var column_width = Math.round(w/ncols);
-         var padding_x = Math.round(0.03 * w/ncols);
-         var padding_y = Math.round(0.03 * h);
+         this.StartTextDrawing(pave.fTextFont, h / (nlines * 1.2));
+
+         var tcolor = JSROOT.Painter.root_colors[pave.fTextColor],
+             column_width = Math.round(w/ncols),
+             padding_x = Math.round(0.03*w/ncols),
+             padding_y = Math.round(0.03*h);
 
          var leg_painter = this;
          var step_y = (h - 2*padding_y)/nrows;
@@ -1634,12 +1641,12 @@
 
          for (var i = 0; i < nlines; ++i) {
             var leg = pave.fPrimitives.arr[i];
-            var lopt = leg['fOption'].toLowerCase();
+            var lopt = leg.fOption.toLowerCase();
 
             var icol = i % ncols, irow = (i - icol) / ncols;
 
             var x0 = icol * column_width;
-            var tpos_x = x0 + Math.round(pave['fMargin']*column_width);
+            var tpos_x = x0 + Math.round(pave.fMargin*column_width);
 
             var pos_y = Math.round(padding_y + irow*step_y); // top corner
             var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
@@ -1648,9 +1655,9 @@
             var attmarker = leg;
             var attline = leg;
 
-            var mo = leg['fObject'];
+            var mo = leg.fObject;
 
-            if ((mo != null) && (typeof mo == 'object')) {
+            if ((mo !== null) && (typeof mo == 'object')) {
                if ('fLineColor' in mo) attline = mo;
                if ('fFillColor' in mo) attfill = mo;
                if ('fMarkerColor' in mo) attmarker = mo;
@@ -1695,25 +1702,10 @@
             if (lopt.length>0) any_opt = true;
                           else if (!any_opt) pos_x = x0 + padding_x;
 
-            this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg['fLabel'], tcolor);
+            this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg.fLabel, tcolor);
          }
 
-         if (lwidth && lwidth > 1) {
-            this.draw_g.append("svg:line")
-               .attr("x1", w + (lwidth / 2))
-               .attr("y1", lwidth + 1)
-               .attr("x2", w + (lwidth / 2))
-               .attr("y2",  h + lwidth - 1)
-               .call(lineatt.func);
-            this.draw_g.append("svg:line")
-               .attr("x1", lwidth + 1)
-               .attr("y1", h + (lwidth / 2))
-               .attr("x2", w + lwidth - 1)
-               .attr("y2", h + (lwidth / 2))
-               .call(lineatt.func);
-         }
-
-         this.AddDrag({ obj:pave, redraw: this.Redraw.bind(this) });
+         this.AddDrag({ obj: pave, redraw: this.Redraw.bind(this) });
 
          // rescale after all entries are shown
          this.FinishTextDrawing();
