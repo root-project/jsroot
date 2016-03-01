@@ -1754,8 +1754,7 @@
 
       this['DrawAxisPalette'] = function(s_width, s_height) {
 
-         var palette = this.pave;
-         var axis = palette.fAxis;
+         var pthis = this, palette = this.pave, axis = palette.fAxis;
 
          var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
@@ -1768,11 +1767,8 @@
          var axisOffset = axis.fLabelOffset * width;
          var tickSize = axis.fTickSize * width;
 
-         var contour = this.main_painter().fContour;
 
-         // force creation of contour array if missing
-         //if (this.main_painter().fContour == null)
-         //   this.main_painter().getValueColor(this.main_painter().minbin);
+         var contour = this.main_painter().fContour;
 
          var zmin = 0, zmax = this.main_painter().gmaxbin;
 
@@ -1825,9 +1821,9 @@
                        .attr("fill", 'white');
          else
             for (var i=0;i<contour.length-1;++i) {
-               var z0 = z(contour[i]);
-               var z1 = z(contour[i+1]);
-               var col = this.main_painter().getValueColor(contour[i]);
+               var z0 = z(contour[i]),
+                   z1 = z(contour[i+1]),
+                   col = this.main_painter().getValueColor(contour[i]);
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
                           .attr("y",  z1.toFixed(1))
@@ -1836,12 +1832,16 @@
                           .style("fill", col)
                           .style("stroke", col);
 
+
                if (JSROOT.gStyle.Tooltip > 0)
                   r.on('mouseover', function() {
                      d3.select(this).transition().duration(100).style("stroke", "black").style("stroke-width", "2");
                   }).on('mouseout', function() {
                      d3.select(this).transition().duration(100).style("stroke", d3.select(this).style('fill')).style("stroke-width", "");
                   }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+
+               if (JSROOT.gStyle.Zooming)
+                  r.on("dblclick", function() { pthis.main_painter().Unzoom(false, false, true); });
             }
 
          // Build and draw axes
@@ -1900,7 +1900,7 @@
 
          if (!JSROOT.gStyle.Zooming) return;
 
-         var pthis = this, evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+         var evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
          function moveRectSel() {
 
@@ -1970,7 +1970,9 @@
                     .attr("height", s_height)
                     .style("cursor", "crosshair")
                     .style("opacity", "0")
-                    .on("mousedown", startRectSel);
+                    .on("mousedown", startRectSel)
+                    .on("dblclick", function() { pthis.main_painter().Unzoom(false, false, true); });
+
       }
 
       this['ShowContextMenu'] = function(kind, evnt) {

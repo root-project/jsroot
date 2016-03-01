@@ -1677,7 +1677,8 @@
                  .attr("y", pthis.draw_g.attr("y"))
                  .attr("width", rect_width())
                  .attr("height", rect_height())
-                 .style("cursor", "move");
+                 .style("cursor", "move")
+                 .style("pointer-events","none"); // let forward double click to underlying elements
           }).on("drag", function() {
                if (drag_rect == null) return;
 
@@ -1763,7 +1764,6 @@
             d3.event.sourceEvent.preventDefault();
 
             comple_drag();
-
          });
 
       if (!('only_resize' in callback)) {
