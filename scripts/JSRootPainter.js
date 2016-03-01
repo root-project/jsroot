@@ -3245,21 +3245,22 @@
 
    // ============================================================
 
+   // base class for all objects, derived from TPave
    JSROOT.TPavePainter = function(pave) {
       JSROOT.TObjectPainter.call(this, pave);
-      this.pavetext = pave;
+      this.pave = pave;
       this.Enabled = true;
    }
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TPavePainter.prototype.GetObject = function() {
-      return this.pavetext;
+      return this.pave;
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveText = function() {
 
-      var pt = this.pavetext;
+      var pt = this.pave;
 
       if ((pt.fOption.indexOf("NDC")<0) && !pt.fInit) {
          pt.fInit = 1;
@@ -3290,7 +3291,6 @@
           width = Math.round((pt.fX2NDC - pt.fX1NDC) * this.pad_width()),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * this.pad_height()),
           tcolor = JSROOT.Painter.root_colors[pt.fTextColor],
-          scolor = JSROOT.Painter.root_colors[pt.fShadowColor],
           fcolor = this.createAttFill(pt),
           lwidth = pt.fBorderSize,
           attline = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0),
@@ -3299,12 +3299,10 @@
           nlines = 0, lines = [];
 
       if (pt._typename === "TPaveLabel") {
-         console.log("DRAW PAVE LABEL " + pt.fLabel);
          nlines = 1;
          lines.push(pt.fLabel);
       } else {
          nlines = pt.fLines.arr.length
-
          // adjust font size
          for (var j = 0; j < nlines; ++j) {
             var line = pt.fLines.arr[j].fTitle;
@@ -3317,8 +3315,6 @@
          }
       }
 
-      var pthis = this;
-
       // container used to recalculate coordinates
       this.RecreateDrawG(true, ".stat_layer");
 
@@ -3330,12 +3326,16 @@
            .attr("height", height)
            .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
-      // add decoration before main rect
-      if (lwidth > 1)
+      // add shadow decoration before main rect
+      if ((lwidth > 1) && (pt.fShadowColor>0))
          this.draw_g.append("svg:path")
-             .attr("d","M" + (lwidth+1) + "," + (height+lwidth/2) +
-                       " H" + (width+lwidth/2) + " V" + (lwidth+1))
-            .call(JSROOT.Painter.createAttLine(pt,lwidth).func);
+             .attr("d","M" + width + "," + height +
+                      " v" + (-height + lwidth) + " h" + lwidth +
+                      " v" + height + " h" + (-width) +
+                      " v" + (-lwidth) + " Z")
+            .style("fill", JSROOT.Painter.root_colors[pt.fShadowColor])
+            .style("stroke", JSROOT.Painter.root_colors[pt.fShadowColor])
+            .style("stroke-width", "1px");
 
       this.draw_g.append("rect")
           .attr("x", 0)
@@ -3441,11 +3441,11 @@
    }
 
    JSROOT.TPavePainter.prototype.AddLine = function(txt) {
-      this.pavetext.AddText(txt);
+      this.pave.AddText(txt);
    }
 
    JSROOT.TPavePainter.prototype.IsStats = function() {
-      return this.pavetext ? (this.pavetext._typename === 'TPaveStats') : false;
+      return this.pave ? (this.pave._typename === 'TPaveStats') : false;
    }
 
    JSROOT.TPavePainter.prototype.Format = function(value, fmt) {
@@ -3454,11 +3454,11 @@
       if (!fmt) fmt = "stat";
 
       if (fmt=="stat") {
-         fmt = this.pavetext.fStatFormat;
+         fmt = this.pave.fStatFormat;
          if (!fmt) fmt = JSROOT.gStyle.StatFormat;
       } else
       if (fmt=="fit") {
-         fmt = this.pavetext.fFitFormat;
+         fmt = this.pave.fFitFormat;
          if (!fmt) fmt = JSROOT.gStyle.FitFormat;
       } else
       if (fmt=="entries") {
@@ -3492,37 +3492,37 @@
 
       JSROOT.Painter.createMenu(function(menu) {
          menu['painter'] = pthis;
-         menu.add("header: " + pthis.pavetext._typename + "::" + pthis.pavetext.fName);
+         menu.add("header: " + pthis.pave._typename + "::" + pthis.pave.fName);
          menu.add("SetStatFormat", function() {
-            var fmt = prompt("Enter StatFormat", pthis.pavetext.fStatFormat);
+            var fmt = prompt("Enter StatFormat", pthis.pave.fStatFormat);
             if (fmt!=null) {
-               pthis.pavetext.fStatFormat = fmt;
+               pthis.pave.fStatFormat = fmt;
                pthis.Redraw();
             }
          });
          menu.add("SetFitFormat", function() {
-            var fmt = prompt("Enter FitFormat", pthis.pavetext.fFitFormat);
+            var fmt = prompt("Enter FitFormat", pthis.pave.fFitFormat);
             if (fmt!=null) {
-               pthis.pavetext.fFitFormat = fmt;
+               pthis.pave.fFitFormat = fmt;
                pthis.Redraw();
             }
          });
          menu.add("separator");
          menu.add("SetOptStat", function() {
             // todo - use jqury dialog here
-            var fmt = prompt("Enter OptStat", pthis.pavetext.fOptStat);
-            if (fmt!=null) { pthis.pavetext.fOptStat = parseInt(fmt); pthis.Redraw(); }
+            var fmt = prompt("Enter OptStat", pthis.pave.fOptStat);
+            if (fmt!=null) { pthis.pave.fOptStat = parseInt(fmt); pthis.Redraw(); }
          });
          menu.add("separator");
          function AddStatOpt(pos, name) {
-            var opt = (pos<10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
+            var opt = (pos<10) ? pthis.pave.fOptStat : pthis.pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
             menu.addchk(opt, name, opt * 100 + pos, function(arg) {
-               var newopt = (arg % 100 < 10) ? pthis.pavetext.fOptStat : pthis.pavetext.fOptFit;
+               var newopt = (arg % 100 < 10) ? pthis.pave.fOptStat : pthis.pave.fOptFit;
                var oldopt = parseInt(arg / 100);
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
-               if (arg % 100 < 10) pthis.pavetext.fOptStat = newopt;
-                              else pthis.pavetext.fOptFit = newopt;
+               if (arg % 100 < 10) pthis.pave.fOptStat = newopt;
+                              else pthis.pave.fOptFit = newopt;
                pthis.Redraw();
             });
          }
@@ -3540,8 +3540,8 @@
 
          menu.add("SetOptFit", function() {
             // todo - use jqury dialog here
-            var fmt = prompt("Enter OptStat", pthis.pavetext.fOptFit);
-            if (fmt!=null) { pthis.pavetext.fOptFit = parseInt(fmt); pthis.Redraw(); }
+            var fmt = prompt("Enter OptStat", pthis.pave.fOptFit);
+            if (fmt!=null) { pthis.pave.fOptFit = parseInt(fmt); pthis.Redraw(); }
          });
          menu.add("separator");
          AddStatOpt(10, "Fit parameters");
@@ -3555,7 +3555,7 @@
 
    JSROOT.TPavePainter.prototype.FillStatistic = function() {
       if (!this.IsStats()) return false;
-      if (this.pavetext.fName !== "stats") return false;
+      if (this.pave.fName !== "stats") return false;
 
       var main = this.main_painter();
 
@@ -3564,13 +3564,13 @@
       // no need to refill statistic if histogram is dummy
       if (main.IsDummyHisto()) return true;
 
-      var dostat = new Number(this.pavetext.fOptStat);
-      var dofit = new Number(this.pavetext.fOptFit);
+      var dostat = new Number(this.pave.fOptStat);
+      var dofit = new Number(this.pave.fOptFit);
       if (!dostat) dostat = JSROOT.gStyle.OptStat;
       if (!dofit) dofit = JSROOT.gStyle.OptFit;
 
       // make empty at the beginning
-      this.pavetext.Clear();
+      this.pave.Clear();
 
       // we take statistic from first painter
       main.FillStatistic(this, dostat, dofit);
@@ -3579,9 +3579,18 @@
    }
 
    JSROOT.TPavePainter.prototype.UpdateObject = function(obj) {
-      if (obj._typename !== 'TPaveText') return false;
-      this.pavetext.fLines = JSROOT.clone(obj.fLines);
-      return true;
+      if (this.pave._typename !== obj._typename) return false;
+
+      if (obj._typename === 'TPaveText') {
+         this.pave.fLines = JSROOT.clone(obj.fLines);
+         return true;
+      } else
+      if (obj._typename === 'TPaveLabel') {
+         this.pave.fLabel = obj.fLabel;
+         return true;
+      }
+
+      return false;
    }
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
@@ -5252,7 +5261,7 @@
       if (!this.is_main_painter()) return;
 
       var tpainter = this.FindPainterFor(null, "title");
-      var pavetext = (tpainter !== null) ? tpainter.pavetext : null;
+      var pavetext = (tpainter !== null) ? tpainter.pave : null;
       if (pavetext === null) pavetext = this.FindInPrimitives("title");
       if ((pavetext !== null) && (pavetext._typename !== "TPaveText")) pavetext = null;
 
@@ -6295,12 +6304,12 @@
       }
 
       // adjust the size of the stats box with the number of lines
-      var nlines = stat.pavetext['fLines'].arr.length;
+      var nlines = stat.pave.fLines.arr.length;
       var stath = nlines * JSROOT.gStyle.StatFontSize;
-      if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
+      if ((stath <= 0) || (JSROOT.gStyle.StatFont % 10 === 3)) {
          stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         stat.pavetext['fY1NDC'] = 0.93 - stath;
-         stat.pavetext['fY2NDC'] = 0.93;
+         stat.pave.fY1NDC = 0.93 - stath;
+         stat.pave.fY2NDC = 0.93;
       }
 
       return true;
@@ -6900,12 +6909,12 @@
          this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
 
          var tcolor = JSROOT.Painter.root_colors[this.text.fTextColor],
-         latex_kind = 0, fact = 1.;
+                      latex_kind = 0, fact = 1.;
 
          if (this.text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-            if (this.text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+         if (this.text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
 
-         this.StartTextDrawing(this.text.fTextFont, this.text.fTextSize*Math.min(w,h)*fact);
+         this.StartTextDrawing(this.text.fTextFont, Math.round(this.text.fTextSize*Math.min(w,h)*fact));
 
          this.DrawText(this.text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, this.text.fTitle, tcolor, latex_kind);
 

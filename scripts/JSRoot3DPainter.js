@@ -820,12 +820,12 @@
       }
 
       // adjust the size of the stats box with the number of lines
-      var nlines = stat.pavetext['fLines'].arr.length;
+      var nlines = stat.pave.fLines.arr.length;
       var stath = nlines * JSROOT.gStyle.StatFontSize;
       if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
          stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         stat.pavetext['fY1NDC'] = 0.93 - stath;
-         stat.pavetext['fY2NDC'] = 0.93;
+         stat.pave.fY1NDC = 0.93 - stath;
+         stat.pave.fY2NDC = 0.93;
       }
 
       return true;
