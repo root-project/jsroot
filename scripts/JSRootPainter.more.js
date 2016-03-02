@@ -758,24 +758,19 @@
    // ===================================================================================
 
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
-
-      this.tf1 = tf1;
       this.bins = null;
-
-      this['GetObject'] = function() {
-         return this.tf1;
-      }
 
       this['Redraw'] = function() {
          this.DrawBins();
       }
 
       this['Eval'] = function(x) {
-         return this.tf1.evalPar(x);
+         return this.GetObject().evalPar(x);
       }
 
       this['CreateBins'] = function(ignore_zoom) {
-         var main = this.main_painter(), gxmin = 0, gxmax = 0;
+         var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
+
          if ((main!==null) && !ignore_zoom)  {
             if (main.zoom_xmin !== main.zoom_xmax) {
                gxmin = main.zoom_xmin;
@@ -786,26 +781,26 @@
             }
          }
 
-         if (this.tf1.fSave.length > 0) {
+         if (tf1.fSave.length > 0) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
-            var np = this.tf1.fSave.length - 2;
-            var xmin = this.tf1.fSave[np],
-                xmax = this.tf1.fSave[np+1];
-            var dx = (xmax - xmin) / (np-1);
+            var np = tf1.fSave.length - 2,
+                xmin = tf1.fSave[np],
+                xmax = tf1.fSave[np+1],
+                dx = (xmax - xmin) / (np-1),
+                res = [];
 
-            var res = [];
             for (var n=0; n < np; ++n) {
                var xx = xmin + dx*n;
                // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
                if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
 
-               res.push({ x : xx, y : this.tf1.fSave[n] });
+               res.push({ x: xx, y: tf1.fSave[n] });
             }
             return res;
          }
 
-         var xmin = this.tf1.fXmin, xmax = this.tf1.fXmax, logx = false;
+         var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
          if (gxmin !== gxmax) {
             if (gxmin > xmin) xmin = gxmin;
@@ -818,7 +813,7 @@
             xmax = Math.log(xmax);
          }
 
-         var np = Math.max(this.tf1.fNpx, 101);
+         var np = Math.max(tf1.fNpx, 101);
          var dx = (xmax - xmin) / (np - 1);
 
          var res = [];
@@ -853,10 +848,11 @@
             if (ymin < 0.0) ymin *= 1.05;
          }
 
-         var histo = JSROOT.Create("TH1I");
+         var histo = JSROOT.Create("TH1I"),
+             tf1 = this.GetObject();
 
-         histo.fName = this.tf1.fName + "_hist";
-         histo.fTitle = this.tf1.fTitle;
+         histo.fName = tf1.fName + "_hist";
+         histo.fTitle = tf1.fTitle;
 
          histo.fXaxis.fXmin = xmin;
          histo.fXaxis.fXmax = xmax;
@@ -926,7 +922,7 @@
 
       this['DrawBins'] = function() {
 
-         var w = this.frame_width(), h = this.frame_height();
+         var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
 
          this.RecreateDrawG(false, ".main_layer");
 
@@ -937,8 +933,8 @@
          var pmain = this.main_painter();
          var name = this.GetTipName("\n");
 
-         this.lineatt = JSROOT.Painter.createAttLine(this.tf1);
-         this.fillatt = this.createAttFill(this.tf1);
+         this.lineatt = JSROOT.Painter.createAttLine(tf1);
+         this.fillatt = this.createAttFill(tf1);
          if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
          var bin;
@@ -1049,9 +1045,9 @@
       }
 
       this['UpdateObject'] = function(obj) {
-         if (obj['_typename'] != this.tf1['_typename']) return false;
+         if (!this.MatchObjectType(obj)) return false;
          // TODO: realy update object content
-         this.tf1 = obj;
+         JSROOT.extend(this.GetObject(), obj);
          return true;
       }
 

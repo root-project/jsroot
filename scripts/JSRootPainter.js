@@ -1058,7 +1058,7 @@
       this.draw_g = null; // container for all draw objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
-      this.draw_object = (obj!==undefined) && (typeof obj === 'object') ? obj : null;
+      this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
       this.draw_object_typename = (this.draw_object!==null) && ('_typename' in this.draw_object) ? this.draw_object._typename : "";
    }
 
@@ -1072,6 +1072,14 @@
       if ((arg === undefined) || (arg === null) || (this.draw_object===null)) return false;
       if (typeof arg == 'string') return this.draw_object._typename === arg;
       return (typeof arg === 'obbject') && (this.draw_object._typename === arg._typename);
+   }
+
+   JSROOT.TObjectPainter.prototype.UpdateObject = function(obj) {
+      // generic method to update object
+      // just copy all members from source object
+      if (!this.MatchObjectType(obj)) return false;
+      JSROOT.extend(this.GetObject(), obj);
+      return true;
    }
 
    JSROOT.TObjectPainter.prototype.GetTipName = function(append) {
@@ -6889,21 +6897,21 @@
             pos_x = pos_x * w;
             pos_y = (1 - pos_y) * h;
          } else
-            if (this.main_painter() !== null) {
-               w = this.frame_width(); h = this.frame_height(); use_pad = false;
-               pos_x = this.main_painter().grx(pos_x);
-               pos_y = this.main_painter().gry(pos_y);
-            } else
-               if (this.root_pad() !== null) {
-                  pos_x = this.ConvertToNDC("x", pos_x) * w;
-                  pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
-               } else {
-                  text.fTextAlign = 22;
-                  pos_x = w/2;
-                  pos_y = h/2;
-                  if (text.fTextSize === 0) text.fTextSize = 0.05;
-                  if (text.fTextColor === 0) text.fTextColor = 1;
-               }
+         if (this.main_painter() !== null) {
+            w = this.frame_width(); h = this.frame_height(); use_pad = false;
+            pos_x = this.main_painter().grx(pos_x);
+            pos_y = this.main_painter().gry(pos_y);
+         } else
+         if (this.root_pad() !== null) {
+            pos_x = this.ConvertToNDC("x", pos_x) * w;
+            pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
+         } else {
+            text.fTextAlign = 22;
+            pos_x = w/2;
+            pos_y = h/2;
+            if (text.fTextSize === 0) text.fTextSize = 0.05;
+            if (text.fTextColor === 0) text.fTextColor = 1;
+         }
 
          this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
 
@@ -6921,7 +6929,7 @@
       }
 
       painter['UpdateObject'] = function(obj) {
-         if (!MatchObjectType(obj)) return false;
+         if (!this.MatchObjectType(obj)) return false;
          this.GetObject().fTitle = obj.fTitle;
          return true;
       }
@@ -8992,13 +9000,13 @@
          return JSROOT.Painter.drawInspector(divid, obj);
 
       var handle = null, painter = null;
-      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj['_typename'], opt);
-      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj['_kind'], opt);
+      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
+      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
 
       if ((handle==null) || !('func' in handle)) return null;
 
       function performDraw() {
-         if ((painter==null) && ('painter_kind' in handle))
+         if ((painter===null) && ('painter_kind' in handle))
             painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
          if (painter==null) return handle.func(divid, obj, opt);
@@ -9028,7 +9036,7 @@
          if (!('painter_kind' in handle))
             handle['painter_kind'] = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
 
-         painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter();
+         painter = (handle['painter_kind'] == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
          JSROOT.AssertPrerequisites(prereq, function() {
             var func = JSROOT.findFunction(funcname);
