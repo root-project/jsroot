@@ -6585,6 +6585,9 @@
 
          this.DrawAsMarkers(bins, width, height);
 
+         if (JSROOT.gStyle.Tooltip > 1)
+            this['ProcessTooltip'] = this.ProcessTooltipFunc;
+
          return;
       }
 
@@ -6663,17 +6666,30 @@
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
-          painter = this;
+          painter = this,
+          draw_markers = (this.options.Error > 0) || (this.options.Mark > 0);
 
       var l = left, r = right;
+
+      function GetBinGrX(i) {
+         var x1 = painter.GetBinX(i);
+         if ((x1<0) && painter.options.Logx) return null;
+         if (!draw_markers) return pmain.grx(x1);
+         return (pmain.grx(x1) + pmain.grx(painter.GetBinX(i+1)))/2;
+      }
+
+      function GetBinGrY(i) {
+         var y = painter.histo.getBinContent(i + 1);
+         if (painter.options.Logy && (y < painter.scale_ymin))
+            return 10*height;
+         return Math.round(pmain.gry(y));
+      }
 
       while (l < r-1) {
          var m = Math.round((l+r)*0.5);
 
-         var mx = this.GetBinX(m);
-         if ((mx<0) && this.options.Logx) { l = m; continue; }
-
-         var grx = pmain.grx(mx);
+         var grx = GetBinGrX(m);
+         if (grx === null) { l = m; continue; }
 
          if (grx < pnt.x - 0.5) l = m; else
          if (grx > pnt.x + 0.5) r = m; else { l++; r--; }
@@ -6683,15 +6699,9 @@
       var grx = pmain.grx(this.GetBinX(bin));
 
       l = r = bin;
-      while ((l>left) && (pmain.grx(this.GetBinX(l-1)) > grx - 1.0)) --l;
-      while ((r<right) && (pmain.grx(this.GetBinX(r+1)) < grx + 1.0)) ++r;
+      while ((l>left) && (GetBinGrX(l-1) > grx - 1.0)) --l;
+      while ((r<right) && (GetBinGrX(r+1) < grx + 1.0)) ++r;
 
-      function GetBinGrY(i) {
-         var y = painter.histo.getBinContent(i + 1);
-         if (painter.options.Logy && (y < painter.scale_ymin))
-            return 10*height;
-         return Math.round(pmain.gry(y));
-      }
 
       if (l < r) {
          // many points can be assigned with the same cursor position
@@ -6706,11 +6716,13 @@
          if (best > height/10)
             bin = Math.round(l + (r-l) / height * pnt.y);
 
-         grx = pmain.grx(this.GetBinX(bin));
+         grx = GetBinGrX(bin);
       }
 
       var gry = GetBinGrY(bin);
-      var grx2 = pmain.grx(this.GetBinX(bin+1));
+      var grx2 = GetBinGrX(bin+1);
+
+      var midx = draw_markers ? Math.round(grx) : Math.round((grx + grx2)/2);
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
@@ -6719,8 +6731,7 @@
          return null; // nothing to show
       }
 
-      if (JSROOT.gStyle.Tooltip === 5) {
-
+      if ((JSROOT.gStyle.Tooltip === 5) && !draw_markers) {
          if (pnt.y < gry) {
             ttrect.remove(); // do not highlight for minimal bins
             return null; // nothing to show
@@ -6748,12 +6759,12 @@
                                 .call(this.fillatt.func);
 
          if (ttrect.property("current_bin") !== bin)
-            ttrect.attr("cx", Math.round((grx + grx2)/2))
+            ttrect.attr("cx", midx)
                   .attr("cy", gry)
                   .property("current_bin", bin);
       }
 
-      return { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: this.GetBinTips(bin) };
+      return { x: midx, y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: this.GetBinTips(bin) };
    }
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
