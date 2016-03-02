@@ -3161,8 +3161,7 @@
          cross = false;
       }
       xf[++nf] = xt[0];
-      yf[nf] = yt[0];
-      ++nf;
+      yf[nf++] = yt[0];
 
       for (i = 0; i < nf; ++i) {
          if (w > h) {
@@ -3180,20 +3179,6 @@
       }
 
       var excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
-
-      /* some clean-up */
-      xo.splice(0, xo.length);
-      yo.splice(0, yo.length);
-      xo = null;
-      yo = null;
-      xt.splice(0, xt.length);
-      yt.splice(0, yt.length);
-      xt = null;
-      yt = null;
-      xf.splice(0, xf.length);
-      yf.splice(0, yf.length);
-      xf = null;
-      yf = null;
 
       this.draw_g.append("svg:path")
           .attr("d", line(excl))
