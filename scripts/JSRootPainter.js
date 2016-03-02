@@ -6345,100 +6345,6 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.CreateDrawBins = function(width, height, exclude_zeros) {
-      // method is called directly before bins must be drawn
-
-      var left = this.GetSelectIndex("x", "left", -1);
-      var right = this.GetSelectIndex("x", "right", 2);
-
-      var draw_bins = new Array;
-
-      var can_optimize = ((this.options.Optimize > 0) && (right-left > 5000)) ||
-                         ((this.options.Optimize > 1) && (right-left > 2*width));
-
-      var x1, x2 = this.GetBinX(left);
-      var grx1 = -1111, grx2 = -1111, gry;
-
-      var point = null;
-      var searchmax = false;
-      var pmain = this.main_painter();
-
-      var name = this.GetTipName("\n");
-
-      for (var i = left; i < right; ++i) {
-         // if interval wider than specified range, make it shorter
-         x1 = x2;
-         x2 = this.GetBinX(i+1);
-
-         if (this.options.Logx && (x1 <= 0)) continue;
-
-         grx1 = grx2;
-         grx2 = pmain.grx(x2);
-         if (grx1 < 0) grx1 = pmain.grx(x1);
-
-         var pmax = i, cont = this.histo.getBinContent(i + 1);
-
-         if (can_optimize) {
-            searchmax = !searchmax;
-
-            // consider all points which are not far than 0.5 pixel away
-            while ((i+1<right) && (pmain.grx(this.GetBinX(i+2)) < grx2 + 0.5)) {
-               ++i; x2 = this.GetBinX(i+1);
-               var ccc = this.histo.getBinContent(i + 1);
-               if (searchmax ? ccc>cont : ccc<cont) {
-                  cont = ccc;
-                  pmax = i;
-               }
-            }
-            grx2 = pmain.grx(x2);
-         }
-
-         // exclude zero bins from profile drawings
-         if (exclude_zeros && (cont==0)) continue;
-
-         if (this.options.Logy && (cont < this.scale_ymin))
-            gry = height + 10;
-         else
-            gry = pmain.gry(cont);
-
-         point = { x : grx1, y : gry };
-
-         if (this.options.Error > 0) {
-            point.xerr = (grx2 - grx1) / 2;
-            point.yerr = gry - pmain.gry(cont + this.histo.getBinError(pmax + 1));
-         }
-
-         if (this.options.Error > 0) {
-            point['x'] = (grx1 + grx2) / 2;
-            point['tip'] = name +
-                           "x = " + this.AxisAsText("x", (x1 + x2)/2) + "\n" +
-                           "y = " + this.AxisAsText("y", cont) + "\n" +
-                           "error x = " + ((x2 - x1) / 2).toPrecision(4) + "\n" +
-                           "error y = " + this.histo.getBinError(pmax + 1).toPrecision(4);
-         } else {
-            point['width'] = grx2 - grx1;
-
-            point['tip'] = name + "bin = " + (pmax + 1) + "\n";
-
-            if (pmain.x_kind === 'labels')
-               point['tip'] += ("x = " + this.AxisAsText("x", x1) + "\n");
-            else
-               point['tip'] += ("x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]\n");
-            point['tip'] += ("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
-         }
-
-         draw_bins.push(point);
-      }
-
-      // if we need to draw line or area, we need extra point for correct drawing
-      if ((right == this.nbinsx) && (this.options.Error == 0) && (point!=null)) {
-         var extrapoint = JSROOT.extend({}, point);
-         extrapoint.x = grx2;
-         draw_bins.push(extrapoint);
-      }
-
-      return draw_bins;
-   }
 
    JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, width, height) {
 
@@ -6459,20 +6365,23 @@
 
          pnt.x = Math.round(pnt.x + pnt.width/2);
          pnt.xerr = Math.round(pnt.width/2);
-         pnt.yerr = 30;
+         pnt.yerr1 = pnt.yerr2 = 30;
 
          if (exclude_zero && (cont == 0)) {
-            pnt.y = h + 100; // such point will be removed
+            pnt.y = height + 100; // such point will be removed
             continue;
          }
 
-         if (show_errors)
-            pnt.yerr = Math.round(pnt.y - pmain.gry(cont + this.histo.getBinError(pnt.bin+1)));
+         if (show_errors) {
+            var binerr = this.histo.getBinError(pnt.bin+1);
+            pnt.yerr1 = Math.round(pnt.y - pmain.gry(cont + binerr)); // up
+            pnt.yerr2 = Math.round(pmain.gry(cont - binerr) - pnt.y); // down
+         }
       }
 
       // here are up to five elements are collected, try to group them
       var nodes = this.draw_g.selectAll("g")
-                     .data(draw_bins.filter(function(d) { return (d.y > -d.yerr) && (d.y < height + d.yerr); }))
+                     .data(draw_bins.filter(function(d) { return (d.y > -d.yerr1) && (d.y < height + d.yerr2); }))
                      .enter()
                      .append("svg:g")
                      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
@@ -6492,9 +6401,9 @@
 
          nodes.append("svg:rect")
             .attr("x", function(d) { return -d.xerr; })
-            .attr("y", function(d) { return -d.yerr; })
+            .attr("y", function(d) { return -d.yerr1; })
             .attr("width", function(d) { return 2*d.xerr; })
-            .attr("height", function(d) { return 2*d.yerr; })
+            .attr("height", function(d) { return d.yerr1 + d.yerr2; })
             .call(this.fillatt.func)
             .style("pointer-events", tt_events) // even when fill attribute not specified, get mouse events
             .each(function(d) {
@@ -6518,9 +6427,9 @@
               .call(this.lineatt.func);
          nodes.append("svg:line")  // y indicator
               .attr("x1", 0)
-              .attr("y1", function(d) { return -d.yerr; })
+              .attr("y1", function(d) { return -d.yerr1; })
               .attr("x2", 0)
-              .attr("y2", function(d) { return d.yerr; })
+              .attr("y2", function(d) { return d.yerr2; })
               .call(this.lineatt.func);
       }
 
@@ -6539,15 +6448,15 @@
                 .call(this.lineatt.func);
          nodes.append("svg:line")
                 .attr("x1", -3)
-                .attr("y1", function(d) { return -d.yerr; })
+                .attr("y1", function(d) { return -d.yerr1; })
                 .attr("x2", 3)
-                .attr("y2", function(d) { return -d.yerr; })
+                .attr("y2", function(d) { return -d.yerr1; })
                 .call(this.lineatt.func);
          nodes.append("svg:line")
                  .attr("x1", -3)
-                 .attr("y1", function(d) { return d.yerr; })
+                 .attr("y1", function(d) { return d.yerr2; })
                  .attr("x2", 3)
-                 .attr("y2", function(d) { return d.yerr; })
+                 .attr("y2", function(d) { return d.yerr2; })
                  .call(this.lineatt.func);
       }
 
@@ -6558,13 +6467,20 @@
       }
    }
 
-   JSROOT.TH1Painter.prototype.DrawDirectAsPath = function() {
+   JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
-      var width = this.frame_width(),
-          height = this.frame_height(),
-          left = this.GetSelectIndex("x", "left", -1),
+      delete this['ProcessTooltip'];
+
+      var width = this.frame_width(), height = this.frame_height();
+
+      if (!this.draw_content || (width<=0) || (height<=0))
+         return this.RemoveDrawG();
+
+      this.RecreateDrawG(false, ".main_layer");
+
+      var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
           pthis = this,
@@ -6615,13 +6531,11 @@
                curry = gry;
             } else {
 
-               if ((bins!==null) /*&& !lastbin*/) {
-                  if (curry_min <= height)
-                     bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
-               }
+               if (bins!==null)
+                  bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
 
                // when several points as same X differs, need complete logic
-               if ((curry_min !== curry_max) || (prevy !== curry_min)) {
+               if (!draw_markers && ((curry_min !== curry_max) || (prevy !== curry_min))) {
 
                   if (prevx !== currx)
                      res += "h"+(currx-prevx);
@@ -6840,21 +6754,6 @@
       }
 
       return { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: this.GetBinTips(bin) };
-   }
-
-
-   JSROOT.TH1Painter.prototype.DrawBins = function() {
-
-      delete this['ProcessTooltip'];
-
-      var width = this.frame_width(), height = this.frame_height();
-
-      if (!this.draw_content || (width<=0) || (height<=0))
-         return this.RemoveDrawG();
-
-      this.RecreateDrawG(false, ".main_layer");
-
-      this.DrawDirectAsPath();
    }
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {

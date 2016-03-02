@@ -869,7 +869,7 @@
          if ((pnt === null) || (this.bins===null)) {
             cleanup = true;
          } else
-         if ((pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
+         if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
             cleanup = true;
          }
 

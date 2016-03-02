@@ -8,14 +8,14 @@
 5. Use nested CSS classes to avoid conflicts with other libraries (#29)
 6. Let move and resize TFrame
 7. Improve TH1 drawings
-   - always draw all histograms points in the range (no any skipped bins)
+   - draw all histograms points in the range (no any skipped bins)
    - minimize SVG code for drawing (up to factor 100)
-   - finally, significant speedup in drawings
+   - gives significant speedup in drawings
 8. Comparable improvements for TF1
 9. Provide new tooltip kind
    - created only when needed (minimizing SVG code)
    - tooltip can be drawn for every object in the frame
-   - touch devices could be easily supported 
+   - touch devices could be supported 
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
 12. Use of cached methods let improve binary I/O perfromance by 20% 
