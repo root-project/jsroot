@@ -723,7 +723,7 @@
             .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
-      return $("#" + hid).attr('title', title).css('overflow','hidden').get(0);
+      return $("#" + hid).attr('frame_title', title).css('overflow','hidden').get(0);
    }
 
    // ================================================
@@ -801,7 +801,7 @@
       $('#' + hid)
          .empty()
          .css('overflow', 'hidden')
-         .prop('title', title);
+         .attr('frame_title', title);
 
       return $('#' + hid).get(0);
    }
@@ -976,7 +976,7 @@
       //$("#" + subid).find(".flex_draw").width(draw_w).height(draw_h);
       this.cnt++;
 
-      return $("#" + subid + "_cont").prop('title', title).get(0);
+      return $("#" + subid + "_cont").attr('frame_title', title).get(0);
    }
 
    // ========== performs tree drawing on server ==================
