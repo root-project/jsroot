@@ -2406,13 +2406,14 @@
          else
             group.selectAll("*").remove();
 
-         if (nhints===1) hint.y = pnt.y;
+         if (nhints===1) hint.y = pnt.y + 15;
 
-         var r = group.append("svg:rect").attr("x", pnt.x+10)
+         var r = group.append("svg:rect").attr("x", pnt.x+15)
                                          .attr("y", hint.y)
                                          .attr("width", maxwidth + 2*wmargin)
                                          .attr("height", hint.height)
-                                         .attr("fill","lightgrey");
+                                         .attr("fill","lightgrey")
+                                         .attr("opacity","0");
          if (hints.length > 1) {
             var col = usecolor1 ? hint.color1 : hint.color2;
             if ((col !== undefined) && (col!=='none'))
@@ -2424,9 +2425,21 @@
          if (hint !== null)
             for (var l=0;l<hint.lines.length;l++)
                if (hint.lines[l]!==null)
-                  this.DrawText(12, pnt.x+10+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
+                  this.DrawText(12, pnt.x+15+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
 
          actualw = Math.max(actualw, this.FinishTextDrawing(group));
+
+         function translateFn() {
+            // We only use 'd', but list d,i,a as params just to show can have them as params.
+            // Code only really uses d and t.
+            return function(d, i, a) {
+               return function(t) {
+                  return t < 0.8 ? "0" : (t-0.8)*5;
+               };
+            };
+         }
+
+         group.selectAll("*").transition().duration(500).attrTween("opacity", translateFn());
       }
 
       if (actualw > 10)
@@ -6798,10 +6811,8 @@
       if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
-      this.DrawDirectAsPath();
-
-
-      return;
+      if (JSROOT.gStyle.Tooltip > 1)
+         return this.DrawDirectAsPath();
 
 
       var draw_bins = this.CreateDrawBins(width, height);
