@@ -1011,7 +1011,6 @@
       return res;
    }
 
-
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
       // base painter does not creates canvas or frames
       // it registered in the first child element
@@ -1059,10 +1058,20 @@
       this.draw_g = null; // container for all draw objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
-      this.obj_typename = (obj!=null) && ('_typename' in obj) ? obj['_typename'] : "";
+      this.draw_object = (obj!==undefined) && (typeof obj === 'object') ? obj : null;
+      this.draw_object_typename = (this.draw_object!==null) && ('_typename' in this.draw_object) ? this.draw_object._typename : "";
    }
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+
+   JSROOT.TObjectPainter.prototype.GetObject = function() {
+      return this.draw_object;
+   }
+
+   JSROOT.TObjectPainter.prototype.MatchObjectType = function(obj) {
+      if ((obj === undefined) || (obj === null)) return false;
+      return (this.draw_object!==null) && (this.draw_object._typename === obj._typename);
+   }
 
    JSROOT.TObjectPainter.prototype.pad_painter = function(active_pad) {
       var can = active_pad ? this.svg_pad() : this.svg_canvas();
@@ -1389,8 +1398,8 @@
       }
 
       if (svg_c.empty()) {
-         if ((is_main < 0) || (is_main===5) || (this.obj_typename == "TCanvas")) return;
-         JSROOT.console("Special case for " + this.obj_typename + " assign painter to first DOM element");
+         if ((is_main < 0) || (is_main===5) || (this.draw_object_typename === "TCanvas")) return;
+         JSROOT.console("Special case for " + this.draw_object_typename + " assign painter to first DOM element");
          var main = this.select_main();
          if (main.node() && main.node().firstChild)
             main.node().firstChild['painter'] = this;
@@ -2126,14 +2135,9 @@
 
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
-      this.tframe = tframe;
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TFramePainter.prototype.GetObject = function() {
-      return this.tframe;
-   }
 
    JSROOT.TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
@@ -2141,7 +2145,7 @@
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
-      var width = this.pad_width(), height = this.pad_height();
+      var width = this.pad_width(), height = this.pad_height(), tframe = this.GetObject();
 
       var has_ndc = ('fX1NDC' in this);
 
@@ -2164,18 +2168,18 @@
           lineatt = JSROOT.Painter.createAttLine('black'),
           bordermode = 0, bordersize = 0;
 
-      if (this.tframe !== null) {
-         bordermode = this.tframe.fBorderMode;
-         bordersize = this.tframe.fBorderSize;
-         lineatt = JSROOT.Painter.createAttLine(this.tframe);
-         framecolor = this.createAttFill(this.tframe);
+      if (tframe !== null) {
+         bordermode = tframe.fBorderMode;
+         bordersize = tframe.fBorderSize;
+         lineatt = JSROOT.Painter.createAttLine(tframe);
+         framecolor = this.createAttFill(tframe);
          if (!has_ndc && (root_pad !== null)) {
             var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1);
             var yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1);
-            var px1 = (this.tframe.fX1 - root_pad.fX1) * xspan;
-            var py1 = (this.tframe.fY1 - root_pad.fY1) * yspan;
-            var px2 = (this.tframe.fX2 - root_pad.fX1) * xspan;
-            var py2 = (this.tframe.fY2 - root_pad.fY1) * yspan;
+            var px1 = (tframe.fX1 - root_pad.fX1) * xspan;
+            var py1 = (tframe.fY1 - root_pad.fY1) * yspan;
+            var px2 = (tframe.fX2 - root_pad.fX1) * xspan;
+            var py2 = (tframe.fY2 - root_pad.fY1) * yspan;
             var pxl, pxt, pyl, pyt;
             if (px1 < px2) { pxl = px1; pxt = px2; }
                       else { pxl = px2; pxt = px1; }
@@ -2409,16 +2413,11 @@
 
    JSROOT.TGraphPainter = function(graph) {
       JSROOT.TObjectPainter.call(this, graph);
-      this.graph = graph;
       this.ownhisto = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
    }
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   JSROOT.TGraphPainter.prototype.GetObject = function() {
-      return this.graph;
-   }
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
       this.DrawBins();
@@ -2431,10 +2430,12 @@
                             optionFill:0, optionZ:0, optionBrackets:0,
                             opt:"LP", out_of_range: false, has_errors: false, draw_errors: false, is_bent:false });
 
-      this.is_bent = this.graph['_typename'] == 'TGraphBentErrors';
-      this.has_errors = (this.graph['_typename'] == 'TGraphErrors' ||
-                         this.graph['_typename'] == 'TGraphAsymmErrors' ||
-                         this.is_bent || this.graph['_typename'].match(/^RooHist/));
+      var graph = this.GetObject();
+
+      this.is_bent = graph._typename == 'TGraphBentErrors';
+      this.has_errors = (graph._typename == 'TGraphErrors' ||
+                         graph._typename == 'TGraphAsymmErrors' ||
+                         this.is_bent || graph._typename.match(/^RooHist/));
       this.draw_errors = this.has_errors;
 
       if ((opt != null) && (opt != "")) {
@@ -2499,25 +2500,25 @@
             this.optionLine = 1;
       }
 
-      if (this.graph['_typename'] == 'TGraphErrors') {
-         var maxEX = d3.max(this.graph['fEX']);
-         var maxEY = d3.max(this.graph['fEY']);
+      if (graph._typename == 'TGraphErrors') {
+         var maxEX = d3.max(graph.fEX);
+         var maxEY = d3.max(graph.fEY);
          if (maxEX < 1.0e-300 && maxEY < 1.0e-300)
             this.draw_errors = false;
       }
    }
 
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
-      var gr = this.graph;
-      if (gr==null) return;
+      var gr = this.GetObject();
+      if (gr===null) return;
 
       var npoints = gr['fNpoints'];
-      if ((gr._typename=="TCutG") && (npoints>3)) npoints--;
+      if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
 
       var kind = 0;
-      if (gr['_typename'] == 'TGraphErrors') kind = 1; else
-      if (gr['_typename'] == 'TGraphAsymmErrors' || gr['_typename'] == 'TGraphBentErrors'
-          || gr['_typename'].match(/^RooHist/)) kind = 2;
+      if (gr._typename == 'TGraphErrors') kind = 1; else
+      if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
+          || gr._typename.match(/^RooHist/)) kind = 2;
 
       this.bins = d3.range(npoints).map(
             function(p) {
@@ -2572,20 +2573,22 @@
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
-      var dx = (xmax - xmin)*0.1;
-      var dy = (ymax - ymin)*0.1;
-      var uxmin = xmin - dx, uxmax = xmax + dx;
-      var minimum = ymin - dy, maximum = ymax + dy;
+      var dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
+          uxmin = xmin - dx, uxmax = xmax + dx,
+          minimum = ymin - dy, maximum = ymax + dy;
+
       if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
       if ((uxmax>0) && (xmax<=0)) uxmax = 0;
 
-      if (this.graph.fMinimum != -1111) minimum = ymin = this.graph.fMinimum;
-      if (this.graph.fMaximum != -1111) maximum = ymax = this.graph.fMaximum;
+      var graph = this.GetObject();
+
+      if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
+      if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
       var histo = JSROOT.CreateTH1(100);
-      histo.fName = this.graph.fName + "_h";
-      histo.fTitle = this.graph.fTitle;
+      histo.fName = graph.fName + "_h";
+      histo.fTitle = graph.fTitle;
       histo.fXaxis.fXmin = uxmin;
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = minimum;
@@ -2623,11 +2626,16 @@
    }
 
    JSROOT.TGraphPainter.prototype.DrawBars = function() {
-      var bins = this.bins;
+      var bins = this.bins,
+          graph = this.GetObject(),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          normal = (this.optionBar !== 1),
+          pmain = this.main_painter();
+
       if (bins.length == 1) {
          // special case of single bar
-         var binwidthx = (this.graph['fHistogram']['fXaxis']['fXmax'] -
-               this.graph['fHistogram']['fXaxis']['fXmin']);
+         var binwidthx = (graph.fHistogram.fXaxis.fXmax - graph.fHistogram.fXaxis.fXmin);
          bins[0].xl = bins[0].x - binwidthx/2;
          bins[0].xr = bins[0].x + binwidthx/2;
       } else
@@ -2639,10 +2647,6 @@
             bins[n].xr = 2*bins[n].x - bins[n].xl;
          if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
       }
-
-      var w = this.frame_width(),  h = this.frame_height();
-      var normal = (this.optionBar != 1);
-      var pmain = this.main_painter();
 
       var selbins = this.OptimizeBins(function(d) { return (pmain.grx(d.xr) < 0) || (pmain.grx(d.xl) > w); });
 
@@ -2664,15 +2668,17 @@
    }
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
-      var w = this.frame_width(), h = this.frame_height();
 
       this.RecreateDrawG(false, ".main_layer");
 
-      var pthis = this;
-      var pmain = this.main_painter();
+      var pthis = this,
+          pmain = this.main_painter(),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          name = this.GetItemName(),
+          graph = this.GetObject();
 
-      var name = this.GetItemName();
-      if ((name==null) || (name=="")) name = this.graph.fName;
+      if ((name==null) || (name=="")) name = graph.fName;
       if (name.length > 0) name += "\n";
 
       function TooltipText(d) {
@@ -2690,8 +2696,8 @@
          return res;
       }
 
-      this.lineatt = JSROOT.Painter.createAttLine(this.graph);
-      this.fillatt = this.createAttFill(this.graph);
+      this.lineatt = JSROOT.Painter.createAttLine(graph);
+      this.fillatt = this.createAttFill(graph);
 
       var drawbins = null;
 
@@ -2733,7 +2739,7 @@
       if (this.optionLine == 1 || this.optionFill == 1) {
 
          var close_symbol = "";
-         if (this.graph._typename=="TCutG") close_symbol = " Z";
+         if (graph._typename=="TCutG") close_symbol = " Z";
 
          var lineatt = this.lineatt;
          if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
@@ -2784,25 +2790,22 @@
             var gry = pmain.gry(pnt.y);
 
             // caluclate graphical coordinates
-            pnt['grx1'] = grx.toFixed(1);
-            pnt['gry1'] = gry.toFixed(1);
+            pnt.grx1 = grx.toFixed(1);
+            pnt.gry1 = gry.toFixed(1);
 
             if (this.has_errors) {
-               pnt['grx0'] = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
-               pnt['grx2'] = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
-               pnt['gry0'] = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
-               pnt['gry2'] = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+               pnt.grx0 = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
+               pnt.grx2 = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
+               pnt.gry0 = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
+               pnt.gry2 = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
 
                if (this.is_bent) {
-                  pnt['grdx0'] = pmain.gry(pnt.y + this.graph.fEXlowd[i]) - gry;
-                  pnt['grdx2'] = pmain.gry(pnt.y + this.graph.fEXhighd[i]) - gry;
-                  pnt['grdy0'] = pmain.grx(pnt.x + this.graph.fEYlowd[i]) - grx;
-                  pnt['grdy2'] = pmain.grx(pnt.x + this.graph.fEYhighd[i]) - grx;
+                  pnt.grdx0 = pmain.gry(pnt.y + graph.fEXlowd[i]) - gry;
+                  pnt.grdx2 = pmain.gry(pnt.y + graph.fEXhighd[i]) - gry;
+                  pnt.grdy0 = pmain.grx(pnt.x + graph.fEYlowd[i]) - grx;
+                  pnt.grdy2 = pmain.grx(pnt.x + graph.fEYhighd[i]) - grx;
                } else {
-                  pnt['grdx0'] = 0; // in y direction
-                  pnt['grdx2'] = 0; // in y direction
-                  pnt['grdy0'] = 0; // in x direction
-                  pnt['grdy2'] = 0; // in x direction
+                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
                }
             }
          }
@@ -2946,23 +2949,28 @@
          /* Add markers */
          var style = (this.optionMark == 2) ? 3 : null;
 
-         var marker = JSROOT.Painter.createAttMarker(this.graph, style);
+         var marker = JSROOT.Painter.createAttMarker(graph, style);
          nodes.append(marker.kind).call(marker.func);
       }
    }
 
    JSROOT.TGraphPainter.prototype.DrawExclusion = function(line) {
-      var normx, normy;
-      var n = this.graph['fNpoints'];
-      var xo = new Array(n + 2),
-          yo = new Array(n + 2),
-          xt = new Array(n + 2),
-          yt = new Array(n + 2),
-          xf = new Array(2 * n + 2),
-          yf = new Array(2 * n + 2);
+      var graph = this.GetObject(), n = graph.fNpoints,
+          xo, yo, xt, yt, xf, yf;
+
+      if ('Float32Array' in window) {
+         xo = new Float32Array(n + 2);
+         yo = new Float32Array(n + 2);
+         xt = new Float32Array(n + 2);
+         yt = new Float32Array(n + 2);
+         xf = new Float32Array(2 * n + 2);
+         yf = new Float32Array(2 * n + 2);
+      } else {
+          xo = []; yo = []; xt = []; yt = []; xf = []; yf = [];
+      }
       // negative value means another side of the line...
 
-      var a, i, j, nf, wk = 1;
+      var a, i, j, nf, normx, normy, wk = 1;
       if (this.lineatt.width < 0) {
          this.lineatt.width = - this.lineatt.width;
          wk = -1;
@@ -2978,8 +2986,8 @@
       var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
           ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
       for (i = 0; i < n; ++i) {
-         xo[i] = (this.graph['fX'][i] - xmin) / (xmax - xmin);
-         yo[i] = (this.graph['fY'][i] - ymin) / (ymax - ymin);
+         xo[i] = (graph.fX[i] - xmin) / (xmax - xmin);
+         yo[i] = (graph.fY[i] - ymin) / (ymax - ymin);
          if (w > h)
             yo[i] = yo[i] / ratio;
          else if (h > w)
@@ -3030,10 +3038,10 @@
       for (i = 1; i < nf; ++i) {
          xi0 = xf[i];
          yi0 = yf[i];
-         xi1 = xf[i + 1];
-         yi1 = yf[i + 1];
-         xi2 = xf[i - 1];
-         yi2 = yf[i - 1];
+         xi1 = xf[i+1];
+         yi1 = yf[i+1];
+         xi2 = xf[i-1];
+         yi2 = yf[i-1];
          if (xi1 == xi0) {
             a1 = Math.PI / 2.0;
          } else {
@@ -3181,17 +3189,17 @@
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
-      if (obj['_typename'] != this.graph['_typename'])
-         return false;
+      if (!this.MatchObjectType(obj)) return false;
 
       // if our own histogram was used as axis drawing, we need update histogram  as well
       if (this.ownhisto)
-         this.main_painter().UpdateObject(obj['fHistogram']);
+         this.main_painter().UpdateObject(obj.fHistogram);
 
+      var graph = this.GetObject();
       // TODO: make real update of TGraph object content
-      this.graph['fX'] = obj['fX'];
-      this.graph['fY'] = obj['fY'];
-      this.graph['fNpoints'] = obj['fNpoints'];
+      graph.fX = obj.fX;
+      graph.fY = obj.fY;
+      graph.fNpoints = obj.fNpoints;
       this.CreateBins();
       return true;
    }
@@ -3199,8 +3207,8 @@
    JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
       // allow to zoom TGraph only when at least one point in the range
 
-      var gr = this.graph;
-      if ((gr==null) || (axis!="x")) return false;
+      var gr = this.GetObject();
+      if ((gr===null) || (axis!=="x")) return false;
 
       for (var n=0; n < gr.fNpoints; ++n)
          if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
@@ -3211,11 +3219,13 @@
    JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      if ((this.graph['fFunctions'] == null) || (indx >= this.graph.fFunctions.arr.length))
+      var graph = this.GetObject();
+
+      if ((graph.fFunctions === null) || (indx >= graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      var func = this.graph.fFunctions.arr[indx];
-      var opt = this.graph.fFunctions.opt[indx];
+      var func = graph.fFunctions.arr[indx];
+      var opt = graph.fFunctions.opt[indx];
 
       var painter = JSROOT.draw(this.divid, func, opt);
       if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
@@ -3645,7 +3655,7 @@
 
    JSROOT.TPadPainter = function(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
-      if (this.obj_typename=="") this.obj_typename = iscan ? "TCanvas" : "TPad";
+      if (this.draw_object_typename=="") this.draw_object_typename = iscan ? "TCanvas" : "TPad";
       this.pad = pad;
       if ((pad !== undefined) && (pad !== null) && ('fName' in pad))
          pad.fName = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
