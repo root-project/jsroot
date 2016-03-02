@@ -1285,18 +1285,19 @@
    };
 
    JSROOT.TFile.prototype.AddMethods = function(clname, streamer) {
-      // create additional entry in the streamer, which sets all methods of the class
+      // create additional entries in the streamer, which sets all methods of the class
 
       if (streamer === null) return streamer;
 
       var methods = JSROOT.getMethods(clname);
       if (methods !== null)
-         streamer.push({
-            m: methods,
-            func: function(buf,obj) {
-              JSROOT.extend(obj, this.m);
-            }
-         });
+         for (var key in methods)
+            if (typeof methods[key] === 'function')
+               streamer.push({
+                 name: key,
+                 method: methods[key],
+                 func: function(buf,obj) { obj[this.name] = this.method; }
+               });
 
       return streamer;
    }
@@ -1642,13 +1643,13 @@
                   member.maxindx = element.fMaxIndex;
                   member.arrlength = element.fArrayLength;
                   member.func = function(buf, obj) {
-                     var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
-                     var indx = [], arr = [];
-                     for (var n=0; n<=this.maxdim; ++n) { indx[n] = 0; arr[n] = []; }
-                     for (var i=0;i<tmp.length;++i) {
+                     var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL),
+                         indx = [], arr = [], i, k;
+                     for (i=0; i<=this.maxdim; ++i) { indx[i] = 0; arr[i] = []; }
+                     for (i=0;i<tmp.length;++i) {
                         arr[this.maxdim].push(tmp[i]);
                         ++indx[this.maxdim];
-                        var k = this.maxdim;
+                        k = this.maxdim;
                         while ((indx[k] === this.maxindx[k]) && (k>0)) {
                            indx[k] = 0;
                            arr[k-1].push(arr[k]);
