@@ -6546,6 +6546,7 @@
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
+          pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti, bins = null;
 
@@ -6593,7 +6594,7 @@
 
                if ((bins!==null) /*&& !lastbin*/) {
                   if (curry_min <= height)
-                     bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti, tip: "bin" + besti });
+                     bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
                }
 
                // when several points as same X differs, need complete logic
@@ -6652,9 +6653,6 @@
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
 
-      this['ProcessTooltip'] = this.ProcessTooltipFunc;
-
-/*
       if ((JSROOT.gStyle.Tooltip === 1) && (bins!==null))
          this.draw_g.selectAll("rect")
             .data(bins.filter(function(d) { return d.y < height - 0.1; })).enter()
@@ -6665,16 +6663,38 @@
               .attr("width", function(d) { return d.width; })
               .attr("height", function(d) { return (height - d.y); })
               .on('mouseover', function() {
-                  if ((JSROOT.gStyle.Tooltip>0) && (d3.select(this).style("opacity")!="0.3"))
+                  if (JSROOT.gStyle.Tooltip>0)
                     d3.select(this).transition().duration(100).style("opacity", "0.3");
                })
               .on('mouseout', function() {
-                 d3.select(this).transition().duration(100).style("opacity", "");
+                    d3.select(this).transition().duration(100).style("opacity", "");
                })
-              .append("svg:title").text(function(d) { return d.tip; });
-*/
-
+              .append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
+      else
+      if (JSROOT.gStyle.Tooltip > 1)
+         this['ProcessTooltip'] = this.ProcessTooltipFunc;
    }
+
+   JSROOT.TH1Painter.prototype.GetBinTips = function(bin,asstr) {
+      var tips = [], name = this.GetTipName(), pmain = this.main_painter();
+      if (name.length>0) tips.push(name);
+
+      tips.push("bin = " + (bin+1));
+
+      if (pmain.x_kind === 'labels')
+         tips.push("x = " + this.AxisAsText("x", this.GetBinX(bin)));
+      else
+         tips.push("x = [" + this.AxisAsText("x", this.GetBinX(bin)) + ", " + this.AxisAsText("x", this.GetBinX(bin+1)) + "]");
+
+      tips.push("entries = " + JSROOT.FFormat(this.histo.getBinContent(bin+1), JSROOT.gStyle.StatFormat));
+
+      if (!asstr) return tips;
+
+      var res = "";
+      for (var n=0;n<tips.length;++n) res += (n>0 ? "\n" : "") + tips[n];
+      return res;
+   }
+
 
    JSROOT.TH1Painter.prototype.ProcessTooltipFunc = function(pnt) {
 
@@ -6745,19 +6765,6 @@
          return null; // nothing to show
       }
 
-      var tips = [];
-      var name = this.GetTipName();
-      if (name.length>0) tips.push(name);
-
-      tips.push("bin = " + (bin+1));
-
-      if (pmain.x_kind === 'labels')
-         tips.push("x = " + this.AxisAsText("x", this.GetBinX(bin)));
-      else
-         tips.push("x = [" + this.AxisAsText("x", this.GetBinX(bin)) + ", " + this.AxisAsText("x", this.GetBinX(bin+1)) + "]");
-
-      tips.push("entries = " + JSROOT.FFormat(this.histo.getBinContent(bin+1), JSROOT.gStyle.StatFormat));
-
       if (JSROOT.gStyle.Tooltip === 5) {
 
          if (pnt.y < gry) {
@@ -6775,7 +6782,6 @@
                   .attr("width", grx2-grx)
                   .attr("y", gry)
                   .attr("height", height-gry)
-                  .attr("title", tips[1])
                   .style("opacity", "0.3")
                   .property("current_bin", bin);
       } else {
@@ -6793,7 +6799,7 @@
                   .property("current_bin", bin);
       }
 
-      return { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: tips };
+      return { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: this.GetBinTips(bin) };
    }
 
 
@@ -6811,63 +6817,8 @@
       if ((this.options.Error > 0) || (this.options.Mark > 0))
          return this.DrawAsMarkers(width, height);
 
-      if (JSROOT.gStyle.Tooltip > 1)
-         return this.DrawDirectAsPath();
-
-
-      var draw_bins = this.CreateDrawBins(width, height);
-
-      if (this.fillatt.color !== 'none') {
-
-         // histogram filling
-         var area = d3.svg.area()
-                    .x(function(d) { return d.x.toFixed(1); })
-                    .y0(function(d) { return d.y.toFixed(1); })
-                    .y1(function(d) { return height; })
-                    .interpolate("step-after");
-
-         console.log('th1 area len ' +  area(draw_bins).length);
-
-         this.draw_g.append("svg:path")
-                    .attr("d", area(draw_bins))
-                    .style("pointer-events","none")
-                    .call(this.lineatt.func)
-                    .call(this.fillatt.func);
-      } else {
-
-         var line = d3.svg.line()
-                          .x(function(d) { return d.x.toFixed(1); })
-                          .y(function(d) { return d.y.toFixed(1); })
-                          .interpolate("step-after");
-
-         console.log('th1 line len ' +  line(draw_bins).length);
-
-         this.draw_g
-               .append("svg:path")
-               .attr("d", line(draw_bins))
-               .call(this.lineatt.func)
-               .style("fill", "none");
-      }
-
-      if (JSROOT.gStyle.Tooltip > 0)
-         this.draw_g.selectAll("rect")
-                    .data(draw_bins.filter(function(d) { return d.y < height - 0.1; }))
-                    .enter().append("svg:rect")
-                    .attr("class", "h1bin")
-                    .attr("x", function(d) { return d.x.toFixed(1); })
-                    .attr("y", function(d) { return d.y.toFixed(1); })
-                    .attr("width", function(d) { return d.width.toFixed(1); })
-                    .attr("height", function(d) { return (height - d.y).toFixed(1); })
-                    .on('mouseover', function() {
-                        if ((JSROOT.gStyle.Tooltip>0) && (d3.select(this).style("opacity")!="0.3"))
-                          d3.select(this).transition().duration(100).style("opacity", "0.3");
-                     })
-                     .on('mouseout', function() {
-                        d3.select(this).transition().duration(100).style("opacity", "");
-                     })
-                     .append("svg:title").text(function(d) { return d.tip; });
+      this.DrawDirectAsPath();
    }
-
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
