@@ -3274,9 +3274,13 @@
 
       var pt = this.GetObject();
 
-      if ((pt.fOption.indexOf("NDC")<0) && !pt.fInit) {
+      if (pt.fInit===0) {
          pt.fInit = 1;
          var pad = this.root_pad();
+         if (pt.fOption.indexOf("NDC")>=0) {
+            pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
+            pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
+         } else
          if (pad !== null) {
             if (pad.fLogx) {
                if (pt.fX1 > 0) pt.fX1 = JSROOT.log10(pt.fX1);
@@ -3291,10 +3295,8 @@
             pt.fX2NDC = (pt.fX2-pad.fX1) / (pad.fX2 - pad.fX1);
             pt.fY2NDC = (pt.fY2-pad.fY1) / (pad.fY2 - pad.fY1);
          } else {
-            pt.fX1NDC = 0.1;
-            pt.fX2NDC = 0.9;
-            pt.fY1NDC = 0.1;
-            pt.fY2NDC = 0.9;
+            pt.fX1NDC = pt.fY1NDC = 0.1;
+            pt.fX2NDC = pt.fY2NDC = 0.9;
          }
       }
 

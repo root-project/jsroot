@@ -1505,79 +1505,36 @@
 
    JSROOT.Painter.drawLegend = function(divid, obj, opt) {
 
-      this.legend = obj;
+      JSROOT.extend(this, new JSROOT.TPavePainter(obj));
+
       this.SetDivId(divid);
 
-      this['GetObject'] = function() {
-         return this.legend;
-      }
+      this['DrawLegendItems'] = function(w, h) {
 
-      this['Redraw'] = function() {
-         this.RecreateDrawG(true, ".text_layer");
-
-         var pave = this.legend;
-
-         if (pave.fInit === 0) {
-            pave.fInit = 1;
-            pave.fX1NDC = pave.fX1;
-            pave.fX2NDC = pave.fX2;
-            pave.fY1NDC = pave.fY1;
-            pave.fY2NDC = pave.fY2;
-         }
-
-         var x = Math.round(pave.fX1NDC * this.pad_width()),
-             y = Math.round((1 - pave.fY2NDC) * this.pad_height()),
-             w = Math.round((pave.fX2NDC - pave.fX1NDC) * this.pad_width()),
-             h = Math.round((pave.fY2NDC - pave.fY1NDC) * this.pad_height()),
-             lwidth = pave.fBorderSize,
-             boxfill = this.createAttFill(pave),
-             lineatt = JSROOT.Painter.createAttLine(pave),
-             ncols = pave.fNColumns,
-             nlines = pave.fPrimitives.arr.length,
+         var legend = this.GetObject(),
+             nlines = legend.fPrimitives.arr.length,
+             ncols = legend.fNColumns,
              nrows = nlines;
 
          if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
 
-         this.draw_g.attr("x", x)
-                    .attr("y", y)
-                    .attr("width", w)
-                    .attr("height", h)
-                    .attr("transform", "translate(" + x + "," + y + ")");
+         this.StartTextDrawing(legend.fTextFont, h / (nlines * 1.2));
 
-         // add decoration before main rect
-         if (lwidth > 1)
-            this.draw_g.append("svg:path")
-                .attr("d","M" + (lwidth+1) + "," + (h+lwidth/2) +
-                          " H" + (w+lwidth/2) + " V" + (lwidth+1))
-               .call(JSROOT.Painter.createAttLine(pave,lwidth).func);
-
-         this.draw_g.append("svg:rect")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", w)
-              .attr("height", h)
-              .call(boxfill.func)
-              .call(lineatt.func);
-
-         this.StartTextDrawing(pave.fTextFont, h / (nlines * 1.2));
-
-         var tcolor = JSROOT.Painter.root_colors[pave.fTextColor],
+         var tcolor = JSROOT.Painter.root_colors[legend.fTextColor],
              column_width = Math.round(w/ncols),
              padding_x = Math.round(0.03*w/ncols),
-             padding_y = Math.round(0.03*h);
-
-         var leg_painter = this;
-         var step_y = (h - 2*padding_y)/nrows;
-         var any_opt = false;
+             padding_y = Math.round(0.03*h),
+             step_y = (h - 2*padding_y)/nrows,
+             any_opt = false;
 
          for (var i = 0; i < nlines; ++i) {
-            var leg = pave.fPrimitives.arr[i];
+            var leg = legend.fPrimitives.arr[i];
             var lopt = leg.fOption.toLowerCase();
 
             var icol = i % ncols, irow = (i - icol) / ncols;
 
             var x0 = icol * column_width;
-            var tpos_x = x0 + Math.round(pave.fMargin*column_width);
+            var tpos_x = x0 + Math.round(legend.fMargin*column_width);
 
             var pos_y = Math.round(padding_y + irow*step_y); // top corner
             var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
@@ -1594,11 +1551,8 @@
                if ('fMarkerColor' in mo) attmarker = mo;
             }
 
-            var fill = this.createAttFill(attfill);
-            var llll = JSROOT.Painter.createAttLine(attline);
-
             // Draw fill pattern (in a box)
-            if (lopt.indexOf('f') != -1) {
+            if (lopt.indexOf('f') != -1)
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
                this.draw_g.append("svg:rect")
@@ -1606,21 +1560,21 @@
                       .attr("y", Math.round(pos_y+step_y*0.1))
                       .attr("width", tpos_x - 2*padding_x - x0)
                       .attr("height", Math.round(step_y*0.8))
-                      .call(fill.func);
-            }
+                      .call(this.createAttFill(attfill).func);
 
             // Draw line
-            if (lopt.indexOf('l') != -1) {
+            if (lopt.indexOf('l') != -1)
                this.draw_g.append("svg:line")
                   .attr("x1", x0 + padding_x)
                   .attr("y1", mid_y)
                   .attr("x2", tpos_x - padding_x)
                   .attr("y2", mid_y)
-                  .call(llll.func);
-            }
-            // Draw error only
+                  .call(JSROOT.Painter.createAttLine(attline).func);
+
+            // Draw error
             if (lopt.indexOf('e') != -1  && (lopt.indexOf('l') == -1 || lopt.indexOf('f') != -1)) {
             }
+
             // Draw Polymarker
             if (lopt.indexOf('p') != -1) {
                var marker = JSROOT.Painter.createAttMarker(attmarker);
@@ -1636,11 +1590,11 @@
             this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg.fLabel, tcolor);
          }
 
-         this.AddDrag({ obj: pave, redraw: this.Redraw.bind(this) });
-
          // rescale after all entries are shown
          this.FinishTextDrawing();
       }
+
+      this['PaveDrawFunc'] = this.DrawLegendItems;
 
       this.Redraw();
 
@@ -1698,15 +1652,11 @@
          var pos_x = parseInt(this.draw_g.attr("x")), // pave position
              pos_y = parseInt(this.draw_g.attr("y")),
              width = this.pad_width(),
-             height = this.pad_height();
-
-         var axisOffset = axis.fLabelOffset * width;
-         var tickSize = axis.fTickSize * width;
-
-
-         var contour = this.main_painter().fContour;
-
-         var zmin = 0, zmax = this.main_painter().gmaxbin;
+             height = this.pad_height(),
+             axisOffset = axis.fLabelOffset * width,
+             tickSize = axis.fTickSize * width,
+             contour = this.main_painter().fContour,
+             zmin = 0, zmax = this.main_painter().gmaxbin;
 
          if (contour!==null) {
             zmin = contour[0];
