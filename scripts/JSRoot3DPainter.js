@@ -573,7 +573,8 @@
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
       var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip>0 ? 1 : 0));
 
@@ -693,26 +694,29 @@
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
    JSROOT.TH3Painter.prototype.ScanContent = function() {
-      this.nbinsx = this.histo['fXaxis']['fNbins'];
-      this.nbinsy = this.histo['fYaxis']['fNbins'];
-      this.nbinsz = this.histo['fZaxis']['fNbins'];
+      var histo = this.GetObject();
 
-      this.xmin = this.histo['fXaxis']['fXmin'];
-      this.xmax = this.histo['fXaxis']['fXmax'];
+      this.nbinsx = histo.fXaxis.fNbins;
+      this.nbinsy = histo.fYaxis.fNbins;
+      this.nbinsz = histo.fZaxis.fNbins;
 
-      this.ymin = this.histo['fYaxis']['fXmin'];
-      this.ymax = this.histo['fYaxis']['fXmax'];
+      this.xmin = histo.fXaxis.fXmin;
+      this.xmax = histo.fXaxis.fXmax;
 
-      this.zmin = this.histo['fZaxis']['fXmin'];
-      this.zmax = this.histo['fZaxis']['fXmax'];
+      this.ymin = histo.fYaxis.fXmin;
+      this.ymax = histo.fYaxis.fXmax;
+
+      this.zmin = histo.fZaxis.fXmin;
+      this.zmax = histo.fZaxis.fXmax;
 
       // global min/max, used at the moment in 3D drawing
 
-      this.gminbin = this.gmaxbin = this.histo.getBinContent(1, 1, 1);
-      for (var i = 0; i < this.nbinsx; ++i)
-         for (var j = 0; j < this.nbinsy; ++j)
-            for (var k = 0; k < this.nbinsz; ++k) {
-               var bin_content = this.histo.getBinContent(i + 1, j + 1, k + 1);
+      this.gminbin = this.gmaxbin = histo.getBinContent(1,1,1);
+      var i,j,k;
+      for (i = 0; i < this.nbinsx; ++i)
+         for (j = 0; j < this.nbinsy; ++j)
+            for (k = 0; k < this.nbinsz; ++k) {
+               var bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content < this.gminbin) this.gminbin = bin_content; else
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
             }
@@ -721,9 +725,10 @@
    }
 
    JSROOT.TH3Painter.prototype.CountStat = function() {
-      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0;
-
-      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 };
+      var histo = this.GetObject(),
+          stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+          stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
+          res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 };
 
       for (var xi = 0; xi < this.nbinsx+2; ++xi) {
 
@@ -740,7 +745,7 @@
                var zz = this.zmin + (zi - 0.5) / this.nbinsz * (this.zmax - this.zmin);
                var zside = (zi === 0) ? 0 : (zi === this.nbinsz+1 ? 2 : 1);
 
-               var cont = this.histo.getBinContent(xi, yi, zi);
+               var cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
                if ((xside==1) && (yside==1) && (zside==1)) {
@@ -756,14 +761,14 @@
          }
       }
 
-      if (this.histo.fTsumw>0) {
-         stat_sum0 = this.histo.fTsumw;
-         stat_sumx1 = this.histo.fTsumwx;
-         stat_sumx2 = this.histo.fTsumwx2;
-         stat_sumy1 = this.histo.fTsumwy;
-         stat_sumy2 = this.histo.fTsumwy2;
-         stat_sumz1 = this.histo.fTsumwz;
-         stat_sumz2 = this.histo.fTsumwz2;
+      if (histo.fTsumw > 0) {
+         stat_sum0  = histo.fTsumw;
+         stat_sumx1 = histo.fTsumwx;
+         stat_sumx2 = histo.fTsumwx2;
+         stat_sumy1 = histo.fTsumwy;
+         stat_sumy2 = histo.fTsumwy2;
+         stat_sumz1 = histo.fTsumwz;
+         stat_sumz2 = histo.fTsumwz2;
       }
 
       if (stat_sum0 > 0) {
@@ -777,13 +782,13 @@
 
       res.integral = stat_sum0;
 
-      if (this.histo.fEntries > 1) res.entries = this.histo.fEntries;
+      if (histo.fEntries > 1) res.entries = histo.fEntries;
 
       return res;
    }
 
    JSROOT.TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
-      if (!this.histo) return false;
+      if (this.GetObject()===null) return false;
 
       var pave = stat.GetObject(),
           data = this.CountStat(),
@@ -798,7 +803,7 @@
       //var print_kurt = Math.floor(dostat / 100000000) % 10;
 
       if (print_name > 0)
-         pave.AddText(this.histo.fName);
+         pave.AddText(this.GetObject().fName);
 
       if (print_entries > 0)
          pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
@@ -833,16 +838,16 @@
    }
 
    JSROOT.TH3Painter.prototype.CreateBins = function() {
-      var bins = [];
-
-      var name = this.GetItemName();
-      if ((name==null) || (name=="")) name = this.histo.fName;
+      var i, j, k, bins = [],
+          histo = this.GetObject(),
+          name = this.GetItemName();
+      if ((name==null) || (name=="")) name = histo.fName;
       if (name.length > 0) name += "<br/>";
 
-      for (var i = 0; i < this.nbinsx; ++i)
-         for (var j = 0; j < this.nbinsy; ++j)
-            for (var k = 0; k < this.nbinsz; ++k) {
-               var bin_content = this.histo.getBinContent(i + 1, j + 1, k + 1);
+      for (i = 0; i < this.nbinsx; ++i)
+         for (j = 0; j < this.nbinsy; ++j)
+            for (k = 0; k < this.nbinsz; ++k) {
+               var bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
 
                var bin = {
@@ -865,11 +870,13 @@
    }
 
    JSROOT.TH3Painter.prototype.Draw3DBins = function() {
+
       if (!this.draw_content) return;
 
       var bins = this.CreateBins();
 
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.histo['fFillColor']]);
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
+
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
@@ -885,8 +892,8 @@
          geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 2 * this.size3d / this.nbinsz);
       }
 
-      var bin, wei;
-      for (var i = 0; i < bins.length; ++i) {
+      var bin, wei, i;
+      for (i = 0; i < bins.length; ++i) {
          wei = (this.options.Color > 0) ? 1. : bins[i].n / this.gmaxbin;
 
          if (wei < 1e-5) continue; // do not show empty bins
@@ -902,7 +909,7 @@
 
          this.toplevel.add(bin);
 
-         if (this.options.Box != 11) {
+         if (this.options.Box !== 11) {
             var helper = new THREE.BoxHelper(bin);
             helper.material.color.set(0x000000);
             helper.material.linewidth = 1.0;

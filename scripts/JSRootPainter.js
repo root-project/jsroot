@@ -1172,7 +1172,8 @@
    }
 
    JSROOT.TObjectPainter.prototype.frame_painter = function() {
-      return this.svg_frame().property('frame_painter');
+      var res = this.svg_frame().property('frame_painter');
+      return (res===undefined) ? null : res;
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function() {
@@ -1221,9 +1222,8 @@
       // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
 
       var pad = this.svg_pad();
-      var frame = this.svg_frame();
 
-      if (pad.empty() && frame.empty()) {
+      if (pad.empty()) {
          // this is a case when object drawn without canvas
 
          var rect = this.main_visible_rect();
@@ -1239,23 +1239,23 @@
       var elem = pad;
       if (this.embed_3d() == 0)
          elem = this.svg_canvas();
-      else
-      if (!frame.empty()) elem = frame;
 
-      var size = { x: 0, y: 0,
-                   width: elem.property("draw_width"),
-                   height: elem.property("draw_height") };
+      var size = { x: 0, y: 0, width: 100, height:100 };
 
-      if (elem === frame) {
-         size.x = frame.property("draw_x");
-         size.y = frame.property("draw_y");
+      if (this.frame_painter()!==null) {
+         elem = this.svg_frame();
+         size.x = elem.property("draw_x");
+         size.y = elem.property("draw_y");
       }
 
-      if (frame.empty() && (this.embed_3d() > 0)) {
-         size.x = Math.floor(size.x + size.width*0.1);
-         size.y = Math.floor(size.y + size.height*0.1);
-         size.width = Math.floor(size.width*0.8);
-         size.height = Math.floor(size.height*0.8);
+      size.width = elem.property("draw_width");
+      size.height = elem.property("draw_height");
+
+      if ((this.frame_painter()===null) && (this.embed_3d() > 0)) {
+         size.x = Math.round(size.x + size.width*0.1);
+         size.y = Math.round(size.y + size.height*0.1);
+         size.width = Math.round(size.width*0.8);
+         size.height = Math.round(size.height*0.8);
       }
 
       return size;
@@ -4611,41 +4611,43 @@
 
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
-      if (obj['_typename'] != this.histo['_typename']) {
-         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj['_typename'] + " expected " + this.histo['_typename']);
+      if (!this.MatchObjectType(obj)) {
+         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj._typename + " expected " + this.histo._typename);
          return false;
       }
 
       // TODO: simple replace of object does not help - one can have different
       // complex relations between histo and stat box, histo and colz axis,
-      // on could have THStack or TMultiGraph object
+      // one could have THStack or TMultiGraph object
       // The only that could be done is update of content
 
       // this.histo = obj;
 
-      this.histo.fEntries = obj.fEntries;
-      this.histo.fTsumw = obj.fTsumw;
-      this.histo.fTsumwx = obj.fTsumwx;
-      this.histo.fTsumwx2 = obj.fTsumwx2;
+      var histo = this.GetObject();
+
+      histo.fEntries = obj.fEntries;
+      histo.fTsumw = obj.fTsumw;
+      histo.fTsumwx = obj.fTsumwx;
+      histo.fTsumwx2 = obj.fTsumwx2;
       if (this.Dimension() == 2) {
-         this.histo.fTsumwy = obj.fTsumwy;
-         this.histo.fTsumwy2 = obj.fTsumwy2;
-         this.histo.fTsumwxy = obj.fTsumwxy;
+         histo.fTsumwy = obj.fTsumwy;
+         histo.fTsumwy2 = obj.fTsumwy2;
+         histo.fTsumwxy = obj.fTsumwxy;
       }
-      this.histo.fArray = obj.fArray;
-      this.histo.fNcells = obj.fNcells;
-      this.histo.fTitle = obj.fTitle;
-      this.histo.fMinimum = obj.fMinimum;
-      this.histo.fMaximum = obj.fMaximum;
-      this.histo.fXaxis.fNbins = obj.fXaxis.fNbins;
-      this.histo.fXaxis.fXmin = obj.fXaxis.fXmin;
-      this.histo.fXaxis.fXmax = obj.fXaxis.fXmax;
-      this.histo.fYaxis.fXmin = obj.fYaxis.fXmin;
-      this.histo.fYaxis.fXmax = obj.fYaxis.fXmax;
-      this.histo.fSumw2 = obj.fSumw2;
+      histo.fArray = obj.fArray;
+      histo.fNcells = obj.fNcells;
+      histo.fTitle = obj.fTitle;
+      histo.fMinimum = obj.fMinimum;
+      histo.fMaximum = obj.fMaximum;
+      histo.fXaxis.fNbins = obj.fXaxis.fNbins;
+      histo.fXaxis.fXmin = obj.fXaxis.fXmin;
+      histo.fXaxis.fXmax = obj.fXaxis.fXmax;
+      histo.fYaxis.fXmin = obj.fYaxis.fXmin;
+      histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+      histo.fSumw2 = obj.fSumw2;
 
       if (this.IsTProfile()) {
-         this.histo.fBinEntries = obj.fBinEntries;
+         histo.fBinEntries = obj.fBinEntries;
       }
 
       this.ScanContent();
