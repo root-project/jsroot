@@ -2240,6 +2240,8 @@
           main_svg = this.draw_g.select(".main_layer");
 
       if (main_svg.empty()) {
+         this.draw_g.append("svg:title").text("");
+
          top_rect = this.draw_g.append("svg:rect");
 
          // append for the moment three layers - for drawing and axis
@@ -2324,8 +2326,8 @@
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
       if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
-      var hints = [], maxlen = 0, lastcolor1 = 0, usecolor1 = false;
-      var textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = this.frame_height();
+      var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
+          textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = this.frame_height();
 
       var pp = this.pad_painter(true);
       var painters = (pp === null) ? null : pp.painters;
@@ -2339,6 +2341,8 @@
           hints.push(hint);
           if ((hint === null) || (pnt === null)) return;
 
+          nhints++;
+
           for (var l=0;l<hint.lines.length;++l)
              if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
 
@@ -2351,13 +2355,13 @@
         });
 
       // end of closing tooltips
-      if (pnt === null) {
+      if ((pnt === null) || (nhints===0)) {
          this.draw_g.select(".upper_layer").select(".objects_hints").remove();
          return;
       }
 
-      // resort y position of all hints, starting from down
-      if (hints.length > 1) {
+      if (nhints > 1) {
+         // resort y position of multiple hints, starting from down
          var curry = height + 10;
          for (var n = 0; n < hints.length; ++n) {
             var p = -1;
@@ -2370,9 +2374,7 @@
             if (hints[p].y + hints[p].height > curry) hints[p].y = curry - hints[p].height;
             curry = hints[p].y - 2*hmargin;
          }
-      } else
-      if ((hints[0] !== null) && (pnt.y > hint.y))
-         hint.y = pnt.y;
+      }
 
       var layer = this.draw_g.select(".upper_layer");
 
@@ -2403,6 +2405,8 @@
             group = hintsg.append("svg:g").attr("class", "painter_hint_"+n);
          else
             group.selectAll("*").remove();
+
+         if (nhints===1) hint.y = pnt.y;
 
          var r = group.append("svg:rect").attr("x", pnt.x+10)
                                          .attr("y", hint.y)
@@ -6761,28 +6765,22 @@
                   .attr("title", tips[1])
                   .style("opacity", "0.3")
                   .property("current_bin", bin);
+      } else {
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:circle")
+                                .attr("class","tooltip_bin")
+                                .style("pointer-events","none")
+                                .attr("r", this.lineatt.width + 3)
+                                .call(this.lineatt.func)
+                                .call(this.fillatt.func);
 
-         return null; // do not show anything
+         if (ttrect.property("current_bin") !== bin)
+            ttrect.attr("cx", Math.round((grx + grx2)/2))
+                  .attr("cy", gry)
+                  .property("current_bin", bin);
       }
 
-
-
-      if (ttrect.empty())
-         ttrect = this.draw_g.append("svg:circle")
-                             .attr("class","tooltip_bin")
-                             .style("pointer-events","none")
-                             .attr("r", this.lineatt.width + 3)
-                             .call(this.lineatt.func)
-                             .call(this.fillatt.func);
-
-      if (ttrect.property("current_bin") !== bin)
-         ttrect.attr("cx", Math.round((grx + grx2)/2))
-               .attr("cy", gry)
-               .property("current_bin", bin);
-
-      var res = { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: [] };
-
-      return res;
+      return { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: tips };
    }
 
 
