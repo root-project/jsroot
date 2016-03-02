@@ -85,7 +85,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 1/03/2016";
+   JSROOT.version = "dev 2/03/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1018,43 +1018,45 @@
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
    JSROOT.CreateTH1 = function(nbinsx) {
-      var histo = JSROOT.Create("TH1I");
-      JSROOT.extend(histo, { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
-      if (nbinsx!=null) {
-         histo['fNcells'] = nbinsx+2;
-         for (var i=0;i<histo['fNcells'];++i) histo['fArray'].push(0);
-         JSROOT.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
+      var histo = JSROOT.extend(JSROOT.Create("TH1I"),
+                   { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+
+      if (nbinsx!==undefined) {
+         histo.fNcells = nbinsx+2;
+         for (var i=0;i<histo.fNcells;++i) histo.fArray.push(0);
+         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
       }
       return histo;
    }
 
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
-      var histo = JSROOT.Create("TH2I");
-      JSROOT.extend(histo, { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
-      if ((nbinsx!=null) && (nbinsy!=null)) {
-         histo['fNcells'] = (nbinsx+2) * (nbinsy+2);
-         for (var i=0;i<histo['fNcells'];++i) histo['fArray'].push(0);
-         JSROOT.extend(histo['fXaxis'], { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
-         JSROOT.extend(histo['fYaxis'], { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
+      var histo = JSROOT.extend(JSROOT.Create("TH2I"),
+                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+
+      if ((nbinsx!==undefined) && (nbinsy!==undefined)) {
+         histo.fNcells = (nbinsx+2) * (nbinsy+2);
+         for (var i=0;i<histo.fNcells;++i) histo.fArray.push(0);
+         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+         JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
       }
       return histo;
    }
 
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
-      var graph = JSROOT.Create("TGraph");
-      JSROOT.extend(graph, { fBits: 0x3000408, fName: "dummy_graph_" + this.id_counter++, fTitle: "dummytitle" });
+      var graph = JSROOT.extend(JSROOT.Create("TGraph"),
+              { fBits: 0x3000408, fName: "dummy_graph_" + this.id_counter++, fTitle: "dummytitle" });
 
       if (npoints>0) {
-         graph['fMaxSize'] = graph['fNpoints'] = npoints;
+         graph.fMaxSize = graph.fNpoints = npoints;
 
          var usex = (typeof xpts == 'object') && (xpts.length === npoints);
          var usey = (typeof ypts == 'object') && (ypts.length === npoints);
 
          for (var i=0;i<npoints;++i) {
-            graph['fX'].push(usex ? xpts[i] : i/npoints);
-            graph['fY'].push(usey ? ypts[i] : i/npoints);
+            graph.fX.push(usex ? xpts[i] : i/npoints);
+            graph.fY.push(usey ? ypts[i] : i/npoints);
          }
       }
 
@@ -1071,8 +1073,8 @@
    JSROOT.addMethods = function(obj, obj_typename) {
       // check object type and add methods if needed
       if (('fBits' in obj) && !('TestBit' in obj)) {
-         obj['TestBit'] = function (f) { return (this['fBits'] & f) != 0; };
-         obj['InvertBit'] = function (f) { this['fBits'] = this['fBits'] ^ (f & 0xffffff); };
+         obj.TestBit = function (f) { return (this.fBits & f) != 0; };
+         obj.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
 
       if (!obj_typename) {
@@ -1080,29 +1082,22 @@
          obj_typename = obj._typename;
       }
 
-      var EErrorType = {
-          kERRORMEAN : 0,
-          kERRORSPREAD : 1,
-          kERRORSPREADI : 2,
-          kERRORSPREADG : 3
-       };
-
-      if ((obj_typename == 'TList') || (obj_typename == 'THashList')) {
-         obj['Clear'] = function() {
-            this['arr'] = new Array;
-            this['opt'] = new Array;
+      if ((obj_typename === 'TList') || (obj_typename === 'THashList')) {
+         obj.Clear = function() {
+            this.arr = [];
+            this.opt = [];
          }
-         obj['Add'] = function(obj,opt) {
-            this['arr'].push(obj);
-            this['opt'].push((opt && typeof opt=='string') ? opt : "");
+         obj.Add = function(obj,opt) {
+            this.arr.push(obj);
+            this.opt.push((opt && typeof opt=='string') ? opt : "");
          }
-         obj['AddFirst'] = function(obj,opt) {
-            this['arr'].unshift(obj);
-            this['opt'].unshift((opt && typeof opt=='string') ? opt : "");
+         obj.AddFirst = function(obj,opt) {
+            this.arr.unshift(obj);
+            this.opt.unshift((opt && typeof opt=='string') ? opt : "");
          }
-         obj['RemoveAt'] = function(indx) {
-            this['arr'].splice(indx, 1);
-            this['opt'].splice(indx, 1);
+         obj.RemoveAt = function(indx) {
+            this.arr.splice(indx, 1);
+            this.opt.splice(indx, 1);
          }
       }
 
@@ -1163,7 +1158,7 @@
          };
       }
 
-      if (obj_typename=='TF1') {
+      if (obj_typename === 'TF1') {
          obj['GetParName'] = function(n) {
             if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
             if ('fNames' in this) return this.fNames[n];
@@ -1194,6 +1189,7 @@
             return oddNodes;
          };
       }
+
       if (obj_typename.indexOf("TH1") == 0 ||
           obj_typename.indexOf("TH2") == 0 ||
           obj_typename.indexOf("TH3") == 0) {
@@ -1248,11 +1244,12 @@
          };
          obj['getBinError'] = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
-            var cont = this.fArray[bin];               // sum of bin w *y
-            var sum  = this.fBinEntries[bin];          // sum of bin weights
-            var err2 = this.fSumw2[bin];               // sum of bin w * y^2
-            var neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
+            var cont = this.fArray[bin],               // sum of bin w *y
+                sum  = this.fBinEntries[bin],          // sum of bin weights
+                err2 = this.fSumw2[bin],               // sum of bin w * y^2
+                neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
             if (sum < 1e-300) return 0;                  // for empty bins
+            var EErrorType = { kERRORMEAN : 0, kERRORSPREAD : 1, kERRORSPREADI : 2, kERRORSPREADG : 3 };
             // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
             if (this.fErrorMode === EErrorType.kERRORSPREADG)
                return 1.0/Math.sqrt(sum);
