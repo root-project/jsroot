@@ -3334,13 +3334,14 @@
             .style("stroke-width", "1px");
 
       this.lineatt = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0);
+      this.fillatt = this.createAttFill(pt);
 
       this.draw_g.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", width)
           .attr("height", height)
-          .call(this.createAttFill(pt).func)
+          .call(this.fillatt.func)
           .call(this.lineatt.func);
 
       if ('PaveDrawFunc' in this)
@@ -3464,8 +3465,8 @@
                .attr("y", y)
                .attr("width", w)
                .attr("height", h)
-               .call(fcolor.func)
-               .call(attline.func);
+               .call(this.fillatt.func)
+               .call(this.lineatt.func);
 
          this.StartTextDrawing(pt.fTextFont, h/1.5, lbl_g);
 
@@ -3988,16 +3989,12 @@
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.THistPainter.prototype.GetObject = function() {
-      return this.histo;
-   }
-
    JSROOT.THistPainter.prototype.IsDummyHisto = function() {
       return (this.histo==null) || !this.draw_content || (this.options.Axis>0);
    }
 
    JSROOT.THistPainter.prototype.IsTProfile = function() {
-      return this.histo && this.histo['_typename'] == 'TProfile';
+      return this.MatchObjectType('TProfile');
    }
 
    JSROOT.THistPainter.prototype.IsTH2Poly = function() {
@@ -6880,17 +6877,14 @@
 
    JSROOT.Painter.drawText = function(divid, text) {
       var painter = new JSROOT.TObjectPainter(text);
-      painter.text = text;
       painter.SetDivId(divid, 2);
 
       painter['Redraw'] = function() {
-         var w = this.pad_width(),
-             h = this.pad_height(),
-             use_pad = true,
-             pos_x = this.text.fX,
-             pos_y = this.text.fY;
+         var w = this.pad_width(), h = this.pad_height(),
+             use_pad = true, text = this.GetObject(),
+             pos_x = text.fX, pos_y = text.fY;
 
-         if (this.text.TestBit(JSROOT.BIT(14))) {
+         if (text.TestBit(JSROOT.BIT(14))) {
             // NDC coordiantes
             pos_x = pos_x * w;
             pos_y = (1 - pos_y) * h;
@@ -6904,36 +6898,32 @@
                   pos_x = this.ConvertToNDC("x", pos_x) * w;
                   pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
                } else {
-                  this.text.fTextAlign = 22;
+                  text.fTextAlign = 22;
                   pos_x = w/2;
                   pos_y = h/2;
-                  if (this.text.fTextSize === 0) this.text.fTextSize = 0.05;
-                  if (this.text.fTextColor === 0) this.text.fTextColor = 1;
+                  if (text.fTextSize === 0) text.fTextSize = 0.05;
+                  if (text.fTextColor === 0) text.fTextColor = 1;
                }
 
          this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
 
-         var tcolor = JSROOT.Painter.root_colors[this.text.fTextColor],
+         var tcolor = JSROOT.Painter.root_colors[text.fTextColor],
                       latex_kind = 0, fact = 1.;
 
-         if (this.text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-         if (this.text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+         if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
+         if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
 
-         this.StartTextDrawing(this.text.fTextFont, Math.round(this.text.fTextSize*Math.min(w,h)*fact));
+         this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
 
-         this.DrawText(this.text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, this.text.fTitle, tcolor, latex_kind);
+         this.DrawText(text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, text.fTitle, tcolor, latex_kind);
 
          this.FinishTextDrawing();
       }
 
       painter['UpdateObject'] = function(obj) {
-         if (this.text._typename !== obj._typename) return false;
-         this.text.fTitle = obj.fTitle;
+         if (!MatchObjectType(obj)) return false;
+         this.GetObject().fTitle = obj.fTitle;
          return true;
-      }
-
-      painter['GetObject'] = function() {
-         return this.text;
       }
 
       painter.Redraw();
