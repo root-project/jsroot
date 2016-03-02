@@ -1061,24 +1061,22 @@
 
    JSROOT.TestGeoAttBit = function(volume, f) {
       if (!('fGeoAtt' in volume)) return false;
-      return (volume['fGeoAtt'] & f) != 0;
+      return (volume.fGeoAtt & f) !== 0;
    }
 
    JSROOT.ToggleGeoAttBit = function(volume, f) {
       if (!('fGeoAtt' in volume)) return false;
 
-      volume['fGeoAtt'] = volume['fGeoAtt'] ^ (f & 0xffffff);
+      volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
    JSROOT.TGeoPainter = function( geometry ) {
-      JSROOT.TObjectPainter.call( this, geometry );
-
-      this.Cleanup(true);
-
-      if ((geometry !== null) && (geometry['_typename'].indexOf('TGeoVolume') === 0))
+      if ((geometry !== null) && (geometry._typename.indexOf('TGeoVolume') === 0))
          geometry = { _typename:"TGeoNode", fVolume: geometry, fName:"TopLevel" };
 
-      this._geometry = geometry;
+      JSROOT.TObjectPainter.call(this, geometry);
+
+      this.Cleanup(true);
    }
 
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
@@ -1104,10 +1102,6 @@
          }
       }];
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
-   }
-
-   JSROOT.TGeoPainter.prototype.GetObject = function() {
-      return this._geometry;
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
@@ -1796,13 +1790,13 @@
 
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
-      if (this._geometry['_typename'] == "TGeoNode")  {
+      if (this.MatchObjectType("TGeoNode"))  {
          this._nodedraw = true;
-         this._stack = [ { toplevel: this._toplevel, node: this._geometry, main: true } ];
+         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), main: true } ];
       }
-      else if (this._geometry['_typename'] == 'TEveGeoShapeExtract') {
+      else if (this.MatchObjectType('TEveGeoShapeExtract')) {
          this._nodedraw = false;
-         this._stack = [ { toplevel: this._toplevel, node: this._geometry, main: true } ];
+         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), main: true } ];
       }
 
       this.accountClear();
@@ -1866,7 +1860,7 @@
       var tm1 = new Date();
 
       var arg = { cnt : [], maxlvl: -1 };
-      var cnt = this.CountGeoVolumes(this._geometry, arg);
+      var cnt = this.CountGeoVolumes(this.GetObject(), arg);
 
       var res = 'Total number: ' + cnt + '<br/>';
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
@@ -1877,13 +1871,13 @@
 
       if (arg.viscnt === 0) {
          arg.clear(); arg.maxlvl = 9999;
-         cnt = this.CountGeoVolumes(this._geometry, arg);
+         cnt = this.CountGeoVolumes(this.GetObject(), arg);
       }
 
       res += "Visible volumes: " + arg.viscnt + '<br/>';
 
       if (cnt<200000) {
-         this.ScanUniqueVisVolumes(this._geometry, 0, arg);
+         this.ScanUniqueVisVolumes(this.GetObject(), 0, arg);
 
          for (var n=0;n<arg.map.length;++n)
             if (arg.map[n]._refcnt > 1) {
@@ -1927,13 +1921,13 @@
 
       this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
 
-      var total = this.CountGeoVolumes(this._geometry, this._data);
+      var total = this.CountGeoVolumes(this.GetObject(), this._data);
 
       // if no any volume was selected, probably it is because of visibility flags
       if ((total>0) && (this._data.viscnt == 0) && (this.options.maxlvl < 0)) {
          this._data.clear();
          this._data.maxlvl = 1111;
-         total = this.CountGeoVolumes(this._geometry, this._data);
+         total = this.CountGeoVolumes(this.GetObject(), this._data);
       }
 
       var maxlimit = this._webgl ? 1e7 : 1e4;
@@ -1945,7 +1939,7 @@
             if (sum > maxlimit) {
                this._data.maxlvl = lvl - 1;
                this._data.clear();
-               this.CountGeoVolumes(this._geometry, this._data);
+               this.CountGeoVolumes(this.GetObject(), this._data);
                break;
             }
          }
@@ -2217,58 +2211,46 @@
 
    // ===================================================================================
 
-   JSROOT.TAxis3DPainter = function( axis ) {
-      JSROOT.TObjectPainter.call( this, axis );
-
-      this.axis = axis;
-   }
-
-   JSROOT.TAxis3DPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
-
-   JSROOT.TAxis3DPainter.prototype.GetObject = function() {
-      return this.axis;
-   }
-
-   JSROOT.TAxis3DPainter.prototype.Draw3DAxis = function() {
-      var main = this.main_painter();
-
-      if ((main === null) && ('_main' in this.axis))
-         main = this.axis._main; // simple workaround to get geo painter
-
-      if ((main === null) || (main._toplevel === undefined))
-         return console.warn('no geo object found for 3D axis drawing');
-
-      var box = new THREE.Box3().setFromObject(main._toplevel);
-
-      this.xmin = box.min.x; this.xmax = box.max.x;
-      this.ymin = box.min.y; this.ymax = box.max.y;
-      this.zmin = box.min.z; this.zmax = box.max.z;
-
-      this.options = { Logx: false, Logy: false, Logz: false };
-
-      this.size3d = 0; // use min/max values directly as graphical coordinates
-
-      this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
-
-      this.toplevel = main._toplevel;
-
-      this.DrawXYZ();
-
-      main.adjustCameraPosition();
-
-      main.Render3D();
-   }
-
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
 
-      JSROOT.extend(this, new JSROOT.TAxis3DPainter(axis));
+      var painter = new JSROOT.TObjectPainter(axis);
 
       if (!('_main' in axis))
-         this.SetDivId(divid);
+         painter.SetDivId(divid);
 
-      this.Draw3DAxis();
+      painter['Draw3DAxis'] = function() {
+         var main = this.main_painter();
 
-      return this.DrawingReady();
+         if ((main === null) && ('_main' in this.GetObject()))
+            main = this.GetObject()._main; // simple workaround to get geo painter
+
+         if ((main === null) || (main._toplevel === undefined))
+            return console.warn('no geo object found for 3D axis drawing');
+
+         var box = new THREE.Box3().setFromObject(main._toplevel);
+
+         this.xmin = box.min.x; this.xmax = box.max.x;
+         this.ymin = box.min.y; this.ymax = box.max.y;
+         this.zmin = box.min.z; this.zmax = box.max.z;
+
+         this.options = { Logx: false, Logy: false, Logz: false };
+
+         this.size3d = 0; // use min/max values directly as graphical coordinates
+
+         this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
+
+         this.toplevel = main._toplevel;
+
+         this.DrawXYZ();
+
+         main.adjustCameraPosition();
+
+         main.Render3D();
+      }
+
+      painter.Draw3DAxis();
+
+      return painter.DrawingReady();
    }
 
    // ===============================================================================
