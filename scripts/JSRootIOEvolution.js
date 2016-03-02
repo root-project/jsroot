@@ -406,19 +406,21 @@
             streamer[n].func(this, obj);
 
          this.CheckBytecount(ver, classname);
+         // methods will be assigned by last entry in the streamer
       }
       else if (classname == 'TQObject') {
          // skip TQObject
       }
       else if (classname == "TBasket") {
          this.ReadTBasket(obj);
+         JSROOT.addMethods(obj);
       } else {
          // just skip bytes belonging to not-recognized object
          var ver = this.ReadVersion();
          this.CheckBytecount(ver);
+         JSROOT.addMethods(obj);
       }
 
-      JSROOT.addMethods(obj);
 
       return obj;
    }
@@ -1282,6 +1284,23 @@
       return this.ReadObject(dir_name, cycle, readdir_callback);
    };
 
+   JSROOT.TFile.prototype.AddMethods = function(clname, streamer) {
+      // create additional entry in the streamer, which sets all methods of the class
+
+      if (streamer === null) return streamer;
+
+      var methods = JSROOT.getMethods(clname);
+      if (methods !== null)
+         streamer.push({
+            m: methods,
+            func: function(buf,obj) {
+              JSROOT.extend(obj, this.m);
+            }
+         });
+
+      return streamer;
+   }
+
    JSROOT.TFile.prototype.GetStreamer = function(clname) {
       // return the streamer for the class 'clname', from the list of streamers
       // or generate it from the streamer infos and add it to the list
@@ -1302,7 +1321,7 @@
             obj.fUniqueID = buf.ntou4();
             obj.fBits = buf.ntou4();
          } });
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == 'TNamed') {
@@ -1313,7 +1332,7 @@
             obj.fName = buf.ReadTString();
             obj.fTitle = buf.ReadTString();
          } });
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if ((clname == 'TList') || (clname == 'THashList')) {
@@ -1334,7 +1353,7 @@
                }
             }
          } });
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == 'TClonesArray') {
@@ -1368,7 +1387,7 @@
             //   list['arr'].push(obj);
             //}
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == 'TCanvas') {
@@ -1402,7 +1421,7 @@
             buf.ntou1();   // ignore b << TestBit(kAutoExec);
             buf.ntou1();   // ignore b << TestBit(kMenuBar);
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == 'TObjArray') {
@@ -1420,7 +1439,7 @@
             for (var i = 0; i < nobjects; ++i)
                list.arr.push(buf.ReadObjectAny());
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == 'TPolyMarker3D') {
@@ -1442,7 +1461,7 @@
             else
                marker.fName = "TPolyMarker3D";
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerInfo") {
@@ -1456,7 +1475,7 @@
                streamerinfo.fElements = buf.ReadObjectAny();
             }
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerElement") {
@@ -1490,7 +1509,7 @@
             if (ver > 3) {
             }
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerBase") {
@@ -1503,7 +1522,7 @@
                elem.fBaseVersion = buf.ntou4();
             }
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if ((clname == "TStreamerBasicPointer") || (clname == "TStreamerLoop")) {
@@ -1516,7 +1535,7 @@
                elem.fCountClass = buf.ReadTString();
             }
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerSTL") {
@@ -1537,7 +1556,7 @@
             if (buf.last_read_version > 1)
                buf.ClassStreamer(elem, "TStreamerElement");
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerObjectAnyPointer") {
@@ -1545,7 +1564,7 @@
             if (buf.last_read_version > 0)
                buf.ClassStreamer(elem, "TStreamerElement");
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
       }
 
       var s_i = null;
@@ -1559,236 +1578,239 @@
          return null;
       }
 
-      if (s_i.fElements !== null) {
-         for (var j=0; j<s_i.fElements.arr.length; ++j) {
-            // extract streamer info for each class member
-            var element = s_i.fElements.arr[j];
+      if (s_i.fElements === null)
+         return this.AddMethods(clname, streamer);
 
-            var member = { name: element.fName, type: element.fType };
 
-            if (element.fTypeName === 'BASE') {
-               if (JSROOT.IO.GetArrayKind(member['name']) > 0) {
-                  // this is workaround for arrays as base class
-                  // we create 'fArray' member, which read as any other data member
-                  member.name = 'fArray';
-                  member.type = JSROOT.IO.kAny;
-               } else {
-                  // create streamer for base class
-                  member.type = JSROOT.IO.kBase;
-                  this.GetStreamer(element.fName);
-               }
+      for (var j=0; j<s_i.fElements.arr.length; ++j) {
+         // extract streamer info for each class member
+         var element = s_i.fElements.arr[j];
+
+         var member = { name: element.fName, type: element.fType };
+
+         if (element.fTypeName === 'BASE') {
+            if (JSROOT.IO.GetArrayKind(member['name']) > 0) {
+               // this is workaround for arrays as base class
+               // we create 'fArray' member, which read as any other data member
+               member.name = 'fArray';
+               member.type = JSROOT.IO.kAny;
+            } else {
+               // create streamer for base class
+               member.type = JSROOT.IO.kBase;
+               this.GetStreamer(element.fName);
             }
-
-            switch (member.type) {
-               case JSROOT.IO.kBase:
-                  member.func =  function(buf, obj) {
-                     buf.ClassStreamer(obj, this.name);
-                  };
-                  break;
-               case JSROOT.IO.kTString:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }; break;
-               case JSROOT.IO.kAnyP:
-               case JSROOT.IO.kObjectP:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ReadObjectAny(); }; break;
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
-               case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-                  if (element.fArrayDim === 1) {
-                     member.arrlength = element.fArrayLength;
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
-                     };
-                  } else
-                  if (element.fArrayDim === 2) {
-                     member.arrlength = element.fMaxIndex[1];
-                     member.maxindx = element.fMaxIndex[0];
-                     member.func = function(buf, obj) {
-                        obj[this.name] = [];
-                        for (var n=0;n<this.maxindx;++n)
-                           obj[this.name].push(buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL));
-                     };
-                  } else {
-                     member.maxdim = element.fArrayDim - 1;
-                     member.maxindx = element.fMaxIndex;
-                     member.arrlength = element.fArrayLength;
-                     member.func = function(buf, obj) {
-                        var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
-                        var indx = [], arr = [];
-                        for (var n=0; n<=this.maxdim; ++n) { indx[n] = 0; arr[n] = []; }
-                        for (var i=0;i<tmp.length;++i) {
-                           arr[this.maxdim].push(tmp[i]);
-                           ++indx[this.maxdim];
-                           var k = this.maxdim;
-                           while ((indx[k] === this.maxindx[k]) && (k>0)) {
-                              indx[k] = 0;
-                              arr[k-1].push(arr[k]);
-                              arr[k] = [];
-                              ++indx[--k];
-                           }
-                        }
-                        obj[this.name] = arr[0];
-                     };
-                  }
-                  break;
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
-               case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
-                  member.cntname = element.fCountName;
-                  member.func = function(buf, obj) {
-                     if (buf.ntou1() === 1)
-                        obj[this.name] = buf.ReadFastArray(obj[this.cntname], this.type - JSROOT.IO.kOffsetP);
-                     else
-                        obj[this.name] = new Array();
-                  };
-                  break;
-               case JSROOT.IO.kAny:
-               case JSROOT.IO.kAnyp:
-               case JSROOT.IO.kObjectp:
-               case JSROOT.IO.kObject:
-                  var classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
-                  if (classname.charAt(classname.length-1) == "*")
-                     classname = classname.substr(0, classname.length - 1);
-
-                  var arrkind = JSROOT.IO.GetArrayKind(classname);
-
-                  if (arrkind > 0) {
-                     member.arrkind = arrkind;
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
-                     };
-                  } else {
-                     member.classname = classname;
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ClassStreamer({}, this.classname);
-                     };
-                  }
-                  break;
-               case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
-               case JSROOT.IO.kOffsetL + JSROOT.IO.kAny:
-               case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
-               case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
-                  member.arrlength = element.fArrayLength;
-                  var classname = element.fTypeName;
-                  if (classname.charAt(classname.length-1) == "*")
-                     classname = classname.substr(0, classname.length - 1);
-
-                  var arrkind = JSROOT.IO.GetArrayKind(classname);
-
-                  if (arrkind > 0) {
-                     member.arrkind = arrkind;
-                     member.func = function(buf, obj) {
-                        obj[this.name] = [];
-                        for (var k=0;k<this.arrlength;++k)
-                           obj[this.name].push(buf.ReadFastArray(buf.ntou4(), this.arrkind));
-                     };
-                  } else {
-                     member.classname = classname;
-                     member.func = function(buf, obj) {
-                        obj[this.name] = [];
-                        for (var k=0;k<this.arrlength;++k)
-                           obj[this.name].push(buf.ClassStreamer({}, this.classname));
-                     };
-                  }
-                  break;
-               case JSROOT.IO.kChar:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
-               case JSROOT.IO.kShort:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
-               case JSROOT.IO.kInt:
-               case JSROOT.IO.kCounter:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntoi4(); }; break;
-               case JSROOT.IO.kLong:
-               case JSROOT.IO.kLong64:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntoi8(); }; break;
-               case JSROOT.IO.kDouble:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntod(); }; break;
-               case JSROOT.IO.kFloat:
-               case JSROOT.IO.kDouble32:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntof(); }; break;
-               case JSROOT.IO.kLegacyChar:
-               case JSROOT.IO.kUChar:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntou1(); }; break;
-               case JSROOT.IO.kUShort:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntou2(); }; break;
-               case JSROOT.IO.kUInt:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntou4(); }; break;
-               case JSROOT.IO.kULong64:
-               case JSROOT.IO.kULong:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
-
-               case JSROOT.IO.kBool:
-                  member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
-               case JSROOT.IO.kStreamLoop:
-               case JSROOT.IO.kStreamer:
-                  member.cntname = element.fCountName;
-                  member.typename = element.fTypeName;
-                  member.func = function(buf,obj) {
-                     var ver = buf.ReadVersion();
-                     var res = null;
-
-                     if (this.typename == "TString*") {
-                        var cnt = obj[this.cntname];
-                        res = new Array(cnt);
-                        for (var i = 0; i < cnt; ++i )
-                           res[i] = buf.ReadTString();
-                     } else
-                     if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kDouble); else
-                     if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kInt); else
-                     if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kFloat); else
-                     if (this.typename == "vector<TObject*>") {
-                        var n = buf.ntoi4();
-                        res = [];
-                        for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
-                     }  else
-                     if (this.typename.indexOf("map<TString,int")==0) {
-                        var n = buf.ntoi4();
-                        res = [];
-                        for (var i=0;i<n;++i) {
-                           var str = buf.ReadTString();
-                           var val = buf.ntoi4();
-                           res.push({ first: str, second: val});
-                        }
-                     } else {
-                        JSROOT.console('failed to stream element of type ' + this.typename);
-                     }
-
-                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
-
-                     obj[this.name] = res;
-                  };
-                  break;
-               default:
-                  if (JSROOT.fUserStreamers !== null)
-                     member.func = JSROOT.fUserStreamers[element.fTypeName];
-
-                  if (typeof member.func !== 'function') {
-                     alert('failed to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
-                     member.func = function(buf,obj) {};  // do nothing, fix in the future
-                  }
-            }
-
-            streamer.push(member);
          }
+
+         switch (member.type) {
+            case JSROOT.IO.kBase:
+               member.func =  function(buf, obj) {
+                  buf.ClassStreamer(obj, this.name);
+               };
+               break;
+            case JSROOT.IO.kTString:
+               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }; break;
+            case JSROOT.IO.kAnyP:
+            case JSROOT.IO.kObjectP:
+               member.func = function(buf,obj) { obj[this.name] = buf.ReadObjectAny(); }; break;
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
+               if (element.fArrayDim === 1) {
+                  member.arrlength = element.fArrayLength;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
+                  };
+               } else
+               if (element.fArrayDim === 2) {
+                  member.arrlength = element.fMaxIndex[1];
+                  member.maxindx = element.fMaxIndex[0];
+                  member.func = function(buf, obj) {
+                     obj[this.name] = [];
+                     for (var n=0;n<this.maxindx;++n)
+                        obj[this.name].push(buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL));
+                  };
+               } else {
+                  member.maxdim = element.fArrayDim - 1;
+                  member.maxindx = element.fMaxIndex;
+                  member.arrlength = element.fArrayLength;
+                  member.func = function(buf, obj) {
+                     var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
+                     var indx = [], arr = [];
+                     for (var n=0; n<=this.maxdim; ++n) { indx[n] = 0; arr[n] = []; }
+                     for (var i=0;i<tmp.length;++i) {
+                        arr[this.maxdim].push(tmp[i]);
+                        ++indx[this.maxdim];
+                        var k = this.maxdim;
+                        while ((indx[k] === this.maxindx[k]) && (k>0)) {
+                           indx[k] = 0;
+                           arr[k-1].push(arr[k]);
+                           arr[k] = [];
+                           ++indx[--k];
+                        }
+                     }
+                     obj[this.name] = arr[0];
+                  };
+               }
+               break;
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
+               member.cntname = element.fCountName;
+               member.func = function(buf, obj) {
+                  if (buf.ntou1() === 1)
+                     obj[this.name] = buf.ReadFastArray(obj[this.cntname], this.type - JSROOT.IO.kOffsetP);
+                  else
+                     obj[this.name] = new Array();
+               };
+               break;
+            case JSROOT.IO.kAny:
+            case JSROOT.IO.kAnyp:
+            case JSROOT.IO.kObjectp:
+            case JSROOT.IO.kObject:
+               var classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
+               if (classname.charAt(classname.length-1) == "*")
+                  classname = classname.substr(0, classname.length - 1);
+
+               var arrkind = JSROOT.IO.GetArrayKind(classname);
+
+               if (arrkind > 0) {
+                  member.arrkind = arrkind;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
+                  };
+               } else {
+                  member.classname = classname;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ClassStreamer({}, this.classname);
+                  };
+               }
+               break;
+            case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
+            case JSROOT.IO.kOffsetL + JSROOT.IO.kAny:
+            case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
+            case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
+               member.arrlength = element.fArrayLength;
+               var classname = element.fTypeName;
+               if (classname.charAt(classname.length-1) == "*")
+                  classname = classname.substr(0, classname.length - 1);
+
+               var arrkind = JSROOT.IO.GetArrayKind(classname);
+
+               if (arrkind > 0) {
+                  member.arrkind = arrkind;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = [];
+                     for (var k=0;k<this.arrlength;++k)
+                        obj[this.name].push(buf.ReadFastArray(buf.ntou4(), this.arrkind));
+                  };
+               } else {
+                  member.classname = classname;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = [];
+                     for (var k=0;k<this.arrlength;++k)
+                        obj[this.name].push(buf.ClassStreamer({}, this.classname));
+                  };
+               }
+               break;
+            case JSROOT.IO.kChar:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
+            case JSROOT.IO.kShort:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
+            case JSROOT.IO.kInt:
+            case JSROOT.IO.kCounter:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi4(); }; break;
+            case JSROOT.IO.kLong:
+            case JSROOT.IO.kLong64:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi8(); }; break;
+            case JSROOT.IO.kDouble:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntod(); }; break;
+            case JSROOT.IO.kFloat:
+            case JSROOT.IO.kDouble32:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntof(); }; break;
+            case JSROOT.IO.kLegacyChar:
+            case JSROOT.IO.kUChar:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou1(); }; break;
+            case JSROOT.IO.kUShort:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou2(); }; break;
+            case JSROOT.IO.kUInt:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou4(); }; break;
+            case JSROOT.IO.kULong64:
+            case JSROOT.IO.kULong:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
+
+            case JSROOT.IO.kBool:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
+            case JSROOT.IO.kStreamLoop:
+            case JSROOT.IO.kStreamer:
+               member.cntname = element.fCountName;
+               member.typename = element.fTypeName;
+               member.func = function(buf,obj) {
+                  var ver = buf.ReadVersion();
+                  var res = null;
+
+                  if (this.typename == "TString*") {
+                     var cnt = obj[this.cntname];
+                     res = new Array(cnt);
+                     for (var i = 0; i < cnt; ++i )
+                        res[i] = buf.ReadTString();
+                  } else
+                  if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kDouble); else
+                  if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kInt); else
+                  if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kFloat); else
+                  if (this.typename == "vector<TObject*>") {
+                     var n = buf.ntoi4();
+                     res = [];
+                     for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
+                  }  else
+                  if (this.typename.indexOf("map<TString,int")==0) {
+                     var n = buf.ntoi4();
+                     res = [];
+                     for (var i=0;i<n;++i) {
+                        var str = buf.ReadTString();
+                        var val = buf.ntoi4();
+                        res.push({ first: str, second: val});
+                     }
+                  } else {
+                     JSROOT.console('failed to stream element of type ' + this.typename);
+                  }
+
+                  if (!buf.CheckBytecount(ver, this.typename)) res = null;
+
+                  obj[this.name] = res;
+               };
+               break;
+            default:
+               if (JSROOT.fUserStreamers !== null)
+                  member.func = JSROOT.fUserStreamers[element.fTypeName];
+
+               if (typeof member.func !== 'function') {
+                  alert('failed to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+                  member.func = function(buf,obj) {};  // do nothing, fix in the future
+               }
+         }
+
+         streamer.push(member);
       }
-      return streamer;
+
+      return this.AddMethods(clname, streamer);
    };
 
    JSROOT.TFile.prototype.Delete = function() {

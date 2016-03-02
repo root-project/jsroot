@@ -1008,8 +1008,8 @@
             break;
       }
 
-      JSROOT.addMethods(obj, typename);
       obj._typename = typename;
+      this.addMethods(obj);
       return obj;
    }
 
@@ -1068,59 +1068,61 @@
       for(var i=0; i<arguments.length; ++i)
           mgraph.fGraphs.Add(arguments[i], "");
       return mgraph;
-    }
+   }
 
-   JSROOT.addMethods = function(obj, obj_typename) {
-      // check object type and add methods if needed
-      if (('fBits' in obj) && !('TestBit' in obj)) {
-         obj.TestBit = function (f) { return (this.fBits & f) != 0; };
-         obj.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
+   JSROOT.methodsCache = {}; // variable used to keep methods for known classes
+
+   JSROOT.getMethods = function(typename, obj) {
+      var m = JSROOT.methodsCache[typename];
+
+      if (m !== undefined) return m;
+
+      m = {};
+
+      if ((typename=="TObject") || (typename=="TNamed") || ((obj!==undefined) && ('fBits' in obj))) {
+         m.TestBit = function (f) { return (this.fBits & f) != 0; };
+         m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
       }
 
-      if (!obj_typename) {
-         if (!('_typename' in obj)) return;
-         obj_typename = obj._typename;
-      }
-
-      if ((obj_typename === 'TList') || (obj_typename === 'THashList')) {
-         obj.Clear = function() {
+      if ((typename === 'TList') || (typename === 'THashList')) {
+         m.Clear = function() {
             this.arr = [];
             this.opt = [];
          }
-         obj.Add = function(obj,opt) {
+         m.Add = function(obj,opt) {
             this.arr.push(obj);
             this.opt.push((opt && typeof opt=='string') ? opt : "");
          }
-         obj.AddFirst = function(obj,opt) {
+         m.AddFirst = function(obj,opt) {
             this.arr.unshift(obj);
             this.opt.unshift((opt && typeof opt=='string') ? opt : "");
          }
-         obj.RemoveAt = function(indx) {
+         m.RemoveAt = function(indx) {
             this.arr.splice(indx, 1);
             this.opt.splice(indx, 1);
          }
       }
 
-      if ((obj_typename == "TPaveText") || (obj_typename == "TPaveStats")) {
-         obj['AddText'] = function(txt) {
-            this['fLines'].Add({'fTitle' : txt, "fTextColor" : 1 });
+      if ((typename === "TPaveText") || (typename === "TPaveStats")) {
+         m.AddText = function(txt) {
+            this.fLines.Add({'fTitle' : txt, "fTextColor" : 1 });
          }
-         obj['Clear'] = function() {
-            this['fLines'].Clear();
+         m.Clear = function() {
+            this.fLines.Clear();
          }
       }
 
-      if ((obj_typename.indexOf("TFormula") != -1) || (obj_typename.indexOf("TF1") == 0)) {
-         obj['addFormula'] = function(obj) {
+      if ((typename.indexOf("TFormula") != -1) || (typename.indexOf("TF1") == 0)) {
+         m.addFormula = function(obj) {
             if (obj==null) return;
-            if (!('formulas' in this)) this['formulas'] = [];
-            this['formulas'].push(obj);
+            if (!('formulas' in this)) this.formulas = [];
+            this.formulas.push(obj);
          }
 
-         obj['evalPar'] = function(x) {
-            if (! ('_func' in this) || (this['_title'] != this['fTitle'])) {
+         m.evalPar = function(x) {
+            if (! ('_func' in this) || (this._title !== this.fTitle)) {
 
-              var _func = this['fTitle'];
+              var _func = this.fTitle;
 
               if ('formulas' in this)
                  for (var i=0;i<this.formulas.length;++i) {
@@ -1132,7 +1134,7 @@
               _func = _func.replace('TMath::Exp(', 'Math.exp(');
               _func = _func.replace('TMath::Abs(', 'Math.abs(');
               if (typeof JSROOT.Math == 'object') {
-                 this['_math'] = JSROOT.Math;
+                 this._math = JSROOT.Math;
                  _func = _func.replace('TMath::Prob(', 'this._math.Prob(');
                  _func = _func.replace('gaus(', 'this._math.gaus(this, x, ');
                  _func = _func.replace('gausn(', 'this._math.gausn(this, x, ');
@@ -1141,43 +1143,43 @@
                  _func = _func.replace('landaun(', 'this._math.landaun(this, x, ');
               }
               _func = _func.replace('pi', 'Math.PI');
-              for (var i=0;i<this['fNpar'];++i) {
+              for (var i=0;i<this.fNpar;++i) {
                  while(_func.indexOf('['+i+']') != -1)
-                    _func = _func.replace('['+i+']', this['fParams'][i]);
+                    _func = _func.replace('['+i+']', this.fParams[i]);
               }
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
               _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
 
-               this['_func'] = new Function("x", "return " + _func).bind(this);
-               this['_title'] = this['fTitle'];
+               this._func = new Function("x", "return " + _func).bind(this);
+               this._title = this['fTitle'];
             }
 
-            return this['_func'](x);
+            return this._func(x);
          };
       }
 
-      if (obj_typename === 'TF1') {
-         obj['GetParName'] = function(n) {
+      if (typename === 'TF1') {
+         m.GetParName = function(n) {
             if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
             if ('fNames' in this) return this.fNames[n];
             return "Par"+n;
          }
-         obj['GetParValue'] = function(n) {
+         m.GetParValue = function(n) {
             if (('fFormula' in this) && ('fClingParameters' in this.fFormula)) return this.fFormula.fClingParameters[n];
             if (('fParams' in this) && (this.fParams!=null))  return this.fParams[n];
             return null;
          }
       }
 
-      if ((obj_typename.indexOf("TGraph") == 0) || (obj_typename == "TCutG")) {
+      if ((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) {
          // check if point inside figure specified by the TGrpah
-         obj['IsInside'] = function(xp,yp) {
-            var j = this['fNpoints'] - 1, x = this['fX'], y = this['fY'];
+         m.IsInside = function(xp,yp) {
+            var j = this.fNpoints - 1, x = this.fX, y = this.fY;
             var oddNodes = false;
 
-            for (var i=0; i<this['fNpoints']; ++i) {
+            for (var i=0; i<this.fNpoints; ++i) {
                if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
                   if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
                      oddNodes = !oddNodes;
@@ -1190,10 +1192,10 @@
          };
       }
 
-      if (obj_typename.indexOf("TH1") == 0 ||
-          obj_typename.indexOf("TH2") == 0 ||
-          obj_typename.indexOf("TH3") == 0) {
-         obj['getBinError'] = function(bin) {
+      if (typename.indexOf("TH1") == 0 ||
+          typename.indexOf("TH2") == 0 ||
+          typename.indexOf("TH3") == 0) {
+         m.getBinError = function(bin) {
             //   -*-*-*-*-*Return value of error associated to bin number bin*-*-*-*-*
             //    if the sum of squares of weights has been defined (via Sumw2),
             //    this function returns the sqrt(sum of w2).
@@ -1204,7 +1206,7 @@
                return Math.sqrt(this.fSumw2[bin]);
             return Math.sqrt(Math.abs(this.fArray[bin]));
          };
-         obj['setBinContent'] = function(bin, content) {
+         m.setBinContent = function(bin, content) {
             // Set bin content - only trival case, without expansion
             this.fEntries++;
             this.fTsumw = 0;
@@ -1212,37 +1214,41 @@
                this.fArray[bin] = content;
          };
       }
-      if (obj_typename.indexOf("TH1") == 0) {
-         obj['getBin'] = function(x) { return x; }
-         obj['getBinContent'] = function(bin) { return this.fArray[bin]; }
+
+      if (typename.indexOf("TH1") == 0) {
+         m.getBin = function(x) { return x; }
+         m.getBinContent = function(bin) { return this.fArray[bin]; }
       }
-      if (obj_typename.indexOf("TH2") == 0) {
-         obj['getBin'] = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
-         obj['getBinContent'] = function(x, y) { return this.fArray[this.getBin(x, y)]; }
+
+      if (typename.indexOf("TH2") == 0) {
+         m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
+         m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
       }
-      if (obj_typename.indexOf("TH3") == 0) {
-         obj['getBin'] = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
-         obj['getBinContent'] = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
+
+      if (typename.indexOf("TH3") == 0) {
+         m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
+         m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
       }
-      if (obj_typename.indexOf("TProfile") == 0) {
-         obj['getBin'] = function(x) { return x; }
-         obj['getBinContent'] = function(bin) {
-            if (bin < 0 || bin >= this['fNcells']) return 0;
-            if (this['fBinEntries'][bin] < 1e-300) return 0;
-            if (!this['fArray']) return 0;
-            return this['fArray'][bin]/this['fBinEntries'][bin];
+
+      if (typename.indexOf("TProfile") == 0) {
+         m.getBin = function(x) { return x; }
+         m.getBinContent = function(bin) {
+            if (bin < 0 || bin >= this.fNcells) return 0;
+            if (this.fBinEntries[bin] < 1e-300) return 0;
+            if (!this.fArray) return 0;
+            return this.fArray[bin]/this.fBinEntries[bin];
          };
-         obj['getBinEffectiveEntries'] = function(bin) {
-            if (bin < 0 || bin >= this['fNcells']) return 0;
-            var sumOfWeights = this['fBinEntries'][bin];
-            if ( this['fBinSumw2'] == null || this['fBinSumw2'].length != this['fNcells']) {
+         m.getBinEffectiveEntries = function(bin) {
+            if (bin < 0 || bin >= this.fNcells) return 0;
+            var sumOfWeights = this.fBinEntries[bin];
+            if ( this.fBinSumw2 == null || this.fBinSumw2.length != this.fNcells) {
                // this can happen  when reading an old file
                return sumOfWeights;
             }
             var sumOfWeightsSquare = this.fSumw2[bin];
             return ( sumOfWeightsSquare > 0 ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0 );
          };
-         obj['getBinError'] = function(bin) {
+         m.getBinError = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
             var cont = this.fArray[bin],               // sum of bin w *y
                 sum  = this.fBinEntries[bin],          // sum of bin weights
@@ -1272,6 +1278,13 @@
             return (eprim/Math.sqrt(neff));
          };
       }
+
+      JSROOT.methodsCache[typename] = m;
+      return m;
+   };
+
+   JSROOT.addMethods = function(obj) {
+      this.extend(obj, JSROOT.getMethods(obj._typename, obj));
    };
 
    JSROOT.lastFFormat = "";
