@@ -840,9 +840,7 @@
    JSROOT.TH3Painter.prototype.CreateBins = function() {
       var i, j, k, bins = [],
           histo = this.GetObject(),
-          name = this.GetItemName();
-      if ((name==null) || (name=="")) name = histo.fName;
-      if (name.length > 0) name += "<br/>";
+          name = this.GetTipName("<br/>");
 
       for (i = 0; i < this.nbinsx; ++i)
          for (j = 0; j < this.nbinsy; ++j)

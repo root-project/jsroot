@@ -1074,6 +1074,15 @@
       return (typeof arg === 'obbject') && (this.draw_object._typename === arg._typename);
    }
 
+   JSROOT.TObjectPainter.prototype.GetTipName = function(append) {
+      var res = this.GetItemName();
+      if (res===null) res = "";
+      if ((res.length === 0) && ('fName' in this.GetObject()))
+         res = this.GetObject().fName;
+      if ((res.length > 0) && (append!==undefined)) res += append;
+      return res;
+   }
+
    JSROOT.TObjectPainter.prototype.pad_painter = function(active_pad) {
       var can = active_pad ? this.svg_pad() : this.svg_canvas();
       return can.empty() ? null : can.property('pad_painter');
@@ -2676,11 +2685,8 @@
           pmain = this.main_painter(),
           w = this.frame_width(),
           h = this.frame_height(),
-          name = this.GetItemName(),
+          name = this.GetTipName("\n"),
           graph = this.GetObject();
-
-      if ((name==null) || (name=="")) name = graph.fName;
-      if (name.length > 0) name += "\n";
 
       function TooltipText(d) {
          var res = name + "x = " + pmain.AxisAsText("x", d.x) + "\n" +
@@ -6337,9 +6343,7 @@
       var searchmax = false;
       var pmain = this.main_painter();
 
-      var name = this.GetItemName();
-      if ((name==null) || (name=="")) name = this.histo.fName;
-      if (name.length > 0) name += "\n";
+      var name = this.GetTipName("\n");
 
       for (var i = left; i < right; ++i) {
          // if interval wider than specified range, make it shorter
@@ -6700,11 +6704,8 @@
 
       var res = { x: Math.round((grx + grx2)/2), y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: [] };
 
-      if ((this.GetItemName()!=="") && (this.GetItemName()!==null))
-         res.lines.push(this.GetItemName());
-      else
-      if (this.histo.fName !== "")
-         res.lines.push(this.histo.fName);
+      var name = this.GetTipName();
+      if (name.length>0) res.lines.push(name);
 
       res.lines.push("bin = " + (bin+1));
 

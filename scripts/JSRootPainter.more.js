@@ -913,11 +913,8 @@
                      color2: this.fillatt.color,
                      lines: [] };
 
-         if ((this.GetItemName()!=="") && (this.GetItemName()!==null))
-            res.lines.push(this.GetItemName());
-         else
-         if (this.tf1.fName !== "")
-            res.lines.push(this.tf1.fName);
+         var name = this.GetTipName();
+         if (name.length > 0) res.lines.push(name);
 
          var pmain = this.main_painter();
          if (pmain!==null)
@@ -938,10 +935,7 @@
 
          var pthis = this;
          var pmain = this.main_painter();
-
-         var name = this.GetItemName();
-         if ((name==null) || (name=="")) name = this.tf1.fName;
-         if (name.length > 0) name += "\n";
+         var name = this.GetTipName("\n");
 
          this.lineatt = JSROOT.Painter.createAttLine(this.tf1);
          this.fillatt = this.createAttFill(this.tf1);
@@ -2153,24 +2147,25 @@
    }
 
    JSROOT.TH2Painter.prototype.ScanContent = function() {
-      this.fillcolor = JSROOT.Painter.root_colors[this.histo['fFillColor']];
-      // if (this.histo['fFillColor'] == 0) this.fillcolor = '#4572A7'; // why?
+      var i,j,histo = this.GetObject();
 
-      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+      this.fillcolor = JSROOT.Painter.root_colors[histo.fFillColor];
+
+      this.lineatt = JSROOT.Painter.createAttLine(histo);
       if (this.lineatt.color == 'none') this.lineatt.color = '#4572A7';
 
-      this.nbinsx = this.histo['fXaxis']['fNbins'];
-      this.nbinsy = this.histo['fYaxis']['fNbins'];
+      this.nbinsx = histo.fXaxis.fNbins;
+      this.nbinsy = histo.fYaxis.fNbins;
 
       // used in CreateXY method
 
       this.CreateAxisFuncs(true);
 
       // global min/max, used at the moment in 3D drawing
-      this.gminbin = this.gmaxbin = this.histo.getBinContent(1, 1);
-      for (var i = 0; i < this.nbinsx; ++i) {
-         for (var j = 0; j < this.nbinsy; ++j) {
-            var bin_content = this.histo.getBinContent(i + 1, j + 1);
+      this.gminbin = this.gmaxbin = histo.getBinContent(1, 1);
+      for (i = 0; i < this.nbinsx; ++i) {
+         for (j = 0; j < this.nbinsy; ++j) {
+            var bin_content = histo.getBinContent(i + 1, j + 1);
             if (bin_content < this.gminbin) this.gminbin = bin_content; else
             if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
          }
@@ -2181,26 +2176,25 @@
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
-      var stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0;
+      var histo = this.GetObject(),
+          stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
+          stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
+          xleft = this.GetSelectIndex("x", "left"),
+          xright = this.GetSelectIndex("x", "right"),
+          yleft = this.GetSelectIndex("y", "left"),
+          yright = this.GetSelectIndex("y", "right"),
+          xi, xside, xx, yi, yside, yy, zz,
+          res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
-      var res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix : [], xmax: 0, ymax:0, wmax: null };
-      for (var n = 0; n < 9; ++n) res.matrix.push(0);
+      for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
+         xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
+         xx = this.GetBinX(xi - 0.5);
 
-      var xleft = this.GetSelectIndex("x", "left");
-      var xright = this.GetSelectIndex("x", "right");
+         for (yi = 0; yi <= this.nbinsy + 1; ++yi) {
+            yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
+            yy = this.ymin + this.GetBinY(yi - 0.5);
 
-      var yleft = this.GetSelectIndex("y", "left");
-      var yright = this.GetSelectIndex("y", "right");
-
-      for (var xi = 0; xi <= this.nbinsx + 1; ++xi) {
-         var xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
-         var xx = this.GetBinX(xi - 0.5);
-
-         for (var yi = 0; yi <= this.nbinsy + 1; ++yi) {
-            var yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
-            var yy = this.ymin + this.GetBinY(yi - 0.5);
-
-            var zz = this.histo.getBinContent(xi, yi);
+            zz = histo.getBinContent(xi, yi);
 
             res.entries += zz;
 
@@ -2221,13 +2215,13 @@
          }
       }
 
-      if (!this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && (this.histo.fTsumw>0)) {
-         stat_sum0 = this.histo.fTsumw;
-         stat_sumx1 = this.histo.fTsumwx;
-         stat_sumx2 = this.histo.fTsumwx2;
-         stat_sumy1 = this.histo.fTsumwy;
-         stat_sumy2 = this.histo.fTsumwy2;
-         stat_sumxy = this.histo.fTsumwxy;
+      if (!this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && (histo.fTsumw > 0)) {
+         stat_sum0 = histo.fTsumw;
+         stat_sumx1 = histo.fTsumwx;
+         stat_sumx2 = histo.fTsumwx2;
+         stat_sumy1 = histo.fTsumwy;
+         stat_sumy2 = histo.fTsumwy2;
+         stat_sumxy = histo.fTsumwxy;
       }
 
       if (stat_sum0 > 0) {
@@ -2237,16 +2231,16 @@
          res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
       }
 
-      if (res.wmax==null) res.wmax = 0;
+      if (res.wmax===null) res.wmax = 0;
       res.integral = stat_sum0;
 
-      if (this.histo.fEntries > 1) res.entries = this.histo.fEntries;
+      if (histo.fEntries > 1) res.entries = histo.fEntries;
 
       return res;
    }
 
    JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
-      if (!this.histo) return false;
+      if (this.GetObject() === null) return false;
 
       var pave = stat.GetObject(),
           data = this.CountStat(),
@@ -2261,7 +2255,7 @@
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
       if (print_name > 0)
-         pave.AddText(this.histo.fName);
+         pave.AddText(this.GetObject().fName);
 
       if (print_entries > 0)
          pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
@@ -2312,13 +2306,15 @@
       if (this.fContour == null) {
          // if not initialized, first create controur array
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+         var histo = this.GetObject();
+
          this.fUserContour = false;
-         if ((this.histo.fContour!=null) && (this.histo.fContour.length>1) && this.histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-            this.fContour = JSROOT.clone(this.histo.fContour);
+         if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+            this.fContour = JSROOT.clone(histo.fContour);
             this.fUserContour = true;
          } else {
             var nlevels = 20;
-            if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+            if (histo.fContour != null) nlevels = histo.fContour.length;
             if (nlevels<1) nlevels = 20;
             this.fContour = [];
             this.zmin = this.minbin;
@@ -2418,14 +2414,12 @@
    }
 
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
-      var i1 = this.GetSelectIndex("x", "left", 0);
-      var i2 = this.GetSelectIndex("x", "right", 1);
-      var j1 = this.GetSelectIndex("y", "left", 0);
-      var j2 = this.GetSelectIndex("y", "right", 1);
-
-      var name = this.GetItemName();
-      if ((name==null) || (name=="")) name = this.histo.fName;
-      if (name.length > 0) name += "\n";
+      var histo = this.GetObject(),
+          i1 = this.GetSelectIndex("x", "left", 0),
+          i2 = this.GetSelectIndex("x", "right", 1),
+          j1 = this.GetSelectIndex("y", "left", 0),
+          j2 = this.GetSelectIndex("y", "right", 1),
+          name = this.GetTipName("\n");
 
       var xx = [], yy = [];
       for (var i = i1; i <= i2; ++i) {
