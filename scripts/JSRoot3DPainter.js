@@ -785,47 +785,48 @@
    JSROOT.TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (!this.histo) return false;
 
-      var data = this.CountStat();
-
-      var print_name = dostat % 10;
-      var print_entries = Math.floor(dostat / 10) % 10;
-      var print_mean = Math.floor(dostat / 100) % 10;
-      var print_rms = Math.floor(dostat / 1000) % 10;
-      var print_under = Math.floor(dostat / 10000) % 10;
-      var print_over = Math.floor(dostat / 100000) % 10;
-      var print_integral = Math.floor(dostat / 1000000) % 10;
+      var pave = stat.GetObject(),
+          data = this.CountStat(),
+          print_name = dostat % 10,
+          print_entries = Math.floor(dostat / 10) % 10,
+          print_mean = Math.floor(dostat / 100) % 10,
+          print_rms = Math.floor(dostat / 1000) % 10,
+          print_under = Math.floor(dostat / 10000) % 10,
+          print_over = Math.floor(dostat / 100000) % 10,
+          print_integral = Math.floor(dostat / 1000000) % 10;
       //var print_skew = Math.floor(dostat / 10000000) % 10;
       //var print_kurt = Math.floor(dostat / 100000000) % 10;
 
       if (print_name > 0)
-         stat.AddLine(this.histo['fName']);
+         pave.AddText(this.histo.fName);
 
       if (print_entries > 0)
-         stat.AddLine("Entries = " + stat.Format(data.entries,"entries"));
+         pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         stat.AddLine("Mean x = " + stat.Format(data.meanx));
-         stat.AddLine("Mean y = " + stat.Format(data.meany));
-         stat.AddLine("Mean z = " + stat.Format(data.meanz));
+         pave.AddText("Mean x = " + stat.Format(data.meanx));
+         pave.AddText("Mean y = " + stat.Format(data.meany));
+         pave.AddText("Mean z = " + stat.Format(data.meanz));
       }
 
       if (print_rms > 0) {
-         stat.AddLine("Std Dev x = " + stat.Format(data.rmsx));
-         stat.AddLine("Std Dev y = " + stat.Format(data.rmsy));
-         stat.AddLine("Std Dev z = " + stat.Format(data.rmsz));
+         pave.AddText("Std Dev x = " + stat.Format(data.rmsx));
+         pave.AddText("Std Dev y = " + stat.Format(data.rmsy));
+         pave.AddText("Std Dev z = " + stat.Format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         stat.AddLine("Integral = " + stat.Format(data.integral,"entries"));
+         pave.AddText("Integral = " + stat.Format(data.integral,"entries"));
       }
 
       // adjust the size of the stats box with the number of lines
-      var nlines = stat.pave.fLines.arr.length;
-      var stath = nlines * JSROOT.gStyle.StatFontSize;
+
+      var nlines = pave.fLines.arr.length,
+          stath = nlines * JSROOT.gStyle.StatFontSize;
       if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
          stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         stat.pave.fY1NDC = 0.93 - stath;
-         stat.pave.fY2NDC = 0.93;
+         pave.fY1NDC = 0.93 - stath;
+         pave.fY2NDC = 0.93;
       }
 
       return true;
