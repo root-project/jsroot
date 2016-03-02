@@ -6404,8 +6404,8 @@
          point = { x : grx1, y : gry };
 
          if (this.options.Error > 0) {
-            point['xerr'] = (grx2 - grx1) / 2;
-            point['yerr'] = gry - pmain.gry(cont + this.histo.getBinError(pmax + 1));
+            point.xerr = (grx2 - grx1) / 2;
+            point.yerr = gry - pmain.gry(cont + this.histo.getBinError(pmax + 1));
          }
 
          if (this.options.Error > 0) {
@@ -6440,26 +6440,49 @@
       return draw_bins;
    }
 
-   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, w, h) {
+   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, width, height) {
 
       // when draw as error, enable marker draw
       if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
          this.options.Mark = 1;
 
-      /* Calculate coordinates for each point, exclude zeros if not p0 or e0 option */
-      var draw_bins = this.CreateDrawBins(w, h, (this.options.Error!==10) && (this.options.Mark!==10));
+      var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
+          show_errors = (this.options.Error > 0),
+          show_markers = (this.options.Mark > 0),
+          pmain = this.main_painter(),
+          pthis = this;
 
-      var show_markers = this.options.Mark > 0;
+      for (var n = 0; n < draw_bins.length; ++n) {
+         var pnt = draw_bins[n];
+
+         var cont = this.histo.getBinContent(pnt.bin+1);
+
+         pnt.x = Math.round(pnt.x + pnt.width/2);
+         pnt.xerr = Math.round(pnt.width/2);
+         pnt.yerr = 30;
+
+         if (exclude_zero && (cont == 0)) {
+            pnt.y = h + 100; // such point will be removed
+            continue;
+         }
+
+         if (show_errors)
+            pnt.yerr = Math.round(pnt.y - pmain.gry(cont + this.histo.getBinError(pnt.bin+1)));
+      }
 
       // here are up to five elements are collected, try to group them
       var nodes = this.draw_g.selectAll("g")
-                     .data(draw_bins)
+                     .data(draw_bins.filter(function(d) { return (d.y > -d.yerr) && (d.y < height + d.yerr); }))
                      .enter()
                      .append("svg:g")
-                     .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")";});
+                     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-      if (JSROOT.gStyle.Tooltip > 0)
-         nodes.append("svg:title").text(function(d) { return d.tip; });
+      var tt_events = 'none';
+
+      if (JSROOT.gStyle.Tooltip === 1) {
+         tt_events = "visibleFill";
+         nodes.append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
+      }
 
       if (this.options.Error == 12) {
          // draw as rectangles
@@ -6468,65 +6491,63 @@
          if (this.fillatt.color === 'none') show_markers = true;
 
          nodes.append("svg:rect")
-            .attr("x", function(d) { return (-d.xerr).toFixed(1); })
-            .attr("y", function(d) { return (-d.yerr).toFixed(1); })
-            .attr("width", function(d) { return (2*d.xerr).toFixed(1); })
-            .attr("height", function(d) { return (2*d.yerr).toFixed(1); })
-            // .call(this.lineatt.func)
+            .attr("x", function(d) { return -d.xerr; })
+            .attr("y", function(d) { return -d.yerr; })
+            .attr("width", function(d) { return 2*d.xerr; })
+            .attr("height", function(d) { return 2*d.yerr; })
             .call(this.fillatt.func)
-            .style("pointer-events","visibleFill") // even when fill attribute not specified, get mouse events
-            .property("fill0", this.fillatt.color) // remember color
-            .on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip>0)
-                 d3.select(this).transition().duration(100).style("fill", "grey");
-            })
-            .on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", this['fill0']);
+            .style("pointer-events", tt_events) // even when fill attribute not specified, get mouse events
+            .each(function(d) {
+               if (JSROOT.gStyle.Tooltip!==1) return; // no extra settings in default mode
+               this['fill0'] = pthis.fillatt.color; // remember color
+               d3.select(this).on('mouseover', function() {
+                  if (JSROOT.gStyle.Tooltip>0)
+                     d3.select(this).transition().duration(100).style("fill", "grey");
+               }).on('mouseout', function() {
+                  d3.select(this).transition().duration(100).style("fill", this['fill0']);
+               });
             });
-
-
-            //.append("svg:title").text(function(d) { return d.tip; });
       } else
       if (this.options.Error > 0) {
          /* Draw main error indicators */
          nodes.append("svg:line") // x indicator
-              .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
+              .attr("x1", function(d) { return -d.xerr; })
               .attr("y1", 0)
-              .attr("x2", function(d) { return d.xerr.toFixed(1); })
+              .attr("x2", function(d) { return d.xerr; })
               .attr("y2", 0)
               .call(this.lineatt.func);
          nodes.append("svg:line")  // y indicator
               .attr("x1", 0)
-              .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
+              .attr("y1", function(d) { return -d.yerr; })
               .attr("x2", 0)
-              .attr("y2", function(d) { return d.yerr.toFixed(1); })
+              .attr("y2", function(d) { return d.yerr; })
               .call(this.lineatt.func);
       }
 
       if (this.options.Error == 11) {
          nodes.append("svg:line")
                 .attr("y1", -3)
-                .attr("x1", function(d) { return (-d.xerr).toFixed(1); })
+                .attr("x1", function(d) { return -d.xerr; })
                 .attr("y2", 3)
-                .attr("x2", function(d) { return (-d.xerr).toFixed(1); })
+                .attr("x2", function(d) { return -d.xerr; })
                 .call(this.lineatt.func);
          nodes.append("svg:line")
                 .attr("y1", -3)
-                .attr("x1", function(d) { return d.xerr.toFixed(1); })
+                .attr("x1", function(d) { return d.xerr; })
                 .attr("y2", 3)
-                .attr("x2", function(d) { return d.xerr.toFixed(1); })
+                .attr("x2", function(d) { return d.xerr; })
                 .call(this.lineatt.func);
          nodes.append("svg:line")
                 .attr("x1", -3)
-                .attr("y1", function(d) { return (-d.yerr).toFixed(1); })
+                .attr("y1", function(d) { return -d.yerr; })
                 .attr("x2", 3)
-                .attr("y2", function(d) { return (-d.yerr).toFixed(1); })
+                .attr("y2", function(d) { return -d.yerr; })
                 .call(this.lineatt.func);
          nodes.append("svg:line")
                  .attr("x1", -3)
-                 .attr("y1", function(d) { return d.yerr.toFixed(1); })
+                 .attr("y1", function(d) { return d.yerr; })
                  .attr("x2", 3)
-                 .attr("y2", function(d) { return d.yerr.toFixed(1); })
+                 .attr("y2", function(d) { return d.yerr; })
                  .call(this.lineatt.func);
       }
 
@@ -6554,9 +6575,11 @@
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width) && (JSROOT.gStyle.Tooltip === 3);
 
-      if (JSROOT.gStyle.Tooltip === 1) {
-         bins = [];
-         use_minmax = true; // use minmax if tooltips or markers should be selected
+      var draw_markers = (this.options.Error > 0) || (this.options.Mark > 0);
+
+      if ((JSROOT.gStyle.Tooltip === 1) || draw_markers) {
+         // collect bins to be drawn, min/max logic used to select max bin at each pixel
+         bins = []; use_minmax = true;
       }
 
       for (i = left; i <= right; ++i) {
@@ -6643,9 +6666,15 @@
          res+="Z";
       }
 
-      console.log('th1 path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
+      if (draw_markers) {
+         if (bins) console.log('Total bins ' + bins.length);
 
-      if (bins) console.log('Total bins ' + bins.length);
+         this.DrawAsMarkers(bins, width, height);
+
+         return;
+      }
+
+      console.log('th1 path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
@@ -6679,14 +6708,25 @@
       var tips = [], name = this.GetTipName(), pmain = this.main_painter();
       if (name.length>0) tips.push(name);
 
-      tips.push("bin = " + (bin+1));
+      var x1 = this.GetBinX(bin),
+          x2 = this.GetBinX(bin+1),
+          cont = this.histo.getBinContent(bin+1);
 
-      if (pmain.x_kind === 'labels')
-         tips.push("x = " + this.AxisAsText("x", this.GetBinX(bin)));
-      else
-         tips.push("x = [" + this.AxisAsText("x", this.GetBinX(bin)) + ", " + this.AxisAsText("x", this.GetBinX(bin+1)) + "]");
+      if (this.options.Error > 0) {
+         tips.push("x = " + this.AxisAsText("x", (x1+x2)/2));
+         tips.push("y = " + this.AxisAsText("y", cont));
+         tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
+         tips.push("error y = " + this.histo.getBinError(bin + 1).toPrecision(4));
+      } else {
+         tips.push("bin = " + (bin+1));
 
-      tips.push("entries = " + JSROOT.FFormat(this.histo.getBinContent(bin+1), JSROOT.gStyle.StatFormat));
+         if (pmain.x_kind === 'labels')
+            tips.push("x = " + this.AxisAsText("x", x1));
+         else
+            tips.push("x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]");
+
+         tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
+      }
 
       if (!asstr) return tips;
 
@@ -6813,9 +6853,6 @@
          return this.RemoveDrawG();
 
       this.RecreateDrawG(false, ".main_layer");
-
-      if ((this.options.Error > 0) || (this.options.Mark > 0))
-         return this.DrawAsMarkers(width, height);
 
       this.DrawDirectAsPath();
    }
