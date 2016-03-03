@@ -1131,12 +1131,16 @@
          return this.draw_g.selectAll("*").remove();
 
       if (take_pad) {
-         if (layer==null) layer = ".text_layer";
+         if (typeof layer != 'string') layer = ".text_layer";
          this.draw_g = this.svg_pad().select(layer).append("svg:g");
       } else {
-         if (layer==null) layer = ".main_layer";
+         if (typeof layer != 'string') layer = ".main_layer";
          this.draw_g = this.svg_frame().select(layer).append("svg:g");
       }
+
+      // set attribute for debugging
+      this.draw_g.attr('objname', this.GetTipName());
+
       return this.draw_g;
    }
 
@@ -2325,32 +2329,40 @@
       if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
-          textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3, height = this.frame_height();
+          textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3,
+          height = this.frame_height(),
+          pp = this.pad_painter(true),
+          painters = (pp === null) ? [] : pp.painters;
 
-      var pp = this.pad_painter(true);
-      var painters = (pp === null) ? null : pp.painters;
-      if (painters !== null)
-        painters.forEach(function(obj) {
-          var hint = null;
+      // first count - how many processors are there
+      if (pnt!==null) {
+         pnt.nproc = 0;
+         painters.forEach(function(obj) {
+            if ('ProcessTooltip' in obj) pnt.nproc++;
+         });
+      }
 
-          if ('ProcessTooltip' in obj)
-             hint = obj.ProcessTooltip(pnt);
+      painters.forEach(function(obj) {
+         var hint = null;
 
-          hints.push(hint);
-          if ((hint === null) || (pnt === null)) return;
+         if ('ProcessTooltip' in obj)
+            hint = obj.ProcessTooltip(pnt);
 
-          nhints++;
+         hints.push(hint);
+         if ((hint === null) || (pnt === null)) return;
 
-          for (var l=0;l<hint.lines.length;++l)
-             if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
+         nhints++;
 
-          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
+         for (var l=0;l<hint.lines.length;++l)
+            if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
 
-          if ((hint.color1!== undefined) && (hint.color1!=='none')) {
-             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
-             lastcolor1 = hint.color1;
-          }
-        });
+         hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
+
+         if ((hint.color1!== undefined) && (hint.color1!=='none')) {
+            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+            lastcolor1 = hint.color1;
+         }
+      });
 
       // end of closing tooltips
       if ((pnt === null) || (nhints===0)) {
@@ -6541,7 +6553,7 @@
          return;
       }
 
-      console.log('th1 path len = ' + res.length + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
+      console.log('th1 len ' + res.length + '  ' + this.GetTipName() + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
 
       this.draw_g.append("svg:path")
                  .attr("d", res)
@@ -6694,9 +6706,12 @@
 
          midy = gry1 = gry2 = GetBinGrY(findbin);
 
-         show_rect = (JSROOT.gStyle.Tooltip === 5);
+         show_rect = (pnt.nproc === 1); // if histogram alone, use old-style with rects
 
-         if (show_rect) gry2 = height;
+         if (show_rect) {
+            if (pnt.y < gry1) findbin = null;
+            gry2 = height;
+         }
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");

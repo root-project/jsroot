@@ -937,33 +937,35 @@
          this.fillatt = this.createAttFill(tf1);
          if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
-         var bin;
+         var n, bin;
          // first calculate graphical coordinates
-         for(var n=0; n<this.bins.length; ++n) {
+         for(n=0; n<this.bins.length; ++n) {
             bin = this.bins[n];
-            bin.grx = Math.round(pmain.grx(bin.x));
-            bin.gry = Math.round(pmain.gry(bin.y));
+            //bin.grx = Math.round(pmain.grx(bin.x));
+            //bin.gry = Math.round(pmain.gry(bin.y));
+            bin.grx = pmain.grx(bin.x);
+            bin.gry = pmain.gry(bin.y);
          }
 
          if (this.bins.length > 2) {
 
             // code taken from d3.js to calculate parameters for Bezier curves
             // here we using rounded values, plus we want to use delta values in svg:path (more compact)
-            function d3_svg_lineSlope(p0, p1) {
+            function jsroot_d3_svg_lineSlope(p0, p1) {
               return (p1.gry - p0.gry) / (p1.grx - p0.grx);
             }
-            function d3_svg_lineFiniteDifferences(points) {
-               var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = d3_svg_lineSlope(p0, p1);
+            function jsroot_d3_svg_lineFiniteDifferences(points) {
+               var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
                while (++i < j) {
-                 m[i] = (d + (d = d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
+                 m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
                }
                m[i] = d;
                return m;
              }
-             function myd3_svg_lineMonotoneTangents(points) {
-               var d, a, b, s, m = d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
+             function jsroot_d3_svg_lineMonotoneTangents(points) {
+               var d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
                while (++i < j) {
-                 d = d3_svg_lineSlope(points[i], points[i + 1]);
+                 d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
                  if (Math.abs(d) < 1e-6) {
                    m[i] = m[i + 1] = 0;
                  } else {
@@ -980,35 +982,37 @@
                i = -1;
                while (++i <= j) {
                   s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-                  points[i].dgrx = Math.round(s || 0);
-                  points[i].dgry = Math.round(m[i]*s || 0);
+                  //points[i].dgrx = Math.round(s || 0);
+                  //points[i].dgry = Math.round(m[i]*s || 0);
+                  points[i].dgrx = s || 0;
+                  points[i].dgry = m[i]*s || 0;
                }
              }
 
-             myd3_svg_lineMonotoneTangents(this.bins);
+             jsroot_d3_svg_lineMonotoneTangents(this.bins);
 
              var currx = this.bins[0].grx,
-                 curry = this.bins[0].gry;
+                 curry = this.bins[0].gry,
+                 maxy = Math.max(curry, h+5);
 
-             var path = "M" + currx + "," + curry;
+             var path = "M" + currx.toFixed(1) + "," + curry.toFixed(1);
 
              bin = this.bins[0];
-             path += "c" + bin.dgrx + "," + bin.dgry + ",";
+             path += "c" + bin.dgrx.toFixed(1) + "," + bin.dgry.toFixed(1) + ",";
 
-             for(var n=1; n<this.bins.length; ++n) {
-               bin = this.bins[n];
-               var x = bin.grx;
-               var y = bin.gry;
-               if (n > 1) path += "s";
-               path += (x-bin.dgrx-currx) + "," + (y-bin.dgry-curry) + "," + (x-currx) + "," + (y-curry);
-               currx = x;
-               curry = y;
+             for(n=1; n<this.bins.length; ++n) {
+                bin = this.bins[n];
+                if (n > 1) path += "s";
+                path += (bin.grx-bin.dgrx-currx).toFixed(1) + "," + (bin.gry-bin.dgry-curry).toFixed(1) + "," + (bin.grx-currx).toFixed(1) + "," + (bin.gry-curry).toFixed(1);
+                currx = bin.grx;
+                curry = bin.gry;
+                maxy = Math.max(maxy, curry);
             }
 
-            var close_path = "L" + currx +"," + (h+3) +
-                             "L" + this.bins[0].grx +"," + (h+3) + "Z";
+            var close_path = "L" + currx.toFixed(1) +"," + maxy.toFixed(1) +
+                             "L" + this.bins[0].grx.toFixed(1) +"," + maxy.toFixed(1) + "Z";
 
-            console.log('tf1 line ' + path.length);
+            console.log('tf1 len ' + path.length + '  ' + this.GetTipName());
 
             if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
@@ -1024,13 +1028,12 @@
                   .style("stroke", "none")
                   .style("pointer-events", "none")
                   .call(this.fillatt.func);
-
          }
 
-         delete this['ProcessTooltip'];
+         delete this.ProcessTooltip;
 
         if (JSROOT.gStyle.Tooltip > 1)
-           this['ProcessTooltip'] = this['ProcessTooltipFunc'];
+           this.ProcessTooltip = this.ProcessTooltipFunc;
         else
         if (JSROOT.gStyle.Tooltip > 0)
            this.draw_g.selectAll()
@@ -1042,13 +1045,6 @@
                .style("opacity", 0)
                .append("svg:title")
                .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
-      }
-
-      this['UpdateObject'] = function(obj) {
-         if (!this.MatchObjectType(obj)) return false;
-         // TODO: realy update object content
-         JSROOT.extend(this.GetObject(), obj);
-         return true;
       }
 
       this['CanZoomIn'] = function(axis,min,max) {
