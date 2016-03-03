@@ -991,26 +991,20 @@
 
              jsroot_d3_svg_lineMonotoneTangents(this.bins);
 
-             var currx = this.bins[0].grx,
-                 curry = this.bins[0].gry,
-                 maxy = Math.max(curry, h+5);
-
-             var path = "M" + currx.toFixed(1) + "," + curry.toFixed(1);
-
              bin = this.bins[0];
-             path += "c" + bin.dgrx.toFixed(1) + "," + bin.dgry.toFixed(1) + ",";
+
+             var prev, ndig = 2, maxy = Math.max(bin.gry, h+5);
+
+             var path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
+                        "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
 
              for(n=1; n<this.bins.length; ++n) {
+                prev = bin;
                 bin = this.bins[n];
                 if (n > 1) path += "s";
-                path += (bin.grx-bin.dgrx-currx).toFixed(1) + "," + (bin.gry-bin.dgry-curry).toFixed(1) + "," + (bin.grx-currx).toFixed(1) + "," + (bin.gry-curry).toFixed(1);
-                currx = bin.grx;
-                curry = bin.gry;
-                maxy = Math.max(maxy, curry);
+                path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+                maxy = Math.max(maxy, prev.gry);
             }
-
-            var close_path = "L" + currx.toFixed(1) +"," + maxy.toFixed(1) +
-                             "L" + this.bins[0].grx.toFixed(1) +"," + maxy.toFixed(1) + "Z";
 
             console.log('tf1 len ' + path.length + '  ' + this.GetTipName());
 
@@ -1024,7 +1018,8 @@
             if (this.fillatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "area")
-                  .attr("d", path + close_path)
+                  .attr("d", path + "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
+                                    "L" + this.bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z")
                   .style("stroke", "none")
                   .style("pointer-events", "none")
                   .call(this.fillatt.func);
