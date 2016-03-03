@@ -898,16 +898,19 @@
                               .call(this.lineatt.func)
                               .call(this.fillatt.func);
 
-         if (gbin.property("current_bin") !== best)
+         var res = { x: bin.grx,
+               y: bin.gry,
+               color1: this.lineatt.color,
+               color2: this.fillatt.color,
+               lines: [] };
+
+         res.changed = gbin.property("current_bin") !== best;
+
+         if (res.changed)
             gbin.attr("cx", bin.grx)
                 .attr("cy", bin.gry)
                 .property("current_bin", best);
 
-         var res = { x: bin.grx,
-                     y: bin.gry,
-                     color1: this.lineatt.color,
-                     color2: this.fillatt.color,
-                     lines: [] };
 
          var name = this.GetTipName();
          if (name.length > 0) res.lines.push(name);
@@ -982,8 +985,6 @@
                i = -1;
                while (++i <= j) {
                   s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-                  //points[i].dgrx = Math.round(s || 0);
-                  //points[i].dgry = Math.round(m[i]*s || 0);
                   points[i].dgrx = s || 0;
                   points[i].dgry = m[i]*s || 0;
                }
@@ -993,9 +994,8 @@
 
              bin = this.bins[0];
 
-             var prev, ndig = 2, maxy = Math.max(bin.gry, h+5);
-
-             var path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
+             var prev, ndig = 2, maxy = Math.max(bin.gry, h+5),
+                 path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
                         "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
 
              for(n=1; n<this.bins.length; ++n) {
@@ -1124,12 +1124,12 @@
       this['GetHistMinMax'] = function(hist, witherr) {
          var res = { min : 0, max : 0 };
          var domin = false, domax = false;
-         if (hist['fMinimum'] != -1111)
-            res.min = hist['fMinimum'];
+         if (hist.fMinimum != -1111)
+            res.min = hist.fMinimum;
          else
             domin = true;
-         if (hist['fMaximum'] != -1111)
-            res.max = hist['fMaximum'];
+         if (hist.fMaximum != -1111)
+            res.max = hist.fMaximum;
          else
             domax = true;
 

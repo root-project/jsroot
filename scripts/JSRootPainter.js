@@ -2364,9 +2364,12 @@
          }
       });
 
+      var layer = this.draw_g.select(".upper_layer");
+      var hintsg = layer.select(".objects_hints"); // group with all tooltips
+
       // end of closing tooltips
-      if ((pnt === null) || (nhints===0)) {
-         this.draw_g.select(".upper_layer").select(".objects_hints").remove();
+      if ((pnt === null) || (nhints===0) || (maxlen===0)) {
+         hintsg.remove();
          return;
       }
 
@@ -2386,56 +2389,67 @@
          }
       }
 
-      var layer = this.draw_g.select(".upper_layer");
-
-      var hintsg = layer.select(".objects_hints");
-
-      if (hintsg.empty()) {
-         if (maxlen === 0) return;
+      if (hintsg.empty())
          hintsg = layer.append("svg:g")
                        .attr("class", "objects_hints")
                        .style("pointer-events","none");
-      } else {
-         if (maxlen === 0) return hintsg.style("display","none");
-         hintsg.style("display",null); // let draw
-      }
 
-      var maxwidth = textheight * maxlen * 0.5;
-      if (maxwidth < 50) maxwidth = 50;
+      var maxwidth = Math.max(50, Math.round(textheight*maxlen*0.5));
       var actualw = 0;
 
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
          var group = hintsg.select(".painter_hint_"+n);
          if (hint===null) {
-            group.selectAll("*").remove();
+            group.remove();
             continue;
          }
-         if (group.empty())
-            group = hintsg.append("svg:g").attr("class", "painter_hint_"+n);
-         else
-            group.selectAll("*").remove();
+
+         var was_empty = group.empty(),
+             was_changed = ('changed' in hint) ? hint.changed : true;
+
+         if (was_empty)
+            group = hintsg.append("svg:svg")
+                          .attr("class", "painter_hint_"+n)
+                          .style('overflow','hidden')
+                          .attr("opacity","0");
 
          if (nhints===1) hint.y = pnt.y + 15;
 
-         var r = group.append("svg:rect").attr("x", pnt.x+15)
-                                         .attr("y", hint.y)
-                                         .attr("width", maxwidth + 2*wmargin)
-                                         .attr("height", hint.height)
-                                         .attr("fill","lightgrey")
-                                         .attr("opacity","0");
-         if (hints.length > 1) {
+         group.attr("x", pnt.x+15)
+              .attr("y", hint.y);
+
+         if (!was_changed && !was_empty) {
+            // no need to refill tooltip - just check size
+            actualw = Math.max(actualw, parseInt(group.attr("width")) - 2*wmargin);
+            continue;
+         }
+
+         if (!was_empty)
+            group.selectAll("*").remove();
+
+         group.attr("width", maxwidth + 2*wmargin)
+              .attr("height", hint.height);
+
+         var r = group.append("rect")
+                      .attr("x",0)
+                      .attr("y",0)
+                      .attr("width",maxwidth + 2*wmargin)
+                      .attr("height", hint.height)
+                      .attr("fill","lightgrey")
+
+         if (nhints > 1) {
             var col = usecolor1 ? hint.color1 : hint.color2;
             if ((col !== undefined) && (col!=='none'))
-               r.style("stroke", col).style("stroke-width", 2);
+               r.attr("stroke", col).attr("stroke-width", 2);
          }
 
          this.StartTextDrawing(42, textheight, group);
 
-         if (hint !== null)
+         if (hint.lines != null)
             for (var l=0;l<hint.lines.length;l++)
                if (hint.lines[l]!==null)
-                  this.DrawText(12, pnt.x+15+wmargin, hint.y + l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
+                  this.DrawText(12, wmargin, l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
 
          actualw = Math.max(actualw, this.FinishTextDrawing(group));
 
@@ -2449,11 +2463,12 @@
             };
          }
 
-         group.selectAll("*").transition().duration(500).attrTween("opacity", translateFn());
+         if (was_empty)
+            group.transition().duration(500).attrTween("opacity", translateFn());
       }
 
       if (actualw > 10)
-         hintsg.selectAll("rect").attr("width", actualw + 4*wmargin);
+         hintsg.selectAll("svg").attr("width", actualw + 2*wmargin).select('rect').attr("width", actualw + 2*wmargin);
    }
 
 
@@ -6721,6 +6736,10 @@
          return null;
       }
 
+      var res = { x: midx, y: midy,
+                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  lines: this.GetBinTips(findbin) };
+
       if (show_rect) {
 
          if (ttrect.empty())
@@ -6728,7 +6747,9 @@
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         if (ttrect.property("current_bin") !== findbin)
+         res.changed = ttrect.property("current_bin") !== findbin;
+
+         if (res.changed)
             ttrect.attr("x", grx1)
                   .attr("width", grx2-grx1)
                   .attr("y", gry1)
@@ -6744,14 +6765,17 @@
                                 .call(this.lineatt.func)
                                 .call(this.fillatt.func);
 
-         if (ttrect.property("current_bin") !== findbin)
+         res.changed = ttrect.property("current_bin") !== findbin;
+
+         if (res.changed)
             ttrect.attr("cx", midx)
                   .attr("cy", midy)
                   .property("current_bin", findbin);
       }
 
-      return { x: midx, y: midy, color1: this.lineatt.color, color2: this.fillatt.color, lines: this.GetBinTips(findbin) };
+      return res;
    }
+
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
       JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
