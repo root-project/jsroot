@@ -6336,8 +6336,7 @@
       var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
-          pmain = this.main_painter(),
-          pthis = this;
+          pmain = this.main_painter();
 
       for (var n = 0; n < draw_bins.length; ++n) {
          var pnt = draw_bins[n];
@@ -6365,22 +6364,22 @@
                      .data(draw_bins.filter(function(d) { return (d.y > -d.yerr1) && (d.y < height + d.yerr2); }))
                      .enter()
                      .append("svg:g")
+                     .property('mydata', function(d) { return d; })
                      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
       var tt_events = 'none';
 
       if (JSROOT.gStyle.Tooltip === 1) {
          tt_events = "visibleFill";
+         var pthis = this;
          nodes.append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
       }
 
       if (this.options.Error == 12) {
-         // draw as rectangles
 
          // when no any marker is show, use at least non-empty fill color
          if (this.fillatt.color === 'none') show_markers = true;
 
-         // TODO: provide correct handling of such tooltips - probably without creation of additional elements
          nodes.append("svg:rect")
             .attr("x", function(d) { return -d.xerr; })
             .attr("y", function(d) { return -d.yerr1; })
@@ -6388,16 +6387,18 @@
             .attr("height", function(d) { return d.yerr1 + d.yerr2; })
             .call(this.fillatt.func)
             .style("pointer-events", tt_events) // even when fill attribute not specified, get mouse events
-            .each(function(d) {
-               if (JSROOT.gStyle.Tooltip!==1) return; // no extra settings in default mode
-               this['fill0'] = pthis.fillatt.color; // remember color
-               d3.select(this).on('mouseover', function() {
-                  if (JSROOT.gStyle.Tooltip>0)
-                     d3.select(this).transition().duration(100).style("fill", "grey");
-               }).on('mouseout', function() {
-                  d3.select(this).transition().duration(100).style("fill", this['fill0']);
-               });
-            });
+
+         if (JSROOT.gStyle.Tooltip === 1)
+            nodes.select("rect")
+                 .property('fill0', this.fillatt.color)
+                 .on('mouseover', function() {
+                    if (JSROOT.gStyle.Tooltip !== 1) return;
+                    d3.select(this).style("fill", this.fill0)
+                      .transition().duration(100).style("fill", "grey");
+                  })
+                  .on('mouseout', function() {
+                     d3.select(this).transition().duration(100).style("fill", this.fill0);
+                   });
       } else
       if (this.options.Error > 0) {
          var endx = "", endy = "";
@@ -6532,8 +6533,6 @@
       }
 
       if (draw_markers) {
-         if (bins) console.log('Total bins ' + bins.length);
-
          this.DrawAsMarkers(bins, width, height);
 
          if (JSROOT.gStyle.Tooltip > 1)
@@ -6560,11 +6559,11 @@
               .attr("width", function(d) { return d.width; })
               .attr("height", function(d) { return (height - d.y); })
               .on('mouseover', function() {
-                  if (JSROOT.gStyle.Tooltip>0)
-                    d3.select(this).transition().duration(100).style("opacity", "0.3");
+                  if (JSROOT.gStyle.Tooltip!==1) return;
+                  d3.select(this).transition().duration(100).style("opacity", "0.3");
                })
               .on('mouseout', function() {
-                    d3.select(this).transition().duration(100).style("opacity", "");
+                  d3.select(this).transition().duration(100).style("opacity", "");
                })
               .append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
       else
@@ -6603,7 +6602,6 @@
       return res;
    }
 
-
    JSROOT.TH1Painter.prototype.ProcessTooltipFunc = function(pnt) {
 
       if (pnt === null) {
@@ -6614,88 +6612,114 @@
 
       var width = this.frame_width(),
           height = this.frame_height(),
-          left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
           painter = this,
-          draw_markers = (this.options.Error > 0) || (this.options.Mark > 0);
+          findbin = null, show_rect = true,
+          grx1, midx, grx2, gry1, midy, gry2;
 
-      var l = left, r = right;
+      if ((this.options.Error > 0) || (this.options.Mark > 0)) {
+         // if markers are drawn, use their attributes
+         var dd = null;
 
-      function GetBinGrX(i) {
-         var x1 = painter.GetBinX(i);
-         if ((x1<0) && painter.options.Logx) return null;
-         if (!draw_markers) return pmain.grx(x1);
-         return (pmain.grx(x1) + pmain.grx(painter.GetBinX(i+1)))/2;
-      }
+         this.draw_g.selectAll("g").each(function(d) {
+            if ((pnt.x > d.x - d.xerr) && (pnt.x < d.x + d.xerr)) {
+               if ((dd === null) || (Math.abs(d.x - pnt.x) < Math.abs(dd.x - pnt.x))) dd = d;
+            }
+         });
 
-      function GetBinGrY(i) {
-         var y = painter.histo.getBinContent(i + 1);
-         if (painter.options.Logy && (y < painter.scale_ymin))
-            return 10*height;
-         return Math.round(pmain.gry(y));
-      }
+         if (dd !== null) {
+            findbin = dd.bin;
+            grx1 = dd.x - dd.xerr;
+            midx = dd.x;
+            grx2 = dd.x + dd.xerr;
+            gry1 = dd.y - dd.yerr1;
+            midy = dd.y;
+            gry2 = dd.y + dd.yerr2;
+            show_rect = true;
+         }
+      } else {
 
-      while (l < r-1) {
-         var m = Math.round((l+r)*0.5);
+         var left = this.GetSelectIndex("x", "left", -1),
+             right = this.GetSelectIndex("x", "right", 2),
+             l = left, r = right;
 
-         var grx = GetBinGrX(m);
-         if (grx === null) { l = m; continue; }
-
-         if (grx < pnt.x - 0.5) l = m; else
-         if (grx > pnt.x + 0.5) r = m; else { l++; r--; }
-      }
-
-      var bin = l, grx = GetBinGrX(bin);
-
-      l = r = bin;
-      while ((l>left) && (GetBinGrX(l-1) > grx - 1.0)) --l;
-      while ((r<right) && (GetBinGrX(r+1) < grx + 1.0)) ++r;
-
-      if (l < r) {
-         // many points can be assigned with the same cursor position
-         // first try point around mouse y
-         var best = height;
-         for (var m=l;m<=r;m++) {
-            var dist = Math.abs(GetBinGrY(m) - pnt.y);
-            if (dist < best) { best = dist; bin = m; }
+         function GetBinGrX(i) {
+            var x1 = painter.GetBinX(i);
+            if ((x1<0) && painter.options.Logx) return null;
+            return pmain.grx(x1);
          }
 
-         // if best distance still too far from mouse position, just take from between
-         if (best > height/10)
-            bin = Math.round(l + (r-l) / height * pnt.y);
-
-         grx = GetBinGrX(bin);
-      }
-
-      var gry = GetBinGrY(bin),
-          grx2 = GetBinGrX(bin+1),
-          midx = draw_markers ? Math.round(grx) : Math.round((grx + grx2)/2),
-          ttrect = this.draw_g.select(".tooltip_bin");
-
-      if (gry > height - 1) {
-         ttrect.remove(); // do not highlight for minimal bins
-         return null; // nothing to show
-      }
-
-      if ((JSROOT.gStyle.Tooltip === 5) && !draw_markers) {
-         if (pnt.y < gry) {
-            ttrect.remove(); // do not highlight for minimal bins
-            return null; // nothing to show
+         function GetBinGrY(i) {
+            var y = painter.histo.getBinContent(i + 1);
+            if (painter.options.Logy && (y < painter.scale_ymin))
+               return 10*height;
+            return Math.round(pmain.gry(y));
          }
+
+         while (l < r-1) {
+            var m = Math.round((l+r)*0.5);
+
+            var xx = GetBinGrX(m);
+            if (xx === null) { l = m; continue; }
+
+            if (xx < pnt.x - 0.5) l = m; else
+            if (xx > pnt.x + 0.5) r = m; else { l++; r--; }
+         }
+
+         findbin = r = l;
+         grx1 = GetBinGrX(findbin);
+
+         while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
+         while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
+
+         if (l < r) {
+            // many points can be assigned with the same cursor position
+            // first try point around mouse y
+            var best = height;
+            for (var m=l;m<=r;m++) {
+               var dist = Math.abs(GetBinGrY(m) - pnt.y);
+               if (dist < best) { best = dist; bin = m; }
+            }
+
+            // if best distance still too far from mouse position, just take from between
+            if (best > height/10)
+               findbin = Math.round(l + (r-l) / height * pnt.y);
+
+            grx1 = GetBinGrX(findbin);
+         }
+
+         grx2 = GetBinGrX(findbin+1);
+
+         midx = Math.round((grx1+grx2)/2);
+
+         midy = gry1 = gry2 = GetBinGrY(findbin);
+
+         show_rect = (JSROOT.gStyle.Tooltip === 5);
+
+         if (show_rect) gry2 = height;
+      }
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if ((findbin == null) || ((gry2 <= 0) || (gry1 >= height))) {
+         ttrect.remove();
+         return null;
+      }
+
+      if (show_rect) {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         if (ttrect.property("current_bin") !== bin)
-            ttrect.attr("x", grx)
-                  .attr("width", grx2-grx)
-                  .attr("y", gry)
-                  .attr("height", height-gry)
+         if (ttrect.property("current_bin") !== findbin)
+            ttrect.attr("x", grx1)
+                  .attr("width", grx2-grx1)
+                  .attr("y", gry1)
+                  .attr("height", gry2-gry1)
                   .style("opacity", "0.3")
-                  .property("current_bin", bin);
+                  .property("current_bin", findbin);
       } else {
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:circle")
@@ -6705,13 +6729,13 @@
                                 .call(this.lineatt.func)
                                 .call(this.fillatt.func);
 
-         if (ttrect.property("current_bin") !== bin)
+         if (ttrect.property("current_bin") !== findbin)
             ttrect.attr("cx", midx)
-                  .attr("cy", gry)
-                  .property("current_bin", bin);
+                  .attr("cy", midy)
+                  .property("current_bin", findbin);
       }
 
-      return { x: midx, y: gry, color1: this.lineatt.color, color2: this.fillatt.color,  lines: this.GetBinTips(bin) };
+      return { x: midx, y: midy, color1: this.lineatt.color, color2: this.fillatt.color, lines: this.GetBinTips(findbin) };
    }
 
    JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
