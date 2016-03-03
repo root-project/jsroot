@@ -8501,7 +8501,7 @@
       var found_frame = null;
 
       this.ForEachFrame(function(frame) {
-         if (d3.select(frame).attr('title') == searchtitle)
+         if (d3.select(frame).attr('frame_title') == searchtitle)
             found_frame = frame;
       });
 
@@ -8667,6 +8667,10 @@
    }
 
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.GridDisplay.prototype.NumGridFrames = function() {
+      return this.sizex*this.sizey;
+   }
 
    JSROOT.GridDisplay.prototype.IsSingle = function() {
       return (this.sizex == 1) && (this.sizey == 1);
