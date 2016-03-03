@@ -890,19 +890,22 @@
          bin = this.bins[best];
 
          var gbin = this.draw_g.select(".tooltip_bin");
+         var radius = this.lineatt.width + 3;
+
          if (gbin.empty())
             gbin = this.draw_g.append("svg:circle")
                               .attr("class","tooltip_bin")
                               .style("pointer-events","none")
-                              .attr("r", this.lineatt.width + 3)
+                              .attr("r", radius)
                               .call(this.lineatt.func)
                               .call(this.fillatt.func);
 
          var res = { x: bin.grx,
-               y: bin.gry,
-               color1: this.lineatt.color,
-               color2: this.fillatt.color,
-               lines: [] };
+                     y: bin.gry,
+                     color1: this.lineatt.color,
+                     color2: this.fillatt.color,
+                     lines: [],
+                     exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
 
          res.changed = gbin.property("current_bin") !== best;
 

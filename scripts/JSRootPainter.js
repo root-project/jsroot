@@ -336,7 +336,7 @@
                      .attr("cy", 0)
                      .attr("r", this.size)
                      .style("stroke", this.stroke)
-                     .style("pointer-events","visibleFill");
+                     .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none");
          }.bind(res);
          break;
       case 1: // cross
@@ -359,7 +359,7 @@
                      .attr("width", this.size)
                      .attr("height", this.size)
                      .style("stroke", this.stroke)
-                     .style("pointer-events","visibleFill");
+                     .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none");
          }.bind(res);
          break;
       case 4: // triangle-up
@@ -399,7 +399,7 @@
             function(selection) {
               selection.style("fill", this.fill)
                        .style("stroke", this.stroke)
-                       .style("pointer-events","visibleFill") // even if not filled, get events
+                       .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none") // even if not filled, get events
                        .attr("d", this.marker);
             }.bind(res);
 
@@ -449,10 +449,10 @@
    }
 
    JSROOT.Painter.root_fonts = new Array('Arial', 'Times New Roman',
-         'bold Times New Roman', 'bold italic Times New Roman', 'Arial',
-         'oblique Arial', 'bold Arial', 'bold oblique Arial', 'Courier New',
-         'oblique Courier New', 'bold Courier New', 'bold oblique Courier New',
-         'Symbol', 'Times New Roman', 'Wingdings', 'Symbol');
+         'bTimes New Roman', 'biTimes New Roman', 'Arial',
+         'oArial', 'bArial', 'boArial', 'Courier New',
+         'oCourier New', 'bCourier New', 'boCourier New',
+         'Symbol', 'Times New Roman', 'Wingdings', 'Symbol', 'Verdana');
 
    JSROOT.Painter.getFontDetails = function(fontIndex, size) {
 
@@ -460,25 +460,18 @@
 
       var res = { name: "Arial", size: 11, weight: null, style: null };
 
-      if (size != null) res.size = Math.round(size);
+      if (size != undefined) res.size = Math.round(size);
 
-      if (fontName == null)
-         fontName = "";
+      if (typeof fontName != 'string') fontName = "";
 
-      if (fontName.indexOf("bold") != -1) {
-         res.weight = "bold";
-         // The first 5 characters are removed because "bold " is always first
-         // when it occurs
-         fontName = fontName.substring(5, fontName.length);
+      while (fontName.length > 0) {
+         if (fontName.charAt(0)==='b') res.weight = "bold"; else
+         if (fontName.charAt(0)==='i') res.style = "italic"; else
+         if (fontName.charAt(0)==='o') res.style = "oblique"; else break;
+         fontName = fontName.substr(1);
       }
-      if (fontName.charAt(0) == 'i') {
-         res.style = "italic";
-         fontName = fontName.substring(7, fontName.length);
-      } else if (fontName.charAt(0) == 'o') {
-         res.style = "oblique";
-         fontName = fontName.substring(8, fontName.length);
-      }
-      if (name == 'Symbol') {
+
+      if (fontName == 'Symbol') {
          res.weight = null;
          res.style = null;
       }
@@ -496,7 +489,6 @@
       }
 
       res.asStyle = function(sz) {
-         // return font name, which could be applied with d3.select().style('font')
          return ((sz!=null) ? sz : this.size) + "px " + this.name;
       }
 
@@ -2326,8 +2318,8 @@
 
       if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
-      var hints = [], nhints = 0, maxlen = 0, maxheight = 0, lastcolor1 = 0, usecolor1 = false,
-          textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3,
+      var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
+          textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           height = this.frame_height(),
           width = this.frame_width(),
           pp = this.pad_painter(true),
@@ -2353,15 +2345,13 @@
 
          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
-         maxheight = Math.max(maxheight, hint.height);
-
          if ((hint.color1!== undefined) && (hint.color1!=='none')) {
             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
             lastcolor1 = hint.color1;
          }
       });
 
-      var layer = this.draw_g.select(".upper_layer"),
+      var layer = this.svg_pad().select(".stat_layer"),
       hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
@@ -2375,11 +2365,13 @@
                        .attr("class", "objects_hints")
                        .style("pointer-events","none");
 
+      // copy transform attributes from frame itself
+      hintsg.attr("transform", this.draw_g.attr("transform"));
+
       var viewmode = hintsg.property('viewmode');
       if (viewmode === undefined) viewmode = "";
 
-      var maxwidth = Math.max(50, Math.round(textheight*maxlen*0.5));
-      var actualw = 0;
+      var actualw = 0, posx = pnt.x + 15;
 
       if (nhints > 1) {
          // if there are many hints, place them left or right
@@ -2391,22 +2383,13 @@
 
          if (pnt.x <= bleft*width) {
             viewmode = "left";
-            hintsg.property('startx', 20);
-            hintsg.property('starty', 10);
-            hintsg.property('stepy', maxheight+10);
+            posx = 20;
          } else
          if (pnt.x >= bright*width) {
             viewmode = "right";
-            hintsg.property('startx', Math.max(50, width - 20 - maxwidth - 2*wmargin));
-            hintsg.property('starty', 10);
-            hintsg.property('stepy', maxheight+10);
-         }
-
-         for (var n = 0; n < hints.length; ++n) {
-            if (hints[n]===null) continue;
-
-            hints[n].x = hintsg.property('startx');
-            hints[n].y = hintsg.property('starty') + n*hintsg.property('stepy');
+            posx = width - 100;
+         } else {
+            posx = hintsg.property('startx');
          }
       } else {
          viewmode = "single";
@@ -2417,6 +2400,10 @@
          hintsg.selectAll("*").remove();
       }
 
+      var font = JSROOT.Painter.getFontDetails(160, textheight);
+
+      var curry = 10;
+
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
          var group = hintsg.select(".painter_hint_"+n);
@@ -2425,8 +2412,7 @@
             continue;
          }
 
-         var was_empty = group.empty(),
-             was_changed = ('changed' in hint) ? hint.changed : true;
+         var was_empty = group.empty();
 
          if (was_empty)
             group = hintsg.append("svg:svg")
@@ -2434,44 +2420,49 @@
                           .style('overflow','hidden')
                           .attr("opacity","0");
 
-         if (viewmode == "single") { hint.x = pnt.x + 15; hint.y = pnt.y + 15; }
+         if (viewmode == "single") { curry = pnt.y + 15; }
 
-         group.attr("x", hint.x)
-              .attr("y", hint.y);
+         group.attr("x", posx)
+              .attr("y", curry);
 
-         if (!was_changed && !was_empty) {
-            // no need to refill tooltip - just check size
-            actualw = Math.max(actualw, parseInt(group.attr("width")) - 2*wmargin);
-            continue;
-         }
+         curry += hints[n].height + 5;
 
          if (!was_empty)
             group.selectAll("*").remove();
 
-         group.attr("width", maxwidth + 2*wmargin)
+         group.attr("width", 100)
               .attr("height", hint.height);
 
          var r = group.append("rect")
                       .attr("x",0)
                       .attr("y",0)
-                      .attr("width",maxwidth + 2*wmargin)
+                      .attr("width", 100)
                       .attr("height", hint.height)
                       .attr("fill","lightgrey")
 
          if (nhints > 1) {
             var col = usecolor1 ? hint.color1 : hint.color2;
             if ((col !== undefined) && (col!=='none'))
-               r.attr("stroke", col).attr("stroke-width", 1);
+               r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
          }
-
-         this.StartTextDrawing(42, textheight, group);
 
          if (hint.lines != null)
             for (var l=0;l<hint.lines.length;l++)
-               if (hint.lines[l]!==null)
-                  this.DrawText(12, wmargin, l*textheight*hstep + hmargin, maxwidth, textheight*hstep, hint.lines[l], 'black', 1, group);
+               if (hint.lines[l]!==null) {
+                  var txt = group.append("svg:text")
+                                 .attr("text-anchor", "left")
+                                 .attr("x", wmargin)
+                                 .attr("y", hmargin + l*textheight*hstep)
+                                 .attr("dy", ".8em")
+                                 .attr("fill","black")
+                                 .call(font.func)
+                                 .text(hint.lines[l]);
 
-         actualw = Math.max(actualw, this.FinishTextDrawing(group));
+                  var box = this.GetBoundarySizes(txt.node());
+
+                  actualw = Math.max(actualw, box.width);
+               }
+
 
          function translateFn() {
             // We only use 'd', but list d,i,a as params just to show can have them as params.
@@ -2487,8 +2478,18 @@
             group.transition().duration(500).attrTween("opacity", translateFn());
       }
 
+      actualw += 2*wmargin;
+
+      if ((viewmode == "right") && (posx + actualw > width)) {
+         posx = width - actualw - 20;
+         hintsg.selectAll("svg").attr("x", posx);
+      }
+
       if (actualw > 10)
-         hintsg.selectAll("svg").attr("width", actualw + 2*wmargin).select('rect').attr("width", actualw + 2*wmargin);
+         hintsg.selectAll("svg").attr("width", actualw)
+               .select('rect').attr("width", actualw);
+
+      hintsg.property('startx', posx);
    }
 
 
@@ -4953,6 +4954,8 @@
                  .style("stroke-width", 1)
                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
+
+      layer.style("pointer-events", (JSROOT.gStyle.Tooltip > 1) ?  "none" : "inherit");
    }
 
    JSROOT.THistPainter.prototype.DrawBins = function() {
@@ -6456,13 +6459,14 @@
                  return "M" + (-d.xerr) + ",0" + endx + "h" + 2*d.xerr + endx +
                         "M0," + (-d.yerr1) + endy + "v" + (d.yerr1+d.yerr2) + endy;
                })
+              .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "inherit" : "none")
               .call(this.lineatt.func);
       }
 
       if (show_markers) {
          // draw markers also when e2 option was specified
          var marker = JSROOT.Painter.createAttMarker(this.histo);
-         nodes.append(marker.kind).call(marker.func, null, true);
+         nodes.append(marker.kind).call(marker.func);
       }
    }
 
@@ -6670,7 +6674,7 @@
          var dd = null;
 
          this.draw_g.selectAll("g").each(function(d) {
-            if ((pnt.x > d.x - d.xerr) && (pnt.x < d.x + d.xerr)) {
+            if ((pnt.x >= d.x - d.xerr) && (pnt.x <= d.x + d.xerr)) {
                if ((dd === null) || (Math.abs(d.x - pnt.x) < Math.abs(dd.x - pnt.x))) dd = d;
             }
          });
@@ -6762,7 +6766,6 @@
                   lines: this.GetBinTips(findbin) };
 
       if (show_rect) {
-
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
                                 .attr("class","tooltip_bin h1bin")
@@ -6777,14 +6780,21 @@
                   .attr("height", gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
+
+         res.exact = Math.abs(midy - pnt.y) <= 5;
+
       } else {
+         var radius = this.lineatt.width + 3;
+
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:circle")
                                 .attr("class","tooltip_bin")
                                 .style("pointer-events","none")
-                                .attr("r", this.lineatt.width + 3)
+                                .attr("r", radius)
                                 .call(this.lineatt.func)
                                 .call(this.fillatt.func);
+
+         res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
 
          res.changed = ttrect.property("current_bin") !== findbin;
 
