@@ -1055,7 +1055,7 @@
 
    JSROOT.TObjectPainter = function(obj) {
       JSROOT.TBasePainter.call(this);
-      this.draw_g = null; // container for all draw objects
+      this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
       this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
@@ -1115,8 +1115,6 @@
 
    JSROOT.TObjectPainter.prototype.RemoveDrawG = function() {
       // generic method to delete all graphical elements, associated with painter
-      // may not work for all cases
-
       if (this.draw_g != null) {
          this.draw_g.remove();
          this.draw_g = null;
@@ -1127,8 +1125,7 @@
      *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
      *  svg:g element can be attached to different layers */
    JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
-      if (this.draw_g)
-         return this.draw_g.selectAll("*").remove();
+      this.RemoveDrawG();
 
       if (take_pad) {
          if (typeof layer != 'string') layer = ".text_layer";
@@ -2326,6 +2323,7 @@
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
+
       if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,

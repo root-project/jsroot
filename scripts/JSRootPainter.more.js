@@ -911,7 +911,6 @@
                 .attr("cy", bin.gry)
                 .property("current_bin", best);
 
-
          var name = this.GetTipName();
          if (name.length > 0) res.lines.push(name);
 
@@ -1013,6 +1012,7 @@
                   .attr("class", "line")
                   .attr("d", path)
                   .style("fill", "none")
+                  .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "visibleStroke" : "none")
                   .call(this.lineatt.func);
 
             if (this.fillatt.color != "none")
