@@ -1369,15 +1369,15 @@
          prop.matrix = JSROOT.GEO.createMatrix(node.fMatrix);
       else
       if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
-         // if (node['fFinder']['_typename'] == 'TGeoPatternParaX') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternParaY') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternParaZ') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternTrapZ') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternCylR') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternSphR') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternSphTheta') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternSphPhi') { }
-         // if (node['fFinder']['_typename'] == 'TGeoPatternHoneycomb') { }
+         // if (node.fFinder._typename === 'TGeoPatternParaX') { }
+         // if (node.fFinder._typename === 'TGeoPatternParaY') { }
+         // if (node.fFinder._typename === 'TGeoPatternParaZ') { }
+         // if (node.fFinder._typename === 'TGeoPatternTrapZ') { }
+         // if (node.fFinder._typename === 'TGeoPatternCylR') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphR') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
+         // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
          if ((node.fFinder._typename === 'TGeoPatternX') ||
              (node.fFinder._typename === 'TGeoPatternY') ||
              (node.fFinder._typename === 'TGeoPatternZ')) {

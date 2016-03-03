@@ -1186,7 +1186,7 @@
          }
 
          var pad = this.root_pad();
-         if ((pad!=null) && (pad['fLogy']>0)) {
+         if ((pad!=null) && (pad.fLogy > 0)) {
             if (res.min<0) res.min = res.max * 1e-4;
          }
 
@@ -1594,7 +1594,7 @@
          this.FinishTextDrawing();
       }
 
-      this['PaveDrawFunc'] = this.DrawLegendItems;
+      this.PaveDrawFunc = this.DrawLegendItems;
 
       this.Redraw();
 
@@ -1857,11 +1857,11 @@
 
       }
 
-      this['ShowContextMenu'] = function(kind, evnt) {
+      this.ShowContextMenu = function(kind, evnt) {
          this.main_painter().ShowContextMenu("z", evnt);
       }
 
-      this['Redraw'] = function() {
+      this.Redraw = function() {
          this.Enabled = true;
          var main = this.main_painter();
          this.UseContextMenu = (main !== null);
@@ -1871,7 +1871,7 @@
          this.DrawPave();
       }
 
-      this['PaveDrawFunc'] = this.DrawAxisPalette;
+      this.PaveDrawFunc = this.DrawAxisPalette;
 
       // workaround to let copmlete pallete draw when actual palette colors already there
       this['CompleteDraw'] = this['Redraw'];
