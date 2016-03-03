@@ -2326,28 +2326,25 @@
 
       if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
 
-      var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
+      var hints = [], nhints = 0, maxlen = 0, maxheight = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 10, hmargin = 3, wmargin = 3, hstep = 1.3,
           height = this.frame_height(),
+          width = this.frame_width(),
           pp = this.pad_painter(true),
-          painters = (pp === null) ? [] : pp.painters;
+          painters = [];
 
       // first count - how many processors are there
-      if (pnt!==null) {
-         pnt.nproc = 0;
-         painters.forEach(function(obj) {
-            if ('ProcessTooltip' in obj) pnt.nproc++;
+      if ((pp!==null) && (pp.painters !== null))
+         pp.painters.forEach(function(obj) {
+            if ('ProcessTooltip' in obj) painters.push(obj);
          });
-      }
+
+      if (pnt) pnt.nproc = painters.length;
 
       painters.forEach(function(obj) {
-         var hint = null;
-
-         if ('ProcessTooltip' in obj)
-            hint = obj.ProcessTooltip(pnt);
-
+         var hint = obj.ProcessTooltip(pnt);
          hints.push(hint);
-         if ((hint === null) || (pnt === null)) return;
+         if ((hint === null) || (pnt===null)) return;
 
          nhints++;
 
@@ -2356,35 +2353,21 @@
 
          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
+         maxheight = Math.max(maxheight, hint.height);
+
          if ((hint.color1!== undefined) && (hint.color1!=='none')) {
             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
             lastcolor1 = hint.color1;
          }
       });
 
-      var layer = this.draw_g.select(".upper_layer");
-      var hintsg = layer.select(".objects_hints"); // group with all tooltips
+      var layer = this.draw_g.select(".upper_layer"),
+      hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
-      if ((pnt === null) || (nhints===0) || (maxlen===0)) {
+      if ((pnt === null) || (painters.length===0) || (maxlen===0)) {
          hintsg.remove();
          return;
-      }
-
-      if (nhints > 1) {
-         // resort y position of multiple hints, starting from down
-         var curry = height + 10;
-         for (var n = 0; n < hints.length; ++n) {
-            var p = -1;
-            for (var k = 0; k < hints.length; ++k) {
-               if ((hints[k] === null) || ('checked' in hints[k])) continue;
-               if ((p<0) || (hints[k].y > hints[p].y)) p = k;
-            }
-            if (p<0) break;
-            hints[p].checked = true;
-            if (hints[p].y + hints[p].height > curry) hints[p].y = curry - hints[p].height;
-            curry = hints[p].y - 2*hmargin;
-         }
       }
 
       if (hintsg.empty())
@@ -2392,8 +2375,47 @@
                        .attr("class", "objects_hints")
                        .style("pointer-events","none");
 
+      var viewmode = hintsg.property('viewmode');
+      if (viewmode === undefined) viewmode = "";
+
       var maxwidth = Math.max(50, Math.round(textheight*maxlen*0.5));
       var actualw = 0;
+
+      if (nhints > 1) {
+         // if there are many hints, place them left or right
+
+         var bleft = 0.5, bright = 0.5;
+
+         if (viewmode=="left") bright = 0.7; else
+         if (viewmode=="right") bleft = 0.3;
+
+         if (pnt.x <= bleft*width) {
+            viewmode = "left";
+            hintsg.property('startx', 20);
+            hintsg.property('starty', 10);
+            hintsg.property('stepy', maxheight+10);
+         } else
+         if (pnt.x >= bright*width) {
+            viewmode = "right";
+            hintsg.property('startx', Math.max(50, width - 20 - maxwidth - 2*wmargin));
+            hintsg.property('starty', 10);
+            hintsg.property('stepy', maxheight+10);
+         }
+
+         for (var n = 0; n < hints.length; ++n) {
+            if (hints[n]===null) continue;
+
+            hints[n].x = hintsg.property('startx');
+            hints[n].y = hintsg.property('starty') + n*hintsg.property('stepy');
+         }
+      } else {
+         viewmode = "single";
+      }
+
+      if (viewmode !== hintsg.property('viewmode')) {
+         hintsg.property('viewmode', viewmode);
+         hintsg.selectAll("*").remove();
+      }
 
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
@@ -2412,9 +2434,9 @@
                           .style('overflow','hidden')
                           .attr("opacity","0");
 
-         if (nhints===1) hint.y = pnt.y + 15;
+         if (viewmode == "single") { hint.x = pnt.x + 15; hint.y = pnt.y + 15; }
 
-         group.attr("x", pnt.x+15)
+         group.attr("x", hint.x)
               .attr("y", hint.y);
 
          if (!was_changed && !was_empty) {
@@ -2439,7 +2461,7 @@
          if (nhints > 1) {
             var col = usecolor1 ? hint.color1 : hint.color2;
             if ((col !== undefined) && (col!=='none'))
-               r.attr("stroke", col).attr("stroke-width", 2);
+               r.attr("stroke", col).attr("stroke-width", 1);
          }
 
          this.StartTextDrawing(42, textheight, group);
@@ -6571,6 +6593,7 @@
       this.draw_g.append("svg:path")
                  .attr("d", res)
                  .style("stroke-linejoin","miter")
+                 .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "inherit" : "none")
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
 
