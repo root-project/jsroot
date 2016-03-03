@@ -1070,10 +1070,9 @@
 
    JSROOT.TObjectPainter.prototype.MatchObjectType = function(arg) {
       if ((arg === undefined) || (arg === null) || (this.draw_object===null)) return false;
-      if (typeof arg == 'string') return this.draw_object._typename === arg;
-      return (typeof arg === 'obbject') && (this.draw_object._typename === arg._typename);
+      if (typeof arg === 'string') return this.draw_object._typename === arg;
+      return (typeof arg === 'object') && (this.draw_object._typename === arg._typename);
    }
-
 
    JSROOT.TObjectPainter.prototype.SetItemName = function(name, opt) {
       JSROOT.TBasePainter.prototype.SetItemName.call(name, opt);
@@ -6399,6 +6398,7 @@
          // when no any marker is show, use at least non-empty fill color
          if (this.fillatt.color === 'none') show_markers = true;
 
+         // TODO: provide correct handling of such tooltips - probably without creation of additional elements
          nodes.append("svg:rect")
             .attr("x", function(d) { return -d.xerr; })
             .attr("y", function(d) { return -d.yerr1; })
