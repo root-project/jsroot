@@ -6400,46 +6400,15 @@
             });
       } else
       if (this.options.Error > 0) {
-         /* Draw main error indicators */
-         nodes.append("svg:line") // x indicator
-              .attr("x1", function(d) { return -d.xerr; })
-              .attr("y1", 0)
-              .attr("x2", function(d) { return d.xerr; })
-              .attr("y2", 0)
-              .call(this.lineatt.func);
-         nodes.append("svg:line")  // y indicator
-              .attr("x1", 0)
-              .attr("y1", function(d) { return -d.yerr1; })
-              .attr("x2", 0)
-              .attr("y2", function(d) { return d.yerr2; })
-              .call(this.lineatt.func);
-      }
+         var endx = "", endy = "";
+         if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
 
-      if (this.options.Error == 11) {
-         nodes.append("svg:line")
-                .attr("y1", -3)
-                .attr("x1", function(d) { return -d.xerr; })
-                .attr("y2", 3)
-                .attr("x2", function(d) { return -d.xerr; })
-                .call(this.lineatt.func);
-         nodes.append("svg:line")
-                .attr("y1", -3)
-                .attr("x1", function(d) { return d.xerr; })
-                .attr("y2", 3)
-                .attr("x2", function(d) { return d.xerr; })
-                .call(this.lineatt.func);
-         nodes.append("svg:line")
-                .attr("x1", -3)
-                .attr("y1", function(d) { return -d.yerr1; })
-                .attr("x2", 3)
-                .attr("y2", function(d) { return -d.yerr1; })
-                .call(this.lineatt.func);
-         nodes.append("svg:line")
-                 .attr("x1", -3)
-                 .attr("y1", function(d) { return d.yerr2; })
-                 .attr("x2", 3)
-                 .attr("y2", function(d) { return d.yerr2; })
-                 .call(this.lineatt.func);
+         nodes.append("svg:path")
+              .attr("d", function(d) {
+                 return "M" + (-d.xerr) + ",0" + endx + "h" + 2*d.xerr + endx +
+                        "M0," + (-d.yerr1) + endy + "v" + (d.yerr1+d.yerr2) + endy;
+               })
+              .call(this.lineatt.func);
       }
 
       if (show_markers) {
@@ -6677,8 +6646,7 @@
          if (grx > pnt.x + 0.5) r = m; else { l++; r--; }
       }
 
-      var bin = l;
-      var grx = pmain.grx(this.GetBinX(bin));
+      var bin = l, grx = GetBinGrX(bin);
 
       l = r = bin;
       while ((l>left) && (GetBinGrX(l-1) > grx - 1.0)) --l;
