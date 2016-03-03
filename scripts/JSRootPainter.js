@@ -6674,7 +6674,8 @@
          var dd = null;
 
          this.draw_g.selectAll("g").each(function(d) {
-            if ((pnt.x >= d.x - d.xerr) && (pnt.x <= d.x + d.xerr)) {
+            var range = Math.max(3, d.xerr);
+            if ((pnt.x >= d.x - range) && (pnt.x <= d.x + range)) {
                if ((dd === null) || (Math.abs(d.x - pnt.x) < Math.abs(dd.x - pnt.x))) dd = d;
             }
          });
@@ -6688,7 +6689,12 @@
             midy = dd.y;
             gry2 = dd.y + dd.yerr2;
             show_rect = true;
+
+            // when only histogram shown, marker should be precise
+            if (pnt.nproc === 1)
+               if ((pnt.y < Math.min(gry1, dd.y-3)) || (pnt.y>Math.max(gry2, dd.y+3))) findbin = null;
          }
+
       } else {
 
          var left = this.GetSelectIndex("x", "left", -1),
@@ -6730,7 +6736,7 @@
             var best = height;
             for (var m=l;m<=r;m++) {
                var dist = Math.abs(GetBinGrY(m) - pnt.y);
-               if (dist < best) { best = dist; bin = m; }
+               if (dist < best) { best = dist; findbin = m; }
             }
 
             // if best distance still too far from mouse position, just take from between
