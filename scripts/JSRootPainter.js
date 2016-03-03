@@ -4589,14 +4589,9 @@
 
       if (this.main_painter() !== this) return;
 
-      this['zoom_xmin'] = 0;
-      this['zoom_xmax'] = 0;
-
-      this['zoom_ymin'] = 0;
-      this['zoom_ymax'] = 0;
-
-      this['zoom_zmin'] = 0;
-      this['zoom_zmax'] = 0;
+      this.zoom_xmin = this.zoom_xmax = 0;
+      this.zoom_ymin = this.zoom_ymax = 0;
+      this.zoom_zmin = this.zoom_zmax = 0;
 
       if ((pad==null) || !('fUxmin' in pad) || this.create_canvas) return;
 
@@ -4609,11 +4604,11 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== this['histo']['fXaxis']['fXmin'] || max !== this['histo']['fXaxis']['fXmax'])
-            if (min >= this['histo']['fXaxis']['fXmin'] && max <= this['histo']['fXaxis']['fXmax']) {
+         if (min !== this.histo.fXaxis.fXmin || max !== this.histo.fXaxis.fXmax)
+            if (min >= this.histo.fXaxis.fXmin && max <= this.histo.fXaxis.fXmax) {
                // set zoom values if only inside range
-               this['zoom_xmin'] = min;
-               this['zoom_xmax'] = max;
+               this.zoom_xmin = min;
+               this.zoom_xmax = max;
             }
       }
 
@@ -4625,11 +4620,11 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== this['histo']['fYaxis']['fXmin'] || max !== this['histo']['fYaxis']['fXmax'])
-            if (min >= this['histo']['fYaxis']['fXmin'] && max <= this['histo']['fYaxis']['fXmax']) {
+         if (min !== this.histo.fYaxis.fXmin || max !== this.histo.fYaxis.fXmax)
+            if (min >= this.histo.fYaxis.fXmin && max <= this.histo.fYaxis.fXmax) {
                // set zoom values if only inside range
-               this['zoom_ymin'] = min;
-               this['zoom_ymax'] = max;
+               this.zoom_ymin = min;
+               this.zoom_ymax = max;
             }
       }
    }
@@ -5521,26 +5516,26 @@
    }
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax);
-      var test_z = (zmin!=zmax) && (zmin!=null) && (zmax!=null);
-      var main = this.main_painter();
+      var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax),
+          test_z = (zmin!=zmax) && (zmin!=null) && (zmax!=null),
+          main = this.main_painter();
 
       main.ForEachPainter(function(obj) {
          if (test_x && obj.CanZoomIn("x", xmin, xmax)) {
-            main['zoom_xmin'] = xmin;
-            main['zoom_xmax'] = xmax;
+            main.zoom_xmin = xmin;
+            main.zoom_xmax = xmax;
             isany = true;
             test_x = false;
          }
          if (test_y && obj.CanZoomIn("y", ymin, ymax)) {
-            main['zoom_ymin'] = ymin;
-            main['zoom_ymax'] = ymax;
+            main.zoom_ymin = ymin;
+            main.zoom_ymax = ymax;
             isany = true;
             test_y = false;
          }
          if (test_z && obj.CanZoomIn("z",zmin, zmax)) {
-            main['zoom_zmin'] = zmin;
-            main['zoom_zmax'] = zmax;
+            main.zoom_zmin = zmin;
+            main.zoom_zmax = zmax;
             isany = true;
             test_z = false;
          }
