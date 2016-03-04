@@ -1046,13 +1046,15 @@
       this['CanZoomIn'] = function(axis,min,max) {
          if (axis!=="x") return false;
 
-         if (this.tf1.fSave.length > 0) {
+         var tf1 = this.GetObject();
+
+         if (tf1.fSave.length > 0) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
-            var nb_points = this.tf1.fNpx;
+            var nb_points = tf1.fNpx;
 
-            var xmin = this.tf1.fSave[nb_points + 1];
-            var xmax = this.tf1.fSave[nb_points + 2];
+            var xmin = tf1.fSave[nb_points + 1];
+            var xmax = tf1.fSave[nb_points + 2];
 
             return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
          }

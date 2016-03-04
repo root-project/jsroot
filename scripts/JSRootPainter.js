@@ -4989,52 +4989,307 @@
 
    JSROOT.THistPainter.prototype.AxisAsText = function(axis, value) {
       if (axis == "x") {
-         if (this.x_kind == 'time') {
+         if (this.x_kind == 'time')
             value = this.ConvertX(value);
-            // this is indication of time format
-            if ('formatx' in this) return this.formatx(value);
-            return value.toString();
-         }
+         // this is indication of time format
+         if ('format' in this.x_handle) return this.x_handle.format(value);
 
-         if (this.x_kind == 'labels') {
-            var indx = parseInt(value) + 1;
-            if ((indx<1) || (indx>this.histo.fXaxis.fNbins)) return null;
-            for (var i = 0; i < this.histo.fXaxis.fLabels.arr.length; ++i) {
-               var tstr = this.histo.fXaxis.fLabels.arr[i];
-               if (tstr.fUniqueID == indx) return tstr.fString;
-            }
-         }
-
-         if (Math.abs(value) < 1e-14)
-            if (Math.abs(this.xmax - this.xmin) > 1e-5) value = 0;
          return value.toPrecision(4);
       }
 
       if (axis == "y") {
-         if (this.y_kind == 'labels') {
-            var indx = parseInt(value) + 1;
-            if ((indx<1) || (indx>this.histo.fYaxis.fNbins)) return null;
-            for (var i=0; i < this.histo.fYaxis.fLabels.arr.length; ++i) {
-               var tstr = this.histo.fYaxis.fLabels.arr[i];
-               if (tstr.fUniqueID == indx) return tstr.fString;
-            }
-            return null;
-         }
-         if ('dfy' in this) {
-            return this.dfy(new Date(this.timeoffsety + value * 1000));
-         }
-         if (Math.abs(value) < 1e-14)
-            if (Math.abs(this.ymax - this.ymin) > 1e-5) value = 0;
+         if (this.y_kind == 'time')
+            value = this.ConvertY(value);
+
+         if ('format' in this.y_handle) return this.y_handle.format(value);
+
          return value.toPrecision(4);
       }
 
       return value.toPrecision(4);
    }
 
+   JSROOT.THistPainter.prototype.DrawTAxis = function(axis, handle) {
+      // function draw complete axis
+      // axis - TAxis instance
+
+      var w = this.frame_width(),
+          h = this.frame_height(),
+          vertical = (handle.name=="yaxis"),
+          layer = this.svg_frame().select(".axis_layer"),
+          axis_g = layer.select("." + handle.name + "_container");
+
+      if (axis_g.empty())
+         axis_g = layer.append("svg:g").attr("class",handle.name + "_container");
+      else
+         axis_g.selectAll("*").remove();
+
+      if (handle.name == "xaxis")
+         axis_g.attr("transform", "translate(0," + h + ")");
+
+      handle.nticks = axis.fNdivisions % 100;
+      handle.nticks2 = (axis.fNdivisions % 10000 - handle.nticks) / 100;
+      // var n3ax = ndivx / 10000;
+
+      console.log(handle.name + ' n2ticks ' + handle.nticks2);
+
+      /* axis label */
+      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * h)),
+          labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
+
+      if (axis.fTitle.length > 0) {
+
+          var title_g = axis_g.append("svg:g").attr("class", "axis_title");
+
+          this.StartTextDrawing(axis.fTitleFont, Math.round(axis.fTitleSize * h), title_g);
+
+          var center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1;
+
+          console.log(handle.name + ' labeloff ' + axis.fLabelOffset + '  title off ' + axis.fTitleOffset);
+
+          var tres = 0;
+          if (vertical)
+             tres = this.DrawText(center ? "middle" : (rotate<0 ? "begin" : "end" ),
+                                 Math.round((center ? h/2 : 0) * -rotate),
+                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+ (rotate>0 ? 1 : 2))*labelfont.size)),
+                                 0, (rotate<0 ? -90 : -270),
+                                 axis.fTitle, null, 1, title_g);
+          else
+             tres = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
+                                 Math.round((center ? w/2 : w)*rotate),
+                                 Math.round((labeloffset + 1.3*labelfont.size*axis.fTitleOffset)*rotate),
+                                 0, (rotate<0 ? -180 : 0),
+                                 axis.fTitle, null, 1, title_g);
+
+          if (tres<=0) handle.shrink_forbidden = true;
+
+          this.FinishTextDrawing(title_g);
+      }
+
+      if (handle.kind == 'time') {
+         if (handle.nticks > 8) handle.nticks = 8;
+
+         var scale_range = handle.scale_max - handle.scale_min;
+         var timeformat = JSROOT.Painter.getTimeFormat(axis);
+         if ((timeformat.length == 0) || (scale_range < 0.1 * (handle.max - handle.min)))
+            timeformat = JSROOT.Painter.chooseTimeFormat(scale_range, handle.nticks);
+
+         if (timeformat.length > 0)
+            handle.format = d3.time.format(timeformat);
+         else
+            handle.format = function(d) { return d.toString(); }
+
+      } else
+      if (handle.kind == 'log') {
+         handle.noexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+         if ((handle.scale_max < 300) && (handle.scale_min > 0.3)) handle.noexp = true;
+         handle.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+
+         handle.format = function(d) {
+            var val = parseFloat(d);
+            var vlog = JSROOT.log10(val);
+            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this.noexp)
+                  return JSROOT.Painter.formatExp(val.toExponential(0));
+               else
+               if (vlog<0)
+                  return val.toFixed(Math.round(-vlog+0.5));
+               else
+                  return val.toFixed(0);
+            }
+            return null;
+         }
+      } else
+      if (handle.kind == 'labels') {
+         handle.nticks = 50; // for text output allow max 50 names
+         var scale_range = handle.scale_max - handle.scale_min;
+         if (handle.nticks > scale_range)
+            handle.nticks = parseInt(scale_range);
+         handle.nticks2 = 1;
+
+         handle.axis = axis;
+
+         handle.format = function(d) {
+            var indx = Math.round(parseInt(d)) + 1;
+            if ((indx<1) || (indx>this.axis.fNbins)) return null;
+            for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
+               var tstr = this.axis.fLabels.arr[i];
+               if (tstr.fUniqueID == indx) return tstr.fString;
+            }
+         }
+      } else
+      handle.format = function(d) {
+         if ((Math.abs(d) < 1e-14) && (Math.abs(this.max - this.min) > 1e-5)) d = 0;
+         return parseFloat(d.toPrecision(12));
+      }
+
+      var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
+          DivLength = Math.round(axis.fTickLength*(vertical ? w : h));
+
+      if (AxisColor === undefined) AxisColor = 'black';
+
+      var major = handle.func.ticks(handle.nticks), minor = major;
+
+      if (handle.nticks2 > 1)
+         minor = handle.func.ticks(major.length * handle.nticks2);
+
+      var center = (handle.kind == 'labels') ||
+                   (handle.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
+
+      var res = "", last = 0, lasth = 0, nmajor = 0, textscale = 1,
+          hmajor = DivLength, hminor = Math.round(DivLength/2);
+
+      // first draw ticks
+
+      for (var n=0;n<minor.length;++n) {
+         var pos = Math.round(handle.func(minor[n]));
+
+         if (vertical) {
+            if (n==0) res += "M0," + pos;
+                 else res += "m" + -lasth + "," +(pos-last);
+
+         } else {
+            if (n==0) res += "M"+pos+",0";
+                 else res += "m" + (pos-last) + "," + lasth;
+         }
+
+         lasth = hminor;
+
+         if ((nmajor < major.length) && (pos == Math.round(handle.func(major[nmajor])))) {
+            lasth = hmajor;
+            nmajor++;
+         }
+
+         if (vertical)
+            res += "h"+ lasth;
+         else
+            res += "v"+ -lasth;
+
+         last = pos;
+      }
+
+      console.log(handle.name + ' path ' + res.length);
+
+      axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
+
+      last = vertical ? h : 0;
+
+      var text_g = axis_g.append("svg:g")
+                         .attr("class","axis_labels")
+                         .call(labelfont.func);
+
+      for (nmajor=0;nmajor<major.length;++nmajor) {
+         var pos = Math.round(handle.func(major[nmajor]));
+         var lbl = handle.format(major[nmajor]);
+
+         var t = text_g.append("svg:text").text(lbl);
+
+         if (vertical)
+            t.attr("x", -labeloffset)
+             .attr("y", pos)
+             .style("text-anchor", "end")
+             .style("dominant-baseline", "middle");
+         else
+            t.attr("x", pos)
+             .attr("y", labeloffset)
+             .attr("dy", ".7em")
+             .style("text-anchor", "middle");
+
+         var tsize = this.GetBoundarySizes(t.node());
+         var space_before = (nmajor > 0) ? pos - last : (vertical ? h/2 : w/2);
+         var space_after = (nmajor < major.length-1) ? (Math.round(handle.func(major[nmajor+1])) - pos) : space_before;
+         var space = Math.min(Math.abs(space_before), Math.abs(space_after));
+
+         if (vertical) {
+
+            if ((space > 0) && (tsize.height > 5) && (handle.kind !== 'log'))
+               textscale = Math.min(textscale, space / tsize.height);
+
+            if (center) {
+               // if position too far top, remove label
+               if (pos + space_after/2 - textscale*tsize.height/2 < -10)
+                  t.remove();
+               else
+                  t.attr("y", Math.round(pos + space_after/2));
+            }
+
+         } else {
+
+            // test if label consume too much space
+            if ((space > 0) && (tsize.width > 10) && (handle.kind !== 'log'))
+               textscale = Math.min(textscale, space / tsize.width);
+
+            if (center) {
+               // if position too far right, remove label
+               if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
+                  t.remove();
+               else
+                  t.attr("x", Math.round(pos + space_after/2));
+            }
+         }
+
+         last = pos;
+     }
+
+     if ((textscale>0) && (textscale<1.)) {
+        labelfont.size = Math.floor(labelfont.size * textscale);
+        text_g.call(labelfont.func);
+     }
+
+     if (JSROOT.gStyle.Zooming) {
+        var r =  axis_g.append("svg:rect")
+                       .style("opacity", "0")
+                       .style("cursor", "crosshair");
+
+        if (vertical)
+           r.attr("x",-2*labelfont.size - 3)
+            .attr("y", 0)
+            .attr("width", 2*labelfont.size + 3)
+            .attr("height", h)
+        else
+           r.attr("x", 0).attr("y", 0)
+            .attr("width", w).attr("height", labelfont.size + 3);
+     }
+   }
+
    JSROOT.THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
+
+      this.x_handle = {
+            name: "xaxis",
+            func: this.x,
+            kind : this.x_kind,
+            min: this.xmin,
+            max: this.xmax,
+            scale_min: this.scale_xmin,
+            scale_max: this.scale_xmax
+         };
+
+      if (this.options.Logx && this.x_kind !== "time") this.x_handle.kind = "log";
+
+      this.DrawTAxis(this.histo.fXaxis, this.x_handle);
+
+      this.y_handle = {
+            name: "yaxis",
+            func: this.y,
+            kind : this.y_kind,
+            min: this.ymin,
+            max: this.ymax,
+            scale_min: this.scale_ymin,
+            scale_max: this.scale_ymax
+      };
+
+      if (this.options.Logy && this.y_kind !== "time") this.y_handle.kind = "log";
+
+      this.DrawTAxis(this.histo.fYaxis, this.y_handle);
+
+      return;
+
+
+
 
       var w = this.frame_width(), h = this.frame_height();
 
@@ -5060,19 +5315,18 @@
       var n3ay = ndivy / 10000;
 
       /* X-axis label */
-      var xlabelfont = JSROOT.Painter.getFontDetails(this.histo.fXaxis.fLabelFont, this.histo.fXaxis.fLabelSize * h);
-
-      var xAxisLabelOffset = 3 + (this.histo.fXaxis.fLabelOffset * h);
+      var xlabelfont = JSROOT.Painter.getFontDetails(this.histo.fXaxis.fLabelFont, this.histo.fXaxis.fLabelSize * h),
+          xlabeloffset = 3 + Math.round(this.histo.fXaxis.fLabelOffset * h);
 
       if (this.histo.fXaxis.fTitle.length > 0) {
           this.StartTextDrawing(this.histo.fXaxis.fTitleFont, this.histo.fXaxis.fTitleSize * h, xax_g);
 
-          var center = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
-          var rotate = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1. : 1.;
+          var center = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+              rotate = this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1;
 
           var res = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
-                                 (center ? w/2 : w)*rotate,
-                                  rotate*(xAxisLabelOffset + xlabelfont.size * (1.+this.histo.fXaxis.fTitleOffset)),
+                                  Math.round((center ? w/2 : w)*rotate),
+                                  Math.round((xlabeloffset + xlabelfont.size * (1+this.histo.fXaxis.fTitleOffset))*rotate),
                                   0, (rotate<0) ? -180 : 0,
                                   this.histo.fXaxis.fTitle, null, 1, xax_g);
 
@@ -5082,19 +5336,18 @@
       }
 
       /* Y-axis label */
-      var yAxisLabelOffset = 3 + (this.histo.fYaxis.fLabelOffset * w);
-
-      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo.fYaxis.fLabelFont, this.histo.fYaxis.fLabelSize * h);
+      var ylabelfont = JSROOT.Painter.getFontDetails(this.histo.fYaxis.fLabelFont, this.histo.fYaxis.fLabelSize * h),
+          ylabeloffset = 3 + Math.round(this.histo.fYaxis.fLabelOffset * w);
 
       if (this.histo.fYaxis.fTitle.length > 0) {
          this.StartTextDrawing(this.histo.fYaxis.fTitleFont, this.histo.fYaxis.fTitleSize * h, yax_g);
 
-         var center = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
-         var rotate = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? 1 : -1;
+         var center = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             rotate = this.histo.fYaxis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? 1 : -1;
 
          var res = this.DrawText(center ? "middle" : ((rotate<0) ? "end" : "begin"),
-                                 (center ? h/2 : 0) * rotate,
-                                 rotate * (yAxisLabelOffset + (1 + this.histo.fYaxis.fTitleOffset) * ylabelfont.size + yax_g.property('text_font').size),
+                                 Math.round((center ? h/2 : 0) * rotate),
+                                 Math.round(rotate * (ylabeloffset + (1+this.histo.fYaxis.fTitleOffset)*ylabelfont.size + yax_g.property('text_font').size)),
                                  0, (rotate<0 ? -270 : -90),
                                  this.histo.fYaxis.fTitle, null, 1, yax_g);
 
@@ -5104,9 +5357,9 @@
       }
 
       var xAxisColor = this.histo.fXaxis.fAxisColor,
-          xDivLength = this.histo.fXaxis.fTickLength * h,
+          xDivLength = this.histo.fXaxis.fTickLength*h,
           yAxisColor = this.histo.fYaxis.fAxisColor,
-          yDivLength = this.histo.fYaxis.fTickLength * w,
+          yDivLength = this.histo.fYaxis.fTickLength*w,
           pthis = this;
 
       /* Define the scales, according to the information from the pad */
@@ -5161,7 +5414,7 @@
       }
 
       var x_axis = d3.svg.axis().scale(this.x).orient("bottom")
-                           .tickPadding(xAxisLabelOffset)
+                           .tickPadding(xlabeloffset)
                            .tickSize(-xDivLength, -xDivLength / 2, -xDivLength / 4)
                            .ticks(this.x_nticks);
 
@@ -5220,13 +5473,14 @@
       var y_axis = d3.svg.axis()
                    .scale(this.y)
                    .orient("left")
-                   .tickPadding(yAxisLabelOffset)
+                   .tickPadding(ylabeloffset)
                    .tickSize(-yDivLength, -yDivLength / 2,-yDivLength / 4)
                    .ticks(this.y_nticks);
 
       if ('formaty' in this)
          y_axis.tickFormat(this.formaty.bind(this));
 
+/*
       var drawx = xax_g.append("svg:g").attr("class", "xaxis")
                        .call(x_axis).call(xlabelfont.func);
 
@@ -5234,8 +5488,8 @@
           (!this.options.Logx && this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterLabels))) {
          // caluclate label widths to adjust font size
 
-         var maxwidth = 0, cnt = 0, shift = 10;
-         var xlabels = drawx.selectAll(".tick text");
+         var maxwidth = 0, cnt = 0, shift = 10,
+             xlabels = drawx.selectAll(".tick text");
 
          xlabels.each(function() {
             var box = pthis.GetBoundarySizes(d3.select(this).node());
@@ -5269,15 +5523,84 @@
          }
       }
 
-      if ((n2ax > 0) && !this.options.Logx && (this.x_kind != 'labels')) {
-         // this is additional ticks, required in d3.v3
-         var x_axis_sub =
-             d3.svg.axis().scale(this.x).orient("bottom")
-               .tickPadding(xAxisLabelOffset).innerTickSize(-xDivLength / 2)
-               .tickFormat(function(d) { return; })
-               .ticks(this.x.ticks(this.x_nticks).length * n2ax);
+*/
 
-         xax_g.append("svg:g").attr("class", "xaxis").call(x_axis_sub);
+      if (false) {
+
+         // major and minor ticks on the axis
+         var major = this.x.ticks(this.x_nticks),
+             minor = (n2ax > 1) && (this.x_kind !== 'labels') ? this.x.ticks(this.x_nticks * n2ax) : major;
+
+         var center = (this.x_kind == 'labels') ||
+                      (!this.options.Logx && this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kCenterLabels));
+
+         var res = "", last = 0, lasth = 0, nmajor = 0, lastmajor = 0, textscale = 10.,
+             hmajor = Math.round(-xDivLength), hminor = Math.round(-xDivLength/2);
+
+         xax_g.call(xlabelfont.func);
+
+         for (var n=0;n<minor.length;++n) {
+            var pos = Math.round(this.x(minor[n]));
+            if (n==0) res += "M"+pos+",0";
+                 else res += "m" + (pos-last) + "," + (-lasth);
+            lasth = hminor;
+
+            if ((nmajor < major.length) && (pos == Math.round(this.x(major[nmajor])))) {
+               lasth = hmajor;
+
+               var lbl = major[nmajor];
+               if ('formatx' in this) lbl = this.formatx(lbl);
+               nmajor++;
+
+               var t = xax_g.append("svg:text")
+                            .attr("x", pos)
+                            .attr("y", xlabeloffset)
+                            .attr("dy", ".7em")
+                            .style("text-anchor", "middle")
+                            .text(lbl);
+
+               var tsize = this.GetBoundarySizes(t.node());
+
+               var space_left = (nmajor > 0) ? pos - lastmajor : w/2;
+               var space_right = (nmajor < major.length) ? (Math.round(this.x(major[nmajor])) - pos) : space_left;
+
+               var space = Math.min(space_left, space_right);
+
+               console.log('label ' + lbl + '  width ' + tsize.width + ' left ' + space_left + ' right ' + space_right);
+
+               // test if label consume too much space
+               if ((space > 0) && (tsize.width > 10))
+                  textscale = Math.min(textscale, space / tsize.width);
+
+               if (center) {
+                  // if position too far right, remove label
+                  if (pos + space_right/2 - tsize.width/2 > w - 10) {
+                     t.remove();
+                  } else
+                     t.attr("x", Math.round(pos + space_right/2));
+               }
+
+               lastmajor = pos;
+            }
+
+            res += "v"+ lasth;
+            last = pos;
+         }
+
+         xax_g.append("svg:path").attr("d", res).style("stroke","black");
+
+         if ((textscale>0) && (textscale < 1.)) {
+            xlabelfont.size = Math.floor(xlabelfont.size * textscale);
+            xax_g.call(xlabelfont.func);
+         }
+
+         // this is additional ticks, required in d3.v3
+//         var x_axis_sub =
+//             d3.svg.axis().scale(this.x).orient("bottom")
+//               .tickPadding(xlabeloffset).innerTickSize(-xDivLength / 2)
+//               .tickFormat(function(d) { return; })
+//               .ticks(this.x.ticks(this.x_nticks).length * n2ax);
+//         xax_g.append("svg:g").attr("class", "xaxis").call(x_axis_sub);
       }
 
       var drawy = yax_g.append("svg:g").attr("class", "yaxis").call(y_axis).call(ylabelfont.func);
@@ -5317,7 +5640,7 @@
       if ((n2ay > 0) && !this.options.Logy && (this.y_kind != 'labels')) {
          // this is additional ticks, required in d3.v3
          var y_axis_sub = d3.svg.axis().scale(this.y).orient("left")
-               .tickPadding(yAxisLabelOffset).innerTickSize(-yDivLength / 2)
+               .tickPadding(ylabeloffset).innerTickSize(-yDivLength / 2)
                .tickFormat(function(d) { return; })
                .ticks(this.y.ticks(this.y_nticks).length * n2ay);
 
@@ -6652,17 +6975,17 @@
           cont = this.histo.getBinContent(bin+1);
 
       if (this.options.Error > 0) {
-         tips.push("x = " + this.AxisAsText("x", (x1+x2)/2));
-         tips.push("y = " + this.AxisAsText("y", cont));
+         tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
+         tips.push("y = " + pmain.AxisAsText("y", cont));
          tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
          tips.push("error y = " + this.histo.getBinError(bin + 1).toPrecision(4));
       } else {
          tips.push("bin = " + (bin+1));
 
          if (pmain.x_kind === 'labels')
-            tips.push("x = " + this.AxisAsText("x", x1));
+            tips.push("x = " + pmain.AxisAsText("x", x1));
          else
-            tips.push("x = [" + this.AxisAsText("x", x1) + ", " + this.AxisAsText("x", x2) + "]");
+            tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + "]");
 
          tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
       }
