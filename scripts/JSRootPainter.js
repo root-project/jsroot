@@ -5030,33 +5030,31 @@
       console.log(handle.name + ' n2ticks ' + handle.nticks2);
 
       /* axis label */
-      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * h)),
-          labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
+      var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
       if (axis.fTitle.length > 0) {
 
-          var title_g = axis_g.append("svg:g").attr("class", "axis_title");
+          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+              title_fontsize = Math.round(axis.fTitleSize * h),
+              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
 
-          this.StartTextDrawing(axis.fTitleFont, Math.round(axis.fTitleSize * h), title_g);
-
-          var center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1;
-
-          console.log(handle.name + ' labeloff ' + axis.fLabelOffset + '  title off ' + axis.fTitleOffset);
+          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
           var tres = 0;
           if (vertical)
              tres = this.DrawText(center ? "middle" : (rotate<0 ? "begin" : "end" ),
                                  Math.round((center ? h/2 : 0) * -rotate),
-                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+ (rotate>0 ? 1 : 2))*labelfont.size)),
+                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+(rotate>0?1:2))*title_fontsize)),
                                  0, (rotate<0 ? -90 : -270),
-                                 axis.fTitle, null, 1, title_g);
+                                 axis.fTitle, title_color, 1, title_g);
           else
              tres = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
                                  Math.round((center ? w/2 : w)*rotate),
-                                 Math.round((labeloffset + 1.3*labelfont.size*axis.fTitleOffset)*rotate),
+                                 Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)*rotate),
                                  0, (rotate<0 ? -180 : 0),
-                                 axis.fTitle, null, 1, title_g);
+                                 axis.fTitle, title_color, 1, title_g);
 
           if (tres<=0) handle.shrink_forbidden = true;
 
@@ -5144,7 +5142,6 @@
       for (var n=0;n<minor.length;++n) {
          var pos = Math.round(handle.func(minor[n]));
 
-
          if (vertical) {
             if (n==0) res += "M0," + pos;
                  else res += "m" + -lasth + "," +(pos-last);
@@ -5176,7 +5173,9 @@
 
       last = vertical ? h : 0;
 
-      var text_g = axis_g.append("svg:g")
+      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * h)),
+          label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
+          label_g = axis_g.append("svg:g")
                          .attr("class","axis_labels")
                          .call(labelfont.func);
 
@@ -5184,7 +5183,7 @@
          var pos = Math.round(handle.func(major[nmajor]));
          var lbl = handle.format(major[nmajor]);
 
-         var t = text_g.append("svg:text").text(lbl);
+         var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
          if (vertical)
             t.attr("x", -labeloffset)
@@ -5235,7 +5234,7 @@
 
      if ((textscale>0) && (textscale<1.)) {
         labelfont.size = Math.floor(labelfont.size * textscale);
-        text_g.call(labelfont.func);
+        label_g.call(labelfont.func);
      }
 
      if (JSROOT.gStyle.Zooming) {
