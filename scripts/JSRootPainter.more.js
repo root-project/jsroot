@@ -1015,7 +1015,6 @@
                   .attr("class", "line")
                   .attr("d", path)
                   .style("fill", "none")
-                  .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "visibleStroke" : "none")
                   .call(this.lineatt.func);
 
             if (this.fillatt.color != "none")
@@ -1024,7 +1023,6 @@
                   .attr("d", path + "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
                                     "L" + this.bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z")
                   .style("stroke", "none")
-                  .style("pointer-events", "none")
                   .call(this.fillatt.func);
          }
 

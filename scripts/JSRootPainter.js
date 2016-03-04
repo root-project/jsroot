@@ -335,8 +335,7 @@
                      .attr("cx", 0)
                      .attr("cy", 0)
                      .attr("r", this.size)
-                     .style("stroke", this.stroke)
-                     .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none");
+                     .style("stroke", this.stroke);
          }.bind(res);
          break;
       case 1: // cross
@@ -358,8 +357,7 @@
                      .attr("y", this.pos)
                      .attr("width", this.size)
                      .attr("height", this.size)
-                     .style("stroke", this.stroke)
-                     .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none");
+                     .style("stroke", this.stroke);
          }.bind(res);
          break;
       case 4: // triangle-up
@@ -399,7 +397,6 @@
             function(selection) {
               selection.style("fill", this.fill)
                        .style("stroke", this.stroke)
-                       .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ? "visibleFill" : "none") // even if not filled, get events
                        .attr("d", this.marker);
             }.bind(res);
 
@@ -1014,20 +1011,18 @@
    }
 
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
-      if (name==null) {
-         delete this['_hitemname'];
-      } else {
-         this['_hitemname'] = name;
-      }
-      if (opt!=null) this['_hdrawopt'] = opt;
+      if (typeof name === 'string') this._hitemname = name;
+                               else delete this._hitemname;
+      if (typeof opt === 'string') this._hdrawopt = opt;
+                             else  delete this._hdrawopt;
    }
 
    JSROOT.TBasePainter.prototype.GetItemName = function() {
-      return ('_hitemname' in this) ? this['_hitemname'] : null;
+      return ('_hitemname' in this) ? this._hitemname : null;
    }
 
    JSROOT.TBasePainter.prototype.GetItemDrawOpt = function() {
-      return ('_hdrawopt' in this) ? this['_hdrawopt'] : "";
+      return ('_hdrawopt' in this) ? this._hdrawopt : "";
    }
 
    JSROOT.TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
@@ -1041,7 +1036,6 @@
       value = parseFloat(value.replace("px",""));
       return isNaN(value) ? 0 : value;
    }
-
 
    // ==============================================================================
 
@@ -2169,28 +2163,26 @@
    }
 
    JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
-      var width = this.pad_width(), height = this.pad_height(), tframe = this.GetObject();
-
-      var has_ndc = ('fX1NDC' in this);
+      var width = this.pad_width(),
+          height = this.pad_height(),
+          tframe = this.GetObject(),
+          root_pad = this.root_pad(),
+          framecolor = this.createAttFill('white'),
+          lineatt = JSROOT.Painter.createAttLine('black'),
+          bordermode = 0, bordersize = 0,
+          has_ndc = ('fX1NDC' in this);
 
       if (!has_ndc) {
-         var pad = this.root_pad();
-         if (pad === null)
+         if (root_pad === null)
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          else
             JSROOT.extend(this, {
-               fX1NDC: pad.fLeftMargin,
-               fX2NDC: 1 - pad.fRightMargin,
-               fY1NDC: pad.fTopMargin,
-               fY2NDC: 1 - pad.fBottomMargin
+               fX1NDC: root_pad.fLeftMargin,
+               fX2NDC: 1 - root_pad.fRightMargin,
+               fY1NDC: root_pad.fTopMargin,
+               fY2NDC: 1 - root_pad.fBottomMargin
             });
       }
-
-      var root_pad = this.root_pad();
-
-      var framecolor = this.createAttFill('white'),
-          lineatt = JSROOT.Painter.createAttLine('black'),
-          bordermode = 0, bordersize = 0;
 
       if (tframe !== null) {
          bordermode = tframe.fBorderMode;
@@ -2251,41 +2243,6 @@
 
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
-
-         var painter = this;
-
-         function HideEvent() {
-            painter.ProcessTooltipEvent(null);
-         };
-
-         function ProcessEvent() {
-            var evnt = d3.event;
-
-            var point = main_svg.node().createSVGPoint();
-
-            point.x = evnt.clientX;
-            point.y = evnt.clientY;
-            var ctm = top_rect.node().getScreenCTM();
-            var inverse = ctm.inverse();
-
-            var pnt = point.matrixTransform(inverse);
-
-            painter.ProcessTooltipEvent(pnt);
-         };
-
-         if (JSROOT.gStyle.Tooltip > 1) {
-            // install events handler for special tooltip kinds
-            main_svg
-              .attr("title","")
-              .on('mousemove', ProcessEvent)
-              .on('mouseleave', HideEvent);
-
-            top_rect
-              .attr("title","")
-              .style("pointer-events","visibleFill")
-              .on('mousemove', ProcessEvent)
-              .on('mouseleave', HideEvent);
-         }
       }
 
       // simple way to access painter via frame container
@@ -2312,7 +2269,50 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      this.AddDrag({ obj: this, only_resize:true, redraw: this.RedrawPad.bind(this) });
+      this.AddDrag({ obj: this, only_resize: true, redraw: this.RedrawPad.bind(this) });
+
+      var tooltip_rect = this.draw_g.select(".interactive_rect");
+
+      if (JSROOT.gStyle.Tooltip < 2)
+         return tooltip_rect.remove();
+
+      if (tooltip_rect.empty()) {
+
+         var painter = this;
+
+         function HideEvent() {
+            painter.ProcessTooltipEvent(null);
+         };
+
+         function ProcessEvent() {
+            var evnt = d3.event;
+
+            var point = main_svg.node().createSVGPoint();
+
+            point.x = evnt.clientX;
+            point.y = evnt.clientY;
+            var ctm = top_rect.node().getScreenCTM();
+            var inverse = ctm.inverse();
+
+            var pnt = point.matrixTransform(inverse);
+
+            painter.ProcessTooltipEvent(pnt);
+         };
+
+         tooltip_rect =
+            this.draw_g
+                .append("rect")
+                .attr("opacity","0")
+                .style("pointer-events", "visibleFill")
+                .attr("title","")
+                .on('mousemove', ProcessEvent)
+                .on('mouseleave', HideEvent);
+      }
+
+      tooltip_rect.attr("x", 0)
+                  .attr("y", 0)
+                  .attr("width", w)
+                  .attr("height", h);
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -2364,6 +2364,9 @@
          hintsg.remove();
          return;
       }
+
+      // we need to set pointer-events=none for all elements while hints
+      // placed in front of so-called interactive rect in frame, used to catch mouse events
 
       if (hintsg.empty())
          hintsg = layer.append("svg:g")
@@ -2423,7 +2426,8 @@
             group = hintsg.append("svg:svg")
                           .attr("class", "painter_hint_"+n)
                           .style('overflow','hidden')
-                          .attr("opacity","0");
+                          .attr("opacity","0")
+                          .style("pointer-events","none");
 
          if (viewmode == "single") { curry = pnt.y + 15; }
 
@@ -2444,6 +2448,7 @@
                       .attr("width", 100)
                       .attr("height", hint.height)
                       .attr("fill","lightgrey")
+                      .style("pointer-events","none");
 
          if (nhints > 1) {
             var col = usecolor1 ? hint.color1 : hint.color2;
@@ -2460,6 +2465,7 @@
                                  .attr("y", hmargin + l*textheight*hstep)
                                  .attr("dy", ".8em")
                                  .attr("fill","black")
+                                 .style("pointer-events","none")
                                  .call(font.func)
                                  .text(hint.lines[l]);
 
@@ -2847,7 +2853,6 @@
          this.draw_g.append("svg:path")
                .attr("d", line(drawbins) + close_symbol)
                .attr("class", "draw_line")
-               .style("pointer-events","none")
                .call(lineatt.func)
                .call(this.fillatt.func);
 
@@ -3943,16 +3948,12 @@
       if ((this.pad===null) || (indx >= this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);
 
-      // var pp = this.FindPainterFor(this.pad.fPrimitives.arr[indx]);
-
       var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
 
-      if (pp) {
-         pp._primitive = true; // mark painter as belonging to primitives
-         return pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
-      }
+      if (pp === null) return this.DrawPrimitive(indx+1, callback);
 
-      this.DrawPrimitive(indx+1, callback);
+      pp._primitive = true; // mark painter as belonging to primitives
+      pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function() {
@@ -4959,8 +4960,6 @@
                  .style("stroke-width", 1)
                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
-
-      layer.style("pointer-events", (JSROOT.gStyle.Tooltip > 1) ?  "none" : "inherit");
    }
 
    JSROOT.THistPainter.prototype.DrawBins = function() {
@@ -6391,7 +6390,7 @@
       var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
-          pmain = this.main_painter();
+          pmain = this.main_painter(), pthis = this;
 
       for (var n = 0; n < draw_bins.length; ++n) {
          var pnt = draw_bins[n];
@@ -6422,13 +6421,8 @@
                      .property('mydata', function(d) { return d; })
                      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-      var tt_events = 'none';
-
-      if (JSROOT.gStyle.Tooltip === 1) {
-         tt_events = "visibleFill";
-         var pthis = this;
+      if (JSROOT.gStyle.Tooltip === 1)
          nodes.append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
-      }
 
       if (this.options.Error == 12) {
 
@@ -6440,11 +6434,12 @@
             .attr("y", function(d) { return -d.yerr1; })
             .attr("width", function(d) { return 2*d.xerr; })
             .attr("height", function(d) { return d.yerr1 + d.yerr2; })
-            .call(this.fillatt.func)
-            .style("pointer-events", tt_events) // even when fill attribute not specified, get mouse events
+            .call(this.fillatt.func);
+             // even when fill attribute not specified, get mouse events
 
          if (JSROOT.gStyle.Tooltip === 1)
             nodes.select("rect")
+                 .style("pointer-events", "visibleFill")
                  .property('fill0', this.fillatt.color)
                  .on('mouseover', function() {
                     if (JSROOT.gStyle.Tooltip !== 1) return;
@@ -6464,7 +6459,6 @@
                  return "M" + (-d.xerr) + ",0" + endx + "h" + 2*d.xerr + endx +
                         "M0," + (-d.yerr1) + endy + "v" + (d.yerr1+d.yerr2) + endy;
                })
-              .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "inherit" : "none")
               .call(this.lineatt.func);
       }
 
@@ -6602,7 +6596,6 @@
       this.draw_g.append("svg:path")
                  .attr("d", res)
                  .style("stroke-linejoin","miter")
-                 .style("pointer-events", (JSROOT.gStyle.Tooltip == 1) ?  "inherit" : "none")
                  .call(this.lineatt.func)
                  .call(this.fillatt.func);
 
