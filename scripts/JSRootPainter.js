@@ -4944,19 +4944,17 @@
       /* add a grid on x axis, if the option is set */
 
       // add a grid on x axis, if the option is set
-      if (this.options.Gridx) {
+      if (this.options.Gridx && this.x_handle) {
 
          var h = this.frame_height();
 
-         var xticks = this.x.ticks(this.x_nticks);
-
          layer.selectAll(".xgrid")
-                .data(xticks).enter()
+                .data(this.x_handle.ticks).enter()
                   .append("svg:line")
                   .attr("class", "xgrid")
-                  .attr("x1", this.x)
+                  .attr("x1", function(d) { return d; })
                   .attr("y1", h)
-                  .attr("x2", this.x)
+                  .attr("x2", function(d) { return d; })
                   .attr("y2",0)
                   .style("stroke", "black")
                   .style("stroke-width", 1)
@@ -4964,19 +4962,17 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (this.options.Gridy) {
+      if (this.options.Gridy && this.y_handle) {
          var w = this.frame_width();
 
-         var yticks = this.y.ticks(this.y_nticks);
-
          layer.selectAll('.ygrid')
-              .data(yticks).enter()
+              .data(this.y_handle.ticks).enter()
                  .append("svg:line")
                  .attr("class", "ygrid")
                  .attr("x1", 0)
-                 .attr("y1", this.y)
+                 .attr("y1", function(d) { return d; })
                  .attr("x2", w)
-                 .attr("y2", this.y)
+                 .attr("y2", function(d) { return d; })
                  .style("stroke", "black")
                  .style("stroke-width", 1)
                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
@@ -5082,6 +5078,7 @@
 
       } else
       if (handle.kind == 'log') {
+         handle.nticks2 = 1;
          handle.noexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
          if ((handle.scale_max < 300) && (handle.scale_min > 0.3)) handle.noexp = true;
          handle.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
@@ -5142,8 +5139,11 @@
 
       // first draw ticks
 
+      handle.ticks = [];
+
       for (var n=0;n<minor.length;++n) {
          var pos = Math.round(handle.func(minor[n]));
+
 
          if (vertical) {
             if (n==0) res += "M0," + pos;
@@ -5159,6 +5159,7 @@
          if ((nmajor < major.length) && (pos == Math.round(handle.func(major[nmajor])))) {
             lasth = hmajor;
             nmajor++;
+            handle.ticks.push(pos); // keep graphical of major ticks
          }
 
          if (vertical)
