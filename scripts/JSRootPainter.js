@@ -1117,8 +1117,10 @@
      *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
      *  svg:g element can be attached to different layers */
    JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
-      this.RemoveDrawG();
-
+      if (this.draw_g) {
+         // one should keep svg:g element on its place
+         d3.selectAll(this.draw_g.node().childNodes).remove();
+      } else
       if (take_pad) {
          if (typeof layer != 'string') layer = ".text_layer";
          this.draw_g = this.svg_pad().select(layer).append("svg:g");
@@ -1127,8 +1129,11 @@
          this.draw_g = this.svg_frame().select(layer).append("svg:g");
       }
 
-      // set attribute for debugging
-      this.draw_g.attr('objname', this.GetTipName());
+      // set attributes for debugging
+      if (this.draw_object!==null) {
+         this.draw_g.attr('objname', this.draw_object.fName);
+         this.draw_g.attr('objtype', this.draw_object._typename);
+      }
 
       return this.draw_g;
    }
