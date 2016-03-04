@@ -2278,20 +2278,19 @@
 
       if (tooltip_rect.empty()) {
 
-         var painter = this;
+         var painter = this,
+             point = main_svg.node().createSVGPoint();
 
          function CloseEvent() {
             painter.ProcessTooltipEvent(null);
          }
 
          function MouseMoveEvent() {
-            var point = main_svg.node().createSVGPoint();
             point.x = d3.event.clientX;
             point.y = d3.event.clientY;
             var ctm = tooltip_rect.node().getScreenCTM();
-            var inverse = ctm.inverse();
-            var pnt = point.matrixTransform(inverse);
-            painter.ProcessTooltipEvent(pnt);
+            var pnt = point.matrixTransform(ctm.inverse());
+            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false });
          }
 
          function TouchMoveEvent() {
@@ -2300,13 +2299,11 @@
             if (touches.length !== 1)
                return painter.ProcessTooltipEvent(null);
 
-            var point = main_svg.node().createSVGPoint();
             point.x = touches[0].pageX;
             point.y = touches[0].pageY;
             var ctm = tooltip_rect.node().getScreenCTM();
-            var inverse = ctm.inverse();
-            var pnt = point.matrixTransform(inverse);
-            painter.ProcessTooltipEvent(pnt);
+            var pnt = point.matrixTransform(ctm.inverse());
+            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true });
          }
 
          tooltip_rect =
@@ -2321,16 +2318,23 @@
 
 
          if (JSROOT.touches)
-            tooltip_rect.on("touchstart", TouchMoveEvent)
-                        .on("touchmove", TouchMoveEvent)
-                        .on("touchend", CloseEvent)
-                        .on("touchcancel", CloseEvent);
+            tooltip_rect
+               // .on("touchstart", TouchMoveEvent) // not react on enter event, only moving
+               .on("touchmove", TouchMoveEvent)
+               .on("touchend", CloseEvent)
+               .on("touchcancel", CloseEvent);
       }
 
       tooltip_rect.attr("x", 0)
                   .attr("y", 0)
                   .attr("width", w)
                   .attr("height", h);
+   }
+
+   JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
+      // return true if tooltip is shown, use to prevent some other action
+      if (JSROOT.gStyle.Tooltip < 2) return false;
+      return !this.svg_pad().select(".stat_layer").select(".objects_hints").empty();
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
@@ -2350,7 +2354,10 @@
             if ('ProcessTooltip' in obj) painters.push(obj);
          });
 
-      if (pnt) pnt.nproc = painters.length;
+      if (pnt) {
+         pnt.nproc = painters.length;
+         if (pnt.touch) textheight = 15;
+      }
 
       painters.forEach(function(obj) {
          var hint = obj.ProcessTooltip(pnt);
@@ -2443,7 +2450,8 @@
                           .attr("opacity","0")
                           .style("pointer-events","none");
 
-         if (viewmode == "single") { curry = pnt.y + 15; }
+         if (viewmode == "single")
+            curry = pnt.touch ? pnt.y - hints[n].height - 5 : pnt.y + 15;
 
          group.attr("x", posx)
               .attr("y", curry);
@@ -5872,8 +5880,8 @@
 
          var diff = now.getTime() - this.last_touch.getTime();
 
-         if ((diff > 500) && (diff<2000)) {
-            this.ShowContextMenu('main', { clientX : this.zoom_curr[0], clientY : this.zoom_curr[1]});
+         if ((diff > 500) && (diff<2000) && !this.frame_painter().IsTooltipShown()) {
+            this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
             this.last_touch = new Date(0);
          } else {
             this.clearInteractiveElements();
@@ -5954,7 +5962,6 @@
          }
       }
    }
-
 
    JSROOT.THistPainter.prototype.CreateToolbar = function(buttons) {
 
@@ -6703,8 +6710,8 @@
             gry2 = dd.y + dd.yerr2;
             show_rect = true;
 
-            // when only histogram shown, marker should be precise
-            if (pnt.nproc === 1)
+            // when only histogram shown, marker should be precise (but not for touch devices)
+            if ((pnt.nproc === 1) && !pnt.touch)
                if ((pnt.y < Math.min(gry1, dd.y-3)) || (pnt.y>Math.max(gry2, dd.y+3))) findbin = null;
          }
 
@@ -6768,7 +6775,8 @@
          show_rect = (pnt.nproc === 1); // if histogram alone, use old-style with rects
 
          if (show_rect) {
-            if (pnt.y < gry1) findbin = null;
+            // for mouse events mouse pointer should be under the curve
+            if ((pnt.y < gry1) && !pnt.touch) findbin = null;
             gry2 = height;
          }
       }
