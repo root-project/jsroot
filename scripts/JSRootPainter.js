@@ -2290,7 +2290,8 @@
             point.y = d3.event.clientY;
             var ctm = tooltip_rect.node().getScreenCTM();
             var pnt = point.matrixTransform(ctm.inverse());
-            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false });
+            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false,
+                                          pageX: d3.event.pageX, pageY: d3.event.pageY });
          }
 
          function TouchMoveEvent() {
@@ -2303,7 +2304,8 @@
             point.y = touches[0].pageY;
             var ctm = tooltip_rect.node().getScreenCTM();
             var pnt = point.matrixTransform(ctm.inverse());
-            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true });
+            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true,
+                                          pageX: touches[0].pageX, pageY: touches[0].pageY });
          }
 
          tooltip_rect =
@@ -2319,7 +2321,7 @@
 
          if (JSROOT.touches)
             tooltip_rect
-               // .on("touchstart", TouchMoveEvent) // not react on enter event, only moving
+               .on("touchstart", TouchMoveEvent)
                .on("touchmove", TouchMoveEvent)
                .on("touchend", CloseEvent)
                .on("touchcancel", CloseEvent);

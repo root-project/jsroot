@@ -2657,6 +2657,8 @@
 
       var w = this.frame_width(), h = this.frame_height();
 
+      delete this.ProcessTooltip;
+
       if ((this.options.Color==2) && !JSROOT.browser.isIE)
          return this.DrawSimpleCanvas(w,h);
 
@@ -2676,16 +2678,15 @@
          // Add markers
          var marker = JSROOT.Painter.createAttMarker(this.GetObject());
 
-         var markers =
-            this.draw_g.selectAll(".marker")
-                  .data(local_bins)
-                  .enter().append(marker.kind)
-                  .attr("class", "marker")
-                  .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
-                  .call(marker.func);
+         this.draw_g.selectAll(".marker")
+               .data(local_bins)
+               .enter().append(marker.kind)
+               .attr("class", "marker")
+               .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
+               .call(marker.func)
+               .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
+               .append("svg:title").text(function(d) { return d.tip; });
 
-         if (JSROOT.gStyle.Tooltip > 0)
-            markers.append("svg:title").text(function(d) { return d.tip; });
       } else {
 
          this.draw_g.selectAll(".bins")
@@ -2697,24 +2698,68 @@
              .attr("width", function(d) { return d.width.toFixed(1); })
              .attr("height", function(d) { return d.height.toFixed(1); })
              .style("stroke", function(d) { return d.stroke; })
-             .style("fill", function(d) {
-                this['f0'] = d.fill;
-                this['f1'] = d.tipcolor;
-                return d.fill;
-             })
-             .filter(function() { return JSROOT.gStyle.Tooltip > 0 ? this : null } )
+             .style("fill", function(d) { return d.fill; })
+             .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
              .on('mouseover', function() {
                 if (JSROOT.gStyle.Tooltip > 0)
-                   d3.select(this).transition().duration(100).style("fill", this['f1']);
+                   d3.select(this).transition().duration(100).style("fill", this.__data__.tipcolor);
              })
              .on('mouseout', function() {
-                d3.select(this).transition().duration(100).style("fill", this['f0']);
+                d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
              })
              .append("svg:title").text(function(d) { return d.tip; });
 
       }
 
       delete local_bins;
+
+      if (JSROOT.gStyle.Tooltip > 1)
+         this.ProcessTooltip = this.ProcessTooltipFunc;
+   }
+
+   JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
+      var find = null, cnt = 0;
+
+      if (pnt !== null)
+         this.draw_g.selectAll(".bins"). each(function() {
+            var node = d3.select(this);
+            var x = Number(node.attr("x"));
+            var y = Number(node.attr("y"));
+            if ((pnt.x < x) || (pnt.y<y)) return;
+            var w = Number(node.attr("width"));
+            var h = Number(node.attr("height"));
+            if ((pnt.x > x+w) || (pnt.y > y+h)) return;
+            cnt++; find = this;
+         });
+
+
+      var issame = (cnt===1) && (find === this._sbin);
+
+      if (!issame) {
+         if ('_sbin' in this)
+            d3.select(this._sbin).transition().duration(100).style("fill", this._sbin.__data__.fill);
+
+         delete this._sbin;
+      }
+
+      if (cnt!==1) return null;
+
+      if (!issame) {
+         this._sbin = find;
+         d3.select(find).transition().duration(100).style("fill", find.__data__.tipcolor);
+      }
+
+      var res = {
+            x: Number(d3.select(find).attr("x")) + Number(d3.select(find).attr("width"))/2,
+            y: Number(d3.select(find).attr("y")) + Number(d3.select(find).attr("height"))/2,
+            color1: find.__data__.fill,
+            color2: find.__data__.fill,
+            lines: find.__data__.tip.split("\n"),
+            exact: true,
+            changed: !issame
+        };
+
+      return res;
    }
 
    JSROOT.TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
