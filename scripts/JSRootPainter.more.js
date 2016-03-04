@@ -2718,17 +2718,17 @@
    }
 
    JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
-      var find = null, cnt = 0;
+      var find = null, cnt = 0, ismarker = (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1);
 
       if (pnt !== null)
-         this.draw_g.selectAll(".bins"). each(function() {
-            var node = d3.select(this);
-            var x = Number(node.attr("x"));
-            var y = Number(node.attr("y"));
-            if ((pnt.x < x) || (pnt.y<y)) return;
-            var w = Number(node.attr("width"));
-            var h = Number(node.attr("height"));
-            if ((pnt.x > x+w) || (pnt.y > y+h)) return;
+         this.draw_g.selectAll(ismarker ? ".marker" : ".bins"). each(function() {
+            var d = this.__data__;
+            if (ismarker) {
+               if (Math.abs(pnt.x - d.x)>3 || Math.abs(pnt.y - d.y)>3) return;
+            } else {
+               if ((pnt.x < d.x) || (pnt.y<d.y)) return;
+               if ((pnt.x > d.x+d.width) || (pnt.y > d.y+d.height)) return;
+            }
             cnt++; find = this;
          });
 
@@ -2736,7 +2736,7 @@
       var issame = (cnt===1) && (find === this._sbin);
 
       if (!issame) {
-         if ('_sbin' in this)
+         if (('_sbin' in this) && !ismarker)
             d3.select(this._sbin).transition().duration(100).style("fill", this._sbin.__data__.fill);
 
          delete this._sbin;
@@ -2744,17 +2744,20 @@
 
       if (cnt!==1) return null;
 
+      var d = find.__data__;
+
       if (!issame) {
          this._sbin = find;
-         d3.select(find).transition().duration(100).style("fill", find.__data__.tipcolor);
+         if (!ismarker)
+            d3.select(find).transition().duration(100).style("fill", d.tipcolor);
       }
 
       var res = {
-            x: Number(d3.select(find).attr("x")) + Number(d3.select(find).attr("width"))/2,
-            y: Number(d3.select(find).attr("y")) + Number(d3.select(find).attr("height"))/2,
-            color1: find.__data__.fill,
-            color2: find.__data__.fill,
-            lines: find.__data__.tip.split("\n"),
+            x: d.x + (ismarker ? 0 : d.width/2),
+            y: d.y + (ismarker ? 0 : d.height/2),
+            color1: d.fill,
+            color2: d.fill,
+            lines: d.tip.split("\n"),
             exact: true,
             changed: !issame
         };
