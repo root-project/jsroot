@@ -2701,8 +2701,8 @@
              .style("fill", function(d) { return d.fill; })
              .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
              .on('mouseover', function() {
-                if (JSROOT.gStyle.Tooltip > 0)
-                   d3.select(this).transition().duration(100).style("fill", this.__data__.tipcolor);
+                if (JSROOT.gStyle.Tooltip < 1) return;
+                d3.select(this).transition().duration(100).style("fill", this.__data__.tipcolor);
              })
              .on('mouseout', function() {
                 d3.select(this).transition().duration(100).style("fill", this.__data__.fill);

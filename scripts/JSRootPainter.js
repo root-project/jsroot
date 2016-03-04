@@ -430,6 +430,8 @@
             selection.style('stroke-width', this.width);
             selection.style('stroke-dasharray', this.dash);
          }
+         if (this.fill!==undefined)
+            selection.style('fill', this.fill);
       }
       line.func = line.SetLine.bind(line);
 
@@ -2824,6 +2826,7 @@
       var drawbins = null;
 
       if (this.optionEF > 0) {
+
          var area = d3.svg.area()
                         .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                         .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
@@ -2839,6 +2842,7 @@
                     .call(this.fillatt.func);
       }
 
+      // TODO - make it compacter
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
@@ -2846,7 +2850,15 @@
       if (this.optionBar) {
          var nodes = this.DrawBars();
          if (JSROOT.gStyle.Tooltip === 1)
-            nodes.append("svg:title").text(TooltipText);
+            nodes.on('mouseover', function() {
+               if (JSROOT.gStyle.Tooltip < 1) return;
+               this.__data__.fill = d3.select(this).style("fill");
+               d3.select(this).transition().duration(100).style("fill", "grey");
+            })
+            .on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
+            })
+            .append("svg:title").text(TooltipText);
       }
 
       if (Math.abs(this.lineatt.width) > 99) {
@@ -2949,22 +2961,30 @@
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
-           .call(this.fillatt.func);
+           .call(this.fillatt.func)
+           .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
+           .on('mouseover', function() {
+               if (JSROOT.gStyle.Tooltip < 1) return;
+               this.__data__.fill = d3.select(this).style("fill");
+               d3.select(this).transition().duration(100).style("fill", "grey");
+           })
+           .on('mouseout', function() {
+              d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
+           })
+           .append("svg:title").text(TooltipText);
       }
+
+      this.lineatt.fill = "none"; // used for svg:path, avoid filling
 
       if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0); })
              .append("svg:path")
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width)
-             .style("fill", "none")
+             .call(this.lineatt.func)
              .attr("d", function(d) { return "M-5,"+(d.gry0-3)+"v3h10v-3"; });
 
          nodes.filter(function(d) { return (d.eyhigh > 0); })
              .append("svg:path")
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width)
-             .style("fill", "none")
+             .call(this.lineatt.func)
              .attr("d", function(d) { return "M-5,"+(d.gry2+3)+"v-3h10v3"; });
       }
 
@@ -2972,33 +2992,25 @@
          // lower x error
          nodes.filter(function(d) { return (d.exlow > 0); })
              .append("svg:path")
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width)
-             .style("fill", "none")
+             .call(this.lineatt.func)
              .attr("d", function(d) { return "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6"; });
 
          // high x error
          nodes.filter(function(d) { return (d.exhigh > 0); })
              .append("svg:path")
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width)
-             .style("fill", "none")
+             .call(this.lineatt.func)
              .attr("d", function(d) { return "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6"; });
 
          // low y error
          nodes.filter(function(d) { return (d.eylow > 0); })
               .append("svg:path")
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width)
-              .style("fill", "none")
+              .call(this.lineatt.func)
               .attr("d", function(d) { return "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6"; });
 
          // high y error
          nodes.filter(function(d) { return (d.eyhigh > 0); })
               .append("svg:path")
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width)
-              .style("fill", "none")
+              .call(this.lineatt.func)
               .attr("d", function(d) { return "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6"; });
       }
 
@@ -5060,8 +5072,11 @@
 
       var major = handle.func.ticks(handle.nticks), minor = major;
 
-      if (handle.nticks2 > 1)
+      if (handle.nticks2 > 1) {
          minor = handle.func.ticks(major.length * handle.nticks2);
+         // avoid black filling by minor ticks
+         if (minor.length > (vertical ? h : w) / 4)  minor = major;
+      }
 
       var center = (handle.kind == 'labels') ||
                    (handle.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));

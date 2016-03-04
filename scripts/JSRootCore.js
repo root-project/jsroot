@@ -108,7 +108,7 @@
 
    // default draw styles, can be changed after loading of JSRootCore.js
    JSROOT.gStyle = {
-         Tooltip : 2, // 0 - off, 1-default, 2-advanced (experimental)
+         Tooltip : 1, // 0 - off, 1-default, 2-advanced (experimental)
          ContextMenu : true,
          Zooming : true,
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
