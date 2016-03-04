@@ -2845,7 +2845,7 @@
 
       if (this.optionBar) {
          var nodes = this.DrawBars();
-         if (JSROOT.gStyle.Tooltip > 0)
+         if (JSROOT.gStyle.Tooltip === 1)
             nodes.append("svg:title").text(TooltipText);
       }
 
@@ -2880,7 +2880,7 @@
                .call(this.fillatt.func);
 
          // do not add tooltip for line, when we wants to add markers
-         if ((JSROOT.gStyle.Tooltip>0) && (this.optionMark==0))
+         if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==0))
             this.draw_g.selectAll("draw_line")
                        .data(drawbins).enter()
                        .append("svg:circle")
@@ -2911,20 +2911,20 @@
             var gry = pmain.gry(pnt.y);
 
             // caluclate graphical coordinates
-            pnt.grx1 = grx.toFixed(1);
-            pnt.gry1 = gry.toFixed(1);
+            pnt.grx1 = Math.round(grx);
+            pnt.gry1 = Math.round(gry);
 
             if (this.has_errors) {
-               pnt.grx0 = (pmain.grx(pnt.x - pnt.exlow) - grx).toFixed(1);
-               pnt.grx2 = (pmain.grx(pnt.x + pnt.exhigh) - grx).toFixed(1);
-               pnt.gry0 = (pmain.gry(pnt.y - pnt.eylow) - gry).toFixed(1);
-               pnt.gry2 = (pmain.gry(pnt.y + pnt.eyhigh) - gry).toFixed(1);
+               pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
+               pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
+               pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
+               pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
 
                if (this.is_bent) {
-                  pnt.grdx0 = pmain.gry(pnt.y + graph.fEXlowd[i]) - gry;
-                  pnt.grdx2 = pmain.gry(pnt.y + graph.fEXhighd[i]) - gry;
-                  pnt.grdy0 = pmain.grx(pnt.x + graph.fEYlowd[i]) - grx;
-                  pnt.grdy2 = pmain.grx(pnt.x + graph.fEYhighd[i]) - grx;
+                  pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
+                  pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
+                  pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
+                  pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
                } else {
                   pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
                }
@@ -2939,7 +2939,7 @@
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
-      if ((JSROOT.gStyle.Tooltip>0) && nodes)
+      if ((JSROOT.gStyle.Tooltip===1) && nodes)
          nodes.append("svg:title").text(TooltipText);
 
       if (this.optionRect) {
@@ -2953,117 +2953,53 @@
       }
 
       if (this.optionBrackets) {
-         var prnt = nodes.filter(function(d) { return (d.eylow > 0); });
-         prnt.append("svg:line")
-            .attr("x1", -5)
-            .attr("y1", function(d) { return d.gry0; })
-            .attr("x2", 5)
-            .attr("y2", function(d) { return d.gry0; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width)
-         prnt.append("svg:line")
-            .attr("x1", -5)
-            .attr("y1", function(d) { return d.gry0; })
-            .attr("x2", -5)
-            .attr("y2", function(d) { return Number(d.gry0)-3; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-            .attr("x1", 5)
-            .attr("y1", function(d) { return d.gry0; })
-            .attr("x2", 5)
-            .attr("y2", function(d) { return Number(d.gry0)-3; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width);
+         nodes.filter(function(d) { return (d.eylow > 0); })
+             .append("svg:path")
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width)
+             .style("fill", "none")
+             .attr("d", function(d) { return "M-5,"+(d.gry0-3)+"v3h10v-3"; });
 
-         prnt = nodes.filter(function(d) { return (d.eyhigh > 0); });
-         prnt.append("svg:line")
-            .attr("x1", -5)
-            .attr("y1", function(d) { return d.gry2; })
-            .attr("x2", 5)
-            .attr("y2", function(d) { return d.gry2; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-            .attr("x1", -5)
-            .attr("y1", function(d) { return d.gry2; })
-            .attr("x2", -5)
-            .attr("y2", function(d) { return Number(d.gry2)+3; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-            .attr("x1", 5)
-            .attr("y1", function(d) { return d.gry2; })
-            .attr("x2", 5)
-            .attr("y2", function(d) { return Number(d.gry2)+3; })
-            .style("stroke", this.lineatt.color)
-            .style("stroke-width", this.lineatt.width);
+         nodes.filter(function(d) { return (d.eyhigh > 0); })
+             .append("svg:path")
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width)
+             .style("fill", "none")
+             .attr("d", function(d) { return "M-5,"+(d.gry2+3)+"v-3h10v3"; });
       }
 
       if (this.draw_errors) {
          // lower x error
-         var prnt = nodes.filter(function(d) { return (d.exlow > 0); });
-         prnt.append("svg:line")
-             .attr("y1", 0).attr("x1", 0)
-             .attr("x2", function(d) { return d.grx0; })
-             .attr("y2", function(d) { return d.grdx0.toFixed(1); })
+         nodes.filter(function(d) { return (d.exlow > 0); })
+             .append("svg:path")
              .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-             .attr("y1", function(d) { return (d.grdx0-3).toFixed(1); })
-             .attr("x1", function(d) { return d.grx0; })
-             .attr("y2", function(d) { return (d.grdx0+3).toFixed(1); })
-             .attr("x2", function(d) { return d.grx0; })
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
+             .style("stroke-width", this.lineatt.width)
+             .style("fill", "none")
+             .attr("d", function(d) { return "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6"; });
 
          // high x error
-         prnt = nodes.filter(function(d) { return (d.exhigh > 0); });
-         prnt.append("svg:line")
-              .attr("x1", 0).attr("y1", 0)
-              .attr("x2", function(d) { return d.grx2; })
-              .attr("y2", function(d) { return d.grdx2.toFixed(1); })
-              .style("stroke", this.lineatt.color)
-              .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-              .attr("x1", function(d) { return d.grx2; })
-              .attr("y1", function(d) { return (d.grdx2-3).toFixed(1); })
-              .attr("x2", function(d) { return d.grx2; })
-              .attr("y2", function(d) { return (d.grdx2+3).toFixed(1); })
-              .style("stroke", this.lineatt.color)
-              .style( "stroke-width", this.lineatt.width);
+         nodes.filter(function(d) { return (d.exhigh > 0); })
+             .append("svg:path")
+             .style("stroke", this.lineatt.color)
+             .style("stroke-width", this.lineatt.width)
+             .style("fill", "none")
+             .attr("d", function(d) { return "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6"; });
 
          // low y error
-         prnt = nodes.filter(function(d) { return (d.eylow > 0); });
-         prnt.append("svg:line")
-             .attr("x1", 0).attr("y1", 0)
-             .attr("x2", function(d) { return d.grdy0.toFixed(1); })
-             .attr("y2", function(d) { return d.gry0; })
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-             .attr("x1", function(d) { return (d.grdy0-3).toFixed(1); })
-             .attr("y1", function(d) { return d.gry0; })
-             .attr("x2", function(d) { return (d.grdy0+3).toFixed(1); })
-             .attr("y2", function(d) { return d.gry0; })
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
+         nodes.filter(function(d) { return (d.eylow > 0); })
+              .append("svg:path")
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width)
+              .style("fill", "none")
+              .attr("d", function(d) { return "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6"; });
 
          // high y error
-         prnt = nodes.filter(function(d) { return (d.eyhigh > 0); })
-         prnt.append("svg:line")
-             .attr("x1", 0).attr("y1", 0)
-             .attr("x2", function(d) { return d.grdy2.toFixed(1); })
-             .attr("y2", function(d) { return d.gry2; })
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
-         prnt.append("svg:line")
-             .attr("x1", function(d) { return (d.grdy2-3).toFixed(1); })
-             .attr("y1", function(d) { return d.gry2; })
-             .attr("x2", function(d) { return (d.grdy2+3).toFixed(1); })
-             .attr("y2", function(d) { return d.gry2; })
-             .style("stroke", this.lineatt.color)
-             .style("stroke-width", this.lineatt.width);
+         nodes.filter(function(d) { return (d.eyhigh > 0); })
+              .append("svg:path")
+              .style("stroke", this.lineatt.color)
+              .style("stroke-width", this.lineatt.width)
+              .style("fill", "none")
+              .attr("d", function(d) { return "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6"; });
       }
 
       if (this.optionMark) {
