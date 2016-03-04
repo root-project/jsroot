@@ -15,7 +15,7 @@
 9. Provide new tooltip kind
    - created only when needed (minimizing SVG code)
    - tooltip can be drawn for every object in the frame
-   - touch devices could be supported 
+   - touch devices are supported 
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
 12. Use of cached methods let improve binary I/O perfromance by 20% 

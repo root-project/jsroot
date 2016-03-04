@@ -2162,7 +2162,7 @@
       this.fX2NDC -= shrink_right;
    }
 
-   JSROOT.TFramePainter.prototype.DrawFrameSvg = function() {
+   JSROOT.TFramePainter.prototype.Redraw = function() {
       var width = this.pad_width(),
           height = this.pad_height(),
           tframe = this.GetObject(),
@@ -2280,43 +2280,57 @@
 
          var painter = this;
 
-         function HideEvent() {
+         function CloseEvent() {
             painter.ProcessTooltipEvent(null);
-         };
+         }
 
-         function ProcessEvent() {
-            var evnt = d3.event;
+         function MouseMoveEvent() {
+            var point = main_svg.node().createSVGPoint();
+            point.x = d3.event.clientX;
+            point.y = d3.event.clientY;
+            var ctm = tooltip_rect.node().getScreenCTM();
+            var inverse = ctm.inverse();
+            var pnt = point.matrixTransform(inverse);
+            painter.ProcessTooltipEvent(pnt);
+         }
+
+         function TouchMoveEvent() {
+            if ('changedTouches' in d3.event) touches = d3.event.changedTouches; else
+            if ('touches' in d3.event) touches = d3.event.touches;
+            if (touches.length !== 1)
+               return painter.ProcessTooltipEvent(null);
 
             var point = main_svg.node().createSVGPoint();
-
-            point.x = evnt.clientX;
-            point.y = evnt.clientY;
-            var ctm = top_rect.node().getScreenCTM();
+            point.x = touches[0].pageX;
+            point.y = touches[0].pageY;
+            var ctm = tooltip_rect.node().getScreenCTM();
             var inverse = ctm.inverse();
-
             var pnt = point.matrixTransform(inverse);
-
             painter.ProcessTooltipEvent(pnt);
-         };
+         }
 
          tooltip_rect =
             this.draw_g
                 .append("rect")
-                .attr("opacity","0")
+                .style("opacity","0")
+                .style("fill","none")
                 .style("pointer-events", "visibleFill")
-                .attr("title","")
-                .on('mousemove', ProcessEvent)
-                .on('mouseleave', HideEvent);
+                .on('mouseenter', MouseMoveEvent)
+                .on('mousemove', MouseMoveEvent)
+                .on('mouseleave', CloseEvent);
+
+
+         if (JSROOT.touches)
+            tooltip_rect.on("touchstart", TouchMoveEvent)
+                        .on("touchmove", TouchMoveEvent)
+                        .on("touchend", CloseEvent)
+                        .on("touchcancel", CloseEvent);
       }
 
       tooltip_rect.attr("x", 0)
                   .attr("y", 0)
                   .attr("width", w)
                   .attr("height", h);
-   }
-
-   JSROOT.TFramePainter.prototype.Redraw = function() {
-      this.DrawFrameSvg();
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
@@ -2503,11 +2517,10 @@
       hintsg.property('startx', posx);
    }
 
-
    JSROOT.Painter.drawFrame = function(divid, obj) {
       var p = new JSROOT.TFramePainter(obj);
       p.SetDivId(divid);
-      p.DrawFrameSvg();
+      p.Redraw();
       return p.DrawingReady();
    }
 
@@ -5310,7 +5323,7 @@
             .attr("y", 0)
             .attr("width", w)
             .attr("height", xlabelfont.size + 3)
-            .style('opacity', "0")
+            .style("opacity", "0")
             .style("cursor", "crosshair");
 
          // we will use such rect for zoom selection
@@ -5319,7 +5332,7 @@
             .attr("y", 0)
             .attr("width", 2 * ylabelfont.size + 3)
             .attr("height", h)
-            .style('opacity', "0")
+            .style("opacity", "0")
             .style("cursor", "crosshair");
       }
 
@@ -5736,7 +5749,8 @@
       var arr = d3.touches(this.last_touch_tgt);
       this.touch_cnt+=1;
 
-      // only double-touch will be handled
+      // normally double-touch will be handled
+      // touch with single click used for context menu
       if (arr.length == 1) {
          // this is touch with single element
 
@@ -5940,6 +5954,7 @@
          }
       }
    }
+
 
    JSROOT.THistPainter.prototype.CreateToolbar = function(buttons) {
 
