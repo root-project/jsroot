@@ -5017,8 +5017,9 @@
          if ((handle.scale_max < 300) && (handle.scale_min > 0.3)) handle.noexp = true;
          handle.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
-         handle.format = function(d) {
+         handle.format = function(d, asticks) {
             var val = parseFloat(d);
+            if (val <= 0) return asticks ? null : val.toFixed(4);
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp)
@@ -5029,7 +5030,7 @@
                else
                   return val.toFixed(0);
             }
-            return null;
+            return asticks ? null : val.toFixed(4);
          }
       } else
       if (handle.kind == 'labels') {
@@ -5048,11 +5049,13 @@
                var tstr = this.axis.fLabels.arr[i];
                if (tstr.fUniqueID == indx) return tstr.fString;
             }
+            return null;
          }
       } else
-      handle.format = function(d) {
-         if ((Math.abs(d) < 1e-14) && (Math.abs(this.max - this.min) > 1e-5)) d = 0;
-         return parseFloat(d.toPrecision(12));
+      handle.format = function(d, asticks) {
+         var val = parseFloat(d);
+         if ((Math.abs(val) < 1e-14) && (Math.abs(this.max - this.min) > 1e-5)) return 0;
+         return asticks ? d : val.toFixed(4);
       }
 
       var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
@@ -5120,7 +5123,8 @@
 
       for (nmajor=0;nmajor<major.length;++nmajor) {
          var pos = Math.round(handle.func(major[nmajor]));
-         var lbl = handle.format(major[nmajor]);
+         var lbl = handle.format(major[nmajor], true);
+         if (lbl === null) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
