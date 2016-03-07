@@ -2637,39 +2637,29 @@
       var gr = this.GetObject();
       if (gr===null) return;
 
-      var npoints = gr.fNpoints;
+      var p, kind = 0, npoints = gr.fNpoints;
       if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
 
-      var kind = 0;
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
           || gr._typename.match(/^RooHist/)) kind = 2;
 
-      this.bins = d3.range(npoints).map(
-            function(p) {
-               if (kind == 1)
-                  return {
-                     x : gr.fX[p],
-                     y : gr.fY[p],
-                     exlow : gr.fEX[p],
-                     exhigh : gr.fEX[p],
-                     eylow : gr.fEY[p],
-                     eyhigh : gr.fEY[p]
-                  };
-               if (kind == 2)
-                  return {
-                     x : gr.fX[p],
-                     y : gr.fY[p],
-                     exlow : gr.fEXlow[p],
-                     exhigh : gr.fEXhigh[p],
-                     eylow : gr.fEYlow[p],
-                     eyhigh : gr.fEYhigh[p]
-                  };
-               return {
-                     x : gr.fX[p],
-                     y : gr.fY[p]
-                  };
-            });
+      this.bins = [];
+
+      for (p=0;p<npoints;++p) {
+         var bin = { x : gr.fX[p], y : gr.fY[p] };
+         if (kind === 1) {
+            bin.exlow = bin.exhigh = gr.fEX[p];
+            bin.eylow = bin.eyhigh = gr.fEY[p];
+         } else
+         if (kind === 2) {
+            bin.exlow  = gr.fEXlow[p];
+            bin.exhigh  = gr.fEXhigh[p];
+            bin.eylow  = gr.fEYlow[p];
+            bin.eyhigh = gr.fEYhigh[p];
+         }
+         this.bins.push(bin);
+      }
    }
 
    JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
@@ -2750,46 +2740,22 @@
       return optbins;
    }
 
-   JSROOT.TGraphPainter.prototype.DrawBars = function() {
-      var bins = this.bins,
-          graph = this.GetObject(),
-          w = this.frame_width(),
-          h = this.frame_height(),
-          normal = (this.optionBar !== 1),
-          pmain = this.main_painter();
+   JSROOT.TGraphPainter.prototype.TooltipText = function(d) {
+      var pmain = this.main_painter();
 
-      if (bins.length == 1) {
-         // special case of single bar
-         var binwidthx = (graph.fHistogram.fXaxis.fXmax - graph.fHistogram.fXaxis.fXmin);
-         bins[0].xl = bins[0].x - binwidthx/2;
-         bins[0].xr = bins[0].x + binwidthx/2;
-      } else
-      for (var n=0; n < bins.length; ++n) {
-         if (n>0) bins[n].xl = (bins[n].x + bins[n-1].x)/2;
-         if (n<bins.length-1)
-            bins[n].xr = (bins[n].x + bins[n+1].x)/2;
-         else
-            bins[n].xr = 2*bins[n].x - bins[n].xl;
-         if (n==0) bins[n].xl = 2*bins[0].x - bins[0].xr;
-      }
+      var res = this.GetTipName("\n") +
+                "x = " + pmain.AxisAsText("x", d.x) + "\n" +
+                "y = " + pmain.AxisAsText("y", d.y);
 
-      var selbins = this.OptimizeBins(function(d) { return (pmain.grx(d.xr) < 0) || (pmain.grx(d.xl) > w); });
+      if (this.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+         res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
+                           "/+" + pmain.AxisAsText("x", d.exhigh);
 
-      return this.draw_g.selectAll("bar_graph")
-               .data(selbins).enter()
-               .append("svg:rect")
-               .attr("x", function(d) { return (pmain.grx(d.xl)+0.5).toFixed(1); })
-               .attr("y", function(d) {
-                  if (normal || (d.y>=0)) return pmain.gry(d.y).toFixed(1);
-                  return pmain.gry(0).toFixed(1);
-                })
-               .attr("width", function(d) { return (pmain.grx(d.xr) - pmain.grx(d.xl) - 1).toFixed(1); })
-               .attr("height", function(d) {
-                  var hh = pmain.gry(d.y);
-                  if (normal) return hh>h ? 0 : (h - hh).toFixed(1);
-                  return (d.y<0) ? (hh - pmain.gry(0)).toFixed(1) : (pmain.gry(0) - hh).toFixed(1);
-                })
-               .call(this.fillatt.func);
+      if (this.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+         res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
+                           "/+" + pmain.AxisAsText("y", d.eyhigh);
+
+      return res;
    }
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
@@ -2802,21 +2768,6 @@
           h = this.frame_height(),
           name = this.GetTipName("\n"),
           graph = this.GetObject();
-
-      function TooltipText(d) {
-         var res = name + "x = " + pmain.AxisAsText("x", d.x) + "\n" +
-                      "y = " + pmain.AxisAsText("y", d.y);
-
-         if (pthis.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-            res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
-                              "/+" + pmain.AxisAsText("x", d.exhigh);
-
-         if (pthis.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
-            res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
-                              "/+" + pmain.AxisAsText("y", d.eyhigh);
-
-         return res;
-      }
 
       // add title for complete TGraph
       if (JSROOT.gStyle.Tooltip === 1)
@@ -2848,21 +2799,6 @@
       var line = d3.svg.line()
                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
-
-      if (this.optionBar) {
-         var nodes = this.DrawBars();
-         if (JSROOT.gStyle.Tooltip === 1)
-            nodes.on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip < 1) return;
-               var sel = d3.select(this);
-               if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
-               sel.transition().duration(100).style("fill", "grey");
-            })
-            .on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-            })
-            .append("svg:title").text(TooltipText);
-      }
 
       if (Math.abs(this.lineatt.width) > 99) {
          /* first draw exclusion area, and then the line */
@@ -2904,20 +2840,20 @@
                        .attr("r", 3)
                        .style("opacity", 0)
                        .append("svg:title")
-                       .text(TooltipText);
+                       .text(this.TooltipText.bind(this));
       }
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets) {
-
+      if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
          if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
                var grx = pmain.grx(pnt.x);
                if ((grx<0) || (grx>w)) return true; // exclude point out of X range
                if (pthis.out_of_range) return false; // allow to draw points out of Y range
                var gry = pmain.gry(pnt.y);
-               return (gry<0) || (gry>h); // exclude point out of Y range
+               if (gry>h) return true;
+               return (gry<0) && !pthis.optionBar; // exclude point out of Y range
             });
 
          for (var i = 0; i < drawbins.length; ++i) {
@@ -2955,7 +2891,48 @@
       }
 
       if ((JSROOT.gStyle.Tooltip===1) && nodes)
-         nodes.append("svg:title").text(TooltipText);
+         nodes.append("svg:title").text(this.TooltipText.bind(this));
+
+      if (this.optionBar) {
+         // calculate bar width
+         for (var i=1;i<drawbins.length-1;++i)
+            drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
+
+         // first and last bins
+         switch (drawbins.length) {
+            case 0: break;
+            case 1: drawbins[0].width = w/4; break; // patalogic case of single bin
+            case 2: drawbins[0].width = drawbins[1].width = (drawbins[1].grx1-drawbins[0].grx1)/2; break;
+            default:
+               drawbins[0].width = drawbins[1].width;
+               drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
+         }
+
+         var normal = (this.optionBar !== 1), yy0 = Math.round(pmain.gry(0));
+
+         nodes.append("svg:rect")
+            .attr("x", function(d) { return Math.round(-d.width/2); })
+            .attr("y", function(d) {
+                if (normal) return 0;
+                return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+             })
+            .attr("width", function(d) { return Math.round(d.width); })
+            .attr("height", function(d) {
+                if (normal) return h - d.gry1;
+                return Math.abs(yy0 - d.gry1);
+             })
+            .call(this.fillatt.func)
+            .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
+            .on('mouseover', function() {
+                if (JSROOT.gStyle.Tooltip < 1) return;
+                var sel = d3.select(this);
+                if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
+                sel.transition().duration(100).style("fill", "grey");
+             })
+            .on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+             });
+      }
 
       if (this.optionRect) {
          nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
@@ -2974,8 +2951,7 @@
            })
            .on('mouseout', function() {
               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-           })
-           .append("svg:title").text(TooltipText);
+           });
       }
 
       if (this.optionBrackets) {
