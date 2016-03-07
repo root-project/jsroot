@@ -755,14 +755,75 @@
       return this.DrawingReady();
    }
 
+   // ================================================================================
+
+   JSROOT.Painter.BuildSmoothPath = function(bins, height, ndig, downpart) {
+      // function used to provide svg:path for the smoothed curves
+      // reuse code from d3.js. Used in TF1 and TGraph painters
+
+      if (ndig===undefined) ndig = 2;
+
+      function jsroot_d3_svg_lineSlope(p0, p1) {
+         return (p1.gry - p0.gry) / (p1.grx - p0.grx);
+      }
+      function jsroot_d3_svg_lineFiniteDifferences(points) {
+         var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
+         while (++i < j) {
+            m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
+         }
+         m[i] = d;
+         return m;
+      }
+      function jsroot_d3_svg_lineMonotoneTangents(points) {
+         var d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
+         while (++i < j) {
+            d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
+            if (Math.abs(d) < 1e-6) {
+               m[i] = m[i + 1] = 0;
+            } else {
+               a = m[i] / d;
+               b = m[i + 1] / d;
+               s = a * a + b * b;
+               if (s > 9) {
+                  s = d * 3 / Math.sqrt(s);
+                  m[i] = s * a;
+                  m[i + 1] = s * b;
+               }
+            }
+         }
+         i = -1;
+         while (++i <= j) {
+            s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
+            points[i].dgrx = s || 0;
+            points[i].dgry = m[i]*s || 0;
+         }
+      }
+
+      jsroot_d3_svg_lineMonotoneTangents(bins);
+
+      var bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
+          path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
+                 "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+
+      for(n=1; n<bins.length; ++n) {
+          prev = bin;
+          bin = bins[n];
+          if (n > 1) path += "s";
+          path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+          maxy = Math.max(maxy, prev.gry);
+      }
+
+      var res = { path: path, close: "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
+                                     "L" + bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z"  };
+
+      return res;
+   }
+
+
    // ===================================================================================
 
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
       this.bins = null;
-
-      this['Redraw'] = function() {
-         this.DrawBins();
-      }
 
       this['Eval'] = function(x) {
          return this.GetObject().evalPar(x);
@@ -826,7 +887,7 @@
          return res;
       }
 
-      this['CreateDummyHisto'] = function() {
+      this.CreateDummyHisto = function() {
 
          var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
 
@@ -863,7 +924,7 @@
       }
 
 
-      this['ProcessTooltipFunc'] = function(pnt) {
+      this.ProcessTooltipFunc = function(pnt) {
          var cleanup = false;
 
          if ((pnt === null) || (this.bins===null)) {
@@ -924,8 +985,7 @@
          return res;
       }
 
-
-      this['DrawBins'] = function() {
+      this.Redraw = function() {
 
          var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
 
@@ -954,74 +1014,21 @@
 
          if (this.bins.length > 2) {
 
-            // code taken from d3.js to calculate parameters for Bezier curves
-            // here we using rounded values, plus we want to use delta values in svg:path (more compact)
-            function jsroot_d3_svg_lineSlope(p0, p1) {
-              return (p1.gry - p0.gry) / (p1.grx - p0.grx);
-            }
-            function jsroot_d3_svg_lineFiniteDifferences(points) {
-               var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
-               while (++i < j) {
-                 m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
-               }
-               m[i] = d;
-               return m;
-             }
-             function jsroot_d3_svg_lineMonotoneTangents(points) {
-               var d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
-               while (++i < j) {
-                 d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
-                 if (Math.abs(d) < 1e-6) {
-                   m[i] = m[i + 1] = 0;
-                 } else {
-                   a = m[i] / d;
-                   b = m[i + 1] / d;
-                   s = a * a + b * b;
-                   if (s > 9) {
-                     s = d * 3 / Math.sqrt(s);
-                     m[i] = s * a;
-                     m[i + 1] = s * b;
-                   }
-                 }
-               }
-               i = -1;
-               while (++i <= j) {
-                  s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
-                  points[i].dgrx = s || 0;
-                  points[i].dgry = m[i]*s || 0;
-               }
-             }
+            var path = JSROOT.Painter.BuildSmoothPath(this.bins, h, 2);
 
-             jsroot_d3_svg_lineMonotoneTangents(this.bins);
-
-             bin = this.bins[0];
-
-             var prev, ndig = 2, maxy = Math.max(bin.gry, h+5),
-                 path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
-                        "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
-
-             for(n=1; n<this.bins.length; ++n) {
-                prev = bin;
-                bin = this.bins[n];
-                if (n > 1) path += "s";
-                path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
-                maxy = Math.max(maxy, prev.gry);
-            }
-
-            console.log('tf1 len ' + path.length + '  ' + this.GetTipName());
+            console.log('tf1 len ' + path.path.length + '  ' + this.GetTipName());
 
             if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "line")
-                  .attr("d", path)
+                  .attr("d", path.path)
                   .style("fill", "none")
                   .call(this.lineatt.func);
 
             if (this.fillatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "area")
-                  .attr("d", path + "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
-                                    "L" + this.bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z")
+                  .attr("d", path.path + path.close)
                   .style("stroke", "none")
                   .call(this.fillatt.func);
          }
@@ -1043,7 +1050,7 @@
                .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
       }
 
-      this['CanZoomIn'] = function(axis,min,max) {
+      this.CanZoomIn = function(axis,min,max) {
          if (axis!=="x") return false;
 
          var tf1 = this.GetObject();
@@ -1069,7 +1076,7 @@
          JSROOT.Painter.drawHistogram1D(divid, histo, "AXIS");
       }
       this.SetDivId(divid);
-      this.DrawBins();
+      this.Redraw();
       return this.DrawingReady();
    }
 
@@ -1770,15 +1777,16 @@
       this.draw_g.selectAll('.grpoint').each(function() {
          var d = d3.select(this).datum();
          if (d===undefined) return;
-         var dist2x = Math.pow(pnt.x - d.grx1, 2),
-             dist2y = Math.pow(pnt.y - d.gry1, 2),
-             dist2 = dist2x+dist2y, rect = null;
+         var dist2 = Math.pow(pnt.x - d.grx1, 2) + Math.pow(pnt.y - d.gry1, 2), rect = null;
 
-          if (d.error || d.rect || d.marker || d.bracket) {
+         // later for bar drawings one could check only X direction
+         if (dist2 >= best_dist2) return;
+
+         if (d.error || d.rect || d.marker || d.bracket) {
             rect = { x1: Math.min(-3, d.grx0),  x2: Math.max(3, d.grx2), y1: Math.min(-3, d.gry2), y2: Math.max(3, d.gry0) };
-            if (d.bracket) { rect.x1 = -5; rect.x2 = 5 };
-          } else
-          if (d.bar) {
+            if (d.bracket) { rect.x1 = -5; rect.x2 = 5; }
+         } else
+         if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
              if (painter.optionBar===1) {
@@ -1792,10 +1800,10 @@
           var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
           var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
 
-          if (matchx && matchy && (dist2 < best_dist2)) {
-            best_dist2 = dist2;
-            findbin = this;
-            best = rect;
+          if (matchx && matchy) {
+             best_dist2 = dist2;
+             findbin = this;
+             best = rect;
           }
        });
 
