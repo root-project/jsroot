@@ -2740,21 +2740,25 @@
       return optbins;
    }
 
-   JSROOT.TGraphPainter.prototype.TooltipText = function(d) {
-      var pmain = this.main_painter();
+   JSROOT.TGraphPainter.prototype.TooltipText = function(d, asarray) {
+      var pmain = this.main_painter(), lines = [];
 
-      var res = this.GetTipName("\n") +
-                "x = " + pmain.AxisAsText("x", d.x) + "\n" +
-                "y = " + pmain.AxisAsText("y", d.y);
+      lines.push(this.GetTipName());
+      lines.push("x = " + pmain.AxisAsText("x", d.x));
+      lines.push("y = " + pmain.AxisAsText("y", d.y));
 
       if (this.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-         res += "\nerror x = -" + pmain.AxisAsText("x", d.exlow) +
-                           "/+" + pmain.AxisAsText("x", d.exhigh);
+         lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
+                              "/+" + pmain.AxisAsText("x", d.exhigh));
 
       if (this.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
-         res += "\nerror y = -" + pmain.AxisAsText("y", d.eylow) +
-                           "/+" + pmain.AxisAsText("y", d.eyhigh);
+         lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
+                           "/+" + pmain.AxisAsText("y", d.eyhigh));
 
+      if (asarray) return lines;
+
+      var res = "";
+      for (var n=0;n<lines.length;++n) res += (n>0 ? "\n" : "") + lines[n];
       return res;
    }
 
@@ -2882,10 +2886,11 @@
          }
 
          // here are up to five elements are collected, try to group them
-         nodes = this.draw_g.selectAll("g.node")
+         nodes = this.draw_g.selectAll(".grpoint")
                      .data(drawbins)
                      .enter()
                      .append("svg:g")
+                     .attr("class", "grpoint")
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
@@ -2912,6 +2917,7 @@
          nodes.append("svg:rect")
             .attr("x", function(d) { return Math.round(-d.width/2); })
             .attr("y", function(d) {
+                d.bar = true; // element drawn as bar
                 if (pthis.optionBar!==1) return 0;
                 return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
              })
@@ -2921,7 +2927,7 @@
                 return Math.abs(yy0 - d.gry1);
              })
             .call(this.fillatt.func)
-            .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
+            .filter(function(d) { return JSROOT.gStyle.Tooltip===1 ? this : null; })
             .on('mouseover', function() {
                 if (JSROOT.gStyle.Tooltip < 1) return;
                 var sel = d3.select(this);
@@ -2936,7 +2942,7 @@
       if (this.optionRect) {
          nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
            .append("svg:rect")
-           .attr("x", function(d) { return d.grx0; })
+           .attr("x", function(d) { d.rect = true; return d.grx0; })
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
@@ -2954,17 +2960,15 @@
       }
 
       if (this.optionBrackets) {
-         nodes.filter(function(d) { return (d.eylow > 0); })
+         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
              .style('fill', "none")
-             .attr("d", function(d) { return "M-5,"+(d.gry0-3)+"v3h10v-3"; });
-
-         nodes.filter(function(d) { return (d.eyhigh > 0); })
-             .append("svg:path")
-             .call(this.lineatt.func)
-             .style('fill', "none")
-             .attr("d", function(d) { return "M-5,"+(d.gry2+3)+"v-3h10v3"; });
+             .attr("d", function(d) {
+                d.bracket = true;
+                return ((d.eylow > 0)  ? "M-5,"+(d.gry0-3)+"v3h10v-3" : "") +
+                        ((d.eyhigh > 0) ? "M-5,"+(d.gry2+3)+"v-3h10v3" : "");
+              });
       }
 
       if (this.draw_errors)
@@ -2973,7 +2977,8 @@
              .call(this.lineatt.func)
              .style('fill', "none")
              .attr("d", function(d) {
-                return ((d.exlow > 0) ? "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6" : "") +
+                d.error = true;
+                return ((d.exlow > 0)  ? "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6" : "") +
                        ((d.exhigh > 0) ? "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6" : "") +
                        ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6" : "") +
                        ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
@@ -2986,6 +2991,89 @@
          var marker = JSROOT.Painter.createAttMarker(graph, style);
          nodes.append(marker.kind).call(marker.func);
       }
+
+      if (JSROOT.gStyle.Tooltip > 1)
+         this.ProcessTooltip = this.ProcessTooltipFunc;
+      else
+         delete this.ProcessTooltip;
+   }
+
+   JSROOT.TGraphPainter.prototype.ProcessTooltipFunc = function(pnt) {
+      if (pnt === null) {
+         if (this.draw_g !== null)
+            this.draw_g.select(".tooltip_bin").remove();
+         return null;
+      }
+
+      var width = this.frame_width(),
+          height = this.frame_height(),
+          pmain = this.main_painter(),
+          painter = this,
+          findbin = null, best_dist2 = 1e10, best = null;
+
+      this.draw_g.selectAll('.grpoint').each(function() {
+         var d = d3.select(this).datum();
+         if (d===undefined) return;
+         var dist2x = Math.pow(pnt.x - d.grx1, 2),
+             dist2y = Math.pow(pnt.y - d.gry1, 2),
+             dist2 = dist2x+dist2y, rect = null;
+
+          if (d.error || d.rect) {
+            rect = { x1: d.grx0,  x2: d.grx2, y1: d.gry0, y2: d.gry2 };
+          } else
+          if (d.bracket) {
+            rect = { x1: -5,  x2: +5, y1: d.gry0, y2: d.gry2 };
+          } else
+          if (d.bar) {
+             rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
+
+             if (painter.optionBar===1) {
+                var yy0 = pmain.gry(0);
+                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
+             }
+          } else {
+             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
+          }
+          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
+          var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+
+          if (matchx && matchy && (dist2 < best_dist2)) {
+            best_dist2 = dist2;
+            findbin = this;
+            best = rect;
+          }
+       });
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (findbin == null) {
+         ttrect.remove();
+         return null;
+      }
+
+      var d = d3.select(findbin).datum();
+
+      var res = { x: d.grx1, y: d.gry1,
+                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  lines: this.TooltipText(d, true) };
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:rect")
+                             .attr("class","tooltip_bin h1bin")
+                             .style("pointer-events","none");
+
+      res.changed = ttrect.property("current_bin") !== findbin;
+
+      if (res.changed)
+         ttrect.attr("x", d.grx1 + best.x1)
+               .attr("width", best.x2-best.x1)
+               .attr("y", d.gry1 + best.y1)
+               .attr("height", best.y2 - best.y1)
+               .style("opacity", "0.3")
+               .property("current_bin", findbin);
+
+      return res;
    }
 
    JSROOT.TGraphPainter.prototype.DrawExclusion = function(line) {
@@ -6547,7 +6635,6 @@
    }
 
    JSROOT.TH1Painter.prototype.ProcessTooltipFunc = function(pnt) {
-
       if (pnt === null) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
