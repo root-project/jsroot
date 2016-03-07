@@ -3019,10 +3019,10 @@
              dist2 = dist2x+dist2y, rect = null;
 
           if (d.error || d.rect) {
-            rect = { x1: d.grx0,  x2: d.grx2, y1: d.gry0, y2: d.gry2 };
+            rect = { x1: Math.min(-3, d.grx0),  x2: Math.max(3, d.grx2), y1: d.gry2, y2: d.gry0 };
           } else
           if (d.bracket) {
-            rect = { x1: -5,  x2: +5, y1: d.gry0, y2: d.gry2 };
+            rect = { x1: -5,  x2: +5, y1: d.gry2, y2: d.gry0 };
           } else
           if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
@@ -3046,6 +3046,8 @@
        });
 
       var ttrect = this.draw_g.select(".tooltip_bin");
+
+      // console.log('findbin ' + findbin);
 
       if (findbin == null) {
          ttrect.remove();
