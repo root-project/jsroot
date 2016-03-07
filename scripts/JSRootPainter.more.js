@@ -757,7 +757,7 @@
 
    // ================================================================================
 
-   JSROOT.Painter.BuildSmoothPath = function(bins, height, ndig, downpart) {
+   JSROOT.Painter.BuildSvgPath = function(bins, height, ndig) {
       // function used to provide svg:path for the smoothed curves
       // reuse code from d3.js. Used in TF1 and TGraph painters
 
@@ -1014,7 +1014,7 @@
 
          if (this.bins.length > 2) {
 
-            var path = JSROOT.Painter.BuildSmoothPath(this.bins, h, 2);
+            var path = JSROOT.Painter.BuildSvgPath(this.bins, h, 2);
 
             console.log('tf1 len ' + path.path.length + '  ' + this.GetTipName());
 
@@ -1503,40 +1503,6 @@
       return optbins;
    }
 
-   JSROOT.TGraphPainter.prototype.CreateDrawBins = function(filter_func) {
-      var drawbins = this.OptimizeBins(filter_func),
-          pmain = this.main_painter(),
-          graph = this.GetObject();
-
-      for (var i = 0; i < drawbins.length; ++i) {
-         var pnt = drawbins[i];
-         var grx = pmain.grx(pnt.x);
-         var gry = pmain.gry(pnt.y);
-
-         // caluclate graphical coordinates
-         pnt.grx1 = Math.round(grx);
-         pnt.gry1 = Math.round(gry);
-
-         if (this.has_errors) {
-            pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
-            pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
-            pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
-            pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
-
-            if (this.is_bent) {
-               pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
-               pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
-               pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
-               pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
-            } else {
-               pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
-            }
-         }
-      }
-
-      return drawbins;
-   }
-
    JSROOT.TGraphPainter.prototype.TooltipText = function(d, asarray) {
       var pmain = this.main_painter(), lines = [];
 
@@ -1567,12 +1533,11 @@
           pmain = this.main_painter(),
           w = this.frame_width(),
           h = this.frame_height(),
-//          name = this.GetTipName("\n"),
           graph = this.GetObject();
 
       // add title for complete TGraph
       if (JSROOT.gStyle.Tooltip === 1)
-          this.draw_g.append("svg:title").text(name);
+          this.draw_g.append("svg:title").text(this.GetTipName());
 
       this.lineatt = JSROOT.Painter.createAttLine(graph);
       this.fillatt = this.createAttFill(graph);
@@ -1588,10 +1553,31 @@
          if (this.optionEF > 1)
             area = area.interpolate(JSROOT.gStyle.Interpolate);
 
-         drawbins = this.CreateDrawBins();
+         var bins = this.OptimizeBins(), bins2 = [];
+
+         console.log('old area ' + area(bins).length);
+
+         // build lower part
+         for (var n=0;n<bins.length;++n) {
+            var bin = bins[n];
+            bin.grx = pmain.grx(bin.x);
+            bin.gry = pmain.gry(bin.y - bin.eylow);
+         }
+
+         var path1 = JSROOT.Painter.BuildSvgPath(bins, h, 2);
+
+         for (var n=bins.length-1;n>=0;--n) {
+            var bin = bins[n];
+            bin.gry = pmain.gry(bin.y + bin.eyhigh);
+            bins2.push(bin);
+         }
+
+         var path2 = JSROOT.Painter.BuildSvgPath(bins2, h, 2);
+
+         console.log('new area ' + (path1.path.length + path2.path.length));
 
          this.draw_g.append("svg:path")
-                    .attr("d", area(drawbins))
+                    .attr("d", path1.path + "L" + path2.path.substr(1) + "Z")
                     .style("stroke", "none")
                     .call(this.fillatt.func);
       }
@@ -1623,7 +1609,7 @@
          else
             this.fillatt.color = 'none';
 
-         if (drawbins===null) drawbins = this.CreateDrawBins();
+         if (drawbins===null) drawbins = this.OptimizeBins();
 
          this.draw_g.append("svg:path")
                .attr("d", line(drawbins) + close_symbol)
@@ -1648,7 +1634,7 @@
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
          if ((drawbins === null) || !this.out_of_range)
-            drawbins = this.CreateDrawBins(function(pnt) {
+            drawbins = this.OptimizeBins(function(pnt) {
                if (pthis.optionBar) return false; // when drawing bars, take all points
                var grx = pmain.grx(pnt.x);
                if ((grx<0) || (grx>w)) return true; // exclude point out of X range
@@ -1656,6 +1642,33 @@
                var gry = pmain.gry(pnt.y);
                return (gry<0) || (gry>h); // exclude point out of Y range
             });
+
+         for (var i = 0; i < drawbins.length; ++i) {
+            var pnt = drawbins[i];
+
+            // not-rounded graphical coordinates
+            var grx = pmain.grx(pnt.x), gry = pmain.gry(pnt.y);
+
+            // caluclate graphical coordinates
+            pnt.grx1 = Math.round(grx);
+            pnt.gry1 = Math.round(gry);
+
+            if (this.has_errors) {
+               pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
+               pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
+               pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
+               pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
+
+               if (this.is_bent) {
+                  pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
+                  pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
+                  pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
+                  pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
+               } else {
+                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
+               }
+            }
+         }
 
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll(".grpoint")
