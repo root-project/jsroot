@@ -757,11 +757,15 @@
 
    // ================================================================================
 
-   JSROOT.Painter.BuildSvgPath = function(bins, height, ndig) {
+   JSROOT.Painter.BuildSvgPath = function(kind, bins, height, ndig) {
       // function used to provide svg:path for the smoothed curves
       // reuse code from d3.js. Used in TF1 and TGraph painters
+      // kind should contain "bezier" or "line". If first symbol "L", than it used to continue drawing
 
-      if (ndig===undefined) ndig = 2;
+      var smooth = kind.indexOf("bezier") >= 0;
+
+      if (ndig===undefined) ndig = smooth ? 2 : 0;
+      if (height===undefined) height = 0;
 
       function jsroot_d3_svg_lineSlope(p0, p1) {
          return (p1.gry - p0.gry) / (p1.grx - p0.grx);
@@ -799,22 +803,31 @@
          }
       }
 
-      jsroot_d3_svg_lineMonotoneTangents(bins);
+      var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5);
 
-      var bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
-          path = "M" + bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig) +
-                 "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+      res.path = ((kind.charAt(0) == "L") ? "L" : "M") +
+                  bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
+
+      if (smooth) {
+         jsroot_d3_svg_lineMonotoneTangents(bins);
+         res.path +=  "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+      }
 
       for(n=1; n<bins.length; ++n) {
           prev = bin;
           bin = bins[n];
-          if (n > 1) path += "s";
-          path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+          if (smooth) {
+             if (n > 1) res.path += "s";
+             res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+          } else {
+             res.path += "l" + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+          }
           maxy = Math.max(maxy, prev.gry);
       }
 
-      var res = { path: path, close: "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
-                                     "L" + bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z"  };
+      if (height>0)
+         res.close = "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
+                     "L" + bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z";
 
       return res;
    }
@@ -1014,7 +1027,7 @@
 
          if (this.bins.length > 2) {
 
-            var path = JSROOT.Painter.BuildSvgPath(this.bins, h, 2);
+            var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h, 2);
 
             console.log('tf1 len ' + path.path.length + '  ' + this.GetTipName());
 
@@ -1553,31 +1566,30 @@
          if (this.optionEF > 1)
             area = area.interpolate(JSROOT.gStyle.Interpolate);
 
-         var bins = this.OptimizeBins(), bins2 = [];
-
-         console.log('old area ' + area(bins).length);
+         drawbins = this.OptimizeBins();
 
          // build lower part
-         for (var n=0;n<bins.length;++n) {
-            var bin = bins[n];
+         for (var n=0;n<drawbins.length;++n) {
+            var bin = drawbins[n];
             bin.grx = pmain.grx(bin.x);
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         var path1 = JSROOT.Painter.BuildSvgPath(bins, h, 2);
+         var path1 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "bezier" : "line", drawbins), bins2 = [];
 
-         for (var n=bins.length-1;n>=0;--n) {
-            var bin = bins[n];
+         for (var n=drawbins.length-1;n>=0;--n) {
+            var bin = drawbins[n];
             bin.gry = pmain.gry(bin.y + bin.eyhigh);
             bins2.push(bin);
          }
 
-         var path2 = JSROOT.Painter.BuildSvgPath(bins2, h, 2);
+         var path2 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "Lbezier" : "Lline", bins2);
 
+         console.log('old area ' + area(drawbins).length);
          console.log('new area ' + (path1.path.length + path2.path.length));
 
          this.draw_g.append("svg:path")
-                    .attr("d", path1.path + "L" + path2.path.substr(1) + "Z")
+                    .attr("d", path1.path + path2.path + "Z")
                     .style("stroke", "none")
                     .call(this.fillatt.func);
       }
@@ -1611,19 +1623,33 @@
 
          if (drawbins===null) drawbins = this.OptimizeBins();
 
+         for (var n=0;n<drawbins.length;++n) {
+            var bin = drawbins[n];
+            bin.grx = pmain.grx(bin.x);
+            bin.gry = pmain.gry(bin.y);
+         }
+
+         var path = JSROOT.Painter.BuildSvgPath((this.optionCurve === 1) ? "bezier" : "line", drawbins);
+
+         console.log('old line ' + line(drawbins).length);
+         console.log('new line ' + path.path.length);
+
          this.draw_g.append("svg:path")
-               .attr("d", line(drawbins) + close_symbol)
+               //.attr("d", line(drawbins) + close_symbol)
+               .attr("d", path.path + close_symbol)
                .attr("class", "draw_line")
                .call(lineatt.func)
                .call(this.fillatt.func);
 
+         console.log('Draw graph mark = ' + this.optionMark);
+
          // do not add tooltip for line, when we wants to add markers
          if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==0))
-            this.draw_g.selectAll("draw_line")
+            this.draw_g.selectAll("circle")
                        .data(drawbins).enter()
                        .append("svg:circle")
-                       .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
-                       .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
+                       .attr("cx", function(d) { return Math.round(d.grx); })
+                       .attr("cy", function(d) { return Math.round(d.gry); })
                        .attr("r", 3)
                        .style("opacity", 0)
                        .append("svg:title")
