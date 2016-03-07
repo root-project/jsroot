@@ -1321,6 +1321,7 @@
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
+      console.log('Redraw graph');
       this.DrawBins();
    }
 
@@ -1643,6 +1644,9 @@
       var nodes = null;
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
+
+         console.log('Recreate GGG');
+
          if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
                if (pthis.optionBar) return false; // when drawing bars, take all points
@@ -2172,7 +2176,7 @@
 
       this.SetDivId(divid, -1); // it may be no element to set divid
 
-      this['UpdateObject'] = function(obj) {
+      this.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
 
          var mgraph = this.GetObject(),
@@ -2196,7 +2200,7 @@
          return isany;
       }
 
-      this['ComputeGraphRange'] = function(res, gr) {
+      this.ComputeGraphRange = function(res, gr) {
          // Compute the x/y range of the points in this graph
          if (gr.fNpoints == 0) return;
          if (res.first) {
@@ -2220,7 +2224,7 @@
          return x;
       }
 
-      this['ScanGraphsRange'] = function(graphs, histo, pad) {
+      this.ScanGraphsRange = function(graphs, histo, pad) {
          var mgraph = this.GetObject(),
              maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
              rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
@@ -2310,7 +2314,7 @@
          return histo;
       }
 
-      this['DrawAxis'] = function() {
+      this.DrawAxis = function() {
          // draw special histogram
 
          var mgraph = this.GetObject();
@@ -2322,7 +2326,7 @@
          this.firstpainter = JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
       }
 
-      this['DrawNextFunction'] = function(indx, callback) {
+      this.DrawNextFunction = function(indx, callback) {
          // method draws next function from the functions list
 
          var mgraph = this.GetObject();
@@ -2339,15 +2343,18 @@
          this.DrawNextFunction(indx+1, callback);
       }
 
-      this['DrawNextGraph'] = function(indx, opt) {
+      this.DrawNextGraph = function(indx, opt) {
          var graphs = this.GetObject().fGraphs;
+
+         console.log('indx ' + indx + ' graphs =' + graphs.arr.length);
+
          // at the end of graphs drawing draw functions (if any)
          if (indx >= graphs.arr.length)
             return this.DrawNextFunction(0, this.DrawingReady.bind(this));
 
          var drawopt = graphs.opt[indx];
          if ((drawopt==null) || (drawopt == "")) drawopt = opt;
-         var subp = JSROOT.Painter.drawGraph(this.divid, graphs.arr[indx], drawopt);
+         var subp = JSROOT.draw(this.divid, graphs.arr[indx], drawopt);
          this.painters.push(subp);
          subp.WhenReady(this.DrawNextGraph.bind(this, indx+1, opt));
       }
