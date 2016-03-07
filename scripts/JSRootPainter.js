@@ -2848,12 +2848,11 @@
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
          if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
+               if (pthis.optionBar) return false; // when drawing bars, take all points
                var grx = pmain.grx(pnt.x);
                if ((grx<0) || (grx>w)) return true; // exclude point out of X range
                if (pthis.out_of_range) return false; // allow to draw points out of Y range
-               var gry = pmain.gry(pnt.y);
-               if (gry>h) return true;
-               return (gry<0) && !pthis.optionBar; // exclude point out of Y range
+               return (gry<0) || (gry>h); // exclude point out of Y range
             });
 
          for (var i = 0; i < drawbins.length; ++i) {
@@ -2908,17 +2907,17 @@
                drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
          }
 
-         var normal = (this.optionBar !== 1), yy0 = Math.round(pmain.gry(0));
+         var yy0 = Math.round(pmain.gry(0));
 
          nodes.append("svg:rect")
             .attr("x", function(d) { return Math.round(-d.width/2); })
             .attr("y", function(d) {
-                if (normal) return 0;
+                if (pthis.optionBar!==1) return 0;
                 return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
              })
             .attr("width", function(d) { return Math.round(d.width); })
             .attr("height", function(d) {
-                if (normal) return h - d.gry1;
+                if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
             .call(this.fillatt.func)
@@ -5013,7 +5012,7 @@
          handle.nticks = 50; // for text output allow max 50 names
          var scale_range = handle.scale_max - handle.scale_min;
          if (handle.nticks > scale_range)
-            handle.nticks = parseInt(scale_range);
+            handle.nticks = Math.round(scale_range);
          handle.nticks2 = 1;
 
          handle.axis = axis;
@@ -5027,11 +5026,19 @@
             }
             return null;
          }
-      } else
-      handle.format = function(d, asticks) {
-         var val = parseFloat(d);
-         if ((Math.abs(val) < 1e-14) && (Math.abs(this.max - this.min) > 1e-5)) return 0;
-         return asticks ? d : val.toFixed(4);
+      } else {
+
+         handle.range = Math.abs(handle.scale_max - handle.scale_min);
+         if (handle.range > handle.nticks)
+            handle.ndig = 0;
+         else
+            handle.ndig = Math.max(1, Math.round(JSROOT.log10(handle.nticks / handle.range)));
+
+         handle.format = function(d, asticks) {
+            var val = parseFloat(d);
+            if (Math.abs(val) < 1e-10 * this.range) return 0;
+            return val.toFixed(asticks ? this.ndig : this.ndig+2);
+         }
       }
 
       var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
