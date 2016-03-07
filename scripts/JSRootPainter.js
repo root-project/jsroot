@@ -430,8 +430,6 @@
             selection.style('stroke-width', this.width);
             selection.style('stroke-dasharray', this.dash);
          }
-         if (this.fill!==undefined)
-            selection.style('fill', this.fill);
       }
       line.func = line.SetLine.bind(line);
 
@@ -2974,45 +2972,31 @@
            .append("svg:title").text(TooltipText);
       }
 
-      this.lineatt.fill = "none"; // used for svg:path, avoid filling
-
       if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
+             .style('fill', "none")
              .attr("d", function(d) { return "M-5,"+(d.gry0-3)+"v3h10v-3"; });
 
          nodes.filter(function(d) { return (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
+             .style('fill', "none")
              .attr("d", function(d) { return "M-5,"+(d.gry2+3)+"v-3h10v3"; });
       }
 
-      if (this.draw_errors) {
-         // lower x error
-         nodes.filter(function(d) { return (d.exlow > 0); })
+      if (this.draw_errors)
+         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
-             .attr("d", function(d) { return "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6"; });
-
-         // high x error
-         nodes.filter(function(d) { return (d.exhigh > 0); })
-             .append("svg:path")
-             .call(this.lineatt.func)
-             .attr("d", function(d) { return "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6"; });
-
-         // low y error
-         nodes.filter(function(d) { return (d.eylow > 0); })
-              .append("svg:path")
-              .call(this.lineatt.func)
-              .attr("d", function(d) { return "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6"; });
-
-         // high y error
-         nodes.filter(function(d) { return (d.eyhigh > 0); })
-              .append("svg:path")
-              .call(this.lineatt.func)
-              .attr("d", function(d) { return "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6"; });
-      }
+             .style('fill', "none")
+             .attr("d", function(d) {
+                return ((d.exlow > 0) ? "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6" : "") +
+                       ((d.exhigh > 0) ? "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6" : "") +
+                       ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6" : "") +
+                       ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
+              });
 
       if (this.optionMark) {
          /* Add markers */
