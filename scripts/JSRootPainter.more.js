@@ -1290,6 +1290,833 @@
       return this.drawStack(opt);
    }
 
+   // =======================================================================
+
+   JSROOT.TGraphPainter = function(graph) {
+      JSROOT.TObjectPainter.call(this, graph);
+      this.ownhisto = false; // indicate if graph histogram was drawn for axes
+      this.bins = null;
+   }
+
+   JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   JSROOT.TGraphPainter.prototype.Redraw = function() {
+      this.DrawBins();
+   }
+
+   JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
+      this.draw_all = true;
+      JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
+                            optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
+                            optionFill:0, optionZ:0, optionBrackets:0,
+                            opt:"LP", out_of_range: false, has_errors: false, draw_errors: false, is_bent:false });
+
+      var graph = this.GetObject();
+
+      this.is_bent = graph._typename == 'TGraphBentErrors';
+      this.has_errors = (graph._typename == 'TGraphErrors' ||
+                         graph._typename == 'TGraphAsymmErrors' ||
+                         this.is_bent || graph._typename.match(/^RooHist/));
+      this.draw_errors = this.has_errors;
+
+      if ((opt != null) && (opt != "")) {
+         this.opt = opt.toUpperCase();
+         this.opt.replace('SAME', '');
+      }
+      if (this.opt.indexOf('L') != -1)
+         this.optionLine = 1;
+      if (this.opt.indexOf('F') != -1)
+         this.optionFill = 1;
+      if (this.opt.indexOf('A') != -1)
+         this.optionAxis = 1;
+      if (this.opt.indexOf('C') != -1) {
+         this.optionCurve = 1;
+         if (this.optionFill==0) this.optionLine = 1;
+      }
+      if (this.opt.indexOf('*') != -1)
+         this.optionMark = 2;
+      if (this.opt.indexOf('P') != -1)
+         this.optionMark = 1;
+      if (this.opt.indexOf('B') != -1) {
+         this.optionBar = 1;
+         this.draw_errors = false;
+      }
+      if (this.opt.indexOf('R') != -1)
+         this.optionR = 1;
+
+      if (this.opt.indexOf('[]') != -1) {
+         this.optionBrackets = 1;
+         this.draw_errors = false;
+      }
+
+      if (this.opt.indexOf('0') != -1) {
+         this.optionMark = 1;
+         this.draw_errors = true;
+         this.out_of_range = true;
+      }
+
+      if (this.opt.indexOf('1') != -1) {
+         if (this.optionBar == 1) this.optionBar = 2;
+      }
+      if (this.opt.indexOf('2') != -1)
+         this.optionRect = 1;
+
+      if (this.opt.indexOf('3') != -1) {
+         this.optionEF = 1;
+         this.optionLine = 0;
+         this.draw_errors = false;
+      }
+      if (this.opt.indexOf('4') != -1) {
+         this.optionEF = 2;
+         this.optionLine = 0;
+         this.draw_errors = false;
+      }
+
+      if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
+
+      // if no drawing option is selected and if opt<>' ' nothing is done.
+      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
+          this.optionEF + this.optionRect + this.optionBrackets == 0) {
+         if (this.opt.length == 0)
+            this.optionLine = 1;
+      }
+
+      if (graph._typename == 'TGraphErrors') {
+         var maxEX = d3.max(graph.fEX);
+         var maxEY = d3.max(graph.fEY);
+         if (maxEX < 1.0e-300 && maxEY < 1.0e-300)
+            this.draw_errors = false;
+      }
+   }
+
+   JSROOT.TGraphPainter.prototype.CreateBins = function() {
+      var gr = this.GetObject();
+      if (gr===null) return;
+
+      var p, kind = 0, npoints = gr.fNpoints;
+      if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
+
+      if (gr._typename == 'TGraphErrors') kind = 1; else
+      if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
+          || gr._typename.match(/^RooHist/)) kind = 2;
+
+      this.bins = [];
+
+      for (p=0;p<npoints;++p) {
+         var bin = { x : gr.fX[p], y : gr.fY[p] };
+         if (kind === 1) {
+            bin.exlow = bin.exhigh = gr.fEX[p];
+            bin.eylow = bin.eyhigh = gr.fEY[p];
+         } else
+         if (kind === 2) {
+            bin.exlow  = gr.fEXlow[p];
+            bin.exhigh  = gr.fEXhigh[p];
+            bin.eylow  = gr.fEYlow[p];
+            bin.eyhigh = gr.fEYhigh[p];
+         }
+         this.bins.push(bin);
+      }
+   }
+
+   JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
+      // bins should be created
+
+      var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
+
+      if (this.bins != null) {
+         xmin = xmax = this.bins[0].x;
+         ymin = ymax = this.bins[0].y;
+         for (var n = 0; n < this.bins.length; ++n) {
+            var pnt = this.bins[n];
+            if ('exlow' in pnt) {
+               xmin = Math.min(xmin, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+               xmax = Math.max(xmax, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
+               ymin = Math.min(ymin, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
+               ymax = Math.max(ymax, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
+            } else {
+               xmin = Math.min(xmin, pnt.x);
+               xmax = Math.max(xmax, pnt.x);
+               ymin = Math.min(ymin, pnt.y);
+               ymax = Math.max(ymax, pnt.y);
+            }
+         }
+      }
+
+      if (xmin >= xmax) xmax = xmin+1;
+      if (ymin >= ymax) ymax = ymin+1;
+      var dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
+          uxmin = xmin - dx, uxmax = xmax + dx,
+          minimum = ymin - dy, maximum = ymax + dy;
+
+      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
+      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+
+      var graph = this.GetObject();
+
+      if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
+      if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
+      if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
+
+      var histo = JSROOT.CreateTH1(100);
+      histo.fName = graph.fName + "_h";
+      histo.fTitle = graph.fTitle;
+      histo.fXaxis.fXmin = uxmin;
+      histo.fXaxis.fXmax = uxmax;
+      histo.fYaxis.fXmin = minimum;
+      histo.fYaxis.fXmax = maximum;
+      histo.fMinimum = minimum;
+      histo.fMaximum = maximum;
+      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      return histo;
+   }
+
+   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
+      if ((this.bins.length < 30) && !filter_func) return this.bins;
+
+      var selbins = null;
+      if (typeof filter_func == 'function') {
+         for (var n = 0; n < this.bins.length; ++n) {
+            if (filter_func(this.bins[n])) {
+               if (selbins==null)
+                  selbins = (n==0) ? [] : this.bins.slice(0, n);
+            } else {
+               if (selbins != null) selbins.push(this.bins[n]);
+            }
+         }
+      }
+      if (selbins == null) selbins = this.bins;
+
+      if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
+      var step = Math.floor(selbins.length / 5000);
+      if (step < 2) step = 2;
+      var optbins = [];
+      for (var n = 0; n < selbins.length; n+=step)
+         optbins.push(selbins[n]);
+
+      return optbins;
+   }
+
+   JSROOT.TGraphPainter.prototype.TooltipText = function(d, asarray) {
+      var pmain = this.main_painter(), lines = [];
+
+      lines.push(this.GetTipName());
+      lines.push("x = " + pmain.AxisAsText("x", d.x));
+      lines.push("y = " + pmain.AxisAsText("y", d.y));
+
+      if (this.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+         lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
+                              "/+" + pmain.AxisAsText("x", d.exhigh));
+
+      if (this.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+         lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
+                           "/+" + pmain.AxisAsText("y", d.eyhigh));
+
+      if (asarray) return lines;
+
+      var res = "";
+      for (var n=0;n<lines.length;++n) res += (n>0 ? "\n" : "") + lines[n];
+      return res;
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawBins = function() {
+
+      this.RecreateDrawG(false, ".main_layer");
+
+      var pthis = this,
+          pmain = this.main_painter(),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          name = this.GetTipName("\n"),
+          graph = this.GetObject();
+
+      // add title for complete TGraph
+      if (JSROOT.gStyle.Tooltip === 1)
+          this.draw_g.append("svg:title").text(name);
+
+      this.lineatt = JSROOT.Painter.createAttLine(graph);
+      this.fillatt = this.createAttFill(graph);
+
+      var drawbins = null;
+
+      if (this.optionEF > 0) {
+
+         var area = d3.svg.area()
+                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                        .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
+                        .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
+         if (this.optionEF > 1)
+            area = area.interpolate(JSROOT.gStyle.Interpolate);
+
+         drawbins = this.OptimizeBins();
+
+         this.draw_g.append("svg:path")
+                    .attr("d", area(drawbins))
+                    .style("stroke", "none")
+                    .call(this.fillatt.func);
+      }
+
+      // TODO - make it compacter
+      var line = d3.svg.line()
+                  .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                  .y(function(d) { return pmain.gry(d.y).toFixed(1); });
+
+      if (Math.abs(this.lineatt.width) > 99) {
+         /* first draw exclusion area, and then the line */
+         this.optionMark = 0;
+
+         this.DrawExclusion(line);
+      } else
+      if (this.optionCurve == 1) // do not use smoothing with exclusion
+         line = line.interpolate(JSROOT.gStyle.Interpolate);
+
+      if (this.optionLine == 1 || this.optionFill == 1) {
+
+         var close_symbol = "";
+         if (graph._typename=="TCutG") close_symbol = " Z";
+
+         var lineatt = this.lineatt;
+         if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
+
+         if (this.optionFill == 1)
+            close_symbol = " Z"; // always close area if we want to fill it
+         else
+            this.fillatt.color = 'none';
+
+         if (drawbins===null) drawbins = this.OptimizeBins();
+
+         this.draw_g.append("svg:path")
+               .attr("d", line(drawbins) + close_symbol)
+               .attr("class", "draw_line")
+               .call(lineatt.func)
+               .call(this.fillatt.func);
+
+         // do not add tooltip for line, when we wants to add markers
+         if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==0))
+            this.draw_g.selectAll("draw_line")
+                       .data(drawbins).enter()
+                       .append("svg:circle")
+                       .attr("cx", function(d) { return pmain.grx(d.x).toFixed(1); })
+                       .attr("cy", function(d) { return pmain.gry(d.y).toFixed(1); })
+                       .attr("r", 3)
+                       .style("opacity", 0)
+                       .append("svg:title")
+                       .text(this.TooltipText.bind(this));
+      }
+
+      var nodes = null;
+
+      if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
+         if ((drawbins === null) || !this.out_of_range)
+            drawbins = this.OptimizeBins(function(pnt) {
+               if (pthis.optionBar) return false; // when drawing bars, take all points
+               var grx = pmain.grx(pnt.x);
+               if ((grx<0) || (grx>w)) return true; // exclude point out of X range
+               if (pthis.out_of_range) return false; // allow to draw points out of Y range
+               return (gry<0) || (gry>h); // exclude point out of Y range
+            });
+
+         for (var i = 0; i < drawbins.length; ++i) {
+            var pnt = drawbins[i];
+            var grx = pmain.grx(pnt.x);
+            var gry = pmain.gry(pnt.y);
+
+            // caluclate graphical coordinates
+            pnt.grx1 = Math.round(grx);
+            pnt.gry1 = Math.round(gry);
+
+            if (this.has_errors) {
+               pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
+               pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
+               pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
+               pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
+
+               if (this.is_bent) {
+                  pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
+                  pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
+                  pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
+                  pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
+               } else {
+                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
+               }
+            }
+         }
+
+         // here are up to five elements are collected, try to group them
+         nodes = this.draw_g.selectAll(".grpoint")
+                     .data(drawbins)
+                     .enter()
+                     .append("svg:g")
+                     .attr("class", "grpoint")
+                     .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
+      }
+
+      if ((JSROOT.gStyle.Tooltip===1) && nodes)
+         nodes.append("svg:title").text(this.TooltipText.bind(this));
+
+      if (this.optionBar) {
+         // calculate bar width
+         for (var i=1;i<drawbins.length-1;++i)
+            drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
+
+         // first and last bins
+         switch (drawbins.length) {
+            case 0: break;
+            case 1: drawbins[0].width = w/4; break; // patalogic case of single bin
+            case 2: drawbins[0].width = drawbins[1].width = (drawbins[1].grx1-drawbins[0].grx1)/2; break;
+            default:
+               drawbins[0].width = drawbins[1].width;
+               drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
+         }
+
+         var yy0 = Math.round(pmain.gry(0));
+
+         nodes.append("svg:rect")
+            .attr("x", function(d) { return Math.round(-d.width/2); })
+            .attr("y", function(d) {
+                d.bar = true; // element drawn as bar
+                if (pthis.optionBar!==1) return 0;
+                return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+             })
+            .attr("width", function(d) { return Math.round(d.width); })
+            .attr("height", function(d) {
+                if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
+                return Math.abs(yy0 - d.gry1);
+             })
+            .call(this.fillatt.func)
+            .filter(function(d) { return JSROOT.gStyle.Tooltip===1 ? this : null; })
+            .on('mouseover', function() {
+                if (JSROOT.gStyle.Tooltip < 1) return;
+                var sel = d3.select(this);
+                if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
+                sel.transition().duration(100).style("fill", "grey");
+             })
+            .on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+             });
+      }
+
+      if (this.optionRect) {
+         nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
+           .append("svg:rect")
+           .attr("x", function(d) { d.rect = true; return d.grx0; })
+           .attr("y", function(d) { return d.gry2; })
+           .attr("width", function(d) { return d.grx2 - d.grx0; })
+           .attr("height", function(d) { return d.gry0 - d.gry2; })
+           .call(this.fillatt.func)
+           .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
+           .on('mouseover', function() {
+               if (JSROOT.gStyle.Tooltip !== 1) return;
+               var sel = d3.select(this);
+               if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
+               sel.transition().duration(100).style("fill", "grey");
+           })
+           .on('mouseout', function() {
+              d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+           });
+      }
+
+      if (this.optionBrackets) {
+         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
+             .append("svg:path")
+             .call(this.lineatt.func)
+             .style('fill', "none")
+             .attr("d", function(d) {
+                d.bracket = true;
+                return ((d.eylow > 0)  ? "M-5,"+(d.gry0-3)+"v3h10v-3" : "") +
+                        ((d.eyhigh > 0) ? "M-5,"+(d.gry2+3)+"v-3h10v3" : "");
+              });
+      }
+
+      if (this.draw_errors)
+         nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
+             .append("svg:path")
+             .call(this.lineatt.func)
+             .style('fill', "none")
+             .attr("d", function(d) {
+                d.error = true;
+                return ((d.exlow > 0)  ? "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6" : "") +
+                       ((d.exhigh > 0) ? "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6" : "") +
+                       ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6" : "") +
+                       ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
+              });
+
+      if (this.optionMark) {
+         /* Add markers */
+         var style = (this.optionMark == 2) ? 3 : null;
+
+         var marker = JSROOT.Painter.createAttMarker(graph, style);
+         nodes.append(marker.kind).call(marker.func).each(function(d) { d.marker = true; });
+      }
+
+      if (JSROOT.gStyle.Tooltip > 1)
+         this.ProcessTooltip = this.ProcessTooltipFunc;
+      else
+         delete this.ProcessTooltip;
+   }
+
+   JSROOT.TGraphPainter.prototype.ProcessTooltipFunc = function(pnt) {
+      if (pnt === null) {
+         if (this.draw_g !== null)
+            this.draw_g.select(".tooltip_bin").remove();
+         return null;
+      }
+
+      var width = this.frame_width(),
+          height = this.frame_height(),
+          pmain = this.main_painter(),
+          painter = this,
+          findbin = null, best_dist2 = 1e10, best = null;
+
+      this.draw_g.selectAll('.grpoint').each(function() {
+         var d = d3.select(this).datum();
+         if (d===undefined) return;
+         var dist2x = Math.pow(pnt.x - d.grx1, 2),
+             dist2y = Math.pow(pnt.y - d.gry1, 2),
+             dist2 = dist2x+dist2y, rect = null;
+
+          if (d.error || d.rect || d.marker || d.bracket) {
+            rect = { x1: Math.min(-3, d.grx0),  x2: Math.max(3, d.grx2), y1: Math.min(-3, d.gry2), y2: Math.max(3, d.gry0) };
+            if (d.bracket) { rect.x1 = -5; rect.x2 = 5 };
+          } else
+          if (d.bar) {
+             rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
+
+             if (painter.optionBar===1) {
+                var yy0 = pmain.gry(0);
+                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
+             }
+          } else {
+             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
+          }
+          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
+          var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+
+          if (matchx && matchy && (dist2 < best_dist2)) {
+            best_dist2 = dist2;
+            findbin = this;
+            best = rect;
+          }
+       });
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (findbin == null) {
+         ttrect.remove();
+         return null;
+      }
+
+      var d = d3.select(findbin).datum();
+
+      var res = { x: d.grx1, y: d.gry1,
+                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  lines: this.TooltipText(d, true) };
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:rect")
+                             .attr("class","tooltip_bin h1bin")
+                             .style("pointer-events","none");
+
+      res.changed = ttrect.property("current_bin") !== findbin;
+
+      if (res.changed)
+         ttrect.attr("x", d.grx1 + best.x1)
+               .attr("width", best.x2-best.x1)
+               .attr("y", d.gry1 + best.y1)
+               .attr("height", best.y2 - best.y1)
+               .style("opacity", "0.3")
+               .property("current_bin", findbin);
+
+      return res;
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawExclusion = function(line) {
+      var graph = this.GetObject(), n = graph.fNpoints,
+          xo, yo, xt, yt, xf, yf;
+
+      if ('Float32Array' in window) {
+         xo = new Float32Array(n + 2);
+         yo = new Float32Array(n + 2);
+         xt = new Float32Array(n + 2);
+         yt = new Float32Array(n + 2);
+         xf = new Float32Array(2 * n + 2);
+         yf = new Float32Array(2 * n + 2);
+      } else {
+          xo = []; yo = []; xt = []; yt = []; xf = []; yf = [];
+      }
+      // negative value means another side of the line...
+
+      var a, i, j, nf, normx, normy, wk = 1;
+      if (this.lineatt.width < 0) {
+         this.lineatt.width = - this.lineatt.width;
+         wk = -1;
+      }
+      wk *= Math.floor(this.lineatt.width / 100) * 0.005;
+      this.lineatt.width = this.lineatt.width % 100; // line width
+      if (this.lineatt.width > 0) this.optionLine = 1;
+
+      var w = this.frame_width(), h = this.frame_height();
+
+      var ratio = w / h;
+
+      var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
+          ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
+      for (i = 0; i < n; ++i) {
+         xo[i] = (graph.fX[i] - xmin) / (xmax - xmin);
+         yo[i] = (graph.fY[i] - ymin) / (ymax - ymin);
+         if (w > h)
+            yo[i] = yo[i] / ratio;
+         else if (h > w)
+            xo[i] = xo[i] / ratio;
+      }
+      // The first part of the filled area is made of the graph points.
+      // Make sure that two adjacent points are different.
+      xf[0] = xo[0];
+      yf[0] = yo[0];
+      nf = 0;
+      for (i = 1; i < n; ++i) {
+         if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
+         xf[++nf] = xo[i];
+         if (xf[i] == xf[i - 1])
+            xf[i] += 0.000001; // add an epsilon to avoid exact vertical
+                                 // lines.
+         yf[nf] = yo[i];
+      }
+      // For each graph points a shifted points is computed to build up
+      // the second part of the filled area. First and last points are
+      // treated as special cases, outside of the loop.
+      if (xf[1] == xf[0]) {
+         a = Math.PI / 2.0;
+      } else {
+         a = Math.atan((yf[1] - yf[0]) / (xf[1] - xf[0]));
+      }
+      if (xf[0] <= xf[1]) {
+         xt[0] = xf[0] - wk * Math.sin(a);
+         yt[0] = yf[0] + wk * Math.cos(a);
+      } else {
+         xt[0] = xf[0] + wk * Math.sin(a);
+         yt[0] = yf[0] - wk * Math.cos(a);
+      }
+      if (xf[nf] == xf[nf - 1]) {
+         a = Math.PI / 2.0;
+      } else {
+         a = Math.atan((yf[nf] - yf[nf - 1]) / (xf[nf] - xf[nf - 1]));
+      }
+      if (xf[nf] >= xf[nf - 1]) {
+         xt[nf] = xf[nf] - wk * Math.sin(a);
+         yt[nf] = yf[nf] + wk * Math.cos(a);
+      } else {
+         xt[nf] = xf[nf] + wk * Math.sin(a);
+         yt[nf] = yf[nf] - wk * Math.cos(a);
+      }
+
+      var a1, a2, a3, xi0, yi0, xi1, yi1, xi2, yi2;
+      for (i = 1; i < nf; ++i) {
+         xi0 = xf[i];
+         yi0 = yf[i];
+         xi1 = xf[i+1];
+         yi1 = yf[i+1];
+         xi2 = xf[i-1];
+         yi2 = yf[i-1];
+         if (xi1 == xi0) {
+            a1 = Math.PI / 2.0;
+         } else {
+            a1 = Math.atan((yi1 - yi0) / (xi1 - xi0));
+         }
+         if (xi1 < xi0)
+            a1 = a1 + Math.PI;
+         if (xi2 == xi0) {
+            a2 = Math.PI / 2.0;
+         } else {
+            a2 = Math.atan((yi0 - yi2) / (xi0 - xi2));
+         }
+         if (xi0 < xi2)
+            a2 = a2 + Math.PI;
+         x1 = xi0 - wk * Math.sin(a1);
+         y1 = yi0 + wk * Math.cos(a1);
+         x2 = xi0 - wk * Math.sin(a2);
+         y2 = yi0 + wk * Math.cos(a2);
+         xm = (x1 + x2) * 0.5;
+         ym = (y1 + y2) * 0.5;
+         if (xm == xi0) {
+            a3 = Math.PI / 2.0;
+         } else {
+            a3 = Math.atan((ym - yi0) / (xm - xi0));
+         }
+         x3 = xi0 - wk * Math.sin(a3 + (Math.PI / 2.0));
+         y3 = yi0 + wk * Math.cos(a3 + (Math.PI / 2.0));
+         // Rotate (x3,y3) by PI around (xi0,yi0) if it is not on the (xm,ym)
+         // side.
+         if ((xm - xi0) * (x3 - xi0) < 0 && (ym - yi0) * (y3 - yi0) < 0) {
+            x3 = 2 * xi0 - x3;
+            y3 = 2 * yi0 - y3;
+         }
+         if ((xm == x1) && (ym == y1)) {
+            x3 = xm;
+            y3 = ym;
+         }
+         xt[i] = x3;
+         yt[i] = y3;
+      }
+      // Close the polygon if the first and last points are the same
+      if (xf[nf] == xf[0] && yf[nf] == yf[0]) {
+         xm = (xt[nf] + xt[0]) * 0.5;
+         ym = (yt[nf] + yt[0]) * 0.5;
+         if (xm == xf[0]) {
+            a3 = Math.PI / 2.0;
+         } else {
+            a3 = Math.atan((ym - yf[0]) / (xm - xf[0]));
+         }
+         x3 = xf[0] + wk * Math.sin(a3 + (Math.PI / 2.0));
+         y3 = yf[0] - wk * Math.cos(a3 + (Math.PI / 2.0));
+         if ((xm - xf[0]) * (x3 - xf[0]) < 0 && (ym - yf[0]) * (y3 - yf[0]) < 0) {
+            x3 = 2 * xf[0] - x3;
+            y3 = 2 * yf[0] - y3;
+         }
+         xt[nf] = x3;
+         xt[0] = x3;
+         yt[nf] = y3;
+         yt[0] = y3;
+      }
+      // Find the crossing segments and remove the useless ones
+      var xc, yc, c1, b1, c2, b2;
+      var cross = false;
+      var nf2 = nf;
+      for (i = nf2; i > 0; i--) {
+         for (j = i - 1; j > 0; j--) {
+            if (xt[i - 1] == xt[i] || xt[j - 1] == xt[j])
+               continue;
+            c1 = (yt[i - 1] - yt[i]) / (xt[i - 1] - xt[i]);
+            b1 = yt[i] - c1 * xt[i];
+            c2 = (yt[j - 1] - yt[j]) / (xt[j - 1] - xt[j]);
+            b2 = yt[j] - c2 * xt[j];
+            if (c1 != c2) {
+               xc = (b2 - b1) / (c1 - c2);
+               yc = c1 * xc + b1;
+               if (xc > Math.min(xt[i], xt[i - 1])
+                     && xc < Math.max(xt[i], xt[i - 1])
+                     && xc > Math.min(xt[j], xt[j - 1])
+                     && xc < Math.max(xt[j], xt[j - 1])
+                     && yc > Math.min(yt[i], yt[i - 1])
+                     && yc < Math.max(yt[i], yt[i - 1])
+                     && yc > Math.min(yt[j], yt[j - 1])
+                     && yc < Math.max(yt[j], yt[j - 1])) {
+                  xf[++nf] = xt[i];
+                  yf[nf] = yt[i];
+                  xf[++nf] = xc;
+                  yf[nf] = yc;
+                  i = j;
+                  cross = true;
+                  break;
+               } else {
+                  continue;
+               }
+            } else {
+               continue;
+            }
+         }
+         if (!cross) {
+            xf[++nf] = xt[i];
+            yf[nf] = yt[i];
+         }
+         cross = false;
+      }
+      xf[++nf] = xt[0];
+      yf[nf++] = yt[0];
+
+      for (i = 0; i < nf; ++i) {
+         if (w > h) {
+            xf[i] = xmin + (xf[i] * (xmax - xmin));
+            yf[i] = ymin + (yf[i] * (ymax - ymin)) * ratio;
+         } else if (h > w) {
+            xf[i] = xmin + (xf[i] * (xmax - xmin)) * ratio;
+            yf[i] = ymin + (yf[i] * (ymax - ymin));
+         } else {
+            xf[i] = xmin + (xf[i] * (xmax - xmin));
+            yf[i] = ymin + (yf[i] * (ymax - ymin));
+         }
+         if ((xf[i] <= 0.0) && this.main_painter().options.Logx) xf[i] = xmin;
+         if ((yf[i] <= 0.0) && this.main_painter().options.Logy) yf[i] = ymin;
+      }
+
+      var excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
+
+      this.draw_g.append("svg:path")
+          .attr("d", line(excl))
+          .style("stroke", "none")
+          .style("stroke-width", 1)
+          .call(this.fillatt.func)
+          .style('opacity', 0.75);
+   }
+
+   JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
+      if (!this.MatchObjectType(obj)) return false;
+
+      // if our own histogram was used as axis drawing, we need update histogram  as well
+      if (this.ownhisto)
+         this.main_painter().UpdateObject(obj.fHistogram);
+
+      var graph = this.GetObject();
+      // TODO: make real update of TGraph object content
+      graph.fX = obj.fX;
+      graph.fY = obj.fY;
+      graph.fNpoints = obj.fNpoints;
+      this.CreateBins();
+      return true;
+   }
+
+   JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
+      // allow to zoom TGraph only when at least one point in the range
+
+      var gr = this.GetObject();
+      if ((gr===null) || (axis!=="x")) return false;
+
+      for (var n=0; n < gr.fNpoints; ++n)
+         if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
+
+      return false;
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
+      // method draws next function from the functions list
+
+      var graph = this.GetObject();
+
+      if ((graph.fFunctions === null) || (indx >= graph.fFunctions.arr.length))
+         return JSROOT.CallBack(callback);
+
+      var func = graph.fFunctions.arr[indx];
+      var opt = graph.fFunctions.opt[indx];
+
+      var painter = JSROOT.draw(this.divid, func, opt);
+      if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
+
+      this.DrawNextFunction(indx+1, callback);
+   }
+
+   JSROOT.Painter.drawGraph = function(divid, graph, opt) {
+      JSROOT.extend(this, new JSROOT.TGraphPainter(graph));
+
+      this.CreateBins();
+
+      this.SetDivId(divid, -1); // just to get access to existing elements
+
+      if (this.main_painter() == null) {
+         if (graph.fHistogram == null)
+            graph.fHistogram = this.CreateHistogram();
+         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, "AXIS");
+         this.ownhisto = true;
+      }
+
+      this.SetDivId(divid);
+      this.DecodeOptions(opt);
+      this.DrawBins();
+
+      this.DrawNextFunction(0, this.DrawingReady.bind(this));
+
+      return this;
+   }
+
    // =============================================================
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
@@ -2869,7 +3696,6 @@
 
       return this;
    }
-
 
    return JSROOT.Painter;
 
