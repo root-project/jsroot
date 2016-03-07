@@ -1503,6 +1503,40 @@
       return optbins;
    }
 
+   JSROOT.TGraphPainter.prototype.CreateDrawBins = function(filter_func) {
+      var drawbins = this.OptimizeBins(filter_func),
+          pmain = this.main_painter(),
+          graph = this.GetObject();
+
+      for (var i = 0; i < drawbins.length; ++i) {
+         var pnt = drawbins[i];
+         var grx = pmain.grx(pnt.x);
+         var gry = pmain.gry(pnt.y);
+
+         // caluclate graphical coordinates
+         pnt.grx1 = Math.round(grx);
+         pnt.gry1 = Math.round(gry);
+
+         if (this.has_errors) {
+            pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
+            pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
+            pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
+            pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
+
+            if (this.is_bent) {
+               pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
+               pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
+               pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
+               pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
+            } else {
+               pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
+            }
+         }
+      }
+
+      return drawbins;
+   }
+
    JSROOT.TGraphPainter.prototype.TooltipText = function(d, asarray) {
       var pmain = this.main_painter(), lines = [];
 
@@ -1521,7 +1555,7 @@
       if (asarray) return lines;
 
       var res = "";
-      for (var n=0;n<lines.length;++n) res += (n>0 ? "\n" : "") + lines[n];
+      for (var n=0;n<lines.length;++n) res += ((n>0 ? "\n" : "") + lines[n]);
       return res;
    }
 
@@ -1533,7 +1567,7 @@
           pmain = this.main_painter(),
           w = this.frame_width(),
           h = this.frame_height(),
-          name = this.GetTipName("\n"),
+//          name = this.GetTipName("\n"),
           graph = this.GetObject();
 
       // add title for complete TGraph
@@ -1554,7 +1588,7 @@
          if (this.optionEF > 1)
             area = area.interpolate(JSROOT.gStyle.Interpolate);
 
-         drawbins = this.OptimizeBins();
+         drawbins = this.CreateDrawBins();
 
          this.draw_g.append("svg:path")
                     .attr("d", area(drawbins))
@@ -1589,7 +1623,7 @@
          else
             this.fillatt.color = 'none';
 
-         if (drawbins===null) drawbins = this.OptimizeBins();
+         if (drawbins===null) drawbins = this.CreateDrawBins();
 
          this.draw_g.append("svg:path")
                .attr("d", line(drawbins) + close_symbol)
@@ -1614,39 +1648,14 @@
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
          if ((drawbins === null) || !this.out_of_range)
-            drawbins = this.OptimizeBins(function(pnt) {
+            drawbins = this.CreateDrawBins(function(pnt) {
                if (pthis.optionBar) return false; // when drawing bars, take all points
                var grx = pmain.grx(pnt.x);
                if ((grx<0) || (grx>w)) return true; // exclude point out of X range
                if (pthis.out_of_range) return false; // allow to draw points out of Y range
+               var gry = pmain.gry(pnt.y);
                return (gry<0) || (gry>h); // exclude point out of Y range
             });
-
-         for (var i = 0; i < drawbins.length; ++i) {
-            var pnt = drawbins[i];
-            var grx = pmain.grx(pnt.x);
-            var gry = pmain.gry(pnt.y);
-
-            // caluclate graphical coordinates
-            pnt.grx1 = Math.round(grx);
-            pnt.gry1 = Math.round(gry);
-
-            if (this.has_errors) {
-               pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
-               pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
-               pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
-               pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
-
-               if (this.is_bent) {
-                  pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
-                  pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
-                  pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
-                  pnt.grdy2 = Math.round(pmain.grx(pnt.x + graph.fEYhighd[i]) - grx);
-               } else {
-                  pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
-               }
-            }
-         }
 
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll(".grpoint")
