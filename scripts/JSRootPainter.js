@@ -2818,6 +2818,10 @@
          return res;
       }
 
+      // add title for complete TGraph
+      if (JSROOT.gStyle.Tooltip === 1)
+          this.draw_g.append("svg:title").text(name);
+
       this.lineatt = JSROOT.Painter.createAttLine(graph);
       this.fillatt = this.createAttFill(graph);
 
