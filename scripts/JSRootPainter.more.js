@@ -2702,10 +2702,10 @@
              .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
              .on('mouseover', function() {
                 if (JSROOT.gStyle.Tooltip < 1) return;
-                d3.select(this).transition().duration(100).style("fill", this.__data__.tipcolor);
+                d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().tipcolor);
              })
              .on('mouseout', function() {
-                d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
+                d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().fill);
              })
              .append("svg:title").text(function(d) { return d.tip; });
 
@@ -2722,7 +2722,7 @@
 
       if (pnt !== null)
          this.draw_g.selectAll(ismarker ? ".marker" : ".bins"). each(function() {
-            var d = this.__data__;
+            var d = d3.select(this).datum();
             if (ismarker) {
                if (Math.abs(pnt.x - d.x)>3 || Math.abs(pnt.y - d.y)>3) return;
             } else {
@@ -2737,14 +2737,14 @@
 
       if (!issame) {
          if (('_sbin' in this) && !ismarker)
-            d3.select(this._sbin).transition().duration(100).style("fill", this._sbin.__data__.fill);
+            d3.select(this._sbin).transition().duration(100).style("fill", d3.select(this._sbin).datum().fill);
 
          delete this._sbin;
       }
 
       if (cnt!==1) return null;
 
-      var d = find.__data__;
+      var d = d3.select(find).datum();
 
       if (!issame) {
          this._sbin = find;

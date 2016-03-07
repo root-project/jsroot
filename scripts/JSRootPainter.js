@@ -2850,11 +2850,12 @@
          if (JSROOT.gStyle.Tooltip === 1)
             nodes.on('mouseover', function() {
                if (JSROOT.gStyle.Tooltip < 1) return;
-               this.__data__.fill = d3.select(this).style("fill");
-               d3.select(this).transition().duration(100).style("fill", "grey");
+               var sel = d3.select(this);
+               if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
+               sel.transition().duration(100).style("fill", "grey");
             })
             .on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
+               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
             })
             .append("svg:title").text(TooltipText);
       }
@@ -2962,12 +2963,13 @@
            .call(this.fillatt.func)
            .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
            .on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip < 1) return;
-               this.__data__.fill = d3.select(this).style("fill");
-               d3.select(this).transition().duration(100).style("fill", "grey");
+               if (JSROOT.gStyle.Tooltip !== 1) return;
+               var sel = d3.select(this);
+               if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
+               sel.transition().duration(100).style("fill", "grey");
            })
            .on('mouseout', function() {
-              d3.select(this).transition().duration(100).style("fill", this.__data__.fill);
+              d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
            })
            .append("svg:title").text(TooltipText);
       }
