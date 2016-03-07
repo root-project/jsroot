@@ -1559,13 +1559,6 @@
 
       if (this.optionEF > 0) {
 
-         var area = d3.svg.area()
-                        .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                        .y0(function(d) { return pmain.gry(d.y - d.eylow).toFixed(1); })
-                        .y1(function(d) { return pmain.gry(d.y + d.eyhigh).toFixed(1); });
-         if (this.optionEF > 1)
-            area = area.interpolate(JSROOT.gStyle.Interpolate);
-
          drawbins = this.OptimizeBins();
 
          // build lower part
@@ -1575,7 +1568,8 @@
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         var path1 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "bezier" : "line", drawbins), bins2 = [];
+         var path1 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "bezier" : "line", drawbins),
+             bins2 = [];
 
          for (var n=drawbins.length-1;n>=0;--n) {
             var bin = drawbins[n];
@@ -1583,10 +1577,10 @@
             bins2.push(bin);
          }
 
+         // build upper part (in reverse direction
          var path2 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "Lbezier" : "Lline", bins2);
 
-         console.log('old area ' + area(drawbins).length);
-         console.log('new area ' + (path1.path.length + path2.path.length));
+         console.log('gr area ' + (path1.path.length + path2.path.length));
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1594,19 +1588,11 @@
                     .call(this.fillatt.func);
       }
 
-      // TODO - make it compacter
-      var line = d3.svg.line()
-                  .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                  .y(function(d) { return pmain.gry(d.y).toFixed(1); });
-
       if (Math.abs(this.lineatt.width) > 99) {
          /* first draw exclusion area, and then the line */
          this.optionMark = 0;
-
-         this.DrawExclusion(line);
-      } else
-      if (this.optionCurve == 1) // do not use smoothing with exclusion
-         line = line.interpolate(JSROOT.gStyle.Interpolate);
+         this.DrawExclusion();
+      }
 
       if (this.optionLine == 1 || this.optionFill == 1) {
 
@@ -1631,11 +1617,9 @@
 
          var path = JSROOT.Painter.BuildSvgPath((this.optionCurve === 1) ? "bezier" : "line", drawbins);
 
-         console.log('old line ' + line(drawbins).length);
          console.log('new line ' + path.path.length);
 
          this.draw_g.append("svg:path")
-               //.attr("d", line(drawbins) + close_symbol)
                .attr("d", path.path + close_symbol)
                .attr("class", "draw_line")
                .call(lineatt.func)
@@ -2095,10 +2079,14 @@
          if ((yf[i] <= 0.0) && this.main_painter().options.Logy) yf[i] = ymin;
       }
 
-      var excl = d3.range(nf).map(function(p) { return { x : xf[p], y : yf[p] }; });
+      var pmain = this.main_painter(),
+          excl = d3.range(nf).map(function(p) { return { x: xf[p], y: yf[p] }; }),
+          line = d3.svg.line()
+                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
+                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
 
       this.draw_g.append("svg:path")
-          .attr("d", line(excl))
+          .attr("d", line(excl) + "Z")
           .style("stroke", "none")
           .style("stroke-width", 1)
           .call(this.fillatt.func)
