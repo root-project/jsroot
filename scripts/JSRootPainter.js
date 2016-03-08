@@ -319,10 +319,8 @@
 
       var marker_color = JSROOT.Painter.root_colors[attmarker.fMarkerColor];
 
-      var res = { stroke: marker_color, fill: marker_color, marker: "" };
+      var res = { kind: 'svg:path', stroke: marker_color, fill: marker_color, marker: "", fullSize: markerSize };
       if (!toFill) res.fill = 'none';
-
-      res.kind = 'svg:path';
 
       var half = (markerSize/2).toFixed(1);
 
