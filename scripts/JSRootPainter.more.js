@@ -808,8 +808,11 @@
       res.path = ((kind.charAt(0) == "L") ? "L" : "M") +
                   bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
 
-      if (smooth) {
+      // just calculate all deltas, can be used to build exclusion
+      if (smooth || kind.indexOf('calc')>=0)
          jsroot_d3_svg_lineMonotoneTangents(bins);
+
+      if (smooth) {
          res.path +=  "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
       }
 
@@ -1592,7 +1595,7 @@
       if (Math.abs(this.lineatt.width) > 99) {
          /* first draw exclusion area, and then the line */
          this.optionMark = 0;
-         this.DrawExclusion();
+         this.DrawExclusionNew();
       }
 
       if (this.optionLine == 1 || this.optionFill == 1) {
@@ -1874,7 +1877,7 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.DrawExclusion = function(line) {
+   JSROOT.TGraphPainter.prototype.DrawExclusion = function() {
       var graph = this.GetObject(), n = graph.fNpoints,
           xo, yo, xt, yt, xf, yf;
 
@@ -2095,6 +2098,56 @@
           .style("stroke-width", 1)
           .call(this.fillatt.func)
           .style('opacity', 0.75);
+   }
+
+   JSROOT.TGraphPainter.prototype.DrawExclusionNew = function() {
+
+      var wk = 1, pmain = this.main_painter();
+      if (this.lineatt.width < 0) {
+         this.lineatt.width = - this.lineatt.width;
+         wk = -1;
+      }
+      wk *= Math.floor(this.lineatt.width / 100) * 5; //  * 0.005;
+      this.lineatt.width = this.lineatt.width % 100; // line width
+      if (this.lineatt.width > 0) this.optionLine = 1;
+
+      var drawbins = this.OptimizeBins();
+
+      for (var n=0;n<drawbins.length;++n) {
+         var bin = drawbins[n];
+         bin.grx = pmain.grx(bin.x);
+         bin.gry = pmain.gry(bin.y);
+      }
+
+      // use only yo build differences
+      var path1 = JSROOT.Painter.BuildSvgPath("bezier", drawbins);
+
+      //console.log('path1 ' + path1.path);
+
+      var extrabins = [];
+
+      for (var n=drawbins.length-1;n>=0;--n) {
+         var bin = drawbins[n];
+         var dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
+
+         // shift point, using
+         bin.grx += wk*bin.dgry/dlen;
+         bin.gry -= wk*bin.dgrx/dlen;
+
+         extrabins.push(bin);
+      }
+
+      var path2 = JSROOT.Painter.BuildSvgPath("Lbezier", extrabins);
+
+      //console.log('path2 ' + path2.path);
+
+      this.draw_g.append("svg:path")
+                 .attr("d", path1.path + path2.path + "Z")
+                 .style("stroke", "none")
+                 .style("stroke-width", 1)
+                 .call(this.fillatt.func)
+                 .style('opacity', 0.75);
+
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
