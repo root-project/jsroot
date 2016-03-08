@@ -1977,7 +1977,7 @@
          if (fo_g.property('_scale')) {
             var box = painter.GetBoundarySizes(fo_g.node());
             var w = fo_g.property('_width'), h = fo_g.property('_height');
-            if (rotate!==0) { var d = w; w = h; h = d; }
+            if ((rotate===90) || (rotate==270)) { var d = w; w = h; h = d; }
             painter.TextScaleFactor(1.05* box.width / w, draw_g);
             painter.TextScaleFactor(1.* box.height / h, draw_g);
          }
@@ -2004,22 +2004,24 @@
              fo_x = fo_g.property('_x'),
              fo_y = fo_g.property('_y');
 
+         var hrotate = (rotate==180), vrotate = (rotate==90) || (rotate==270);
+
          if (fo_g.property('_scale')) {
             if (align[0] == 'middle') fo_x += (fo_w - box.width)/2; else
             if (align[0] == 'end')    fo_x += (fo_w - box.width);
             if (align[1] == 'middle') fo_y += (fo_h - box.height)/2; else
-            if (align[1] == 'top' && (rotate===0)) fo_y += (fo_h - box.height); else
-            if (align[1] == 'bottom' && (rotate!==0)) fo_y += (fo_h - box.height);
+            if (align[1] == 'top' && !vrotate) fo_y += (fo_h - box.height); else
+            if (align[1] == 'bottom' && !vrotate) fo_y += (fo_h - box.height);
          } else {
             if (align[0] == 'middle') fo_x -= box.width/2; else
             if (align[0] == 'end')    fo_x -= box.width;
             if (align[1] == 'middle') fo_y -= box.height/2; else
-            if (align[1] == 'bottom' && (rotate===0)) fo_y -= box.height; else
-            if (align[1] == 'top' && (rotate!==0)) fo_y -= box.height;
+            if (align[1] == 'bottom' && !vrotate) fo_y -= box.height; else
+            if (align[1] == 'top' && vrotate) fo_y -= box.height;
          }
 
          var trans = "";
-         if (rotate!==0) trans += "rotate("+rotate+",0,0) ";
+         if (rotate!==0) trans = "rotate("+rotate+",0,0) ";
          trans += "translate("+fo_x+","+fo_y+")";
 
          fo_g.attr('transform', trans).attr('visibility', null);
@@ -2113,8 +2115,7 @@
 
       var rotate = 0;
 
-      if (!scale)
-         if ((h==-270) || (h==-90)) rotate = Math.abs(h);
+      if (!scale && h<0) rotate = Math.abs(h);
 
       var fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
@@ -4208,7 +4209,7 @@
 
       if (axis.fTitle.length > 0) {
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-              title_fontsize = Math.round(axis.fTitleSize * h),
+              title_fontsize = Math.round(axis.fTitleSize * Math.min(w,h)),
               center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
               rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
               title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
@@ -4217,13 +4218,13 @@
 
           var tres = 0;
           if (vertical)
-             tres = this.DrawText(center ? "middle" : (rotate<0 ? "begin" : "end" ),
+             tres = this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";" + (rotate<0 ? "top" : "bottom"),
                                  Math.round((center ? h/2 : 0) * -rotate),
-                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+(rotate>0?0:1))*title_fontsize)),
+                                 Math.round(-rotate*(labeloffset + 2.6*axis.fTitleOffset*title_fontsize)),
                                  0, (rotate<0 ? -90 : -270),
                                  axis.fTitle, title_color, 1, title_g);
           else
-             tres = this.DrawText(center ? 'middle' : (rotate<0 ? 'begin' : 'end'),
+             tres = this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";" + ((rotate<0) ? "bottom" : "top"),
                                  Math.round((center ? w/2 : w)*rotate),
                                  Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)*rotate),
                                  0, (rotate<0 ? -180 : 0),
