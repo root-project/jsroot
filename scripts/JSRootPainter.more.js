@@ -1550,7 +1550,8 @@
           pmain = this.main_painter(),
           w = this.frame_width(),
           h = this.frame_height(),
-          graph = this.GetObject();
+          graph = this.GetObject(),
+          excl_width = 0;
 
       // add title for complete TGraph
       if (JSROOT.gStyle.Tooltip === 1)
@@ -1558,6 +1559,19 @@
 
       this.lineatt = JSROOT.Painter.createAttLine(graph);
       this.fillatt = this.createAttFill(graph);
+
+      if (Math.abs(this.lineatt.width) > 99) {
+         // exclusion graph
+         if (this.lineatt.width < 0) {
+            this.lineatt.width = - this.lineatt.width;
+            excl_width = -1;
+         } else {
+            excl_width = 1;
+         }
+         excl_width *= Math.floor(this.lineatt.width / 100) * 5;
+         this.lineatt.width = this.lineatt.width % 100; // line width
+         if (this.lineatt.width > 0) this.optionLine = 1;
+      }
 
       var drawbins = null;
 
@@ -1592,24 +1606,13 @@
                     .call(this.fillatt.func);
       }
 
-      if (Math.abs(this.lineatt.width) > 99) {
-         /* first draw exclusion area, and then the line */
-         this.optionMark = 0;
-         this.DrawExclusionNew();
-      }
-
-      if (this.optionLine == 1 || this.optionFill == 1) {
+      if (this.optionLine == 1 || this.optionFill == 1 || (excl_width!==0)) {
 
          var close_symbol = "";
-         if (graph._typename=="TCutG") close_symbol = " Z";
+         if (graph._typename=="TCutG") { close_symbol = "Z"; excl_width = 0; }
 
-         var lineatt = this.lineatt;
-         if (this.optionLine == 0) lineatt = JSROOT.Painter.createAttLine('none');
-
-         if (this.optionFill == 1)
-            close_symbol = " Z"; // always close area if we want to fill it
-         else
-            this.fillatt.color = 'none';
+         if ((this.optionFill == 1) && (excl_width===0))
+            close_symbol = "Z"; // always close area if we want to fill it
 
          if (drawbins===null) drawbins = this.OptimizeBins();
 
@@ -1619,17 +1622,50 @@
             bin.gry = pmain.gry(bin.y);
          }
 
-         var path = JSROOT.Painter.BuildSvgPath((this.optionCurve === 1) ? "bezier" : "line", drawbins);
+         var kind = "line"; // simple line
+         if (this.optionCurve === 1) kind = "bezier"; else
+         if (excl_width!==0) kind+="calc"; // we need to calculated deltas to build exclusion points
 
-         console.log('new line ' + path.path.length);
+         var path = JSROOT.Painter.BuildSvgPath(kind, drawbins);
 
-         this.draw_g.append("svg:path")
-               .attr("d", path.path + close_symbol)
-               .attr("class", "draw_line")
-               .call(lineatt.func)
-               .call(this.fillatt.func);
+         if (excl_width!==0) {
+            var extrabins = [];
+            for (var n=drawbins.length-1;n>=0;--n) {
+               var bin = drawbins[n];
+               var dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
+               // shift point, using
+               bin.grx += excl_width*bin.dgry/dlen;
+               bin.gry -= excl_width*bin.dgrx/dlen;
+               extrabins.push(bin);
+            }
 
-         console.log('Draw graph mark = ' + this.optionMark);
+            var path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.optionCurve === 1) ? "bezier" : "line"), extrabins);
+
+            this.draw_g.append("svg:path")
+                       .attr("d", path.path + path2.path + "Z")
+                       .style("stroke", "none")
+                       .call(this.fillatt.func)
+                       .style('opacity', 0.75);
+
+            console.log('excl area ' + (path.path.length + path2.path.length));
+         }
+
+         if (this.optionLine || this.optionFill) {
+            console.log('graph path ' + path.path.length);
+
+            var elem = this.draw_g.append("svg:path")
+                          .attr("d", path.path + close_symbol);
+            if (this.optionLine)
+               elem.call(this.lineatt.func);
+            else
+               elem.style('stroke','none');
+
+            if (close_symbol.length > 0)
+               elem.call(this.fillatt.func);
+            else
+               elem.style('fill','none');
+
+         }
 
          // do not add tooltip for line, when we wants to add markers
          if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==0))
@@ -1647,8 +1683,6 @@
       var nodes = null;
 
       if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
-
-         console.log('Recreate GGG');
 
          if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
@@ -1875,279 +1909,6 @@
                .property("current_bin", findbin);
 
       return res;
-   }
-
-   JSROOT.TGraphPainter.prototype.DrawExclusion = function() {
-      var graph = this.GetObject(), n = graph.fNpoints,
-          xo, yo, xt, yt, xf, yf;
-
-      if ('Float32Array' in window) {
-         xo = new Float32Array(n + 2);
-         yo = new Float32Array(n + 2);
-         xt = new Float32Array(n + 2);
-         yt = new Float32Array(n + 2);
-         xf = new Float32Array(2 * n + 2);
-         yf = new Float32Array(2 * n + 2);
-      } else {
-          xo = []; yo = []; xt = []; yt = []; xf = []; yf = [];
-      }
-      // negative value means another side of the line...
-
-      var a, i, j, nf, normx, normy, wk = 1;
-      if (this.lineatt.width < 0) {
-         this.lineatt.width = - this.lineatt.width;
-         wk = -1;
-      }
-      wk *= Math.floor(this.lineatt.width / 100) * 0.005;
-      this.lineatt.width = this.lineatt.width % 100; // line width
-      if (this.lineatt.width > 0) this.optionLine = 1;
-
-      var w = this.frame_width(), h = this.frame_height();
-
-      var ratio = w / h;
-
-      var xmin = this.main_painter().xmin, xmax = this.main_painter().xmax,
-          ymin = this.main_painter().ymin, ymax = this.main_painter().ymax;
-      for (i = 0; i < n; ++i) {
-         xo[i] = (graph.fX[i] - xmin) / (xmax - xmin);
-         yo[i] = (graph.fY[i] - ymin) / (ymax - ymin);
-         if (w > h)
-            yo[i] = yo[i] / ratio;
-         else if (h > w)
-            xo[i] = xo[i] / ratio;
-      }
-      // The first part of the filled area is made of the graph points.
-      // Make sure that two adjacent points are different.
-      xf[0] = xo[0];
-      yf[0] = yo[0];
-      nf = 0;
-      for (i = 1; i < n; ++i) {
-         if (xo[i] == xo[i - 1] && yo[i] == yo[i - 1])  continue;
-         xf[++nf] = xo[i];
-         if (xf[i] == xf[i - 1])
-            xf[i] += 0.000001; // add an epsilon to avoid exact vertical
-                                 // lines.
-         yf[nf] = yo[i];
-      }
-      // For each graph points a shifted points is computed to build up
-      // the second part of the filled area. First and last points are
-      // treated as special cases, outside of the loop.
-      if (xf[1] == xf[0]) {
-         a = Math.PI / 2.0;
-      } else {
-         a = Math.atan((yf[1] - yf[0]) / (xf[1] - xf[0]));
-      }
-      if (xf[0] <= xf[1]) {
-         xt[0] = xf[0] - wk * Math.sin(a);
-         yt[0] = yf[0] + wk * Math.cos(a);
-      } else {
-         xt[0] = xf[0] + wk * Math.sin(a);
-         yt[0] = yf[0] - wk * Math.cos(a);
-      }
-      if (xf[nf] == xf[nf - 1]) {
-         a = Math.PI / 2.0;
-      } else {
-         a = Math.atan((yf[nf] - yf[nf - 1]) / (xf[nf] - xf[nf - 1]));
-      }
-      if (xf[nf] >= xf[nf - 1]) {
-         xt[nf] = xf[nf] - wk * Math.sin(a);
-         yt[nf] = yf[nf] + wk * Math.cos(a);
-      } else {
-         xt[nf] = xf[nf] + wk * Math.sin(a);
-         yt[nf] = yf[nf] - wk * Math.cos(a);
-      }
-
-      var a1, a2, a3, xi0, yi0, xi1, yi1, xi2, yi2;
-      for (i = 1; i < nf; ++i) {
-         xi0 = xf[i];
-         yi0 = yf[i];
-         xi1 = xf[i+1];
-         yi1 = yf[i+1];
-         xi2 = xf[i-1];
-         yi2 = yf[i-1];
-         if (xi1 == xi0) {
-            a1 = Math.PI / 2.0;
-         } else {
-            a1 = Math.atan((yi1 - yi0) / (xi1 - xi0));
-         }
-         if (xi1 < xi0)
-            a1 = a1 + Math.PI;
-         if (xi2 == xi0) {
-            a2 = Math.PI / 2.0;
-         } else {
-            a2 = Math.atan((yi0 - yi2) / (xi0 - xi2));
-         }
-         if (xi0 < xi2)
-            a2 = a2 + Math.PI;
-         x1 = xi0 - wk * Math.sin(a1);
-         y1 = yi0 + wk * Math.cos(a1);
-         x2 = xi0 - wk * Math.sin(a2);
-         y2 = yi0 + wk * Math.cos(a2);
-         xm = (x1 + x2) * 0.5;
-         ym = (y1 + y2) * 0.5;
-         if (xm == xi0) {
-            a3 = Math.PI / 2.0;
-         } else {
-            a3 = Math.atan((ym - yi0) / (xm - xi0));
-         }
-         x3 = xi0 - wk * Math.sin(a3 + (Math.PI / 2.0));
-         y3 = yi0 + wk * Math.cos(a3 + (Math.PI / 2.0));
-         // Rotate (x3,y3) by PI around (xi0,yi0) if it is not on the (xm,ym)
-         // side.
-         if ((xm - xi0) * (x3 - xi0) < 0 && (ym - yi0) * (y3 - yi0) < 0) {
-            x3 = 2 * xi0 - x3;
-            y3 = 2 * yi0 - y3;
-         }
-         if ((xm == x1) && (ym == y1)) {
-            x3 = xm;
-            y3 = ym;
-         }
-         xt[i] = x3;
-         yt[i] = y3;
-      }
-      // Close the polygon if the first and last points are the same
-      if (xf[nf] == xf[0] && yf[nf] == yf[0]) {
-         xm = (xt[nf] + xt[0]) * 0.5;
-         ym = (yt[nf] + yt[0]) * 0.5;
-         if (xm == xf[0]) {
-            a3 = Math.PI / 2.0;
-         } else {
-            a3 = Math.atan((ym - yf[0]) / (xm - xf[0]));
-         }
-         x3 = xf[0] + wk * Math.sin(a3 + (Math.PI / 2.0));
-         y3 = yf[0] - wk * Math.cos(a3 + (Math.PI / 2.0));
-         if ((xm - xf[0]) * (x3 - xf[0]) < 0 && (ym - yf[0]) * (y3 - yf[0]) < 0) {
-            x3 = 2 * xf[0] - x3;
-            y3 = 2 * yf[0] - y3;
-         }
-         xt[nf] = x3;
-         xt[0] = x3;
-         yt[nf] = y3;
-         yt[0] = y3;
-      }
-      // Find the crossing segments and remove the useless ones
-      var xc, yc, c1, b1, c2, b2;
-      var cross = false;
-      var nf2 = nf;
-      for (i = nf2; i > 0; i--) {
-         for (j = i - 1; j > 0; j--) {
-            if (xt[i - 1] == xt[i] || xt[j - 1] == xt[j])
-               continue;
-            c1 = (yt[i - 1] - yt[i]) / (xt[i - 1] - xt[i]);
-            b1 = yt[i] - c1 * xt[i];
-            c2 = (yt[j - 1] - yt[j]) / (xt[j - 1] - xt[j]);
-            b2 = yt[j] - c2 * xt[j];
-            if (c1 != c2) {
-               xc = (b2 - b1) / (c1 - c2);
-               yc = c1 * xc + b1;
-               if (xc > Math.min(xt[i], xt[i - 1])
-                     && xc < Math.max(xt[i], xt[i - 1])
-                     && xc > Math.min(xt[j], xt[j - 1])
-                     && xc < Math.max(xt[j], xt[j - 1])
-                     && yc > Math.min(yt[i], yt[i - 1])
-                     && yc < Math.max(yt[i], yt[i - 1])
-                     && yc > Math.min(yt[j], yt[j - 1])
-                     && yc < Math.max(yt[j], yt[j - 1])) {
-                  xf[++nf] = xt[i];
-                  yf[nf] = yt[i];
-                  xf[++nf] = xc;
-                  yf[nf] = yc;
-                  i = j;
-                  cross = true;
-                  break;
-               } else {
-                  continue;
-               }
-            } else {
-               continue;
-            }
-         }
-         if (!cross) {
-            xf[++nf] = xt[i];
-            yf[nf] = yt[i];
-         }
-         cross = false;
-      }
-      xf[++nf] = xt[0];
-      yf[nf++] = yt[0];
-
-      for (i = 0; i < nf; ++i) {
-         if (w > h) {
-            xf[i] = xmin + (xf[i] * (xmax - xmin));
-            yf[i] = ymin + (yf[i] * (ymax - ymin)) * ratio;
-         } else if (h > w) {
-            xf[i] = xmin + (xf[i] * (xmax - xmin)) * ratio;
-            yf[i] = ymin + (yf[i] * (ymax - ymin));
-         } else {
-            xf[i] = xmin + (xf[i] * (xmax - xmin));
-            yf[i] = ymin + (yf[i] * (ymax - ymin));
-         }
-         if ((xf[i] <= 0.0) && this.main_painter().options.Logx) xf[i] = xmin;
-         if ((yf[i] <= 0.0) && this.main_painter().options.Logy) yf[i] = ymin;
-      }
-
-      var pmain = this.main_painter(),
-          excl = d3.range(nf).map(function(p) { return { x: xf[p], y: yf[p] }; }),
-          line = d3.svg.line()
-                   .x(function(d) { return pmain.grx(d.x).toFixed(1); })
-                   .y(function(d) { return pmain.gry(d.y).toFixed(1); });
-
-      this.draw_g.append("svg:path")
-          .attr("d", line(excl) + "Z")
-          .style("stroke", "none")
-          .style("stroke-width", 1)
-          .call(this.fillatt.func)
-          .style('opacity', 0.75);
-   }
-
-   JSROOT.TGraphPainter.prototype.DrawExclusionNew = function() {
-
-      var wk = 1, pmain = this.main_painter();
-      if (this.lineatt.width < 0) {
-         this.lineatt.width = - this.lineatt.width;
-         wk = -1;
-      }
-      wk *= Math.floor(this.lineatt.width / 100) * 5; //  * 0.005;
-      this.lineatt.width = this.lineatt.width % 100; // line width
-      if (this.lineatt.width > 0) this.optionLine = 1;
-
-      var drawbins = this.OptimizeBins();
-
-      for (var n=0;n<drawbins.length;++n) {
-         var bin = drawbins[n];
-         bin.grx = pmain.grx(bin.x);
-         bin.gry = pmain.gry(bin.y);
-      }
-
-      // use only yo build differences
-      var path1 = JSROOT.Painter.BuildSvgPath("bezier", drawbins);
-
-      //console.log('path1 ' + path1.path);
-
-      var extrabins = [];
-
-      for (var n=drawbins.length-1;n>=0;--n) {
-         var bin = drawbins[n];
-         var dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
-
-         // shift point, using
-         bin.grx += wk*bin.dgry/dlen;
-         bin.gry -= wk*bin.dgrx/dlen;
-
-         extrabins.push(bin);
-      }
-
-      var path2 = JSROOT.Painter.BuildSvgPath("Lbezier", extrabins);
-
-      //console.log('path2 ' + path2.path);
-
-      this.draw_g.append("svg:path")
-                 .attr("d", path1.path + path2.path + "Z")
-                 .style("stroke", "none")
-                 .style("stroke-width", 1)
-                 .call(this.fillatt.func)
-                 .style('opacity', 0.75);
-
    }
 
    JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
@@ -2398,8 +2159,6 @@
 
       this.DrawNextGraph = function(indx, opt) {
          var graphs = this.GetObject().fGraphs;
-
-         console.log('indx ' + indx + ' graphs =' + graphs.arr.length);
 
          // at the end of graphs drawing draw functions (if any)
          if (indx >= graphs.arr.length)
