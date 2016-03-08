@@ -4209,8 +4209,6 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
-      axis.fTitle = 'M_{#mu#mu}';
-
       if (axis.fTitle.length > 0) {
 
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
