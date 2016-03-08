@@ -818,9 +818,9 @@
       }
 
       for(n=1; n<bins.length; ++n) {
+          prev = bin;
           bin = bins[n];
           if (smooth) {
-             prev = bin;
              if (n > 1) res.path += "s";
              res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
              maxy = Math.max(maxy, prev.gry);
