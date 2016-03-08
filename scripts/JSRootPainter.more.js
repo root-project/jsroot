@@ -31,10 +31,10 @@
    };
 
    JSROOT.ToolbarIcons.th2draw3d = {
-       path:  "M172.768,0H51.726C23.202,0,0.002,23.194,0.002,51.712v89.918c0,28.512,23.2,51.718,51.724,51.718h121.042   c28.518,0,51.724-23.2,51.724-51.718V51.712C224.486,23.194,201.286,0,172.768,0z M177.512,141.63c0,2.611-2.124,4.745-4.75,4.745   H51.726c-2.626,0-4.751-2.134-4.751-4.745V51.712c0-2.614,2.125-4.739,4.751-4.739h121.042c2.62,0,4.75,2.125,4.75,4.739   L177.512,141.63L177.512,141.63z "+
-              "M460.293,0H339.237c-28.521,0-51.721,23.194-51.721,51.712v89.918c0,28.512,23.2,51.718,51.721,51.718h121.045   c28.521,0,51.721-23.2,51.721-51.718V51.712C512.002,23.194,488.802,0,460.293,0z M465.03,141.63c0,2.611-2.122,4.745-4.748,4.745   H339.237c-2.614,0-4.747-2.128-4.747-4.745V51.712c0-2.614,2.133-4.739,4.747-4.739h121.045c2.626,0,4.748,2.125,4.748,4.739   V141.63z "+
-              "M172.768,256.149H51.726c-28.524,0-51.724,23.205-51.724,51.726v89.915c0,28.504,23.2,51.715,51.724,51.715h121.042   c28.518,0,51.724-23.199,51.724-51.715v-89.915C224.486,279.354,201.286,256.149,172.768,256.149z M177.512,397.784   c0,2.615-2.124,4.736-4.75,4.736H51.726c-2.626-0.006-4.751-2.121-4.751-4.736v-89.909c0-2.626,2.125-4.753,4.751-4.753h121.042   c2.62,0,4.75,2.116,4.75,4.753L177.512,397.784L177.512,397.784z "+
-              "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045   c2.615,0,4.748,2.116,4.748,4.753V397.784z"
+       path:  "M172.768,0H51.726C23.202,0,0.002,23.194,0.002,51.712v89.918c0,28.512,23.2,51.718,51.724,51.718h121.042   c28.518,0,51.724-23.2,51.724-51.718V51.712C224.486,23.194,201.286,0,172.768,0z M177.512,141.63c0,2.611-2.124,4.745-4.75,4.745   H51.726c-2.626,0-4.751-2.134-4.751-4.745V51.712c0-2.614,2.125-4.739,4.751-4.739h121.042c2.62,0,4.75,2.125,4.75,4.739 L177.512,141.63L177.512,141.63z "+
+              "M460.293,0H339.237c-28.521,0-51.721,23.194-51.721,51.712v89.918c0,28.512,23.2,51.718,51.721,51.718h121.045   c28.521,0,51.721-23.2,51.721-51.718V51.712C512.002,23.194,488.802,0,460.293,0z M465.03,141.63c0,2.611-2.122,4.745-4.748,4.745   H339.237c-2.614,0-4.747-2.128-4.747-4.745V51.712c0-2.614,2.133-4.739,4.747-4.739h121.045c2.626,0,4.748,2.125,4.748,4.739 V141.63z "+
+              "M172.768,256.149H51.726c-28.524,0-51.724,23.205-51.724,51.726v89.915c0,28.504,23.2,51.715,51.724,51.715h121.042   c28.518,0,51.724-23.199,51.724-51.715v-89.915C224.486,279.354,201.286,256.149,172.768,256.149z M177.512,397.784   c0,2.615-2.124,4.736-4.75,4.736H51.726c-2.626-0.006-4.751-2.121-4.751-4.736v-89.909c0-2.626,2.125-4.753,4.751-4.753h121.042 c2.62,0,4.75,2.116,4.75,4.753L177.512,397.784L177.512,397.784z "+
+              "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
    };
 
    JSROOT.Painter.CreateDefaultPalette = function() {
@@ -803,7 +803,8 @@
          }
       }
 
-      var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5);
+      var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
+                    currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy;
 
       res.path = ((kind.charAt(0) == "L") ? "L" : "M") +
                   bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
@@ -817,15 +818,19 @@
       }
 
       for(n=1; n<bins.length; ++n) {
-          prev = bin;
           bin = bins[n];
           if (smooth) {
+             prev = bin;
              if (n > 1) res.path += "s";
              res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+             maxy = Math.max(maxy, prev.gry);
           } else {
-             res.path += "l" + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+             dx = Math.round(bin.grx - currx);
+             dy = Math.round(bin.gry - curry);
+             res.path += "l" + dx + "," + dy;
+             currx+=dx; curry+=dy;
+             maxy = Math.max(maxy, curry);
           }
-          maxy = Math.max(maxy, prev.gry);
       }
 
       if (height>0)
@@ -841,11 +846,11 @@
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
       this.bins = null;
 
-      this['Eval'] = function(x) {
+      this.Eval = function(x) {
          return this.GetObject().evalPar(x);
       }
 
-      this['CreateBins'] = function(ignore_zoom) {
+      this.CreateBins = function(ignore_zoom) {
          var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
 
          if ((main!==null) && !ignore_zoom)  {
@@ -1324,7 +1329,6 @@
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
-      console.log('Redraw graph');
       this.DrawBins();
    }
 
@@ -1697,7 +1701,7 @@
          for (var i = 0; i < drawbins.length; ++i) {
             var pnt = drawbins[i];
 
-            // not-rounded graphical coordinates
+            // original graphical coordinates
             var grx = pmain.grx(pnt.x), gry = pmain.gry(pnt.y);
 
             // caluclate graphical coordinates
@@ -1841,6 +1845,9 @@
          return null;
       }
 
+      if ((this.optionEF > 0) || (this.optionLine == 1) || (this.optionFill == 1))
+         return this.ProcessTooltipForLine(pnt);
+
       var width = this.frame_width(),
           height = this.frame_height(),
           pmain = this.main_painter(),
@@ -1907,6 +1914,76 @@
                .attr("height", best.y2 - best.y1)
                .style("opacity", "0.3")
                .property("current_bin", findbin);
+
+      return res;
+   }
+
+   JSROOT.TGraphPainter.prototype.ProcessTooltipForLine = function(pnt) {
+
+      if (this.bins === null) return null;
+
+      var bestbin = null, bestdist2 = 1e10, pmain = this.main_painter();
+
+      for (var n=0;n<this.bins.length;++n) {
+         var bin = this.bins[n];
+
+         if (bin.grx === undefined) continue;
+
+         bin.grx = pmain.grx(bin.x);
+
+         var dist2 = Math.pow(pnt.x-bin.grx,2);
+         if (dist2 < bestdist2) {
+            bestdist2 = dist2;
+            bestbin = bin;
+         }
+      }
+
+      var ttbin = this.draw_g.select(".tooltip_bin");
+
+      if (bestbin===null) {
+         ttbin.remove();
+         return null;
+      }
+
+      var res = { x: bestbin.grx, y: bestbin.gry,
+                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  lines: this.TooltipText(bestbin, true) };
+
+      if (ttbin.empty())
+         ttbin = this.draw_g.append("svg:g")
+                             .attr("class","tooltip_bin");
+
+      var radius = Math.max(this.lineatt.width + 3, 4), gry1,gry2;
+
+      if (this.optionEF > 0) {
+         gry1 = pmain.gry(bestbin.y - bestbin.eylow);
+         gry2 = pmain.gry(bestbin.y + bestbin.eyhigh);
+      } else {
+         gry1 = gry2 = pmain.gry(bestbin.y);
+      }
+
+      res.exact = (Math.abs(pnt.x - bestbin.grx) <= radius) &&
+                  ((Math.abs(pnt.y - gry1) <= radius) || (Math.abs(pnt.y - gry2) <= radius));
+
+      res.changed = ttbin.property("current_bin") !== bestbin;
+
+      if (res.changed) {
+         ttbin.selectAll("*").remove(); // first delete all childs
+         ttbin.property("current_bin", bestbin);
+         ttbin.append("svg:circle")
+              .attr("cx", bestbin.grx.toFixed(0))
+              .attr("cy", gry1.toFixed(0))
+              .attr("r", radius)
+              .call(this.lineatt.func)
+              .call(this.fillatt.func);
+         if (gry1!==gry2)
+            ttbin.append("svg:circle")
+                .attr("cx", bestbin.grx.toFixed(0))
+                .attr("cy", gry2.toFixed(0))
+                .attr("r", radius)
+                .call(this.lineatt.func)
+                .call(this.fillatt.func);
+      }
 
       return res;
    }
