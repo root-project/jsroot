@@ -2876,8 +2876,13 @@
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      if (print_name > 0)
-         pave.AddText(this.GetObject().fName);
+      if (print_name > 0) {
+         var name = this.GetObject().fName;
+         if (name.length<14)
+            pave.AddText(name);
+         else
+            pave.AddText(name.substr(0,11)+"...");
+      }
 
       if (print_entries > 0)
          pave.AddText("Entries = " + stat.Format(data.entries,"entries"));

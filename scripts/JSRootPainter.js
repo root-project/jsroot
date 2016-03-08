@@ -4208,6 +4208,8 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
+      axis.fTitle = 'M_{#mu#mu}';
+
       if (axis.fTitle.length > 0) {
 
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
@@ -5409,7 +5411,6 @@
 
       var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
 
-
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
@@ -5440,8 +5441,13 @@
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      if (print_name > 0)
-         pave.AddText(this.histo.fName);
+      if (print_name > 0) {
+         var name = this.histo.fName;
+         if (name.length<14)
+            pave.AddText(name);
+         else
+            pave.AddText(name.substr(0,11)+"...");
+      }
 
       if (this.IsTProfile()) {
 
