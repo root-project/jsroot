@@ -5839,12 +5839,12 @@
 
          if (dd !== null) {
             findbin = dd.bin;
-            grx1 = dd.x - dd.xerr;
+            grx1 = dd.x - Math.max(2, dd.xerr);
             midx = dd.x;
-            grx2 = dd.x + dd.xerr;
-            gry1 = dd.y - dd.yerr1;
+            grx2 = dd.x + Math.max(2, dd.xerr);
+            gry1 = dd.y - Math.max(2, dd.yerr1);
             midy = dd.y;
-            gry2 = dd.y + dd.yerr2;
+            gry2 = dd.y + Math.max(2, dd.yerr2);
             show_rect = true;
 
             // when only histogram shown, marker should be precise (but not for touch devices)

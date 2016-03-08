@@ -1531,11 +1531,11 @@
       lines.push("x = " + pmain.AxisAsText("x", d.x));
       lines.push("y = " + pmain.AxisAsText("y", d.y));
 
-      if (this.draw_errors  && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+      if (this.draw_errors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
          lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
                               "/+" + pmain.AxisAsText("x", d.exhigh));
 
-      if (this.draw_errors  && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+      if ((this.draw_errors || (this.optionEF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
          lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
                            "/+" + pmain.AxisAsText("y", d.eyhigh));
 

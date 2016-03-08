@@ -11,14 +11,14 @@
    - draw all histograms points in the range (no any skipped bins)
    - minimize SVG code for drawing (up to factor 100)
    - gives significant speedup in drawings
-8. Comparable improvements for TF1
+8. SVG code improvement for TGraph, TF1, TAxis drawings
 9. Provide new tooltip kind
    - created only when needed (minimizing SVG code)
    - tooltip can be drawn for every object in the frame
    - touch devices are supported 
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
-12. Use of cached methods let improve binary I/O perfromance by 20% 
+12. Use of cached methods improves binary I/O perfromance by 20% 
 
 
 ## Changes in 4.3
