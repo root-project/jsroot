@@ -1952,7 +1952,15 @@
 
       if (svgs==null) svgs = draw_g.selectAll(".math_svg");
 
-      var painter = this;
+      var painter = this, svg_factor = 0.;
+
+      // adjust font size (if there are normal text)
+      var f = draw_g.property('text_factor');
+      var font = draw_g.property('text_font');
+      if ((f>0) && ((f<0.9) || (f>1.))) {
+         font.size = Math.floor(font.size/f);
+         draw_g.call(font.func);
+      }
 
       // first remove dummy divs and check scaling coefficient
       svgs.each(function() {
@@ -1976,65 +1984,55 @@
 
          if (fo_g.property('_scale')) {
             var box = painter.GetBoundarySizes(fo_g.node());
-            var w = fo_g.property('_width'), h = fo_g.property('_height');
-            if ((rotate===90) || (rotate==270)) { var d = w; w = h; h = d; }
-            painter.TextScaleFactor(1.05* box.width / w, draw_g);
-            painter.TextScaleFactor(1.* box.height / h, draw_g);
+            svg_factor = Math.max(svg_factor, 1.05*box.width / fo_g.property('_width'),
+                                              1.05*box.height / fo_g.property('_height'));
          }
       });
-
-      // adjust font size
-      var f = draw_g.property('text_factor');
-
-      var font = draw_g.property('text_font');
-      if ((f>0) && ((f<0.9) || (f>1.))) {
-         font.size = Math.floor(font.size/f);
-         draw_g.call(font.func);
-      }
 
       svgs.each(function() {
          var fo_g = d3.select(this);
          // only direct parent
          if (fo_g.node().parentNode !== draw_g.node()) return;
-         var box = painter.GetBoundarySizes(fo_g.node()),
+
+         if (svg_factor > 0.) {
+            var m = fo_g.select("svg"); // MathJax svg
+            var mw = m.attr("width"), mh = m.attr("height");
+            if ((typeof mw == 'string') && (typeof mh == 'string') && (mw.indexOf("ex") > 0) && (mh.indexOf("ex") > 0)) {
+               mw = parseFloat(mw.substr(0,mw.length-2));
+               mh = parseFloat(mh.substr(0,mh.length-2));
+               if ((mw>0) && (mh>0)) {
+                  m.attr("width", (mw/svg_factor).toFixed(2)+"ex");
+                  m.attr("height", (mh/svg_factor).toFixed(2)+"ex");
+               }
+            } else {
+               JSROOT.console('Fail to downscale MathJax output');
+            }
+         }
+
+         var box = painter.GetBoundarySizes(fo_g.node()), // sizes before rotation
              align = fo_g.property('_align'),
              rotate = fo_g.property('_rotate'),
              fo_w = fo_g.property('_width'),
              fo_h = fo_g.property('_height'),
-             fo_x = fo_g.property('_x'),
-             fo_y = fo_g.property('_y');
+             tr = { x: fo_g.property('_x'), y: fo_g.property('_y') };
 
-         var vrotate = (rotate===90) ? -1 : ((rotate===270) ? 1 : 0);
-         var hrotate = (rotate==180) ? -1 : 1;
-
-         var box_width =  box.width;
-         var box_height = box.height;
-
-         if (fo_g.property('_scale')) {
-            if (align[0] == 'middle') fo_x += (fo_w - box_width)/2; else
-            if (align[0] == 'end')    fo_x += (fo_w - box_width);
-            if (align[1] == 'middle') fo_y += (fo_h - box_height)/2; else
-            if (align[1] == 'top') fo_y += (fo_h - box_height); else
-            if (align[1] == 'bottom') fo_y += (fo_h - box_height);
-         } else
-         if (vrotate!==0) {
-            if (align[0] == 'middle') fo_y += vrotate*box_width/2; else
-            if (align[0] == 'end')    fo_y += vrotate*box_width;
-
-            console.log('align ' + JSON.stringify(align) + '  sizes ' + JSON.stringify(box));
-
-            if (align[1] == 'middle') fo_x -= vrotate*box_height/2; else
-            if (align[1] == 'bottom') fo_x -= vrotate*box_height;
-
-         } else {
-            if (align[0] == 'middle') fo_x -= hrotate*box_width/2; else
-            if (align[0] == 'end')    fo_x -= hrotate*box_width;
-
-            if (align[1] == 'middle') fo_y -= hrotate*box_height/2; else
-            if (align[1] == 'bottom') fo_y -= hrotate*box_height;
+         var sign = { x:1, y:1 }, nx = "x", ny = "y";
+         if (rotate == 180) { sign.x = sign.y = -1; } else
+         if ((rotate == 270) || (rotate == 90)) {
+            sign.x = (rotate===270) ? -1 : 1;
+            sign.y = -sign.x;
+            nx = "y"; ny = "x"; // replace names to which align applied
          }
 
-         var trans = "translate("+fo_x+","+fo_y+")";
+         if (!fo_g.property('_scale')) fo_w = fo_h = 0;
+
+         if (align[0] == 'middle') tr[nx] += sign.x*(fo_w - box.width)/2; else
+         if (align[0] == 'end')    tr[nx] += sign.x*(fo_w - box.width);
+
+         if (align[1] == 'middle') tr[ny] += sign.y*(fo_h - box.height)/2; else
+         if (align[1] == 'bottom') tr[ny] += sign.y*(fo_h - box.height);
+
+         var trans = "translate("+tr.x+","+tr.y+")";
          if (rotate!==0) trans += " rotate("+rotate+",0,0)";
 
          fo_g.attr('transform', trans).attr('visibility', null);
@@ -4221,7 +4219,7 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
-      axis.fTitle = "M_{#mu#mu}";
+//      axis.fTitle = "M_{#mu#mu}";
 
       if (axis.fTitle.length > 0) {
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
