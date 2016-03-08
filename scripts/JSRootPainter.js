@@ -1958,7 +1958,10 @@
       svgs.each(function() {
          var fo_g = d3.select(this);
          if (fo_g.node().parentNode !== draw_g.node()) return;
-         var entry = fo_g.property('_element'); fo_g.property('_element', null);
+         var entry = fo_g.property('_element'),
+             rotate = fo_g.property('_rotate');
+
+         fo_g.property('_element', null);
 
          var vvv = d3.select(entry).select("svg");
          if (vvv.empty()) {
@@ -2060,7 +2063,7 @@
       var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!==2)) || (latex_kind<1);
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
-      if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
+      // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
       if (use_normal_text) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
@@ -2119,6 +2122,10 @@
          h = this.pad_height();
       }
 
+      if (rotate && !draw_g.selectAll("*").empty()) {
+         JSROOT.console("When doing rotate of MathJax, only single text element allowed");
+      }
+
       var fo_g = draw_g.append("svg")
                        .attr('x',x).attr('y',y)  // set x,y,width,height attribute to be able apply alignment later
                        .attr('width',w).attr('height',h)
@@ -2128,7 +2135,11 @@
                        .property('_rotate', rotate)
                        .property('_align', align);
 
-      if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
+      //if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
+
+      if (rotate) {
+         draw_g.attr("transform", "rotate(270, 0, 0)");
+      }
 
       var element = document.createElement("div");
       d3.select(element).style("visibility", "hidden")
@@ -4207,8 +4218,9 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
-      if (axis.fTitle.length > 0) {
+      // axis.fTitle = "M_{#mu#mu}";
 
+      if (axis.fTitle.length > 0) {
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
               title_fontsize = Math.round(axis.fTitleSize * h),
               center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
@@ -5909,7 +5921,9 @@
 
          midy = gry1 = gry2 = GetBinGrY(findbin);
 
-         show_rect = (pnt.nproc === 1); // if histogram alone, use old-style with rects
+         // if histogram alone, use old-style with rects
+         // if there are too many points at pixel, use circle
+         show_rect = (pnt.nproc === 1) && (r-l < 2);
 
          if (show_rect) {
             // for mouse events mouse pointer should be under the curve

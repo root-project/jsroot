@@ -944,7 +944,6 @@
          return histo;
       }
 
-
       this.ProcessTooltipFunc = function(pnt) {
          var cleanup = false;
 
