@@ -4353,7 +4353,8 @@
          lasth = hminor;
 
          if ((nmajor < major.length) && (pos == Math.round(handle.func(major[nmajor])))) {
-            lasth = hmajor;
+            // if not showing lables, not show large tick
+            if (!('format' in handle) || (handle.format(major[nmajor],true)!==null)) lasth = hmajor;
             nmajor++;
             handle.ticks.push(pos); // keep graphical of major ticks
          }
@@ -5923,7 +5924,7 @@
 
          // if histogram alone, use old-style with rects
          // if there are too many points at pixel, use circle
-         show_rect = (pnt.nproc === 1) && (r-l < 2);
+         show_rect = (pnt.nproc === 1) && (right-left < width);
 
          if (show_rect) {
             // for mouse events mouse pointer should be under the curve
