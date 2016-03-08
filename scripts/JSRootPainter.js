@@ -2004,25 +2004,38 @@
              fo_x = fo_g.property('_x'),
              fo_y = fo_g.property('_y');
 
-         var hrotate = (rotate==180), vrotate = (rotate==90) || (rotate==270);
+         var vrotate = (rotate===90) ? -1 : ((rotate===270) ? 1 : 0);
+         var hrotate = (rotate==180) ? -1 : 1;
+
+         var box_width =  box.width;
+         var box_height = box.height;
 
          if (fo_g.property('_scale')) {
-            if (align[0] == 'middle') fo_x += (fo_w - box.width)/2; else
-            if (align[0] == 'end')    fo_x += (fo_w - box.width);
-            if (align[1] == 'middle') fo_y += (fo_h - box.height)/2; else
-            if (align[1] == 'top' && !vrotate) fo_y += (fo_h - box.height); else
-            if (align[1] == 'bottom' && !vrotate) fo_y += (fo_h - box.height);
+            if (align[0] == 'middle') fo_x += (fo_w - box_width)/2; else
+            if (align[0] == 'end')    fo_x += (fo_w - box_width);
+            if (align[1] == 'middle') fo_y += (fo_h - box_height)/2; else
+            if (align[1] == 'top') fo_y += (fo_h - box_height); else
+            if (align[1] == 'bottom') fo_y += (fo_h - box_height);
+         } else
+         if (vrotate!==0) {
+            if (align[0] == 'middle') fo_y += vrotate*box_width/2; else
+            if (align[0] == 'end')    fo_y += vrotate*box_width;
+
+            console.log('align ' + JSON.stringify(align) + '  sizes ' + JSON.stringify(box));
+
+            if (align[1] == 'middle') fo_x -= vrotate*box_height/2; else
+            if (align[1] == 'bottom') fo_x -= vrotate*box_height;
+
          } else {
-            if (align[0] == 'middle') fo_x -= box.width/2; else
-            if (align[0] == 'end')    fo_x -= box.width;
-            if (align[1] == 'middle') fo_y -= box.height/2; else
-            if (align[1] == 'bottom' && !vrotate) fo_y -= box.height; else
-            if (align[1] == 'top' && vrotate) fo_y -= box.height;
+            if (align[0] == 'middle') fo_x -= hrotate*box_width/2; else
+            if (align[0] == 'end')    fo_x -= hrotate*box_width;
+
+            if (align[1] == 'middle') fo_y -= hrotate*box_height/2; else
+            if (align[1] == 'bottom') fo_y -= hrotate*box_height;
          }
 
-         var trans = "";
-         if (rotate!==0) trans = "rotate("+rotate+",0,0) ";
-         trans += "translate("+fo_x+","+fo_y+")";
+         var trans = "translate("+fo_x+","+fo_y+")";
+         if (rotate!==0) trans += " rotate("+rotate+",0,0)";
 
          fo_g.attr('transform', trans).attr('visibility', null);
       });
@@ -2081,23 +2094,26 @@
                pos_y = (y + h/2).toFixed(1);
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
-         } else
-         if (h==0) {
+         } else {
             if (align[1] == 'top') pos_dy = ".8em"; else
             if (align[1] == 'middle') {
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
          }
 
+         // use translate and then rotate to avoid complex sign calculations
+         var trans = "translate("+pos_x+","+pos_y+")";
+         if (!scale && (h<0)) trans += " rotate("+(-h)+",0,0)";
+
          var txt = draw_g.append("text")
                          .attr("text-anchor", align[0])
-                         .attr("x", pos_x)
-                         .attr("y", pos_y)
+                         .attr("x", 0)
+                         .attr("y", 0)
                          .attr("fill", tcolor ? tcolor : null)
-                         .text(label);
+                         .attr("transform", trans)
+                         .text(label)
          if (pos_dy!=null) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
-         if (!scale && (h<0)) txt.attr("transform", "rotate(" + (-h) + ", 0, 0)");
 
          var box = this.GetBoundarySizes(txt.node());
 
@@ -2115,7 +2131,7 @@
 
       var rotate = 0;
 
-      if (!scale && h<0) rotate = Math.abs(h);
+      if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
 
       var fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
@@ -4205,7 +4221,7 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
 
-      // axis.fTitle = "M_{#mu#mu}";
+      axis.fTitle = "M_{#mu#mu}";
 
       if (axis.fTitle.length > 0) {
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
@@ -4217,18 +4233,32 @@
           this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
           var tres = 0;
-          if (vertical)
-             tres = this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";" + (rotate<0 ? "top" : "bottom"),
-                                 Math.round((center ? h/2 : 0) * -rotate),
-                                 Math.round(-rotate*(labeloffset + 2.6*axis.fTitleOffset*title_fontsize)),
-                                 0, (rotate<0 ? -90 : -270),
-                                 axis.fTitle, title_color, 1, title_g);
-          else
-             tres = this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";" + ((rotate<0) ? "bottom" : "top"),
-                                 Math.round((center ? w/2 : w)*rotate),
-                                 Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)*rotate),
+          if (vertical) {
+             tres = this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";middle",
+                                  -1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize),
+                                   Math.round(center ? h/2 : 0),
+                                   0, (rotate<0 ? -90 : -270),
+                                   axis.fTitle, title_color, 1, title_g);
+//             title_g.append("svg:line")
+//                    .attr("x1",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
+//                    .attr("y1",0)
+//                    .attr("x2",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
+//                    .attr("y2",h)
+//                    .attr("stroke","black")
+          }
+          else {
+             tres = this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";middle",
+                                 Math.round(center ? w/2 : w),
+                                 Math.round(labeloffset + 1.6*title_fontsize*axis.fTitleOffset),
                                  0, (rotate<0 ? -180 : 0),
                                  axis.fTitle, title_color, 1, title_g);
+//             title_g.append("svg:line")
+//                   .attr("x1",0)
+//                   .attr("y1",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
+//                   .attr("x2",w)
+//                   .attr("y2",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
+//                   .attr("stroke","black")
+          }
 
           this.FinishTextDrawing(title_g);
       }
