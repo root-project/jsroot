@@ -1082,6 +1082,7 @@
       if (res===null) res = "";
       if ((res.length === 0) && ('fName' in this.GetObject()))
          res = this.GetObject().fName;
+      if (res.lenght > 20) res = res.substr(0,17)+"...";
       if ((res.length > 0) && (append!==undefined)) res += append;
       return res;
    }
