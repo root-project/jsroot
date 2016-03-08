@@ -1976,8 +1976,10 @@
 
          if (fo_g.property('_scale')) {
             var box = painter.GetBoundarySizes(fo_g.node());
-            painter.TextScaleFactor(1.05* box.width / parseInt(fo_g.attr('width')), draw_g);
-            painter.TextScaleFactor(1.* box.height / parseInt(fo_g.attr('height')), draw_g);
+            var w = fo_g.property('_width'), h = fo_g.property('_height');
+            if (rotate!==0) { var d = w; w = h; h = d; }
+            painter.TextScaleFactor(1.05* box.width / w, draw_g);
+            painter.TextScaleFactor(1.* box.height / h, draw_g);
          }
       });
 
@@ -1994,38 +1996,33 @@
          var fo_g = d3.select(this);
          // only direct parent
          if (fo_g.node().parentNode !== draw_g.node()) return;
-         var box = painter.GetBoundarySizes(fo_g.node());
-         var align = fo_g.property('_align');
-         var rotate = fo_g.property('_rotate');
-         var fo_w = parseInt(fo_g.attr('width')), fo_h = parseInt(fo_g.attr('height'));
-         var fo_x = parseInt(fo_g.attr('x')), fo_y = parseInt(fo_g.attr('y'));
+         var box = painter.GetBoundarySizes(fo_g.node()),
+             align = fo_g.property('_align'),
+             rotate = fo_g.property('_rotate'),
+             fo_w = fo_g.property('_width'),
+             fo_h = fo_g.property('_height'),
+             fo_x = fo_g.property('_x'),
+             fo_y = fo_g.property('_y');
 
          if (fo_g.property('_scale')) {
             if (align[0] == 'middle') fo_x += (fo_w - box.width)/2; else
             if (align[0] == 'end')    fo_x += (fo_w - box.width);
             if (align[1] == 'middle') fo_y += (fo_h - box.height)/2; else
-            if (align[1] == 'top' && !rotate) fo_y += (fo_h - box.height); else
-            if (align[1] == 'bottom' && rotate) fo_y += (fo_h - box.height);
+            if (align[1] == 'top' && (rotate===0)) fo_y += (fo_h - box.height); else
+            if (align[1] == 'bottom' && (rotate!==0)) fo_y += (fo_h - box.height);
          } else {
             if (align[0] == 'middle') fo_x -= box.width/2; else
             if (align[0] == 'end')    fo_x -= box.width;
             if (align[1] == 'middle') fo_y -= box.height/2; else
-            if (align[1] == 'bottom' && !rotate) fo_y -= box.height; else
-            if (align[1] == 'top' && rotate) fo_y -= box.height;
+            if (align[1] == 'bottom' && (rotate===0)) fo_y -= box.height; else
+            if (align[1] == 'top' && (rotate!==0)) fo_y -= box.height;
          }
 
-         // this is just workaround for Y-axis label,
-         // one could extend it the future on all labels
-         if ((fo_y < 0) && (painter.frame_x() < -fo_y))
-            fo_y = -painter.frame_x() + 1;
+         var trans = "";
+         if (rotate!==0) trans += "rotate("+rotate+",0,0) ";
+         trans += "translate("+fo_x+","+fo_y+")";
 
-         // use x/y while transform used for rotation
-         fo_g.attr('x', fo_x).attr('y', fo_y).attr('visibility', null);
-
-         // width and height required by Chrome
-         if ((fo_g.attr('width')==0) || (fo_g.attr('width') < box.width+15)) fo_g.attr('width', box.width+15);
-         if ((fo_g.attr('height')==0) || (fo_g.attr('height') < box.height+10)) fo_g.attr('height', box.height+10);
-
+         fo_g.attr('transform', trans).attr('visibility', null);
       });
 
       // now hidden text after rescaling can be shown
@@ -2114,32 +2111,21 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
 
-      var rotate = false;
+      var rotate = 0;
 
-      if (!scale) {
-         if ((h==-270) || (h==-90)) rotate = true;
-         w = this.pad_width(); // artifical values, big enough to see output
-         h = this.pad_height();
-      }
+      if (!scale)
+         if ((h==-270) || (h==-90)) rotate = Math.abs(h);
 
-      if (rotate && !draw_g.selectAll("*").empty()) {
-         JSROOT.console("When doing rotate of MathJax, only single text element allowed");
-      }
-
-      var fo_g = draw_g.append("svg")
-                       .attr('x',x).attr('y',y)  // set x,y,width,height attribute to be able apply alignment later
-                       .attr('width',w).attr('height',h)
+      var fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
+                       .property('_x',x) // used for translation later
+                       .property('_y',y)
+                       .property('_width',w) // used to check scaling
+                       .property('_height',h)
                        .property('_scale', scale)
                        .property('_rotate', rotate)
                        .property('_align', align);
-
-      //if (rotate) fo_g.attr("transform", "rotate(270, 0, 0)");
-
-      if (rotate) {
-         draw_g.attr("transform", "rotate(270, 0, 0)");
-      }
 
       var element = document.createElement("div");
       d3.select(element).style("visibility", "hidden")
@@ -4233,7 +4219,7 @@
           if (vertical)
              tres = this.DrawText(center ? "middle" : (rotate<0 ? "begin" : "end" ),
                                  Math.round((center ? h/2 : 0) * -rotate),
-                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+(rotate>0?1:2))*title_fontsize)),
+                                 Math.round(-rotate*(labeloffset + (1.6*axis.fTitleOffset+(rotate>0?0:1))*title_fontsize)),
                                  0, (rotate<0 ? -90 : -270),
                                  axis.fTitle, title_color, 1, title_g);
           else
