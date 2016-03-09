@@ -3089,25 +3089,25 @@
       if (arr.length <= maxlen) return;
 
       // check filled bins
-      var left = 0, right = arr.length-2;
+      var left = 0, right = arr.length-2; // last bin does not have count
       while ((left < right) && (arr[left].cnt===0)) ++left;
       while ((left < right) && (arr[right].cnt===0)) --right;
       if (right-left < maxlen) return;
 
       function RemoveNulls() {
          var j = right;
-         while (j>left) {
-            while ((j>left) && (arr[j]!=null)) --j;
+         while (j>=left) {
+            while ((j>=left) && (arr[j]!==null)) --j;
             var j2 = j;
-            while ((j>0) && (arr[j]==null)) --j;
-            if (j < j2) arr.splice(j+1, j2-j);
+            while ((j>=0) && (arr[j]===null)) --j;
+            if (j < j2) { arr.splice(j+1, j2-j); right -= (j2-j); }
             --j;
          }
       };
 
       if (!regular) {
          var grdist = Math.abs(arr[right+1].gr - arr[left].gr) / maxlen;
-         var i = 0;
+         var i = left;
          while (i <= right) {
             var gr0 = arr[i++].gr;
             // remove points which are not far away from current
@@ -3137,7 +3137,7 @@
           j2 = this.GetSelectIndex("y", "right", 1),
           name = this.GetTipName("\n"),
           xx = [], yy = [], i, j, x, y,
-          nbins = 0, binz = 0, sumz = 0, zdiff, dgrx, dgry
+          nbins = 0, binz = 0, sumz = 0, zdiff, dgrx, dgry;
 
       for (i = i1; i <= i2; ++i) {
          x = this.GetBinX(i);
