@@ -3136,14 +3136,14 @@
 
       for (i = i1; i <= i2; ++i) {
          x = this.GetBinX(i);
-         if (this.options.Logx && (x <= 0)) continue;
+         if (this.options.Logx && (x <= 0)) { i1 = i+1; continue; }
          xx.push({indx:i, axis: x, gr: this.grx(x), cnt:0});
       }
 
       for (j = j1; j <= j2; ++j) {
          y = this.GetBinY(j);
-         if (this.options.Logy && (y <= 0)) continue;
-         yy.push({indx:j, axis: y, gr: this.gry(y), cnt:0});
+         if (this.options.Logy && (y <= 0)) { j1 = j+1; continue; }
+         yy.push({indx:j, axis:y, gr:this.gry(y), cnt:0});
       }
 
       // first found min/max values in selected range, and number of non-zero bins
@@ -3198,6 +3198,7 @@
                if (show) {
                   nbins++;
                   xx[i-i1].cnt+=1;
+                  if (typeof (yy[j-j1]) === 'undefined') console.log('j= ' + j + '  j1 = ' + j1 + ' len =' + yy.length);
                   yy[j-j1].cnt+=1;
                }
             }
@@ -3205,7 +3206,7 @@
       }
 
       if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2) && (this.options.Color<2)) || (this.options.Optimize > 10)) {
-         var numx = JSROOT.gStyle.Tooltip > 1 ? 120 : 40;
+         var numx = JSROOT.gStyle.Tooltip > 1 ? 80 : 40;
          if (this.options.Optimize > 10) numx = Math.round(numx / 4);
          var numy = numx;
 
