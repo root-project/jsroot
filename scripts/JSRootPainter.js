@@ -4336,12 +4336,17 @@
          if (handle.range > handle.nticks)
             handle.ndig = 0;
          else
-            handle.ndig = Math.max(1, Math.round(JSROOT.log10(handle.nticks / handle.range)));
+            handle.ndig = Math.max(1, Math.round(1.2*JSROOT.log10(handle.nticks / handle.range)));
 
          handle.format = function(d, asticks) {
             var val = parseFloat(d);
-            if (Math.abs(val) < 1e-10 * this.range) return 0;
-            return val.toFixed(asticks ? this.ndig : this.ndig+2);
+            if (asticks) {
+               if (Math.abs(val) < 1e-10 * this.range) return 0;
+               val = val.toFixed(this.ndig);
+               if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
+               return val;
+            }
+            return val.toFixed(this.ndig+2);
          }
       }
 
