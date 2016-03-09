@@ -1956,8 +1956,8 @@
 
       // adjust font size (if there are normal text)
       var f = draw_g.property('text_factor');
-      var font = draw_g.property('text_font');
       if ((f>0) && ((f<0.9) || (f>1.))) {
+         var font = draw_g.property('text_font');
          font.size = Math.floor(font.size/f);
          draw_g.call(font.func);
       }
@@ -4007,6 +4007,9 @@
       //    this.gr[x,y]  converts root scale into graphical value
       //    this.Revert[X/Y]  converts graphical coordinates to root scale value
 
+      this.x_handle = null;
+      this.y_handle = null;
+
       if (!this.is_main_painter()) {
          this.x = this.main_painter().x;
          this.y = this.main_painter().y;
@@ -4176,8 +4179,10 @@
       if (axis == "x") {
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
-         // this is indication of time format
-         if ('format' in this.x_handle) return this.x_handle.format(value);
+
+         if (this.x_handle!==null)
+            if ('format' in this.x_handle)
+               return this.x_handle.format(value);
 
          return value.toPrecision(4);
       }
@@ -4186,7 +4191,9 @@
          if (this.y_kind == 'time')
             value = this.ConvertY(value);
 
-         if ('format' in this.y_handle) return this.y_handle.format(value);
+         if (this.y_handle!==null)
+            if ('format' in this.y_handle)
+               return this.y_handle.format(value);
 
          return value.toPrecision(4);
       }
