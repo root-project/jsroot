@@ -4227,9 +4227,9 @@
          axis_g.attr("transform", "translate(0," + h + ")");
 
       handle.nticks = axis.fNdivisions % 100;
-      handle.nticks = (handle.nticks > 7) ? 7 : handle.nticks;
       handle.nticks2 = (axis.fNdivisions % 10000 - handle.nticks) / 100;
       // var n3ax = ndivx / 10000;
+      handle.nticks = (handle.nticks > 7) ? 7 : handle.nticks;
 
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
