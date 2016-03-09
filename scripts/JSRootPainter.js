@@ -505,31 +505,27 @@
       return res;
    }
 
-   JSROOT.Painter.chooseTimeFormat = function(range, nticks) {
-      if (nticks < 1) nticks = 1;
-      var awidth = range / nticks;
-      if (awidth < .5) return "%S";
-      if (awidth < 30) return "%Mm%S";
-      awidth /= 60; if (awidth < 30) return "%Hh%M";
-      awidth /= 60; if (awidth < 12) return "%d-%Hh";
-      awidth /= 24; if (awidth < 15.218425) return "%d/%m";
+   JSROOT.Painter.chooseTimeFormat = function(awidth, ticks) {
+      if (awidth < .5) return ticks ? "%S.%L" : "%M:%S.%L";
+      if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
+      awidth /= 60; if (awidth < 30) return ticks ? "%Hh%M" : "%d/%m %H:%M";
+      awidth /= 60; if (awidth < 12) return ticks ? "%d-%Hh" : "%d/%m/%y %Hh";
+      awidth /= 24; if (awidth < 15.218425) return ticks ? "%d/%m" : "%d/%m/%y";
       awidth /= 30.43685; if (awidth < 6) return "%d/%m/%y";
-      awidth /= 12; if (awidth < 2) return "%m/%y";
+      awidth /= 12; if (awidth < 2) return ticks ? "%m/%y" : "%d/%m/%y";
       return "%Y";
    }
 
    JSROOT.Painter.getTimeFormat = function(axis) {
-      var timeFormat = axis['fTimeFormat'];
-      var idF = timeFormat.indexOf('%F');
-      if (idF >= 0)
-         return timeFormat.substr(0, idF);
-      return timeFormat;
+      var idF = axis.fTimeFormat.indexOf('%F');
+      if (idF >= 0) return axis.fTimeFormat.substr(0, idF);
+      return axis.fTimeFormat;
    }
 
    JSROOT.Painter.getTimeOffset = function(axis) {
-      var idF = axis['fTimeFormat'].indexOf('%F');
-      if (idF < 0) return JSROOT.gStyle['TimeOffset'];
-      var sof = axis['fTimeFormat'].substr(idF + 2);
+      var idF = axis.fTimeFormat.indexOf('%F');
+      if (idF < 0) return JSROOT.gStyle.TimeOffset;
+      var sof = axis.fTimeFormat.substr(idF + 2);
       if (sof == '1995-01-01 00:00:00s0') return 788918400000;
       // special case, used from DABC painters
       if ((sof == "0") || (sof == "")) return 0;
@@ -4280,14 +4276,21 @@
          if (handle.nticks > 8) handle.nticks = 8;
 
          var scale_range = handle.scale_max - handle.scale_min;
-         var timeformat = JSROOT.Painter.getTimeFormat(axis);
-         if ((timeformat.length == 0) || (scale_range < 0.1 * (handle.max - handle.min)))
-            timeformat = JSROOT.Painter.chooseTimeFormat(scale_range, handle.nticks);
 
-         if (timeformat.length > 0)
-            handle.format = d3.time.format(timeformat);
-         else
-            handle.format = function(d) { return d.toString(); }
+         var tf1 = JSROOT.Painter.getTimeFormat(axis);
+         if ((tf1.length == 0) || (scale_range < 0.1 * (handle.max - handle.min)))
+            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range/handle.nticks, true);
+         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range/w, false);
+
+         handle.tfunc1 = handle.tfunc2 = d3.time.format(tf1);
+         if (tf2!==tf1)
+            handle.tfunc2 = d3.time.format(tf2);
+
+         console.log('tformats '+tf1 + ' ' + tf2);
+
+         handle.format = function(d, asticks) {
+            return asticks ? this.tfunc1(d) : this.tfunc2(d);
+         }
 
       } else
       if (handle.kind == 'log') {
@@ -5844,6 +5847,9 @@
 
          if (pmain.x_kind === 'labels')
             tips.push("x = " + pmain.AxisAsText("x", x1));
+         else
+         if (pmain.x_kind === 'time')
+            tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          else
             tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + "]");
 
