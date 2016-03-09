@@ -3482,8 +3482,10 @@
       ctx.stroke();
       this.draw_kind = "canv2";
 
-      if ((JSROOT.gStyle.Tooltip > 1) && JSROOT.browser.isFirefox)
+      if ((JSROOT.gStyle.Tooltip > 1) && JSROOT.browser.isFirefox) {
+         this.tt_handle = handle;
          this.ProcessTooltip = this.ProcessTooltipPath;
+      }
    }
 
    JSROOT.TH2Painter.prototype.MakeIcon = function() {
@@ -3684,8 +3686,10 @@
 
       this.draw_kind = "path";
 
-      if (JSROOT.gStyle.Tooltip > 1)
+      if (JSROOT.gStyle.Tooltip > 1) {
+         this.tt_handle = handle;
          this.ProcessTooltip = this.ProcessTooltipPath;
+      }
    }
 
    JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
@@ -3718,41 +3722,29 @@
       }
 
       var histo = this.GetObject(),
-          i1 = this.GetSelectIndex("x", "left", 0),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", 0),
-          j2 = this.GetSelectIndex("y", "right", 1),
-          i, j, grx1, grx2, gry1, gry2, x, y, find = 0;
+          h = this.tt_handle,
+          i, j, find = 0;
 
       // search bin position
-      for (i = i1; i <= i2; ++i) {
-         x = this.GetBinX(i);
-         if (this.options.Logx && (x <= 0)) continue;
-         grx2 = Math.round(this.grx(x));
-         if ((grx1!==undefined) && (pnt.x>=grx1) && (pnt.x<=grx2)) { ++find; break; }
-         grx1 = grx2;
+      for (i = h.i1; i < h.i2; ++i) {
+         if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) { ++find; break; }
       }
 
-      for (j = j1; j <= j2; ++j) {
-         y = this.GetBinY(j);
-         if (this.options.Logy && (y <= 0)) continue;
-         gry2 = Math.round(this.gry(y));
-         if ((gry1!==undefined) && (pnt.y>=gry2) && (pnt.y<=gry1)) { ++find; break; }
-         gry1 = gry2;
-      }
+      for (j = h.j1; j <= h.j2; ++j)
+         if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
-      var binz = (find === 2) ? histo.getBinContent(i,j) : -100;
+      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : -100;
 
       if ((find !== 2) || (binz <= this.minbin)) {
          ttrect.remove();
          return null;
       }
 
-      var res = { x: (grx1+grx2)/2, y: (gry1+gry2)/2,
+      var res = { x: pnt.x, y: pnt.y,
                  color1: this.lineatt.color, color2: this.fillcolor,
-                 lines: this.GetBinTips(i-1, j-1), exact: true };
+                 lines: this.GetBinTips(i, j), exact: true };
 
       if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
 
@@ -3764,10 +3756,10 @@
       res.changed = ttrect.property("current_bin") !== i*10000 + j;
 
       if (res.changed)
-         ttrect.attr("x", grx1)
-               .attr("width", grx2-grx1)
-               .attr("y", gry2)
-               .attr("height", gry1-gry2)
+         ttrect.attr("x", h.grx[i])
+               .attr("width", h.grx[i+1] - h.grx[i])
+               .attr("y", h.gry[j+1])
+               .attr("height", h.gry[j] - h.gry[j+1])
                .style("opacity", "0.7")
                .property("current_bin", i*10000 + j);
 
