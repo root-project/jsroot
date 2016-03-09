@@ -390,13 +390,14 @@
                       " L " + half + ",0  L 0," + half + " z"; break;
       }
 
-      if (res.kind == 'svg:path')
+      if (res.kind == 'svg:path') {
          res.func =
             function(selection) {
               selection.style("fill", this.fill)
                        .style("stroke", this.stroke)
                        .attr("d", this.marker);
             }.bind(res);
+      }
 
       return res;
    }

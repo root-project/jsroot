@@ -1497,7 +1497,7 @@
       return histo;
    }
 
-   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
+   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func, limit) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       var selbins = null;
@@ -1513,8 +1513,9 @@
       }
       if (selbins == null) selbins = this.bins;
 
-      if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
-      var step = Math.floor(selbins.length / 5000);
+      if (limit==undefined) limit = 5000;
+      if ((selbins.length < limit) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
+      var step = Math.floor(selbins.length / limit);
       if (step < 2) step = 2;
       var optbins = [];
       for (var n = 0; n < selbins.length; n+=step)
@@ -1687,7 +1688,7 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionMark || this.optionRect || this.optionBrackets || this.optionBar) {
+      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || (this.optionMark && JSROOT.gStyle.Tooltip==1)) {
          this.draw_nodes = true;
          if ((drawbins === null) || !this.out_of_range)
             drawbins = this.OptimizeBins(function(pnt) {
@@ -1830,11 +1831,36 @@
          var style = (this.optionMark == 2) ? 3 : null;
 
          var marker = JSROOT.Painter.createAttMarker(graph, style);
-         nodes.append(marker.kind).call(marker.func).call(function(d) {
-            d.marker = true;
-            d.grx0 = d.gry0 = -marker.fullSize/2;
-            d.grx2 = d.gry2 = marker.fullSize/2;
-         });
+         var halfsize = Math.max(2, Math.round(marker.fullSize/2));
+
+         if (nodes !== null) {
+            nodes.append(marker.kind).call(marker.func).call(function(d) {
+               d.marker = true;
+               d.grx0 = d.gry0 = -halfsize;
+               d.grx2 = d.gry2 = halfsize;
+            });
+         } else {
+            drawbins = this.OptimizeBins(function(pnt) {
+               pnt.grx1 = Math.round(pmain.grx(pnt.x));
+               if ((grx<0) || (grx>w)) return true; // exclude point out of X range
+               pnt.gry1 = Math.round(pmain.gry(pnt.y));
+               if ((gry<0) || (gry>h)) return true; // exclude point out of Y range
+               pnt.grx0 = pnt.gry0 = -halfsize;
+               pnt.grx2 = pnt.gry2 = halfsize;
+            },8000);
+
+            console.log('select ' + drawbins.length);
+
+            this.draw_g.selectAll(".grpoint")
+                  .data(drawbins)
+                  .enter()
+                  .append(marker.kind)
+                  .attr("class", "grpoint")
+                  .call(marker.func)
+                  //.attr("cx", function(d) { return d.grx1; })
+                  //.attr("cy", function(d) { return d.gry1; });
+                  .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")" });
+         }
       }
 
       if (JSROOT.gStyle.Tooltip > 1)
