@@ -3592,7 +3592,7 @@
       this.fContour = null; // z-scale ranges when drawing with color
       this.fUserContour = false;
 
-      var colPaths = [], colindx, zdiff, dgrx, dgry, ww, hh;
+      var colPaths = [], currx = [], curry = [], colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
 
       // now start build
       for (i = i1; i < i2; ++i) {
@@ -3602,15 +3602,21 @@
 
             if (this.options.Color > 0) {
                colindx = this.getValueColor(binz, true);
-
                if (colindx === null) continue;
 
-               if (colPaths[colindx] === undefined) colPaths[colindx] = "";
+               cmd1 = "M"+grx[i]+","+gry[j+1];
+               if (colPaths[colindx] === undefined) {
+                  colPaths[colindx] = cmd1;
+               } else{
+                  cmd2 = "m" + (grx[i]-currx[colindx]) + "," + (gry[j+1] - curry[colindx]);
+                  colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+               }
 
-                colPaths[colindx] += "M" + grx[i]+","+gry[j] +
-                                     "v" + (gry[j] - gry[j+1] + 1) +
-                                     "h" + (grx[i+1] - grx[i] + 1 ) +
-                                     "v" + (gry[j+1] - gry[j] - 1) + "z";
+               currx[colindx] = grx[i]; curry[colindx] = gry[j+1];
+
+               colPaths[colindx] += "v" + (gry[j] - gry[j+1] + 1) +
+                                    "h" + (grx[i+1] - grx[i] + 1 ) +
+                                    "v" + (gry[j+1] - gry[j] - 1) + "z";
             } else {
                zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
 
@@ -3623,10 +3629,9 @@
                ww = Math.round(ww - 2*dgrx);
                hh = Math.round(hh - 2*dgry);
 
-
                if ((ww > 0) && (hh > 0)) {
                   if (colPaths[i]===undefined) colPaths[i] = "";
-                  colPaths[i] += "M" + Math.round(grx[i] + dgrx) + "," + Math.round(gry[j] + dgry) +
+                  colPaths[i] += "M" + Math.round(grx[i] + dgrx) + "," + Math.round(gry[j+1] + dgry) +
                                  "v" + hh + "h" + ww + "v-" + hh + "z";
                }
             }
