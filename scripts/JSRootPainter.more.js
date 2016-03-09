@@ -1832,16 +1832,16 @@
          this.draw_kind = "path";
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
              path = "", n, pnt, grx, gry;
-         for (var n=0;n<this.bins.length;n+=step) {
+         for (n=0;n<this.bins.length;n+=step) {
             pnt = this.bins[n];
             grx = Math.round(pmain.grx(pnt.x));
             if ((grx<0) || (grx>w)) continue;
             gry = Math.round(pmain.gry(pnt.y));
-            if ((gry<0) || (gry>h)) continue; // exclude point out of Y range
+            if ((gry<0) || (gry>h)) continue;
             path+="M" + grx + "," + gry + "v2h2v-2z";
          }
 
-         console.log('svg:path len ' + path.length + ' step ' + step);
+         console.log('graph svg:path len ' + path.length + ' step ' + step);
 
          this.draw_g.append("svg:path")
                     .attr("d",path)
@@ -3053,7 +3053,7 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.getValueColor = function(zc) {
+   JSROOT.TH2Painter.prototype.getValueColor = function(zc, asindx) {
       if (this.fContour == null) {
          // if not initialized, first create controur array
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
@@ -3107,8 +3107,8 @@
       }
 
       if (color<0) {
-      // do not draw bin where color is negative
-         if (this.options.Color != 111) return null;
+         // do not draw bin where color is negative
+         if (this.options.Color !== 111) return null;
          color = 0;
       }
 
@@ -3117,7 +3117,7 @@
 
       var theColor = Math.floor((color+0.99)*this.fPalette.length/(this.fContour.length-1));
       if (theColor > this.fPalette.length-1) theColor = this.fPalette.length-1;
-      return this.fPalette[theColor];
+      return asindx ? theColor : this.fPalette[theColor];
    }
 
    JSROOT.TH2Painter.prototype.CompressAxis = function(arr, maxlen, regular) {
@@ -3471,15 +3471,64 @@
       console.log(res);
    }
 
+   JSROOT.TH2Painter.prototype.DrawMarkers = function(w,h) {
+      var local_bins = this.CreateDrawBins(w, h, 0, JSROOT.gStyle.Tooltip > 0 ? 2 : 0);
+
+      var marker = JSROOT.Painter.createAttMarker(this.GetObject());
+
+      this.draw_g.selectAll(".marker")
+            .data(local_bins)
+            .enter().append(marker.kind)
+            .attr("class", "marker")
+            .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
+            .call(marker.func)
+            .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
+            .append("svg:title").text(function(d) { return d.tip; });
+
+      if (JSROOT.gStyle.Tooltip > 1)
+         this.ProcessTooltip = this.ProcessTooltipFunc;
+   }
+
+   JSROOT.TH2Painter.prototype.DrawBinsAsRects = function(w,h) {
+      // this is old-style drawing of 2d histogram
+      // each bin shown as separate svg:rect, which leads to big number of elements at the end
+
+      var normal_coordinates = (this.options.Color > 0);
+
+      var tipkind = (JSROOT.gStyle.Tooltip > 0) ? 1 : 0;
+
+      var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
+
+      this.draw_g.selectAll(".bins")
+          .data(local_bins).enter()
+          .append("svg:rect")
+          .attr("class", "bins")
+          .attr("x", function(d) { return d.x.toFixed(1); })
+          .attr("y", function(d) { return d.y.toFixed(1); })
+          .attr("width", function(d) { return d.width.toFixed(1); })
+          .attr("height", function(d) { return d.height.toFixed(1); })
+          .style("stroke", function(d) { return d.stroke; })
+          .style("fill", function(d) { return d.fill; })
+          .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
+          .on('mouseover', function() {
+              if (JSROOT.gStyle.Tooltip < 1) return;
+              d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().tipcolor);
+           })
+          .on('mouseout', function() {
+             d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().fill);
+          })
+          .append("svg:title").text(function(d) { return d.tip; });
+   }
+
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
       // this.MakeIcon();
 
       this.RecreateDrawG(false, ".main_layer");
 
-      var w = this.frame_width(), h = this.frame_height();
-
       delete this.ProcessTooltip;
+
+      var w = this.frame_width(), h = this.frame_height();
 
       if ((this.options.Color==2) && !JSROOT.browser.isIE)
          return this.DrawSimpleCanvas(w,h);
@@ -3487,56 +3536,120 @@
       if ((this.options.Color==3) && !JSROOT.browser.isIE)
          return this.DrawNormalCanvas(w,h);
 
+      if (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1)
+         return this.DrawMarkers(w,h);
 
-      var draw_markers = (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1);
-      var normal_coordinates = (this.options.Color > 0) || draw_markers;
+      if (JSROOT.gStyle.Tooltip===1)
+         return this.DrawBinsAsRects(w,h);
 
-      var tipkind = 0;
-      if (JSROOT.gStyle.Tooltip > 0) tipkind = draw_markers ? 2 : 1;
+      var histo = this.GetObject(),
+          i1 = this.GetSelectIndex("x", "left", 0),
+          i2 = this.GetSelectIndex("x", "right", 1),
+          j1 = this.GetSelectIndex("y", "left", 0),
+          j2 = this.GetSelectIndex("y", "right", 1),
+          i, j, nbins = 0, binz = 0, grx = [], gry = [], x, y;
 
-      var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
-
-      if (draw_markers) {
-         // Add markers
-         var marker = JSROOT.Painter.createAttMarker(this.GetObject());
-
-         this.draw_g.selectAll(".marker")
-               .data(local_bins)
-               .enter().append(marker.kind)
-               .attr("class", "marker")
-               .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
-               .call(marker.func)
-               .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
-               .append("svg:title").text(function(d) { return d.tip; });
-
-      } else {
-
-         this.draw_g.selectAll(".bins")
-             .data(local_bins).enter()
-             .append("svg:rect")
-             .attr("class", "bins")
-             .attr("x", function(d) { return d.x.toFixed(1); })
-             .attr("y", function(d) { return d.y.toFixed(1); })
-             .attr("width", function(d) { return d.width.toFixed(1); })
-             .attr("height", function(d) { return d.height.toFixed(1); })
-             .style("stroke", function(d) { return d.stroke; })
-             .style("fill", function(d) { return d.fill; })
-             .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
-             .on('mouseover', function() {
-                if (JSROOT.gStyle.Tooltip < 1) return;
-                d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().tipcolor);
-             })
-             .on('mouseout', function() {
-                d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().fill);
-             })
-             .append("svg:title").text(function(d) { return d.tip; });
-
+      // calculate graphical coordinates in advance
+      for (i = i1; i <= i2; ++i) {
+         x = this.GetBinX(i);
+         if (this.options.Logx && (x <= 0)) { i1 = i+1; continue; }
+         grx[i] = this.grx(x);
+         if (this.options.Color > 0) grx[i] = Math.round(grx[i]);
       }
 
-      delete local_bins;
+      for (j = j1; j <= j2; ++j) {
+         y = this.GetBinY(j);
+         if (this.options.Logy && (y <= 0)) { j1 = j+1; continue; }
+         gry[j] = this.gry(y);
+         if (this.options.Color > 0) gry[j] = Math.round(gry[j]);
+      }
 
-      if (JSROOT.gStyle.Tooltip > 1)
-         this.ProcessTooltip = this.ProcessTooltipFunc;
+      // first found min/max values in selected range, and number of non-zero bins
+      this.maxbin = this.minbin = histo.getBinContent(i1 + 1, j1 + 1);
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if (binz != 0) nbins++;
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+
+      var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
+      if (this.options.Color <= 0)
+         if (this.options.Logz && (this.maxbin>0)) {
+            uselogz = true;
+            logmax = Math.log(this.maxbin);
+            logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
+            if (logmin >= logmax) logmin = logmax - 10;
+            xfactor = 0.5 / (logmax - logmin);
+            yfactor = 0.5 / (logmax - logmin);
+         } else {
+            xfactor = 0.5 / (this.maxbin - this.minbin);
+            yfactor = 0.5 / (this.maxbin - this.minbin);
+         }
+
+      this.fContour = null; // z-scale ranges when drawing with color
+      this.fUserContour = false;
+
+      var colPaths = [], colindx, zdiff, dgrx, dgry, ww, hh;
+
+      // now start build
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            if (this.options.Color > 0) {
+               colindx = this.getValueColor(binz, true);
+
+               if (colindx === null) continue;
+
+               if (colPaths[colindx] === undefined) colPaths[colindx] = "";
+
+                colPaths[colindx] += "M" + grx[i]+","+gry[j] +
+                                     "v" + (gry[j] - gry[j+1] + 1) +
+                                     "h" + (grx[i+1] - grx[i] + 1 ) +
+                                     "v" + (gry[j+1] - gry[j] - 1) + "z";
+            } else {
+               zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
+
+               ww = grx[i+1] - grx[i];
+               hh = gry[j] - gry[j+1];
+
+               dgrx = zdiff * xfactor * ww;
+               dgry = zdiff * yfactor * hh;
+
+               ww = Math.round(ww - 2*dgrx);
+               hh = Math.round(hh - 2*dgry);
+
+
+               if ((ww > 0) && (hh > 0)) {
+                  if (colPaths[i]===undefined) colPaths[i] = "";
+                  colPaths[i] += "M" + Math.round(grx[i] + dgrx) + "," + Math.round(gry[j] + dgry) +
+                                 "v" + hh + "h" + ww + "v-" + hh + "z";
+               }
+            }
+         }
+      }
+
+      for (colindx=0;colindx<colPaths.length;++colindx)
+         if (colPaths[colindx] !== undefined) {
+            // console.log('colindx ' + colindx + '  path len ' + colPaths[colindx].length);
+            if (this.options.Color > 0)
+               this.draw_g
+                   .append("svg:path")
+                   .attr("palette-index", colindx)
+                   .attr("fill", this.fPalette[colindx])
+                   .attr("d", colPaths[colindx]);
+            else
+               this.draw_g
+               .append("svg:path")
+               .attr("hist-column", colindx)
+               .attr("fill", this.fillcolor)
+               .call(this.lineatt.func)
+               .attr("d", colPaths[colindx]);
+         }
    }
 
    JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
