@@ -1506,7 +1506,7 @@
       var selbins = null;
       if (typeof filter_func == 'function') {
          for (var n = 0; n < this.bins.length; ++n) {
-            if (filter_func(this.bins[n])) {
+            if (filter_func(this.bins[n],n)) {
                if (selbins==null)
                   selbins = (n==0) ? [] : this.bins.slice(0, n);
             } else {
@@ -1695,7 +1695,7 @@
 
       if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || this.optionMark==1 || this.optionMark==2) {
 
-         drawbins = this.OptimizeBins(function(pnt) {
+         drawbins = this.OptimizeBins(function(pnt,i) {
 
             var grx = pmain.grx(pnt.x);
 
