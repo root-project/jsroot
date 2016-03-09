@@ -2703,6 +2703,7 @@
       this.fContour = null; // contour levels
       this.fUserContour = false; // are this user-defined levels
       this.fPalette = null;
+      this.draw_kind = "none";
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -3413,6 +3414,8 @@
       }
 
       context.putImageData(image, 0, 0);
+
+      this.draw_kind = "canv1";
    }
 
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
@@ -3433,6 +3436,7 @@
       }
 
       ctx.stroke();
+      this.draw_kind = "canv2";
    }
 
    JSROOT.TH2Painter.prototype.MakeIcon = function() {
@@ -3487,6 +3491,8 @@
 
       if (JSROOT.gStyle.Tooltip > 1)
          this.ProcessTooltip = this.ProcessTooltipFunc;
+
+      this.draw_kind = "markers";
    }
 
    JSROOT.TH2Painter.prototype.DrawBinsAsRects = function(w,h) {
@@ -3518,11 +3524,15 @@
              d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().fill);
           })
           .append("svg:title").text(function(d) { return d.tip; });
+
+      this.draw_kind = "rects";
    }
 
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
       // this.MakeIcon();
+
+      this.draw_kind = "none";
 
       this.RecreateDrawG(false, ".main_layer");
 
@@ -3655,9 +3665,102 @@
                .call(this.lineatt.func)
                .attr("d", colPaths[colindx]);
          }
+
+      this.draw_kind = "path";
+
+      if (JSROOT.gStyle.Tooltip > 1)
+         this.ProcessTooltip = this.ProcessTooltipPath;
    }
 
+   JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
+      var lines = [];
+
+      lines.push(this.GetTipName());
+
+      if (this.x_kind == 'labels')
+         lines.push("x = " + this.AxisAsText("x", this.GetBinX(i)));
+      else
+         lines.push("x = [" + this.AxisAsText("x", this.GetBinX(i)) + ", " + this.AxisAsText("x", this.GetBinX(i+1)) + "]");
+
+      if (this.y_kind == 'labels')
+         lines.push("y = " + this.AxisAsText("y", this.GetBinY(j)));
+      else
+         lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + "]");
+
+      lines.push(" bin=" + i + "," + j);
+
+      lines.push("entries = " + JSROOT.FFormat(this.GetObject().getBinContent(i+1,j+1), JSROOT.gStyle.StatFormat));
+
+      return lines;
+   }
+
+   JSROOT.TH2Painter.prototype.ProcessTooltipPath = function(pnt) {
+      if (pnt==null) {
+         if (this.draw_g !== null)
+            this.draw_g.select(".tooltip_bin").remove();
+         return null;
+      }
+
+      var histo = this.GetObject(),
+          i1 = this.GetSelectIndex("x", "left", 0),
+          i2 = this.GetSelectIndex("x", "right", 1),
+          j1 = this.GetSelectIndex("y", "left", 0),
+          j2 = this.GetSelectIndex("y", "right", 1),
+          i, j, grx1, grx2, gry1, gry2, x, y, find = 0;
+
+      // search bin position
+      for (i = i1; i <= i2; ++i) {
+         x = this.GetBinX(i);
+         if (this.options.Logx && (x <= 0)) continue;
+         grx2 = Math.round(this.grx(x));
+         if ((grx1!==undefined) && (pnt.x>=grx1) && (pnt.x<=grx2)) { ++find; break; }
+         grx1 = grx2;
+      }
+
+      for (j = j1; j <= j2; ++j) {
+         y = this.GetBinY(j);
+         if (this.options.Logy && (y <= 0)) continue;
+         gry2 = Math.round(this.gry(y));
+         if ((gry1!==undefined) && (pnt.y>=gry2) && (pnt.y<=gry1)) { ++find; break; }
+         gry1 = gry2;
+      }
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      var binz = (find === 2) ? histo.getBinContent(i,j) : -100;
+
+      if ((find !== 2) || (binz <= this.minbin)) {
+         ttrect.remove();
+         return null;
+      }
+
+      var res = { x: (grx1+grx2)/2, y: (gry1+gry2)/2,
+                 color1: this.lineatt.color, color2: this.fillcolor,
+                 lines: this.GetBinTips(i-1, j-1), exact: true };
+
+      if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:rect")
+                             .attr("class","tooltip_bin h1bin")
+                             .style("pointer-events","none");
+
+      res.changed = ttrect.property("current_bin") !== i*10000 + j;
+
+      if (res.changed)
+         ttrect.attr("x", grx1)
+               .attr("width", grx2-grx1)
+               .attr("y", gry2)
+               .attr("height", gry1-gry2)
+               .style("opacity", "0.7")
+               .property("current_bin", i*10000 + j);
+
+      return res;
+   }
+
+
    JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
+
       var find = null, cnt = 0, ismarker = (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1);
 
       if (pnt !== null)
