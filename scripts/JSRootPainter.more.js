@@ -1401,6 +1401,9 @@
 
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
+      // special case - one could use scg:path to draw many pixels (
+      if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 3;
+
       // if no drawing option is selected and if opt<>' ' nothing is done.
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
           this.optionEF + this.optionRect + this.optionBrackets == 0) {
@@ -1497,7 +1500,7 @@
       return histo;
    }
 
-   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func, limit) {
+   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       var selbins = null;
@@ -1513,7 +1516,7 @@
       }
       if (selbins == null) selbins = this.bins;
 
-      if (limit==undefined) limit = 5000;
+      var limit = 5000;
       if ((selbins.length < limit) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
       var step = Math.floor(selbins.length / limit);
       if (step < 2) step = 2;
@@ -1563,7 +1566,7 @@
 
       this.lineatt = JSROOT.Painter.createAttLine(graph);
       this.fillatt = this.createAttFill(graph);
-      this.draw_nodes = false; // indicate if special svg:g were created for each bin
+      this.draw_kind = "none"; // indicate if special svg:g were created for each bin
 
       if (Math.abs(this.lineatt.width) > 99) {
          // exclusion graph
@@ -1609,6 +1612,7 @@
                     .attr("d", path1.path + path2.path + "Z")
                     .style("stroke", "none")
                     .call(this.fillatt.func);
+         this.draw_kind = "lines";
       }
 
       if (this.optionLine == 1 || this.optionFill == 1 || (excl_width!==0)) {
@@ -1673,8 +1677,10 @@
                elem.style('fill','none');
          }
 
+         this.draw_kind = "lines";
+
          // do not add tooltip for line, when we wants to add markers
-         if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==0))
+         if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==1) || (this.optionMark==2))
             this.draw_g.selectAll("circle")
                        .data(drawbins).enter()
                        .append("svg:circle")
@@ -1688,35 +1694,28 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || (this.optionMark && JSROOT.gStyle.Tooltip==1)) {
-         this.draw_nodes = true;
-         if ((drawbins === null) || !this.out_of_range)
-            drawbins = this.OptimizeBins(function(pnt) {
-               if (pthis.optionBar) return false; // when drawing bars, take all points
-               var grx = pmain.grx(pnt.x);
-               if ((grx<0) || (grx>w)) return true; // exclude point out of X range
-               if (pthis.out_of_range) return false; // allow to draw points out of Y range
-               var gry = pmain.gry(pnt.y);
-               return (gry<0) || (gry>h); // exclude point out of Y range
-            });
+      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || this.optionMark==1 || this.optionMark==2) {
+         drawbins = this.OptimizeBins(function(pnt) {
 
-         for (var i = 0; i < drawbins.length; ++i) {
-            var pnt = drawbins[i];
+            var grx = pmain.grx(pnt.x);
 
-            // original graphical coordinates
-            var grx = pmain.grx(pnt.x), gry = pmain.gry(pnt.y);
+            // when drawing bars, take all points
+            if (!pthis.optionBar && ((grx<0) || (grx>w))) return false;
 
-            // caluclate graphical coordinates
+            var gry = pmain.gry(pnt.y);
+
+            if (!pthis.optionBar && !pthis.out_of_range && ((gry<0) || (gry>h))) return false;
+
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
 
-            if (this.has_errors) {
+            if (pthis.has_errors) {
                pnt.grx0 = Math.round(pmain.grx(pnt.x - pnt.exlow) - grx);
                pnt.grx2 = Math.round(pmain.grx(pnt.x + pnt.exhigh) - grx);
                pnt.gry0 = Math.round(pmain.gry(pnt.y - pnt.eylow) - gry);
                pnt.gry2 = Math.round(pmain.gry(pnt.y + pnt.eyhigh) - gry);
 
-               if (this.is_bent) {
+               if (pthis.is_bent) {
                   pnt.grdx0 = Math.round(pmain.gry(pnt.y + graph.fEXlowd[i]) - gry);
                   pnt.grdx2 = Math.round(pmain.gry(pnt.y + graph.fEXhighd[i]) - gry);
                   pnt.grdy0 = Math.round(pmain.grx(pnt.x + graph.fEYlowd[i]) - grx);
@@ -1725,7 +1724,10 @@
                   pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
                }
             }
-         }
+            return true;
+         });
+
+         this.draw_kind = "nodes";
 
          // here are up to five elements are collected, try to group them
          nodes = this.draw_g.selectAll(".grpoint")
@@ -1826,41 +1828,36 @@
                        ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
               });
 
-      if (this.optionMark) {
-         /* Add markers */
-         var style = (this.optionMark == 2) ? 3 : null;
+      if ((this.optionMark == 3) && (nodes==null)) {
+         this.draw_kind = "path";
+         var step = Math.max(1, Math.round(this.bins.length / 50000)),
+             path = "", n, pnt, grx, gry;
+         for (var n=0;n<this.bins.length;n+=step) {
+            pnt = this.bins[n];
+            grx = Math.round(pmain.grx(pnt.x));
+            if ((grx<0) || (grx>w)) continue;
+            gry = Math.round(pmain.gry(pnt.y));
+            if ((gry<0) || (gry>h)) continue; // exclude point out of Y range
+            path+="M" + grx + "," + gry + "v2h2v-2z";
+         }
 
-         var marker = JSROOT.Painter.createAttMarker(graph, style);
+         console.log('svg:path len ' + path.length + ' step ' + step);
+
+         this.draw_g.append("svg:path")
+                    .attr("d",path)
+                    .attr("fill", JSROOT.Painter.root_colors[graph.fMarkerColor]);
+
+      } else
+      if (this.optionMark > 0) {
+         /* Add markers */
+         var marker = JSROOT.Painter.createAttMarker(graph, ((this.optionMark==2) ? 3 : null));
          var halfsize = Math.max(2, Math.round(marker.fullSize/2));
 
-         if (nodes !== null) {
-            nodes.append(marker.kind).call(marker.func).call(function(d) {
-               d.marker = true;
-               d.grx0 = d.gry0 = -halfsize;
-               d.grx2 = d.gry2 = halfsize;
-            });
-         } else {
-            drawbins = this.OptimizeBins(function(pnt) {
-               pnt.grx1 = Math.round(pmain.grx(pnt.x));
-               if ((grx<0) || (grx>w)) return true; // exclude point out of X range
-               pnt.gry1 = Math.round(pmain.gry(pnt.y));
-               if ((gry<0) || (gry>h)) return true; // exclude point out of Y range
-               pnt.grx0 = pnt.gry0 = -halfsize;
-               pnt.grx2 = pnt.gry2 = halfsize;
-            },8000);
-
-            console.log('select ' + drawbins.length);
-
-            this.draw_g.selectAll(".grpoint")
-                  .data(drawbins)
-                  .enter()
-                  .append(marker.kind)
-                  .attr("class", "grpoint")
-                  .call(marker.func)
-                  //.attr("cx", function(d) { return d.grx1; })
-                  //.attr("cy", function(d) { return d.gry1; });
-                  .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")" });
-         }
+         nodes.append(marker.kind).call(marker.func).call(function(d) {
+            d.marker = true;
+            d.grx0 = d.gry0 = -halfsize;
+            d.grx2 = d.gry2 = halfsize;
+         });
       }
 
       if (JSROOT.gStyle.Tooltip > 1)
@@ -1876,8 +1873,10 @@
          return null;
       }
 
-      if (!this.draw_nodes)
+      if ((this.draw_kind=="lines") || (this.draw_kind=="path"))
          return this.ProcessTooltipForLine(pnt);
+
+      if (this.draw_kind!="nodes") return null;
 
       var width = this.frame_width(),
           height = this.frame_height(),
@@ -1953,16 +1952,23 @@
 
       if (this.bins === null) return null;
 
-      var bestbin = null, bestdist = 1e10, pmain = this.main_painter(), dist;
+      var islines = (this.draw_kind=="lines"),
+          bestbin = null, bestdist = 1e10,
+          pmain = this.main_painter(),
+          dist, grx, gry, n;
 
-      for (var n=0;n<this.bins.length;++n) {
+      for ( n=0;n<this.bins.length;++n) {
          var bin = this.bins[n];
 
-         // should be calculated before
-         bin.grx = pmain.grx(bin.x);
+         grx = pmain.grx(bin.x);
+         dist = pnt.x-grx;
 
-         dist = pnt.x-bin.grx;
-         if ((n==0) && (dist < -10)) { bestbin = null; break; } // check first point
+         if (islines) {
+            if ((n==0) && (dist < -10)) { bestbin = null; break; } // check first point
+         } else {
+            gry = pmain.gry(bin.y);
+            dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
+         }
 
          if (Math.abs(dist) < bestdist) {
             bestdist = dist;
@@ -1971,7 +1977,9 @@
       }
 
       // check last point
-      if (dist > 10) bestbin = null;
+      if ((dist > 10) && islines) bestbin = null;
+
+      if (!islines && Math.sqrt(bestdist)>4) bestbin = null;
 
       var ttbin = this.draw_g.select(".tooltip_bin");
 
@@ -1980,24 +1988,26 @@
          return null;
       }
 
-      var res = { x: bestbin.grx, y: bestbin.gry,
+      var res = { x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
                   color1: this.lineatt.color, color2: this.fillatt.color,
                   lines: this.TooltipText(bestbin, true) };
+
+      if (!islines) res.color1 = res.color2 = JSROOT.Painter.root_colors[this.GetObject().fMarkerColor];
 
       if (ttbin.empty())
          ttbin = this.draw_g.append("svg:g")
                              .attr("class","tooltip_bin");
 
-      var radius = Math.max(this.lineatt.width + 3, 4), gry1,gry2;
+      var radius = Math.max(this.lineatt.width + 3, 4), gry1, gry2;
 
-      if (this.optionEF > 0) {
+      if ((this.optionEF > 0) && islines) {
          gry1 = pmain.gry(bestbin.y - bestbin.eylow);
          gry2 = pmain.gry(bestbin.y + bestbin.eyhigh);
       } else {
          gry1 = gry2 = pmain.gry(bestbin.y);
       }
 
-      res.exact = (Math.abs(pnt.x - bestbin.grx) <= radius) &&
+      res.exact = (Math.abs(pnt.x - res.x) <= radius) &&
                   ((Math.abs(pnt.y - gry1) <= radius) || (Math.abs(pnt.y - gry2) <= radius));
 
       res.changed = ttbin.property("current_bin") !== bestbin;
@@ -2011,16 +2021,20 @@
 
          var elem = ttbin.selectAll("circle")
                          .attr("r", radius)
-                         .attr("cx", bestbin.grx.toFixed(1));
+                         .attr("cx", res.x.toFixed(1));
 
-         if (this.optionLine)
-            elem.call(this.lineatt.func);
-         else
-            elem.style('stroke','black');
-         if (this.optionFill > 0)
-            elem.call(this.fillatt.func);
-         else
-            elem.style('fill','none');
+         if (!islines) {
+            elem.style('stroke', res.color1 == 'black' ? 'green' : 'black').style('fill','none');
+         } else {
+            if (this.optionLine)
+               elem.call(this.lineatt.func);
+            else
+               elem.style('stroke','black');
+            if (this.optionFill > 0)
+               elem.call(this.fillatt.func);
+            else
+               elem.style('fill','none');
+         }
       }
 
       return res;
