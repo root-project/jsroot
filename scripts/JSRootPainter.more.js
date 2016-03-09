@@ -2536,7 +2536,7 @@
             if (pos_x + xoffset > width-3) xoffset = width - 3 - pos_x;
             var tcolor = JSROOT.Painter.root_colors[axis.fTextColor];
             this.StartTextDrawing(axis.fTextFont, axis.fTitleSize * height);
-            this.DrawText("end;middle", xoffset, 0, 0, -270, axis.fTitle, tcolor);
+            this.DrawText("end;bottom", xoffset, 0, 0, -270, axis.fTitle, tcolor);
             this.FinishTextDrawing();
          }
 
