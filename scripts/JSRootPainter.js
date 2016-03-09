@@ -4300,8 +4300,10 @@
          handle.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
 
          handle.format = function(d, asticks) {
+            if (!asticks) return d.toExponential(4);
+
             var val = parseFloat(d);
-            if (val <= 0) return asticks ? null : val.toFixed(4);
+            if (val <= 0) return null;
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp)
@@ -4312,7 +4314,7 @@
                else
                   return val.toFixed(0);
             }
-            return asticks ? null : val.toFixed(4);
+            return null;
          }
       } else
       if (handle.kind == 'labels') {
