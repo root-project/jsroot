@@ -3258,6 +3258,339 @@
       return painter;
    }
 
+   // =======================================================================
+
+   JSROOT.TAxisPainter = function(axis, gaxis) {
+      JSROOT.TObjectPainter.call(this, axis);
+      this.gaxis = (gaxis===undefined) ? null : gaxis;
+
+      this.name = "yaxis";
+      this.kind = "normal";
+      this.func = null;
+
+      this.full_min = 0;
+      this.full_max = 1;
+      this.scale_min = 0;
+      this.scale_max = 1;
+      this.ticks = []; // list of major ticks
+   }
+
+   JSROOT.TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   JSROOT.TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
+      this.name = name;
+      this.kind = kind;
+      this.func = func;
+
+      this.full_min = min;
+      this.full_max = max;
+      this.scale_min = smin;
+      this.scale_max = smax;
+   }
+
+   JSROOT.TAxisPainter.prototype.DrawTAxis = function() {
+      // function draw complete TAxis
+      // later will be used to draw TGaxis
+
+      var axis = this.GetObject(),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          vertical = (this.name == "yaxis"),
+          layer = this.svg_frame().select(".axis_layer"),
+          axis_g = layer.select("." + this.name + "_container");
+
+      if (axis_g.empty())
+         axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+      else
+         axis_g.selectAll("*").remove();
+
+      if (this.name == "xaxis")
+         axis_g.attr("transform", "translate(0," + h + ")");
+
+      delete this.format;// remove formatting func
+
+      this.nticks = axis.fNdivisions % 100;
+      this.nticks2 = (axis.fNdivisions % 10000 - this.nticks) / 100;
+      // var n3ax = ndivx / 10000;
+      this.nticks = (this.nticks > 7) ? 7 : this.nticks;
+
+      /* axis label */
+      var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
+
+//      axis.fTitle = "M_{#mu#mu}";
+
+      if (axis.fTitle.length > 0) {
+          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+              title_fontsize = Math.round(axis.fTitleSize * Math.min(w,h)),
+              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
+
+          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+          var tres = 0;
+          if (vertical) {
+             tres = this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";middle",
+                                  -1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize),
+                                   Math.round(center ? h/2 : 0),
+                                   0, (rotate<0 ? -90 : -270),
+                                   axis.fTitle, title_color, 1, title_g);
+//             title_g.append("svg:line")
+//                    .attr("x1",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
+//                    .attr("y1",0)
+//                    .attr("x2",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
+//                    .attr("y2",h)
+//                    .attr("stroke","black")
+          }
+          else {
+             tres = this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";middle",
+                                 Math.round(center ? w/2 : w),
+                                 Math.round(labeloffset + 1.6*title_fontsize*axis.fTitleOffset),
+                                 0, (rotate<0 ? -180 : 0),
+                                 axis.fTitle, title_color, 1, title_g);
+//             title_g.append("svg:line")
+//                   .attr("x1",0)
+//                   .attr("y1",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
+//                   .attr("x2",w)
+//                   .attr("y2",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
+//                   .attr("stroke","black")
+          }
+
+          this.FinishTextDrawing(title_g);
+      }
+
+      if (this.kind == 'time') {
+         if (this.nticks > 8) this.nticks = 8;
+
+         var scale_range = this.scale_max - this.scale_min;
+
+         var tf1 = JSROOT.Painter.getTimeFormat(axis);
+         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
+         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range/w, false);
+
+         this.tfunc1 = this.tfunc2 = d3.time.format(tf1);
+         if (tf2!==tf1)
+            this.tfunc2 = d3.time.format(tf2);
+
+         console.log('tformats '+tf1 + ' ' + tf2);
+
+         this.format = function(d, asticks) {
+            return asticks ? this.tfunc1(d) : this.tfunc2(d);
+         }
+
+      } else
+      if (this.kind == 'log') {
+         this.nticks2 = 1;
+         this.noexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
+         this.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
+
+         this.format = function(d, asticks) {
+            if (!asticks) return d.toExponential(4);
+
+            var val = parseFloat(d);
+            if (val <= 0) return null;
+            var vlog = JSROOT.log10(val);
+            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this.noexp)
+                  return JSROOT.Painter.formatExp(val.toExponential(0));
+               else
+               if (vlog<0)
+                  return val.toFixed(Math.round(-vlog+0.5));
+               else
+                  return val.toFixed(0);
+            }
+            return null;
+         }
+      } else
+      if (this.kind == 'labels') {
+         this.nticks = 50; // for text output allow max 50 names
+         var scale_range = this.scale_max - this.scale_min;
+         if (this.nticks > scale_range)
+            this.nticks = Math.round(scale_range);
+         this.nticks2 = 1;
+
+         this.axis = axis;
+
+         this.format = function(d) {
+            var indx = Math.round(parseInt(d)) + 1;
+            if ((indx<1) || (indx>this.axis.fNbins)) return null;
+            for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
+               var tstr = this.axis.fLabels.arr[i];
+               if (tstr.fUniqueID == indx) return tstr.fString;
+            }
+            return null;
+         }
+      } else {
+
+         this.range = Math.abs(this.scale_max - this.scale_min);
+         if (this.range > this.nticks)
+            this.ndig = 0;
+         else
+            this.ndig = Math.max(1, Math.round(1.2*JSROOT.log10(this.nticks / this.range)));
+
+         this.format = function(d, asticks) {
+            var val = parseFloat(d);
+            if (asticks) {
+               if (Math.abs(val) < 1e-10 * this.range) return 0;
+               val = val.toFixed(this.ndig);
+               if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
+               return val;
+            }
+            return val.toFixed(this.ndig+2);
+         }
+      }
+
+      var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
+          DivLength = Math.round(axis.fTickLength*(vertical ? w : h));
+
+      if (AxisColor === undefined) AxisColor = 'black';
+
+      var major = this.func.ticks(this.nticks), minor = major;
+
+      if (this.nticks2 > 1) {
+         minor = this.func.ticks(major.length * this.nticks2);
+         // avoid black filling by minor ticks
+         if (minor.length > (vertical ? h : w) / 4)  minor = major;
+      }
+
+      var center = (this.kind == 'labels') ||
+                   (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
+
+      var res = "", last = 0, lasth = 0, nmajor = 0, textscale = 1,
+          hmajor = DivLength, hminor = Math.round(DivLength/2);
+
+      // first draw ticks
+
+      this.ticks = [];
+
+      for (var n=0;n<minor.length;++n) {
+         var pos = Math.round(this.func(minor[n]));
+
+         if (vertical) {
+            if (n==0) res += "M0," + pos;
+                 else res += "m" + -lasth + "," +(pos-last);
+
+         } else {
+            if (n==0) res += "M"+pos+",0";
+                 else res += "m" + (pos-last) + "," + lasth;
+         }
+
+         lasth = hminor;
+
+         if ((nmajor < major.length) && (pos == Math.round(this.func(major[nmajor])))) {
+            // if not showing lables, not show large tick
+            if (!('format' in this) || (this.format(major[nmajor],true)!==null)) lasth = hmajor;
+            nmajor++;
+            this.ticks.push(pos); // keep graphical of major ticks
+         }
+
+         if (vertical)
+            res += "h"+ lasth;
+         else
+            res += "v"+ -lasth;
+
+         last = pos;
+      }
+
+      console.log(this.name + ' path ' + res.length);
+
+      axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
+
+      last = vertical ? h : 0;
+
+      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * h)),
+          label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
+          label_g = axis_g.append("svg:g")
+                         .attr("class","axis_labels")
+                         .call(labelfont.func);
+
+      for (nmajor=0;nmajor<major.length;++nmajor) {
+         var pos = Math.round(this.func(major[nmajor]));
+         var lbl = this.format(major[nmajor], true);
+         if (lbl === null) continue;
+
+         var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
+
+         if (vertical)
+            t.attr("x", -labeloffset)
+             .attr("y", pos)
+             .style("text-anchor", "end")
+             .style("dominant-baseline", "middle");
+         else
+            t.attr("x", pos)
+             .attr("y", labeloffset)
+             .attr("dy", ".7em")
+             .style("text-anchor", "middle");
+
+         var tsize = this.GetBoundarySizes(t.node());
+         var space_before = (nmajor > 0) ? pos - last : (vertical ? h/2 : w/2);
+         var space_after = (nmajor < major.length-1) ? (Math.round(this.func(major[nmajor+1])) - pos) : space_before;
+         var space = Math.min(Math.abs(space_before), Math.abs(space_after));
+
+         if (vertical) {
+
+            if ((space > 0) && (tsize.height > 5) && (this.kind !== 'log'))
+               textscale = Math.min(textscale, space / tsize.height);
+
+            if (center) {
+               // if position too far top, remove label
+               if (pos + space_after/2 - textscale*tsize.height/2 < -10)
+                  t.remove();
+               else
+                  t.attr("y", Math.round(pos + space_after/2));
+            }
+
+         } else {
+
+            // test if label consume too much space
+            if ((space > 0) && (tsize.width > 10) && (this.kind !== 'log'))
+               textscale = Math.min(textscale, space / tsize.width);
+
+            if (center) {
+               // if position too far right, remove label
+               if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
+                  t.remove();
+               else
+                  t.attr("x", Math.round(pos + space_after/2));
+            }
+         }
+
+         last = pos;
+     }
+
+     if ((textscale>0) && (textscale<1.)) {
+        labelfont.size = Math.floor(labelfont.size * textscale);
+        label_g.call(labelfont.func);
+     }
+
+     if (JSROOT.gStyle.Zooming) {
+        var r =  axis_g.append("svg:rect")
+                       .style("opacity", "0")
+                       .style("cursor", "crosshair");
+
+        if (vertical)
+           r.attr("x",-2*labelfont.size - 3)
+            .attr("y", 0)
+            .attr("width", 2*labelfont.size + 3)
+            .attr("height", h)
+        else
+           r.attr("x", 0).attr("y", 0)
+            .attr("width", w).attr("height", labelfont.size + 3);
+      }
+
+      this.position = 0;
+
+      if ('getBoundingClientRect' in axis_g.node()) {
+         var rect1 = axis_g.node().getBoundingClientRect(),
+             rect2 = this.svg_pad().node().getBoundingClientRect();
+
+         this.position = rect1.left - rect2.left; // use to control left position of Y scale
+      }
+   }
+
+
    // =============================================================
 
    JSROOT.THistPainter = function(histo) {
@@ -4093,7 +4426,8 @@
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
-         if (this.zoom_ymin === this.zoom_ymax) this.scale_ymax*=1.8;
+         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1))
+            this.scale_ymax*=1.8;
 
          if ((this.scale_ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
@@ -4204,337 +4538,32 @@
       return value.toPrecision(4);
    }
 
-   JSROOT.THistPainter.prototype.DrawTAxis = function(axis, handle) {
-      // function draw complete TAxis
-      // later will be used to draw TGaxis
-
-      var w = this.frame_width(),
-          h = this.frame_height(),
-          vertical = (handle.name == "yaxis"),
-          layer = this.svg_frame().select(".axis_layer"),
-          axis_g = layer.select("." + handle.name + "_container");
-
-      if (axis_g.empty())
-         axis_g = layer.append("svg:g").attr("class",handle.name + "_container");
-      else
-         axis_g.selectAll("*").remove();
-
-      if (handle.name == "xaxis")
-         axis_g.attr("transform", "translate(0," + h + ")");
-
-      handle.nticks = axis.fNdivisions % 100;
-      handle.nticks2 = (axis.fNdivisions % 10000 - handle.nticks) / 100;
-      // var n3ax = ndivx / 10000;
-      handle.nticks = (handle.nticks > 7) ? 7 : handle.nticks;
-
-      /* axis label */
-      var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
-
-//      axis.fTitle = "M_{#mu#mu}";
-
-      if (axis.fTitle.length > 0) {
-          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-              title_fontsize = Math.round(axis.fTitleSize * Math.min(w,h)),
-              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
-
-          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
-
-          var tres = 0;
-          if (vertical) {
-             tres = this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";middle",
-                                  -1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize),
-                                   Math.round(center ? h/2 : 0),
-                                   0, (rotate<0 ? -90 : -270),
-                                   axis.fTitle, title_color, 1, title_g);
-//             title_g.append("svg:line")
-//                    .attr("x1",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
-//                    .attr("y1",0)
-//                    .attr("x2",-1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize))
-//                    .attr("y2",h)
-//                    .attr("stroke","black")
-          }
-          else {
-             tres = this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";middle",
-                                 Math.round(center ? w/2 : w),
-                                 Math.round(labeloffset + 1.6*title_fontsize*axis.fTitleOffset),
-                                 0, (rotate<0 ? -180 : 0),
-                                 axis.fTitle, title_color, 1, title_g);
-//             title_g.append("svg:line")
-//                   .attr("x1",0)
-//                   .attr("y1",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
-//                   .attr("x2",w)
-//                   .attr("y2",Math.round((labeloffset + 1.6*title_fontsize*axis.fTitleOffset)))
-//                   .attr("stroke","black")
-          }
-
-          this.FinishTextDrawing(title_g);
-      }
-
-      if (handle.kind == 'time') {
-         if (handle.nticks > 8) handle.nticks = 8;
-
-         var scale_range = handle.scale_max - handle.scale_min;
-
-         var tf1 = JSROOT.Painter.getTimeFormat(axis);
-         if ((tf1.length == 0) || (scale_range < 0.1 * (handle.max - handle.min)))
-            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range/handle.nticks, true);
-         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range/w, false);
-
-         handle.tfunc1 = handle.tfunc2 = d3.time.format(tf1);
-         if (tf2!==tf1)
-            handle.tfunc2 = d3.time.format(tf2);
-
-         console.log('tformats '+tf1 + ' ' + tf2);
-
-         handle.format = function(d, asticks) {
-            return asticks ? this.tfunc1(d) : this.tfunc2(d);
-         }
-
-      } else
-      if (handle.kind == 'log') {
-         handle.nticks2 = 1;
-         handle.noexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
-         if ((handle.scale_max < 300) && (handle.scale_min > 0.3)) handle.noexp = true;
-         handle.moreloglabels = axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels);
-
-         handle.format = function(d, asticks) {
-            if (!asticks) return d.toExponential(4);
-
-            var val = parseFloat(d);
-            if (val <= 0) return null;
-            var vlog = JSROOT.log10(val);
-            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-               if (!this.noexp)
-                  return JSROOT.Painter.formatExp(val.toExponential(0));
-               else
-               if (vlog<0)
-                  return val.toFixed(Math.round(-vlog+0.5));
-               else
-                  return val.toFixed(0);
-            }
-            return null;
-         }
-      } else
-      if (handle.kind == 'labels') {
-         handle.nticks = 50; // for text output allow max 50 names
-         var scale_range = handle.scale_max - handle.scale_min;
-         if (handle.nticks > scale_range)
-            handle.nticks = Math.round(scale_range);
-         handle.nticks2 = 1;
-
-         handle.axis = axis;
-
-         handle.format = function(d) {
-            var indx = Math.round(parseInt(d)) + 1;
-            if ((indx<1) || (indx>this.axis.fNbins)) return null;
-            for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
-               var tstr = this.axis.fLabels.arr[i];
-               if (tstr.fUniqueID == indx) return tstr.fString;
-            }
-            return null;
-         }
-      } else {
-
-         handle.range = Math.abs(handle.scale_max - handle.scale_min);
-         if (handle.range > handle.nticks)
-            handle.ndig = 0;
-         else
-            handle.ndig = Math.max(1, Math.round(1.2*JSROOT.log10(handle.nticks / handle.range)));
-
-         handle.format = function(d, asticks) {
-            var val = parseFloat(d);
-            if (asticks) {
-               if (Math.abs(val) < 1e-10 * this.range) return 0;
-               val = val.toFixed(this.ndig);
-               if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
-               return val;
-            }
-            return val.toFixed(this.ndig+2);
-         }
-      }
-
-      var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
-          DivLength = Math.round(axis.fTickLength*(vertical ? w : h));
-
-      if (AxisColor === undefined) AxisColor = 'black';
-
-      var major = handle.func.ticks(handle.nticks), minor = major;
-
-      if (handle.nticks2 > 1) {
-         minor = handle.func.ticks(major.length * handle.nticks2);
-         // avoid black filling by minor ticks
-         if (minor.length > (vertical ? h : w) / 4)  minor = major;
-      }
-
-      var center = (handle.kind == 'labels') ||
-                   (handle.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
-
-      var res = "", last = 0, lasth = 0, nmajor = 0, textscale = 1,
-          hmajor = DivLength, hminor = Math.round(DivLength/2);
-
-      // first draw ticks
-
-      handle.ticks = [];
-
-      for (var n=0;n<minor.length;++n) {
-         var pos = Math.round(handle.func(minor[n]));
-
-         if (vertical) {
-            if (n==0) res += "M0," + pos;
-                 else res += "m" + -lasth + "," +(pos-last);
-
-         } else {
-            if (n==0) res += "M"+pos+",0";
-                 else res += "m" + (pos-last) + "," + lasth;
-         }
-
-         lasth = hminor;
-
-         if ((nmajor < major.length) && (pos == Math.round(handle.func(major[nmajor])))) {
-            // if not showing lables, not show large tick
-            if (!('format' in handle) || (handle.format(major[nmajor],true)!==null)) lasth = hmajor;
-            nmajor++;
-            handle.ticks.push(pos); // keep graphical of major ticks
-         }
-
-         if (vertical)
-            res += "h"+ lasth;
-         else
-            res += "v"+ -lasth;
-
-         last = pos;
-      }
-
-      console.log(handle.name + ' path ' + res.length);
-
-      axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
-
-      last = vertical ? h : 0;
-
-      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * h)),
-          label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
-          label_g = axis_g.append("svg:g")
-                         .attr("class","axis_labels")
-                         .call(labelfont.func);
-
-      for (nmajor=0;nmajor<major.length;++nmajor) {
-         var pos = Math.round(handle.func(major[nmajor]));
-         var lbl = handle.format(major[nmajor], true);
-         if (lbl === null) continue;
-
-         var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
-
-         if (vertical)
-            t.attr("x", -labeloffset)
-             .attr("y", pos)
-             .style("text-anchor", "end")
-             .style("dominant-baseline", "middle");
-         else
-            t.attr("x", pos)
-             .attr("y", labeloffset)
-             .attr("dy", ".7em")
-             .style("text-anchor", "middle");
-
-         var tsize = this.GetBoundarySizes(t.node());
-         var space_before = (nmajor > 0) ? pos - last : (vertical ? h/2 : w/2);
-         var space_after = (nmajor < major.length-1) ? (Math.round(handle.func(major[nmajor+1])) - pos) : space_before;
-         var space = Math.min(Math.abs(space_before), Math.abs(space_after));
-
-         if (vertical) {
-
-            if ((space > 0) && (tsize.height > 5) && (handle.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.height);
-
-            if (center) {
-               // if position too far top, remove label
-               if (pos + space_after/2 - textscale*tsize.height/2 < -10)
-                  t.remove();
-               else
-                  t.attr("y", Math.round(pos + space_after/2));
-            }
-
-         } else {
-
-            // test if label consume too much space
-            if ((space > 0) && (tsize.width > 10) && (handle.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.width);
-
-            if (center) {
-               // if position too far right, remove label
-               if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
-                  t.remove();
-               else
-                  t.attr("x", Math.round(pos + space_after/2));
-            }
-         }
-
-         last = pos;
-     }
-
-     if ((textscale>0) && (textscale<1.)) {
-        labelfont.size = Math.floor(labelfont.size * textscale);
-        label_g.call(labelfont.func);
-     }
-
-     if (JSROOT.gStyle.Zooming) {
-        var r =  axis_g.append("svg:rect")
-                       .style("opacity", "0")
-                       .style("cursor", "crosshair");
-
-        if (vertical)
-           r.attr("x",-2*labelfont.size - 3)
-            .attr("y", 0)
-            .attr("width", 2*labelfont.size + 3)
-            .attr("height", h)
-        else
-           r.attr("x", 0).attr("y", 0)
-            .attr("width", w).attr("height", labelfont.size + 3);
-      }
-
-      handle.position = 0;
-
-      if ('getBoundingClientRect' in axis_g.node()) {
-         var rect1 = axis_g.node().getBoundingClientRect(),
-             rect2 = this.svg_pad().node().getBoundingClientRect();
-
-         handle.position = rect1.left - rect2.left; // use to control left position of Y scale
-      }
-   }
-
    JSROOT.THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
 
-      this.x_handle = {
-            name: "xaxis",
-            func: this.x,
-            kind : this.x_kind,
-            min: this.xmin,
-            max: this.xmax,
-            scale_min: this.scale_xmin,
-            scale_max: this.scale_xmax
-         };
+      if (this.x_handle===null) {
+         this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis);
+         this.x_handle.SetDivId(this.divid, -1);
+      }
 
-      if (this.options.Logx && this.x_kind !== "time") this.x_handle.kind = "log";
+      this.x_handle.SetAxisConfig("xaxis",
+                                  (this.options.Logx && this.x_kind !== "time") ? "log" : this.x_kind,
+                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
 
-      this.DrawTAxis(this.histo.fXaxis, this.x_handle);
+      this.x_handle.DrawTAxis();
 
-      this.y_handle = {
-            name: "yaxis",
-            func: this.y,
-            kind : this.y_kind,
-            min: this.ymin,
-            max: this.ymax,
-            scale_min: this.scale_ymin,
-            scale_max: this.scale_ymax
-      };
+      if (this.y_handle===null) {
+         this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis);
+         this.y_handle.SetDivId(this.divid, -1);
+      }
 
-      if (this.options.Logy && this.y_kind !== "time") this.y_handle.kind = "log";
+      this.y_handle.SetAxisConfig("yaxis",
+                                  (this.options.Logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
 
-      this.DrawTAxis(this.histo.fYaxis, this.y_handle);
+      this.y_handle.DrawTAxis();
 
       if (shrink_forbidden) return;
 
