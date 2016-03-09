@@ -4097,7 +4097,7 @@
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
-         if (this.zoom_ymin === this.zoom_ymax) this.scale_ymax*=1.1;
+         if (this.zoom_ymin === this.zoom_ymax) this.scale_ymax*=1.8;
 
          if ((this.scale_ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
