@@ -3209,8 +3209,10 @@
          }
       }
 
-      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) || (this.options.Optimize > 10)) {
-         var numx = (this.options.Optimize > 10) ? 10 : 40, numy = numx;
+      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2) && (this.options.Color<2)) || (this.options.Optimize > 10)) {
+         var numx = JSROOT.gStyle.Tooltip > 1 ? 120 : 40;
+         if (this.options.Optimize > 10) numx = Math.round(numx / 4);
+         var numy = numx;
 
          var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
          if (coef > 1.) numy = Math.max(10, Math.round(numx / coef));
