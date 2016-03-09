@@ -1,0 +1,24 @@
+{
+  "name": "jsroot",
+  "homepage": "https://root.cern.ch/js/",
+  "authors": [
+    "Sergey Linev <S.Linev@gsi.de>",
+    "Bertrand Bellenot <bertrand.bellenot@cern.ch>"
+  ],
+  "description": "JavaScript ROOT library",
+  "main": "scripts/JSRootCore.js",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "jsroot"
+  ],
+  "ignore": [
+    "*.md",
+    "/docs",
+    "/files",
+    "/LICENSE"
+   ],
+  "license": "MIT"
+}
