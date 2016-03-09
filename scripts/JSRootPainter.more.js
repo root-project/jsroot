@@ -1516,9 +1516,8 @@
       }
       if (selbins == null) selbins = this.bins;
 
-      var limit = 5000;
-      if ((selbins.length < limit) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
-      var step = Math.floor(selbins.length / limit);
+      if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
+      var step = Math.floor(selbins.length / 5000);
       if (step < 2) step = 2;
       var optbins = [];
       for (var n = 0; n < selbins.length; n+=step)
@@ -1695,16 +1694,17 @@
       var nodes = null;
 
       if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || this.optionMark==1 || this.optionMark==2) {
+
          drawbins = this.OptimizeBins(function(pnt) {
 
             var grx = pmain.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!pthis.optionBar && ((grx<0) || (grx>w))) return false;
+            if (!pthis.optionBar && ((grx<0) || (grx>w))) return true;
 
             var gry = pmain.gry(pnt.y);
 
-            if (!pthis.optionBar && !pthis.out_of_range && ((gry<0) || (gry>h))) return false;
+            if (!pthis.optionBar && !pthis.out_of_range && ((gry<0) || (gry>h))) return true;
 
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
@@ -1724,7 +1724,8 @@
                   pnt.grdx0 = pnt.grdx2 = pnt.grdy0 = pnt.grdy2 = 0;
                }
             }
-            return true;
+
+            return false;
          });
 
          this.draw_kind = "nodes";

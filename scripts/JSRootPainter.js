@@ -306,7 +306,7 @@
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
       if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
 
-      var marker_kind = ((style>0) && (style < JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
+      var marker_kind = ((style>0) && (style<JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
 
       var shape = marker_kind % 100, toFill = (marker_kind>=100);
 
