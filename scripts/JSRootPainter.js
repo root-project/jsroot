@@ -2658,12 +2658,14 @@
           first_stat = 0,
           num_cols = 0,
           nlines = pt.fLines.arr.length,
-          lines = [];
+          lines = [],
+          maxlen = 0;
 
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
          var line = pt.fLines.arr[j].fTitle;
          lines.push(line);
+         if (j>0) maxlen = Math.max(maxlen, line.length);
          if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
          var parts = line.split("|");
@@ -2692,7 +2694,11 @@
                                     width * n / num_cols, posy,
                                     width/num_cols, stepy, parts[n], jcolor);
                } else if (lines[j].indexOf('=') < 0) {
-                  if (j==0) has_head = true;
+                  if (j==0) {
+                     has_head = true;
+                     if (lines[j].length > maxlen + 5)
+                        lines[j] = lines[j].substr(0,maxlen+2) + "...";
+                  }
                   this.DrawText((j == 0) ? "middle" : "start",
                                  margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
                } else {
@@ -5473,13 +5479,8 @@
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
-      if (print_name > 0) {
-         var name = this.histo.fName;
-         if (name.length<14)
-            pave.AddText(name);
-         else
-            pave.AddText(name.substr(0,11)+"...");
-      }
+      if (print_name > 0)
+         pave.AddText(this.histo.fName);
 
       if (this.IsTProfile()) {
 

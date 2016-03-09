@@ -1105,7 +1105,7 @@
 
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
-            this.fLines.Add({'fTitle' : txt, "fTextColor" : 1 });
+            this.fLines.Add({ fTitle: txt, fTextColor: 1 });
          }
          m.Clear = function() {
             this.fLines.Clear();
@@ -1125,11 +1125,9 @@
               var _func = this.fTitle;
 
               if ('formulas' in this)
-                 for (var i=0;i<this.formulas.length;++i) {
-                    while (_func.indexOf(this.formulas[i].fName) >= 0) {
+                 for (var i=0;i<this.formulas.length;++i)
+                    while (_func.indexOf(this.formulas[i].fName) >= 0)
                        _func = _func.replace(this.formulas[i].fName, this.formulas[i].fTitle);
-                   }
-               }
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs');
               _func = _func.replace('TMath::Exp(', 'Math.exp(');
               _func = _func.replace('TMath::Abs(', 'Math.abs(');
@@ -1143,17 +1141,16 @@
                  _func = _func.replace('landaun(', 'this._math.landaun(this, x, ');
               }
               _func = _func.replace('pi', 'Math.PI');
-              for (var i=0;i<this.fNpar;++i) {
+              for (var i=0;i<this.fNpar;++i)
                  while(_func.indexOf('['+i+']') != -1)
                     _func = _func.replace('['+i+']', this.fParams[i]);
-              }
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
               _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
 
                this._func = new Function("x", "return " + _func).bind(this);
-               this._title = this['fTitle'];
+               this._title = this.fTitle;
             }
 
             return this._func(x);
