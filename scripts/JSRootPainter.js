@@ -5832,11 +5832,13 @@
           x2 = this.GetBinX(bin+1),
           cont = this.histo.getBinContent(bin+1);
 
-      if (this.options.Error > 0) {
+      if ((this.options.Error > 0) || (this.options.Mark > 0)) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          tips.push("y = " + pmain.AxisAsText("y", cont));
-         tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
-         tips.push("error y = " + this.histo.getBinError(bin + 1).toPrecision(4));
+         if (this.options.Error > 0) {
+            tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
+            tips.push("error y = " + this.histo.getBinError(bin + 1).toPrecision(4));
+         }
       } else {
          tips.push("bin = " + (bin+1));
 
