@@ -3370,6 +3370,47 @@
       return local_bins;
    }
 
+   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding) {
+      var histo = this.GetObject(), i, j, x, y, binz,
+          res = {
+             i1: this.GetSelectIndex("x", "left", 0),
+             i2: this.GetSelectIndex("x", "right", 1),
+             j1: this.GetSelectIndex("y", "left", 0),
+             j2: this.GetSelectIndex("y", "right", 1),
+             grx: [], gry: []
+          };
+
+       // calculate graphical coordinates in advance
+      for (i = res.i1; i <= res.i2; ++i) {
+         x = this.GetBinX(i);
+         if (this.options.Logx && (x <= 0)) { res.i1 = i+1; continue; }
+         res.grx[i] = this.grx(x);
+         if (dorounding) res.grx[i] = Math.round(res.grx[i]);
+      }
+
+      for (j = res.j1; j <= res.j2; ++j) {
+         y = this.GetBinY(j);
+         if (this.options.Logy && (y <= 0)) { res.j1 = j+1; continue; }
+         res.gry[j] = this.gry(y);
+         if (dorounding) res.gry[j] = Math.round(res.gry[j]);
+      }
+
+      //  findd min/max values in selected range
+      this.maxbin = this.minbin = histo.getBinContent(res.i1 + 1, res.j1 + 1);
+      for (i = res.i1; i < res.i2; ++i) {
+         for (j = res.j1; j < res.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if (binz>this.maxbin) this.maxbin = binz; else
+            if (binz<this.minbin) this.minbin = binz;
+         }
+      }
+
+      this.fContour = null; // z-scale ranges when drawing with color
+      this.fUserContour = false;
+
+      return res;
+   }
+
    JSROOT.TH2Painter.prototype.DrawSimpleCanvas = function(w,h) {
       var i, j, binz,
           histo = this.GetObject(),
@@ -3420,7 +3461,8 @@
 
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
 
-      var local_bins = this.CreateDrawBins(w, h, 0, 0);
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(true), i, j, binz;
 
       var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
       this.SetForeignObjectPosition(fo);
@@ -3429,14 +3471,19 @@
 
       var ctx = canvas.node().getContext("2d");
 
-      for (var i = 0; i < local_bins.length; ++i) {
-         var bin = local_bins[i];
-         ctx.fillStyle = bin.fill;
-         ctx.fillRect(bin.x,bin.y,bin.width,bin.height);
-      }
+      for (i = handle.i1; i < handle.i2; ++i)
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+            ctx.fillStyle = this.getValueColor(binz);
+            ctx.fillRect(handle.grx[i],handle.gry[j+1],handle.grx[i+1] - handle.grx[i], handle.gry[j] - handle.gry[j+1]);
+         }
 
       ctx.stroke();
       this.draw_kind = "canv2";
+
+      if ((JSROOT.gStyle.Tooltip > 1) && JSROOT.browser.isFirefox)
+         this.ProcessTooltip = this.ProcessTooltipPath;
    }
 
    JSROOT.TH2Painter.prototype.MakeIcon = function() {
@@ -3553,37 +3600,8 @@
          return this.DrawBinsAsRects(w,h);
 
       var histo = this.GetObject(),
-          i1 = this.GetSelectIndex("x", "left", 0),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", 0),
-          j2 = this.GetSelectIndex("y", "right", 1),
-          i, j, nbins = 0, binz = 0, grx = [], gry = [], x, y;
-
-      // calculate graphical coordinates in advance
-      for (i = i1; i <= i2; ++i) {
-         x = this.GetBinX(i);
-         if (this.options.Logx && (x <= 0)) { i1 = i+1; continue; }
-         grx[i] = this.grx(x);
-         if (this.options.Color > 0) grx[i] = Math.round(grx[i]);
-      }
-
-      for (j = j1; j <= j2; ++j) {
-         y = this.GetBinY(j);
-         if (this.options.Logy && (y <= 0)) { j1 = j+1; continue; }
-         gry[j] = this.gry(y);
-         if (this.options.Color > 0) gry[j] = Math.round(gry[j]);
-      }
-
-      // first found min/max values in selected range, and number of non-zero bins
-      this.maxbin = this.minbin = histo.getBinContent(i1 + 1, j1 + 1);
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            if (binz != 0) nbins++;
-            if (binz>this.maxbin) this.maxbin = binz; else
-            if (binz<this.minbin) this.minbin = binz;
-         }
-      }
+          handle = this.PrepareColorDraw(this.options.Color > 0),
+          i, j, binz;
 
       var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
       if (this.options.Color <= 0)
@@ -3599,14 +3617,11 @@
             yfactor = 0.5 / (this.maxbin - this.minbin);
          }
 
-      this.fContour = null; // z-scale ranges when drawing with color
-      this.fUserContour = false;
-
       var colPaths = [], currx = [], curry = [], colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
 
       // now start build
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
+      for (i = handle.i1; i < handle.i2; ++i) {
+         for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
             if ((binz == 0) || (binz < this.minbin)) continue;
 
@@ -3614,24 +3629,25 @@
                colindx = this.getValueColor(binz, true);
                if (colindx === null) continue;
 
-               cmd1 = "M"+grx[i]+","+gry[j+1];
+               cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
                if (colPaths[colindx] === undefined) {
                   colPaths[colindx] = cmd1;
                } else{
-                  cmd2 = "m" + (grx[i]-currx[colindx]) + "," + (gry[j+1] - curry[colindx]);
+                  cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
                   colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
                }
 
-               currx[colindx] = grx[i]; curry[colindx] = gry[j+1];
+               currx[colindx] = handle.grx[i];
+               curry[colindx] = handle.gry[j+1];
 
-               colPaths[colindx] += "v" + (gry[j] - gry[j+1] + 1) +
-                                    "h" + (grx[i+1] - grx[i] + 1 ) +
-                                    "v" + (gry[j+1] - gry[j] - 1) + "z";
+               colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1] + 1) +
+                                    "h" + (handle.grx[i+1] - handle.grx[i] + 1 ) +
+                                    "v" + (handle.gry[j+1] - handle.gry[j] - 1) + "z";
             } else {
                zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
 
-               ww = grx[i+1] - grx[i];
-               hh = gry[j] - gry[j+1];
+               ww = handle.grx[i+1] - handle.grx[i];
+               hh = handle.gry[j] - handle.gry[j+1];
 
                dgrx = zdiff * xfactor * ww;
                dgry = zdiff * yfactor * hh;
@@ -3641,7 +3657,7 @@
 
                if ((ww > 0) && (hh > 0)) {
                   if (colPaths[i]===undefined) colPaths[i] = "";
-                  colPaths[i] += "M" + Math.round(grx[i] + dgrx) + "," + Math.round(gry[j+1] + dgry) +
+                  colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
                                  "v" + hh + "h" + ww + "v-" + hh + "z";
                }
             }
@@ -3687,7 +3703,7 @@
       else
          lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + "]");
 
-      lines.push(" bin=" + i + "," + j);
+      lines.push("bin = " + i + ", " + j);
 
       lines.push("entries = " + JSROOT.FFormat(this.GetObject().getBinContent(i+1,j+1), JSROOT.gStyle.StatFormat));
 
