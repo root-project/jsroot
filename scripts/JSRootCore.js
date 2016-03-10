@@ -44,7 +44,7 @@
          };
 
       // check if modules are already loaded
-      for (var module = 0; module < paths.length; ++module)
+      for (var module in paths)
         if (requirejs.defined(module))
            delete paths[module];
 
