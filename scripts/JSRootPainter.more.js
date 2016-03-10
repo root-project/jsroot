@@ -602,36 +602,26 @@
 
    JSROOT.Painter.drawLine = function(divid, obj, opt) {
 
-      this.line = obj;
       this.SetDivId(divid);
 
-      // function used for live update of object
-      this['UpdateObject'] = function(obj) {
-         // copy all fields
-         JSROOT.extend(this.line, obj);
-      }
-
-      this['Redraw'] = function() {
-         var lineatt = JSROOT.Painter.createAttLine(this.line);
+      this.Redraw = function() {
+         var line = this.GetObbject(),
+             lineatt = JSROOT.Painter.createAttLine(line);
 
          // create svg:g container for line drawing
          this.RecreateDrawG(this.main_painter() == null);
 
-         var x1 = this.AxisToSvg("x", this.line.fX1);
-         var y1 = this.AxisToSvg("y", this.line.fY1);
-         var x2 = this.AxisToSvg("x", this.line.fX2);
-         var y2 = this.AxisToSvg("y", this.line.fY2);
-
          this.draw_g
              .append("svg:line")
-             .attr("x1", x1.toFixed(1))
-             .attr("y1", y1.toFixed(1))
-             .attr("x2", x2.toFixed(1))
-             .attr("y2", y2.toFixed(1))
+             .attr("x1", this.AxisToSvg("x", line.fX1).toFixed(1))
+             .attr("y1", this.AxisToSvg("y", line.fY1).toFixed(1))
+             .attr("x2", this.AxisToSvg("x", line.fX2).toFixed(1))
+             .attr("y2", this.AxisToSvg("y", line.fY2).toFixed(1))
              .call(lineatt.func);
       }
 
       this.Redraw(); // actual drawing
+
       return this.DrawingReady();
    }
 
@@ -639,38 +629,29 @@
 
    JSROOT.Painter.drawArrow = function(divid, obj, opt) {
 
-      this.arrow = obj;
       this.SetDivId(divid);
 
-      // function used for live update of object
-      this['UpdateObject'] = function(obj) {
-         // copy all fields
-         JSROOT.extend(this.arrow, obj);
-      }
 
-      this['Redraw'] = function() {
-         var lineatt = JSROOT.Painter.createAttLine(this.arrow);
-         var fillatt = this.createAttFill(this.arrow);
+      this.Redraw = function() {
+         var arrow = this.GetObject(),
+             lineatt = JSROOT.Painter.createAttLine(arrow),
+             fillatt = this.createAttFill(arrow);
 
-         var wsize = Math.max(this.pad_width(), this.pad_height()) * this.arrow.fArrowSize;
+         var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
          if (wsize<3) wsize = 3;
-         var hsize = wsize * Math.tan(this.arrow.fAngle/2 * (Math.PI/180));
+         var hsize = wsize * Math.tan(arrow.fAngle/2 * (Math.PI/180));
 
          // create svg:g container for line drawing
          this.RecreateDrawG(this.main_painter() == null);
 
-         var x1 = this.AxisToSvg("x", this.arrow.fX1);
-         var y1 = this.AxisToSvg("y", this.arrow.fY1);
-         var x2 = this.AxisToSvg("x", this.arrow.fX2);
-         var y2 = this.AxisToSvg("y", this.arrow.fY2);
-
-         var right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1);
-         var left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1);
-
-         var m_start = null, m_mid = null, m_end = null, defs = null;
-
-         var oo = this.arrow.fOption;
-         var len = oo.length;
+         var x1 = this.AxisToSvg("x", arrow.fX1),
+             y1 = this.AxisToSvg("y", arrow.fY1),
+             x2 = this.AxisToSvg("x", arrow.fX2),
+             y2 = this.AxisToSvg("y", arrow.fY2),
+             right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
+             left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
+             m_start = null, m_mid = null, m_end = null, defs = null,
+             oo = arrow.fOption, len = oo.length;
 
          if (oo.indexOf("<")==0) {
             var closed = (oo.indexOf("<|") == 0);
@@ -749,7 +730,7 @@
          if (m_end!=null) path.style("marker-end","url(#" + m_end + ")");
       }
 
-      if (!('arrowcnt' in JSROOT.Painter)) JSROOT.Painter['arrowcnt'] = 0;
+      if (!('arrowcnt' in JSROOT.Painter)) JSROOT.Painter.arrowcnt = 0;
 
       this.Redraw(); // actual drawing
       return this.DrawingReady();
@@ -2528,7 +2509,7 @@
 
          this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
-         this.z_handle.DrawTAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
+         this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
 
          /// Add palette axis title
@@ -2768,7 +2749,7 @@
          JSROOT.extend(pal.fAxis, { _typename: "TGaxis",
             fChopt: "", fFunctionName: "", fGridLength: 0,
             fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-            fName: "", fNdiv: 8, fTickSize: 0.03, fTimeFormat: "",
+            fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
             fTitle: histo.fZaxis.fTitle, fTitleOffset: 1, fTitleSize: 0.035,
             fWmax: 100, fWmin: 0,
             // set values from base classes
