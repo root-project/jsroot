@@ -11,13 +11,6 @@
     "amd",
     "globals"
   ],
-  "dependencies": {
-    "d3": "~3.5.16",
-    "jquery-ui": "~1.11.4",
-    "jquery-mousewheel" : "~3.1.13",
-    "jqueryui-touch-punch" : "*",
-    "threejs": "*"
-  },
   "keywords": [
     "jsroot"
   ],
