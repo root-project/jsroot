@@ -25,15 +25,7 @@
     "*.md",
     "/docs",
     "/files",
-    "/LICENSE",
-    "/scripts/d3.v3.min.js",
-    "/scripts/jquery.min.js",
-    "/scripts/jquery-ui.min.js",
-    "/scripts/jquery-mousewheel.min.js",
-    "/scripts/jquery.mousewheel.js",
-    "/scripts/touch-punch.min.js",
-    "/scripts/three.min.js",
-    "/scripts/three.js"
+    "/LICENSE"
    ],
   "license": "MIT"
 }
