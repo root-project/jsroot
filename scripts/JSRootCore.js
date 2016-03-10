@@ -49,7 +49,7 @@
                                                  else console.warn("Require.js paths changed - please contact JSROOT developers");
 
       // check if modules are already loaded
-      for (var module in paths) {
+      for (var module in paths)
          if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
             delete paths[module];
 
@@ -79,7 +79,7 @@
              }
           }
        }
-    });
+      });
 
       // AMD. Register as an anonymous module.
       define( factory );
