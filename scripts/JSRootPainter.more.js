@@ -631,7 +631,6 @@
 
       this.SetDivId(divid);
 
-
       this.Redraw = function() {
          var arrow = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(arrow),
