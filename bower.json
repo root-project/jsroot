@@ -11,6 +11,13 @@
     "amd",
     "globals"
   ],
+  "dependencies": {
+    "d3": "~3.5.16",
+    "jquery-ui": "~1.11.4",
+    "jquery-mousewheel" : "~3.1.13",
+    "jqueryui-touch-punch" : "*",
+    "threejs": "*"
+  },
   "keywords": [
     "jsroot"
   ],
@@ -18,7 +25,15 @@
     "*.md",
     "/docs",
     "/files",
-    "/LICENSE"
+    "/LICENSE",
+    "/scripts/d3.v3.min.js",
+    "/scripts/jquery.min.js",
+    "/scripts/jquery-ui.min.js",
+    "/scripts/jquery-mousewheel.min.js",
+    "/scripts/jquery.mousewheel.js",
+    "/scripts/touch-punch.min.js",
+    "/scripts/three.min.js",
+    "/scripts/three.js"
    ],
   "license": "MIT"
 }
