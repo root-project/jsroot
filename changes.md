@@ -18,7 +18,8 @@
    - touch devices are supported 
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
-12. Use of cached methods improves binary I/O perfromance by 20% 
+12. Use of cached methods improves binary I/O perfromance by 20%
+13. Support TGaxis drawing
 
 
 ## Changes in 4.3

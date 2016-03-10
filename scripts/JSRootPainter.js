@@ -3294,15 +3294,18 @@
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           vertical = (this.name !== "xaxis"),
-          side = (this.name === "zaxis") ? -1  : 1,
-          axis_g = layer, AxisColor = "black", DivLength = 10;
+          side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
+          axis_g = layer, AxisColor = "black",
+          tickSize = 10, scaling_size = 100;
 
       if (is_gaxis) {
          AxisColor = JSROOT.Painter.root_colors[axis.fLineColor];
-         DivLength = Math.round(axis.fTickSize * (vertical ? this.pad_width() : this.pad_height()));
+         scaling_size = (vertical ? this.pad_width() : this.pad_height());
+         tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
          AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor];
-         DivLength = Math.round(axis.fTickLength * (vertical ? w : h));
+         scaling_size = (vertical ? w : h);
+         tickSize = Math.round(axis.fTickLength * scaling_size);
       }
 
       if (!is_gaxis || (this.name === "zaxis")) {
@@ -3314,7 +3317,8 @@
       } else {
 
          if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
-         if (vertical && axis.fChopt=="+L") side = -1;
+         if (vertical && axis.fChopt=="+L") side = -1; else
+         if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; }
 
          axis_g.append("svg:line")
                .attr("x1",0).attr("y1",0)
@@ -3332,10 +3336,12 @@
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
+      this.nticks3 = Math.floor(ndiv/10000);
+
       this.nticks = (!is_gaxis && (this.nticks > 7)) ? 7 : this.nticks;
 
       /* axis label */
-      var labeloffset = 3 + Math.round(axis.fLabelOffset * (vertical ? w : h));
+      var labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size);
 
 //      axis.fTitle = "M_{#mu#mu}";
 
@@ -3445,19 +3451,24 @@
          }
       }
 
-      var major = this.func.ticks(this.nticks), minor = major;
+      var major = this.func.ticks(this.nticks), middle = major, minor = major;
 
       if (this.nticks2 > 1) {
-         minor = this.func.ticks(major.length * this.nticks2);
-         // avoid black filling by minor ticks
-         if (minor.length > (vertical ? h : w) / 4)  minor = major;
+         minor = middle = this.func.ticks(major.length * this.nticks2);
+         // avoid black filling by middle-size
+         if ((middle.length <= major.length) || (middle.length > (vertical ? h : w) / 4))
+            minor = middle = major;
+         else
+         if ((this.nticks3 > 1) && (tickSize/4 > 2) && (this.kind !== 'log'))  {
+            minor = this.func.ticks(middle.length * this.nticks3);
+            if ((minor.length <= middle.length) || (minor.length > (vertical ? h : w) / 2)) minor = middle;
+         }
       }
 
       var center = (this.kind == 'labels') ||
                    (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
 
-      var res = "", last = 0, lasth = 0, nmajor = 0, textscale = 1,
-          hmajor = DivLength, hminor = Math.round(DivLength/2);
+      var res = "", lastpos = 0, lasth = 0, nmajor = 0, nmiddle = 0, textscale = 1;
 
       // first draw ticks
 
@@ -3466,30 +3477,32 @@
       for (var n=0;n<minor.length;++n) {
          var pos = Math.round(this.func(minor[n]));
 
-         if (vertical) {
-            if (n==0) res += "M0," + pos;
-                 else res += "m" + -lasth*side + "," +(pos-last);
+         var h1 = Math.round(tickSize/4), h2 = 0;
 
-         } else {
-            if (n==0) res += "M" + pos +",0";
-                 else res += "m" + (pos-last) + "," + lasth*side;
+         if ((nmiddle < middle.length) && (pos == Math.round(this.func(middle[nmiddle])))) {
+            h1 = Math.round(tickSize/2); nmiddle++;
          }
-
-         lasth = hminor;
 
          if ((nmajor < major.length) && (pos == Math.round(this.func(major[nmajor])))) {
             // if not showing lables, not show large tick
-            if (!('format' in this) || (this.format(major[nmajor],true)!==null)) lasth = hmajor;
+            if (!('format' in this) || (this.format(major[nmajor],true)!==null)) h1 = tickSize;
             nmajor++;
-            this.ticks.push(pos); // keep graphical of major ticks
+            this.ticks.push(pos); // keep graphical positions of major ticks
          }
 
-         if (vertical)
-            res += "h"+ lasth*side;
-         else
-            res += "v"+ -lasth*side;
+         if (both_sides > 0) h2 = -h1; else
+         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
 
-         last = pos;
+         if (n==0) {
+            res += vertical ? ("M"+h1+","+ pos) : ("M"+pos+","+-h1);
+         } else {
+            res += vertical ? ("m"+(h1-lasth)+","+(pos-lastpos)) : ("m"+(pos-lastpos)+","+(lasth-h1));
+         }
+
+         res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+
+         lastpos = pos;
+         lasth = h2;
       }
 
       console.log(this.name + ' path ' + res.length);
@@ -3503,8 +3516,6 @@
           label_g = axis_g.append("svg:g")
                          .attr("class","axis_labels")
                          .call(labelfont.func);
-
-      console.log('color = ' + label_color + ' size = ' + axis.fLabelSize);
 
       for (nmajor=0;nmajor<major.length;++nmajor) {
          var pos = Math.round(this.func(major[nmajor]));
@@ -3520,7 +3531,7 @@
               .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
-             .attr("y", labeloffset*side)
+             .attr("y", labeloffset*side  + both_sides*tickSize)
              .attr("dy", (side > 0) ? ".7em" : "-.3em")
              .style("text-anchor", "middle");
 
@@ -3598,10 +3609,7 @@
           y1 = Math.round(this.AxisToSvg("y", gaxis.fY1)),
           x2 = Math.round(this.AxisToSvg("x", gaxis.fX2)),
           y2 = Math.round(this.AxisToSvg("y", gaxis.fY2)),
-          w = Math.abs(x2-x1),
-          h = Math.abs(y2-y1);
-
-      console.log('x1 = '+x1 + ' x2 = ' + x2 + ' y1 = '+y1 + ' y2 = ' + y2 + ' w = '+ w + ' h = ' + h);
+          w = x2 - x1, h = y1 - y2;
 
       var name = w<5 ? "yaxis" : "xaxis",
           kind = "normal",
@@ -3619,18 +3627,28 @@
       func.domain([min, max]);
 
       if (name == "yaxis") {
-         if (y1 > y2) func.range([h,0]);
-                 else { func.range([0,h]); var d = y1; y1 = y2; y2 = d; }
+         if (h > 0) {
+            func.range([h,0]);
+         } else {
+            var d = y1; y1 = y2; y2 = d;
+            h = -h;
+            func.range([0,h]);
+         }
+      } else {
+         if (w > 0) {
+            func.range([0,w]);
+         } else {
+            var d = x1; x1 = x2; x2 = d;
+            w = -w;
+            func.range([w,0]);
+         }
       }
-                      else func.range([0,w]);
 
       this.SetAxisConfig(name, kind, func, min, max, min, max);
 
       this.RecreateDrawG(true, ".text_layer");
 
-      console.log('min ' + min + ' max ' + max + ' ndiv = ' + gaxis.fNdiv + " opt = " + gaxis.fChopt);
       this.DrawAxis(this.draw_g, w, h, "translate(" + x1 + "," + y2 +")");
-
    }
 
 
