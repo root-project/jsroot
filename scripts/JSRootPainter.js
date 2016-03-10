@@ -3288,15 +3288,13 @@
       this.scale_max = smax;
    }
 
-   JSROOT.TAxisPainter.prototype.DrawTAxis = function() {
+   JSROOT.TAxisPainter.prototype.DrawTAxis = function(layer, w, h, transform) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
       var axis = this.GetObject(),
-          w = this.frame_width(),
-          h = this.frame_height(),
-          vertical = (this.name == "yaxis"),
-          layer = this.svg_frame().select(".axis_layer"),
+          vertical = (this.name !== "xaxis"),
+          side = (this.name === "zaxis") ? -1  : 1,
           axis_g = layer.select("." + this.name + "_container");
 
       if (axis_g.empty())
@@ -3304,10 +3302,12 @@
       else
          axis_g.selectAll("*").remove();
 
-      if (this.name == "xaxis")
-         axis_g.attr("transform", "translate(0," + h + ")");
+      if (transform!== undefined)
+         axis_g.attr("transform", transform);
 
       delete this.format;// remove formatting func
+
+      console.log('ndiv = ' + axis.fNdivisions);
 
       this.nticks = axis.fNdivisions % 100;
       this.nticks2 = (axis.fNdivisions % 10000 - this.nticks) / 100;
@@ -3358,6 +3358,8 @@
 
           this.FinishTextDrawing(title_g);
       }
+
+      console.log(' w = ' + w  + ' h = ' + h + '  kind = ' + this.kind);
 
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
@@ -3443,11 +3445,14 @@
       }
 
       var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
-          DivLength = Math.round(axis.fTickLength*(vertical ? w : h));
+          DivLength = Math.round(axis.fTickLength * (vertical ? w : h));
 
       if (AxisColor === undefined) AxisColor = 'black';
 
       var major = this.func.ticks(this.nticks), minor = major;
+
+
+      console.log('ticks = ' + JSON.stringify(major) + " smin " + this.scale_min + '  ' + this.scale_max + ' n '  + this.nticks);
 
       if (this.nticks2 > 1) {
          minor = this.func.ticks(major.length * this.nticks2);
@@ -3470,11 +3475,11 @@
 
          if (vertical) {
             if (n==0) res += "M0," + pos;
-                 else res += "m" + -lasth + "," +(pos-last);
+                 else res += "m" + -lasth*side + "," +(pos-last);
 
          } else {
             if (n==0) res += "M"+pos+",0";
-                 else res += "m" + (pos-last) + "," + lasth;
+                 else res += "m" + (pos-last) + "," + lasth*side;
          }
 
          lasth = hminor;
@@ -3487,9 +3492,9 @@
          }
 
          if (vertical)
-            res += "h"+ lasth;
+            res += "h"+ lasth*side;
          else
-            res += "v"+ -lasth;
+            res += "v"+ -lasth*side;
 
          last = pos;
       }
@@ -3514,10 +3519,10 @@
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
          if (vertical)
-            t.attr("x", -labeloffset)
-             .attr("y", pos)
-             .style("text-anchor", "end")
-             .style("dominant-baseline", "middle");
+            t.attr("x", -labeloffset*side)
+              .attr("y", pos)
+              .style("text-anchor", (side > 0) ? "end" : "begin")
+              .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
              .attr("y", labeloffset)
@@ -3567,11 +3572,12 @@
 
      if (JSROOT.gStyle.Zooming) {
         var r =  axis_g.append("svg:rect")
+                       .attr("class", "axis_zoom")
                        .style("opacity", "0")
                        .style("cursor", "crosshair");
 
         if (vertical)
-           r.attr("x",-2*labelfont.size - 3)
+           r.attr("x", (side >0) ? (-2*labelfont.size - 3) : 3)
             .attr("y", 0)
             .attr("width", 2*labelfont.size + 3)
             .attr("height", h)
@@ -4543,6 +4549,12 @@
 
       if (!this.is_main_painter()) return;
 
+      var layer = this.svg_frame().select(".axis_layer"),
+          w = this.frame_width(),
+          h = this.frame_height()
+
+
+
       if (this.x_handle===null) {
          this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis);
          this.x_handle.SetDivId(this.divid, -1);
@@ -4552,7 +4564,7 @@
                                   (this.options.Logx && this.x_kind !== "time") ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
 
-      this.x_handle.DrawTAxis();
+      this.x_handle.DrawTAxis(layer, w, h, "translate(0," + h + ")");
 
       if (this.y_handle===null) {
          this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis);
@@ -4563,11 +4575,11 @@
                                   (this.options.Logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
 
-      this.y_handle.DrawTAxis();
+      this.y_handle.DrawTAxis(layer, w, h);
 
       if (shrink_forbidden) return;
 
-      var shrink = 0., ypos = this.y_handle.position, w = this.frame_width();
+      var shrink = 0., ypos = this.y_handle.position;
 
       if (ypos < 0) {
          shrink = -ypos/w + 0.001;

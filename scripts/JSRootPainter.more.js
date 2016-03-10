@@ -2427,6 +2427,11 @@
 
       this.SetDivId(divid);
 
+      console.log('palette.fAxis = ' + palette.fAxis._typename)
+
+      this.z_handle = new JSROOT.TAxisPainter(palette.fAxis.fAxis);
+      this.z_handle.SetDivId(divid, -1)
+
       this['MakeIcon'] = function(contour, z) {
          var h = this.frame_height();
          var res = "";
@@ -2452,11 +2457,11 @@
          }
 
          res += "]";
-         console.log('len = ',res.length);
-         console.log(res);
+         //console.log('len = ',res.length);
+         //console.log(res);
       }
 
-      this['DrawAxisPalette'] = function(s_width, s_height) {
+      this.DrawAxisPalette = function(s_width, s_height) {
 
          var pthis = this, palette = this.GetObject(), axis = palette.fAxis;
 
@@ -2468,7 +2473,6 @@
              width = this.pad_width(),
              height = this.pad_height(),
              axisOffset = axis.fLabelOffset * width,
-             tickSize = axis.fTickSize * width,
              contour = this.main_painter().fContour,
              zmin = 0, zmax = this.main_painter().gmaxbin;
 
@@ -2477,39 +2481,15 @@
             zmax = contour[contour.length-1];
          }
 
-         var z = null;
+         var z = null, z_kind = "line";
 
          if (this.main_painter().options.Logz) {
             z = d3.scale.log();
-            this.noexpz = ((zmax < 300) && (zmin > 0.3));
-
-            this['formatz'] = function(d) {
-               var val = parseFloat(d);
-               var vlog = JSROOT.log10(val);
-               if (Math.abs(vlog - Math.round(vlog))<0.001) {
-                  if (!this.noexpz)
-                     return JSROOT.Painter.formatExp(val.toExponential(0));
-                  else
-                  if (vlog<0)
-                     return val.toFixed(Math.round(-vlog+0.5));
-                  else
-                     return val.toFixed(0);
-               }
-               return null;
-            }
-
+            z_kind = "log";
          } else {
             z = d3.scale.linear();
-            this['formatz'] = function(d) {
-               if ((Math.abs(d) < 1e-14) && (Math.abs(zmax - zmin) > 1e-5)) d = 0;
-               return parseFloat(d.toPrecision(12));
-            }
          }
          z.domain([zmin, zmax]).range([s_height,0]);
-
-         var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, axis.fLabelSize * height);
-
-         if (tickSize > s_width*0.6) tickSize = s_width*0.6;
 
          if ((contour==null) || this._can_move)
             // we need such rect to correctly calculate size
@@ -2524,6 +2504,7 @@
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
                    col = this.main_painter().getValueColor(contour[i]);
+
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
                           .attr("y",  z1.toFixed(1))
@@ -2544,26 +2525,13 @@
                   r.on("dblclick", function() { pthis.main_painter().Unzoom("z"); });
             }
 
-         // Build and draw axes
-         var z_axis = d3.svg.axis().scale(z)
-                       .orient("right")
-                       .tickPadding(axisOffset)
-                       .tickSize(-tickSize, -tickSize / 2, 0)
-                       .ticks(nbr1)
-                       .tickFormat(this.formatz.bind(this));
 
-         var zax = this.draw_g.append("svg:g")
-                      .attr("class", "zaxis")
-                      .attr("transform", "translate(" + s_width + ", 0)")
-                      .call(z_axis);
+         this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
-         zax.selectAll("text")
-                 .call(labelfont.func)
-                 .attr("fill", JSROOT.Painter.root_colors[axis.fLabelColor]);
+         this.z_handle.DrawTAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
-         // if ((contour!==null) && !this._can_move) this.MakeIcon(contour,z);
 
-         /** Add palette axis title */
+         /// Add palette axis title
          if ((axis.fTitle != "") && (typeof axis.fTextFont !== 'undefined')) {
             // offest in width of colz drawings
             var xoffset = axis.fTitleOffset * s_width;
@@ -2580,6 +2548,7 @@
             this.DrawText("end;bottom", xoffset, 0, 0, -270, axis.fTitle, tcolor);
             this.FinishTextDrawing();
          }
+
 
          if (this._can_move) {
             if ('getBoundingClientRect' in this.draw_g.node()) {
@@ -2659,16 +2628,9 @@
             d3.event.stopPropagation();
          }
 
-         this.draw_g.append("svg:rect")
-                    .attr("x", s_width)
-                    .attr("y", 0)
-                    .attr("width", 20)
-                    .attr("height", s_height)
-                    .style("cursor", "crosshair")
-                    .style("opacity", "0")
+         this.draw_g.select(".axis_zoom")
                     .on("mousedown", startRectSel)
                     .on("dblclick", function() { pthis.main_painter().Unzoom("z"); });
-
       }
 
       this.ShowContextMenu = function(kind, evnt) {
@@ -2688,7 +2650,7 @@
       this.PaveDrawFunc = this.DrawAxisPalette;
 
       // workaround to let copmlete pallete draw when actual palette colors already there
-      this['CompleteDraw'] = this['Redraw'];
+      this.CompleteDraw = this.Redraw;
 
       this._can_move = (opt === 'canmove');
 
@@ -2813,6 +2775,9 @@
             fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
             fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
          });
+
+         pal.fAxis.fAxis = JSROOT.Create('TAxis');
+         pal.fAxis.fAxis.fTickLength = 0.5;
 
          if (histo.fFunctions == null)
             histo.fFunctions = JSROOT.Create("TList");
