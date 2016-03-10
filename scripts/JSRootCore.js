@@ -54,8 +54,11 @@
             delete paths[module];
 
       // add mapping if script loaded as bower module 'jsroot'
-      if (cfg_paths && ('jsroot' in cfg_paths))
-         requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
+      if (cfg_paths  && ('jsroot' in cfg_paths))
+           requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
+        else
+           requirejs.config({ map : { "*": { "jsroot": "JSRootCore" } } });
+
 
       // configure all dependencies
       requirejs.config({
@@ -1402,10 +1405,10 @@
       var scripts = document.getElementsByTagName('script');
 
       for (var n = 0; n < scripts.length; ++n) {
-         if (scripts[n]['type'] != 'text/javascript') continue;
+         // if (scripts[n]['type'] != 'text/javascript') continue;
 
-         var src = scripts[n]['src'];
-         if ((src == null) || (src.length == 0)) continue;
+         var src = scripts[n].src;
+         if ((src===undefined) || (typeof src !== 'string')) continue;
 
          var pos = src.indexOf("scripts/JSRootCore.");
          if (pos<0) continue;
