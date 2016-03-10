@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['d3', 'JSRootPainter', 'THREE_ALL'], factory );
+      define( ['d3', 'JSRootPainter', 'threejs_all'], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')

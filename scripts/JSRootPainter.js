@@ -3379,8 +3379,6 @@
          if (tf2!==tf1)
             this.tfunc2 = d3.time.format(tf2);
 
-         console.log('tformats '+tf1 + ' ' + tf2);
-
          this.format = function(d, asticks) {
             return asticks ? this.tfunc1(d) : this.tfunc2(d);
          }
@@ -3448,12 +3446,7 @@
          }
       }
 
-      if (AxisColor === undefined) AxisColor = 'black';
-
       var major = this.func.ticks(this.nticks), minor = major;
-
-      console.log(this.nticks +  '  major = ' + JSON.stringify(major));
-
 
       var AxisColor = "black", DivLength = 10;
       if (is_gaxis) {
@@ -3466,6 +3459,8 @@
          AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor];
          DivLength = Math.round(axis.fTickLength * (vertical ? w : h));
       }
+
+      if (AxisColor === undefined) AxisColor = 'black';
 
 
       if (this.nticks2 > 1) {

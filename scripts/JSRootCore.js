@@ -25,12 +25,13 @@
             'd3'                   : dir+'d3.v3.min',
             'jquery'               : dir+'jquery.min',
             'jquery-ui'            : dir+'jquery-ui.min',
-            'touch-punch'          : dir+'touch-punch.min',
+            'jqueryui-mousewheel'  : dir+'jquery.mousewheel'+ext,
+            'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate'+ext,
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
-            'THREE'                : dir+'three'+ext,
-            'THREE_ALL'            : dir+'three.extra'+ext,
+            'threejs'              : dir+'three'+ext,
+            'threejs_all'          : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -56,16 +57,15 @@
       // add mapping if script loaded as bower module 'jsroot'
       if (cfg_paths  && ('jsroot' in cfg_paths))
            requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
-        else
-           requirejs.config({ map : { "*": { "jsroot": "JSRootCore" } } });
 
 
       // configure all dependencies
       requirejs.config({
         paths: paths,
         shim: {
-         'touch-punch': { deps: ['jquery'] },
-         'THREE_ALL': { deps: ['THREE'] },
+         'jqueryui-mousewheel': { deps: ['jquery-ui'] },
+         'jqueryui-touch-punch': { deps: ['jquery-ui'] },
+         'threejs_all': { deps: [ 'threejs'] },
          'MathJax': {
              exports: 'MathJax',
              init: function () {
@@ -765,7 +765,7 @@
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
          mainfiles += "$$$scripts/three" + ext + ".js;" +
                       "$$$scripts/three.extra" + ext + ".js;";
-         modules.push("THREE_ALL");
+         modules.push("threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
@@ -809,10 +809,10 @@
 
          if (JSROOT.touches) {
             lst_jq += '$$$scripts/touch-punch.min.js;';
-            modules.push('touch-punch');
+            modules.push('jqueryui-touch-punch');
          }
 
-         modules.splice(0,0, 'jquery', 'jquery-ui');
+         modules.splice(0,0, 'jquery', 'jquery-ui', 'jqueryui-mousewheel');
          mainfiles = lst_jq + mainfiles;
 
          jsroot.load_jquery = true;
