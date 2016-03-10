@@ -3293,6 +3293,7 @@
       // later will be used to draw TGaxis
 
       var axis = this.GetObject(),
+          is_gaxis = (axis && axis._typename === 'TGaxis'),
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1,
           axis_g = layer.select("." + this.name + "_container");
@@ -3307,11 +3308,16 @@
 
       delete this.format;// remove formatting func
 
-      console.log('ndiv = ' + axis.fNdivisions);
+      var ndiv = is_gaxis ? axis.fNdiv : axis.fNdivisions;
 
-      this.nticks = axis.fNdivisions % 100;
-      this.nticks2 = (axis.fNdivisions % 10000 - this.nticks) / 100;
-      // var n3ax = ndivx / 10000;
+      if (is_gaxis) {
+         console.log('ndiv ' + ndiv);
+         if (ndiv===0) ndiv = 508;
+      }
+
+      this.nticks = ndiv % 100;
+      this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
+      // var n3ax = ndiv / 10000;
       this.nticks = (this.nticks > 7) ? 7 : this.nticks;
 
       /* axis label */
@@ -3358,8 +3364,6 @@
 
           this.FinishTextDrawing(title_g);
       }
-
-      console.log(' w = ' + w  + ' h = ' + h + '  kind = ' + this.kind);
 
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
@@ -3444,15 +3448,25 @@
          }
       }
 
-      var AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor],
-          DivLength = Math.round(axis.fTickLength * (vertical ? w : h));
-
       if (AxisColor === undefined) AxisColor = 'black';
 
       var major = this.func.ticks(this.nticks), minor = major;
 
+      console.log(this.nticks +  '  major = ' + JSON.stringify(major));
 
-      console.log('ticks = ' + JSON.stringify(major) + " smin " + this.scale_min + '  ' + this.scale_max + ' n '  + this.nticks);
+
+      var AxisColor = "black", DivLength = 10;
+      if (is_gaxis) {
+         AxisColor = JSROOT.Painter.root_colors[axis.fLineColor];
+         DivLength = Math.round(axis.fTickSize * (vertical ? this.pad_width() : this.pad_height()));
+
+         console.log('DivLength = ' + DivLength);
+
+      } else {
+         AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor];
+         DivLength = Math.round(axis.fTickLength * (vertical ? w : h));
+      }
+
 
       if (this.nticks2 > 1) {
          minor = this.func.ticks(major.length * this.nticks2);

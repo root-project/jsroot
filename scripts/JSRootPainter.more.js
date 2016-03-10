@@ -2429,7 +2429,7 @@
 
       console.log('palette.fAxis = ' + palette.fAxis._typename)
 
-      this.z_handle = new JSROOT.TAxisPainter(palette.fAxis.fAxis);
+      this.z_handle = new JSROOT.TAxisPainter(palette.fAxis);
       this.z_handle.SetDivId(divid, -1)
 
       this['MakeIcon'] = function(contour, z) {
@@ -2775,9 +2775,6 @@
             fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
             fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
          });
-
-         pal.fAxis.fAxis = JSROOT.Create('TAxis');
-         pal.fAxis.fAxis.fTickLength = 0.5;
 
          if (histo.fFunctions == null)
             histo.fFunctions = JSROOT.Create("TList");
