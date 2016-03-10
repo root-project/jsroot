@@ -43,10 +43,19 @@
             'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
+      var cfg_paths;
+      if ((requirejs.s!==undefined) && (requirejs.s.contexts !== undefined) && ((requirejs.s.contexts._!==undefined) &&
+           requirejs.s.contexts._.config!==undefined)) cfg_paths = requirejs.s.contexts._.config.paths;
+                                                 else console.warn("Require.js paths changed - please contact JSROOT developers");
+
       // check if modules are already loaded
-      for (var module in paths)
-        if (requirejs.defined(module))
-           delete paths[module];
+      for (var module in paths) {
+         if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
+            delete paths[module];
+
+      // add mapping if script loaded as bower module 'jsroot'
+      if (cfg_paths && ('jsroot' in cfg_paths))
+         requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
 
       // configure all dependencies
       requirejs.config({
