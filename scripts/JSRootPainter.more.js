@@ -2723,7 +2723,8 @@
 
          // set values from base classes
 
-         JSROOT.extend(pal.fAxis, { fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
+         JSROOT.extend(pal.fAxis, { fTitle: histo.fZaxis.fTitle,
+                                    fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42 });
 
          if (histo.fFunctions == null)
