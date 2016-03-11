@@ -3287,7 +3287,7 @@
       this.scale_max = smax;
    }
 
-   JSROOT.TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform) {
+   JSROOT.TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
@@ -3296,16 +3296,18 @@
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
           axis_g = layer, AxisColor = "black",
-          tickSize = 10, scaling_size = 100;
+          tickSize = 10, scaling_size = 100, text_scaling_size = 100;
 
       if (is_gaxis) {
          AxisColor = JSROOT.Painter.root_colors[axis.fLineColor];
          scaling_size = (vertical ? this.pad_width() : this.pad_height());
+         text_scaling_size = Math.min(this.pad_width(), this.pad_height());
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
          AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor];
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
+         text_scaling_size = Math.min(w,h);
       }
 
       if (!is_gaxis || (this.name === "zaxis")) {
@@ -3347,23 +3349,25 @@
 
       if (axis.fTitle.length > 0) {
           var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-              title_fontsize = Math.round(axis.fTitleSize * Math.min(w,h)),
+              title_fontsize = Math.round(axis.fTitleSize * text_scaling_size),
               center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
               rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
               title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
 
           this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
 
+          var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
           if (vertical)
-             this.DrawText((center ? "middle" : (rotate<0 ? "begin" : "end" ))+ ";middle",
-                           -1*Math.round(labeloffset + 1.6*axis.fTitleOffset*title_fontsize),
-                            Math.round(center ? h/2 : 0),
+             this.DrawText((center ? "middle" : (myxor ? "begin" : "end" ))+ ";middle",
+                           -side*Math.round(labeloffset + (2-side/3) * axis.fTitleOffset*title_fontsize),
+                            Math.round(center ? h/2 : (reverse ? h : 0)),
                             0, (rotate<0 ? -90 : -270),
                             axis.fTitle, title_color, 1, title_g);
           else
-             this.DrawText((center ? 'middle' : (rotate<0 ? 'begin' : 'end')) + ";middle",
-                           Math.round(center ? w/2 : w),
-                           Math.round(labeloffset + 1.6*title_fontsize*axis.fTitleOffset),
+             this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                           Math.round(center ? w/2 : (reverse ? 0 : w)),
+                           Math.round(side*(labeloffset + 1.6*title_fontsize*axis.fTitleOffset)),
                            0, (rotate<0 ? -180 : 0),
                            axis.fTitle, title_color, 1, title_g);
 
@@ -3615,7 +3619,8 @@
           kind = "normal",
           func = null,
           min = gaxis.fWmin,
-          max = gaxis.fWmax;
+          max = gaxis.fWmax,
+          reverse = false;
 
       if (gaxis.fChopt.indexOf("G")>=0) {
          func = d3.scale.log();
@@ -3631,7 +3636,7 @@
             func.range([h,0]);
          } else {
             var d = y1; y1 = y2; y2 = d;
-            h = -h;
+            h = -h; reverse = true;
             func.range([0,h]);
          }
       } else {
@@ -3639,7 +3644,7 @@
             func.range([0,w]);
          } else {
             var d = x1; x1 = x2; x2 = d;
-            w = -w;
+            w = -w; reverse = true;
             func.range([w,0]);
          }
       }
@@ -3648,7 +3653,7 @@
 
       this.RecreateDrawG(true, ".text_layer");
 
-      this.DrawAxis(this.draw_g, w, h, "translate(" + x1 + "," + y2 +")");
+      this.DrawAxis(this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
 
 

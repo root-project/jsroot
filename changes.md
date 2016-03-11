@@ -19,7 +19,8 @@
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
 12. Use of cached methods improves binary I/O perfromance by 20%
-13. Support TGaxis drawing
+13. Support TGaxis
+14. Project now can be obtained via 'bower install jsroot' 
 
 
 ## Changes in 4.3
