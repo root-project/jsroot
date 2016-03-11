@@ -12,7 +12,7 @@
     "globals"
   ],
   "dependencies": {
-    "d3": "3.5.9",
+    "d3": "~3.5.9",
     "jquery": "2.1.4",
     "jquery-ui": "1.11.4",
     "jquery-mousewheel" : "3.1.13",

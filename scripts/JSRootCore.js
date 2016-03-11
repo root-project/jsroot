@@ -10,7 +10,7 @@
       var dir = "scripts", ext = "";
       var scripts = document.getElementsByTagName('script');
       for (var n = 0; n < scripts.length; ++n) {
-         if (scripts[n]['type'] != 'text/javascript') continue;
+         // if (scripts[n]['type'] != 'text/javascript') continue;
          var src = scripts[n]['src'];
          if ((src == null) || (src.length == 0)) continue;
          var pos = src.indexOf("scripts/JSRootCore.");
@@ -602,23 +602,27 @@
          urllist = "";
       }
 
-      var isrootjs = false;
-      if (filename.indexOf("$$$")==0) {
+      var isrootjs = false, isbower = false;
+      if (filename.indexOf("$$$")===0) {
          isrootjs = true;
          filename = filename.slice(3);
          if ((filename.indexOf("style/")==0) && JSROOT.source_min &&
              (filename.lastIndexOf('.css')==filename.length-3) &&
              (filename.indexOf('.min.css')<0))
             filename = filename.slice(0, filename.length-4) + '.min.css';
+      } else
+      if (filename.indexOf("###")===0) {
+         isbower = true;
+         filename = filename.slice(3);
       }
       var isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
          var styles = document.getElementsByTagName('link');
          for (var n = 0; n < styles.length; ++n) {
-            if ((styles[n]['type'] != 'text/css') || (styles[n]['rel'] != 'stylesheet')) continue;
+            if ((styles[n].type != 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
 
-            var href = styles[n]['href'];
+            var href = styles[n].href;
             if ((href == null) || (href.length == 0)) continue;
 
             if (href.indexOf(filename)>=0) return completeLoad();
@@ -628,9 +632,9 @@
          var scripts = document.getElementsByTagName('script');
 
          for (var n = 0; n < scripts.length; ++n) {
-            if (scripts[n]['type'] != 'text/javascript') continue;
+            // if (scripts[n].type != 'text/javascript') continue;
 
-            var src = scripts[n]['src'];
+            var src = scripts[n].src;
             if ((src == null) || (src.length == 0)) continue;
 
             if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0)) {
@@ -640,7 +644,8 @@
          }
       }
 
-      if (isrootjs && (JSROOT.source_dir!=null)) filename = JSROOT.source_dir + filename;
+      if (isrootjs && (JSROOT.source_dir!=null)) filename = JSROOT.source_dir + filename; else
+      if (isbower && (JSROOT.bower_dir.length>0)) filename = JSROOT.bower_dir + filename;
 
       var element = null;
 
