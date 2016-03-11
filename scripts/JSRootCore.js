@@ -101,6 +101,7 @@
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
+   JSROOT.source_fullpath = ""; // full name of source script
    JSROOT.bower_dir = ""; // when specified, use standard libs from bower location
 
    JSROOT.id_counter = 0;
@@ -109,6 +110,24 @@
    JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
+      var scripts = document.getElementsByTagName('script');
+      for (var n = 0; n < scripts.length; ++n) {
+         var src = scripts[n].src;
+         if ((src===undefined) || (typeof src !== 'string')) continue;
+
+         var pos = src.indexOf("scripts/JSRootCore.");
+         if (pos<0) continue;
+
+         JSROOT.source_dir = src.substr(0, pos);
+         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
+
+         JSROOT.source_fullpath = src;
+
+         if ((console!==undefined) && (typeof console.log == 'function'))
+            console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
+         break;
+      }
+
       JSROOT.touches = ('ontouchend' in document); // identify if touch events are supported
       JSROOT.browser.isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
       JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
@@ -1411,11 +1430,7 @@
 
    JSROOT.Initialize = function() {
 
-      if (typeof document === "undefined") {
-         JSROOT.source_dir = "";
-         JSROOT.source_min = false;
-         return this;
-      }
+      if (JSROOT.source_fullpath.length === 0) return this;
 
       function window_on_load(func) {
          if (func!=null) {
@@ -1427,67 +1442,51 @@
          return JSROOT;
       }
 
-      var scripts = document.getElementsByTagName('script');
+      var src = JSROOT.source_fullpath;
 
-      for (var n = 0; n < scripts.length; ++n) {
-         // if (scripts[n]['type'] != 'text/javascript') continue;
-
-         var src = scripts[n].src;
-         if ((src===undefined) || (typeof src !== 'string')) continue;
-
-         var pos = src.indexOf("scripts/JSRootCore.");
-         if (pos<0) continue;
-
-         JSROOT.source_dir = src.substr(0, pos);
-         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
-
-         JSROOT.console("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
-
-         if (JSROOT.source_min) {
-            if ( typeof define === "function" && define.amd ) {
-               // all references are done with 'JSRootCore' name,
-               // define it directly, otherwise it will be loaded once again
-               define('JSRootCore', [], JSROOT);
-            }
+      if (JSROOT.source_min) {
+         if ( typeof define === "function" && define.amd ) {
+            // all references are done with 'JSRootCore' name,
+            // define it directly, otherwise it will be loaded once again
+            define('JSRootCore', [], JSROOT);
          }
+      }
 
-         if (JSROOT.GetUrlOption('gui', src) !== null)
-            return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
+      if (JSROOT.GetUrlOption('gui', src) !== null)
+         return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
 
-         if ( typeof define === "function" && define.amd )
-            return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
+      if ( typeof define === "function" && define.amd )
+         return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
 
-         var prereq = "";
-         if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
-         if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
-         if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
-         if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
-         if (JSROOT.GetUrlOption('geo', src)!=null) prereq += "geo;";
-         if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
-         if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
-         if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
-         var user = JSROOT.GetUrlOption('load', src);
-         if ((user!=null) && (user.length>0)) prereq += "load:" + user;
-         var onload = JSROOT.GetUrlOption('onload', src);
-         var bower = JSROOT.GetUrlOption('bower', src);
-         if (bower!==null) {
-            if (bower.length>0) JSROOT.bower_dir = bower; else
+      var prereq = "";
+      if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
+      if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
+      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
+      if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
+      if (JSROOT.GetUrlOption('geo', src)!=null) prereq += "geo;";
+      if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
+      if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
+      if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
+      var user = JSROOT.GetUrlOption('load', src);
+      if ((user!=null) && (user.length>0)) prereq += "load:" + user;
+      var onload = JSROOT.GetUrlOption('onload', src);
+      var bower = JSROOT.GetUrlOption('bower', src);
+      if (bower!==null) {
+         if (bower.length>0) JSROOT.bower_dir = bower; else
             if (JSROOT.source_dir.indexOf("jsroot/") == JSROOT.source_dir.length - 7)
                JSROOT.bower_dir = JSROOT.source_dir.substr(0, JSROOT.source_dir.length - 7);
-            if (JSROOT.bower_dir.length > 0) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
-         }
-
-         if ((prereq.length>0) || (onload!=null))
-            window_on_load(function() {
-              if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
-              if (onload!=null) {
-                 onload = JSROOT.findFunction(onload);
-                 if (typeof onload == 'function') onload();
-              }
-            });
-
-         return this;
+         if (JSROOT.bower_dir.length > 0) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
       }
+
+      if ((prereq.length>0) || (onload!=null))
+         window_on_load(function() {
+            if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
+               if (onload!=null) {
+                  onload = JSROOT.findFunction(onload);
+                  if (typeof onload == 'function') onload();
+               }
+         });
+
       return this;
    }
 
