@@ -2407,8 +2407,6 @@
 
       this.SetDivId(divid);
 
-      console.log('palette.fAxis = ' + palette.fAxis._typename)
-
       this.z_handle = new JSROOT.TAxisPainter(palette.fAxis);
       this.z_handle.SetDivId(divid, -1)
 
@@ -2721,19 +2719,12 @@
          JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: null,
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
-         pal.fAxis = JSROOT.Create('TLine');
-         JSROOT.Create('TAttText', pal.fAxis);
+         pal.fAxis = JSROOT.Create('TGaxis');
 
-         JSROOT.extend(pal.fAxis, { _typename: "TGaxis",
-            fChopt: "", fFunctionName: "", fGridLength: 0,
-            fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-            fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
-            fTitle: histo.fZaxis.fTitle, fTitleOffset: 1, fTitleSize: 0.035,
-            fWmax: 100, fWmin: 0,
-            // set values from base classes
-            fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
-            fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42
-         });
+         // set values from base classes
+
+         JSROOT.extend(pal.fAxis, { fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
+                                    fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42 });
 
          if (histo.fFunctions == null)
             histo.fFunctions = JSROOT.Create("TList");

@@ -900,8 +900,7 @@
 
    JSROOT.Create = function(typename, target) {
       var obj = target;
-      if (obj == null)
-         obj = { _typename: typename };
+      if (obj == null) obj = { _typename: typename };
 
       switch (typename) {
          case 'TObject':
@@ -1018,6 +1017,16 @@
             JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
                                  fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
             break;
+         case 'TGaxis':
+            JSROOT.Create("TLine", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.extend(obj, { _fChopt: "", fFunctionName: "", fGridLength: 0,
+                                  fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
+                                  fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
+                                  fTitle: histo.fZaxis.fTitle, fTitleOffset: 1, fTitleSize: 0.035,
+                                  fWmax: 100, fWmin: 0 });
+            break;
+
       }
 
       obj._typename = typename;
