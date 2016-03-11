@@ -101,6 +101,7 @@
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
+   JSROOT.bower_dir = ""; // when specified, use standard libs from bower location
 
    JSROOT.id_counter = 0;
 
@@ -712,7 +713,7 @@
 
       var ext = jsroot.source_min ? ".min" : "";
 
-      var need_jquery = false;
+      var need_jquery = false, use_bower = (JSROOT.bower_dir.length>0);
 
       // file names should be separated with ';'
       var mainfiles = "", extrafiles = ""; // scripts for direct loadin
@@ -730,7 +731,7 @@
                jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
                jsroot['_test_d3_'] = 1;
             } else {
-               mainfiles += '$$$scripts/d3.v3.min.js;';
+               mainfiles += use_bower ? '###d3/d3.js' : '$$$scripts/d3.v3.min.js;';
                jsroot['_test_d3_'] = 2;
             }
          }
@@ -763,8 +764,18 @@
       }
 
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
-         mainfiles += "$$$scripts/three" + ext + ".js;" +
-                      "$$$scripts/three.extra" + ext + ".js;";
+         if (use_bower)
+           mainfiles += "###threejs/build/three.min.js;" +
+                        "###threejs/examples/js/utils/FontUtils.js;" +
+                        "###threejs/examples/js/renderers/Projector.js;" +
+                        "###threejs/examples/js/renderers/CanvasRenderer.js;" +
+                        "###threejs/examples/js/geometries/TextGeometry.js;" +
+                        "###threejs/examples/js/controls/OrbitControls.js;" +
+                        "###threejs/examples/js/controls/TransformControls.js;" +
+                        "###threejs/examples/fonts/helvetiker_regular.typeface.js";
+         else
+            mainfiles += "$$$scripts/three" + ext + ".js;" +
+                         "$$$scripts/three.extra" + ext + ".js;";
          modules.push("threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
@@ -779,8 +790,8 @@
 
       if (kind.indexOf("mathjax;")>=0) {
          if (typeof MathJax == 'undefined') {
-            mainfiles += "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG," +
-                          jsroot.source_dir + "scripts/mathjax_config.js;";
+            mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://cdn.mathjax.org/mathjax/latest/MathJax.js") +
+                         "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
          }
          if (JSROOT.gStyle.MathJax == 0) JSROOT.gStyle.MathJax = 1;
          modules.push('MathJax');
@@ -799,16 +810,16 @@
          if (has_jq)
             jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.4", debugout);
          else
-            lst_jq += "$$$scripts/jquery.min.js;";
+            lst_jq += (use_bower ? "###jquery/dist" : "$$$scripts") + "/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
             jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.4", debugout);
          else {
-            lst_jq += '$$$scripts/jquery-ui.min.js;';
+            lst_jq += (use_bower ? "###jquery-ui" : "$$$scripts") + '/jquery-ui.min.js;';
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
          }
 
          if (JSROOT.touches) {
-            lst_jq += '$$$scripts/touch-punch.min.js;';
+            lst_jq += use_bower ? '###jqueryui-touch-punch/jquery.ui.touch-punch.min.js;' : '$$$scripts/touch-punch.min.js;';
             modules.push('jqueryui-touch-punch');
          }
 
@@ -1453,6 +1464,13 @@
          var user = JSROOT.GetUrlOption('load', src);
          if ((user!=null) && (user.length>0)) prereq += "load:" + user;
          var onload = JSROOT.GetUrlOption('onload', src);
+         var bower = JSROOT.GetUrlOption('bower', src);
+         if (bower!==null) {
+            if (bower.length>0) JSROOT.bower_dir = bower; else
+            if (JSROOT.source_dir.indexOf("jsroot/") == JSROOT.source_dir.length - 7)
+               JSROOT.bower_dir = JSROOT.source_dir.substr(0, JSROOT.source_dir.length - 7);
+            if (JSROOT.bower_dir.length > 0) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
+         }
 
          if ((prereq.length>0) || (onload!=null))
             window_on_load(function() {
