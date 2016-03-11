@@ -21,7 +21,9 @@
     "threejs": "*"
   },
   "keywords": [
-    "jsroot"
+    "jsroot",
+    "ROOT",
+    "CERN"
   ],
   "ignore": [
     "*.md",
