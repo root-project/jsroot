@@ -3486,7 +3486,7 @@
 
       last = vertical ? h : 0;
 
-      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (axis_g ? this.pad_height() : h))),
+      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),
           label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
           label_g = axis_g.append("svg:g")
                          .attr("class","axis_labels")
