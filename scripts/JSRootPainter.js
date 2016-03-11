@@ -323,7 +323,6 @@
       if (!toFill) res.fill = 'none';
 
       var ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
-
       var half = (markerSize/2).toFixed(ndig), full = markerSize.toFixed(ndig);
 
       switch(shape) {
@@ -331,53 +330,41 @@
          res.marker = "M-"+half+",0a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
          break;
       case 1: // cross
-         var quat = (markerSize/6).toFixed(ndig);
-         res.marker = "M -" + quat+","+half+ " L " + quat+","+half + " L " + quat+","+quat +
-                      " L " + half+","+quat + " L " + half + ",-" + quat + " L " + quat+",-"+quat +
-                      " L " + quat+",-"+half + " L -" + quat+",-"+half + " L -" + quat+",-"+quat +
-                      " L -" + half+",-"+quat + " L -" + half+","+quat + " L -" + quat+","+quat + " z";
+         var d = (markerSize/3).toFixed(ndig), d0 = (markerSize/6).toFixed(ndig);
+         res.marker = "M"+d0+","+d0+"h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
          break;
       case 2: // diamond
-         res.marker = "M -" + half + ",0  L 0,-" + half +
-                      " L " + half + ",0  L 0," + half + " z";
+         res.marker = "M-"+half+",0l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
          break;
       case 3: // square
-         res.marker = "M -"+half+",-"+half+"v"+full+"h"+full+"v-"+full + "z";
+         res.marker = "M-"+half+",-"+half+"v"+full+"h"+full+"v-"+full + "z";
          break;
       case 4: // triangle-up
-         res.marker = "M 0," + half + " L -" + half + ",-" + half +
-                      " L " + half + ",-" + half + " z";
+         res.marker = "M0,"+half+"l-"+ half+",-"+full+"h"+full+"z";
          break;
       case 5: // triangle-down
-         res.marker = "M 0,-" + half + " L -" + half + "," + half +
-                      " L " + half + "," + half + " z";
+         res.marker = "M0,-"+half+"l-"+ half+","+full+"h"+full+"z";
          break;
       case 6: // star
-         res.marker = "M -" + half + "," + (-markerSize/8).toFixed(ndig) +
-                      " L" + half + "," + (-markerSize/8).toFixed(ndig) +
-                      " L" + (-markerSize/3.3).toFixed(ndig) + "," + half +
-                      " L0,-" + half +
-                      " L" + (markerSize/2.8).toFixed(ndig) + "," + half + " z";
+         res.marker = "M0,-"+half + "l" + (markerSize/3).toFixed(ndig)+","+full +
+                                    "l-"+ (5/6*markerSize).toFixed(ndig) + ",-" + (5/8*markerSize).toFixed(ndig) +
+                                    "h" + full +
+                                    "l-" + (5/6*markerSize).toFixed(ndig) + "," + (5/8*markerSize).toFixed(ndig) + "z";
          break;
       case 7: // asterisk
-         res.marker = "M -" + half + ",-" + half +
-                      " L" + half + "," + half +
-                      " M 0,-" + half + " L 0," + half +
-                      " M "  + half + ",-" + half +
-                      " L -" + half + "," + half +
-                      " M -" + half + ",0 L " + half + ",0";
+         res.marker = "M-"+half+",-"+half + "l"+full+","+full +
+                      "m0,-"+full+"l-"+full+","+full+
+                      "m0,-"+half+"h"+full+"m-"+half+",-"+half+"v"+full;
          break;
       case 8: // plus
-         res.marker = "M 0,-" + half + " L 0," + half +
-                      " M -" + half + ",0 L " + half + ",0"; break;
+         res.marker = "M0,-"+half+"v"+full+"m-"+half+",-"+half+"h"+full;
+         break;
       case 9: // mult
-         res.marker = "M -" + half + ",-" + half +
-                      " L" + half + "," + half +
-                      " M "  + half + ",-" + half +
-                      " L -" + half + "," + half; break;
-      default:
-         res.marker = "M -" + half + ",0  L 0,-" + half +
-                      " L " + half + ",0  L 0," + half + " z"; break;
+         res.marker = "M-"+half+",-"+half + "l"+full+","+full + "m0,-"+full+"l-"+full+","+full;
+         break;
+      default: // diamand
+         res.marker = "M-"+half+",0l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
+         break;
       }
 
       res.func =
