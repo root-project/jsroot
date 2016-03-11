@@ -2510,41 +2510,20 @@
 
          this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
+         if (this._can_move && ('getBoundingClientRect' in this.draw_g.node())) {
+            this._can_move = false; // do it only once
 
-         /// Add palette axis title
-         if ((axis.fTitle != "") && (typeof axis.fTextFont !== 'undefined')) {
-            // offest in width of colz drawings
-            var xoffset = axis.fTitleOffset * s_width;
-            if ('getBoundingClientRect' in this.draw_g.node()) {
-               var rect1 = this.draw_g.node().getBoundingClientRect();
-               // offset in portion of real text width produced by axis
-               xoffset = axis.fTitleOffset * (rect1.width-s_width);
+            var rect = this.draw_g.node().getBoundingClientRect();
+
+            var shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+
+            if (shift>0) {
+               this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
+                          .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
+               palette.fX1NDC -= shift/width;
+               palette.fX2NDC -= shift/width;
+               return;
             }
-            // add font size
-            xoffset += s_width + axis.fTitleSize * height * 1.3;
-            if (pos_x + xoffset > width-3) xoffset = width - 3 - pos_x;
-            var tcolor = JSROOT.Painter.root_colors[axis.fTextColor];
-            this.StartTextDrawing(axis.fTextFont, axis.fTitleSize * height);
-            this.DrawText("end;bottom", xoffset, 0, 0, -270, axis.fTitle, tcolor);
-            this.FinishTextDrawing();
-         }
-
-
-         if (this._can_move) {
-            if ('getBoundingClientRect' in this.draw_g.node()) {
-               var rect1 = this.draw_g.node().getBoundingClientRect();
-
-               var shift = (pos_x + parseInt(rect1.width)) - parseInt(0.995*width) + 3;
-
-               if (shift>0) {
-                  this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                             .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
-                  palette.fX1NDC -= shift/width;
-                  palette.fX2NDC -= shift/width;
-               }
-            }
-            this._can_move = false; // do it once
-            return;
          }
 
          if (!JSROOT.gStyle.Zooming) return;

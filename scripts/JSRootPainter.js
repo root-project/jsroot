@@ -3345,35 +3345,6 @@
       /* axis label */
       var labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size);
 
-//      axis.fTitle = "M_{#mu#mu}";
-
-      if (axis.fTitle.length > 0) {
-          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-              title_fontsize = Math.round(axis.fTitleSize * text_scaling_size),
-              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
-
-          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
-
-          var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
-
-          if (vertical)
-             this.DrawText((center ? "middle" : (myxor ? "begin" : "end" ))+ ";middle",
-                           -side*Math.round(labeloffset + (2-side/3) * axis.fTitleOffset*title_fontsize),
-                            Math.round(center ? h/2 : (reverse ? h : 0)),
-                            0, (rotate<0 ? -90 : -270),
-                            axis.fTitle, title_color, 1, title_g);
-          else
-             this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
-                           Math.round(center ? w/2 : (reverse ? 0 : w)),
-                           Math.round(side*(labeloffset + 1.6*title_fontsize*axis.fTitleOffset)),
-                           0, (rotate<0 ? -180 : 0),
-                           axis.fTitle, title_color, 1, title_g);
-
-          this.FinishTextDrawing(title_g);
-      }
-
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
 
@@ -3579,6 +3550,45 @@
         labelfont.size = Math.floor(labelfont.size * textscale);
         label_g.call(labelfont.func);
      }
+
+//   axis.fTitle = "M_{#mu#mu}";
+
+     if (axis.fTitle.length > 0) {
+         var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+             title_fontsize = Math.round(axis.fTitleSize * text_scaling_size),
+             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+             title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
+
+         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+         var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
+         if (vertical) {
+            var xoffset = -side*Math.round(labeloffset + (2-side/3) * axis.fTitleOffset*title_fontsize);
+
+            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+               // special handling for color palette labels - draw them always on right side
+               var rect = axis_g.node().getBoundingClientRect();
+               if (xoffset < rect.width - tickSize) xoffset = Math.round(rect.width - tickSize);
+            }
+
+            this.DrawText((center ? "middle" : (myxor ? "begin" : "end" ))+ ";middle",
+                           xoffset,
+                           Math.round(center ? h/2 : (reverse ? h : 0)),
+                           0, (rotate<0 ? -90 : -270),
+                           axis.fTitle, title_color, 1, title_g);
+         } else {
+            this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                          Math.round(center ? w/2 : (reverse ? 0 : w)),
+                          Math.round(side*(labeloffset + 1.6*title_fontsize*axis.fTitleOffset)),
+                          0, (rotate<0 ? -180 : 0),
+                          axis.fTitle, title_color, 1, title_g);
+         }
+
+         this.FinishTextDrawing(title_g);
+     }
+
 
      if (JSROOT.gStyle.Zooming) {
         var r =  axis_g.append("svg:rect")
