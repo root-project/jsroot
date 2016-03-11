@@ -32,7 +32,7 @@
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'threejs'              : dir+'three'+ext,
             'threejs_all'          : dir+'three.extra'+ext,
-            'JSRootCore'           : dir+'JSRootCore'+ext,
+//            'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
@@ -55,8 +55,8 @@
             delete paths[module];
 
       // add mapping if script loaded as bower module 'jsroot'
-      if (cfg_paths  && ('jsroot' in cfg_paths))
-           requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
+//      if (cfg_paths  && ('jsroot' in cfg_paths))
+//           requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
 
 
       // configure all dependencies
@@ -84,8 +84,18 @@
        }
       });
 
+      var jsroot = factory({});
+
+
       // AMD. Register as an anonymous module.
-      define( factory );
+      define( jsroot );
+
+      if (!require.specified("JSRootCore"))
+          define('JSRootCore', [], jsroot);
+
+      if (!require.specified("jsroot"))
+         define('jsroot', [], jsroot);
+
    } else {
 
       if (typeof JSROOT != 'undefined')
@@ -1444,13 +1454,13 @@
 
       var src = JSROOT.source_fullpath;
 
-      if (JSROOT.source_min) {
-         if ( typeof define === "function" && define.amd ) {
+//      if (JSROOT.source_min) {
+//         if ( typeof define === "function" && define.amd ) {
             // all references are done with 'JSRootCore' name,
             // define it directly, otherwise it will be loaded once again
-            define('JSRootCore', [], JSROOT);
-         }
-      }
+//            define('JSRootCore', [], JSROOT);
+//         }
+//      }
 
       if (JSROOT.GetUrlOption('gui', src) !== null)
          return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
