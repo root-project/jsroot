@@ -369,9 +369,9 @@
 
       res.func =
          function(selection) {
-           selection.style("fill", this.fill)
-                    .style("stroke", this.stroke)
-                    .attr("d", this.marker);
+           return selection.style("fill", this.fill)
+                           .style("stroke", this.stroke)
+                           .attr("d", this.marker);
          }.bind(res);
 
       return res;
@@ -5685,8 +5685,8 @@
       return true;
    }
 
-
-   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, width, height) {
+   JSROOT.TH1Painter.prototype.DrawAsMarkersOld = function(draw_bins, width, height) {
+      // draw all markers as independent elements, only required with old tooltip style
 
       // when draw as error, enable marker draw
       if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
@@ -5773,6 +5773,104 @@
          nodes.append(marker.kind).call(marker.func);
       }
    }
+
+   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, width, height) {
+      // draw all markers as independent elements, only required with old tooltip style
+
+      // when draw as error, enable marker draw
+      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
+         this.options.Mark = 1;
+
+      var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
+          show_errors = (this.options.Error > 0),
+          show_markers = (this.options.Mark > 0),
+          pmain = this.main_painter(), pthis = this;
+
+      for (var n = 0; n < draw_bins.length; ++n) {
+         var pnt = draw_bins[n];
+
+         var cont = this.histo.getBinContent(pnt.bin+1);
+
+         pnt.x = Math.round(pnt.x + pnt.width/2);
+         pnt.xerr = Math.round(pnt.width/2);
+         pnt.yerr1 = pnt.yerr2 = 30;
+
+         if (exclude_zero && (cont == 0)) {
+            pnt.y = height + 100; // such point will be removed
+            continue;
+         }
+
+         if (show_errors) {
+            var binerr = this.histo.getBinError(pnt.bin+1);
+            pnt.yerr1 = Math.round(pnt.y - pmain.gry(cont + binerr)); // up
+            pnt.yerr2 = Math.round(pmain.gry(cont - binerr) - pnt.y); // down
+         }
+      }
+
+      if (this.options.Error == 12) {
+         // show each element point as rect
+
+         if (this.fillatt.func=='none') {
+            show_markers = true
+         } else {
+            var path = "";
+            for (var n = 0; n < draw_bins.length; ++n) {
+               var pnt = draw_bins[n];
+               if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
+
+               path+="M" + (pnt.x-pnt.xerr) +","+(pnt.y-pnt.yerr1) +
+                     "h" + 2*pnt.xerr + "v" + (pnt.yerr1 + pnt.yerr2) + "h-" + 2*pnt.xerr + "z";
+            }
+
+            this.draw_g.append("svg:path")
+                       .attr("d",path)
+                       .call(this.fillatt.func);
+
+            console.log('th1 boxes path ' + path.length);
+         }
+      }
+      if (this.options.Error > 0) {
+         var endx = "", endy = "";
+         if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
+
+         var path = "";
+         for (var n = 0; n < draw_bins.length; ++n) {
+            var pnt = draw_bins[n];
+            if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
+
+            path+="M" + (pnt.x-pnt.xerr) +","+pnt.y + endx + "h" + 2*pnt.xerr + endx +
+                  "M" + pnt.x +"," + (pnt.y-pnt.yerr1) + endy + "v" + (pnt.yerr1+pnt.yerr2) + endy;
+         }
+
+         this.draw_g.append("svg:path")
+                    .attr("d",path)
+                    .call(this.lineatt.func)
+         console.log('th1 err path ' + path.length);
+      }
+
+      if (show_markers) {
+         // draw markers also when e2 option was specified
+         var marker = JSROOT.Painter.createAttMarker(this.histo);
+
+         // simply use relative move from point, can optimize in the future
+         var mpath = "m" + marker.marker.substr(1);
+
+         var path = "";
+         for (var n = 0; n < draw_bins.length; ++n) {
+             var pnt = draw_bins[n];
+             if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
+             path+="M"+pnt.x+","+pnt.y + mpath;
+         }
+
+         this.draw_g.append("svg:path")
+                    .attr("d",path)
+                    .style("fill", marker.fill)
+                    .style("stroke", marker.stroke);
+
+         console.log('th1 marker path ' + path.length);
+      }
+   }
+
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
@@ -5888,7 +5986,10 @@
       }
 
       if (draw_markers) {
-         this.DrawAsMarkers(bins, width, height);
+         if (JSROOT.gStyle.Tooltip == 1)
+            this.DrawAsMarkersOld(bins, width, height);
+         else
+            this.DrawAsMarkers(bins, width, height);
 
          if (JSROOT.gStyle.Tooltip > 1)
             this.ProcessTooltip = this.ProcessTooltipFunc;
@@ -5974,90 +6075,88 @@
           pmain = this.main_painter(),
           painter = this,
           findbin = null, show_rect = true,
-          grx1, midx, grx2, gry1, midy, gry2;
+          show_errors = (this.options.Error > 0), // use error boxes
+          show_middle = show_errors || (this.options.Mark > 0), // center bin position
+          grx1, midx, grx2, gry1, midy, gry2,
+          left = this.GetSelectIndex("x", "left", -1),
+          right = this.GetSelectIndex("x", "right", 2),
+          l = left, r = right;
 
-      if ((this.options.Error > 0) || (this.options.Mark > 0)) {
-         // if markers are drawn, use their attributes
-         var dd = null;
+      function GetBinGrX(i) {
+         var x1 = painter.GetBinX(show_middle ? (i+0.5) : i);
+         if ((x1<0) && painter.options.Logx) return null;
+         return pmain.grx(x1);
+      }
 
-         this.draw_g.selectAll("g").each(function(d) {
-            var range = Math.max(3, d.xerr);
-            if ((pnt.x >= d.x - range) && (pnt.x <= d.x + range)) {
-               if ((dd === null) || (Math.abs(d.x - pnt.x) < Math.abs(dd.x - pnt.x))) dd = d;
-            }
-         });
+      function GetBinGrY(i) {
+         var y = painter.histo.getBinContent(i + 1);
+         if (painter.options.Logy && (y < painter.scale_ymin))
+            return 10*height;
+         return Math.round(pmain.gry(y));
+      }
 
-         if (dd !== null) {
-            findbin = dd.bin;
-            grx1 = dd.x - Math.max(2, dd.xerr);
-            midx = dd.x;
-            grx2 = dd.x + Math.max(2, dd.xerr);
-            gry1 = dd.y - Math.max(2, dd.yerr1);
-            midy = dd.y;
-            gry2 = dd.y + Math.max(2, dd.yerr2);
-            show_rect = true;
+      while (l < r-1) {
+         var m = Math.round((l+r)*0.5);
 
-            // when only histogram shown, marker should be precise (but not for touch devices)
-            if ((pnt.nproc === 1) && !pnt.touch)
-               if ((pnt.y < Math.min(gry1, dd.y-3)) || (pnt.y>Math.max(gry2, dd.y+3))) findbin = null;
+         var xx = GetBinGrX(m);
+         if (xx === null) { l = m; continue; }
+
+         if (xx < pnt.x - 0.5) l = m; else
+            if (xx > pnt.x + 0.5) r = m; else { l++; r--; }
+      }
+
+      findbin = r = l;
+      grx1 = GetBinGrX(findbin);
+
+      while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
+      while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
+
+      if (l < r) {
+         // many points can be assigned with the same cursor position
+         // first try point around mouse y
+         var best = height;
+         for (var m=l;m<=r;m++) {
+            var dist = Math.abs(GetBinGrY(m) - pnt.y);
+            if (dist < best) { best = dist; findbin = m; }
          }
+
+         // if best distance still too far from mouse position, just take from between
+         if (best > height/10)
+            findbin = Math.round(l + (r-l) / height * pnt.y);
+
+         grx1 = GetBinGrX(findbin);
+      }
+
+      grx2 = GetBinGrX(findbin+1);
+
+      midx = Math.round((grx1+grx2)/2);
+
+      midy = gry1 = gry2 = GetBinGrY(findbin);
+
+      if (show_middle) {
+
+         show_rect = true;
+         grx1 = GetBinGrX(findbin-0.5);
+         grx2 = GetBinGrX(findbin+0.5);
+
+         var msize = (this.options.Mark > 0) ? Math.round(this.histo.fMarkerSize*4) : 3;
+         if (msize<3) msize = 3;
+
+         if (show_errors) {
+            var cont = this.histo.getBinContent(findbin+1);
+            var binerr = this.histo.getBinError(findbin+1);
+
+            gry1 = Math.round(pmain.gry(cont + binerr)); // up
+            gry2 = Math.round(pmain.gry(cont - binerr)); // down
+         }
+
+         gry1 = Math.min(gry1, midy - msize);
+         gry2 = Math.max(gry2, midy + msize);
+
+         if (!pnt.touch)
+            if ((pnt.y<gry1) || (pnt.y>gry2)) findbin = null;
 
       } else {
-
-         var left = this.GetSelectIndex("x", "left", -1),
-             right = this.GetSelectIndex("x", "right", 2),
-             l = left, r = right;
-
-         function GetBinGrX(i) {
-            var x1 = painter.GetBinX(i);
-            if ((x1<0) && painter.options.Logx) return null;
-            return pmain.grx(x1);
-         }
-
-         function GetBinGrY(i) {
-            var y = painter.histo.getBinContent(i + 1);
-            if (painter.options.Logy && (y < painter.scale_ymin))
-               return 10*height;
-            return Math.round(pmain.gry(y));
-         }
-
-         while (l < r-1) {
-            var m = Math.round((l+r)*0.5);
-
-            var xx = GetBinGrX(m);
-            if (xx === null) { l = m; continue; }
-
-            if (xx < pnt.x - 0.5) l = m; else
-            if (xx > pnt.x + 0.5) r = m; else { l++; r--; }
-         }
-
-         findbin = r = l;
-         grx1 = GetBinGrX(findbin);
-
-         while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
-         while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
-
-         if (l < r) {
-            // many points can be assigned with the same cursor position
-            // first try point around mouse y
-            var best = height;
-            for (var m=l;m<=r;m++) {
-               var dist = Math.abs(GetBinGrY(m) - pnt.y);
-               if (dist < best) { best = dist; findbin = m; }
-            }
-
-            // if best distance still too far from mouse position, just take from between
-            if (best > height/10)
-               findbin = Math.round(l + (r-l) / height * pnt.y);
-
-            grx1 = GetBinGrX(findbin);
-         }
-
-         grx2 = GetBinGrX(findbin+1);
-
-         midx = Math.round((grx1+grx2)/2);
-
-         midy = gry1 = gry2 = GetBinGrY(findbin);
 
          // if histogram alone, use old-style with rects
          // if there are too many points at pixel, use circle
@@ -6069,6 +6168,7 @@
             gry2 = height;
          }
       }
+
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
