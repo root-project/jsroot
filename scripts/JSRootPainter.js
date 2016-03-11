@@ -322,61 +322,51 @@
       var res = { kind: 'svg:path', stroke: marker_color, fill: marker_color, marker: "", fullSize: markerSize };
       if (!toFill) res.fill = 'none';
 
-      var half = (markerSize/2).toFixed(1);
+      var ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
+
+      var half = (markerSize/2).toFixed(ndig), full = markerSize.toFixed(ndig);
 
       switch(shape) {
       case 0: // circle
-         res.kind = 'svg:circle';
-         res.size = half;
-         res.func = function(selection, d) {
-            return selection.style("fill", this.fill)
-                     .attr("cx", 0)
-                     .attr("cy", 0)
-                     .attr("r", this.size)
-                     .style("stroke", this.stroke);
-         }.bind(res);
+         res.marker = "M-"+half+",0a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
          break;
       case 1: // cross
-         var quat = (markerSize/6).toFixed(1);
+         var quat = (markerSize/6).toFixed(ndig);
          res.marker = "M -" + quat+","+half+ " L " + quat+","+half + " L " + quat+","+quat +
                       " L " + half+","+quat + " L " + half + ",-" + quat + " L " + quat+",-"+quat +
                       " L " + quat+",-"+half + " L -" + quat+",-"+half + " L -" + quat+",-"+quat +
-                      " L -" + half+",-"+quat + " L -" + half+","+quat + " L -" + quat+","+quat + " z"; break;
+                      " L -" + half+",-"+quat + " L -" + half+","+quat + " L -" + quat+","+quat + " z";
+         break;
       case 2: // diamond
          res.marker = "M -" + half + ",0  L 0,-" + half +
-                      " L " + half + ",0  L 0," + half + " z"; break;
+                      " L " + half + ",0  L 0," + half + " z";
+         break;
       case 3: // square
-         res.kind = 'svg:rect';
-         res.pos = "-" + half;
-         res.size = markerSize.toFixed(1);
-         res.func = function(selection) {
-            selection.style("fill", this.fill)
-                     .attr("x", this.pos)
-                     .attr("y", this.pos)
-                     .attr("width", this.size)
-                     .attr("height", this.size)
-                     .style("stroke", this.stroke);
-         }.bind(res);
+         res.marker = "M -"+half+",-"+half+"v"+full+"h"+full+"v-"+full + "z";
          break;
       case 4: // triangle-up
          res.marker = "M 0," + half + " L -" + half + ",-" + half +
-                      " L " + half + ",-" + half + " z"; break;
+                      " L " + half + ",-" + half + " z";
+         break;
       case 5: // triangle-down
          res.marker = "M 0,-" + half + " L -" + half + "," + half +
-                      " L " + half + "," + half + " z"; break;
+                      " L " + half + "," + half + " z";
+         break;
       case 6: // star
-         res.marker = "M -" + half + "," + (-markerSize/8).toFixed(1) +
-                      " L" + half + "," + (-markerSize/8).toFixed(1) +
-                      " L" + (-markerSize/3.3).toFixed(1) + "," + half +
+         res.marker = "M -" + half + "," + (-markerSize/8).toFixed(ndig) +
+                      " L" + half + "," + (-markerSize/8).toFixed(ndig) +
+                      " L" + (-markerSize/3.3).toFixed(ndig) + "," + half +
                       " L0,-" + half +
-                      " L" + (markerSize/2.8).toFixed(1) + "," + half + " z"; break;
+                      " L" + (markerSize/2.8).toFixed(ndig) + "," + half + " z";
+         break;
       case 7: // asterisk
          res.marker = "M -" + half + ",-" + half +
                       " L" + half + "," + half +
                       " M 0,-" + half + " L 0," + half +
                       " M "  + half + ",-" + half +
                       " L -" + half + "," + half +
-                      " M -" + half + ",0 L " + half + ",0"; break;
+                      " M -" + half + ",0 L " + half + ",0";
+         break;
       case 8: // plus
          res.marker = "M 0,-" + half + " L 0," + half +
                       " M -" + half + ",0 L " + half + ",0"; break;
@@ -390,14 +380,12 @@
                       " L " + half + ",0  L 0," + half + " z"; break;
       }
 
-      if (res.kind == 'svg:path') {
-         res.func =
-            function(selection) {
-              selection.style("fill", this.fill)
-                       .style("stroke", this.stroke)
-                       .attr("d", this.marker);
-            }.bind(res);
-      }
+      res.func =
+         function(selection) {
+           selection.style("fill", this.fill)
+                    .style("stroke", this.stroke)
+                    .attr("d", this.marker);
+         }.bind(res);
 
       return res;
    }
