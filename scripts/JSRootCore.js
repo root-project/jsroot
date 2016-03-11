@@ -7,19 +7,10 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      var dir = "scripts", ext = "";
-      var scripts = document.getElementsByTagName('script');
-      for (var n = 0; n < scripts.length; ++n) {
-         // if (scripts[n]['type'] != 'text/javascript') continue;
-         var src = scripts[n]['src'];
-         if ((src == null) || (src.length == 0)) continue;
-         var pos = src.indexOf("scripts/JSRootCore.");
-         if (pos>=0) {
-            dir = src.substr(0, pos+8);
-            if (src.indexOf("scripts/JSRootCore.min.js")==pos) ext = ".min";
-            break;
-         }
-      }
+      var jsroot = factory({});
+
+
+      var dir = jsroot.source_dir + "scripts/", ext = jsroot.source_min ? ".min" : "";
 
       var paths = {
             'd3'                   : dir+'d3.v3.min',
@@ -83,8 +74,6 @@
           }
        }
       });
-
-      var jsroot = factory({});
 
 
       // AMD. Register as an anonymous module.
