@@ -736,7 +736,7 @@
                jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
                jsroot['_test_d3_'] = 1;
             } else {
-               mainfiles += use_bower ? '###d3/d3.js' : '$$$scripts/d3.v3.min.js;';
+               mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.v3.min.js;';
                jsroot['_test_d3_'] = 2;
             }
          }
