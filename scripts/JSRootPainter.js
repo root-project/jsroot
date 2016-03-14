@@ -6149,7 +6149,7 @@
          gry1 = Math.min(gry1, midy - msize);
          gry2 = Math.max(gry2, midy + msize);
 
-         if (!pnt.touch)
+         if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt.y<gry1) || (pnt.y>gry2)) findbin = null;
 
       } else {
