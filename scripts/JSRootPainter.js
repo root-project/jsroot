@@ -4995,8 +4995,7 @@
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      this.zoom_rect = this.svg_frame()
-                        .append("rect")
+      this.zoom_rect = this.svg_frame().append("rect")
                         .attr("class", "zoom")
                         .attr("id", "zoomRect")
                         .attr("pointer-events","none");

@@ -3681,11 +3681,9 @@
 
       if (this.IsUserTooltipCallback() && res.changed) {
          this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
-                                   bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny:j+1,
+                                   bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
                                    grx: pnt.x, gry: pnt.y });
       }
-
-
 
       return res;
    }
@@ -3764,10 +3762,6 @@
 
       this.DrawTitle();
 
-      this.AddInteractive();
-
-      this.CreateToolbar();
-
       JSROOT.CallBack(call_back);
    }
 
@@ -3835,6 +3829,8 @@
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
             if (this.options.Lego == 0) {
+               this.AddInteractive();
+               this.CreateToolbar();
                if (this.options.AutoZoom) this.AutoZoom();
             }
             this.DrawingReady();
