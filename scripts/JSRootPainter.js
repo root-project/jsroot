@@ -926,6 +926,10 @@
       return null;
    }
 
+   JSROOT.TBasePainter.prototype.MatchObjectType = function(typ) {
+      return false;
+   }
+
    JSROOT.TBasePainter.prototype.UpdateObject = function(obj) {
       return false;
    }
@@ -1850,6 +1854,48 @@
       }
 
       return null;
+   }
+
+   JSROOT.TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
+      // hook for the users to get tooltip information when mouse cursor moves over frame area
+      // call_back function will be called every time when new data is selected
+      // when mouse leave frame area, call_back(null) will be called
+
+      if ((call_back === undefined) || (typeof call_back !== 'function')) {
+         delete this.UserTooltipCallback;
+         return;
+      }
+
+      if (user_timeout===undefined) user_timeout = 500;
+
+      this.UserTooltipCallback = call_back;
+      this.UserTooltipTimeout = user_timeout;
+   }
+
+   JSROOT.TObjectPainter.prototype.IsUserTooltipCallback = function() {
+      return typeof this.UserTooltipCallback == 'function';
+   }
+
+   JSROOT.TObjectPainter.prototype.ProvideUserTooltip = function(data) {
+
+      if (!this.IsUserTooltipCallback()) return;
+
+      if (this.UserTooltipTimeout <= 0)
+         return this.UserTooltipCallback(data);
+
+      if (typeof this.UserTooltipTHandle != 'undefined') {
+         clearTimeout(this.UserTooltipTHandle);
+         delete this.UserTooltipTHandle;
+      }
+
+      if (data==null)
+         return this.UserTooltipCallback(data);
+
+      this.UserTooltipTHandle = setTimeout(function(d) {
+         // only after timeout user function will be called
+         delete this.UserTooltipTHandle;
+         this.UserTooltipCallback(d);
+      }.bind(this, data), this.UserTooltipTimeout);
    }
 
    JSROOT.TObjectPainter.prototype.Redraw = function() {
@@ -6067,6 +6113,7 @@
       if (pnt === null) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
+         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -6170,6 +6217,7 @@
 
       if ((findbin == null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
+         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -6214,6 +6262,12 @@
             ttrect.attr("cx", midx)
                   .attr("cy", midy)
                   .property("current_bin", findbin);
+      }
+
+      if (this.IsUserTooltipCallback() && res.changed) {
+         this.ProvideUserTooltip({ obj: this.histo,  name: this.histo.fName,
+                                   bin: findbin, cont: this.histo.getBinContent(findbin+1),
+                                   grx: midx, gry: midy });
       }
 
       return res;
@@ -8495,20 +8549,20 @@
          }
 
          for (var i = 0; i < can_painter.painters.length; ++i) {
-            var obj0 = can_painter.painters[i].GetObject();
-
-            if ((obj0 != null) && (obj0._typename == obj._typename))
-               if (can_painter.painters[i].UpdateObject(obj)) {
+            var painter = can_painter.painters[i];
+            if (painter.MatchObjectType(obj._typename))
+               if (painter.UpdateObject(obj)) {
                   can_painter.RedrawPad();
-                  return can_painter.painters[i];
+                  return painter;
                }
          }
       }
 
       if (can_painter)
-          JSROOT.console("Cannot find painter to update object of type " + obj._typename);
+         JSROOT.console("Cannot find painter to update object of type " + obj._typename);
 
-      dummy.select_main().html("");
+      JSROOT.cleanup(divid);
+
       return JSROOT.draw(divid, obj, opt);
    }
 

@@ -3632,6 +3632,7 @@
       if (pnt==null) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
+         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -3653,6 +3654,7 @@
 
       if ((find !== 2) || (binz <= this.minbin)) {
          ttrect.remove();
+         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -3676,6 +3678,14 @@
                .attr("height", h.gry[j] - h.gry[j+1])
                .style("opacity", "0.7")
                .property("current_bin", i*10000 + j);
+
+      if (this.IsUserTooltipCallback() && res.changed) {
+         this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
+                                   bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny:j+1,
+                                   grx: pnt.x, gry: pnt.y });
+      }
+
+
 
       return res;
    }
