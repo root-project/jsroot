@@ -2192,6 +2192,7 @@
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
+
       var width = this.pad_width(),
           height = this.pad_height(),
           tframe = this.GetObject(),
@@ -2360,12 +2361,17 @@
                   .attr("y", 0)
                   .attr("width", w)
                   .attr("height", h);
+
+      var hintsg = this.svg_pad().select(".stat_layer").select(".objects_hints");
+      // if tooltips were visible before, try to reconstruct them after short timeout
+      if (!hintsg.empty())
+         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (JSROOT.gStyle.Tooltip < 2) return false;
-      return !this.svg_pad().select(".stat_layer").select(".objects_hints").empty();
+      return ! (this.svg_pad().select(".stat_layer").select(".objects_hints").empty());
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
@@ -2427,6 +2433,8 @@
 
       // copy transform attributes from frame itself
       hintsg.attr("transform", this.draw_g.attr("transform"));
+
+      hintsg.property("last_point", pnt);
 
       var viewmode = hintsg.property('viewmode');
       if (viewmode === undefined) viewmode = "";
