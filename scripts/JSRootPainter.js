@@ -6075,15 +6075,13 @@
           pmain = this.main_painter(),
           painter = this,
           findbin = null, show_rect = true,
-          show_errors = (this.options.Error > 0), // use error boxes
-          show_middle = show_errors || (this.options.Mark > 0), // center bin position
           grx1, midx, grx2, gry1, midy, gry2,
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           l = left, r = right;
 
       function GetBinGrX(i) {
-         var x1 = painter.GetBinX(show_middle ? (i+0.5) : i);
+         var x1 = painter.GetBinX(i);
          if ((x1<0) && painter.options.Logx) return null;
          return pmain.grx(x1);
       }
@@ -6133,16 +6131,14 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-      if (show_middle) {
+      if ((this.options.Error > 0) || (this.options.Mark > 0))  {
 
          show_rect = true;
-         grx1 = GetBinGrX(findbin-0.5);
-         grx2 = GetBinGrX(findbin+0.5);
 
          var msize = (this.options.Mark > 0) ? Math.round(this.histo.fMarkerSize*4) : 3;
          if (msize<3) msize = 3;
 
-         if (show_errors) {
+         if (this.options.Error > 0) {
             var cont = this.histo.getBinContent(findbin+1);
             var binerr = this.histo.getBinError(findbin+1);
 
