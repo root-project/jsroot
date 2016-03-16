@@ -5004,13 +5004,10 @@
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      this.zoom_rect = this.svg_frame().append("rect")
-                        .attr("class", "zoom")
-                        .attr("id", "zoomRect")
-                        .attr("pointer-events","none");
-
       d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
                        .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
+
+      this.zoom_rect = null;
 
       if (JSROOT.gStyle.Tooltip > 0) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
@@ -5036,6 +5033,13 @@
          case 2: this.zoom_curr[0] = m[0]; break;
          case 3: this.zoom_curr[1] = m[1]; break;
       }
+
+      if (this.zoom_rect===null)
+         this.zoom_rect = this.svg_frame()
+                              .append("rect")
+                              .attr("class", "zoom")
+//                              .attr("id", "zoomRect")
+                              .attr("pointer-events","none");
 
       this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
                     .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
