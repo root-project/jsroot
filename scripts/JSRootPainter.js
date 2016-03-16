@@ -6079,7 +6079,7 @@
          if (pmain.x_kind === 'time')
             tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          else
-            tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + "]");
+            tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")");
 
          tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
       }

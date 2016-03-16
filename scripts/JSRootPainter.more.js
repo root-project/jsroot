@@ -3618,12 +3618,12 @@
       if (this.x_kind == 'labels')
          lines.push("x = " + this.AxisAsText("x", this.GetBinX(i)));
       else
-         lines.push("x = [" + this.AxisAsText("x", this.GetBinX(i)) + ", " + this.AxisAsText("x", this.GetBinX(i+1)) + "]");
+         lines.push("x = [" + this.AxisAsText("x", this.GetBinX(i)) + ", " + this.AxisAsText("x", this.GetBinX(i+1)) + ")");
 
       if (this.y_kind == 'labels')
          lines.push("y = " + this.AxisAsText("y", this.GetBinY(j)));
       else
-         lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + "]");
+         lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 
