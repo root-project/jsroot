@@ -4976,8 +4976,6 @@
    JSROOT.THistPainter.prototype.startRectSel = function(tgt) {
       // ignore when touch selection is actiavated
 
-      console.log('start rect sel ' + this.zoom_kind);
-
       if (this.zoom_kind > 100) return;
 
       d3.event.preventDefault();
@@ -5037,15 +5035,11 @@
          case 3: this.zoom_curr[1] = m[1]; break;
       }
 
-      if (this.zoom_rect===null) {
-         console.log('first move of rect sel ' + this.zoom_kind);
-
+      if (this.zoom_rect===null)
          this.zoom_rect = this.svg_frame()
                               .append("rect")
                               .attr("class", "zoom")
-//                              .attr("id", "zoomRect")
                               .attr("pointer-events","none");
-      }
 
       this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
                     .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
@@ -5841,106 +5835,6 @@
       }
    }
 
-   JSROOT.TH1Painter.prototype.DrawAsMarkers = function(draw_bins, width, height) {
-      // draw all markers as independent elements, only required with old tooltip style
-
-      // when draw as error, enable marker draw
-      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
-         this.options.Mark = 1;
-
-      var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
-          show_errors = (this.options.Error > 0),
-          show_markers = (this.options.Mark > 0),
-          pmain = this.main_painter(), pthis = this;
-
-      for (var n = 0; n < draw_bins.length; ++n) {
-         var pnt = draw_bins[n];
-
-         var cont = this.histo.getBinContent(pnt.bin+1);
-
-         // pnt.x = Math.round(pnt.x + pnt.width/2);
-         // pnt.xerr = Math.round(pnt.width/2);
-         pnt.yerr1 = pnt.yerr2 = 30;
-
-         if (exclude_zero && (cont == 0)) {
-            pnt.y = height + 100; // such point will be removed
-            continue;
-         }
-
-         if (show_errors) {
-            var binerr = this.histo.getBinError(pnt.bin+1);
-            pnt.yerr1 = Math.round(pnt.y - pmain.gry(cont + binerr)); // up
-            pnt.yerr2 = Math.round(pmain.gry(cont - binerr) - pnt.y); // down
-         }
-      }
-
-      if (this.options.Error == 12) {
-         // show each element point as rect
-
-         if (this.fillatt.func=='none') {
-            show_markers = true
-         } else {
-            var path = "";
-            for (var n = 0; n < draw_bins.length; ++n) {
-               var pnt = draw_bins[n];
-               if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
-
-               path+="M" + pnt.x +","+(pnt.y-pnt.yerr1) +
-                     "h" + pnt.width + "v" + (pnt.yerr1 + pnt.yerr2+1) + "h-" + pnt.width + "z";
-            }
-
-            console.log('th1 boxes path ' + path.length);
-
-            if (path.length > 0)
-               this.draw_g.append("svg:path")
-                          .attr("d",path)
-                          .call(this.fillatt.func);
-         }
-      }
-      if (this.options.Error > 0) {
-         var endx = "", endy = "";
-         if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
-
-         var path = "";
-         for (var n = 0; n < draw_bins.length; ++n) {
-            var pnt = draw_bins[n];
-            if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
-
-            path+="M" + pnt.x +","+pnt.y + endx + "h" + (pnt.width-1) + endx +
-                  "M" + Math.round(pnt.x + pnt.width/2) +"," + (pnt.y-pnt.yerr1) + endy + "v" + (pnt.yerr1+pnt.yerr2) + endy;
-         }
-
-         if (path.length > 0)
-            this.draw_g.append("svg:path")
-                       .attr("d",path)
-                       .call(this.lineatt.func)
-         console.log('th1 err path ' + path.length);
-      }
-
-      if (show_markers) {
-         // draw markers also when e2 option was specified
-         var marker = JSROOT.Painter.createAttMarker(this.histo);
-
-         // simply use relative move from point, can optimize in the future
-         var mpath = "m" + marker.marker.substr(1);
-
-         var path = "";
-         for (var n = 0; n < draw_bins.length; ++n) {
-             var pnt = draw_bins[n];
-             if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
-             path+="M"+Math.round(pnt.x + pnt.width/2)+","+pnt.y + mpath;
-         }
-
-         if (path.length > 0)
-            this.draw_g.append("svg:path")
-                       .attr("d",path)
-                       .style("fill", marker.fill)
-                       .style("stroke", marker.stroke);
-
-         console.log('th1 marker path ' + path.length);
-      }
-   }
-
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
@@ -5960,18 +5854,41 @@
           pmain = this.main_painter(),
           pthis = this,
           res = "", lastbin = false,
-          startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti, bins = null;
+          startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
+          bins = null,
+          exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
+          show_errors = (this.options.Error > 0),
+          show_markers = (this.options.Mark > 0),
+          path_fill = null, path_err = null, path_marker = null, endx = "", endy = "", my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
+
+      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
+         show_markers = true;
+
+      if (this.options.Error == 12) {
+         if (this.fillatt.func=='none') show_markers = true;
+                                   else path_fill = "";
+      } else
+      if (this.options.Error > 0) path_err = "";
+
+      if (show_markers) {
+         // draw markers also when e2 option was specified
+         marker = JSROOT.Painter.createAttMarker(this.histo);
+         // simply use relative move from point, can optimize in the future
+         path_marker = "";
+      }
 
       // if there are too many points, exclude many vertical drawings at the same X position
       // instead define min and max value and made min-max drawing
-      var use_minmax = ((right-left) > 3*width) && (JSROOT.gStyle.Tooltip === 3);
+      var use_minmax = ((right-left) > 3*width);
 
-      var draw_markers = (this.options.Error > 0) || (this.options.Mark > 0);
+      if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
 
-      if ((JSROOT.gStyle.Tooltip === 1) || draw_markers) {
-         // collect bins to be drawn, min/max logic used to select max bin at each pixel
-         bins = []; use_minmax = true;
-      }
+      var draw_markers = show_errors || show_markers;
+
+      if (draw_markers) use_minmax = true;
+
+      // collect bins to be drawn, min/max logic used to select max bin at each pixel
+      if (JSROOT.gStyle.Tooltip === 1) bins = [];
 
       for (i = left; i <= right; ++i) {
 
@@ -6006,8 +5923,35 @@
                curry = gry;
             } else {
 
-               if (bins!==null)
-                  bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
+               if (draw_markers) {
+                  bincont = this.histo.getBinContent(besti+1);
+                  if (!exclude_zero || (bincont!==0)) {
+                     if (bins!==null) {
+                        bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
+                     } else {
+                        mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
+                        mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
+                        my = Math.round(pmain.gry(bincont));
+                        yerr1 = yerr2 = 20;
+                        if (show_errors) {
+                           binerr = this.histo.getBinError(besti+1);
+                           yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
+                           yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
+                        }
+
+                        if ((my >= -yerr1) && (my < height + yerr2)) {
+                           if (path_fill !== null)
+                              path_fill +="M" + mx1 +","+(my-yerr1) +
+                                         "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                           if (path_err !== null)
+                              path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
+                                         "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
+                           if (path_marker !== null)
+                              path_marker += "M"+Math.round((mx1+mx2)/2)+","+ my + "m" + marker.marker.substr(1);
+                        }
+                     }
+                  }
+               }
 
                // when several points as same X differs, need complete logic
                if (!draw_markers && ((curry_min !== curry_max) || (prevy !== curry_min))) {
@@ -6057,9 +6001,23 @@
 
       if (draw_markers) {
          if (JSROOT.gStyle.Tooltip == 1)
-            this.DrawAsMarkersOld(bins, width, height);
-         else
-            this.DrawAsMarkers(bins, width, height);
+            return this.DrawAsMarkersOld(bins, width, height);
+
+         if ((path_fill !== null) && (path_fill.length > 0))
+            this.draw_g.append("svg:path")
+                       .attr("d", path_fill)
+                       .call(this.fillatt.func);
+
+         if ((path_err !== null) && (path_err.length > 0))
+               this.draw_g.append("svg:path")
+                   .attr("d", path_err)
+                   .call(this.lineatt.func)
+
+         if ((path_marker !== null) && (path_marker.length > 0))
+            this.draw_g.append("svg:path")
+                .attr("d", path_marker)
+                .style("fill", marker.fill)
+                .style("stroke", marker.stroke);
 
          if (JSROOT.gStyle.Tooltip > 1)
             this.ProcessTooltip = this.ProcessTooltipFunc;
