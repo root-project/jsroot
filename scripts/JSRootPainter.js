@@ -2306,62 +2306,58 @@
       if (JSROOT.gStyle.Tooltip < 2)
          return tooltip_rect.remove();
 
-      if (tooltip_rect.empty()) {
+      var painter = this,
+          point = main_svg.node().createSVGPoint();
 
-         var painter = this,
-             point = main_svg.node().createSVGPoint();
+      function CloseEvent() {
+         painter.ProcessTooltipEvent(null);
+      }
 
-         function CloseEvent() {
-            painter.ProcessTooltipEvent(null);
-         }
+      function MouseMoveEvent() {
+         point.x = d3.event.clientX;
+         point.y = d3.event.clientY;
+         var ctm = tooltip_rect.node().getScreenCTM();
+         var pnt = point.matrixTransform(ctm.inverse());
+         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false,
+            pageX: d3.event.pageX, pageY: d3.event.pageY });
+      }
 
-         function MouseMoveEvent() {
-            point.x = d3.event.clientX;
-            point.y = d3.event.clientY;
-            var ctm = tooltip_rect.node().getScreenCTM();
-            var pnt = point.matrixTransform(ctm.inverse());
-            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false,
-                                          pageX: d3.event.pageX, pageY: d3.event.pageY });
-         }
-
-         function TouchMoveEvent() {
-            if ('changedTouches' in d3.event) touches = d3.event.changedTouches; else
+      function TouchMoveEvent() {
+         if ('changedTouches' in d3.event) touches = d3.event.changedTouches; else
             if ('touches' in d3.event) touches = d3.event.touches;
-            if (touches.length !== 1)
-               return painter.ProcessTooltipEvent(null);
+         if (touches.length !== 1)
+            return painter.ProcessTooltipEvent(null);
 
-            point.x = touches[0].pageX;
-            point.y = touches[0].pageY;
-            var ctm = tooltip_rect.node().getScreenCTM();
-            var pnt = point.matrixTransform(ctm.inverse());
-            painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true,
-                                          pageX: touches[0].pageX, pageY: touches[0].pageY });
-         }
+         point.x = touches[0].pageX;
+         point.y = touches[0].pageY;
+         var ctm = tooltip_rect.node().getScreenCTM();
+         var pnt = point.matrixTransform(ctm.inverse());
+         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true,
+            pageX: touches[0].pageX, pageY: touches[0].pageY });
+      }
 
+      if (tooltip_rect.empty())
          tooltip_rect =
             this.draw_g
                 .append("rect")
                 .attr("class","interactive_rect")
                 .style("opacity","0")
                 .style("fill","none")
-                .style("pointer-events", "visibleFill")
-                .on('mouseenter', MouseMoveEvent)
-                .on('mousemove', MouseMoveEvent)
-                .on('mouseleave', CloseEvent);
-
-
-         if (JSROOT.touches)
-            tooltip_rect
-               .on("touchstart", TouchMoveEvent)
-               .on("touchmove", TouchMoveEvent)
-               .on("touchend", CloseEvent)
-               .on("touchcancel", CloseEvent);
-      }
+                .style("pointer-events", "visibleFill");
 
       tooltip_rect.attr("x", 0)
                   .attr("y", 0)
                   .attr("width", w)
-                  .attr("height", h);
+                  .attr("height", h)
+                  .on('mouseenter', MouseMoveEvent)
+                  .on('mousemove', MouseMoveEvent)
+                  .on('mouseleave', CloseEvent);
+
+       if (JSROOT.touches)
+          tooltip_rect.on("touchstart", TouchMoveEvent)
+                      .on("touchmove", TouchMoveEvent)
+                      .on("touchend", CloseEvent)
+                      .on("touchcancel", CloseEvent);
 
       var hintsg = this.svg_pad().select(".stat_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
@@ -5861,7 +5857,7 @@
           show_markers = (this.options.Mark > 0),
           path_fill = null, path_err = null, path_marker = null, endx = "", endy = "", my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
 
-      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
+      if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
          show_markers = true;
 
       if (this.options.Error == 12) {
