@@ -4975,6 +4975,9 @@
 
    JSROOT.THistPainter.prototype.startRectSel = function(tgt) {
       // ignore when touch selection is actiavated
+
+      console.log('start rect sel ' + this.zoom_kind);
+
       if (this.zoom_kind > 100) return;
 
       d3.event.preventDefault();
@@ -4984,7 +4987,7 @@
       this.zoom_origin = d3.mouse(this.last_mouse_tgt);
 
       this.zoom_curr = [ Math.max(0, Math.min(this.frame_width(), this.zoom_origin[0])),
-                          Math.max(0, Math.min(this.frame_height(), this.zoom_origin[1])) ];
+                         Math.max(0, Math.min(this.frame_height(), this.zoom_origin[1])) ];
 
       if (this.zoom_origin[0] < 0) {
          this.zoom_kind = 3; // only y
@@ -5034,12 +5037,15 @@
          case 3: this.zoom_curr[1] = m[1]; break;
       }
 
-      if (this.zoom_rect===null)
+      if (this.zoom_rect===null) {
+         console.log('first move of rect sel ' + this.zoom_kind);
+
          this.zoom_rect = this.svg_frame()
                               .append("rect")
                               .attr("class", "zoom")
 //                              .attr("id", "zoomRect")
                               .attr("pointer-events","none");
+      }
 
       this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
                     .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
@@ -5852,8 +5858,8 @@
 
          var cont = this.histo.getBinContent(pnt.bin+1);
 
-         pnt.x = Math.round(pnt.x + pnt.width/2);
-         pnt.xerr = Math.round(pnt.width/2);
+         // pnt.x = Math.round(pnt.x + pnt.width/2);
+         // pnt.xerr = Math.round(pnt.width/2);
          pnt.yerr1 = pnt.yerr2 = 30;
 
          if (exclude_zero && (cont == 0)) {
@@ -5879,15 +5885,16 @@
                var pnt = draw_bins[n];
                if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
 
-               path+="M" + (pnt.x-pnt.xerr) +","+(pnt.y-pnt.yerr1) +
-                     "h" + 2*pnt.xerr + "v" + (pnt.yerr1 + pnt.yerr2) + "h-" + 2*pnt.xerr + "z";
+               path+="M" + pnt.x +","+(pnt.y-pnt.yerr1) +
+                     "h" + pnt.width + "v" + (pnt.yerr1 + pnt.yerr2+1) + "h-" + pnt.width + "z";
             }
 
-            this.draw_g.append("svg:path")
-                       .attr("d",path)
-                       .call(this.fillatt.func);
-
             console.log('th1 boxes path ' + path.length);
+
+            if (path.length > 0)
+               this.draw_g.append("svg:path")
+                          .attr("d",path)
+                          .call(this.fillatt.func);
          }
       }
       if (this.options.Error > 0) {
@@ -5899,13 +5906,14 @@
             var pnt = draw_bins[n];
             if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
 
-            path+="M" + (pnt.x-pnt.xerr) +","+pnt.y + endx + "h" + 2*pnt.xerr + endx +
-                  "M" + pnt.x +"," + (pnt.y-pnt.yerr1) + endy + "v" + (pnt.yerr1+pnt.yerr2) + endy;
+            path+="M" + pnt.x +","+pnt.y + endx + "h" + (pnt.width-1) + endx +
+                  "M" + Math.round(pnt.x + pnt.width/2) +"," + (pnt.y-pnt.yerr1) + endy + "v" + (pnt.yerr1+pnt.yerr2) + endy;
          }
 
-         this.draw_g.append("svg:path")
-                    .attr("d",path)
-                    .call(this.lineatt.func)
+         if (path.length > 0)
+            this.draw_g.append("svg:path")
+                       .attr("d",path)
+                       .call(this.lineatt.func)
          console.log('th1 err path ' + path.length);
       }
 
@@ -5920,13 +5928,14 @@
          for (var n = 0; n < draw_bins.length; ++n) {
              var pnt = draw_bins[n];
              if ((pnt.y < -pnt.yerr1) || (pnt.y > height + pnt.yerr2)) continue;
-             path+="M"+pnt.x+","+pnt.y + mpath;
+             path+="M"+Math.round(pnt.x + pnt.width/2)+","+pnt.y + mpath;
          }
 
-         this.draw_g.append("svg:path")
-                    .attr("d",path)
-                    .style("fill", marker.fill)
-                    .style("stroke", marker.stroke);
+         if (path.length > 0)
+            this.draw_g.append("svg:path")
+                       .attr("d",path)
+                       .style("fill", marker.fill)
+                       .style("stroke", marker.stroke);
 
          console.log('th1 marker path ' + path.length);
       }
@@ -6187,7 +6196,8 @@
          grx1 = GetBinGrX(findbin);
       }
 
-      grx2 = GetBinGrX(findbin+1);
+      grx1 = Math.round(grx1);
+      grx2 = Math.round(GetBinGrX(findbin+1));
 
       midx = Math.round((grx1+grx2)/2);
 
@@ -6256,7 +6266,7 @@
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
 
-         res.exact = Math.abs(midy - pnt.y) <= 5;
+         res.exact = (Math.abs(midy - pnt.y) <= 5) || ((pnt.y>=gry1) && (pnt.y <= gry2));
 
       } else {
          var radius = this.lineatt.width + 3;

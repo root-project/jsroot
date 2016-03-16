@@ -1868,10 +1868,11 @@
       this.draw_g.selectAll('.grpoint').each(function() {
          var d = d3.select(this).datum();
          if (d===undefined) return;
-         var dist2 = Math.pow(pnt.x - d.grx1, 2) + Math.pow(pnt.y - d.gry1, 2), rect = null;
-
-         // later for bar drawings one could check only X direction
+         var dist2 = Math.pow(pnt.x - d.grx1, 2);
+         if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
          if (dist2 >= best_dist2) return;
+
+         var rect = null;
 
          if (d.error || d.rect || d.marker || d.bracket) {
             rect = { x1: Math.min(-3, d.grx0),  x2: Math.max(3, d.grx2), y1: Math.min(-3, d.gry2), y2: Math.max(3, d.gry0) };
@@ -1891,10 +1892,11 @@
           var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
           var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
 
-          if (matchx && matchy) {
+          if (matchx && (matchy || (pnt.nproc > 1))) {
              best_dist2 = dist2;
              findbin = this;
              best = rect;
+             best.exact = matchx && matchy;
           }
        });
 
@@ -1910,6 +1912,8 @@
       var res = { x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color, color2: this.fillatt.color,
                   lines: this.TooltipText(d, true) };
+
+      if (best.exact) res.exact = true;
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -1938,7 +1942,7 @@
           pmain = this.main_painter(),
           dist, grx, gry, n;
 
-      for ( n=0;n<this.bins.length;++n) {
+      for (n=0;n<this.bins.length;++n) {
          var bin = this.bins[n];
 
          grx = pmain.grx(bin.x);
