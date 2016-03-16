@@ -167,7 +167,7 @@
       }
 
       var inter = JSROOT.GetUrlOption("interactive", url);
-      if ((inter=="") || (inter=="1")) inter = "11111"; else
+      if ((inter=="") || (inter=="1")) inter = "21111"; else
       if (inter=="0") inter = "00000";
       if ((inter!==null) && (inter.length==5)) {
          JSROOT.gStyle.Tooltip =     parseInt(inter.charAt(0));
