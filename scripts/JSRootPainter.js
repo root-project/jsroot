@@ -5945,9 +5945,9 @@
                                          "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                            if (path_err !== null)
                               path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
-                                         "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
+                                         "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
                            if (path_marker !== null)
-                              path_marker += "M"+Math.round((mx1+mx2)/2)+","+ my + "m" + marker.marker.substr(1);
+                              path_marker += "M"+Math.round((mx1+mx2-1)/2)+","+ my + "m" + marker.marker.substr(1);
                         }
                      }
                   }
