@@ -1167,7 +1167,7 @@
          }
       }
 
-      if ((typename.indexOf("TFormula") != -1) || (typename.indexOf("TF1") == 0)) {
+      if (typename.indexOf("TF1") == 0) {
          m.addFormula = function(obj) {
             if (obj==null) return;
             if (!('formulas' in this)) this.formulas = [];
@@ -1198,7 +1198,7 @@
               _func = _func.replace('pi', 'Math.PI');
               for (var i=0;i<this.fNpar;++i)
                  while(_func.indexOf('['+i+']') != -1)
-                    _func = _func.replace('['+i+']', this.fParams[i]);
+                    _func = _func.replace('['+i+']', this.GetParValue(i));
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
@@ -1209,10 +1209,7 @@
             }
 
             return this._func(x);
-         };
-      }
-
-      if (typename === 'TF1') {
+         }
          m.GetParName = function(n) {
             if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
             if ('fNames' in this) return this.fNames[n];
