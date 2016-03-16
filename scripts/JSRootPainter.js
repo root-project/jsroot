@@ -1779,10 +1779,10 @@
       resize_corner2.call(drag_resize);
    }
 
-   JSROOT.TObjectPainter.prototype.startTouchMenu = function(touch_tgt, kind) {
+   JSROOT.TObjectPainter.prototype.startTouchMenu = function(kind) {
       // method to let activate context menu via touch handler
 
-      var arr = d3.touches(touch_tgt);
+      var arr = d3.touches(this.svg_frame().node());
       if (arr.length != 1) return;
 
       if (!kind || (kind=="")) kind = "main";
@@ -1791,10 +1791,10 @@
       d3.event.preventDefault();
       d3.event.stopPropagation();
 
-      this[fld] = { tgt: touch_tgt, dt: new Date(), pos : arr[0] };
+      this[fld] = { dt: new Date(), pos: arr[0] };
 
-      d3.select(touch_tgt).on("touchcancel", this.endTouchMenu.bind(this, kind))
-                          .on("touchend", this.endTouchMenu.bind(this, kind), true);
+      this.svg_frame().on("touchcancel", this.endTouchMenu.bind(this, kind))
+                      .on("touchend", this.endTouchMenu.bind(this, kind));
    }
 
    JSROOT.TObjectPainter.prototype.endTouchMenu = function(kind) {
@@ -1807,13 +1807,13 @@
 
       var diff = new Date().getTime() - this[fld].dt.getTime();
 
-      d3.select(this[fld].tgt).on("touchcancel", null)
-                              .on("touchend", null, true);
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null);
 
       if (diff>500) {
-         var rect = d3.select(this[fld].tgt).node().getBoundingClientRect();
+         var rect = this.svg_frame().node().getBoundingClientRect();
          this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY : rect.top + this[fld].pos[1] } );
+                                      clientY: rect.top + this[fld].pos[1] } );
       }
 
       delete this[fld];
@@ -2303,23 +2303,22 @@
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
-      if (JSROOT.gStyle.Tooltip < 2)
+      if (Math.abs(JSROOT.gStyle.Tooltip) < 2)
          return tooltip_rect.remove();
 
       var painter = this,
           point = main_svg.node().createSVGPoint();
-
-      function CloseEvent() {
-         painter.ProcessTooltipEvent(null);
-      }
 
       function MouseMoveEvent() {
          point.x = d3.event.clientX;
          point.y = d3.event.clientY;
          var ctm = tooltip_rect.node().getScreenCTM();
          var pnt = point.matrixTransform(ctm.inverse());
-         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false,
-            pageX: d3.event.pageX, pageY: d3.event.pageY });
+         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false });
+      }
+
+      function MouseCloseEvent() {
+         painter.ProcessTooltipEvent(null);
       }
 
       function TouchMoveEvent() {
@@ -2332,36 +2331,40 @@
          point.y = touches[0].pageY;
          var ctm = tooltip_rect.node().getScreenCTM();
          var pnt = point.matrixTransform(ctm.inverse());
-         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true,
-            pageX: touches[0].pageX, pageY: touches[0].pageY });
+         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true });
       }
 
-      if (tooltip_rect.empty())
+      function TouchCloseEvent() {
+         painter.ProcessTooltipEvent(null);
+      }
+
+      if (tooltip_rect.empty()) {
          tooltip_rect =
             this.draw_g
                 .append("rect")
                 .attr("class","interactive_rect")
                 .style("opacity","0")
                 .style("fill","none")
-                .style("pointer-events", "visibleFill");
+                .style("pointer-events", "visibleFill")
+                .on('mouseenter', MouseMoveEvent)
+                .on('mousemove', MouseMoveEvent)
+                .on('mouseleave', MouseCloseEvent);
+
+         if (JSROOT.touches)
+            tooltip_rect.on("touchstart", TouchMoveEvent)
+                        .on("touchmove", TouchMoveEvent)
+                        .on("touchend", TouchCloseEvent)
+                        .on("touchcancel", TouchCloseEvent);
+      }
 
       tooltip_rect.attr("x", 0)
                   .attr("y", 0)
                   .attr("width", w)
-                  .attr("height", h)
-                  .on('mouseenter', MouseMoveEvent)
-                  .on('mousemove', MouseMoveEvent)
-                  .on('mouseleave', CloseEvent);
-
-       if (JSROOT.touches)
-          tooltip_rect.on("touchstart", TouchMoveEvent)
-                      .on("touchmove", TouchMoveEvent)
-                      .on("touchend", CloseEvent)
-                      .on("touchcancel", CloseEvent);
+                  .attr("height", h);
 
       var hintsg = this.svg_pad().select(".stat_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty())
+      if (!hintsg.empty() && (JSROOT.gStyle.Tooltip > 1))
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
@@ -4922,7 +4925,7 @@
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax),
-          test_z = (zmin!=zmax) && (zmin!=null) && (zmax!=null),
+          test_z = (zmin!=zmax) && (zmin!==undefined) && (zmax!==undefined),
           main = this.main_painter();
 
       main.ForEachPainter(function(obj) {
@@ -4961,7 +4964,7 @@
 
    JSROOT.THistPainter.prototype.mouseDoubleClick = function() {
       d3.event.preventDefault();
-      var m = d3.mouse(this.last_mouse_tgt);
+      var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
       var kind = "xyz";
       if (m[0] < 0) kind = "y"; else
@@ -4969,7 +4972,7 @@
       this.Unzoom(kind);
    }
 
-   JSROOT.THistPainter.prototype.startRectSel = function(tgt) {
+   JSROOT.THistPainter.prototype.startRectSel = function() {
       // ignore when touch selection is actiavated
 
       if (this.zoom_kind > 100) return;
@@ -4977,8 +4980,7 @@
       d3.event.preventDefault();
 
       this.clearInteractiveElements();
-      this.last_mouse_tgt = tgt;
-      this.zoom_origin = d3.mouse(this.last_mouse_tgt);
+      this.zoom_origin = d3.mouse(this.svg_frame().node());
 
       this.zoom_curr = [ Math.max(0, Math.min(this.frame_width(), this.zoom_origin[0])),
                          Math.max(0, Math.min(this.frame_height(), this.zoom_origin[1])) ];
@@ -5006,7 +5008,7 @@
 
       this.zoom_rect = null;
 
-      if (JSROOT.gStyle.Tooltip > 0) {
+      if (JSROOT.gStyle.Tooltip > 1) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.frame_painter().ProcessTooltipEvent(null);
          this.disable_tooltip = true;
@@ -5020,7 +5022,7 @@
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       d3.event.preventDefault();
-      var m = d3.mouse(this.last_mouse_tgt);
+      var m = d3.mouse(this.svg_frame().node());
 
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
@@ -5051,7 +5053,7 @@
       d3.select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
 
-      var m = d3.mouse(this.last_mouse_tgt);
+      var m = d3.mouse(this.svg_frame().node());
 
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
@@ -5083,7 +5085,7 @@
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
 
-   JSROOT.THistPainter.prototype.startTouchZoom = function(tgt) {
+   JSROOT.THistPainter.prototype.startTouchZoom = function() {
       // in case when zooming was started, block any other kind of events
       if (this.zoom_kind != 0) {
          d3.event.preventDefault();
@@ -5091,8 +5093,7 @@
          return;
       }
 
-      this.last_touch_tgt = tgt;
-      var arr = d3.touches(this.last_touch_tgt);
+      var arr = d3.touches(this.svg_frame().node());
       this.touch_cnt+=1;
 
       // normally double-touch will be handled
@@ -5122,7 +5123,7 @@
          if (JSROOT.gStyle.ContextMenu) {
             this.zoom_curr = arr[0];
             this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
-                            .on("touchend", this.endTouchSel.bind(this), true);
+                            .on("touchend", this.endTouchSel.bind(this));
             d3.event.preventDefault();
             d3.event.stopPropagation();
          }
@@ -5131,11 +5132,12 @@
       if (arr.length != 2) return;
 
       d3.event.preventDefault();
+      d3.event.stopPropagation();
 
       this.clearInteractiveElements();
 
       this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null, true);
+                      .on("touchend", null);
 
       var pnt1 = arr[0], pnt2 = arr[1];
 
@@ -5154,6 +5156,12 @@
          this.zoom_kind = 101; // x and y
       }
 
+      if (JSROOT.gStyle.Tooltip > 1) {
+         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
+         this.frame_painter().ProcessTooltipEvent(null);
+         this.disable_tooltip = true;
+      }
+
       this.zoom_rect = this.svg_frame().append("rect")
             .attr("class", "zoom")
             .attr("id", "zoomRect")
@@ -5164,8 +5172,7 @@
 
       d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
                        .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
-                       .on("touchend.zoomRect", this.endTouchSel.bind(this), true);
-      d3.event.stopPropagation();
+                       .on("touchend.zoomRect", this.endTouchSel.bind(this));
    }
 
    JSROOT.THistPainter.prototype.moveTouchSel = function() {
@@ -5173,7 +5180,7 @@
 
       d3.event.preventDefault();
 
-      var arr = d3.touches(this.last_touch_tgt);
+      var arr = d3.touches(this.svg_frame().node());
 
       if (arr.length != 2)
          return this.clearInteractiveElements();
@@ -5207,7 +5214,7 @@
    JSROOT.THistPainter.prototype.endTouchSel = function() {
 
       this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null, true);
+                      .on("touchend", null);
 
       if (this.zoom_kind === 0) {
          // special case - single touch can ends up with context menu
@@ -5266,36 +5273,28 @@
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
       this.disable_tooltip = false;
-      this.last_mouse_tgt = null; // last place where mouse event was
-      this.last_touch_tgt = null; // last place where touch event was
       this.zoom_origin = null;  // original point where zooming started
       this.zoom_curr = null;    // current point for zomming
       this.touch_cnt = 0;
 
-      // one cannot use bind() with some mouse/touch events
-      // therefore use normal functions with pthis workaround
-
-      var pthis = this,
-          interactive = this.svg_frame();
-
-      if (JSROOT.gStyle.Tooltip > 1) interactive = interactive.select(".interactive_rect");
+      var pthis = this;
 
       if (JSROOT.gStyle.Zooming && !JSROOT.touches) {
-         interactive.on("mousedown", function() { pthis.startRectSel(this); } );
-         interactive.on("dblclick", function() { pthis.mouseDoubleClick(); });
+         this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
+         this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
-         interactive.on("touchstart", function() { pthis.startTouchZoom(this); });
+         this.svg_frame().on("touchstart", this.startTouchZoom.bind(this) );
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
             this.svg_frame().selectAll(".xaxis_container")
-               .on("touchstart", function() { pthis.startTouchMenu(this, "x"); } );
+                .on("touchstart", this.startTouchMenu.bind(this, "x") );
             this.svg_frame().selectAll(".yaxis_container")
-               .on("touchstart", function() { pthis.startTouchMenu(this, "y"); } );
+                .on("touchstart", this.startTouchMenu.bind(this, "y") );
          } else {
-            interactive.on("contextmenu", this.ShowContextMenu.bind(this) );
+            this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
             this.svg_frame().selectAll(".xaxis_container")
                 .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
             this.svg_frame().selectAll(".yaxis_container")
@@ -6295,6 +6294,7 @@
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
+      // this.AddInteractive();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
