@@ -2341,6 +2341,7 @@
          tooltip_rect =
             this.draw_g
                 .append("rect")
+                .attr("class","interactive_rect")
                 .style("opacity","0")
                 .style("fill","none")
                 .style("pointer-events", "visibleFill")
@@ -5257,7 +5258,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
-      // only first painter in list allowed to add interactive functionality to the main pad
+      // only first painter in list allowed to add interactive functionality to the frame
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
@@ -5274,15 +5275,18 @@
       // one cannot use bind() with some mouse/touch events
       // therefore use normal functions with pthis workaround
 
-      var pthis = this;
+      var pthis = this,
+          interactive = this.svg_frame();
+
+      if (JSROOT.gStyle.Tooltip > 1) interactive = interactive.select(".interactive_rect");
 
       if (JSROOT.gStyle.Zooming && !JSROOT.touches) {
-         this.svg_frame().on("mousedown", function() { pthis.startRectSel(this); } );
-         this.svg_frame().on("dblclick", function() { pthis.mouseDoubleClick(); });
+         interactive.on("mousedown", function() { pthis.startRectSel(this); } );
+         interactive.on("dblclick", function() { pthis.mouseDoubleClick(); });
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
-         this.svg_frame().on("touchstart", function() { pthis.startTouchZoom(this); });
+         interactive.on("touchstart", function() { pthis.startTouchZoom(this); });
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
@@ -5291,7 +5295,7 @@
             this.svg_frame().selectAll(".yaxis_container")
                .on("touchstart", function() { pthis.startTouchMenu(this, "y"); } );
          } else {
-            this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
+            interactive.on("contextmenu", this.ShowContextMenu.bind(this) );
             this.svg_frame().selectAll(".xaxis_container")
                 .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
             this.svg_frame().selectAll(".yaxis_container")
