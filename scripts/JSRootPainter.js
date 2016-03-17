@@ -307,20 +307,30 @@
 
       var res = { x0: 0, y0: 0, stroke: marker_color, fill: marker_color, marker: "", size: 8, ndig: 0 };
 
-      res.create = function(x,y) {
-         if (this.ndig===0)
-            return "M" + Math.round(x+this.x0)+ "," + Math.round(y+this.y0) + this.marker;
-         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
-      }
-
       if (style === 777) {
          // special pixel mode
-         //res.stroke = 'none';
-         //res.marker = "v2h2v-2z";
          res.fill = 'none';
          res.marker = "h1";
          res.size = 1;
+         res.lastx = null;
+         res.lasty = null;
+
+         // use special create function to handle relative position movements
+         res.create = function(x,y) {
+            var xx = Math.round(x),
+                yy = Math.round(y),
+                big = "M"+xx+","+yy+"h1",
+                short = (this.lastx===null) ? big : "m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1";
+            this.lastx = xx+1;
+            this.lasty = yy;
+            return (short.length < big.length) ? short : big;
+         }
+
          return res;
+      }
+
+      res.create = function(x,y) {
+         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
       }
 
       if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;

@@ -1818,12 +1818,13 @@
             grx = pmain.grx(pnt.x);
             if ((grx > -marker.size) && (grx < w+marker.size)) {
                gry = pmain.gry(pnt.y);
-               if ((gry >-marker.size) && (gry < h+marker.size))
+               if ((gry >-marker.size) && (gry < h+marker.size)) {
                   path += marker.create(grx, gry);
+               }
             }
          }
 
-         console.log('len = ' + path.length);
+         console.log('len = ' + path.length + ' bins ' + this.bins.length);
 
          if (path.length>0) {
             this.draw_g.append("svg:path")
