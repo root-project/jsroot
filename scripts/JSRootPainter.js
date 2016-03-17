@@ -3535,7 +3535,7 @@
               .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
-             .attr("y", labeloffset*side  + both_sides*tickSize)
+             .attr("y", 2+labeloffset*side  + both_sides*tickSize)
              .attr("dy", (side > 0) ? ".7em" : "-.3em")
              .style("text-anchor", "middle");
 
@@ -3594,7 +3594,7 @@
          var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
 
          if (vertical) {
-            var xoffset = -side*Math.round(labeloffset + (2-side/3) * axis.fTitleOffset*title_fontsize);
+            var xoffset = -side*Math.round(labeloffset + (2-side/10) * axis.fTitleOffset*title_fontsize);
 
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
@@ -3610,7 +3610,7 @@
          } else {
             this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
                           Math.round(center ? w/2 : (reverse ? 0 : w)),
-                          Math.round(side*(labeloffset + 1.6*title_fontsize*axis.fTitleOffset)),
+                          Math.round(side*(labeloffset + 1.9*title_fontsize*axis.fTitleOffset)),
                           0, (rotate<0 ? -180 : 0),
                           axis.fTitle, title_color, 1, title_g);
          }
