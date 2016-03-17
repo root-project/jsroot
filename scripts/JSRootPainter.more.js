@@ -1822,13 +1822,18 @@
       if (this.optionMark > 0) {
          /* Add markers */
          var marker = JSROOT.Painter.createAttMarker(graph, ((this.optionMark==2) ? 3 : null));
+
          var halfsize = Math.max(2, Math.round(marker.fullSize/2));
 
-         nodes.append(marker.kind).call(marker.func).call(function(d) {
-            d.marker = true;
-            d.grx0 = d.gry0 = -halfsize;
-            d.grx2 = d.gry2 = halfsize;
-         });
+         nodes.append("svg:path")
+              .style("fill", marker.fill)
+              .style("stroke", marker.stroke)
+              .attr("d", marker.create(0,0))
+              .call(function(d) {
+                  d.marker = true;
+                  d.grx0 = d.gry0 = -halfsize;
+                  d.grx2 = d.gry2 = halfsize;
+              });
       }
 
       if (JSROOT.gStyle.Tooltip > 1)
@@ -2366,9 +2371,11 @@
             // Draw Polymarker
             if (lopt.indexOf('p') != -1) {
                var marker = JSROOT.Painter.createAttMarker(attmarker);
-               this.draw_g.append(marker.kind)
-                   .attr("transform", function(d) { return "translate(" + (x0 + tpos_x)/2 + "," + mid_y + ")"; })
-                   .call(marker.func);
+               this.draw_g
+                   .append("svg:path")
+                   .style("fill", marker.fill)
+                   .style("stroke", marker.stroke)
+                   .attr("d", marker.create((x0 + tpos_x)/2, mid_y));
             }
 
             var pos_x = tpos_x;

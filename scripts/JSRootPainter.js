@@ -317,62 +317,73 @@
 
       var marker_color = JSROOT.Painter.root_colors[attmarker.fMarkerColor];
 
-      var res = { kind: 'svg:path', stroke: marker_color, fill: marker_color, marker: "", fullSize: markerSize };
+      var res = { x0: 0, y0: 0, stroke: marker_color, fill: marker_color, marker: "", fullSize: markerSize, ndig: 0 };
       if (!toFill) res.fill = 'none';
 
-      var ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
-      if (shape == 6) ndig++;
-      var half = (markerSize/2).toFixed(ndig), full = markerSize.toFixed(ndig);
+      res.ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
+      if (shape == 6) res.ndig++;
+      var half = (markerSize/2).toFixed(res.ndig), full = markerSize.toFixed(res.ndig);
 
       switch(shape) {
       case 0: // circle
-         res.marker = "M-"+half+",0a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
+         res.x0 = -markerSize/2;
+         res.marker = "a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
          break;
       case 1: // cross
-         var d = (markerSize/3).toFixed(ndig), d0 = (markerSize/6).toFixed(ndig);
-         res.marker = "M"+d0+","+d0+"h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
+         var d = (markerSize/3).toFixed(res.ndig);
+         res.x0 = res.y0 = markerSize/6;
+         res.marker = "h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
          break;
       case 2: // diamond
-         res.marker = "M-"+half+",0l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
+         res.x0 = -markerSize/2;
+         res.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
          break;
       case 3: // square
-         res.marker = "M-"+half+",-"+half+"v"+full+"h"+full+"v-"+full + "z";
+         res.x0 = res.y0 = -markerSize/2;
+         res.marker = "v"+full+"h"+full+"v-"+full+"z";
          break;
       case 4: // triangle-up
-         res.marker = "M0,"+half+"l-"+ half+",-"+full+"h"+full+"z";
+         res.y0 = markerSize/2;
+         res.marker = "l-"+ half+",-"+full+"h"+full+"z";
          break;
       case 5: // triangle-down
-         res.marker = "M0,-"+half+"l-"+ half+","+full+"h"+full+"z";
+         res.y0 = -markerSize/2;
+         res.marker = "l-"+ half+","+full+"h"+full+"z";
          break;
       case 6: // star
-         res.marker = "M0,-"+half + "l" + (markerSize/3).toFixed(ndig)+","+full +
-                                    "l-"+ (5/6*markerSize).toFixed(ndig) + ",-" + (5/8*markerSize).toFixed(ndig) +
-                                    "h" + full +
-                                    "l-" + (5/6*markerSize).toFixed(ndig) + "," + (5/8*markerSize).toFixed(ndig) + "z";
+         res.y0 = -markerSize/2;
+         res.marker = "l" + (markerSize/3).toFixed(res.ndig)+","+full +
+                      "l-"+ (5/6*markerSize).toFixed(res.ndig) + ",-" + (5/8*markerSize).toFixed(res.ndig) +
+                      "h" + full +
+                      "l-" + (5/6*markerSize).toFixed(res.ndig) + "," + (5/8*markerSize).toFixed(res.ndig) + "z";
          break;
       case 7: // asterisk
-         res.marker = "M-"+half+",-"+half + "l"+full+","+full +
+         res.x0 = res.y0 = -markerSize/2;
+         res.marker = "l"+full+","+full +
                       "m0,-"+full+"l-"+full+","+full+
                       "m0,-"+half+"h"+full+"m-"+half+",-"+half+"v"+full;
          break;
       case 8: // plus
-         res.marker = "M0,-"+half+"v"+full+"m-"+half+",-"+half+"h"+full;
+         res.y0 = -markerSize/2;
+         res.marker = "v"+full+"m-"+half+",-"+half+"h"+full;
          break;
       case 9: // mult
-         res.marker = "M-"+half+",-"+half + "l"+full+","+full + "m0,-"+full+"l-"+full+","+full;
+         res.x0 = res.y0 = -markerSize/2;
+         res.marker = "l"+full+","+full + "m0,-"+full+"l-"+full+","+full;
          break;
       default: // diamand
-         res.marker = "M-"+half+",0l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
+         res.x0 = -markerSize/2;
+         res.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
          break;
       }
 
-      res.func =
-         function(selection) {
-           return selection.style("fill", this.fill)
-                           .style("stroke", this.stroke)
-                           .attr("d", this.marker);
-         }.bind(res);
+      res.create = function(x,y) {
+         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+      }
 
+       //     return selection.style("fill", this.fill)
+       //                 .style("stroke", this.stroke)
+       //                  .attr("d", this.marker);
       return res;
    }
 
@@ -5816,7 +5827,10 @@
       if (show_markers) {
          // draw markers also when e2 option was specified
          var marker = JSROOT.Painter.createAttMarker(this.histo);
-         nodes.append(marker.kind).call(marker.func);
+         nodes.append("svg:path")
+              .style("fill", marker.fill)
+              .style("stroke", marker.stroke)
+              .attr("d", marker.create(0,0));
       }
    }
 
@@ -5927,12 +5941,12 @@
                         if ((my >= -yerr1) && (my < height + yerr2)) {
                            if (path_fill !== null)
                               path_fill +="M" + mx1 +","+(my-yerr1) +
-                                         "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                                          "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                            if (path_err !== null)
                               path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
                                          "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
                            if (path_marker !== null)
-                              path_marker += "M"+Math.round((mx1+mx2-1)/2)+","+ my + "m" + marker.marker.substr(1);
+                              path_marker += marker.create((mx1+mx2-1)/2, my);
                         }
                      }
                   }
