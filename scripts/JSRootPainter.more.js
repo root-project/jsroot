@@ -3316,6 +3316,7 @@
       return res;
    }
 
+/*
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
 
       var histo = this.GetObject(),
@@ -3399,6 +3400,7 @@
 
       this.draw_kind = "markers";
    }
+*/
 
    JSROOT.TH2Painter.prototype.DrawBinsAsRects = function(w,h) {
       // this is old-style drawing of 2d histogram
@@ -3448,8 +3450,9 @@
       //if ((this.options.Color==3) && !JSROOT.browser.isIE)
       //    return this.DrawNormalCanvas(w,h);
 
-      if (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1)
-         return this.DrawMarkers(w,h);
+      //this.GetObject().fMarkerStyle = 30;
+      //if (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1)
+      //   return this.DrawMarkers(w,h);
 
       if (JSROOT.gStyle.Tooltip===1)
          return this.DrawBinsAsRects(w,h);
