@@ -1803,12 +1803,11 @@
 
       if (this.optionMark > 0) {
          // for tooltips use markers only if nodes where not created
-         if (nodes == null) this.draw_kind = "mark";
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
              path = "", n, pnt, grx, gry, marker_kind = null;
 
          if (this.optionMark==2) marker_kind = 3; else
-         if (this.optionMark==3) { marker_kind = 777; if (nodes == null) this.draw_kind = "path"; }
+         if (this.optionMark==3) marker_kind = 777;
 
          var marker = JSROOT.Painter.createAttMarker(graph,marker_kind);
 
@@ -1824,10 +1823,16 @@
             }
          }
 
-         this.draw_g.append("svg:path")
-                    .attr("d", path)
-                    .style("fill", marker.fill)
-                    .style("stroke", marker.stroke);
+         console.log('len = ' + path.length);
+
+         if (path.length>0) {
+            this.draw_g.append("svg:path")
+                       .attr("d", path)
+                       .style("fill", marker.fill)
+                       .style("stroke", marker.stroke);
+            if (nodes===null)
+               this.draw_kind = (this.optionMark==3) ? "path" : "mark";
+         }
       }
 
       if (JSROOT.gStyle.Tooltip > 1)

@@ -315,8 +315,10 @@
 
       if (style === 777) {
          // special pixel mode
-         res.stroke = 'none';
-         res.marker = "v2h2v-2z";
+         //res.stroke = 'none';
+         //res.marker = "v2h2v-2z";
+         res.fill = 'none';
+         res.marker = "h1";
          res.size = 1;
          return res;
       }
