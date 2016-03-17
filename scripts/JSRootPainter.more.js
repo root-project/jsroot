@@ -3316,54 +3316,6 @@
       return res;
    }
 
-   JSROOT.TH2Painter.prototype.DrawSimpleCanvas = function(w,h) {
-      var i, j, binz,
-          histo = this.GetObject(),
-          i1 = this.GetSelectIndex("x", "left", 0),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", 0),
-          j2 = this.GetSelectIndex("y", "right", 1);
-
-      this.maxbin = this.minbin = histo.getBinContent(i1+1, j1+1);
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            if (binz>this.maxbin) this.maxbin = binz; else
-            if (binz<this.minbin) this.minbin = binz;
-         }
-      }
-
-      var dx = i2-i1, dy = j2-j1;
-
-      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo);
-
-      var canvas = fo.append("xhtml:canvas")
-                     .attr("width", dx).attr("height", dy)
-                     .attr("style", "width: " + w + "px; height: "+ h + "px");
-
-      var context = canvas.node().getContext("2d");
-      var image = context.createImageData(dx, dy);
-
-      var p = -1;
-
-      for (j = j2-1; j >= j1; j--) {
-         for (i = i1; i < i2; ++i) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            var col = binz>this.minbin ? this.getValueColor(binz) : 'white';
-            var c = d3.rgb(col);
-            image.data[++p] = c.r;
-            image.data[++p] = c.g;
-            image.data[++p] = c.b;
-            image.data[++p] = 255;
-         }
-      }
-
-      context.putImageData(image, 0, 0);
-
-      this.draw_kind = "canv1";
-   }
-
    JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
 
       var histo = this.GetObject(),
@@ -3493,11 +3445,8 @@
 
       var w = this.frame_width(), h = this.frame_height();
 
-      if ((this.options.Color==2) && !JSROOT.browser.isIE)
-         return this.DrawSimpleCanvas(w,h);
-
-      if ((this.options.Color==3) && !JSROOT.browser.isIE)
-         return this.DrawNormalCanvas(w,h);
+      //if ((this.options.Color==3) && !JSROOT.browser.isIE)
+      //    return this.DrawNormalCanvas(w,h);
 
       if (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1)
          return this.DrawMarkers(w,h);
