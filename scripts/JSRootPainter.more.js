@@ -3820,9 +3820,9 @@
          this.DrawNextFunction(0, function() {
             if (this.options.Lego == 0) {
                this.AddInteractive();
-               this.CreateToolbar();
                if (this.options.AutoZoom) this.AutoZoom();
             }
+            this.CreateToolbar();
             this.DrawingReady();
          }.bind(this));
 
