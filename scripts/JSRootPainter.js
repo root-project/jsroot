@@ -321,6 +321,7 @@
       if (!toFill) res.fill = 'none';
 
       var ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
+      if (shape == 6) ndig++;
       var half = (markerSize/2).toFixed(ndig), full = markerSize.toFixed(ndig);
 
       switch(shape) {
