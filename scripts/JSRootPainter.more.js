@@ -1824,8 +1824,6 @@
             }
          }
 
-         console.log('len = ' + path.length + ' bins ' + this.bins.length);
-
          if (path.length>0) {
             this.draw_g.append("svg:path")
                        .attr("d", path)
