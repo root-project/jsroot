@@ -1001,7 +1001,7 @@
 
       var res = bsp.toGeometry();
 
-      console.log('Composite shape left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
+      // console.log('Composite shape left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
 
       return res;
    }

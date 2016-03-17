@@ -1355,8 +1355,6 @@
       if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
       if (isNaN(prec) || (prec<0) || (prec==null)) prec = 4;
 
-      if ((prec>20) || (prec<0)) console.log("1.prec = "  + prec +  "  fmt = " + fmt + last);
-
       var significance = false;
       if ((last=='e') || (last=='E')) { isexp = true; } else
       if (last=='Q') { isexp = true; significance = true; } else

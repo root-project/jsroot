@@ -3503,8 +3503,6 @@
          lasth = h2;
       }
 
-      console.log(this.name + ' path ' + res.length);
-
       axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
 
       last = vertical ? h : 0;
@@ -6010,8 +6008,6 @@
 
          return;
       }
-
-      console.log('th1 len ' + res.length + '  ' + this.GetTipName() + ' minmax = ' + use_minmax + ' nbins ' + (right-left+1));
 
       this.draw_g.append("svg:path")
                  .attr("d", res)

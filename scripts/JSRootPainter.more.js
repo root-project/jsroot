@@ -1016,8 +1016,6 @@
 
             var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h, 2);
 
-            console.log('tf1 len ' + path.path.length + '  ' + this.GetTipName());
-
             if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
                   .attr("class", "line")
@@ -1585,8 +1583,6 @@
          // build upper part (in reverse direction
          var path2 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "Lbezier" : "Lline", bins2);
 
-         console.log('gr area ' + (path1.path.length + path2.path.length));
-
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
                     .style("stroke", "none")
@@ -1636,15 +1632,11 @@
                        .style("stroke", "none")
                        .call(this.fillatt.func)
                        .style('opacity', 0.75);
-
-            console.log('excl area ' + (path.path.length + path2.path.length));
          }
 
          if (this.optionLine || this.optionFill) {
-            console.log('graph path ' + path.path.length);
-
             var elem = this.draw_g.append("svg:path")
-                          .attr("d", path.path + close_symbol);
+                           .attr("d", path.path + close_symbol);
             if (this.optionLine)
                elem.call(this.lineatt.func);
             else
@@ -1821,8 +1813,6 @@
             if ((gry<0) || (gry>h)) continue;
             path+="M" + grx + "," + gry + "v2h2v-2z";
          }
-
-         console.log('graph svg:path len ' + path.length + ' step ' + step);
 
          this.draw_g.append("svg:path")
                     .attr("d",path)
@@ -2439,8 +2429,6 @@
          }
 
          res += "]";
-         //console.log('len = ',res.length);
-         //console.log(res);
       }
 
       this.DrawAxisPalette = function(s_width, s_height) {
@@ -3157,7 +3145,6 @@
                if (show) {
                   nbins++;
                   xx[i-i1].cnt+=1;
-                  if (typeof (yy[j-j1]) === 'undefined') console.log('j= ' + j + '  j1 = ' + j1 + ' len =' + yy.length);
                   yy[j-j1].cnt+=1;
                }
             }
@@ -3437,9 +3424,8 @@
       }
 
       res += "]";
-
-      console.log('len = ',res.length);
-      console.log(res);
+      //console.log('len = ',res.length);
+      //console.log(res);
    }
 
    JSROOT.TH2Painter.prototype.DrawMarkers = function(w,h) {
