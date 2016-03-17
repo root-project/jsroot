@@ -201,9 +201,6 @@
       if (toolbar !== null)
          JSROOT.gStyle.ToolBar = (toolbar !== "0") && (toolbar !== "false");
 
-      var interpolate = JSROOT.GetUrlOption("interpolate", url);
-      if (interpolate!==null) JSROOT.gStyle.Interpolate = interpolate;
-
       var palette = JSROOT.GetUrlOption("palette", url);
       if (palette!==null) {
          palette = parseInt(palette);
@@ -1595,22 +1592,18 @@
       }
 
       var resize_corner1 = this.draw_g.select('.resize_corner1');
-      if (resize_corner1.empty()) {
-         resize_corner1 = this.draw_g.append("path").attr('class','resize_corner1');
-         if (JSROOT.touches)
-            resize_corner1.attr("d","M0,0 h20 v20 h-20 Z");
-         else
-            resize_corner1.attr("d","M2,2 h15 v-5 h-20 v20 h5 Z");
-      }
+      if (resize_corner1.empty())
+         resize_corner1 = this.draw_g
+                              .append("path")
+                              .attr('class','resize_corner1')
+                              .attr("d","M2,2 h15 v-5 h-20 v20 h5 Z");
 
       var resize_corner2 = this.draw_g.select('.resize_corner2');
-      if (resize_corner2.empty()) {
-         resize_corner2 = this.draw_g.append("path").attr('class','resize_corner2');
-         if (JSROOT.touches)
-            resize_corner2.attr("d","M0,0 h-20 v-20 h20 Z");
-         else
-            resize_corner2.attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
-      }
+      if (resize_corner2.empty())
+         resize_corner2 = this.draw_g
+                              .append("path")
+                              .attr('class','resize_corner2')
+                              .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
 
       resize_corner1.style("opacity", "0")
                     .style("cursor", "nw-resize");
@@ -2660,7 +2653,7 @@
 
       this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
-      if (this.UseContextMenu && JSROOT.gStyle.ContextMenu && !JSROOT.touches)
+      if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
    }
 
@@ -5277,9 +5270,7 @@
       this.zoom_curr = null;    // current point for zomming
       this.touch_cnt = 0;
 
-      var pthis = this;
-
-      if (JSROOT.gStyle.Zooming && !JSROOT.touches) {
+      if (JSROOT.gStyle.Zooming) {
          this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
          this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
       }
@@ -5293,13 +5284,12 @@
                 .on("touchstart", this.startTouchMenu.bind(this, "x") );
             this.svg_frame().selectAll(".yaxis_container")
                 .on("touchstart", this.startTouchMenu.bind(this, "y") );
-         } else {
-            this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
-            this.svg_frame().selectAll(".xaxis_container")
-                .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-            this.svg_frame().selectAll(".yaxis_container")
-                .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
          }
+         this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
+         this.svg_frame().selectAll(".xaxis_container")
+             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+         this.svg_frame().selectAll(".yaxis_container")
+             .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
       }
    }
 

@@ -96,7 +96,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 16/03/2016";
+   JSROOT.version = "dev 17/03/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -159,7 +159,6 @@
          FitFormat : "5.4g",
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
-         Interpolate : "basis", // d3.js interpolate methods, used in TGraph and TF1 painters
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, 1 - overlay over SVG (IE), 2 - embed into SVG (works only with Firefox and Chrome)
          NoWebGL : false // if true, WebGL will be disabled

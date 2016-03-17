@@ -1136,7 +1136,7 @@
 
       if (left!=null) {
          var wdiff = $("#"+this.separ.left).outerWidth() - $("#"+this.separ.left).width();
-         var w = JSROOT.touches ? 10 : 4;
+         var w = 5;
          $("#"+this.separ.vertical).css('left', left + "px").width(w).css('top','1px');
          $("#"+this.separ.left).width(left-wdiff-1).css('top','1px');
          $("#"+this.separ.right).css('left',left+w+"px").css('top','1px');
@@ -1153,7 +1153,7 @@
          if (height<5) height = 5;
          var bot = height + diff;
          $('#'+this.separ.bottom).height(height);
-         var h = JSROOT.touches ? 10 : 4;
+         var h = 5;
          $("#"+this.separ.horizontal).css('bottom', bot + 'px').height(h);
          bot += h;
          $("#"+this.separ.left).css('bottom', bot + 'px');
