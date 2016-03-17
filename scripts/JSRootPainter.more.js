@@ -1651,7 +1651,7 @@
          this.draw_kind = "lines";
 
          // do not add tooltip for line, when we wants to add markers
-         if ((JSROOT.gStyle.Tooltip===1) && (this.optionMark==1) || (this.optionMark==2))
+         if (JSROOT.gStyle.Tooltip===1)
             this.draw_g.selectAll("circle")
                        .data(drawbins).enter()
                        .append("svg:circle")
@@ -1665,7 +1665,7 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar || this.optionMark==1 || this.optionMark==2) {
+      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar) {
 
          drawbins = this.OptimizeBins(function(pnt,i) {
 
@@ -1801,39 +1801,32 @@
                        ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
               });
 
-      if ((this.optionMark == 3) && (nodes==null)) {
-         this.draw_kind = "path";
+      if (this.optionMark > 0) {
+         this.draw_kind = "mark";
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
-             path = "", n, pnt, grx, gry;
+             path = "", n, pnt, grx, gry, marker_kind = null;
+
+         if (this.optionMark==2) marker_kind = 3; else
+         if (this.optionMark==3) { marker_kind = 777; this.draw_kind = "path"; }
+
+         var marker = JSROOT.Painter.createAttMarker(graph,marker_kind);
+
+         this.marker_size = marker.size;
+
          for (n=0;n<this.bins.length;n+=step) {
             pnt = this.bins[n];
-            grx = Math.round(pmain.grx(pnt.x));
-            if ((grx<0) || (grx>w)) continue;
-            gry = Math.round(pmain.gry(pnt.y));
-            if ((gry<0) || (gry>h)) continue;
-            path+="M" + grx + "," + gry + "v2h2v-2z";
+            grx = pmain.grx(pnt.x);
+            if ((grx > -marker.size) && (grx < w+marker.size)) {
+               gry = pmain.gry(pnt.y);
+               if ((gry >-marker.size) && (gry < h+marker.size))
+                  path += marker.create(grx, gry);
+            }
          }
 
          this.draw_g.append("svg:path")
-                    .attr("d",path)
-                    .attr("fill", JSROOT.Painter.root_colors[graph.fMarkerColor]);
-
-      } else
-      if (this.optionMark > 0) {
-         /* Add markers */
-         var marker = JSROOT.Painter.createAttMarker(graph, ((this.optionMark==2) ? 3 : null));
-
-         var halfsize = Math.max(2, Math.round(marker.fullSize/2));
-
-         nodes.append("svg:path")
-              .style("fill", marker.fill)
-              .style("stroke", marker.stroke)
-              .attr("d", marker.create(0,0))
-              .call(function(d) {
-                  d.marker = true;
-                  d.grx0 = d.gry0 = -halfsize;
-                  d.grx2 = d.gry2 = halfsize;
-              });
+                    .attr("d", path)
+                    .style("fill", marker.fill)
+                    .style("stroke", marker.stroke);
       }
 
       if (JSROOT.gStyle.Tooltip > 1)
@@ -1849,8 +1842,8 @@
          return null;
       }
 
-      if ((this.draw_kind=="lines") || (this.draw_kind=="path"))
-         return this.ProcessTooltipForLine(pnt);
+      if ((this.draw_kind=="lines") || (this.draw_kind=="path") || (this.draw_kind=="mark"))
+         return this.ProcessTooltipForPath(pnt);
 
       if (this.draw_kind!="nodes") return null;
 
@@ -1928,11 +1921,12 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.ProcessTooltipForLine = function(pnt) {
+   JSROOT.TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
 
       if (this.bins === null) return null;
 
       var islines = (this.draw_kind=="lines"),
+          ismark = (this.draw_kind=="mark"),
           bestbin = null, bestdist = 1e10,
           pmain = this.main_painter(),
           dist, grx, gry, n;
@@ -1959,7 +1953,13 @@
       // check last point
       if ((dist > 10) && islines) bestbin = null;
 
-      if (!islines && Math.sqrt(bestdist)>4) bestbin = null;
+      var radius = Math.max(this.lineatt.width + 3, 4);
+
+      if (ismark) radius = Math.max(this.marker_size/2 + 2, 4);
+
+      if (!islines && !ismark && (Math.sqrt(bestdist)>radius)) bestbin = null;
+
+      if (ismark && (this.bins.length==1) && (Math.sqrt(bestdist)>3*radius)) bestbin = null;
 
       var ttbin = this.draw_g.select(".tooltip_bin");
 
@@ -1978,7 +1978,7 @@
          ttbin = this.draw_g.append("svg:g")
                              .attr("class","tooltip_bin");
 
-      var radius = Math.max(this.lineatt.width + 3, 4), gry1, gry2;
+      var gry1, gry2;
 
       if ((this.optionEF > 0) && islines) {
          gry1 = pmain.gry(bestbin.y - bestbin.eylow);
@@ -1995,25 +1995,37 @@
       if (res.changed) {
          ttbin.selectAll("*").remove(); // first delete all childs
          ttbin.property("current_bin", bestbin);
-         ttbin.append("svg:circle").attr("cy", gry1.toFixed(1))
-         if (Math.abs(gry1-gry2) > 1)
-            ttbin.append("svg:circle").attr("cy", gry2.toFixed(1));
 
-         var elem = ttbin.selectAll("circle")
-                         .attr("r", radius)
-                         .attr("cx", res.x.toFixed(1));
-
-         if (!islines) {
-            elem.style('stroke', res.color1 == 'black' ? 'green' : 'black').style('fill','none');
+         if (ismark) {
+            ttbin.append("svg:rect")
+                 .attr("class","h1bin")
+                 .style("pointer-events","none")
+                 .style("opacity", "0.3")
+                 .attr("x", (res.x - radius).toFixed(1))
+                 .attr("y", (res.y - radius).toFixed(1))
+                 .attr("width", (2*radius).toFixed(1))
+                 .attr("height", (2*radius).toFixed(1));
          } else {
-            if (this.optionLine)
-               elem.call(this.lineatt.func);
-            else
-               elem.style('stroke','black');
-            if (this.optionFill > 0)
-               elem.call(this.fillatt.func);
-            else
-               elem.style('fill','none');
+            ttbin.append("svg:circle").attr("cy", gry1.toFixed(1))
+            if (Math.abs(gry1-gry2) > 1)
+               ttbin.append("svg:circle").attr("cy", gry2.toFixed(1));
+
+            var elem = ttbin.selectAll("circle")
+                            .attr("r", radius)
+                            .attr("cx", res.x.toFixed(1));
+
+            if (!islines) {
+               elem.style('stroke', res.color1 == 'black' ? 'green' : 'black').style('fill','none');
+            } else {
+               if (this.optionLine)
+                  elem.call(this.lineatt.func);
+               else
+                  elem.style('stroke','black');
+               if (this.optionFill > 0)
+                  elem.call(this.fillatt.func);
+               else
+                  elem.style('fill','none');
+            }
          }
       }
 

@@ -302,88 +302,97 @@
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
-      if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
-
-      var marker_kind = ((style>0) && (style<JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
-
-      var shape = marker_kind % 100, toFill = (marker_kind>=100);
-
-      var markerSize = attmarker.fMarkerSize * 8;
-      switch(style) {
-         case 1: markerSize = 1; break;
-         case 6: markerSize = 2; break;
-         case 7: markerSize = 3; break;
-      }
 
       var marker_color = JSROOT.Painter.root_colors[attmarker.fMarkerColor];
 
-      var res = { x0: 0, y0: 0, stroke: marker_color, fill: marker_color, marker: "", fullSize: markerSize, ndig: 0 };
-      if (!toFill) res.fill = 'none';
+      var res = { x0: 0, y0: 0, stroke: marker_color, fill: marker_color, marker: "", size: 8, ndig: 0 };
 
-      res.ndig = (markerSize>7) ? 0 : ((markerSize>2) ? 1 : 2);
+      res.create = function(x,y) {
+         if (this.ndig===0)
+            return "M" + Math.round(x+this.x0)+ "," + Math.round(y+this.y0) + this.marker;
+         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+      }
+
+      if (style === 777) {
+         // special pixel mode
+         res.stroke = 'none';
+         res.marker = "v2h2v-2z";
+         res.size = 1;
+         return res;
+      }
+
+      if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
+
+      var marker_kind = ((style>0) && (style<JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[style] : 100;
+      var shape = marker_kind % 100;
+
+      if (marker_kind<100) res.fill = 'none';
+
+      res.size = attmarker.fMarkerSize * 8;
+      switch(style) {
+         case 1: res.size = 1; break;
+         case 6: res.size = 2; break;
+         case 7: res.size = 3; break;
+      }
+
+
+      res.ndig = (res.size>7) ? 0 : ((res.size>2) ? 1 : 2);
       if (shape == 6) res.ndig++;
-      var half = (markerSize/2).toFixed(res.ndig), full = markerSize.toFixed(res.ndig);
+      var half = (res.size/2).toFixed(res.ndig), full = res.size.toFixed(res.ndig);
 
       switch(shape) {
       case 0: // circle
-         res.x0 = -markerSize/2;
+         res.x0 = -res.size/2;
          res.marker = "a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
          break;
       case 1: // cross
-         var d = (markerSize/3).toFixed(res.ndig);
-         res.x0 = res.y0 = markerSize/6;
+         var d = (res.size/3).toFixed(res.ndig);
+         res.x0 = res.y0 = res.size/6;
          res.marker = "h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
          break;
       case 2: // diamond
-         res.x0 = -markerSize/2;
+         res.x0 = -res.size/2;
          res.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
          break;
       case 3: // square
-         res.x0 = res.y0 = -markerSize/2;
+         res.x0 = res.y0 = -res.size/2;
          res.marker = "v"+full+"h"+full+"v-"+full+"z";
          break;
       case 4: // triangle-up
-         res.y0 = markerSize/2;
+         res.y0 = res.size/2;
          res.marker = "l-"+ half+",-"+full+"h"+full+"z";
          break;
       case 5: // triangle-down
-         res.y0 = -markerSize/2;
+         res.y0 = -res.size/2;
          res.marker = "l-"+ half+","+full+"h"+full+"z";
          break;
       case 6: // star
-         res.y0 = -markerSize/2;
-         res.marker = "l" + (markerSize/3).toFixed(res.ndig)+","+full +
-                      "l-"+ (5/6*markerSize).toFixed(res.ndig) + ",-" + (5/8*markerSize).toFixed(res.ndig) +
+         res.y0 = -res.size/2;
+         res.marker = "l" + (res.size/3).toFixed(res.ndig)+","+full +
+                      "l-"+ (5/6*res.size).toFixed(res.ndig) + ",-" + (5/8*res.size).toFixed(res.ndig) +
                       "h" + full +
-                      "l-" + (5/6*markerSize).toFixed(res.ndig) + "," + (5/8*markerSize).toFixed(res.ndig) + "z";
+                      "l-" + (5/6*res.size).toFixed(res.ndig) + "," + (5/8*res.size).toFixed(res.ndig) + "z";
          break;
       case 7: // asterisk
-         res.x0 = res.y0 = -markerSize/2;
+         res.x0 = res.y0 = -res.size/2;
          res.marker = "l"+full+","+full +
                       "m0,-"+full+"l-"+full+","+full+
                       "m0,-"+half+"h"+full+"m-"+half+",-"+half+"v"+full;
          break;
       case 8: // plus
-         res.y0 = -markerSize/2;
+         res.y0 = -res.size/2;
          res.marker = "v"+full+"m-"+half+",-"+half+"h"+full;
          break;
       case 9: // mult
-         res.x0 = res.y0 = -markerSize/2;
+         res.x0 = res.y0 = -res.size/2;
          res.marker = "l"+full+","+full + "m0,-"+full+"l-"+full+","+full;
          break;
       default: // diamand
-         res.x0 = -markerSize/2;
+         res.x0 = -res.size/2;
          res.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
          break;
       }
 
-      res.create = function(x,y) {
-         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
-      }
-
-       //     return selection.style("fill", this.fill)
-       //                 .style("stroke", this.stroke)
-       //                  .attr("d", this.marker);
       return res;
    }
 
