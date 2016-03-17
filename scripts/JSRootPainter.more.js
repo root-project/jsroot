@@ -1802,12 +1802,13 @@
               });
 
       if (this.optionMark > 0) {
-         this.draw_kind = "mark";
+         // for tooltips use markers only if nodes where not created
+         if (nodes == null) this.draw_kind = "mark";
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
              path = "", n, pnt, grx, gry, marker_kind = null;
 
          if (this.optionMark==2) marker_kind = 3; else
-         if (this.optionMark==3) { marker_kind = 777; this.draw_kind = "path"; }
+         if (this.optionMark==3) { marker_kind = 777; if (nodes == null) this.draw_kind = "path"; }
 
          var marker = JSROOT.Painter.createAttMarker(graph,marker_kind);
 
@@ -1959,7 +1960,10 @@
 
       if (!islines && !ismark && (Math.sqrt(bestdist)>radius)) bestbin = null;
 
-      if (ismark && (this.bins.length==1) && (Math.sqrt(bestdist)>3*radius)) bestbin = null;
+      if (ismark && (bestbin!==null)) {
+         if ((pnt.nproc == 1) && (Math.sqrt(bestdist)>radius)) bestbin = null; else
+         if ((this.bins.length==1) && (Math.sqrt(bestdist)>3*radius)) bestbin = null;
+      }
 
       var ttbin = this.draw_g.select(".tooltip_bin");
 
