@@ -4454,7 +4454,7 @@
             if (indx > this.nbinsx) this.ymax;
             if (indx==bin) return this.histo.fYaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fYbins[indx2] * Math.abs(bin-indx);
+            return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fYaxis.fXbins[indx2] * Math.abs(bin-indx);
          };
          this.GetIndexY = function(y,add) {
             for (var k = 1; k < this.histo.fYaxis.fXbins.length; ++k)
