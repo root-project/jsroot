@@ -7307,7 +7307,7 @@
          });
    }
 
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, tree_node) {
+   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont) {
       var hpainter = this;
 
       var hitem = this.Find(itemname);
@@ -7348,7 +7348,7 @@
                    item._isopen = true;
                    is_ok = true;
                    if (typeof hpainter.UpdateTreeNode == 'function')
-                      hpainter.UpdateTreeNode(item, tree_node, true);
+                      hpainter.UpdateTreeNode(item, d3cont, true);
                    break;
                 }
             }
@@ -7360,7 +7360,7 @@
                item._isopen = true;
                is_ok = true;
                if (typeof hpainter.UpdateTreeNode == 'function')
-                  hpainter.UpdateTreeNode(item, tree_node, true);
+                  hpainter.UpdateTreeNode(item, d3cont, true);
             }
          }
 
