@@ -392,49 +392,58 @@
    }
 
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, node, set_attr) {
-      if (node==null) {
+
+      var d3cont;
+
+      if (node)  {
+         d3cont = d3.select(node.get(0));
+      } else {
          var name = this.itemFullName(hitem);
-         node = $(this.select_main().node()).find("[item='" + name + "']");
-         if ((node.length == 0) && ('_cycle' in hitem))
-            node = $(this.select_main().node()).find("[item='" + name + ";" + hitem._cycle + "']");
-         if (node.length == 0) return;
+         console.log('Search item ' + name);
+
+         d3cont = this.select_main().select("[item='" + name + "']");
+         //node = $(this.select_main().node()).find("[item='" + name + "']");
+         if (d3cont.empty() && ('_cycle' in hitem))
+            d3cont = this.select_main().select("[item='" + name + ";" + hitem._cycle + "']");
+         if (d3cont.empty()) return;
       }
 
+
       if (set_attr) {
-         node.attr('item', this.itemFullName(hitem));
-         node.find("a").text(hitem._name);
+         d3cont.attr('item', this.itemFullName(hitem));
+         d3cont.select("a").text(hitem._name);
       }
 
       // better search for images again, but not store them extra
       var img1 = "", img2 = "", has_childs = ('_childs' in hitem);
       var handle = JSROOT.getDrawHandle(hitem._kind);
-      if (handle!=null) {
+      if (handle !== null) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
       }
-      if ('_icon' in hitem) img1 = hitem['_icon'];
-      if ('_icon2' in hitem) img2 = hitem['_icon2'];
+      if ('_icon' in hitem) img1 = hitem._icon;
+      if ('_icon2' in hitem) img2 = hitem._icon2;
       if (img2.length==0) img2 = img1;
       if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
       if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
 
-      var a_node = node.find("a").first();
+      var d3a = d3cont.select("a");
 
       if ('_value' in hitem) {
-         var p_node = a_node.next().html(hitem._isopen ? "" : hitem._value);
+         d3cont.select("p").html(hitem._isopen ? "" : hitem._value);
       }
 
-      var img = a_node.prev();
+      var d3img = d3.select(d3a.node().previousElementSibling);
 
       if (this.with_icons) {
          var newname = hitem._isopen ? img2 : img1;
          if (newname.indexOf("img_")==0) {
             if ('_icon_click' in hitem) newname += " icon_click";
-            img.attr("class", newname);
+            d3img.attr("class", newname);
          } else {
-            img.attr("src", newname);
+            d3img.attr("src", newname);
          }
-         img = img.prev();
+         d3img = d3.select(d3img.node().previousElementSibling);
       }
 
       var h = this;
@@ -442,17 +451,16 @@
       var new_class = hitem._isopen ? "img_minus" : "img_plus";
       if (this.isLastSibling(hitem)) new_class += "bottom";
 
-      if (img.hasClass("plus_minus")) {
-         img.attr('class', new_class + " plus_minus");
+      if (d3img.classed("plus_minus")) {
+         d3img.attr('class', new_class + " plus_minus");
       } else
       if (has_childs) {
-         img.attr('class', new_class + " plus_minus");
-         img.css('cursor', 'pointer');
-         img.click(function() { h.tree_click($(this), "plusminus"); });
+         d3img.attr('class', new_class + " plus_minus")
+              .style('cursor', 'pointer')
+              .on('click', function() { h.tree_click($(this), "plusminus"); });
       }
 
-      var childs = node.children().last();
-      if (childs.hasClass("h_childs")) childs.remove();
+      d3cont.select(".h_childs").remove();
 
       var display_childs = has_childs && hitem._isopen;
       if (!display_childs) return;
@@ -463,17 +471,14 @@
       //this.html += '</div>';
       //node.append(this.html);
 
-      var d3cont = d3.select(node.get(0));
-
       d3chlds = d3cont.append("div").attr("class", "h_childs");
       for (var i in hitem._childs)
          this.addItemHtml(hitem._childs[i], hitem, d3chlds);
 
-
-      childs = node.children().last();
+      var childs = $(d3chlds.node());
 
       var items = childs.find(".h_item")
-                   .click(function() { h.tree_click($(this)); });
+                        .click(function() { h.tree_click($(this)); });
 
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
