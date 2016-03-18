@@ -21,6 +21,7 @@
 12. Use of cached methods improves binary I/O perfromance by 20%
 13. Support TGaxis
 14. Project now can be obtained via 'bower install jsroot' 
+15. Support scatter plot for TH2 
 
 
 ## Changes in 4.3

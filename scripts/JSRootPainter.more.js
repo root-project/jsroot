@@ -3544,7 +3544,6 @@
          yfactor = 0.5 / (this.maxbin - this.minbin);
       }
 
-
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
@@ -3667,11 +3666,15 @@
               lasty = curry+1;
            }
 
+           var color = this.lineatt.color;
+           if (color === 'none') color = this.fillcolor;
+           if (color === 'none') color = 'black';
+
            pattern.attr("width", cell_w[colindx])
                   .attr("height", cell_h[colindx])
                   .append("svg:path")
                   .attr("d",path)
-                  .style("stroke", "red");
+                  .style("stroke", color);
 
            this.draw_g
                .append("svg:path")
