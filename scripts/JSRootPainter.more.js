@@ -3621,6 +3621,9 @@
       if (defs.empty() && (colPaths.length>0))
          defs = this.svg_frame().select('.main_layer').insert("svg:defs",":first-child");
 
+      var marker = null;
+      if (histo.fMarkerStyle > 0) marker = JSROOT.Painter.createAttMarker(histo);
+
       for (colindx=0;colindx<colPaths.length;++colindx)
         if (colPaths[colindx] !== undefined) {
            var pattern_class = "scatter_" + colindx;
@@ -3657,6 +3660,10 @@
               currx = Math.round(arrx[n] * cell_w[colindx]);
               curry = Math.round(arry[n] * cell_h[colindx]);
 
+              if (marker!==null) {
+                 path += marker.create(currx, curry);
+                 continue;
+              }
               m1 = "M" + currx + "," + curry;
               if (lastx!==null) m2 = "m" + (currx-lastx) + "," + (curry-lasty);
                            else m2 = m1;
