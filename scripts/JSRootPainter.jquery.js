@@ -159,23 +159,24 @@
          if ('icon2' in handle) img2 = handle.icon2;
          if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) || ('expand' in handle)) can_click = true;
       }
-      if ('_icon' in hitem) img1 = hitem['_icon'];
-      if ('_icon2' in hitem) img2 = hitem['_icon2'];
+      if ('_icon' in hitem) img1 = hitem._icon;
+      if ('_icon2' in hitem) img2 = hitem._icon2;
       if ((img1.length==0) && ('_online' in hitem))
-         hitem['_icon'] = img1 = "img_globe";
+         hitem._icon = img1 = "img_globe";
       if ((img1.length==0) && isroot)
-         hitem['_icon'] = img1 = "img_base";
+         hitem._icon = img1 = "img_base";
 
-      if (hitem['_more'] || ('_expand' in hitem) || ('_player' in hitem))
+      if (hitem._more || ('_expand' in hitem) || ('_player' in hitem))
          can_click = true;
 
       if (img2.length==0) img2 = img1;
-      if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";
-      if (img2.length==0) img2 = (has_childs || hitem['_more']) ? "img_folderopen" : "img_page";
+      if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
+      if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
 
       var itemname = this.itemFullName(hitem);
+      if (itemname.indexOf('<')>=0) itemname = itemname.replace(/</g,'_').replace(/>/g,'_');
 
-      this['html'] += '<div item="' + itemname + '">';
+      this.html += '<div item="' + itemname + '">';
 
       // build indent
       var sindent = "";
@@ -184,7 +185,7 @@
          sindent = '<div class="' + (this.isLastSibling(prnt) ? "img_empty" : "img_line") + '"/>' + sindent;
          prnt = prnt._parent;
       }
-      this['html'] += sindent;
+      this.html += sindent;
 
       var icon_class = "", plusminus = false;
 
@@ -195,7 +196,7 @@
          icon_class = hitem._isopen ? "img_minus" : "img_plus";
          plusminus = true;
       } else
-      /*if (hitem['_more']) {
+      /*if (hitem._more) {
          icon_class = "img_plus"; // should be special plus ???
          plusminus = true;
       } else */ {
@@ -203,59 +204,64 @@
       }
 
       if (icon_class.length > 0) {
-         this['html'] += '<div class="' + icon_class;
-         if (this.isLastSibling(hitem)) this['html'] += "bottom";
-         if (plusminus) this['html'] += ' plus_minus" style="cursor:pointer';
-         this['html'] += '"/>';
+         this.html += '<div class="' + icon_class;
+         if (this.isLastSibling(hitem)) this.html += "bottom";
+         if (plusminus) this.html += ' plus_minus" style="cursor:pointer';
+         this.html += '"/>';
       }
 
       // make node icons
 
       if (this.with_icons) {
          var icon_name = hitem._isopen ? img2 : img1;
+         var title = hitem._kind ? hitem._kind.replace(/</g,'&lt;').replace(/>/g,'&gt;') : "";
 
          if (icon_name.indexOf("img_")==0) {
             if ('_icon_click' in hitem) icon_name+= " icon_click";
-            this['html'] += '<div class="' + icon_name + '" title="' + hitem._kind + '"/>';
+            this.html += '<div class="' + icon_name + '" title="' + title + '"/>';
          } else {
-           this['html'] += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + hitem._kind +'"/>';
+            this.html += '<img src="' + icon_name + '" alt="" style="vertical-align:top;width:18px;height:18px" title="' + title +'"/>';
          }
       }
 
-      this['html'] += '<a';
-      if (can_click || has_childs) this['html'] +=' class="h_item"';
+      this.html += '<a';
+      if (can_click || has_childs) this.html +=' class="h_item"';
 
       var element_name = hitem._name;
 
       if ('_realname' in hitem)
          element_name = hitem._realname;
 
+      element_name = element_name.replace(/</g,'&lt;').replace(/>/g,'&gt;');
       var element_title = "";
       if ('_title' in hitem) element_title = hitem._title;
 
       if ('_fullname' in hitem)
-         element_title += "  fullname: " + hitem['_fullname'];
+         element_title += "  fullname: " + hitem._fullname;
 
-      if (element_title.length == 0) element_title = element_name;
+      if (element_title.length === 0)
+         element_title = element_name;
+      else
+         element_title = element_title.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-      this['html'] += ' title="' + element_title + '"';
-      this['html'] += '>' + element_name + ('_value' in hitem ? ":" : "") + '</a>';
+      this.html += ' title="' + element_title + '"';
+      this.html += '>' + element_name + ('_value' in hitem ? ":" : "") + '</a>';
       if ('_value' in hitem) {
-         this['html'] += "<p";
-         if ('_vclass' in hitem) this['html'] += " class='" + hitem._vclass + "'";
-         this['html'] += ">";
-         if (!hitem['_isopen']) this['html'] += hitem._value;
-         this['html'] += "</p>";
+         this.html += "<p";
+         if ('_vclass' in hitem) this.html += " class='" + hitem._vclass + "'";
+         this.html += ">";
+         if (!hitem._isopen) this.html += hitem._value;
+         this.html += "</p>";
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
-         this['html'] += '<div class="h_childs">';
+         this.html += '<div class="h_childs">';
          for (var i in hitem._childs)
             this.addItemHtml(hitem._childs[i], hitem);
-         this['html'] += '</div>';
+         this.html += '</div>';
       }
 
-      this['html'] += '</div>';
+      this.html += '</div>';
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
@@ -275,38 +281,38 @@
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
 
-      this['html'] = "<div class='jsroot' style='overflow:auto; width:100%; height:100%;"
-      if (this.background) this['html']+="background-color:"+this.background + ";";
-      if (this.with_icons) this['html']+="font-size:12px;";
-                      else this['html']+="font-size:15px;";
-      this['html']+="'>";
+      this.html = "<div class='jsroot' style='overflow:auto; width:100%; height:100%;"
+      if (this.background) this.html+="background-color:"+this.background + ";";
+      if (this.with_icons) this.html+="font-size:12px;";
+                      else this.html+="font-size:15px;";
+      this.html+="'>";
       if (factcmds.length>0) {
          for (var n in factcmds)
-            this['html'] += "<button class='fast_command'> </button>";
+            this.html += "<button class='fast_command'> </button>";
       }
-      this['html'] += "<p>";
-      this['html'] += "<a href='#open_all'>open all</a>";
-      this['html'] += "| <a href='#close_all'>close all</a>";
+      this.html += "<p>";
+      this.html += "<a href='#open_all'>open all</a>";
+      this.html += "| <a href='#close_all'>close all</a>";
       if ('_online' in this.h)
-         this['html'] += "| <a href='#reload'>reload</a>";
+         this.html += "| <a href='#reload'>reload</a>";
       else
-         this['html'] += "<a/>";
+         this.html += "<a/>";
 
       if ('disp_kind' in this)
-         this['html'] += "| <a href='#clear'>clear</a>";
+         this.html += "| <a href='#clear'>clear</a>";
       else
-         this['html'] += "<a/>";
+         this.html += "<a/>";
 
-      this['html'] += "</p>";
+      this.html += "</p>";
 
-      this['html'] += '<div class="h_tree">';
+      this.html += '<div class="h_tree">';
       this.addItemHtml(this.h, null);
-      this['html'] += '</div>';
-      this['html'] += '</div>';
+      this.html += '</div>';
+      this.html += '</div>';
 
       var h = this;
 
-      var items = elem.html(this['html'])
+      var items = elem.html(this.html)
           .find(".h_item")
           .click(function() { h.tree_click($(this)); });
 
@@ -372,8 +378,8 @@
       if ('_icon' in hitem) img1 = hitem['_icon'];
       if ('_icon2' in hitem) img2 = hitem['_icon2'];
       if (img2.length==0) img2 = img1;
-      if (img1.length==0) img1 = (has_childs || hitem['_more']) ? "img_folder" : "img_page";
-      if (img2.length==0) img2 = (has_childs || hitem['_more']) ? "img_folderopen" : "img_page";
+      if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
+      if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
 
       var a_node = node.find("a").first();
 
@@ -414,11 +420,11 @@
       var display_childs = has_childs && hitem._isopen;
       if (!display_childs) return;
 
-      this['html'] = '<div class="h_childs">';
+      this.html = '<div class="h_childs">';
       for (var i in hitem._childs)
          this.addItemHtml(hitem._childs[i], hitem);
-      this['html'] += '</div>';
-      node.append(this['html']);
+      this.html += '</div>';
+      node.append(this.html);
       childs = node.children().last();
 
       var items = childs.find(".h_item")
@@ -458,7 +464,7 @@
       if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
 
       // special case - one should expand item
-      if ((place == "plusminus") && !('_childs' in hitem) && hitem['_more'])
+      if ((place == "plusminus") && !('_childs' in hitem) && hitem._more)
          return this.expand(itemname, null, node.parent());
 
       if (place == "item") {
@@ -540,7 +546,7 @@
                   addr += separ() + "files=" + JSON.stringify(files);
 
             if (painter['disp_kind'])
-               addr += separ() + "layout=" + painter['disp_kind'].replace(/ /g, "");
+               addr += separ() + "layout=" + painter.disp_kind.replace(/ /g, "");
 
             var items = [];
 
@@ -576,7 +582,7 @@
                });
             }
 
-            if (!('_childs' in hitem) && (hitem['_more'] || !('_more' in hitem)))
+            if (!('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add("Expand", function() { painter.expand(itemname); });
          }
 
