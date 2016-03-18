@@ -3622,7 +3622,7 @@
          defs = this.svg_frame().select('.main_layer').insert("svg:defs",":first-child");
 
       var marker = null;
-      if (histo.fMarkerStyle > 0) marker = JSROOT.Painter.createAttMarker(histo);
+      if (histo.fMarkerStyle > 1) marker = JSROOT.Painter.createAttMarker(histo);
 
       for (colindx=0;colindx<colPaths.length;++colindx)
         if (colPaths[colindx] !== undefined) {
