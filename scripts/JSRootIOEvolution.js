@@ -83,7 +83,6 @@
 
             //  place for unpacking
             if (tgtbuf===null) tgtbuf = new ArrayBuffer(tgtsize);
-            if (curr > 0) console.log('unpack at ' + curr);
 
             var reslen = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
             if (reslen<=0) break;
