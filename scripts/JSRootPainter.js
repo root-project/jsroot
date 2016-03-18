@@ -3787,7 +3787,9 @@
       // check for graphical cuts
       var chopt = opt.toUpperCase();
       chopt = JSROOT.Painter.clearCuts(chopt);
-      if (hdim > 1) option.Scat = 1;
+
+      // if (hdim > 1) option.Scat = 1;  // default was scatter plot
+
       if ((hdim===1) && (this.histo.fSumw2.length > 0)) option.Error = 2;
       if (this.histo.fFunctions !== null) option.Func = 1;
 

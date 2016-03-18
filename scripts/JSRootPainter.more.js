@@ -3312,7 +3312,7 @@
       return local_bins;
    }
 
-   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding) {
+   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {
       var histo = this.GetObject(), i, j, x, y, binz,
           res = {
              i1: this.GetSelectIndex("x", "left", 0),
@@ -3321,6 +3321,8 @@
              j2: this.GetSelectIndex("y", "right", 1),
              grx: [], gry: []
           };
+
+      if (pixel_density) dorounding = true;
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
@@ -3338,12 +3340,20 @@
       }
 
       //  findd min/max values in selected range
-      this.maxbin = this.minbin = histo.getBinContent(res.i1 + 1, res.j1 + 1);
+
+      binz = histo.getBinContent(res.i1 + 1, res.j1 + 1);
+      this.maxbin = this.minbin = null;
+
       for (i = res.i1; i < res.i2; ++i) {
          for (j = res.j1; j < res.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if (binz>this.maxbin) this.maxbin = binz; else
-            if (binz<this.minbin) this.minbin = binz;
+            if (pixel_density) binz = binz/(res.grx[i+1]-res.grx[i]+1)/(res.gry[j]-res.gry[j+1]+1);
+            if (this.maxbin===null) {
+               this.maxbin = this.minbin = binz;
+            } else {
+               this.maxbin = Math.max(this.maxbin, binz);
+               this.minbin = Math.min(this.minbin, binz);
+            }
          }
       }
 
@@ -3472,9 +3482,208 @@
       this.draw_kind = "rects";
    }
 
+   JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(true),
+          colPaths = [], currx = [], curry = [],
+          colindx, cmd1, cmd2, i, j, binz;
+
+         // now start build
+      for (i = handle.i1; i < handle.i2; ++i) {
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            colindx = this.getValueColor(binz, true);
+            if (colindx === null) continue;
+
+            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
+            if (colPaths[colindx] === undefined) {
+               colPaths[colindx] = cmd1;
+            } else{
+               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
+               colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+            }
+
+            currx[colindx] = handle.grx[i];
+            curry[colindx] = handle.gry[j+1];
+
+            colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1] + 1) +
+                                 "h" + (handle.grx[i+1] - handle.grx[i] + 1) +
+                                 "v" + (handle.gry[j+1] - handle.gry[j] - 1) + "z";
+         }
+      }
+
+     for (colindx=0;colindx<colPaths.length;++colindx)
+        if (colPaths[colindx] !== undefined)
+           this.draw_g
+               .append("svg:path")
+               .attr("palette-index", colindx)
+               .attr("fill", this.fPalette[colindx])
+               .attr("d", colPaths[colindx]);
+
+      return handle;
+   }
+
+   JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(false),
+          i, j, binz, colPaths = [], currx = [], curry = [],
+          colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
+
+      var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
+      if (this.options.Logz && (this.maxbin>0)) {
+         uselogz = true;
+         logmax = Math.log(this.maxbin);
+         logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
+         if (logmin >= logmax) logmin = logmax - 10;
+         xfactor = 0.5 / (logmax - logmin);
+         yfactor = 0.5 / (logmax - logmin);
+      } else {
+         xfactor = 0.5 / (this.maxbin - this.minbin);
+         yfactor = 0.5 / (this.maxbin - this.minbin);
+      }
+
+
+      // now start build
+      for (i = handle.i1; i < handle.i2; ++i) {
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
+
+            ww = handle.grx[i+1] - handle.grx[i];
+            hh = handle.gry[j] - handle.gry[j+1];
+
+            dgrx = zdiff * xfactor * ww;
+            dgry = zdiff * yfactor * hh;
+
+            ww = Math.round(ww - 2*dgrx);
+            hh = Math.round(hh - 2*dgry);
+
+            if ((ww > 0) && (hh > 0)) {
+               if (colPaths[i]===undefined) colPaths[i] = "";
+               colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
+                              "v" + hh + "h" + ww + "v-" + hh + "z";
+            }
+         }
+      }
+
+     for (i=0;i<colPaths.length;++i)
+        if (colPaths[i] !== undefined)
+           this.draw_g.append("svg:path")
+                      .attr("hist-column", i)
+                      .attr("fill", this.fillcolor)
+                      .call(this.lineatt.func)
+                      .attr("d", colPaths[i]);
+
+      return handle;
+   }
+
+   JSROOT.TH2Painter.prototype.DrawBinsScatter = function(w,h) {
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(true, true),
+          colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
+          colindx, cmd1, cmd2, i, j, binz, cw, ch;
+
+         // now start build
+      for (i = handle.i1; i < handle.i2; ++i) {
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            cw = handle.grx[i+1] - handle.grx[i] + 1;
+            ch = handle.gry[j] - handle.gry[j+1] + 1;
+
+            colindx = this.getContourIndex(binz/cw/ch);
+            if (colindx < 0) continue;
+
+            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
+            if (colPaths[colindx] === undefined) {
+               colPaths[colindx] = cmd1;
+               cell_w[colindx] = cw;
+               cell_h[colindx] = ch;
+            } else{
+               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
+               colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+               cell_w[colindx] = Math.max(cell_w[colindx], cw);
+               cell_h[colindx] = Math.max(cell_h[colindx], ch);
+            }
+
+            currx[colindx] = handle.grx[i];
+            curry[colindx] = handle.gry[j+1];
+
+            colPaths[colindx] += "v"+ch+"h"+cw+"v-"+ch+"z";
+         }
+      }
+
+      var defs = this.svg_frame().select('.main_layer').select("defs");
+      if (defs.empty() && (colPaths.length>0))
+         defs = this.svg_frame().select('.main_layer').insert("svg:defs",":first-child");
+
+      for (colindx=0;colindx<colPaths.length;++colindx)
+        if (colPaths[colindx] !== undefined) {
+           var pattern_class = "scatter_" + colindx;
+           var pattern = defs.select('.'+pattern_class);
+           if (pattern.empty())
+              pattern = defs.append('svg:pattern')
+                            .attr("class", pattern_class)
+                            .attr("id", "jsroot_scatter_pattern_" + JSROOT.id_counter++)
+                            .attr("patternUnits","userSpaceOnUse");
+           else
+              pattern.selectAll("*").remove();
+
+           var dens = colindx < this.fContour.length-1 ? (this.fContour[colindx] + this.fContour[colindx+1]) / 2 : this.maxbin;
+
+           // console.log('index ' + colindx + '  density = ' + dens.toFixed(5) + ' max = ' + this.maxbin.toFixed(5));
+
+           if (this.maxbin>0.5) dens = dens / this.maxbin*0.5;
+
+           var npix = Math.round(dens*cell_w[colindx]*cell_h[colindx])*5;
+           if (npix<1) npix = 1;
+
+           var arrx = new Float32Array(npix), arry = new Float32Array(npix);
+
+           for (var n=0;n<npix;++n) {
+              arrx[n] = Math.random();
+              arry[n] = Math.random();
+           }
+
+           // arrx.sort();
+
+           var lastx = null, lasty = null, currx, curry, path = "", m1, m2;
+
+           for (var n=0;n<npix;++n) {
+              currx = Math.round(arrx[n] * cell_w[colindx]);
+              curry = Math.round(arry[n] * cell_h[colindx]);
+
+              m1 = "M" + currx + "," + curry;
+              if (lastx!==null) m2 = "m" + (currx-lastx) + "," + (curry-lasty);
+                           else m2 = m1;
+              if (m2.length<m1.length) path+=m2 + "v1";
+                                  else path+=m1 + "v1";
+              lastx = currx;
+              lasty = curry+1;
+           }
+
+           pattern.attr("width", cell_w[colindx])
+                  .attr("height", cell_h[colindx])
+                  .append("svg:path")
+                  .attr("d",path)
+                  .style("stroke", "red");
+
+           this.draw_g
+               .append("svg:path")
+               .attr("scatter-index", colindx)
+               .attr("fill", 'url(#' + pattern.attr("id") + ')')
+               .attr("d", colPaths[colindx]);
+        }
+
+      return handle;
+   }
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
-      // this.MakeIcon();
 
       this.draw_kind = "none";
 
@@ -3494,90 +3703,18 @@
       if (JSROOT.gStyle.Tooltip===1)
          return this.DrawBinsAsRects(w,h);
 
-      var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(this.options.Color > 0),
-          i, j, binz;
+      var handle = null;
 
-      var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
-      if (this.options.Color <= 0)
-         if (this.options.Logz && (this.maxbin>0)) {
-            uselogz = true;
-            logmax = Math.log(this.maxbin);
-            logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
-            if (logmin >= logmax) logmin = logmax - 10;
-            xfactor = 0.5 / (logmax - logmin);
-            yfactor = 0.5 / (logmax - logmin);
-         } else {
-            xfactor = 0.5 / (this.maxbin - this.minbin);
-            yfactor = 0.5 / (this.maxbin - this.minbin);
-         }
+      if (this.options.Color > 0)
+         handle = this.DrawBinsColor(w, h);
+      else
+      if (this.options.Scat > 0)
+         handle = this.DrawBinsScatter(w, h);
+      else
+         handle = this.DrawBinsBox(w, h);
 
-      var colPaths = [], currx = [], curry = [], colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
-
-      // now start build
-      for (i = handle.i1; i < handle.i2; ++i) {
-         for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
-
-            if (this.options.Color > 0) {
-               colindx = this.getValueColor(binz, true);
-               if (colindx === null) continue;
-
-               cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
-               if (colPaths[colindx] === undefined) {
-                  colPaths[colindx] = cmd1;
-               } else{
-                  cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
-                  colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
-               }
-
-               currx[colindx] = handle.grx[i];
-               curry[colindx] = handle.gry[j+1];
-
-               colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1] + 1) +
-                                    "h" + (handle.grx[i+1] - handle.grx[i] + 1 ) +
-                                    "v" + (handle.gry[j+1] - handle.gry[j] - 1) + "z";
-            } else {
-               zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
-
-               ww = handle.grx[i+1] - handle.grx[i];
-               hh = handle.gry[j] - handle.gry[j+1];
-
-               dgrx = zdiff * xfactor * ww;
-               dgry = zdiff * yfactor * hh;
-
-               ww = Math.round(ww - 2*dgrx);
-               hh = Math.round(hh - 2*dgry);
-
-               if ((ww > 0) && (hh > 0)) {
-                  if (colPaths[i]===undefined) colPaths[i] = "";
-                  colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
-                                 "v" + hh + "h" + ww + "v-" + hh + "z";
-               }
-            }
-         }
-      }
-
-      for (colindx=0;colindx<colPaths.length;++colindx)
-         if (colPaths[colindx] !== undefined) {
-            // console.log('colindx ' + colindx + '  path len ' + colPaths[colindx].length);
-            if (this.options.Color > 0)
-               this.draw_g
-                   .append("svg:path")
-                   .attr("palette-index", colindx)
-                   .attr("fill", this.fPalette[colindx])
-                   .attr("d", colPaths[colindx]);
-            else
-               this.draw_g
-               .append("svg:path")
-               .attr("hist-column", colindx)
-               .attr("fill", this.fillcolor)
-               .call(this.lineatt.func)
-               .attr("d", colPaths[colindx]);
-         }
-
-      this.draw_kind = "path";
+      if (handle!==null)
+         this.draw_kind = "path";
 
       if (JSROOT.gStyle.Tooltip > 1) {
          this.tt_handle = handle;
@@ -3670,7 +3807,7 @@
 
    JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
 
-      var find = null, cnt = 0, ismarker = (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1);
+      var find = null, cnt = 0, ismarker = false;
 
       if (pnt !== null)
          this.draw_g.selectAll(ismarker ? ".marker" : ".bins"). each(function() {
