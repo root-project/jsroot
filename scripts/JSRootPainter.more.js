@@ -2987,9 +2987,11 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.getValueColor = function(zc, asindx) {
+   JSROOT.TH2Painter.prototype.getContourIndex = function(zc) {
+      // return contour index, which corresponds to the z content value
+
       if (this.fContour == null) {
-         // if not initialized, first create controur array
+         // if not initialized, first create contour array
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
          var histo = this.GetObject();
 
@@ -3031,25 +3033,33 @@
          }
       }
 
-      var color = -1;
       if (this.fUserContour || this.options.Logz) {
-         for (var k = 0; k < this.fContour.length; ++k) {
-            if (zc >= this.fContour[k]) color++;
+         var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
+         if (zc < cntr[0]) return -1;
+         if (zc >= cntr[r]) return r;
+         while (l < r-1) {
+            mid = Math.round((l+r)/2);
+            if (cntr[mid] > zc) r = mid; else l = mid;
          }
-      } else {
-         color = Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+         return l;
       }
 
-      if (color<0) {
+      return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+   }
+
+   JSROOT.TH2Painter.prototype.getValueColor = function(zc, asindx) {
+      var index = this.getContourIndex(zc);
+
+      if (index<0) {
          // do not draw bin where color is negative
          if (this.options.Color !== 111) return null;
-         color = 0;
+         index = 0;
       }
 
       if (this.fPalette == null)
          this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
 
-      var theColor = Math.floor((color+0.99)*this.fPalette.length/(this.fContour.length-1));
+      var theColor = Math.floor((index+0.99)*this.fPalette.length/(this.fContour.length-1));
       if (theColor > this.fPalette.length-1) theColor = this.fPalette.length-1;
       return asindx ? theColor : this.fPalette[theColor];
    }
