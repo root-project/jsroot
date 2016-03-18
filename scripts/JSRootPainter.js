@@ -317,13 +317,10 @@
 
          // use special create function to handle relative position movements
          res.create = function(x,y) {
-            var xx = Math.round(x),
-                yy = Math.round(y),
-                big = "M"+xx+","+yy+"h1",
-                short = (this.lastx===null) ? big : "m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1";
-            this.lastx = xx+1;
-            this.lasty = yy;
-            return (short.length < big.length) ? short : big;
+            var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
+            var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
+            this.lastx = xx+1; this.lasty = yy;
+            return (m2.length < m1.length) ? m2 : m1;
          }
 
          return res;
