@@ -49,9 +49,9 @@
    JSROOT.R__unzip = function(str, tgtsize, noalert) {
       // Reads header envelope, determines zipped size and unzip content
 
-      var isarr = (typeof str != 'string') && ('byteLength' in str);
-
-      var len = isarr ? str.byteLength : str.length;
+      var isarr = (typeof str != 'string') && ('byteLength' in str),
+          totallen = isarr ? str.byteLength : str.length,
+          curr = 0, fullres = 0, tgtbuf = null;
 
       function getChar(o) {
          return isarr ? String.fromCharCode(str.getUint8(o)) : str.charAt(o);
@@ -61,42 +61,51 @@
          return isarr ? str.getUint8(o) : str.charCodeAt(o);
       }
 
-      if (JSROOT.IO.Z_HDRSIZE > len) {
-         if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
+      while (fullres < tgtsize) {
+
+         if (curr + JSROOT.IO.Z_HDRSIZE >= totallen) {
+            if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
+            return null;
+         }
+
+         /*   C H E C K   H E A D E R   */
+         if (!((getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED))) {
+            if (!noalert) alert("R__unzip: Old zlib format is not supported!");
+            return null;
+         }
+
+         var srcsize = JSROOT.IO.Z_HDRSIZE +
+                         ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
+
+         if (isarr) {
+            // portion of packed data to process
+            var uint8arr = new Uint8Array(str.buffer, str.byteOffset + curr + JSROOT.IO.Z_HDRSIZE + 2, str.byteLength - curr - JSROOT.IO.Z_HDRSIZE - 2);
+
+            //  place for unpacking
+            if (tgtbuf===null) tgtbuf = new ArrayBuffer(tgtsize);
+            if (curr > 0) console.log('unpack at ' + curr);
+
+            var reslen = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+            if (reslen<=0) break;
+
+            fullres += reslen;
+         } else {
+            // old code using String for unpacking, keep for compativility
+            var unpacked = window.RawInflate.inflate(str.substr(JSROOT.IO.Z_HDRSIZE + 2 + curr, srcsize));
+            if ((unpacked === null) || (unpacked.length===0)) break;
+            if (tgtbuf===null) tgtbuf = unpacked; else tgtbuf += unpacked;
+            fullres += unpacked.length;
+         }
+
+         curr += srcsize;
+      }
+
+      if (fullres !== tgtsize) {
+         if (!noalert) alert("R__unzip: fail to unzip data expacts " + tgtsize + " , got " + fullres);
          return null;
       }
 
-      /*   C H E C K   H E A D E R   */
-      if (!(getChar(0) == 'Z' && getChar(1) == 'L' && getCode(2) == JSROOT.IO.Z_DEFLATED) &&
-          !(getChar(0) == 'C' && getChar(1) == 'S' && getCode(2) == JSROOT.IO.Z_DEFLATED) &&
-          !(getChar(0) == 'X' && getChar(1) == 'Z' && getCode(2) == 0)) {
-         if (!noalert) alert("Error R__unzip: error in header");
-         return null;
-      }
-
-      if (getChar(0) != 'Z' && getCharAt(1) != 'L') {
-         if (!noalert) alert("R__unzip: Old zlib format is not supported!");
-         return null;
-      }
-
-      var srcsize = JSROOT.IO.Z_HDRSIZE +
-                      ((getCode(3) & 0xff) | ((getCode(4) & 0xff) << 8) | ((getCode(5) & 0xff) << 16));
-
-      if (!isarr)
-         return window.RawInflate.inflate(str.substr(JSROOT.IO.Z_HDRSIZE + 2, srcsize));
-
-      var uint8arr = new Uint8Array(str.buffer, str.byteOffset + JSROOT.IO.Z_HDRSIZE + 2, str.byteLength - JSROOT.IO.Z_HDRSIZE - 2);
-
-      var tgtbuf = new ArrayBuffer(tgtsize);
-
-      var res = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf));
-
-      if (res != tgtsize) {
-         if (!noalert) alert("R__unzip: mismatch between unpacked size and keys info " + res + " - " + tgtsize);
-         return null;
-      }
-
-      return new DataView(tgtbuf);
+      return isarr ? new DataView(tgtbuf) : tgtbuf;
    }
 
    // =================================================================================
