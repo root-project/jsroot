@@ -346,12 +346,15 @@
 
       var top = elem.html(this.html).find(".h_tree");
 
-      this.addItemHtml(this.h, null, d3.select(top.get(0)))
+      var d3top = d3.select(top.get(0));
+
+      this.addItemHtml(this.h, null, d3top);
 
       var h = this;
 
-      var items = elem.find(".h_item")
-                      .click(function() { h.tree_click($(this)); });
+      d3top.selectAll(".h_item").on("click", function() { h.tree_click(this); });
+
+      var items = elem.find(".h_item");
 
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
@@ -361,10 +364,9 @@
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
       }
 
-      // d3elem.selectAll(".plus_minus").on("click", function(d) { h.tree_click($(d),true); });
-      elem.find(".plus_minus").click(function() { h.tree_click($(this), "plusminus"); });
+      d3top.selectAll(".plus_minus").on("click", function() { h.tree_click(this, "plusminus"); });
 
-      elem.find(".icon_click").click(function() { h.tree_click($(this), "icon"); });
+      d3top.selectAll(".icon_click").on("click", function() { h.tree_click(this, "icon"); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
@@ -457,7 +459,7 @@
       if (has_childs) {
          d3img.attr('class', new_class + " plus_minus")
               .style('cursor', 'pointer')
-              .on('click', function() { h.tree_click($(this), "plusminus"); });
+              .on('click', function() { h.tree_click(this, "plusminus"); });
       }
 
       d3cont.select(".h_childs").remove();
@@ -475,10 +477,11 @@
       for (var i in hitem._childs)
          this.addItemHtml(hitem._childs[i], hitem, d3chlds);
 
+      d3chlds.selectAll(".h_item").on("click", function() { h.tree_click(this); })
+
       var childs = $(d3chlds.node());
 
-      var items = childs.find(".h_item")
-                        .click(function() { h.tree_click($(this)); });
+      var items = childs.find(".h_item");
 
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
@@ -488,13 +491,15 @@
             items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
       }
 
-      childs.find(".plus_minus").click(function() { h.tree_click($(this), "plusminus"); });
+      d3chlds.selectAll(".plus_minus").on("click", function() { h.tree_click(this, "plusminus"); });
 
-      childs.find(".icon_click").click(function() { h.tree_click($(this), "icon"); });
+      d3chlds.selectAll(".icon_click").on("click", function() { h.tree_click(this, "icon"); });
    }
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
-      var itemname = node.parent().attr('item');
+      if (node===null) return;
+      var d3cont = d3.select(node.parentNode);
+      var itemname = d3cont.attr('item');
 
       if (itemname == null) return;
 
@@ -504,9 +509,9 @@
       if (!place || (place=="")) place = "item";
 
       if (place == "icon") {
-         if (('_icon_click' in hitem) && (typeof hitem['_icon_click'] == 'function'))
-            if (hitem['_icon_click'](hitem))
-               this.UpdateTreeNode(hitem, node.parent());
+         if (('_icon_click' in hitem) && (typeof hitem._icon_click == 'function'))
+            if (hitem._icon_click(hitem))
+               this.UpdateTreeNode(hitem, d3cont);
          return;
       }
 
@@ -515,7 +520,7 @@
 
       // special case - one should expand item
       if ((place == "plusminus") && !('_childs' in hitem) && hitem._more)
-         return this.expand(itemname, null, node.parent());
+         return this.expand(itemname, null, d3cont);
 
       if (place == "item") {
          if ('_player' in hitem)
@@ -530,14 +535,14 @@
                return this.display(itemname);
 
             if ('execute' in handle)
-               return this.ExecuteCommand(itemname, node);
+               return this.ExecuteCommand(itemname, d3.select(node));
 
-            if (('expand' in handle) && (hitem['_childs'] == null))
-               return this.expand(itemname, null, node.parent());
+            if (('expand' in handle) && (hitem._childs == null))
+               return this.expand(itemname, null, d3cont);
          }
 
          if ((hitem['_childs'] == null))
-            return this.expand(itemname, null, node.parent());
+            return this.expand(itemname, null, d3cont);
 
          if (!('_childs' in hitem) || (hitem === this.h)) return;
       }
@@ -547,7 +552,7 @@
       else
          hitem._isopen = true;
 
-      this.UpdateTreeNode(hitem, node.parent());
+      this.UpdateTreeNode(hitem, d3cont);
    }
 
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(node, event) {
