@@ -6919,7 +6919,7 @@
          if (d3node.empty()) return;
          var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
          if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
-         d3node.style('background', 'col').transition().duration(2000).style('background', '');
+         d3node.style('background', col).transition().duration(2000).each("end", function() { d3node.style('background', ''); });
          if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
          if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
       }).send();
