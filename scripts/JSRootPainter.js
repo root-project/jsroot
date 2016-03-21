@@ -4132,12 +4132,7 @@
          option.Axis = 2;
          chopt = chopt.replace('AXIG', '    ');
       }
-      if (chopt.indexOf('SCAT') != -1) {
-         option.Scat = 1;
-         chopt = chopt.replace('SCAT', '    ');
-      }
-      l = chopt.indexOf('TEXT');
-      if (l != -1) {
+      if (chopt.indexOf('TEXT') != -1) {
          var angle = parseInt(chopt);
          if (!isNaN(angle)) {
             if (angle < 0)
@@ -4153,6 +4148,10 @@
          if (l != -1 && this.IsTH2Poly())
             option.Text += 3000;
          option.Scat = 0;
+      }
+      if (chopt.indexOf('SCAT') != -1) {
+         option.Scat = 1;
+         chopt = chopt.replace('SCAT', '    ');
       }
       if (chopt.indexOf('POL') != -1) {
          option.System = JSROOT.Painter.Coord.kPOLAR;
@@ -8353,7 +8352,7 @@
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;LEGO;same" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "THStack", prereq: "more2d", func: "JSROOT.Painter.drawHStack" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });

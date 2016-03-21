@@ -3530,6 +3530,39 @@
       return handle;
    }
 
+   JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
+      var histo = this.GetObject(),
+          i,j,binz,colindx;
+
+      if (handle===null) handle = this.PrepareColorDraw(true);
+
+      var text_g = this.draw_g
+                       .append("svg:g")
+                       .attr("class","th2_text");
+
+      this.StartTextDrawing(42, 20, text_g);
+
+      for (i = handle.i1; i < handle.i2; ++i)
+         for (j = handle.j1; j < handle.j2; ++j) {
+            binz = histo.getBinContent(i + 1, j + 1);
+            if ((binz == 0) || (binz < this.minbin)) continue;
+
+            colindx = this.getValueColor(binz, true);
+            if (colindx === null) continue;
+
+            var binw = handle.grx[i+1] - handle.grx[i],
+                binh = handle.gry[j] - handle.gry[j+1];
+
+            this.DrawText(22, Math.round(handle.grx[i] + binw*0.1), Math.round(handle.gry[j+1] + binh*0.1),
+                              Math.round(binw*0.8), Math.round(binh*0.8),
+                          JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat), "black", 0, text_g);
+         }
+
+      this.FinishTextDrawing(text_g);
+
+      return handle;
+   }
+
    JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(false),
@@ -3720,13 +3753,21 @@
 
       var handle = null;
 
+      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text === 0)
+         this.options.Box = 1;
+
+
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);
       else
       if (this.options.Scat > 0)
          handle = this.DrawBinsScatter(w, h);
       else
+      if (this.options.Box > 0)
          handle = this.DrawBinsBox(w, h);
+
+      if (this.options.Text>0)
+         handle = this.DrawBinsText(w, h, handle);
 
       if (handle!==null)
          this.draw_kind = "path";
