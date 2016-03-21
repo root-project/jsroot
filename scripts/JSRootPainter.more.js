@@ -2769,7 +2769,7 @@
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          this.svg_canvas().property('current_pad', this.pad_name);
          pal_painter = JSROOT.draw(this.divid, pal, "canmove");
-        this.svg_canvas().property('current_pad', '');
+         this.svg_canvas().property('current_pad', '');
       } else {
          pal_painter._can_move = true;
          pal_painter.Redraw();

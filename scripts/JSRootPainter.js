@@ -4765,8 +4765,12 @@
       if (stat == null) {
          if (arg=='only-check') return false;
          // when statbox created first time, one need to draw it
-         this.CreateStat();
-         this.Redraw();
+         stat = this.CreateStat();
+
+         this.svg_canvas().property('current_pad', this.pad_name);
+         JSROOT.draw(this.divid, stat);
+         this.svg_canvas().property('current_pad', '');
+
          return true;
       }
 
@@ -5438,10 +5442,11 @@
             menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
       }
       if (this.draw_content) {
-         menu.addchk((this.options.Optimize>0), "Optimize drawing", function() {
-            this.options.Optimize = (this.options.Optimize>0) ? 0 : 2;
-            this.RedrawPad();
-         });
+         if (JSROOT.gStyle.Tooltip == 1)
+            menu.addchk((this.options.Optimize>0), "Optimize drawing", function() {
+               this.options.Optimize = (this.options.Optimize>0) ? 0 : 2;
+               this.RedrawPad();
+            });
 
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
       }
@@ -6342,9 +6347,8 @@
 
       painter.DrawTitle();
 
-      if (JSROOT.gStyle.AutoStat && painter.create_canvas) {
+      if (JSROOT.gStyle.AutoStat && painter.create_canvas)
          painter.CreateStat();
-      }
 
       painter.DrawNextFunction(0, function() {
 
