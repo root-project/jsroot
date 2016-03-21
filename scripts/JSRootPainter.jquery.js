@@ -212,8 +212,8 @@
       var h = this;
 
       if (icon_class.length > 0) {
+         if (this.isLastSibling(hitem)) icon_class+="bottom";
          var d3icon = d3cont.append("div").attr('class', icon_class);
-         if (this.isLastSibling(hitem)) d3icon.classed("bottom", true);
          if (plusminus) d3icon.style('cursor','pointer')
                               .on("click", function() { h.tree_click(this, "plusminus"); });
       }
@@ -297,76 +297,58 @@
 
       if (this.divid == null) return JSROOT.CallBack(callback);
       var d3elem = this.select_main();
-      if ((this.h == null) || d3elem.empty()) {
-         d3elem.html("");
+
+      d3elem.html(""); // clear html - most simple way
+
+      if ((this.h == null) || d3elem.empty())
          return JSROOT.CallBack(callback);
-      }
 
-      var elem = $(d3elem.node());
-
-      var factcmds = [], status_item = null;
+      var h = this, factcmds = [], status_item = null;
       this.ForEach(function(item) {
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
 
-      var html = "<div class='jsroot' style='overflow:auto; width:100%; height:100%;"
-      if (this.background) html+="background-color:"+this.background + ";";
-      if (this.with_icons) html+="font-size:12px;";
-                      else html+="font-size:15px;";
-      html+="'>";
-      if (factcmds.length>0) {
-         for (var n in factcmds)
-            html += "<button class='fast_command'> </button>";
-      }
-      html += "<p>";
-      html += "<a href='#open_all'>open all</a>";
-      html += "| <a href='#close_all'>close all</a>";
-      if ('_online' in this.h)
-         html += "| <a href='#reload'>reload</a>";
-      else
-         html += "<a/>";
+      var maindiv =
+         d3elem.append("div")
+               .attr("class", "jsroot")
+               .style("background-color", this.background ? this.background : "")
+               .style('overflow', 'auto')
+               .style('width', '100%')
+               .style('height', '100%')
+               .style('font-size', this.with_icons ? "12px" : "15px" );
 
-      if ('disp_kind' in this)
-         html += "| <a href='#clear'>clear</a>";
-      else
-         html += "<a/>";
+      for (var n=0;n<factcmds.length;++n) {
+         var btn =
+             maindiv.append("button")
+                    .text("")
+                    .attr("class",'fast_command')
+                    .attr("item", this.itemFullName(factcmds[n]))
+                    .attr("title", factcmds[n]._title)
+                    .on("click", function() { h.ExecuteCommand(d3.select(this).attr("item"), this); } );
 
-      html += "</p>";
 
-      html += '<div class="h_tree">';
-      html += '</div>';
-      html += '</div>';
-
-      var top = elem.html(html).find(".h_tree");
-
-      var d3top = d3.select(top.get(0));
-
-      this.addItemHtml(this.h, d3top);
-
-      var h = this;
-
-      var items = elem.find(".h_item");
-
-      if ('disp_kind' in h) {
-         if (JSROOT.gStyle.DragAndDrop)
-            items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+         if ('_icon' in factcmds[n])
+            btn.append('img').attr("src", factcmds[n]._icon);
       }
 
-      elem.find("a").first().click(function() { h.toggle(true); return false; })
-                    .next().click(function() { h.toggle(false); return false; })
-                    .next().click(function() { h.reload(); return false; })
-                    .next().click(function() { h.clear(false); return false; });
+      d3p = maindiv.append("p");
 
-      if (factcmds.length>0)
-         elem.find('.fast_command').each(function(index) {
-            if ('_icon' in factcmds[index])
-               $(this).text("").append('<img src="' + factcmds[index]['_icon'] + '"/>');
-            $(this).button()
-                   .attr("item", h.itemFullName(factcmds[index]))
-                   .attr("title", factcmds[index]._title)
-                   .click(function() { h.ExecuteCommand($(this).attr("item"), $(this).get(0)); });
-         });
+      d3p.append("a").attr("href", '#').text("open all").on("click", function() { h.toggle(true); d3.event.preventDefault(); });
+      d3p.append("text").text(" | ");
+      d3p.append("a").attr("href", '#').text("close all").on("click", function() { h.toggle(false); d3.event.preventDefault(); });
+
+      if ('_online' in this.h) {
+         d3p.append("text").text(" | ");
+         d3p.append("a").attr("href", '#').text("reload").on("click", function() { h.reload(); d3.event.preventDefault(); });
+      }
+
+      if ('disp_kind' in this) {
+         d3p.append("text").text(" | ");
+         d3p.append("a").attr("href", '#').text("clear").on("click", function() { h.clear(false); d3.event.preventDefault(); });
+      }
+
+      this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
          var func = JSROOT.findFunction(status_item._status);
