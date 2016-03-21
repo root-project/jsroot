@@ -6691,13 +6691,16 @@
                painter.TreeHierarchy(node, obj);
                return true;
             }
-         } else if (key.fClassName == 'TDirectory'  || key.fClassName == 'TDirectoryFile') {
+         } else
+         if (key.fClassName == 'TDirectory'  || key.fClassName == 'TDirectoryFile') {
             var dir = null;
             if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
             item._isdir = true;
             if (dir == null) {
                item._more = true;
                item._expand = function(node, obj) {
+                  // one can get expand call from child objects - ignore them
+                  if (obj._typename.indexOf("TDirectory")!==0) return false;
                   painter.KeysHierarchy(node, obj.fKeys);
                   return true;
                }
@@ -6706,16 +6709,16 @@
                item._name = key.fName;
                painter.KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
             }
-         } else if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
+         } else
+         if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
             item._name = 'StreamerInfo';
             item._kind = "ROOT.TStreamerInfoList";
             item._title = "List of streamer infos for binary I/O";
             item._readobj = file.fStreamerInfos;
-         } else if (key.fClassName == 'TList'
-               || key.fClassName == 'TObjArray'
-               || key.fClassName == 'TClonesArray') {
-                item._more = true;
-                item._expand = JSROOT.Painter.ListHierarchy;
+         } else
+         if (key.fClassName == 'TList' || key.fClassName == 'TObjArray' || key.fClassName == 'TClonesArray') {
+            item._more = true;
+            item._expand = JSROOT.Painter.ListHierarchy;
          }
 
          folder._childs.push(item);
@@ -7348,7 +7351,7 @@
                    item._isopen = true;
                    is_ok = true;
                    if (typeof hpainter.UpdateTreeNode == 'function')
-                      hpainter.UpdateTreeNode(item, d3cont, true);
+                      hpainter.UpdateTreeNode(item, d3cont);
                    break;
                 }
             }
@@ -7360,7 +7363,7 @@
                item._isopen = true;
                is_ok = true;
                if (typeof hpainter.UpdateTreeNode == 'function')
-                  hpainter.UpdateTreeNode(item, d3cont, true);
+                  hpainter.UpdateTreeNode(item, d3cont);
             }
          }
 
