@@ -7103,7 +7103,8 @@
                   d3.select(frame).html("");
                   mdi.ActivateFrame(frame);
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
-                  h.enable_dropping(frame, itemname);
+                  if (JSROOT.gStyle.DragAndDrop)
+                     h.enable_dropping(frame, itemname);
                }
             }
 
@@ -7117,8 +7118,12 @@
       });
    }
 
+   JSROOT.HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
+      // here is not defined - implemented with jquery
+   }
+
    JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
-      // here is not used - implemented with jquery
+      // here is not defined - implemented with jquery
    }
 
    JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, call_back) {

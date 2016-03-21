@@ -251,7 +251,7 @@
 
          if ('disp_kind' in h) {
             if (JSROOT.gStyle.DragAndDrop)
-               $(d3a.node()).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+               this.enable_dragging(d3a.node(), itemname);
             if (JSROOT.gStyle.ContextMenu)
                d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
          }
@@ -262,7 +262,6 @@
       if ('_realname' in hitem)
          element_name = hitem._realname;
 
-      element_name = element_name.replace(/</g,'&lt;').replace(/>/g,'&gt;');
       var element_title = "";
       if ('_title' in hitem) element_title = hitem._title;
 
@@ -271,11 +270,9 @@
 
       if (element_title.length === 0)
          element_title = element_name;
-      else
-         element_title = element_title.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
       d3a.attr('title', element_title)
-         .html(element_name + ('_value' in hitem ? ":" : ""));
+         .text(element_name + ('_value' in hitem ? ":" : ""));
 
       if ('_value' in hitem) {
          var d3p = d3cont.append("p");
@@ -561,26 +558,29 @@
       JSROOT.CallBack(callback, this['disp']);
    }
 
+   JSROOT.HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
+      $(element).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+   }
+
    JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
       var h = this;
-      if (JSROOT.gStyle.DragAndDrop)
-         $(frame).droppable({
-            hoverClass : "ui-state-active",
-            accept: function(ui) {
-               var dropname = ui.parent().attr('item');
-               if ((dropname == itemname) || (dropname==null)) return false;
+      $(frame).droppable({
+         hoverClass : "ui-state-active",
+         accept: function(ui) {
+            var dropname = ui.parent().attr('item');
+            if ((dropname == itemname) || (dropname==null)) return false;
 
-               var ditem = h.Find(dropname);
-               if ((ditem==null) || (!('_kind' in ditem))) return false;
+            var ditem = h.Find(dropname);
+            if ((ditem==null) || (!('_kind' in ditem))) return false;
 
-               return ditem._kind.indexOf("ROOT.")==0;
-            },
-            drop: function(event, ui) {
-               var dropname = ui.draggable.parent().attr('item');
-               if (dropname==null) return false;
-               return h.dropitem(dropname, $(this).attr("id"));
-            }
-         });
+            return ditem._kind.indexOf("ROOT.")==0;
+         },
+         drop: function(event, ui) {
+            var dropname = ui.draggable.parent().attr('item');
+            if (dropname==null) return false;
+            return h.dropitem(dropname, $(this).attr("id"));
+         }
+      });
    }
 
    // ==================================================
