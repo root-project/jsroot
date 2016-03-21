@@ -6933,6 +6933,7 @@
       });
    }
 
+
    JSROOT.HierarchyPainter.prototype.toggle = function(status, h) {
       var hitem = (h==null) ? this.h : h;
 

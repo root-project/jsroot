@@ -532,30 +532,30 @@
 
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
       if ('disp' in this) {
-         if (this['disp'].NumDraw() > 0) return JSROOT.CallBack(callback, this['disp']);
-         this['disp'].Reset();
-         delete this['disp'];
+         if (this.disp.NumDraw() > 0) return JSROOT.CallBack(callback, this.disp);
+         this.disp.Reset();
+         delete this.disp;
       }
 
       // check that we can found frame where drawing should be done
-      if (document.getElementById(this['disp_frameid']) == null)
+      if (document.getElementById(this.disp_frameid) == null)
          return JSROOT.CallBack(callback, null);
 
-      if (this['disp_kind'] == "tabs")
-         this['disp'] = new JSROOT.TabsDisplay(this['disp_frameid']);
+      if (this.disp_kind == "tabs")
+         this.disp = new JSROOT.TabsDisplay(this.disp_frameid);
       else
-      if ((this['disp_kind'] == "flex") || (this['disp_kind'] == "flexible"))
-         this['disp'] = new JSROOT.FlexibleDisplay(this['disp_frameid']);
+      if ((this.disp_kind == "flex") || (this.disp_kind == "flexible"))
+         this.disp = new JSROOT.FlexibleDisplay(this.disp_frameid);
       else
-      if (this['disp_kind'].search("grid") == 0)
-         this['disp'] = new JSROOT.GridDisplay(this['disp_frameid'], this['disp_kind']);
+      if (this.disp_kind.search("grid") == 0)
+         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
       else
-      if (this['disp_kind'] == "simple")
-         this['disp'] = new JSROOT.SimpleDisplay(this['disp_frameid']);
+      if (this.disp_kind == "simple")
+         this.disp = new JSROOT.SimpleDisplay(this.disp_frameid);
       else
-         this['disp'] = new JSROOT.CollapsibleDisplay(this['disp_frameid']);
+         this.disp = new JSROOT.CollapsibleDisplay(this.disp_frameid);
 
-      JSROOT.CallBack(callback, this['disp']);
+      JSROOT.CallBack(callback, this.disp);
    }
 
    JSROOT.HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
