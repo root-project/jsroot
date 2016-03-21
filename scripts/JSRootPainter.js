@@ -6498,6 +6498,8 @@
    }
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
+      if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
+
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
@@ -6635,6 +6637,8 @@
    }
 
    JSROOT.HierarchyPainter.prototype.TreeHierarchy = function(node, obj) {
+      if (obj._typename != 'TTree' && obj._typename != 'TNtuple') return false;
+
       node._childs = [];
 
       for ( var i = 0; i < obj.fBranches.arr.length; ++i) {
@@ -6665,6 +6669,9 @@
    }
 
    JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file, dirname) {
+
+      if (keys === undefined) return false;
+
       folder._childs = [];
 
       var painter = this;
@@ -6700,9 +6707,7 @@
                item._more = true;
                item._expand = function(node, obj) {
                   // one can get expand call from child objects - ignore them
-                  if (obj._typename.indexOf("TDirectory")!==0) return false;
-                  painter.KeysHierarchy(node, obj.fKeys);
-                  return true;
+                  return painter.KeysHierarchy(node, obj.fKeys);
                }
             } else {
                // remove cycle number - we have already directory
@@ -6723,6 +6728,8 @@
 
          folder._childs.push(item);
       }
+
+      return true;
    }
 
    JSROOT.HierarchyPainter.prototype.FileHierarchy = function(file) {
