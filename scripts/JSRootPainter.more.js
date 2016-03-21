@@ -2429,7 +2429,7 @@
       this.SetDivId(divid);
 
       this.z_handle = new JSROOT.TAxisPainter(palette.fAxis);
-      this.z_handle.SetDivId(divid, -1)
+      this.z_handle.SetDivId(divid, -1);
 
       this['MakeIcon'] = function(contour, z) {
          var h = this.frame_height();
@@ -2464,6 +2464,8 @@
 
          var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
+
+         console.log('main painter= ' + this.main_painter() + '  pad name ' + this.pad_name);
 
          var pos_x = parseInt(this.draw_g.attr("x")), // pave position
              pos_y = parseInt(this.draw_g.attr("y")),
@@ -2764,7 +2766,10 @@
       var pal_painter = this.FindPainterFor(pal);
 
       if (pal_painter === null) {
+         // when histogram drawn on sub pad, let draw new axis object on the same pad
+         this.svg_canvas().property('current_pad', this.pad_name);
          pal_painter = JSROOT.draw(this.divid, pal, "canmove");
+        this.svg_canvas().property('current_pad', '');
       } else {
          pal_painter._can_move = true;
          pal_painter.Redraw();
