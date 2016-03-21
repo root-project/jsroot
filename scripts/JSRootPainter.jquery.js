@@ -144,10 +144,9 @@
       return true;
    }
 
-   JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, parent, d3prnt) {
-      var isroot = (parent == null);
+   JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, doupdate) {
+      var isroot = !('_parent' in hitem);
       var has_childs = '_childs' in hitem;
-      if (!isroot) hitem._parent = parent;
 
       if ('_hidden' in hitem) return;
 
@@ -174,7 +173,17 @@
       if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
 
       var itemname = this.itemFullName(hitem);
-      var d3cont = d3prnt.append("div").attr("item", itemname);
+
+      var d3cont;
+
+      if (doupdate) {
+         d3prnt.selectAll("*").remove();
+         d3cont = d3prnt;
+      } else {
+         d3cont = d3prnt.append("div");
+      }
+
+      d3cont.attr("item", itemname);
 
       // build indent
       var prnt = isroot ? null : hitem._parent;
@@ -200,10 +209,13 @@
          icon_class = "img_join";
       }
 
+      var h = this;
+
       if (icon_class.length > 0) {
          var d3icon = d3cont.append("div").attr('class', icon_class);
          if (this.isLastSibling(hitem)) d3icon.classed("bottom", true);
-         if (plusminus) d3icon.classed("plus_minus", true).style('cursor','pointer');
+         if (plusminus) d3icon.style('cursor','pointer')
+                              .on("click", function() { h.tree_click(this, "plusminus"); });
       }
 
       // make node icons
@@ -212,22 +224,38 @@
          var icon_name = hitem._isopen ? img2 : img1;
          var title = hitem._kind ? hitem._kind.replace(/</g,'&lt;').replace(/>/g,'&gt;') : "";
 
+         var d3img = null;
+
          if (icon_name.indexOf("img_")==0) {
-            d3cont.append("div").attr("class", icon_name)
-                                .classed("icon_click", ('_icon_click' in hitem))
-                                .attr("title", title)
+            d3img = d3cont.append("div")
+                          .attr("class", icon_name)
+                          .attr("title", title);
          } else {
-            d3cont.append("img").attr("src", icon_name)
-                                .attr("alt","")
-                                .attr("title",title)
-                                .style('vertical-align','top')
-                                .style('width','18px')
-                                .style('height','18px')
+            d3img = d3cont.append("img")
+                          .attr("src", icon_name)
+                          .attr("alt","")
+                          .attr("title",title)
+                          .style('vertical-align','top')
+                          .style('width','18px')
+                          .style('height','18px');
          }
+
+         if ('_icon_click' in hitem)
+            d3img.on("click", function() { h.tree_click(this, "icon"); });
       }
 
       var d3a = d3cont.append("a");
-      if (can_click || has_childs) d3a.attr("class","h_item");
+      if (can_click || has_childs) {
+         d3a.attr("class","h_item")
+            .on("click", function() { h.tree_click(this); });
+
+         if ('disp_kind' in h) {
+            if (JSROOT.gStyle.DragAndDrop)
+               $(d3a.node()).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
+            if (JSROOT.gStyle.ContextMenu)
+               d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
+         }
+      }
 
       var element_name = hitem._name;
 
@@ -257,8 +285,11 @@
 
       if (has_childs && (isroot || hitem._isopen)) {
          var d3chlds = d3cont.append("div").attr("class", "h_childs");
-         for (var i in hitem._childs)
-            this.addItemHtml(hitem._childs[i], hitem, d3chlds);
+         for (var i=0; i< hitem._childs.length;++i) {
+            var chld = hitem._childs[i];
+            chld._parent = hitem;
+            this.addItemHtml(chld, d3chlds);
+         }
       }
    }
 
@@ -311,25 +342,16 @@
 
       var d3top = d3.select(top.get(0));
 
-      this.addItemHtml(this.h, null, d3top);
+      this.addItemHtml(this.h, d3top);
 
       var h = this;
-
-      d3top.selectAll(".h_item").on("click", function() { h.tree_click(this); });
 
       var items = elem.find(".h_item");
 
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop)
             items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-
-         if (JSROOT.gStyle.ContextMenu)
-            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); });
       }
-
-      d3top.selectAll(".plus_minus").on("click", function() { h.tree_click(this, "plusminus"); });
-
-      d3top.selectAll(".icon_click").on("click", function() { h.tree_click(this, "icon"); });
 
       elem.find("a").first().click(function() { h.toggle(true); return false; })
                     .next().click(function() { h.toggle(false); return false; })
@@ -343,7 +365,7 @@
             $(this).button()
                    .attr("item", h.itemFullName(factcmds[index]))
                    .attr("title", factcmds[index]._title)
-                   .click(function() { h.ExecuteCommand($(this).attr("item"), $(this)); });
+                   .click(function() { h.ExecuteCommand($(this).attr("item"), $(this).get(0)); });
          });
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
@@ -356,8 +378,7 @@
       JSROOT.CallBack(callback);
    }
 
-   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont, set_attr) {
-
+   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
       if ((d3cont===undefined) || d3cont.empty())  {
          var name = this.itemFullName(hitem);
          d3cont = this.select_main().select("[item='" + name + "']");
@@ -367,84 +388,7 @@
          if (d3cont.empty()) return;
       }
 
-
-      if (set_attr) {
-         d3cont.attr('item', this.itemFullName(hitem));
-         d3cont.select("a").text(hitem._name);
-      }
-
-      // better search for images again, but not store them extra
-      var img1 = "", img2 = "", has_childs = ('_childs' in hitem);
-      var handle = JSROOT.getDrawHandle(hitem._kind);
-      if (handle !== null) {
-         if ('icon' in handle) img1 = handle.icon;
-         if ('icon2' in handle) img2 = handle.icon2;
-      }
-      if ('_icon' in hitem) img1 = hitem._icon;
-      if ('_icon2' in hitem) img2 = hitem._icon2;
-      if (img2.length==0) img2 = img1;
-      if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
-      if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
-
-      var d3a = d3cont.select("a");
-
-      if ('_value' in hitem) {
-         d3cont.select("p").html(hitem._isopen ? "" : hitem._value);
-      }
-
-      var d3img = d3.select(d3a.node().previousElementSibling);
-
-      if (this.with_icons) {
-         var newname = hitem._isopen ? img2 : img1;
-         if (newname.indexOf("img_")==0) {
-            if ('_icon_click' in hitem) newname += " icon_click";
-            d3img.attr("class", newname);
-         } else {
-            d3img.attr("src", newname);
-         }
-         d3img = d3.select(d3img.node().previousElementSibling);
-      }
-
-      var h = this;
-
-      var new_class = hitem._isopen ? "img_minus" : "img_plus";
-      if (this.isLastSibling(hitem)) new_class += "bottom";
-
-      if (d3img.classed("plus_minus")) {
-         d3img.attr('class', new_class + " plus_minus");
-      } else
-      if (has_childs) {
-         d3img.attr('class', new_class + " plus_minus")
-              .style('cursor', 'pointer')
-              .on('click', function() { h.tree_click(this, "plusminus"); });
-      }
-
-      d3cont.select(".h_childs").remove();
-
-      var display_childs = has_childs && hitem._isopen;
-      if (!display_childs) return;
-
-      d3chlds = d3cont.append("div").attr("class", "h_childs");
-      for (var i in hitem._childs)
-         this.addItemHtml(hitem._childs[i], hitem, d3chlds);
-
-      d3chlds.selectAll(".h_item").on("click", function() { h.tree_click(this); })
-
-      var childs = $(d3chlds.node());
-
-      var items = childs.find(".h_item");
-
-      if ('disp_kind' in h) {
-         if (JSROOT.gStyle.DragAndDrop)
-            items.draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
-
-         if (JSROOT.gStyle.ContextMenu)
-            items.on('contextmenu', function(e) { h.tree_contextmenu($(this), e); })
-      }
-
-      d3chlds.selectAll(".plus_minus").on("click", function() { h.tree_click(this, "plusminus"); });
-
-      d3chlds.selectAll(".icon_click").on("click", function() { h.tree_click(this, "icon"); });
+      this.addItemHtml(hitem, d3cont, true);
    }
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
@@ -486,7 +430,7 @@
                return this.display(itemname);
 
             if ('execute' in handle)
-               return this.ExecuteCommand(itemname, d3.select(node));
+               return this.ExecuteCommand(itemname, node.parentNode);
 
             if (('expand' in handle) && (hitem._childs == null))
                return this.expand(itemname, null, d3cont);
@@ -506,10 +450,10 @@
       this.UpdateTreeNode(hitem, d3cont);
    }
 
-   JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(node, event) {
-      event.preventDefault();
+   JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(elem) {
+      d3.event.preventDefault();
 
-      var itemname = node.parent().attr('item');
+      var itemname = d3.select(elem.parentNode).attr('item');
 
       var hitem = this.Find(itemname);
       if (hitem==null) return;
@@ -596,10 +540,10 @@
             hitem['_menu'](menu, hitem, painter);
 
          if (menu.size() > 0) {
-            menu['tree_node'] = node;
+            menu.tree_node = elem.parentNode;
             if (menu.separ) menu.add("separator"); // add separator at the end
             menu.add("Close");
-            menu.show(event);
+            menu.show(d3.event);
          }
 
       }); // end menu creation

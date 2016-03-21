@@ -6893,6 +6893,7 @@
       var hitem = this.Find(itemname);
       var url = itemname + "/cmd.json";
       var pthis = this;
+      var d3node = d3.select((typeof callback == 'function') ? null : callback);
 
       if ('_numargs' in hitem)
          for (var n = 0; n < hitem._numargs; ++n) {
@@ -6905,21 +6906,20 @@
             url += ((n==0) ? "?" : "&") + argname + "=" + argvalue;
          }
 
-      if ((callback!=null) && (typeof callback == 'object')) {
-         callback.css('background','yellow');
-         if (hitem && hitem._title) callback.attr('title', "Executing " + hitem._title);
+      if (!d3node.empty()) {
+         d3node.style('background','yellow');
+         if (hitem && hitem._title) d3node.attr('title', "Executing " + hitem._title);
       }
-      var req = JSROOT.NewHttpRequest(url, 'text', function(res) {
+
+      JSROOT.NewHttpRequest(url, 'text', function(res) {
          if (typeof callback == 'function') return callback(res);
-         if ((callback != null) && (typeof callback == 'object')) {
-            var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
-            if (hitem && hitem._title) callback.attr('title', hitem._title + " lastres=" + res);
-            callback.animate({ backgroundColor: col}, 2000, function() { callback.css('background', ''); });
-            if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
-            if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
-         }
-      });
-      req.send();
+         if (d3node.empty()) return;
+         var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
+         if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
+         d3node.style('background', 'col').transition().duration(2000).style('background', '');
+         if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
+         if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
+      }).send();
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
@@ -7319,12 +7319,12 @@
       if (!('_more' in hitem)) {
          var handle = JSROOT.getDrawHandle(hitem._kind);
          if ((handle!=null) && ('expand' in handle)) {
-            return JSROOT.AssertPrerequisites(handle['prereq'], function() {
-               hitem['_expand'] = JSROOT.findFunction(handle['expand']);
+            return JSROOT.AssertPrerequisites(handle.prereq, function() {
+               hitem._expand = JSROOT.findFunction(handle.expand);
                if (typeof hitem['_expand'] == 'function') {
-                  hitem['_more'] = true; // use as workaround - not try to repeat same action
+                  hitem._more = true; // use as workaround - not try to repeat same action
                   hpainter.expand(itemname, call_back, tree_node);
-                  delete hitem['_more'];
+                  delete hitem._more;
                }
             });
          }
@@ -7677,7 +7677,7 @@
          menu.add("Expand", function() { painter.expand(itemname); });
 
       if (handle && ('execute' in handle))
-         menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu['tree_node']); });
+         menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu.tree_node); });
 
       var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm";
       var separ = "?";
