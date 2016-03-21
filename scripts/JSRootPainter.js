@@ -6937,7 +6937,7 @@
       var hitem = (h==null) ? this.h : h;
 
       if (!('_childs' in hitem)) {
-         if (!status || this.with_icons || ((typeof hitem['_expand']) !== 'function')) return;
+         if (!status || this.with_icons || ((typeof hitem._expand) !== 'function')) return;
          this.expand(this.itemFullName(hitem));
          if ('_childs' in hitem) hitem._isopen = true;
          return;

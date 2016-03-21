@@ -378,6 +378,15 @@
 }
 
 
+.fast_command {
+    min-width: 22px;
+    min-height: 22px;
+    margin-left: 3px;
+    margin-top: 3px;
+}
+
+
+
 /*--------------------------------------------------
   Flexible MDI display
   --------------------------------------------------*/
