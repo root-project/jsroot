@@ -3813,9 +3813,8 @@
           i, j, find = 0;
 
       // search bin position
-      for (i = h.i1; i < h.i2; ++i) {
+      for (i = h.i1; i < h.i2; ++i)
          if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) { ++find; break; }
-      }
 
       for (j = h.j1; j <= h.j2; ++j)
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
@@ -3824,7 +3823,9 @@
 
       var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : -100;
 
-      if ((find !== 2) || (binz <= this.minbin)) {
+      // console.log('find = ' + find + '  binz = ' + binz + '  minbin ' + this.minbin);
+
+      if ((find !== 2) || (binz === 0) || (binz < this.minbin)) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
