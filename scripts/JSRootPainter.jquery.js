@@ -150,14 +150,16 @@
 
       if ('_hidden' in hitem) return;
 
-      var handle = JSROOT.getDrawHandle(hitem._kind);
-      var img1 = "", img2 = "";
-      var can_click = false;
-      if (handle!=null) {
+      var handle = JSROOT.getDrawHandle(hitem._kind),
+         img1 = "", img2 = "", can_click = false;
+
+      if (handle !== null) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
          if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) || ('expand' in handle)) can_click = true;
       }
+
+
       if ('_icon' in hitem) img1 = hitem._icon;
       if ('_icon2' in hitem) img2 = hitem._icon2;
       if ((img1.length==0) && ('_online' in hitem))
@@ -167,6 +169,9 @@
 
       if (hitem._more || ('_expand' in hitem) || ('_player' in hitem))
          can_click = true;
+
+      var can_menu = can_click;
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0)) can_menu = true;
 
       if (img2.length==0) img2 = img1;
       if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
@@ -245,16 +250,15 @@
       }
 
       var d3a = d3cont.append("a");
-      if (can_click || has_childs) {
+      if (can_click || has_childs)
          d3a.attr("class","h_item")
             .on("click", function() { h.tree_click(this); });
 
-         if ('disp_kind' in h) {
-            if (JSROOT.gStyle.DragAndDrop)
-               this.enable_dragging(d3a.node(), itemname);
-            if (JSROOT.gStyle.ContextMenu)
-               d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
-         }
+      if ('disp_kind' in h) {
+         if (JSROOT.gStyle.DragAndDrop && can_click)
+           this.enable_dragging(d3a.node(), itemname);
+         if (JSROOT.gStyle.ContextMenu && can_menu)
+            d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
       }
 
       var element_name = hitem._name;

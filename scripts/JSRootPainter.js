@@ -7039,6 +7039,7 @@
    JSROOT.HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
       if (item == null) return false;
       if ('_player' in item) return true;
+      if (drawopt == 'inspect') return true;
       var handle = JSROOT.getDrawHandle(item._kind, drawopt);
       return (handle!=null) && ('func' in handle);
    }
@@ -8455,15 +8456,15 @@
             opts[i] = opts[i].toLowerCase();
             if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
 
-            if (allopts==null) allopts = [];
+            if (allopts===null) allopts = [];
             if (allopts.indexOf(opts[i])<0) allopts.push(opts[i]);
          }
       }
 
-      if (isany && (allopts==null)) {
-         allopts = new Array;
-         allopts.push("");
-      }
+      if (isany && (allopts===null)) allopts = [""];
+
+      // if no any handle found, let inspect ROOT-based objects
+      if (!isany && kind.indexOf("ROOT.")==0) allopts = [];
 
       if (!noinspect && allopts)
          allopts.push("inspect");
