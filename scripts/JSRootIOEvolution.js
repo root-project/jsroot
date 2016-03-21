@@ -132,8 +132,8 @@
    }
 
    JSROOT.TBuffer.prototype.MapObject = function(tag, obj) {
-      if (obj==null) return;
-      this.fObjectMap[tag] = obj;
+      if (obj!==null)
+         this.fObjectMap[tag] = obj;
    }
 
    JSROOT.TBuffer.prototype.MapClass = function(tag, classname) {
@@ -383,7 +383,8 @@
    }
 
    JSROOT.TBuffer.prototype.ReadObjectAny = function() {
-      var startpos = this.o;
+      var objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset;
+
       var clRef = this.ReadClass();
 
       // class identified as object and should be handled so
@@ -392,11 +393,19 @@
 
       if (clRef.name === -1) return null;
 
+      var arrkind = JSROOT.IO.GetArrayKind(clRef.name);
+
       var obj = {};
 
-      this.MapObject(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, obj);
-
-      this.ClassStreamer(obj, clRef.name);
+      if (arrkind > 0) {
+         // reading array, can map array only afterwards
+         obj = this.ReadFastArray(this.ntou4(), arrkind);
+         this.MapObject(objtag, obj);
+      } else {
+         // reading normal object, should map before to
+         this.MapObject(objtag, obj);
+         this.ClassStreamer(obj, clRef.name);
+      }
 
       return obj;
    }
@@ -1598,7 +1607,7 @@
          var member = { name: element.fName, type: element.fType };
 
          if (element.fTypeName === 'BASE') {
-            if (JSROOT.IO.GetArrayKind(member['name']) > 0) {
+            if (JSROOT.IO.GetArrayKind(member.name) > 0) {
                // this is workaround for arrays as base class
                // we create 'fArray' member, which read as any other data member
                member.name = 'fArray';

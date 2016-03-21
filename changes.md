@@ -23,6 +23,7 @@
 14. Project now can be obtained via 'bower install jsroot' 
 15. Support scatter plot for TH2 
 16. Support in binary I/O zipped buffer bigger than 16M
+17. Correctly handle in binary I/O pointer on TArray object (like in THnSparseArrayChunk)
 
 
 ## Changes in 4.3
