@@ -180,12 +180,6 @@
       var tt = JSROOT.GetUrlOption("tooltip", url);
       if (tt !== null) JSROOT.gStyle.Tooltip = parseInt(tt);
 
-      var col = JSROOT.GetUrlOption("col", url);
-      if (col!==null) {
-         col = parseInt(col);
-         if (!isNaN(col) && (col>0) && (col<4)) JSROOT.gStyle.DefaultCol = col;
-      }
-
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
       if ((mathjax!==null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
 
@@ -4095,7 +4089,7 @@
          if (chopt.charAt(l+3)=='1') { option.Color = 1; name += "1"; ++l; } else
          if (chopt.charAt(l+3)=='2') { option.Color = 2; name += "2"; ++l; } else
          if (chopt.charAt(l+3)=='3') { option.Color = 3; name += "3"; ++l; } else
-            option.Color = JSROOT.gStyle.DefaultCol;
+            option.Color = 1;
 
          if (chopt.charAt(l+4)=='Z') { option.Zscale = 1; name += 'Z'; }
          chopt = chopt.replace(name, '');

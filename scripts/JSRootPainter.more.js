@@ -2465,8 +2465,6 @@
          var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
 
-         console.log('main painter= ' + this.main_painter() + '  pad name ' + this.pad_name);
-
          var pos_x = parseInt(this.draw_g.attr("x")), // pave position
              pos_y = parseInt(this.draw_g.attr("y")),
              width = this.pad_width(),
@@ -2693,13 +2691,13 @@
 
       if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; }
 
-      if (this.options.Color == 0)
-         this.options.Color = JSROOT.gStyle.DefaultCol;
-      else
-      if (toggle)
-         this.options.Color = -this.options.Color;
-      else
-         this.options.Color = Math.abs(this.options.Color);
+      if (this.options.Color == 0) {
+         this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
+      } else
+      if (toggle) {
+         this.options.LastColor = this.options.Color;
+         this.options.Color = 0;
+      }
 
       if ((this.options.Color > 0) && (this.options.Zscale > 0))
          this.DrawNewPalette(true);
@@ -3059,7 +3057,7 @@
       var index = this.getContourIndex(zc);
 
       if (index<0) {
-         // do not draw bin where color is negative
+         // do not draw bin where color is negative, only with col0 option minimal values are shown
          if (this.options.Color !== 111) return null;
          index = 0;
       }
@@ -3758,9 +3756,8 @@
 
       var handle = null;
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text === 0)
+      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
          this.options.Box = 1;
-
 
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);

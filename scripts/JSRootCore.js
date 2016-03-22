@@ -96,7 +96,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/03/2016";
+   JSROOT.version = "dev 22/03/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -146,7 +146,6 @@
          DragAndDrop : true,  // enables drag and drop functionality
          ToolBar : true,    // show additional tool buttons on the canvas
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
-         DefaultCol : 1,  // default col option 1-svg, 2-canvas
          AutoStat : true,
          OptStat  : 1111,
          OptFit   : 0,
