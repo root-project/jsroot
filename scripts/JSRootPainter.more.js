@@ -3827,7 +3827,11 @@
 
       lines.push("bin = " + i + ", " + j);
 
-      lines.push("entries = " + JSROOT.FFormat(this.GetObject().getBinContent(i+1,j+1), JSROOT.gStyle.StatFormat));
+      var binz = this.GetObject().getBinContent(i+1,j+1);
+      if (binz === Math.round(binz))
+         lines.push("entries = " + binz);
+      else
+         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat));
 
       return lines;
    }

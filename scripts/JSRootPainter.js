@@ -6152,7 +6152,10 @@
          else
             tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")");
 
-         tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
+         if (cont === Math.round(cont))
+            tips.push("entries = " + cont);
+         else
+            tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
       }
 
       if (!asstr) return tips;
