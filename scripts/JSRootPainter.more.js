@@ -3533,16 +3533,16 @@
             if (colPaths[colindx] === undefined) {
                colPaths[colindx] = cmd1;
             } else{
-               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1] - curry[colindx]);
+               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1]-curry[colindx]);
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
 
             currx[colindx] = handle.grx[i];
             curry[colindx] = handle.gry[j+1];
 
-            colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1] + 1) +
-                                 "h" + (handle.grx[i+1] - handle.grx[i] + 1) +
-                                 "v" + (handle.gry[j+1] - handle.gry[j] - 1) + "z";
+            colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1]) +
+                                 "h" + (handle.grx[i+1] - handle.grx[i]) +
+                                 "v" + (handle.gry[j+1] - handle.gry[j]) + "z";
          }
       }
 
@@ -3657,8 +3657,8 @@
             binz = histo.getBinContent(i + 1, j + 1);
             if ((binz == 0) || (binz < this.minbin)) continue;
 
-            cw = handle.grx[i+1] - handle.grx[i] + 1;
-            ch = handle.gry[j] - handle.gry[j+1] + 1;
+            cw = handle.grx[i+1] - handle.grx[i];
+            ch = handle.gry[j] - handle.gry[j+1];
 
             colindx = this.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
