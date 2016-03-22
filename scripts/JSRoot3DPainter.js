@@ -262,6 +262,10 @@
          delete this.toplevel;
          delete this.camera;
          delete this.renderer;
+         if ('render_tmout' in this) {
+            clearTimeout(this.render_tmout);
+            delete this.render_tmout;
+         }
          return;
       }
 
@@ -615,7 +619,9 @@
 
       if (tmout <= 0) {
          if ('render_tmout' in this)
-            clearTimeout(this['render_tmout']);
+            clearTimeout(this.render_tmout);
+
+         if (this.renderer === undefined) return;
 
          var tm1 = new Date();
 
@@ -624,7 +630,7 @@
 
          var tm2 = new Date();
 
-         delete this['render_tmout'];
+         delete this.render_tmout;
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
@@ -639,7 +645,7 @@
       // no need to shoot rendering once again
       if ('render_tmout' in this) return;
 
-      this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
+      this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
 
