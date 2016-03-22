@@ -349,52 +349,66 @@
          if (xmax <= 0) xmax = 1.;
          if (xmin <= 0) xmin = 1e-6*xmax;
          this.tx = d3.scale.log();
+         this.x_kind = "log";
       } else {
          this.tx = d3.scale.linear();
+         this.x_kind = "lin";
       }
       this.tx.domain([ xmin, xmax ]).range([grminx, grmaxx]);
+      this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
+      this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
+      this.x_handle.CreateFormatFuncs();
 
       if (this.options.Logy) {
          if (ymax <= 0) ymax = 1.;
          if (ymin <= 0) ymin = 1e-6*ymax;
          this.ty = d3.scale.log();
+         this.y_kind = "log";
       } else {
          this.ty = d3.scale.linear();
+         this.y_kind = "lin";
       }
       this.ty.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
+      this.y_handle = new JSROOT.TAxisPainter(histo ? histo.fYaxis : null);
+      this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.ty, this.ymin, this.ymax, ymin, ymax);
+      this.y_handle.CreateFormatFuncs();
 
       if (this.options.Logz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-6*zmax;
          this.tz = d3.scale.log();
+         this.z_kind = "log";
       } else {
          this.tz = d3.scale.linear();
+         this.z_kind = "lin";
       }
       this.tz.domain([ zmin, zmax]).range([ grminz, grmaxz ]);
 
-      this.zz_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
-      this.zz_handle.SetAxisConfig("zaxis", this.options.Logz ? "log" : "lin", this.tz, this.zmin, this.zmax, zmin, zmax);
-      this.zz_handle.CreateFormatFuncs();
+      this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
+      this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.tz, this.zmin, this.zmax, zmin, zmax);
+      this.z_handle.CreateFormatFuncs();
 
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
       var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 
       var ticklen = textsize * 0.5, text, tick;
 
-      var xmajors = this.tx.ticks(8), xminors = this.tx.ticks(50);
+      var xticks = this.x_handle.CreateTicks();
 
       // geometry used for the tick drawing
       var geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(0, -1, -1));
 
-      for (var i = 0; i < xminors.length; ++i) {
-         var grx = this.tx(xminors[i]);
-         var indx = xmajors.indexOf(xminors[i]);
-         var plen = ((indx>=0) ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
+      while (xticks.next()) {
+         var grx = xticks.grpos;
+         var is_major = (xticks.kind===1);
+         var lbl = this.x_handle.format(xticks.tick, true, true);
+         if (xticks.last_major()) lbl = "x"; else
+            if (lbl === null) { is_major = false; lbl = ""; }
+         var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
-         if (indx>=0) {
-            var lbl = (indx === xmajors.length-1) ? "x" : xminors[i];
+         if (is_major) {
             var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
@@ -420,29 +434,31 @@
             tick.position.set(grx,grmaxy, grminz);
             tick.scale.set(1,plen,plen);
             tick.rotation.z = Math.PI;
-            tick.name = "X axis: " + xminors[i];
+            tick.name = "X axis: " + this.x_handle.format(xticks.tick);
             this.toplevel.add(tick);
          }
 
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grx,grminy,grminz);
          tick.scale.set(1,plen,plen);
-         tick.name = "X axis: " + xminors[i];
+         tick.name = "X axis: " + this.x_handle.format(xticks.tick);
          this.toplevel.add(tick);
       }
 
-      var ymajors = this.ty.ticks(8), yminors = this.ty.ticks(50);
+      var yticks = this.y_handle.CreateTicks();
       geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(-1, 0, -1));
 
-      for (var i = 0; i < yminors.length; ++i) {
-         var gry = this.ty(yminors[i]);
-         var indx = ymajors.indexOf(yminors[i]);
-         var plen = ((indx>=0) ? ticklen : ticklen*0.6) * Math.sin(Math.PI/4);
+      while (yticks.next()) {
+         var gry = yticks.grpos;
+         var is_major = (yticks.kind===1);
+         var lbl = this.y_handle.format(yticks.tick, true, true);
+         if (yticks.last_major()) lbl = "y"; else
+            if (lbl === null) { is_major = false; lbl = ""; }
+         var plen = (is_major ? ticklen : ticklen*0.6) * Math.sin(Math.PI/4);
 
-         if (indx>=0) {
-            var lbl = (indx === ymajors.length-1) ? "y" : yminors[i];
+         if (is_major) {
             var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
@@ -469,17 +485,17 @@
             tick.position.set(grmaxx,gry,grminz);
             tick.scale.set(plen,1,plen);
             tick.rotation.z = Math.PI;
-            tick.name = "Y axis " + yminors[i];
+            tick.name = "Y axis " + this.y_handle.format(yticks.tick);
             this.toplevel.add(tick);
          }
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grminx,gry,grminz);
          tick.scale.set(plen,1, plen);
-         tick.name = "Y axis " + yminors[i];
+         tick.name = "Y axis " + this.y_handle.format(yticks.tick);
          this.toplevel.add(tick);
       }
 
-      var zticks = this.zz_handle.CreateTicks();
+      var zticks = this.z_handle.CreateTicks();
       geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(-1, 1, 0));
@@ -487,7 +503,7 @@
          var grz = zticks.grpos;
          var is_major = zticks.kind == 1;
 
-         var lbl = this.zz_handle.format(zticks.tick, true, true);
+         var lbl = this.z_handle.format(zticks.tick, true, true);
          if (lbl === null) { is_major = false; lbl = ""; }
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
@@ -534,28 +550,28 @@
             tick.position.set(grmaxx,grmaxy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = -Math.PI/2;
-            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
+            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grmaxx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI;
-            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
+            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grminx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI/2;
-            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
+            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
          }
 
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grminx,grmaxy,grz);
          tick.scale.set(plen,plen,1);
-         tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
+         tick.name = "Z axis " + this.z_handle.format(zticks.tick);
          this.toplevel.add(tick);
       }
 
@@ -683,7 +699,7 @@
 
       this.Create3DScene();
 
-      this.zmin = this.gminbin;
+      this.zmin = this.options.Logz ? this.gmin0bin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin * 1.05; // not very nice
 
       this.DrawXYZ();

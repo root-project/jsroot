@@ -2851,13 +2851,19 @@
 
       // global min/max, used at the moment in 3D drawing
       this.gminbin = this.gmaxbin = histo.getBinContent(1, 1);
+      this.gmin0bin = null;
       for (i = 0; i < this.nbinsx; ++i) {
          for (j = 0; j < this.nbinsy; ++j) {
             var bin_content = histo.getBinContent(i+1, j+1);
             if (bin_content < this.gminbin) this.gminbin = bin_content; else
             if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+            if (bin_content > 0)
+               if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
          }
       }
+
+      // this value used for logz scale drawing
+      if (this.gmin0bin === null) this.gmin0bin = this.gmaxbin*1e-4;
 
       // used to enable/disable stat box
       this.draw_content = this.gmaxbin > 0;
@@ -3284,7 +3290,7 @@
                if (this.x_kind == 'labels')
                   point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
                else {
-                  point.tip = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + "]";
+                  point.tip = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + ")";
 
                   if (xx[i].indx + 1 == xx[i+1].indx)
                      point.tip += " bin=" + xx[i].indx + "\n";
@@ -3294,7 +3300,7 @@
                if (this.y_kind == 'labels')
                   point.tip += "y = " + this.AxisAsText("y", yy[j].axis) + "\n";
                else {
-                  point.tip += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + "]";
+                  point.tip += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + ")";
                   if (yy[j].indx + 1 == yy[j+1].indx)
                      point.tip += " bin=" + yy[j].indx + "\n";
                   else

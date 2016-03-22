@@ -3479,6 +3479,10 @@
          return true;
       }
 
+      handle.last_major = function() {
+         return (this.kind !== 1) ? false : this.nmajor == this.major.length;
+      }
+
       return handle;
    }
 
