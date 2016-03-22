@@ -1934,10 +1934,10 @@
           ismark = (this.draw_kind=="mark"),
           bestbin = null, bestdist = 1e10,
           pmain = this.main_painter(),
-          dist, grx, gry, n;
+          dist, grx, gry, n, bin;
 
       for (n=0;n<this.bins.length;++n) {
-         var bin = this.bins[n];
+         bin = this.bins[n];
 
          grx = pmain.grx(bin.x);
          dist = pnt.x-grx;
@@ -1946,7 +1946,7 @@
             if ((n==0) && (dist < -10)) { bestbin = null; break; } // check first point
          } else {
             gry = pmain.gry(bin.y);
-            dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
+            if (pnt.nproc === 1) dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
          }
 
          if (Math.abs(dist) < bestdist) {
@@ -1962,11 +1962,14 @@
 
       if (ismark) radius = Math.max(this.marker_size/2 + 2, 4);
 
-      if (!islines && !ismark && (Math.sqrt(bestdist)>radius)) bestbin = null;
+      if (bestbin !== null)
+         bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
+
+      if (!islines && !ismark && (bestdist>radius)) bestbin = null;
 
       if (ismark && (bestbin!==null)) {
-         if ((pnt.nproc == 1) && (Math.sqrt(bestdist)>radius)) bestbin = null; else
-         if ((this.bins.length==1) && (Math.sqrt(bestdist)>3*radius)) bestbin = null;
+         if ((pnt.nproc == 1) && (bestdist>radius)) bestbin = null; else
+         if ((this.bins.length==1) && (bestdist>3*radius)) bestbin = null;
       }
 
       var ttbin = this.draw_g.select(".tooltip_bin");
