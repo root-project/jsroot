@@ -3559,9 +3559,9 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
-          i,j,binz,colindx;
+          i,j,binz,colindx,binw,binh,lbl;
 
-      if (handle===null) handle = this.PrepareColorDraw(true);
+      if (handle===null) handle = this.PrepareColorDraw(false);
 
       var text_g = this.draw_g
                        .append("svg:g")
@@ -3577,12 +3577,18 @@
             colindx = this.getValueColor(binz, true);
             if (colindx === null) continue;
 
-            var binw = handle.grx[i+1] - handle.grx[i],
-                binh = handle.gry[j] - handle.gry[j+1];
+            binw = handle.grx[i+1] - handle.grx[i];
+            binh = handle.gry[j] - handle.gry[j+1];
+            lbl = Math.round(binz);
+
+            if (lbl === binz)
+               lbl = binz.toString();
+            else
+               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
 
             this.DrawText(22, Math.round(handle.grx[i] + binw*0.1), Math.round(handle.gry[j+1] + binh*0.1),
                               Math.round(binw*0.8), Math.round(binh*0.8),
-                          JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat), "black", 0, text_g);
+                          lbl, "black", 0, text_g);
          }
 
       this.FinishTextDrawing(text_g);
