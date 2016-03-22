@@ -3450,7 +3450,7 @@
             handle.minor = handle.middle = handle.major;
          } else
          if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
-            handle.minor = this.func.ticks(hanle.middle.length * this.nticks3);
+            handle.minor = this.func.ticks(handle.middle.length * this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/2)) handle.minor = handle.middle;
          }
       }
@@ -3529,7 +3529,7 @@
 
       this.CreateFormatFuncs();
 
-      var major = this.func.ticks(this.nticks), middle = major, minor = major;
+/*      var major = this.func.ticks(this.nticks), middle = major, minor = major;
 
       if (this.nticks2 > 1) {
          minor = middle = this.func.ticks(major.length * this.nticks2);
@@ -3541,30 +3541,31 @@
             minor = this.func.ticks(middle.length * this.nticks3);
             if ((minor.length <= middle.length) || (minor.length > (vertical ? h : w) / 2)) minor = middle;
          }
-      }
+      } */
 
       var center = (this.kind == 'labels') ||
                    (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
 
-      var res = "", lastpos = 0, lasth = 0, nmajor = 0, nmiddle = 0, textscale = 1;
+      var res = "", lastpos = 0, lasth = 0, textscale = 1;
 
       // first draw ticks
 
       this.ticks = [];
 
-      for (var n=0;n<minor.length;++n) {
-         var pos = Math.round(this.func(minor[n]));
+      var handle = this.CreateTicks();
+
+      while (handle.next(true)) {
+         var pos = handle.grpos;
 
          var h1 = Math.round(tickSize/4), h2 = 0;
 
-         if ((nmiddle < middle.length) && (pos == Math.round(this.func(middle[nmiddle])))) {
-            h1 = Math.round(tickSize/2); nmiddle++;
+         if (handle.kind < 3) {
+            h1 = Math.round(tickSize/2);
          }
 
-         if ((nmajor < major.length) && (pos == Math.round(this.func(major[nmajor])))) {
+         if (handle.kind == 1) {
             // if not showing lables, not show large tick
-            if (!('format' in this) || (this.format(major[nmajor],true)!==null)) h1 = tickSize;
-            nmajor++;
+            if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
             this.ticks.push(pos); // keep graphical positions of major ticks
          }
 
@@ -3593,9 +3594,9 @@
                          .attr("class","axis_labels")
                          .call(labelfont.func);
 
-      for (nmajor=0;nmajor<major.length;++nmajor) {
-         var pos = Math.round(this.func(major[nmajor]));
-         var lbl = this.format(major[nmajor], true);
+      for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
+         var pos = Math.round(this.func(handle.major[nmajor]));
+         var lbl = this.format(handle.major[nmajor], true);
          if (lbl === null) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
@@ -3613,7 +3614,7 @@
 
          var tsize = this.GetBoundarySizes(t.node());
          var space_before = (nmajor > 0) ? (pos - last) : (vertical ? h/2 : w/2);
-         var space_after = (nmajor < major.length-1) ? (Math.round(this.func(major[nmajor+1])) - pos) : space_before;
+         var space_after = (nmajor < handle.major.length-1) ? (Math.round(this.func(handle.major[nmajor+1])) - pos) : space_before;
          var space = Math.min(Math.abs(space_before), Math.abs(space_after));
 
          if (vertical) {
