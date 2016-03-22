@@ -675,7 +675,7 @@
       this.Create3DScene();
 
       this.zmin = this.gminbin;
-      this.zmax = Math.ceil(this.gmaxbin / 100) * 105; // not very nice
+      this.zmax = this.gmaxbin * 1.05; // not very nice
 
       this.DrawXYZ();
 
