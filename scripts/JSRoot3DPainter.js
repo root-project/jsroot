@@ -328,17 +328,15 @@
 
    JSROOT.Painter.HPainter_DrawXYZ = function() {
 
-      // in webgl world X goes right, Y goes up and Z goes in direction from the screen
-      // therefore in TH2/TH3 drawing:
-      //  histogram AxisX -> webgl X axis
-      //  histogram AxisY -> webgl -Z axis
-      //  histogram AxisZ -> webgl Y axis
-
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.07),
-          bothsides = (this.size3d !== 0);
+          bothsides = (this.size3d !== 0),
+          xmin = this.xmin, xmax = this.xmax,
+          ymin = this.ymin, ymax = this.ymax,
+          zmin = this.zmin, zmax = this.zmax,
+          histo = this.histo;
 
       if (this.size3d === 0) {
          grminx = this.xmin; grmaxx = this.xmax;
@@ -348,31 +346,38 @@
       }
 
       if (this.options.Logx) {
-         var xmax = this.xmax <= 0 ? 1 : this.xmax
-         var xmin = (this.xmin <= 0) ? 1e-6*xmax : this.xmin;
-         this.tx = d3.scale.log().domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
+         if (xmax <= 0) xmax = 1.;
+         if (xmin <= 0) xmin = 1e-6*xmax;
+         this.tx = d3.scale.log();
       } else {
-         this.tx = d3.scale.linear().domain([ this.xmin, this.xmax ]).range([ grminx, grmaxx ]);
+         this.tx = d3.scale.linear();
       }
+      this.tx.domain([ xmin, xmax ]).range([grminx, grmaxx]);
 
       if (this.options.Logy) {
-         var ymax = this.ymax <= 0 ? 1 : this.ymax
-         var ymin = (this.ymin <= 0) ? 1e-6*ymax : this.ymin;
-         this.ty = d3.scale.log().domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
+         if (ymax <= 0) ymax = 1.;
+         if (ymin <= 0) ymin = 1e-6*ymax;
+         this.ty = d3.scale.log();
       } else {
-         this.ty = d3.scale.linear().domain([ this.ymin, this.ymax ]).range([ grminy, grmaxy ]);
+         this.ty = d3.scale.linear();
       }
+      this.ty.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
 
       if (this.options.Logz) {
-         var zmax = this.zmax <= 0 ? 1 : this.zmax
-         var zmin = (this.zmin <= 0) ? 1e-6*zmax : this.zmin;
-         this.tz = d3.scale.log().domain([ zmin, zmax]).range([ grminz, grmaxz ]);
+         if (zmax <= 0) zmax = 1;
+         if (zmin <= 0) zmin = 1e-6*zmax;
+         this.tz = d3.scale.log();
       } else {
-         this.tz = d3.scale.linear().domain([ this.zmin, this.zmax ]).range( [ grminz, grmaxz ]);
+         this.tz = d3.scale.linear();
       }
+      this.tz.domain([ zmin, zmax]).range([ grminz, grmaxz ]);
 
-      var textMaterial = new THREE.MeshBasicMaterial({ color : 0x000000 });
-      var lineMaterial = new THREE.LineBasicMaterial({ color : 0x000000 });
+      this.zz_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
+      this.zz_handle.SetAxisConfig("zaxis", this.options.Logz ? "log" : "lin", this.tz, this.zmin, this.zmax, zmin, zmax);
+      this.zz_handle.CreateFormatFuncs();
+
+      var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 
       var ticklen = textsize * 0.5, text, tick;
 
@@ -434,7 +439,7 @@
       for (var i = 0; i < yminors.length; ++i) {
          var gry = this.ty(yminors[i]);
          var indx = ymajors.indexOf(yminors[i]);
-         var plen = ((indx>=0) ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
+         var plen = ((indx>=0) ? ticklen : ticklen*0.6) * Math.sin(Math.PI/4);
 
          if (indx>=0) {
             var lbl = (indx === ymajors.length-1) ? "y" : yminors[i];
@@ -474,16 +479,20 @@
          this.toplevel.add(tick);
       }
 
-      var zmajors = this.tz.ticks(8), zminors = this.tz.ticks(50);
+      var zticks = this.zz_handle.CreateTicks();
       geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(-1, 1, 0));
-      for (var i = 0; i < zminors.length; ++i) {
-         var grz = this.tz(zminors[i]);
-         var is_major = zmajors.indexOf(zminors[i]) >= 0;
+      while (zticks.next()) {
+         var grz = zticks.grpos;
+         var is_major = zticks.kind == 1;
+
+         var lbl = this.zz_handle.format(zticks.tick, true, true);
+         if (lbl === null) { is_major = false; lbl = ""; }
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
+
          if (is_major) {
-            var text3d = new THREE.TextGeometry(zminors[i], { size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
             var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
@@ -525,28 +534,28 @@
             tick.position.set(grmaxx,grmaxy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = -Math.PI/2;
-            tick.name = "Z axis " + zminors[i];
+            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grmaxx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI;
-            tick.name = "Z axis " + zminors[i];
+            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
             this.toplevel.add(tick);
 
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grminx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI/2;
-            tick.name = "Z axis " + zminors[i];
+            tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
             this.toplevel.add(tick);
          }
 
          tick = new THREE.Line(geometry, lineMaterial);
          tick.position.set(grminx,grmaxy,grz);
          tick.scale.set(plen,plen,1);
-         tick.name = "Z axis " + zminors[i];
+         tick.name = "Z axis " + this.zz_handle.format(zticks.tick);
          this.toplevel.add(tick);
       }
 
