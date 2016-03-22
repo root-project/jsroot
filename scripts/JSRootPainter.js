@@ -3559,32 +3559,29 @@
       var handle = this.CreateTicks();
 
       while (handle.next(true)) {
-         var pos = handle.grpos;
-
          var h1 = Math.round(tickSize/4), h2 = 0;
 
-         if (handle.kind < 3) {
+         if (handle.kind < 3)
             h1 = Math.round(tickSize/2);
-         }
 
          if (handle.kind == 1) {
             // if not showing lables, not show large tick
             if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
-            this.ticks.push(pos); // keep graphical positions of major ticks
+            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
          if (both_sides > 0) h2 = -h1; else
          if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
 
-         if (n==0) {
-            res += vertical ? ("M"+h1+","+ pos) : ("M"+pos+","+-h1);
+         if (res.length == 0) {
+            res += vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+-h1);
          } else {
-            res += vertical ? ("m"+(h1-lasth)+","+(pos-lastpos)) : ("m"+(pos-lastpos)+","+(lasth-h1));
+            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
          }
 
          res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
 
-         lastpos = pos;
+         lastpos = handle.grpos;
          lasth = h2;
       }
 
