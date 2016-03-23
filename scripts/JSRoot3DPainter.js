@@ -318,8 +318,6 @@
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
 
-      console.log('ADD canvas size ' + JSON.stringify(size));
-
       this.add_3d_canvas(size, this.renderer.domElement);
 
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
@@ -686,8 +684,6 @@
       if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return;
 
       if ((size3d.width<10) || (size3d.height<10)) return;
-
-      console.log('size3d = ' + JSON.stringify(size3d));
 
       this.scene_width = size3d.width;
       this.scene_height = size3d.height;

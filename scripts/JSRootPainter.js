@@ -1347,22 +1347,25 @@
 
          elem = this.svg_pad().select(".special_layer").select("." + size.clname);
          if (elem.empty())
-            elem = this.svg_pad().select(".special_layer").append("foreignObject");
+            elem = this.svg_pad().select(".special_layer")
+                       .append("foreignObject").attr("class", size.clname);
 
-         elem.attr('width', size.width)
+         elem.attr('x', size.x)
+             .attr('y', size.y)
+             .attr('width', size.width)
              .attr('height', size.height)
              .attr('viewBox', "0 0 " + size.width + " " + size.height)
              .attr('preserveAspectRatio','xMidYMid');
-
-         this.SetForeignObjectPosition(elem, size);
 
       } else {
          // force redraw by resize
          this.svg_canvas().property('redraw_by_resize', true);
 
          elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
-         if (elem.empty())
-            elem = d3.select(this.svg_canvas().node().parentNode).append('div');
+         if (elem.empty()) {
+            elem = d3.select(this.svg_canvas().node().parentNode)
+                     .append('div').attr("class", size.clname);
+         }
 
          elem.style('position','absolute')
              .style('left', size.x + 'px')
@@ -1459,21 +1462,6 @@
          sel = d3.select(sel.node().parentNode);
       }
       return pos;
-   }
-
-   JSROOT.TObjectPainter.prototype.SetForeignObjectPosition = function(fo, pos) {
-      // method used to set absolute coordinates for foreignObject
-      // it is known problem of WebKit http://bit.ly/1wjqCQ9
-
-      if (!pos) pos = { x: 0, y: 0 };
-
-      if (JSROOT.browser.isWebKit) {
-         // force canvas redraw when foreign object used - it is not correctly scaled
-         this.svg_canvas().property('redraw_by_resize', true);
-         pos = this.CalcAbsolutePosition(fo, pos);
-      }
-
-      fo.attr("x",pos.x).attr("y",pos.y);
    }
 
 
@@ -2302,6 +2290,8 @@
       // simple way to access painter via frame container
       this.draw_g.property('frame_painter', this);
 
+      console.log('frame ' + lm + "," + tm + "  " + w + "," + h);
+
       this.draw_g.attr("x", lm)
              .attr("y", tm)
              .attr("width", w)
@@ -3090,6 +3080,7 @@
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
+             .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
           svg.append("svg:title").text("ROOT canvas");
           svg.append("svg:g").attr("class","root_frame");
@@ -3115,8 +3106,7 @@
          .property('draw_x', 0)
          .property('draw_y', 0)
          .property('draw_width', w)
-         .property('draw_height', h)
-         .property('redraw_by_resize', false);
+         .property('draw_height', h);
 
       return true;
    }
