@@ -1947,7 +1947,7 @@
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
-      this.add_3d_canvas(this._renderer.domElement);
+      this.add_3d_canvas(size, this._renderer.domElement);
 
       this.startDrawGeometry();
 

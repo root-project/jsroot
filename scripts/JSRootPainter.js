@@ -1009,8 +1009,8 @@
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
       if (typeof name === 'string') this._hitemname = name;
                                else delete this._hitemname;
+      // only upate draw option, never delete. null specified when update drawing
       if (typeof opt === 'string') this._hdrawopt = opt;
-                             else  delete this._hdrawopt;
    }
 
    JSROOT.TBasePainter.prototype.GetItemName = function() {
@@ -1057,13 +1057,12 @@
    }
 
    JSROOT.TObjectPainter.prototype.SetItemName = function(name, opt) {
-      JSROOT.TBasePainter.prototype.SetItemName.call(name, opt);
+      JSROOT.TBasePainter.prototype.SetItemName.call(this, name, opt);
       if (name=="") return;
       var can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
                    else this.select_main().attr("title", name);
    }
-
 
    JSROOT.TObjectPainter.prototype.UpdateObject = function(obj) {
       // generic method to update object
@@ -1233,10 +1232,16 @@
       return 1; // default is overlay
    }
 
-   JSROOT.TObjectPainter.prototype.size_for_3d = function() {
+   JSROOT.TObjectPainter.prototype.size_for_3d = function(can3d) {
       // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
 
+      if (can3d === undefined) can3d = this.embed_3d();
+
       var pad = this.svg_pad();
+
+      var clname = this.pad_name;
+      if (clname == '') clname = 'canvas';
+      clname = "draw3d_" + clname;
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
@@ -1247,15 +1252,14 @@
             rect.height = Math.round(0.66*rect.width);
             this.select_main().style('height', rect.height + "px");
          }
-         rect.x = 0; rect.y = 0;
+         rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
          return rect;
       }
 
       var elem = pad;
-      if (this.embed_3d() == 0)
-         elem = this.svg_canvas();
+      if (can3d == 0) elem = this.svg_canvas();
 
-      var size = { x: 0, y: 0, width: 100, height:100 };
+      var size = { x: 0, y: 0, width: 100, height:100, clname: clname, can3d: can3d };
 
       if (this.frame_painter()!==null) {
          elem = this.svg_frame();
@@ -1266,12 +1270,15 @@
       size.width = elem.property("draw_width");
       size.height = elem.property("draw_height");
 
-      if ((this.frame_painter()===null) && (this.embed_3d() > 0)) {
+      if ((this.frame_painter()===null) && (can3d > 0)) {
          size.x = Math.round(size.x + size.width*0.1);
          size.y = Math.round(size.y + size.height*0.1);
          size.width = Math.round(size.width*0.8);
          size.height = Math.round(size.height*0.8);
       }
+
+      if (can3d === 1)
+         this.CalcAbsolutePosition(this.svg_pad(), size);
 
       return size;
    }
@@ -1282,31 +1289,25 @@
 
       this.svg_pad().property('can3d', null);
 
-      if (can3d === 0) {
+      var size = this.size_for_3d(can3d);
+
+      if (size.can3d === 0) {
          d3.select(this.svg_canvas().node().nextSibling).remove(); // remove html5 canvas
          this.svg_canvas().style('display', null); // show SVG canvas
       } else {
          if (this.svg_pad().empty()) return;
-         var clname = this.pad_name;
-         if (clname == "") clname = 'canvas';
-         clname = ".draw3d_" + clname;
-         if (can3d > 1) {
-            this.svg_pad().select(".special_layer").select(clname).remove();
-         } else {
-            d3.select(this.svg_canvas().node().parentNode).select(clname).remove();
-         }
+
+         this.apply_3d_size(size).remove();
 
          this.svg_frame().style('display', null);
       }
    }
 
-   JSROOT.TObjectPainter.prototype.add_3d_canvas = function(canv) {
+   JSROOT.TObjectPainter.prototype.add_3d_canvas = function(size, canv) {
 
-      var can3d = this.embed_3d();
+      if ((canv == null) || (size.can3d < -1)) return;
 
-      if ((canv == null) || (can3d < 0)) return;
-
-      if (this.svg_canvas().empty()) {
+      if (size.can3d === -1) {
          // case when 3D object drawn without canvas
 
          var main = this.select_main().node();
@@ -1318,57 +1319,61 @@
          return;
       }
 
-      this.svg_pad().property('can3d', can3d);
+      this.svg_pad().property('can3d', size.can3d);
 
-      if (can3d === 0) {
+      if (size.can3d === 0) {
          this.svg_canvas().style('display', 'none'); // hide SVG canvas
 
-         this.svg_canvas().node().parentNode.appendChild(canv); // add
+         this.svg_canvas().node().parentNode.appendChild(canv); // add directly
       } else {
          if (this.svg_pad().empty()) return;
 
          // first hide normal frame
          this.svg_frame().style('display', 'none');
 
-         var size = this.size_for_3d();
+         var elem = this.apply_3d_size(size);
 
-         var fo;
-
-         var clname = this.pad_name;
-         if (clname == '') clname = 'canvas';
-         clname = "draw3d_" + clname;
-
-         if (can3d == 1) {
-            // we need translate position of 3d drawing, starting from the pad
-            size = this.CalcAbsolutePosition(this.svg_pad(), size);
-
-            // force redraw by resize
-            this.svg_canvas().property('redraw_by_resize', true);
-
-            fo = d3.select(this.svg_canvas().node().parentNode).append('div');
-            fo.style('position','absolute')
-              .style('left', size.x + 'px')
-              .style('top', size.y + 'px')
-              .style('width', size.width + 'px')
-              .style('height', size.height + 'px');
-         } else {
-            fo = this.svg_pad().select(".special_layer").append("foreignObject");
-
-            // set frame dimensions
-            fo.attr('width', size.width)
-              .attr('height', size.height)
-              .attr('viewBox', "0 0 " + size.width + " " + size.height)
-              .attr('preserveAspectRatio','xMidYMid');
-
-            // and position
-            this.SetForeignObjectPosition(fo, size);
-         }
-
-         fo.attr('class',clname)
-           .attr('title', "")
-           .node().appendChild(canv);
+         elem.attr('title','').node().appendChild(canv);
       }
    }
+
+   JSROOT.TObjectPainter.prototype.apply_3d_size = function(size) {
+
+      if (size.can3d < 0) return d3.select(null);
+
+      var elem;
+
+      if (size.can3d > 1) {
+
+         elem = this.svg_pad().select(".special_layer").select("." + size.clname);
+         if (elem.empty())
+            elem = this.svg_pad().select(".special_layer").append("foreignObject");
+
+         elem.attr('width', size.width)
+             .attr('height', size.height)
+             .attr('viewBox', "0 0 " + size.width + " " + size.height)
+             .attr('preserveAspectRatio','xMidYMid');
+
+         this.SetForeignObjectPosition(elem, size);
+
+      } else {
+         // force redraw by resize
+         this.svg_canvas().property('redraw_by_resize', true);
+
+         elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
+         if (elem.empty())
+            elem = d3.select(this.svg_canvas().node().parentNode).append('div');
+
+         elem.style('position','absolute')
+             .style('left', size.x + 'px')
+             .style('top', size.y + 'px')
+             .style('width', size.width + 'px')
+             .style('height', size.height + 'px');
+      }
+
+      return elem;
+   }
+
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    JSROOT.TObjectPainter.prototype.main_painter = function() {
@@ -3052,6 +3057,7 @@
                return false;
             }
 
+
       } else {
 
          if ((h < 10) && (w > 0)) {
@@ -3214,7 +3220,7 @@
       pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
    }
 
-   JSROOT.TPadPainter.prototype.Redraw = function() {
+   JSROOT.TPadPainter.prototype.Redraw = function(resize) {
       if (this.iscan)
          this.CreateCanvasSvg(2);
       else
@@ -3222,7 +3228,7 @@
 
       // at the moment canvas painter donot redraw its subitems
       for (var i = 0; i < this.painters.length; ++i)
-         this.painters[i].Redraw();
+         this.painters[i].Redraw(resize);
    }
 
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
@@ -3235,7 +3241,7 @@
       // if canvas changed, redraw all its subitems
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw();
+            this.painters[i].Redraw(true);
 
       return changed;
    }
@@ -3352,6 +3358,9 @@
 
       if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
 
+      var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+      if (gr_range<=0) gr_range = 100;
+
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
 
@@ -3360,7 +3369,7 @@
          var tf1 = JSROOT.Painter.getTimeFormat(axis);
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
-         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range/w, false);
+         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
 
          this.tfunc1 = this.tfunc2 = d3.time.format(tf1);
          if (tf2!==tf1)
@@ -7920,7 +7929,7 @@
 
       if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
 
-      JSROOT.RegisterForResize(this);
+      //JSROOT.RegisterForResize(this);
 
       this.SetMonitoring(monitor);
 
@@ -8126,7 +8135,7 @@
 
          if ((only_frame_id !== null) && (d3.select(frame).attr('id') != only_frame_id)) return;
 
-         if ((painter.GetItemName()!==null) && (typeof painter['CheckResize'] == 'function')) {
+         if ((painter.GetItemName()!==null) && (typeof painter.CheckResize == 'function')) {
             // do not call resize for many painters on the same frame
             if (resized_frame === frame) return;
             painter.CheckResize(size);
@@ -8355,27 +8364,18 @@
       // handle can be function or object with CheckResize function
       // one could specify delay after which resize event will be handled
 
-      var myInterval = null;
-      var myCounter = -1;
-      var myPeriod = delay ? delay / 2.5 : 100;
-      if (myPeriod < 20) myPeriod = 20;
+      if ((handle===null) || (handle === undefined)) return;
+
+      var myInterval = null, myDelay = delay ? delay : 300;
+
+      if (myDelay < 20) myDelay = 20;
 
       function ResizeTimer() {
-         if (myCounter < 0) return;
-         myCounter += 1;
-         if (myCounter < 3) return;
-
-         if (myInterval !== null) {
-            clearInterval(myInterval);
-            myInterval = null;
-         }
-         myCounter = -1;
-
-         if (handle==null) return;
+         myInterval = null;
 
          document.body.style.cursor = 'wait';
          if (typeof handle == 'function') handle(); else
-         if ((typeof handle == 'object') && (typeof handle['CheckResize'] == 'function')) handle.CheckResize(); else
+         if ((typeof handle == 'object') && (typeof handle.CheckResize == 'function')) handle.CheckResize(); else
          if (typeof handle == 'string') {
             var node = d3.select('#'+handle);
             if (!node.empty()) {
@@ -8391,9 +8391,8 @@
       }
 
       function ProcessResize() {
-         if (myInterval === null)
-            myInterval = setInterval(ResizeTimer, myPeriod);
-         myCounter = 0;
+         if (myInterval !== null) clearTimeout(myInterval);
+         myInterval = setTimeout(ResizeTimer, myDelay);
       }
 
       window.addEventListener('resize', ProcessResize);

@@ -282,6 +282,7 @@
          this.scene.add(newtop);
 
          this.toplevel = newtop;
+
          return;
       }
 
@@ -317,7 +318,9 @@
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
 
-      this.add_3d_canvas(this.renderer.domElement);
+      console.log('ADD canvas size ' + JSON.stringify(size));
+
+      this.add_3d_canvas(size, this.renderer.domElement);
 
       this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
       this['Render3D'] = JSROOT.Painter.Render3D;
@@ -674,14 +677,17 @@
    }
 
 
-   JSROOT.Painter.Resize3D = function(size) {
-      var size3d = this.size_for_3d();
+   JSROOT.Painter.Resize3D = function() {
 
-      // console.log('new size3d = ' + JSON.stringify(size3d));
+      var size3d = this.size_for_3d(this.svg_pad().property('can3d'));
+
+      this.apply_3d_size(size3d);
 
       if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return;
 
       if ((size3d.width<10) || (size3d.height<10)) return;
+
+      console.log('size3d = ' + JSON.stringify(size3d));
 
       this.scene_width = size3d.width;
       this.scene_height = size3d.height;
@@ -947,11 +953,15 @@
       }
    }
 
-   JSROOT.TH3Painter.prototype.Redraw = function() {
-      this.Create3DScene();
-      this.DrawXYZ();
-      this.Draw3DBins();
-      this.Render3D();
+   JSROOT.TH3Painter.prototype.Redraw = function(resize) {
+      if (resize) {
+         this.Resize3D();
+      } else {
+         this.Create3DScene();
+         this.DrawXYZ();
+         this.Draw3DBins();
+         this.Render3D();
+      }
    }
 
    JSROOT.TH3Painter.prototype.CheckResize = function(size) {
