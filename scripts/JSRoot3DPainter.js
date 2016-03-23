@@ -85,7 +85,7 @@
             this.cont.innerHTML = v;
             this.tt.style.width = 'auto'; // let it be automatically resizing...
             if (JSROOT.browser.isIE)
-               this.tt.style.width = tt.offsetWidth;
+               this.tt.style.width = this.tt.offsetWidth;
          },
          hide : function() {
             if (this.tt !== null)

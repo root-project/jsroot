@@ -1225,10 +1225,10 @@
       // returns embed mode for 3D drawings (three.js) inside SVG
       // 0 - no embedding,  3D drawing take full size of canvas
       // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
-      // 2 - normall embedding via ForeginObject, works only with Firefox and WebKit
+      // 2 - normall embedding via ForeginObject, works only with Firefox
 
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
-      if (JSROOT.browser.isFirefox || JSROOT.browser.isWebKit)
+      if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
       return 1; // default is overlay
    }
@@ -1339,7 +1339,8 @@
          clname = "draw3d_" + clname;
 
          if (can3d == 1) {
-            size = this.CalcAbsolutePosition(this.svg_frame(), size);
+            // we need translate position of 3d drawing, starting from the pad
+            size = this.CalcAbsolutePosition(this.svg_pad(), size);
 
             // force redraw by resize
             this.svg_canvas().property('redraw_by_resize', true);
