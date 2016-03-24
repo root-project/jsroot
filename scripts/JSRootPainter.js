@@ -7394,7 +7394,7 @@
                hitem._expand = JSROOT.findFunction(handle.expand);
                if (typeof hitem['_expand'] == 'function') {
                   hitem._more = true; // use as workaround - not try to repeat same action
-                  hpainter.expand(itemname, call_back, tree_node);
+                  hpainter.expand(itemname, call_back, d3cont);
                   delete hitem._more;
                }
             });
