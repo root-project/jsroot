@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in master
+## Changes in 4.4
 1. Fix faces orientation for all TGeo shapes. 
 2. Improve TGeoTorus creation - handle all parameters combinations
 3. Implement TGeoCompositeShape, using ThreeCSG.js
