@@ -2290,8 +2290,6 @@
       // simple way to access painter via frame container
       this.draw_g.property('frame_painter', this);
 
-      console.log('frame ' + lm + "," + tm + "  " + w + "," + h);
-
       this.draw_g.attr("x", lm)
              .attr("y", tm)
              .attr("width", w)
@@ -3446,12 +3444,12 @@
          var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
 
          // avoid black filling by middle-size
-         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range / 4)) {
+         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
             handle.minor = handle.middle = handle.major;
          } else
          if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
             handle.minor = this.func.ticks(handle.middle.length * this.nticks3);
-            if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/2)) handle.minor = handle.middle;
+            if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
       }
 
