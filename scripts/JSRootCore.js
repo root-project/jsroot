@@ -9,7 +9,6 @@
 
       var jsroot = factory({});
 
-
       var dir = jsroot.source_dir + "scripts/", ext = jsroot.source_min ? ".min" : "";
 
       var paths = {
@@ -75,7 +74,6 @@
        }
       });
 
-
       // AMD. Register as an anonymous module.
       define( jsroot );
 
@@ -96,7 +94,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 23/03/2016";
+   JSROOT.version = "dev 24/03/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
