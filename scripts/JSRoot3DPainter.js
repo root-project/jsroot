@@ -360,7 +360,12 @@
 
       if (this.options.Logx) {
          if (xmax <= 0) xmax = 1.;
-         if (xmin <= 0) xmin = 1e-6*xmax;
+         if ((xmin <= 0) && (this.nbinsx > 0))
+            for (var i=0;i<this.nbinsx;++i) {
+               xmin = Math.max(xmin, this.GetBinX(i));
+               if (xmin>0) break;
+            }
+         if (xmin <= 0) xmin = 1e-4*xmax;
          this.tx = d3.scale.log();
          this.x_kind = "log";
       } else {
@@ -374,7 +379,13 @@
 
       if (this.options.Logy) {
          if (ymax <= 0) ymax = 1.;
-         if (ymin <= 0) ymin = 1e-6*ymax;
+         if ((ymin <= 0) && (this.nbinsy>0))
+            for (var i=0;i<this.nbinsy;++i) {
+               ymin = Math.max(ymin, this.GetBinY(i));
+               if (ymin>0) break;
+            }
+
+         if (ymin <= 0) ymin = 1e-4*ymax;
          this.ty = d3.scale.log();
          this.y_kind = "log";
       } else {
@@ -388,7 +399,7 @@
 
       if (this.options.Logz) {
          if (zmax <= 0) zmax = 1;
-         if (zmin <= 0) zmin = 1e-6*zmax;
+         if (zmin <= 0) zmin = 1e-4*zmax;
          this.tz = d3.scale.log();
          this.z_kind = "log";
       } else {

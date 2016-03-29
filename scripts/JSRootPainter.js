@@ -4568,8 +4568,8 @@
 
          if ((this.scale_xmin <= 0) && (this.nbinsx>0))
             for (var i=0;i<this.nbinsx;++i) {
-               var left = this.GetBinX(i);
-               if (left>0) { this.scale_xmin = left; break; }
+               this.scale_xmin = Math.max(this.scale_xmin, this.GetBinX(i));
+               if (this.scale_xmin>0) break;
             }
 
          if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax)) {
@@ -4620,8 +4620,8 @@
 
          if ((this.scale_ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
-               var down = this.GetBinY(i);
-               if (down>0) { this.scale_ymin = down; break; }
+               this.scale_ymin = Math.max(this.scale_ymin, this.GetBinY(i));
+               if (this.scale_ymin>0) break;
             }
 
          if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0))
