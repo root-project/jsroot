@@ -367,7 +367,7 @@
          this.tx = d3.scale.linear();
          this.x_kind = "lin";
       }
-      this.tx.domain([ xmin, xmax ]).range([grminx, grmaxx]);
+      this.tx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
       this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
@@ -395,7 +395,7 @@
          this.tz = d3.scale.linear();
          this.z_kind = "lin";
       }
-      this.tz.domain([ zmin, zmax]).range([ grminz, grmaxz ]);
+      this.tz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 
       this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.tz, this.zmin, this.zmax, zmin, zmax);
@@ -628,9 +628,15 @@
 
       var geom = new THREE.BoxGeometry(1, 1, 1);
 
+      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1];
+
+      var z1 = this.tz(zmin);
+
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
-         var wei = this.tz(hh.z);
+         if (hh.z < zmin) continue;
+
+         var z2 = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
 
          // create a new mesh with cube geometry
          var bin = new THREE.Mesh(geom, material.clone());
@@ -641,8 +647,8 @@
          if ((x1 < -1.001*this.size3d) || (x2 > 1.001*this.size3d) ||
              (y1 < -1.001*this.size3d) || (y2 > 1.001*this.size3d)) continue;
 
-         bin.position.set((x1+x2)/2, (y1+y2)/2, wei/2);
-         bin.scale.set(x2-x1,y2-y1,wei);
+         bin.position.set((x1+x2)/2, (y1+y2)/2, (z1+z2)/2);
+         bin.scale.set(x2-x1,y2-y1,z2-z1);
 
          if ('tip' in hh) bin.name = hh.tip;
          this.toplevel.add(bin);
