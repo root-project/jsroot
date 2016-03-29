@@ -453,19 +453,6 @@
     background: rgba(255, 255, 255, 0.7);
 }
 
-.jsroot .toolbar--hover {
-    opacity: 0;
-    -webkit-transition: opacity 0.3s ease 0s;
-    -moz-transition: opacity 0.3s ease 0s;
-    -ms-transition: opacity 0.3s ease 0s;
-    -o-transition: opacity 0.3s ease 0s;
-    transition: opacity 0.3s ease 0s;
-}
-
-.jsroot .toolbar--hover:hover {
-    opacity: 1;
-}
-
 .jsroot .toolbar-group {
     float: left;
     display: inline-block;
