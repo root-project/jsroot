@@ -167,7 +167,7 @@
       }
 
       var inter = JSROOT.GetUrlOption("interactive", url);
-      if ((inter=="") || (inter=="1")) inter = "21111"; else
+      if ((inter=="") || (inter=="1")) inter = "11111"; else
       if (inter=="0") inter = "00000";
       if ((inter!==null) && (inter.length==5)) {
          JSROOT.gStyle.Tooltip =     parseInt(inter.charAt(0));
@@ -2315,7 +2315,7 @@
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
-      if (Math.abs(JSROOT.gStyle.Tooltip) < 2)
+      if (JSROOT.gStyle.Tooltip === 0)
          return tooltip_rect.remove();
 
       var painter = this,
@@ -2376,19 +2376,19 @@
 
       var hintsg = this.svg_pad().select(".stat_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty() && (JSROOT.gStyle.Tooltip > 1))
+      if (!hintsg.empty() && (JSROOT.gStyle.Tooltip > 0))
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
-      if (JSROOT.gStyle.Tooltip < 2) return false;
+      if (JSROOT.gStyle.Tooltip < 1) return false;
       return ! (this.svg_pad().select(".stat_layer").select(".objects_hints").empty());
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
 
-      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 2)) pnt = null;
+      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 1)) pnt = null;
 
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
@@ -5083,7 +5083,7 @@
 
       this.zoom_rect = null;
 
-      if (JSROOT.gStyle.Tooltip > 1) {
+      if (JSROOT.gStyle.Tooltip > 0) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.frame_painter().ProcessTooltipEvent(null);
          this.disable_tooltip = true;
@@ -5231,7 +5231,7 @@
          this.zoom_kind = 101; // x and y
       }
 
-      if (JSROOT.gStyle.Tooltip > 1) {
+      if (JSROOT.gStyle.Tooltip > 0) {
          JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
          this.frame_painter().ProcessTooltipEvent(null);
          this.disable_tooltip = true;
@@ -5489,15 +5489,9 @@
          if (this.Dimension() == 2)
             menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
       }
-      if (this.draw_content) {
-         if (JSROOT.gStyle.Tooltip == 1)
-            menu.addchk((this.options.Optimize>0), "Optimize drawing", function() {
-               this.options.Optimize = (this.options.Optimize>0) ? 0 : 2;
-               this.RedrawPad();
-            });
 
+      if (this.draw_content)
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
-      }
    }
 
    JSROOT.THistPainter.prototype.FillToolbar = function(buttons) {
@@ -5814,98 +5808,6 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.DrawAsMarkersOld = function(draw_bins, width, height) {
-      // draw all markers as independent elements, only required with old tooltip style
-
-      // when draw as error, enable marker draw
-      if ((this.options.Mark == 0) && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
-         this.options.Mark = 1;
-
-      var exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
-          show_errors = (this.options.Error > 0),
-          show_markers = (this.options.Mark > 0),
-          pmain = this.main_painter(), pthis = this;
-
-      for (var n = 0; n < draw_bins.length; ++n) {
-         var pnt = draw_bins[n];
-
-         var cont = this.histo.getBinContent(pnt.bin+1);
-
-         pnt.x = Math.round(pnt.x + pnt.width/2);
-         pnt.xerr = Math.round(pnt.width/2);
-         pnt.yerr1 = pnt.yerr2 = 30;
-
-         if (exclude_zero && (cont == 0)) {
-            pnt.y = height + 100; // such point will be removed
-            continue;
-         }
-
-         if (show_errors) {
-            var binerr = this.histo.getBinError(pnt.bin+1);
-            pnt.yerr1 = Math.round(pnt.y - pmain.gry(cont + binerr)); // up
-            pnt.yerr2 = Math.round(pmain.gry(cont - binerr) - pnt.y); // down
-         }
-      }
-
-      // here are up to five elements are collected, try to group them
-      var nodes = this.draw_g.selectAll("g")
-                     .data(draw_bins.filter(function(d) { return (d.y > -d.yerr1) && (d.y < height + d.yerr2); }))
-                     .enter()
-                     .append("svg:g")
-                     .property('mydata', function(d) { return d; })
-                     .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-
-      if (JSROOT.gStyle.Tooltip === 1)
-         nodes.append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
-
-      if (this.options.Error == 12) {
-
-         // when no any marker is show, use at least non-empty fill color
-         if (this.fillatt.color === 'none') show_markers = true;
-
-         nodes.append("svg:rect")
-            .attr("x", function(d) { return -d.xerr; })
-            .attr("y", function(d) { return -d.yerr1; })
-            .attr("width", function(d) { return 2*d.xerr; })
-            .attr("height", function(d) { return d.yerr1 + d.yerr2; })
-            .call(this.fillatt.func);
-             // even when fill attribute not specified, get mouse events
-
-         if (JSROOT.gStyle.Tooltip === 1)
-            nodes.select("rect")
-                 .style("pointer-events", "visibleFill")
-                 .property('fill0', this.fillatt.color)
-                 .on('mouseover', function() {
-                    if (JSROOT.gStyle.Tooltip !== 1) return;
-                    d3.select(this).style("fill", this.fill0)
-                      .transition().duration(100).style("fill", "grey");
-                  })
-                  .on('mouseout', function() {
-                     d3.select(this).transition().duration(100).style("fill", this.fill0);
-                   });
-      } else
-      if (this.options.Error > 0) {
-         var endx = "", endy = "";
-         if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
-
-         nodes.append("svg:path")
-              .attr("d", function(d) {
-                 return "M" + (-d.xerr) + ",0" + endx + "h" + 2*d.xerr + endx +
-                        "M0," + (-d.yerr1) + endy + "v" + (d.yerr1+d.yerr2) + endy;
-               })
-              .call(this.lineatt.func);
-      }
-
-      if (show_markers) {
-         // draw markers also when e2 option was specified
-         var marker = JSROOT.Painter.createAttMarker(this.histo);
-         nodes.append("svg:path")
-              .style("fill", marker.fill)
-              .style("stroke", marker.stroke)
-              .attr("d", marker.create(0,0));
-      }
-   }
-
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
@@ -5926,7 +5828,6 @@
           pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
-          bins = null,
           exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
@@ -5957,9 +5858,6 @@
       var draw_markers = show_errors || show_markers;
 
       if (draw_markers) use_minmax = true;
-
-      // collect bins to be drawn, min/max logic used to select max bin at each pixel
-      if (JSROOT.gStyle.Tooltip === 1) bins = [];
 
       for (i = left; i <= right; ++i) {
 
@@ -5997,29 +5895,25 @@
                if (draw_markers) {
                   bincont = this.histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
-                     if (bins!==null) {
-                        bins.push({ x: currx,  width: grx-currx, y: curry_min, bin: besti });
-                     } else {
-                        mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
-                        mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
-                        my = Math.round(pmain.gry(bincont));
-                        yerr1 = yerr2 = 20;
-                        if (show_errors) {
-                           binerr = this.histo.getBinError(besti+1);
-                           yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
-                           yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
-                        }
+                     mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
+                     mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
+                     my = Math.round(pmain.gry(bincont));
+                     yerr1 = yerr2 = 20;
+                     if (show_errors) {
+                        binerr = this.histo.getBinError(besti+1);
+                        yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
+                        yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
+                     }
 
-                        if ((my >= -yerr1) && (my < height + yerr2)) {
-                           if (path_fill !== null)
-                              path_fill +="M" + mx1 +","+(my-yerr1) +
-                                          "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                           if (path_err !== null)
-                              path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
-                                         "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
-                           if (path_marker !== null)
-                              path_marker += marker.create((mx1+mx2-1)/2, my);
-                        }
+                     if ((my >= -yerr1) && (my < height + yerr2)) {
+                        if (path_fill !== null)
+                           path_fill +="M" + mx1 +","+(my-yerr1) +
+                           "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                        if (path_err !== null)
+                           path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
+                           "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
+                        if (path_marker !== null)
+                           path_marker += marker.create((mx1+mx2-1)/2, my);
                      }
                   }
                }
@@ -6071,8 +5965,6 @@
       }
 
       if (draw_markers) {
-         if (JSROOT.gStyle.Tooltip == 1)
-            return this.DrawAsMarkersOld(bins, width, height);
 
          if ((path_fill !== null) && (path_fill.length > 0))
             this.draw_g.append("svg:path")
@@ -6090,37 +5982,17 @@
                 .style("fill", marker.fill)
                 .style("stroke", marker.stroke);
 
-         if (JSROOT.gStyle.Tooltip > 1)
-            this.ProcessTooltip = this.ProcessTooltipFunc;
+      } else {
 
-         return;
+         this.draw_g.append("svg:path")
+                    .attr("d", res)
+                    .style("stroke-linejoin","miter")
+                    .call(this.lineatt.func)
+                    .call(this.fillatt.func);
+
       }
 
-      this.draw_g.append("svg:path")
-                 .attr("d", res)
-                 .style("stroke-linejoin","miter")
-                 .call(this.lineatt.func)
-                 .call(this.fillatt.func);
-
-      if ((JSROOT.gStyle.Tooltip === 1) && (bins!==null))
-         this.draw_g.selectAll("rect")
-            .data(bins.filter(function(d) { return d.y < height - 0.1; })).enter()
-            .append("svg:rect")
-              .attr("class", "h1bin")
-              .attr("x", function(d) { return d.x; })
-              .attr("y", function(d) { return d.y; })
-              .attr("width", function(d) { return d.width; })
-              .attr("height", function(d) { return (height - d.y); })
-              .on('mouseover', function() {
-                  if (JSROOT.gStyle.Tooltip!==1) return;
-                  d3.select(this).transition().duration(100).style("opacity", "0.3");
-               })
-              .on('mouseout', function() {
-                  d3.select(this).transition().duration(100).style("opacity", "");
-               })
-              .append("svg:title").text(function(d) { return pthis.GetBinTips(d.bin, true); });
-      else
-      if (JSROOT.gStyle.Tooltip > 1)
+      if (JSROOT.gStyle.Tooltip > 0)
          this.ProcessTooltip = this.ProcessTooltipFunc;
    }
 
