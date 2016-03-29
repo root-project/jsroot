@@ -606,7 +606,7 @@
 
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
-      var local_bins = this.CreateDrawBins(100, 100, 2, (JSROOT.gStyle.Tooltip>0 ? 1 : 0));
+      var local_bins = this.CreateDrawBins(this.size3d, this.size3d);
 
       // create the bin cubes
       var fillcolor = new THREE.Color(0xDDDDDD);

@@ -1048,19 +1048,8 @@
 
          delete this.ProcessTooltip;
 
-        if (JSROOT.gStyle.Tooltip > 1)
-           this.ProcessTooltip = this.ProcessTooltipFunc;
-        else
         if (JSROOT.gStyle.Tooltip > 0)
-           this.draw_g.selectAll()
-               .data(this.bins).enter()
-               .append("svg:circle")
-               .attr("cx", function(d) { return d.grx; })
-               .attr("cy", function(d) { return d.gry; })
-               .attr("r", 4)
-               .style("opacity", 0)
-               .append("svg:title")
-               .text( function(d) { return name + "x = " + pmain.AxisAsText("x",d.x) + " \ny = " + pmain.AxisAsText("y", d.y); });
+           this.ProcessTooltip = this.ProcessTooltipFunc;
       }
 
       this.CanZoomIn = function(axis,min,max) {
@@ -1552,10 +1541,6 @@
           graph = this.GetObject(),
           excl_width = 0;
 
-      // add title for complete TGraph
-      if (JSROOT.gStyle.Tooltip === 1)
-          this.draw_g.append("svg:title").text(this.GetTipName());
-
       this.lineatt = JSROOT.Painter.createAttLine(graph);
       this.fillatt = this.createAttFill(graph);
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
@@ -1664,18 +1649,6 @@
          }
 
          this.draw_kind = "lines";
-
-         // do not add tooltip for line, when we wants to add markers
-         if (JSROOT.gStyle.Tooltip===1)
-            this.draw_g.selectAll("circle")
-                       .data(drawbins).enter()
-                       .append("svg:circle")
-                       .attr("cx", function(d) { return Math.round(d.grx); })
-                       .attr("cy", function(d) { return Math.round(d.gry); })
-                       .attr("r", 3)
-                       .style("opacity", 0)
-                       .append("svg:title")
-                       .text(this.TooltipText.bind(this));
       }
 
       var nodes = null;
@@ -1726,9 +1699,6 @@
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
-      if ((JSROOT.gStyle.Tooltip===1) && nodes)
-         nodes.append("svg:title").text(this.TooltipText.bind(this));
-
       if (this.optionBar) {
          // calculate bar width
          for (var i=1;i<drawbins.length-1;++i)
@@ -1758,38 +1728,17 @@
                 if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
-            .call(this.fillatt.func)
-            .filter(function(d) { return JSROOT.gStyle.Tooltip===1 ? this : null; })
-            .on('mouseover', function() {
-                if (JSROOT.gStyle.Tooltip < 1) return;
-                var sel = d3.select(this);
-                if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
-                sel.transition().duration(100).style("fill", "grey");
-             })
-            .on('mouseout', function() {
-               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-             });
+            .call(this.fillatt.func);
       }
 
-      if (this.optionRect) {
+      if (this.optionRect)
          nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
            .append("svg:rect")
            .attr("x", function(d) { d.rect = true; return d.grx0; })
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
-           .call(this.fillatt.func)
-           .filter(function() { return JSROOT.gStyle.Tooltip===1 ? this : null; })
-           .on('mouseover', function() {
-               if (JSROOT.gStyle.Tooltip !== 1) return;
-               var sel = d3.select(this);
-               if (sel.property('fill0') === undefined) sel.property('fill0', sel.style("fill"));
-               sel.transition().duration(100).style("fill", "grey");
-           })
-           .on('mouseout', function() {
-              d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-           });
-      }
+           .call(this.fillatt.func);
 
       if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
@@ -1849,10 +1798,10 @@
          }
       }
 
-      if (JSROOT.gStyle.Tooltip > 1)
+      delete this.ProcessTooltip;
+
+      if (JSROOT.gStyle.Tooltip > 0)
          this.ProcessTooltip = this.ProcessTooltipFunc;
-      else
-         delete this.ProcessTooltip;
    }
 
    JSROOT.TGraphPainter.prototype.ProcessTooltipFunc = function(pnt) {
@@ -1932,7 +1881,7 @@
 
       if (res.changed)
          ttrect.attr("x", d.grx1 + best.x1)
-               .attr("width", best.x2-best.x1)
+               .attr("width", best.x2 - best.x1)
                .attr("y", d.gry1 + best.y1)
                .attr("height", best.y2 - best.y1)
                .style("opacity", "0.3")
@@ -3138,7 +3087,8 @@
       }
    }
 
-   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h, coordinates_kind, tipkind) {
+   JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h) {
+      // used only for lego plot now
       var histo = this.GetObject(),
           i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
@@ -3146,7 +3096,7 @@
           j2 = this.GetSelectIndex("y", "right", 1),
           name = this.GetTipName("\n"),
           xx = [], yy = [], i, j, x, y,
-          nbins = 0, binz = 0, sumz = 0, zdiff, dgrx, dgry;
+          nbins = 0, binz = 0, sumz = 0;
 
       for (i = i1; i <= i2; ++i) {
          x = this.GetBinX(i);
@@ -3171,56 +3121,24 @@
          }
       }
 
-      var xfactor = 1, yfactor = 1, uselogz = false, logmin  = 0, logmax = 1;
-      if (coordinates_kind == 1)
-         if (this.options.Logz && (this.maxbin>0)) {
-            uselogz = true;
-            logmax = Math.log(this.maxbin);
-            logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
-            xfactor = 0.5 / (logmax - logmin);
-            yfactor = 0.5 / (logmax - logmin);
-         } else {
-            xfactor = 0.5 / (this.maxbin - this.minbin);
-            yfactor = 0.5 / (this.maxbin - this.minbin);
-         }
-
-      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2)) || (this.options.Optimize > 10)) {
+      if (((this.options.Optimize > 0) && (nbins>1000)) || (this.options.Optimize > 10)) {
          // if there are many non-empty points, check if all of them are selected
          // probably we do not need to optimize axis
 
-         this.fContour = null; // z-scale ranges when drawing with color
-         this.fUserContour = false;
          nbins = 0;
          for (i = i1; i < i2; ++i) {
             for (j = j1; j < j2; ++j) {
                binz = histo.getBinContent(i+1, j+1);
                if ((binz == 0) || (binz < this.minbin)) continue;
-
-               var show = false;
-
-               if (coordinates_kind == 0) {
-                  if (this.getValueColor(binz) != null) show = true;
-               } else {
-                  zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
-                  dgrx = zdiff * xfactor;
-                  dgry = zdiff * yfactor;
-
-                  if (((1 - 2*zdiff*xfactor)*(xx[i-i1+1].gr - xx[i-i1].gr) > 0.05) ||
-                      ((1 - 2*zdiff*yfactor)*(yy[j-j1].gr - yy[j-j1+1].gr) > 0.05)) show = true;
-               }
-
-               if (show) {
-                  nbins++;
-                  xx[i-i1].cnt+=1;
-                  yy[j-j1].cnt+=1;
-               }
+               nbins++;
+               xx[i-i1].cnt+=1;
+               yy[j-j1].cnt+=1;
             }
          }
       }
 
-      if (((this.options.Optimize > 0) && (nbins>1000) && (coordinates_kind<2) && (this.options.Color<2)) || (this.options.Optimize > 10)) {
-         var numx = JSROOT.gStyle.Tooltip > 1 ? 80 : 40;
-         if (this.options.Optimize > 10) numx = Math.round(numx / 4);
+      if (((this.options.Optimize > 0) && (nbins>1000)) || (this.options.Optimize > 10)) {
+         var numx = this.options.Optimize > 10 ? 10 : 40;
          var numy = numx;
 
          var coef = Math.abs(xx[0].gr - xx[xx.length-1].gr) / Math.abs(yy[0].gr - yy[yy.length-1].gr);
@@ -3233,9 +3151,6 @@
          if ((this.options.Optimize > 1) || (yy.length > 50))
             this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
       }
-
-      this.fContour = null; // z-scale ranges when drawing with color
-      this.fUserContour = false;
 
       var local_bins = [];
 
@@ -3260,51 +3175,13 @@
 
             if ((binz == 0) || (binz < this.minbin)) continue;
 
-            var point = null;
+            var point = {
+               x : (xx[i].axis + xx[i+1].axis) / 2,
+               y : (yy[j].axis + yy[j+1].axis) / 2,
+               z : binz
+            };
 
-            switch (coordinates_kind) {
-            case 0: {
-               var fillcol = this.getValueColor(binz);
-               if (fillcol!=null)
-                 point = {
-                   x : grx1,
-                   y : gry2,
-                   width : grx2 - grx1 + 1,  // +1 to fill gaps between colored bins
-                   height : gry1 - gry2 + 1,
-                   stroke : "none",
-                   fill : fillcol,
-                   tipcolor: (fillcol == 'black') ? "grey" : "black"
-                 };
-               break;
-            }
-            case 1:
-               zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
-               dgrx = zdiff * xfactor * (grx2 - grx1);
-               dgry = zdiff * yfactor * (gry1 - gry2);
-               point = {
-                  x : grx1 + dgrx,
-                  y : gry2 + dgry,
-                  width : grx2 - grx1 - 2 * dgrx,
-                  height : gry1 - gry2 - 2 * dgry,
-                  stroke : this.lineatt.color,
-                  fill : this.fillcolor,
-                  tipcolor: this.fillcolor == 'black' ? "grey" : "black"
-               }
-               if ((point.width < 0.05) || (point.height < 0.05)) point = null;
-               break;
-
-            case 2:
-               point = {
-                  x : (xx[i].axis + xx[i+1].axis) / 2,
-                  y : (yy[j].axis + yy[j+1].axis) / 2,
-                  z : binz
-               }
-               break;
-            }
-
-            if (point==null) continue;
-
-            if (tipkind == 1) {
+            if (JSROOT.gStyle.Tooltip > 0) {
                if (this.x_kind == 'labels')
                   point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
                else {
@@ -3330,11 +3207,7 @@
                else
                   point.tip += "sum = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat) +
                                " max = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
-            } else if (tipkind == 2)
-               point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n" +
-                                  "y = " + this.AxisAsText("y", yy[j].axis) + "\n" +
-                                  "entries = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat);
-
+            }
             local_bins.push(point);
          }
       }
