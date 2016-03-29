@@ -1633,7 +1633,7 @@
 
       var drag_rect = null;
 
-      function comple_drag() {
+      function complete_drag() {
          drag_rect.style("cursor", "auto");
 
          var oldx = Number(pthis.draw_g.attr("x")),
@@ -1723,10 +1723,10 @@
 
                d3.event.sourceEvent.preventDefault();
 
-               if (comple_drag() === false)
+               if (complete_drag() === false)
                   if(callback['ctxmenu'] && ((new Date()).getTime() - drag_tm.getTime() > 600)) {
                      var rrr = resize_corner2.node().getBoundingClientRect();
-                     pthis.ShowContextMenu('main', { clientX: rrr.left, clientY : rrr.top } );
+                     pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   }
             });
 
@@ -1780,7 +1780,7 @@
 
             d3.event.sourceEvent.preventDefault();
 
-            comple_drag();
+            complete_drag();
          });
 
       if (!('only_resize' in callback)) {
