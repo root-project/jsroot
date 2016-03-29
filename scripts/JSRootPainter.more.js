@@ -4021,7 +4021,7 @@
       // check if we need to create palette
       if (this.create_canvas && (this.options.Zscale > 0)) {
          // draw new palette, resize frame if required
-         this.DrawNewPalette(false);
+         this.DrawNewPalette(true);
       } else if (this.options.Zscale == 0) {
          // delete palette - it may appear there due to previous draw options
          this.FindPalette(true);
