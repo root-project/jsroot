@@ -3071,6 +3071,8 @@
             if (fillcolor === undefined) fillcolor = 'white';
          }
 
+         console.log('fill color = ' + fillcolor + ' num = ' + this.pad.fFillColor);
+
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
@@ -3258,6 +3260,7 @@
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
       var painter = new JSROOT.TPadPainter(can, true);
       painter.SetDivId(divid, -1); // just assign id
+      painter.CheckColors(can);
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
@@ -3267,7 +3270,6 @@
          return painter.DrawingReady();
       }
 
-      painter.CheckColors(can);
       painter.DrawPrimitive(0, painter.DrawingReady.bind(painter));
       return painter;
    }
