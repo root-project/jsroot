@@ -3155,10 +3155,8 @@
       var local_bins = [];
 
       for (i = 0; i < xx.length-1; ++i) {
-         var grx1 = xx[i].gr, grx2 = xx[i+1].gr;
 
          for (j = 0; j < yy.length-1; ++j) {
-            var gry1 = yy[j].gr, gry2 = yy[j+1].gr;
 
             sumz = binz = histo.getBinContent(xx[i].indx + 1, yy[j].indx + 1);
 
@@ -3176,30 +3174,32 @@
             if ((binz == 0) || (binz < this.minbin)) continue;
 
             var point = {
-               x : (xx[i].axis + xx[i+1].axis) / 2,
-               y : (yy[j].axis + yy[j+1].axis) / 2,
-               z : binz
+               x1: xx[i].axis,
+               x2: xx[i+1].axis,
+               y1: yy[j].axis,
+               y2: yy[j+1].axis,
+               z: binz
             };
 
             if (JSROOT.gStyle.Tooltip > 0) {
                if (this.x_kind == 'labels')
-                  point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "\n";
+                  point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "<br/>";
                else {
                   point.tip = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + ")";
 
                   if (xx[i].indx + 1 == xx[i+1].indx)
-                     point.tip += " bin=" + xx[i].indx + "\n";
+                     point.tip += " bin=" + xx[i].indx + "<br/>";
                   else
-                     point.tip += " bins=[" + xx[i].indx + "," + (xx[i+1].indx-1) + "]\n";
+                     point.tip += " bins=[" + xx[i].indx + "," + (xx[i+1].indx-1) + "]<br/>";
                }
                if (this.y_kind == 'labels')
-                  point.tip += "y = " + this.AxisAsText("y", yy[j].axis) + "\n";
+                  point.tip += "y = " + this.AxisAsText("y", yy[j].axis) + "<br/>";
                else {
                   point.tip += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + ")";
                   if (yy[j].indx + 1 == yy[j+1].indx)
-                     point.tip += " bin=" + yy[j].indx + "\n";
+                     point.tip += " bin=" + yy[j].indx + "<br/>";
                   else
-                     point.tip += " bins=[" + yy[j].indx + "," + (yy[j+1].indx-1) + "]\n";
+                     point.tip += " bins=[" + yy[j].indx + "," + (yy[j+1].indx-1) + "]<br/>";
                }
 
                if (sumz == binz)

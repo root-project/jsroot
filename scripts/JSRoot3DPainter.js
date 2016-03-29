@@ -346,6 +346,18 @@
          textsize = (grmaxz - grminz) * 0.05;
       }
 
+      if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
+         xmin = this.zoom_xmin; xmax = this.zoom_xmax;
+      }
+
+      if (('zoom_ymin' in this) && ('zoom_ymax' in this) && (this.zoom_ymin !== this.zoom_ymax)) {
+         ymin = this.zoom_ymin; ymax = this.zoom_ymax;
+      }
+
+      if (('zoom_zmin' in this) && ('zoom_zmax' in this) && (this.zoom_zmin !== this.zoom_zmax)) {
+         zmin = this.zoom_zmin; zmax = this.zoom_zmax;
+      }
+
       if (this.options.Logx) {
          if (xmax <= 0) xmax = 1.;
          if (xmin <= 0) xmin = 1e-6*xmax;
@@ -606,7 +618,7 @@
 
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
-      var local_bins = this.CreateDrawBins(this.size3d, this.size3d);
+      var local_bins = this.CreateDrawBins(100, 100);
 
       // create the bin cubes
       var fillcolor = new THREE.Color(0xDDDDDD);
@@ -614,7 +626,7 @@
 
       var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
 
-      var geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 1);
+      var geom = new THREE.BoxGeometry(1, 1, 1);
 
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
@@ -623,11 +635,16 @@
          // create a new mesh with cube geometry
          var bin = new THREE.Mesh(geom, material.clone());
 
-         bin.position.set(this.tx(hh.x), this.ty(hh.y), wei / 2);
-         bin.scale.set(1,1,wei);
+         var x1 = this.tx(hh.x1), x2 = this.tx(hh.x2),
+             y1 = this.ty(hh.y1), y2 = this.ty(hh.y2);
 
-         if ((JSROOT.gStyle.Tooltip > 0) && ('tip' in hh))
-            bin.name = hh.tip.replace(/(?:\r\n|\r|\n)/g, '<br/>');
+         if ((x1 < -1.001*this.size3d) || (x2 > 1.001*this.size3d) ||
+             (y1 < -1.001*this.size3d) || (y2 > 1.001*this.size3d)) continue;
+
+         bin.position.set((x1+x2)/2, (y1+y2)/2, wei/2);
+         bin.scale.set(x2-x1,y2-y1,wei);
+
+         if ('tip' in hh) bin.name = hh.tip;
          this.toplevel.add(bin);
 
          var helper = new THREE.BoxHelper(bin);
