@@ -524,3 +524,13 @@
     margin-left: -18px;
     border-radius: 2px;
 }
+
+/* stylesheet for embedded toolbar buttons */
+.jsroot .svg_toolbar_btn {
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.jsroot .svg_toolbar_btn:hover {
+    opacity: 1.0;
+}

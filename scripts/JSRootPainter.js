@@ -115,10 +115,7 @@
                       .attr('width', '1em')
                       .attr('viewBox', [0, 0, size, size].join(' '))
 
-       var elem;
-
-       if ('recs' in thisIcon) {
-          elem = svg.append("g");
+      if ('recs' in thisIcon) {
           var rec = {};
           for (var n=0;n<thisIcon.recs.length;++n) {
              JSROOT.extend(rec, thisIcon.recs[n]);
@@ -131,7 +128,6 @@
           if (scale !== 1)
              elem.attr('transform', 'scale(' + scale + ' ' + scale +')');
        }
-
    };
 
    JSROOT.Toolbar.prototype.removeAllButtons = function() {
@@ -331,13 +327,12 @@
 
       if (marker_kind<100) res.fill = 'none';
 
-      res.size = attmarker.fMarkerSize * 8;
       switch(style) {
          case 1: res.size = 1; break;
          case 6: res.size = 2; break;
          case 7: res.size = 3; break;
+         default: res.size = attmarker.fMarkerSize * 8;
       }
-
 
       res.ndig = (res.size>7) ? 0 : ((res.size>2) ? 1 : 2);
       if (shape == 6) res.ndig++;
@@ -1136,10 +1131,25 @@
    /** This is SVG element, correspondent to current pad */
    JSROOT.TObjectPainter.prototype.svg_pad = function() {
       var c = this.svg_canvas();
-      if ((this.pad_name.length > 0) && !c.empty()) {
+      if ((this.pad_name.length > 0) && !c.empty())
          c = c.select("[pad=" + this.pad_name + ']');
-      }
       return c;
+   }
+
+   /** Method selects immediate layer under canvas/pad main element */
+   JSROOT.TObjectPainter.prototype.svg_layer = function(name) {
+      var svg = this.svg_pad();
+      if (svg.empty()) return svg;
+
+      var node = svg.node().firstChild;
+
+      while (node!==null) {
+         var elem = d3.select(node);
+         if (elem.classed(name)) return elem;
+         node = node.nextSibling;
+      }
+
+      return d3.select(null);
    }
 
    JSROOT.TObjectPainter.prototype.root_pad = function() {
@@ -3045,7 +3055,6 @@
                return false;
             }
 
-
       } else {
 
          if ((h < 10) && (w > 0)) {
@@ -3085,6 +3094,7 @@
           svg.append("svg:g").attr("class","special_layer");
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
+          svg.append("svg:g").attr("class","btns_layer");
       }
 
       if ((w<=0) || (h<=0)) {
@@ -3105,6 +3115,8 @@
          .property('draw_y', 0)
          .property('draw_width', w)
          .property('draw_height', h);
+
+      svg.select(".btns_layer").attr("transform","translate(2," + (h-18) + ")");
 
       return true;
    }
@@ -3130,7 +3142,9 @@
          svg_pad = this.svg_pad();
          svg_rect = svg_pad.select(".root_pad_border");
       } else {
-         svg_pad = this.svg_canvas().append("g")
+         svg_pad = this.svg_canvas()
+             .select(".special_layer")
+             .append("g")
              .attr("class", "root_pad")
              .attr("pad", this.pad.fName) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
@@ -3140,6 +3154,7 @@
          svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
+         svg_pad.append("svg:g").attr("class","btns_layer");
       }
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
@@ -3154,6 +3169,8 @@
               .attr("height", h)
               .call(fillatt.func)
               .call(lineatt.func);
+
+      svg_pad.select(".btns_layer").attr("transform","translate(2," + (h-18) + ")");
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
@@ -3219,6 +3236,19 @@
          this.painters[i].Redraw(resize);
    }
 
+   JSROOT.TPadPainter.prototype.NumDrawnSubpads = function() {
+      if (this.painters === undefined) return 0;
+
+      var num = 0;
+
+      for (var i = 0; i < this.painters.length; ++i) {
+         var obj = this.painters[i].GetObject();
+         if ((obj!==null) && (obj._typename === "TPad")) num++;
+      }
+
+      return num;
+   }
+
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
       if (!this.iscan) return false;
 
@@ -3255,6 +3285,44 @@
       return isany;
    }
 
+   JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, func) {
+      var group = this.svg_layer("btns_layer");
+      if (group.empty()) return;
+
+      var x = group.property("nextx");
+      if (x===undefined) x = 0;
+
+      var svg = group.append("svg:svg")
+                     .attr("class", "svg_toolbar_btn")
+                     .attr("x", x)
+                     .attr("y", 0)
+                     .attr("width","16px")
+                     .attr("height", "16px")
+                     .attr("viewBox", "0 0 512 512");
+
+      svg.append("svg:title").text(tooltip);
+
+      if ('recs' in btn) {
+         var rec = {};
+         for (var n=0;n<btn.recs.length;++n) {
+            JSROOT.extend(rec, btn.recs[n]);
+            svg.append('rect').attr("x", rec.x).attr("y", rec.y)
+                              .attr("width", rec.w).attr("height", rec.h)
+                              .attr("fill", rec.f);
+         }
+      } else {
+         svg.append('svg:path').attr('d',btn.path);
+      }
+
+      // special rect to correctly get mouse events for whole button area
+      svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
+         .style("opacity","0").style("fill","none").style("pointer-events", "visibleFill");
+
+      svg.on("click", func);
+
+      group.property("nextx", x+18);
+   }
+
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
       var painter = new JSROOT.TPadPainter(can, true);
       painter.SetDivId(divid, -1); // just assign id
@@ -3268,16 +3336,23 @@
          return painter.DrawingReady();
       }
 
-      painter.DrawPrimitive(0, painter.DrawingReady.bind(painter));
+      painter.DrawPrimitive(0, function() {
+         if (painter.NumDrawnSubpads() > 0)
+            painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", function() {
+               JSROOT.AssertPrerequisites("savepng", function() {
+                  saveSvgAsPng(painter.svg_canvas().node(), "jsroot_canvas.png");
+               });
+            });
+         painter.DrawingReady();
+      });
       return painter;
    }
 
    JSROOT.Painter.drawPad = function(divid, pad) {
       var painter = new JSROOT.TPadPainter(pad, false);
       painter.SetDivId(divid, -1); // pad painter will be registered in the canvas painters list
-      if (painter.svg_canvas().empty()) {
+      if (painter.svg_canvas().empty())
          painter.has_canvas = false;
-      }
 
       painter.CreatePadSvg();
       painter.SetDivId(divid);
