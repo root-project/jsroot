@@ -3396,35 +3396,6 @@
    }
 
 /*
-   JSROOT.TH2Painter.prototype.DrawNormalCanvas = function(w,h) {
-
-      var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(true), i, j, binz;
-
-      var fo = this.draw_g.append("foreignObject").attr("width", w).attr("height", h);
-      this.SetForeignObjectPosition(fo);
-
-      var canvas = fo.append("xhtml:canvas").attr("width", w).attr("height", h);
-
-      var ctx = canvas.node().getContext("2d");
-
-      for (i = handle.i1; i < handle.i2; ++i)
-         for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
-            ctx.fillStyle = this.getValueColor(binz);
-            ctx.fillRect(handle.grx[i],handle.gry[j+1],handle.grx[i+1] - handle.grx[i], handle.gry[j] - handle.gry[j+1]);
-         }
-
-      ctx.stroke();
-      this.draw_kind = "canv2";
-
-      if ((JSROOT.gStyle.Tooltip > 1) && JSROOT.browser.isFirefox) {
-         this.tt_handle = handle;
-         this.ProcessTooltip = this.ProcessTooltipPath;
-      }
-   }
-
    JSROOT.TH2Painter.prototype.MakeIcon = function() {
       this.options.Optimize = 100;
 
@@ -3459,60 +3430,7 @@
       //console.log('len = ',res.length);
       //console.log(res);
    }
-
-   JSROOT.TH2Painter.prototype.DrawMarkers = function(w,h) {
-      var local_bins = this.CreateDrawBins(w, h, 0, JSROOT.gStyle.Tooltip > 0 ? 2 : 0);
-
-      var marker = JSROOT.Painter.createAttMarker(this.GetObject());
-
-      this.draw_g.selectAll(".marker")
-            .data(local_bins)
-            .enter().append(marker.kind)
-            .attr("class", "marker")
-            .attr("transform", function(d) { return "translate(" + d.x.toFixed(1) + "," + d.y.toFixed(1) + ")" })
-            .call(marker.func)
-            .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
-            .append("svg:title").text(function(d) { return d.tip; });
-
-      if (JSROOT.gStyle.Tooltip > 1)
-         this.ProcessTooltip = this.ProcessTooltipFunc;
-
-      this.draw_kind = "markers";
-   }
 */
-
-   JSROOT.TH2Painter.prototype.DrawBinsAsRects = function(w,h) {
-      // this is old-style drawing of 2d histogram
-      // each bin shown as separate svg:rect, which leads to big number of elements at the end
-
-      var normal_coordinates = (this.options.Color > 0);
-
-      var tipkind = (JSROOT.gStyle.Tooltip > 0) ? 1 : 0;
-
-      var local_bins = this.CreateDrawBins(w, h, normal_coordinates ? 0 : 1, tipkind);
-
-      this.draw_g.selectAll(".bins")
-          .data(local_bins).enter()
-          .append("svg:rect")
-          .attr("class", "bins")
-          .attr("x", function(d) { return d.x.toFixed(1); })
-          .attr("y", function(d) { return d.y.toFixed(1); })
-          .attr("width", function(d) { return d.width.toFixed(1); })
-          .attr("height", function(d) { return d.height.toFixed(1); })
-          .style("stroke", function(d) { return d.stroke; })
-          .style("fill", function(d) { return d.fill; })
-          .filter(function() { return JSROOT.gStyle.Tooltip === 1 ? this : null } )
-          .on('mouseover', function() {
-              if (JSROOT.gStyle.Tooltip < 1) return;
-              d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().tipcolor);
-           })
-          .on('mouseout', function() {
-             d3.select(this).transition().duration(100).style("fill", d3.select(this).datum().fill);
-          })
-          .append("svg:title").text(function(d) { return d.tip; });
-
-      this.draw_kind = "rects";
-   }
 
    JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
@@ -3774,16 +3692,6 @@
 
       var w = this.frame_width(), h = this.frame_height();
 
-      //if ((this.options.Color==3) && !JSROOT.browser.isIE)
-      //    return this.DrawNormalCanvas(w,h);
-
-      //this.GetObject().fMarkerStyle = 30;
-      //if (this.options.Scat > 0 && this.GetObject().fMarkerStyle > 1)
-      //   return this.DrawMarkers(w,h);
-
-      if (JSROOT.gStyle.Tooltip===1)
-         return this.DrawBinsAsRects(w,h);
-
       var handle = null;
 
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
@@ -3804,7 +3712,7 @@
       if (handle!==null)
          this.draw_kind = "path";
 
-      if (JSROOT.gStyle.Tooltip > 1) {
+      if (JSROOT.gStyle.Tooltip > 0) {
          this.tt_handle = handle;
          this.ProcessTooltip = this.ProcessTooltipPath;
       }
