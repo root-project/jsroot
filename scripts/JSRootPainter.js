@@ -3071,8 +3071,6 @@
             if (fillcolor === undefined) fillcolor = 'white';
          }
 
-         console.log('fill color = ' + fillcolor + ' num = ' + this.pad.fFillColor);
-
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
