@@ -2533,7 +2533,7 @@
             for (var l=0;l<hint.lines.length;l++)
                if (hint.lines[l]!==null) {
                   var txt = group.append("svg:text")
-                                 .attr("text-anchor", "left")
+                                 .attr("text-anchor", "start")
                                  .attr("x", wmargin)
                                  .attr("y", hmargin + l*textheight*hstep)
                                  .attr("dy", ".8em")
@@ -3603,7 +3603,7 @@
          if (vertical)
             t.attr("x", -labeloffset*side)
               .attr("y", pos)
-              .style("text-anchor", (side > 0) ? "end" : "begin")
+              .style("text-anchor", (side > 0) ? "end" : "start")
               .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
@@ -3649,11 +3649,12 @@
 
      if ((textscale>0) && (textscale<1.)) {
         // rotate X lables if they are too big
-        if ((textscale < 0.7) && !vertical) {
+        if ((textscale < 0.7) && !vertical && (side>0)) {
            label_g.selectAll("text").each(function() {
               var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y");
 
               txt.attr("transform", "translate(" + x+ ","+y + ") rotate(20)")
+                 .style("text-anchor", "start")
                  .attr("x",null).attr("y",null);
            });
            textscale*=2;
