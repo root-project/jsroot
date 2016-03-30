@@ -3651,13 +3651,13 @@
         // rotate X lables if they are too big
         if ((textscale < 0.7) && !vertical && (side>0)) {
            label_g.selectAll("text").each(function() {
-              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y");
+              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
 
-              txt.attr("transform", "translate(" + x+ ","+y + ") rotate(20)")
+              txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
                  .style("text-anchor", "start")
                  .attr("x",null).attr("y",null);
            });
-           textscale*=2;
+           textscale *= 3.5;
         }
         // round to upper boundary for calculated value like 4.4
         labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
