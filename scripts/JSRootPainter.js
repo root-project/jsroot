@@ -3648,11 +3648,20 @@
      }
 
      if ((textscale>0) && (textscale<1.)) {
-        labelfont.size = Math.floor(labelfont.size * textscale);
+        // rotate X lables if they are too big
+        if ((textscale < 0.7) && !vertical) {
+           label_g.selectAll("text").each(function() {
+              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y");
+
+              txt.attr("transform", "translate(" + x+ ","+y + ") rotate(20)")
+                 .attr("x",null).attr("y",null);
+           });
+           textscale*=2;
+        }
+        // round to upper boundary for calculated value like 4.4
+        labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
         label_g.call(labelfont.func);
      }
-
-//   axis.fTitle = "M_{#mu#mu}";
 
      if (axis.fTitle.length > 0) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
