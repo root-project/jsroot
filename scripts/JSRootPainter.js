@@ -6019,7 +6019,7 @@
                            yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
                         }
 
-                        if ((my >= -yerr1) && (my < height + yerr2)) {
+                        if ((my >= -yerr1) && (my <= height + yerr2)) {
                            if (path_fill !== null)
                               path_fill +="M" + mx1 +","+(my-yerr1) +
                                           "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
