@@ -5981,6 +5981,7 @@
                if (draw_markers) {
                   bincont = this.histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
+
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
                      mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
                      my = Math.round(pmain.gry(bincont));
@@ -5991,7 +5992,7 @@
                         yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
                      }
 
-                     if ((my >= -yerr1) && (my < height + yerr2)) {
+                     if ((my >= -yerr1) && (my <= height + yerr2)) {
                         if (path_fill !== null)
                            path_fill +="M" + mx1 +","+(my-yerr1) +
                            "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
