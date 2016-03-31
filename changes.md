@@ -1,5 +1,14 @@
 # JSROOT changelog
 
+## Changes in 4.4.1
+1. Fix - colz palette resize when drawing histogram second time
+2. Fix - use embeded in TCanvas color for background color of canvas itself
+3. Fix - rotate too long X axis text labels 
+4. Fix - draw histogram bins on frame boundary
+5. Fix - use alternative color for shapes with default black color  
+6. Fix - correctly handle pcon/pgon shape with rmin==rmax on top or bottom side
+   
+
 ## Changes in 4.4
 1. Fix faces orientation for all TGeo shapes. 
 2. Improve TGeoTorus creation - handle all parameters combinations
