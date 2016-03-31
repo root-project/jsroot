@@ -1410,8 +1410,12 @@
 
       if (visible) {
          var _transparent = false, _opacity = 1.0;
+         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
+         else
          if (volume.fLineColor >= 0)
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+
          if (('fMedium' in volume) && (volume.fMedium !== null) &&
              ('fMaterial' in volume.fMedium) && (volume.fMedium.fMaterial !== null)) {
             var fillstyle = volume.fMedium.fMaterial.fFillStyle;
