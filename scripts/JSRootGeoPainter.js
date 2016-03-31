@@ -645,7 +645,8 @@
                if (side === 0) {
                   pnts.push(new THREE.Vector2(rad, layerz));
                   edges.push(curr_indx);
-               } else {
+               } else
+               if (rad < shape.fRmax[layer]) {
                   pnts.unshift(new THREE.Vector2(rad, layerz));
                   edges.unshift(curr_indx);
                }
@@ -663,13 +664,13 @@
       }
 
       // add faces for top and bottom side
-      for (var top = 0; top < 2; ++top) {
-         var inside = (top === 0) ? indxs[1][0] : indxs[1][shape.fNz-1];
-         var outside = (top === 0) ? indxs[0][0] : indxs[0][shape.fNz-1];
+      for (var layer = 0; layer < shape.fNz; layer+= (shape.fNz-1)) {
+         if (shape.fRmin[layer] >= shape.fRmax[layer]) continue;
+         var inside = indxs[1][layer], outside = indxs[0][layer];
          for (var seg=0; seg < radiusSegments; ++seg) {
             var seg1 = (seg + 1) % layerVerticies;
-            geometry.faces.push( new THREE.Face3( outside + seg, (top===0) ? (inside + seg) : (outside + seg1), inside + seg1, null, color, 0 ) );
-            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg1, (top===0) ? (outside + seg1) : (inside + seg), null, color, 0 ));
+            geometry.faces.push( new THREE.Face3( outside + seg, (layer===0) ? (inside + seg) : (outside + seg1), inside + seg1, null, color, 0 ) );
+            geometry.faces.push( new THREE.Face3( outside + seg, inside + seg1, (layer===0) ? (outside + seg1) : (inside + seg), null, color, 0 ));
          }
       }
 
