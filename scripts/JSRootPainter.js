@@ -3290,13 +3290,24 @@
    }
 
    JSROOT.TPadPainter.prototype.ButtonClick = function(funcname) {
+
+      var elem = null, filename = "";
+
       if (funcname == "CanvasSnapShot") {
-         var painter = this;
-         JSROOT.AssertPrerequisites("savepng", function() {
-            painter.svg_canvas().selectAll(".btns_layer").style("display","none");
-            saveSvgAsPng(painter.svg_canvas().node(), "jsroot_canvas.png");
-            painter.svg_canvas().selectAll(".btns_layer").style("display","");
-         });
+         elem = this.svg_canvas();
+         filename = (this.pad ? this.pad.fName : "jsroot_canvas") + ".png";
+      } else
+      if (funcname == "PadSnapShot") {
+         elem = this.svg_pad(this.this_pad_name);
+         filename = this.this_pad_name + ".png";
+      }
+      if (elem!==null) {
+         if (!elem.empty())
+            JSROOT.AssertPrerequisites("savepng", function() {
+               elem.selectAll(".btns_layer").style("display","none");
+               saveSvgAsPng(elem.node(), filename);
+               elem.selectAll(".btns_layer").style("display","");
+            });
          return;
       }
 
@@ -3354,7 +3365,7 @@
       if (!this.iscan)
          group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx')-this.ButtonSize(0.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
 
-      if (!this.iscan && (this.pad_painter()!==this))
+      if (!this.iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this))
          this.pad_painter().AddButton(btn, tooltip, funcname);
    }
 
@@ -3386,6 +3397,8 @@
          painter.has_canvas = false;
 
       painter.CreatePadSvg();
+
+      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
 
       var prev_name = "";
 
