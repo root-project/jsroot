@@ -1347,7 +1347,7 @@
       }
    }
 
-   JSROOT.TObjectPainter.prototype.apply_3d_size = function(size) {
+   JSROOT.TObjectPainter.prototype.apply_3d_size = function(size, onlyget) {
 
       if (size.can3d < 0) return d3.select(null);
 
@@ -1356,6 +1356,8 @@
       if (size.can3d > 1) {
 
          elem = this.svg_pad().select(".special_layer").select("." + size.clname);
+         if (onlyget) return elem;
+
          if (elem.empty())
             elem = this.svg_pad().select(".special_layer")
                        .append("foreignObject").attr("class", size.clname);
@@ -1368,10 +1370,12 @@
              .attr('preserveAspectRatio','xMidYMid');
 
       } else {
+         elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
+         if (onlyget) return elem;
+
          // force redraw by resize
          this.svg_canvas().property('redraw_by_resize', true);
 
-         elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
          if (elem.empty()) {
             elem = d3.select(this.svg_canvas().node().parentNode)
                      .append('div').attr("class", size.clname);
@@ -3301,13 +3305,27 @@
          elem = this.svg_pad(this.this_pad_name);
          filename = this.this_pad_name + ".png";
       }
-      if (elem!==null) {
-         if (!elem.empty())
+      if ((elem!==null) && !elem.empty()) {
+         var main = elem.property('mainpainter');
+
+         if ((elem.property('can3d') === 1) && (main!==undefined) && (main.renderer!==undefined)) {
+            var dataUrl = main.renderer.domElement.toDataURL("image/png");
+            dataUrl.replace("image/png", "image/octet-stream");
+            var link = document.createElement('a');
+            if (typeof link.download === 'string') {
+               document.body.appendChild(link); //Firefox requires the link to be in the body
+               link.download = filename;
+               link.href = dataUrl;
+               link.click();
+               document.body.removeChild(link); //remove the link when done
+            }
+         } else {
             JSROOT.AssertPrerequisites("savepng", function() {
                elem.selectAll(".btns_layer").style("display","none");
                saveSvgAsPng(elem.node(), filename);
                elem.selectAll(".btns_layer").style("display","");
             });
+         }
          return;
       }
 
