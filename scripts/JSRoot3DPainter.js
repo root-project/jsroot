@@ -1011,6 +1011,15 @@
       if (changed) this.Resize3D(size);
    }
 
+   JSROOT.TH3Painter.prototype.FillToolbar = function() {
+      var pp = this.pad_painter(true);
+      if (pp===null) return;
+
+      pp.AddButton(JSROOT.ToolbarIcons.undo, 'Unzoom all axes', 'UnzoomAllAxis');
+      if (this.draw_content)
+         pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+   }
+
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
       // when called, *this* set to painter instance
 
@@ -1033,6 +1042,8 @@
          var stats = this.CreateStat();
          if (stats) JSROOT.draw(this.divid, stats, "");
       }
+
+      this.FillToolbar();
 
       return this.DrawingReady();
    }
