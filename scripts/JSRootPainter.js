@@ -5027,44 +5027,24 @@
 
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexs starts from 0
-      var indx = 0;
-      var obj = this.main_painter();
+      var indx = 0, obj = this.main_painter();
       if (obj == null) obj = this;
-      var nbin = 0;
+      var nbin = this['nbins'+axis];
+      if (!nbin) nbin = 0;
       if (!add) add = 0;
 
-      if (axis == "x") {
-         nbin = this.nbinsx;
-         if (obj.zoom_xmin != obj.zoom_xmax) {
-            if (size == "left")
-               indx = this.GetIndexX(obj.zoom_xmin, add);
-            else
-               indx = this.GetIndexX(obj.zoom_xmax, add + 0.5);
+      var func = 'GetIndex' + axis.toUpperCase(),
+          min = obj['zoom_' + axis + 'min'],
+          max = obj['zoom_' + axis + 'max'];
+
+      if ((min != max) && (func in this)) {
+         if (size == "left") {
+            indx = this[func](min, add);
          } else {
-            indx = (size == "left") ? 0 : nbin;
+            indx = this[func](max, add + 0.5);
          }
-      } else
-      if (axis == "y") {
-         nbin = this.nbinsy;
-         if ((obj.zoom_ymin != obj.zoom_ymax) && ('GetIndexY' in this)) {
-            if (size == "left")
-               indx = this.GetIndexY(obj.zoom_ymin, add);
-            else
-               indx = this.GetIndexY(obj.zoom_ymax, add + 0.5);
-         } else {
-            indx = (size == "left") ? 0 : nbin;
-         }
-      } else
-      if (axis == "z") {
-         nbin = this.nbinsz;
-         if ((obj.zoom_zmin != obj.zoom_zmax) && ('GetIndexZ' in this)) {
-            if (size == "left")
-               indx = this.GetIndexZ(obj.zoom_zmin, add);
-            else
-               indx = this.GetIndexZ(obj.zoom_zmax, add + 0.5);
-         } else {
-            indx = (size == "left") ? 0 : nbin;
-         }
+      } else {
+         indx = (size == "left") ? 0 : nbin;
       }
 
       if (size == "left") {
@@ -5674,7 +5654,6 @@
       }
       return true;
    }
-
 
    JSROOT.THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
