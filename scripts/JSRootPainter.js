@@ -1036,7 +1036,6 @@
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
       this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
-      this.draw_object_typename = (this.draw_object!==null) && ('_typename' in this.draw_object) ? this.draw_object._typename : "";
    }
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
@@ -1129,16 +1128,17 @@
    }
 
    /** This is SVG element, correspondent to current pad */
-   JSROOT.TObjectPainter.prototype.svg_pad = function() {
+   JSROOT.TObjectPainter.prototype.svg_pad = function(pad_name) {
       var c = this.svg_canvas();
-      if ((this.pad_name.length > 0) && !c.empty())
-         c = c.select("[pad=" + this.pad_name + ']');
+      if (pad_name === undefined) pad_name = this.pad_name;
+      if ((pad_name.length > 0) && !c.empty())
+         c = c.select("[pad=" + pad_name + ']');
       return c;
    }
 
    /** Method selects immediate layer under canvas/pad main element */
-   JSROOT.TObjectPainter.prototype.svg_layer = function(name) {
-      var svg = this.svg_pad();
+   JSROOT.TObjectPainter.prototype.svg_layer = function(name, pad_name) {
+      var svg = this.svg_pad(pad_name);
       if (svg.empty()) return svg;
 
       var node = svg.node().firstChild;
@@ -1200,22 +1200,22 @@
       return (res===undefined) ? null : res;
    }
 
-   JSROOT.TObjectPainter.prototype.pad_width = function() {
-      var res = this.svg_pad().property("draw_width");
+   JSROOT.TObjectPainter.prototype.pad_width = function(pad_name) {
+      var res = this.svg_pad(pad_name).property("draw_width");
       return isNaN(res) ? 0 : res;
    }
 
-   JSROOT.TObjectPainter.prototype.pad_height = function() {
-      var res = this.svg_pad().property("draw_height");
+   JSROOT.TObjectPainter.prototype.pad_height = function(pad_name) {
+      var res = this.svg_pad(pad_name).property("draw_height");
       return isNaN(res) ? 0 : res;
    }
 
-   JSROOT.TObjectPainter.prototype.frame_x = function(name) {
+   JSROOT.TObjectPainter.prototype.frame_x = function() {
       var res = parseInt(this.svg_frame().attr("x"));
       return isNaN(res) ? 0 : res;
    }
 
-   JSROOT.TObjectPainter.prototype.frame_y = function(name) {
+   JSROOT.TObjectPainter.prototype.frame_y = function() {
       var res = parseInt(this.svg_frame().attr("y"));
       return isNaN(res) ? 0 : res;
    }
@@ -1433,8 +1433,7 @@
       }
 
       if (svg_c.empty()) {
-         if ((is_main < 0) || (is_main===5) || (this.draw_object_typename === "TCanvas")) return;
-         JSROOT.console("Special case for " + this.draw_object_typename + " assign painter to first DOM element");
+         if ((is_main < 0) || (is_main===5) || this.iscan) return;
          var main = this.select_main();
          if (main.node() && main.node().firstChild)
             main.node().firstChild.painter = this;
@@ -2996,19 +2995,19 @@
 
    JSROOT.TPadPainter = function(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
-      if (this.draw_object_typename=="") this.draw_object_typename = iscan ? "TCanvas" : "TPad";
       this.pad = pad;
-      if ((pad !== undefined) && (pad !== null) && ('fName' in pad))
-         pad.fName = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.iscan = iscan; // indicate if workign with canvas
+      this.this_pad_name = "";
+      if (!this.iscan && (pad !== null) && ('fName' in pad))
+         this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPadPainter.prototype.ButtonSize = function() {
-      return this.iscan ? 16 : 12;
+   JSROOT.TPadPainter.prototype.ButtonSize = function(fact) {
+      return Math.round((!fact ? 1 : fact) * (this.iscan ? 16 : 12));
    }
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -3120,7 +3119,7 @@
          .property('draw_width', w)
          .property('draw_height', h);
 
-      svg.select(".btns_layer").attr("transform","translate(2," + (h-this.ButtonSize()-2) + ")");
+      this.svg_layer("btns_layer").attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")");
 
       return true;
    }
@@ -3129,8 +3128,8 @@
       if (!this.has_canvas)
          return this.CreateCanvasSvg(only_resize ? 2 : 0);
 
-      var width = this.svg_canvas().property("draw_width"),
-          height = this.svg_canvas().property("draw_height"),
+      var width = this.svg_pad().property("draw_width"),
+          height = this.svg_pad().property("draw_height"),
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
@@ -3140,17 +3139,18 @@
 
       if (this.pad.fBorderMode == 0) lineatt.color = 'none';
 
-      var svg_pad = null, svg_rect = null;
+      var svg_pad = null, svg_rect = null, btns = null;
 
       if (only_resize) {
-         svg_pad = this.svg_pad();
+         svg_pad = this.svg_pad(this.this_pad_name);
          svg_rect = svg_pad.select(".root_pad_border");
+         btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = this.svg_canvas()
+         svg_pad = this.svg_pad()
              .select(".special_layer")
              .append("g")
              .attr("class", "root_pad")
-             .attr("pad", this.pad.fName) // set extra attribute  to mark pad name
+             .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
@@ -3158,7 +3158,7 @@
          svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
-         svg_pad.append("svg:g").attr("class","btns_layer");
+         btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
       }
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
@@ -3174,7 +3174,7 @@
               .call(fillatt.func)
               .call(lineatt.func);
 
-      svg_pad.select(".btns_layer").attr("transform","translate(2," + (h-this.ButtonSize()-2) + ")");
+      btns.attr("transform","translate("+ (w- btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h-this.ButtonSize(1.25)) + ")");
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
@@ -3303,7 +3303,6 @@
       for (var i = 0; i < this.painters.length; ++i)
          if (typeof this.painters[i].ButtonClick == 'function')
             this.painters[i].ButtonClick(funcname);
-
    }
 
    JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname) {
@@ -3311,7 +3310,7 @@
       // do not add buttons when not allowed
       if (!JSROOT.gStyle.ToolBar) return;
 
-      var group = this.svg_layer("btns_layer");
+      var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (group.empty()) return;
 
       // avoid buttons with duplicate names
@@ -3327,9 +3326,10 @@
                      .attr("y", 0)
                      .attr("width",this.ButtonSize()+"px")
                      .attr("height",this.ButtonSize()+"px")
-                     .attr("viewBox", "0 0 512 512");
+                     .attr("viewBox", "0 0 512 512")
+                     .style("overflow","hidden");
 
-      svg.append("svg:title").text(tooltip);
+      svg.append("svg:title").text(tooltip + (this.iscan ? " " : (" on pad " + this.this_pad_name)));
 
       if ('recs' in btn) {
          var rec = {};
@@ -3349,7 +3349,10 @@
 
       svg.on("click", this.ButtonClick.bind(this, funcname));
 
-      group.property("nextx", x+this.ButtonSize()+2);
+      group.property("nextx", x+this.ButtonSize(1.25));
+
+      if (!this.iscan)
+         group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx')-this.ButtonSize(0.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
 
       if (!this.iscan && (this.pad_painter()!==this))
          this.pad_painter().AddButton(btn, tooltip, funcname);
@@ -3376,17 +3379,17 @@
 
    JSROOT.Painter.drawPad = function(divid, pad) {
       var painter = new JSROOT.TPadPainter(pad, false);
-      painter.SetDivId(divid, -1); // pad painter will be registered in the canvas painters list
+
+      painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
+
       if (painter.svg_canvas().empty())
          painter.has_canvas = false;
 
       painter.CreatePadSvg();
-      painter.SetDivId(divid);
 
       var prev_name = "";
 
       if (painter.has_canvas) {
-         painter.pad_name = pad.fName;
          // we select current pad, where all drawing is performed
          prev_name = painter.svg_canvas().property('current_pad');
          painter.svg_canvas().property('current_pad', pad.fName);
