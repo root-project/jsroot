@@ -789,28 +789,36 @@
             }
 
       this.draw_content = this.gmaxbin > 0;
+
+      this.CreateAxisFuncs(true, true);
    }
 
    JSROOT.TH3Painter.prototype.CountStat = function() {
       var histo = this.GetObject(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
+          i1 = this.GetSelectIndex("x", "left"),
+          i2 = this.GetSelectIndex("x", "right"),
+          j1 = this.GetSelectIndex("y", "left"),
+          j2 = this.GetSelectIndex("y", "right"),
+          k1 = this.GetSelectIndex("z", "left"),
+          k2 = this.GetSelectIndex("z", "right"),
           res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 };
 
       for (var xi = 0; xi < this.nbinsx+2; ++xi) {
 
-         var xx = this.xmin + (xi - 0.5) / this.nbinsx * (this.xmax - this.xmin);
-         var xside = (xi === 0) ? 0 : (xi === this.nbinsx+1 ? 2 : 1);
+         var xx = this.GetBinX(xi - 0.5);
+         var xside = (xi < i1) ? 0 : (xi > i2 ? 2 : 1);
 
          for (var yi = 0; yi < this.nbinsy+2; ++yi) {
 
-            var yy = this.ymin + (yi - 0.5) / this.nbinsy * (this.ymax - this.ymin);
-            var yside = (yi === 0) ? 0 : (yi === this.nbinsy+1 ? 2 : 1);
+            var yy = this.GetBinY(yi - 0.5);
+            var yside = (yi < j1) ? 0 : (yi > j2 ? 2 : 1);
 
             for (var zi = 0; zi < this.nbinsz+2; ++zi) {
 
-               var zz = this.zmin + (zi - 0.5) / this.nbinsz * (this.zmax - this.zmin);
-               var zside = (zi === 0) ? 0 : (zi === this.nbinsz+1 ? 2 : 1);
+               var zz = this.GetBinZ(zi - 0.5);
+               var zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
                var cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
@@ -904,41 +912,9 @@
       return true;
    }
 
-   JSROOT.TH3Painter.prototype.CreateBins = function() {
-      var i, j, k, bins = [],
-          histo = this.GetObject(),
-          name = this.GetTipName("<br/>");
-
-      for (i = 0; i < this.nbinsx; ++i)
-         for (j = 0; j < this.nbinsy; ++j)
-            for (k = 0; k < this.nbinsz; ++k) {
-               var bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content <= this.gminbin) continue;
-
-               var bin = {
-                     x : this.xmin + (i + 0.5) / this.nbinsx * (this.xmax - this.xmin),
-                     y : this.ymin + (j + 0.5) / this.nbinsy * (this.ymax - this.ymin),
-                     z : this.zmin + (k + 0.5) / this.nbinsz * (this.zmax - this.zmin),
-                     n : bin_content
-                  };
-
-               if (JSROOT.gStyle.Tooltip > 0)
-                  bin.tip = name + 'x=' + JSROOT.FFormat(bin.x,"6.4g") + ' bin=' + (i+1) + '<br/>'
-                                 + 'y=' + JSROOT.FFormat(bin.y,"6.4g") + ' bin=' + (j+1) + '<br/>'
-                                 + 'z=' + JSROOT.FFormat(bin.z,"6.4g") + ' bin=' + (k+1) + '<br/>'
-                                 + 'entries=' + JSROOT.FFormat(bin.n, "7.0g");
-
-               bins.push(bin);
-            }
-
-      return bins;
-   }
-
    JSROOT.TH3Painter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
-
-      var bins = this.CreateBins();
 
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
@@ -949,36 +925,64 @@
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
-         geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
+         //geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
+         geom = new THREE.SphereGeometry(0.5);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-         geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
+         //geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-         geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 2 * this.size3d / this.nbinsz);
+         // geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 2 * this.size3d / this.nbinsz);
+         geom = new THREE.BoxGeometry(1, 1, 1);
       }
 
-      var bin, wei, i;
-      for (i = 0; i < bins.length; ++i) {
-         wei = (this.options.Color > 0) ? 1. : bins[i].n / this.gmaxbin;
+      var histo = this.GetObject(),
+          i1 = this.GetSelectIndex("x", "left", 0),
+          i2 = this.GetSelectIndex("x", "right", 0),
+          j1 = this.GetSelectIndex("y", "left", 0),
+          j2 = this.GetSelectIndex("y", "right", 0),
+          k1 = this.GetSelectIndex("z", "left", 0),
+          k2 = this.GetSelectIndex("z", "right", 0),
+          name = this.GetTipName("<br/>");
 
-         if (wei < 1e-5) continue; // do not show empty bins
+      var scalex = (this.tx(this.GetBinX(i2+0.5)) - this.tx(this.GetBinX(i1+0.5))) / (i2-i1),
+          scaley = (this.ty(this.GetBinY(j2+0.5)) - this.ty(this.GetBinY(j1+0.5))) / (j2-j1),
+          scalez = (this.tz(this.GetBinZ(k2+0.5)) - this.tz(this.GetBinZ(k1+0.5))) / (k2-k1);
 
-         bin = new THREE.Mesh(geom, material.clone());
+      for (var i = i1; i < i2; ++i) {
+         var binx = this.GetBinX(i+0.5), grx = this.tx(binx);
+         for (var j = j1; j < j2; ++j) {
+            var biny = this.GetBinY(j+0.5), gry = this.ty(biny);
+            for (var k = k1; k < k2; ++k) {
+               var bin_content = histo.getBinContent(i+1, j+1, k+1);
+               if (bin_content <= this.gminbin) continue;
 
-         bin.position.set( this.tx(bins[i].x), this.ty(bins[i].y),  this.tz(bins[i].z) );
+               var wei = (this.options.Color > 0) ? 1. : bin_content / this.gmaxbin;
 
-         bin.scale.set(wei, wei, wei);
+               if (wei < 1e-5) continue; // do not show empty bins
 
-         if ('tip' in bins[i])
-           bin.name = bins[i].tip;
+               var binz = this.GetBinZ(k+0.5), grz = this.tz(binz);
 
-         this.toplevel.add(bin);
+               var bin = new THREE.Mesh(geom, material.clone());
 
-         if (this.options.Box !== 11) {
-            var helper = new THREE.BoxHelper(bin);
-            helper.material.color.set(0x000000);
-            helper.material.linewidth = 1.0;
-            this.toplevel.add(helper)
+               bin.position.set( grx, gry, grz );
+
+               bin.scale.set(scalex*wei, scaley*wei, scalez*wei);
+
+               if (JSROOT.gStyle.Tooltip > 0)
+                  bin.name = name + 'x=' + JSROOT.FFormat(binx,"6.4g") + ' bin=' + (i+1) + '<br/>'
+                                  + 'y=' + JSROOT.FFormat(biny,"6.4g") + ' bin=' + (j+1) + '<br/>'
+                                  + 'z=' + JSROOT.FFormat(binz,"6.4g") + ' bin=' + (k+1) + '<br/>'
+                                  + 'entries=' + JSROOT.FFormat(bin_content, "7.0g");
+
+               this.toplevel.add(bin);
+
+               if (this.options.Box !== 11) {
+                  var helper = new THREE.BoxHelper(bin);
+                  helper.material.color.set(0x000000);
+                  helper.material.linewidth = 1.0;
+                  this.toplevel.add(helper)
+               }
+            }
          }
       }
    }

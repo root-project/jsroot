@@ -4613,7 +4613,7 @@
       return true;
    }
 
-   JSROOT.THistPainter.prototype.CreateAxisFuncs = function(with_y_axis) {
+   JSROOT.THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
 
@@ -4655,7 +4655,7 @@
          this.GetBinY = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
-            if (indx > this.nbinsx) this.ymax;
+            if (indx > this.nbinsy) this.ymax;
             if (indx==bin) return this.histo.fYaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
             return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fYaxis.fXbins[indx2] * Math.abs(bin-indx);
@@ -4669,10 +4669,37 @@
          this.regulary = true;
          this.binwidthy = (this.ymax - this.ymin);
          if (this.nbinsy > 0)
-            this.binwidthy = this.binwidthy / this.nbinsy
+            this.binwidthy = this.binwidthy / this.nbinsy;
 
          this.GetBinY = function(bin) { return this.ymin+bin*this.binwidthy; };
          this.GetIndexY = function(y,add) { return Math.floor((y - this.ymin) / this.binwidthy + add); };
+      }
+
+      if (!with_z_axis || (this.nbinsz==0)) return;
+
+      if (this.histo.fZaxis.fXbins.length == this.nbinsz+1) {
+         this.regularz = false;
+         this.GetBinZ = function(bin) {
+            var indx = Math.round(bin);
+            if (indx <= 0) return this.zmin;
+            if (indx > this.nbinsz) this.zmax;
+            if (indx==bin) return this.histo.fZaxis.fXbins[indx];
+            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.histo.fZaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fZaxis.fXbins[indx2] * Math.abs(bin-indx);
+         };
+         this.GetIndexZ = function(z,add) {
+            for (var k = 1; k < this.histo.fZaxis.fXbins.length; ++k)
+               if (z < this.histo.fZaxis.fXbins[k]) return Math.floor(k-1+add);
+            return this.nbinsz;
+         };
+      } else {
+         this.regularz = true;
+         this.binwidthz = (this.zmax - this.zmin);
+         if (this.nbinsz > 0)
+            this.binwidthz = this.binwidthz / this.nbinsz;
+
+         this.GetBinZ = function(bin) { return this.zmin+bin*this.binwidthz; };
+         this.GetIndexZ = function(z,add) { return Math.floor((z - this.zmin) / this.binwidthz + add); };
       }
    }
 
@@ -5024,6 +5051,17 @@
                indx = this.GetIndexY(obj.zoom_ymin, add);
             else
                indx = this.GetIndexY(obj.zoom_ymax, add + 0.5);
+         } else {
+            indx = (size == "left") ? 0 : nbin;
+         }
+      } else
+      if (axis == "z") {
+         nbin = this.nbinsz;
+         if ((obj.zoom_zmin != obj.zoom_zmax) && ('GetIndexZ' in this)) {
+            if (size == "left")
+               indx = this.GetIndexZ(obj.zoom_zmin, add);
+            else
+               indx = this.GetIndexZ(obj.zoom_zmax, add + 0.5);
          } else {
             indx = (size == "left") ? 0 : nbin;
          }
