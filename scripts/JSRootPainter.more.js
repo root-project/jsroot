@@ -2627,29 +2627,35 @@
       }
    }
 
-   JSROOT.TH2Painter.prototype.FillToolbar = function(buttons) {
-      JSROOT.THistPainter.prototype.FillToolbar.call(this, buttons);
-      var painter = this;
-      buttons.push({
-         name: 'ToggleCol',
-         title: 'Toggle color options',
-         icon: JSROOT.ToolbarIcons.th2color,
-         click: function() { painter.ToggleColor(); }
-      });
+   JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
+      if (JSROOT.THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
 
-      buttons.push({
-         name: 'ToggleColZ',
-         title: 'Toggle color palette',
-         icon: JSROOT.ToolbarIcons.th2colorz,
-         click: function() { if (painter.options.Lego == 0 && painter.options.Color > 0) painter.ToggleColz(); }
-      });
+      if (this !== this.main_painter()) return false;
 
-      buttons.push({
-         name: 'Toggle3D',
-         title: 'Toggle 3D mode',
-         icon: JSROOT.ToolbarIcons.th2draw3d,
-         click: function() { painter.options.Lego = painter.options.Lego > 0 ? 0 : 1; painter.RedrawPad(); }
-      });
+      switch(funcname) {
+         case "ToggleColor": this.ToggleColor(); break;
+         case "ToggleColorZ":
+            if (this.options.Lego == 0 && this.options.Color > 0) this.ToggleColz();
+            break;
+         case "Toggle3D":
+            this.options.Lego = this.options.Lego > 0 ? 0 : 1;
+            this.RedrawPad();
+            break;
+         default: return false;
+      }
+
+      return true;
+   }
+
+   JSROOT.TH2Painter.prototype.FillToolbar = function() {
+      JSROOT.THistPainter.prototype.FillToolbar.call(this);
+
+      var pp = this.pad_painter(true);
+      if (pp===null) return;
+
+      pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
+      pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
+      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
    }
 
    JSROOT.TH2Painter.prototype.ToggleColor = function() {
@@ -3822,7 +3828,7 @@
             if (this.options.Lego == 0) {
                if (this.options.AutoZoom) this.AutoZoom();
             }
-            this.CreateToolbar();
+            this.FillToolbar();
             this.DrawingReady();
          }.bind(this));
 

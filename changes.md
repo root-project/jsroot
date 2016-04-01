@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Provide tooltip buttons in subpads
+
+
 ## Changes in 4.4
 1. Fix faces orientation for all TGeo shapes. 
 2. Improve TGeoTorus creation - handle all parameters combinations

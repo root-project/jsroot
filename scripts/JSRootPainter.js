@@ -3007,6 +3007,10 @@
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
+   JSROOT.TPadPainter.prototype.ButtonSize = function() {
+      return this.iscan ? 16 : 12;
+   }
+
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
       var render_to = this.select_main();
@@ -3116,7 +3120,7 @@
          .property('draw_width', w)
          .property('draw_height', h);
 
-      svg.select(".btns_layer").attr("transform","translate(2," + (h-18) + ")");
+      svg.select(".btns_layer").attr("transform","translate(2," + (h-this.ButtonSize()-2) + ")");
 
       return true;
    }
@@ -3170,7 +3174,7 @@
               .call(fillatt.func)
               .call(lineatt.func);
 
-      svg_pad.select(".btns_layer").attr("transform","translate(2," + (h-18) + ")");
+      svg_pad.select(".btns_layer").attr("transform","translate(2," + (h-this.ButtonSize()-2) + ")");
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
@@ -3285,19 +3289,44 @@
       return isany;
    }
 
-   JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, func) {
+   JSROOT.TPadPainter.prototype.ButtonClick = function(funcname) {
+      if (funcname == "CanvasSnapShot") {
+         var painter = this;
+         JSROOT.AssertPrerequisites("savepng", function() {
+            painter.svg_canvas().selectAll(".btns_layer").style("display","none");
+            saveSvgAsPng(painter.svg_canvas().node(), "jsroot_canvas.png");
+            painter.svg_canvas().selectAll(".btns_layer").style("display","");
+         });
+         return;
+      }
+
+      for (var i = 0; i < this.painters.length; ++i)
+         if (typeof this.painters[i].ButtonClick == 'function')
+            this.painters[i].ButtonClick(funcname);
+
+   }
+
+   JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname) {
+
+      // do not add buttons when not allowed
+      if (!JSROOT.gStyle.ToolBar) return;
+
       var group = this.svg_layer("btns_layer");
       if (group.empty()) return;
+
+      // avoid buttons with duplicate names
+      if (!group.select("[name=" + funcname + ']').empty()) return;
 
       var x = group.property("nextx");
       if (x===undefined) x = 0;
 
       var svg = group.append("svg:svg")
                      .attr("class", "svg_toolbar_btn")
+                     .attr("name", funcname)
                      .attr("x", x)
                      .attr("y", 0)
-                     .attr("width","16px")
-                     .attr("height", "16px")
+                     .attr("width",this.ButtonSize()+"px")
+                     .attr("height",this.ButtonSize()+"px")
                      .attr("viewBox", "0 0 512 512");
 
       svg.append("svg:title").text(tooltip);
@@ -3318,9 +3347,12 @@
       svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
          .style("opacity","0").style("fill","none").style("pointer-events", "visibleFill");
 
-      svg.on("click", func);
+      svg.on("click", this.ButtonClick.bind(this, funcname));
 
-      group.property("nextx", x+18);
+      group.property("nextx", x+this.ButtonSize()+2);
+
+      if (!this.iscan && (this.pad_painter()!==this))
+         this.pad_painter().AddButton(btn, tooltip, funcname);
    }
 
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
@@ -3330,23 +3362,15 @@
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
+      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot");
+
       if (can==null) {
          if (opt.indexOf("noframe") < 0)
             JSROOT.Painter.drawFrame(divid, null);
          return painter.DrawingReady();
       }
 
-      painter.DrawPrimitive(0, function() {
-         if (painter.NumDrawnSubpads() > 0)
-            painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", function() {
-               JSROOT.AssertPrerequisites("savepng", function() {
-                  painter.svg_canvas().selectAll(".btns_layer").style("display","none");
-                  saveSvgAsPng(painter.svg_canvas().node(), "jsroot_canvas.png");
-                  painter.svg_canvas().selectAll(".btns_layer").style("display","");
-               });
-            });
-         painter.DrawingReady();
-      });
+      painter.DrawPrimitive(0, function() { painter.DrawingReady(); });
       return painter;
    }
 
@@ -3877,7 +3901,6 @@
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.toolbar = null;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -5462,36 +5485,6 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.CreateToolbar = function(buttons) {
-
-      if ( !JSROOT.gStyle.ToolBar || (this.toolbar !== null) || !this.is_main_painter()) return;
-
-      if (this.pad_name.length > 0) return; // do not create toolbar in subpad
-
-      if ((buttons === null) || (buttons === undefined)) buttons = [];
-
-      this.FillToolbar(buttons);
-
-      var painter = this;
-
-      buttons.push({
-            name: 'toImage',
-            title: 'Save as PNG',
-            icon: JSROOT.ToolbarIcons.camera,
-            click: function() {
-               var file_name = "d3_canvas";
-               if (typeof (painter.histo.fName) != 'undefined')
-                  file_name = painter.histo.fName;
-               var top = painter.svg_canvas().node();
-               JSROOT.AssertPrerequisites("savepng", function() {
-                  saveSvgAsPng(top, file_name + ".png");
-               });
-            }
-         });
-
-      this.toolbar = new JSROOT.Toolbar( this.select_main(), [buttons] );
-   }
-
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
@@ -5581,54 +5574,34 @@
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
    }
 
-   JSROOT.THistPainter.prototype.FillToolbar = function(buttons) {
-      var painter = this;
-
-      buttons.push({
-         name: 'Unzoom',
-         title: 'Unzoom all axes',
-         icon: JSROOT.ToolbarIcons.undo,
-         click: function() { painter.Unzoom(); }
-      });
-
-      if (('AutoZoom' in this) && (this.Dimension() < 3))
-         buttons.push({
-            name: 'AutoZoom',
-            title: 'Zoom into non-empty range',
-            icon: JSROOT.ToolbarIcons.auto_zoom,
-            click: function() { painter.AutoZoom(); }
-         });
-
-      buttons.push({
-         name: 'LogX',
-         title: 'Toggle log X',
-         icon: JSROOT.ToolbarIcons.arrow_right,
-         click: function() { painter.ToggleLog("x"); }
-      });
-
-      buttons.push({
-         name: 'LogY',
-         title: 'Toggle log Y',
-         icon: JSROOT.ToolbarIcons.arrow_up,
-         click: function() { painter.ToggleLog("y"); }
-      });
-
-      if (this.Dimension() === 2)
-         buttons.push({
-            name: 'LogZ',
-            title: 'Toggle log Z',
-            icon: JSROOT.ToolbarIcons.arrow_diag,
-            click: function() { painter.ToggleLog("z"); }
-         });
-
-      if (this.draw_content) {
-         buttons.push({
-            name: 'ToggleStat',
-            title: 'Toggle stat box',
-            icon: JSROOT.ToolbarIcons.statbox,
-            click: function() { painter.ToggleStat(); }
-         });
+   JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
+      if (this !== this.main_painter()) return false;
+      switch(funcname) {
+         case "UnzoomAllAxis": this.Unzoom(); break;
+         case "AutoZoom": this.AutoZoom(); break;
+         case "ToggleLogX": this.ToggleLog("x"); break;
+         case "ToggleLogY": this.ToggleLog("y"); break;
+         case "ToggleLogZ": this.ToggleLog("z"); break;
+         case "ToggleStatBox": this.ToggleStat(); break;
+         default: return false;
       }
+      return true;
+   }
+
+
+   JSROOT.THistPainter.prototype.FillToolbar = function() {
+      var pp = this.pad_painter(true);
+      if (pp===null) return;
+
+      pp.AddButton(JSROOT.ToolbarIcons.undo, 'Unzoom all axes', 'UnzoomAllAxis');
+      if (('AutoZoom' in this) && (this.Dimension() < 3))
+         pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, "Zoom into non-empty range", "AutoZoom");
+      pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");
+      pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY");
+      if (this.Dimension() > 1)
+         pp.AddButton(JSROOT.ToolbarIcons.arrow_diag, "Toggle log z", "ToggleLogZ");
+      if (this.draw_content)
+         pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
    // ======= TH1 painter================================================
@@ -6365,7 +6338,7 @@
 
          painter.AddInteractive();
 
-         painter.CreateToolbar();
+         painter.FillToolbar();
 
          if (painter.options.AutoZoom) painter.AutoZoom();
 
