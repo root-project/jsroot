@@ -4510,7 +4510,7 @@
          this.GetBinY = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
-            if (indx > this.nbinsx) this.ymax;
+            if (indx > this.nbinsy) this.ymax;
             if (indx==bin) return this.histo.fYaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
             return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fYaxis.fXbins[indx2] * Math.abs(bin-indx);
@@ -4524,7 +4524,7 @@
          this.regulary = true;
          this.binwidthy = (this.ymax - this.ymin);
          if (this.nbinsy > 0)
-            this.binwidthy = this.binwidthy / this.nbinsy
+            this.binwidthy = this.binwidthy / this.nbinsy;
 
          this.GetBinY = function(bin) { return this.ymin+bin*this.binwidthy; };
          this.GetIndexY = function(y,add) { return Math.floor((y - this.ymin) / this.binwidthy + add); };
