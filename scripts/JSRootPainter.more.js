@@ -2577,7 +2577,7 @@
       }
 
       this.ShowContextMenu = function(kind, evnt) {
-         this.main_painter().ShowContextMenu("z", evnt);
+         this.main_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
       }
 
       this.Redraw = function() {

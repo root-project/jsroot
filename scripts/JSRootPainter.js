@@ -3712,12 +3712,13 @@
                          .attr("class","axis_labels")
                          .call(labelfont.func);
 
-      if ((this.kind=="normal") && vertical) {
+      this.order = 0;
+      if ((this.kind=="normal") && vertical && !axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
          var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
 
          for(var order=18;order>0;order-=3) {
             var mult = Math.pow(10, order);
-            if ((this.range > mult * 5) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
+            if ((this.range > mult * 10) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
                this.order = order;
                break;
             }
@@ -5533,7 +5534,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt) {
+   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
@@ -5555,7 +5556,7 @@
          if ((kind==="x") || (kind==="y") || (kind==="z")) {
             var faxis = this.histo.fXaxis;
             if (kind=="y") faxis = this.histo.fYaxis; else
-            if (kind=="z") faxis = this.histo.fZaxis;
+            if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
             menu.add("header: " + kind.toUpperCase() + " axis");
             menu.add("Unzoom", function() { this.Unzoom(kind); });
             menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );

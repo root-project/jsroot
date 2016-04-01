@@ -2,7 +2,8 @@
 
 ## Changes in dev
 1. Provide tooltip buttons in subpads
-
+2. Implement scaling factor like x10^3 on the vertical axes 
+ 
 
 ## Changes in 4.4
 1. Fix faces orientation for all TGeo shapes. 
