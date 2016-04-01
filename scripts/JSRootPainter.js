@@ -5120,7 +5120,11 @@
    JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
       var obj = this.main_painter();
       if (!obj) obj = this;
-      obj.options["Log" + axis] = obj.options["Log" + axis] ? 0 : 1;
+
+      var curr = obj.options["Log" + axis];
+      // do not allow log scale for labels
+      if (!curr && (this[axis+"_kind"] == "labels")) return;
+      obj.options["Log" + axis] = curr ? 0 : 1;
       obj.RedrawPad();
    }
 
