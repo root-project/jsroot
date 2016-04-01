@@ -3425,6 +3425,7 @@
       this.name = "yaxis";
       this.kind = "normal";
       this.func = null;
+      this.order = 0; // scaling order for axis labels
 
       this.full_min = 0;
       this.full_max = 1;
@@ -3492,9 +3493,14 @@
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
 
          this.format = function(d, asticks, notickexp) {
-            if (!asticks) return d.toExponential(4);
 
             var val = parseFloat(d);
+
+            if (!asticks) {
+               var rnd = Math.round(val);
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : val.toExponential(4);
+            }
+
             if (val <= 0) return null;
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
@@ -3530,20 +3536,30 @@
       } else {
 
          this.range = Math.abs(this.scale_max - this.scale_min);
-         if (this.range > this.nticks)
-            this.ndig = 0;
+         if (this.range <= 0)
+            this.ndig = -3;
          else
-            this.ndig = Math.max(1, Math.round(1.2*JSROOT.log10(this.nticks / this.range)));
+            this.ndig = Math.round(JSROOT.log10(this.nticks / this.range) + 0.7);
 
          this.format = function(d, asticks) {
-            var val = parseFloat(d);
+            var val = parseFloat(d), rnd = Math.round(val);
             if (asticks) {
-               if (Math.abs(val) < 1e-10 * this.range) return 0;
-               val = val.toFixed(this.ndig);
-               if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
-               return val;
+               if (this.order===0) {
+                  if (val === rnd) return rnd.toString();
+                  if (Math.abs(val) < 1e-10 * this.range) return 0;
+                  val = val.toFixed(this.ndig > 0 ? this.ndig : 0);
+                  if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
+                  return val;
+               }
+               val = val / Math.pow(10, this.order);
+               rnd = Math.round(val);
+               if (val === rnd) return rnd.toString();
+               return val.toFixed(this.ndig + this.order > 0 ? this.ndig + this.order : 0 );
             }
-            return val.toFixed(this.ndig+2);
+
+            if (val === rnd)
+               return (Math.abs(rnd)<1e9) ? rnd.toString() : val.toExponential(4);
+            return val.toFixed(this.ndig+2 > 0 ? this.ndig+2 : 0);
          }
       }
    }
@@ -3648,20 +3664,6 @@
 
       this.CreateFormatFuncs();
 
-/*      var major = this.func.ticks(this.nticks), middle = major, minor = major;
-
-      if (this.nticks2 > 1) {
-         minor = middle = this.func.ticks(major.length * this.nticks2);
-         // avoid black filling by middle-size
-         if ((middle.length <= major.length) || (middle.length > (vertical ? h : w) / 4))
-            minor = middle = major;
-         else
-         if ((this.nticks3 > 1) && (tickSize/4 > 2) && (this.kind !== 'log'))  {
-            minor = this.func.ticks(middle.length * this.nticks3);
-            if ((minor.length <= middle.length) || (minor.length > (vertical ? h : w) / 2)) minor = middle;
-         }
-      } */
-
       var center = (this.kind == 'labels') ||
                    (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
 
@@ -3710,6 +3712,18 @@
                          .attr("class","axis_labels")
                          .call(labelfont.func);
 
+      if ((this.kind=="normal") && vertical) {
+         var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
+
+         for(var order=18;order>0;order-=3) {
+            var mult = Math.pow(10, order);
+            if ((this.range > mult * 5) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
+               this.order = order;
+               break;
+            }
+         }
+      }
+
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
          var pos = Math.round(this.func(handle.major[nmajor]));
          var lbl = this.format(handle.major[nmajor], true);
@@ -3719,9 +3733,9 @@
 
          if (vertical)
             t.attr("x", -labeloffset*side)
-              .attr("y", pos)
-              .style("text-anchor", (side > 0) ? "end" : "start")
-              .style("dominant-baseline", "middle");
+             .attr("y", pos)
+             .style("text-anchor", (side > 0) ? "end" : "start")
+             .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
              .attr("y", 2+labeloffset*side  + both_sides*tickSize)
@@ -3763,6 +3777,20 @@
 
          last = pos;
      }
+
+     if (this.order!==0) {
+        var val = Math.pow(10,this.order).toExponential(0);
+
+        var t = label_g.append("svg:text").attr("fill", label_color).text('\xD7' + JSROOT.Painter.formatExp(val));
+
+        if (vertical)
+           t.attr("x", labeloffset)
+            .attr("y", 0)
+            .style("text-anchor", "start")
+            .style("dominant-baseline", "middle")
+            .attr("dy", "-.5em");
+     }
+
 
      if ((textscale>0) && (textscale<1.)) {
         // rotate X lables if they are too big

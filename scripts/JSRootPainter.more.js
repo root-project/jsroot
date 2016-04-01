@@ -2445,7 +2445,7 @@
             zmax = contour[contour.length-1];
          }
 
-         var z = null, z_kind = "line";
+         var z = null, z_kind = "normal";
 
          if (this.main_painter().options.Logz) {
             z = d3.scale.log();
