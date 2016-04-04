@@ -5198,6 +5198,39 @@
           test_z = (zmin!=zmax) && (zmin!==undefined) && (zmax!==undefined),
           main = this.main_painter();
 
+      if (test_x) {
+         var cnt = 0;
+         if (xmin <= main.xmin) { xmin = main.xmin; cnt++; }
+         if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
+         if (cnt === 2) {
+            test_x = false;
+            if (main.zoom_xmin !== main.zoom_xmax) isany = true;
+            main.zoom_xmin = main.zoom_xmax = 0;
+         }
+      }
+
+      if (test_y) {
+         var cnt = 0;
+         if (ymin <= main.ymin) { ymin = main.ymin; cnt++; }
+         if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
+         if (cnt === 2) {
+            test_y = false;
+            if (main.zoom_ymin !== main.zoom_ymax) isany = true;
+            main.zoom_ymin = main.zoom_ymax = 0;
+         }
+      }
+
+      if (test_z) {
+         var cnt = 0;
+         if (zmin <= main.zmin) { zmin = main.zmin; cnt++; }
+         if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
+         if (cnt === 2) {
+            test_z = false;
+            if (main.zoom_zmin !== main.zoom_zmax) isany = true;
+            main.zoom_zmin = main.zoom_zmax = 0;
+         }
+      }
+
       main.ForEachPainter(function(obj) {
          if (test_x && obj.CanZoomIn("x", xmin, xmax)) {
             main.zoom_xmin = xmin;
@@ -5534,6 +5567,42 @@
       d3.event.stopPropagation();
    }
 
+   JSROOT.THistPainter.prototype.mouseWheel = function() {
+      d3.event.stopPropagation();
+
+      var delta = 0;
+      switch (d3.event.deltaMode) {
+         case 0: delta = d3.event.deltaY / this.pad_height(); break; // DOM_DELTA_PIXEL
+         case 1: delta = d3.event.deltaY / this.pad_height() * 20; break; // DOM_DELTA_LINE
+         case 2: delta = d3.event.deltaY / this.pad_height() * 100; break; // DOM_DELTA_PAGE
+      }
+      // console.log("wheel deltas = ", delta, d3.event.deltaX, d3.event.deltaY, d3.event.deltaZ, 'mode', d3.event.deltaMode);
+      if (delta===0) return;
+
+      this.clearInteractiveElements();
+
+      if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
+
+      var xmin = this.zoom_xmin, xmax = this.zoom_xmax, unzoomx = false,
+          ymin = this.zoom_ymin, ymax = this.zoom_ymax, unzoomy = false;
+      if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
+      if ((ymin === ymax) && (this.Dimension() > 1) && (delta<0)) { ymin = this.ymin; ymax = this.ymax; }
+
+      if (xmin < xmax) {
+         var rx = (xmax - xmin);
+         if (delta>0) rx = 1.001 * rx / (1-2*delta);
+         xmin += -delta*rx; xmax -= -delta*rx;
+      }
+
+      if (ymin < ymax) {
+         var ry = (ymax - ymin);
+         if (delta>0) ry = 1.001 * ry / (1-2*delta);
+         ymin += -delta*ry; ymax -= -delta*ry;
+      }
+
+      this.Zoom(xmin,xmax,ymin,ymax);
+   }
+
    JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
@@ -5550,6 +5619,10 @@
       if (JSROOT.gStyle.Zooming) {
          this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
          this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
+         this.svg_frame().on("wheel", this.mouseWheel.bind(this) );
+         //this.svg_frame().on("mousewheel", this.mouseWheel.bind(this) );
+         //this.svg_frame().on('MozMousePixelScroll', this.mouseWheel.bind(this) );
+
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
