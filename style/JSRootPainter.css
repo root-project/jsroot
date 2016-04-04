@@ -527,8 +527,10 @@
 
 /* stylesheet for embedded toolbar buttons */
 .jsroot .svg_toolbar_btn {
+    stroke: steelblue;
+    fill: steelblue;
     cursor: pointer;
-    opacity: 0.2;
+    opacity: 0.3;
 }
 
 .jsroot .svg_toolbar_btn:hover {
