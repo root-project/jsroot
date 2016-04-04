@@ -5378,8 +5378,8 @@
       }
 
       if ((this.zoom_kind != 2) && (Math.abs(this.zoom_curr[1] - this.zoom_origin[1]) > 10)) {
-         ymin = Math.min(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
-         ymax = Math.max(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
+         ymin = Math.min(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
          isany = true;
       }
 
@@ -5554,8 +5554,8 @@
       }
 
       if ((this.zoom_kind != 102) && (Math.abs(this.zoom_curr[1] - this.zoom_origin[1]) > 10)) {
-         ymin = Math.min(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
-         ymax = Math.max(this.y.invert(this.zoom_origin[1]), this.y.invert(this.zoom_curr[1]));
+         ymin = Math.min(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
          isany = true;
       }
 
@@ -5572,9 +5572,9 @@
 
       var delta = 0;
       switch (d3.event.deltaMode) {
-         case 0: delta = d3.event.deltaY / this.pad_height(); break; // DOM_DELTA_PIXEL
-         case 1: delta = d3.event.deltaY / this.pad_height() * 20; break; // DOM_DELTA_LINE
-         case 2: delta = d3.event.deltaY / this.pad_height() * 100; break; // DOM_DELTA_PAGE
+         case 0: delta = d3.event.deltaY / this.pad_height() * 2; break; // DOM_DELTA_PIXEL
+         case 1: delta = d3.event.deltaY / this.pad_height() * 40; break; // DOM_DELTA_LINE
+         case 2: delta = d3.event.deltaY / this.pad_height() * 200; break; // DOM_DELTA_PAGE
       }
       // console.log("wheel deltas = ", delta, d3.event.deltaX, d3.event.deltaY, d3.event.deltaZ, 'mode', d3.event.deltaMode);
       if (delta===0) return;
@@ -5583,21 +5583,28 @@
 
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
-      var xmin = this.zoom_xmin, xmax = this.zoom_xmax, unzoomx = false,
-          ymin = this.zoom_ymin, ymax = this.zoom_ymax, unzoomy = false;
+      var xmin = this.zoom_xmin, xmax = this.zoom_xmax,
+          ymin = this.zoom_ymin, ymax = this.zoom_ymax;
       if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
       if ((ymin === ymax) && (this.Dimension() > 1) && (delta<0)) { ymin = this.ymin; ymax = this.ymax; }
 
+      var cur = d3.mouse(this.svg_frame().node());
+
       if (xmin < xmax) {
-         var rx = (xmax - xmin);
-         if (delta>0) rx = 1.001 * rx / (1-2*delta);
-         xmin += -delta*rx; xmax -= -delta*rx;
+         var rx = (xmax - xmin), dmin = 0.5;
+         if (delta>0) rx = 1.001 * rx / (1 - delta);
+
+         if ((cur[0]>0) && (cur[0]<this.frame_width()))
+            dmin = cur[0] / this.frame_width();
+         xmin += -delta*dmin*rx; xmax -= -delta*(1-dmin)*rx;
       }
 
       if (ymin < ymax) {
-         var ry = (ymax - ymin);
-         if (delta>0) ry = 1.001 * ry / (1-2*delta);
-         ymin += -delta*ry; ymax -= -delta*ry;
+         var ry = (ymax - ymin), dmin = 0.5;
+         if (delta>0) ry = 1.001 * ry / (1-delta);
+         if ((cur[1]>0) && (cur[1]<this.frame_height()))
+            dmin = 1 - cur[1] / this.frame_height();
+         ymin += -delta*dmin*ry; ymax -= -delta*(1-dmin)*ry;
       }
 
       this.Zoom(xmin,xmax,ymin,ymax);

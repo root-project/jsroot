@@ -1,8 +1,9 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Provide tooltip buttons in subpads
+1. Provide shortcut buttons for each subpad
 2. Implement scaling factor like x10^3 on the vertical axes 
+3. Zooming with mouse wheel
  
 
 ## Changes in 4.4
