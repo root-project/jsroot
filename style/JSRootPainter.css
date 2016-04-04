@@ -528,7 +528,7 @@
 /* stylesheet for embedded toolbar buttons */
 .jsroot .svg_toolbar_btn {
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0.2;
 }
 
 .jsroot .svg_toolbar_btn:hover {
