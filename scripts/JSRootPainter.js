@@ -3226,7 +3226,9 @@
       if (pnt) pnt.nproc = painters.length;
 
       painters.forEach(function(obj) {
-         hints.push(obj.ProcessTooltip(pnt));
+         var hint = obj.ProcessTooltip(pnt);
+         hints.push(hint);
+         if (hint && pnt.painters) hint.painter = obj;
       });
 
       return hints;
@@ -5659,89 +5661,124 @@
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
+      var menu_painter = this, hpainter = this; // object used to show context menu
+
       if (!evnt) {
          d3.event.preventDefault();
          d3.event.stopPropagation(); // disable main context menu
          evnt = d3.event;
-      }
 
-      // one need to copy event, while after call back event may be changed
-      this.ctx_menu_evnt = evnt;
+         if (kind === undefined) {
+            var ms = d3.mouse(this.svg_frame().node());
+            var tch = d3.touches(this.svg_frame().node());
+            var pnt = null, pp = this.pad_painter(true), sel = null;
+
+            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
+            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+
+            if ((pnt!==null) && (pp !== null)) {
+               pnt.painters = true; // assign painter for every tooltip
+               var hints = pp.GetTooltips(pnt);
+               for (var n=0;n<hints.length;++n)
+                  if (hints[n] && hints[n].menu) { sel = hints[n].painter; break; }
+            }
+
+            if (sel!==null) menu_painter = sel; else
+            if (pp !== null) { kind = "pad"; obj = pp; }
+         }
+      }
 
       // suppress any running zomming
       this.clearInteractiveElements();
 
-      JSROOT.Painter.createMenu(function(menu) {
-         menu.painter = this;
+      // one need to copy event, while after call back event may be changed
+      menu_painter.ctx_menu_evnt = evnt;
 
-         if ((kind==="x") || (kind==="y") || (kind==="z")) {
-            var faxis = this.histo.fXaxis;
-            if (kind=="y") faxis = this.histo.fYaxis; else
-            if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
-            menu.add("header: " + kind.toUpperCase() + " axis");
-            menu.add("Unzoom", function() { this.Unzoom(kind); });
-            menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
-            if (faxis != null) {
-               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
-                     function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "CenterTitle",
-                     function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "RotateTitle",
-                     function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "MoreLogLabels",
-                      function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-               menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "NoExponent",
-                      function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
-            }
-         } else {
-            menu.add("header:"+ this.histo.fName);
-            this.FillContextMenu(menu);
+      JSROOT.Painter.createMenu(function(menu) {
+         // after menu creation 'this' bind to painter
+         menu.painter = this;
+         this.FillContextMenu(menu, kind, obj);
+         menu.show(this.ctx_menu_evnt);
+         delete this.ctx_menu_evnt; // delete temporary variable
+      }.bind(menu_painter) );  // end menu creation
+   }
+
+   JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
+
+      if ((kind=="x") || (kind=="y") || (kind=="z")) {
+         var faxis = this.histo.fXaxis;
+         if (kind=="y") faxis = this.histo.fYaxis; else
+         if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
+         menu.add("header: " + kind.toUpperCase() + " axis");
+         menu.add("Unzoom", function() { this.Unzoom(kind); });
+         menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+         if (faxis != null) {
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "CenterTitle",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "RotateTitle",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "MoreLogLabels",
+                   function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "NoExponent",
+                   function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
          }
+         return;
+      }
+
+      if ((kind == "pad") && (obj!==null)) {
+
+         menu.add("header:"+ (obj.iscan ? "Canvas" : ("Pad " + obj.this_pad_name)));
+
+         if (this.zoom_xmin !== this.zoom_xmax)
+            menu.add("Unzoom X", function() { this.Unzoom("x"); });
+         if (this.zoom_ymin !== this.zoom_ymax)
+            menu.add("Unzoom Y", function() { this.Unzoom("y"); });
+         if (this.zoom_zmin !== this.zoom_zmax)
+            menu.add("Unzoom Z", function() { this.Unzoom("z"); });
+         menu.add("Unzoom", function() { this.Unzoom(); });
+
+         menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
+            JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
+            // this.RedrawPad();
+         });
+
+         if (this.options) {
+            menu.addchk(this.options.Logx, "SetLogx", function() { this.ToggleLog("x"); });
+
+            menu.addchk(this.options.Logy, "SetLogy", function() { this.ToggleLog("y"); });
+
+            if (this.Dimension() == 2)
+               menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
+         }
+
          menu.add("separator");
 
          var file_name = "canvas";
-         if (typeof (this.histo.fName) != 'undefined')
-            file_name = this.histo.fName;
+         if (!obj.iscan) filename = "pad_" + obj.this_pad_name;
 
          menu.add("Save as "+file_name+".png", function() {
             // todo - use jqury dialog here
-            var top = this.svg_canvas().node();
-            if (top != null)
+            var top = this.svg_pad();
+            if (!top.empty())
                JSROOT.AssertPrerequisites("savepng", function() {
-                  saveSvgAsPng(top, file_name + ".png");
+                  top.selectAll(".btns_layer").style("display","none");
+                  saveSvgAsPng(top.node(), file_name+".png");
+                  top.selectAll(".btns_layer").style("display","");
                });
          });
 
-         menu.show(this.ctx_menu_evnt);
-         delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(this) /*, this.select_main().node() */);  // end menu creation
-   }
-
-   JSROOT.THistPainter.prototype.FillContextMenu = function(menu) {
-      if (this.zoom_xmin !== this.zoom_xmax)
-         menu.add("Unzoom X", function() { this.Unzoom("x"); });
-      if (this.zoom_ymin !== this.zoom_ymax)
-         menu.add("Unzoom Y", function() { this.Unzoom("y"); });
-      if (this.zoom_zmin !== this.zoom_zmax)
-         menu.add("Unzoom Z", function() { this.Unzoom("z"); });
-      menu.add("Unzoom", function() { this.Unzoom(); });
-
-      menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
-         JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
-         this.RedrawPad();
-      });
-
-      if (this.options) {
-         menu.addchk(this.options.Logx, "SetLogx", function() { this.ToggleLog("x"); });
-
-         menu.addchk(this.options.Logy, "SetLogy", function() { this.ToggleLog("y"); });
-
-         if (this.Dimension() == 2)
-            menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
+         return;
       }
+
+      menu.add("header:"+ this.histo.fName);
 
       if (this.draw_content)
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
+
+      if ('FillHistContextMenu' in this)
+         this.FillHistContextMenu(menu);
    }
 
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
@@ -6427,8 +6464,7 @@
    }
 
 
-   JSROOT.TH1Painter.prototype.FillContextMenu = function(menu) {
-      JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
+   JSROOT.TH1Painter.prototype.FillHistContextMenu = function(menu) {
       if (this.draw_content)
          menu.add("Auto zoom-in", this.AutoZoom.bind(this));
    }

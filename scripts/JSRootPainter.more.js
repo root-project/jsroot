@@ -2614,8 +2614,7 @@
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
-   JSROOT.TH2Painter.prototype.FillContextMenu = function(menu) {
-      JSROOT.THistPainter.prototype.FillContextMenu.call(this, menu);
+   JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
       if (this.options.Lego > 0) {
          menu.add("Draw in 2D", function() { this.options.Lego = 0; this.RedrawPad(); });
       } else {
