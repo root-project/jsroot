@@ -5590,15 +5590,17 @@
       var cur = d3.mouse(this.svg_frame().node());
 
       if (xmin < xmax) {
-         var rx = (xmax - xmin), dmin = 0.5;
+         var rx = (xmax - xmin);
          if (delta>0) rx = 1.001 * rx / (1 - delta);
 
-         if ((cur[0]>0) && (cur[0]<this.frame_width()))
-            dmin = cur[0] / this.frame_width();
-         xmin += -delta*dmin*rx; xmax -= -delta*(1-dmin)*rx;
+         if ((cur[0]>0) && (cur[0]<this.frame_width())) {
+            var dmin = cur[0] / this.frame_width();
+            xmin += -delta*dmin*rx;
+            xmax -= -delta*(1-dmin)*rx;
+         }
       }
 
-      if (this.Dimension() > 1) {
+      if ((this.Dimension() > 1) || (cur[0] < 0)) {
          ymin = this.zoom_ymin, ymax = this.zoom_ymax;
 
          if ((ymin === ymax) && (delta<0)) { ymin = this.ymin; ymax = this.ymax; }
@@ -5606,9 +5608,11 @@
          if (ymin < ymax) {
             var ry = (ymax - ymin), dmin = 0.5;
             if (delta>0) ry = 1.001 * ry / (1-delta);
-            if ((cur[1]>0) && (cur[1]<this.frame_height()))
-               dmin = 1 - cur[1] / this.frame_height();
-            ymin += -delta*dmin*ry; ymax -= -delta*(1-dmin)*ry;
+            if ((cur[1]>0) && (cur[1]<this.frame_height())) {
+               var dmin = 1 - cur[1] / this.frame_height();
+               ymin += -delta*dmin*ry;
+               ymax -= -delta*(1-dmin)*ry;
+            }
          }
       }
 
