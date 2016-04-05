@@ -2396,29 +2396,20 @@
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           height = this.frame_height(),
           width = this.frame_width(),
-          pp = this.pad_painter(true),
-          painters = [];
+          pp = this.pad_painter(true);
 
-      // first count - how many processors are there
-      if ((pp!==null) && (pp.painters !== null))
-         pp.painters.forEach(function(obj) {
-            if ('ProcessTooltip' in obj) painters.push(obj);
-         });
+      // collect tooltips from pad painter - it has list of all drawn objects
+      if (pp!==null) hints = pp.GetTooltips(pnt);
 
-      if (pnt) {
-         pnt.nproc = painters.length;
-         if (pnt.touch) textheight = 15;
-      }
+      if (pnt && pnt.touch) textheight = 15;
 
-      painters.forEach(function(obj) {
-         var hint = obj.ProcessTooltip(pnt);
-         hints.push(hint);
-         if ((hint === null) || (pnt===null)) return;
+      hints.forEach(function(hint) {
+         if (hint === null) return;
 
          nhints++;
 
          for (var l=0;l<hint.lines.length;++l)
-            if (hint.lines[l].length > maxlen) maxlen = hint.lines[l].length;
+            maxlen = Math.max(maxlen, hint.lines[l].length);
 
          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
@@ -2432,7 +2423,7 @@
       hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
-      if ((pnt === null) || (painters.length===0) || (maxlen===0)) {
+      if ((pnt === null) || (hints.length===0) || (maxlen===0)) {
          hintsg.remove();
          return;
       }
@@ -3220,6 +3211,25 @@
 
       pp._primitive = true; // mark painter as belonging to primitives
       pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
+   }
+
+
+   JSROOT.TPadPainter.prototype.GetTooltips = function(pnt) {
+      var painters = [], hints = [];
+
+      // first count - how many processors are there
+      if (this.painters !== null)
+         this.painters.forEach(function(obj) {
+            if ('ProcessTooltip' in obj) painters.push(obj);
+         });
+
+      if (pnt) pnt.nproc = painters.length;
+
+      painters.forEach(function(obj) {
+         hints.push(obj.ProcessTooltip(pnt));
+      });
+
+      return hints;
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
