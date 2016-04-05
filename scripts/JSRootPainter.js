@@ -2331,15 +2331,11 @@
       if (JSROOT.gStyle.Tooltip === 0)
          return tooltip_rect.remove();
 
-      var painter = this,
-          point = main_svg.node().createSVGPoint();
+      var painter = this;
 
       function MouseMoveEvent() {
-         point.x = d3.event.clientX;
-         point.y = d3.event.clientY;
-         var ctm = tooltip_rect.node().getScreenCTM();
-         var pnt = point.matrixTransform(ctm.inverse());
-         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: false });
+         var pnt = d3.mouse(tooltip_rect.node());
+         painter.ProcessTooltipEvent({ x: pnt[0], y: pnt[1], touch: false });
       }
 
       function MouseCloseEvent() {
@@ -2347,16 +2343,9 @@
       }
 
       function TouchMoveEvent() {
-         if ('changedTouches' in d3.event) touches = d3.event.changedTouches; else
-            if ('touches' in d3.event) touches = d3.event.touches;
-         if (touches.length !== 1)
-            return painter.ProcessTooltipEvent(null);
-
-         point.x = touches[0].pageX;
-         point.y = touches[0].pageY;
-         var ctm = tooltip_rect.node().getScreenCTM();
-         var pnt = point.matrixTransform(ctm.inverse());
-         painter.ProcessTooltipEvent({ x: pnt.x, y: pnt.y, touch: true });
+         var pnt = d3.touches(tooltip_rect.node());
+         if (!pnt || pnt.length !== 1) return painter.ProcessTooltipEvent(null);
+         painter.ProcessTooltipEvent({ x: pnt[0][0], y: pnt[0][1], touch: true });
       }
 
       function TouchCloseEvent() {
@@ -5636,9 +5625,6 @@
          this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
          this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
          this.svg_frame().on("wheel", this.mouseWheel.bind(this) );
-         //this.svg_frame().on("mousewheel", this.mouseWheel.bind(this) );
-         //this.svg_frame().on('MozMousePixelScroll', this.mouseWheel.bind(this) );
-
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
@@ -5647,15 +5633,15 @@
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
             this.svg_frame().selectAll(".xaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this, "x") );
+                .on("touchstart", this.startTouchMenu.bind(this,"x") );
             this.svg_frame().selectAll(".yaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this, "y") );
+                .on("touchstart", this.startTouchMenu.bind(this,"y") );
          }
          this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
          this.svg_frame().selectAll(".xaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
          this.svg_frame().selectAll(".yaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this, "y"));
+             .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
    }
 
@@ -6046,8 +6032,6 @@
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
-      delete this.ProcessTooltip;
-
       var width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
@@ -6192,11 +6176,8 @@
          }
       }
 
-      if (this.fillatt.color !== 'none') {
-         res+="L"+currx+","+(height+3);
-         res+="L"+startx+","+(height+3);
-         res+="Z";
-      }
+      if (this.fillatt.color !== 'none')
+         res += "L"+currx+","+(height+3) + "L"+startx+","+(height+3) + "Z";
 
       if (draw_markers) {
 
@@ -6225,9 +6206,6 @@
                     .call(this.fillatt.func);
 
       }
-
-      if (JSROOT.gStyle.Tooltip > 0)
-         this.ProcessTooltip = this.ProcessTooltipFunc;
    }
 
    JSROOT.TH1Painter.prototype.GetBinTips = function(bin,asstr) {
@@ -6269,8 +6247,8 @@
       return res;
    }
 
-   JSROOT.TH1Painter.prototype.ProcessTooltipFunc = function(pnt) {
-      if (pnt === null) {
+   JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
+      if ((pnt === null) || !this.draw_content) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
@@ -6404,6 +6382,8 @@
 
          res.exact = (Math.abs(midy - pnt.y) <= 5) || ((pnt.y>=gry1) && (pnt.y <= gry2));
 
+         res.menu = true; // one could show context menu
+
       } else {
          var radius = this.lineatt.width + 3;
 
@@ -6416,6 +6396,8 @@
                                 .call(this.fillatt.func);
 
          res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
+
+         res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
 
          res.changed = ttrect.property("current_bin") !== findbin;
 
