@@ -3684,7 +3684,7 @@
    }
 
 
-   JSROOT.TH2Painter.prototype.ProcessTooltipFunc = function(pnt) {
+   JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
 
       var find = null, cnt = 0, ismarker = false;
 

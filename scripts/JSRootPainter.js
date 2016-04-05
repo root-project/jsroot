@@ -5741,7 +5741,7 @@
 
          menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
             JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
-            // this.RedrawPad();
+            this.RedrawPad();
          });
 
          if (this.options) {
