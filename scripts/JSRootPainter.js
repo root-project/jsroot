@@ -6659,10 +6659,14 @@
             continue;
          }
 
-         if ((typeof fld == 'object') && ('_typename' in fld)
-             && ((fld._typename=='TList') || (fld._typename=='TObjArray')) ) {
+         if ((typeof fld == 'object') && ('_typename' in fld)) {
+             if ((fld._typename=='TList') || (fld._typename=='TObjArray')) {
                item._kind = item._title = "ROOT." + fld._typename;
                fld = fld.arr;
+             } else if (fld._typename=='TFolder') {
+                item._kind = item._title = "ROOT." + fld._typename;
+                fld = fld.fFolders.arr;
+             }
          }
 
          var proto = Object.prototype.toString.apply(fld);
