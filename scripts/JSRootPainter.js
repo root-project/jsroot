@@ -6906,7 +6906,7 @@
                return true;
             }
          } else
-         if (key.fClassName == 'TDirectory'  || key.fClassName == 'TDirectoryFile') {
+         if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
             var dir = null;
             if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
             item._isdir = true;
@@ -6927,10 +6927,6 @@
             item._kind = "ROOT.TStreamerInfoList";
             item._title = "List of streamer infos for binary I/O";
             item._readobj = file.fStreamerInfos;
-         } else
-         if (key.fClassName == 'TList' || key.fClassName == 'TObjArray' || key.fClassName == 'TClonesArray') {
-            item._more = true;
-            item._expand = JSROOT.Painter.ListHierarchy;
          }
 
          folder._childs.push(item);
@@ -8580,8 +8576,9 @@
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf" });
-   JSROOT.addDrawFunc({ name: "TList", icon: "img_list" });
-   JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list" });
+   JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TColor", icon: "img_color" });
    JSROOT.addDrawFunc({ name: "TFile", icon: "img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "TMemFile", icon: "img_file", noinspect:true });
