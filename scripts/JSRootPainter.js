@@ -6707,6 +6707,8 @@
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
+      console.log('Expand TList ' + lst.arr.length);
+
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
@@ -6762,6 +6764,7 @@
             continue;
          }
 
+         // TODO: one could reuse ListHierarchy function, but it will produce names list, not a numbered list
          if ((typeof fld == 'object') && ('_typename' in fld)
              && ((fld._typename=='TList') || (fld._typename=='TObjArray')) ) {
                item._kind = item._title = "ROOT." + fld._typename;
@@ -6772,9 +6775,11 @@
          var simple  = false;
 
          if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+            item._title = item._kind + " len=" + fld.length;
             simple = (proto != '[object Array]');
-            if (fld.length == 0) {
+            if (fld.length === 0) {
                item._value = "[ ]";
+               item._more = false; // hpainter will not try to expand again
             } else {
                item._value = "[...]";
                item._more = true;
