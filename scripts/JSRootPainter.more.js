@@ -2609,7 +2609,6 @@
       this.fContour = null; // contour levels
       this.fUserContour = false; // are this user-defined levels
       this.fPalette = null;
-      this.draw_kind = "none";
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -3562,11 +3561,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
-      this.draw_kind = "none";
-
       this.RecreateDrawG(false, ".main_layer");
-
-      delete this.ProcessTooltip;
 
       var w = this.frame_width(), h = this.frame_height();
 
@@ -3587,13 +3582,7 @@
       if (this.options.Text>0)
          handle = this.DrawBinsText(w, h, handle);
 
-      if (handle!==null)
-         this.draw_kind = "path";
-
-      if (JSROOT.gStyle.Tooltip > 0) {
-         this.tt_handle = handle;
-         this.ProcessTooltip = this.ProcessTooltipPath;
-      }
+      this.tt_handle = handle;
    }
 
    JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
@@ -3622,7 +3611,7 @@
       return lines;
    }
 
-   JSROOT.TH2Painter.prototype.ProcessTooltipPath = function(pnt) {
+   JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
       if (pnt==null) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
@@ -3655,7 +3644,7 @@
 
       var res = { x: pnt.x, y: pnt.y,
                  color1: this.lineatt.color, color2: this.fillcolor,
-                 lines: this.GetBinTips(i, j), exact: true };
+                 lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
 
@@ -3679,56 +3668,6 @@
                                    bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
                                    grx: pnt.x, gry: pnt.y });
       }
-
-      return res;
-   }
-
-
-   JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
-
-      var find = null, cnt = 0, ismarker = false;
-
-      if (pnt !== null)
-         this.draw_g.selectAll(ismarker ? ".marker" : ".bins"). each(function() {
-            var d = d3.select(this).datum();
-            if (ismarker) {
-               if (Math.abs(pnt.x - d.x)>3 || Math.abs(pnt.y - d.y)>3) return;
-            } else {
-               if ((pnt.x < d.x) || (pnt.y<d.y)) return;
-               if ((pnt.x > d.x+d.width) || (pnt.y > d.y+d.height)) return;
-            }
-            cnt++; find = this;
-         });
-
-
-      var issame = (cnt===1) && (find === this._sbin);
-
-      if (!issame) {
-         if (('_sbin' in this) && !ismarker)
-            d3.select(this._sbin).transition().duration(100).style("fill", d3.select(this._sbin).datum().fill);
-
-         delete this._sbin;
-      }
-
-      if (cnt!==1) return null;
-
-      var d = d3.select(find).datum();
-
-      if (!issame) {
-         this._sbin = find;
-         if (!ismarker)
-            d3.select(find).transition().duration(100).style("fill", d.tipcolor);
-      }
-
-      var res = {
-            x: d.x + (ismarker ? 0 : d.width/2),
-            y: d.y + (ismarker ? 0 : d.height/2),
-            color1: d.fill,
-            color2: d.fill,
-            lines: d.tip.split("\n"),
-            exact: true,
-            changed: !issame
-        };
 
       return res;
    }
