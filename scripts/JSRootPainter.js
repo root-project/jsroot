@@ -6561,6 +6561,25 @@
       this.clear(true);
    }
 
+   JSROOT.Painter.FolderHierarchy = function(item, obj) {
+
+      if ((obj==null) || !('fFolders' in obj) || (obj.fFolders==null)) return false;
+
+      if (obj.fFolders.arr.length===0) { item._more = false; return true; }
+
+      item._childs = [];
+
+      for ( var i = 0; i < obj.fFolders.arr.length; ++i) {
+         var chld = obj.fFolders.arr[i];
+         item._childs.push( {
+            _name : chld.fName,
+            _kind : "ROOT." + chld._typename,
+            _readobj : chld
+         });
+      }
+      return true;
+   }
+
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
@@ -8449,7 +8468,7 @@
    JSROOT.addDrawFunc({ name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: "all" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
-   JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true });
+   JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
