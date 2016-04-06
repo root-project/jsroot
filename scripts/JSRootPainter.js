@@ -6689,7 +6689,7 @@
 
       if ((obj==null) || !('fFolders' in obj) || (obj.fFolders==null)) return false;
 
-      if (obj.fFolders.arr.length===0) return true;
+      if (obj.fFolders.arr.length===0) { item._more = false; return true; }
 
       item._childs = [];
 
@@ -6703,6 +6703,26 @@
       }
       return true;
    }
+
+   JSROOT.Painter.TaskHierarchy = function(item, obj) {
+
+      if ((obj==null) || !('fTasks' in obj) || (obj.fTasks==null)) return false;
+
+      if (obj.fTasks.arr.length===0) { item._more = false; return true; }
+
+      item._childs = [];
+
+      for ( var i = 0; i < obj.fTasks.arr.length; ++i) {
+         var chld = obj.fTasks.arr[i];
+         item._childs.push( {
+            _name : chld.fName,
+            _kind : "ROOT." + chld._typename,
+            _readobj : chld
+         });
+      }
+      return true;
+   }
+
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
@@ -6790,8 +6810,8 @@
             } else {
                item._value = "[...]";
                item._more = true;
-               item._obj = fld;
                item._expand = JSROOT.Painter.ObjectHierarchy;
+               item._obj = fld;
                item._get = function(item, itemname, callback) {
                   JSROOT.CallBack(callback, item, this._obj);
                };
@@ -7553,7 +7573,7 @@
          if ((handle!=null) && ('expand' in handle)) {
             return JSROOT.AssertPrerequisites(handle.prereq, function() {
                hitem._expand = JSROOT.findFunction(handle.expand);
-               if (typeof hitem['_expand'] == 'function') {
+               if (typeof hitem._expand == 'function') {
                   hitem._more = true; // use as workaround - not try to repeat same action
                   hpainter.expand(itemname, call_back, d3cont);
                   delete hitem._more;
@@ -7576,16 +7596,17 @@
 
          while ((curr != null) && (obj != null)) {
             if (('_expand' in curr) && (typeof curr._expand == 'function')) {
-                if (curr._expand(item, obj)) {
-                   item._isopen = true;
-                   is_ok = true;
-                   if (typeof hpainter.UpdateTreeNode == 'function')
-                      hpainter.UpdateTreeNode(item, d3cont);
-                   break;
-                }
+               if (curr._expand(item, obj)) {
+                  item._isopen = true;
+                  is_ok = true;
+                  if (typeof hpainter.UpdateTreeNode == 'function')
+                     hpainter.UpdateTreeNode(item, d3cont);
+                  break;
+               }
             }
             curr = ('_parent' in curr) ? curr._parent : null;
          }
+
 
          if (!is_ok && (obj!=null)) {
             if (JSROOT.Painter.ObjectHierarchy(item, obj, true)) {
@@ -8584,6 +8605,7 @@
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
+   JSROOT.addDrawFunc({ name: "TTask", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
@@ -8644,6 +8666,35 @@
       }
 
       return first;
+   }
+
+   JSROOT.addStreamerInfos = function(lst) {
+      if (lst === null) return;
+
+      function CheckBaseClasses(si) {
+         if (si.fElements == null) return null;
+
+         for (var j=0; j<si.fElements.arr.length; ++j) {
+            // extract streamer info for each class member
+            var element = si.fElements.arr[j];
+            if (element.fTypeName !== 'BASE') continue;
+
+            var handle = JSROOT.getDrawHandle("ROOT." + element.fName);
+
+            if (handle !== null) return handle;
+         }
+         return null;
+      }
+
+      for (var n=0;n<lst.arr.length;++n) {
+         var si = lst.arr[n];
+         if (JSROOT.getDrawHandle("ROOT." + si.fName) !== null) continue;
+
+         var handle = CheckBaseClasses(si);
+
+         if ((handle !== null) && handle.for_derived)
+            console.log('Found handle for base class of ' + si.fName);
+      }
    }
 
    // returns array with supported draw options for the specified class

@@ -1167,6 +1167,8 @@
       lst._typename = "TStreamerInfoList";
 
       this.fStreamerInfos = lst;
+
+      JSROOT.addStreamerInfos(lst);
    }
 
 
@@ -1309,7 +1311,7 @@
       var methods = JSROOT.getMethods(clname);
       if (methods !== null)
          for (var key in methods)
-            if (typeof methods[key] === 'function')
+            if ((typeof methods[key] === 'function') || (key.indexOf("_")==0))
                streamer.push({
                  name: key,
                  method: methods[key],

@@ -1332,6 +1332,11 @@
       this.extend(obj, JSROOT.getMethods(obj._typename, obj));
    };
 
+   JSROOT.addStreamerInfos = function(si) {
+      // method can be redefined to add file streamer infos
+      // redefined in painter, used to reassign painter handles
+   };
+
    JSROOT.lastFFormat = "";
 
    JSROOT.FFormat = function(value, fmt) {
