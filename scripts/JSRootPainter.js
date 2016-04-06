@@ -6669,9 +6669,11 @@
          var simple  = false;
 
          if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+            item._title = item._kind + " len=" + fld.length;
             simple = (proto != '[object Array]');
             if (fld.length == 0) {
                item._value = "[ ]";
+               item._more = false;
             } else {
                item._value = "[...]";
                item._more = true;
