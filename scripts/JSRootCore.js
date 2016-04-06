@@ -445,6 +445,7 @@
    }
 
    JSROOT.findFunction = function(name) {
+      if (typeof name === 'function') return name;
       var func = window[name];
       if (typeof func == 'function') return func;
       var separ = name.lastIndexOf(".");
