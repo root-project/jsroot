@@ -6707,7 +6707,10 @@
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
-      console.log('Expand TList ' + lst.arr.length);
+      if (lst.arr.length === 0) {
+         folder._more = false;
+         return true;
+      }
 
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
