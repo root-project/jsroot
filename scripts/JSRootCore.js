@@ -445,6 +445,7 @@
    }
 
    JSROOT.findFunction = function(name) {
+      if (typeof name === 'function') return name;
       var func = window[name];
       if (typeof func == 'function') return func;
       var separ = name.lastIndexOf(".");
@@ -710,8 +711,7 @@
 
       if (!('doing_assert' in jsroot)) jsroot.doing_assert = [];
 
-
-      if ((typeof kind != 'string') || (kind == ''))
+      if ((typeof kind !== 'string') || (kind == ''))
          return jsroot.CallBack(callback);
 
       if (kind=='__next__') {
