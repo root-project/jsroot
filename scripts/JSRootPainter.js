@@ -6782,6 +6782,56 @@
       return true;
    }
 
+   JSROOT.Painter.KeysHierarchy = function(folder, keys, file, dirname) {
+
+      if (keys === undefined) return false;
+
+      folder._childs = [];
+
+      for (var i = 0; i < keys.length; ++i) {
+         var key = keys[i];
+
+         var item = {
+            _name : key.fName + ";" + key.fCycle,
+            _cycle : key.fCycle,
+            _kind : "ROOT." + key.fClassName,
+            _title : key.fTitle,
+            _keyname : key.fName,
+            _readobj : null,
+            _parent : folder
+         };
+
+         if ('fRealName' in key)
+            item._realname = key.fRealName + ";" + key.fCycle;
+
+         if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
+            var dir = null;
+            if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
+            if (dir == null) {
+               item._more = true;
+               item._expand = function(node, obj) {
+                  // one can get expand call from child objects - ignore them
+                  return JSROOT.Painter.KeysHierarchy(node, obj.fKeys);
+               }
+            } else {
+               // remove cycle number - we have already directory
+               item._name = key.fName;
+               JSROOT.Painter.KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+            }
+         } else
+         if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
+            item._name = 'StreamerInfo';
+            item._kind = "ROOT.TStreamerInfoList";
+            item._title = "List of streamer infos for binary I/O";
+            item._readobj = file.fStreamerInfos;
+         }
+
+         folder._childs.push(item);
+      }
+
+      return true;
+   }
+
    JSROOT.Painter.ObjectHierarchy = function(top, obj, args) {
       if ((top==null) || (obj==null)) return false;
 
@@ -6902,57 +6952,6 @@
       this.clear(true);
    }
 
-   JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file, dirname) {
-
-      if (keys === undefined) return false;
-
-      folder._childs = [];
-
-      var painter = this;
-      for (var i = 0; i < keys.length; ++i) {
-         var key = keys[i];
-
-         var item = {
-            _name : key.fName + ";" + key.fCycle,
-            _cycle : key.fCycle,
-            _kind : "ROOT." + key.fClassName,
-            _title : key.fTitle,
-            _keyname : key.fName,
-            _readobj : null,
-            _parent : folder
-         };
-
-         if ('fRealName' in key)
-            item._realname = key.fRealName + ";" + key.fCycle;
-
-         if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
-            var dir = null;
-            if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
-            if (dir == null) {
-               item._more = true;
-               item._expand = function(node, obj) {
-                  // one can get expand call from child objects - ignore them
-                  return painter.KeysHierarchy(node, obj.fKeys);
-               }
-            } else {
-               // remove cycle number - we have already directory
-               item._name = key.fName;
-               painter.KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
-            }
-         } else
-         if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
-            item._name = 'StreamerInfo';
-            item._kind = "ROOT.TStreamerInfoList";
-            item._title = "List of streamer infos for binary I/O";
-            item._readobj = file.fStreamerInfos;
-         }
-
-         folder._childs.push(item);
-      }
-
-      return true;
-   }
-
    JSROOT.HierarchyPainter.prototype.FileHierarchy = function(file) {
       var painter = this;
 
@@ -6991,11 +6990,11 @@
                         if (dir) {
                            d.last._name = d.last._keyname;
                            var dirname = painter.itemFullName(d.last, fff);
-                           painter.KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
+                           JSROOT.Painter.KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        painter.KeysHierarchy(fff, file.fKeys, file, "");
+                        JSROOT.Painter.KeysHierarchy(fff, file.fKeys, file, "");
                      }
                      item = painter.Find({name:itemname, top: fff});
                   }
@@ -7019,7 +7018,7 @@
          }
       };
 
-      this.KeysHierarchy(folder, file.fKeys, file, "");
+      JSROOT.Painter.KeysHierarchy(folder, file.fKeys, file, "");
 
       return folder;
    }
@@ -7825,11 +7824,7 @@
    JSROOT.Painter.OnlineHierarchy = function(node, obj) {
       // central function for expand of all online items
 
-      console.log('online hierarchy ',node._name);
-
       if ((obj != null) && (node != null) && ('_childs' in obj)) {
-
-         console.log('online hierarchy childs ',obj._childs.length);
 
          for (var n=0;n<obj._childs.length;++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
