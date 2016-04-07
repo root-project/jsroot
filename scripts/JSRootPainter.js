@@ -6660,30 +6660,7 @@
       return painter.DrawingReady();
    }
 
-   // =========== painter of hierarchical structures =================================
-
-   JSROOT.hpainter = null; // global pointer
-
-   JSROOT.HierarchyPainter = function(name, frameid, backgr) {
-      JSROOT.TBasePainter.call(this);
-      this.name = name;
-      this.h = null; // hierarchy
-      this.with_icons = true;
-      this.background = backgr;
-      this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      if (frameid != null) this.SetDivId(frameid);
-
-      // remember only very first instance
-      if (JSROOT.hpainter == null)
-         JSROOT.hpainter = this;
-   }
-
-   JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
-
-   JSROOT.HierarchyPainter.prototype.Cleanup = function() {
-      // clear drawing and browser
-      this.clear(true);
-   }
+   // ===================== hierarchy scanning functions ==================================
 
    JSROOT.Painter.FolderHierarchy = function(item, obj) {
 
@@ -6705,12 +6682,16 @@
    }
 
    JSROOT.Painter.TaskHierarchy = function(item, obj) {
+      // function can be used for different derived classes
+      // we show not only child tasks, but all complex data members
 
       if ((obj==null) || !('fTasks' in obj) || (obj.fTasks==null)) return false;
 
-      if (obj.fTasks.arr.length===0) { item._more = false; return true; }
+      JSROOT.Painter.ObjectHierarchy(item, obj, true, ['fTasks', 'fName']);
 
-      item._childs = [];
+      if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
+
+      // item._childs = [];
 
       for ( var i = 0; i < obj.fTasks.arr.length; ++i) {
          var chld = obj.fTasks.arr[i];
@@ -6745,7 +6726,7 @@
       return true;
    }
 
-   JSROOT.Painter.ObjectHierarchy = function(top, obj, nosimple) {
+   JSROOT.Painter.ObjectHierarchy = function(top, obj, nosimple, exclude) {
       if ((top==null) || (obj==null)) return false;
 
       // if ('_value' in top) top._value = "";
@@ -6774,6 +6755,7 @@
          if (key == '_typename') continue;
          var fld = obj[key];
          if (typeof fld == 'function') continue;
+         if (exclude && (exclude.indexOf(key)>=0)) continue;
 
          var item = {
             _parent : top,
@@ -6782,8 +6764,7 @@
 
          if (fld === null) {
             item._value = "null";
-            if (!nosimple)
-               top._childs.push(item);
+            if (!nosimple) top._childs.push(item);
             continue;
          }
 
@@ -6873,6 +6854,31 @@
             top._childs.push(item);
       }
       return true;
+   }
+
+   // =========== painter of hierarchical structures =================================
+
+   JSROOT.hpainter = null; // global pointer
+
+   JSROOT.HierarchyPainter = function(name, frameid, backgr) {
+      JSROOT.TBasePainter.call(this);
+      this.name = name;
+      this.h = null; // hierarchy
+      this.with_icons = true;
+      this.background = backgr;
+      this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
+      if (frameid != null) this.SetDivId(frameid);
+
+      // remember only very first instance
+      if (JSROOT.hpainter == null)
+         JSROOT.hpainter = this;
+   }
+
+   JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+
+   JSROOT.HierarchyPainter.prototype.Cleanup = function() {
+      // clear drawing and browser
+      this.clear(true);
    }
 
    JSROOT.HierarchyPainter.prototype.TreeHierarchy = function(node, obj) {
@@ -8704,9 +8710,10 @@
 
          if (!handle) continue;
 
-         console.log('Duplicate handle ' + handle.name + ' for derived class ' + si.fName);
+         // console.log('Duplicate handle ' + handle.name + ' for derived class ' + si.fName);
 
          var newhandle = JSROOT.extend({}, handle);
+         // delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
          JSROOT.DrawFuncs.lst.push(newhandle);
       }
