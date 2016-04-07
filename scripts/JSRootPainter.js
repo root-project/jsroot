@@ -6687,7 +6687,7 @@
 
       if ((obj==null) || !('fTasks' in obj) || (obj.fTasks==null)) return false;
 
-      JSROOT.Painter.ObjectHierarchy(item, obj, true, ['fTasks', 'fName']);
+      JSROOT.Painter.ObjectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
 
       if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
 
@@ -6716,30 +6716,46 @@
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
-         var item = {
-            _name : obj.fName,
-            _kind : "ROOT." + obj._typename,
-            _readobj : obj
-         };
+
+         var item;
+
+         if (obj===null) {
+            item = {
+               _name: i.toString(),
+               _kind: "ROOT.NULL",
+               _title: "NULL",
+               _obj: null
+            }
+         } else {
+           item = {
+             _name : obj.fName,
+             _kind : "ROOT." + obj._typename,
+             _title : obj.fTitle,
+             _obj : obj
+           };
+           // if name is integer value, it should match array index
+           if ((item._name === undefined) ||
+               (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
+               || (lst.arr.indexOf(obj)<i))
+                 item._name = i.toString();
+
+           if (item._title === undefined)
+              item._title = obj._typename ? item._kind : item._name;
+         }
+
          folder._childs.push(item);
       }
       return true;
    }
 
-   JSROOT.Painter.ObjectHierarchy = function(top, obj, nosimple, exclude) {
+   JSROOT.Painter.ObjectHierarchy = function(top, obj, args) {
       if ((top==null) || (obj==null)) return false;
 
-      // if ('_value' in top) top._value = "";
-
-      if (nosimple) {
-         top._nosimple = true;
-      } else {
-         // check if parent has such property
-         var prnt = top;
-         while (prnt!=null) {
-            if ('_nosimple' in prnt) { nosimple = true; break; }
-            prnt = ('_parent' in prnt) ? prnt._parent : null;
-         }
+      // check nosimple property in all parents
+      var nosimple = true,  prnt = top;
+      while (prnt) {
+         if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
+         prnt = prnt._parent;
       }
 
       top._childs = [];
@@ -6755,7 +6771,7 @@
          if (key == '_typename') continue;
          var fld = obj[key];
          if (typeof fld == 'function') continue;
-         if (exclude && (exclude.indexOf(key)>=0)) continue;
+         if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
 
          var item = {
             _parent : top,
@@ -6763,20 +6779,9 @@
          };
 
          if (fld === null) {
-            item._value = "null";
+            item._value = item._title = "null";
             if (!nosimple) top._childs.push(item);
             continue;
-         }
-
-         // TODO: one could reuse ListHierarchy function, but it will produce names list, not a numbered list
-         if ((typeof fld == 'object') && ('_typename' in fld)) {
-            if ((fld._typename=='TList') || (fld._typename=='TObjArray')) {
-              item._kind = item._title = "ROOT." + fld._typename;
-              fld = fld.arr;
-            } else if (fld._typename=='TFolder') {
-               item._kind = item._title = "ROOT." + fld._typename;
-               fld = fld.fFolders.arr;
-            }
          }
 
          var proto = Object.prototype.toString.apply(fld);
@@ -6793,9 +6798,6 @@
                item._more = true;
                item._expand = JSROOT.Painter.ObjectHierarchy;
                item._obj = fld;
-               item._get = function(item, itemname, callback) {
-                  JSROOT.CallBack(callback, item, this._obj);
-               };
             }
          } else
          if (typeof fld == 'object') {
@@ -6804,33 +6806,18 @@
 
             // check if object already shown in hierarchy (circular dependency)
             var curr = top, inparent = false;
-            while ((curr != null) && !inparent) {
-               inparent = (('_obj' in curr) && (curr._obj === fld));
-               curr = ('_parent' in curr) ? curr._parent : null;
+            while (curr && !inparent) {
+               inparent = (curr._obj === fld);
+               curr = curr._parent;
             }
 
             if (inparent) {
                item._value = "{ prnt }";
                simple = true;
             } else {
-               item._expand = JSROOT.Painter.ObjectHierarchy;
-               item._more = true;
-               item._value = "{ }";
                item._obj = fld;
-               item._get = function(item, itemname, callback) {
-                  JSROOT.CallBack(callback, item, this._obj);
-               };
-               if (nosimple) {
-                  // check if object can be expand
-                  var test = {};
-                  JSROOT.Painter.ObjectHierarchy(test, fld, true);
-                  if (test._childs.length == 0) {
-                     delete item._expand;
-                     delete item._more;
-                     if (fld._typename == 'TColor') item._value = JSROOT.Painter.MakeColorRGB(fld);
-                  }
-                  delete test;
-               }
+               item._value = "{ }";
+               if (fld._typename == 'TColor') item._value = JSROOT.Painter.MakeColorRGB(fld);
             }
          } else
          if ((typeof fld == 'number') || (typeof fld == 'boolean')) {
@@ -6842,7 +6829,7 @@
             item._vclass = 'h_value_num';
          } else
          if (typeof fld == 'string') {
-            simple = (key != 'fName');
+            simple = true;
             item._value = '"' + fld + '"';
             item._vclass = 'h_value_str';
          } else {
@@ -7095,7 +7082,7 @@
                      return process_child(top._childs[i]);
 
             // if allowed, try to found item with key
-            if (('check_keys' in arg) && (typeof top['_childs'] != 'undefined'))
+            if (('check_keys' in arg) && (typeof top._childs != 'undefined'))
                for (var i = 0; i < top._childs.length; ++i) {
                   if (top._childs[i]._name.indexOf(localname + ";")==0)
                      return process_child(top._childs[i]);
@@ -7103,11 +7090,19 @@
 
             if ('force' in arg) {
                // if didnot found element with given name we just generate it
-               if (! ('_childs' in top)) top['_childs'] = [];
+               if (! ('_childs' in top)) top._childs = [];
                var child = { _name: localname };
                top._childs.push(child);
                return process_child(child);
             }
+
+            // when search for the elements it could be allowed to check index
+            if (arg.allow_index && (typeof top._childs != 'undefined')) {
+               var indx = parseInt(localname);
+               if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
+                  return process_child(top._childs[indx]);
+            }
+
          } while (pos > 0);
 
          return ('last_exists' in arg) && (top!=null) ? { last : top, rest : fullname } : null;
@@ -7210,7 +7205,7 @@
 
       var itemname = (typeof arg == 'object') ? arg.arg : arg;
 
-      var item = this.Find(itemname);
+      var item = this.Find( { name: itemname, allow_index: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
       var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true });
@@ -7230,14 +7225,19 @@
          return this.expand(parentname, function(res) {
             if (!res) JSROOT.CallBack(call_back);
             var newparentname = hpainter.itemFullName(d.last);
-            hpainter.get( { arg : newparentname + "/" + d.rest, rest : d.rest }, call_back, options);
+            hpainter.get( { arg: newparentname + "/" + d.rest, rest: d.rest }, call_back, options);
          });
       }
+
+      // check if item already has assigned object
+
+      if ((item !== null) && (typeof item._obj == 'object'))
+         return JSROOT.CallBack(call_back, item, item._obj);
 
       // normally search _get method in the parent items
       var curr = item;
       while (curr != null) {
-         if (('_get' in curr) && (typeof (curr._get) == 'function'))
+         if (('_get' in curr) && (typeof curr._get == 'function'))
             return curr._get(item, null, call_back, options);
          curr = ('_parent' in curr) ? curr._parent : null;
       }
@@ -7613,9 +7613,8 @@
             curr = ('_parent' in curr) ? curr._parent : null;
          }
 
-
-         if (!is_ok && (obj!=null)) {
-            if (JSROOT.Painter.ObjectHierarchy(item, obj, true)) {
+         if (!is_ok && (obj !== null)) {
+            if (JSROOT.Painter.ObjectHierarchy(item, obj)) {
                item._isopen = true;
                is_ok = true;
                if (typeof hpainter.UpdateTreeNode == 'function')
@@ -8242,7 +8241,7 @@
    JSROOT.Painter.drawInspector = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.with_icons = false;
-      painter.h = { _name : "Object" };
+      painter.h = { _name : "Object", _title: "ROOT." + obj._typename, _click_action: "expand", _nosimple: false };
       JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);

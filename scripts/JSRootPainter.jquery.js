@@ -384,6 +384,12 @@
       var hitem = this.Find(itemname);
       if (hitem == null) return;
 
+      var prnt = hitem, dflt = undefined;
+      while (prnt) {
+         if ((dflt = prnt._click_action) !== undefined) break;
+         prnt = prnt._parent;
+      }
+
       if (!place || (place=="")) place = "item";
 
       if (place == "icon") {
@@ -397,7 +403,8 @@
       if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
 
       // special case - one should expand item
-      if ((place == "plusminus") && !('_childs' in hitem) && hitem._more)
+      if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
+          ((place == "item") && (dflt === "expand")))
          return this.expand(itemname, null, d3cont);
 
       if (place == "item") {
