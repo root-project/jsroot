@@ -94,7 +94,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 6/04/2016";
+   JSROOT.version = "dev 7/04/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1330,11 +1330,6 @@
 
    JSROOT.addMethods = function(obj) {
       this.extend(obj, JSROOT.getMethods(obj._typename, obj));
-   };
-
-   JSROOT.addStreamerInfos = function(si) {
-      // method can be redefined to add file streamer infos
-      // redefined in painter, used to reassign painter handles
    };
 
    JSROOT.lastFFormat = "";

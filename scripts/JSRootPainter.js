@@ -8605,7 +8605,7 @@
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
-   JSROOT.addDrawFunc({ name: "TTask", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
+   JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true });
    JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
@@ -8638,7 +8638,7 @@
       var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind;
 
       var counter = 0;
-      for (var i=0; i<JSROOT.DrawFuncs.lst.length; ++i) {
+      for (var i=0; i < JSROOT.DrawFuncs.lst.length; ++i) {
          var h = JSROOT.DrawFuncs.lst[i];
          if (typeof h.name == "string") {
             if (h.name != search) continue;
@@ -8671,8 +8671,9 @@
    JSROOT.addStreamerInfos = function(lst) {
       if (lst === null) return;
 
-      function CheckBaseClasses(si) {
+      function CheckBaseClasses(si, lvl) {
          if (si.fElements == null) return null;
+         if (lvl>10) return null; // protect against recursion
 
          for (var j=0; j<si.fElements.arr.length; ++j) {
             // extract streamer info for each class member
@@ -8680,8 +8681,17 @@
             if (element.fTypeName !== 'BASE') continue;
 
             var handle = JSROOT.getDrawHandle("ROOT." + element.fName);
+            if (handle && !handle.for_derived) handle = null;
 
-            if (handle !== null) return handle;
+            // now try find that base class of base in the list
+            if (handle === null)
+               for (var k=0;k<lst.arr.length; ++k)
+                  if (lst.arr[k].fName === element.fName) {
+                     handle = CheckBaseClasses(lst.arr[k], lvl+1);
+                     break;
+                  }
+
+            if (handle && handle.for_derived) return handle;
          }
          return null;
       }
@@ -8690,10 +8700,15 @@
          var si = lst.arr[n];
          if (JSROOT.getDrawHandle("ROOT." + si.fName) !== null) continue;
 
-         var handle = CheckBaseClasses(si);
+         var handle = CheckBaseClasses(si, 0);
 
-         if ((handle !== null) && handle.for_derived)
-            console.log('Found handle for base class of ' + si.fName);
+         if (!handle) continue;
+
+         console.log('Duplicate handle ' + handle.name + ' for derived class ' + si.fName);
+
+         var newhandle = JSROOT.extend({}, handle);
+         newhandle.name = si.fName;
+         JSROOT.DrawFuncs.lst.push(newhandle);
       }
    }
 

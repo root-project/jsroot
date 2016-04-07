@@ -4,6 +4,7 @@
 1. Provide shortcut buttons for each subpad
 2. Implement scaling factor like x10^3 on the vertical axes 
 3. Zooming with mouse wheel
+4. Support browsing of TTask and derived classes
  
 
 ## Changes in 4.4

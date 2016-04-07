@@ -1168,7 +1168,8 @@
 
       this.fStreamerInfos = lst;
 
-      JSROOT.addStreamerInfos(lst);
+      if (typeof JSROOT.addStreamerInfos === 'function')
+         JSROOT.addStreamerInfos(lst);
    }
 
 
