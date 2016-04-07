@@ -402,8 +402,6 @@
          return;
       }
 
-      console.log('click ', itemname, place);
-
       // special feature - all items with '_expand' function are not drawn by click
       if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
 
@@ -431,10 +429,14 @@
                return this.expand(itemname, null, d3cont);
          }
 
-         if ((hitem['_childs'] == null))
+         if (!hitem._childs && (this.default_by_click === "expand"))
             return this.expand(itemname, null, d3cont);
 
-         if (!('_childs' in hitem) || (hitem === this.h)) return;
+         // cannot draw, but can inspect ROOT objects
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0))
+            return this.display(itemname, "inspect");
+
+         if (!hitem._childs || (hitem === this.h)) return;
       }
 
       if (hitem._isopen)

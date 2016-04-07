@@ -8244,6 +8244,7 @@
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
+      painter.default_by_click = "expand"; // that painter tries to do by default
       painter.with_icons = false;
       painter.h = { _name : "Object", _title: "ROOT." + obj._typename, _click_action: "expand", _nosimple: false };
       JSROOT.Painter.ObjectHierarchy(painter.h, obj);
