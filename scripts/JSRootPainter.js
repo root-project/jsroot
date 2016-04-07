@@ -7606,23 +7606,18 @@
          if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
 
          if (DoExpandItem(hitem, hitem._obj, itemname)) return;
-
-         // flag used in online part to request not object, but h.json
-         hitem._doing_expand = true;
       }
 
       JSROOT.progress("Loading " + itemname);
 
       this.get(itemname, function(item, obj) {
 
-         if (hitem) delete hitem._doing_expand;
-
          JSROOT.progress();
 
          if (obj && DoExpandItem(item, obj)) return;
 
          JSROOT.CallBack(call_back);
-      });
+      }, "hierarchy_expand" ); // indicate that we getting element for expand, can handle it differently
 
    }
 
@@ -7761,17 +7756,19 @@
 
       var url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
 
+      if (option === 'hierarchy_expand') { h_get = true; option = undefined; }
+
       if (item != null) {
          url = this.GetOnlineItemUrl(item);
          var func = null;
          if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
 
-         if ('_doing_expand' in item) {
-            h_get = true;
+         if (h_get) {
             req = 'h.json?compact=3';
+            item._expand = JSROOT.Painter.OnlineHierarchy; // use proper expand function
          } else
          if ('_make_request' in item) {
-            func = JSROOT.findFunction(item['_make_request']);
+            func = JSROOT.findFunction(item._make_request);
          } else
          if ((draw_handle!=null) && ('make_request' in draw_handle)) {
             func = draw_handle.make_request;
@@ -7828,7 +7825,12 @@
    JSROOT.Painter.OnlineHierarchy = function(node, obj) {
       // central function for expand of all online items
 
+      console.log('online hierarchy ',node._name);
+
       if ((obj != null) && (node != null) && ('_childs' in obj)) {
+
+         console.log('online hierarchy childs ',obj._childs.length);
+
          for (var n=0;n<obj._childs.length;++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
                obj._childs[n]._expand = JSROOT.Painter.OnlineHierarchy;
