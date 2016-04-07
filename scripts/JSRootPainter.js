@@ -6708,7 +6708,7 @@
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
-      if (lst.arr.length === 0) {
+      if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
          return true;
       }
@@ -6745,6 +6745,40 @@
 
          folder._childs.push(item);
       }
+      return true;
+   }
+
+   JSROOT.Painter.TreeHierarchy = function(node, obj) {
+      if (obj._typename != 'TTree' && obj._typename != 'TNtuple') return false;
+
+      node._childs = [];
+
+      for ( var i = 0; i < obj.fBranches.arr.length; ++i) {
+         var branch = obj.fBranches.arr[i];
+         var nb_leaves = branch.fLeaves.arr.length;
+
+         // display branch with only leaf as leaf
+         if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) nb_leaves = 0;
+
+         var subitem = {
+            _name : branch.fName,
+            _kind : nb_leaves > 0 ? "ROOT.TBranch" : "ROOT.TLeafF"
+         }
+
+         node._childs.push(subitem);
+
+         if (nb_leaves > 0) {
+            subitem._childs = [];
+            for (var j = 0; j < nb_leaves; ++j) {
+               var leafitem = {
+                  _name : branch.fLeaves.arr[j].fName,
+                  _kind : "ROOT.TLeafF"
+               }
+               subitem._childs.push(leafitem);
+            }
+         }
+      }
+
       return true;
    }
 
@@ -6868,38 +6902,6 @@
       this.clear(true);
    }
 
-   JSROOT.HierarchyPainter.prototype.TreeHierarchy = function(node, obj) {
-      if (obj._typename != 'TTree' && obj._typename != 'TNtuple') return false;
-
-      node._childs = [];
-
-      for ( var i = 0; i < obj.fBranches.arr.length; ++i) {
-         var branch = obj.fBranches.arr[i];
-         var nb_leaves = branch.fLeaves.arr.length;
-
-         // display branch with only leaf as leaf
-         if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) nb_leaves = 0;
-
-         var subitem = {
-            _name : branch.fName,
-            _kind : nb_leaves > 0 ? "ROOT.TBranch" : "ROOT.TLeafF"
-         }
-
-         node._childs.push(subitem);
-
-         if (nb_leaves > 0) {
-            subitem._childs = [];
-            for (var j = 0; j < nb_leaves; ++j) {
-               var leafitem = {
-                  _name : branch.fLeaves.arr[j].fName,
-                  _kind : "ROOT.TLeafF"
-               }
-               subitem._childs.push(leafitem);
-            }
-         }
-      }
-   }
-
    JSROOT.HierarchyPainter.prototype.KeysHierarchy = function(folder, keys, file, dirname) {
 
       if (keys === undefined) return false;
@@ -6923,18 +6925,9 @@
          if ('fRealName' in key)
             item._realname = key.fRealName + ";" + key.fCycle;
 
-         if ((key.fClassName == 'TTree' || key.fClassName == 'TNtuple')) {
-            item._more = true;
-
-            item._expand = function(node, obj) {
-               painter.TreeHierarchy(node, obj);
-               return true;
-            }
-         } else
          if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
             var dir = null;
             if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
-            item._isdir = true;
             if (dir == null) {
                item._more = true;
                item._expand = function(node, obj) {
@@ -7571,24 +7564,50 @@
 
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
 
-      // item marked as it cannot be expanded
-      if (hitem) {
-         if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
+      function DoExpandItem(_item, _obj, _name) {
+         if (!_name) _name = hpainter.itemFullName(_item);
 
-         if (!('_more' in hitem)) {
-            var handle = JSROOT.getDrawHandle(hitem._kind);
-            if ((handle!=null) && ('expand' in handle)) {
-               return JSROOT.AssertPrerequisites(handle.prereq, function() {
-                  hitem._expand = JSROOT.findFunction(handle.expand);
-                  if (typeof hitem._expand == 'function') {
-                     hitem._more = true; // use as workaround - not try to repeat same action
-                     hpainter.expand(itemname, call_back, d3cont);
-                     delete hitem._more;
-                  }
-               });
+         // try to use expand function
+         if (_obj && _item && typeof _item._expand == 'function') {
+            if (_item._expand(_item, _obj)) {
+               _item._isopen = true;
+               if (typeof hpainter.UpdateTreeNode == 'function')
+                  hpainter.UpdateTreeNode(_item, d3cont);
+               JSROOT.CallBack(call_back, true);
+               return true;
             }
          }
 
+         if (!('_expand' in _item)) {
+            var handle = JSROOT.getDrawHandle(_item._kind);
+            if (handle && ('expand' in handle)) {
+               JSROOT.AssertPrerequisites(handle.prereq, function() {
+                  _item._expand = JSROOT.findFunction(handle.expand);
+                  if (typeof _item._expand != 'function') { delete _item._expand; return; }
+                  hpainter.expand(_name, call_back, d3cont);
+               });
+               return true;
+            }
+         }
+
+         if (_obj && JSROOT.Painter.ObjectHierarchy(_item, _obj)) {
+            _item._isopen = true;
+            if (typeof hpainter.UpdateTreeNode == 'function')
+               hpainter.UpdateTreeNode(_item, d3cont);
+            JSROOT.CallBack(call_back, true);
+            return true;
+         }
+
+         return false;
+      }
+
+      if (hitem) {
+         // item marked as it cannot be expanded
+         if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
+
+         if (DoExpandItem(hitem, hitem._obj, itemname)) return;
+
+         // flag used in online part to request not object, but h.json
          hitem._doing_expand = true;
       }
 
@@ -7600,31 +7619,9 @@
 
          JSROOT.progress();
 
-         var curr = item, is_ok = false;
+         if (obj && DoExpandItem(item, obj)) return;
 
-         while ((curr != null) && (obj != null)) {
-            if (('_expand' in curr) && (typeof curr._expand == 'function')) {
-               if (curr._expand(item, obj)) {
-                  item._isopen = true;
-                  is_ok = true;
-                  if (typeof hpainter.UpdateTreeNode == 'function')
-                     hpainter.UpdateTreeNode(item, d3cont);
-                  break;
-               }
-            }
-            curr = ('_parent' in curr) ? curr._parent : null;
-         }
-
-         if (!is_ok && (obj !== null)) {
-            if (JSROOT.Painter.ObjectHierarchy(item, obj)) {
-               item._isopen = true;
-               is_ok = true;
-               if (typeof hpainter.UpdateTreeNode == 'function')
-                  hpainter.UpdateTreeNode(item, d3cont);
-            }
-         }
-
-         JSROOT.CallBack(call_back, is_ok);
+         JSROOT.CallBack(call_back);
       });
 
    }
@@ -7771,7 +7768,7 @@
 
          if ('_doing_expand' in item) {
             h_get = true;
-            req  = 'h.json?compact=3';
+            req = 'h.json?compact=3';
          } else
          if ('_make_request' in item) {
             func = JSROOT.findFunction(item['_make_request']);
@@ -7828,6 +7825,22 @@
       itemreq.send(null);
    }
 
+   JSROOT.Painter.OnlineHierarchy = function(node, obj) {
+      // central function for expand of all online items
+
+      if ((obj != null) && (node != null) && ('_childs' in obj)) {
+         for (var n=0;n<obj._childs.length;++n)
+            if (obj._childs[n]._more || obj._childs[n]._childs)
+               obj._childs[n]._expand = JSROOT.Painter.OnlineHierarchy;
+
+         node._childs = obj._childs;
+         obj._childs = null;
+         return true;
+      }
+
+      return false;
+   }
+
    JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
       var painter = this;
 
@@ -7846,19 +7859,12 @@
             painter.GetOnlineItem(item, itemname, callback, option);
          }
 
-         painter.h._expand = function(node, obj) {
-            // central function for all expand
-
-            if ((obj != null) && (node != null) && ('_childs' in obj)) {
-               node._childs = obj._childs;
-               obj._childs = null;
-               return true;
-            }
-            return false;
-         }
+         painter.h._expand = JSROOT.Painter.OnlineHierarchy;
 
          var scripts = "", modules = "";
          painter.ForEach(function(item) {
+            if ('_childs' in item) item._expand = JSROOT.Painter.OnlineHierarchy;
+
             if ('_autoload' in item) {
                var arr = item._autoload.split(";");
                for (var n = 0; n < arr.length; ++n)
@@ -8617,8 +8623,8 @@
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
-   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true });
-   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf" });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
