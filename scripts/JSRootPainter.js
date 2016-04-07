@@ -6675,7 +6675,7 @@
          item._childs.push( {
             _name : chld.fName,
             _kind : "ROOT." + chld._typename,
-            _readobj : chld
+            _obj : chld
          });
       }
       return true;
@@ -6698,7 +6698,7 @@
          item._childs.push( {
             _name : chld.fName,
             _kind : "ROOT." + chld._typename,
-            _readobj : chld
+            _obj : chld
          });
       }
       return true;
@@ -7569,8 +7569,6 @@
 
       var hitem = this.Find(itemname);
 
-      // console.log('expand ',itemname,'hitem',hitem);
-
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
 
       // item marked as it cannot be expanded
@@ -8246,7 +8244,10 @@
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.default_by_click = "expand"; // that painter tries to do by default
       painter.with_icons = false;
-      painter.h = { _name : "Object", _title: "ROOT." + obj._typename, _click_action: "expand", _nosimple: false };
+      painter.h = { _name: "Object", _title: "ROOT." + obj._typename, _click_action: "expand", _nosimple: false };
+      if ((typeof obj.fName === 'string') && (obj.fName.length>0))
+         painter.h._name = obj.fName;
+
       JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);

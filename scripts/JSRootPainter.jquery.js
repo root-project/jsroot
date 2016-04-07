@@ -381,7 +381,6 @@
       if (node===null) return;
       var d3cont = d3.select(node.parentNode);
       var itemname = d3cont.attr('item');
-
       if (itemname == null) return;
 
       var hitem = this.Find(itemname);
@@ -415,6 +414,7 @@
             return this.player(itemname);
 
          var handle = JSROOT.getDrawHandle(hitem._kind);
+
          if (handle != null) {
             if ('aslink' in handle)
                return window.open(itemname + "/");
