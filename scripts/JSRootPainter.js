@@ -7121,11 +7121,11 @@
    JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent) {
       var res = "";
 
-      while ('_parent' in node) {
+      while (node && ('_parent' in node)) {
          if (res.length > 0) res = "/" + res;
          res = node._name + res;
          node = node._parent;
-         if ((uptoparent != null) && (node == uptoparent)) break;
+         if (uptoparent && (node === uptoparent)) break;
       }
 
       return res;
@@ -7176,7 +7176,6 @@
       });
    }
 
-
    JSROOT.HierarchyPainter.prototype.toggle = function(status, h) {
       var hitem = (h==null) ? this.h : h;
 
@@ -7208,12 +7207,12 @@
       var item = this.Find( { name: itemname, allow_index: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
-      var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true });
+      var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
 
       // if item not found, try to expand hierarchy central function
       // implements not process get in central method of hierarchy item (if exists)
       // if last_parent found, try to expand it
-      if ((d!=null) && ('last' in d) && (d.last!=null)) {
+      if ((d !== null) && ('last' in d) && (d.last !== null)) {
          var hpainter = this;
          var parentname = this.itemFullName(d.last);
 
@@ -7569,32 +7568,37 @@
       var hpainter = this;
 
       var hitem = this.Find(itemname);
-      if (hitem==null) return JSROOT.CallBack(call_back);
+
+      // console.log('expand ',itemname,'hitem',hitem);
+
+      if (!hitem && d3cont) return JSROOT.CallBack(call_back);
 
       // item marked as it cannot be expanded
-      if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
+      if (hitem) {
+         if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
 
-      if (!('_more' in hitem)) {
-         var handle = JSROOT.getDrawHandle(hitem._kind);
-         if ((handle!=null) && ('expand' in handle)) {
-            return JSROOT.AssertPrerequisites(handle.prereq, function() {
-               hitem._expand = JSROOT.findFunction(handle.expand);
-               if (typeof hitem._expand == 'function') {
-                  hitem._more = true; // use as workaround - not try to repeat same action
-                  hpainter.expand(itemname, call_back, d3cont);
-                  delete hitem._more;
-               }
-            });
+         if (!('_more' in hitem)) {
+            var handle = JSROOT.getDrawHandle(hitem._kind);
+            if ((handle!=null) && ('expand' in handle)) {
+               return JSROOT.AssertPrerequisites(handle.prereq, function() {
+                  hitem._expand = JSROOT.findFunction(handle.expand);
+                  if (typeof hitem._expand == 'function') {
+                     hitem._more = true; // use as workaround - not try to repeat same action
+                     hpainter.expand(itemname, call_back, d3cont);
+                     delete hitem._more;
+                  }
+               });
+            }
          }
+
+         hitem._doing_expand = true;
       }
 
       JSROOT.progress("Loading " + itemname);
 
-      hitem._doing_expand = true;
-
       this.get(itemname, function(item, obj) {
 
-         delete hitem._doing_expand;
+         if (hitem) delete hitem._doing_expand;
 
          JSROOT.progress();
 

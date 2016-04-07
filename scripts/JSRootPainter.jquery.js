@@ -171,7 +171,10 @@
          can_click = true;
 
       var can_menu = can_click;
-      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0)) can_menu = true;
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0)) {
+         can_menu = true;
+         can_click = true;
+      }
 
       if (img2.length==0) img2 = img1;
       if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
@@ -398,6 +401,8 @@
                this.UpdateTreeNode(hitem, d3cont);
          return;
       }
+
+      console.log('click ', itemname, place);
 
       // special feature - all items with '_expand' function are not drawn by click
       if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
