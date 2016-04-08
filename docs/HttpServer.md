@@ -72,7 +72,8 @@ For that one should use `%arg1`, `%arg2` and so on identifiers. Like:
 
     serv->RegisterCommand("/DoSomething","SomeFunction(%arg1%,%arg2%)");
 
-For instance, command which could execute arbitrary string in appliction via ProcessLine, looks like:
+User will be requested to enter arguments values, when command element clicked in the browser. 
+Example of the command which executes arbitrary string in appliction via ProcessLine looks like:
   
     serv->RegisterCommand("/Process","%arg1%");
 
