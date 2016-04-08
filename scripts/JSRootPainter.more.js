@@ -1305,6 +1305,7 @@
       JSROOT.TObjectPainter.call(this, graph);
       this.ownhisto = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
+      this.xmin = this.ymin = this.xmax = this.ymax = 0;
    }
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1415,7 +1416,7 @@
       this.bins = [];
 
       for (p=0;p<npoints;++p) {
-         var bin = { x : gr.fX[p], y : gr.fY[p] };
+         var bin = { x: gr.fX[p], y: gr.fY[p] };
          if (kind === 1) {
             bin.exlow = bin.exhigh = gr.fEX[p];
             bin.eylow = bin.eyhigh = gr.fEY[p];
@@ -1427,32 +1428,31 @@
             bin.eyhigh = gr.fEYhigh[p];
          }
          this.bins.push(bin);
+
+         if (p===0) {
+            this.xmin = this.xmax = bin.x;
+            this.ymin = this.ymax = bin.y;
+         }
+
+         if (kind > 0) {
+            this.xmin = Math.min(this.xmin, bin.x - bin.exlow, bin.x + bin.exhigh);
+            this.xmax = Math.max(this.xmax, bin.x - bin.exlow, bin.x + bin.exhigh);
+            this.ymin = Math.min(this.ymin, bin.y - bin.eylow, bin.y + bin.eyhigh);
+            this.ymax = Math.max(this.ymax, bin.y - bin.eylow, bin.y + bin.eyhigh);
+         } else {
+            this.xmin = Math.min(this.xmin, bin.x);
+            this.xmax = Math.max(this.xmax, bin.x);
+            this.ymin = Math.min(this.ymin, bin.y);
+            this.ymax = Math.max(this.ymax, bin.y);
+         }
+
       }
    }
 
    JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
       // bins should be created
 
-      var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
-
-      if (this.bins != null) {
-         xmin = xmax = this.bins[0].x;
-         ymin = ymax = this.bins[0].y;
-         for (var n = 0; n < this.bins.length; ++n) {
-            var pnt = this.bins[n];
-            if ('exlow' in pnt) {
-               xmin = Math.min(xmin, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
-               xmax = Math.max(xmax, pnt.x - pnt.exlow, pnt.x + pnt.exhigh);
-               ymin = Math.min(ymin, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
-               ymax = Math.max(ymax, pnt.y - pnt.eylow, pnt.y + pnt.eyhigh);
-            } else {
-               xmin = Math.min(xmin, pnt.x);
-               xmax = Math.max(xmax, pnt.x);
-               ymin = Math.min(ymin, pnt.y);
-               ymax = Math.max(ymax, pnt.y);
-            }
-         }
-      }
+      var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
@@ -2034,6 +2034,21 @@
 
       return false;
    }
+
+   JSROOT.TGraphPainter.prototype.ButtonClick = function(funcname) {
+
+      if (funcname !== "ToggleZoom") return false;
+
+      var main = this.main_painter();
+      if (main === null) return false;
+
+      if ((this.xmin===this.xmax) && (this.ymin = this.ymax)) return false;
+
+      main.Zoom(this.xmin, this.xmax, this.ymin, this.ymax);
+
+      return true;
+   }
+
 
    JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list

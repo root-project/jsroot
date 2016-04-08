@@ -5818,11 +5818,7 @@
 
    JSROOT.THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
-
       if (pp===null) return;
-
-      console.log('hist draw toolbar ', this.pad_name, 'pp', pp.this_pad_name );
-
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom');
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");
