@@ -65,8 +65,18 @@ One just register command like:
     serv->RegisterCommand("/DoSomething","SomeFunction()");
 
 Element with name `DoSomething` will appear in the web browser and can be clicked.
-It will result in `gROOT->ProcessLineSync("SomeFunction()")` call. When registering command,
-one could specify icon name which will be displayed with the command.
+It will result in `gROOT->ProcessLineSync("SomeFunction()")` call. 
+
+One could configure argument(s) for the command. 
+For that one should use `%arg1`, `%arg2` and so on identifiers. Like:   
+
+    serv->RegisterCommand("/DoSomething","SomeFunction(%arg1%,%arg2%)");
+
+For instance, command which could execute arbitrary string in appliction via ProcessLine, looks like:
+  
+    serv->RegisterCommand("/Process","%arg1%");
+
+When registering command, one could specify icon name which will be displayed with the command.
 
     serv->RegisterCommand("/DoSomething","SomeFunction()", "rootsys/icons/ed_execute.png");
 
@@ -75,7 +85,7 @@ string to the icon name to let browser show command as extra button. In last cas
 
     serv->Hide("/DoSomething");
 
-One can find example of command interface usage in [tutorials/http/httpcontrol.C](https://root.cern.ch/gitweb?p=root.git;a=blob_plain;f=tutorials/http/httpcontrol.C;hb=HEAD) macro.
+One can find example of command interface usage in [tutorials/http/httpcontrol.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpcontrol.C) macro.
 
 
 
@@ -362,6 +372,15 @@ It can be invoked with `cmd.json` request like:
     [shell] wget http://localhost:8080/Folder/Start/cmd.json -O result.txt
 
 If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution.
+
+If command definition include arguemnts: 
+
+    serv->RegisterCommand("/ResetCounter", "DoRest(%arg1%,%arg2%)");
+    
+One could specify them in the URL string:
+    
+    [shell] wget http://localhost:8080/ResetCounter/cmd.json?arg1=7&arg2=12 -O result.txt
+
 
 
 ### Performing multiple requests at once
