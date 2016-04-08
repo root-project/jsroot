@@ -12,9 +12,9 @@ To start the http server, at any time, create an instance of the [THttpServer](h
 
     serv = new THttpServer("http:8080");
 
-This will start a [civetweb](https://github.com/bel2125/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (IE9, Firefox, Chrome, Opera) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
+This will start a [civetweb](https://github.com/bel2125/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
 
-There is a [snapshot (frozen copy)](https://root.cern.ch/js/latest/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://root.cern.ch/gitweb?p=root.git;a=blob_plain;f=tutorials/http/httpserver.C;hb=HEAD) macro from ROOT tutorial.
+There is a [snapshot (frozen copy)](https://root.cern.ch/js/latest/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C) macro from ROOT tutorial.
 
 <iframe width="800" height="500" src="https://root.cern.ch/js/latest/httpserver.C/?layout=simple&item=Canvases/c1">
 </iframe>
@@ -374,9 +374,9 @@ It can be invoked with `cmd.json` request like:
 
 If command fails, `false` will be returned, otherwise result of gROOT->ProcessLineSync() execution.
 
-If command definition include arguemnts: 
+If command definition include arguments: 
 
-    serv->RegisterCommand("/ResetCounter", "DoRest(%arg1%,%arg2%)");
+    serv->RegisterCommand("/ResetCounter", "DoReset(%arg1%,%arg2%)");
     
 One could specify them in the URL string:
     
