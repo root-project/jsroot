@@ -3294,7 +3294,7 @@
       return isany;
    }
 
-   JSROOT.TPadPainter.prototype.ButtonClick = function(funcname) {
+   JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
 
       var elem = null, filename = "";
 
@@ -3330,9 +3330,19 @@
          return;
       }
 
-      for (var i = 0; i < this.painters.length; ++i)
-         if (typeof this.painters[i].ButtonClick == 'function')
-            this.painters[i].ButtonClick(funcname);
+      // click automatically goes to all sub-pads
+      // if any painter indicates that processing completed, it returns true
+      var done = false;
+
+      for (var i = 0; i < this.painters.length; ++i) {
+         var pp = this.painters[i];
+
+         if (typeof pp.PadButtonClick == 'function')
+            pp.PadButtonClick(funcname);
+
+         if ((typeof pp.ButtonClick == 'function') && !done)
+            done = pp.ButtonClick(funcname);
+      }
    }
 
    JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname) {
@@ -3377,7 +3387,7 @@
       svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
          .style("opacity","0").style("fill","none").style("pointer-events", "visibleFill");
 
-      svg.on("click", this.ButtonClick.bind(this, funcname));
+      svg.on("click", this.PadButtonClick.bind(this, funcname));
 
       group.property("nextx", x+this.ButtonSize(1.25));
 
@@ -5787,20 +5797,19 @@
          case "ToggleZoom":
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
                this.Unzoom();
-            } else
+               return true;
+            }
             if (this.draw_content && ('AutoZoom' in this) && (this.Dimension() < 3)) {
                this.AutoZoom();
-            } else {
-               return false;
+               return true;
             }
             break;
          case "ToggleLogX": this.ToggleLog("x"); break;
          case "ToggleLogY": this.ToggleLog("y"); break;
          case "ToggleLogZ": this.ToggleLog("z"); break;
-         case "ToggleStatBox": this.ToggleStat(); break;
-         default: return false;
+         case "ToggleStatBox": this.ToggleStat(); return true; break;
       }
-      return true;
+      return false;
    }
 
    JSROOT.THistPainter.prototype.FillToolbar = function() {
