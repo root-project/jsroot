@@ -44,11 +44,6 @@
          if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
             delete paths[module];
 
-      // add mapping if script loaded as bower module 'jsroot'
-//      if (cfg_paths  && ('jsroot' in cfg_paths))
-//           requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
-
-
       // configure all dependencies
       requirejs.config({
         paths: paths,
@@ -94,7 +89,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 7/04/2016";
+   JSROOT.version = "dev 8/04/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1433,14 +1428,6 @@
       }
 
       var src = JSROOT.source_fullpath;
-
-//      if (JSROOT.source_min) {
-//         if ( typeof define === "function" && define.amd ) {
-            // all references are done with 'JSRootCore' name,
-            // define it directly, otherwise it will be loaded once again
-//            define('JSRootCore', [], JSROOT);
-//         }
-//      }
 
       if (JSROOT.GetUrlOption('gui', src) !== null)
          return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );

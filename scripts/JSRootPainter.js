@@ -5784,8 +5784,16 @@
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
       if (this !== this.main_painter()) return false;
       switch(funcname) {
-         case "UnzoomAllAxis": this.Unzoom(); break;
-         case "AutoZoom": this.AutoZoom(); break;
+         case "ToggleZoom":
+            if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
+               this.Unzoom();
+            } else
+            if (this.draw_content && ('AutoZoom' in this) && (this.Dimension() < 3)) {
+               this.AutoZoom();
+            } else {
+               return false;
+            }
+            break;
          case "ToggleLogX": this.ToggleLog("x"); break;
          case "ToggleLogY": this.ToggleLog("y"); break;
          case "ToggleLogZ": this.ToggleLog("z"); break;
@@ -5799,9 +5807,7 @@
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.undo, 'Unzoom all axes', 'UnzoomAllAxis');
-      if (('AutoZoom' in this) && (this.Dimension() < 3))
-         pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, "Zoom into non-empty range", "AutoZoom");
+      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom');
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY");
       if (this.Dimension() > 1)
