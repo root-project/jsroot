@@ -2991,7 +2991,7 @@
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TPadPainter.prototype.ButtonSize = function(fact) {
-      return Math.round((!fact ? 1 : fact) * (this.iscan ? 16 : 12));
+      return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
    }
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -3340,7 +3340,7 @@
          if (typeof pp.PadButtonClick == 'function')
             pp.PadButtonClick(funcname);
 
-         if ((typeof pp.ButtonClick == 'function') && !done)
+         if (!done && (typeof pp.ButtonClick == 'function'))
             done = pp.ButtonClick(funcname);
       }
    }
@@ -3359,6 +3359,8 @@
       var x = group.property("nextx");
       if (x===undefined) x = 0;
 
+      var iscan = this.iscan || !this.has_canvas;
+
       var svg = group.append("svg:svg")
                      .attr("class", "svg_toolbar_btn")
                      .attr("name", funcname)
@@ -3369,7 +3371,7 @@
                      .attr("viewBox", "0 0 512 512")
                      .style("overflow","hidden");
 
-      svg.append("svg:title").text(tooltip + (this.iscan ? " " : (" on pad " + this.this_pad_name)));
+      svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)));
 
       if ('recs' in btn) {
          var rec = {};
@@ -3391,10 +3393,10 @@
 
       group.property("nextx", x+this.ButtonSize(1.25));
 
-      if (!this.iscan)
+      if (!iscan)
          group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx')-this.ButtonSize(0.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
 
-      if (!this.iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this))
+      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this))
          this.pad_painter().AddButton(btn, tooltip, funcname);
    }
 
@@ -3422,8 +3424,10 @@
 
       painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
 
-      if (painter.svg_canvas().empty())
+      if (painter.svg_canvas().empty()) {
          painter.has_canvas = false;
+         painter.this_pad_name = "";
+      }
 
       painter.CreatePadSvg();
 
@@ -5814,7 +5818,11 @@
 
    JSROOT.THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
+
       if (pp===null) return;
+
+      console.log('hist draw toolbar ', this.pad_name, 'pp', pp.this_pad_name );
+
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom');
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");

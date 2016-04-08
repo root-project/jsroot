@@ -2642,6 +2642,7 @@
          default: return false;
       }
 
+      // all methods here should not be processed further
       return true;
    }
 
