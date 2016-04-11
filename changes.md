@@ -3,7 +3,7 @@
 ## Changes in 4.4.2
 1. Fix - statistic collection for TH2
 2. Fix - correct handling of empty TList in browser/inspector
-3. Fix - support TFolder in browser/inspector 
+3. Fix - support TFolder in browser/inspector (#40)
 
 
 ## Changes in 4.4.1
