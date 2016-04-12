@@ -3847,7 +3847,11 @@
 
       // if (hdim > 1) option.Scat = 1;  // default was scatter plot
 
-      if ((hdim===1) && (this.histo.fSumw2.length > 0)) option.Error = 2;
+      // use error plot only when any sumw2 bigger than 0
+      if ((hdim===1) && (this.histo.fSumw2.length > 0))
+         for (var n=0;n<this.histo.fSumw2.length;++n)
+            if (this.histo.fSumw2[n] > 0) { option.Error = 2; break; }
+
       if (this.histo.fFunctions !== null) option.Func = 1;
 
       var i = chopt.indexOf('PAL');
@@ -8460,7 +8464,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";P;P0;E;E1;E2;same"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";HIST;P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });

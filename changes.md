@@ -4,6 +4,7 @@
 1. Fix - wrong selection of TH1 Y axis range when errors are displayed (#44) 
 2. Fix - apply user range for TH1 X-axis zooming (#44)   
 3. Fix - protect against patalogic case of 1-bin histogram
+4. Fix - use error plot by default in TH1 only when positive sumw2 entry exists
 
 
 ## Changes in 4.4.2
