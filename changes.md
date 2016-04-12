@@ -5,7 +5,7 @@
 2. Implement scaling factor like x10^3 on the vertical axes 
 3. Zooming with mouse wheel
 4. Support browsing of TTask and derived classes (#40)
-5. Apply user range for drawing TH1/TH2 histograms 
+5. Apply user range for drawing TH1/TH2 histograms, also when superimposed 
  
 
 ## Changes in 4.4

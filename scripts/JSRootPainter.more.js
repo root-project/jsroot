@@ -2860,6 +2860,23 @@
 
       // used to enable/disable stat box
       this.draw_content = this.gmaxbin > 0;
+
+      // apply selected user X range if no other range selection was done
+      if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
+          (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
+          ((this.histo.fXaxis.fFirst>1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
+         this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
+         this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
+      }
+
+      // apply selected user Y range if no other range selection was done
+      if (this.is_main_painter() && (this.zoom_ymin === this.zoom_ymax) &&
+          (this.histo.fYaxis.fFirst !== this.histo.fYaxis.fLast) &&
+          ((this.histo.fYaxis.fFirst>1) || (this.histo.fYaxis.fLast <= this.nbinsy))) {
+         this.zoom_ymin = this.histo.fYaxis.fFirst > 1 ? this.GetBinY(this.histo.fYaxis.fFirst-1) : this.ymin;
+         this.zoom_ymax = this.histo.fYaxis.fLast <= this.nbinsy ? this.GetBinY(this.histo.fYaxis.fLast) : this.ymax;
+      }
+
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
