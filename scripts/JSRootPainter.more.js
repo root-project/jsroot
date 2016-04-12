@@ -1029,7 +1029,13 @@
 
          if (this.bins.length > 2) {
 
-            var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h, 2);
+            var h0 = h;  // use maximal frame height for filling
+            if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
+               h0 = Math.round(pmain.gry(0));
+               if ((h0 > h) || (h0 < 0)) h0 = h;
+            }
+
+            var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
 
             if (this.lineatt.color != "none")
                this.draw_g.append("svg:path")
