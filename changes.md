@@ -6,6 +6,7 @@
 3. Zooming with mouse wheel
 4. Support browsing of TTask and derived classes (#40)
 5. Apply user range for drawing TH1/TH2 histograms, also when superimposed 
+6. Implement simple drawing for TBox,TWbox,TSliderBox classes
  
 
 ## Changes in 4.4

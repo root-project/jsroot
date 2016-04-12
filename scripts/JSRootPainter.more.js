@@ -620,7 +620,7 @@
       this.SetDivId(divid);
 
       this.Redraw = function() {
-         var line = this.GetObbject(),
+         var line = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(line);
 
          // create svg:g container for line drawing
@@ -633,6 +633,40 @@
              .attr("x2", this.AxisToSvg("x", line.fX2).toFixed(1))
              .attr("y2", this.AxisToSvg("y", line.fY2).toFixed(1))
              .call(lineatt.func);
+      }
+
+      this.Redraw(); // actual drawing
+
+      return this.DrawingReady();
+   }
+
+   // =============================================================================
+
+   JSROOT.Painter.drawBox = function(divid, obj, opt) {
+
+      this.SetDivId(divid);
+
+      this.Redraw = function() {
+         var box = this.GetObject(),
+             lineatt = JSROOT.Painter.createAttLine(box),
+             fillatt = this.createAttFill(box);
+
+         // create svg:g container for line drawing
+         this.RecreateDrawG(this.main_painter() == null);
+
+         var x1 = Math.round(this.AxisToSvg("x", box.fX1)),
+             x2 = Math.round(this.AxisToSvg("x", box.fX2)),
+             y1 = Math.round(this.AxisToSvg("y", box.fY1)),
+             y2 = Math.round(this.AxisToSvg("y", box.fY2));
+
+         this.draw_g
+             .append("svg:rect")
+             .attr("x", Math.min(x1,x2))
+             .attr("y", Math.min(y1,y2))
+             .attr("width", Math.abs(x2-x1))
+             .attr("height", Math.abs(y1-y2))
+             .call(lineatt.func)
+             .call(fillatt.func);
       }
 
       this.Redraw(); // actual drawing
