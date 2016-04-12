@@ -5879,6 +5879,9 @@
 
       this.CreateAxisFuncs(false);
 
+      this.hmin = hmin;
+      this.hmax = hmax;
+
       this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
@@ -6253,8 +6256,11 @@
          }
       }
 
-      if (this.fillatt.color !== 'none')
-         res += "L"+currx+","+(height+3) + "L"+startx+","+(height+3) + "Z";
+      if (this.fillatt.color !== 'none') {
+         var h0 = (height+3);
+         if ((this.hmin>=0) && (pmain.gry(0) < height)) h0 = Math.round(pmain.gry(0));
+         res += "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
+      }
 
       if (draw_markers) {
 
@@ -6424,7 +6430,13 @@
          if (show_rect) {
             // for mouse events mouse pointer should be under the curve
             if ((pnt.y < gry1) && !pnt.touch) findbin = null;
+
             gry2 = height;
+
+            if ((this.fillatt.color !== 'none') && (this.hmin>=0)) {
+               gry2 = Math.round(pmain.gry(0));
+               if ((gry2 > height) || (gry2 <= gry1)) gry2 = height;
+            }
          }
       }
 
