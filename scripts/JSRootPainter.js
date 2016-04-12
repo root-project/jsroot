@@ -5080,10 +5080,20 @@
          indx = (size == "left") ? 0 : nbin;
       }
 
+      var taxis; // TAxis object of histogram, where user range can be stored
+      if ((obj!==this) && this.histo) {
+         taxis = this.histo["f" + axis.toUpperCase() + "axis"];
+         if (taxis) {
+            if ((taxis.fFirst === taxis.fLast) || ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
+         }
+      }
+
       if (size == "left") {
          if (indx < 0) indx = 0;
+         if (taxis && taxis.fFirst>1 && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
       } else {
          if (indx > nbin) indx = nbin;
+         if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
       }
 
       return indx;
@@ -5796,7 +5806,7 @@
    }
 
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
-      if (this !== this.main_painter()) return false;
+      if (!this.is_main_painter()) return false;
       switch(funcname) {
          case "ToggleZoom":
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
@@ -6164,8 +6174,9 @@
 
          grx = Math.round(pmain.grx(x));
 
-         if (i === right) {
-            lastbin = true;
+         lastbin = (i === right);
+
+         if (lastbin && (left<right)) {
             gry = curry;
          } else {
             y = this.histo.getBinContent(i+1);
@@ -6256,7 +6267,7 @@
          }
       }
 
-      if (this.fillatt.color !== 'none') {
+      if ((this.fillatt.color !== 'none') && (res.length>0)) {
          var h0 = (height+3);
          if ((this.hmin>=0) && (pmain.gry(0) < height)) h0 = Math.round(pmain.gry(0));
          res += "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
@@ -6280,14 +6291,13 @@
                 .style("fill", marker.fill)
                 .style("stroke", marker.stroke);
 
-      } else {
-
+      } else
+      if (res.length > 0) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
-
       }
    }
 
