@@ -3629,14 +3629,12 @@
             dgrx = zdiff * xfactor * ww;
             dgry = zdiff * yfactor * hh;
 
-            ww = Math.round(ww - 2*dgrx);
-            hh = Math.round(hh - 2*dgry);
+            ww = Math.max(Math.round(ww - 2*dgrx), 1);
+            hh = Math.max(Math.round(hh - 2*dgry), 1);
 
-            if ((ww > 0) && (hh > 0)) {
-               if (colPaths[i]===undefined) colPaths[i] = "";
-               colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
-                              "v" + hh + "h" + ww + "v-" + hh + "z";
-            }
+            if (colPaths[i]===undefined) colPaths[i] = "";
+            colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
+                           "v" + hh + "h" + ww + "v-" + hh + "z";
          }
       }
 
