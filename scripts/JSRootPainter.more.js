@@ -620,7 +620,7 @@
       this.SetDivId(divid);
 
       this.Redraw = function() {
-         var line = this.GetObbject(),
+         var line = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(line);
 
          // create svg:g container for line drawing
