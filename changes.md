@@ -2,6 +2,7 @@
 
 ## Changes in 4.4.x
 1. Fix - wrong selection of TH1 Y axis range when errors are displayed (#44) 
+2. Fix - apply user range for TH1 X-axis zooming (#44)   
 
 
 ## Changes in 4.4.2
