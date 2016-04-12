@@ -11,7 +11,7 @@ In most practical cases it is not necessary to install JSROOT on the local compu
 
 In rare cases one need to install JSROOT on separate web server - for such case one could use provided packages from <https://github.com/linev/jsroot/releases>. 
 
-One could use JSROOT directly from local file system. If source code was unpacked in `/home/user/jsroot/` subfolder, one could just open it in broser with <file:///home/user/jsroot/index.htm> address.
+One could use JSROOT directly from local file system. If source code was unpacked in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
 
 
 
