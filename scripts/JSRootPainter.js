@@ -5183,6 +5183,27 @@
       this.DrawNextFunction(indx+1, callback);
    }
 
+   JSROOT.THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
+
+      if (!this.histo) return false;
+
+      function UnzoomTAxis(obj) {
+         if (!obj) return false;
+         if (obj.fFirst === obj.fLast) return false;
+         if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
+         obj.fFirst = obj.fLast = 0;
+         return true;
+      }
+
+      var res = false;
+
+      if (dox) res |= UnzoomTAxis(this.histo.fXaxis);
+      if (doy) res |= UnzoomTAxis(this.histo.fYaxis);
+      if (doz) res |= UnzoomTAxis(this.histo.fZaxis);
+
+      return res;
+   }
+
    JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
       var obj = this.main_painter();
       if (!obj) obj = this;
@@ -5204,7 +5225,21 @@
          if (obj.zoom_zmin !== obj.zoom_zmax) changed = true;
          obj.zoom_zmin = obj.zoom_zmax = 0;
       }
+
+      // first try to unzoom main painter - it could have user range specified
+      changed |= obj.UnzoomUserRange(dox, doy, doz);
+
+      // than try to unzoom all overlapped objects
+      var pp = this.pad_painter(true);
+      if (!changed && pp && pp.painters)
+         pp.painters.forEach(function(paint){
+            if (paint && (typeof paint.UnzoomUserRange == 'function'))
+               if (paint.UnzoomUserRange(dox, doy, doz)) changed = true;
+         });
+
       if (changed) this.RedrawPad();
+
+      return changed;
    }
 
    JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
