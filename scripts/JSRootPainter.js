@@ -3402,6 +3402,8 @@
 
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
       var painter = new JSROOT.TPadPainter(can, true);
+      if (can && opt && (opt.indexOf("white")>=0)) can.fFillColor = 0;
+
       painter.SetDivId(divid, -1); // just assign id
       painter.CheckColors(can);
       painter.CreateCanvasSvg(0);
@@ -3419,8 +3421,10 @@
       return painter;
    }
 
-   JSROOT.Painter.drawPad = function(divid, pad) {
+   JSROOT.Painter.drawPad = function(divid, pad, opt) {
       var painter = new JSROOT.TPadPainter(pad, false);
+
+      if (pad && opt && (opt.indexOf("white")>=0)) pad.fFillColor = 0;
 
       painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
 
