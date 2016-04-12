@@ -5990,8 +5990,9 @@
 
          grx = Math.round(pmain.grx(x));
 
-         if (i === right) {
-            lastbin = true;
+         lastbin = (i === right);
+
+         if (lastbin && (left < right)) {
             gry = curry;
          } else {
             y = this.histo.getBinContent(i+1);
@@ -6085,7 +6086,7 @@
          }
       }
 
-      if (this.fillatt.color !== 'none') {
+      if ((this.fillatt.color !== 'none') && (res.length > 0)) {
          res+="L"+currx+","+(height+3);
          res+="L"+startx+","+(height+3);
          res+="Z";
@@ -6117,11 +6118,12 @@
          return;
       }
 
-      this.draw_g.append("svg:path")
-                 .attr("d", res)
-                 .style("stroke-linejoin","miter")
-                 .call(this.lineatt.func)
-                 .call(this.fillatt.func);
+      if (res.length > 0)
+         this.draw_g.append("svg:path")
+                    .attr("d", res)
+                    .style("stroke-linejoin","miter")
+                    .call(this.lineatt.func)
+                    .call(this.fillatt.func);
 
       if ((JSROOT.gStyle.Tooltip === 1) && (bins!==null))
          this.draw_g.selectAll("rect")
