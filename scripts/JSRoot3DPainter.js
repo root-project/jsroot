@@ -1079,7 +1079,8 @@
       for (var n=0; n<cnt; n+=step) {
          var bin = new THREE.Mesh(geom, material.clone());
          bin.position.set( main.tx(poly.fP[n]), main.ty(poly.fP[n+1]), main.tz(poly.fP[n+2]) );
-         bin.name =  poly.fName;
+         bin.name = (poly.fName !== "TPolyMarker3D") ? (poly.fName + ": ") : ("bin " + n/3 + ": ");
+         bin.name += main.x_handle.format(poly.fP[n]) + "," + main.y_handle.format(poly.fP[n+1]) + "," + main.z_handle.format(poly.fP[n+2]);
          main.toplevel.add(bin);
       }
 

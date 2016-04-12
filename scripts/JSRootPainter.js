@@ -4577,7 +4577,7 @@
       var min = pad.fUxmin, max = pad.fUxmax;
 
       // first check that non-default values are there
-      if ((min !== 0) || (max !== 1)) {
+      if ((this.Dimension() < 3) && ((min !== 0) || (max !== 1))) {
          if (pad.fLogx > 0) {
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
@@ -4593,7 +4593,7 @@
 
       min = pad.fUymin; max = pad.fUymax;
 
-      if ((this.Dimension() > 1) && ((min !== 0) || (max !== 1))) {
+      if ((this.Dimension() == 2) && ((min !== 0) || (max !== 1))) {
          if (pad.fLogy > 0) {
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
@@ -5092,7 +5092,8 @@
       if ((obj!==this) && this.histo) {
          taxis = this.histo["f" + axis.toUpperCase() + "axis"];
          if (taxis) {
-            if ((taxis.fFirst === taxis.fLast) || ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
+            if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
+                ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
          }
       }
 
@@ -5197,9 +5198,10 @@
 
       function UnzoomTAxis(obj) {
          if (!obj) return false;
+         if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
          if (obj.fFirst === obj.fLast) return false;
          if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
-         obj.fFirst = obj.fLast = 0;
+         obj.InvertBit(JSROOT.EAxisBits.kAxisRange);
          return true;
       }
 
@@ -5980,6 +5982,7 @@
 
       // apply selected user range if no other range selection was done
       if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
+          this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange) &&
           (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
           ((this.histo.fXaxis.fFirst>1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
          this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
