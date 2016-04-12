@@ -5651,8 +5651,9 @@
          this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
       }
 
-      // apply selected user range
-      if ((this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
+      // apply selected user range if no other range selection was done
+      if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
+          (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
           ((this.histo.fXaxis.fFirst>1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
          this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
          this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
