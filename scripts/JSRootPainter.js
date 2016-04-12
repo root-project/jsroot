@@ -5586,14 +5586,17 @@
       this.nbinsy = 0;
 
       for (var i = 0; i < this.nbinsx; ++i) {
-         var value = this.histo.getBinContent(i + 1);
+         var value = this.histo.getBinContent(i + 1), err = 0;
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
          if (value > 0)
             if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
-         if (this.options.Error > 0) value += this.histo.getBinError(i + 1);
-         if (i == 0) hmin = hmax = value;
-         if (value < hmin) hmin = value; else
-         if (value > hmax) hmax = value;
+         if (this.options.Error > 0) err = this.histo.getBinError(i + 1);
+         if (i == 0) {
+            hmin = value - err; hmax = value + err;
+         } else {
+            hmin = Math.min(hmin, value - err);
+            hmax = Math.max(hmax, value + err);
+         }
       }
 
       // account overflow/underflow bins

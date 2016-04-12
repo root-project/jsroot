@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 4.4.x
+1. Fix - wrong selection of TH1 Y axis range when errors are displayed (#44) 
+
+
 ## Changes in 4.4.2
 1. Fix - statistic collection for TH2
 2. Fix - correct handling of empty TList in browser/inspector
