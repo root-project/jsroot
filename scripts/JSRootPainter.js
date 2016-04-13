@@ -244,7 +244,12 @@
 
    JSROOT.Painter.MakeColorRGB = function(col) {
       if ((col==null) || (col._typename != 'TColor')) return null;
-      var rgb = "rgb(" + (col.fRed*255).toFixed(0) + "," + (col.fGreen*255).toFixed(0) + "," + (col.fBlue*255).toFixed(0) + ")";
+      var rgb = Math.round(col.fRed*255) + "," + Math.round(col.fGreen*255) + "," + Math.round(col.fBlue*255);
+      if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
+         rgb = "rgb(" + rgb + ")";
+      else
+         rgb = "rgba(" + rgb + "," + col.fAlpha.toFixed(3) + ")";
+
       switch (rgb) {
          case 'rgb(255,255,255)' : rgb = 'white'; break;
          case 'rgb(0,0,0)' : rgb = 'black'; break;
