@@ -6,6 +6,7 @@
 3. Fix - protect against patalogic case of 1-bin histogram
 4. Fix - use error plot by default in TH1 only when positive sumw2 entry exists
 5. Fix - for TH2 box draw option draw at least 1px rect for non-empty bin
+6. Fix - support transparancy (alpha) in TColor (#45)
 
 
 ## Changes in 4.4.2
