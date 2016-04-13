@@ -2216,6 +2216,7 @@
 
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
+      this.tooltip_enabled = true;
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2397,9 +2398,11 @@
       return ! (this.svg_pad().select(".stat_layer").select(".objects_hints").empty());
    }
 
-   JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt) {
+   JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
 
-      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 1)) pnt = null;
+      if (enabled !== undefined) this.tooltip_enabled = enabled;
+
+      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 1) || !this.tooltip_enabled) pnt = null;
 
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
@@ -5339,10 +5342,9 @@
       JSROOT.Painter.closeMenu();
       if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
-      if (this.disable_tooltip) {
-         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.disable_tooltip = false;
-      }
+
+      // enable tooltip in frame painter
+      this.frame_painter().ProcessTooltipEvent(null, true);
    }
 
    JSROOT.THistPainter.prototype.mouseDoubleClick = function() {
@@ -5391,11 +5393,8 @@
 
       this.zoom_rect = null;
 
-      if (JSROOT.gStyle.Tooltip > 0) {
-         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.frame_painter().ProcessTooltipEvent(null);
-         this.disable_tooltip = true;
-      }
+      // disable tooltips in frame painter
+      this.frame_painter().ProcessTooltipEvent(null, false);
 
       d3.event.stopPropagation();
    }
@@ -5539,11 +5538,7 @@
          this.zoom_kind = 101; // x and y
       }
 
-      if (JSROOT.gStyle.Tooltip > 0) {
-         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.frame_painter().ProcessTooltipEvent(null);
-         this.disable_tooltip = true;
-      }
+      this.frame_painter().ProcessTooltipEvent(null, false);
 
       this.zoom_rect = this.svg_frame().append("rect")
             .attr("class", "zoom")
@@ -5584,12 +5579,9 @@
                      .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
                      .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
 
-      if ((JSROOT.gStyle.Tooltip>0) && ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
-                || (this.zoom_origin[1] - this.zoom_curr[1] > 10))) {
-         JSROOT.gStyle.Tooltip = -JSROOT.gStyle.Tooltip;
-         this.frame_painter().ProcessTooltipEvent(null);
-         this.disable_tooltip = true;
-      }
+      if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+           || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
+         this.frame_painter().ProcessTooltipEvent(null, false);
 
       d3.event.stopPropagation();
    }
@@ -5707,7 +5699,6 @@
       this.last_touch = new Date(0);
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
-      this.disable_tooltip = false;
       this.zoom_origin = null;  // original point where zooming started
       this.zoom_curr = null;    // current point for zomming
       this.touch_cnt = 0;
@@ -6615,7 +6606,6 @@
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
-      // this.AddInteractive();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
