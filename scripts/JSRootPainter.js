@@ -1675,6 +1675,8 @@
          drag_rect.remove();
          drag_rect = null;
 
+         pthis.frame_painter().ProcessTooltipEvent(null, true);
+
          resize_corner2.attr("transform", "translate(" + newwidth + "," + newheight + ")");
 
          if (change_size || change_pos) {
@@ -1700,6 +1702,8 @@
             if (detectRightButton(d3.event.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
+
+            pthis.frame_painter().ProcessTooltipEvent(null, false); // disable tooltip
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -1758,6 +1762,8 @@
 
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
+
+           pthis.frame_painter().ProcessTooltipEvent(null, false); // disable tooltip
 
            acc_x = 0; acc_y = 0;
            pad_w = pthis.pad_width();
