@@ -1833,18 +1833,13 @@
                        .attr("d", path)
                        .style("fill", marker.fill)
                        .style("stroke", marker.stroke);
-            if (nodes===null)
+            if ((nodes===null) && (this.draw_kind=="none"))
                this.draw_kind = (this.optionMark==3) ? "path" : "mark";
          }
       }
-
-      delete this.ProcessTooltip;
-
-      if (JSROOT.gStyle.Tooltip > 0)
-         this.ProcessTooltip = this.ProcessTooltipFunc;
    }
 
-   JSROOT.TGraphPainter.prototype.ProcessTooltipFunc = function(pnt) {
+   JSROOT.TGraphPainter.prototype.ProcessTooltip = function(pnt) {
       if (pnt === null) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
