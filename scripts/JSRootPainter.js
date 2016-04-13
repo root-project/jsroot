@@ -420,6 +420,10 @@
 
       if ((_width==0) || (color==0)) line.color = 'none';
 
+      // if custom color number used, use lightgrey color to show lines
+      if ((line.color === undefined) && (color>0))
+         line.color = 'lightgrey';
+
       line.SetLine = function(selection) {
          selection.style('stroke', this.color);
          if (this.color!='none') {
