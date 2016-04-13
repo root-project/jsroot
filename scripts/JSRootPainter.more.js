@@ -1844,7 +1844,7 @@
                        .attr("d", path)
                        .style("fill", marker.fill)
                        .style("stroke", marker.stroke);
-            if (nodes===null)
+            if ((nodes===null) && (this.draw_kind=="none"))
                this.draw_kind = (this.optionMark==3) ? "path" : "mark";
          }
       }
