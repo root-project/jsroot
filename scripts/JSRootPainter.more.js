@@ -3969,8 +3969,6 @@
 
       this.DrawTitle();
 
-      this.AddInteractive();
-
       JSROOT.CallBack(call_back);
    }
 
@@ -4037,6 +4035,7 @@
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
             if (this.options.Lego == 0) {
+               this.AddInteractive();
                if (this.options.AutoZoom) this.AutoZoom();
             }
             this.CreateToolbar();

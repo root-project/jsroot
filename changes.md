@@ -8,6 +8,7 @@
 5. Fix - for TH2 box draw option draw at least 1px rect for non-empty bin
 6. Fix - support transparancy (alpha) in TColor (#45)
 7. Fix - correct tooltip handling for graphs with lines and markers
+8. Fix - interactive zooming in TH2 when doing histogram update  
 
 
 ## Changes in 4.4.2
