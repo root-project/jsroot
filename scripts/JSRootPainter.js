@@ -281,9 +281,9 @@
       }
    }
 
-   JSROOT.Painter.root_line_styles = new Array("", "", "3, 3", "1, 2",
-         "3, 4, 1, 4", "5, 3, 1, 3", "5, 3, 1, 3, 1, 3, 1, 3", "5, 5",
-         "5, 3, 1, 3, 1, 3", "20, 5", "20, 10, 1, 10", "1, 2");
+   JSROOT.Painter.root_line_styles = new Array("", "", "3,3", "1,2",
+         "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
+         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,2");
 
    // Initialize ROOT markers
    JSROOT.Painter.root_markers = new Array(
@@ -428,7 +428,8 @@
          selection.style('stroke', this.color);
          if (this.color!='none') {
             selection.style('stroke-width', this.width);
-            selection.style('stroke-dasharray', this.dash);
+            if (this.dash && (this.dash.length>0))
+               selection.style('stroke-dasharray', this.dash);
          }
       }
       line.func = line.SetLine.bind(line);
@@ -5760,7 +5761,7 @@
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
 
-            if ((pnt!==null) && (pp !== null)) {
+            if ((pnt !== null) && (pp !== null)) {
                pnt.painters = true; // assign painter for every tooltip
                var hints = pp.GetTooltips(pnt);
                for (var n=0;n<hints.length;++n)
@@ -5772,9 +5773,6 @@
          }
       }
 
-      // suppress any running zomming
-      this.clearInteractiveElements();
-
       // one need to copy event, while after call back event may be changed
       menu_painter.ctx_menu_evnt = evnt;
 
@@ -5782,6 +5780,8 @@
          // after menu creation 'this' bind to painter
          menu.painter = this;
          this.FillContextMenu(menu, kind, obj);
+         // suppress any running zomming
+         this.clearInteractiveElements();
          this.SwitchTooltip(false);
          menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          delete this.ctx_menu_evnt; // delete temporary variable
@@ -5870,8 +5870,20 @@
       for (var n=1;n<10;++n)
          menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
       menu.add("endsub:");
-      menu.add("color", function() { console.log('change color'); });
-      menu.add("style", function() { console.log('change style'); });
+
+      menu.add("sub:color", function() { console.log('change color'); });
+      for (var n=1;n<8;++n) {
+         var col = JSROOT.Painter.root_colors[n];
+         menu.addchk((this.lineatt.color==col), col, col, function(arg) { this.lineatt.color = arg; this.Redraw(); });
+      }
+      menu.add("endsub:");
+
+      menu.add("sub:style", function() { console.log('change style'); });
+      for (var n=1;n<12;++n) {
+         var style = JSROOT.Painter.root_line_styles[n];
+         menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); });
+      }
+      menu.add("endsub:");
       menu.add("endsub:");
 
       menu.add("sub:Fill att");
