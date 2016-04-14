@@ -1115,11 +1115,12 @@
          d3.selectAll(this.draw_g.node().childNodes).remove();
       } else
       if (take_pad) {
-         if (typeof layer != 'string') layer = ".text_layer";
+         if (typeof layer != 'string') layer = "text_layer";
          if (layer.charAt(0) == ".") layer = layer.substr(1);
          this.draw_g = this.svg_layer(layer).append("svg:g");
       } else {
          if (typeof layer != 'string') layer = ".main_layer";
+         if (layer.charAt(0) != ".") layer = "." + layer;
          this.draw_g = this.svg_frame().select(layer).append("svg:g");
       }
 
@@ -2652,7 +2653,7 @@
           lwidth = pt.fBorderSize;
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true, this.IsStats() ? ".stat_layer" : ".text_layer");
+      this.RecreateDrawG(true, this.IsStats() ? "stat_layer" : "text_layer");
 
       // position and size required only for drag functions
       this.draw_g
@@ -3980,7 +3981,7 @@
 
       this.SetAxisConfig(name, kind, func, min, max, min, max);
 
-      this.RecreateDrawG(true, ".text_layer");
+      this.RecreateDrawG(true, "text_layer");
 
       this.DrawAxis(this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
@@ -6188,7 +6189,7 @@
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
 
-      this.RecreateDrawG(false, ".main_layer");
+      this.RecreateDrawG(false, "main_layer");
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
@@ -6694,7 +6695,7 @@
             if (text.fTextColor === 0) text.fTextColor = 1;
          }
 
-         this.RecreateDrawG(use_pad, use_pad ? ".text_layer" : ".upper_layer");
+         this.RecreateDrawG(use_pad, use_pad ? "text_layer" : "upper_layer");
 
          if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
          if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }

@@ -1038,7 +1038,7 @@
 
          var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
 
-         this.RecreateDrawG(false, ".main_layer");
+         this.RecreateDrawG(false, "main_layer");
 
          // recalculate drawing bins when necessary
          this.bins = this.CreateBins(false);
@@ -1572,7 +1572,7 @@
 
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG(false, ".main_layer");
+      this.RecreateDrawG(false, "main_layer");
 
       var pthis = this,
           pmain = this.main_painter(),
@@ -3628,7 +3628,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG(false, ".main_layer");
+      this.RecreateDrawG(false, "main_layer");
 
       var w = this.frame_width(), h = this.frame_height();
 
