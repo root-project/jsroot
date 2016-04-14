@@ -7682,7 +7682,7 @@
                _item._isopen = true;
                if (typeof hpainter.UpdateTreeNode == 'function')
                   hpainter.UpdateTreeNode(_item, d3cont);
-               JSROOT.CallBack(call_back, true);
+               JSROOT.CallBack(call_back, _item);
                return true;
             }
          }
@@ -7703,7 +7703,7 @@
             _item._isopen = true;
             if (typeof hpainter.UpdateTreeNode == 'function')
                hpainter.UpdateTreeNode(_item, d3cont);
-            JSROOT.CallBack(call_back, true);
+            JSROOT.CallBack(call_back, _item);
             return true;
          }
 
