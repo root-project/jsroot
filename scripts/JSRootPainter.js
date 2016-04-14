@@ -283,7 +283,7 @@
 
    JSROOT.Painter.root_line_styles = new Array("", "", "3,3", "1,2",
          "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
-         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,2");
+         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3");
 
    // Initialize ROOT markers
    JSROOT.Painter.root_markers = new Array(
@@ -5879,7 +5879,7 @@
       menu.add("endsub:");
 
       menu.add("sub:style", function() { console.log('change style'); });
-      for (var n=1;n<12;++n) {
+      for (var n=1;n<11;++n) {
          var style = JSROOT.Painter.root_line_styles[n];
          menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); });
       }
@@ -6234,8 +6234,8 @@
          show_markers = true;
 
       if (this.options.Error == 12) {
-         if (this.fillatt.func=='none') show_markers = true;
-                                   else path_fill = "";
+         if (this.fillatt.color=='none') show_markers = true;
+                                    else path_fill = "";
       } else
       if (this.options.Error > 0) path_err = "";
 

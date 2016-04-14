@@ -2859,10 +2859,11 @@
    JSROOT.TH2Painter.prototype.ScanContent = function() {
       var i,j,histo = this.GetObject();
 
-      this.fillcolor = JSROOT.Painter.root_colors[histo.fFillColor];
+      this.fillatt = this.createAttFill(histo);
+      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
       this.lineatt = JSROOT.Painter.createAttLine(histo);
-      if (this.lineatt.color == 'none') this.lineatt.color = '#4572A7';
+      if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
       this.nbinsx = histo.fXaxis.fNbins;
       this.nbinsy = histo.fYaxis.fNbins;
@@ -3506,9 +3507,9 @@
         if (colPaths[i] !== undefined)
            this.draw_g.append("svg:path")
                       .attr("hist-column", i)
-                      .attr("fill", this.fillcolor)
+                      .attr("d", colPaths[i])
                       .call(this.lineatt.func)
-                      .attr("d", colPaths[i]);
+                      .call(this.fillatt.func);
 
       return handle;
    }
@@ -3607,7 +3608,7 @@
            }
 
            var color = this.lineatt.color;
-           if (color === 'none') color = this.fillcolor;
+           if (color === 'none') color = this.fillatt.color;
            if (color === 'none') color = 'black';
 
            pattern.attr("width", cell_w[colindx])
@@ -3710,7 +3711,7 @@
       }
 
       var res = { x: pnt.x, y: pnt.y,
-                 color1: this.lineatt.color, color2: this.fillcolor,
+                 color1: this.lineatt.color, color2: this.fillatt.color,
                  lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
