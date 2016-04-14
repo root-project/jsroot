@@ -88,17 +88,21 @@
       menu.remove = function() {
          if (this.element!==null) {
             this.element.remove();
+            if (this.close_callback) this.close_callback();
          }
          this.element = null;
       }
 
-      menu.show = function(event) {
+      menu.show = function(event, close_callback) {
          this.remove();
 
-         document.body.onclick = function(e) { menu.remove(); }
+         if (typeof close_callback == 'function') this.close_callback = close_callback;
+
+         document.body.onclick = menu.remove.bind(menu);
 
          this.element = $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>')
                                         .find('.jsroot_ctxmenu');
+
 
          this.element
             .attr('id', menuname)

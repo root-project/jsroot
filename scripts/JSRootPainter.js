@@ -5782,7 +5782,8 @@
          // after menu creation 'this' bind to painter
          menu.painter = this;
          this.FillContextMenu(menu, kind, obj);
-         menu.show(this.ctx_menu_evnt);
+         this.SwitchTooltip(false);
+         menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
    }
