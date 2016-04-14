@@ -2397,7 +2397,7 @@
                   .attr("width", w)
                   .attr("height", h);
 
-      var hintsg = this.svg_pad().select(".stat_layer").select(".objects_hints");
+      var hintsg = this.svg_layer("stat_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && (JSROOT.gStyle.Tooltip > 0))
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
@@ -2406,7 +2406,7 @@
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (JSROOT.gStyle.Tooltip < 1) return false;
-      return ! (this.svg_pad().select(".stat_layer").select(".objects_hints").empty());
+      return ! (this.svg_layer("stat_layer").select(".objects_hints").empty());
    }
 
    JSROOT.TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -2442,8 +2442,8 @@
          }
       });
 
-      var layer = this.svg_pad().select(".stat_layer"),
-      hintsg = layer.select(".objects_hints"); // group with all tooltips
+      var layer = this.svg_layer("stat_layer"),
+          hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
       if ((pnt === null) || (hints.length===0) || (maxlen===0)) {
@@ -2545,7 +2545,7 @@
                r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
          }
 
-         if (hint.lines != null)
+         if (hint.lines != null) {
             for (var l=0;l<hint.lines.length;l++)
                if (hint.lines[l]!==null) {
                   var txt = group.append("svg:text")
@@ -2562,7 +2562,7 @@
 
                   actualw = Math.max(actualw, box.width);
                }
-
+         }
 
          function translateFn() {
             // We only use 'd', but list d,i,a as params just to show can have them as params.
