@@ -2980,10 +2980,13 @@
       this.DrawPave(true);
    }
 
-   JSROOT.Painter.drawPaveText = function(divid, pave) {
+   JSROOT.Painter.drawPaveText = function(divid, pave, opt) {
 
       var painter = new JSROOT.TPavePainter(pave);
       painter.SetDivId(divid, 2);
+
+      if ((typeof opt == 'string') && (opt.indexOf("onpad:")==0))
+         painter.pad_name = opt.substr(6);
 
       switch (pave._typename) {
          case "TPaveLabel":
@@ -5057,31 +5060,29 @@
 
    JSROOT.THistPainter.prototype.ToggleStat = function(arg) {
 
-      var stat = this.FindStat();
+      var stat = this.FindStat(), statpainter = null;
 
       if (stat == null) {
          if (arg=='only-check') return false;
          // when statbox created first time, one need to draw it
          stat = this.CreateStat();
-
-         this.svg_canvas().property('current_pad', this.pad_name);
-         JSROOT.draw(this.divid, stat);
-         this.svg_canvas().property('current_pad', '');
-
-         return true;
+      } else {
+         statpainter = this.FindPainterFor(stat);
       }
 
-      var statpainter = this.FindPainterFor(stat);
-      if (statpainter == null) return false;
+      if (arg=='only-check') return statpainter ? statpainter.Enabled : false;
 
-      if (arg=='only-check') return statpainter.Enabled;
+      if (statpainter) {
+         statpainter.Enabled = !statpainter.Enabled;
+         // when stat box is drawed, it always can be draw individualy while it
+         // should be last for colz RedrawPad is used
+         statpainter.Redraw();
+         return statpainter.Enabled;
+      }
 
-      statpainter.Enabled = !statpainter.Enabled;
-      // when stat box is drawed, it always can be draw individualy while it
-      // should be last for colz RedrawPad is used
-      statpainter.Redraw();
+      JSROOT.draw(this.divid, stat, "onpad:" + this.pad_name);
 
-      return statpainter.Enabled;
+      return true;
    }
 
    JSROOT.THistPainter.prototype.IsAxisZoomed = function(axis) {
