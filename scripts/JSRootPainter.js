@@ -4585,6 +4585,13 @@
 
    JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
+      this.fillatt = this.createAttFill(this.histo);
+      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
+
+      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+      var main = this.main_painter();
+      if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
+
       var pad = this.root_pad();
 
       if (pad!=null) {
@@ -4637,7 +4644,6 @@
             }
       }
    }
-
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) {
@@ -5887,7 +5893,12 @@
       menu.add("endsub:");
 
       menu.add("sub:Fill att");
-      menu.add("color", function() { console.log('change color'); });
+      menu.add("sub:color", function() { console.log('change fill color'); });
+      for (var n=0;n<8;++n) {
+         var col = (n==0) ? "none" : JSROOT.Painter.root_colors[n];
+         menu.addchk((this.fillatt.color==col), col, col, function(arg) { this.fillatt.color = arg; this.Redraw(); });
+      }
+      menu.add("endsub:");
       menu.add("style", function() { console.log('change style'); });
       menu.add("endsub:");
    }
@@ -5937,12 +5948,6 @@
    JSROOT.TH1Painter.prototype.ScanContent = function() {
       // from here we analyze object content
       // therefore code will be moved
-      this.fillatt = this.createAttFill(this.histo);
-      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
-
-      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
-      var main = this.main_painter();
-      if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
 
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 

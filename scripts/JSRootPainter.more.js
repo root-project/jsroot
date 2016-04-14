@@ -2859,12 +2859,6 @@
    JSROOT.TH2Painter.prototype.ScanContent = function() {
       var i,j,histo = this.GetObject();
 
-      this.fillatt = this.createAttFill(histo);
-      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
-
-      this.lineatt = JSROOT.Painter.createAttLine(histo);
-      if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
-
       this.nbinsx = histo.fXaxis.fNbins;
       this.nbinsy = histo.fYaxis.fNbins;
 
@@ -3634,6 +3628,8 @@
       var w = this.frame_width(), h = this.frame_height();
 
       var handle = null;
+
+      if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
          this.options.Box = 1;
