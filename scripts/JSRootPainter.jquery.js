@@ -86,7 +86,9 @@
       }
 
       menu.remove = function() {
-         if (this.element!==null) this.element.remove();
+         if (this.element!==null) {
+            this.element.remove();
+         }
          this.element = null;
       }
 

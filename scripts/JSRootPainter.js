@@ -216,7 +216,7 @@
 
    /** Function that generates all root colors */
    JSROOT.Painter.root_colors = function() {
-      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89, 211,84)','rgb(89,84,216)', 'white'];
+      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89,211,84)','rgb(89,84,216)', 'white'];
       colorMap[110] = 'white';
 
       var moreCol = [
@@ -5863,6 +5863,20 @@
 
       if ('FillHistContextMenu' in this)
          this.FillHistContextMenu(menu);
+
+      menu.add("sub:Line att");
+      menu.add("sub:width", function() { console.log('change width'); });
+      for (var n=1;n<10;++n)
+         menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
+      menu.add("endsub:");
+      menu.add("color", function() { console.log('change color'); });
+      menu.add("style", function() { console.log('change style'); });
+      menu.add("endsub:");
+
+      menu.add("sub:Fill att");
+      menu.add("color", function() { console.log('change color'); });
+      menu.add("style", function() { console.log('change style'); });
+      menu.add("endsub:");
    }
 
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
