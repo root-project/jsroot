@@ -1116,7 +1116,8 @@
       } else
       if (take_pad) {
          if (typeof layer != 'string') layer = ".text_layer";
-         this.draw_g = this.svg_pad().select(layer).append("svg:g");
+         if (layer.charAt(0) == ".") layer = layer.substr(1);
+         this.draw_g = this.svg_layer(layer).append("svg:g");
       } else {
          if (typeof layer != 'string') layer = ".main_layer";
          this.draw_g = this.svg_frame().select(layer).append("svg:g");
