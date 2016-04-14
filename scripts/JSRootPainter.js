@@ -1615,6 +1615,11 @@
       if (pad_painter) pad_painter.Redraw();
    }
 
+   JSROOT.TObjectPainter.prototype.SwitchTooltip = function(on) {
+      var fp = this.frame_painter();
+      if (fp) fp.ProcessTooltipEvent(null, on);
+   }
+
    JSROOT.TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
@@ -1675,7 +1680,7 @@
          drag_rect.remove();
          drag_rect = null;
 
-         pthis.frame_painter().ProcessTooltipEvent(null, true);
+         pthis.SwitchTooltip(true);
 
          resize_corner2.attr("transform", "translate(" + newwidth + "," + newheight + ")");
 
@@ -1703,7 +1708,7 @@
 
             JSROOT.Painter.closeMenu(); // close menu
 
-            pthis.frame_painter().ProcessTooltipEvent(null, false); // disable tooltip
+            pthis.SwitchTooltip(false); // disable tooltip
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -1763,7 +1768,7 @@
            d3.event.sourceEvent.stopPropagation();
            d3.event.sourceEvent.preventDefault();
 
-           pthis.frame_painter().ProcessTooltipEvent(null, false); // disable tooltip
+           pthis.SwitchTooltip(false); // disable tooltip
 
            acc_x = 0; acc_y = 0;
            pad_w = pthis.pad_width();
@@ -5350,7 +5355,7 @@
       this.zoom_kind = 0;
 
       // enable tooltip in frame painter
-      this.frame_painter().ProcessTooltipEvent(null, true);
+      this.SwitchTooltip(true);
    }
 
    JSROOT.THistPainter.prototype.mouseDoubleClick = function() {
@@ -5400,7 +5405,7 @@
       this.zoom_rect = null;
 
       // disable tooltips in frame painter
-      this.frame_painter().ProcessTooltipEvent(null, false);
+      this.SwitchTooltip(false);
 
       d3.event.stopPropagation();
    }
@@ -5544,7 +5549,7 @@
          this.zoom_kind = 101; // x and y
       }
 
-      this.frame_painter().ProcessTooltipEvent(null, false);
+      this.SwitchTooltip(false);
 
       this.zoom_rect = this.svg_frame().append("rect")
             .attr("class", "zoom")
@@ -5587,7 +5592,7 @@
 
       if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
            || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
-         this.frame_painter().ProcessTooltipEvent(null, false);
+         this.SwitchTooltip(false);
 
       d3.event.stopPropagation();
    }
