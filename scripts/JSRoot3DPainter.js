@@ -645,7 +645,7 @@
 
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
-         if (hh.z < zmin) continue;
+         if (hh.z <= zmin) continue;
 
          var z2 = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
 
