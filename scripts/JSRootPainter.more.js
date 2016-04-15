@@ -2445,7 +2445,7 @@
 
       this.SetDivId(divid);
 
-      this.z_handle = new JSROOT.TAxisPainter(palette.fAxis);
+      this.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
       this.z_handle.SetDivId(divid, -1);
 
       this['MakeIcon'] = function(contour, z) {

@@ -1868,6 +1868,26 @@
       delete this[fld];
    }
 
+   JSROOT.TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, useid, get_func, set_func) {
+      menu.add("sub:"+name, function() {
+         // todo - use jqury dialog here
+         var col = prompt("Enter line color " + (useid ? "(only id number)" : "(name or id)"), get_func());
+         if (col == null) return;
+         var id = parseInt(col);
+         if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined))
+            col = JSROOT.Painter.root_colors[id];
+         else
+         if (useid) return;
+         set_func(useid ? id : col);
+      });
+      for (var n=-1;n<8;++n) {
+         var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
+         menu.addchk((get_func() == (useid ? n : col)), col, useid ? n : col, set_func);
+      }
+      menu.add("endsub:");
+
+   }
+
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu) {
       // this method used to fill entries for different attributes of the object
       // like TAttFill, TAttLine, ....
@@ -1884,20 +1904,9 @@
             menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
          menu.add("endsub:");
 
-         menu.add("sub:color", function() {
-            // todo - use jqury dialog here
-            var col = prompt("Enter line color (name or id)", this.lineatt.color);
-            if (col == null) return;
-            var id = parseInt(col);
-            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) col = JSROOT.Painter.root_colors[id];
-            this.lineatt.color = col;
-            this.Redraw();
-         });
-         for (var n=1;n<8;++n) {
-            var col = JSROOT.Painter.root_colors[n];
-            menu.addchk((this.lineatt.color==col), col, col, function(arg) { this.lineatt.color = arg; this.Redraw(); });
-         }
-         menu.add("endsub:");
+         this.AddColorMenuEntry(menu, "color", false,
+                          function() { return this.lineatt.color; }.bind(this),
+                          function(arg) { this.lineatt.color = arg; this.Redraw(); });
 
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
@@ -1917,19 +1926,9 @@
 
       if (this.fillatt !== undefined) {
          menu.add("sub:Fill att");
-         menu.add("sub:color", function() {
-            var col = prompt("Enter fill color (name or id)", this.fillatt.color);
-            if (col == null) return;
-            var id = parseInt(col);
-            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) col = JSROOT.Painter.root_colors[id];
-            this.fillatt.color = col;
-            this.Redraw();
-         });
-         for (var n=-1;n<8;++n) {
-            var col = (n<0) ? "none" : JSROOT.Painter.root_colors[n];
-            menu.addchk((this.fillatt.color==col), col, col, function(arg) { this.fillatt.color = arg; this.Redraw(); });
-         }
-         menu.add("endsub:");
+         this.AddColorMenuEntry(menu, "color", false,
+               function() { return this.fillatt.color; }.bind(this),
+               function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("style", function() { console.log('change style'); });
          menu.add("endsub:");
       }
@@ -3558,8 +3557,10 @@
 
    // =======================================================================
 
-   JSROOT.TAxisPainter = function(axis) {
+   JSROOT.TAxisPainter = function(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
+
+      this.embedded = embedded; // indicate that painter embedded into the histo painter
 
       this.name = "yaxis";
       this.kind = "normal";
@@ -3764,16 +3765,18 @@
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer, AxisColor = "black",
+          axis_g = layer,
           tickSize = 10, scaling_size = 100, text_scaling_size = 100;
 
       if (is_gaxis) {
-         AxisColor = JSROOT.Painter.root_colors[axis.fLineColor];
+         if (!this.axis_color)
+            this.axis_color = JSROOT.Painter.root_colors[axis.fLineColor];
          scaling_size = (vertical ? this.pad_width() : this.pad_height());
          text_scaling_size = Math.min(this.pad_width(), this.pad_height());
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
-         AxisColor = JSROOT.Painter.root_colors[axis.fAxisColor];
+         if (!this.axis_color)
+            this.axis_color = JSROOT.Painter.root_colors[axis.fAxisColor];
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
          text_scaling_size = Math.min(w,h);
@@ -3795,7 +3798,7 @@
                .attr("x1",0).attr("y1",0)
                .attr("x1",vertical ? 0 : w)
                .attr("y1", vertical ? h : 0)
-               .style("stroke", AxisColor);
+               .style("stroke", this.axis_color);
       }
 
       if (transform!== undefined)
@@ -3841,7 +3844,7 @@
          lasth = h2;
       }
 
-      axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
+      axis_g.append("svg:path").attr("d", res).style("stroke", this.axis_color);
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),
@@ -4064,7 +4067,7 @@
 
 
    JSROOT.drawGaxis = function(divid, obj, opt) {
-      var painter = new JSROOT.TAxisPainter(obj);
+      var painter = new JSROOT.TAxisPainter(obj, false);
 
       painter.SetDivId(divid);
 
@@ -4085,6 +4088,8 @@
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.x_handle = null;
+      this.y_handle = null;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -4863,9 +4868,6 @@
       //    this.gr[x,y]  converts root scale into graphical value
       //    this.Revert[X/Y]  converts graphical coordinates to root scale value
 
-      this.x_handle = null;
-      this.y_handle = null;
-
       if (!this.is_main_painter()) {
          this.x = this.main_painter().x;
          this.y = this.main_painter().y;
@@ -5067,8 +5069,8 @@
           w = this.frame_width(),
           h = this.frame_height();
 
-      if (this.x_handle===null) {
-         this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis);
+      if (this.x_handle === null) {
+         this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
          this.x_handle.SetDivId(this.divid, -1);
       }
 
@@ -5078,8 +5080,8 @@
 
       this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")");
 
-      if (this.y_handle===null) {
-         this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis);
+      if (this.y_handle === null) {
+         this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
          this.y_handle.SetDivId(this.divid, -1);
       }
 
@@ -5871,24 +5873,54 @@
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
-         var faxis = this.histo.fXaxis;
-         if (kind=="y") faxis = this.histo.fYaxis; else
-         if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
+         var faxis = this.histo.fXaxis, handle = this.x_handle;
+         if (kind=="y") { faxis = this.histo.fYaxis; handle = this.y_handle; } else
+         if (kind=="z") { faxis = obj ? obj : this.histo.fZaxis; handle = this.z_handle; }
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", function() { this.Unzoom(kind); });
          menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
          if (faxis != null) {
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "CenterTitle",
+            menu.add("sub:Title");
+            menu.add("SetTitle", function() {
+               var t = prompt("Enter axis title", faxis.fTitle);
+               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
+            });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "RotateTitle",
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+            if (typeof faxis.fTitleColor !== 'undefined')
+               this.AddColorMenuEntry(menu, "Color", true,
+                     function() { return faxis.fTitleColor; },
+                     function(arg) { faxis.fTitleColor = arg; this.RedrawPad(); });
+            menu.add("sub:Offset", function() {
+               var t = prompt("Enter title offset", faxis.fTitleOffset);
+               if ((t==null) || isNaN(parseFloat(t))) return;
+               faxis.fTitleOffset = parseFloat(t); this.RedrawPad();
+            });
+            for (var off = 0; off < 3; off+=0.2)
+               menu.addchk(off == faxis.fTitleOffset, off.toFixed(1), off, function(arg) { faxis.fTitleOffset = arg; this.RedrawPad(); });
+            menu.add("endsub:");
+            menu.add("sub:Size", function() {
+               var t = prompt("Enter title size", faxis.fTitleSize.toFixed(4));
+               if ((t==null) || isNaN(parseFloat(t))) return;
+               faxis.fTitleSize = parseFloat(t); this.RedrawPad();
+            });
+            for (var sz = 0.02; sz < 0.11; sz+=0.01)
+               menu.addchk(Math.abs(sz-faxis.fTitleSize)<0.005, sz.toFixed(2), sz, function(arg) { faxis.fTitleSize = arg; this.RedrawPad(); });
+            menu.add("endsub:");
+            menu.add("endsub:");
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "MoreLogLabels",
                    function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "NoExponent",
                    function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
          }
+         if (handle)
+            this.AddColorMenuEntry(menu, "AxisColor", false,
+                     function() { return handle.axis_color; },
+                     function(arg) { handle.axis_color = arg; this.RedrawPad(); });
          return;
       }
 
