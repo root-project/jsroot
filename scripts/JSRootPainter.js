@@ -5071,6 +5071,9 @@
 
       if (this.zoom_kind > 100) return;
 
+      // ignore all events from non-left button
+      if ((d3.event.which || d3.event.button) !== 1) return;
+
       d3.event.preventDefault();
 
       this.clearInteractiveElements();

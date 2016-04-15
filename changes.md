@@ -2,6 +2,7 @@
 
 ## Changes in 4.4.x
 1. Fix - toggling of statbox was not working in all situations 
+2. Fix - for mouse rect zooming use only left mouse button
 
 
 ## Changes in 4.4.3
