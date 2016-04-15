@@ -1886,7 +1886,7 @@
       var useid = (typeof value !== 'string');
       for (var n=-1;n<8;++n) {
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
-         var svg = "<svg width='100' height='20' style='background-color:" + col + "'><text x='4' y='14' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
+         var svg = "<svg width='100' height='20' style='background-color:" + col + "'><text x='4' y='14' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
          menu.addchk((value == (useid ? n : col)), svg, useid ? n : col, set_func);
       }
       menu.add("endsub:");
@@ -1938,7 +1938,10 @@
          }.bind(this));
          for (var n=1;n<11;++n) {
             var style = JSROOT.Painter.root_line_styles[n];
-            menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); }.bind(this));
+
+            var svg = "<svg width='100' height='20'><text x='1' y='14' style='font-size:12px'>" + n + "</text><line x1='30' y1='10' x2='100' y2='10' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
+
+            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.dash = arg; this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -1949,7 +1952,7 @@
          this.AddColorMenuEntry(menu, "color", this.fillatt.color,
                function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("sub:" + preffix + "style", function() { console.log('change fill style'); }.bind(this));
-         for (var n=3000;n<3026;++n) {
+         for (var n=3000;n<3010;++n) {
             menu.addchk(false, n.toString(), n, function(arg) { console.log('change fill style ' + arg); }.bind(this));
          }
          menu.add("endsub:");
@@ -4114,8 +4117,6 @@
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.x_handle = null;
-      this.y_handle = null;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -5095,10 +5096,8 @@
           w = this.frame_width(),
           h = this.frame_height();
 
-      if (this.x_handle === null) {
-         this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
-         this.x_handle.SetDivId(this.divid, -1);
-      }
+      this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
+      this.x_handle.SetDivId(this.divid, -1);
 
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.options.Logx && this.x_kind !== "time") ? "log" : this.x_kind,
@@ -5106,10 +5105,8 @@
 
       this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")");
 
-      if (this.y_handle === null) {
-         this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
-         this.y_handle.SetDivId(this.divid, -1);
-      }
+      this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
+      this.y_handle.SetDivId(this.divid, -1);
 
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.options.Logy && this.y_kind !== "time") ? "log" : this.y_kind,
@@ -5899,9 +5896,9 @@
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
-         var faxis = this.histo.fXaxis, handle = this.x_handle;
-         if (kind=="y") { faxis = this.histo.fYaxis; handle = this.y_handle; } else
-         if (kind=="z") { faxis = obj ? obj : this.histo.fZaxis; handle = this.z_handle; }
+         var faxis = this.histo.fXaxis;
+         if (kind=="y")  faxis = this.histo.fYaxis;  else
+         if (kind=="z")  faxis = obj ? obj : this.histo.fZaxis;
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", function() { this.Unzoom(kind); });
          menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
