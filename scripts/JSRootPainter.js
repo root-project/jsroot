@@ -1500,7 +1500,10 @@
 
       var fill = { color: "none" };
       fill.SetFill = function(selection) {
-         selection.style('fill', this.color);
+         if (this.attr)
+            selection.style(this.attr, (this.color == "none") ? null : this.color);
+         else
+            selection.style('fill', this.color);
          if ('antialias' in this)
             selection.style('antialias', this.antialias);
       }
@@ -1511,6 +1514,7 @@
          return fill;
       }
 
+      // 4000..4100 are special patterns for the pads
       if ((pattern < 1001) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
 
       fill.color = JSROOT.Painter.root_colors[color];
@@ -3117,12 +3121,6 @@
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
-
-      this.fillcolor = 'white';
-      if (pad && ('fFillColor' in pad)) {
-         this.fillcolor = JSROOT.Painter.root_colors[pad.fFillColor];
-         if (this.fillcolor === undefined) this.fillcolor = 'white';
-      }
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3158,7 +3156,7 @@
             return false;
          } else {
             svg.attr("visibility", "visible")
-               .style("background-color", this.fillcolor == 'none' ? null : this.fillcolor);
+               .call(this.fillatt.func);
          }
 
          if (check_resize == 1) {
@@ -3202,7 +3200,6 @@
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
-             .style("background-color", this.fillcolor == 'none' ? null : this.fillcolor)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -3214,6 +3211,10 @@
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
           svg.append("svg:g").attr("class","btns_layer");
+
+          this.fillatt = this.createAttFill(this.pad, 1, 'white');
+          if (this.fillatt.color == undefined) this.fillatt.color = 'white';
+          this.fillatt.attr = 'background-color';
       }
 
       if ((w<=0) || (h<=0)) {
@@ -3233,7 +3234,8 @@
          .property('draw_x', 0)
          .property('draw_y', 0)
          .property('draw_width', w)
-         .property('draw_height', h);
+         .property('draw_height', h)
+         .call(this.fillatt.func);
 
       this.svg_layer("btns_layer").attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")");
 
@@ -3249,11 +3251,7 @@
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
-          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h,
-          fillatt = this.createAttFill(this.pad),
-          lineatt = JSROOT.Painter.createAttLine(this.pad);
-
-      if (this.pad.fBorderMode == 0) lineatt.color = 'none';
+          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h;
 
       var svg_pad = null, svg_rect = null, btns = null;
 
@@ -3274,6 +3272,11 @@
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
          btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
+
+         this.fillatt = this.createAttFill(this.pad, 1, 'white');
+         if (this.fillatt.color == undefined) this.fillatt.color = 'white';
+         this.lineatt = JSROOT.Painter.createAttLine(this.pad)
+         if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
@@ -3286,8 +3289,8 @@
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
-              .call(fillatt.func)
-              .call(lineatt.func);
+              .call(this.fillatt.func)
+              .call(this.lineatt.func);
 
       btns.attr("transform","translate("+ (w- btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h-this.ButtonSize(1.25)) + ")");
    }
@@ -5971,9 +5974,7 @@
                menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
          }
 
-         if (obj.iscan)
-            this.AddColorMenuEntry(menu, "Canvas fill color", obj.fillcolor,
-                      function(arg) { obj.fillcolor = arg; this.RedrawPad(); });
+         obj.FillAttContextMenu(menu,obj.iscan ? "Canvas " : "Pad ");
 
          if (this.frame_painter())
             this.frame_painter().FillAttContextMenu(menu, "Frame ");
