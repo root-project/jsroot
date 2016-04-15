@@ -2676,8 +2676,10 @@
             .style("stroke", JSROOT.Painter.root_colors[pt.fShadowColor])
             .style("stroke-width", "1px");
 
-      this.lineatt = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0);
-      this.fillatt = this.createAttFill(pt);
+      if (this.lineatt === undefined)
+         this.lineatt = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0);
+      if (this.fillatt === undefined)
+         this.fillatt = this.createAttFill(pt);
 
       this.draw_g.append("rect")
           .attr("x", 0)
@@ -2887,12 +2889,11 @@
             }
          });
          menu.add("separator");
-         menu.add("SetOptStat", function() {
+         menu.add("sub:SetOptStat", function() {
             // todo - use jqury dialog here
             var fmt = prompt("Enter OptStat", pave.fOptStat);
             if (fmt!=null) { pave.fOptStat = parseInt(fmt); pthis.Redraw(); }
          });
-         menu.add("separator");
          function AddStatOpt(pos, name) {
             var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
             opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
@@ -2915,18 +2916,22 @@
          AddStatOpt(6, "Integral");
          AddStatOpt(7, "Skewness");
          AddStatOpt(8, "Kurtosis");
-         menu.add("separator");
+         menu.add("endsub:");
 
-         menu.add("SetOptFit", function() {
+         menu.add("sub:SetOptFit", function() {
             // todo - use jqury dialog here
             var fmt = prompt("Enter OptStat", pave.fOptFit);
             if (fmt!=null) { pave.fOptFit = parseInt(fmt); pthis.Redraw(); }
          });
-         menu.add("separator");
          AddStatOpt(10, "Fit parameters");
          AddStatOpt(11, "Par errors");
          AddStatOpt(12, "Chi square / NDF");
          AddStatOpt(13, "Probability");
+         menu.add("endsub:");
+
+         menu.add("separator");
+
+         pthis.FillAttContextMenu(menu);
 
          menu.show(evnt);
       }); // end menu creation
@@ -5783,8 +5788,7 @@
       menu_painter.ctx_menu_evnt = evnt;
 
       JSROOT.Painter.createMenu(function(menu) {
-         // after menu creation 'this' bind to painter
-         menu.painter = this;
+         menu.painter = this; // in all menu callbacks painter will be 'this' pointer
          this.FillContextMenu(menu, kind, obj);
          // suppress any running zomming
          this.clearInteractiveElements();
@@ -5871,36 +5875,74 @@
       if ('FillHistContextMenu' in this)
          this.FillHistContextMenu(menu);
 
-      menu.add("sub:Line att");
-      menu.add("sub:width", function() { console.log('change width'); });
-      for (var n=1;n<10;++n)
-         menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
-      menu.add("endsub:");
+      this.FillAttContextMenu(menu);
+   }
 
-      menu.add("sub:color", function() { console.log('change color'); });
-      for (var n=1;n<8;++n) {
-         var col = JSROOT.Painter.root_colors[n];
-         menu.addchk((this.lineatt.color==col), col, col, function(arg) { this.lineatt.color = arg; this.Redraw(); });
-      }
-      menu.add("endsub:");
+   JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu) {
+      // this method used to fill entries for different attributes of the object
+      // like TAttFill, TAttLine, ....
 
-      menu.add("sub:style", function() { console.log('change style'); });
-      for (var n=1;n<11;++n) {
-         var style = JSROOT.Painter.root_line_styles[n];
-         menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); });
-      }
-      menu.add("endsub:");
-      menu.add("endsub:");
+      if (this.lineatt !== undefined) {
+         menu.add("sub:Line att");
+         menu.add("sub:width", function() {
+            var w = prompt("Enter line width", this.lineatt.width);
+            if ((w == null) || isNaN(parseInt(w))) return;
+            this.lineatt.width = parseInt(w);
+            this.Redraw();
+         });
+         for (var n=1;n<10;++n)
+            menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
+         menu.add("endsub:");
 
-      menu.add("sub:Fill att");
-      menu.add("sub:color", function() { console.log('change fill color'); });
-      for (var n=0;n<8;++n) {
-         var col = (n==0) ? "none" : JSROOT.Painter.root_colors[n];
-         menu.addchk((this.fillatt.color==col), col, col, function(arg) { this.fillatt.color = arg; this.Redraw(); });
+         menu.add("sub:color", function() {
+            // todo - use jqury dialog here
+            var col = prompt("Enter line color (name or id)", this.lineatt.color);
+            if (col == null) return;
+            var id = parseInt(col);
+            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) col = JSROOT.Painter.root_colors[id];
+            this.lineatt.color = col;
+            this.Redraw();
+         });
+         for (var n=1;n<8;++n) {
+            var col = JSROOT.Painter.root_colors[n];
+            menu.addchk((this.lineatt.color==col), col, col, function(arg) { this.lineatt.color = arg; this.Redraw(); });
+         }
+         menu.add("endsub:");
+
+         menu.add("sub:style", function() {
+            var id = prompt("Enter line style id (1-solid)", 1);
+            if (id == null) return;
+            id = parseInt(id);
+            if (isNaN(id) || (JSROOT.Painter.root_line_styles[id] === undefined)) return;
+            this.lineatt.dash = JSROOT.Painter.root_line_styles[id];
+            this.Redraw();
+         });
+         for (var n=1;n<11;++n) {
+            var style = JSROOT.Painter.root_line_styles[n];
+            menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); });
+         }
+         menu.add("endsub:");
+         menu.add("endsub:");
       }
-      menu.add("endsub:");
-      menu.add("style", function() { console.log('change style'); });
-      menu.add("endsub:");
+
+      if (this.fillatt !== undefined) {
+         menu.add("sub:Fill att");
+         menu.add("sub:color", function() {
+            var col = prompt("Enter fill color (name or id)", this.fillatt.color);
+            if (col == null) return;
+            var id = parseInt(col);
+            if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) col = JSROOT.Painter.root_colors[id];
+            this.fillatt.color = col;
+            this.Redraw();
+         });
+         for (var n=-1;n<8;++n) {
+            var col = (n<0) ? "none" : JSROOT.Painter.root_colors[n];
+            menu.addchk((this.fillatt.color==col), col, col, function(arg) { this.fillatt.color = arg; this.Redraw(); });
+         }
+         menu.add("endsub:");
+         menu.add("style", function() { console.log('change style'); });
+         menu.add("endsub:");
+      }
    }
 
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
