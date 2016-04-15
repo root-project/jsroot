@@ -1886,7 +1886,8 @@
       var useid = (typeof value !== 'string');
       for (var n=-1;n<8;++n) {
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
-         menu.addchk((value == (useid ? n : col)), col, useid ? n : col, set_func);
+         var svg = "<svg width='100' height='20' style='background-color:" + col + "'><text x='4' y='14' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
+         menu.addchk((value == (useid ? n : col)), svg, useid ? n : col, set_func);
       }
       menu.add("endsub:");
    }
@@ -1947,7 +1948,11 @@
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.color,
                function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
-         menu.add("style", function() { console.log('change style'); });
+         menu.add("sub:" + preffix + "style", function() { console.log('change fill style'); }.bind(this));
+         for (var n=3000;n<3026;++n) {
+            menu.addchk(false, n.toString(), n, function(arg) { console.log('change fill style ' + arg); }.bind(this));
+         }
+         menu.add("endsub:");
          menu.add("endsub:");
       }
    }
@@ -3150,7 +3155,7 @@
             return false;
          } else {
             svg.attr("visibility", "visible")
-               .style("background-color", this.fillcolor);
+               .style("background-color", this.fillcolor == 'none' ? null : this.fillcolor);
          }
 
          if (check_resize == 1) {
@@ -3194,7 +3199,7 @@
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
-             .style("background-color", this.fillcolor)
+             .style("background-color", this.fillcolor == 'none' ? null : this.fillcolor)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -5969,8 +5974,9 @@
                menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
          }
 
-         this.AddColorMenuEntry(menu, "Pad fill color", obj.fillcolor,
-                   function(arg) { obj.fillcolor = arg; this.RedrawPad(); });
+         if (obj.iscan)
+            this.AddColorMenuEntry(menu, "Canvas fill color", obj.fillcolor,
+                      function(arg) { obj.fillcolor = arg; this.RedrawPad(); });
 
          if (this.frame_painter())
             this.frame_painter().FillAttContextMenu(menu, "Frame ");

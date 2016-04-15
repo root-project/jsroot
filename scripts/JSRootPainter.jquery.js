@@ -103,7 +103,6 @@
          this.element = $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>')
                                         .find('.jsroot_ctxmenu');
 
-
          this.element
             .attr('id', menuname)
             .css('left', event.clientX + window.pageXOffset)
@@ -119,7 +118,7 @@
                   menu.remove();
                   if (typeof func == 'function') {
                      if ('painter' in menu)
-                        func.bind(menu['painter'])(arg); // if 'painter' field set, returned as this to callback
+                        func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
                      else
                         func(arg);
                   }
