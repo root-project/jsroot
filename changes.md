@@ -7,7 +7,7 @@
 4. Support browsing of TTask and derived classes (#40)
 5. Apply user range for drawing TH1/TH2 histograms, also when superimposed 
 6. Implement simple drawing for TBox,TWbox,TSliderBox classes
-7. Provide context menu to change line attributes for histogram
+7. Provide context menus for many different objects attributes
  
 
 ## Changes in 4.4

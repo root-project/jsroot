@@ -1914,16 +1914,19 @@
    }
 
 
-   JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu) {
+   JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
       // like TAttFill, TAttLine, ....
+      // all menu call-backs need to be rebind, while menu can be used from other painter
+
+      if (!preffix) preffix = "";
 
       if (this.lineatt !== undefined) {
-         menu.add("sub:Line att");
+         menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu,"width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.width = arg; this.Redraw(); });
+                               function(arg) { this.lineatt.width = arg; this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.color = arg; this.Redraw(); });
+                          function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -1931,17 +1934,17 @@
             if (isNaN(id) || (JSROOT.Painter.root_line_styles[id] === undefined)) return;
             this.lineatt.dash = JSROOT.Painter.root_line_styles[id];
             this.Redraw();
-         });
+         }.bind(this));
          for (var n=1;n<11;++n) {
             var style = JSROOT.Painter.root_line_styles[n];
-            menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); });
+            menu.addchk((this.lineatt.dash==style), n.toString(), style, function(arg) { this.lineatt.dash = arg; this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
       }
 
       if (this.fillatt !== undefined) {
-         menu.add("sub:Fill att");
+         menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.color,
                function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("style", function() { console.log('change style'); });
@@ -2372,13 +2375,17 @@
             framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
       }
 
+      // force white color for the frame
+      if (framecolor.color == 'none') framecolor.color = 'white';
+
+      if (this.fillatt === undefined) this.fillatt = framecolor;
+      if (this.lineatt === undefined) this.lineatt = lineatt;
+
       var lm = Math.round(width * this.fX1NDC),
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC));
 
-      // force white color for the frame
-      if (framecolor.color == 'none') framecolor.color = 'white';
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.svg_frame();
@@ -2423,8 +2430,8 @@
               .attr("y", 0)
               .attr("width", w)
               .attr("height", h)
-              .call(framecolor.func)
-              .call(lineatt.func);
+              .call(this.fillatt.func)
+              .call(this.lineatt.func);
 
       main_svg.attr("width", w)
               .attr("height", h)
@@ -3102,6 +3109,12 @@
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
       this.painters = new Array; // complete list of all painters in the pad
       this.has_canvas = true;
+
+      this.fillcolor = 'white';
+      if (pad && ('fFillColor' in pad)) {
+         this.fillcolor = JSROOT.Painter.root_colors[pad.fFillColor];
+         if (this.fillcolor === undefined) this.fillcolor = 'white';
+      }
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -3136,7 +3149,8 @@
             svg.attr("visibility", "hidden");
             return false;
          } else {
-            svg.attr("visibility", "visible");
+            svg.attr("visibility", "visible")
+               .style("background-color", this.fillcolor);
          }
 
          if (check_resize == 1) {
@@ -3177,16 +3191,10 @@
             render_to.style('height', h+'px');
          }
 
-         var fillcolor = 'white';
-         if ((this.pad!==null) && ('fFillColor' in this.pad)) {
-            fillcolor = JSROOT.Painter.root_colors[this.pad.fFillColor];
-            if (fillcolor === undefined) fillcolor = 'white';
-         }
-
          svg = this.select_main()
              .append("svg")
              .attr("class", "jsroot root_canvas")
-             .style("background-color", fillcolor)
+             .style("background-color", this.fillcolor)
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
@@ -5960,6 +5968,12 @@
             if (this.Dimension() == 2)
                menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
          }
+
+         this.AddColorMenuEntry(menu, "Pad fill color", obj.fillcolor,
+                   function(arg) { obj.fillcolor = arg; this.RedrawPad(); });
+
+         if (this.frame_painter())
+            this.frame_painter().FillAttContextMenu(menu, "Frame ");
 
          menu.add("separator");
 
