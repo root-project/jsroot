@@ -1868,25 +1868,51 @@
       delete this[fld];
    }
 
-   JSROOT.TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, useid, get_func, set_func) {
+   JSROOT.TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, value, set_func) {
+      if (value === undefined) return;
       menu.add("sub:"+name, function() {
          // todo - use jqury dialog here
-         var col = prompt("Enter line color " + (useid ? "(only id number)" : "(name or id)"), get_func());
+         var useid = (typeof value !== 'string');
+         var col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
          if (col == null) return;
          var id = parseInt(col);
-         if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined))
+         if (!isNaN(id) && (JSROOT.Painter.root_colors[id] !== undefined)) {
             col = JSROOT.Painter.root_colors[id];
-         else
-         if (useid) return;
-         set_func(useid ? id : col);
+         } else {
+            if (useid) return;
+         }
+         set_func.bind(this)(useid ? id : col);
       });
+      var useid = (typeof value !== 'string');
       for (var n=-1;n<8;++n) {
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
-         menu.addchk((get_func() == (useid ? n : col)), col, useid ? n : col, set_func);
+         menu.addchk((value == (useid ? n : col)), col, useid ? n : col, set_func);
       }
       menu.add("endsub:");
-
    }
+
+   JSROOT.TObjectPainter.prototype.AddSizeMenuEntry = function(menu, name, min, max, step, value, set_func) {
+      if (value === undefined) return;
+
+      menu.add("sub:"+name, function() {
+         // todo - use jqury dialog here
+         var entry = value.toFixed(4);
+         if (step>=0.1) entry = value.toFixed(2);
+         if (step>=1) entry = value.toFixed(0);
+         var val = prompt("Enter value of " + name, entry);
+         if (val==null) return;
+         var val = parseFloat(val);
+         if (!isNaN(val)) set_func.bind(this)((step>=1) ? Math.round(val) : val);
+      });
+      for (var val=min;val<=max;val+=step) {
+         var entry = val.toFixed(2);
+         if (step>=0.1) entry = val.toFixed(1);
+         if (step>=1) entry = val.toFixed(0);
+         menu.addchk((Math.abs(value - val) < step/2), entry, val, set_func);
+      }
+      menu.add("endsub:");
+   }
+
 
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu) {
       // this method used to fill entries for different attributes of the object
@@ -1894,20 +1920,10 @@
 
       if (this.lineatt !== undefined) {
          menu.add("sub:Line att");
-         menu.add("sub:width", function() {
-            var w = prompt("Enter line width", this.lineatt.width);
-            if ((w == null) || isNaN(parseInt(w))) return;
-            this.lineatt.width = parseInt(w);
-            this.Redraw();
-         });
-         for (var n=1;n<10;++n)
-            menu.addchk((this.lineatt.width==n), n.toString(), n, function(arg) { this.lineatt.width = arg; this.Redraw(); });
-         menu.add("endsub:");
-
-         this.AddColorMenuEntry(menu, "color", false,
-                          function() { return this.lineatt.color; }.bind(this),
+         this.AddSizeMenuEntry(menu,"width", 1, 10, 1, this.lineatt.width,
+                               function(arg) { this.lineatt.width = arg; this.Redraw(); });
+         this.AddColorMenuEntry(menu, "color", this.lineatt.color,
                           function(arg) { this.lineatt.color = arg; this.Redraw(); });
-
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -1926,8 +1942,7 @@
 
       if (this.fillatt !== undefined) {
          menu.add("sub:Fill att");
-         this.AddColorMenuEntry(menu, "color", false,
-               function() { return this.fillatt.color; }.bind(this),
+         this.AddColorMenuEntry(menu, "color", this.fillatt.color,
                function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("style", function() { console.log('change style'); });
          menu.add("endsub:");
@@ -3765,18 +3780,16 @@
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer,
+          axis_g = layer, axis_color = 'black',
           tickSize = 10, scaling_size = 100, text_scaling_size = 100;
 
       if (is_gaxis) {
-         if (!this.axis_color)
-            this.axis_color = JSROOT.Painter.root_colors[axis.fLineColor];
+         axis_color = JSROOT.Painter.root_colors[axis.fLineColor];
          scaling_size = (vertical ? this.pad_width() : this.pad_height());
          text_scaling_size = Math.min(this.pad_width(), this.pad_height());
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
-         if (!this.axis_color)
-            this.axis_color = JSROOT.Painter.root_colors[axis.fAxisColor];
+         axis_color = JSROOT.Painter.root_colors[axis.fAxisColor];
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
          text_scaling_size = Math.min(w,h);
@@ -3798,7 +3811,7 @@
                .attr("x1",0).attr("y1",0)
                .attr("x1",vertical ? 0 : w)
                .attr("y1", vertical ? h : 0)
-               .style("stroke", this.axis_color);
+               .style("stroke", axis_color);
       }
 
       if (transform!== undefined)
@@ -3844,7 +3857,7 @@
          lasth = h2;
       }
 
-      axis_g.append("svg:path").attr("d", res).style("stroke", this.axis_color);
+      axis_g.append("svg:path").attr("d", res).style("stroke", axis_color);
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),
@@ -5879,9 +5892,21 @@
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", function() { this.Unzoom(kind); });
          menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
          if (faxis != null) {
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "CenterLabels",
+            menu.add("sub:Labels");
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
+                  function(arg) { faxis.fLabelColor = arg; this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fLabelOffset,
+                  function(arg) { faxis.fLabelOffset = arg; this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
+                  function(arg) { faxis.fLabelSize = arg; this.RedrawPad(); } );
+            menu.add("endsub:");
             menu.add("sub:Title");
             menu.add("SetTitle", function() {
                var t = prompt("Enter axis title", faxis.fTitle);
@@ -5891,36 +5916,22 @@
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            if (typeof faxis.fTitleColor !== 'undefined')
-               this.AddColorMenuEntry(menu, "Color", true,
-                     function() { return faxis.fTitleColor; },
-                     function(arg) { faxis.fTitleColor = arg; this.RedrawPad(); });
-            menu.add("sub:Offset", function() {
-               var t = prompt("Enter title offset", faxis.fTitleOffset);
-               if ((t==null) || isNaN(parseFloat(t))) return;
-               faxis.fTitleOffset = parseFloat(t); this.RedrawPad();
-            });
-            for (var off = 0; off < 3; off+=0.2)
-               menu.addchk(off == faxis.fTitleOffset, off.toFixed(1), off, function(arg) { faxis.fTitleOffset = arg; this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
+                  function(arg) { faxis.fTitleColor = arg; this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
+                                  function(arg) { faxis.fTitleOffset = arg; this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
+                  function(arg) { faxis.fTitleSize = arg; this.RedrawPad(); } );
             menu.add("endsub:");
-            menu.add("sub:Size", function() {
-               var t = prompt("Enter title size", faxis.fTitleSize.toFixed(4));
-               if ((t==null) || isNaN(parseFloat(t))) return;
-               faxis.fTitleSize = parseFloat(t); this.RedrawPad();
-            });
-            for (var sz = 0.02; sz < 0.11; sz+=0.01)
-               menu.addchk(Math.abs(sz-faxis.fTitleSize)<0.005, sz.toFixed(2), sz, function(arg) { faxis.fTitleSize = arg; this.RedrawPad(); });
-            menu.add("endsub:");
-            menu.add("endsub:");
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "MoreLogLabels",
-                   function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "NoExponent",
-                   function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
          }
-         if (handle)
-            this.AddColorMenuEntry(menu, "AxisColor", false,
-                     function() { return handle.axis_color; },
-                     function(arg) { handle.axis_color = arg; this.RedrawPad(); });
+         menu.add("sub:Ticks");
+         this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
+                     function(arg) { faxis.fLineColor = arg; this.RedrawPad(); });
+         this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+                     function(arg) { faxis.fAxisColor = arg; this.RedrawPad(); });
+         this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                   function(arg) { faxis.fTickLength = arg; this.RedrawPad(); } );
+         menu.add("endsub:");
          return;
       }
 
