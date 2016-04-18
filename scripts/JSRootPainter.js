@@ -1493,104 +1493,125 @@
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
-      if ((attfill!==null) && (typeof attfill == 'object')) {
-         if (pattern===undefined) pattern = attfill.fFillStyle;
-         if (color===undefined) color = attfill.fFillColor;
-      }
-
-      var fill = { color: "none" };
+      var fill = { color: "none", colorindx: 0, pattern: 0 };
       fill.SetFill = function(selection) {
          if (this.attr)
             selection.style(this.attr, (this.color == "none") ? null : this.color);
          else
             selection.style('fill', this.color);
+
+         if ('opacity' in this)
+            selection.style('opacity', this.opacity);
+
          if ('antialias' in this)
             selection.style('antialias', this.antialias);
       }
       fill.func = fill.SetFill.bind(fill);
 
-      if (typeof attfill == 'string') {
-         fill.color = attfill;
-         return fill;
+      fill.ChangeFill = function(color, pattern, svg) {
+         if ((color !== undefined) && !isNaN(color)) {
+            this.colorindx = color;
+         }
+         if ((pattern !== undefined) && !isNaN(pattern)) {
+            this.pattern = pattern;
+            delete this.opacity;
+            delete this.antialias;
+         }
+
+         if (this.pattern < 1001) {
+            this.color = 'none';
+            return true;
+         }
+
+         this.color = JSROOT.Painter.root_colors[this.colorindx];
+         if (typeof this.color != 'string') this.color = "none";
+
+         if (this.pattern === 1001) return true;
+
+         if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
+            // special transparent colors (use for subpads)
+            this.opactity = (this.pattern - 4000)/100;
+            return true;
+         }
+
+         if ((svg===undefined) || svg.empty() || (this.pattern < 3000) || (this.pattern > 3025)) return false;
+
+         var id = "pat_" + this.pattern + "_" + this.colorindx;
+
+         var defs = svg.select('defs');
+         if (defs.empty())
+            defs = svg.insert("svg:defs",":first-child");
+
+         var line_color = this.color;
+         this.color = "url(#" + id + ")";
+         this.antialias = false;
+
+         if (!defs.select("."+id).empty()) return true;
+
+         var patt = defs.append('svg:pattern').attr("id", id).attr("class",id).attr("patternUnits","userSpaceOnUse");
+
+         switch (this.pattern) {
+           case 3001:
+             patt.attr("width", 2).attr("height", 2);
+             patt.append('svg:rect').attr("x", 0).attr("y", 0).attr("width", 1).attr("height", 1);
+             patt.append('svg:rect').attr("x", 1).attr("y", 1).attr("width", 1).attr("height", 1);
+             break;
+           case 3002:
+             patt.attr("width", 4).attr("height", 2);
+             patt.append('svg:rect').attr("x", 1).attr("y", 0).attr("width", 1).attr("height", 1);
+             patt.append('svg:rect').attr("x", 3).attr("y", 1).attr("width", 1).attr("height", 1);
+             break;
+           case 3003:
+             patt.attr("width", 4).attr("height", 4);
+             patt.append('svg:rect').attr("x", 2).attr("y", 1).attr("width", 1).attr("height", 1);
+             patt.append('svg:rect').attr("x", 0).attr("y", 3).attr("width", 1).attr("height", 1);
+             break;
+           case 3005:
+             patt.attr("width", 8).attr("height", 8);
+             patt.append("svg:line").attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8);
+             break;
+           case 3006:
+             patt.attr("width", 4).attr("height", 4);
+             patt.append("svg:line").attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3);
+             break;
+           case 3007:
+             patt.attr("width", 4).attr("height", 4);
+             patt.append("svg:line").attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1);
+             break;
+           case 3010: // bricks
+             patt.attr("width", 10).attr("height", 10);
+             patt.append("svg:line").attr("x1", 0).attr("y1", 2).attr("x2", 10).attr("y2", 2);
+             patt.append("svg:line").attr("x1", 0).attr("y1", 7).attr("x2", 10).attr("y2", 7);
+             patt.append("svg:line").attr("x1", 2).attr("y1", 0).attr("x2", 2).attr("y2", 2);
+             patt.append("svg:line").attr("x1", 7).attr("y1", 2).attr("x2", 7).attr("y2", 7);
+             patt.append("svg:line").attr("x1", 2).attr("y1", 7).attr("x2", 2).attr("y2", 10);
+             break;
+           case 3021: // stairs
+           case 3022:
+             patt.attr("width", 10).attr("height", 10);
+             patt.append("svg:line").attr("x1", 0).attr("y1", 5).attr("x2", 5).attr("y2", 5);
+             patt.append("svg:line").attr("x1", 5).attr("y1", 5).attr("x2", 5).attr("y2", 0);
+             patt.append("svg:line").attr("x1", 5).attr("y1", 10).attr("x2", 10).attr("y2", 10);
+             patt.append("svg:line").attr("x1", 10).attr("y1", 10).attr("x2", 10).attr("y2", 5);
+             break;
+           default: /* == 3004 */
+             patt.attr("width", 8).attr("height", 8);
+             patt.append("svg:line").attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8);
+             break;
+         }
+
+         patt.selectAll('line').style("stroke",line_color).style("stroke-width", 1);
+         patt.selectAll('rect').style("fill",line_color);
+
+         return true;
       }
 
-      // 4000..4100 are special patterns for the pads
-      if ((pattern < 1001) || ((pattern >= 4000) && (pattern <= 4100))) return fill;
-
-      fill.color = JSROOT.Painter.root_colors[color];
-      if (typeof fill.color != 'string') fill.color = "none";
-
-      var svg = this.svg_canvas();
-
-      if ((pattern < 3000) || (pattern > 3025) || svg.empty()) return fill;
-
-      var id = "pat_" + pattern + "_" + color;
-
-      var defs = svg.select('defs');
-      if (defs.empty())
-         defs = svg.insert("svg:defs",":first-child");
-
-      fill.color = "url(#" + id + ")";
-      fill.antialias = false;
-
-      if (!defs.select("#"+id).empty()) return fill;
-
-      var line_color = JSROOT.Painter.root_colors[color];
-
-      var patt = defs.append('svg:pattern').attr("id", id).attr("patternUnits","userSpaceOnUse");
-
-      switch (pattern) {
-        case 3001:
-          patt.attr("width", 2).attr("height", 2);
-          patt.append('svg:rect').attr("x", 0).attr("y", 0).attr("width", 1).attr("height", 1);
-          patt.append('svg:rect').attr("x", 1).attr("y", 1).attr("width", 1).attr("height", 1);
-          break;
-        case 3002:
-          patt.attr("width", 4).attr("height", 2);
-          patt.append('svg:rect').attr("x", 1).attr("y", 0).attr("width", 1).attr("height", 1);
-          patt.append('svg:rect').attr("x", 3).attr("y", 1).attr("width", 1).attr("height", 1);
-          break;
-        case 3003:
-          patt.attr("width", 4).attr("height", 4);
-          patt.append('svg:rect').attr("x", 2).attr("y", 1).attr("width", 1).attr("height", 1);
-          patt.append('svg:rect').attr("x", 0).attr("y", 3).attr("width", 1).attr("height", 1);
-          break;
-        case 3005:
-          patt.attr("width", 8).attr("height", 8);
-          patt.append("svg:line").attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8);
-          break;
-        case 3006:
-          patt.attr("width", 4).attr("height", 4);
-          patt.append("svg:line").attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3);
-          break;
-        case 3007:
-          patt.attr("width", 4).attr("height", 4);
-          patt.append("svg:line").attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1);
-          break;
-        case 3010: // bricks
-          patt.attr("width", 10).attr("height", 10);
-          patt.append("svg:line").attr("x1", 0).attr("y1", 2).attr("x2", 10).attr("y2", 2);
-          patt.append("svg:line").attr("x1", 0).attr("y1", 7).attr("x2", 10).attr("y2", 7);
-          patt.append("svg:line").attr("x1", 2).attr("y1", 0).attr("x2", 2).attr("y2", 2);
-          patt.append("svg:line").attr("x1", 7).attr("y1", 2).attr("x2", 7).attr("y2", 7);
-          patt.append("svg:line").attr("x1", 2).attr("y1", 7).attr("x2", 2).attr("y2", 10);
-          break;
-        case 3021: // stairs
-        case 3022:
-          patt.attr("width", 10).attr("height", 10);
-          patt.append("svg:line").attr("x1", 0).attr("y1", 5).attr("x2", 5).attr("y2", 5);
-          patt.append("svg:line").attr("x1", 5).attr("y1", 5).attr("x2", 5).attr("y2", 0);
-          patt.append("svg:line").attr("x1", 5).attr("y1", 10).attr("x2", 10).attr("y2", 10);
-          patt.append("svg:line").attr("x1", 10).attr("y1", 10).attr("x2", 10).attr("y2", 5);
-          break;
-        default: /* == 3004 */
-          patt.attr("width", 8).attr("height", 8);
-          patt.append("svg:line").attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8);
-          break;
+      if ((attfill!==null) && (typeof attfill == 'object')) {
+         if ('fFillStyle' in attfill) pattern = attfill.fFillStyle;
+         if ('fFillColor' in attfill) color = attfill.fFillColor;
       }
 
-      patt.selectAll('line').style("stroke",line_color).style("stroke-width", 1);
-      patt.selectAll('rect').style("fill",line_color);
+      fill.ChangeFill(color, pattern, this.svg_canvas());
 
       return fill;
    }
@@ -2343,7 +2364,7 @@
           height = this.pad_height(),
           tframe = this.GetObject(),
           root_pad = this.root_pad(),
-          framecolor = this.createAttFill('white'),
+          framecolor = this.createAttFill(null, 1001, 0),
           lineatt = JSROOT.Painter.createAttLine('black'),
           bordermode = 0, bordersize = 0,
           has_ndc = ('fX1NDC' in this);
@@ -3213,9 +3234,8 @@
           svg.append("svg:g").attr("class","stat_layer");
           svg.append("svg:g").attr("class","btns_layer");
 
-          this.fillatt = this.createAttFill(this.pad, 1, 'white');
-          if (this.fillatt.color == undefined) this.fillatt.color = 'white';
-          this.fillatt.attr = 'background-color';
+          this.fillatt = this.createAttFill(this.pad, 1001, 0);
+          this.fillatt.attr = 'background-color'; // set special attribute of the SVG element
       }
 
       if ((w<=0) || (h<=0)) {
@@ -3274,8 +3294,7 @@
          svg_pad.append("svg:g").attr("class","stat_layer");
          btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
 
-         this.fillatt = this.createAttFill(this.pad, 1, 'white');
-         if (this.fillatt.color == undefined) this.fillatt.color = 'white';
+         this.fillatt = this.createAttFill(this.pad, 1001, 0);
          this.lineatt = JSROOT.Painter.createAttLine(this.pad)
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
