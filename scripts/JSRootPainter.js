@@ -2035,9 +2035,16 @@
 
          menu.add("sub:style");
          var supported = [1, 2, 3, 4, 5, 6, 7, 8, 21,22,23,24,25,26,27,28,29,30,31,32,33,34];
-         for (var n=0; n<supported.length; ++n)
-            menu.addchk(this.markeratt.style == supported[n], supported[n].toString(), supported[n],
+
+         var clone = JSROOT.clone(this.markeratt);
+         for (var n=0; n<supported.length; ++n) {
+            clone.Change(undefined, supported[n], 1);
+            clone.reset_pos();
+            var svg = "<svg width='60' height='12'><text x='1' y='9' style='font-size:10px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,5) + "'></path></svg>";
+
+            menu.addchk(this.markeratt.style == supported[n], svg, supported[n],
                      function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
+         }
          menu.add("endsub:");
 
          menu.add("endsub:");
