@@ -1949,7 +1949,7 @@
 
       if (this.lineatt !== undefined) {
          menu.add("sub:"+preffix+"Line att");
-         this.AddSizeMenuEntry(menu,"width", 1, 10, 1, this.lineatt.width,
+         this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.width = arg; this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
                           function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
@@ -1976,7 +1976,7 @@
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
                function(arg) { this.fillatt.ChangeFill(arg, undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
-         menu.add("sub:" + preffix + "style", function() {
+         menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
             id = parseInt(id);
