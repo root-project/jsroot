@@ -3246,8 +3246,8 @@
       if (!this.has_canvas)
          return this.CreateCanvasSvg(only_resize ? 2 : 0);
 
-      var width = this.svg_pad().property("draw_width"),
-          height = this.svg_pad().property("draw_height"),
+      var width = this.svg_canvas().property("draw_width"),
+          height = this.svg_canvas().property("draw_height"),
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
@@ -3260,7 +3260,7 @@
          svg_rect = svg_pad.select(".root_pad_border");
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = this.svg_layer("special_layer")
+         svg_pad = this.svg_layer("special_layer","")
              .append("g")
              .attr("class", "root_pad")
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
