@@ -1513,7 +1513,7 @@
             this.colorindx = color;
          }
          if ((pattern !== undefined) && !isNaN(pattern)) {
-            this.pattern = pattern;
+            this.pattern = parseInt(pattern);
             delete this.opacity;
             delete this.antialias;
          }
@@ -1530,7 +1530,7 @@
 
          if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
             // special transparent colors (use for subpads)
-            this.opactity = (this.pattern - 4000)/100;
+            this.opacity = (this.pattern - 4000)/100;
             return true;
          }
 
@@ -1974,12 +1974,21 @@
 
       if (this.fillatt !== undefined) {
          menu.add("sub:"+preffix+"Fill att");
-         this.AddColorMenuEntry(menu, "color", this.fillatt.color,
-               function(arg) { this.fillatt.color = arg; this.Redraw(); }.bind(this));
-         menu.add("sub:" + preffix + "style", function() { console.log('change fill style'); }.bind(this));
-         for (var n=3000;n<3010;++n) {
-            menu.addchk(false, n.toString(), n, function(arg) { console.log('change fill style ' + arg); }.bind(this));
-         }
+         this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
+               function(arg) { this.fillatt.ChangeFill(arg, undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
+         menu.add("sub:" + preffix + "style", function() {
+            var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
+            if (id == null) return;
+            id = parseInt(id);
+            if (isNaN(id)) return;
+            this.fillatt.ChangeFill(undefined, id, this.svg_canvas());
+            this.Redraw();
+         }.bind(this));
+
+         var supported = [1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+
+         for (var n=0; n<supported.length; ++n)
+            menu.addchk(this.fillatt.pattern == supported[n], supported[n].toString(), supported[n], function(arg) { this.fillatt.ChangeFill(undefined, arg, this.svg_canvas()); this.Redraw(); }.bind(this));
          menu.add("endsub:");
          menu.add("endsub:");
       }
