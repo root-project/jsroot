@@ -4742,7 +4742,6 @@
    JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
       this.fillatt = this.createAttFill(this.histo);
-      if (this.fillatt.color == 'white') this.fillatt.color = 'none';
 
       this.lineatt = JSROOT.Painter.createAttLine(this.histo);
       var main = this.main_painter();
