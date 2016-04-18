@@ -1510,7 +1510,7 @@
 
       fill.ChangeFill = function(color, pattern, svg) {
          if ((color !== undefined) && !isNaN(color)) {
-            this.colorindx = color;
+            this.colorindx = parseInt(color);
          }
          if ((pattern !== undefined) && !isNaN(pattern)) {
             this.pattern = parseInt(pattern);
@@ -1912,7 +1912,7 @@
       for (var n=-1;n<8;++n) {
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
          var svg = "<svg width='100' height='20' style='background-color:" + col + "'><text x='4' y='14' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
-         menu.addchk((value == (useid ? n : col)), svg, useid ? n : col, set_func);
+         menu.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
       }
       menu.add("endsub:");
    }
@@ -1985,10 +1985,19 @@
             this.Redraw();
          }.bind(this));
 
-         var supported = [1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
+         var supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
 
-         for (var n=0; n<supported.length; ++n)
-            menu.addchk(this.fillatt.pattern == supported[n], supported[n].toString(), supported[n], function(arg) { this.fillatt.ChangeFill(undefined, arg, this.svg_canvas()); this.Redraw(); }.bind(this));
+         var clone = JSROOT.clone(this.fillatt);
+         if (clone.colorindx<=0) clone.colorindx = 1;
+
+         for (var n=0; n<supported.length; ++n) {
+
+            clone.ChangeFill(undefined, supported[n], this.svg_canvas());
+
+            var svg = "<svg width='100' height='20'><text x='1' y='14' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='10' stroke='none' fill='" + clone.color + "'></rect></svg>";
+
+            menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) { this.fillatt.ChangeFill(undefined, arg, this.svg_canvas()); this.Redraw(); }.bind(this));
+         }
          menu.add("endsub:");
          menu.add("endsub:");
       }
