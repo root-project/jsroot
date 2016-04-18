@@ -1144,7 +1144,7 @@
       var c = this.svg_canvas();
       if (pad_name === undefined) pad_name = this.pad_name;
       if ((pad_name.length > 0) && !c.empty())
-         c = c.select("[pad=" + pad_name + ']');
+         c = c.select(".subpads_layer").select("[pad=" + pad_name + ']');
       return c;
    }
 
@@ -3207,6 +3207,7 @@
 
           svg.append("svg:title").text("ROOT canvas");
           svg.append("svg:g").attr("class","root_frame");
+          svg.append("svg:g").attr("class","subpads_layer");
           svg.append("svg:g").attr("class","special_layer");
           svg.append("svg:g").attr("class","text_layer");
           svg.append("svg:g").attr("class","stat_layer");
@@ -3260,7 +3261,7 @@
          svg_rect = svg_pad.select(".root_pad_border");
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = this.svg_layer("special_layer","")
+         svg_pad = this.svg_canvas().select(".subpads_layer")
              .append("g")
              .attr("class", "root_pad")
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
@@ -3333,6 +3334,17 @@
       }
 
       return null;
+   }
+
+   JSROOT.TPadPainter.prototype.HasObjectsToDraw = function() {
+      // return true if any objects beside sub-pads exists in the pad
+
+      if ((this.pad===null) || !this.pad.fPrimitives || (this.pad.fPrimitives.arr.length==0)) return false;
+
+      for (var n=0;n<this.pad.fPrimitives.arr.length;++n)
+         if (this.pad.fPrimitives.arr[n] && this.pad.fPrimitives.arr[n]._typename != "TPad") return true;
+
+      return false;
    }
 
    JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
@@ -3569,7 +3581,7 @@
 
       painter.CreatePadSvg();
 
-      if (painter.MatchObjectType("TPad"))
+      if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw()))
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
 
       var prev_name = "";
