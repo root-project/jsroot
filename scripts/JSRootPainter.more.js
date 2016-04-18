@@ -1813,17 +1813,20 @@
          if (this.optionMark==2) marker_kind = 3; else
          if (this.optionMark==3) marker_kind = 777;
 
-         var marker = JSROOT.Painter.createAttMarker(graph,marker_kind);
+         if (!this.markeratt || (this.optionMark==3))
+            this.markeratt = JSROOT.Painter.createAttMarker(graph,marker_kind);
 
-         this.marker_size = marker.size;
+         this.marker_size = this.markeratt.size;
+
+         this.markeratt.reset_pos();
 
          for (n=0;n<this.bins.length;n+=step) {
             pnt = this.bins[n];
             grx = pmain.grx(pnt.x);
-            if ((grx > -marker.size) && (grx < w+marker.size)) {
+            if ((grx > -this.marker_size) && (grx < w+this.marker_size)) {
                gry = pmain.gry(pnt.y);
-               if ((gry >-marker.size) && (gry < h+marker.size)) {
-                  path += marker.create(grx, gry);
+               if ((gry >-this.marker_size) && (gry < h+this.marker_size)) {
+                  path += this.markeratt.create(grx, gry);
                }
             }
          }
@@ -1831,8 +1834,7 @@
          if (path.length>0) {
             this.draw_g.append("svg:path")
                        .attr("d", path)
-                       .style("fill", marker.fill)
-                       .style("stroke", marker.stroke);
+                       .call(this.markeratt.func);
             if ((nodes===null) && (this.draw_kind=="none"))
                this.draw_kind = (this.optionMark==3) ? "path" : "mark";
          }
@@ -2410,9 +2412,8 @@
                var marker = JSROOT.Painter.createAttMarker(attmarker);
                this.draw_g
                    .append("svg:path")
-                   .style("fill", marker.fill)
-                   .style("stroke", marker.stroke)
-                   .attr("d", marker.create((x0 + tpos_x)/2, mid_y));
+                   .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
+                   .call(marker.func);
             }
 
             var pos_x = tpos_x;
@@ -3549,8 +3550,8 @@
       if (defs.empty() && (colPaths.length>0))
          defs = this.svg_frame().select('.main_layer').insert("svg:defs",":first-child");
 
-      var marker = null;
-      if (histo.fMarkerStyle > 1) marker = JSROOT.Painter.createAttMarker(histo);
+      if (!this.markeratt)
+         this.markeratt = JSROOT.Painter.createAttMarker(histo);
 
       for (colindx=0;colindx<colPaths.length;++colindx)
         if (colPaths[colindx] !== undefined) {
@@ -3582,34 +3583,18 @@
 
            // arrx.sort();
 
-           var lastx = null, lasty = null, currx, curry, path = "", m1, m2;
+           this.markeratt.reset_pos();
 
-           for (var n=0;n<npix;++n) {
-              currx = Math.round(arrx[n] * cell_w[colindx]);
-              curry = Math.round(arry[n] * cell_h[colindx]);
+           var path = "";
 
-              if (marker!==null) {
-                 path += marker.create(currx, curry);
-                 continue;
-              }
-              m1 = "M" + currx + "," + curry;
-              if (lastx!==null) m2 = "m" + (currx-lastx) + "," + (curry-lasty);
-                           else m2 = m1;
-              if (m2.length<m1.length) path+=m2 + "v1";
-                                  else path+=m1 + "v1";
-              lastx = currx;
-              lasty = curry+1;
-           }
-
-           var color = this.lineatt.color;
-           if (color === 'none') color = this.fillatt.color;
-           if (color === 'none') color = 'black';
+           for (var n=0;n<npix;++n)
+              path += this.markeratt.create(arrx[n] * cell_w[colindx], arry[n] * cell_h[colindx]);
 
            pattern.attr("width", cell_w[colindx])
                   .attr("height", cell_h[colindx])
                   .append("svg:path")
                   .attr("d",path)
-                  .style("stroke", color);
+                  .call(this.markeratt.func);
 
            this.draw_g
                .append("svg:path")
