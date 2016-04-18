@@ -310,14 +310,16 @@
          if (style!==undefined) this.style = style;
          if (size!==undefined) this.size = size; else size = this.size;
 
+         this.x0 = this.y0 = 0;
+
+         this.reset_pos = function() {
+            this.lastx = this.lasty = null;
+         }
+
          if ((this.style === 1) || (this.style === 777)) {
             this.fill = false;
             this.marker = "h1";
             this.size = 1;
-
-            this.reset_pos = function() {
-               this.lastx = this.lasty = null;
-            }
 
             // use special create function to handle relative position movements
             this.create = function(x,y) {
@@ -399,8 +401,6 @@
             this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
             break;
          }
-
-         this.reset_pos = function() {}
 
          this.create = function(x,y) {
             return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
@@ -2034,11 +2034,11 @@
                function(arg) { this.markeratt.Change(undefined, undefined, parseInt(arg)); this.Redraw(); }.bind(this));
 
          menu.add("sub:style");
-         var supported = [1, 2, 3, 4, 5, 6, 7, 8, 21,22,23,24,25,26,27,28,29,30,31,32,33,34];
+         var supported = [1,2,3,4,5,6,7,8,21,22,23,24,25,26,27,28,29,30,31,32,33,34];
 
          var clone = JSROOT.clone(this.markeratt);
          for (var n=0; n<supported.length; ++n) {
-            clone.Change(undefined, supported[n], 1);
+            clone.Change(undefined, supported[n], 1.2);
             clone.reset_pos();
             var svg = "<svg width='60' height='12'><text x='1' y='9' style='font-size:10px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,5) + "'></path></svg>";
 
