@@ -47,7 +47,7 @@
          var close_tag = "</li>";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; }
 
-         if (typeof arg == 'function') { func = arg; arg = name; }
+         if (typeof arg == 'function') { func = arg; arg = name;  }
 
          // if ((arg==null) || (typeof arg != 'string')) arg = name;
 

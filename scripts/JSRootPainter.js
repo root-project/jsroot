@@ -304,11 +304,32 @@
 
       var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0 };
 
-      res.ChangeMarker = function(color, style, size) {
+      res.Change = function(color, style, size) {
 
          if (color!==undefined) this.color = color;
          if (style!==undefined) this.style = style;
          if (size!==undefined) this.size = size; else size = this.size;
+
+         if ((this.style === 1) || (this.style === 777)) {
+            this.fill = false;
+            this.marker = "h1";
+            this.size = 1;
+
+            this.reset_pos = function() {
+               this.lastx = this.lasty = null;
+            }
+
+            // use special create function to handle relative position movements
+            this.create = function(x,y) {
+               var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
+               var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
+               this.lastx = xx+1; this.lasty = yy;
+               return (m2.length < m1.length) ? m2 : m1;
+            }
+
+            this.reset_pos();
+            return true;
+         }
 
          var marker_kind = ((this.style>0) && (this.style<JSROOT.Painter.root_markers.length)) ? JSROOT.Painter.root_markers[this.style] : 100;
          var shape = marker_kind % 100;
@@ -378,6 +399,14 @@
             this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
             break;
          }
+
+         this.reset_pos = function() {}
+
+         this.create = function(x,y) {
+            return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+         }
+
+         return true;
       }
 
       res.Apply = function(selection) {
@@ -389,37 +418,7 @@
 
       res.func = res.Apply.bind(res);
 
-      if ((style === 777) || (style === 1)) {
-         // special pixel mode
-         res.fill = false;
-         res.marker = "h1";
-         res.size = 1;
-
-         res.reset_pos = function() {
-            this.lastx = this.lasty = null;
-         }
-
-         // use special create function to handle relative position movements
-         res.create = function(x,y) {
-            var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
-            var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
-            this.lastx = xx+1; this.lasty = yy;
-            return (m2.length < m1.length) ? m2 : m1;
-         }
-
-         res.reset_pos();
-
-         return res;
-      }
-
-      res.reset_pos = function() {}
-
-      res.create = function(x,y) {
-         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
-      }
-
-
-      res.ChangeMarker(marker_color, style, attmarker.fMarkerSize);
+      res.Change(marker_color, style, attmarker.fMarkerSize);
 
       return res;
    }
@@ -2021,11 +2020,29 @@
 
             var svg = "<svg width='100' height='20'><text x='1' y='14' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='10' stroke='none' fill='" + clone.color + "'></rect></svg>";
 
-            menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) { this.fillatt.ChangeFill(undefined, arg, this.svg_canvas()); this.Redraw(); }.bind(this));
+            menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) { this.fillatt.ChangeFill(undefined, parseInt(arg), this.svg_canvas()); this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
       }
+
+      if (this.markeratt !== undefined) {
+         menu.add("sub:"+preffix+"Marker att");
+         this.AddColorMenuEntry(menu, "color", this.markeratt.color,
+                   function(arg) { this.markeratt.Change(arg); this.Redraw(); }.bind(this));
+         this.AddSizeMenuEntry(menu, "size", 1, 12, 1, this.markeratt.size,
+               function(arg) { this.markeratt.Change(undefined, undefined, parseInt(arg)); this.Redraw(); }.bind(this));
+
+         menu.add("sub:style");
+         var supported = [1, 2, 3, 4, 5, 6, 7, 8, 21,22,23,24,25,26,27,28,29,30,31,32,33,34];
+         for (var n=0; n<supported.length; ++n)
+            menu.addchk(this.markeratt.style == supported[n], supported[n].toString(), supported[n],
+                     function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
+         menu.add("endsub:");
+
+         menu.add("endsub:");
+      }
+
    }
 
    JSROOT.TObjectPainter.prototype.FindInPrimitives = function(objname) {

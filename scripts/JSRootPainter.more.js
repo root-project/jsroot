@@ -1808,12 +1808,12 @@
       if (this.optionMark > 0) {
          // for tooltips use markers only if nodes where not created
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
-             path = "", n, pnt, grx, gry, marker_kind = null;
+             path = "", n, pnt, grx, gry, marker_kind;
 
          if (this.optionMark==2) marker_kind = 3; else
-         if (this.optionMark==3) marker_kind = 777;
+         if (this.optionMark==3) marker_kind = 1;
 
-         if (!this.markeratt || (this.optionMark==3))
+         if (!this.markeratt || (marker_kind!==undefined))
             this.markeratt = JSROOT.Painter.createAttMarker(graph,marker_kind);
 
          this.marker_size = this.markeratt.size;
