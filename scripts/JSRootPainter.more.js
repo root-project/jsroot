@@ -2352,12 +2352,13 @@
 
       this.SetDivId(divid);
 
-      this['DrawLegendItems'] = function(w, h) {
+      this.DrawLegendItems = function(w, h) {
 
          var legend = this.GetObject(),
              nlines = legend.fPrimitives.arr.length,
              ncols = legend.fNColumns,
-             nrows = nlines;
+             nrows = nlines,
+             pp = this.pad_painter();
 
          if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
 
@@ -2382,20 +2383,23 @@
             var pos_y = Math.round(padding_y + irow*step_y); // top corner
             var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
 
-            var attfill = leg;
-            var attmarker = leg;
-            var attline = leg;
+            var o_fill = leg, o_marker = leg, o_line = leg;
 
             var mo = leg.fObject;
 
+            var painter = null;
+
             if ((mo !== null) && (typeof mo == 'object')) {
-               if ('fLineColor' in mo) attline = mo;
-               if ('fFillColor' in mo) attfill = mo;
-               if ('fMarkerColor' in mo) attmarker = mo;
+               if ('fLineColor' in mo) o_line = mo;
+               if ('fFillColor' in mo) o_fill = mo;
+               if ('fMarkerColor' in mo) o_marker = mo;
+
+               if (pp) painter = pp.FindPainterFor(mo);
             }
 
             // Draw fill pattern (in a box)
-            if (lopt.indexOf('f') != -1)
+            if (lopt.indexOf('f') != -1) {
+               var fillatt = (painter & painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
                this.draw_g.append("svg:rect")
@@ -2403,16 +2407,19 @@
                       .attr("y", Math.round(pos_y+step_y*0.1))
                       .attr("width", tpos_x - 2*padding_x - x0)
                       .attr("height", Math.round(step_y*0.8))
-                      .call(this.createAttFill(attfill).func);
+                      .call(fillatt.func);
+            }
 
             // Draw line
-            if (lopt.indexOf('l') != -1)
+            if (lopt.indexOf('l') != -1) {
+               var lineatt = (painter && painter.lineatt) ? painter.lineatt : JSROOT.Painter.createAttLine(o_line)
                this.draw_g.append("svg:line")
                   .attr("x1", x0 + padding_x)
                   .attr("y1", mid_y)
                   .attr("x2", tpos_x - padding_x)
                   .attr("y2", mid_y)
-                  .call(JSROOT.Painter.createAttLine(attline).func);
+                  .call(lineatt.func);
+            }
 
             // Draw error
             if (lopt.indexOf('e') != -1  && (lopt.indexOf('l') == -1 || lopt.indexOf('f') != -1)) {
@@ -2420,7 +2427,7 @@
 
             // Draw Polymarker
             if (lopt.indexOf('p') != -1) {
-               var marker = JSROOT.Painter.createAttMarker(attmarker);
+               var marker = (painter && painter.markeratt) ? painter.markeratt : JSROOT.Painter.createAttMarker(o_marker);
                this.draw_g
                    .append("svg:path")
                    .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
