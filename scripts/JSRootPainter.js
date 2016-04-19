@@ -2031,7 +2031,7 @@
       if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.ChangeFill(arg, undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
+               function(arg) { this.fillatt.ChangeFill(parseInt(arg), undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
@@ -2052,7 +2052,10 @@
 
             var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + clone.color + "'></rect></svg>";
 
-            menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) { this.fillatt.ChangeFill(undefined, parseInt(arg), this.svg_canvas()); this.Redraw(); }.bind(this));
+            menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
+               this.fillatt.ChangeFill(undefined, parseInt(arg), this.svg_canvas());
+               this.Redraw();
+            }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -3282,7 +3285,8 @@
             svg.attr("visibility", "hidden");
             return false;
          } else {
-            svg.attr("visibility", "visible")
+            svg.attr("visibility", "visible");
+            svg.select(".canvas_fillrect")
                .call(this.fillatt.func);
          }
 
@@ -3332,16 +3336,16 @@
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
-          svg.append("svg:title").text("ROOT canvas");
-          svg.append("svg:g").attr("class","root_frame");
-          svg.append("svg:g").attr("class","subpads_layer");
-          svg.append("svg:g").attr("class","special_layer");
-          svg.append("svg:g").attr("class","text_layer");
-          svg.append("svg:g").attr("class","stat_layer");
-          svg.append("svg:g").attr("class","btns_layer");
+         svg.append("svg:title").text("ROOT canvas");
+         svg.append("svg:rect").attr("class","canvas_fillrect").attr("x",0).attr("y",0);
+         svg.append("svg:g").attr("class","root_frame");
+         svg.append("svg:g").attr("class","subpads_layer");
+         svg.append("svg:g").attr("class","special_layer");
+         svg.append("svg:g").attr("class","text_layer");
+         svg.append("svg:g").attr("class","stat_layer");
+         svg.append("svg:g").attr("class","btns_layer");
 
-          this.fillatt = this.createAttFill(this.pad, 1001, 0);
-          this.fillatt.attr = 'background-color'; // set special attribute of the SVG element
+         this.fillatt = this.createAttFill(this.pad, 1001, 0);
       }
 
       if ((w<=0) || (h<=0)) {
@@ -3361,7 +3365,11 @@
          .property('draw_x', 0)
          .property('draw_y', 0)
          .property('draw_width', w)
-         .property('draw_height', h)
+         .property('draw_height', h);
+
+      svg.select(".canvas_fillrect")
+         .attr("width",w)
+         .attr("height",h)
          .call(this.fillatt.func);
 
       this.svg_layer("btns_layer").attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")");
@@ -6116,7 +6124,7 @@
                menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
          }
 
-         obj.FillAttContextMenu(menu,obj.iscan ? "Canvas " : "Pad ");
+         obj.FillAttContextMenu(menu, obj.iscan ? "Canvas " : "Pad ");
 
          if (this.frame_painter())
             this.frame_painter().FillAttContextMenu(menu, "Frame ");
@@ -6864,8 +6872,13 @@
 
 
    JSROOT.TH1Painter.prototype.FillHistContextMenu = function(menu) {
-      if (this.draw_content)
-         menu.add("Auto zoom-in", this.AutoZoom.bind(this));
+      if (!this.draw_content) return;
+
+      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
+      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2"], function(arg) {
+         this.options = this.DecodeOptions(arg);
+         this.Redraw();
+      });
    }
 
    JSROOT.TH1Painter.prototype.AutoZoom = function() {
