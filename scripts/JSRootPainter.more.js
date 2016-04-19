@@ -1018,6 +1018,7 @@
                      exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
 
          res.changed = gbin.property("current_bin") !== best;
+         res.menu = res.exact;
 
          if (res.changed)
             gbin.attr("cx", bin.grx)
@@ -1047,9 +1048,12 @@
          var pmain = this.main_painter();
          var name = this.GetTipName("\n");
 
-         this.lineatt = JSROOT.Painter.createAttLine(tf1);
-         this.fillatt = this.createAttFill(tf1);
-         if (this.fillatt.color == 'white') this.fillatt.color = 'none';
+         if (!this.lineatt)
+            this.lineatt = JSROOT.Painter.createAttLine(tf1);
+         this.lineatt.used = false;
+         if (!this.fillatt)
+            this.fillatt = this.createAttFill(tf1);
+         this.fillatt.used = false;
 
          var n, bin;
          // first calculate graphical coordinates
@@ -1570,15 +1574,6 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.GetFillFunc = function() {
-      // create fill attributes only when needed
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(this.GetObject());
-
-      this.fillatt.used = true;
-      return this.fillatt.func;
-   }
-
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
 
       this.RecreateDrawG(false, "main_layer");
@@ -1592,6 +1587,10 @@
 
       if (!this.lineatt)
          this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(graph);
+      this.fillatt.used = false;
+
       if (this.fillatt) this.fillatt.used = false; // mark used only when really used
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
@@ -1629,7 +1628,7 @@
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
                     .style("stroke", "none")
-                    .call(this.GetFillFunc());
+                    .call(this.fillatt.func);
          this.draw_kind = "lines";
       }
 
@@ -1673,7 +1672,7 @@
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
                        .style("stroke", "none")
-                       .call(this.GetFillFunc())
+                       .call(this.fillatt.func)
                        .style('opacity', 0.75);
          }
 
@@ -1686,7 +1685,7 @@
                elem.style('stroke','none');
 
             if (this.optionFill > 0)
-               elem.call(this.GetFillFunc());
+               elem.call(this.fillatt.func);
             else
                elem.style('fill','none');
          }
@@ -1771,7 +1770,7 @@
                 if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
-            .call(this.GetFillFunc());
+            .call(this.fillatt.func);
       }
 
       if (this.optionRect)
@@ -1781,7 +1780,7 @@
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
-           .call(this.GetFillFunc());
+           .call(this.fillatt.func);
 
       if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
@@ -2115,13 +2114,6 @@
 
       this.DrawNextFunction(indx+1, callback);
    }
-
-   JSROOT.TGraphPainter.prototype.FillContextMenu = function(menu) {
-      menu.add("header:"+ this.GetTipName());
-
-      this.FillAttContextMenu(menu);
-   }
-
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       JSROOT.extend(this, new JSROOT.TGraphPainter(graph));

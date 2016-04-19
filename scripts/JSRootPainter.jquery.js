@@ -51,8 +51,8 @@
 
          // if ((arg==null) || (typeof arg != 'string')) arg = name;
 
-         if (name.indexOf("chk:")==0) { name = "<span class='ui-icon ui-icon-check'></span>" + name.substr(4); } else
-         if (name.indexOf("unk:")==0) { name = "<span class='ui-icon ui-icon-blank'></span>" + name.substr(4); }
+         if (name.indexOf("chk:")==0) { name = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>" + name.substr(4); } else
+         if (name.indexOf("unk:")==0) { name = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>" + name.substr(4); }
 
          // special handling of first versions with menu support
          if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))

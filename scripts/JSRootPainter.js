@@ -461,6 +461,7 @@
          line.color = 'lightgrey';
 
       line.SetLine = function(selection) {
+         this.used = true;
          selection.style('stroke', this.color);
          if (this.color!='none') {
             selection.style('stroke-width', this.width);
@@ -1531,6 +1532,8 @@
 
       var fill = { color: "none", colorindx: 0, pattern: 0, used: true };
       fill.SetFill = function(selection) {
+         this.used = true;
+
          if (this.attr)
             selection.style(this.attr, (this.color == "none") ? null : this.color);
          else
@@ -2077,8 +2080,16 @@
          menu.add("endsub:");
          menu.add("endsub:");
       }
-
    }
+
+   JSROOT.TObjectPainter.prototype.FillContextMenu = function(menu) {
+      menu.add("header:"+ this.GetTipName());
+
+      this.FillAttContextMenu(menu);
+
+      return menu.size() > 0;
+   }
+
 
    JSROOT.TObjectPainter.prototype.FindInPrimitives = function(objname) {
       // try to find object by name in list of pad primitives
@@ -6012,10 +6023,14 @@
 
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = this; // in all menu callbacks painter will be 'this' pointer
-         this.FillContextMenu(menu, kind, obj);
-         // suppress any running zomming
-         this.SwitchTooltip(false);
-         menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
+         var domenu = this.FillContextMenu(menu, kind, obj);
+
+         if (domenu !== false) {
+            // suppress any running zomming
+            this.SwitchTooltip(false);
+            menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
+         }
+
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
    }
@@ -6072,7 +6087,7 @@
          this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
                    function(arg) { faxis.fTickLength = arg; this.RedrawPad(); } );
          menu.add("endsub:");
-         return;
+         return true;
       }
 
       if ((kind == "pad") && (obj!==null)) {
@@ -6122,7 +6137,7 @@
                });
          });
 
-         return;
+         return true;
       }
 
       menu.add("header:"+ this.histo.fName);
@@ -6134,6 +6149,8 @@
          this.FillHistContextMenu(menu);
 
       this.FillAttContextMenu(menu);
+
+      return true;
    }
 
    JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
