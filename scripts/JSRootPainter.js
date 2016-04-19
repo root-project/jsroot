@@ -1974,7 +1974,7 @@
       if (this.lineatt !== undefined) {
          menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.width = arg; this.Redraw(); }.bind(this));
+                               function(arg) { this.lineatt.width = parseInt(arg); this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
                           function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
@@ -2030,8 +2030,8 @@
          menu.add("sub:"+preffix+"Marker att");
          this.AddColorMenuEntry(menu, "color", this.markeratt.color,
                    function(arg) { this.markeratt.Change(arg); this.Redraw(); }.bind(this));
-         this.AddSizeMenuEntry(menu, "size", 1, 12, 1, this.markeratt.size,
-               function(arg) { this.markeratt.Change(undefined, undefined, parseInt(arg)); this.Redraw(); }.bind(this));
+         this.AddSizeMenuEntry(menu, "size", 0.5, 6, 0.5, this.markeratt.size,
+               function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.Redraw(); }.bind(this));
 
          menu.add("sub:style");
          var supported = [1,2,3,4,5,6,7,8,21,22,23,24,25,26,27,28,29,30,31,32,33,34];
@@ -5986,7 +5986,6 @@
          menu.painter = this; // in all menu callbacks painter will be 'this' pointer
          this.FillContextMenu(menu, kind, obj);
          // suppress any running zomming
-         this.clearInteractiveElements();
          this.SwitchTooltip(false);
          menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          delete this.ctx_menu_evnt; // delete temporary variable
@@ -5994,6 +5993,9 @@
    }
 
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
+
+      // when fill and show context menu, remove all zooming
+      this.clearInteractiveElements();
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          var faxis = this.histo.fXaxis;

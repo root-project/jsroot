@@ -1581,14 +1581,17 @@
           graph = this.GetObject(),
           excl_width = 0;
 
-      this.lineatt = JSROOT.Painter.createAttLine(graph);
-      this.fillatt = this.createAttFill(graph);
+      if (!this.lineatt)
+         this.lineatt = JSROOT.Painter.createAttLine(graph);
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(graph);
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
+      this.marker_size = 0; // indicate if markers are drawn
 
       if (Math.abs(this.lineatt.width) > 99) {
          // exclusion graph
          if (this.lineatt.width < 0) {
-            this.lineatt.width = - this.lineatt.width;
+            this.lineatt.width = -this.lineatt.width;
             excl_width = -1;
          } else {
             excl_width = 1;
@@ -1908,6 +1911,7 @@
                   lines: this.TooltipText(d, true) };
 
       if (best.exact) res.exact = true;
+      res.menu = res.exact; // activate menu only when exactly locate bin
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -1961,7 +1965,7 @@
 
       var radius = Math.max(this.lineatt.width + 3, 4);
 
-      if (ismark) radius = Math.max(this.marker_size/2 + 2, 4);
+      if (this.marker_size > 0) radius = Math.max(Math.round(this.marker_size*7), radius);
 
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
@@ -2001,6 +2005,8 @@
 
       res.exact = (Math.abs(pnt.x - res.x) <= radius) &&
                   ((Math.abs(pnt.y - gry1) <= radius) || (Math.abs(pnt.y - gry2) <= radius));
+
+      res.menu = res.exact;
 
       res.changed = ttbin.property("current_bin") !== bestbin;
 
@@ -2103,6 +2109,13 @@
 
       this.DrawNextFunction(indx+1, callback);
    }
+
+   JSROOT.TGraphPainter.prototype.FillContextMenu = function(menu) {
+      menu.add("header:"+ this.GetTipName());
+
+      this.FillAttContextMenu(menu);
+   }
+
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       JSROOT.extend(this, new JSROOT.TGraphPainter(graph));
