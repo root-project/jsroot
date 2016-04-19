@@ -1020,6 +1020,16 @@
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
+   JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
+      if (!this.draw_content) return;
+
+      menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
+         this.options = this.DecodeOptions(arg);
+         this.Redraw();
+      });
+   }
+
+
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
       // when called, *this* set to painter instance
 
