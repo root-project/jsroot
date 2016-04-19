@@ -302,7 +302,7 @@
 
       if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
 
-      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0 };
+      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0, used: true };
 
       res.Change = function(color, style, size) {
 
@@ -437,6 +437,7 @@
       if (borderw!==undefined) _width = borderw;
 
       var line = {
+          used: true, // can mark object if it used or not,
           color: JSROOT.Painter.root_colors[color],
           width: _width,
           dash: JSROOT.Painter.root_line_styles[style]
@@ -1528,7 +1529,7 @@
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
-      var fill = { color: "none", colorindx: 0, pattern: 0 };
+      var fill = { color: "none", colorindx: 0, pattern: 0, used: true };
       fill.SetFill = function(selection) {
          if (this.attr)
             selection.style(this.attr, (this.color == "none") ? null : this.color);
@@ -1982,7 +1983,7 @@
 
       if (!preffix) preffix = "";
 
-      if (this.lineatt !== undefined) {
+      if (this.lineatt && this.lineatt.used) {
          menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.width = parseInt(arg); this.Redraw(); }.bind(this));
@@ -2024,7 +2025,7 @@
          }
       }
 
-      if (this.fillatt !== undefined) {
+      if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
                function(arg) { this.fillatt.ChangeFill(arg, undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
@@ -2054,7 +2055,7 @@
          menu.add("endsub:");
       }
 
-      if (this.markeratt !== undefined) {
+      if (this.markeratt && this.markeratt.used) {
          menu.add("sub:"+preffix+"Marker att");
          this.AddColorMenuEntry(menu, "color", this.markeratt.color,
                    function(arg) { this.markeratt.Change(arg); this.Redraw(); }.bind(this));

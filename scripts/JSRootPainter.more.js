@@ -1570,6 +1570,15 @@
       return res;
    }
 
+   JSROOT.TGraphPainter.prototype.GetFillFunc = function() {
+      // create fill attributes only when needed
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(this.GetObject());
+
+      this.fillatt.used = true;
+      return this.fillatt.func;
+   }
+
    JSROOT.TGraphPainter.prototype.DrawBins = function() {
 
       this.RecreateDrawG(false, "main_layer");
@@ -1583,8 +1592,7 @@
 
       if (!this.lineatt)
          this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(graph);
+      if (this.fillatt) this.fillatt.used = false; // mark used only when really used
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
 
@@ -1621,7 +1629,7 @@
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
                     .style("stroke", "none")
-                    .call(this.fillatt.func);
+                    .call(this.GetFillFunc());
          this.draw_kind = "lines";
       }
 
@@ -1665,7 +1673,7 @@
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
                        .style("stroke", "none")
-                       .call(this.fillatt.func)
+                       .call(this.GetFillFunc())
                        .style('opacity', 0.75);
          }
 
@@ -1678,7 +1686,7 @@
                elem.style('stroke','none');
 
             if (this.optionFill > 0)
-               elem.call(this.fillatt.func);
+               elem.call(this.GetFillFunc());
             else
                elem.style('fill','none');
          }
@@ -1763,7 +1771,7 @@
                 if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
-            .call(this.fillatt.func);
+            .call(this.GetFillFunc());
       }
 
       if (this.optionRect)
@@ -1773,7 +1781,7 @@
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
-           .call(this.fillatt.func);
+           .call(this.GetFillFunc());
 
       if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
@@ -1899,8 +1907,9 @@
       var d = d3.select(findbin).datum();
 
       var res = { x: d.grx1, y: d.gry1,
-                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  color1: this.lineatt.color,
                   lines: this.TooltipText(d, true) };
+      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
@@ -1977,10 +1986,15 @@
       }
 
       var res = { x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
-                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  color1: this.lineatt.color,
                   lines: this.TooltipText(bestbin, true) };
 
-      if (!islines) res.color1 = res.color2 = JSROOT.Painter.root_colors[this.GetObject().fMarkerColor];
+      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
+
+      if (!islines) {
+         res.color1 = JSROOT.Painter.root_colors[this.GetObject().fMarkerColor];
+         if (!res.color2) res.color2 = res.color1;
+      }
 
       if (ttbin.empty())
          ttbin = this.draw_g.append("svg:g")
