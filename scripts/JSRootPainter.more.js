@@ -3649,7 +3649,7 @@
       if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
-         this.options.Box = 1;
+         this.options.Scat = 1;
 
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);
