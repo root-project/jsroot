@@ -3032,6 +3032,36 @@
       return true;
    }
 
+   JSROOT.TH2Painter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+      if (nlevels<1) nlevels = 20;
+      this.fContour = [];
+      this.zmin = zmin;
+      this.zmax = zmax;
+
+      if (this.options.Logz) {
+         if (this.zmax <= 0) this.zmax = 1.;
+         if (this.zmin <= 0)
+            this.zmin = (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
+         if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
+
+         var logmin = Math.log(this.zmin)/Math.log(10);
+         var logmax = Math.log(this.zmax)/Math.log(10);
+         var dz = (logmax-logmin)/nlevels;
+         this.fContour.push(this.zmin);
+         for (var level=1; level<nlevels; level++)
+            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
+         this.fContour.push(this.zmax);
+      } else {
+         if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+            this.zmax += 0.01*Math.abs(this.zmax);
+            this.zmin -= 0.01*Math.abs(this.zmin);
+         }
+         var dz = (this.zmax-this.zmin)/nlevels;
+         for (var level=0; level<=nlevels; level++)
+            this.fContour.push(this.zmin + dz*level);
+      }
+   }
+
    JSROOT.TH2Painter.prototype.getContourIndex = function(zc) {
       // return contour index, which corresponds to the z content value
 
@@ -3045,39 +3075,13 @@
             this.fContour = JSROOT.clone(histo.fContour);
             this.fUserContour = true;
          } else {
-            var nlevels = 20;
+            var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
             if (histo.fContour != null) nlevels = histo.fContour.length;
-            if (nlevels<1) nlevels = 20;
-            this.fContour = [];
-            this.zmin = this.minbin;
-            this.zmax = this.maxbin;
             if (this.zoom_zmin != this.zoom_zmax) {
-               this.zmin = this.zoom_zmin;
-               this.zmax = this.zoom_zmax;
+               zmin = this.zoom_zmin;
+               zmax = this.zoom_zmax;
             }
-
-            if (this.options.Logz) {
-
-               if (this.zmax <= 0) this.zmax = 1.;
-               if (this.zmin <= 0) this.zmin = 0.3*this.minposbin;
-               if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
-
-               var logmin = Math.log(this.zmin)/Math.log(10);
-               var logmax = Math.log(this.zmax)/Math.log(10);
-               var dz = (logmax-logmin)/nlevels;
-               this.fContour.push(this.zmin);
-               for (var level=1; level<nlevels; level++)
-                  this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
-               this.fContour.push(this.zmax);
-            } else {
-               if ((this.zmin == this.zmax) && (this.zmin != 0)) {
-                  this.zmax += 0.01*Math.abs(this.zmax);
-                  this.zmin -= 0.01*Math.abs(this.zmin);
-               }
-               var dz = (this.zmax-this.zmin)/nlevels;
-               for (var level=0; level<=nlevels; level++)
-                  this.fContour.push(this.zmin + dz*level);
-            }
+            this.CreateContour(nlevels, zmin, zmax, this.minposbin);
          }
       }
 
@@ -3285,13 +3289,13 @@
    }
 
    JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {
-      var histo = this.GetObject(), i, j, x, y, binz,
+      var histo = this.GetObject(), i, j, x, y, binz, binarea,
           res = {
              i1: this.GetSelectIndex("x", "left", 0),
              i2: this.GetSelectIndex("x", "right", 1),
              j1: this.GetSelectIndex("y", "left", 0),
              j2: this.GetSelectIndex("y", "right", 1),
-             grx: [], gry: []
+             grx: [], gry: [], min: 0, max: 0
           };
 
       if (pixel_density) dorounding = true;
@@ -3311,7 +3315,7 @@
          if (dorounding) res.gry[j] = Math.round(res.gry[j]);
       }
 
-      //  findd min/max values in selected range
+      //  find min/max values in selected range
 
       binz = histo.getBinContent(res.i1 + 1, res.j1 + 1);
       this.maxbin = this.minbin = this.minposbin = null;
@@ -3319,7 +3323,13 @@
       for (i = res.i1; i < res.i2; ++i) {
          for (j = res.j1; j < res.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if (pixel_density) binz = binz/(res.grx[i+1]-res.grx[i]+1)/(res.gry[j]-res.gry[j+1]+1);
+            if (pixel_density) {
+               binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
+               if (binarea <= 0) continue;
+               res.max = Math.max(res.max, binz);
+               if ((binz>0) && ((binz<res.min) || (res.min===0))) res.min = binz;
+               binz = binz/binarea;
+            }
             if (this.maxbin===null) {
                this.maxbin = this.minbin = binz;
             } else {
@@ -3327,7 +3337,7 @@
                this.minbin = Math.min(this.minbin, binz);
             }
             if (binz > 0)
-              this.minposbin = Math.min(binz, (this.minposbin===null) ? binz : this.minposbin);
+               if ((this.minposbin===null) || (binz<this.minposbin)) this.minposbin = binz;
          }
       }
 
@@ -3513,9 +3523,15 @@
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(true, true),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
-          colindx, cmd1, cmd2, i, j, binz, cw, ch;
+          colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.;
 
-         // now start build
+      // limit filling factor, do not try to produce as many points as filled area;
+      if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
+
+      var nlevels = Math.round(handle.max - handle.min);
+      this.CreateContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
+
+      // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
@@ -3523,6 +3539,7 @@
 
             cw = handle.grx[i+1] - handle.grx[i];
             ch = handle.gry[j] - handle.gry[j+1];
+            if (cw*ch <= 0) continue;
 
             colindx = this.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
@@ -3546,15 +3563,16 @@
          }
       }
 
-      var defs = this.svg_frame().select('.main_layer').select("defs");
+      var layer = this.svg_frame().select('.main_layer');
+      var defs = layer.select("defs");
       if (defs.empty() && (colPaths.length>0))
-         defs = this.svg_frame().select('.main_layer').insert("svg:defs",":first-child");
+         defs = layer.insert("svg:defs",":first-child");
 
       if (!this.markeratt)
          this.markeratt = JSROOT.Painter.createAttMarker(histo);
 
       for (colindx=0;colindx<colPaths.length;++colindx)
-        if (colPaths[colindx] !== undefined) {
+        if ((colPaths[colindx] !== undefined) && (colindx<this.fContour.length)) {
            var pattern_class = "scatter_" + colindx;
            var pattern = defs.select('.'+pattern_class);
            if (pattern.empty())
@@ -3565,13 +3583,7 @@
            else
               pattern.selectAll("*").remove();
 
-           var dens = colindx < this.fContour.length-1 ? (this.fContour[colindx] + this.fContour[colindx+1]) / 2 : this.maxbin;
-
-           // console.log('index ' + colindx + '  density = ' + dens.toFixed(5) + ' max = ' + this.maxbin.toFixed(5));
-
-           if (this.maxbin>0.5) dens = dens / this.maxbin*0.5;
-
-           var npix = Math.round(dens*cell_w[colindx]*cell_h[colindx])*5;
+           var npix = Math.round(factor*this.fContour[colindx]*cell_w[colindx]*cell_h[colindx]);
            if (npix<1) npix = 1;
 
            var arrx = new Float32Array(npix), arry = new Float32Array(npix);
