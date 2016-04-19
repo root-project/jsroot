@@ -9,6 +9,8 @@
     padding: 0;
     margin: 0;
     font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+    box-sizing: content-box;
+    line-height: 14px
 }
 
 .jsroot .h_tree img {

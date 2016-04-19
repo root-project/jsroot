@@ -325,7 +325,7 @@
                .style('overflow', 'auto')
                .style('width', '100%')
                .style('height', '100%')
-               .style('font-size', this.with_icons ? "12px" : "15px" );
+               .style('font-size', this.with_icons ? "12px" : "15px");
 
       for (var n=0;n<factcmds.length;++n) {
          var btn =
