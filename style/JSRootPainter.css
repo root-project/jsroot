@@ -382,8 +382,8 @@
     z-index: 11;
     overflow: visible;
     font-size: 11px;
+    line-height: 16px;
 }
-
 
 .jsroot .fast_command {
     width: 28px;

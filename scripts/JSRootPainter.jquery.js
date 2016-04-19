@@ -44,8 +44,8 @@
          }
 
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
-         var close_tag = "</li>";
-         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; }
+         var close_tag = "</li>", style = "padding-top:2px;padding-bottom:1px";
+         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; style += ";padding-right:2em"}
 
          if (typeof arg == 'function') { func = arg; arg = name;  }
 
@@ -58,7 +58,7 @@
          if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
             name = '<a href="#">' + name + '</a>';
 
-         this.code += "<li cnt='" + this.cnt + "' arg='" + arg + "'>" + name + close_tag;
+         this.code += "<li cnt='" + this.cnt + "' arg='" + arg + "' style='" + style + "'>" + name + close_tag;
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
 
          this.cnt++;

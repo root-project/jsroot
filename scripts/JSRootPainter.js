@@ -1950,7 +1950,7 @@
       var useid = (typeof value !== 'string');
       for (var n=-1;n<8;++n) {
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
-         var svg = "<svg width='100' height='20' style='background-color:" + col + "'><text x='4' y='14' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
+         var svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
          menu.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
       }
       menu.add("endsub:");
@@ -2003,7 +2003,7 @@
          for (var n=1;n<11;++n) {
             var style = JSROOT.Painter.root_line_styles[n];
 
-            var svg = "<svg width='100' height='20'><text x='1' y='14' style='font-size:12px'>" + n + "</text><line x1='30' y1='10' x2='100' y2='10' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
+            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
 
             menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.dash = arg; this.Redraw(); }.bind(this));
          }
@@ -2050,7 +2050,7 @@
 
             clone.ChangeFill(undefined, supported[n], this.svg_canvas());
 
-            var svg = "<svg width='100' height='20'><text x='1' y='14' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='10' stroke='none' fill='" + clone.color + "'></rect></svg>";
+            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + clone.color + "'></rect></svg>";
 
             menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) { this.fillatt.ChangeFill(undefined, parseInt(arg), this.svg_canvas()); this.Redraw(); }.bind(this));
          }
@@ -2070,9 +2070,9 @@
 
          var clone = JSROOT.clone(this.markeratt);
          for (var n=0; n<supported.length; ++n) {
-            clone.Change(undefined, supported[n], 1.2);
+            clone.Change(undefined, supported[n], 1.7);
             clone.reset_pos();
-            var svg = "<svg width='60' height='12'><text x='1' y='9' style='font-size:10px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,5) + "'></path></svg>";
+            var svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,8) + "'></path></svg>";
 
             menu.addchk(this.markeratt.style == supported[n], svg, supported[n],
                      function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
