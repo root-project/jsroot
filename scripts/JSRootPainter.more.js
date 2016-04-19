@@ -1582,23 +1582,15 @@
           excl_width = 0;
 
       if (!this.lineatt)
-         this.lineatt = JSROOT.Painter.createAttLine(graph);
+         this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
       if (!this.fillatt)
          this.fillatt = this.createAttFill(graph);
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
 
-      if (Math.abs(this.lineatt.width) > 99) {
-         // exclusion graph
-         if (this.lineatt.width < 0) {
-            this.lineatt.width = -this.lineatt.width;
-            excl_width = -1;
-         } else {
-            excl_width = 1;
-         }
-         excl_width *= Math.floor(this.lineatt.width / 100) * 5;
-         this.lineatt.width = this.lineatt.width % 100; // line width
-         if (this.lineatt.width > 0) this.optionLine = 1;
+      if (this.lineatt.excl_side!=0) {
+         excl_width = this.lineatt.excl_side * this.lineatt.excl_width;
+         if (this.lineatt.width>0) this.optionLine = 1;
       }
 
       var drawbins = null;

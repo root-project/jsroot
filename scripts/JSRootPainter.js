@@ -423,7 +423,7 @@
       return res;
    }
 
-   JSROOT.Painter.createAttLine = function(attline, borderw) {
+   JSROOT.Painter.createAttLine = function(attline, borderw, can_excl) {
 
       var color = 0, _width = 0, style = 0;
 
@@ -434,7 +434,7 @@
          if ('fLineWidth' in attline) _width = attline.fLineWidth;
          if ('fLineStyle' in attline) style = attline.fLineStyle;
       }
-      if (borderw!=null) _width = borderw;
+      if (borderw!==undefined) _width = borderw;
 
       var line = {
           color: JSROOT.Painter.root_colors[color],
@@ -443,6 +443,17 @@
       };
 
       if ((_width==0) || (color==0)) line.color = 'none';
+
+      if (can_excl) {
+         line.excl_side = 0;
+         line.excl_width = 0;
+         if (Math.abs(line.width) > 99) {
+            // exclusion graph
+            line.excl_side = (line.width < 0) ? -1 : 1;
+            line.excl_width = Math.floor(line.width / 100) * 5;
+            line.width = line.width % 100; // line width
+         }
+      }
 
       // if custom color number used, use lightgrey color to show lines
       if ((line.color === undefined) && (color>0))
@@ -1994,6 +2005,23 @@
          }
          menu.add("endsub:");
          menu.add("endsub:");
+
+         if (('excl_side' in this.lineatt) && (this.lineatt.excl_side!==0))  {
+            menu.add("sub:Exclusion");
+            menu.add("sub:side");
+            for (var side=-1;side<=1;++side)
+               menu.addchk((this.lineatt.excl_side==side), side, side, function(arg) {
+                  this.lineatt.excl_side = parseInt(arg);
+                  if ((this.lineatt.excl_width===0) && (this.lineatt.excl_side!=0)) this.lineatt.excl_width = 20;
+                  this.Redraw();
+               }.bind(this));
+            menu.add("endsub:");
+
+            this.AddSizeMenuEntry(menu, "width", 10, 100, 10, this.lineatt.excl_width,
+                  function(arg) { this.lineatt.excl_width = parseInt(arg); this.Redraw(); }.bind(this));
+
+            menu.add("endsub:");
+         }
       }
 
       if (this.fillatt !== undefined) {
@@ -2046,7 +2074,6 @@
                      function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
-
          menu.add("endsub:");
       }
 
