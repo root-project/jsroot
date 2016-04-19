@@ -2357,8 +2357,7 @@
          var legend = this.GetObject(),
              nlines = legend.fPrimitives.arr.length,
              ncols = legend.fNColumns,
-             nrows = nlines,
-             pp = this.pad_painter();
+             nrows = nlines;
 
          if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
 
@@ -2394,7 +2393,7 @@
                if ('fFillColor' in mo) o_fill = mo;
                if ('fMarkerColor' in mo) o_marker = mo;
 
-               if (pp) painter = pp.FindPainterFor(mo);
+               painter = this.FindPainterFor(mo);
             }
 
             // Draw fill pattern (in a box)
@@ -2653,7 +2652,7 @@
          this.Enabled = true;
          var main = this.main_painter();
          this.UseContextMenu = (main !== null);
-         if ((main !== null) && ('options' in main))
+         if ((main !== null) && main.options)
             this.Enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
 
          this.DrawPave();
@@ -2683,15 +2682,18 @@
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
    JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
-      if (this.options.Lego > 0) {
-         menu.add("Draw in 2D", function() { this.options.Lego = 0; this.RedrawPad(); });
-      } else {
-         menu.add("Auto zoom-in", function() { this.AutoZoom(); });
-         menu.add("Draw in 3D", function() { this.options.Lego = 1; this.RedrawPad(); });
-         menu.add("Toggle col", function() { this.ToggleColor(); });
-         if (this.options.Color > 0)
-            menu.add("Toggle colz", this.ToggleColz.bind(this));
-      }
+      if (!this.draw_content) return;
+
+      // painter automatically bind to mene callbacks
+      menu.add("Auto zoom-in", this.AutoZoom);
+
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego"], function(arg) {
+         this.options = this.DecodeOptions(arg);
+         if (this.options.Zscale > 0)
+            // draw new palette, resize frame if required
+            this.DrawNewPalette(true);
+         this.RedrawPad();
+      });
    }
 
    JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
@@ -3821,13 +3823,9 @@
       this.ScanContent();
 
       // check if we need to create palette
-      if (this.create_canvas && (this.options.Zscale > 0)) {
+      if (this.create_canvas && (this.options.Zscale > 0))
          // draw new palette, resize frame if required
          this.DrawNewPalette(true);
-      } else if (this.options.Zscale == 0) {
-         // delete palette - it may appear there due to previous draw options
-         this.FindPalette(true);
-      }
 
       // create X/Y only when frame is adjusted, probably should be done differently
       this.CreateXY();
