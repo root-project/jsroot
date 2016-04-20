@@ -216,7 +216,7 @@
 
    /** Function that generates all root colors */
    JSROOT.Painter.root_colors = function() {
-      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89,211,84)','rgb(89,84,216)', 'white'];
+      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','limegreen','slateblue', 'white'];
       colorMap[110] = 'white';
 
       var moreCol = [
@@ -460,8 +460,12 @@
 
       line.Apply = function(selection) {
          this.used = true;
-         selection.style('stroke', this.color);
-         if (this.color!='none') {
+         if (this.color=='none') {
+            selection.style('stroke', null);
+            selection.style('stroke-width', null);
+            selection.style('stroke-dasharray', null);
+         } else {
+            selection.style('stroke', this.color);
             selection.style('stroke-width', this.width);
             if (this.dash && (this.dash.length>0))
                selection.style('stroke-dasharray', this.dash);
@@ -1528,7 +1532,12 @@
 
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
-      var fill = { color: "none", colorindx: 0, pattern: 0, used: true };
+      // fill kind can be 1 or 2
+      // 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
+      // 2 means all other objects where such combination is white-color filling
+
+      var fill = { color: "none", colorindx: 0, pattern: 0, used: true, kind: 2 };
+
       fill.Apply = function(selection) {
          this.used = true;
 
@@ -1543,16 +1552,21 @@
       fill.func = fill.Apply.bind(fill);
 
       fill.Change = function(color, pattern, svg) {
-         if ((color !== undefined) && !isNaN(color)) {
-            this.colorindx = parseInt(color);
-         }
+         if ((color !== undefined) && !isNaN(color))
+            this.colorindx = color;
+
          if ((pattern !== undefined) && !isNaN(pattern)) {
-            this.pattern = parseInt(pattern);
+            this.pattern = pattern;
             delete this.opacity;
             delete this.antialias;
          }
 
          if (this.pattern < 1001) {
+            this.color = 'none';
+            return true;
+         }
+
+         if ((this.pattern === 1001) && (this.colorindx===0) && (this.kind===1)) {
             this.color = 'none';
             return true;
          }
@@ -1927,7 +1941,7 @@
       delete this[fld];
    }
 
-   JSROOT.TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, value, set_func) {
+   JSROOT.TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, value, set_func, fill_kind) {
       if (value === undefined) return;
       menu.add("sub:"+name, function() {
          // todo - use jqury dialog here
@@ -1943,8 +1957,11 @@
          set_func.bind(this)(useid ? id : col);
       });
       var useid = (typeof value !== 'string');
-      for (var n=-1;n<8;++n) {
+      for (var n=-1;n<11;++n) {
+         if ((n<0) && useid) continue;
+         if ((n==10) && (fill_kind!==1)) continue;
          var col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
+         if ((n==0) && (fill_kind==1)) col = 'none';
          var svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
          menu.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
       }
@@ -1986,7 +2003,7 @@
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.width = parseInt(arg); this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
+                          function(arg) { console.log('line color', arg); this.lineatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -2026,7 +2043,7 @@
       if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.Redraw(); }.bind(this), this.fillatt.kind);
          menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
@@ -2916,6 +2933,7 @@
           .attr("y", 0)
           .attr("width", width)
           .attr("height", height)
+          .style("pointer-events", "visibleFill")
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
@@ -4840,6 +4858,7 @@
    JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
       this.fillatt = this.createAttFill(this.histo);
+      this.fillatt.kind = 1;
 
       this.lineatt = JSROOT.Painter.createAttLine(this.histo);
       var main = this.main_painter();

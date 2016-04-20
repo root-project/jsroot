@@ -1052,8 +1052,10 @@
          if (!this.lineatt)
             this.lineatt = JSROOT.Painter.createAttLine(tf1);
          this.lineatt.used = false;
-         if (!this.fillatt)
+         if (!this.fillatt) {
             this.fillatt = this.createAttFill(tf1);
+            this.fillatt.kind = 1;
+         }
          this.fillatt.used = false;
 
          var n, bin;
@@ -1588,8 +1590,10 @@
 
       if (!this.lineatt)
          this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
-      if (!this.fillatt)
+      if (!this.fillatt) {
          this.fillatt = this.createAttFill(graph);
+         this.fillatt.kind = 1;
+      }
       this.fillatt.used = false;
 
       if (this.fillatt) this.fillatt.used = false; // mark used only when really used
@@ -3650,7 +3654,7 @@
 
       var handle = null;
 
-      if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
+      // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
          this.options.Scat = 1;
