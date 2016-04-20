@@ -4039,10 +4039,11 @@
       this.order = 0;
       if ((this.kind=="normal") && vertical && !axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
          var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
-
-         for(var order=18;order>0;order-=3) {
+         for(var order=18;order>-18;order-=3) {
+            if (order===0) continue;
+            if ((order<0) && (this.range>=0.1)) break;
             var mult = Math.pow(10, order);
-            if ((this.range > mult * 10) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
+            if ((this.range > mult * 9.99999) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
                this.order = order;
                break;
             }
