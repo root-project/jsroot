@@ -410,10 +410,8 @@
       }
 
       res.Apply = function(selection) {
-         if (this.stroke)
-            selection.style('stroke', this.color);
-         if (this.fill)
-            selection.style('fill', this.color);
+         selection.style('stroke', this.stroke ? this.color : "none");
+         selection.style('fill', this.fill ? this.color : "none");
       }
 
       res.func = res.Apply.bind(res);
