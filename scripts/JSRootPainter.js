@@ -1530,13 +1530,15 @@
    }
 
 
-   JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
+   JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color, kind) {
 
       // fill kind can be 1 or 2
       // 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
       // 2 means all other objects where such combination is white-color filling
 
       var fill = { color: "none", colorindx: 0, pattern: 0, used: true, kind: 2 };
+
+      if (kind!==undefined) fill.kind = kind;
 
       fill.Apply = function(selection) {
          this.used = true;
@@ -4857,8 +4859,7 @@
 
    JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
-      this.fillatt = this.createAttFill(this.histo);
-      this.fillatt.kind = 1;
+      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
 
       this.lineatt = JSROOT.Painter.createAttLine(this.histo);
       var main = this.main_painter();

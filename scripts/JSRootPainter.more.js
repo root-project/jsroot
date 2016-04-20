@@ -1052,10 +1052,8 @@
          if (!this.lineatt)
             this.lineatt = JSROOT.Painter.createAttLine(tf1);
          this.lineatt.used = false;
-         if (!this.fillatt) {
-            this.fillatt = this.createAttFill(tf1);
-            this.fillatt.kind = 1;
-         }
+         if (!this.fillatt)
+            this.fillatt = this.createAttFill(tf1, undefined, undefined, 1);
          this.fillatt.used = false;
 
          var n, bin;
@@ -1590,10 +1588,8 @@
 
       if (!this.lineatt)
          this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
-      if (!this.fillatt) {
-         this.fillatt = this.createAttFill(graph);
-         this.fillatt.kind = 1;
-      }
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(graph, undefined, undefined, 1);
       this.fillatt.used = false;
 
       if (this.fillatt) this.fillatt.used = false; // mark used only when really used
