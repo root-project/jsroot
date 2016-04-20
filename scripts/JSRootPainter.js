@@ -5923,43 +5923,56 @@
          case 1: delta = d3.event.deltaY / this.pad_height() * 40; break; // DOM_DELTA_LINE
          case 2: delta = d3.event.deltaY / this.pad_height() * 200; break; // DOM_DELTA_PAGE
       }
-      // console.log("wheel deltas = ", delta, d3.event.deltaX, d3.event.deltaY, d3.event.deltaZ, 'mode', d3.event.deltaMode);
       if (delta===0) return;
 
       this.clearInteractiveElements();
 
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
-      var xmin = this.zoom_xmin, xmax = this.zoom_xmax, ymin = undefined, ymax = undefined;
+      var xmin = this.scale_xmin, xmax = this.scale_xmax, ymin = undefined, ymax = undefined;
 
       if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
 
       var cur = d3.mouse(this.svg_frame().node());
 
       if (xmin < xmax) {
-         var rx = (xmax - xmin);
-         if (delta>0) rx = 1.001 * rx / (1 - delta);
-
-         if ((cur[0]>0) && (cur[0]<this.frame_width())) {
-            var dmin = cur[0] / this.frame_width();
-            xmin += -delta*dmin*rx;
-            xmax -= -delta*(1-dmin)*rx;
+         var dmin = cur[0] / this.frame_width();
+         if ((dmin>0) && (dmin<1)) {
+            if (this.options.Logx) {
+               xmin = xmin / Math.pow(2, delta*dmin);
+               xmax = xmax * Math.pow(2, delta*(1-dmin));
+            } else {
+               var rx = (xmax - xmin);
+               if (delta>0) rx = 1.001 * rx / (1-delta);
+               xmin += -delta*dmin*rx;
+               xmax -= -delta*(1-dmin)*rx;
+            }
+            if (xmin >= xmax) xmin = xmax = undefined;
+         } else {
+            xmin = xmax = undefined;
          }
       }
 
       if ((this.Dimension() > 1) || (cur[0] < 0)) {
-         ymin = this.zoom_ymin, ymax = this.zoom_ymax;
+         ymin = this.scale_ymin; ymax = this.scale_ymax;
 
          if ((ymin === ymax) && (delta<0)) { ymin = this.ymin; ymax = this.ymax; }
 
-         if (ymin < ymax) {
-            var ry = (ymax - ymin), dmin = 0.5;
-            if (delta>0) ry = 1.001 * ry / (1-delta);
-            if ((cur[1]>0) && (cur[1]<this.frame_height())) {
-               var dmin = 1 - cur[1] / this.frame_height();
+         var dmin = 1 - cur[1] / this.frame_height();
+
+         if ((ymin < ymax) && (dmin>0) && (dmin<1))  {
+            if (this.options.Logy) {
+               ymin = ymin / Math.pow(2, delta*dmin);
+               ymax = ymax * Math.pow(2, delta*(1-dmin));
+            } else {
+               var ry = (ymax - ymin);
+               if (delta>0) ry = 1.001 * ry / (1-delta);
                ymin += -delta*dmin*ry;
                ymax -= -delta*(1-dmin)*ry;
             }
+            if (ymin >= ymax) ymin = ymax = undefined;
+         } else {
+            ymin = ymax = undefined;
          }
       }
 
