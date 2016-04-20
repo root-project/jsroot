@@ -2833,7 +2833,7 @@
 
    JSROOT.Painter.drawFrame = function(divid, obj) {
       var p = new JSROOT.TFramePainter(obj);
-      p.SetDivId(divid);
+      p.SetDivId(divid, 2);
       p.Redraw();
       return p.DrawingReady();
    }
