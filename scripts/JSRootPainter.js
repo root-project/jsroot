@@ -2086,7 +2086,12 @@
    }
 
    JSROOT.TObjectPainter.prototype.FillContextMenu = function(menu) {
-      menu.add("header:"+ this.GetTipName());
+
+      var title = this.GetTipName();
+      if (this.GetObject() && ('_typename' in this.GetObject()))
+         title = this.GetObject()._typename + "::" + title;
+
+      menu.add("header:"+ title);
 
       this.FillAttContextMenu(menu);
 
@@ -6154,7 +6159,7 @@
          return true;
       }
 
-      menu.add("header:"+ this.histo.fName);
+      menu.add("header:"+ this.histo._typename + "::" + this.histo.fName);
 
       if (this.draw_content)
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
