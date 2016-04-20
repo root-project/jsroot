@@ -2696,6 +2696,7 @@
             // draw new palette, resize frame if required
             this.DrawNewPalette(true);
          this.RedrawPad();
+         if (this.options.Lego == 0) this.AddInteractive();
       });
    }
 
