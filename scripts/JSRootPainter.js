@@ -6018,8 +6018,13 @@
             if ((pnt !== null) && (pp !== null)) {
                pnt.painters = true; // assign painter for every tooltip
                var hints = pp.GetTooltips(pnt);
+
+               var bestdist = 1000;
                for (var n=0;n<hints.length;++n)
-                  if (hints[n] && hints[n].menu) { sel = hints[n].painter; break; }
+                  if (hints[n] && hints[n].menu) {
+                     var dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+                  }
             }
 
             if (sel!==null) menu_painter = sel; else
@@ -6835,9 +6840,11 @@
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
 
-         res.exact = (Math.abs(midy - pnt.y) <= 5) || ((pnt.y>=gry1) && (pnt.y <= gry2));
+         res.exact = (Math.abs(midy - pnt.y) <= 5) || ((pnt.y>=gry1) && (pnt.y<=gry2));
 
          res.menu = true; // one could show context menu
+         // distance to middle point, use to decide which menu to activate
+         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
 
       } else {
          var radius = this.lineatt.width + 3;
@@ -6853,6 +6860,7 @@
          res.exact = (Math.abs(midx - pnt.x) <= radius) && (Math.abs(midy - pnt.y) <= radius);
 
          res.menu = res.exact; // show menu only when mouse pointer exactly over the histogram
+         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
 
          res.changed = ttrect.property("current_bin") !== findbin;
 

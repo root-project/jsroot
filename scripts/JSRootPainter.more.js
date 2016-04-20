@@ -1019,6 +1019,7 @@
 
          res.changed = gbin.property("current_bin") !== best;
          res.menu = res.exact;
+         res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
 
          if (res.changed)
             gbin.attr("cx", bin.grx)
@@ -1912,6 +1913,7 @@
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
+      res.menu_dist = 3; // distance alwyas fixed
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -2012,6 +2014,7 @@
                   ((Math.abs(pnt.y - gry1) <= radius) || (Math.abs(pnt.y - gry2) <= radius));
 
       res.menu = res.exact;
+      res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
 
       res.changed = ttbin.property("current_bin") !== bestbin;
 
