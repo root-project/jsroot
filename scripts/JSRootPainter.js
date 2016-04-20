@@ -5583,15 +5583,17 @@
          }
 
          // first try to unzoom main painter - it could have user range specified
-         changed |= main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
+         if (!changed) {
+            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
 
-         // than try to unzoom all overlapped objects
-         var pp = this.pad_painter(true);
-         if (!changed && pp && pp.painters)
+            // than try to unzoom all overlapped objects
+            var pp = this.pad_painter(true);
+            if (pp && pp.painters)
             pp.painters.forEach(function(paint){
-               if (paint && (typeof paint.UnzoomUserRange == 'function'))
+               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
                   if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
             });
+         }
       }
 
       if (changed) this.RedrawPad();
