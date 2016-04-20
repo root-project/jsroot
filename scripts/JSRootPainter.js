@@ -5492,44 +5492,6 @@
       return res;
    }
 
-   JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
-      var obj = this.main_painter();
-      if (!obj) obj = this;
-
-      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
-
-      var changed = false;
-
-      if (dox) {
-         if (obj.zoom_xmin !== obj.zoom_xmax) changed = true;
-         obj.zoom_xmin = obj.zoom_xmax = 0;
-      }
-      if (doy) {
-         if (obj.zoom_ymin !== obj.zoom_ymax) changed = true;
-         obj.zoom_ymin = obj.zoom_ymax = 0;
-      }
-      if (doz) {
-         if (obj.zoom_zmin !== obj.zoom_zmax) changed = true;
-         obj.zoom_zmin = obj.zoom_zmax = 0;
-      }
-
-      // first try to unzoom main painter - it could have user range specified
-      changed |= obj.UnzoomUserRange(dox, doy, doz);
-
-      // than try to unzoom all overlapped objects
-      var pp = this.pad_painter(true);
-      if (!changed && pp && pp.painters)
-         pp.painters.forEach(function(paint){
-            if (paint && (typeof paint.UnzoomUserRange == 'function'))
-               if (paint.UnzoomUserRange(dox, doy, doz)) changed = true;
-         });
-
-      if (changed) this.RedrawPad();
-
-      return changed;
-   }
-
    JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
       var obj = this.main_painter();
       if (!obj) obj = this;
@@ -5542,65 +5504,104 @@
    }
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      var isany = false, test_x = (xmin != xmax), test_y = (ymin != ymax),
-          test_z = (zmin!=zmax) && (zmin!==undefined) && (zmax!==undefined),
-          main = this.main_painter();
+      // function can be used for zooming into specified range
+      // if both ranges for axis 0 (like xmin==xmax==0), axis will be unzoomed
 
-      if (test_x) {
+      var main = this.main_painter(),
+          zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
+          unzoom_x = false, unzoom_y = false, unzoom_z = false;
+
+      if (zoom_x) {
          var cnt = 0;
          if (xmin <= main.xmin) { xmin = main.xmin; cnt++; }
          if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
-         if (cnt === 2) {
-            test_x = false;
-            if (main.zoom_xmin !== main.zoom_xmax) isany = true;
-            main.zoom_xmin = main.zoom_xmax = 0;
-         }
+         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+      } else {
+         unzoom_x = (xmin === xmax) && (xmin === 0);
       }
 
-      if (test_y) {
+      if (zoom_y) {
          var cnt = 0;
          if (ymin <= main.ymin) { ymin = main.ymin; cnt++; }
          if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
-         if (cnt === 2) {
-            test_y = false;
-            if (main.zoom_ymin !== main.zoom_ymax) isany = true;
-            main.zoom_ymin = main.zoom_ymax = 0;
-         }
+         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+      } else {
+         unzoom_y = (ymin === ymax) && (ymin === 0);
       }
 
-      if (test_z) {
+      if (zoom_z) {
          var cnt = 0;
          if (zmin <= main.zmin) { zmin = main.zmin; cnt++; }
          if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
-         if (cnt === 2) {
-            test_z = false;
-            if (main.zoom_zmin !== main.zoom_zmax) isany = true;
-            main.zoom_zmin = main.zoom_zmax = 0;
-         }
+         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+      } else {
+         unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      main.ForEachPainter(function(obj) {
-         if (test_x && obj.CanZoomIn("x", xmin, xmax)) {
-            main.zoom_xmin = xmin;
-            main.zoom_xmax = xmax;
-            isany = true;
-            test_x = false;
-         }
-         if (test_y && obj.CanZoomIn("y", ymin, ymax)) {
-            main.zoom_ymin = ymin;
-            main.zoom_ymax = ymax;
-            isany = true;
-            test_y = false;
-         }
-         if (test_z && obj.CanZoomIn("z",zmin, zmax)) {
-            main.zoom_zmin = zmin;
-            main.zoom_zmax = zmax;
-            isany = true;
-            test_z = false;
-         }
-      });
+      var changed = false;
 
-      if (isany) this.RedrawPad();
+      // first process zooming (if any)
+      if (zoom_x || zoom_y || zoom_z)
+         main.ForEachPainter(function(obj) {
+            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
+               main.zoom_xmin = xmin;
+               main.zoom_xmax = xmax;
+               changed = true;
+               zoom_x = false;
+            }
+            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
+               main.zoom_ymin = ymin;
+               main.zoom_ymax = ymax;
+               changed = true;
+               zoom_y = false;
+            }
+            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
+               main.zoom_zmin = zmin;
+               main.zoom_zmax = zmax;
+               changed = true;
+               zoom_z = false;
+            }
+         });
+
+      // and process unzoom, if any
+      if (unzoom_x || unzoom_y || unzoom_z) {
+         if (unzoom_x) {
+            if (main.zoom_xmin !== main.zoom_xmax) changed = true;
+            main.zoom_xmin = main.zoom_xmax = 0;
+         }
+         if (unzoom_y) {
+            if (main.zoom_ymin !== main.zoom_ymax) changed = true;
+            main.zoom_ymin = main.zoom_ymax = 0;
+         }
+         if (unzoom_z) {
+            if (main.zoom_zmin !== main.zoom_zmax) changed = true;
+            main.zoom_zmin = main.zoom_zmax = 0;
+         }
+
+         // first try to unzoom main painter - it could have user range specified
+         changed |= main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
+
+         // than try to unzoom all overlapped objects
+         var pp = this.pad_painter(true);
+         if (!changed && pp && pp.painters)
+            pp.painters.forEach(function(paint){
+               if (paint && (typeof paint.UnzoomUserRange == 'function'))
+                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+            });
+      }
+
+      if (changed) this.RedrawPad();
+
+      return changed;
+   }
+
+   JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
+      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+
+      return this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                       doy ? 0 : undefined, doy ? 0 : undefined,
+                       doz ? 0 : undefined, doz ? 0 : undefined);
    }
 
    JSROOT.THistPainter.prototype.clearInteractiveElements = function() {
