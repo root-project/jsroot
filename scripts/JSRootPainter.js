@@ -4041,7 +4041,7 @@
          var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
          for(var order=18;order>-18;order-=3) {
             if (order===0) continue;
-            if ((order<0) && (this.range>=0.1)) break;
+            if ((order<0) && ((this.range>=0.1) || (maxtick>=1.))) break;
             var mult = Math.pow(10, order);
             if ((this.range > mult * 9.99999) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
                this.order = order;
