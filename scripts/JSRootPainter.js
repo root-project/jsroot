@@ -5926,6 +5926,8 @@
       }
       if (delta===0) return;
 
+      d3.event.preventDefault();
+
       this.clearInteractiveElements();
 
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
