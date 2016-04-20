@@ -458,7 +458,7 @@
       if ((line.color === undefined) && (color>0))
          line.color = 'lightgrey';
 
-      line.SetLine = function(selection) {
+      line.Apply = function(selection) {
          this.used = true;
          selection.style('stroke', this.color);
          if (this.color!='none') {
@@ -467,7 +467,7 @@
                selection.style('stroke-dasharray', this.dash);
          }
       }
-      line.func = line.SetLine.bind(line);
+      line.func = line.Apply.bind(line);
 
       return line;
    }
@@ -1529,13 +1529,10 @@
    JSROOT.TObjectPainter.prototype.createAttFill = function(attfill, pattern, color) {
 
       var fill = { color: "none", colorindx: 0, pattern: 0, used: true };
-      fill.SetFill = function(selection) {
+      fill.Apply = function(selection) {
          this.used = true;
 
-         if (this.attr)
-            selection.style(this.attr, (this.color == "none") ? null : this.color);
-         else
-            selection.style('fill', this.color);
+         selection.style('fill', this.color);
 
          if ('opacity' in this)
             selection.style('opacity', this.opacity);
@@ -1543,9 +1540,9 @@
          if ('antialias' in this)
             selection.style('antialias', this.antialias);
       }
-      fill.func = fill.SetFill.bind(fill);
+      fill.func = fill.Apply.bind(fill);
 
-      fill.ChangeFill = function(color, pattern, svg) {
+      fill.Change = function(color, pattern, svg) {
          if ((color !== undefined) && !isNaN(color)) {
             this.colorindx = parseInt(color);
          }
@@ -1648,7 +1645,7 @@
          if ('fFillColor' in attfill) color = attfill.fFillColor;
       }
 
-      fill.ChangeFill(color, pattern, this.svg_canvas());
+      fill.Change(color, pattern, this.svg_canvas());
 
       return fill;
    }
@@ -2029,13 +2026,13 @@
       if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.ChangeFill(parseInt(arg), undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
             id = parseInt(id);
             if (isNaN(id)) return;
-            this.fillatt.ChangeFill(undefined, id, this.svg_canvas());
+            this.fillatt.Change(undefined, id, this.svg_canvas());
             this.Redraw();
          }.bind(this));
 
@@ -2046,12 +2043,12 @@
 
          for (var n=0; n<supported.length; ++n) {
 
-            clone.ChangeFill(undefined, supported[n], this.svg_canvas());
+            clone.Change(undefined, supported[n], this.svg_canvas());
 
             var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + clone.color + "'></rect></svg>";
 
             menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
-               this.fillatt.ChangeFill(undefined, parseInt(arg), this.svg_canvas());
+               this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
                this.Redraw();
             }.bind(this));
          }
