@@ -3588,7 +3588,8 @@
          lasth = h2;
       }
 
-      axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
+      if (res.length > 0)
+         axis_g.append("svg:path").attr("d", res).style("stroke", AxisColor);
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),

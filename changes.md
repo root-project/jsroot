@@ -4,6 +4,7 @@
 1. Fix - toggling of statbox was not working in all situations 
 2. Fix - for mouse rect zooming use only left mouse button
 3. Fix - correctly draw TH2 with lego option, when histogram has negative bin content
+4. Fix - log axis drawing with no visible ticks 
 
 
 ## Changes in 4.4.3
