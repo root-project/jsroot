@@ -5372,12 +5372,10 @@
       }
 
       var taxis; // TAxis object of histogram, where user range can be stored
-      if ((obj!==this) && this.histo) {
-         taxis = this.histo["f" + axis.toUpperCase() + "axis"];
-         if (taxis) {
-            if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
-                ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
-         }
+      if (this.histo) taxis  = this.histo["f" + axis.toUpperCase() + "axis"];
+      if (taxis) {
+         if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
+             ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
       }
 
       if (size == "left") {
@@ -6054,6 +6052,29 @@
       }.bind(menu_painter) );  // end menu creation
    }
 
+   JSROOT.THistPainter.prototype.ChangeUserRange = function(arg) {
+      var taxis = this.histo['f'+arg+"axis"];
+      if (!taxis) return;
+
+      var curr = "[1," + taxis.fNbins+"]";
+      if (taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
+          curr = "[" +taxis.fFirst+"," + taxis.fLast+"]";
+
+      var res = prompt("Enter user range for axis " + arg + " like [1," + taxis.fNbins + "]", curr);
+      if (res==null) return;
+      res = JSON.parse(res);
+
+      if (!res || (res.length!=2) || isNaN(res[0]) || isNaN(res[1])) return;
+      taxis.fFirst = parseInt(res[0]);
+      taxis.fLast = parseInt(res[1]);
+
+      var newflag = (taxis.fFirst < taxis.fLast) && (taxis.fFirst >= 1) && (taxis.fLast<=taxis.fNbins);
+      if (newflag != taxis.TestBit(JSROOT.EAxisBits.kAxisRange))
+         taxis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+
+      this.Redraw();
+   }
+
    JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       // when fill and show context menu, remove all zooming
@@ -6161,8 +6182,19 @@
 
       menu.add("header:"+ this.histo._typename + "::" + this.histo.fName);
 
-      if (this.draw_content)
+      if (this.draw_content) {
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
+         if (this.Dimension() == 1) {
+            menu.add("User range X", "X", this.ChangeUserRange);
+         } else {
+            menu.add("sub:User ranges");
+            menu.add("X", "X", this.ChangeUserRange);
+            menu.add("Y", "Y", this.ChangeUserRange);
+            if (this.Dimension() > 2)
+               menu.add("Z", "Z", this.ChangeUserRange);
+            menu.add("endsub:")
+         }
+      }
 
       if ('FillHistContextMenu' in this)
          this.FillHistContextMenu(menu);
