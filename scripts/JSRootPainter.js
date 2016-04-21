@@ -6041,7 +6041,14 @@
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
-      var menu_painter = this, hpainter = this; // object used to show context menu
+      // this is for debug purposes only, when context menu is where, close is and show normal menu
+      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
+      //   var elem = document.getElementById('root_ctx_menu');
+      //   elem.parentNode.removeChild(elem);
+      //   return;
+      //}
+
+      var menu_painter = this; // object used to show context menu
 
       if (!evnt) {
          d3.event.preventDefault();
@@ -6089,6 +6096,7 @@
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
    }
+
 
    JSROOT.THistPainter.prototype.ChangeUserRange = function(arg) {
       var taxis = this.histo['f'+arg+"axis"];
