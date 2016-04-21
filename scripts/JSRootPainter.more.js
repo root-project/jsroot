@@ -1822,8 +1822,10 @@
          if (this.optionMark==2) marker_kind = 3; else
          if (this.optionMark==3) marker_kind = 1;
 
-         if (!this.markeratt || (marker_kind!==undefined))
+         if (!this.markeratt)
             this.markeratt = JSROOT.Painter.createAttMarker(graph,marker_kind);
+         else
+            this.markeratt.Change(undefined, marker_kind);
 
          this.marker_size = this.markeratt.size;
 
