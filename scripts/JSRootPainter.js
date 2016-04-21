@@ -6573,7 +6573,7 @@
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
           path_fill = null, path_err = null, path_marker = null,
-          endx = "", endy = "", my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
+          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
          show_markers = true;
@@ -6597,7 +6597,12 @@
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width);
 
-      if (this.options.Error == 11) { endx = "m0,3v-6m0,3"; endy = "m3,0h-6m3,0"; }
+      if (this.options.Error == 11) {
+         var lw = this.lineatt.width + 2;
+         endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
+         endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
+         dend = Math.floor((lw-3)/2);
+      }
 
       var draw_markers = show_errors || show_markers;
 
@@ -6654,10 +6659,10 @@
                      if ((my >= -yerr1) && (my <= height + yerr2)) {
                         if (path_fill !== null)
                            path_fill +="M" + mx1 +","+(my-yerr1) +
-                           "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                                       "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                         if (path_err !== null)
-                           path_err +="M" + mx1 +","+ my + endx + "h" + (mx2-mx1-1) + endx +
-                           "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1) + endy + "v" + (yerr1+yerr2) + endy;
+                           path_err +="M" + (mx1+dend) +","+ my + endx + "h" + (mx2-mx1-2*dend) + endx +
+                                      "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
                         if (path_marker !== null)
                            path_marker += this.markeratt.create((mx1+mx2-1)/2, my);
                      }

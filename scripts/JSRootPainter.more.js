@@ -1795,18 +1795,24 @@
               });
       }
 
-      if (this.draw_errors)
+      if (this.draw_errors) {
+         // to show end of error markers, use line width attribute
+         var lw = this.lineatt.width + 2,
+             vv = "m0," + lw + "v-" + 2*lw,
+             hh = "m" + lw + ",0h-" + 2*lw;
+         lw = Math.floor((lw-3)/2); // one shoud take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
              .style('fill', "none")
              .attr("d", function(d) {
                 d.error = true;
-                return ((d.exlow > 0)  ? "M0,0L"+d.grx0+","+d.grdx0+"m0,3v-6" : "") +
-                       ((d.exhigh > 0) ? "M0,0L"+d.grx2+","+d.grdx2+"m0,3v-6" : "") +
-                       ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+d.gry0+"m3,0h-6" : "") +
-                       ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+d.gry2+"m3,0h-6" : "");
+                return ((d.exlow > 0)  ? "M0,0L"+(d.grx0+lw)+","+d.grdx0+vv : "") +
+                       ((d.exhigh > 0) ? "M0,0L"+(d.grx2-lw)+","+d.grdx2+vv : "") +
+                       ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+(d.gry0-lw)+hh : "") +
+                       ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+(d.gry2+lw)+hh : "");
               });
+      }
 
       if (this.optionMark > 0) {
          // for tooltips use markers only if nodes where not created
