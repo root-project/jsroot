@@ -2692,10 +2692,40 @@
 
 
    JSROOT.TFramePainter.prototype.FillContextMenu = function(menu) {
+      // fill context menu for the frame
+      // it could be appended to the histogram menus
+
+      var main = this.main_painter(), alone = menu.size()==0;
+
+      if (alone)
+         menu.add("header:Frame");
+      else
+         menu.add("separator");
+
+      if (main) {
+         if (main.zoom_xmin !== main.zoom_xmax)
+            menu.add("Unzoom X", main.Unzoom.bind(main,"x"));
+         if (main.zoom_ymin !== main.zoom_ymax)
+            menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
+         if (main.zoom_zmin !== main.zoom_zmax)
+            menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
+         menu.add("Unzoom", main.Unzoom.bind(main));
+
+         if (main.options) {
+            menu.addchk(main.options.Logx, "SetLogx", main.ToggleLog.bind(main,"x"));
+
+            menu.addchk(main.options.Logy, "SetLogy", main.ToggleLog.bind(main,"y"));
+
+            if (main.Dimension() == 2)
+               menu.addchk(main.options.Logz, "SetLogz", main.ToggleLog.bind(main,"z"));
+         }
+         menu.add("separator");
+      }
+
       menu.addchk(this.tooltip_enabled, "Show tooltips", function() {
          this.tooltip_enabled = !this.tooltip_enabled;
       }.bind(this));
-      this.FillAttContextMenu(menu);
+      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", function(arg) {
          var top = this.svg_frame();
@@ -2704,6 +2734,8 @@
                saveSvgAsPng(top.node(), "frame.png");
             });
       }.bind(this));
+
+      return true;
    }
 
 
@@ -6184,7 +6216,7 @@
          if (kind === undefined) {
             var ms = d3.mouse(this.svg_frame().node());
             var tch = d3.touches(this.svg_frame().node());
-            var pnt = null, pp = this.pad_painter(true), sel = null;
+            var pnt = null, pp = this.pad_painter(true), fp = this.frame_painter(), sel = null;
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
@@ -6202,7 +6234,7 @@
             }
 
             if (sel!==null) menu_painter = sel; else
-            if (this.frame_painter() !== null) kind = "frame";
+            if (fp!==null) kind = "frame";
          }
       }
 
@@ -6213,11 +6245,21 @@
          menu.painter = this; // in all menu callbacks painter will be 'this' pointer
          var domenu = this.FillContextMenu(menu, kind, obj);
 
+         if ((domenu===false) && (fp!==null)) {
+            domenu = fp.FillContextMenu(menu);
+            kind = "frame";
+         }
+
          if (domenu !== false) {
+            if ((kind!=="frame") && (fp!==null) &&
+                (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20))
+                  fp.FillContextMenu(menu);
+
             // suppress any running zomming
             this.SwitchTooltip(false);
             menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          }
+
 
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
@@ -6303,34 +6345,8 @@
       }
 
       if (kind == "frame") {
-
          var fp = this.frame_painter();
-
-         menu.add("header:Frame");
-
-         if (this.zoom_xmin !== this.zoom_xmax)
-            menu.add("Unzoom X", function() { this.Unzoom("x"); });
-         if (this.zoom_ymin !== this.zoom_ymax)
-            menu.add("Unzoom Y", function() { this.Unzoom("y"); });
-         if (this.zoom_zmin !== this.zoom_zmax)
-            menu.add("Unzoom Z", function() { this.Unzoom("z"); });
-         menu.add("Unzoom", function() { this.Unzoom(); });
-
-         if (this.options) {
-            menu.addchk(this.options.Logx, "SetLogx", function() { this.ToggleLog("x"); });
-
-            menu.addchk(this.options.Logy, "SetLogy", function() { this.ToggleLog("y"); });
-
-            if (this.Dimension() == 2)
-               menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
-         }
-
-         if (fp) {
-            menu.add("separator");
-            fp.FillContextMenu(menu);
-         }
-
-         return true;
+         if (fp) return fp.FillContextMenu(menu);
       }
 
       menu.add("header:"+ this.histo._typename + "::" + this.histo.fName);
