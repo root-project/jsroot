@@ -6871,6 +6871,9 @@
          var msize = 3;
          if (this.markeratt) msize = Math.max(msize, 2+Math.round(this.markeratt.size * 4));
 
+         // show at least 6 pixels as tooltip rect
+         if (grx2 - grx1 < 2*msize) { grx1 = midx-msize; grx2 = midx+msize; }
+
          if (this.options.Error > 0) {
             var cont = this.histo.getBinContent(findbin+1);
             var binerr = this.histo.getBinError(findbin+1);
@@ -6925,10 +6928,6 @@
                                 .style("pointer-events","none");
 
          res.changed = ttrect.property("current_bin") !== findbin;
-
-
-         // show at least 6 pixels as tooltip rect
-         if (grx2 - grx1 < 6) { grx1 = midx-3; grx2 = midx+3; }
 
          if (res.changed)
             ttrect.attr("x", grx1)
