@@ -100,6 +100,9 @@
 
          document.body.onclick = menu.remove.bind(menu);
 
+         var oldmenu = document.getElementById(menuname);
+         if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
+
          this.element = $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>')
                                         .find('.jsroot_ctxmenu');
 
