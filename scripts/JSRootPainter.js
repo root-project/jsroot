@@ -6583,7 +6583,7 @@
           path_fill = null, path_err = null, path_marker = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
 
-      if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1) && (this.histo.fMarkerSize > 0))
+      if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
          show_markers = true;
 
       if (this.options.Error == 12) {
@@ -6596,9 +6596,13 @@
          // draw markers also when e2 option was specified
          if (!this.markeratt)
             this.markeratt = JSROOT.Painter.createAttMarker(this.histo);
-         // simply use relative move from point, can optimize in the future
-         path_marker = "";
-         this.markeratt.reset_pos();
+         if (this.markeratt.size > 0) {
+            // simply use relative move from point, can optimize in the future
+            path_marker = "";
+            this.markeratt.reset_pos();
+         } else {
+            show_markers = false;
+         }
       }
 
       // if there are too many points, exclude many vertical drawings at the same X position
@@ -6670,9 +6674,9 @@
                                        "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                         if (path_err !== null)
                            path_err +="M" + (mx1+dend) +","+ my + endx + "h" + (mx2-mx1-2*dend) + endx +
-                                      "M" + Math.round((mx1+mx2-1)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+                                      "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
                         if (path_marker !== null)
-                           path_marker += this.markeratt.create((mx1+mx2-1)/2, my);
+                           path_marker += this.markeratt.create((mx1+mx2)/2, my);
                      }
                   }
                }
@@ -6859,12 +6863,13 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
+
       if ((this.options.Error > 0) || (this.options.Mark > 0))  {
 
          show_rect = true;
 
-         var msize = (this.options.Mark > 0) ? Math.round(this.histo.fMarkerSize*4) : 3;
-         if (msize<3) msize = 3;
+         var msize = 3;
+         if (this.markeratt) msize = Math.max(msize, 2+Math.round(this.markeratt.size * 4));
 
          if (this.options.Error > 0) {
             var cont = this.histo.getBinContent(findbin+1);
@@ -6913,12 +6918,17 @@
                   lines: this.GetBinTips(findbin) };
 
       if (show_rect) {
+
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
          res.changed = ttrect.property("current_bin") !== findbin;
+
+
+         // show at least 6 pixels as tooltip rect
+         if (grx2 - grx1 < 6) { grx1 = midx-3; grx2 = midx+3; }
 
          if (res.changed)
             ttrect.attr("x", grx1)
