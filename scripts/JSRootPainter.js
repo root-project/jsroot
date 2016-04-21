@@ -2120,7 +2120,13 @@
                   // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
                   function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.Redraw(); }.bind(this));
       }
+      menu.add("endsub:");
 
+      menu.add("sub:font");
+      for (var n=1; n<16; ++n) {
+         menu.addchk(n == Math.floor(obj.fTextFont/10), n, n,
+                  function(arg) { this.GetObject().fTextFont = parseInt(arg)*10+2; this.Redraw(); }.bind(this));
+      }
       menu.add("endsub:");
 
       menu.add("endsub:");
