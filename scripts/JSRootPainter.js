@@ -5957,8 +5957,10 @@
          var dmin = cur[0] / this.frame_width();
          if ((dmin>0) && (dmin<1)) {
             if (this.options.Logx) {
-               xmin = xmin / Math.pow(2, delta*dmin);
-               xmax = xmax * Math.pow(2, delta*(1-dmin));
+               var factor = (xmin>0) ? JSROOT.log10(xmax/xmin) : 2;
+               if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
+               xmin = xmin / Math.pow(factor, delta*dmin);
+               xmax = xmax * Math.pow(factor, delta*(1-dmin));
             } else {
                var rx = (xmax - xmin);
                if (delta>0) rx = 1.001 * rx / (1-delta);
@@ -5980,8 +5982,10 @@
 
          if ((ymin < ymax) && (dmin>0) && (dmin<1))  {
             if (this.options.Logy) {
-               ymin = ymin / Math.pow(2, delta*dmin);
-               ymax = ymax * Math.pow(2, delta*(1-dmin));
+               var factor = (ymin>0) ? JSROOT.log10(ymax/ymin) : 2;
+               if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
+               ymin = ymin / Math.pow(factor, delta*dmin);
+               ymax = ymax * Math.pow(factor, delta*(1-dmin));
             } else {
                var ry = (ymax - ymin);
                if (delta>0) ry = 1.001 * ry / (1-delta);
