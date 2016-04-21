@@ -2099,6 +2099,34 @@
       }
    }
 
+   JSROOT.TObjectPainter.prototype.TextAttContextMenu = function(menu, prefix) {
+      // for the moment, text attributes accessed directly from objects
+
+      var obj = this.GetObject();
+      if (!obj || !('fTextColor' in obj)) return;
+
+      menu.add("sub:" + (prefix ? prefix : "Text"));
+      this.AddColorMenuEntry(menu, "color", obj.fTextColor,
+            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.Redraw(); }.bind(this));
+
+      var align = [11, 12, 13, 21, 22, 23, 31, 32, 33],
+          hnames = ['left', 'centered' , 'right'],
+          vnames = ['bottom', 'centered', 'top'];
+
+      menu.add("sub:align");
+      for (var n=0; n<align.length; ++n) {
+         menu.addchk(align[n] == obj.fTextAlign,
+                  align[n], align[n],
+                  // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
+                  function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.Redraw(); }.bind(this));
+      }
+
+      menu.add("endsub:");
+
+      menu.add("endsub:");
+   }
+
+
    JSROOT.TObjectPainter.prototype.FillContextMenu = function(menu) {
 
       var title = this.GetTipName();
@@ -3197,8 +3225,7 @@
          }
 
          if (pthis.UseTextColor)
-           pthis.AddColorMenuEntry(menu, "Text color", pave.fTextColor,
-                   function(arg) { pave.fTextColor = parseInt(arg); this.Redraw(); });
+            pthis.TextAttContextMenu(menu);
 
          pthis.FillAttContextMenu(menu);
 
