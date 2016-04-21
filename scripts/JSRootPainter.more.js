@@ -1945,7 +1945,8 @@
 
       var islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
-          bestbin = null, bestdist = 1e10,
+          bestbin = null,
+          bestdist = 1e10,
           pmain = this.main_painter(),
           dist, grx, gry, n, bin;
 
@@ -1959,7 +1960,7 @@
             if ((n==0) && (dist < -10)) { bestbin = null; break; } // check first point
          } else {
             gry = pmain.gry(bin.y);
-            if (pnt.nproc === 1) dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
+            dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
          }
 
          if (Math.abs(dist) < bestdist) {
@@ -1977,6 +1978,8 @@
 
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
+
+      // console.log('draw kind', this.draw_kind, 'best dist', bestdist,'best bin', bestbin);
 
       if (!islines && !ismark && (bestdist>radius)) bestbin = null;
 

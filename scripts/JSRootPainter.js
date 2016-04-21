@@ -216,7 +216,7 @@
 
    /** Function that generates all root colors */
    JSROOT.Painter.root_colors = function() {
-      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','limegreen','slateblue', 'white'];
+      var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89,212,84)','rgb(89,84,217)', 'white'];
       colorMap[110] = 'white';
 
       var moreCol = [
@@ -2005,7 +2005,7 @@
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.width = parseInt(arg); this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { console.log('line color', arg); this.lineatt.color = arg; this.Redraw(); }.bind(this));
+                          function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
