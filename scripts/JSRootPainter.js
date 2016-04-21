@@ -2690,6 +2690,23 @@
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
+
+   JSROOT.TFramePainter.prototype.FillContextMenu = function(menu) {
+      menu.addchk(this.tooltip_enabled, "Show tooltips", function() {
+         this.tooltip_enabled = !this.tooltip_enabled;
+      }.bind(this));
+      this.FillAttContextMenu(menu);
+      menu.add("separator");
+      menu.add("Save as frame.png", function(arg) {
+         var top = this.svg_frame();
+         if (!top.empty())
+            JSROOT.AssertPrerequisites("savepng", function() {
+               saveSvgAsPng(top.node(), "frame.png");
+            });
+      }.bind(this));
+   }
+
+
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (JSROOT.gStyle.Tooltip < 1) return false;
@@ -3418,6 +3435,9 @@
          svg.append("svg:g").attr("class","btns_layer");
 
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
+
+         if (JSROOT.gStyle.ContextMenu)
+            svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
       }
 
       if ((w<=0) || (h<=0)) {
@@ -3479,6 +3499,9 @@
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
          btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
+
+         if (JSROOT.gStyle.ContextMenu)
+            svg_pad.select(".root_pad_border").on("contextmenu", this.ShowContextMenu.bind(this));
 
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
          this.lineatt = JSROOT.Painter.createAttLine(this.pad)
@@ -3583,6 +3606,57 @@
       });
 
       return hints;
+   }
+
+   JSROOT.TPadPainter.prototype.ShowContextMenu = function(evnt) {
+      if (!evnt) {
+
+         // for debug purposes keep original context menu for small region in top-left corner
+         var pos = d3.mouse(this.svg_pad(this.this_pad_name).node());
+         if (pos && (pos.length==2) && (pos[0]>0) && (pos[0]<10) && (pos[1]>0) && pos[1]<10) return;
+
+         d3.event.stopPropagation(); // disable main context menu
+         d3.event.preventDefault();  // disable browser context menu
+
+         // one need to copy event, while after call back event may be changed
+         evnt = d3.event;
+      }
+
+      var pthis = this;
+
+      JSROOT.Painter.createMenu(function(menu) {
+         menu.painter = pthis; // set as this in callbacks
+         if (pthis.pad)
+            menu.add("header: " + pthis.pad._typename + "::" + pthis.pad.fName);
+         else
+            menu.add("header: Canvas");
+
+         if (pthis.iscan)
+            menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
+               JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
+            });
+
+         pthis.FillAttContextMenu(menu);
+
+         menu.add("separator");
+
+         var file_name = "canvas.png";
+         if (!pthis.iscan) file_name = pthis.this_pad_name + ".png";
+
+         menu.add("Save as "+file_name, file_name, function(arg) {
+            // todo - use jqury dialog here
+            var top = this.svg_pad(this.this_pad_name);
+            if (!top.empty())
+               JSROOT.AssertPrerequisites("savepng", function() {
+                  console.log('create', arg);
+                  top.selectAll(".btns_layer").style("display","none");
+                  saveSvgAsPng(top.node(), arg);
+                  top.selectAll(".btns_layer").style("display","");
+               });
+         });
+
+         menu.show(evnt);
+      }); // end menu creation
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
@@ -6128,7 +6202,7 @@
             }
 
             if (sel!==null) menu_painter = sel; else
-            if (pp !== null) { kind = "pad"; obj = pp; }
+            if (this.frame_painter() !== null) kind = "frame";
          }
       }
 
@@ -6228,9 +6302,11 @@
          return true;
       }
 
-      if ((kind == "pad") && (obj!==null)) {
+      if (kind == "frame") {
 
-         menu.add("header:"+ (obj.iscan ? "Canvas" : ("Pad " + obj.this_pad_name)));
+         var fp = this.frame_painter();
+
+         menu.add("header:Frame");
 
          if (this.zoom_xmin !== this.zoom_xmax)
             menu.add("Unzoom X", function() { this.Unzoom("x"); });
@@ -6239,11 +6315,6 @@
          if (this.zoom_zmin !== this.zoom_zmax)
             menu.add("Unzoom Z", function() { this.Unzoom("z"); });
          menu.add("Unzoom", function() { this.Unzoom(); });
-
-         menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
-            JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
-            this.RedrawPad();
-         });
 
          if (this.options) {
             menu.addchk(this.options.Logx, "SetLogx", function() { this.ToggleLog("x"); });
@@ -6254,26 +6325,10 @@
                menu.addchk(this.options.Logz, "SetLogz", function() { this.ToggleLog("z"); });
          }
 
-         obj.FillAttContextMenu(menu, obj.iscan ? "Canvas " : "Pad ");
-
-         if (this.frame_painter())
-            this.frame_painter().FillAttContextMenu(menu, "Frame ");
-
-         menu.add("separator");
-
-         var file_name = "canvas";
-         if (!obj.iscan) filename = "pad_" + obj.this_pad_name;
-
-         menu.add("Save as "+file_name+".png", function() {
-            // todo - use jqury dialog here
-            var top = this.svg_pad();
-            if (!top.empty())
-               JSROOT.AssertPrerequisites("savepng", function() {
-                  top.selectAll(".btns_layer").style("display","none");
-                  saveSvgAsPng(top.node(), file_name+".png");
-                  top.selectAll(".btns_layer").style("display","");
-               });
-         });
+         if (fp) {
+            menu.add("separator");
+            fp.FillContextMenu(menu);
+         }
 
          return true;
       }
