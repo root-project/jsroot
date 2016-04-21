@@ -2858,13 +2858,16 @@
    JSROOT.TPavePainter = function(pave) {
       JSROOT.TObjectPainter.call(this, pave);
       this.Enabled = true;
-      this.UseContextMenu = false;
+      this.UseContextMenu = true;
+      this.UseTextColor = false; // indicates if text color used, enabled menu entry
    }
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TPavePainter.prototype.DrawPave = function(refill) {
       // this draw only basic TPave
+
+      this.UseTextColor = false;
 
       if (!this.Enabled)
          return this.RemoveDrawG();
@@ -2949,6 +2952,8 @@
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveLabel = function(width, height) {
+      this.UseTextColor = true;
+
       var pave = this.GetObject();
 
       this.StartTextDrawing(pave.fTextFont, height/1.2);
@@ -2990,11 +2995,15 @@
 
       if (nlines == 1) {
          this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0], tcolor);
+         this.UseTextColor = true;
       } else {
          for (var j = 0; j < nlines; ++j) {
-            var jcolor = JSROOT.Painter.root_colors[pt.fLines.arr[j].fTextColor];
-            if (pt.fLines.arr[j].fTextColor == 0) jcolor = tcolor;
-            var posy = j*stepy;
+            var posy = j*stepy,
+               jcolor = JSROOT.Painter.root_colors[pt.fLines.arr[j].fTextColor];
+            if ((pt.fLines.arr[j].fTextColor == 0) || (jcolor===undefined)) {
+               jcolor = tcolor;
+               this.UseTextColor = true;
+            }
 
             if (this.IsStats()) {
                if ((first_stat > 0) && (j >= first_stat)) {
@@ -3074,6 +3083,8 @@
          this.DrawText(22, x, y, w, h, pt.fLabel, tcolor, 1, lbl_g);
 
          this.FinishTextDrawing(lbl_g);
+
+         this.UseTextColor = true;
       }
    }
 
@@ -3111,7 +3122,7 @@
       return res;
    }
 
-   JSROOT.TPavePainter.prototype.ShowContextMenu = function(kind, evnt) {
+   JSROOT.TPavePainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
          d3.event.stopPropagation(); // disable main context menu
          d3.event.preventDefault();  // disable browser context menu
@@ -3119,67 +3130,75 @@
          // one need to copy event, while after call back event may be changed
          evnt = d3.event;
       }
+
       var pthis = this, pave = this.GetObject();
 
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = pthis; // set as this in callbacks
          menu.add("header: " + pave._typename + "::" + pave.fName);
-         menu.add("SetStatFormat", function() {
-            var fmt = prompt("Enter StatFormat", pave.fStatFormat);
-            if (fmt!=null) {
-               pave.fStatFormat = fmt;
-               pthis.Redraw();
-            }
-         });
-         menu.add("SetFitFormat", function() {
-            var fmt = prompt("Enter FitFormat", pave.fFitFormat);
-            if (fmt!=null) {
-               pave.fFitFormat = fmt;
-               pthis.Redraw();
-            }
-         });
-         menu.add("separator");
-         menu.add("sub:SetOptStat", function() {
-            // todo - use jqury dialog here
-            var fmt = prompt("Enter OptStat", pave.fOptStat);
-            if (fmt!=null) { pave.fOptStat = parseInt(fmt); pthis.Redraw(); }
-         });
-         function AddStatOpt(pos, name) {
-            var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
-            opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
-            menu.addchk(opt, name, opt * 100 + pos, function(arg) {
-               var newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
-               var oldopt = parseInt(arg / 100);
-               newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
-               if (arg % 100 < 10) pave.fOptStat = newopt;
-                              else pave.fOptFit = newopt;
-               pthis.Redraw();
+         if (pthis.IsStats()) {
+
+            menu.add("SetStatFormat", function() {
+               var fmt = prompt("Enter StatFormat", pave.fStatFormat);
+               if (fmt!=null) {
+                  pave.fStatFormat = fmt;
+                  pthis.Redraw();
+               }
             });
+            menu.add("SetFitFormat", function() {
+               var fmt = prompt("Enter FitFormat", pave.fFitFormat);
+               if (fmt!=null) {
+                  pave.fFitFormat = fmt;
+                  pthis.Redraw();
+               }
+            });
+            menu.add("separator");
+            menu.add("sub:SetOptStat", function() {
+               // todo - use jqury dialog here
+               var fmt = prompt("Enter OptStat", pave.fOptStat);
+               if (fmt!=null) { pave.fOptStat = parseInt(fmt); pthis.Redraw(); }
+            });
+            function AddStatOpt(pos, name) {
+               var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
+               opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
+               menu.addchk(opt, name, opt * 100 + pos, function(arg) {
+                  var newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
+                  var oldopt = parseInt(arg / 100);
+                  newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
+                  if (arg % 100 < 10) pave.fOptStat = newopt;
+                  else pave.fOptFit = newopt;
+                  pthis.Redraw();
+               });
+            }
+
+            AddStatOpt(0, "Histogram name");
+            AddStatOpt(1, "Entries");
+            AddStatOpt(2, "Mean");
+            AddStatOpt(3, "Std Dev");
+            AddStatOpt(4, "Underflow");
+            AddStatOpt(5, "Overflow");
+            AddStatOpt(6, "Integral");
+            AddStatOpt(7, "Skewness");
+            AddStatOpt(8, "Kurtosis");
+            menu.add("endsub:");
+
+            menu.add("sub:SetOptFit", function() {
+               // todo - use jqury dialog here
+               var fmt = prompt("Enter OptStat", pave.fOptFit);
+               if (fmt!=null) { pave.fOptFit = parseInt(fmt); pthis.Redraw(); }
+            });
+            AddStatOpt(10, "Fit parameters");
+            AddStatOpt(11, "Par errors");
+            AddStatOpt(12, "Chi square / NDF");
+            AddStatOpt(13, "Probability");
+            menu.add("endsub:");
+
+            menu.add("separator");
          }
 
-         AddStatOpt(0, "Histogram name");
-         AddStatOpt(1, "Entries");
-         AddStatOpt(2, "Mean");
-         AddStatOpt(3, "Std Dev");
-         AddStatOpt(4, "Underflow");
-         AddStatOpt(5, "Overflow");
-         AddStatOpt(6, "Integral");
-         AddStatOpt(7, "Skewness");
-         AddStatOpt(8, "Kurtosis");
-         menu.add("endsub:");
-
-         menu.add("sub:SetOptFit", function() {
-            // todo - use jqury dialog here
-            var fmt = prompt("Enter OptStat", pave.fOptFit);
-            if (fmt!=null) { pave.fOptFit = parseInt(fmt); pthis.Redraw(); }
-         });
-         AddStatOpt(10, "Fit parameters");
-         AddStatOpt(11, "Par errors");
-         AddStatOpt(12, "Chi square / NDF");
-         AddStatOpt(13, "Probability");
-         menu.add("endsub:");
-
-         menu.add("separator");
+         if (pthis.UseTextColor)
+           pthis.AddColorMenuEntry(menu, "Text color", pave.fTextColor,
+                   function(arg) { pave.fTextColor = parseInt(arg); this.Redraw(); });
 
          pthis.FillAttContextMenu(menu);
 
@@ -3233,6 +3252,7 @@
 
    JSROOT.TPavePainter.prototype.Redraw = function() {
       // if pavetext artificially disabled, do not redraw it
+
       this.DrawPave(true);
    }
 
@@ -3250,7 +3270,6 @@
             break;
          case "TPaveStats":
          case "TPaveText":
-            painter.UseContextMenu = painter.IsStats();
             painter.PaveDrawFunc = painter.DrawPaveText;
             break;
       }

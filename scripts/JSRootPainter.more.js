@@ -2658,7 +2658,7 @@
                     .on("dblclick", function() { pthis.main_painter().Unzoom("z"); });
       }
 
-      this.ShowContextMenu = function(kind, evnt) {
+      this.ShowContextMenu = function(evnt) {
          this.main_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
       }
 
