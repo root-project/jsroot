@@ -7027,10 +7027,16 @@
          }
       }
 
+      if (findbin!==null) {
+         // if bin on boundary found, check that x position is ok
+         if ((findbin === left) && (grx1 > pnt.x + 2))  findbin = null; else
+         if ((findbin === right-1) && (grx2 < pnt.x - 2)) findbin = null;
+      }
+
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
-      if ((findbin == null) || ((gry2 <= 0) || (gry1 >= height))) {
+      if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
