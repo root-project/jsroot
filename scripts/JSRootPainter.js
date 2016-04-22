@@ -6206,7 +6206,7 @@
       //   return;
       //}
 
-      var menu_painter = this; // object used to show context menu
+      var menu_painter = this, frame_corner = false; // object used to show context menu
 
       if (!evnt) {
          d3.event.preventDefault();
@@ -6235,6 +6235,8 @@
 
             if (sel!==null) menu_painter = sel; else
             if (fp!==null) kind = "frame";
+
+            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
          }
       }
 
@@ -6245,16 +6247,11 @@
          menu.painter = this; // in all menu callbacks painter will be 'this' pointer
          var domenu = this.FillContextMenu(menu, kind, obj);
 
-         if ((domenu===false) && (fp!==null)) {
+         // fill frame menu by default - or append frame elements when actiavted in the frame corner
+         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
             domenu = fp.FillContextMenu(menu);
-            kind = "frame";
-         }
 
-         if (domenu !== false) {
-            if ((kind!=="frame") && (fp!==null) &&
-                (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20))
-                  fp.FillContextMenu(menu);
-
+         if (domenu) {
             // suppress any running zomming
             this.SwitchTooltip(false);
             menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
