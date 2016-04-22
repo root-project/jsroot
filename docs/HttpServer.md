@@ -85,7 +85,7 @@ By default, the http server is open for anonymous access. One could restrict the
 
     [shell] htdigest -c .htdigest domain_name user_name
 
-It is recommended not to use special symbols in domain or user names. Several users can be add to the ".htdigetst" file. When starting the server, the following arguments should be specified:
+It is recommended not to use special symbols in domain or user names. Several users can be add to the ".htdigest" file. When starting the server, the following arguments should be specified:
 
     root [0] new THttpServer("http:8080?auth_file=.htdigest&auth_domain=domain_name");
 
