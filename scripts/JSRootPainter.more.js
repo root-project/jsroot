@@ -553,7 +553,6 @@
 
    JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
 
-      this.SetObject(obj);
       this.SetDivId(divid);
 
       this.Redraw = function() {
@@ -677,9 +676,9 @@
       this.SetDivId(divid);
 
       this.Redraw = function() {
-         var arrow = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(arrow),
-             fillatt = this.createAttFill(arrow);
+         var arrow = this.GetObject();
+         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
+         if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
          var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
          if (wsize<3) wsize = 3;
@@ -700,7 +699,7 @@
          if (oo.indexOf("<")==0) {
             var closed = (oo.indexOf("<|") == 0);
             if (!defs) defs = this.draw_g.append("defs");
-            m_start = "jsroot_arrowmarker_" +  JSROOT.Painter['arrowcnt']++;
+            m_start = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
             var beg = defs.append("svg:marker")
                 .attr("id", m_start)
                 .attr("markerWidth", wsize.toFixed(1))
@@ -712,8 +711,8 @@
                 .append("svg:path")
                 .style("fill","none")
                 .attr("d", left_arrow + (closed ? " Z" : ""))
-                .call(lineatt.func);
-            if (closed) beg.call(fillatt.func);
+                .call(this.lineatt.func);
+            if (closed) beg.call(this.fillatt.func);
          }
 
          var midkind = 0;
@@ -725,7 +724,7 @@
          if (midkind > 0) {
             var closed = midkind > 10;
             if (!defs) defs = this.draw_g.append("defs");
-            m_mid = "jsroot_arrowmarker_" +  JSROOT.Painter['arrowcnt']++;
+            m_mid = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
 
             var mid = defs.append("svg:marker")
               .attr("id", m_mid)
@@ -739,14 +738,14 @@
               .style("fill","none")
               .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) +
                          ((midkind > 10) ? " Z" : ""))
-              .call(lineatt.func);
-            if (midkind > 10) mid.call(fillatt.func);
+              .call(this.lineatt.func);
+            if (midkind > 10) mid.call(this.fillatt.func);
          }
 
          if (oo.lastIndexOf(">") == len-1) {
             var closed = (oo.lastIndexOf("|>") == len-2) && (len>1);
             if (!defs) defs = this.draw_g.append("defs");
-            m_end = "jsroot_arrowmarker_" +  JSROOT.Painter['arrowcnt']++;
+            m_end = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
             var end = defs.append("svg:marker")
               .attr("id", m_end)
               .attr("markerWidth", wsize.toFixed(1))
@@ -758,8 +757,8 @@
               .append("svg:path")
               .style("fill","none")
               .attr("d", right_arrow + (closed ? " Z" : ""))
-              .call(lineatt.func);
-            if (closed) end.call(fillatt.func);
+              .call(this.lineatt.func);
+            if (closed) end.call(this.fillatt.func);
          }
 
          var path = this.draw_g
@@ -767,7 +766,7 @@
              .attr("d",  "M" + x1.toFixed(1) + "," + y1.toFixed(1) +
                       ((m_mid == null) ? "" : "L" + (x1/2+x2/2).toFixed(1) + "," + (y1/2+y2/2).toFixed(1)) +
                         " L" + x2.toFixed(1) + "," + y2.toFixed(1))
-             .call(lineatt.func);
+             .call(this.lineatt.func);
 
          if (m_start!=null) path.style("marker-start","url(#" + m_start + ")");
          if (m_mid!=null) path.style("marker-mid","url(#" + m_mid + ")");

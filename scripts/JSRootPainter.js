@@ -1089,10 +1089,6 @@
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
-   JSROOT.TObjectPainter.prototype.SetObject = function(obj) {
-      this.draw_object = obj;
-   }
-
    JSROOT.TObjectPainter.prototype.GetObject = function() {
       return this.draw_object;
    }
