@@ -2709,7 +2709,7 @@
             menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
          if (main.zoom_zmin !== main.zoom_zmax)
             menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
-         menu.add("Unzoom", main.Unzoom.bind(main));
+         menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
 
          if (main.options) {
             menu.addchk(main.options.Logx, "SetLogx", main.ToggleLog.bind(main,"x"));
@@ -5895,9 +5895,7 @@
          case 3: this.zoom_curr[1] = m[1]; break; // only Y
       }
 
-      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-
-      var isany = false;
+      var xmin, xmax, ymin, ymax, isany = false;
 
       if ((this.zoom_kind != 3) && (Math.abs(this.zoom_curr[0] - this.zoom_origin[0]) > 10)) {
          xmin = Math.min(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
@@ -6064,9 +6062,7 @@
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
 
-      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-
-      var isany = false;
+      var xmin, xmax, ymin, ymax, isany = false;
 
       if ((this.zoom_kind != 103) && (Math.abs(this.zoom_curr[0] - this.zoom_origin[0]) > 10)) {
          xmin = Math.min(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
@@ -6296,7 +6292,7 @@
          if (kind=="y")  faxis = this.histo.fYaxis;  else
          if (kind=="z")  faxis = obj ? obj : this.histo.fZaxis;
          menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", function() { this.Unzoom(kind); });
+         menu.add("Unzoom", this.Unzoom.bind(this, kind));
          menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
@@ -7131,7 +7127,7 @@
       while ((left < right) && (this.histo.getBinContent(right) <= min)) --right;
 
       if ((right - left < dist) && (left < right))
-         this.Zoom(this.GetBinX(left), this.GetBinX(right), 0, 0);
+         this.Zoom(this.GetBinX(left), this.GetBinX(right));
    }
 
    JSROOT.TH1Painter.prototype.CanZoomIn = function(axis,min,max) {

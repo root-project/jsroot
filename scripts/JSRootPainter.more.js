@@ -2622,7 +2622,7 @@
             var zmin = Math.min(z.invert(sel1), z.invert(sel2));
             var zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-            pthis.main_painter().Zoom(0, 0, 0, 0, zmin, zmax);
+            pthis.main_painter().Zoom(undefined, undefined, undefined, undefined, zmin, zmax);
          }
 
          function startRectSel() {
@@ -2876,19 +2876,21 @@
                if (j >= jright) jright = j + 1;
             }
 
-      var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+      var xmin, xmax, ymin, ymax, isany = false;
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
          xmin = this.GetBinX(ileft);
          xmax = this.GetBinX(iright);
+         isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
          ymin = this.GetBinY(jleft);
          ymax = this.GetBinY(jright);
+         isany = true;
       }
 
-      this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
 
 
