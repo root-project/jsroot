@@ -3751,6 +3751,33 @@
       return isany;
    }
 
+   JSROOT.TPadPainter.prototype.ItemContextMenu = function(name) {
+       var rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
+       var evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
+
+       // use timeout to avoid conflict with mouse click and automatic menu close
+       if (name=="pad")
+          return setTimeout(this.ShowContextMenu.bind(this, evnt), 50);
+
+       var selp = null;
+
+       if (name == "frame") {
+          selp = this.frame_painter();
+       } else {
+          var indx = parseInt(name);
+          if (!isNaN(indx)) selp = this.painters[indx];
+       }
+
+       if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
+
+       JSROOT.Painter.createMenu(function(menu) {
+          menu.painter = selp;
+          if (selp.FillContextMenu(menu))
+             setTimeout(menu.show.bind(menu, evnt), 50);
+       });
+
+   }
+
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
 
       var elem = null, filename = "";
@@ -3784,6 +3811,46 @@
                elem.selectAll(".btns_layer").style("display","");
             });
          }
+         return;
+      }
+
+      if (funcname == "PadContextMenus") {
+
+         var pthis = this, evnt = d3.event;
+
+         d3.event.preventDefault();
+         d3.event.stopPropagation();
+
+         JSROOT.Painter.createMenu(function(menu) {
+            menu.painter = pthis; // set as this in callbacks
+            menu.add("header:Menus");
+
+            if (pthis.iscan)
+               menu.add("Canvas", "pad", pthis.ItemContextMenu);
+            else
+               menu.add("Pad", "pad", pthis.ItemContextMenu);
+
+            if (pthis.frame_painter())
+               menu.add("Frame", "frame", pthis.ItemContextMenu);
+
+            if (pthis.painters && (pthis.painters.length>0)) {
+               menu.add("separator");
+               var shown = [];
+               for (var n=0;n<pthis.painters.length;++n) {
+                  var pp = pthis.painters[n];
+                  var obj = pp ? pp.GetObject() : null;
+                  if (!obj || (shown.indexOf(obj)>=0)) continue;
+
+                  var name = ('_typename' in obj) ? (obj._typename + "::") : "";
+                  if ('fName' in obj) name += obj.fName;
+                  if (name.length==0) name = "item" + n;
+                  menu.add(name, n, pthis.ItemContextMenu);
+               }
+            }
+
+            menu.show(evnt);
+         });
+
          return;
       }
 
@@ -3867,6 +3934,7 @@
       painter.SetDivId(divid);  // now add to painters list
 
       painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot");
+      painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
       if (can==null) {
          if (opt.indexOf("noframe") < 0)
@@ -3892,8 +3960,10 @@
 
       painter.CreatePadSvg();
 
-      if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw()))
+      if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+      }
 
       var prev_name = "";
 

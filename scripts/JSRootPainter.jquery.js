@@ -33,7 +33,7 @@
    JSROOT.Painter.createMenu = function(maincallback, menuname) {
       if (!menuname || (typeof menuname !== 'string')) menuname = 'root_ctx_menu';
 
-      var menu = { element:null, code:"", cnt: 1, funcs : {}, separ : false };
+      var menu = { element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
       menu.add = function(name, arg, func) {
          if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
@@ -89,22 +89,28 @@
          if (this.element!==null) {
             this.element.remove();
             if (this.close_callback) this.close_callback();
+            document.body.removeEventListener('click', this.remove_bind);
          }
          this.element = null;
       }
+
+      menu.remove_bind = menu.remove.bind(menu);
 
       menu.show = function(event, close_callback) {
          this.remove();
 
          if (typeof close_callback == 'function') this.close_callback = close_callback;
 
-         document.body.onclick = menu.remove.bind(menu);
+         document.body.addEventListener('click', this.remove_bind);
 
          var oldmenu = document.getElementById(menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
-         this.element = $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>')
-                                        .find('.jsroot_ctxmenu');
+         $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>');
+
+         this.element = $('.jsroot_ctxmenu');
+
+         var pthis = this;
 
          this.element
             .attr('id', menuname)
@@ -117,11 +123,11 @@
                select: function( event, ui ) {
                   var arg = ui.item.attr('arg');
                   var cnt = ui.item.attr('cnt');
-                  var func = cnt ? menu.funcs[cnt] : null;
-                  menu.remove();
+                  var func = cnt ? pthis.funcs[cnt] : null;
+                  pthis.remove();
                   if (typeof func == 'function') {
                      if ('painter' in menu)
-                        func.bind(menu.painter)(arg); // if 'painter' field set, returned as this to callback
+                        func.bind(pthis.painter)(arg); // if 'painter' field set, returned as this to callback
                      else
                         func(arg);
                   }

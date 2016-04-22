@@ -8,6 +8,7 @@
 5. Apply user range for drawing TH1/TH2 histograms, also when superimposed (#44) 
 6. Implement simple drawing for TBox,TWbox,TSliderBox classes
 7. Provide context menus for many different objects attributes
+8. Context menu for every drawn object can be activated via toolbar button 
  
 
 ## Changes in 4.4
