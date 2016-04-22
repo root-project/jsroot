@@ -3759,20 +3759,23 @@
        if (name=="pad")
           return setTimeout(this.ShowContextMenu.bind(this, evnt), 50);
 
-       var selp = null;
+       var selp = null, selkind;
 
-       if (name == "frame") {
-          selp = this.frame_painter();
-       } else {
-          var indx = parseInt(name);
-          if (!isNaN(indx)) selp = this.painters[indx];
+       switch(name) {
+          case "xaxis": selp = this.main_painter(); selkind = "x"; break;
+          case "yaxis": selp = this.main_painter(); selkind = "y"; break;
+          case "frame": selp = this.frame_painter(); break;
+          default: {
+             var indx = parseInt(name);
+             if (!isNaN(indx)) selp = this.painters[indx];
+          }
        }
 
        if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
 
        JSROOT.Painter.createMenu(function(menu) {
           menu.painter = selp;
-          if (selp.FillContextMenu(menu))
+          if (selp.FillContextMenu(menu,selkind))
              setTimeout(menu.show.bind(menu, evnt), 50);
        });
 
@@ -3832,6 +3835,11 @@
 
             if (pthis.frame_painter())
                menu.add("Frame", "frame", pthis.ItemContextMenu);
+
+            if (pthis.main_painter()) {
+               menu.add("X axis", "xaxis", pthis.ItemContextMenu);
+               menu.add("Y axis", "yaxis", pthis.ItemContextMenu);
+            }
 
             if (pthis.painters && (pthis.painters.length>0)) {
                menu.add("separator");
