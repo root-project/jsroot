@@ -89,7 +89,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/04/2016";
+   JSROOT.version = "dev 22/04/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -153,7 +153,8 @@
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
-         NoWebGL : false // if true, WebGL will be disabled
+         NoWebGL : false, // if true, WebGL will be disabled,
+         EndErrorSize : 2 // size in pixels of end error for E1 draw options
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }

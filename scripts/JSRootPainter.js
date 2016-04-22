@@ -6733,10 +6733,10 @@
       var use_minmax = ((right-left) > 3*width);
 
       if (this.options.Error == 11) {
-         var lw = this.lineatt.width + 2;
+         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
-         dend = Math.floor((lw-3)/2);
+         dend = Math.floor((this.lineatt.width-1)/2);
       }
 
       var draw_markers = show_errors || show_markers;

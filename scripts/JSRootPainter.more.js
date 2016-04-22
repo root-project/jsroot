@@ -1797,10 +1797,10 @@
 
       if (this.draw_errors) {
          // to show end of error markers, use line width attribute
-         var lw = this.lineatt.width + 2,
+         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize,
              vv = "m0," + lw + "v-" + 2*lw,
              hh = "m" + lw + ",0h-" + 2*lw;
-         lw = Math.floor((lw-3)/2); // one shoud take into account half of end-cup line width
+         lw = Math.floor((this.lineatt.width-1)/2); // one shoud take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
