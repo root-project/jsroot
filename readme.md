@@ -1,10 +1,8 @@
 #JavaScript ROOT
 
-JavaScript ROOT aims to provide interactive ROOT-like
-graphics in the web browsers. One could read and display data
-from binary ROOT files. Or data can be obtained from JSON representation,
-produced with TBufferJSON class.  JSROOT also implements
-user interface for THttpServer class.   
+JavaScript ROOT provides interactive ROOT-like graphics in the web browsers. 
+Data can be read and displayed from binary and JSON ROOT files. 
+JSROOT implements user interface for THttpServer class.   
 
 <a href="http://jsroot.gsi.de/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=COLZ"><img src="http://jsroot.gsi.de/files/img/th2.png" align="left" hspace="10" vspace="6" alt="TH2 drawing" title="Draw TH2 histogram with COLZ options"></a>
 <a href="http://jsroot.gsi.de/latest/?nobrowser&file=../files/danilo6.root&item=canvas;1"><img src="http://jsroot.gsi.de/files/img/tf1.png" align="left" hspace="10" vspace="6" alt="TF1 drawing" title="Superimpose histogram with fit results"></a>
