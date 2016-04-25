@@ -2407,7 +2407,7 @@
 
             // Draw fill pattern (in a box)
             if (lopt.indexOf('f') != -1) {
-               var fillatt = (painter & painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
+               var fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
                // box total height is yspace*0.7
                // define x,y as the center of the symbol for this entry
                this.draw_g.append("svg:rect")
