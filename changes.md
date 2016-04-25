@@ -1,11 +1,20 @@
 # JSROOT changelog
 
+## Changes in 4.5
+1. Zooming with mouse wheel
+2. Context menus for many different objects attributes are provided
+3. Context menu for every drawn object can be activated via toolbar button 
+4. Support browsing of TTask and derived classes (#40)
+5. Apply user range for drawing TH1/TH2 histograms, also when superimposed (#44) 
+6. Implement scaling factor like x10^3 on the vertical axes 
+7. Provide shortcut buttons for each subpad
+8. Implement simple drawing for TBox, TWbox, TSliderBox classes
+
 ## Changes in 4.4.4
 1. Fix - toggling of statbox was not working in all situations 
 2. Fix - for mouse rect zooming use only left mouse button
 3. Fix - correctly draw TH2 with lego option, when histogram has negative bin content
 4. Fix - log axis drawing with no visible ticks 
-
 
 ## Changes in 4.4.3
 1. Fix - wrong selection of TH1 Y axis range when errors are displayed (#44) 
@@ -31,7 +40,7 @@
 4. Fix - draw histogram bins on frame boundary
 5. Fix - use alternative color for shapes with default black color  
 6. Fix - correctly handle pcon/pgon shape with rmin==rmax on top or bottom side
-   
+  
 
 ## Changes in 4.4
 1. Fix faces orientation for all TGeo shapes. 

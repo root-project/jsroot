@@ -44,11 +44,6 @@
          if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
             delete paths[module];
 
-      // add mapping if script loaded as bower module 'jsroot'
-//      if (cfg_paths  && ('jsroot' in cfg_paths))
-//           requirejs.config({ map : { "*": { "JSRootCore": "jsroot" } } });
-
-
       // configure all dependencies
       requirejs.config({
         paths: paths,
@@ -94,7 +89,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "4.4.4 20/04/2016";
+   JSROOT.version = "4.5 25/04/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -137,7 +132,7 @@
 
    // default draw styles, can be changed after loading of JSRootCore.js
    JSROOT.gStyle = {
-         Tooltip : 2, // 0 - off, 1-default, 2-advanced (experimental)
+         Tooltip : 1, // 0 - off, 1 - on
          ContextMenu : true,
          Zooming : true,
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
@@ -157,8 +152,9 @@
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
-         Embed3DinSVG : 2,  // 0 - no embed, 1 - overlay over SVG (IE), 2 - embed into SVG (works only with Firefox and Chrome)
-         NoWebGL : false // if true, WebGL will be disabled
+         Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
+         NoWebGL : false, // if true, WebGL will be disabled,
+         EndErrorSize : 2 // size in pixels of end error for E1 draw options
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -711,8 +707,7 @@
 
       if (!('doing_assert' in jsroot)) jsroot.doing_assert = [];
 
-
-      if ((typeof kind != 'string') || (kind == ''))
+      if ((typeof kind !== 'string') || (kind == ''))
          return jsroot.CallBack(callback);
 
       if (kind=='__next__') {
@@ -1434,14 +1429,6 @@
       }
 
       var src = JSROOT.source_fullpath;
-
-//      if (JSROOT.source_min) {
-//         if ( typeof define === "function" && define.amd ) {
-            // all references are done with 'JSRootCore' name,
-            // define it directly, otherwise it will be loaded once again
-//            define('JSRootCore', [], JSROOT);
-//         }
-//      }
 
       if (JSROOT.GetUrlOption('gui', src) !== null)
          return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
