@@ -424,14 +424,19 @@
    JSROOT.Painter.createAttLine = function(attline, borderw, can_excl) {
 
       var color = 0, _width = 0, style = 0;
-
-      if (attline=='black') { color = 1; _width = 1; } else
-      if (attline=='none') { _width = 0; } else
+      if (typeof attline == 'string') {
+         if (attline=='black') { color = 1; _width = 1; } else
+         if (attline=='none') { _width = 0; }
+      } else
       if (typeof attline == 'object') {
          if ('fLineColor' in attline) color = attline.fLineColor;
          if ('fLineWidth' in attline) _width = attline.fLineWidth;
          if ('fLineStyle' in attline) style = attline.fLineStyle;
+      } else
+      if ((attline!==undefined) && !isNaN(attline)) {
+         color = attline;
       }
+
       if (borderw!==undefined) _width = borderw;
 
       var line = {
@@ -4200,16 +4205,15 @@
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer, axis_color = 'black',
-          tickSize = 10, scaling_size = 100, text_scaling_size = 100;
+          axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100;
 
       if (is_gaxis) {
-         axis_color = JSROOT.Painter.root_colors[axis.fLineColor];
+         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis);
          scaling_size = (vertical ? this.pad_width() : this.pad_height());
          text_scaling_size = Math.min(this.pad_width(), this.pad_height());
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
-         axis_color = JSROOT.Painter.root_colors[axis.fAxisColor];
+         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis.fAxisColor, 1);
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
          text_scaling_size = Math.min(w,h);
@@ -4231,7 +4235,7 @@
                .attr("x1",0).attr("y1",0)
                .attr("x1",vertical ? 0 : w)
                .attr("y1", vertical ? h : 0)
-               .style("stroke", axis_color);
+               .call(this.lineatt.func);
       }
 
       if (transform!== undefined)
@@ -4278,7 +4282,7 @@
       }
 
       if (res.length > 0)
-         axis_g.append("svg:path").attr("d", res).style("stroke", axis_color);
+         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),
