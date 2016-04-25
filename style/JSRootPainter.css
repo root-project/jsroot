@@ -422,7 +422,7 @@
     height: calc(100% - 26px);
 }
 
-.jsroot .flex-resizable-helper {
+.jsroot-flex-resizable-helper {
     border: 2px dotted #00F;
 }
 

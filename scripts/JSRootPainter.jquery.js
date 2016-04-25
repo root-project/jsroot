@@ -878,7 +878,7 @@
          .width(Math.round(w * 0.58))
          .height(Math.round(h * 0.58))
          .resizable({
-            helper: "flex-resizable-helper",
+            helper: "jsroot-flex-resizable-helper",
             start: function(event, ui) {
                // bring element to front when start resizing
                $(this).appendTo($(this).parent());
