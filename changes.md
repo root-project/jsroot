@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 4.5
+## Changes in 4.5.0
 1. Zooming with mouse wheel
 2. Context menus for many different objects attributes are provided
 3. Context menu for every drawn object can be activated via toolbar button 
