@@ -3620,9 +3620,13 @@
 
            var arrx = new Float32Array(npix), arry = new Float32Array(npix);
 
-           for (var n=0;n<npix;++n) {
-              arrx[n] = Math.random();
-              arry[n] = Math.random();
+           if (npix===1) {
+              arrx[0] = arry[0] = 0.5;
+           } else {
+              for (var n=0;n<npix;++n) {
+                 arrx[n] = Math.random();
+                 arry[n] = Math.random();
+              }
            }
 
            // arrx.sort();
