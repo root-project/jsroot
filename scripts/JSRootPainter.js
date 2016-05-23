@@ -6386,7 +6386,7 @@
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
             this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
                   function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fLabelOffset,
+            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
                   function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
             this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
                   function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
