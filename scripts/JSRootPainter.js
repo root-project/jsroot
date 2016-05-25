@@ -7319,7 +7319,7 @@
       return painter.DrawingReady();
    }
 
-   // ================= painer of raw text ========================================
+   // ================= painter of raw text ========================================
 
    JSROOT.RawTextPainter = function(txt) {
       JSROOT.TBasePainter.call(this);
