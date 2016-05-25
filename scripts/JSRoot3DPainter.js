@@ -115,6 +115,8 @@
             if ((pick!==null) && (INTERSECTED !== pick)) {
                if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
                   INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                  // 0.96 and 1.04166 are inverse, allowing "highlight" bins to buldge
+                  // slightly and be visible over the unhighlighted ones 
                   INTERSECTED.scale.x *= 0.96;
                   INTERSECTED.scale.y *= 0.96;
                   INTERSECTED.scale.z *= 0.96;
