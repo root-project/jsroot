@@ -942,7 +942,7 @@
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
          //geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
          geom = new THREE.SphereGeometry(0.5, 18, 16);
-         intersect_geom = new THREE.SphereGeometry(0.6, 10, 8);
+         intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          //geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
