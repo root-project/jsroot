@@ -936,12 +936,13 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
-      var material = null, geom = null;
+      var material = null, geom = null; intersect_geom = null;
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
          //geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
-         geom = new THREE.SphereGeometry(0.5);
+         geom = new THREE.SphereGeometry(0.5, 18, 16);
+         intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          //geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
@@ -989,15 +990,15 @@
          single_bin_verts[9*face+7] = geom.vertices[geom.faces[face].c].y;
          single_bin_verts[9*face+8] = geom.vertices[geom.faces[face].c].z;
 
-         single_bin_norms[9*face  ] = geom.faces[face].normal.x;
-         single_bin_norms[9*face+1] = geom.faces[face].normal.y;
-         single_bin_norms[9*face+2] = geom.faces[face].normal.z;
-         single_bin_norms[9*face+3] = geom.faces[face].normal.x;
-         single_bin_norms[9*face+4] = geom.faces[face].normal.y;
-         single_bin_norms[9*face+5] = geom.faces[face].normal.z;
-         single_bin_norms[9*face+6] = geom.faces[face].normal.x;
-         single_bin_norms[9*face+7] = geom.faces[face].normal.y;
-         single_bin_norms[9*face+8] = geom.faces[face].normal.z;
+         single_bin_norms[9*face  ] = geom.faces[face].vertexNormals[0].x;
+         single_bin_norms[9*face+1] = geom.faces[face].vertexNormals[0].y;
+         single_bin_norms[9*face+2] = geom.faces[face].vertexNormals[0].z;
+         single_bin_norms[9*face+3] = geom.faces[face].vertexNormals[1].x;
+         single_bin_norms[9*face+4] = geom.faces[face].vertexNormals[1].y;
+         single_bin_norms[9*face+5] = geom.faces[face].vertexNormals[1].z;
+         single_bin_norms[9*face+6] = geom.faces[face].vertexNormals[2].x;
+         single_bin_norms[9*face+7] = geom.faces[face].vertexNormals[2].y;
+         single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;  
       }
 
       for (var i = i1; i < i2; ++i) {
@@ -1014,7 +1015,11 @@
 
                var binz = this.GetBinZ(k+0.5), grz = this.tz(binz);
 
-               var bin = new THREE.Mesh(geom, material.clone());
+               if (this.options.Box !== 11) {
+                  var bin = new THREE.Mesh(geom, material.clone());
+               } else {
+                  var bin = new THREE.Mesh(intersect_geom, material.clone());
+               }
 
                bin.position.set( grx, gry, grz );
 
