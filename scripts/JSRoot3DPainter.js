@@ -116,7 +116,7 @@
                if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
                   INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                   // 0.96 and 1.04166 are inverse, allowing "highlight" bins to buldge
-                  // slightly and be visible over the unhighlighted ones 
+                  // slightly and be visible over the unhighlighted ones
                   INTERSECTED.scale.x *= 0.96;
                   INTERSECTED.scale.y *= 0.96;
                   INTERSECTED.scale.z *= 0.96;
@@ -940,14 +940,12 @@
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
-         //geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
-         geom = new THREE.SphereGeometry(0.5, 18, 16);
-         intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
+         // geom = new THREE.SphereGeometry(0.5, 18, 16);
+         geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
+         // intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
-         //geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-         // geom = new THREE.BoxGeometry(2 * this.size3d / this.nbinsx, 2 * this.size3d / this.nbinsy, 2 * this.size3d / this.nbinsz);
          geom = new THREE.BoxGeometry(1, 1, 1);
       }
 
@@ -971,18 +969,18 @@
       var box_vcount = geom.faces.length*3;
       // BufferGeometries that store geometry of all bins
       var all_bins_buffgeom = new THREE.BufferGeometry();
-      var all_bins_linebuff = new THREE.BufferGeometry();  
-   
+      var all_bins_linebuff = new THREE.BufferGeometry();
+
       var single_bin_verts = new Float32Array(box_vcount*3);
       var single_bin_norms = new Float32Array(box_vcount*3);
       var temp_bin_verts = [];
       // Fill a typed array with cube geometry that will be shared by all
-      // (This technically could be put into an InstancedBufferGeometry but 
+      // (This technically could be put into an InstancedBufferGeometry but
       // performance gain is likely not huge )
       for (var face = 0; face < geom.faces.length; ++face) {
          single_bin_verts[9*face  ] = geom.vertices[geom.faces[face].a].x;
          single_bin_verts[9*face+1] = geom.vertices[geom.faces[face].a].y;
-         single_bin_verts[9*face+2] = geom.vertices[geom.faces[face].a].z;  
+         single_bin_verts[9*face+2] = geom.vertices[geom.faces[face].a].z;
          single_bin_verts[9*face+3] = geom.vertices[geom.faces[face].b].x;
          single_bin_verts[9*face+4] = geom.vertices[geom.faces[face].b].y;
          single_bin_verts[9*face+5] = geom.vertices[geom.faces[face].b].z;
@@ -998,7 +996,7 @@
          single_bin_norms[9*face+5] = geom.faces[face].vertexNormals[1].z;
          single_bin_norms[9*face+6] = geom.faces[face].vertexNormals[2].x;
          single_bin_norms[9*face+7] = geom.faces[face].vertexNormals[2].y;
-         single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;  
+         single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;
       }
 
       for (var i = i1; i < i2; ++i) {
@@ -1015,23 +1013,19 @@
 
                var binz = this.GetBinZ(k+0.5), grz = this.tz(binz);
 
-               if (this.options.Box !== 11) {
-                  var bin = new THREE.Mesh(geom, material.clone());
-               } else {
-                  var bin = new THREE.Mesh(intersect_geom, material.clone());
-               }
+               var bin = new THREE.Mesh(intersect_geom ? intersect_geom : geom, material.clone());
 
                bin.position.set( grx, gry, grz );
 
                bin.scale.set(scalex*wei, scaley*wei, scalez*wei);
-               
+
                // Grab the coordinates and scale that are being assigned to each bin
                for (var vi = 0; vi < box_vcount; ++vi) {
                   temp_bin_verts.push(single_bin_verts[3*vi  ]*scalex*wei+grx);
                   temp_bin_verts.push(single_bin_verts[3*vi+1]*scaley*wei+gry);
                   temp_bin_verts.push(single_bin_verts[3*vi+2]*scalez*wei+grz);
                }
-            
+
                // Make old bins invisible so they don't hurt performance but
                // still cause tooltip to show up
                bin.material.visible = false;
@@ -1059,14 +1053,14 @@
       bin_verts = new Float32Array(temp_bin_verts.length);
       bin_norms = new Float32Array(temp_bin_verts.length);
       for (var i = 0; i<temp_bin_verts.length; ++i) {
-         bin_verts[i] = temp_bin_verts[i];  
+         bin_verts[i] = temp_bin_verts[i];
          bin_norms[i] = single_bin_norms[i%single_bin_norms.length];
       }
 
       // Create mesh from bin buffergeometry
-      all_bins_buffgeom.addAttribute( 'position', 
+      all_bins_buffgeom.addAttribute( 'position',
          new THREE.BufferAttribute( bin_verts, 3 ) );
-      all_bins_buffgeom.addAttribute( 'normal', 
+      all_bins_buffgeom.addAttribute( 'normal',
          new THREE.BufferAttribute( bin_norms, 3 ) );
       var combined_bins = new THREE.Mesh(all_bins_buffgeom, material.clone());
       this.toplevel.add(combined_bins);
@@ -1088,10 +1082,10 @@
          }
 
          all_bins_linebuff.setIndex(
-          new THREE.BufferAttribute( new Uint16Array(line_indices), 1 ) ); 
-         all_bins_linebuff.addAttribute( 'position', 
+          new THREE.BufferAttribute( new Uint16Array(line_indices), 1 ) );
+         all_bins_linebuff.addAttribute( 'position',
               new THREE.BufferAttribute( new Float32Array(line_verts), 3 ) );
-         
+
          var combined_lines = new THREE.LineSegments(
               all_bins_linebuff, all_helpers.children[0].material.clone());
 
