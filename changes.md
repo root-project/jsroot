@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Upgrafe three.js to r77, adjust text rendering code 
+
+
 ## Changes in 4.5.0
 1. Zooming with mouse wheel
 2. Context menus for many different objects attributes are provided

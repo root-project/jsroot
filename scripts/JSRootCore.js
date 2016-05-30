@@ -626,6 +626,27 @@
          isbower = true;
          filename = filename.slice(3);
       }
+
+      var font_suffix = filename.indexOf('.typeface.json');
+      if (font_suffix > 0) {
+         var fontid = 'threejs_font_' + filename.slice(filename.lastIndexOf('/')+1, font_suffix);
+         if (typeof JSROOT[fontid] !== 'undefined') return completeLoad();
+
+         if ((typeof THREE === 'undefined') || (typeof THREE.FontLoader === 'undefined')) {
+            console.log('fail to load',filename,'no (proper) three.js found');
+            return completeLoad();
+         }
+
+         JSROOT.progress("loading " + filename + " ...");
+
+         var loader = new THREE.FontLoader();
+         loader.load( filename, function ( response ) {
+            JSROOT[fontid] = response;
+            completeLoad();
+         } );
+         return;
+      }
+
       var isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
@@ -779,18 +800,17 @@
       }
 
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
-         if (use_bower)
+         if (use_bower) {
            mainfiles += "###threejs/build/three.min.js;" +
-                        "###threejs/examples/js/utils/FontUtils.js;" +
                         "###threejs/examples/js/renderers/Projector.js;" +
                         "###threejs/examples/js/renderers/CanvasRenderer.js;" +
-                        "###threejs/examples/js/geometries/TextGeometry.js;" +
                         "###threejs/examples/js/controls/OrbitControls.js;" +
-                        "###threejs/examples/js/controls/TransformControls.js;" +
-                        "###threejs/examples/fonts/helvetiker_regular.typeface.js";
-         else
+                        "###threejs/examples/js/controls/TransformControls.js;";
+           extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
+         } else {
             mainfiles += "$$$scripts/three" + ext + ".js;" +
                          "$$$scripts/three.extra" + ext + ".js;";
+         }
          modules.push("threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');

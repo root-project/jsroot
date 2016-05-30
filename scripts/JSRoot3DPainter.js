@@ -449,7 +449,7 @@
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
          if (is_major) {
-            var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
@@ -499,7 +499,7 @@
          var plen = (is_major ? ticklen : ticklen*0.6) * Math.sin(Math.PI/4);
 
          if (is_major) {
-            var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
@@ -548,7 +548,7 @@
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
          if (is_major) {
-            var text3d = new THREE.TextGeometry(lbl, { size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
 
             text3d.computeBoundingBox();
             var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
