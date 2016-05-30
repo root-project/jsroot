@@ -936,13 +936,12 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
-      var material = null, geom = null; intersect_geom = null;
+      var material = null, geom = null;
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
          // geom = new THREE.SphereGeometry(0.5, 18, 16);
          geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
-         // intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
@@ -1013,7 +1012,7 @@
 
                var binz = this.GetBinZ(k+0.5), grz = this.tz(binz);
 
-               var bin = new THREE.Mesh(intersect_geom ? intersect_geom : geom, material.clone());
+               var bin = new THREE.Mesh(geom, material.clone());
 
                bin.position.set( grx, gry, grz );
 
