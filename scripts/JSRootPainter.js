@@ -3800,7 +3800,8 @@
                });
          });
 
-         menu.show(evnt);
+         pthis.FillObjectExecMenu(menu, function() { menu.show(evnt); });
+
       }); // end menu creation
    }
 
@@ -9018,7 +9019,11 @@
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
          if (obj!=null) hpainter['_cached_draw_object'] = obj;
          var opt = JSROOT.GetUrlOption("opt");
-         hpainter.display("", opt);
+
+         hpainter.display("", opt, function(obj_painter) {
+            if (JSROOT.GetUrlOption("websocket")!==null)
+               obj_painter.OpenWebsocket();
+         });
       });
    }
 
