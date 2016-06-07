@@ -3741,7 +3741,10 @@
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
 
       if ((obj == null) || !('fPrimitives' in obj)) return false;
-
+      
+      this.pad.fGridx = obj.fGridx;
+      this.pad.fGridy = obj.fGridy;
+      
       if (this.iscan) this.CheckColors(obj);
 
       var isany = false, p = 0;
@@ -4565,7 +4568,7 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0, Gridx: 0, Gridy: 0,
+         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0,
          Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
@@ -5113,8 +5116,6 @@
          this.options.Logx = pad.fLogx;
          this.options.Logy = pad.fLogy;
          this.options.Logz = pad.fLogz;
-         this.options.Gridx = pad.fGridx;
-         this.options.Gridy = pad.fGridy;
       }
 
       if (this.main_painter() !== this) return;
@@ -5429,10 +5430,11 @@
 
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
-      /* add a grid on x axis, if the option is set */
+      
+      var pad = this.root_pad();
 
       // add a grid on x axis, if the option is set
-      if (this.options.Gridx && this.x_handle) {
+      if (pad && pad.fGridx && this.x_handle) {
 
          var h = this.frame_height();
 
@@ -5450,7 +5452,7 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (this.options.Gridy && this.y_handle) {
+      if (pad && pad.fGridy && this.y_handle) {
          var w = this.frame_width();
 
          layer.selectAll('.ygrid')
