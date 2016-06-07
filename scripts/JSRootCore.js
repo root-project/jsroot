@@ -1206,6 +1206,7 @@
                  _func = _func.replace('expo(', 'this._math.expo(this, x, ');
                  _func = _func.replace('landau(', 'this._math.landau(this, x, ');
                  _func = _func.replace('landaun(', 'this._math.landaun(this, x, ');
+                 _func = _func.replace('TMath::Gaus(', 'this._math.gaus(this, x, ');
               }
               _func = _func.replace('pi', 'Math.PI');
               for (var i=0;i<this.fNpar;++i)
