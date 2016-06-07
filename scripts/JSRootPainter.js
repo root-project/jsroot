@@ -3781,8 +3781,22 @@
                JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
             });
 
-         pthis.FillAttContextMenu(menu);
+         if (!pthis._websocket) {
+            
+            
+            function ToggleGrid(arg) {
+               this.pad[arg] = !this.pad[arg];
+               if (this.main_painter() && this.main_painter().DrawGrids) 
+                  this.main_painter().DrawGrids();
+            }
 
+            menu.addchk(pthis.pad.fGridx, 'Grid x', 'fGridx', ToggleGrid);
+
+            menu.addchk(pthis.pad.fGridy, 'Grid y', 'fGridy', ToggleGrid);
+
+            pthis.FillAttContextMenu(menu);
+
+         }
          menu.add("separator");
 
          var file_name = "canvas.png";
