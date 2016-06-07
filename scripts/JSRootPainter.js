@@ -842,6 +842,9 @@
             str = str.slice(11, str.length-1);
          }
       }
+
+      str = str.replace('^2','\xB2').replace('^3','\xB3');
+
       return str;
    }
 
