@@ -2001,6 +2001,67 @@
    }
 
 
+   JSROOT.TObjectPainter.prototype.OpenWebsocket = function() {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      delete this._websocket;
+
+      var path = window.location.href;
+      path = path.replace("http://", "ws://");
+      path = path.replace("https://", "wss://");
+      var pos = path.indexOf("draw.htm");
+      if (pos < 0) return;
+
+      path = path.substr(0,pos) + "root.websocket";
+
+      console.log('open websocket ' + path);
+
+      var conn = new WebSocket(path);
+
+      this._websocket = conn;
+
+      var pthis = this;
+
+      conn.onopen = function() {
+         console.log('websocket initialized');
+         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big peace)
+      }
+
+      conn.onmessage = function (e) {
+         var d = e.data;
+         if (typeof d != 'string') return console.log("msg",d);
+
+         if (d.substr(0,4)=='JSON') {
+            var obj = JSROOT.parse(d.substr(4));
+            // console.log("get JSON ", d.length-4, obj._typename);
+            pthis.RedrawObject(obj);
+            conn.send('READY'); // send ready message back
+         } else
+         if (d.substr(0,4)=='MENU') {
+            var lst = JSROOT.parse(d.substr(4));
+            console.log("get MENUS ", typeof lst, lst.length, d.length-4);
+            conn.send('READY'); // send ready message back
+            if (typeof pthis._getmenu_callback == 'function')
+               pthis._getmenu_callback(lst);
+         } else {
+            console.log("msg",d);
+         }
+      }
+
+      conn.onclose = function() {
+         console.log('websocket closed');
+
+         delete pthis._websocket;
+      }
+
+      conn.onerror = function (err) {
+         console.log("err",err);
+         conn.close();
+      }
+   }
+
+
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
       // like TAttFill, TAttLine, ....
