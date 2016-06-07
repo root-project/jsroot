@@ -838,7 +838,7 @@
       if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
          var pos = str.indexOf("}{");
          if ((pos>0) && (pos == str.lastIndexOf("}{"))) {
-            str = str.replace("}{", "\n");
+            str = str.replace("}{", "\n ");
             str = str.slice(11, str.length-1);
          }
       }
