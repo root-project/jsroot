@@ -1181,24 +1181,27 @@
               if (typeof JSROOT.Math == 'object') {
                  this._math = JSROOT.Math;
                  _func = _func.replace('TMath::Prob(', 'this._math.Prob(');
+                 _func = _func.replace('TMath::Gaus(', 'this._math.Gaus(');
                  _func = _func.replace('gaus(', 'this._math.gaus(this, x, ');
                  _func = _func.replace('gausn(', 'this._math.gausn(this, x, ');
                  _func = _func.replace('expo(', 'this._math.expo(this, x, ');
                  _func = _func.replace('landau(', 'this._math.landau(this, x, ');
                  _func = _func.replace('landaun(', 'this._math.landaun(this, x, ');
-                 _func = _func.replace('TMath::Gaus(', 'this._math.gaus(this, x, ');
               }
               _func = _func.replace('pi', 'Math.PI');
               for (var i=0;i<this.fNpar;++i)
                  while(_func.indexOf('['+i+']') != -1)
-                    _func = _func.replace('['+i+']', this.GetParValue(i));
+                    _func = _func.replace('['+i+']', '('+this.GetParValue(i)+')');
               _func = _func.replace(/\b(sin)\b/gi, 'Math.sin');
               _func = _func.replace(/\b(cos)\b/gi, 'Math.cos');
               _func = _func.replace(/\b(tan)\b/gi, 'Math.tan');
               _func = _func.replace(/\b(exp)\b/gi, 'Math.exp');
+              for (var n=2;n<10;++n)
+                 _func = _func.replace('x^'+n, 'Math.pow(x,'+n+')');
 
-               this._func = new Function("x", "return " + _func).bind(this);
-               this._title = this.fTitle;
+              this._func = new Function("x", "return " + _func).bind(this);
+
+              this._title = this.fTitle;
             }
 
             return this._func(x);
