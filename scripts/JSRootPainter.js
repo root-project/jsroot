@@ -3744,8 +3744,6 @@
 
       if (this.iscan) this.CheckColors(obj);
 
-      if (obj.fPrimitives.arr.length !== this.pad.fPrimitives.arr.length) return false;
-
       var isany = false, p = 0;
       for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
          while (p < this.painters.length) {
