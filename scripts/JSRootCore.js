@@ -198,51 +198,64 @@
          console.log(value);
    }
 
+   // extract reference, coded inside string
+   // check already should be done, that string starts from "$ref:"  
+   JSROOT.JSONR_unref_str = function(value, dy) {
+      // if ((value.length > 5) && (value.indexOf("$ref:") === 0)) 
+      var i = parseInt(value.substr(5));
+      return (!isNaN(i) && (i >= 0) && (i < dy.length)) ? dy[i] : value;
+   }
+   
+   // replace all references inside object
+   // object should not be null
    // This is part of the JSON-R code, found on
    // https://github.com/graniteds/jsonr
    // Only unref part was used, arrays are not accounted as objects
-   // Should be used to reintroduce objects references, produced by TBufferJSON
-   JSROOT.JSONR_unref = function(value, dy) {
-      var c, i, k, ks;
-      if (!dy) dy = [];
-
-      switch (typeof value) {
-      case 'string':
-          if ((value.length > 5) && (value.substr(0, 5) == "$ref:")) {
-             c = parseInt(value.substr(5));
-             if (!isNaN(c) && (c < dy.length)) {
-                value = dy[c];
-             }
+   JSROOT.JSONR_unref_obj = function(value, dy) {
+      var i, fld, proto = Object.prototype.toString.apply(value);
+      
+      if (proto === '[object Array]') {
+          for (i = 0; i < value.length; ++i) {
+             fld = value[i];
+             if (typeof fld === 'string') {
+                if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
+                   value[i] = this.JSONR_unref_str(fld, dy);
+             } else 
+             if ((typeof fld === 'object') && (fld !== null))
+                this.JSONR_unref_obj(fld, dy);
           }
-          break;
+          return;
+      }
+      
+      // if object in the table, return it
+      if (dy.indexOf(value) >= 0) return;
 
-      case 'object':
-         if (value !== null) {
+      // add object to object map
+      dy.push(value);
 
-            if (Object.prototype.toString.apply(value) === '[object Array]') {
-               for (i = 0; i < value.length; ++i) {
-                  value[i] = this.JSONR_unref(value[i], dy);
-               }
-            } else {
+      // add methods to all objects, where _typename is specified
+      if ('_typename' in value) this.addMethods(value);
 
-               // account only objects in ref table
-               if (dy.indexOf(value) === -1) {
-                  dy.push(value);
-               }
-
-               // add methods to all objects, where _typename is specified
-               if ('_typename' in value) this.addMethods(value);
-
-               ks = Object.keys(value);
-               for (i = 0; i < ks.length; ++i) {
-                  k = ks[i];
-                  value[k] = this.JSONR_unref(value[k], dy);
-               }
-            }
-         }
-         break;
+      var ks = Object.keys(value);
+      for (var k = 0; k < ks.length; ++k) {
+         i = ks[k];
+         fld = value[i];
+         
+         if (typeof fld === 'string') {
+            if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
+               value[i] = this.JSONR_unref_str(fld, dy);
+         } else 
+         if ((typeof fld === 'object') && (fld !== null))
+            this.JSONR_unref_obj(fld, dy);
       }
 
+      return value;
+   }
+
+   // Should be used to reintroduce objects references, produced by TBufferJSON
+   JSROOT.JSONR_unref = function(value) {
+      if ((typeof value === 'object') && (value !== null))
+         this.JSONR_unref_obj(value, []);
       return value;
    }
 
