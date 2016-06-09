@@ -3665,19 +3665,23 @@
 
       if (!this._websocket) {
 
-         function ToggleGrid(arg) {
-
-            this.pad[arg] = !this.pad[arg];
-
+         function ToggleField(arg) {
+            this.pad[arg] = this.pad[arg] ? 0 : 1;
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
+            if (!main) return;
 
-            if (main && (typeof main.DrawGrids == 'function'))
+            if ((arg.indexOf('fGrid')==0) && (typeof main.DrawGrids == 'function'))
                main.DrawGrids();
+
+            if ((arg.indexOf('fTick')==0) && (typeof main.DrawAxes == 'function'))
+               main.DrawAxes();
          }
 
-         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleGrid);
+         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleField);
+         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleField);
+         menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
+         menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
-         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleGrid);
 
          this.FillAttContextMenu(menu);
       }
@@ -4229,7 +4233,7 @@
       return handle;
    }
 
-   JSROOT.TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse) {
+   JSROOT.TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse, second_shift) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
@@ -4238,6 +4242,9 @@
           vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
           axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100;
+
+      // shift for second ticks set (if any)
+      if (!second_shift) second_shift = 0;
 
       if (is_gaxis) {
          if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis);
@@ -4270,7 +4277,7 @@
                .call(this.lineatt.func);
       }
 
-      if (transform!== undefined)
+      if (transform !== undefined)
          axis_g.attr("transform", transform);
 
       this.CreateFormatFuncs();
@@ -4278,7 +4285,7 @@
       var center = (this.kind == 'labels') ||
                    (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
 
-      var res = "", lastpos = 0, lasth = 0, textscale = 1;
+      var res = "", res2 = "", lastpos = 0, lasth = 0, textscale = 1;
 
       // first draw ticks
 
@@ -4302,12 +4309,15 @@
          if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
 
          if (res.length == 0) {
-            res += vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+-h1);
+            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
+            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
          } else {
             res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
+            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
          }
 
          res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+         res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
 
          lastpos = handle.grpos;
          lasth = h2;
@@ -4315,6 +4325,9 @@
 
       if (res.length > 0)
          axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+
+      if ((second_shift!==0) && (res2.length>0))
+         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h))),
@@ -5537,7 +5550,7 @@
                                   (pad.fLogx && this.x_kind !== "time") ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
 
-      this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")");
+      this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")", false, pad.fTickx ? -h : 0);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -5546,7 +5559,7 @@
                                   (pad.fLogy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
 
-      this.y_handle.DrawAxis(layer, w, h);
+      this.y_handle.DrawAxis(layer, w, h, undefined, false, pad.fTicky ? w : 0);
 
       if (shrink_forbidden) return;
 
