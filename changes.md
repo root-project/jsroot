@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Upgrafe three.js to r77, adjust text rendering code 
+2. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
 
 
 ## Changes in 4.5.0
