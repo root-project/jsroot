@@ -2021,7 +2021,7 @@
 
       this._websocket = conn;
 
-      var pthis = this;
+      var pthis = this, sum1 = 0, sum2 = 0;
 
       conn.onopen = function() {
          console.log('websocket initialized');
@@ -2035,7 +2035,13 @@
          if (d.substr(0,4)=='JSON') {
             var obj = JSROOT.parse(d.substr(4));
             // console.log("get JSON ", d.length-4, obj._typename);
+            var tm1 = new Date().getTime();
             pthis.RedrawObject(obj);
+            var tm2 = new Date().getTime();
+            sum1+=1;
+            sum2+=(tm2-tm1);
+            if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
+            
             conn.send('READY'); // send ready message back
          } else
          if (d.substr(0,4)=='MENU') {
