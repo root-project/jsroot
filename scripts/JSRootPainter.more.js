@@ -906,14 +906,14 @@
             return res;
          }
 
-         var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
+         var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false, pad = this.root_pad();
 
          if (gxmin !== gxmax) {
             if (gxmin > xmin) xmin = gxmin;
             if (gxmax < xmax) xmax = gxmax;
          }
 
-         if ((main!==null) && main.options.Logx && (xmin>0) && (xmax>0)) {
+         if ((main!==null) && pad.fLogx && (xmin>0) && (xmax>0)) {
             logx = true;
             xmin = Math.log(xmin);
             xmax = Math.log(xmax);
@@ -1229,7 +1229,7 @@
          }
 
          var pad = this.root_pad();
-         if ((pad!=null) && (pad.fLogy > 0)) {
+         if (pad && pad.fLogy) {
             if (res.min<0) res.min = res.max * 1e-4;
          }
 
@@ -2524,7 +2524,7 @@
 
          var z = null, z_kind = "normal";
 
-         if (this.main_painter().options.Logz) {
+         if (this.root_pad().fLogz) {
             z = d3.scale.log();
             z_kind = "log";
          } else {
@@ -3070,7 +3070,7 @@
       this.zmin = zmin;
       this.zmax = zmax;
 
-      if (this.options.Logz) {
+      if (this.root_pad().fLogz) {
          if (this.zmax <= 0) this.zmax = 1.;
          if (this.zmin <= 0)
             this.zmin = (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
@@ -3117,7 +3117,7 @@
          }
       }
 
-      if (this.fUserContour || this.options.Logz) {
+      if (this.fUserContour || this.root_pad().fLogz) {
          var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
          if (zc < cntr[0]) return -1;
          if (zc >= cntr[r]) return r;
@@ -3195,6 +3195,7 @@
    JSROOT.TH2Painter.prototype.CreateDrawBins = function(w, h) {
       // used only for lego plot now
       var histo = this.GetObject(),
+          pad = this.root_pad(),
           i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", 0),
@@ -3205,13 +3206,13 @@
 
       for (i = i1; i <= i2; ++i) {
          x = this.GetBinX(i);
-         if (this.options.Logx && (x <= 0)) { i1 = i+1; continue; }
+         if (pad.fLogx && (x <= 0)) { i1 = i+1; continue; }
          xx.push({indx:i, axis: x, gr: this.grx(x), cnt:0});
       }
 
       for (j = j1; j <= j2; ++j) {
          y = this.GetBinY(j);
-         if (this.options.Logy && (y <= 0)) { j1 = j+1; continue; }
+         if (pad.fLogy && (y <= 0)) { j1 = j+1; continue; }
          yy.push({indx:j, axis:y, gr:this.gry(y), cnt:0});
       }
 
@@ -3251,10 +3252,10 @@
                    else numx = Math.max(10, Math.round(numy * coef));
 
          if ((this.options.Optimize > 1) || (xx.length > 50))
-            this.CompressAxis(xx, numx, !this.options.Logx && this.regularx);
+            this.CompressAxis(xx, numx, !pad.fLogx && this.regularx);
 
          if ((this.options.Optimize > 1) || (yy.length > 50))
-            this.CompressAxis(yy, numy, !this.options.Logy && this.regulary);
+            this.CompressAxis(yy, numy, !pad.fLogy && this.regulary);
       }
 
       var local_bins = [];
@@ -3321,7 +3322,8 @@
    }
 
    JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {
-      var histo = this.GetObject(), i, j, x, y, binz, binarea,
+      var histo = this.GetObject(), pad = this.root_pad(),
+          i, j, x, y, binz, binarea,
           res = {
              i1: this.GetSelectIndex("x", "left", 0),
              i2: this.GetSelectIndex("x", "right", 1),
@@ -3335,14 +3337,14 @@
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = this.GetBinX(i);
-         if (this.options.Logx && (x <= 0)) { res.i1 = i+1; continue; }
+         if (pad.fLogx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = this.grx(x);
          if (dorounding) res.grx[i] = Math.round(res.grx[i]);
       }
 
       for (j = res.j1; j <= res.j2; ++j) {
          y = this.GetBinY(j);
-         if (this.options.Logy && (y <= 0)) { res.j1 = j+1; continue; }
+         if (pad.fLogy && (y <= 0)) { res.j1 = j+1; continue; }
          res.gry[j] = this.gry(y);
          if (dorounding) res.gry[j] = Math.round(res.gry[j]);
       }
@@ -3505,7 +3507,7 @@
           colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
 
       var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
-      if (this.options.Logz && (this.maxbin>0)) {
+      if (this.root_pad().fLogz && (this.maxbin>0)) {
          uselogz = true;
          logmax = Math.log(this.maxbin);
          logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;

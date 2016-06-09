@@ -2238,7 +2238,9 @@
          this.ymin = box.min.y; this.ymax = box.max.y;
          this.zmin = box.min.z; this.zmax = box.max.z;
 
-         this.options = { Logx: false, Logy: false, Logz: false };
+         console.error('Check log setting in options which no longer exists');
+
+         // this.options = { Logx: false, Logy: false, Logz: false };
 
          this.size3d = 0; // use min/max values directly as graphical coordinates
 

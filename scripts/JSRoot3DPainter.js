@@ -350,6 +350,7 @@
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.07),
           bothsides = (this.size3d !== 0),
+          pad = this.root_pad(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -374,7 +375,7 @@
          zmin = this.zoom_zmin; zmax = this.zoom_zmax;
       }
 
-      if (this.options.Logx) {
+      if (pad && pad.fLogx) {
          if (xmax <= 0) xmax = 1.;
          if ((xmin <= 0) && (this.nbinsx > 0))
             for (var i=0;i<this.nbinsx;++i) {
@@ -393,7 +394,7 @@
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
 
-      if (this.options.Logy) {
+      if (pad && pad.fLogy) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
@@ -413,7 +414,7 @@
       this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.ty, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.CreateFormatFuncs();
 
-      if (this.options.Logz) {
+      if (pad && pad.fLogz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
          this.tz = d3.scale.log();
@@ -750,7 +751,7 @@
 
       this.Create3DScene();
 
-      this.zmin = this.options.Logz ? this.gmin0bin * 0.3 : this.gminbin;
+      this.zmin = this.root_pad().fLogz ? this.gmin0bin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin * 1.05; // not very nice
 
       this.DrawXYZ();

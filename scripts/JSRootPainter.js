@@ -2703,7 +2703,7 @@
       // fill context menu for the frame
       // it could be appended to the histogram menus
 
-      var main = this.main_painter(), alone = menu.size()==0;
+      var main = this.main_painter(), alone = menu.size()==0, pad = this.root_pad();
 
       if (alone)
          menu.add("header:Frame");
@@ -2719,13 +2719,13 @@
             menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
          menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
 
-         if (main.options) {
-            menu.addchk(main.options.Logx, "SetLogx", main.ToggleLog.bind(main,"x"));
+         if (pad) {
+            menu.addchk(pad.fLogx, "SetLogx", main.ToggleLog.bind(main,"x"));
 
-            menu.addchk(main.options.Logy, "SetLogy", main.ToggleLog.bind(main,"y"));
+            menu.addchk(pad.fLogy, "SetLogy", main.ToggleLog.bind(main,"y"));
 
             if (main.Dimension() == 2)
-               menu.addchk(main.options.Logz, "SetLogz", main.ToggleLog.bind(main,"z"));
+               menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
          }
          menu.add("separator");
       }
@@ -4573,7 +4573,7 @@
 
    JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
 
-      if ((opt == null) || (opt == "")) opt = this.histo['fOption'];
+      if ((opt == null) || (opt == "")) opt = this.histo.fOption;
 
       /* decode string 'opt' and fill the option structure */
       var hdim = this.Dimension();
@@ -4585,12 +4585,12 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Logx: 0, Logy: 0, Logz: 0,
-         Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
+         HighRes: 0, Zero: 0, Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
-      var chopt = opt.toUpperCase();
-      chopt = JSROOT.Painter.clearCuts(chopt);
+      var chopt = JSROOT.Painter.clearCuts(opt.toUpperCase());
+
+      var pad = this.root_pad();
 
       // if (hdim > 1) option.Scat = 1;  // default was scatter plot
 
@@ -4636,15 +4636,15 @@
          chopt = chopt.replace('NOSTAT', '');
       }
       if (chopt.indexOf('LOGX') != -1) {
-         option.Logx = 1;
+         pad.fLogx = 1;
          chopt = chopt.replace('LOGX', '');
       }
       if (chopt.indexOf('LOGY') != -1) {
-         option.Logy = 1;
+         pad.fLogy = 1;
          chopt = chopt.replace('LOGY', '');
       }
       if (chopt.indexOf('LOGZ') != -1) {
-         option.Logz = 1;
+         pad.fLogz = 1;
          chopt = chopt.replace('LOGZ', '');
       }
 
@@ -5126,16 +5126,9 @@
       var main = this.main_painter();
       if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
 
-      var pad = this.root_pad();
-
-      if (pad!=null) {
-         // Copy options from current pad
-         this.options.Logx = pad.fLogx;
-         this.options.Logy = pad.fLogy;
-         this.options.Logz = pad.fLogz;
-      }
-
       if (this.main_painter() !== this) return;
+
+      var pad = this.root_pad();
 
       this.zoom_xmin = this.zoom_xmax = 0;
       this.zoom_ymin = this.zoom_ymax = 0;
@@ -5329,7 +5322,7 @@
          return;
       }
 
-      var w = this.frame_width(), h = this.frame_height();
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
 
       if (this.histo.fXaxis.fTimeDisplay) {
          this.x_kind = 'time';
@@ -5351,7 +5344,7 @@
       if (this.x_kind == 'time') {
          this.x = d3.time.scale();
       } else
-      if (this.options.Logx) {
+      if (pad.fLogx) {
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
 
          if ((this.scale_xmin <= 0) && (this.nbinsx>0))
@@ -5375,7 +5368,7 @@
          // we emulate scale functionality
          this.grx = function(val) { return this.x(this.ConvertX(val)); }
       } else
-      if (this.options.Logx) {
+      if (pad.fLogx) {
          this.grx = function(val) { return (val < this.scale_xmin) ? -5 : this.x(val); }
       } else {
          this.grx = this.x;
@@ -5399,7 +5392,7 @@
          this.RevertY = function(gry) { return this.y.invert(gry); };
       }
 
-      if (this.options.Logy) {
+      if (pad.fLogy) {
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
@@ -5431,7 +5424,7 @@
          // we emulate scale functionality
          this.gry = function(val) { return this.y(this.ConvertY(val)); }
       } else
-      if (this.options.Logy) {
+      if (pad.fLogy) {
          // make protecttion for log
          this.gry = function(val) { return (val < this.scale_ymin) ? h+5 : this.y(val); }
       } else {
@@ -5523,13 +5516,14 @@
 
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
-          h = this.frame_height();
+          h = this.frame_height(),
+          pad = this.root_pad();
 
       this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
       this.x_handle.SetDivId(this.divid, -1);
 
       this.x_handle.SetAxisConfig("xaxis",
-                                  (this.options.Logx && this.x_kind !== "time") ? "log" : this.x_kind,
+                                  (pad.fLogx && this.x_kind !== "time") ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
 
       this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")");
@@ -5538,7 +5532,7 @@
       this.y_handle.SetDivId(this.divid, -1);
 
       this.y_handle.SetAxisConfig("yaxis",
-                                  (this.options.Logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  (pad.fLogy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
 
       this.y_handle.DrawAxis(layer, w, h);
@@ -5773,13 +5767,12 @@
    }
 
    JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
-      var obj = this.main_painter();
+      var obj = this.main_painter(), pad = this.root_pad();
       if (!obj) obj = this;
-
-      var curr = obj.options["Log" + axis];
+      var curr = pad["fLog" + axis];
       // do not allow log scale for labels
       if (!curr && (this[axis+"_kind"] == "labels")) return;
-      obj.options["Log" + axis] = curr ? 0 : 1;
+      pad["fLog" + axis] = curr ? 0 : 1;
       obj.RedrawPad();
    }
 
@@ -6207,12 +6200,12 @@
 
       if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
 
-      var cur = d3.mouse(this.svg_frame().node());
+      var cur = d3.mouse(this.svg_frame().node()), pad = this.root_pad();
 
       if (xmin < xmax) {
          var dmin = cur[0] / this.frame_width();
          if ((dmin>0) && (dmin<1)) {
-            if (this.options.Logx) {
+            if (pad.fLogx) {
                var factor = (xmin>0) ? JSROOT.log10(xmax/xmin) : 2;
                if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
                xmin = xmin / Math.pow(factor, delta*dmin);
@@ -6237,7 +6230,7 @@
          var dmin = 1 - cur[1] / this.frame_height();
 
          if ((ymin < ymax) && (dmin>0) && (dmin<1))  {
-            if (this.options.Logy) {
+            if (pad.fLogy) {
                var factor = (ymin>0) ? JSROOT.log10(ymax/ymin) : 2;
                if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
                ymin = ymin / Math.pow(factor, delta*dmin);
@@ -6792,6 +6785,7 @@
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.main_painter(),
+          pad = this.root_pad(),
           pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
@@ -6842,7 +6836,7 @@
 
          x = this.GetBinX(i);
 
-         if (this.options.Logx && (x <= 0)) continue;
+         if (pad.fLogx && (x <= 0)) continue;
 
          grx = Math.round(pmain.grx(x));
 
@@ -6852,7 +6846,7 @@
             gry = curry;
          } else {
             y = this.histo.getBinContent(i+1);
-            if (this.options.Logy && (y < this.scale_ymin))
+            if (pad.fLogy && (y < this.scale_ymin))
                gry = height + 1;
             else
                gry = Math.round(pmain.gry(y));
@@ -7022,6 +7016,7 @@
       var width = this.frame_width(),
           height = this.frame_height(),
           pmain = this.main_painter(),
+          pad = this.root_pad(),
           painter = this,
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2,
@@ -7031,13 +7026,13 @@
 
       function GetBinGrX(i) {
          var x1 = painter.GetBinX(i);
-         if ((x1<0) && painter.options.Logx) return null;
+         if ((x1<0) && pad.fLogx) return null;
          return pmain.grx(x1);
       }
 
       function GetBinGrY(i) {
          var y = painter.histo.getBinContent(i + 1);
-         if (painter.options.Logy && (y < painter.scale_ymin))
+         if (pad.fLogy && (y < painter.scale_ymin))
             return 10*height;
          return Math.round(pmain.gry(y));
       }
