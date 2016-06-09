@@ -1521,7 +1521,7 @@
       if (svg_p.property('pad_painter') !== this)
          svg_p.property('pad_painter').painters.push(this);
 
-      if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && (svg_p.property('mainpainter') == null))
+      if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && !svg_p.property('mainpainter'))
          // when this is first main painter in the pad
          svg_p.property('mainpainter', this);
    }
@@ -3651,6 +3651,57 @@
       return hints;
    }
 
+   JSROOT.TPadPainter.prototype.FillContextMenu = function(menu) {
+
+      if (this.pad)
+         menu.add("header: " + this.pad._typename + "::" + this.pad.fName);
+      else
+         menu.add("header: Canvas");
+
+      if (this.iscan)
+         menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
+            JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
+         });
+
+      if (!this._websocket) {
+
+         function ToggleGrid(arg) {
+
+            this.pad[arg] = !this.pad[arg];
+
+            var main = this.svg_pad(this.this_pad_name).property('mainpainter');
+
+            if (main && (typeof main.DrawGrids == 'function'))
+               main.DrawGrids();
+         }
+
+         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleGrid);
+
+         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleGrid);
+
+         this.FillAttContextMenu(menu);
+      }
+
+      menu.add("separator");
+
+      var file_name = "canvas.png";
+      if (!this.iscan) file_name = this.this_pad_name + ".png";
+
+      menu.add("Save as "+file_name, file_name, function(arg) {
+         // todo - use jqury dialog here
+         var top = this.svg_pad(this.this_pad_name);
+         if (!top.empty())
+            JSROOT.AssertPrerequisites("savepng", function() {
+               console.log('create', arg);
+               top.selectAll(".btns_layer").style("display","none");
+               saveSvgAsPng(top.node(), arg);
+               top.selectAll(".btns_layer").style("display","");
+            });
+      });
+
+      return true;
+   }
+
    JSROOT.TPadPainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
 
@@ -3669,48 +3720,8 @@
 
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = pthis; // set as this in callbacks
-         if (pthis.pad)
-            menu.add("header: " + pthis.pad._typename + "::" + pthis.pad.fName);
-         else
-            menu.add("header: Canvas");
 
-         if (pthis.iscan)
-            menu.addchk((JSROOT.gStyle.Tooltip > 0), "Show tooltips", function() {
-               JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
-            });
-
-         if (!pthis._websocket) {
-
-
-            function ToggleGrid(arg) {
-               this.pad[arg] = !this.pad[arg];
-               if (this.main_painter() && this.main_painter().DrawGrids)
-                  this.main_painter().DrawGrids();
-            }
-
-            menu.addchk(pthis.pad.fGridx, 'Grid x', 'fGridx', ToggleGrid);
-
-            menu.addchk(pthis.pad.fGridy, 'Grid y', 'fGridy', ToggleGrid);
-
-            pthis.FillAttContextMenu(menu);
-
-         }
-         menu.add("separator");
-
-         var file_name = "canvas.png";
-         if (!pthis.iscan) file_name = pthis.this_pad_name + ".png";
-
-         menu.add("Save as "+file_name, file_name, function(arg) {
-            // todo - use jqury dialog here
-            var top = this.svg_pad(this.this_pad_name);
-            if (!top.empty())
-               JSROOT.AssertPrerequisites("savepng", function() {
-                  console.log('create', arg);
-                  top.selectAll(".btns_layer").style("display","none");
-                  saveSvgAsPng(top.node(), arg);
-                  top.selectAll(".btns_layer").style("display","");
-               });
-         });
+         pthis.FillContextMenu(menu);
 
          menu.show(evnt);
       }); // end menu creation
