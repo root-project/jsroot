@@ -199,13 +199,13 @@
    }
 
    // extract reference, coded inside string
-   // check already should be done, that string starts from "$ref:"  
+   // check already should be done, that string starts from "$ref:"
    JSROOT.JSONR_unref_str = function(value, dy) {
-      // if ((value.length > 5) && (value.indexOf("$ref:") === 0)) 
+      // if ((value.length > 5) && (value.indexOf("$ref:") === 0))
       var i = parseInt(value.substr(5));
       return (!isNaN(i) && (i >= 0) && (i < dy.length)) ? dy[i] : value;
    }
-   
+
    // replace all references inside object
    // object should not be null
    // This is part of the JSON-R code, found on
@@ -213,20 +213,20 @@
    // Only unref part was used, arrays are not accounted as objects
    JSROOT.JSONR_unref_obj = function(value, dy) {
       var i, fld, proto = Object.prototype.toString.apply(value);
-      
+
       if (proto === '[object Array]') {
           for (i = 0; i < value.length; ++i) {
              fld = value[i];
              if (typeof fld === 'string') {
                 if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
                    value[i] = this.JSONR_unref_str(fld, dy);
-             } else 
+             } else
              if ((typeof fld === 'object') && (fld !== null))
                 this.JSONR_unref_obj(fld, dy);
           }
           return;
       }
-      
+
       // if object in the table, return it
       if (dy.indexOf(value) >= 0) return;
 
@@ -240,11 +240,11 @@
       for (var k = 0; k < ks.length; ++k) {
          i = ks[k];
          fld = value[i];
-         
+
          if (typeof fld === 'string') {
             if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
                value[i] = this.JSONR_unref_str(fld, dy);
-         } else 
+         } else
          if ((typeof fld === 'object') && (fld !== null))
             this.JSONR_unref_obj(fld, dy);
       }
@@ -1085,7 +1085,46 @@
                                   fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
                                   fWmax: 100, fWmin: 0 });
             break;
-
+         case 'TAttPad':
+            JSROOT.extend(obj, { fLeftMargin: 0.1, fRightMargin: 0.1, fBottomMargin: 0.1, fTopMargin: 0.1,
+                                 fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
+                                 fFrameFillColor: 0, fFrameLineColor: 1, fFrameFillStyle: 1001,
+                                 fFrameLineStyle: 1, fFrameLineWidth: 1, fFrameBorderSize: 1,
+                                 fFrameBorderMode: 0 });
+            break;
+         case 'TPad':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.Create("TAttPad", obj);
+            JSROOT.extend(obj, { fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
+                                 fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
+                                 fUtoAbsPixelk: 1, fUtoPixelk: 1, fUtoPixel: 1, fVtoAbsPixelk: 1,
+                                 fVtoPixelk: 1, fVtoPixel: 1, fAbsPixeltoXk: 1, fPixeltoXk: 1,
+                                 fPixeltoX: 1, fAbsPixeltoYk: 1, fPixeltoYk: 1, fPixeltoY: 1,
+                                 fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
+                                 fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
+                                 fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
+                                 fNumber: 0, fTickx: 0, fTicky: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
+                                 fBorderMode: 0, fModified: false, fGridx: false, fGridy: false,
+                                 fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
+                                 fPrimitives: JSROOT.Create("TList"), fExecs: null,
+                                 fName: "pad", fTitle: "canvas" });
+            break;
+         case 'TAttCanvas':
+            JSROOT.extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
+                                 fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
+            break;
+         case 'TCanvas':
+            JSROOT.Create("TPad", obj);
+            JSROOT.extend(obj, { fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
+                                 fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
+                                 fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
+                                 fCw: 800, fCh : 500, fCatt: JSROOT.Create("TAttCanvas"),
+                                 kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
+                                 fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
+            break;
       }
 
       obj._typename = typename;

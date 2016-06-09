@@ -3677,6 +3677,9 @@
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
       if (can==null) return;
+
+
+
       for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
          var obj = can.fPrimitives.arr[i];
          if (obj==null) continue;
@@ -3788,11 +3791,11 @@
             });
 
          if (!pthis._websocket) {
-            
-            
+
+
             function ToggleGrid(arg) {
                this.pad[arg] = !this.pad[arg];
-               if (this.main_painter() && this.main_painter().DrawGrids) 
+               if (this.main_painter() && this.main_painter().DrawGrids)
                   this.main_painter().DrawGrids();
             }
 
@@ -3867,10 +3870,10 @@
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
 
       if ((obj == null) || !('fPrimitives' in obj)) return false;
-      
+
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
-      
+
       if (this.iscan) this.CheckColors(obj);
 
       var isany = false, p = 0;
@@ -4068,8 +4071,11 @@
    }
 
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
+      var nocanvas = (can===null);
+      if (nocanvas) can = JSROOT.Create("TCanvas");
+
       var painter = new JSROOT.TPadPainter(can, true);
-      if (can && opt && (opt.indexOf("white")>=0)) can.fFillColor = 0;
+      if (opt && (opt.indexOf("white")>=0)) can.fFillColor = 0;
 
       painter.SetDivId(divid, -1); // just assign id
       painter.CheckColors(can);
@@ -4079,11 +4085,8 @@
       painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot");
       painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
-      if (can==null) {
-         if (opt.indexOf("noframe") < 0)
-            JSROOT.Painter.drawFrame(divid, null);
-         return painter.DrawingReady();
-      }
+      if (nocanvas && opt.indexOf("noframe") < 0)
+         JSROOT.Painter.drawFrame(divid, null);
 
       painter.DrawPrimitive(0, function() { painter.DrawingReady(); });
       return painter;
@@ -5556,7 +5559,7 @@
 
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
-      
+
       var pad = this.root_pad();
 
       // add a grid on x axis, if the option is set
