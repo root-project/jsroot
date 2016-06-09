@@ -3888,6 +3888,11 @@
 
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
+      this.pad.fTickx = obj.fTickx;
+      this.pad.fTicky = obj.fTicky;
+      this.pad.fLogx  = obj.fLogx;
+      this.pad.fLogy  = obj.fLogy;
+      this.pad.fLogz  = obj.fLogz;
 
       if (this.iscan) this.CheckColors(obj);
 
