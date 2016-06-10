@@ -3564,7 +3564,14 @@
 
       var bars = "", markers = "";
 
-      console.log('offset', histo.fBarOffset, ' width', histo.fBarWidth);
+      // create attribute only when necessary
+      if (!this.markeratt) {
+         if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
+         this.markeratt = JSROOT.Painter.createAttMarker(histo, 5);
+      }
+
+      // reset absolution position for markers
+      this.markeratt.reset_pos();
 
       // loop over visible x-bins
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -3587,7 +3594,6 @@
 
          // exclude points with negative y when log scale is specified
          if (pad.fLogy && (meany-3*rmsy<=0)) continue;
-
 
          x1 = handle.grx[i];
          x2 = handle.grx[i+1];
@@ -3620,6 +3626,8 @@
          bars += "M" + center + "," + y2 + "v" + (yy2-y2);
          bars += "M" + x1 + "," + yy2 + "h" + (x2-x1);
 
+         markers += this.markeratt.create(center, yy1 - 10);
+         markers += this.markeratt.create(center, yy2 + 10);
       }
 
       if (bars.length > 0)
@@ -3627,6 +3635,11 @@
              .attr("d", bars)
              .call(this.lineatt.func)
              .call(this.fillatt.func);
+
+      if (markers.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", markers)
+             .call(this.markeratt.func);
 
       return handle;
    }
