@@ -7105,7 +7105,6 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-
       if ((this.options.Error > 0) || (this.options.Mark > 0))  {
 
          show_rect = true;
@@ -7122,6 +7121,8 @@
 
             gry1 = Math.round(pmain.gry(cont + binerr)); // up
             gry2 = Math.round(pmain.gry(cont - binerr)); // down
+
+            if ((cont==0) && this.IsTProfile()) findbin = null;
          }
 
          gry1 = Math.min(gry1, midy - msize);
