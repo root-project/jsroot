@@ -5147,8 +5147,10 @@
       }
       if (chopt.indexOf('A') != -1)
          option.Axis = -1;
-      if (chopt.indexOf('B') != -1)
+      if (chopt.indexOf('B') != -1) {
          option.Bar = 1;
+         option.Hist = -1;
+      }
       if (chopt.indexOf('C') != -1) {
          option.Curve = 1;
          option.Hist = -1;
@@ -5215,9 +5217,6 @@
             // and Polar modes');
          }
       }
-
-      // Check options incompatibilities
-      if (option.Bar == 1) option.Hist = -1;
 
       return option;
    }
@@ -6890,10 +6889,53 @@
       return true;
    }
 
+   JSROOT.TH1Painter.prototype.DrawBars = function() {
+      var width = this.frame_width(), height = this.frame_height();
+
+      this.RecreateDrawG(false, "main_layer");
+
+      var left = this.GetSelectIndex("x", "left", -1),
+          right = this.GetSelectIndex("x", "right", 1),
+          pmain = this.main_painter(),
+          pad = this.root_pad(),
+          pthis = this,
+          i, x1, x2, grx1, grx2, y, gry, w;
+
+      var bars = "";
+
+      for (i = left; i < right; ++i) {
+         x1 = this.GetBinX(i);
+         x2 = this.GetBinX(i+1);
+
+         if (pad.fLogx && (x2 <= 0)) continue;
+
+         grx1 = Math.round(pmain.grx(x1));
+         grx2 = Math.round(pmain.grx(x2));
+
+         y = this.histo.getBinContent(i+1);
+         if (pad.fLogy && (y < this.scale_ymin)) continue;
+         gry = Math.round(pmain.gry(y));
+
+         w = grx2 - grx1;
+         grx1 += Math.round(this.histo.fBarOffset/1000*w);
+         w = Math.round(this.histo.fBarWidth/1000*w);
+
+         bars += "M"+grx1+"," + gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+      }
+
+      if (bars.length > 0)
+         this.draw_g.append("svg:path")
+                    .attr("d", bars)
+                    .call(this.fillatt.func);
+   }
+
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
+
+      if (this.options.Bar > 0)
+         return this.DrawBars();
 
       var width = this.frame_width(), height = this.frame_height();
 
