@@ -4,6 +4,7 @@
 1. Upgrafe three.js to r77, adjust text rendering code 
 2. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
 3. Preliminary support of candle plot (many options to be implemented)
+4. Prelimiary support of hbox drawings 
 
 
 ## Changes in 4.5.0
