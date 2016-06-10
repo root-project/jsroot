@@ -1468,7 +1468,7 @@
       return this === this.main_painter();
    }
 
-   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main) {
+   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
       // Assigns id of top element (normally <div></div> where drawing is done
       // is_main - -1 - not add to painters list,
       //            0 - normal painter (default),
@@ -1477,6 +1477,7 @@
       //            3 - if canvas and (or) frame missing, create them, but not set as main object
       //            4 - major objects like TH3 (required canvas, but no frame)
       //            5 - major objects like TGeoVolume (do not require canvas)
+      // pad_name - when specified, subpad name used for object drawin
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
       // In such case the only painter will be assigned to the first element
 
@@ -1505,7 +1506,9 @@
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
-      this.pad_name = svg_c.property('current_pad');
+      this.pad_name = pad_name;
+      if (this.pad_name === undefined)
+         this.pad_name = svg_c.property('current_pad');
 
       if (is_main < 0) return;
 
@@ -3459,11 +3462,11 @@
 
    JSROOT.Painter.drawPaveText = function(divid, pave, opt) {
 
-      var painter = new JSROOT.TPavePainter(pave);
-      painter.SetDivId(divid, 2);
+      // one could force drawing of PaveText on specific sub-pad
+      var onpad = ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) ? opt.substr(6) : undefined;
 
-      if ((typeof opt == 'string') && (opt.indexOf("onpad:")==0))
-         painter.pad_name = opt.substr(6);
+      var painter = new JSROOT.TPavePainter(pave);
+      painter.SetDivId(divid, 2, onpad);
 
       switch (pave._typename) {
          case "TPaveLabel":
