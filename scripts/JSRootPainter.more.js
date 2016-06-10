@@ -3322,7 +3322,9 @@
    }
 
    JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {
-      var histo = this.GetObject(), pad = this.root_pad(),
+      var histo = this.GetObject(),
+          pad = this.root_pad(),
+          pmain = this.main_painter(),
           i, j, x, y, binz, binarea,
           res = {
              i1: this.GetSelectIndex("x", "left", 0),
@@ -3338,14 +3340,14 @@
       for (i = res.i1; i <= res.i2; ++i) {
          x = this.GetBinX(i);
          if (pad.fLogx && (x <= 0)) { res.i1 = i+1; continue; }
-         res.grx[i] = this.grx(x);
+         res.grx[i] = pmain.grx(x);
          if (dorounding) res.grx[i] = Math.round(res.grx[i]);
       }
 
       for (j = res.j1; j <= res.j2; ++j) {
          y = this.GetBinY(j);
          if (pad.fLogy && (y <= 0)) { res.j1 = j+1; continue; }
-         res.gry[j] = this.gry(y);
+         res.gry[j] = pmain.gry(y);
          if (dorounding) res.gry[j] = Math.round(res.gry[j]);
       }
 
@@ -3553,6 +3555,82 @@
       return handle;
    }
 
+   JSROOT.TH2Painter.prototype.DrawCandle = function(w,h) {
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(true),
+          pad = this.root_pad(),
+          pmain = this.main_painter(), // used for axis values conversions
+          i, j, y, sum0, sum1, sum2, cont, meany, rmsy, y0, y1, y2, x1, x2, w, yy1, yy2;
+
+      var bars = "", markers = "";
+
+      console.log('offset', histo.fBarOffset, ' width', histo.fBarWidth);
+
+      // loop over visible x-bins
+      for (i = handle.i1; i < handle.i2; ++i) {
+         sum0 = sum1 = sum2 = 0;
+         // loop over all y bins
+         for (j = 0; j < this.nbinsy; ++j) {
+            cont = histo.getBinContent(i + 1, j + 1);
+            y = this.GetBinY(j + 0.5); // center of y bin coordinate
+            sum0 += cont;
+            sum1 += cont*y;
+            sum2 += cont*y*y;
+         }
+
+         meany = rmsy = 0;
+
+         if (sum0 > 0) {
+            meany = sum1/sum0;
+            rmsy = Math.sqrt(sum2/sum0 - meany*meany);
+         }
+
+         // exclude points with negative y when log scale is specified
+         if (pad.fLogy && (meany-3*rmsy<=0)) continue;
+
+
+         x1 = handle.grx[i];
+         x2 = handle.grx[i+1];
+
+         w = x2 - x1;
+         center = Math.round((x2+x1) / 2 + histo.fBarOffset / 1000 * w);
+         if (histo.fBarWidth>0) w = Math.round(w * histo.fBarWidth / 1000);
+         x1 = Math.round(center - w/2);
+         x2 = Math.round(center + w/2);;
+
+         y0 = Math.round(pmain.gry(meany));
+         // mean line
+         bars += "M" + x1 + "," + y0 + "h" + (x2-x1);
+
+         y1 = Math.round(pmain.gry(meany+rmsy));
+         y2 = Math.round(pmain.gry(meany-rmsy));
+
+         // rectangle
+         bars += "M" + x1 + "," + y1 +
+                 "v" + (y2-y1) + "h" + (x2-x1) + "v-" + (y2-y1) + "z";
+
+         yy1 = Math.round(pmain.gry(meany+3*rmsy));
+         yy2 = Math.round(pmain.gry(meany-3*rmsy));
+
+         // upper part
+         bars += "M" + center + "," + y1 + "v" + (yy1-y1);
+         bars += "M" + x1 + "," + yy1 + "h" + (x2-x1);
+
+         // lower part
+         bars += "M" + center + "," + y2 + "v" + (yy2-y2);
+         bars += "M" + x1 + "," + yy2 + "h" + (x2-x1);
+
+      }
+
+      if (bars.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", bars)
+             .call(this.lineatt.func)
+             .call(this.fillatt.func);
+
+      return handle;
+   }
+
    JSROOT.TH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(true, true),
@@ -3666,7 +3744,7 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text == 0)
+      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
       if (this.options.Color > 0)
@@ -3677,8 +3755,11 @@
       else
       if (this.options.Box > 0)
          handle = this.DrawBinsBox(w, h);
+      else
+      if (this.options.Candle.length > 0)
+         handle = this.DrawCandle(w, h);
 
-      if (this.options.Text>0)
+      if (this.options.Text > 0)
          handle = this.DrawBinsText(w, h, handle);
 
       this.tt_handle = handle;
