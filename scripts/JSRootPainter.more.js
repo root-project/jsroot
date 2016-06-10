@@ -2380,22 +2380,17 @@
              any_opt = false;
 
          for (var i = 0; i < nlines; ++i) {
-            var leg = legend.fPrimitives.arr[i];
-            var lopt = leg.fOption.toLowerCase();
-
-            var icol = i % ncols, irow = (i - icol) / ncols;
-
-            var x0 = icol * column_width;
-            var tpos_x = x0 + Math.round(legend.fMargin*column_width);
-
-            var pos_y = Math.round(padding_y + irow*step_y); // top corner
-            var mid_y = Math.round(padding_y + (irow+0.5)*step_y); // center line
-
-            var o_fill = leg, o_marker = leg, o_line = leg;
-
-            var mo = leg.fObject;
-
-            var painter = null;
+            var leg = legend.fPrimitives.arr[i],
+                lopt = leg.fOption.toLowerCase(),
+                icol = i % ncols, irow = (i - icol) / ncols,
+                x0 = icol * column_width,
+                tpos_x = x0 + Math.round(legend.fMargin*column_width),
+                pos_y = Math.round(padding_y + irow*step_y), // top corner
+                mid_y = Math.round(padding_y + (irow+0.5)*step_y), // center line
+                o_fill = leg, o_marker = leg, o_line = leg,
+                mo = leg.fObject,
+                painter = null,
+                isany = false;
 
             if ((mo !== null) && (typeof mo == 'object')) {
                if ('fLineColor' in mo) o_line = mo;
@@ -2416,6 +2411,7 @@
                       .attr("width", tpos_x - 2*padding_x - x0)
                       .attr("height", Math.round(step_y*0.8))
                       .call(fillatt.func);
+               if (fillatt.color !== 'none') isany = true;
             }
 
             // Draw line
@@ -2427,6 +2423,7 @@
                   .attr("x2", tpos_x - padding_x)
                   .attr("y2", mid_y)
                   .call(lineatt.func);
+               if (lineatt.color !== 'none') isany = true;
             }
 
             // Draw error
@@ -2440,7 +2437,18 @@
                    .append("svg:path")
                    .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
                    .call(marker.func);
+               if (marker.color !== 'none') isany = true;
             }
+
+            // special case - nothing draw, try to show rect with line attributes
+            if (!isany && painter && painter.lineatt && (painter.lineatt.color !== 'none'))
+               this.draw_g.append("svg:rect")
+                          .attr("x", x0 + padding_x)
+                          .attr("y", Math.round(pos_y+step_y*0.1))
+                          .attr("width", tpos_x - 2*padding_x - x0)
+                          .attr("height", Math.round(step_y*0.8))
+                          .attr("fill", "none")
+                          .call(painter.lineatt.func);
 
             var pos_x = tpos_x;
             if (lopt.length>0) any_opt = true;
