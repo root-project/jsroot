@@ -4611,7 +4611,7 @@
          Mark: 0, Fill: 0, Same: 0, Scat: 0, Func: 0, Star: 0,
          Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-         Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1,
+         Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
          HighRes: 0, Zero: 0, Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
@@ -4719,6 +4719,13 @@
       if (chopt.indexOf('PIE') != -1) {
          option.Pie = 1;
          chopt = chopt.replace('PIE', '   ');
+      }
+      l = chopt.indexOf('CANDLE');
+      if (l!=-1) {
+         var l2 = l + 6;
+         while ((l2 < chopt.length) && (chopt[l2] !== " ")) ++l2;
+         option.Candle = chopt.slice(l+6, l2);
+         for (var i=l;i<l2;++i) chopt[i] = ' ';
       }
       l = chopt.indexOf('LEGO');
       if (l != -1) {
