@@ -4868,48 +4868,17 @@
             option.Hist = 1;
          }
       }
-      l = chopt.indexOf('HBAR');
-      if (l != -1) {
-         option.Hist = 0;
-         option.Bar = 20;
-         chopt = chopt.replace('HBAR', '    ');
-         if (chopt[l + 4] == '1') {
-            option.Bar = 21;
-            chopt[l + 4] = ' ';
-         }
-         if (chopt[l + 4] == '2') {
-            option.Bar = 22;
-            chopt[l + 4] = ' ';
-         }
-         if (chopt[l + 4] == '3') {
-            option.Bar = 23;
-            chopt[l + 4] = ' ';
-         }
-         if (chopt[l + 4] == '4') {
-            option.Bar = 24;
-            chopt[l + 4] = ' ';
-         }
-      }
+      // decode bar/hbar option
       l = chopt.indexOf('BAR');
-      if (l != -1) {
+      if (l >= 0) {
          option.Hist = 0;
          option.Bar = 10;
+         if ((l>0) && (chopt[l-1]=='H')) { option.Bar = 20; chopt[l-1]=' '; }
          chopt = chopt.replace('BAR', '   ');
-         if (chopt[l + 3] == '1') {
-            option.Bar = 11;
-            chopt[l + 3] = ' ';
-         }
-         if (chopt[l + 3] == '2') {
-            option.Bar = 12;
-            chopt[l + 3] = ' ';
-         }
-         if (chopt[l + 3] == '3') {
-            option.Bar = 13;
-            chopt[l + 3] = ' ';
-         }
-         if (chopt[l + 3] == '4') {
-            option.Bar = 14;
-            chopt[l + 3] = ' ';
+         var indx = parseInt(chopt[l+3]);
+         if (!isNaN(indx) && (indx>=0) && (indx<=4)) {
+            option.Bar += indx;
+            chopt[l+3] = ' ';
          }
       }
       l = chopt.indexOf('ARR');
