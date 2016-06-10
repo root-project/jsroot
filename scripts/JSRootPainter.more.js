@@ -3560,7 +3560,7 @@
           handle = this.PrepareColorDraw(true),
           pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
-          i, j, y, sum0, sum1, sum2, cont, meany, rmsy, y0, y1, y2, x1, x2, w, yy1, yy2;
+          i, j, y, sum0, sum1, sum2, cont, center, w, pnt;
 
       var bars = "", markers = "";
 
@@ -3572,6 +3572,8 @@
 
       // reset absolution position for markers
       this.markeratt.reset_pos();
+
+      handle.candle = []; // array of drawn points
 
       // loop over visible x-bins
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -3585,49 +3587,50 @@
             sum2 += cont*y*y;
          }
 
-         meany = rmsy = 0;
+         pnt = { bin:i, meany:0, rmsy:0 };
 
          if (sum0 > 0) {
-            meany = sum1/sum0;
-            rmsy = Math.sqrt(sum2/sum0 - meany*meany);
+            pnt.meany = sum1/sum0;
+            pnt.rmsy = Math.sqrt(sum2/sum0 - pnt.meany*pnt.meany);
          }
 
          // exclude points with negative y when log scale is specified
-         if (pad.fLogy && (meany-3*rmsy<=0)) continue;
+         if (pad.fLogy && (pnt.meany-3*pnt.rmsy<=0)) continue;
 
-         x1 = handle.grx[i];
-         x2 = handle.grx[i+1];
+         w = handle.grx[i+1] - handle.grx[i];
+         center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
+         if (histo.fBarWidth>0) w = w * histo.fBarWidth / 1000;
 
-         w = x2 - x1;
-         center = Math.round((x2+x1) / 2 + histo.fBarOffset / 1000 * w);
-         if (histo.fBarWidth>0) w = Math.round(w * histo.fBarWidth / 1000);
-         x1 = Math.round(center - w/2);
-         x2 = Math.round(center + w/2);;
+         pnt.x1 = Math.round(center - w/2);
+         pnt.x2 = Math.round(center + w/2);
+         center = Math.round(center);
 
-         y0 = Math.round(pmain.gry(meany));
+         pnt.y0 = Math.round(pmain.gry(pnt.meany));
          // mean line
-         bars += "M" + x1 + "," + y0 + "h" + (x2-x1);
+         bars += "M" + pnt.x1 + "," + pnt.y0 + "h" + (pnt.x2-pnt.x1);
 
-         y1 = Math.round(pmain.gry(meany+rmsy));
-         y2 = Math.round(pmain.gry(meany-rmsy));
+         pnt.y1 = Math.round(pmain.gry(pnt.meany+pnt.rmsy));
+         pnt.y2 = Math.round(pmain.gry(pnt.meany-pnt.rmsy));
 
          // rectangle
-         bars += "M" + x1 + "," + y1 +
-                 "v" + (y2-y1) + "h" + (x2-x1) + "v-" + (y2-y1) + "z";
+         bars += "M" + pnt.x1 + "," + pnt.y1 +
+                 "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + "z";
 
-         yy1 = Math.round(pmain.gry(meany+3*rmsy));
-         yy2 = Math.round(pmain.gry(meany-3*rmsy));
+         pnt.yy1 = Math.round(pmain.gry(pnt.meany+3*pnt.rmsy));
+         pnt.yy2 = Math.round(pmain.gry(pnt.meany-3*pnt.rmsy));
 
          // upper part
-         bars += "M" + center + "," + y1 + "v" + (yy1-y1);
-         bars += "M" + x1 + "," + yy1 + "h" + (x2-x1);
+         bars += "M" + center + "," + pnt.y1 + "v" + (pnt.yy1-pnt.y1);
+         bars += "M" + pnt.x1 + "," + pnt.yy1 + "h" + (pnt.x2-pnt.x1);
 
          // lower part
-         bars += "M" + center + "," + y2 + "v" + (yy2-y2);
-         bars += "M" + x1 + "," + yy2 + "h" + (x2-x1);
+         bars += "M" + center + "," + pnt.y2 + "v" + (pnt.yy2-pnt.y2);
+         bars += "M" + pnt.x1 + "," + pnt.yy2 + "h" + (pnt.x2-pnt.x1);
 
-         markers += this.markeratt.create(center, yy1 - 10);
-         markers += this.markeratt.create(center, yy2 + 10);
+         markers += this.markeratt.create(center, pnt.yy1 - 10);
+         markers += this.markeratt.create(center, pnt.yy2 + 10);
+
+         handle.candle.push(pnt); // keep point for the tooltip
       }
 
       if (bars.length > 0)
@@ -3804,6 +3807,23 @@
       return lines;
    }
 
+   JSROOT.TH2Painter.prototype.GetCandleTips = function(p) {
+      var lines = [], main = this.main_painter();
+
+      lines.push(this.GetTipName());
+
+      if (this.x_kind == 'labels')
+         lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
+      else
+         lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
+
+      lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.StatFormat))
+      lines.push('rms y = ' + JSROOT.FFormat(p.rmsy, JSROOT.gStyle.StatFormat))
+      lines.push('any other info');
+
+      return lines;
+   }
+
    JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
       if (pnt==null) {
          if (this.draw_g !== null)
@@ -3813,8 +3833,58 @@
       }
 
       var histo = this.GetObject(),
-          h = this.tt_handle,
-          i, j, find = 0;
+          h = this.tt_handle, i,
+          ttrect = this.draw_g.select(".tooltip_bin");
+
+
+      if (h.candle) {
+         // process tooltips for candle
+
+         var p;
+
+         for (i=0;i<h.candle.length;++i) {
+            p = h.candle[i];
+            if ((p.x1 <= pnt.x) && (pnt.x <= p.x2) && (p.yy1 <= pnt.y) && (pnt.y <= p.yy2)) break;
+         }
+
+         if (i>=h.candle.length) {
+            ttrect.remove();
+            this.ProvideUserTooltip(null);
+            return null;
+         }
+
+         var res = { x: pnt.x, y: pnt.y,
+                     color1: this.lineatt.color, color2: this.fillatt.color,
+                     lines: this.GetCandleTips(p), exact: true, menu: true };
+
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:rect")
+                                .attr("class","tooltip_bin h1bin")
+                                .style("pointer-events","none");
+
+         res.changed = ttrect.property("current_bin") !== i;
+
+         if (res.changed)
+            ttrect.attr("x", p.x1)
+                  .attr("width", p.x2-p.x1)
+                  .attr("y", p.yy1)
+                  .attr("height", p.yy2- p.yy1)
+                  .style("opacity", "0.7")
+                  .property("current_bin", i);
+
+
+         if (this.IsUserTooltipCallback() && res.changed) {
+            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
+                                      bin: i+1, cont: p.meany, binx: i+1, biny: 1,
+                                      grx: pnt.x, gry: pnt.y });
+         }
+
+         return res;
+
+      }
+
+
+      var i, j, find = 0;
 
       // search bin position
       for (i = h.i1; i < h.i2; ++i)
@@ -3823,11 +3893,7 @@
       for (j = h.j1; j <= h.j2; ++j)
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
 
-      var ttrect = this.draw_g.select(".tooltip_bin");
-
       var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : -100;
-
-      // console.log('find = ' + find + '  binz = ' + binz + '  minbin ' + this.minbin);
 
       if ((find !== 2) || (binz === 0) || (binz < this.minbin)) {
          ttrect.remove();
