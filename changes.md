@@ -4,6 +4,7 @@
 1. Fix - correctly handle ^2..^9 in TFormula equations
 2. Fix - support TMath::Gaus in TFormula 
 3. Fix - correctly display ^2 and ^3 in SVG text output 
+4. Fix - do not show tooltips for empty TProfile bins
  
 
 ## Changes in 4.5.0
