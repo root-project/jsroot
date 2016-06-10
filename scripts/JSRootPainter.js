@@ -4835,7 +4835,7 @@
       l = chopt.indexOf('CANDLE');
       if (l!=-1) {
          var l2 = l + 6;
-         while ((l2 < chopt.length) && (chopt[l2] !== " ")) ++l2;
+         while ((l2 < chopt.length) && (chopt[l2] !== " ") && (chopt[l2] !== ",")) ++l2;
          option.Candle = chopt.slice(l+6, l2);
          for (var i=l;i<l2;++i) chopt[i] = ' ';
       }

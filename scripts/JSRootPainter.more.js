@@ -3570,6 +3570,9 @@
           pmain = this.main_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, w, pnt;
 
+      // candle option coded into string, which comes after candle indentifier
+      // console.log('Draw candle plot with option', this.options.Candle);
+
       var bars = "", markers = "";
 
       // create attribute only when necessary
