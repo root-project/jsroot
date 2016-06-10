@@ -3812,10 +3812,8 @@
 
       lines.push(this.GetTipName());
 
-      if (this.x_kind == 'labels')
-         lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
-      else
-         lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
+      lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
+      // lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
 
       lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.StatFormat))
       lines.push('rms y = ' + JSROOT.FFormat(p.rmsy, JSROOT.gStyle.StatFormat))
