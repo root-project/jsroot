@@ -936,13 +936,13 @@
       var fillcolor = new THREE.Color(0xDDDDDD);
       fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
 
-      var material = null, geom = null; intersect_geom = null;
+      var material = null, geom = null;// intersect_geom = null;
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f });
          //geom = new THREE.SphereGeometry(this.size3d / this.nbinsx);
          geom = new THREE.SphereGeometry(0.5, 18, 16);
-         intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
+      //   intersect_geom = new THREE.SphereGeometry(0.6, 12, 10);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
          //geom.scale(1, this.nbinsx / this.nbinsy, this.nbinsx / this.nbinsz);
       } else {
@@ -1015,11 +1015,11 @@
 
                var binz = this.GetBinZ(k+0.5), grz = this.tz(binz);
 
-               if (this.options.Box !== 11) {
+          //     if (this.options.Box !== 11) {
                   var bin = new THREE.Mesh(geom, material.clone());
-               } else {
-                  var bin = new THREE.Mesh(intersect_geom, material.clone());
-               }
+          //     } else {
+          //        var bin = new THREE.Mesh(intersect_geom, material.clone());
+          //     }
 
                bin.position.set( grx, gry, grz );
 
