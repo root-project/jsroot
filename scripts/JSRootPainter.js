@@ -6948,9 +6948,7 @@
                .attr("d", barsr)
                .call(this.fillatt.func)
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
-
    }
-
 
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
@@ -7256,6 +7254,12 @@
       grx1 = Math.round(grx1);
       grx2 = Math.round(GetBinGrX(findbin+1));
 
+      if (this.options.Bar > 0) {
+         var w = grx2 - grx1;
+         grx1 += Math.round(this.histo.fBarOffset/1000*w);
+         grx2 = grx1 + Math.round(this.histo.fBarWidth/1000*w);
+      }
+
       midx = Math.round((grx1+grx2)/2);
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
@@ -7308,7 +7312,9 @@
       if (findbin!==null) {
          // if bin on boundary found, check that x position is ok
          if ((findbin === left) && (grx1 > pnt.x + 2))  findbin = null; else
-         if ((findbin === right-1) && (grx2 < pnt.x - 2)) findbin = null;
+         if ((findbin === right-1) && (grx2 < pnt.x - 2)) findbin = null; else
+         // if bars option used check that bar is not match
+         if ((pnt.x < grx1 - 2) || (pnt.x > grx2 + 2)) findbin = null;
       }
 
 
