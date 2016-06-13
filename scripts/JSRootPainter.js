@@ -1390,6 +1390,8 @@
 
       this.svg_pad().property('can3d', size.can3d);
 
+      console.log('add 3d canvas can3d', size.can3d);
+
       if (size.can3d === 0) {
          this.svg_canvas().style('display', 'none'); // hide SVG canvas
 
@@ -1430,20 +1432,29 @@
              .attr('preserveAspectRatio','xMidYMid');
 
       } else {
-         elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
+         var prnt = this.svg_canvas().node().parentNode;
+
+         elem = d3.select(prnt).select("." + size.clname);
          if (onlyget) return elem;
 
          // force redraw by resize
          this.svg_canvas().property('redraw_by_resize', true);
 
-         if (elem.empty()) {
-            elem = d3.select(this.svg_canvas().node().parentNode)
-                     .append('div').attr("class", size.clname);
+         if (elem.empty())
+            elem = d3.select(prnt).append('div').attr("class", size.clname);
+
+         // our position inside canvas, but to set 'absolute' position we should use
+         // canvas element offset relative to first parent with position
+         var offx = 0, offy = 0;
+         while ((prnt !== null) && !offx && !offy) {
+            offx += prnt.offsetLeft;
+            offy += prnt.offsetTop;
+            prnt = prnt.parentNode;
          }
 
          elem.style('position','absolute')
-             .style('left', size.x + 'px')
-             .style('top', size.y + 'px')
+             .style('left', (size.x + offx) + 'px')
+             .style('top', (size.y + offy) + 'px')
              .style('width', size.width + 'px')
              .style('height', size.height + 'px');
       }
