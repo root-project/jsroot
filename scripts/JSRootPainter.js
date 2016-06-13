@@ -1390,8 +1390,6 @@
 
       this.svg_pad().property('can3d', size.can3d);
 
-      console.log('add 3d canvas can3d', size.can3d);
-
       if (size.can3d === 0) {
          this.svg_canvas().style('display', 'none'); // hide SVG canvas
 
