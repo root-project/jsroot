@@ -6,6 +6,7 @@
 3. Fix - correctly display ^2 and ^3 in SVG text output 
 4. Fix - do not show tooltips for empty TProfile bins
 5. Fix - statbox toggling was not working on subpads
+6. Fix - positioning of 3D objects in Chrome in complex layouts 
  
 
 ## Changes in 4.5.0
