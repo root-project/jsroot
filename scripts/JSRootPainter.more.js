@@ -913,7 +913,7 @@
             if (gxmax < xmax) xmax = gxmax;
          }
 
-         if ((main!==null) && pad.fLogx && (xmin>0) && (xmax>0)) {
+         if ((main!==null) && main.logx && (xmin>0) && (xmax>0)) {
             logx = true;
             xmin = Math.log(xmin);
             xmax = Math.log(xmax);
@@ -2577,7 +2577,7 @@
 
          this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
-         this.z_handle.DrawAxis(this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
+         this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
          if (this._can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             this._can_move = false; // do it only once
@@ -3204,6 +3204,7 @@
       // used only for lego plot now
       var histo = this.GetObject(),
           pad = this.root_pad(),
+          main = this.main_painter(),
           i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", 0),
@@ -3214,14 +3215,14 @@
 
       for (i = i1; i <= i2; ++i) {
          x = this.GetBinX(i);
-         if (pad.fLogx && (x <= 0)) { i1 = i+1; continue; }
-         xx.push({indx:i, axis: x, gr: this.grx(x), cnt:0});
+         if (main.logx && (x <= 0)) { i1 = i+1; continue; }
+         xx.push({indx:i, axis: x, gr: main.grx(x), cnt:0});
       }
 
       for (j = j1; j <= j2; ++j) {
          y = this.GetBinY(j);
-         if (pad.fLogy && (y <= 0)) { j1 = j+1; continue; }
-         yy.push({indx:j, axis:y, gr:this.gry(y), cnt:0});
+         if (main.logy && (y <= 0)) { j1 = j+1; continue; }
+         yy.push({indx:j, axis:y, gr: main.gry(y), cnt:0});
       }
 
       // first found min/max values in selected range, and number of non-zero bins
@@ -3260,10 +3261,10 @@
                    else numx = Math.max(10, Math.round(numy * coef));
 
          if ((this.options.Optimize > 1) || (xx.length > 50))
-            this.CompressAxis(xx, numx, !pad.fLogx && this.regularx);
+            this.CompressAxis(xx, numx, !main.logx && this.regularx);
 
          if ((this.options.Optimize > 1) || (yy.length > 50))
-            this.CompressAxis(yy, numy, !pad.fLogy && this.regulary);
+            this.CompressAxis(yy, numy, !main.logy && this.regulary);
       }
 
       var local_bins = [];
@@ -3347,14 +3348,14 @@
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = this.GetBinX(i);
-         if (pad.fLogx && (x <= 0)) { res.i1 = i+1; continue; }
+         if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = pmain.grx(x);
          if (dorounding) res.grx[i] = Math.round(res.grx[i]);
       }
 
       for (j = res.j1; j <= res.j2; ++j) {
          y = this.GetBinY(j);
-         if (pad.fLogy && (y <= 0)) { res.j1 = j+1; continue; }
+         if (pmain.logy && (y <= 0)) { res.j1 = j+1; continue; }
          res.gry[j] = pmain.gry(y);
          if (dorounding) res.gry[j] = Math.round(res.gry[j]);
       }
@@ -3606,7 +3607,7 @@
          }
 
          // exclude points with negative y when log scale is specified
-         if (pad.fLogy && (pnt.meany-3*pnt.rmsy<=0)) continue;
+         if (pmain.logy && (pnt.meany-3*pnt.rmsy<=0)) continue;
 
          w = handle.grx[i+1] - handle.grx[i];
          center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;

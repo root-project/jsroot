@@ -4241,15 +4241,16 @@
       return handle;
    }
 
-   JSROOT.TAxisPainter.prototype.DrawAxis = function(layer, w, h, transform, reverse, second_shift) {
+   JSROOT.TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis'),
-          vertical = (this.name !== "xaxis"),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
           axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100;
+
+      this.vertical = vertical;
 
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0;
@@ -4516,7 +4517,7 @@
           y2 = Math.round(this.AxisToSvg("y", gaxis.fY2)),
           w = x2 - x1, h = y1 - y2;
 
-      var name = w<5 ? "yaxis" : "xaxis",
+      var vertical = w<5,
           kind = "normal",
           func = null,
           min = gaxis.fWmin,
@@ -4532,7 +4533,7 @@
 
       func.domain([min, max]);
 
-      if (name == "yaxis") {
+      if (vertical) {
          if (h > 0) {
             func.range([h,0]);
          } else {
@@ -4550,11 +4551,11 @@
          }
       }
 
-      this.SetAxisConfig(name, kind, func, min, max, min, max);
+      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
 
       this.RecreateDrawG(true, "text_layer");
 
-      this.DrawAxis(this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+      this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
 
 
@@ -5329,6 +5330,10 @@
          return;
       }
 
+      this.swap_xy = false;
+      if (this.options.Bar>=20) this.swap_xy = true;
+      this.logx = this.logy = false;
+
       var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
 
       if (this.histo.fXaxis.fTimeDisplay) {
@@ -5351,7 +5356,9 @@
       if (this.x_kind == 'time') {
          this.x = d3.time.scale();
       } else
-      if (pad.fLogx) {
+      if (this.swap_xy ? pad.fLogy : pad.fLogx) {
+         this.logx = true;
+
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
 
          if ((this.scale_xmin <= 0) && (this.nbinsx>0))
@@ -5369,14 +5376,15 @@
          this.x = d3.scale.linear();
       }
 
-      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)]).range([ 0, w ]);
+      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
+            .range(this.swap_xy ? [ h, 0 ] : [ 0, w ]);
 
       if (this.x_kind == 'time') {
          // we emulate scale functionality
          this.grx = function(val) { return this.x(this.ConvertX(val)); }
       } else
-      if (pad.fLogx) {
-         this.grx = function(val) { return (val < this.scale_xmin) ? -5 : this.x(val); }
+      if (this.logx) {
+         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
       } else {
          this.grx = this.x;
       }
@@ -5399,7 +5407,8 @@
          this.RevertY = function(gry) { return this.y.invert(gry); };
       }
 
-      if (pad.fLogy) {
+      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
+         this.logy = true;
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
@@ -5425,15 +5434,16 @@
          this.y = d3.scale.linear()
       }
 
-      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ]).range([ h, 0 ]);
+      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
+            .range(this.swap_xy ? [ 0, w ] : [ h, 0 ]);
 
       if (this.y_kind=='time') {
          // we emulate scale functionality
          this.gry = function(val) { return this.y(this.ConvertY(val)); }
       } else
-      if (pad.fLogy) {
+      if (this.logy) {
          // make protecttion for log
-         this.gry = function(val) { return (val < this.scale_ymin) ? h+5 : this.y(val); }
+         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
       } else {
          this.gry = this.y;
       }
@@ -5530,19 +5540,21 @@
       this.x_handle.SetDivId(this.divid, -1);
 
       this.x_handle.SetAxisConfig("xaxis",
-                                  (pad.fLogx && this.x_kind !== "time") ? "log" : this.x_kind,
+                                  (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-
-      this.x_handle.DrawAxis(layer, w, h, "translate(0," + h + ")", false, pad.fTickx ? -h : 0);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
 
       this.y_handle.SetAxisConfig("yaxis",
-                                  (pad.fLogy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
 
-      this.y_handle.DrawAxis(layer, w, h, undefined, false, pad.fTicky ? w : 0);
+      var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle;
+      var draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+
+      draw_horiz.DrawAxis(false, layer, w, h, "translate(0," + h + ")", false, pad.fTickx ? -h : 0);
+      draw_vertical.DrawAxis(true, layer, w, h, undefined, false, pad.fTicky ? w : 0);
 
       if (shrink_forbidden) return;
 
@@ -6212,7 +6224,7 @@
       if (xmin < xmax) {
          var dmin = cur[0] / this.frame_width();
          if ((dmin>0) && (dmin<1)) {
-            if (pad.fLogx) {
+            if (this.logx) {
                var factor = (xmin>0) ? JSROOT.log10(xmax/xmin) : 2;
                if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
                xmin = xmin / Math.pow(factor, delta*dmin);
@@ -6237,7 +6249,7 @@
          var dmin = 1 - cur[1] / this.frame_height();
 
          if ((ymin < ymax) && (dmin>0) && (dmin<1))  {
-            if (pad.fLogy) {
+            if (this.logy) {
                var factor = (ymin>0) ? JSROOT.log10(ymax/ymin) : 2;
                if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
                ymin = ymin / Math.pow(factor, delta*dmin);
@@ -6797,26 +6809,34 @@
          x1 = this.GetBinX(i);
          x2 = this.GetBinX(i+1);
 
-         if (pad.fLogx && (x2 <= 0)) continue;
+         if (pmain.logx && (x2 <= 0)) continue;
 
          grx1 = Math.round(pmain.grx(x1));
          grx2 = Math.round(pmain.grx(x2));
 
          y = this.histo.getBinContent(i+1);
-         if (pad.fLogy && (y < this.scale_ymin)) continue;
+         if (pmain.logy && (y < pmain.scale_ymin)) continue;
          gry = Math.round(pmain.gry(y));
 
          w = grx2 - grx1;
          grx1 += Math.round(this.histo.fBarOffset/1000*w);
          w = Math.round(this.histo.fBarWidth/1000*w);
 
-         bars += "M"+grx1+"," + gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+         if (pmain.swap_xy)
+            bars += "M0,"+ grx1 + "h" + gry + "v" + w + "h" + (-gry)+ "z";
+         else
+            bars += "M"+grx1+"," + gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
 
          if (side > 0) {
             grx2 = grx1 + w;
             w = Math.round(w * side / 10);
-            barsl += "M"+grx1+","+gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
-            barsr += "M"+grx2+","+gry + "h" + (-w) + "v" + (height - gry) + "h" + w + "z";
+            if (pmain.swap_xy) {
+               barsl += "M0,"+ grx1 + "h" + gry + "v" + w + "h" + (-gry)+ "z";
+               barsr += "M0,"+ grx2 + "h" + gry + "v" + (-w) + "h" + (-gry)+ "z";
+            } else {
+               barsl += "M"+grx1+","+gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+               barsr += "M"+grx2+","+gry + "h" + (-w) + "v" + (height - gry) + "h" + w + "z";
+            }
          }
       }
 
@@ -6906,7 +6926,7 @@
 
          x = this.GetBinX(i);
 
-         if (pad.fLogx && (x <= 0)) continue;
+         if (this.logx && (x <= 0)) continue;
 
          grx = Math.round(pmain.grx(x));
 
@@ -6916,10 +6936,7 @@
             gry = curry;
          } else {
             y = this.histo.getBinContent(i+1);
-            if (pad.fLogy && (y < this.scale_ymin))
-               gry = height + 1;
-            else
-               gry = Math.round(pmain.gry(y));
+            gry = Math.round(pmain.gry(y));
          }
 
          if (res.length === 0) {
@@ -7096,14 +7113,14 @@
 
       function GetBinGrX(i) {
          var x1 = painter.GetBinX(i);
-         if ((x1<0) && pad.fLogx) return null;
+         if ((x1<0) && pmain.logx) return null;
          return pmain.grx(x1);
       }
 
       function GetBinGrY(i) {
          var y = painter.histo.getBinContent(i + 1);
-         if (pad.fLogy && (y < painter.scale_ymin))
-            return 10*height;
+         if (pmain.logy && (y < painter.scale_ymin))
+            return pmain.swap_xy ? -1000 : 10*height;
          return Math.round(pmain.gry(y));
       }
 
