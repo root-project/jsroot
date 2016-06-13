@@ -5570,41 +5570,42 @@
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      var pad = this.root_pad();
+      var pad = this.root_pad(), h = this.frame_height(), w = this.frame_width(), grid;
 
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
+         grid = "";
+         for (var n=0;n<this.x_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M0,"+this.x_handle.ticks[n]+"h"+w;
+            else
+               grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
-         var h = this.frame_height();
-
-         layer.selectAll(".xgrid")
-                .data(this.x_handle.ticks).enter()
-                  .append("svg:line")
-                  .attr("class", "xgrid")
-                  .attr("x1", function(d) { return d; })
-                  .attr("y1", h)
-                  .attr("x2", function(d) { return d; })
-                  .attr("y2",0)
-                  .style("stroke", "black")
-                  .style("stroke-width", 1)
-                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "xgrid")
+               .attr("d", grid)
+               .style("stroke", "black")
+               .style("stroke-width", 1)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
 
       // add a grid on y axis, if the option is set
       if (pad && pad.fGridy && this.y_handle) {
-         var w = this.frame_width();
+         grid = "";
+         for (var n=0;n<this.y_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M"+this.y_handle.ticks[n]+",0v"+h;
+            else
+               grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
 
-         layer.selectAll('.ygrid')
-              .data(this.y_handle.ticks).enter()
-                 .append("svg:line")
-                 .attr("class", "ygrid")
-                 .attr("x1", 0)
-                 .attr("y1", function(d) { return d; })
-                 .attr("x2", w)
-                 .attr("y2", function(d) { return d; })
-                 .style("stroke", "black")
-                 .style("stroke-width", 1)
-                 .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "ygrid")
+               .attr("d", grid)
+               .style("stroke", "black")
+               .style("stroke-width", 1)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
       }
    }
 
