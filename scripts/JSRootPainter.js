@@ -6901,7 +6901,9 @@
           pthis = this,
           i, x1, x2, grx1, grx2, y, gry, w;
 
-      var bars = "";
+      var bars = "", barsl = "", barsr = "", side = this.options.Bar % 10;
+
+      if (side>4) side = 4;
 
       for (i = left; i < right; ++i) {
          x1 = this.GetBinX(i);
@@ -6921,12 +6923,32 @@
          w = Math.round(this.histo.fBarWidth/1000*w);
 
          bars += "M"+grx1+"," + gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+
+         if (side > 0) {
+            grx2 = grx1 + w;
+            w = Math.round(w * side / 10);
+            barsl += "M"+grx1+","+gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+            barsr += "M"+grx2+","+gry + "h" + (-w) + "v" + (height - gry) + "h" + w + "z";
+         }
       }
 
       if (bars.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", bars)
                     .call(this.fillatt.func);
+
+      if (barsl.length > 0)
+         this.draw_g.append("svg:path")
+               .attr("d", barsl)
+               .call(this.fillatt.func)
+               .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).toString());
+
+      if (barsr.length > 0)
+         this.draw_g.append("svg:path")
+               .attr("d", barsr)
+               .call(this.fillatt.func)
+               .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
+
    }
 
 
