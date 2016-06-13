@@ -1431,9 +1431,9 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshPhongMaterial( { transparent: true/*_transparent*/, shininess: 95,
-                              opacity: 0.15/*_opacity*/, wireframe: false, color: prop.fillcolor, depthTest: false,
-                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
 
@@ -1453,16 +1453,10 @@
             _opacity = node.fRGBA[3];
          }
          prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-         /*
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                          side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors * /,
+                          side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                           overdraw: 0. } );
-         */
-         prop.material = new THREE.MeshPhongMaterial( { transparent: true/*_transparent*/, shininess: 95,
-                         opacity: 0.15/*_opacity*/, wireframe: false, color: prop.fillcolor, depthTest: false,
-                         side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                         overdraw: 0. } );
       }
 
       prop.matrix = new THREE.Matrix4();
@@ -1524,7 +1518,6 @@
          arg.node._visible = false;
 
       if (arg.node._visible) {
-
          if (typeof prop.shape._geom === 'undefined') {
             prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
             this.accountGeom(prop.shape._geom, prop.shape._typename);
@@ -1532,7 +1525,7 @@
 
          geom = prop.shape._geom;
 
-   /*   } else {
+      } else {
          if (this._dummy_material === undefined)
             this._dummy_material =
                new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: false,
@@ -1541,7 +1534,7 @@
 
          prop.material = this._dummy_material;
       }
-      */
+
       var has_childs = (chlds !== null) && (chlds.length > 0);
       var work_around = false;
 
@@ -1604,8 +1597,6 @@
       }
 
       arg.mesh = mesh;
-
-      }
 
       if ((chlds === null) || (chlds.length == 0)) {
          // do not draw childs
@@ -1685,10 +1676,8 @@
             console.log('only one level');
          }
          */
-         
-         var vol = shape.fDX*shape.fDY*shape.fDZ;
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > /*1*/5000000.0 && vol < 2000000000.0) {
-         //   console.log(shape);
+
+         if (vis && !('_visible' in obj) && (shape!==null)) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1781,7 +1770,7 @@
       this._scene_width = w;
       this._scene_height = h;
 
-      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 1000);
+      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
 
       this._renderer = webgl ?
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
