@@ -838,10 +838,13 @@
       if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
          var pos = str.indexOf("}{");
          if ((pos>0) && (pos == str.lastIndexOf("}{"))) {
-            str = str.replace("}{", "\n");
+            str = str.replace("}{", "\n ");
             str = str.slice(11, str.length-1);
          }
       }
+
+      str = str.replace('^2','\xB2').replace('^3','\xB3');
+
       return str;
    }
 
@@ -1427,20 +1430,30 @@
              .attr('preserveAspectRatio','xMidYMid');
 
       } else {
-         elem = d3.select(this.svg_canvas().node().parentNode).select("." + size.clname);
+         var prnt = this.svg_canvas().node().parentNode;
+
+         elem = d3.select(prnt).select("." + size.clname);
          if (onlyget) return elem;
 
          // force redraw by resize
          this.svg_canvas().property('redraw_by_resize', true);
 
-         if (elem.empty()) {
-            elem = d3.select(this.svg_canvas().node().parentNode)
-                     .append('div').attr("class", size.clname);
+         if (elem.empty())
+            elem = d3.select(prnt).append('div').attr("class", size.clname);
+
+         // our position inside canvas, but to set 'absolute' position we should use
+         // canvas element offset relative to first parent with position
+         var offx = 0, offy = 0;
+         while ((prnt !== null) && !offx && !offy) {
+            if (prnt.style.top || prnt.style.left) break;
+            offx += prnt.offsetLeft;
+            offy += prnt.offsetTop;
+            prnt = prnt.parentNode;
          }
 
          elem.style('position','absolute')
-             .style('left', size.x + 'px')
-             .style('top', size.y + 'px')
+             .style('left', (size.x + offx) + 'px')
+             .style('top', (size.y + offy) + 'px')
              .style('width', size.width + 'px')
              .style('height', size.height + 'px');
       }
@@ -1465,7 +1478,7 @@
       return this === this.main_painter();
    }
 
-   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main) {
+   JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
       // Assigns id of top element (normally <div></div> where drawing is done
       // is_main - -1 - not add to painters list,
       //            0 - normal painter (default),
@@ -1474,6 +1487,7 @@
       //            3 - if canvas and (or) frame missing, create them, but not set as main object
       //            4 - major objects like TH3 (required canvas, but no frame)
       //            5 - major objects like TGeoVolume (do not require canvas)
+      // pad_name - when specified, subpad name used for object drawin
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
       // In such case the only painter will be assigned to the first element
 
@@ -1502,7 +1516,9 @@
       }
 
       // SVG element where current pad is drawn (can be canvas itself)
-      this.pad_name = svg_c.property('current_pad');
+      this.pad_name = pad_name;
+      if (this.pad_name === undefined)
+         this.pad_name = svg_c.property('current_pad');
 
       if (is_main < 0) return;
 
@@ -3345,11 +3361,11 @@
 
    JSROOT.Painter.drawPaveText = function(divid, pave, opt) {
 
-      var painter = new JSROOT.TPavePainter(pave);
-      painter.SetDivId(divid, 2);
+      // one could force drawing of PaveText on specific sub-pad
+      var onpad = ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) ? opt.substr(6) : undefined;
 
-      if ((typeof opt == 'string') && (opt.indexOf("onpad:")==0))
-         painter.pad_name = opt.substr(6);
+      var painter = new JSROOT.TPavePainter(pave);
+      painter.SetDivId(divid, 2, onpad);
 
       switch (pave._typename) {
          case "TPaveLabel":
@@ -7061,7 +7077,6 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-
       if ((this.options.Error > 0) || (this.options.Mark > 0))  {
 
          show_rect = true;
@@ -7078,6 +7093,8 @@
 
             gry1 = Math.round(pmain.gry(cont + binerr)); // up
             gry2 = Math.round(pmain.gry(cont - binerr)); // down
+
+            if ((cont==0) && this.IsTProfile()) findbin = null;
          }
 
          gry1 = Math.min(gry1, midy - msize);
