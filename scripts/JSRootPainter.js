@@ -1445,6 +1445,7 @@
          // canvas element offset relative to first parent with position
          var offx = 0, offy = 0;
          while ((prnt !== null) && !offx && !offy) {
+            if (prnt.style.top || prnt.style.left) break;
             offx += prnt.offsetLeft;
             offy += prnt.offsetTop;
             prnt = prnt.parentNode;
