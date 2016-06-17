@@ -1,13 +1,11 @@
 # JSROOT changelog
 
-## Changes in 4.5.x
-1. Fix - correctly handle ^2..^9 in TFormula equations
-2. Fix - support TMath::Gaus in TFormula 
-3. Fix - correctly display ^2 and ^3 in SVG text output 
-4. Fix - do not show tooltips for empty TProfile bins
-5. Fix - statbox toggling was not working on subpads
-6. Fix - positioning of 3D objects in Chrome in complex layouts 
- 
+## Changes in dev
+1. Upgrafe three.js to r77, adjust text rendering code 
+2. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
+3. Preliminary support of candle plot (many options to be implemented)
+4. Prelimiary support of hbox drawings 
+
 
 ## Changes in 4.5.0
 1. Zooming with mouse wheel

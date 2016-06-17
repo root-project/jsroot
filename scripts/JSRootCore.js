@@ -20,6 +20,7 @@
             'rawinflate'           : dir+'rawinflate'+ext,
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
+            'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three'+ext,
             'threejs_all'          : dir+'three.extra'+ext,
 //            'JSRootCore'           : dir+'JSRootCore'+ext,
@@ -89,11 +90,7 @@
    }
 } (function(JSROOT) {
 
-<<<<<<< HEAD
-   JSROOT.version = "dev 25/04/2016";
-=======
-   JSROOT.version = "4.5.x 13/06/2016";
->>>>>>> refs/remotes/linev/master
+   JSROOT.version = "dev 10/06/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -202,51 +199,64 @@
          console.log(value);
    }
 
+   // extract reference, coded inside string
+   // check already should be done, that string starts from "$ref:"
+   JSROOT.JSONR_unref_str = function(value, dy) {
+      // if ((value.length > 5) && (value.indexOf("$ref:") === 0))
+      var i = parseInt(value.substr(5));
+      return (!isNaN(i) && (i >= 0) && (i < dy.length)) ? dy[i] : value;
+   }
+
+   // replace all references inside object
+   // object should not be null
    // This is part of the JSON-R code, found on
    // https://github.com/graniteds/jsonr
    // Only unref part was used, arrays are not accounted as objects
-   // Should be used to reintroduce objects references, produced by TBufferJSON
-   JSROOT.JSONR_unref = function(value, dy) {
-      var c, i, k, ks;
-      if (!dy) dy = [];
+   JSROOT.JSONR_unref_obj = function(value, dy) {
+      var i, fld, proto = Object.prototype.toString.apply(value);
 
-      switch (typeof value) {
-      case 'string':
-          if ((value.length > 5) && (value.substr(0, 5) == "$ref:")) {
-             c = parseInt(value.substr(5));
-             if (!isNaN(c) && (c < dy.length)) {
-                value = dy[c];
-             }
+      if (proto === '[object Array]') {
+          for (i = 0; i < value.length; ++i) {
+             fld = value[i];
+             if (typeof fld === 'string') {
+                if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
+                   value[i] = this.JSONR_unref_str(fld, dy);
+             } else
+             if ((typeof fld === 'object') && (fld !== null))
+                this.JSONR_unref_obj(fld, dy);
           }
-          break;
-
-      case 'object':
-         if (value !== null) {
-
-            if (Object.prototype.toString.apply(value) === '[object Array]') {
-               for (i = 0; i < value.length; ++i) {
-                  value[i] = this.JSONR_unref(value[i], dy);
-               }
-            } else {
-
-               // account only objects in ref table
-               if (dy.indexOf(value) === -1) {
-                  dy.push(value);
-               }
-
-               // add methods to all objects, where _typename is specified
-               if ('_typename' in value) this.addMethods(value);
-
-               ks = Object.keys(value);
-               for (i = 0; i < ks.length; ++i) {
-                  k = ks[i];
-                  value[k] = this.JSONR_unref(value[k], dy);
-               }
-            }
-         }
-         break;
+          return;
       }
 
+      // if object in the table, return it
+      if (dy.indexOf(value) >= 0) return;
+
+      // add object to object map
+      dy.push(value);
+
+      // add methods to all objects, where _typename is specified
+      if ('_typename' in value) this.addMethods(value);
+
+      var ks = Object.keys(value);
+      for (var k = 0; k < ks.length; ++k) {
+         i = ks[k];
+         fld = value[i];
+
+         if (typeof fld === 'string') {
+            if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
+               value[i] = this.JSONR_unref_str(fld, dy);
+         } else
+         if ((typeof fld === 'object') && (fld !== null))
+            this.JSONR_unref_obj(fld, dy);
+      }
+
+      return value;
+   }
+
+   // Should be used to reintroduce objects references, produced by TBufferJSON
+   JSROOT.JSONR_unref = function(value) {
+      if ((typeof value === 'object') && (value !== null))
+         this.JSONR_unref_obj(value, []);
       return value;
    }
 
@@ -254,7 +264,7 @@
 
    // This is simple replacement of jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
-   JSROOT.extend = function(tgt, src, map, deep_copy) {
+   JSROOT.extend = function(tgt, src) {
       if ((src === null) || (typeof src !== 'object')) return src;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
 
@@ -630,6 +640,27 @@
          isbower = true;
          filename = filename.slice(3);
       }
+
+      var font_suffix = filename.indexOf('.typeface.json');
+      if (font_suffix > 0) {
+         var fontid = 'threejs_font_' + filename.slice(filename.lastIndexOf('/')+1, font_suffix);
+         if (typeof JSROOT[fontid] !== 'undefined') return completeLoad();
+
+         if ((typeof THREE === 'undefined') || (typeof THREE.FontLoader === 'undefined')) {
+            console.log('fail to load',filename,'no (proper) three.js found');
+            return completeLoad();
+         }
+
+         JSROOT.progress("loading " + filename + " ...");
+
+         var loader = new THREE.FontLoader();
+         loader.load( filename, function ( response ) {
+            JSROOT[fontid] = response;
+            completeLoad();
+         } );
+         return;
+      }
+
       var isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
@@ -783,18 +814,17 @@
       }
 
       if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
-         if (use_bower)
+         if (use_bower) {
            mainfiles += "###threejs/build/three.min.js;" +
-                        "###threejs/examples/js/utils/FontUtils.js;" +
                         "###threejs/examples/js/renderers/Projector.js;" +
                         "###threejs/examples/js/renderers/CanvasRenderer.js;" +
-                        "###threejs/examples/js/geometries/TextGeometry.js;" +
                         "###threejs/examples/js/controls/OrbitControls.js;" +
-                        "###threejs/examples/js/controls/TransformControls.js;" +
-                        "###threejs/examples/fonts/helvetiker_regular.typeface.js";
-         else
+                        "###threejs/examples/js/controls/TransformControls.js;";
+           extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
+         } else {
             mainfiles += "$$$scripts/three" + ext + ".js;" +
                          "$$$scripts/three.extra" + ext + ".js;";
+         }
          modules.push("threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
@@ -805,6 +835,8 @@
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
          modules.push('ThreeCSG', 'JSRootGeoPainter');
+         mainfiles += "$$$scripts/dat.gui.min.js;";
+         modules.push('dat.gui');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
@@ -1056,7 +1088,46 @@
                                   fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
                                   fWmax: 100, fWmin: 0 });
             break;
-
+         case 'TAttPad':
+            JSROOT.extend(obj, { fLeftMargin: 0.1, fRightMargin: 0.1, fBottomMargin: 0.1, fTopMargin: 0.1,
+                                 fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
+                                 fFrameFillColor: 0, fFrameLineColor: 1, fFrameFillStyle: 1001,
+                                 fFrameLineStyle: 1, fFrameLineWidth: 1, fFrameBorderSize: 1,
+                                 fFrameBorderMode: 0 });
+            break;
+         case 'TPad':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.Create("TAttPad", obj);
+            JSROOT.extend(obj, { fX1: 0, fY1: 0, fX2: 1, fY2: 1, fXtoAbsPixelk: 1, fXtoPixelk: 1,
+                                 fXtoPixel: 1, fYtoAbsPixelk: 1, fYtoPixelk: 1, fYtoPixel: 1,
+                                 fUtoAbsPixelk: 1, fUtoPixelk: 1, fUtoPixel: 1, fVtoAbsPixelk: 1,
+                                 fVtoPixelk: 1, fVtoPixel: 1, fAbsPixeltoXk: 1, fPixeltoXk: 1,
+                                 fPixeltoX: 1, fAbsPixeltoYk: 1, fPixeltoYk: 1, fPixeltoY: 1,
+                                 fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
+                                 fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
+                                 fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
+                                 fNumber: 0, fTickx: 0, fTicky: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
+                                 fBorderMode: 0, fModified: false, fGridx: false, fGridy: false,
+                                 fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
+                                 fPrimitives: JSROOT.Create("TList"), fExecs: null,
+                                 fName: "pad", fTitle: "canvas" });
+            break;
+         case 'TAttCanvas':
+            JSROOT.extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
+                                 fXdate: 0.2, fYdate: 0.3, fAdate: 1 });
+            break;
+         case 'TCanvas':
+            JSROOT.Create("TPad", obj);
+            JSROOT.extend(obj, { fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
+                                 fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
+                                 fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
+                                 fCw: 800, fCh : 500, fCatt: JSROOT.Create("TAttCanvas"),
+                                 kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
+                                 fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
+            break;
       }
 
       obj._typename = typename;
