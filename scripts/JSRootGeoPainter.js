@@ -1431,8 +1431,8 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshPhongMaterial( { shininess: 95, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
-                              opacity: 0.3 /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(0,0,1), this._clipPlaneDist)],
+         prop.material = new THREE.MeshPhongMaterial( { shininess: 95, transparent: true/*_transparent*/, depthTest: false, depthWrite: true,
+                              opacity: 0.3 /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
          prop.material.needsUpdate = this._globalMatUpdate;
@@ -1684,7 +1684,7 @@
 
          var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > 35000000.0 && min > 200.0 ) {
+         if (vis && !('_visible' in obj) && (shape!==null) && vol > 3000000.0 && min > 100.0 ) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1806,7 +1806,7 @@
       box = new THREE.Mesh(box, new THREE.MeshBasicMaterial());
       this._scene.add(box);
      
-      this._clipPlaneDist = 0.5;
+      this._clipPlaneDist = 5.0;
       this._globalOpacity = 0.2;
       this._globalMatUpdate = false;
 
@@ -1818,14 +1818,24 @@
       */
 
       this._datgui = new dat.GUI();
-      var updateClip = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
+      var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
+      var updateClip = this._datgui.add(this, '_clipPlaneDist', -400, 400);
       var self = this;
-      updateClip.onChange( function (value) {
+      updateOpac.onChange( function (value) {
          
          self._toplevel.traverseVisible( function (currentChild) {
             if (currentChild.material)  {
                currentChild.material.opacity = value;
-               console.log("setting opacity to " + value);
+         //      console.log("setting opacity to " + value);
+            }
+         });
+         self.Render3D();
+      });
+      updateClip.onChange( function (value) {
+
+         self._toplevel.traverseVisible( function (currentChild) {
+            if (currentChild.material) {
+               currentChild.material.clippingPlanes[0].constant = value;
             }
          });
          self.Render3D();
