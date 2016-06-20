@@ -1170,6 +1170,7 @@
             if (! ('_func' in this) || (this._title !== this.fTitle)) {
 
               var _func = this.fTitle;
+              if (_func === "gaus") _func = "gaus(0)";
 
               if ('formulas' in this)
                  for (var i=0;i<this.formulas.length;++i)
