@@ -1431,11 +1431,10 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshPhongMaterial( { shininess: 95, transparent: true/*_transparent*/, depthTest: false, depthWrite: true,
+         prop.material = new THREE.MeshPhongMaterial( { shininess: 45, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
                               opacity: 0.3 /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
-         prop.material.needsUpdate = this._globalMatUpdate;
       }
 
       return prop;
@@ -1684,7 +1683,7 @@
 
          var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > 3000000.0 && min > 100.0 ) {
+         if (vis && !('_visible' in obj) && (shape!==null) && vol > 12000.0 && min > 25.0 ) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1783,14 +1782,17 @@
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
                                                   preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
-      this._renderer.localClippingEnabled = true;
+      this._renderer.localClippingEnabled = false;
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
-      var pointLight = new THREE.PointLight(0xefefef);
+      var pointLight = new THREE.PointLight(0xbfbfbf);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
+      var pointLight2 = new THREE.PointLight(0xcccccc);
+      this._scene.add(pointLight2);
+      pointLight2.position.set(0,6000,0);
       this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       this._scene.add( this._camera );
 
@@ -1802,13 +1804,15 @@
       var axhelp = new THREE.AxisHelper();
       this._scene.add(axhelp);
       */
+
       var box = new THREE.BoxGeometry(200,200,200);
       box = new THREE.Mesh(box, new THREE.MeshBasicMaterial());
       this._scene.add(box);
      
+      this._clipEnabled = false;
       this._clipPlaneDist = 5.0;
-      this._globalOpacity = 0.2;
-      this._globalMatUpdate = false;
+      this._globalOpacity = 0.15;
+      this._depthTest = true;
 
       /*
       this._visibleList = [];
@@ -1818,19 +1822,38 @@
       */
 
       this._datgui = new dat.GUI();
+      var updateDepthTest = this._datgui.add(this, '_depthTest');
       var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
-      var updateClip = this._datgui.add(this, '_clipPlaneDist', -400, 400);
+      var updateClipEnabled = this._datgui.add(this, '_clipEnabled');
+      var updateClip = this._datgui.add(this, '_clipPlaneDist', -300, 1400);
+
       var self = this;
       updateOpac.onChange( function (value) {
          
          self._toplevel.traverseVisible( function (currentChild) {
             if (currentChild.material)  {
-               currentChild.material.opacity = value;
+               currentChild.material.opacity = value*value;
          //      console.log("setting opacity to " + value);
             }
          });
          self.Render3D();
       });
+
+      updateDepthTest.onChange( function (value) {
+
+         self._toplevel.traverseVisible( function (currentChild) {
+            if (currentChild.material) {
+               currentChild.material.depthTest = value;
+            }
+         });
+         self.Render3D();
+      });
+
+      updateClipEnabled.onChange( function (value) {
+         self._renderer.localClippingEnabled = value;
+         self.Render3D();
+      });
+
       updateClip.onChange( function (value) {
 
          self._toplevel.traverseVisible( function (currentChild) {
