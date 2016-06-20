@@ -943,7 +943,7 @@
             rotation_matrix = matrix.fRotation.fRotationMatrix;
       }
       else if (matrix._typename !== 'TGeoIdentity') {
-         console.log('unsupported matrix ' + matrix._typename);
+      //   console.log('unsupported matrix ' + matrix._typename);
       }
 
       if ((translation_matrix === null) && (rotation_matrix === null)) return null;
@@ -1402,7 +1402,7 @@
                             _sin,  _cos, 0,  0,
                                0,     0, 1,  0,
                                0,     0, 0,  1);
-         } else {
+         } else if (this.options._debug) {
             console.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
       }
@@ -1432,7 +1432,7 @@
             prop.fillcolor = "lightgrey";
 
          prop.material = new THREE.MeshPhongMaterial( { shininess: 45, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
-                              opacity: 0.3 /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
+                              opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
@@ -1803,15 +1803,15 @@
       /*
       var axhelp = new THREE.AxisHelper();
       this._scene.add(axhelp);
-      */
 
       var box = new THREE.BoxGeometry(200,200,200);
       box = new THREE.Mesh(box, new THREE.MeshBasicMaterial());
       this._scene.add(box);
+      */
      
       this._clipEnabled = false;
       this._clipPlaneDist = 5.0;
-      this._globalOpacity = 0.15;
+      this._globalOpacity = 0.4;
       this._depthTest = true;
 
       /*
@@ -1833,7 +1833,6 @@
          self._toplevel.traverseVisible( function (currentChild) {
             if (currentChild.material)  {
                currentChild.material.opacity = value*value;
-         //      console.log("setting opacity to " + value);
             }
          });
          self.Render3D();
