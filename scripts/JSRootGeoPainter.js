@@ -1246,8 +1246,8 @@
                   if ('name' in p) name = p.name+'/'+name;
                   p = p.parent;
                }
-
-                console.log('intersect ' + name);
+            //    console.log(INTERSECTED);
+            //    console.log('intersect ' + name);
             }
          } else {
             // INTERSECTED = null;
@@ -1431,10 +1431,19 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshPhongMaterial( { shininess: 45, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
+         if (this._shiny) {
+            prop.material = new THREE.MeshPhongMaterial( { shininess: 40, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
                               opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
+         } else {
+            prop.material = new THREE.MeshBasicMaterial( { transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
+                              opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
+                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              overdraw: 0. } );
+         }
+
+
       }
 
       return prop;
@@ -1683,7 +1692,7 @@
 
          var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > 12000.0 && min > 25.0 ) {
+         if (vis && !('_visible' in obj) && (shape!==null) && vol > 40000.0 && min > 35.0 ) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1776,10 +1785,20 @@
       this._scene_width = w;
       this._scene_height = h;
 
-      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
+
+      this._SSAO = false;
+      this._clipEnabled = false;
+      this._clipPlaneDist = 5.0;
+      this._globalOpacity = 1.0;
+      this._depthTest = true;
+      this._shiny = true;
+      this._nFactor = 35.0;
+      this._fFactor = 50.0;
+
+      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
       this._renderer = webgl ?
-                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
+                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: false,
                                                   preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.localClippingEnabled = false;
@@ -1787,10 +1806,10 @@
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
-      var pointLight = new THREE.PointLight(0xbfbfbf);
+      var pointLight = new THREE.PointLight(0xdfdfdf);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
-      var pointLight2 = new THREE.PointLight(0xcccccc);
+      var pointLight2 = new THREE.PointLight(0xbcbcbc);
       this._scene.add(pointLight2);
       pointLight2.position.set(0,6000,0);
       this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
@@ -1800,6 +1819,35 @@
 
       this._scene.add(this._toplevel);
 
+      //// SSAO Setup ////
+      if (webgl) {
+         var renderPass = new THREE.RenderPass( this._scene, this._camera );
+         // Setup depth pass
+         this._depthMaterial = new THREE.MeshDepthMaterial( { 
+            clippingPlanes: [ new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist) ], side: THREE.DoubleSide });
+         this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
+         this._depthMaterial.blending = THREE.NoBlending;
+         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+         this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
+         // Setup SSAO pass
+         this._ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+         this._ssaoPass.renderToScreen = true;
+         this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
+         this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
+     //    this._ssaoPass.uniforms[ 'cameraNear' ].value = this._overall_size/800;
+     //    this._ssaoPass.uniforms[ 'cameraFar' ].value = this._overall_size*100;
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*5;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/5;
+         this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
+         // Add pass to effect composer
+         this._effectComposer = new THREE.EffectComposer( this._renderer );
+         this._effectComposer.addPass( renderPass );
+         this._effectComposer.addPass( this._ssaoPass );
+      }
+
+
       /*
       var axhelp = new THREE.AxisHelper();
       this._scene.add(axhelp);
@@ -1808,11 +1856,6 @@
       box = new THREE.Mesh(box, new THREE.MeshBasicMaterial());
       this._scene.add(box);
       */
-     
-      this._clipEnabled = false;
-      this._clipPlaneDist = 5.0;
-      this._globalOpacity = 0.4;
-      this._depthTest = true;
 
       /*
       this._visibleList = [];
@@ -1822,7 +1865,8 @@
       */
 
       this._datgui = new dat.GUI();
-      var updateDepthTest = this._datgui.add(this, '_depthTest');
+
+   //   var updateDepthTest = this._datgui.add(this, '_depthTest');
       var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
       var updateClipEnabled = this._datgui.add(this, '_clipEnabled');
       var updateClip = this._datgui.add(this, '_clipPlaneDist', -300, 1400);
@@ -1837,7 +1881,7 @@
          });
          self.Render3D();
       });
-
+      /*
       updateDepthTest.onChange( function (value) {
 
          self._toplevel.traverseVisible( function (currentChild) {
@@ -1847,14 +1891,14 @@
          });
          self.Render3D();
       });
-
+      */
       updateClipEnabled.onChange( function (value) {
          self._renderer.localClippingEnabled = value;
          self.Render3D();
       });
 
       updateClip.onChange( function (value) {
-
+         self._depthMaterial.clippingPlanes[0].constant = value;
          self._toplevel.traverseVisible( function (currentChild) {
             if (currentChild.material) {
                currentChild.material.clippingPlanes[0].constant = value;
@@ -1862,6 +1906,26 @@
          });
          self.Render3D();
       });
+
+      if (webgl) {
+         var updateSSAO = this._datgui.add(this, '_SSAO');
+         updateSSAO.onChange( function (value) {
+         self.Render3D();
+      });
+         /*
+         var updatefFactor = this._datgui.add(this, '_fFactor', 1, 100);
+         updatefFactor.onChange( function (value) {
+            self.adjustCameraPosition();
+            self.Render3D();
+      });
+         var updatenFactor = this._datgui.add(this, '_nFactor', 1, 100);
+         updatenFactor.onChange( function (value) {
+            self.adjustCameraPosition();
+            self.Render3D();
+      });
+      */
+      }
+
 
       this._overall_size = 10;
    }
@@ -1892,9 +1956,10 @@
           midz = (box.max.z + box.min.z)/2;
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
-
       this._camera.near = this._overall_size / 500;
       this._camera.far = this._overall_size * 500;
+      this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*this._nFactor;
+      this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/this._nFactor;
       this._camera.updateProjectionMatrix();
 
 //      if (this.options._yup)
@@ -2055,6 +2120,8 @@
          if (now - curr > 300) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
+            this.adjustCameraPosition();
+            this._renderer.render(this._scene, this._camera);
             return this;
          }
 
@@ -2084,7 +2151,17 @@
          var tm1 = new Date();
 
          // do rendering, most consuming time
-         this._renderer.render(this._scene, this._camera);
+         if (this._SSAO) {
+            this._scene.overrideMaterial = this._depthMaterial;
+        //    this._renderer.logarithmicDepthBuffer = false;
+            this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
+            this._scene.overrideMaterial = null;
+            this._effectComposer.render();
+         } else {
+       //     this._renderer.logarithmicDepthBuffer = true;
+            this._renderer.render(this._scene, this._camera);
+         }
+         
 
          var tm2 = new Date();
 
@@ -2201,6 +2278,8 @@
       this._camera.updateProjectionMatrix();
 
       this._renderer.setSize( this._scene_width, this._scene_height );
+      this._depthRenderTarget.setSize( this._scene_width, this._scene_height );
+      this._effectComposer.setSize( this._scene_width, this._scene_height );
 
       this.Render3D();
 

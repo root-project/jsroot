@@ -23,6 +23,12 @@
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three'+ext,
             'threejs_all'          : dir+'three.extra'+ext,
+            'CopyShader'           : dir+'CopyShader',
+            'EffectComposer'       : dir+'EffectComposer',
+            'MaskPass'             : dir+'MaskPass',
+            'RenderPass'           : dir+'RenderPass',
+            'ShaderPass'           : dir+'ShaderPass',
+            'SSAOShader'           : dir+'SSAOShader',
 //            'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -835,8 +841,16 @@
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
          modules.push('ThreeCSG', 'JSRootGeoPainter');
-         mainfiles += "$$$scripts/dat.gui.min.js;";
+         mainfiles += "$$$scripts/dat.gui.min.js;" 
          modules.push('dat.gui');
+         mainfiles += "$$$scripts/shaders/CopyShader.js;" +
+                      "$$$scripts/shaders/EffectComposer.js;" +
+                      "$$$scripts/shaders/MaskPass.js;" +
+                      "$$$scripts/shaders/RenderPass.js;" +
+                      "$$$scripts/shaders/ShaderPass.js;" +
+                      "$$$scripts/shaders/SSAOShader.js;";
+         modules.push('CopyShader', 'EffectComposer', 'MaskPass', 'RenderPass', 'ShaderPass', 'SSAOShader');
+
       }
 
       if (kind.indexOf("mathjax;")>=0) {
