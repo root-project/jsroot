@@ -1246,7 +1246,12 @@
                   if ('name' in p) name = p.name+'/'+name;
                   p = p.parent;
                }
-            //    console.log(INTERSECTED);
+               if (this._selectedVolume !== null) {
+                  this._selectedVolume.material.color = this._selectedVolume.color;
+               }
+               this._selectedVolume.color = INTERSECTED.material.color;
+               INTERSECTED.material.color = 0xffffff;
+                console.log(INTERSECTED);
             //    console.log('intersect ' + name);
             }
          } else {
@@ -1785,15 +1790,17 @@
       this._scene_width = w;
       this._scene_height = h;
 
+      this._selectedVolume = null;
 
-      this._SSAO = false;
+      this._enableSSAO = false;
       this._clipEnabled = false;
       this._clipPlaneDist = 5.0;
-      this._globalOpacity = 1.0;
+      this._globalOpacity = 0.35;
       this._depthTest = true;
-      this._shiny = true;
+      this._shiny = false;
       this._nFactor = 35.0;
       this._fFactor = 50.0;
+   //   this._Ma
 
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
@@ -1864,21 +1871,18 @@
          });
       */
 
-      this._datgui = new dat.GUI();
+      this._datgui = new dat.GUI({width:500});
 
    //   var updateDepthTest = this._datgui.add(this, '_depthTest');
       var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
       var updateClipEnabled = this._datgui.add(this, '_clipEnabled');
       var updateClip = this._datgui.add(this, '_clipPlaneDist', -300, 1400);
+      var updateOpac = this._datgui.add(this._ssaoPass.uniforms[ 'aoClamp' ], 'value', 0.0, 1.0);
+      var updateOpac = this._datgui.add(this._ssaoPass.uniforms[ 'lumInfluence' ], 'value', 0.0, 1.0);
 
       var self = this;
       updateOpac.onChange( function (value) {
-         
-         self._toplevel.traverseVisible( function (currentChild) {
-            if (currentChild.material)  {
-               currentChild.material.opacity = value*value;
-            }
-         });
+         self.updateGlobalOpacity(value);
          self.Render3D();
       });
       /*
@@ -1898,17 +1902,12 @@
       });
 
       updateClip.onChange( function (value) {
-         self._depthMaterial.clippingPlanes[0].constant = value;
-         self._toplevel.traverseVisible( function (currentChild) {
-            if (currentChild.material) {
-               currentChild.material.clippingPlanes[0].constant = value;
-            }
-         });
+         self.updateClipping(value);
          self.Render3D();
       });
 
       if (webgl) {
-         var updateSSAO = this._datgui.add(this, '_SSAO');
+         var updateSSAO = this._datgui.add(this, '_enableSSAO');
          updateSSAO.onChange( function (value) {
          self.Render3D();
       });
@@ -1980,6 +1979,26 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+   }
+
+   JSROOT.TGeoPainter.prototype.updateClipping = function( displacement ) {
+      this._depthMaterial.clippingPlanes[0].constant = displacement;
+      this._toplevel.traverseVisible( function (currentChild) {
+            if (currentChild.material) {
+               currentChild.material.clippingPlanes[0].constant = displacement;
+            }
+         });
+      this._datgui.__controllers[0].updateDisplay();
+   }
+
+   JSROOT.TGeoPainter.prototype.updateGlobalOpacity = function( opacity ) {
+      this._toplevel.traverseVisible( function (currentChild) {
+         if (currentChild.material)  {
+            currentChild.material.opacity = opacity*opacity;
+         }
+      });
+      this._datgui.__controllers[0].updateDisplay();
+
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -2151,7 +2170,7 @@
          var tm1 = new Date();
 
          // do rendering, most consuming time
-         if (this._SSAO) {
+         if (this._enableSSAO) {
             this._scene.overrideMaterial = this._depthMaterial;
         //    this._renderer.logarithmicDepthBuffer = false;
             this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
@@ -2195,6 +2214,7 @@
          JSROOT.draw(this.divid, axis); // it will include drawing of
       }
 
+      this.updateGlobalOpacity(1.0);
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
@@ -2278,8 +2298,8 @@
       this._camera.updateProjectionMatrix();
 
       this._renderer.setSize( this._scene_width, this._scene_height );
-      this._depthRenderTarget.setSize( this._scene_width, this._scene_height );
-      this._effectComposer.setSize( this._scene_width, this._scene_height );
+      this._depthRenderTarget.setSize( this._scene_width * 2, this._scene_height *2);
+      this._effectComposer.setSize( this._scene_width*2, this._scene_height *2);
 
       this.Render3D();
 
@@ -2650,7 +2670,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2"});
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
