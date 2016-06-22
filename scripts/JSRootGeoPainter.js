@@ -1877,8 +1877,6 @@
       var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
       var updateClipEnabled = this._datgui.add(this, '_clipEnabled');
       var updateClip = this._datgui.add(this, '_clipPlaneDist', -300, 1400);
-      var updateOpac = this._datgui.add(this._ssaoPass.uniforms[ 'aoClamp' ], 'value', 0.0, 1.0);
-      var updateOpac = this._datgui.add(this._ssaoPass.uniforms[ 'lumInfluence' ], 'value', 0.0, 1.0);
 
       var self = this;
       updateOpac.onChange( function (value) {
@@ -1988,7 +1986,6 @@
                currentChild.material.clippingPlanes[0].constant = displacement;
             }
          });
-      this._datgui.__controllers[0].updateDisplay();
    }
 
    JSROOT.TGeoPainter.prototype.updateGlobalOpacity = function( opacity ) {
@@ -1997,8 +1994,6 @@
             currentChild.material.opacity = opacity*opacity;
          }
       });
-      this._datgui.__controllers[0].updateDisplay();
-
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
