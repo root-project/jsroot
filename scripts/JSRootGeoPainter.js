@@ -307,13 +307,14 @@
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
-         outerRadius1 = shape.fRmax2;
-         innerRadius1 = shape.fRmin2;
-         outerRadius2 = shape.fRmax1;
-         innerRadius2 = shape.fRmin1;
+         outerRadius1 = shape.fRmax2 * (1 - 0.001*(Math.random() - 0.5));
+         innerRadius1 = shape.fRmin2 * (1 - 0.001*(Math.random() - 0.5));
+         outerRadius2 = shape.fRmax1 * (1 - 0.001*(Math.random() - 0.5));
+         innerRadius2 = shape.fRmin1 * (1 - 0.001*(Math.random() - 0.5));
       } else {
-         outerRadius1 = outerRadius2 = shape.fRmax;
-         innerRadius1 = innerRadius2 = shape.fRmin;
+         // Random noise added to reduce z-buffer artifacts 
+         outerRadius1 = outerRadius2 = shape.fRmax * (1 - 0.001*(Math.random() - 0.5));
+         innerRadius1 = innerRadius2 = shape.fRmin * (1 - 0.001*(Math.random() - 0.5));
       }
 
       var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
@@ -1247,7 +1248,9 @@
                   p = p.parent;
                }
                if (this._selectedVolume !== null && this._selectedVolume !== undefined) {
-                  this._selectedVolume.material.color = this._selectedVolume.color;
+                  this._selectedVolume.color = this._selectedVolume.color;
+               } else {
+                  this._selectedVolume = {};
                }
                this._selectedVolume.color = INTERSECTED.material.color;
                INTERSECTED.material.color = 0xffffff;
@@ -1694,7 +1697,7 @@
             console.log('only one level');
          }
          */
-
+         //marker
          var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
          if (vis && !('_visible' in obj) && (shape!==null) && vol > 40000.0 && min > 35.0 ) {
@@ -1843,8 +1846,8 @@
          this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
      //    this._ssaoPass.uniforms[ 'cameraNear' ].value = this._overall_size/800;
      //    this._ssaoPass.uniforms[ 'cameraFar' ].value = this._overall_size*100;
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*5;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/5;
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
          this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
          this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
          this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
@@ -1953,11 +1956,11 @@
           midz = (box.max.z + box.min.z)/2;
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
-      this._camera.near = this._overall_size / 500;
-      this._camera.far = this._overall_size * 500;
+      this._camera.near = this._overall_size / 200;
+      this._camera.far = this._overall_size * 6;
       if (this._webgl) {
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*this._nFactor;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/this._nFactor;
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
       }
 
       this._camera.updateProjectionMatrix();
