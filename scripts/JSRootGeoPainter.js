@@ -1246,7 +1246,7 @@
                   if ('name' in p) name = p.name+'/'+name;
                   p = p.parent;
                }
-               if (this._selectedVolume !== null) {
+               if (this._selectedVolume !== null && this._selectedVolume !== undefined) {
                   this._selectedVolume.material.color = this._selectedVolume.color;
                }
                this._selectedVolume.color = INTERSECTED.material.color;
@@ -1436,7 +1436,7 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         if (this._shiny) {
+         if (this._shiny || !this._webgl) {
             prop.material = new THREE.MeshPhongMaterial( { shininess: 40, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
                               opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
                               side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
@@ -1800,7 +1800,7 @@
       this._shiny = false;
       this._nFactor = 35.0;
       this._fFactor = 50.0;
-   //   this._Ma
+      this._volumesBySize = {};
 
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
@@ -1955,8 +1955,11 @@
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
       this._camera.near = this._overall_size / 500;
       this._camera.far = this._overall_size * 500;
-      this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*this._nFactor;
-      this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/this._nFactor;
+      if (this._webgl) {
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near*this._nFactor;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far/this._nFactor;
+      }
+
       this._camera.updateProjectionMatrix();
 
 //      if (this.options._yup)
@@ -1980,7 +1983,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.updateClipping = function( displacement ) {
-      this._depthMaterial.clippingPlanes[0].constant = displacement;
+      if (this._webgl) {
+         this._depthMaterial.clippingPlanes[0].constant = displacement;
+      }
       this._toplevel.traverseVisible( function (currentChild) {
             if (currentChild.material) {
                currentChild.material.clippingPlanes[0].constant = displacement;
