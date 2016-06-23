@@ -5628,9 +5628,8 @@
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
 
-         if (this.x_handle!==null)
-            if ('format' in this.x_handle)
-               return this.x_handle.format(value);
+         if (this.x_handle && ('format' in this.x_handle))
+            return this.x_handle.format(value);
 
          return value.toPrecision(4);
       }
@@ -5639,9 +5638,8 @@
          if (this.y_kind == 'time')
             value = this.ConvertY(value);
 
-         if (this.y_handle!==null)
-            if ('format' in this.y_handle)
-               return this.y_handle.format(value);
+         if (this.y_handle && ('format' in this.y_handle))
+            return this.y_handle.format(value);
 
          return value.toPrecision(4);
       }

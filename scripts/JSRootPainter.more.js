@@ -3298,9 +3298,9 @@
 
             if (JSROOT.gStyle.Tooltip > 0) {
                if (this.x_kind == 'labels')
-                  point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "<br/>";
+                  point.tip = name + "x = " + main.AxisAsText("x", xx[i].axis) + "<br/>";
                else {
-                  point.tip = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + ")";
+                  point.tip = name + "x = [" + main.AxisAsText("x", xx[i].axis) + ", " + main.AxisAsText("x", xx[i+1].axis) + ")";
 
                   if (xx[i].indx + 1 == xx[i+1].indx)
                      point.tip += " bin=" + xx[i].indx + "<br/>";
@@ -3308,9 +3308,9 @@
                      point.tip += " bins=[" + xx[i].indx + "," + (xx[i+1].indx-1) + "]<br/>";
                }
                if (this.y_kind == 'labels')
-                  point.tip += "y = " + this.AxisAsText("y", yy[j].axis) + "<br/>";
+                  point.tip += "y = " + main.AxisAsText("y", yy[j].axis) + "<br/>";
                else {
-                  point.tip += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + ")";
+                  point.tip += "y = [" + main.AxisAsText("y", yy[j].axis) + ", " + main.AxisAsText("y", yy[j+1].axis) + ")";
                   if (yy[j].indx + 1 == yy[j+1].indx)
                      point.tip += " bin=" + yy[j].indx + "<br/>";
                   else
@@ -3794,19 +3794,19 @@
    }
 
    JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
-      var lines = [];
+      var lines = [], pmain = this.main_painter();
 
       lines.push(this.GetTipName());
 
       if (this.x_kind == 'labels')
-         lines.push("x = " + this.AxisAsText("x", this.GetBinX(i)));
+         lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(i)));
       else
-         lines.push("x = [" + this.AxisAsText("x", this.GetBinX(i)) + ", " + this.AxisAsText("x", this.GetBinX(i+1)) + ")");
+         lines.push("x = [" + pmain.AxisAsText("x", this.GetBinX(i)) + ", " + pmain.AxisAsText("x", this.GetBinX(i+1)) + ")");
 
       if (this.y_kind == 'labels')
-         lines.push("y = " + this.AxisAsText("y", this.GetBinY(j)));
+         lines.push("y = " + pmain.AxisAsText("y", this.GetBinY(j)));
       else
-         lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + ")");
+         lines.push("y = [" + pmain.AxisAsText("y", this.GetBinY(j)) + ", " + pmain.AxisAsText("y", this.GetBinY(j+1)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 
