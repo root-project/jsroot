@@ -1444,8 +1444,8 @@
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with position
          var offx = 0, offy = 0;
-         while ((prnt !== null) && !offx && !offy) {
-            if (prnt.style.top || prnt.style.left) break;
+         while (prnt && !offx && !offy) {
+            if (getComputedStyle(prnt).position !== 'static') break;
             offx += prnt.offsetLeft;
             offy += prnt.offsetTop;
             prnt = prnt.parentNode;
