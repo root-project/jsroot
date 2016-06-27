@@ -1,12 +1,12 @@
 # JSROOT changelog
 
-## Changes in 4.5.x
+## Changes in 4.5.1
 1. Fix - correctly handle ^2..^9 in TFormula equations
 2. Fix - support TMath::Gaus in TFormula 
 3. Fix - correctly display ^2 and ^3 in SVG text output 
 4. Fix - do not show tooltips for empty TProfile bins
 5. Fix - statbox toggling was not working on subpads
-6. Fix - positioning of 3D objects in Chrome in complex layouts
+6. Fix - positioning of 3D objects in Webkit browsers in complex layouts
 7. Fix - difference in TF1 between ROOT5/6 (#54)  
  
 
