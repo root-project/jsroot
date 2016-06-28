@@ -1766,6 +1766,7 @@
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2 } );
 
       this._scene_width = w;
       this._scene_height = h;
@@ -1859,6 +1860,7 @@
          "keep 'Ctrl' down to snap to grid</center></font>");
       }
    }
+
 
    JSROOT.TGeoPainter.prototype.drawCount = function() {
 
@@ -1982,6 +1984,8 @@
          if (now - curr > 300) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
+            this.adjustCameraPosition();
+            this._renderer.render(this._scene, this._camera);
             return this;
          }
 
@@ -2044,6 +2048,8 @@
          axis._main = this;
          JSROOT.draw(this.divid, axis); // it will include drawing of
       }
+
+      this._scene.overrideMaterial = null;
 
       this.Render3D();
 
