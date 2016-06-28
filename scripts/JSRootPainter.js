@@ -2014,6 +2014,117 @@
    }
 
 
+   JSROOT.TObjectPainter.prototype.OpenWebsocket = function() {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      delete this._websocket;
+
+      var path = window.location.href;
+      path = path.replace("http://", "ws://");
+      path = path.replace("https://", "wss://");
+      var pos = path.indexOf("draw.htm");
+      if (pos < 0) return;
+
+      path = path.substr(0,pos) + "root.websocket";
+
+      console.log('open websocket ' + path);
+
+      var conn = new WebSocket(path);
+
+      this._websocket = conn;
+
+      var pthis = this, sum1 = 0, sum2 = 0;
+
+      conn.onopen = function() {
+         console.log('websocket initialized');
+         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big peace)
+      }
+
+      conn.onmessage = function (e) {
+         var d = e.data;
+         if (typeof d != 'string') return console.log("msg",d);
+
+         if (d.substr(0,4)=='JSON') {
+            var obj = JSROOT.parse(d.substr(4));
+            // console.log("get JSON ", d.length-4, obj._typename);
+            var tm1 = new Date().getTime();
+            pthis.RedrawObject(obj);
+            var tm2 = new Date().getTime();
+            sum1+=1;
+            sum2+=(tm2-tm1);
+            if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
+
+            conn.send('READY'); // send ready message back
+         } else
+         if (d.substr(0,4)=='MENU') {
+            var lst = JSROOT.parse(d.substr(4));
+            console.log("get MENUS ", typeof lst, lst.length, d.length-4);
+            conn.send('READY'); // send ready message back
+            if (typeof pthis._getmenu_callback == 'function')
+               pthis._getmenu_callback(lst);
+         } else {
+            console.log("msg",d);
+         }
+      }
+
+      conn.onclose = function() {
+         console.log('websocket closed');
+
+         delete pthis._websocket;
+      }
+
+      conn.onerror = function (err) {
+         console.log("err",err);
+         conn.close();
+      }
+   }
+
+
+   JSROOT.TObjectPainter.prototype.FillObjectExecMenu = function(menu, call_back) {
+
+      if (!('_websocket' in this) || ('_getmenu_callback' in this))
+         return JSROOT.CallBack(call_back);
+
+      function DoExecMenu(arg) {
+         console.log('execute method ' + arg);
+
+         if (this._websocket)
+            this._websocket.send('EXEC'+arg);
+      }
+
+      function DoFillMenu(_menu, _call_back, items) {
+
+        // avoid multiple call of the callback after timeout
+        if (!this._getmenu_callback) return;
+        delete this._getmenu_callback;
+
+        if (items && items.length) {
+           _menu.add("separator");
+           _menu.add("sub:Online");
+
+           for (var n=0;n<items.length;++n) {
+              var item = items[n];
+              if ('chk' in item)
+                 _menu.addchk(item.chk, item.name, item.exec, DoExecMenu);
+              else
+                 _menu.add(item.name, item.exec, DoExecMenu);
+           }
+
+           _menu.add("endsub:");
+        }
+
+        JSROOT.CallBack(_call_back);
+     }
+
+     this._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
+
+     this._websocket.send('GETMENU'); // request menu items
+
+     setTimeout(this._getmenu_callback, 2000); // set timeout to avoid menu hanging
+   }
+
+
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
       // like TAttFill, TAttLine, ....
@@ -3740,7 +3851,8 @@
 
          pthis.FillContextMenu(menu);
 
-         menu.show(evnt);
+         pthis.FillObjectExecMenu(menu, function() { menu.show(evnt); });
+
       }); // end menu creation
    }
 
@@ -9032,7 +9144,11 @@
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
          if (obj!=null) hpainter['_cached_draw_object'] = obj;
          var opt = JSROOT.GetUrlOption("opt");
-         hpainter.display("", opt);
+
+         hpainter.display("", opt, function(obj_painter) {
+            if (JSROOT.GetUrlOption("websocket")!==null)
+               obj_painter.OpenWebsocket();
+         });
       });
    }
 
