@@ -252,7 +252,7 @@
       return value;
    }
 
-   // Should be used to reintroduce objects references, produced by TBufferJSON
+   /// Should be used to reintroduce objects references, produced by TBufferJSON
    JSROOT.JSONR_unref = function(value) {
       if ((typeof value === 'object') && (value !== null))
          this.JSONR_unref_obj(value, []);
@@ -364,6 +364,8 @@
       if (obj!=null) obj = this.JSONR_unref(obj);
       return obj;
    }
+
+   /** @memberOf JSROOT */
 
    JSROOT.GetUrlOption = function(opt, url, dflt) {
       // analyzes document.URL and extracts options after '?' mark
