@@ -1444,8 +1444,8 @@
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with position
          var offx = 0, offy = 0;
-         while ((prnt !== null) && !offx && !offy) {
-            if (prnt.style.top || prnt.style.left) break;
+         while (prnt && !offx && !offy) {
+            if (getComputedStyle(prnt).position !== 'static') break;
             offx += prnt.offsetLeft;
             offy += prnt.offsetTop;
             prnt = prnt.parentNode;
@@ -5516,9 +5516,8 @@
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
 
-         if (this.x_handle!==null)
-            if ('format' in this.x_handle)
-               return this.x_handle.format(value);
+         if (this.x_handle && ('format' in this.x_handle))
+            return this.x_handle.format(value);
 
          return value.toPrecision(4);
       }
@@ -5527,9 +5526,8 @@
          if (this.y_kind == 'time')
             value = this.ConvertY(value);
 
-         if (this.y_handle!==null)
-            if ('format' in this.y_handle)
-               return this.y_handle.format(value);
+         if (this.y_handle && ('format' in this.y_handle))
+            return this.y_handle.format(value);
 
          return value.toPrecision(4);
       }

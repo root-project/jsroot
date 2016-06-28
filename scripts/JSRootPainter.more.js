@@ -3300,7 +3300,7 @@
                if (this.x_kind == 'labels')
                   point.tip = name + "x = " + this.AxisAsText("x", xx[i].axis) + "<br/>";
                else {
-                  point.tip = name + "x = [" + this.AxisAsText("x", xx[i].axis) + ", " + this.AxisAsText("x", xx[i+1].axis) + ")";
+                  point.tip = name + "x = [" + main.AxisAsText("x", xx[i].axis) + ", " + main.AxisAsText("x", xx[i+1].axis) + ")";
 
                   if (xx[i].indx + 1 == xx[i+1].indx)
                      point.tip += " bin=" + xx[i].indx + "<br/>";
@@ -3308,9 +3308,9 @@
                      point.tip += " bins=[" + xx[i].indx + "," + (xx[i+1].indx-1) + "]<br/>";
                }
                if (this.y_kind == 'labels')
-                  point.tip += "y = " + this.AxisAsText("y", yy[j].axis) + "<br/>";
+                  point.tip += "y = " + main.AxisAsText("y", yy[j].axis) + "<br/>";
                else {
-                  point.tip += "y = [" + this.AxisAsText("y", yy[j].axis) + ", " + this.AxisAsText("y", yy[j+1].axis) + ")";
+                  point.tip += "y = [" + main.AxisAsText("y", yy[j].axis) + ", " + main.AxisAsText("y", yy[j+1].axis) + ")";
                   if (yy[j].indx + 1 == yy[j+1].indx)
                      point.tip += " bin=" + yy[j].indx + "<br/>";
                   else
@@ -3569,7 +3569,7 @@
           handle = this.PrepareColorDraw(true),
           pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
-          i, j, y, sum0, sum1, sum2, cont, center, w, pnt;
+          i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt;
 
       // candle option coded into string, which comes after candle indentifier
       // console.log('Draw candle plot with option', this.options.Candle);
@@ -3589,27 +3589,47 @@
 
       // loop over visible x-bins
       for (i = handle.i1; i < handle.i2; ++i) {
-         sum0 = sum1 = sum2 = 0;
-         // loop over all y bins
+         sum1 = 0;
+         //estimate integral
+         integral = 0;
+         counter = 0;
          for (j = 0; j < this.nbinsy; ++j) {
-            cont = histo.getBinContent(i + 1, j + 1);
+            integral += histo.getBinContent(i+1,j+1);
+         }
+         pnt = { bin:i, meany:0, m25y:0, p25y:0, median:0, iqr:0, whiskerp:0, whiskerm:0};
+         //estimate quantiles... simple function... not so nice as GetQuantiles
+         for (j = 0; j < this.nbinsy; ++j) {
+            cont = histo.getBinContent(i+1,j+1);
+            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = this.GetBinY(j + 0.5); // Lower whisker
+            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = this.GetBinY(j + 0.5); // Lower edge of box
+            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = this.GetBinY(j + 0.5); //Median
+            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = this.GetBinY(j + 0.5); //Uppeder edge of box
+            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = this.GetBinY(j + 0.5); // Upper whisker
+            counter += cont;
             y = this.GetBinY(j + 0.5); // center of y bin coordinate
-            sum0 += cont;
             sum1 += cont*y;
-            sum2 += cont*y*y;
          }
-
-         pnt = { bin:i, meany:0, rmsy:0 };
-
-         if (sum0 > 0) {
-            pnt.meany = sum1/sum0;
-            pnt.rmsy = Math.sqrt(sum2/sum0 - pnt.meany*pnt.meany);
+         if (counter > 0) {
+            pnt.meany = sum1/counter;
          }
+         pnt.iqr = pnt.p25y-pnt.m25y;
+
+//       console.log('Whisker before ' + pnt.whiskerm + '/' + pnt.whiskerp);
+
+         //Whsikers cannot exceed 1.5*iqr from box
+         if ((pnt.m25y-1.5*pnt.iqr) > pnt.whsikerm)  {
+            pnt.whiskerm = pnt.m25y-1.5*pnt.iqr;
+         }
+         if ((pnt.p25y+1.5*pnt.iqr) < pnt.whiskerp) {
+            pnt.whiskerp = pnt.p25y+1.5*pnt.iqr;
+         }
+//       console.log('Whisker after ' + pnt.whiskerm + '/' + pnt.whiskerp);
 
          // exclude points with negative y when log scale is specified
-         if (pmain.logy && (pnt.meany-3*pnt.rmsy<=0)) continue;
+         if (pmain.logy && (pnt.whiskerm<=0)) continue;
 
          w = handle.grx[i+1] - handle.grx[i];
+         w *= 0.66;
          center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
          if (histo.fBarWidth>0) w = w * histo.fBarWidth / 1000;
 
@@ -3617,19 +3637,19 @@
          pnt.x2 = Math.round(center + w/2);
          center = Math.round(center);
 
-         pnt.y0 = Math.round(pmain.gry(pnt.meany));
+         pnt.y0 = Math.round(pmain.gry(pnt.median));
          // mean line
          bars += "M" + pnt.x1 + "," + pnt.y0 + "h" + (pnt.x2-pnt.x1);
 
-         pnt.y1 = Math.round(pmain.gry(pnt.meany+pnt.rmsy));
-         pnt.y2 = Math.round(pmain.gry(pnt.meany-pnt.rmsy));
+         pnt.y1 = Math.round(pmain.gry(pnt.p25y));
+         pnt.y2 = Math.round(pmain.gry(pnt.m25y));
 
          // rectangle
          bars += "M" + pnt.x1 + "," + pnt.y1 +
-                 "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + "z";
+         "v" + (pnt.y2-pnt.y1) + "h" + (pnt.x2-pnt.x1) + "v-" + (pnt.y2-pnt.y1) + "z";
 
-         pnt.yy1 = Math.round(pmain.gry(pnt.meany+3*pnt.rmsy));
-         pnt.yy2 = Math.round(pmain.gry(pnt.meany-3*pnt.rmsy));
+         pnt.yy1 = Math.round(pmain.gry(pnt.whiskerp));
+         pnt.yy2 = Math.round(pmain.gry(pnt.whiskerm));
 
          // upper part
          bars += "M" + center + "," + pnt.y1 + "v" + (pnt.yy1-pnt.y1);
@@ -3639,8 +3659,13 @@
          bars += "M" + center + "," + pnt.y2 + "v" + (pnt.yy2-pnt.y2);
          bars += "M" + pnt.x1 + "," + pnt.yy2 + "h" + (pnt.x2-pnt.x1);
 
-         markers += this.markeratt.create(center, pnt.yy1 - 10);
-         markers += this.markeratt.create(center, pnt.yy2 + 10);
+//       console.log('Whisker-: '+ pnt.whiskerm + ' Whisker+:' + pnt.whiskerp);
+         //estimate outliers
+         for (j = 0; j < this.nbinsy; ++j) {
+            cont = histo.getBinContent(i+1,j+1);
+            if (cont > 0 && this.GetBinY(j + 0.5) < pnt.whiskerm) markers += this.markeratt.create(center, this.GetBinY(j + 0.5));
+            if (cont > 0 && this.GetBinY(j + 0.5) > pnt.whiskerp) markers += this.markeratt.create(center, this.GetBinY(j + 0.5));
+         }
 
          handle.candle.push(pnt); // keep point for the tooltip
       }
@@ -3794,19 +3819,19 @@
    }
 
    JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
-      var lines = [];
+      var lines = [], pmain = this.main_painter();
 
       lines.push(this.GetTipName());
 
       if (this.x_kind == 'labels')
-         lines.push("x = " + this.AxisAsText("x", this.GetBinX(i)));
+         lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(i)));
       else
-         lines.push("x = [" + this.AxisAsText("x", this.GetBinX(i)) + ", " + this.AxisAsText("x", this.GetBinX(i+1)) + ")");
+         lines.push("x = [" + pmain.AxisAsText("x", this.GetBinX(i)) + ", " + pmain.AxisAsText("x", this.GetBinX(i+1)) + ")");
 
       if (this.y_kind == 'labels')
-         lines.push("y = " + this.AxisAsText("y", this.GetBinY(j)));
+         lines.push("y = " + pmain.AxisAsText("y", this.GetBinY(j)));
       else
-         lines.push("y = [" + this.AxisAsText("y", this.GetBinY(j)) + ", " + this.AxisAsText("y", this.GetBinY(j+1)) + ")");
+         lines.push("y = [" + pmain.AxisAsText("y", this.GetBinY(j)) + ", " + pmain.AxisAsText("y", this.GetBinY(j+1)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 
@@ -3828,8 +3853,8 @@
       // lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
 
       lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.StatFormat))
-      lines.push('rms y = ' + JSROOT.FFormat(p.rmsy, JSROOT.gStyle.StatFormat))
-      lines.push('any other info');
+      lines.push('m25 = ' + JSROOT.FFormat(p.m25y, JSROOT.gStyle.StatFormat))
+      lines.push('p25 = ' + JSROOT.FFormat(p.p25y, JSROOT.gStyle.StatFormat))
 
       return lines;
    }
@@ -3885,7 +3910,7 @@
 
          if (this.IsUserTooltipCallback() && res.changed) {
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
-                                      bin: i+1, cont: p.meany, binx: i+1, biny: 1,
+                                      bin: i+1, cont: p.median, binx: i+1, biny: 1,
                                       grx: pnt.x, gry: pnt.y });
          }
 

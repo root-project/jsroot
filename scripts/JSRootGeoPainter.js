@@ -307,14 +307,13 @@
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
-         outerRadius1 = shape.fRmax2 * (1 - 0.001*(Math.random() - 0.5));
-         innerRadius1 = shape.fRmin2 * (1 - 0.001*(Math.random() - 0.5));
-         outerRadius2 = shape.fRmax1 * (1 - 0.001*(Math.random() - 0.5));
-         innerRadius2 = shape.fRmin1 * (1 - 0.001*(Math.random() - 0.5));
+         outerRadius1 = shape.fRmax2;
+         innerRadius1 = shape.fRmin2;
+         outerRadius2 = shape.fRmax1;
+         innerRadius2 = shape.fRmin1;
       } else {
-         // Random noise added to reduce z-buffer artifacts 
-         outerRadius1 = outerRadius2 = shape.fRmax * (1 - 0.001*(Math.random() - 0.5));
-         innerRadius1 = innerRadius2 = shape.fRmin * (1 - 0.001*(Math.random() - 0.5));
+         outerRadius1 = outerRadius2 = shape.fRmax;
+         innerRadius1 = innerRadius2 = shape.fRmin;
       }
 
       var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
@@ -944,7 +943,7 @@
             rotation_matrix = matrix.fRotation.fRotationMatrix;
       }
       else if (matrix._typename !== 'TGeoIdentity') {
-      //   console.log('unsupported matrix ' + matrix._typename);
+         console.log('unsupported matrix ' + matrix._typename);
       }
 
       if ((translation_matrix === null) && (rotation_matrix === null)) return null;
@@ -1247,15 +1246,8 @@
                   if ('name' in p) name = p.name+'/'+name;
                   p = p.parent;
                }
-               if (this._selectedVolume !== null && this._selectedVolume !== undefined) {
-                  this._selectedVolume.color = this._selectedVolume.color;
-               } else {
-                  this._selectedVolume = {};
-               }
-               this._selectedVolume.color = INTERSECTED.material.color;
-               INTERSECTED.material.color = 0xffffff;
-                console.log(INTERSECTED);
-            //    console.log('intersect ' + name);
+
+               // console.log('intersect ' + name);
             }
          } else {
             // INTERSECTED = null;
@@ -1410,7 +1402,7 @@
                             _sin,  _cos, 0,  0,
                                0,     0, 1,  0,
                                0,     0, 0,  1);
-         } else if (this.options._debug) {
+         } else {
             console.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
       }
@@ -1439,19 +1431,10 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         if (this._shiny || !this._webgl) {
-            prop.material = new THREE.MeshPhongMaterial( { shininess: 40, transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
-                              opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
-                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
-         } else {
-            prop.material = new THREE.MeshBasicMaterial( { transparent: true/*_transparent*/, depthTest: true, depthWrite: true,
-                              opacity: this._globalOpacity*this._globalOpacity /*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist)],
-                              side: THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0. } );
-         }
-
-
       }
 
       return prop;
@@ -1470,8 +1453,8 @@
             _opacity = node.fRGBA[3];
          }
          prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-         prop.material = new THREE.MeshPhongMaterial( { shininess: 95, transparent: true/*_transparent*/, depthTest: false,
-                          opacity: 0.2/*_opacity*/, wireframe: false, color: prop.fillcolor, clippingPlanes: [new THREE.Plane()],
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                           overdraw: 0. } );
       }
@@ -1535,14 +1518,13 @@
          arg.node._visible = false;
 
       if (arg.node._visible) {
-      	 this._drawcnt++; 
          if (typeof prop.shape._geom === 'undefined') {
             prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
             this.accountGeom(prop.shape._geom, prop.shape._typename);
          }
 
          geom = prop.shape._geom;
-     /*
+
       } else {
          if (this._dummy_material === undefined)
             this._dummy_material =
@@ -1552,7 +1534,7 @@
 
          prop.material = this._dummy_material;
       }
-	*/
+
       var has_childs = (chlds !== null) && (chlds.length > 0);
       var work_around = false;
 
@@ -1610,14 +1592,11 @@
       }
 
       if (this.options._bound && (arg.node._visible || this.options._full)) {
-      	
          var boxHelper = new THREE.BoxHelper( mesh );
          arg.toplevel.add( boxHelper );
       }
 
       arg.mesh = mesh;
-
-  	}
 
       if ((chlds === null) || (chlds.length == 0)) {
          // do not draw childs
@@ -1697,10 +1676,8 @@
             console.log('only one level');
          }
          */
-         //marker
-         var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
-         var vol = shape.fDX * shape.fDY * shape.fDZ;
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > 40000.0 && min > 35.0 ) {
+
+         if (vis && !('_visible' in obj) && (shape!==null)) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1793,139 +1770,25 @@
       this._scene_width = w;
       this._scene_height = h;
 
-      this._selectedVolume = null;
-
-      this._enableSSAO = false;
-      this._clipEnabled = false;
-      this._clipPlaneDist = 5.0;
-      this._globalOpacity = 0.35;
-      this._depthTest = true;
-      this._shiny = false;
-      this._nFactor = 35.0;
-      this._fFactor = 50.0;
-      this._volumesBySize = {};
-
-      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
+      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
 
       this._renderer = webgl ?
-                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: false,
+                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
                                                   preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
-      this._renderer.localClippingEnabled = false;
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
-      var pointLight = new THREE.PointLight(0xdfdfdf);
+      var pointLight = new THREE.PointLight(0xefefef);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
-      var pointLight2 = new THREE.PointLight(0xbcbcbc);
-      this._scene.add(pointLight2);
-      pointLight2.position.set(0,6000,0);
       this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       this._scene.add( this._camera );
 
       this._toplevel = new THREE.Object3D();
 
       this._scene.add(this._toplevel);
-
-      //// SSAO Setup ////
-      if (webgl) {
-         var renderPass = new THREE.RenderPass( this._scene, this._camera );
-         // Setup depth pass
-         this._depthMaterial = new THREE.MeshDepthMaterial( { 
-            clippingPlanes: [ new THREE.Plane(new THREE.Vector3(1,0,0), this._clipPlaneDist) ], side: THREE.DoubleSide });
-         this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
-         this._depthMaterial.blending = THREE.NoBlending;
-         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
-         this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
-         // Setup SSAO pass
-         this._ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
-         this._ssaoPass.renderToScreen = true;
-         this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
-         this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
-     //    this._ssaoPass.uniforms[ 'cameraNear' ].value = this._overall_size/800;
-     //    this._ssaoPass.uniforms[ 'cameraFar' ].value = this._overall_size*100;
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
-         this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
-         this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
-         this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
-         // Add pass to effect composer
-         this._effectComposer = new THREE.EffectComposer( this._renderer );
-         this._effectComposer.addPass( renderPass );
-         this._effectComposer.addPass( this._ssaoPass );
-      }
-
-
-      /*
-      var axhelp = new THREE.AxisHelper();
-      this._scene.add(axhelp);
-
-      var box = new THREE.BoxGeometry(200,200,200);
-      box = new THREE.Mesh(box, new THREE.MeshBasicMaterial());
-      this._scene.add(box);
-      */
-
-      /*
-      this._visibleList = [];
-      this._toplevel.traverseVisible( function (currentChild) {
-            this._visibleList.push(currentChild);
-         });
-      */
-
-      this._datgui = new dat.GUI({width:500});
-
-   //   var updateDepthTest = this._datgui.add(this, '_depthTest');
-      var updateOpac = this._datgui.add(this, '_globalOpacity', 0.0, 1.0);
-      var updateClipEnabled = this._datgui.add(this, '_clipEnabled');
-      var updateClip = this._datgui.add(this, '_clipPlaneDist', -300, 1400);
-
-      var self = this;
-      updateOpac.onChange( function (value) {
-         self.updateGlobalOpacity(value);
-         self.Render3D();
-      });
-      /*
-      updateDepthTest.onChange( function (value) {
-
-         self._toplevel.traverseVisible( function (currentChild) {
-            if (currentChild.material) {
-               currentChild.material.depthTest = value;
-            }
-         });
-         self.Render3D();
-      });
-      */
-      updateClipEnabled.onChange( function (value) {
-         self._renderer.localClippingEnabled = value;
-         self.Render3D();
-      });
-
-      updateClip.onChange( function (value) {
-         self.updateClipping(value);
-         self.Render3D();
-      });
-
-      if (webgl) {
-         var updateSSAO = this._datgui.add(this, '_enableSSAO');
-         updateSSAO.onChange( function (value) {
-         self.Render3D();
-      });
-         /*
-         var updatefFactor = this._datgui.add(this, '_fFactor', 1, 100);
-         updatefFactor.onChange( function (value) {
-            self.adjustCameraPosition();
-            self.Render3D();
-      });
-         var updatenFactor = this._datgui.add(this, '_nFactor', 1, 100);
-         updatenFactor.onChange( function (value) {
-            self.adjustCameraPosition();
-            self.Render3D();
-      });
-      */
-      }
-
 
       this._overall_size = 10;
    }
@@ -1956,13 +1819,9 @@
           midz = (box.max.z + box.min.z)/2;
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
-      this._camera.near = this._overall_size / 200;
-      this._camera.far = this._overall_size * 6;
-      if (this._webgl) {
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
-      }
 
+      this._camera.near = this._overall_size / 500;
+      this._camera.far = this._overall_size * 500;
       this._camera.updateProjectionMatrix();
 
 //      if (this.options._yup)
@@ -1983,25 +1842,6 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
-   }
-
-   JSROOT.TGeoPainter.prototype.updateClipping = function( displacement ) {
-      if (this._webgl) {
-         this._depthMaterial.clippingPlanes[0].constant = displacement;
-      }
-      this._toplevel.traverseVisible( function (currentChild) {
-            if (currentChild.material) {
-               currentChild.material.clippingPlanes[0].constant = displacement;
-            }
-         });
-   }
-
-   JSROOT.TGeoPainter.prototype.updateGlobalOpacity = function( opacity ) {
-      this._toplevel.traverseVisible( function (currentChild) {
-         if (currentChild.material)  {
-            currentChild.material.opacity = opacity*opacity;
-         }
-      });
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -2132,7 +1972,7 @@
 
       while(true) {
          if (this.drawNode()) {
-         //   this._drawcnt++;
+            this._drawcnt++;
             log = "Creating meshes " + this._drawcnt;
          } else
             break;
@@ -2142,8 +1982,6 @@
          if (now - curr > 300) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
-            this.adjustCameraPosition();
-            this._renderer.render(this._scene, this._camera);
             return this;
          }
 
@@ -2173,17 +2011,7 @@
          var tm1 = new Date();
 
          // do rendering, most consuming time
-         if (this._enableSSAO) {
-            this._scene.overrideMaterial = this._depthMaterial;
-        //    this._renderer.logarithmicDepthBuffer = false;
-            this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
-            this._scene.overrideMaterial = null;
-            this._effectComposer.render();
-         } else {
-       //     this._renderer.logarithmicDepthBuffer = true;
-            this._renderer.render(this._scene, this._camera);
-         }
-         
+         this._renderer.render(this._scene, this._camera);
 
          var tm2 = new Date();
 
@@ -2217,7 +2045,6 @@
          JSROOT.draw(this.divid, axis); // it will include drawing of
       }
 
-      this.updateGlobalOpacity(1.0);
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
@@ -2301,8 +2128,6 @@
       this._camera.updateProjectionMatrix();
 
       this._renderer.setSize( this._scene_width, this._scene_height );
-      this._depthRenderTarget.setSize( this._scene_width * 2, this._scene_height *2);
-      this._effectComposer.setSize( this._scene_width*2, this._scene_height *2);
 
       this.Render3D();
 
@@ -2673,7 +2498,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2"});
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
