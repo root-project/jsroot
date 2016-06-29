@@ -2034,7 +2034,7 @@
 
       this._websocket = conn;
 
-      var pthis = this, sum1 = 0, sum2 = 0;
+      var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
 
       conn.onopen = function() {
          console.log('websocket initialized');
@@ -2056,6 +2056,8 @@
             if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
 
             conn.send('READY'); // send ready message back
+            // if (++cnt > 10) conn.close();
+            
          } else
          if (d.substr(0,4)=='MENU') {
             var lst = JSROOT.parse(d.substr(4));
@@ -3459,6 +3461,11 @@
       if (obj._typename === 'TPaveLabel') {
          pave.fLabel = obj.fLabel;
          return true;
+      } else
+      if (obj._typename === 'TPaveStats') {
+         pave.fOptStat = obj.fOptStat;
+         pave.fOptFit = obj.fOptFit;
+         return true;
       }
 
       return false;
@@ -3896,8 +3903,7 @@
    }
 
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
-
-      if ((obj == null) || !('fPrimitives' in obj)) return false;
+      if (!obj || !('fPrimitives' in obj)) return false;
 
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
@@ -3913,7 +3919,7 @@
       for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
          while (p < this.painters.length) {
             var pp = this.painters[p++];
-            if (!('_primitive' in pp)) continue;
+            if (!pp._primitive) continue;
             if (pp.UpdateObject(obj.fPrimitives.arr[n])) isany = true;
             break;
          }
@@ -5339,6 +5345,15 @@
       if (this.IsTProfile()) {
          histo.fBinEntries = obj.fBinEntries;
       }
+      
+      if (obj.fFunctions)
+         for (var n=0;n<obj.fFunctions.arr.length;++n) {
+            var func = obj.fFunctions.arr[n];
+            if ((func._typename == "TPaveStats") && (func.fName == 'stats')) {
+               var funcpainter = this.FindPainterFor(null,'stats');
+               if (funcpainter) funcpainter.UpdateObject(func);
+            }
+         }
 
       this.ScanContent();
 
