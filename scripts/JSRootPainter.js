@@ -5393,11 +5393,11 @@
             }
          }
 
-      this.ScanContent();
-      
       if (this.is_main_painter() && !this.zoom_changed_interactive)
          this.CheckPadRange();
 
+      this.ScanContent();
+      
       return true;
    }
 
@@ -6712,25 +6712,33 @@
       // from here we analyze object content
       // therefore code will be moved
 
-      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
-
-      var profile = this.IsTProfile();
-
       this.nbinsx = this.histo.fXaxis.fNbins;
       this.nbinsy = 0;
+      
+      this.CreateAxisFuncs(false);
+
+      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true,
+          left = this.GetSelectIndex("x","left"),
+          right = this.GetSelectIndex("x","right"),
+          profile = this.IsTProfile(), value, err;
 
       for (var i = 0; i < this.nbinsx; ++i) {
-         var value = this.histo.getBinContent(i + 1), err = 0;
+         value = this.histo.getBinContent(i + 1);
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
+         
+         if ((i<left) || (i>=right)) continue;
+         
          if (value > 0)
             if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
-         if (this.options.Error > 0) err = this.histo.getBinError(i + 1);
-         if (i == 0) {
-            hmin = value - err; hmax = value + err;
-         } else {
-            hmin = Math.min(hmin, value - err);
-            hmax = Math.max(hmax, value + err);
-         }
+         if (first) {
+            hmin = hmax = value;
+            first = false;;
+         } 
+
+         err = (this.options.Error > 0) ? this.histo.getBinError(i + 1) : 0;
+
+         hmin = Math.min(hmin, value - err);
+         hmax = Math.max(hmax, value + err);
       }
 
       // account overflow/underflow bins
@@ -6741,8 +6749,6 @@
 
       this.stat_entries = hsum;
       if (this.histo.fEntries>1) this.stat_entries = this.histo.fEntries;
-
-      this.CreateAxisFuncs(false);
 
       this.hmin = hmin;
       this.hmax = hmax;
@@ -6767,7 +6773,7 @@
          if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
          this.ymax = hmax + dy;
       }
-
+      
       hmin = hmax = null;
       var set_zoom = false;
       if (this.histo.fMinimum != -1111) {
