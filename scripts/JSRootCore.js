@@ -1398,6 +1398,14 @@
             return (eprim/Math.sqrt(neff));
          };
       }
+      
+      if (typename == "TAxis") {
+         m.GetBinLowEdge = function(bin) {
+            if (this.fNbins <= 0) return 0;
+            if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
+            return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
+         }
+      }
 
       JSROOT.methodsCache[typename] = m;
       return m;

@@ -3922,6 +3922,11 @@
       this.pad.fLogx  = obj.fLogx;
       this.pad.fLogy  = obj.fLogy;
       this.pad.fLogz  = obj.fLogz;
+      
+      this.pad.fUxmin = obj.fUxmin;
+      this.pad.fUxmax = obj.fUxmax;
+      this.pad.fUymin = obj.fUymin;
+      this.pad.fUymax = obj.fUymax;
 
       if (this.iscan) this.CheckColors(obj);
 
@@ -5264,25 +5269,12 @@
       alert("HistPainter.prototype.ScanContent not implemented");
    }
 
-   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
-
-      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
-
-      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
-      var main = this.main_painter();
-      if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
-
-      if (this.main_painter() !== this) return;
-
+   JSROOT.THistPainter.prototype.CheckPadRange = function() {
       var pad = this.root_pad();
 
-      this.zoom_xmin = this.zoom_xmax = 0;
-      this.zoom_ymin = this.zoom_ymax = 0;
-      this.zoom_zmin = this.zoom_zmax = 0;
+      if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
 
-      if ((pad==null) || !('fUxmin' in pad) || this.create_canvas) return;
-
-      var min = pad.fUxmin, max = pad.fUxmax;
+      var min = pad.fUxmin, max = pad.fUxmax, xaxis = this.histo.fXaxis;
 
       // first check that non-default values are there
       if ((this.Dimension() < 3) && ((min !== 0) || (max !== 1))) {
@@ -5290,13 +5282,23 @@
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
          }
-
-         if (min !== this.histo.fXaxis.fXmin || max !== this.histo.fXaxis.fXmax)
-            if (min >= this.histo.fXaxis.fXmin && max <= this.histo.fXaxis.fXmax) {
+         
+         if (min !== xaxis.fXmin || max !== xaxis.fXmax)
+            if (min >= xaxis.fXmin && max <= xaxis.fXmax) {
                // set zoom values if only inside range
                this.zoom_xmin = min;
                this.zoom_xmax = max;
             }
+      }
+      
+      // apply selected user range if range not selected via pad
+      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((this.zoom_xmin === this.zoom_xmax) && (xaxis.fFirst !== xaxis.fLast) &&
+             ((xaxis.fFirst > 1) || (xaxis.fLast <= xaxis.fNbins))) {
+               this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
+               this.zoom_xmax = xaxis.fLast <= xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
+         }
       }
 
       min = pad.fUymin; max = pad.fUymax;
@@ -5314,6 +5316,24 @@
                this.zoom_ymax = max;
             }
       }
+   }
+   
+   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
+
+      var main = this.main_painter();
+
+      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
+
+      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+      
+      if (main) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
+      if (main === this)  {
+         this.zoom_xmin = this.zoom_xmax = 0;
+         this.zoom_ymin = this.zoom_ymax = 0;
+         this.zoom_zmin = this.zoom_zmax = 0;
+         this.CheckPadRange();
+      }
+
    }
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
@@ -5374,6 +5394,9 @@
          }
 
       this.ScanContent();
+      
+      if (this.is_main_painter() && !this.zoom_changed_interactive)
+         this.CheckPadRange();
 
       return true;
    }
@@ -6765,17 +6788,6 @@
       if (set_zoom) {
          this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
          this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
-      }
-
-      // apply selected user range if no other range selection was done
-      if (this.is_main_painter() && this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         this.histo.fXaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
-        if ((this.zoom_xmin === this.zoom_xmax) && !this.zoom_changed_interactive &&   
-            (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
-            ((this.histo.fXaxis.fFirst > 1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
-            this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
-            this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
-        }
       }
 
       // If no any draw options specified, do not try draw histogram
