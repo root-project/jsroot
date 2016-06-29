@@ -1794,6 +1794,7 @@
                   callback.obj.fX2NDC = (newx + newwidth)  / pthis.pad_width();
                   callback.obj.fY1NDC = 1 - (newy + newheight) / pthis.pad_height();
                   callback.obj.fY2NDC = 1 - newy / pthis.pad_height();
+                  callback.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
                }
                if ('redraw' in callback) callback.redraw();
             }
@@ -3453,6 +3454,15 @@
       if (!this.MatchObjectType(obj)) return false;
 
       var pave = this.GetObject();
+      
+      if (!('modified_NDC' in pave)) {
+         // if position was not modified interactively, update from source object
+         pave.fInit = obj.fInit;
+         pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
+         pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
+         pave.fX1NDC = obj.fX1NDC; pave.fX2NDC = obj.fX2NDC;
+         pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
+      }
 
       if (obj._typename === 'TPaveText') {
          pave.fLines = JSROOT.clone(obj.fLines);
