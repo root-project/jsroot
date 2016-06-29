@@ -5346,10 +5346,18 @@
       histo.fMinimum = obj.fMinimum;
       histo.fMaximum = obj.fMaximum;
       histo.fXaxis.fNbins = obj.fXaxis.fNbins;
-      histo.fXaxis.fXmin = obj.fXaxis.fXmin;
-      histo.fXaxis.fXmax = obj.fXaxis.fXmax;
-      histo.fYaxis.fXmin = obj.fYaxis.fXmin;
-      histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+      if (!this.main_painter().zoom_changed_interactive) {
+         histo.fXaxis.fXmin = obj.fXaxis.fXmin;
+         histo.fXaxis.fXmax = obj.fXaxis.fXmax;
+         histo.fXaxis.fFirst = obj.fXaxis.fFirst;
+         histo.fXaxis.fLast = obj.fXaxis.fLast;
+         histo.fXaxis.fBits = obj.fXaxis.fBits; 
+         histo.fYaxis.fXmin = obj.fYaxis.fXmin;
+         histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+         histo.fYaxis.fFirst = obj.fYaxis.fFirst;
+         histo.fYaxis.fLast = obj.fYaxis.fLast;
+         histo.fYaxis.fBits = obj.fYaxis.fBits; 
+      }
       histo.fSumw2 = obj.fSumw2;
 
       if (this.IsTProfile()) {
@@ -5816,7 +5824,7 @@
 
       if (size == "left") {
          if (indx < 0) indx = 0;
-         if (taxis && taxis.fFirst>1 && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
+         if (taxis && (taxis.fFirst>1) && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
       } else {
          if (indx > nbin) indx = nbin;
          if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
@@ -6039,6 +6047,8 @@
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
+      if (dox || doy || dox) this.zoom_changed_interactive = true;
+      
       return this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
                        doz ? 0 : undefined, doz ? 0 : undefined);
@@ -6171,7 +6181,10 @@
 
       this.clearInteractiveElements();
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) {
+         this.zoom_changed_interactive = true;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      }
    }
 
    JSROOT.THistPainter.prototype.startTouchZoom = function() {
@@ -6339,7 +6352,10 @@
       this.clearInteractiveElements();
       this.last_touch = new Date(0);
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) {
+         this.zoom_changed_interactive = true;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      }
 
       d3.event.stopPropagation();
    }
@@ -6413,6 +6429,7 @@
       }
 
       this.Zoom(xmin,xmax,ymin,ymax);
+      if (xmin || xmax || ymin || ymax) this.zoom_changed_interactive = true;
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
@@ -6751,12 +6768,14 @@
       }
 
       // apply selected user range if no other range selection was done
-      if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
-          this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange) &&
-          (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
-          ((this.histo.fXaxis.fFirst>1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
-         this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
-         this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
+      if (this.is_main_painter() && this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         this.histo.fXaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+        if ((this.zoom_xmin === this.zoom_xmax) && !this.zoom_changed_interactive &&   
+            (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
+            ((this.histo.fXaxis.fFirst > 1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
+            this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
+            this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
+        }
       }
 
       // If no any draw options specified, do not try draw histogram
