@@ -943,7 +943,7 @@
             rotation_matrix = matrix.fRotation.fRotationMatrix;
       }
       else if (matrix._typename !== 'TGeoIdentity') {
-         console.log('unsupported matrix ' + matrix._typename);
+      //   console.log('unsupported matrix ' + matrix._typename);
       }
 
       if ((translation_matrix === null) && (rotation_matrix === null)) return null;
@@ -1403,7 +1403,7 @@
                                0,     0, 1,  0,
                                0,     0, 0,  1);
          } else {
-            console.warn('Unsupported pattern type ' + node.fFinder._typename);
+         //   console.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
       }
 
@@ -1482,6 +1482,10 @@
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
 
+      // Aborting here can speed up the drawing a lot but sometimes 
+      // cuts off too many children nodes
+      //if (!arg.node._visible) { this._stack.pop(); return true; }
+
       var kind = this.NodeKind(arg.node);
       if (kind < 0) return false;
       var chlds = null;
@@ -1551,52 +1555,57 @@
       }
 
       if (geom === null) geom = new THREE.Geometry();
+      
+      // Avoid creating meshes if not visible, and only measure "drawcnt" for these
+      if (arg.node._visible) {
+         this._drawcnt++;
 
-      var mesh = new THREE.Mesh( geom, prop.material );
+         var mesh = new THREE.Mesh( geom, prop.material );
 
-      mesh.applyMatrix(prop.matrix);
+         mesh.applyMatrix(prop.matrix);
 
-      this.accountMesh(mesh);
+         this.accountMesh(mesh);
 
-      mesh.name = arg.node.fName;
-
-      // add the mesh to the scene
-      arg.toplevel.add(mesh);
-
-      mesh.updateMatrixWorld();
-
-      if (work_around) {
-         JSROOT.console('perform workaroud for flipping mesh with childs');
-
-         prop.matrix.identity(); // set to 1
-
-         geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
-
-         var dmesh = new THREE.Mesh( geom, prop.material );
-
-         dmesh.applyMatrix(prop.matrix);
-
-         dmesh.name = "..";
+         mesh.name = arg.node.fName;
 
          // add the mesh to the scene
-         mesh.add(dmesh);
+         arg.toplevel.add(mesh);
 
-         dmesh.updateMatrixWorld();
+         mesh.updateMatrixWorld();
+
+         if (work_around) {
+            JSROOT.console('perform workaroud for flipping mesh with childs');
+
+            prop.matrix.identity(); // set to 1
+
+            geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+
+            var dmesh = new THREE.Mesh( geom, prop.material );
+
+            dmesh.applyMatrix(prop.matrix);
+
+            dmesh.name = "..";
+
+            // add the mesh to the scene
+            mesh.add(dmesh);
+
+            dmesh.updateMatrixWorld();
+         }
+
+         if (this.options._debug && (arg.node._visible || this.options._full)) {
+            var helper = new THREE.WireframeHelper(mesh);
+            helper.material.color.set(prop.fillcolor);
+            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
+            arg.toplevel.add(helper);
+         }
+
+         if (this.options._bound && (arg.node._visible || this.options._full)) {
+            var boxHelper = new THREE.BoxHelper( mesh );
+            arg.toplevel.add( boxHelper );
+         }
+
+         arg.mesh = mesh;
       }
-
-      if (this.options._debug && (arg.node._visible || this.options._full)) {
-         var helper = new THREE.WireframeHelper(mesh);
-         helper.material.color.set(prop.fillcolor);
-         helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-         arg.toplevel.add(helper);
-      }
-
-      if (this.options._bound && (arg.node._visible || this.options._full)) {
-         var boxHelper = new THREE.BoxHelper( mesh );
-         arg.toplevel.add( boxHelper );
-      }
-
-      arg.mesh = mesh;
 
       if ((chlds === null) || (chlds.length == 0)) {
          // do not draw childs
@@ -1611,6 +1620,20 @@
    JSROOT.TGeoPainter.prototype.NodeKind = function(obj) {
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
+   }
+
+   JSROOT.TGeoPainter.prototype.createVolumeList = function(obj) {
+   // Traverse the hierarchy to create a list of the sizes of all volumes
+
+  //    var kind = this.NodeKind(obj);
+      if ((obj.fVolume === undefined) || (obj.fVolume === null)) return;
+      var chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : [];
+      var shape = obj.fVolume.fShape;
+      var vol = shape.fDX * shape.fDY * shape.fDZ;
+      this._sizeList.push(vol);
+      for (var i = 0; i < chlds.length; ++i ) {
+         this.createVolumeList(chlds[i]);
+      }
    }
 
    JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
@@ -1677,7 +1700,11 @@
          }
          */
 
-         if (vis && !('_visible' in obj) && (shape!==null)) {
+         
+      //   var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
+         var vol = shape.fDX * shape.fDY * shape.fDZ;
+         // Only set nodes above the minVolume size to visible 
+         if (vis && !('_visible' in obj) && (shape!==null) && vol > this._minVolume) {
             obj._visible = true;
             arg.viscnt++;
          }
@@ -1914,6 +1941,18 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
+      this._volumeTarget = 2000;
+      this._sizeList = [];
+      this.createVolumeList(this.GetObject());
+      this._sizeList.sort(function( a, b ) { return a-b; } );
+      // using the sorted list of volumes, create a cutoff that will
+      // ensure less than the target number of volumes are drawn
+      this._minVolume = 0;
+      if (this._sizeList.length > this._volumeTarget) {
+         this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
+      }
+      //console.log(this._minVolume);
+
       if (opt === 'count')
          return this.drawCount();
 
@@ -1974,7 +2013,6 @@
 
       while(true) {
          if (this.drawNode()) {
-            this._drawcnt++;
             log = "Creating meshes " + this._drawcnt;
          } else
             break;
