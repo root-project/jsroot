@@ -1481,6 +1481,9 @@
 
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
+
+      // Aborting here can speed up the drawing a lot but sometimes 
+      // cuts off too many children nodes
       //if (!arg.node._visible) { this._stack.pop(); return true; }
 
       var kind = this.NodeKind(arg.node);
@@ -1553,6 +1556,7 @@
 
       if (geom === null) geom = new THREE.Geometry();
       
+      // Avoid creating meshes if not visible, and only measure "drawcnt" for these
       if (arg.node._visible) {
          this._drawcnt++;
 
@@ -1619,8 +1623,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.createVolumeList = function(obj) {
-  //    var kind = this.NodeKind(obj);
+   // Traverse the hierarchy to create a list of the sizes of all volumes
 
+  //    var kind = this.NodeKind(obj);
       if ((obj.fVolume === undefined) || (obj.fVolume === null)) return;
       var chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : [];
       var shape = obj.fVolume.fShape;
@@ -1940,7 +1945,8 @@
       this._sizeList = [];
       this.createVolumeList(this.GetObject());
       this._sizeList.sort(function( a, b ) { return a-b; } );
-
+      // using the sorted list of volumes, create a cutoff that will
+      // ensure less than the target number of volumes are drawn
       this._minVolume = 0;
       if (this._sizeList.length > this._volumeTarget) {
          this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
