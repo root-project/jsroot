@@ -1555,6 +1555,7 @@
       
       if (arg.node._visible) {
          this._drawcnt++;
+
          var mesh = new THREE.Mesh( geom, prop.material );
 
          mesh.applyMatrix(prop.matrix);
@@ -1622,7 +1623,7 @@
 
       if ((obj.fVolume === undefined) || (obj.fVolume === null)) return;
       var chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : [];
-      shape = obj.fVolume.fShape;
+      var shape = obj.fVolume.fShape;
       var vol = shape.fDX * shape.fDY * shape.fDZ;
       this._sizeList.push(vol);
       for (var i = 0; i < chlds.length; ++i ) {
@@ -1697,15 +1698,6 @@
          
          var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
-         /*
-         if (!(vol in this._sizeList)) {
-            this._sizeList[vol] = [obj];
-         } else {
-            this._sizeList[vol].push(obj);
-         }
-         */
-    //     this._sizeList.push(vol);
-    //     obj.boundingVol = vol;
 
          if (vis && !('_visible' in obj) && (shape!==null) && vol > this._minVolume) {
             obj._visible = true;
