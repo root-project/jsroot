@@ -89,7 +89,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 29/06/2016";
+   JSROOT.version = "dev 30/06/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1398,7 +1398,7 @@
             return (eprim/Math.sqrt(neff));
          };
       }
-      
+
       if (typename == "TAxis") {
          m.GetBinLowEdge = function(bin) {
             if (this.fNbins <= 0) return 0;
