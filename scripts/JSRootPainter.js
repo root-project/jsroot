@@ -2559,8 +2559,8 @@
             JSROOT.extend(this, {
                fX1NDC: root_pad.fLeftMargin,
                fX2NDC: 1 - root_pad.fRightMargin,
-               fY1NDC: root_pad.fTopMargin,
-               fY2NDC: 1 - root_pad.fBottomMargin
+               fY1NDC: root_pad.fBottomMargin,
+               fY2NDC: 1 - root_pad.fTopMargin
             });
       }
 
@@ -2569,23 +2569,6 @@
          bordersize = tframe.fBorderSize;
          lineatt = JSROOT.Painter.createAttLine(tframe);
          framecolor = this.createAttFill(tframe);
-         if (!has_ndc && (root_pad !== null)) {
-            var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1),
-                yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1),
-                px1 = (tframe.fX1 - root_pad.fX1) * xspan,
-                py1 = (tframe.fY1 - root_pad.fY1) * yspan,
-                px2 = (tframe.fX2 - root_pad.fX1) * xspan,
-                py2 = (tframe.fY2 - root_pad.fY1) * yspan,
-                pxl, pxt, pyl, pyt;
-            if (px1 < px2) { pxl = px1; pxt = px2; }
-                      else { pxl = px2; pxt = px1; }
-            if (py1 < py2) { pyl = py1; pyt = py2; }
-                      else { pyl = py2; pyt = py1; }
-            this.fX1NDC = pxl / width;
-            this.fY1NDC = pyl / height;
-            this.fX2NDC = pxt / width;
-            this.fY2NDC = pyt / height;
-         }
       } else {
          if (root_pad)
             framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);

@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 4.5.x
+1. Fix - position of TFrame in canvas/pad
+
+
 ## Changes in 4.5.1
 1. Fix - correctly handle ^2..^9 in TFormula equations
 2. Fix - support TMath::Gaus in TFormula 
