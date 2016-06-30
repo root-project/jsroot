@@ -5270,6 +5270,11 @@
    }
 
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
+      
+      this.zoom_xmin = this.zoom_xmax = 0;
+      this.zoom_ymin = this.zoom_ymax = 0;
+      this.zoom_zmin = this.zoom_zmax = 0;
+      
       var pad = this.root_pad();
 
       if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
@@ -5295,9 +5300,9 @@
       if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((this.zoom_xmin === this.zoom_xmax) && (xaxis.fFirst !== xaxis.fLast) &&
-             ((xaxis.fFirst > 1) || (xaxis.fLast <= xaxis.fNbins))) {
+             ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
                this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
-               this.zoom_xmax = xaxis.fLast <= xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
+               this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
          }
       }
 
@@ -5327,12 +5332,8 @@
       this.lineatt = JSROOT.Painter.createAttLine(this.histo);
       
       if (main) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
-      if (main === this)  {
-         this.zoom_xmin = this.zoom_xmax = 0;
-         this.zoom_ymin = this.zoom_ymax = 0;
-         this.zoom_zmin = this.zoom_zmax = 0;
+      if (main === this) 
          this.CheckPadRange();
-      }
 
    }
 
