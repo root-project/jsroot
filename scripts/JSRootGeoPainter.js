@@ -2000,7 +2000,7 @@
          while ((cnt<maxlimit) && (indx < this._data.map.length))
             cnt += this._data.map[indx++]._refcnt;
 
-         this._data.minVolume = this._data.map[indx]._volume;
+         this._data.minVolume = this._data.map[indx-1]._volume;
 
          console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
 
@@ -2038,7 +2038,7 @@
 
          var now = new Date().getTime();
 
-         if (now - curr > 300) {
+         if (now - curr > 2000) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
             this.adjustCameraPosition();
