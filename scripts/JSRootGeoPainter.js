@@ -1655,6 +1655,7 @@
                   delete this.map[n]._numchld;
                   delete this.map[n]._numvischld;
                   delete this.map[n]._visible;
+                  delete this.map[n]._volume;
                }
                this.map = [];
             };
@@ -1698,6 +1699,9 @@
          // Only set nodes above the minVolume size to visible
          if (vis && !('_visible' in obj) && (shape!==null) && (vol > this._minVolume)) {
             obj._visible = true;
+            obj._volume = vol;
+         } else {
+            obj._volume = 0;
          }
 
          if (chlds !== null)
@@ -1938,7 +1942,7 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-      this._volumeTarget = 2000;
+/*      this._volumeTarget = 2000;
       this._sizeList = [];
       var t1 = new Date().getTime();
       this.createVolumeList(this.GetObject());
@@ -1952,6 +1956,8 @@
          this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
       }
       console.log('minVolume', this._minVolume, 'len', this._sizeList.length, 't2-t1', t2-t1, 't3-t2', t3-t2);
+*/
+      this._minVolume = 0;
 
       if (opt === 'count')
          return this.drawCount();
@@ -1978,11 +1984,26 @@
 
       console.log('numvis', total.vis, 'map', this._data.map.length);
 
-      var maxlimit = this._webgl ? 1e5 : 5e3;
+      var maxlimit = this._webgl ? 10000 : 2000; // maximal number of allowed nodes to be displayed at once
 
-      if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
-         console.log('selected number of volumes ' + total + ' cannot be disaplyed');
-         return this.drawCount();
+      if (total.vis > maxlimit)  {
+         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed');
+
+         // sort in reverse order (big first)
+         this._data.map.sort(function(a,b) { return b._volume - a._volume; })
+
+         var cnt = 0, indx = 0;
+         while ((cnt<maxlimit) && (indx < this._data.map.length))
+            cnt += this._data.map[indx++]._refcnt;
+
+         this._minVolume = this._data.map[indx]._volume;
+
+         console.log('Select ', cnt, 'nodes, minimal volume', this._minVolume);
+
+         this._data.clear();
+         total = this.CountGeoVolumes(this.GetObject(), this._data);
+
+         console.log('numvis', total.vis, 'map', this._data.map.length);
       }
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
