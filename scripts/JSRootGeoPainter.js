@@ -1945,7 +1945,7 @@
       if (this._sizeList.length > this._volumeTarget) {
          this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
       }
-      console.log(this._minVolume);
+      //console.log(this._minVolume);
 
       if (opt === 'count')
          return this.drawCount();
@@ -2082,8 +2082,6 @@
       }
 
       this._scene.overrideMaterial = null;
-
-      console.log(this._sizeList);
 
       this.Render3D();
 
