@@ -2660,13 +2660,9 @@
       var width = this.pad_width(),
           height = this.pad_height(),
           tframe = this.GetObject(),
-          root_pad = this.root_pad(),
-          framecolor = this.createAttFill(null, 1001, 0),
-          lineatt = JSROOT.Painter.createAttLine('black'),
-          bordermode = 0, bordersize = 0,
-          has_ndc = ('fX1NDC' in this);
+          root_pad = this.root_pad();
 
-      if (!has_ndc) {
+      if (!('fX1NDC' in this) || !this.modified_NDC) {
          if (root_pad === null)
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          else
@@ -2678,27 +2674,26 @@
             });
       }
 
-      if (tframe !== null) {
-         bordermode = tframe.fBorderMode;
-         bordersize = tframe.fBorderSize;
-         lineatt = JSROOT.Painter.createAttLine(tframe);
-         framecolor = this.createAttFill(tframe);
-      } else {
+      if (this.fillatt === undefined) {
+         if (tframe)
+            this.fillatt = this.createAttFill(tframe);
+         else
          if (root_pad)
-            framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
+            this.fillatt = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
+         else
+            this.fillatt = this.createAttFill(null, 1001, 0);
+
+         // force white color for the frame
+         if (this.fillatt.color == 'none') this.fillatt.color = 'white';
       }
 
-      // force white color for the frame
-      if (framecolor.color == 'none') framecolor.color = 'white';
-
-      if (this.fillatt === undefined) this.fillatt = framecolor;
-      if (this.lineatt === undefined) this.lineatt = lineatt;
+      if (this.lineatt === undefined)
+         this.lineatt = JSROOT.Painter.createAttLine(tframe ? tframe : 'black');
 
       var lm = Math.round(width * this.fX1NDC),
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC));
-
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.svg_frame();
@@ -3910,6 +3905,11 @@
       this.pad.fUxmax = obj.fUxmax;
       this.pad.fUymin = obj.fUymin;
       this.pad.fUymax = obj.fUymax;
+
+      this.pad.fLeftMargin   = obj.fLeftMargin;
+      this.pad.fRightMargin  = obj.fRightMargin;
+      this.pad.fBottomMargin = obj.fBottomMargin
+      this.pad.fTopMargin    = obj.fTopMargin;
 
       if (this.iscan) this.CheckColors(obj);
 
