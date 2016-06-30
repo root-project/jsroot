@@ -2058,7 +2058,7 @@
 
             conn.send('READY'); // send ready message back
             // if (++cnt > 10) conn.close();
-            
+
          } else
          if (d.substr(0,4)=='MENU') {
             var lst = JSROOT.parse(d.substr(4));
@@ -2673,8 +2673,8 @@
             JSROOT.extend(this, {
                fX1NDC: root_pad.fLeftMargin,
                fX2NDC: 1 - root_pad.fRightMargin,
-               fY1NDC: root_pad.fTopMargin,
-               fY2NDC: 1 - root_pad.fBottomMargin
+               fY1NDC: root_pad.fBottomMargin,
+               fY2NDC: 1 - root_pad.fTopMargin
             });
       }
 
@@ -2683,23 +2683,6 @@
          bordersize = tframe.fBorderSize;
          lineatt = JSROOT.Painter.createAttLine(tframe);
          framecolor = this.createAttFill(tframe);
-         if (!has_ndc && (root_pad !== null)) {
-            var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1),
-                yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1),
-                px1 = (tframe.fX1 - root_pad.fX1) * xspan,
-                py1 = (tframe.fY1 - root_pad.fY1) * yspan,
-                px2 = (tframe.fX2 - root_pad.fX1) * xspan,
-                py2 = (tframe.fY2 - root_pad.fY1) * yspan,
-                pxl, pxt, pyl, pyt;
-            if (px1 < px2) { pxl = px1; pxt = px2; }
-                      else { pxl = px2; pxt = px1; }
-            if (py1 < py2) { pyl = py1; pyt = py2; }
-                      else { pyl = py2; pyt = py1; }
-            this.fX1NDC = pxl / width;
-            this.fY1NDC = pyl / height;
-            this.fX2NDC = pxt / width;
-            this.fY2NDC = pyt / height;
-         }
       } else {
          if (root_pad)
             framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
@@ -3454,7 +3437,7 @@
       if (!this.MatchObjectType(obj)) return false;
 
       var pave = this.GetObject();
-      
+
       if (!('modified_NDC' in pave)) {
          // if position was not modified interactively, update from source object
          pave.fInit = obj.fInit;
@@ -3922,7 +3905,7 @@
       this.pad.fLogx  = obj.fLogx;
       this.pad.fLogy  = obj.fLogy;
       this.pad.fLogz  = obj.fLogz;
-      
+
       this.pad.fUxmin = obj.fUxmin;
       this.pad.fUxmax = obj.fUxmax;
       this.pad.fUymin = obj.fUymin;
@@ -5270,11 +5253,11 @@
    }
 
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
-      
+
       this.zoom_xmin = this.zoom_xmax = 0;
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
-      
+
       var pad = this.root_pad();
 
       if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
@@ -5287,7 +5270,7 @@
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
          }
-         
+
          if (min !== xaxis.fXmin || max !== xaxis.fXmax)
             if (min >= xaxis.fXmin && max <= xaxis.fXmax) {
                // set zoom values if only inside range
@@ -5295,7 +5278,7 @@
                this.zoom_xmax = max;
             }
       }
-      
+
       // apply selected user range if range not selected via pad
       if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
@@ -5322,7 +5305,7 @@
             }
       }
    }
-   
+
    JSROOT.THistPainter.prototype.CheckPadOptions = function() {
 
       var main = this.main_painter();
@@ -5330,9 +5313,9 @@
       this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
 
       this.lineatt = JSROOT.Painter.createAttLine(this.histo);
-      
+
       if (main) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
-      if (main === this) 
+      if (main === this)
          this.CheckPadRange();
 
    }
@@ -5372,19 +5355,19 @@
          histo.fXaxis.fXmax = obj.fXaxis.fXmax;
          histo.fXaxis.fFirst = obj.fXaxis.fFirst;
          histo.fXaxis.fLast = obj.fXaxis.fLast;
-         histo.fXaxis.fBits = obj.fXaxis.fBits; 
+         histo.fXaxis.fBits = obj.fXaxis.fBits;
          histo.fYaxis.fXmin = obj.fYaxis.fXmin;
          histo.fYaxis.fXmax = obj.fYaxis.fXmax;
          histo.fYaxis.fFirst = obj.fYaxis.fFirst;
          histo.fYaxis.fLast = obj.fYaxis.fLast;
-         histo.fYaxis.fBits = obj.fYaxis.fBits; 
+         histo.fYaxis.fBits = obj.fYaxis.fBits;
       }
       histo.fSumw2 = obj.fSumw2;
 
       if (this.IsTProfile()) {
          histo.fBinEntries = obj.fBinEntries;
       }
-      
+
       if (obj.fFunctions)
          for (var n=0;n<obj.fFunctions.arr.length;++n) {
             var func = obj.fFunctions.arr[n];
@@ -5398,7 +5381,7 @@
          this.CheckPadRange();
 
       this.ScanContent();
-      
+
       return true;
    }
 
@@ -6072,7 +6055,7 @@
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
       if (dox || doy || dox) this.zoom_changed_interactive = true;
-      
+
       return this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
                        doz ? 0 : undefined, doz ? 0 : undefined);
@@ -6715,7 +6698,7 @@
 
       this.nbinsx = this.histo.fXaxis.fNbins;
       this.nbinsy = 0;
-      
+
       this.CreateAxisFuncs(false);
 
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true,
@@ -6726,15 +6709,15 @@
       for (var i = 0; i < this.nbinsx; ++i) {
          value = this.histo.getBinContent(i + 1);
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
-         
+
          if ((i<left) || (i>=right)) continue;
-         
+
          if (value > 0)
             if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
          if (first) {
             hmin = hmax = value;
             first = false;;
-         } 
+         }
 
          err = (this.options.Error > 0) ? this.histo.getBinError(i + 1) : 0;
 
@@ -6774,7 +6757,7 @@
          if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
          this.ymax = hmax + dy;
       }
-      
+
       hmin = hmax = null;
       var set_zoom = false;
       if (this.histo.fMinimum != -1111) {
