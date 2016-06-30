@@ -1648,6 +1648,7 @@
          lvl = 0;
          if (!arg) arg = { erase: true };
          if (!('map' in arg)) arg.map = [];
+         if (!('minVolume' in arg)) arg.minVolume = 0;
          if (!('clear' in arg))
             arg.clear = function() {
                for (var n=0;n<this.map.length;++n) {
@@ -1697,7 +1698,7 @@
          var vol = shape.fDX * shape.fDY * shape.fDZ;
 
          // Only set nodes above the minVolume size to visible
-         if (vis && !('_visible' in obj) && (shape!==null) && (vol > this._minVolume)) {
+         if (vis && !('_visible' in obj) && (shape!==null) && (vol > arg.minVolume)) {
             obj._visible = true;
             obj._volume = vol;
          } else {
@@ -1957,7 +1958,6 @@
       }
       console.log('minVolume', this._minVolume, 'len', this._sizeList.length, 't2-t1', t2-t1, 't3-t2', t3-t2);
 */
-      this._minVolume = 0;
 
       if (opt === 'count')
          return this.drawCount();
@@ -1987,18 +1987,22 @@
       var maxlimit = this._webgl ? 10000 : 2000; // maximal number of allowed nodes to be displayed at once
 
       if (total.vis > maxlimit)  {
+
          console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed');
 
+         var t1 = new Date().getTime();
          // sort in reverse order (big first)
          this._data.map.sort(function(a,b) { return b._volume - a._volume; })
+         var t2 = new Date().getTime();
+         console.log('sort time', t2-t1);
 
          var cnt = 0, indx = 0;
          while ((cnt<maxlimit) && (indx < this._data.map.length))
             cnt += this._data.map[indx++]._refcnt;
 
-         this._minVolume = this._data.map[indx]._volume;
+         this._data.minVolume = this._data.map[indx]._volume;
 
-         console.log('Select ', cnt, 'nodes, minimal volume', this._minVolume);
+         console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
 
          this._data.clear();
          total = this.CountGeoVolumes(this.GetObject(), this._data);
