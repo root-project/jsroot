@@ -1624,20 +1624,6 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   JSROOT.TGeoPainter.prototype.createVolumeList = function(obj) {
-   // Traverse the hierarchy to create a list of the sizes of all volumes
-
-  //    var kind = this.NodeKind(obj);
-      if ((obj.fVolume === undefined) || (obj.fVolume === null)) return;
-      var chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : [];
-      var shape = obj.fVolume.fShape;
-      var vol = shape.fDX * shape.fDY * shape.fDZ;
-      this._sizeList.push(vol);
-      for (var i = 0; i < chlds.length; ++i ) {
-         this.createVolumeList(chlds[i]);
-      }
-   }
-
    JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
@@ -1945,22 +1931,6 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-/*      this._volumeTarget = 2000;
-      this._sizeList = [];
-      var t1 = new Date().getTime();
-      this.createVolumeList(this.GetObject());
-      var t2 = new Date().getTime();
-      this._sizeList.sort(function( a, b ) { return a-b; } );
-      var t3 = new Date().getTime();
-      // using the sorted list of volumes, create a cutoff that will
-      // ensure less than the target number of volumes are drawn
-      this._minVolume = 0;
-      if (this._sizeList.length > this._volumeTarget) {
-         this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
-      }
-      console.log('minVolume', this._minVolume, 'len', this._sizeList.length, 't2-t1', t2-t1, 't3-t2', t3-t2);
-*/
-
       if (opt === 'count')
          return this.drawCount();
 
@@ -1986,11 +1956,11 @@
 
       console.log('numvis', total.vis, 'map', this._data.map.length);
 
-      var maxlimit = this._webgl ? 10000 : 2000; // maximal number of allowed nodes to be displayed at once
+      var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
 
       if (total.vis > maxlimit)  {
 
-         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed');
+         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed, try to reduce');
 
          var t1 = new Date().getTime();
          // sort in reverse order (big first)
