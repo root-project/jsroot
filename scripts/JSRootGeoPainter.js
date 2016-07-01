@@ -1119,7 +1119,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _axis:false, scale: new THREE.Vector3(1,1,1) };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1) };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -1175,12 +1175,7 @@
       opt = opt.toLowerCase();
 
       if (opt.indexOf("all")>=0) {
-         res.maxlvl = 9999;
          opt = opt.replace("all", " ");
-      }
-      if (opt.indexOf("limit")>=0) {
-         res.maxlvl = 1111;
-         opt = opt.replace("limit", " ");
       }
       if (opt.indexOf("invx")>=0) {
          res.scale.x = -1;
@@ -1193,12 +1188,6 @@
       if (opt.indexOf("invz")>=0) {
          res.scale.z = -1;
          opt = opt.replace("invz", " ");
-      }
-
-      var p = opt.indexOf("maxlvl");
-      if (p>=0) {
-         res.maxlvl = parseInt(opt.substr(p+6, 1));
-         opt = opt.replace("maxlvl" + res.maxlvl, " ");
       }
 
       if (opt.indexOf("d")>=0) res._debug = true;
@@ -1661,13 +1650,15 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
 
       var kind = this.NodeKind(obj);
       var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
       if (kind < 0) return res;
+
+      if (vislvl === undefined) vislvl = 9999;
 
       if (lvl === undefined) {
          lvl = 0;
@@ -1697,8 +1688,24 @@
          if ((obj.fVolume === undefined) || (obj.fVolume === null)) return res;
          shape = obj.fVolume.fShape;
          chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-         vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
-                || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis));
+
+         if (arg.screen_vis) {
+            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
+         } else {
+            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis) && (vislvl>=0);
+            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) vislvl = 1; else
+            if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) vislvl = 0;
+         }
+
+         /*
+         if (vis) {
+             var prop = this.getNodeProperties(kind, obj);
+              //  prop.matrix is transformation matrix relative to the parent
+              //  one need to accumulate world matrix to get global tranformation, which could
+              //  be used to identify if object can be seen by the camera
+         }
+         */
+
       } else {
          if (obj.fShape === undefined) return res;
          shape = obj.fShape;
@@ -1732,7 +1739,7 @@
 
          if (chlds !== null)
             for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1);
+               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1);
                obj._numchld += chld_res.cnt;
                obj._numvischld += chld_res.vis;
             }
@@ -1920,7 +1927,7 @@
 
       var tm1 = new Date();
 
-      var arg = { cnt : [], maxlvl: -1 };
+      var arg = { cnt : [], screen_vis: true };
       var count = this.CountGeoVolumes(this.GetObject(), arg);
 
       var res = 'Total number: ' + count.cnt + '<br/>';
@@ -1931,7 +1938,7 @@
       res += "Unique volumes: " + arg.map.length + '<br/>';
 
       if (count.vis === 0) {
-         arg.clear(); arg.maxlvl = 9999;
+         arg.clear(); arg.screen_vis = false;
          count = this.CountGeoVolumes(this.GetObject(), arg);
       }
 
@@ -1980,14 +1987,14 @@
 
       this._webgl = JSROOT.Painter.TestWebGL();
 
-      this._data = { cnt: [], maxlvl: this.options.maxlvl }; // now count volumes which should go to the processing
+      this._data = { cnt: [], screen_vis: true }; // now count volumes which should go to the processing
 
       var total = this.CountGeoVolumes(this.GetObject(), this._data);
 
       // if no any volume was selected, probably it is because of visibility flags
-      if ((total.cnt > 0) && (total.vis == 0) && (this.options.maxlvl < 0)) {
+      if ((total.cnt > 0) && (total.vis == 0)) {
          this._data.clear();
-         this._data.maxlvl = 1111;
+         this._data.screen_vis = false;
          total = this.CountGeoVolumes(this.GetObject(), this._data);
       }
 
@@ -2566,7 +2573,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
