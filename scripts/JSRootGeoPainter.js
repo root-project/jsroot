@@ -1069,14 +1069,19 @@
       };
 
    JSROOT.TestGeoAttBit = function(volume, f) {
-      if (!('fGeoAtt' in volume)) return false;
-      return (volume.fGeoAtt & f) !== 0;
+      var att = volume.fGeoAtt;
+      return att === undefined ? false : ((att & f) !== 0);
    }
 
-   JSROOT.ToggleGeoAttBit = function(volume, f) {
-      if (!('fGeoAtt' in volume)) return false;
+   JSROOT.SetGeoAttBit = function(volume, f, value) {
+      if (volume.fGeoAtt === undefined) return;
+      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
+   }
 
-      volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
+
+   JSROOT.ToggleGeoAttBit = function(volume, f) {
+      if (volume.fGeoAtt !== undefined)
+         volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
    JSROOT.TGeoPainter = function( geometry ) {
@@ -1142,12 +1147,26 @@
          console.log(sign,':',name);
 
 
+         if (name.indexOf("*") < 0)
+            regexp = new RegExp(name);
+         else
+            regexp = new RegExp("^" + name.split("*").join(".*") + "$");
+
+
          var node = this.GetObject();
 
          var kind = this.NodeKind(node);
          var prop = this.getNodeProperties(kind, node);
 
+         if (prop.chlds!==null)
+            for (var n=0;n<prop.chlds.length;++n) {
+               var chld = this.getNodeProperties(kind, prop.chlds[n]);
 
+               if (regexp.test(chld.name) && chld.volume) {
+                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisDaughters, (sign === "+"));
+               }
+            }
       }
 
       if (opt.indexOf("+")>=0)
@@ -1398,7 +1417,7 @@
       if (kind === 1) {
          // special handling for EVE nodes
 
-         var prop = { shape: node.fShape, material: null, chlds: null };
+         var prop = { name: node.fName, shape: node.fShape, material: null, chlds: null };
 
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
@@ -1430,7 +1449,7 @@
 
       var volume = node.fVolume;
 
-      var prop = { shape: volume.fShape, matrix: null, material: null, chlds: null };
+      var prop = { name: volume.fName, volume: node.fVolume, shape: volume.fShape, matrix: null, material: null, chlds: null };
 
       if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
