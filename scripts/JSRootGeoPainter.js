@@ -1361,8 +1361,42 @@
       return geom;
    }
 
-   JSROOT.TGeoPainter.prototype.getNodeProperties = function(node, visible) {
-      // function return matrix, shape and material
+   JSROOT.TGeoPainter.prototype.getNodeProperties = function(kind, node, visible) {
+      // function return matrix, shape and material for specified node
+      // Only if node visible, material is created
+
+      if (kind === 1) {
+         // special handling for EVE nodes
+
+         var prop = { shape: node.fShape, material: null };
+
+         if (visible) {
+            var _transparent = false, _opacity = 1.0;
+            if ( node.fRGBA[3] < 1.0) {
+               _transparent = true;
+               _opacity = node.fRGBA[3];
+            }
+            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             overdraw: 0. } );
+         }
+
+         prop.matrix = new THREE.Matrix4();
+
+         if (node.fTrans!==null) {
+            prop.matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                            node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                            node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                                         0,               0,                0, 1);
+            // second - set position with proper sign
+            prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+         }
+         return prop;
+      }
+
+
 
       var volume = node.fVolume;
 
@@ -1445,38 +1479,6 @@
       return prop;
    }
 
-   JSROOT.TGeoPainter.prototype.getEveNodeProperties = function(node, visible) {
-
-      var prop = { shape: node.fShape };
-
-      prop.material = null;
-
-      if (visible) {
-         var _transparent = false, _opacity = 1.0;
-         if ( node.fRGBA[3] < 1.0) {
-            _transparent = true;
-            _opacity = node.fRGBA[3];
-         }
-         prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                          side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                          overdraw: 0. } );
-      }
-
-      prop.matrix = new THREE.Matrix4();
-
-      if (node.fTrans!==null) {
-         prop.matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
-                         node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
-                         node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                      0,               0,                0, 1);
-         // second - set position with proper sign
-         prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
-      }
-      return prop;
-   }
-
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
@@ -1512,12 +1514,7 @@
          return true;
       }
 
-      var prop = null;
-
-      if (kind === 0)
-         prop = this.getNodeProperties(arg.node, arg.node._visible);
-      else
-         prop = this.getEveNodeProperties(arg.node, arg.node._visible);
+      var prop = this.getNodeProperties(kind, arg.node, arg.node._visible);
 
       var geom = null;
 
