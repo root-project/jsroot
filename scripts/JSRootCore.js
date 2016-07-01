@@ -89,7 +89,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 10/06/2016";
+   JSROOT.version = "dev 30/06/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -252,7 +252,7 @@
       return value;
    }
 
-   // Should be used to reintroduce objects references, produced by TBufferJSON
+   /// Should be used to reintroduce objects references, produced by TBufferJSON
    JSROOT.JSONR_unref = function(value) {
       if ((typeof value === 'object') && (value !== null))
          this.JSONR_unref_obj(value, []);
@@ -364,6 +364,8 @@
       if (obj!=null) obj = this.JSONR_unref(obj);
       return obj;
    }
+
+   /** @memberOf JSROOT */
 
    JSROOT.GetUrlOption = function(opt, url, dflt) {
       // analyzes document.URL and extracts options after '?' mark
@@ -1395,6 +1397,14 @@
             // return standard error on the mean of y
             return (eprim/Math.sqrt(neff));
          };
+      }
+
+      if (typename == "TAxis") {
+         m.GetBinLowEdge = function(bin) {
+            if (this.fNbins <= 0) return 0;
+            if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
+            return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
+         }
       }
 
       JSROOT.methodsCache[typename] = m;

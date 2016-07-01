@@ -1482,7 +1482,7 @@
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
 
-      // Aborting here can speed up the drawing a lot but sometimes 
+      // Aborting here can speed up the drawing a lot but sometimes
       // cuts off too many children nodes
       //if (!arg.node._visible) { this._stack.pop(); return true; }
 
@@ -1555,9 +1555,9 @@
       }
 
       if (geom === null) geom = new THREE.Geometry();
-      
+
       // Avoid creating meshes if not visible, and only measure "drawcnt" for these
-      if (arg.node._visible) {
+//      if (arg.node._visible) {
          this._drawcnt++;
 
          var mesh = new THREE.Mesh( geom, prop.material );
@@ -1605,10 +1605,10 @@
          }
 
          arg.mesh = mesh;
-      }
+//      }
 
-      if ((chlds === null) || (chlds.length == 0)) {
-         // do not draw childs
+      if ((chlds === null) || (chlds.length === 0) || (arg.node._numvischld === 0)) {
+         // do not draw childs if they not exists or not visible
          this._stack.pop();
       } else {
          arg.nchild = 0; // specify that childs should be extracted
@@ -1641,37 +1641,44 @@
       // also check if volume shape can be drawn
 
       var kind = this.NodeKind(obj);
-      if (kind < 0) return 0;
+      var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
+      if (kind < 0) return res;
 
       if (lvl === undefined) {
          lvl = 0;
          if (!arg) arg = { erase: true };
          if (!('map' in arg)) arg.map = [];
-         arg.viscnt = 0;
+         if (!('minVolume' in arg)) arg.minVolume = 0;
          if (!('clear' in arg))
             arg.clear = function() {
                for (var n=0;n<this.map.length;++n) {
                   delete this.map[n]._refcnt;
                   delete this.map[n]._numchld;
+                  delete this.map[n]._numvischld;
                   delete this.map[n]._visible;
+                  delete this.map[n]._volume;
                }
                this.map = [];
-               this.viscnt = 0;
             };
       }
 
       var chlds = null, shape = null, vis = false;
       if (kind === 0) {
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
+         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
+         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
+         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
+         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+
+         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return res;
          shape = obj.fVolume.fShape;
          chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
          vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
                 || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis));
       } else {
-         if (obj.fShape === undefined) return 0;
+         if (obj.fShape === undefined) return res;
          shape = obj.fShape;
          chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-         vis = obj['fRnrSelf'];
+         vis = obj.fRnrSelf;
       }
 
       if ('cnt' in arg) {
@@ -1683,40 +1690,35 @@
           obj._refcnt++;
       } else {
          obj._refcnt = 1;
-         obj._numchld = 0;
+         obj._numchld = 0; // count number of childs
+         obj._numvischld = 0; // count number of visible childs
          arg.map.push(obj);
 
-         /*
-         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
-
-         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisNone))
-            console.log('not visible');
-         else
-         if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel))
-            console.log('only one level');
-         }
-         */
-
-         
-      //   var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
+         //  var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
          var vol = shape.fDX * shape.fDY * shape.fDZ;
-         // Only set nodes above the minVolume size to visible 
-         if (vis && !('_visible' in obj) && (shape!==null) && vol > this._minVolume) {
+
+         // Only set nodes above the minVolume size to visible
+         if (vis && !('_visible' in obj) && (shape!==null) && (vol > arg.minVolume)) {
             obj._visible = true;
-            arg.viscnt++;
+            obj._volume = vol;
+         } else {
+            obj._volume = 0;
          }
 
          if (chlds !== null)
-            for (var i = 0; i < chlds.length; ++i)
-               obj._numchld += this.CountGeoVolumes(chlds[i], arg, lvl+1);
+            for (var i = 0; i < chlds.length; ++i) {
+               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1);
+               obj._numchld += chld_res.cnt;
+               obj._numvischld += chld_res.vis;
+            }
       }
 
       if ((lvl === 0) && arg.erase) arg.clear();
 
-      return 1 + obj._numchld;
+      res.cnt = 1 + obj._numchld; // account number of volumes
+      res.vis = (obj._visible ? 1 : 0) + obj._numvischld; // account number of visible volumes
+
+      return res;
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -1793,7 +1795,7 @@
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2, depthTest: false } );
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2 } );
 
       this._scene_width = w;
       this._scene_height = h;
@@ -1894,23 +1896,23 @@
       var tm1 = new Date();
 
       var arg = { cnt : [], maxlvl: -1 };
-      var cnt = this.CountGeoVolumes(this.GetObject(), arg);
+      var count = this.CountGeoVolumes(this.GetObject(), arg);
 
-      var res = 'Total number: ' + cnt + '<br/>';
+      var res = 'Total number: ' + count.cnt + '<br/>';
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
          if (arg.cnt[lvl] !== 0)
             res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
       res += "Unique volumes: " + arg.map.length + '<br/>';
 
-      if (arg.viscnt === 0) {
+      if (count.vis === 0) {
          arg.clear(); arg.maxlvl = 9999;
-         cnt = this.CountGeoVolumes(this.GetObject(), arg);
+         count = this.CountGeoVolumes(this.GetObject(), arg);
       }
 
-      res += "Visible volumes: " + arg.viscnt + '<br/>';
+      res += "Visible volumes: " + count.cnt + '<br/>';
 
-      if (cnt<200000) {
+      if (count.cnt<200000) {
          this.ScanUniqueVisVolumes(this.GetObject(), 0, arg);
 
          for (var n=0;n<arg.map.length;++n)
@@ -1941,17 +1943,21 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-      this._volumeTarget = 2000;
+/*      this._volumeTarget = 2000;
       this._sizeList = [];
+      var t1 = new Date().getTime();
       this.createVolumeList(this.GetObject());
+      var t2 = new Date().getTime();
       this._sizeList.sort(function( a, b ) { return a-b; } );
+      var t3 = new Date().getTime();
       // using the sorted list of volumes, create a cutoff that will
       // ensure less than the target number of volumes are drawn
       this._minVolume = 0;
       if (this._sizeList.length > this._volumeTarget) {
          this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
       }
-      //console.log(this._minVolume);
+      console.log('minVolume', this._minVolume, 'len', this._sizeList.length, 't2-t1', t2-t1, 't3-t2', t3-t2);
+*/
 
       if (opt === 'count')
          return this.drawCount();
@@ -1965,30 +1971,43 @@
 
       this._webgl = JSROOT.Painter.TestWebGL();
 
-      this._data = { cnt: [], maxlvl : this.options.maxlvl }; // now count volumes which should go to the processing
+      this._data = { cnt: [], maxlvl: this.options.maxlvl }; // now count volumes which should go to the processing
 
       var total = this.CountGeoVolumes(this.GetObject(), this._data);
 
       // if no any volume was selected, probably it is because of visibility flags
-      if ((total>0) && (this._data.viscnt == 0) && (this.options.maxlvl < 0)) {
+      if ((total.cnt > 0) && (total.vis == 0) && (this.options.maxlvl < 0)) {
          this._data.clear();
          this._data.maxlvl = 1111;
          total = this.CountGeoVolumes(this.GetObject(), this._data);
       }
 
-      var maxlimit = this._webgl ? 1e7 : 1e4;
+      console.log('numvis', total.vis, 'map', this._data.map.length);
 
-      if ((this._data.maxlvl === 1111) && (total > maxlimit))  {
-         var sum = 0;
-         for (var lvl=1; lvl < this._data.cnt.length; ++lvl) {
-            sum += this._data.cnt.cnt[lvl];
-            if (sum > maxlimit) {
-               this._data.maxlvl = lvl - 1;
-               this._data.clear();
-               this.CountGeoVolumes(this.GetObject(), this._data);
-               break;
-            }
-         }
+      var maxlimit = this._webgl ? 10000 : 2000; // maximal number of allowed nodes to be displayed at once
+
+      if (total.vis > maxlimit)  {
+
+         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed');
+
+         var t1 = new Date().getTime();
+         // sort in reverse order (big first)
+         this._data.map.sort(function(a,b) { return b._volume - a._volume; })
+         var t2 = new Date().getTime();
+         console.log('sort time', t2-t1);
+
+         var cnt = 0, indx = 0;
+         while ((cnt<maxlimit) && (indx < this._data.map.length))
+            cnt += this._data.map[indx++]._refcnt;
+
+         this._data.minVolume = this._data.map[indx-1]._volume;
+
+         console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
+
+         this._data.clear();
+         total = this.CountGeoVolumes(this.GetObject(), this._data);
+
+         console.log('numvis', total.vis, 'map', this._data.map.length);
       }
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
@@ -2019,7 +2038,7 @@
 
          var now = new Date().getTime();
 
-         if (now - curr > 300) {
+         if (now - curr > 2000) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
             this.adjustCameraPosition();
@@ -2088,7 +2107,7 @@
       }
 
       this._scene.overrideMaterial = null;
-      console.log(this._toplevel);
+
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
@@ -2281,10 +2300,6 @@
          this.xmin = box.min.x; this.xmax = box.max.x;
          this.ymin = box.min.y; this.ymax = box.max.y;
          this.zmin = box.min.z; this.zmax = box.max.z;
-
-         console.error('Check log setting in options which no longer exists');
-
-         // this.options = { Logx: false, Logy: false, Logz: false };
 
          this.size3d = 0; // use min/max values directly as graphical coordinates
 

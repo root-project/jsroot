@@ -1794,6 +1794,7 @@
                   callback.obj.fX2NDC = (newx + newwidth)  / pthis.pad_width();
                   callback.obj.fY1NDC = 1 - (newy + newheight) / pthis.pad_height();
                   callback.obj.fY2NDC = 1 - newy / pthis.pad_height();
+                  callback.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
                }
                if ('redraw' in callback) callback.redraw();
             }
@@ -2011,6 +2012,119 @@
          menu.addchk((Math.abs(value - val) < step/2), entry, val, set_func);
       }
       menu.add("endsub:");
+   }
+
+
+   JSROOT.TObjectPainter.prototype.OpenWebsocket = function() {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      delete this._websocket;
+
+      var path = window.location.href;
+      path = path.replace("http://", "ws://");
+      path = path.replace("https://", "wss://");
+      var pos = path.indexOf("draw.htm");
+      if (pos < 0) return;
+
+      path = path.substr(0,pos) + "root.websocket";
+
+      console.log('open websocket ' + path);
+
+      var conn = new WebSocket(path);
+
+      this._websocket = conn;
+
+      var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
+
+      conn.onopen = function() {
+         console.log('websocket initialized');
+         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big peace)
+      }
+
+      conn.onmessage = function (e) {
+         var d = e.data;
+         if (typeof d != 'string') return console.log("msg",d);
+
+         if (d.substr(0,4)=='JSON') {
+            var obj = JSROOT.parse(d.substr(4));
+            // console.log("get JSON ", d.length-4, obj._typename);
+            var tm1 = new Date().getTime();
+            pthis.RedrawObject(obj);
+            var tm2 = new Date().getTime();
+            sum1+=1;
+            sum2+=(tm2-tm1);
+            if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
+
+            conn.send('READY'); // send ready message back
+            // if (++cnt > 10) conn.close();
+
+         } else
+         if (d.substr(0,4)=='MENU') {
+            var lst = JSROOT.parse(d.substr(4));
+            console.log("get MENUS ", typeof lst, lst.length, d.length-4);
+            conn.send('READY'); // send ready message back
+            if (typeof pthis._getmenu_callback == 'function')
+               pthis._getmenu_callback(lst);
+         } else {
+            console.log("msg",d);
+         }
+      }
+
+      conn.onclose = function() {
+         console.log('websocket closed');
+
+         delete pthis._websocket;
+      }
+
+      conn.onerror = function (err) {
+         console.log("err",err);
+         conn.close();
+      }
+   }
+
+
+   JSROOT.TObjectPainter.prototype.FillObjectExecMenu = function(menu, call_back) {
+
+      if (!('_websocket' in this) || ('_getmenu_callback' in this))
+         return JSROOT.CallBack(call_back);
+
+      function DoExecMenu(arg) {
+         console.log('execute method ' + arg);
+
+         if (this._websocket)
+            this._websocket.send('EXEC'+arg);
+      }
+
+      function DoFillMenu(_menu, _call_back, items) {
+
+        // avoid multiple call of the callback after timeout
+        if (!this._getmenu_callback) return;
+        delete this._getmenu_callback;
+
+        if (items && items.length) {
+           _menu.add("separator");
+           _menu.add("sub:Online");
+
+           for (var n=0;n<items.length;++n) {
+              var item = items[n];
+              if ('chk' in item)
+                 _menu.addchk(item.chk, item.name, item.exec, DoExecMenu);
+              else
+                 _menu.add(item.name, item.exec, DoExecMenu);
+           }
+
+           _menu.add("endsub:");
+        }
+
+        JSROOT.CallBack(_call_back);
+     }
+
+     this._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
+
+     this._websocket.send('GETMENU'); // request menu items
+
+     setTimeout(this._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
 
 
@@ -2546,62 +2660,40 @@
       var width = this.pad_width(),
           height = this.pad_height(),
           tframe = this.GetObject(),
-          root_pad = this.root_pad(),
-          framecolor = this.createAttFill(null, 1001, 0),
-          lineatt = JSROOT.Painter.createAttLine('black'),
-          bordermode = 0, bordersize = 0,
-          has_ndc = ('fX1NDC' in this);
+          root_pad = this.root_pad();
 
-      if (!has_ndc) {
+      if (!('fX1NDC' in this) || !this.modified_NDC) {
          if (root_pad === null)
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          else
             JSROOT.extend(this, {
                fX1NDC: root_pad.fLeftMargin,
                fX2NDC: 1 - root_pad.fRightMargin,
-               fY1NDC: root_pad.fTopMargin,
-               fY2NDC: 1 - root_pad.fBottomMargin
+               fY1NDC: root_pad.fBottomMargin,
+               fY2NDC: 1 - root_pad.fTopMargin
             });
       }
 
-      if (tframe !== null) {
-         bordermode = tframe.fBorderMode;
-         bordersize = tframe.fBorderSize;
-         lineatt = JSROOT.Painter.createAttLine(tframe);
-         framecolor = this.createAttFill(tframe);
-         if (!has_ndc && (root_pad !== null)) {
-            var xspan = width / Math.abs(root_pad.fX2 - root_pad.fX1),
-                yspan = height / Math.abs(root_pad.fY2 - root_pad.fY1),
-                px1 = (tframe.fX1 - root_pad.fX1) * xspan,
-                py1 = (tframe.fY1 - root_pad.fY1) * yspan,
-                px2 = (tframe.fX2 - root_pad.fX1) * xspan,
-                py2 = (tframe.fY2 - root_pad.fY1) * yspan,
-                pxl, pxt, pyl, pyt;
-            if (px1 < px2) { pxl = px1; pxt = px2; }
-                      else { pxl = px2; pxt = px1; }
-            if (py1 < py2) { pyl = py1; pyt = py2; }
-                      else { pyl = py2; pyt = py1; }
-            this.fX1NDC = pxl / width;
-            this.fY1NDC = pyl / height;
-            this.fX2NDC = pxt / width;
-            this.fY2NDC = pyt / height;
-         }
-      } else {
+      if (this.fillatt === undefined) {
+         if (tframe)
+            this.fillatt = this.createAttFill(tframe);
+         else
          if (root_pad)
-            framecolor = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
+            this.fillatt = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
+         else
+            this.fillatt = this.createAttFill(null, 1001, 0);
+
+         // force white color for the frame
+         if (this.fillatt.color == 'none') this.fillatt.color = 'white';
       }
 
-      // force white color for the frame
-      if (framecolor.color == 'none') framecolor.color = 'white';
-
-      if (this.fillatt === undefined) this.fillatt = framecolor;
-      if (this.lineatt === undefined) this.lineatt = lineatt;
+      if (this.lineatt === undefined)
+         this.lineatt = JSROOT.Painter.createAttLine(tframe ? tframe : 'black');
 
       var lm = Math.round(width * this.fX1NDC),
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC));
-
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.svg_frame();
@@ -3341,12 +3433,26 @@
 
       var pave = this.GetObject();
 
+      if (!('modified_NDC' in pave)) {
+         // if position was not modified interactively, update from source object
+         pave.fInit = obj.fInit;
+         pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
+         pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
+         pave.fX1NDC = obj.fX1NDC; pave.fX2NDC = obj.fX2NDC;
+         pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
+      }
+
       if (obj._typename === 'TPaveText') {
          pave.fLines = JSROOT.clone(obj.fLines);
          return true;
       } else
       if (obj._typename === 'TPaveLabel') {
          pave.fLabel = obj.fLabel;
+         return true;
+      } else
+      if (obj._typename === 'TPaveStats') {
+         pave.fOptStat = obj.fOptStat;
+         pave.fOptFit = obj.fOptFit;
          return true;
       }
 
@@ -3740,7 +3846,8 @@
 
          pthis.FillContextMenu(menu);
 
-         menu.show(evnt);
+         pthis.FillObjectExecMenu(menu, function() { menu.show(evnt); });
+
       }); // end menu creation
    }
 
@@ -3784,8 +3891,7 @@
    }
 
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
-
-      if ((obj == null) || !('fPrimitives' in obj)) return false;
+      if (!obj || !('fPrimitives' in obj)) return false;
 
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
@@ -3795,13 +3901,23 @@
       this.pad.fLogy  = obj.fLogy;
       this.pad.fLogz  = obj.fLogz;
 
+      this.pad.fUxmin = obj.fUxmin;
+      this.pad.fUxmax = obj.fUxmax;
+      this.pad.fUymin = obj.fUymin;
+      this.pad.fUymax = obj.fUymax;
+
+      this.pad.fLeftMargin   = obj.fLeftMargin;
+      this.pad.fRightMargin  = obj.fRightMargin;
+      this.pad.fBottomMargin = obj.fBottomMargin
+      this.pad.fTopMargin    = obj.fTopMargin;
+
       if (this.iscan) this.CheckColors(obj);
 
       var isany = false, p = 0;
       for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
          while (p < this.painters.length) {
             var pp = this.painters[p++];
-            if (!('_primitive' in pp)) continue;
+            if (!pp._primitive) continue;
             if (pp.UpdateObject(obj.fPrimitives.arr[n])) isany = true;
             break;
          }
@@ -5136,25 +5252,17 @@
       alert("HistPainter.prototype.ScanContent not implemented");
    }
 
-   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
-
-      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
-
-      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
-      var main = this.main_painter();
-      if (main!==null) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
-
-      if (this.main_painter() !== this) return;
-
-      var pad = this.root_pad();
+   JSROOT.THistPainter.prototype.CheckPadRange = function() {
 
       this.zoom_xmin = this.zoom_xmax = 0;
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
 
-      if ((pad==null) || !('fUxmin' in pad) || this.create_canvas) return;
+      var pad = this.root_pad();
 
-      var min = pad.fUxmin, max = pad.fUxmax;
+      if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
+
+      var min = pad.fUxmin, max = pad.fUxmax, xaxis = this.histo.fXaxis;
 
       // first check that non-default values are there
       if ((this.Dimension() < 3) && ((min !== 0) || (max !== 1))) {
@@ -5163,12 +5271,22 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== this.histo.fXaxis.fXmin || max !== this.histo.fXaxis.fXmax)
-            if (min >= this.histo.fXaxis.fXmin && max <= this.histo.fXaxis.fXmax) {
+         if (min !== xaxis.fXmin || max !== xaxis.fXmax)
+            if (min >= xaxis.fXmin && max <= xaxis.fXmax) {
                // set zoom values if only inside range
                this.zoom_xmin = min;
                this.zoom_xmax = max;
             }
+      }
+
+      // apply selected user range if range not selected via pad
+      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((this.zoom_xmin === this.zoom_xmax) && (xaxis.fFirst !== xaxis.fLast) &&
+             ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
+               this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
+               this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
+         }
       }
 
       min = pad.fUymin; max = pad.fUymax;
@@ -5186,6 +5304,20 @@
                this.zoom_ymax = max;
             }
       }
+   }
+
+   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
+
+      var main = this.main_painter();
+
+      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
+
+      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+
+      if (main) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
+      if (main === this)
+         this.CheckPadRange();
+
    }
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
@@ -5218,15 +5350,35 @@
       histo.fMinimum = obj.fMinimum;
       histo.fMaximum = obj.fMaximum;
       histo.fXaxis.fNbins = obj.fXaxis.fNbins;
-      histo.fXaxis.fXmin = obj.fXaxis.fXmin;
-      histo.fXaxis.fXmax = obj.fXaxis.fXmax;
-      histo.fYaxis.fXmin = obj.fYaxis.fXmin;
-      histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+      if (!this.main_painter().zoom_changed_interactive) {
+         histo.fXaxis.fXmin = obj.fXaxis.fXmin;
+         histo.fXaxis.fXmax = obj.fXaxis.fXmax;
+         histo.fXaxis.fFirst = obj.fXaxis.fFirst;
+         histo.fXaxis.fLast = obj.fXaxis.fLast;
+         histo.fXaxis.fBits = obj.fXaxis.fBits;
+         histo.fYaxis.fXmin = obj.fYaxis.fXmin;
+         histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+         histo.fYaxis.fFirst = obj.fYaxis.fFirst;
+         histo.fYaxis.fLast = obj.fYaxis.fLast;
+         histo.fYaxis.fBits = obj.fYaxis.fBits;
+      }
       histo.fSumw2 = obj.fSumw2;
 
       if (this.IsTProfile()) {
          histo.fBinEntries = obj.fBinEntries;
       }
+
+      if (obj.fFunctions)
+         for (var n=0;n<obj.fFunctions.arr.length;++n) {
+            var func = obj.fFunctions.arr[n];
+            if ((func._typename == "TPaveStats") && (func.fName == 'stats')) {
+               var funcpainter = this.FindPainterFor(null,'stats');
+               if (funcpainter) funcpainter.UpdateObject(func);
+            }
+         }
+
+      if (this.is_main_painter() && !this.zoom_changed_interactive)
+         this.CheckPadRange();
 
       this.ScanContent();
 
@@ -5679,7 +5831,7 @@
 
       if (size == "left") {
          if (indx < 0) indx = 0;
-         if (taxis && taxis.fFirst>1 && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
+         if (taxis && (taxis.fFirst>1) && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
       } else {
          if (indx > nbin) indx = nbin;
          if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
@@ -5902,6 +6054,8 @@
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
+      if (dox || doy || dox) this.zoom_changed_interactive = true;
+
       return this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                        doy ? 0 : undefined, doy ? 0 : undefined,
                        doz ? 0 : undefined, doz ? 0 : undefined);
@@ -6034,7 +6188,10 @@
 
       this.clearInteractiveElements();
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) {
+         this.zoom_changed_interactive = true;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      }
    }
 
    JSROOT.THistPainter.prototype.startTouchZoom = function() {
@@ -6202,7 +6359,10 @@
       this.clearInteractiveElements();
       this.last_touch = new Date(0);
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) {
+         this.zoom_changed_interactive = true;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      }
 
       d3.event.stopPropagation();
    }
@@ -6276,6 +6436,7 @@
       }
 
       this.Zoom(xmin,xmax,ymin,ymax);
+      if (xmin || xmax || ymin || ymax) this.zoom_changed_interactive = true;
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
@@ -6535,25 +6696,33 @@
       // from here we analyze object content
       // therefore code will be moved
 
-      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
-
-      var profile = this.IsTProfile();
-
       this.nbinsx = this.histo.fXaxis.fNbins;
       this.nbinsy = 0;
 
+      this.CreateAxisFuncs(false);
+
+      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true,
+          left = this.GetSelectIndex("x","left"),
+          right = this.GetSelectIndex("x","right"),
+          profile = this.IsTProfile(), value, err;
+
       for (var i = 0; i < this.nbinsx; ++i) {
-         var value = this.histo.getBinContent(i + 1), err = 0;
+         value = this.histo.getBinContent(i + 1);
          hsum += profile ? this.histo.fBinEntries[i + 1] : value;
+
+         if ((i<left) || (i>=right)) continue;
+
          if (value > 0)
             if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
-         if (this.options.Error > 0) err = this.histo.getBinError(i + 1);
-         if (i == 0) {
-            hmin = value - err; hmax = value + err;
-         } else {
-            hmin = Math.min(hmin, value - err);
-            hmax = Math.max(hmax, value + err);
+         if (first) {
+            hmin = hmax = value;
+            first = false;;
          }
+
+         err = (this.options.Error > 0) ? this.histo.getBinError(i + 1) : 0;
+
+         hmin = Math.min(hmin, value - err);
+         hmax = Math.max(hmax, value + err);
       }
 
       // account overflow/underflow bins
@@ -6564,8 +6733,6 @@
 
       this.stat_entries = hsum;
       if (this.histo.fEntries>1) this.stat_entries = this.histo.fEntries;
-
-      this.CreateAxisFuncs(false);
 
       this.hmin = hmin;
       this.hmax = hmax;
@@ -6611,15 +6778,6 @@
       if (set_zoom) {
          this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
          this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
-      }
-
-      // apply selected user range if no other range selection was done
-      if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
-          this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange) &&
-          (this.histo.fXaxis.fFirst !== this.histo.fXaxis.fLast) &&
-          ((this.histo.fXaxis.fFirst>1) || (this.histo.fXaxis.fLast <= this.nbinsx))) {
-         this.zoom_xmin = this.histo.fXaxis.fFirst > 1 ? this.GetBinX(this.histo.fXaxis.fFirst-1) : this.xmin;
-         this.zoom_xmax = this.histo.fXaxis.fLast <= this.nbinsx ? this.GetBinX(this.histo.fXaxis.fLast) : this.xmax;
       }
 
       // If no any draw options specified, do not try draw histogram
@@ -9032,7 +9190,11 @@
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
          if (obj!=null) hpainter['_cached_draw_object'] = obj;
          var opt = JSROOT.GetUrlOption("opt");
-         hpainter.display("", opt);
+
+         hpainter.display("", opt, function(obj_painter) {
+            if (JSROOT.GetUrlOption("websocket")!==null)
+               obj_painter.OpenWebsocket();
+         });
       });
    }
 

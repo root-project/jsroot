@@ -4,7 +4,8 @@
 1. Upgrafe three.js to r77, adjust text rendering code 
 2. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
 3. Preliminary support of candle plot (many options to be implemented)
-4. Prelimiary support of hbox drawings 
+4. Implement box and hbox draw options for TH1 class
+5. Preliminary support of websocket communication
 
 
 ## Changes in 4.5.0
