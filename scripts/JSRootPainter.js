@@ -461,6 +461,15 @@
             line.excl_width = Math.floor(line.width / 100) * 5;
             line.width = line.width % 100; // line width
          }
+         
+         line.ChangeExcl = function(side,width) {
+            if (width !== undefined) this.excl_width = width;
+            if (side !== undefined) {
+               this.excl_side = side;
+               if ((this.excl_width===0) && (this.excl_side!==0)) this.excl_width = 20;
+            }
+            this.changed = true;
+         }
       }
 
       // if custom color number used, use lightgrey color to show lines
@@ -480,6 +489,14 @@
                selection.style('stroke-dasharray', this.dash);
          }
       }
+      
+      line.Change = function(color, width, dash) {
+         if (color !== undefined) this.color = color;
+         if (width !== undefined) this.width = width;
+         if (dash !== undefined) this.dash = dash;
+         this.changed = true;
+      }
+      
       line.func = line.Apply.bind(line);
 
       return line;
@@ -2146,16 +2163,15 @@
       if (this.lineatt && this.lineatt.used) {
          menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.width = parseInt(arg); this.lineatt.changed = true; this.Redraw(); }.bind(this));
+                               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.color = arg; this.lineatt.changed = true; this.Redraw(); }.bind(this));
+                          function(arg) { this.lineatt.Change(arg); this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
             id = parseInt(id);
             if (isNaN(id) || (JSROOT.Painter.root_line_styles[id] === undefined)) return;
-            this.lineatt.dash = JSROOT.Painter.root_line_styles[id];
-            this.lineatt.changed = true;
+            this.lineatt.Change(undefined, undefined, JSROOT.Painter.root_line_styles[id]);
             this.Redraw();
          }.bind(this));
          for (var n=1;n<11;++n) {
@@ -2163,7 +2179,7 @@
 
             var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
 
-            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.dash = arg; this.lineatt.changed = true; this.Redraw(); }.bind(this));
+            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.Change(undefined, undefined, arg); this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -2173,15 +2189,13 @@
             menu.add("sub:side");
             for (var side=-1;side<=1;++side)
                menu.addchk((this.lineatt.excl_side==side), side, side, function(arg) {
-                  this.lineatt.excl_side = parseInt(arg);
-                  this.lineatt.changed = true;
-                  if ((this.lineatt.excl_width===0) && (this.lineatt.excl_side!=0)) this.lineatt.excl_width = 20;
+                  this.lineatt.ChangeExcl(parseInt(arg));
                   this.Redraw();
                }.bind(this));
             menu.add("endsub:");
 
             this.AddSizeMenuEntry(menu, "width", 10, 100, 10, this.lineatt.excl_width,
-                  function(arg) { this.lineatt.excl_width = parseInt(arg); this.lineatt.changed = true; this.Redraw(); }.bind(this));
+                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
 
             menu.add("endsub:");
          }
