@@ -1697,7 +1697,7 @@
          arg.map.push(obj);
 
          //  var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
-         var vol = shape.fDX * shape.fDY * shape.fDZ;
+         var vol = shape ? shape.fDX * shape.fDY * shape.fDZ : 0;
 
          // Only set nodes above the minVolume size to visible
          if (vis && !('_visible' in obj) && (shape!==null) && (vol > arg.minVolume)) {
