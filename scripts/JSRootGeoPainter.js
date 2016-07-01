@@ -30,6 +30,14 @@
 
    JSROOT.GEO = {};
 
+   // method used to avoid duplication of warnings
+   JSROOT.GEO.warn = function(msg) {
+      if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
+      if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
+      JSROOT.GEO._warn_msgs[msg] = true;
+      console.warn(msg);
+   };
+
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -319,8 +327,8 @@
       var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
 
       if (hasrmin) {
-         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
-         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
       }
 
       var thetaStart = 0, thetaLength = 360;
@@ -970,7 +978,7 @@
       geom1.computeVertexNormals();
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
       if (matrix1!==null) {
-         if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         if (matrix1.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
          geom1.applyMatrix(matrix1);
       }
 
@@ -978,7 +986,7 @@
       geom2.computeVertexNormals();
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
       if (matrix2 !== null) {
-         if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         if (matrix2.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
          geom2.applyMatrix(matrix2);
       }
 
@@ -996,7 +1004,7 @@
          bsp = bsp1.subtract(bsp2); // "/"
 
       if (bsp === null) {
-         console.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+         JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
          return geom1;
       }
 
@@ -1276,14 +1284,8 @@
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
       // used to calculate statistic over created geometry
-      if (geom === null) {
-         if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
-         if ((shape_typename !== undefined) && (this.unsupported_shapes.indexOf(shape_typename) < 0)) {
-             this.unsupported_shapes.push(shape_typename);
-             console.warn('Not supported ' + shape_typename);
-         }
-         return;
-      }
+      if (geom === null)
+         return JSROOT.GEO.warn('Not supported ' + shape_typename);
 
       this._num_geom++;
       if (('vertices' in geom) && ('faces' in geom)) {
@@ -1403,7 +1405,10 @@
                                0,     0, 1,  0,
                                0,     0, 0,  1);
          } else {
-         //   console.warn('Unsupported pattern type ' + node.fFinder._typename);
+            if (JSROOT.GEO[node.fFinder._typename] === undefined) {
+               JSROOT.GEO[node.fFinder._typename] = true;
+               console.warn('Unsupported pattern type ' + node.fFinder._typename);
+            }
          }
       }
 
@@ -1574,7 +1579,7 @@
          mesh.updateMatrixWorld();
 
          if (work_around) {
-            JSROOT.console('perform workaroud for flipping mesh with childs');
+            JSROOT.GEO.warn('perform workaroud for flipping mesh with childs');
 
             prop.matrix.identity(); // set to 1
 
