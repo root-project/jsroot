@@ -1123,6 +1123,36 @@
       if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
+
+      while (true) {
+         var sign = "+";
+         var p = opt.indexOf(sign);
+         if (p<0) { sign = "-"; p = opt.indexOf(sign); }
+         if (p<0) break;
+
+         var p2 = p+1, regexp = new RegExp('[,; .]');
+         while ((p2<opt.length) && !regexp.test(opt[p2])) p2++;
+
+         var name = opt.substring(p+1, p2);
+
+         // for (var n=p;n<p2;++n) opt[n] = " ";
+
+         opt = opt.replace(sign + name, " ");
+
+         console.log(sign,':',name);
+
+
+         var node = this.GetObject();
+
+         var kind = this.NodeKind(node);
+         var prop = this.getNodeProperties(kind, node);
+
+
+      }
+
+      if (opt.indexOf("+")>=0)
+
+
       opt = opt.toLowerCase();
 
       if (opt.indexOf("all")>=0) {
@@ -1368,7 +1398,9 @@
       if (kind === 1) {
          // special handling for EVE nodes
 
-         var prop = { shape: node.fShape, material: null };
+         var prop = { shape: node.fShape, material: null, chlds: null };
+
+         if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
          if (visible) {
             var _transparent = false, _opacity = 1.0;
@@ -1396,11 +1428,11 @@
          return prop;
       }
 
-
-
       var volume = node.fVolume;
 
-      var prop = { shape: volume.fShape, matrix: null };
+      var prop = { shape: volume.fShape, matrix: null, material: null, chlds: null };
+
+      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
       if (('fMatrix' in node) && (node.fMatrix !== null))
          prop.matrix = JSROOT.GEO.createMatrix(node.fMatrix);
@@ -1489,32 +1521,21 @@
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
 
-      // Aborting here can speed up the drawing a lot but sometimes
-      // cuts off too many children nodes
-      //if (!arg.node._visible) { this._stack.pop(); return true; }
-
       var kind = this.NodeKind(arg.node);
       if (kind < 0) return false;
-      var chlds = null;
 
-      if (kind === 0) {
-         chlds = (arg.node.fVolume.fNodes !== null) ? arg.node.fVolume.fNodes.arr : null;
-      } else {
-         chlds = (arg.node.fElements !== null) ? arg.node.fElements.arr : null;
-      }
+      var prop = this.getNodeProperties(kind, arg.node, arg.node._visible);
 
       if ('nchild' in arg) {
          // add next child
-         if ((chlds === null) || (chlds.length <= arg.nchild)) {
+         if ((prop.chlds === null) || (prop.chlds.length <= arg.nchild)) {
             this._stack.pop();
          } else {
             this._stack.push({ toplevel: (arg.mesh ? arg.mesh : arg.toplevel),
-                               node: chlds[arg.nchild++] });
+                               node: prop.chlds[arg.nchild++] });
          }
          return true;
       }
-
-      var prop = this.getNodeProperties(kind, arg.node, arg.node._visible);
 
       var geom = null;
 
@@ -1541,7 +1562,7 @@
          prop.material = this._dummy_material;
       }
 
-      var has_childs = (chlds !== null) && (chlds.length > 0);
+      var has_childs = (prop.chlds !== null) && (prop.chlds.length > 0);
       var work_around = false;
 
       // this is only for debugging - test invertion of whole geometry
@@ -1558,58 +1579,55 @@
 
       if (geom === null) geom = new THREE.Geometry();
 
-      // Avoid creating meshes if not visible, and only measure "drawcnt" for these
-//      if (arg.node._visible) {
-         this._drawcnt++;
+      this._drawcnt++;
 
-         var mesh = new THREE.Mesh( geom, prop.material );
+      var mesh = new THREE.Mesh( geom, prop.material );
 
-         mesh.applyMatrix(prop.matrix);
+      mesh.applyMatrix(prop.matrix);
 
-         this.accountMesh(mesh);
+      this.accountMesh(mesh);
 
-         mesh.name = arg.node.fName;
+      mesh.name = arg.node.fName;
+
+      // add the mesh to the scene
+      arg.toplevel.add(mesh);
+
+      mesh.updateMatrixWorld();
+
+      if (work_around) {
+         JSROOT.GEO.warn('perform workaroud for flipping mesh with childs');
+
+         prop.matrix.identity(); // set to 1
+
+         geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+
+         var dmesh = new THREE.Mesh( geom, prop.material );
+
+         dmesh.applyMatrix(prop.matrix);
+
+         dmesh.name = "..";
 
          // add the mesh to the scene
-         arg.toplevel.add(mesh);
+         mesh.add(dmesh);
 
-         mesh.updateMatrixWorld();
+         dmesh.updateMatrixWorld();
+      }
 
-         if (work_around) {
-            JSROOT.GEO.warn('perform workaroud for flipping mesh with childs');
+      if (this.options._debug && (arg.node._visible || this.options._full)) {
+         var helper = new THREE.WireframeHelper(mesh);
+         helper.material.color.set(prop.fillcolor);
+         helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
+         arg.toplevel.add(helper);
+      }
 
-            prop.matrix.identity(); // set to 1
+      if (this.options._bound && (arg.node._visible || this.options._full)) {
+         var boxHelper = new THREE.BoxHelper( mesh );
+         arg.toplevel.add( boxHelper );
+      }
 
-            geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+      arg.mesh = mesh;
 
-            var dmesh = new THREE.Mesh( geom, prop.material );
-
-            dmesh.applyMatrix(prop.matrix);
-
-            dmesh.name = "..";
-
-            // add the mesh to the scene
-            mesh.add(dmesh);
-
-            dmesh.updateMatrixWorld();
-         }
-
-         if (this.options._debug && (arg.node._visible || this.options._full)) {
-            var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(prop.fillcolor);
-            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-            arg.toplevel.add(helper);
-         }
-
-         if (this.options._bound && (arg.node._visible || this.options._full)) {
-            var boxHelper = new THREE.BoxHelper( mesh );
-            arg.toplevel.add( boxHelper );
-         }
-
-         arg.mesh = mesh;
-//      }
-
-      if ((chlds === null) || (chlds.length === 0) || (arg.node._numvischld === 0)) {
+      if ((prop.chlds === null) || (prop.chlds.length === 0) || (arg.node._numvischld === 0)) {
          // do not draw childs if they not exists or not visible
          this._stack.pop();
       } else {
