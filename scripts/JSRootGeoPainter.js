@@ -1795,7 +1795,7 @@
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2 } );
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2, depthTest: false } );
 
       this._scene_width = w;
       this._scene_height = h;
