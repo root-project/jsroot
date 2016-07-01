@@ -1130,33 +1130,33 @@
 
 
       while (true) {
-         var sign = "+";
-         var p = opt.indexOf(sign);
-         if (p<0) { sign = "-"; p = opt.indexOf(sign); }
-         if (p<0) break;
+         var pp = opt.indexOf("+"), pm = opt.indexOf("-");
+         if ((pp<0) && (pm<0)) break;
+         var p1 = pp, sign = "+";
+         if ((p1<0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
 
-         var p2 = p+1, regexp = new RegExp('[,; .]');
-         while ((p2<opt.length) && !regexp.test(opt[p2])) p2++;
+         var p2 = p1+1, regexp = new RegExp('[,; .]');
+         while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
 
-         var name = opt.substring(p+1, p2);
+         var name = opt.substring(p1+1, p2);
+         opt = opt.substr(0,p1) + opt.substr(p2);
 
-         // for (var n=p;n<p2;++n) opt[n] = " ";
-
-         opt = opt.replace(sign + name, " ");
-
-         console.log(sign,':',name);
-
-
-         if (name.indexOf("*") < 0)
-            regexp = new RegExp(name);
-         else
-            regexp = new RegExp("^" + name.split("*").join(".*") + "$");
-
+         console.log("Modify ", sign,':',name);
 
          var node = this.GetObject();
 
          var kind = this.NodeKind(node);
          var prop = this.getNodeProperties(kind, node);
+
+         if (name == "") {
+            JSROOT.SetGeoAttBit(prop.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+            continue;
+         }
+
+         if (name.indexOf("*") < 0)
+            regexp = new RegExp(name);
+         else
+            regexp = new RegExp("^" + name.split("*").join(".*") + "$");
 
          if (prop.chlds!==null)
             for (var n=0;n<prop.chlds.length;++n) {
