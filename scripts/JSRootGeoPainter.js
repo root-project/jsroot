@@ -1654,9 +1654,11 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl) {
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl, parentMat) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
+
+      if (!parentMat) { parentMat = new THREE.Matrix4(); }
 
       var kind = this.NodeKind(obj);
       var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
@@ -1701,14 +1703,15 @@
             if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) vislvl = 0;
          }
 
-         /*
+         
          if (vis) {
              var prop = this.getNodeProperties(kind, obj);
+             obj.globalMatrix = prop.matrix.multiply(parentMat);
               //  prop.matrix is transformation matrix relative to the parent
               //  one need to accumulate world matrix to get global tranformation, which could
               //  be used to identify if object can be seen by the camera
          }
-         */
+         
 
       } else {
          if (obj.fShape === undefined) return res;
@@ -1743,7 +1746,7 @@
 
          if (chlds !== null)
             for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1);
+               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1, obj.globalMatrix);
                obj._numchld += chld_res.cnt;
                obj._numvischld += chld_res.vis;
             }
