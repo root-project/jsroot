@@ -1150,7 +1150,7 @@
 
       this.options = this.DecodeOptions(opt);
 
-      this.CheckPadOptions();
+      this.CheckPadRange();
 
       this.ScanContent();
 

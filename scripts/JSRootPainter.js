@@ -302,10 +302,12 @@
 
       if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
 
-      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0, used: true };
+      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0, used: true, changed: false };
 
       res.Change = function(color, style, size) {
 
+         this.changed = true;
+         
          if (color!==undefined) this.color = color;
          if (style!==undefined) this.style = style;
          if (size!==undefined) this.size = size; else size = this.size;
@@ -417,6 +419,8 @@
       res.func = res.Apply.bind(res);
 
       res.Change(marker_color, style, attmarker.fMarkerSize);
+      
+      res.changed = false;
 
       return res;
    }
@@ -457,6 +461,15 @@
             line.excl_width = Math.floor(line.width / 100) * 5;
             line.width = line.width % 100; // line width
          }
+         
+         line.ChangeExcl = function(side,width) {
+            if (width !== undefined) this.excl_width = width;
+            if (side !== undefined) {
+               this.excl_side = side;
+               if ((this.excl_width===0) && (this.excl_side!==0)) this.excl_width = 20;
+            }
+            this.changed = true;
+         }
       }
 
       // if custom color number used, use lightgrey color to show lines
@@ -476,6 +489,14 @@
                selection.style('stroke-dasharray', this.dash);
          }
       }
+      
+      line.Change = function(color, width, dash) {
+         if (color !== undefined) this.color = color;
+         if (width !== undefined) this.width = width;
+         if (dash !== undefined) this.dash = dash;
+         this.changed = true;
+      }
+      
       line.func = line.Apply.bind(line);
 
       return line;
@@ -1557,7 +1578,7 @@
       // 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
       // 2 means all other objects where such combination is white-color filling
 
-      var fill = { color: "none", colorindx: 0, pattern: 0, used: true, kind: 2 };
+      var fill = { color: "none", colorindx: 0, pattern: 0, used: true, kind: 2, changed: false };
 
       if (kind!==undefined) fill.kind = kind;
 
@@ -1575,6 +1596,8 @@
       fill.func = fill.Apply.bind(fill);
 
       fill.Change = function(color, pattern, svg) {
+         this.changed = true;
+         
          if ((color !== undefined) && !isNaN(color))
             this.colorindx = color;
 
@@ -1683,6 +1706,8 @@
       }
 
       fill.Change(color, pattern, this.svg_canvas());
+      
+      fill.changed = false;
 
       return fill;
    }
@@ -2138,15 +2163,15 @@
       if (this.lineatt && this.lineatt.used) {
          menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.width = parseInt(arg); this.Redraw(); }.bind(this));
+                               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.color = arg; this.Redraw(); }.bind(this));
+                          function(arg) { this.lineatt.Change(arg); this.Redraw(); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
             id = parseInt(id);
             if (isNaN(id) || (JSROOT.Painter.root_line_styles[id] === undefined)) return;
-            this.lineatt.dash = JSROOT.Painter.root_line_styles[id];
+            this.lineatt.Change(undefined, undefined, JSROOT.Painter.root_line_styles[id]);
             this.Redraw();
          }.bind(this));
          for (var n=1;n<11;++n) {
@@ -2154,7 +2179,7 @@
 
             var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
 
-            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.dash = arg; this.Redraw(); }.bind(this));
+            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.Change(undefined, undefined, arg); this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -2164,14 +2189,13 @@
             menu.add("sub:side");
             for (var side=-1;side<=1;++side)
                menu.addchk((this.lineatt.excl_side==side), side, side, function(arg) {
-                  this.lineatt.excl_side = parseInt(arg);
-                  if ((this.lineatt.excl_width===0) && (this.lineatt.excl_side!=0)) this.lineatt.excl_width = 20;
+                  this.lineatt.ChangeExcl(parseInt(arg));
                   this.Redraw();
                }.bind(this));
             menu.add("endsub:");
 
             this.AddSizeMenuEntry(menu, "width", 10, 100, 10, this.lineatt.excl_width,
-                  function(arg) { this.lineatt.excl_width = parseInt(arg); this.Redraw(); }.bind(this));
+                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.Redraw(); }.bind(this));
 
             menu.add("endsub:");
          }
@@ -3593,11 +3617,12 @@
          svg.append("svg:g").attr("class","stat_layer");
          svg.append("svg:g").attr("class","btns_layer");
 
-         this.fillatt = this.createAttFill(this.pad, 1001, 0);
-
          if (JSROOT.gStyle.ContextMenu)
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
       }
+      
+      if (!this.fillatt || !this.fillatt.changed)
+         this.fillatt = this.createAttFill(this.pad, 1001, 0);
 
       if ((w<=0) || (h<=0)) {
          svg.attr("visibility", "hidden");
@@ -3662,8 +3687,10 @@
          if (JSROOT.gStyle.ContextMenu)
             svg_pad.select(".root_pad_border").on("contextmenu", this.ShowContextMenu.bind(this));
 
-         this.fillatt = this.createAttFill(this.pad, 1001, 0);
-         this.lineatt = JSROOT.Painter.createAttLine(this.pad)
+         if (!this.fillatt || !this.fillatt.changed)
+            this.fillatt = this.createAttFill(this.pad, 1001, 0);
+         if (!this.lineatt || !this.lineatt.changed)
+            this.lineatt = JSROOT.Painter.createAttLine(this.pad)
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
@@ -3910,6 +3937,12 @@
       this.pad.fRightMargin  = obj.fRightMargin;
       this.pad.fBottomMargin = obj.fBottomMargin
       this.pad.fTopMargin    = obj.fTopMargin;
+      
+      this.pad.fFillColor = obj.fFillColor;
+      this.pad.fFillStyle = obj.fFillStyle;
+      this.pad.fLineColor = obj.fLineColor;
+      this.pad.fLineStyle = obj.fLineStyle;
+      this.pad.fLineWidth = obj.fLineWidth;
 
       if (this.iscan) this.CheckColors(obj);
 
@@ -5254,6 +5287,8 @@
 
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
 
+      if (!this.is_main_painter()) return;
+      
       this.zoom_xmin = this.zoom_xmax = 0;
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
@@ -5305,19 +5340,21 @@
             }
       }
    }
+   
+   JSROOT.THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-   JSROOT.THistPainter.prototype.CheckPadOptions = function() {
+      if (!this.fillatt || !this.fillatt.changed)
+         this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
 
-      var main = this.main_painter();
+      if (!this.lineatt || !this.lineatt.changed) {
+         this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+         var main = this.main_painter();
 
-      this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
-
-      this.lineatt = JSROOT.Painter.createAttLine(this.histo);
-
-      if (main) this.lineatt.color = main.GetAutoColor(this.lineatt.color);
-      if (main === this)
-         this.CheckPadRange();
-
+         if (main) {
+            var newcol = main.GetAutoColor(this.lineatt.color);
+            if (newcol !== this.lineatt.color) { this.lineatt.color = newcol; this.lineatt.changed = true; }
+         }
+      }
    }
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
@@ -5335,6 +5372,12 @@
 
       var histo = this.GetObject();
 
+      histo.fFillColor = obj.fFillColor;
+      histo.fFillStyle = obj.fFillStyle;
+      histo.fLineColor = obj.fLineColor;
+      histo.fLineStyle = obj.fLineStyle;
+      histo.fLineWidth = obj.fLineWidth;
+      
       histo.fEntries = obj.fEntries;
       histo.fTsumw = obj.fTsumw;
       histo.fTsumwx = obj.fTsumwx;
@@ -5377,8 +5420,7 @@
             }
          }
 
-      if (this.is_main_painter() && !this.zoom_changed_interactive)
-         this.CheckPadRange();
+      if (!this.zoom_changed_interactive) this.CheckPadRange();
 
       this.ScanContent();
 
@@ -7029,6 +7071,8 @@
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
+      this.CheckHistDrawAttributes();
+      
       if (this.options.Bar > 0)
          return this.DrawBars();
 
@@ -7516,7 +7560,7 @@
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
 
-      painter.CheckPadOptions();
+      painter.CheckPadRange();
 
       painter.ScanContent();
 

@@ -30,6 +30,14 @@
 
    JSROOT.GEO = {};
 
+   // method used to avoid duplication of warnings
+   JSROOT.GEO.warn = function(msg) {
+      if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
+      if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
+      JSROOT.GEO._warn_msgs[msg] = true;
+      console.warn(msg);
+   };
+
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -319,8 +327,8 @@
       var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
 
       if (hasrmin) {
-         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
-         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; console.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
       }
 
       var thetaStart = 0, thetaLength = 360;
@@ -970,7 +978,7 @@
       geom1.computeVertexNormals();
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
       if (matrix1!==null) {
-         if (matrix1.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         if (matrix1.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
          geom1.applyMatrix(matrix1);
       }
 
@@ -978,7 +986,7 @@
       geom2.computeVertexNormals();
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
       if (matrix2 !== null) {
-         if (matrix2.determinant() < -0.9) console.warn('Axis reflection in composite shape - not supported');
+         if (matrix2.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
          geom2.applyMatrix(matrix2);
       }
 
@@ -996,7 +1004,7 @@
          bsp = bsp1.subtract(bsp2); // "/"
 
       if (bsp === null) {
-         console.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+         JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
          return geom1;
       }
 
@@ -1061,14 +1069,19 @@
       };
 
    JSROOT.TestGeoAttBit = function(volume, f) {
-      if (!('fGeoAtt' in volume)) return false;
-      return (volume.fGeoAtt & f) !== 0;
+      var att = volume.fGeoAtt;
+      return att === undefined ? false : ((att & f) !== 0);
    }
 
-   JSROOT.ToggleGeoAttBit = function(volume, f) {
-      if (!('fGeoAtt' in volume)) return false;
+   JSROOT.SetGeoAttBit = function(volume, f, value) {
+      if (volume.fGeoAtt === undefined) return;
+      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
+   }
 
-      volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
+
+   JSROOT.ToggleGeoAttBit = function(volume, f) {
+      if (volume.fGeoAtt !== undefined)
+         volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
    JSROOT.TGeoPainter = function( geometry ) {
@@ -1106,7 +1119,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, maxlvl: -1, _axis:false, scale: new THREE.Vector3(1,1,1) };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1) };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -1115,15 +1128,54 @@
       if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
 
+
+      while (true) {
+         var pp = opt.indexOf("+"), pm = opt.indexOf("-");
+         if ((pp<0) && (pm<0)) break;
+         var p1 = pp, sign = "+";
+         if ((p1<0) || ((pm>=0) && (pm<pp))) { p1 = pm; sign = "-"; }
+
+         var p2 = p1+1, regexp = new RegExp('[,; .]');
+         while ((p2<opt.length) && !regexp.test(opt[p2]) && (opt[p2]!='+') && (opt[p2]!='-')) p2++;
+
+         var name = opt.substring(p1+1, p2);
+         opt = opt.substr(0,p1) + opt.substr(p2);
+
+         console.log("Modify ", sign,':',name);
+
+         var node = this.GetObject();
+
+         var kind = this.NodeKind(node);
+         var prop = this.getNodeProperties(kind, node);
+
+         if (name == "") {
+            JSROOT.SetGeoAttBit(prop.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+            continue;
+         }
+
+         if (name.indexOf("*") < 0)
+            regexp = new RegExp(name);
+         else
+            regexp = new RegExp("^" + name.split("*").join(".*") + "$");
+
+         if (prop.chlds!==null)
+            for (var n=0;n<prop.chlds.length;++n) {
+               var chld = this.getNodeProperties(kind, prop.chlds[n]);
+
+               if (regexp.test(chld.name) && chld.volume) {
+                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisDaughters, (sign === "+"));
+               }
+            }
+      }
+
+      if (opt.indexOf("+")>=0)
+
+
       opt = opt.toLowerCase();
 
       if (opt.indexOf("all")>=0) {
-         res.maxlvl = 9999;
          opt = opt.replace("all", " ");
-      }
-      if (opt.indexOf("limit")>=0) {
-         res.maxlvl = 1111;
-         opt = opt.replace("limit", " ");
       }
       if (opt.indexOf("invx")>=0) {
          res.scale.x = -1;
@@ -1136,12 +1188,6 @@
       if (opt.indexOf("invz")>=0) {
          res.scale.z = -1;
          opt = opt.replace("invz", " ");
-      }
-
-      var p = opt.indexOf("maxlvl");
-      if (p>=0) {
-         res.maxlvl = parseInt(opt.substr(p+6, 1));
-         opt = opt.replace("maxlvl" + res.maxlvl, " ");
       }
 
       if (opt.indexOf("d")>=0) res._debug = true;
@@ -1276,14 +1322,8 @@
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
       // used to calculate statistic over created geometry
-      if (geom === null) {
-         if (!('unsupported_shapes' in this)) this.unsupported_shapes = [];
-         if ((shape_typename !== undefined) && (this.unsupported_shapes.indexOf(shape_typename) < 0)) {
-             this.unsupported_shapes.push(shape_typename);
-             console.warn('Not supported ' + shape_typename);
-         }
-         return;
-      }
+      if (geom === null)
+         return JSROOT.GEO.warn('Not supported ' + shape_typename);
 
       this._num_geom++;
       if (('vertices' in geom) && ('faces' in geom)) {
@@ -1359,12 +1399,48 @@
       return geom;
    }
 
-   JSROOT.TGeoPainter.prototype.getNodeProperties = function(node, visible) {
-      // function return matrix, shape and material
+   JSROOT.TGeoPainter.prototype.getNodeProperties = function(kind, node, visible) {
+      // function return matrix, shape and material for specified node
+      // Only if node visible, material is created
+
+      if (kind === 1) {
+         // special handling for EVE nodes
+
+         var prop = { name: node.fName, shape: node.fShape, material: null, chlds: null };
+
+         if (node.fElements !== null) prop.chlds = node.fElements.arr;
+
+         if (visible) {
+            var _transparent = false, _opacity = 1.0;
+            if ( node.fRGBA[3] < 1.0) {
+               _transparent = true;
+               _opacity = node.fRGBA[3];
+            }
+            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             overdraw: 0. } );
+         }
+
+         prop.matrix = new THREE.Matrix4();
+
+         if (node.fTrans!==null) {
+            prop.matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                            node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                            node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                                         0,               0,                0, 1);
+            // second - set position with proper sign
+            prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+         }
+         return prop;
+      }
 
       var volume = node.fVolume;
 
-      var prop = { shape: volume.fShape, matrix: null };
+      var prop = { name: volume.fName, volume: node.fVolume, shape: volume.fShape, matrix: null, material: null, chlds: null };
+
+      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
       if (('fMatrix' in node) && (node.fMatrix !== null))
          prop.matrix = JSROOT.GEO.createMatrix(node.fMatrix);
@@ -1403,7 +1479,10 @@
                                0,     0, 1,  0,
                                0,     0, 0,  1);
          } else {
-         //   console.warn('Unsupported pattern type ' + node.fFinder._typename);
+            if (JSROOT.GEO[node.fFinder._typename] === undefined) {
+               JSROOT.GEO[node.fFinder._typename] = true;
+               console.warn('Unsupported pattern type ' + node.fFinder._typename);
+            }
          }
       }
 
@@ -1440,38 +1519,6 @@
       return prop;
    }
 
-   JSROOT.TGeoPainter.prototype.getEveNodeProperties = function(node, visible) {
-
-      var prop = { shape: node.fShape };
-
-      prop.material = null;
-
-      if (visible) {
-         var _transparent = false, _opacity = 1.0;
-         if ( node.fRGBA[3] < 1.0) {
-            _transparent = true;
-            _opacity = node.fRGBA[3];
-         }
-         prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                          side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                          overdraw: 0. } );
-      }
-
-      prop.matrix = new THREE.Matrix4();
-
-      if (node.fTrans!==null) {
-         prop.matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
-                         node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
-                         node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                      0,               0,                0, 1);
-         // second - set position with proper sign
-         prop.matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
-      }
-      return prop;
-   }
-
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
@@ -1482,37 +1529,21 @@
       // cut all volumes below 0 level
       // if (arg.lvl===0) { this._stack.pop(); return true; }
 
-      // Aborting here can speed up the drawing a lot but sometimes
-      // cuts off too many children nodes
-      //if (!arg.node._visible) { this._stack.pop(); return true; }
-
       var kind = this.NodeKind(arg.node);
       if (kind < 0) return false;
-      var chlds = null;
 
-      if (kind === 0) {
-         chlds = (arg.node.fVolume.fNodes !== null) ? arg.node.fVolume.fNodes.arr : null;
-      } else {
-         chlds = (arg.node.fElements !== null) ? arg.node.fElements.arr : null;
-      }
+      var prop = this.getNodeProperties(kind, arg.node, arg.node._visible);
 
       if ('nchild' in arg) {
          // add next child
-         if ((chlds === null) || (chlds.length <= arg.nchild)) {
+         if ((prop.chlds === null) || (prop.chlds.length <= arg.nchild)) {
             this._stack.pop();
          } else {
             this._stack.push({ toplevel: (arg.mesh ? arg.mesh : arg.toplevel),
-                               node: chlds[arg.nchild++] });
+                               node: prop.chlds[arg.nchild++] });
          }
          return true;
       }
-
-      var prop = null;
-
-      if (kind === 0)
-         prop = this.getNodeProperties(arg.node, arg.node._visible);
-      else
-         prop = this.getEveNodeProperties(arg.node, arg.node._visible);
 
       var geom = null;
 
@@ -1539,7 +1570,7 @@
          prop.material = this._dummy_material;
       }
 
-      var has_childs = (chlds !== null) && (chlds.length > 0);
+      var has_childs = (prop.chlds !== null) && (prop.chlds.length > 0);
       var work_around = false;
 
       // this is only for debugging - test invertion of whole geometry
@@ -1556,58 +1587,55 @@
 
       if (geom === null) geom = new THREE.Geometry();
 
-      // Avoid creating meshes if not visible, and only measure "drawcnt" for these
-//      if (arg.node._visible) {
-         this._drawcnt++;
+      this._drawcnt++;
 
-         var mesh = new THREE.Mesh( geom, prop.material );
+      var mesh = new THREE.Mesh( geom, prop.material );
 
-         mesh.applyMatrix(prop.matrix);
+      mesh.applyMatrix(prop.matrix);
 
-         this.accountMesh(mesh);
+      this.accountMesh(mesh);
 
-         mesh.name = arg.node.fName;
+      mesh.name = arg.node.fName;
+
+      // add the mesh to the scene
+      arg.toplevel.add(mesh);
+
+      mesh.updateMatrixWorld();
+
+      if (work_around) {
+         JSROOT.GEO.warn('perform workaroud for flipping mesh with childs');
+
+         prop.matrix.identity(); // set to 1
+
+         geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+
+         var dmesh = new THREE.Mesh( geom, prop.material );
+
+         dmesh.applyMatrix(prop.matrix);
+
+         dmesh.name = "..";
 
          // add the mesh to the scene
-         arg.toplevel.add(mesh);
+         mesh.add(dmesh);
 
-         mesh.updateMatrixWorld();
+         dmesh.updateMatrixWorld();
+      }
 
-         if (work_around) {
-            JSROOT.console('perform workaroud for flipping mesh with childs');
+      if (this.options._debug && (arg.node._visible || this.options._full)) {
+         var helper = new THREE.WireframeHelper(mesh);
+         helper.material.color.set(prop.fillcolor);
+         helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
+         arg.toplevel.add(helper);
+      }
 
-            prop.matrix.identity(); // set to 1
+      if (this.options._bound && (arg.node._visible || this.options._full)) {
+         var boxHelper = new THREE.BoxHelper( mesh );
+         arg.toplevel.add( boxHelper );
+      }
 
-            geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+      arg.mesh = mesh;
 
-            var dmesh = new THREE.Mesh( geom, prop.material );
-
-            dmesh.applyMatrix(prop.matrix);
-
-            dmesh.name = "..";
-
-            // add the mesh to the scene
-            mesh.add(dmesh);
-
-            dmesh.updateMatrixWorld();
-         }
-
-         if (this.options._debug && (arg.node._visible || this.options._full)) {
-            var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(prop.fillcolor);
-            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-            arg.toplevel.add(helper);
-         }
-
-         if (this.options._bound && (arg.node._visible || this.options._full)) {
-            var boxHelper = new THREE.BoxHelper( mesh );
-            arg.toplevel.add( boxHelper );
-         }
-
-         arg.mesh = mesh;
-//      }
-
-      if ((chlds === null) || (chlds.length === 0) || (arg.node._numvischld === 0)) {
+      if ((prop.chlds === null) || (prop.chlds.length === 0) || (arg.node._numvischld === 0)) {
          // do not draw childs if they not exists or not visible
          this._stack.pop();
       } else {
@@ -1622,27 +1650,15 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   JSROOT.TGeoPainter.prototype.createVolumeList = function(obj) {
-   // Traverse the hierarchy to create a list of the sizes of all volumes
-
-  //    var kind = this.NodeKind(obj);
-      if ((obj.fVolume === undefined) || (obj.fVolume === null)) return;
-      var chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : [];
-      var shape = obj.fVolume.fShape;
-      var vol = shape.fDX * shape.fDY * shape.fDZ;
-      this._sizeList.push(vol);
-      for (var i = 0; i < chlds.length; ++i ) {
-         this.createVolumeList(chlds[i]);
-      }
-   }
-
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl) {
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
       // also check if volume shape can be drawn
 
       var kind = this.NodeKind(obj);
       var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
       if (kind < 0) return res;
+
+      if (vislvl === undefined) vislvl = 9999;
 
       if (lvl === undefined) {
          lvl = 0;
@@ -1672,8 +1688,24 @@
          if ((obj.fVolume === undefined) || (obj.fVolume === null)) return res;
          shape = obj.fVolume.fShape;
          chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-         vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen)
-                || ((lvl < arg.maxlvl) && JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis));
+
+         if (arg.screen_vis) {
+            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
+         } else {
+            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis) && (vislvl>=0);
+            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) vislvl = 1; else
+            if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) vislvl = 0;
+         }
+
+         /*
+         if (vis) {
+             var prop = this.getNodeProperties(kind, obj);
+              //  prop.matrix is transformation matrix relative to the parent
+              //  one need to accumulate world matrix to get global tranformation, which could
+              //  be used to identify if object can be seen by the camera
+         }
+         */
+
       } else {
          if (obj.fShape === undefined) return res;
          shape = obj.fShape;
@@ -1695,7 +1727,7 @@
          arg.map.push(obj);
 
          //  var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
-         var vol = shape.fDX * shape.fDY * shape.fDZ;
+         var vol = shape ? shape.fDX * shape.fDY * shape.fDZ : 0;
 
          // Only set nodes above the minVolume size to visible
          if (vis && !('_visible' in obj) && (shape!==null) && (vol > arg.minVolume)) {
@@ -1707,7 +1739,7 @@
 
          if (chlds !== null)
             for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1);
+               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1);
                obj._numchld += chld_res.cnt;
                obj._numvischld += chld_res.vis;
             }
@@ -1895,7 +1927,7 @@
 
       var tm1 = new Date();
 
-      var arg = { cnt : [], maxlvl: -1 };
+      var arg = { cnt : [], screen_vis: true };
       var count = this.CountGeoVolumes(this.GetObject(), arg);
 
       var res = 'Total number: ' + count.cnt + '<br/>';
@@ -1906,7 +1938,7 @@
       res += "Unique volumes: " + arg.map.length + '<br/>';
 
       if (count.vis === 0) {
-         arg.clear(); arg.maxlvl = 9999;
+         arg.clear(); arg.screen_vis = false;
          count = this.CountGeoVolumes(this.GetObject(), arg);
       }
 
@@ -1943,22 +1975,6 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-/*      this._volumeTarget = 2000;
-      this._sizeList = [];
-      var t1 = new Date().getTime();
-      this.createVolumeList(this.GetObject());
-      var t2 = new Date().getTime();
-      this._sizeList.sort(function( a, b ) { return a-b; } );
-      var t3 = new Date().getTime();
-      // using the sorted list of volumes, create a cutoff that will
-      // ensure less than the target number of volumes are drawn
-      this._minVolume = 0;
-      if (this._sizeList.length > this._volumeTarget) {
-         this._minVolume = this._sizeList[this._sizeList.length - this._volumeTarget];
-      }
-      console.log('minVolume', this._minVolume, 'len', this._sizeList.length, 't2-t1', t2-t1, 't3-t2', t3-t2);
-*/
-
       if (opt === 'count')
          return this.drawCount();
 
@@ -1971,24 +1987,24 @@
 
       this._webgl = JSROOT.Painter.TestWebGL();
 
-      this._data = { cnt: [], maxlvl: this.options.maxlvl }; // now count volumes which should go to the processing
+      this._data = { cnt: [], screen_vis: true }; // now count volumes which should go to the processing
 
       var total = this.CountGeoVolumes(this.GetObject(), this._data);
 
       // if no any volume was selected, probably it is because of visibility flags
-      if ((total.cnt > 0) && (total.vis == 0) && (this.options.maxlvl < 0)) {
+      if ((total.cnt > 0) && (total.vis == 0)) {
          this._data.clear();
-         this._data.maxlvl = 1111;
+         this._data.screen_vis = false;
          total = this.CountGeoVolumes(this.GetObject(), this._data);
       }
 
       console.log('numvis', total.vis, 'map', this._data.map.length);
 
-      var maxlimit = this._webgl ? 10000 : 2000; // maximal number of allowed nodes to be displayed at once
+      var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
 
       if (total.vis > maxlimit)  {
 
-         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed');
+         console.log('selected number of volumes ' + total.vis + ' cannot be disaplyed, try to reduce');
 
          var t1 = new Date().getTime();
          // sort in reverse order (big first)
@@ -2557,7 +2573,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count;limit;maxlvl2" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;

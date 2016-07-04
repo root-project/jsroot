@@ -6,6 +6,7 @@
 3. Preliminary support of candle plot (many options to be implemented)
 4. Implement box and hbox draw options for TH1 class
 5. Preliminary support of websocket communication
+6. Update many draw attributes (fill/line/position) when monitor objects  
 
 
 ## Changes in 4.5.0

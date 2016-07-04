@@ -3789,6 +3789,8 @@
 
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
+      this.CheckHistDrawAttributes();
+      
       this.RecreateDrawG(false, "main_layer");
 
       var w = this.frame_width(), h = this.frame_height();
@@ -4031,7 +4033,7 @@
       // here we deciding how histogram will look like and how will be shown
       this.options = this.DecodeOptions(opt);
 
-      this.CheckPadOptions();
+      this.CheckPadRange();
 
       this.ScanContent();
 
