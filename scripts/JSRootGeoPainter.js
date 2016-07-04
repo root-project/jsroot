@@ -2045,6 +2045,7 @@
       var curr = new Date().getTime();
 
       var log = "";
+      var previewInterval = this._webgl ? 30 : 2000;
 
       while(true) {
          if (this.drawNode()) {
@@ -2054,7 +2055,7 @@
 
          var now = new Date().getTime();
 
-         if (now - curr > 2000) {
+         if (now - curr > previewInterval) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
             this.adjustCameraPosition();
