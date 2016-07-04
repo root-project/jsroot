@@ -1344,64 +1344,10 @@
       if (mesh !== null) this._num_nodes++;
    }
 
-   JSROOT.TGeoPainter.prototype.checkFlipping = function(parent, matrix, shape, geom, mesh_has_childs) {
-      // check if matrix of element should be flipped
-
-      var m = new THREE.Matrix4();
-      m.multiplyMatrices( parent.matrixWorld, matrix);
-      if (m.determinant() > -0.9) return geom;
-
-      // we could not transform matrix of mesh with childs, need workaround
-      if (mesh_has_childs) return null;
-
-      var cnt = 0, flip = new THREE.Vector3(1,1,1);
-
-      if (m.elements[0]===-1 && m.elements[1]=== 0 && m.elements[2] === 0) { flip.x = -1; cnt++; }
-      if (m.elements[4]=== 0 && m.elements[5]===-1 && m.elements[6] === 0) { flip.y = -1; cnt++; }
-      if (m.elements[8]=== 0 && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
-
-      if ((cnt===0) || (cnt ===2)) {
-         flip.set(1,1,1); cnt = 0;
-         if (m.elements[0] + m.elements[1] + m.elements[2] === -1) { flip.x = -1; cnt++; }
-         if (m.elements[4] + m.elements[5] + m.elements[6] === -1) { flip.y = -1; cnt++; }
-         if (m.elements[8] + m.elements[9] + m.elements[10] === -1) { flip.z = -1; cnt++; }
-         if ((cnt === 0) || (cnt === 2)) {
-            // console.log('not found proper axis, use Z ' + JSON.stringify(flip) + '  m = ' + JSON.stringify(m.elements));
-            flip.z = -flip.z;
-         }
-      }
-
-      matrix.scale(flip);
-
-      var gname = "_geom";
-      if (flip.x<0) gname += "X";
-      if (flip.y<0) gname += "Y";
-      if (flip.z<0) gname += "Z";
-
-      // if geometry with such flipping already was created - use it again
-      if (gname in shape) return shape[gname];
-
-      geom = geom.clone();
-
-      geom.scale(flip.x, flip.y, flip.z);
-
-      var face, d;
-      for (var n=0;n<geom.faces.length;++n) {
-         face = geom.faces[n];
-         d = face.b; face.b = face.c; face.c = d;
-      }
-
-      //geom.computeBoundingSphere();
-      geom.computeFaceNormals();
-
-      shape[gname] = geom;
-
-      this.accountGeom(geom);
-
-      return geom;
-   }
-
    JSROOT.TGeoPainter.prototype.createFlippedMesh = function(parent, shape, material) {
+      // when transformation matrix includes one or several invertion of axis,
+      // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
+
       var m = parent.matrixWorld;
 
       var cnt = 0, flip = new THREE.Vector3(1,1,1);
@@ -1614,18 +1560,11 @@
          return true;
       }
 
-      var geom = null;
-
-      var matrix = arg.node._matrix;
-
-      // if ((prop.shape === null) && arg.node._visible)
-      //    arg.node._visible = false;
-
-      var has_childs = (prop.chlds !== null) && (prop.chlds.length > 0);
-      var work_around = false;
+      if (arg.node._matrix === undefined)
+         arg.node._matrix = this.getNodeMatrix(kind, arg.node);
 
       var nodeObj = new THREE.Object3D();
-      if (matrix) nodeObj.applyMatrix(matrix);
+      if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
       this.accountNodes(nodeObj);
 
       nodeObj.name = arg.node.fName;
@@ -1779,9 +1718,6 @@
 
       res.cnt = 1 + obj._numchld; // account number of volumes
       res.vis = (obj._visible ? 1 : 0) + obj._numvischld; // account number of visible volumes
-
-      // if (obj._visisble || (obj._numvischld > 0))
-         obj._matrix = this.getNodeMatrix(kind, obj);
 
       return res;
    }
