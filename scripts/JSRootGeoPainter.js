@@ -1531,67 +1531,95 @@
    }
 
 
+   JSROOT.TGeoPainter.prototype.create3DObjects = function(arg) {
+      // function used to create Object3D hierarchy to current point
+      // Called only if object need to be drawn
+
+      if (arg.mesh) return arg.mesh;
+
+      var parent = this._stack[0].toplevel;
+
+      for (var n=0;n<this._stack.length;++n) {
+         arg = this._stack[n];
+         if (arg.mesh === undefined) {
+            if (arg.node._matrix === undefined)
+               arg.node._matrix = this.getNodeMatrix(this.NodeKind(arg.node), arg.node);
+
+            var nodeObj = new THREE.Object3D();
+            if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
+            this.accountNodes(nodeObj);
+
+            nodeObj.name = arg.node.fName;
+
+            // add the mesh to the scene
+            parent.add(nodeObj);
+
+            // this is only for debugging - test invertion of whole geometry
+            if (arg.main && (this.options.scale !== null)) {
+               if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
+                  nodeObj.scale.copy(this.options.scale);
+                  nodeObj.updateMatrix();
+               }
+            }
+
+            nodeObj.updateMatrixWorld();
+
+            arg.mesh = nodeObj;
+         }
+
+         parent = arg.mesh;
+      }
+
+      return arg.mesh;
+   }
+
    // Central function of TGeoNode drawing
    // Automatically traverse complete hierarchy
    // Also can be used to update existing drawing
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
-      if ((this._stack == null) || (this._stack.length == 0)) return false;
+      if (!this._stack || (this._stack.length == 0)) return false;
 
       var arg = this._stack[this._stack.length - 1];
+
+      if (arg.main && arg.mesh) {
+         // end of iteration
+         this._stack.pop();
+         return false;
+      }
+
+      if ('nchild' in arg) {
+         if (arg.nchild >= arg.chlds.length) {
+            this._stack.pop();
+            return true; // no more childs
+         }
+         // extract next child
+         arg.node = arg.chlds[arg.nchild++];
+         delete arg.mesh; // remove mesh on previous child
+      }
 
       var kind = this.NodeKind(arg.node);
       if (kind < 0) return false;
 
-      var visible = arg.node._visible && (arg.node._volume > this._data.minVolume);
+      var visible = arg.node._visible && (arg.node._volume > this._data.minVolume) && (arg.vislvl >= 0);
+      if (arg.main) this.create3DObjects(arg);
 
       var prop = this.getNodeProperties(kind, arg.node, visible);
 
-      if ('nchild' in arg) {
-         // add next child
-         if ((prop.chlds === null) || (prop.chlds.length <= arg.nchild) || (arg.vislvl <= 0)) {
-            this._stack.pop();
-         } else {
-            this._stack.push({ toplevel: (arg.mesh ? arg.mesh : arg.toplevel),
-                               node: prop.chlds[arg.nchild++],
-                               vislvl: arg.vislvl - 1 });
-         }
-         return true;
-      }
-
-      if (arg.node._matrix === undefined)
-         arg.node._matrix = this.getNodeMatrix(kind, arg.node);
-
-      var nodeObj = new THREE.Object3D();
-      if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
-      this.accountNodes(nodeObj);
-
-      nodeObj.name = arg.node.fName;
-
-      // add the mesh to the scene
-      arg.toplevel.add(nodeObj);
-
-      // this is only for debugging - test invertion of whole geometry
-      if (arg.main && (this.options.scale !== null)) {
-         if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
-            nodeObj.scale.copy(this.options.scale);
-            nodeObj.updateMatrix();
-         }
-      }
-
-      // calculate word matrix
-      nodeObj.updateMatrixWorld();
-
-      var mesh = null;
+      // console.log(this._stack.length, 'vislvl', arg.vislvl, 'visible', visible, 'chlds', prop.chlds, 'numvis', arg.node._numvischld);
 
       if (visible) {
+         var nodeObj = this.create3DObjects(arg);
+
          this._drawcnt++;
 
          if (typeof prop.shape._geom === 'undefined') {
             prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
             this.accountGeom(prop.shape._geom, prop.shape._typename);
          }
+
+         var mesh = null;
 
          if (prop.shape._geom !== null) {
 
@@ -1603,29 +1631,28 @@
 
             nodeObj.add(mesh);
          }
+
+         if (mesh && (this.options._debug || this.options._full)) {
+            var helper = new THREE.WireframeHelper(mesh);
+            helper.material.color.set(prop.fillcolor);
+            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
+            nodeObj.add(helper);
+         }
+
+         if (mesh && (this.options._bound || this.options._full)) {
+            var boxHelper = new THREE.BoxHelper( mesh );
+            nodeObj.add( boxHelper );
+         }
       }
 
-      if (this.options._debug && (visible || this.options._full)) {
-         var helper = new THREE.WireframeHelper(mesh);
-         helper.material.color.set(prop.fillcolor);
-         helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-         nodeObj.add(helper);
-      }
+      var vislvl = ('_visdepth' in arg.node) ? arg.node._visdepth : arg.vislvl;
 
-      if (this.options._bound && (visible || this.options._full)) {
-         var boxHelper = new THREE.BoxHelper( mesh );
-         nodeObj.add( boxHelper );
-      }
-
-      arg.mesh = nodeObj;
-
-      if ('_visdepth' in arg.node) arg.vislvl = arg.node._visdepth;
-
-      if ((prop.chlds === null) || (prop.chlds.length === 0) || (arg.node._numvischld === 0)) {
-         // do not draw childs if they not exists or not visible
-         this._stack.pop();
-      } else {
-         arg.nchild = 0; // specify that childs should be extracted and drawn
+      if (prop.chlds && (prop.chlds.length > 0) && (arg.node._numvischld > 0) && (vislvl > 0)) {
+         this._stack.push({
+            nchild: 0,
+            chlds: prop.chlds,
+            vislvl: vislvl - 1,
+         });
       }
 
       return true;
