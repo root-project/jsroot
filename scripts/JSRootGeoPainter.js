@@ -1519,15 +1519,15 @@
    }
 
 
+   // Central function of TGeoNode drawing
+   // Automatically traverse complete hierarchy
+   // Also can be used to update existing drawing
+
    JSROOT.TGeoPainter.prototype.drawNode = function() {
 
       if ((this._stack == null) || (this._stack.length == 0)) return false;
 
       var arg = this._stack[this._stack.length - 1];
-
-      // cut all volumes below 0 level
-      // if (arg.lvl===0) { this._stack.pop(); return true; }
-
       var kind = this.NodeKind(arg.node);
       if (kind < 0) return false;
 
@@ -1546,7 +1546,7 @@
 
       var geom = null;
 
-      if (prop.matrix === null) prop.matrix = new THREE.Matrix4();
+      if (!prop.matrix) prop.matrix = new THREE.Matrix4();
 
       if ((prop.shape === null) && arg.node._visible)
          arg.node._visible = false;
@@ -1640,7 +1640,7 @@
          // do not draw childs if they not exists or not visible
          this._stack.pop();
       } else {
-         arg.nchild = 0; // specify that childs should be extracted
+         arg.nchild = 0; // specify that childs should be extracted and drawn
       }
 
       return true;
@@ -1651,11 +1651,10 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl /*, parentMat*/) {
+   JSROOT.TGeoPainter.prototype.CountGeoVolumes = function(obj, arg, lvl, vislvl) {
       // count number of volumes, numver per hierarchy level, reference count, number of childs
-      // also check if volume shape can be drawn
-
-      // if (!parentMat) { parentMat = new THREE.Matrix4(); }
+      // also set _visible flag base on visibility bits and shape volume
+      // Selection based on camera position will be done in different place
 
       var kind = this.NodeKind(obj);
       var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
@@ -1700,17 +1699,6 @@
             if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) vislvl = 0;
          }
 
-         /*
-         if (vis) {
-             var prop = this.getNodeProperties(kind, obj);
-             obj.globalMatrix = prop.matrix.multiply(parentMat);
-              //  prop.matrix is transformation matrix relative to the parent
-              //  one need to accumulate world matrix to get global tranformation, which could
-              //  be used to identify if object can be seen by the camera
-         }
-         */
-
-
       } else {
          if (obj.fShape === undefined) return res;
          shape = obj.fShape;
@@ -1744,7 +1732,7 @@
 
          if (chlds !== null)
             for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1 /*, obj.globalMatrix */);
+               var chld_res = this.CountGeoVolumes(chlds[i], arg, lvl+1, vislvl-1);
                obj._numchld += chld_res.cnt;
                obj._numvischld += chld_res.vis;
             }
@@ -1863,11 +1851,9 @@
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
       if (this.MatchObjectType("TGeoNode"))  {
-         this._nodedraw = true;
          this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), main: true } ];
       }
       else if (this.MatchObjectType('TEveGeoShapeExtract')) {
-         this._nodedraw = false;
          this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), main: true } ];
       }
 
