@@ -1593,13 +1593,16 @@
             this.accountGeom(prop.shape._geom, prop.shape._typename);
          }
 
-         if (nodeObj.matrixWorld.determinant() > -0.9) {
-            mesh = new THREE.Mesh( prop.shape._geom, prop.material );
-         } else {
-            mesh = this.createFlippedMesh(nodeObj, prop.shape, prop.material);
-         }
+         if (prop.shape._geom !== null) {
 
-         nodeObj.add(mesh);
+            if (nodeObj.matrixWorld.determinant() > -0.9) {
+               mesh = new THREE.Mesh( prop.shape._geom, prop.material );
+            } else {
+               mesh = this.createFlippedMesh(nodeObj, prop.shape, prop.material);
+            }
+
+            nodeObj.add(mesh);
+         }
       }
 
       if (this.options._debug && (visible || this.options._full)) {
