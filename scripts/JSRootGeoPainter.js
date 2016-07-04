@@ -1040,7 +1040,7 @@
          case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape, limit );
          case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
          case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
-         case "TGeoShapeAssembly": return new THREE.Geometry();
+         case "TGeoShapeAssembly": return null;
       }
 
       return null;
@@ -1317,11 +1317,13 @@
       this._num_geom = 0;
       this._num_vertices = 0;
       this._num_faces = 0;
-      this._num_meshes = 0;
+      this._num_nodes = 0;
    }
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
       // used to calculate statistic over created geometry
+      if (shape_typename === 'TGeoShapeAssembly')
+         return;
       if (geom === null)
          return JSROOT.GEO.warn('Not supported ' + shape_typename);
 
@@ -1337,9 +1339,9 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.accountMesh = function(mesh) {
+   JSROOT.TGeoPainter.prototype.accountNodes = function(mesh) {
       // used to calculate statistic over created meshes
-      if (mesh !== null) this._num_meshes++;
+      if (mesh !== null) this._num_nodes++;
    }
 
    JSROOT.TGeoPainter.prototype.checkFlipping = function(parent, matrix, shape, geom, mesh_has_childs) {
@@ -1585,29 +1587,31 @@
          work_around = has_childs && (geom === null);
       }
 
-      if (geom === null) geom = new THREE.Geometry();
+      var nodeObj = new THREE.Object3D();
 
-      this._drawcnt++;
+      if (arg.node._visible && (geom !== null)) {
+         var mesh = new THREE.Mesh( geom, prop.material );
+         nodeObj.add(mesh);
+         this._drawcnt++;
+      }
 
-      var mesh = new THREE.Mesh( geom, prop.material );
+      nodeObj.applyMatrix(prop.matrix);
 
-      mesh.applyMatrix(prop.matrix);
+      this.accountNodes(nodeObj);
 
-      this.accountMesh(mesh);
-
-      mesh.name = arg.node.fName;
+      nodeObj.name = arg.node.fName;
 
       // add the mesh to the scene
-      arg.toplevel.add(mesh);
+      arg.toplevel.add(nodeObj);
 
-      mesh.updateMatrixWorld();
+      nodeObj.updateMatrixWorld();
 
       if (work_around) {
          JSROOT.GEO.warn('perform workaroud for flipping mesh with childs');
 
          prop.matrix.identity(); // set to 1
 
-         geom = this.checkFlipping(mesh, prop.matrix, prop.shape, prop.shape._geom, false);
+         geom = this.checkFlipping(nodeObj, prop.matrix, prop.shape, prop.shape._geom, false);
 
          var dmesh = new THREE.Mesh( geom, prop.material );
 
@@ -1616,7 +1620,7 @@
          dmesh.name = "..";
 
          // add the mesh to the scene
-         mesh.add(dmesh);
+         nodeObj.add(dmesh);
 
          dmesh.updateMatrixWorld();
       }
@@ -1633,7 +1637,7 @@
          arg.toplevel.add( boxHelper );
       }
 
-      arg.mesh = mesh;
+      arg.mesh = nodeObj;
 
       if ((prop.chlds === null) || (prop.chlds.length === 0) || (arg.node._numvischld === 0)) {
          // do not draw childs if they not exists or not visible
@@ -1827,7 +1831,7 @@
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
-      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2 } );
+      this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2, depthTest: false } );
 
       this._scene_width = w;
       this._scene_height = h;
@@ -2045,6 +2049,7 @@
       var curr = new Date().getTime();
 
       var log = "";
+      var previewInterval = this._webgl ? 30 : 2000;
 
       while(true) {
          if (this.drawNode()) {
@@ -2054,7 +2059,7 @@
 
          var now = new Date().getTime();
 
-         if (now - curr > 2000) {
+         if (now - curr > previewInterval) {
             JSROOT.progress(log);
             setTimeout(this.continueDraw.bind(this), 0);
             this.adjustCameraPosition();
@@ -2067,7 +2072,7 @@
       }
 
       var t2 = new Date().getTime();
-      JSROOT.console('Create tm = ' + (t2-this._startm) + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces + ' meshes ' + this._num_meshes);
+      JSROOT.console('Create tm = ' + (t2-this._startm) + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces + ' nodes ' + this._num_nodes);
 
       if (t2 - this._startm > 300) {
          JSROOT.progress('Rendering geometry');
