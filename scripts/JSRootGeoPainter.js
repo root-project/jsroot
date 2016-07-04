@@ -1481,10 +1481,7 @@
                                0,     0, 1,  0,
                                0,     0, 0,  1);
          } else {
-            if (JSROOT.GEO[node.fFinder._typename] === undefined) {
-               JSROOT.GEO[node.fFinder._typename] = true;
-               console.warn('Unsupported pattern type ' + node.fFinder._typename);
-            }
+           JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
       }
 
