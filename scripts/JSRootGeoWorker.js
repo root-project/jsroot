@@ -21,4 +21,12 @@ onmessage = function(e) {
       postMessage(e.data);
    }
 
+   if ('map' in e.data) {
+      var map = e.data.map;
+      e.data.tm1 = new Date();
+
+      console.log('get map len ' + map.length);
+      console.log('copy of cloned data takes ' + (e.data.tm1.getTime() -  e.data.tm0.getTime()));
+   }
+
 }

@@ -29,15 +29,6 @@
    if (typeof JSROOT.GEO !== 'object')
       console.error('JSROOT.GEO namespace is not defined')
 
-   // method used to avoid duplication of warnings
-   JSROOT.GEO.warn = function(msg) {
-      if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
-      if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
-      JSROOT.GEO._warn_msgs[msg] = true;
-      console.warn(msg);
-   };
-
-
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
@@ -137,7 +128,7 @@
 
          var node = this.GetObject();
 
-         var kind = this.NodeKind(node);
+         var kind = JSROOT.GEO.NodeKind(node);
          var prop = this.getNodeProperties(kind, node);
 
          if (name == "") {
@@ -400,70 +391,6 @@
       return mesh;
    }
 
-   JSROOT.TGeoPainter.prototype.getNodeMatrix = function(kind, node) {
-      // returns transformation matrix for the node
-      // created after node visibility flag is checked and volume cut is performed
-
-      var matrix = null;
-
-      if (kind === 1) {
-         // special handling for EVE nodes
-
-         matrix = new THREE.Matrix4();
-
-         if (node.fTrans!==null) {
-            matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
-                       node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
-                       node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                         0,               0,                0, 1);
-            // second - set position with proper sign
-            matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
-         }
-      } else
-      if (('fMatrix' in node) && (node.fMatrix !== null))
-         matrix = JSROOT.GEO.createMatrix(node.fMatrix);
-      else
-      if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
-         // if (node.fFinder._typename === 'TGeoPatternParaX') { }
-         // if (node.fFinder._typename === 'TGeoPatternParaY') { }
-         // if (node.fFinder._typename === 'TGeoPatternParaZ') { }
-         // if (node.fFinder._typename === 'TGeoPatternTrapZ') { }
-         // if (node.fFinder._typename === 'TGeoPatternCylR') { }
-         // if (node.fFinder._typename === 'TGeoPatternSphR') { }
-         // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
-         // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
-         // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
-         if ((node.fFinder._typename === 'TGeoPatternX') ||
-             (node.fFinder._typename === 'TGeoPatternY') ||
-             (node.fFinder._typename === 'TGeoPatternZ')) {
-            var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
-
-            matrix = new THREE.Matrix4();
-
-            switch (node.fFinder._typename.charAt(11)) {
-               case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
-               case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
-               case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
-            }
-         } else
-         if (node.fFinder._typename === 'TGeoPatternCylPhi') {
-            var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep);
-            var _cos = Math.cos(phi), _sin = Math.sin(phi);
-
-            matrix = new THREE.Matrix4();
-
-            matrix.set(_cos, -_sin, 0,  0,
-                      _sin,  _cos, 0,  0,
-                         0,     0, 1,  0,
-                         0,     0, 0,  1);
-         } else {
-           JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
-         }
-      }
-
-      return matrix;
-   }
-
    JSROOT.TGeoPainter.prototype.getNodeProperties = function(kind, node, visible) {
       // function return matrix, shape and material for specified node
       // Only if node visible, material is created
@@ -541,7 +468,7 @@
          arg = this._stack[n];
          if (arg.mesh === undefined) {
             if (arg.node._matrix === undefined)
-               arg.node._matrix = this.getNodeMatrix(this.NodeKind(arg.node), arg.node);
+               arg.node._matrix = JSROOT.GEO.getNodeMatrix(JSROOT.GEO.NodeKind(arg.node), arg.node);
 
             var nodeObj = new THREE.Object3D();
             if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
@@ -597,7 +524,7 @@
          delete arg.mesh; // remove mesh on previous child
       }
 
-      var kind = this.NodeKind(arg.node);
+      var kind = JSROOT.GEO.NodeKind(arg.node);
       if (kind < 0) return false;
 
       var visible = arg.node._visible && (arg.node._volume > this._data.minVolume) && (arg.vislvl >= 0);
@@ -656,18 +583,13 @@
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.NodeKind = function(obj) {
-      if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
-      return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
-   }
-
    JSROOT.TGeoPainter.prototype.CountGeoNodes = function(obj, arg, lvl) {
       // Scan nodes hierarchy, finds unique nodes and create map of such nodes
       // Extract visibility flags. calculates volume
       // Function should be called once every time object flags are changed
       // Selection based on camera position will be done in different place
 
-      var kind = this.NodeKind(obj);
+      var kind = JSROOT.GEO.NodeKind(obj);
       var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
       if (kind < 0) return res;
 
@@ -756,10 +678,10 @@
    JSROOT.TGeoPainter.prototype.CreateClonedStructures = function(arg) {
       if (!arg || !arg.map) return;
 
+      var tm1 = new Date().getTime();
+
       for (var n=0;n<arg.map.length;++n)
          arg.map[n]._refid = n; // mark all objects, need for the dereferencing
-
-      var tm1 = new Date().getTime();
 
       var cloned_map = [];
 
@@ -773,22 +695,33 @@
       for (var n=0;n<arg.map.length;++n) {
          var obj = arg.map[n];
 
-         var kind = this.NodeKind(obj);
+         var kind = JSROOT.GEO.NodeKind(obj);
 
-         var chlds = null;
+         var chlds = null, shape = null;
 
          if (kind === 0) {
-            if (obj.fVolume && obj.fVolume.fNodes) chlds = obj.fVolume.fNodes;
+            if (obj.fVolume) {
+               shape = obj.fVolume.fShape;
+               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes;
+            }
          } else {
+            shape = obj.fShape;
             if (obj.fElements) chlds = obj.fElements.arr;
+         }
+
+         var clone = cloned_map[n];
+
+         var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
+         if (matrix) clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+         if (shape) {
+            clone.fDX = shape.fDX;
+            clone.fDY = shape.fDY;
+            clone.fDZ = shape.fDZ;
          }
 
          if (!chlds) continue;
 
-         var clone = cloned_map[n];
-
          clone.chlds = [];
-
          for (var k=0;k<chlds.length;++k) {
             var chld = chlds[k];
             clone.chlds.push(cloned_map[chld._refid]);
@@ -797,9 +730,21 @@
 
       var tm2 = new Date().getTime();
 
-      console.log('Creating clone takes', (tm2-tm1).toFixed(1));
+      console.log('Creating clone takes', tm2-tm1);
 
       this.startWorker();
+
+      var tm3 = new Date().getTime();
+
+      console.log('Start worker in main context takes', tm3-tm2);
+
+      this._worker.postMessage( { map: cloned_map, tm0: new Date() } );
+
+      var tm4 = new Date().getTime();
+
+      console.log('Post message in main thread takes ', tm4-tm3);
+
+      console.log('Full clone and worker initialization took ', tm4-tm1);
    }
 
    JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
@@ -819,7 +764,7 @@
          }
       }
 
-      var kind = this.NodeKind(obj);
+      var kind = JSROOT.GEO.NodeKind(obj);
       if ((kind<0) || (vislvl<0)) return 0;
 
       var chlds = null, res = 0;
@@ -863,7 +808,7 @@
             delete arg.map[n]._camcnt; // how often node was counted as visible by camera
       }
 
-      var kind = this.NodeKind(obj);
+      var kind = JSROOT.GEO.NodeKind(obj);
       if ((kind<0) || (vislvl<0)) return 0;
 
       var chlds = null, shape, matrix, res = 0;
@@ -882,7 +827,7 @@
                    else matrix = new THREE.Matrix4();
 
       if (obj._matrix === undefined)
-         obj._matrix = this.getNodeMatrix(kind, obj);
+         obj._matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
 
       if (obj._matrix) matrix.multiply(obj._matrix);
 
@@ -1160,8 +1105,6 @@
 
       if (numvis > maxlimit)  {
 
-         // this.CreateClonedStructures(this._data);
-
          console.log('selected number of volumes ' + numvis + ' cannot be disaplyed, try to reduce');
 
          var t1 = new Date().getTime();
@@ -1326,6 +1269,8 @@
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
+
+      this.CreateClonedStructures(this._data);
 
       this._data.clear();
 
