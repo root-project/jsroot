@@ -1114,7 +1114,19 @@
    }
 
    JSROOT.GEO.VisibleByCamera = function(camera, matrix, shape) {
-      return true;
+      var frustum = new THREE.Frustum();
+      var cameraProjectionMatrix = new THREE.Matrix4();
+
+      camera.updateMatrixWorld();
+      camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+      cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromMatrix( cameraProjectionMatrix );
+
+      var boundingBox = new THREE.Box3( 
+        new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ), 
+        new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ) ).applyMatrix4( matrix );
+
+      return frustum.intersectsBox( boundingBox );
    }
 
    return JSROOT;
