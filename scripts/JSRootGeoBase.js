@@ -17,6 +17,24 @@
 
    JSROOT.GEO = {};
 
+   // method used to avoid duplication of warnings
+   JSROOT.GEO.warn = function(msg) {
+      if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
+      if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
+      JSROOT.GEO._warn_msgs[msg] = true;
+      console.warn(msg);
+   }
+
+   JSROOT.GEO.NodeKind = function(obj) {
+      // return kind of the geo nodes
+      // 0 - TGeoNode
+      // 1 - TEveGeoNode
+      // -1 - unsupported type
+
+      if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
+      return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
+   }
+
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -949,6 +967,75 @@
       return res;
    }
 
+   JSROOT.GEO.getNodeMatrix = function(kind, node) {
+      // returns transformation matrix for the node
+      // created after node visibility flag is checked and volume cut is performed
+
+      var matrix = null;
+
+      if (kind === 1) {
+         // special handling for EVE nodes
+
+         matrix = new THREE.Matrix4();
+
+         if (node.fTrans!==null) {
+            matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
+                       node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
+                       node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
+                                    0,               0,                0, 1);
+            // second - set position with proper sign
+            matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+         }
+      } else
+      if (('fMatrix' in node) && (node.fMatrix !== null))
+         matrix = JSROOT.GEO.createMatrix(node.fMatrix);
+      else
+      if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
+         // if (node.fFinder._typename === 'TGeoPatternTrapZ') { }
+         // if (node.fFinder._typename === 'TGeoPatternCylR') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphR') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
+         // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
+         // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
+         if ((node.fFinder._typename === 'TGeoPatternX') ||
+             (node.fFinder._typename === 'TGeoPatternY') ||
+             (node.fFinder._typename === 'TGeoPatternZ') ||
+             (node.fFinder._typename === 'TGeoPatternParaX') ||
+             (node.fFinder._typename === 'TGeoPatternParaY') ||
+             (node.fFinder._typename === 'TGeoPatternParaZ')) {
+            var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
+
+            matrix = new THREE.Matrix4();
+
+            switch (node.fFinder._typename.charAt(node.fFinder._typename.length - 1)) {
+               case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
+               case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
+               case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
+            }
+         } else
+         if (node.fFinder._typename === 'TGeoPatternCylPhi') {
+            var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep);
+            var _cos = Math.cos(phi), _sin = Math.sin(phi);
+
+            matrix = new THREE.Matrix4();
+
+            matrix.set(_cos, -_sin, 0,  0,
+                      _sin,  _cos, 0,  0,
+                         0,     0, 1,  0,
+                         0,     0, 0,  1);
+         } else
+         if (node.fFinder._typename === 'TGeoPatternCylR') {
+            // seems to be, require no transformation
+            matrix = new THREE.Matrix4();
+         } else {
+           JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
+         }
+      }
+
+      return matrix;
+   }
+
+
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
       if (faces_limit === undefined) faces_limit = 10000;
@@ -989,7 +1076,8 @@
 
       var res = bsp.toGeometry();
 
-      // console.log('Composite shape left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
+      if (res.faces.length === 0)
+         JSROOT.GEO.warn('Composite shape problem ' + shape.fNode.fLeft._typename + ' faces ' + geom1.faces.length + ' '+shape.fNode.fRight._typename + 'faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
 
       return res;
    }
