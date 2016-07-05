@@ -310,6 +310,11 @@
    }
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
+
+      if (geom && ((geom.vertices.length==0) || (geom.faces.length==0))) {
+         console.log('Problem with ' + shape_typename);
+      }
+
       // used to calculate statistic over created geometry
       if (shape_typename === 'TGeoShapeAssembly')
          return;
@@ -546,7 +551,7 @@
 
          var mesh = null;
 
-         if (prop.shape._geom !== null) {
+         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
 
             if (nodeObj.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );

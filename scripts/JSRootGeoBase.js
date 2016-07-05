@@ -1076,7 +1076,8 @@
 
       var res = bsp.toGeometry();
 
-      // console.log('Composite shape left_faces ' + geom1.faces.length + ' right_faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
+      if (res.faces.length === 0)
+         JSROOT.GEO.warn('Composite shape problem ' + shape.fNode.fLeft._typename + ' faces ' + geom1.faces.length + ' '+shape.fNode.fRight._typename + 'faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
 
       return res;
    }
