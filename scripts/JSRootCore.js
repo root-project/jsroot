@@ -22,7 +22,7 @@
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'threejs'              : dir+'three'+ext,
             'threejs_all'          : dir+'three.extra'+ext,
-//            'JSRootCore'           : dir+'JSRootCore'+ext,
+            'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
@@ -31,6 +31,7 @@
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
+            'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
             'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
@@ -51,6 +52,7 @@
          'jqueryui-mousewheel': { deps: ['jquery-ui'] },
          'jqueryui-touch-punch': { deps: ['jquery-ui'] },
          'threejs_all': { deps: [ 'threejs'] },
+         'ThreeCSG' : { deps: [ 'threejs'] },
          'MathJax': {
              exports: 'MathJax',
              init: function () {
@@ -833,9 +835,10 @@
 
       if (kind.indexOf("geom;")>=0) {
          mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
+                      "$$$scripts/JSRootGeoBase" + ext + ".js;" +
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('ThreeCSG', 'JSRootGeoPainter');
+         modules.push('ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
