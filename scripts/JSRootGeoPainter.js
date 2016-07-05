@@ -1532,7 +1532,7 @@
 
 
    JSROOT.TGeoPainter.prototype.create3DObjects = function(arg) {
-      // function used to create Object3D hierarchy to current point
+      // function used to create Object3D hierarchy to current stack point
       // Called only if object need to be drawn
 
       if (arg.mesh) return arg.mesh;
@@ -1687,9 +1687,12 @@
                   delete this.map[n]._visdepth;
                   delete this.map[n]._volume;
                   delete this.map[n]._matrix;
+                  delete this.map[n]._viscnt;
+                  delete this.map[n]._camcnt;
                }
                this.map = [];
                delete this.vismap;
+               delete this.cammap;
             };
       }
 
@@ -1755,50 +1758,36 @@
    JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
       // after flags are set, one should eplicitly count how often each nodes is visible
       // one could use volume cut if necessary
-      // for each node one set how often it has visibility flag set
+      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
 
-      if (!arg || (vislvl<0)) return 0;
-
-      var kind = this.NodeKind(obj);
-      if (kind < 0) return 0;
+      if (!arg) return 0;
 
       if (vislvl === undefined) {
          vislvl = 9999;
-         arg.vismap = [];
-         if (!('minVolume' in arg)) arg.minVolume = 0;
+         arg.vismap = []; // list of all visible nodes (after volume cut)
+         if (arg.minVolume === undefined) arg.minVolume = 0;
 
-         if (!('clearvis' in arg))
-            arg.clearvis = function() {
-               for (var n=0;n<this.vismap.length;++n) {
-                  delete this.map[n]._viscnt;
-               }
-               this.vismap = [];
-            };
+         for (var n=0;n<arg.map.length;++n) {
+            delete arg.map[n]._viscnt; // how often node was counted as visible
+         }
       }
 
-      var chlds = null, vis = obj._visible;
-      if (kind === 0) {
-         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+      var kind = this.NodeKind(obj);
+      if ((kind<0) || (vislvl<0)) return 0;
 
+      var chlds = null, res = 0;
+      if (kind === 0) {
          if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
-         shape = obj.fVolume.fShape;
          chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
       } else {
-         if (obj.fShape === undefined) return 0;
          chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
       }
 
-      var res = 0;
-
-      if (vis && (obj._volume > arg.minVolume)) {
-         if (!('_viscnt' in obj)) {
-            obj._viscnt = 0;
-            arg.vismap.push(obj);
+      if (obj._visible && (obj._volume > arg.minVolume)) {
+         if (obj._viscnt === undefined) {
+             obj._viscnt = 0;
+             arg.vismap.push(obj);
          }
-
          obj._viscnt++;
          res++;
       }
@@ -1808,6 +1797,65 @@
       if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
          for (var i = 0; i < chlds.length; ++i)
             res += this.CountVisibleNodes(chlds[i], arg, vislvl-1);
+
+      return res;
+   }
+
+   JSROOT.TGeoPainter.prototype.VisibleByCamera = function(matrix, shape) {
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.CountCameraNodes = function(obj, arg, vislvl, parentMatrix) {
+      // Count how many nodes are seen by camera
+      // Only node which inside (minCamVolume..minVolume] interval are recognized
+      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
+
+      if (!arg) return 0;
+
+      if (vislvl === undefined) {
+         vislvl = 9999;
+         arg.cammap = []; // list of all visible by camera nodes (after volume cut)
+         if (arg.minCamVolume === undefined) arg.minCamVolume = 0;
+         for (var n=0;n<arg.map.length;++n)
+            delete arg.map[n]._camcnt; // how often node was counted as visible by camera
+      }
+
+      var kind = this.NodeKind(obj);
+      if ((kind<0) || (vislvl<0)) return 0;
+
+      var chlds = null, shape, matrix, res = 0;
+      if (kind === 0) {
+         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
+         shape = obj.fVolume.fShape;
+         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
+      } else {
+         shape = obj.fShape;
+         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
+      }
+
+      if ('_visdepth' in obj) vislvl = obj._visdepth;
+
+      if (parentMatrix) matrix = parentMatrix.clone();
+                   else matrix = new THREE.Matrix4();
+
+      if (obj._matrix === undefined)
+         obj._matrix = this.getNodeMatrix(kind, obj);
+
+      if (obj._matrix) matrix.multiply(obj._matrix);
+
+      if (obj._visible && (obj._volume <= arg.minVolume) && (obj._volume > arg.minCamVolume))
+         if (this.VisibleByCamera(matrix, shape)) {
+            if (!('_camcnt' in obj)) {
+               obj._camcnt = 0;
+               arg.cammap.push(obj);
+            }
+            obj._camcnt++;
+            res++;
+         }
+
+      if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
+         for (var i = 0; i < chlds.length; ++i)
+            res += this.CountCameraNodes(chlds[i], arg, vislvl-1, matrix);
 
       return res;
    }
@@ -2051,6 +2099,9 @@
 
       // if no any volume was selected, probably it is because of visibility flags
       if ((total.cnt > 0) && (total.vis == 0)) {
+
+         console.log('switch to normal visisbility flags');
+
          this._data.clear();
          this._data.screen_vis = false;
          total = this.CountGeoNodes(this.GetObject(), this._data);
@@ -2071,7 +2122,7 @@
          // sort in reverse order (big first)
          this._data.vismap.sort(function(a,b) { return b._volume - a._volume; })
          var t2 = new Date().getTime();
-         console.log('sort time', t2-t1);
+         console.log('sort time', (t2-t1).toFixed(1));
 
          var cnt = 0, indx = 0;
          while ((cnt < maxlimit) && (indx < this._data.vismap.length-1))
@@ -2081,10 +2132,30 @@
 
          console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
 
-         this._data.clearvis();
+         /*
+
          numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-         console.log('numvis', numvis);
+         console.log('Selected numvis', numvis);
+
+         t1 = new Date().getTime();
+         var numcam = this.CountCameraNodes(this.GetObject(), this._data);
+         t2 = new Date().getTime();
+
+         console.log('Selected numcam', numcam, 'time', (t2-t1).toFixed(1));
+         if (numcam > maxlimit) {
+            console.log('too many object seen by camera, reduce map', this._data.cammap.length)
+            this._data.cammap.sort(function(a,b) { return b._volume - a._volume; })
+            var cnt = 0, indx = 0;
+            while ((cnt < maxlimit) && (indx < this._data.cammap.length-1))
+               cnt += this._data.cammap[indx++]._camcnt;
+            this._data.minCamVolume = this._data.cammap[indx]._volume;
+            console.log('Select ', cnt, 'nodes for camera, minimal volume', this._data.minCamVolume);
+            numcam = this.CountCameraNodes(this.GetObject(), this._data);
+            console.log('Selected numcam again', numcam);
+         }
+         */
+
       }
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
