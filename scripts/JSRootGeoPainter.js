@@ -111,7 +111,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1) };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1), more:1 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -161,13 +161,19 @@
             }
       }
 
-      if (opt.indexOf("+")>=0)
-
-
       opt = opt.toLowerCase();
 
+      if (opt.indexOf("more3")>=0) {
+         opt = opt.replace("more3", " ");
+         res.more = 3;
+      }
+      if (opt.indexOf("more")>=0) {
+         opt = opt.replace("more", " ");
+         res.more = 2;
+      }
       if (opt.indexOf("all")>=0) {
          opt = opt.replace("all", " ");
+         res.more = 100;
       }
       if (opt.indexOf("invx")>=0) {
          res.scale.x = -1;
@@ -747,6 +753,55 @@
       return res;
    }
 
+   JSROOT.TGeoPainter.prototype.CreateClonedStructures = function(arg) {
+      if (!arg || !arg.map) return;
+
+      for (var n=0;n<arg.map.length;++n)
+         arg.map[n]._refid = n; // mark all objects, need for the dereferencing
+
+      var tm1 = new Date().getTime();
+
+      var cloned_map = [];
+
+      // first create nodes themself
+      for (var n=0;n<arg.map.length;++n) {
+         var obj = arg.map[n];
+         cloned_map.push({ vol: obj._volume,  vis: obj._visible });
+      }
+
+      // than fill childrens lists
+      for (var n=0;n<arg.map.length;++n) {
+         var obj = arg.map[n];
+
+         var kind = this.NodeKind(obj);
+
+         var chlds = null;
+
+         if (kind === 0) {
+            if (obj.fVolume && obj.fVolume.fNodes) chlds = obj.fVolume.fNodes;
+         } else {
+            if (obj.fElements) chlds = obj.fElements.arr;
+         }
+
+         if (!chlds) continue;
+
+         var clone = cloned_map[n];
+
+         clone.chlds = [];
+
+         for (var k=0;k<chlds.length;++k) {
+            var chld = chlds[k];
+            clone.chlds.push(cloned_map[chld._refid]);
+         }
+      }
+
+      var tm2 = new Date().getTime();
+
+      console.log('Creating clone takes', (tm2-tm1).toFixed(1));
+
+      this.startWorker();
+   }
+
    JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
       // after flags are set, one should eplicitly count how often each nodes is visible
       // one could use volume cut if necessary
@@ -1101,10 +1156,11 @@
       console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis);
 
       var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
+      maxlimit *= this.options.more;
 
       if (numvis > maxlimit)  {
 
-         // this.startWorker();
+         // this.CreateClonedStructures(this._data);
 
          console.log('selected number of volumes ' + numvis + ' cannot be disaplyed, try to reduce');
 
