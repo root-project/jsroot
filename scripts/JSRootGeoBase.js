@@ -1023,6 +1023,10 @@
                       _sin,  _cos, 0,  0,
                          0,     0, 1,  0,
                          0,     0, 0,  1);
+         } else
+         if (node.fFinder._typename === 'TGeoPatternCylR') {
+            // seems to be, require no transformation
+            matrix = new THREE.Matrix4();
          } else {
            JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
          }
