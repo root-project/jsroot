@@ -991,9 +991,6 @@
          matrix = JSROOT.GEO.createMatrix(node.fMatrix);
       else
       if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
-         // if (node.fFinder._typename === 'TGeoPatternParaX') { }
-         // if (node.fFinder._typename === 'TGeoPatternParaY') { }
-         // if (node.fFinder._typename === 'TGeoPatternParaZ') { }
          // if (node.fFinder._typename === 'TGeoPatternTrapZ') { }
          // if (node.fFinder._typename === 'TGeoPatternCylR') { }
          // if (node.fFinder._typename === 'TGeoPatternSphR') { }
@@ -1002,12 +999,15 @@
          // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
          if ((node.fFinder._typename === 'TGeoPatternX') ||
              (node.fFinder._typename === 'TGeoPatternY') ||
-             (node.fFinder._typename === 'TGeoPatternZ')) {
+             (node.fFinder._typename === 'TGeoPatternZ') ||
+             (node.fFinder._typename === 'TGeoPatternParaX') ||
+             (node.fFinder._typename === 'TGeoPatternParaY') ||
+             (node.fFinder._typename === 'TGeoPatternParaZ')) {
             var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
             matrix = new THREE.Matrix4();
 
-            switch (node.fFinder._typename.charAt(11)) {
+            switch (node.fFinder._typename.charAt(node.fFinder._typename.length - 1)) {
                case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
                case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
                case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
