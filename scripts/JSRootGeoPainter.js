@@ -685,57 +685,11 @@
 
       var tm1 = new Date().getTime();
 
-      for (var n=0;n<arg.map.length;++n)
-         arg.map[n]._refid = n; // mark all objects, need for the dereferencing
-
-      var cloned_map = [];
-
-      // first create nodes themself
-      for (var n=0;n<arg.map.length;++n) {
-         var obj = arg.map[n];
-         cloned_map.push({ vol: obj._volume,  vis: obj._visible });
-      }
-
-      // than fill childrens lists
-      for (var n=0;n<arg.map.length;++n) {
-         var obj = arg.map[n];
-
-         var kind = JSROOT.GEO.NodeKind(obj);
-
-         var chlds = null, shape = null;
-
-         if (kind === 0) {
-            if (obj.fVolume) {
-               shape = obj.fVolume.fShape;
-               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes;
-            }
-         } else {
-            shape = obj.fShape;
-            if (obj.fElements) chlds = obj.fElements.arr;
-         }
-
-         var clone = cloned_map[n];
-
-         var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-         if (matrix) clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-         if (shape) {
-            clone.fDX = shape.fDX;
-            clone.fDY = shape.fDY;
-            clone.fDZ = shape.fDZ;
-         }
-
-         if (!chlds) continue;
-
-         clone.chlds = [];
-         for (var k=0;k<chlds.length;++k) {
-            var chld = chlds[k];
-            clone.chlds.push(cloned_map[chld._refid]);
-         }
-      }
+      var clones = new JSROOT.GEO.ClonedNodes(arg.map);
 
       var tm2 = new Date().getTime();
 
-      console.log('Creating clone takes', tm2-tm1);
+      console.log('Create clones', clones.nodes.length, tm2-tm1);
 
       this.startWorker();
 
@@ -743,7 +697,7 @@
 
       console.log('Start worker in main context takes', tm3-tm2);
 
-      this._worker.postMessage( { map: cloned_map, tm0: new Date() } );
+      this._worker.postMessage( { map: clones.nodes, tm0: new Date() } );
 
       var tm4 = new Date().getTime();
 
@@ -1100,10 +1054,19 @@
          total = this.CountGeoNodes(this.GetObject(), this._data);
       }
 
+      var tm1 = new Date().getTime();
+      this._clones = new JSROOT.GEO.ClonedNodes(this._data.map);
+      var tm2 = new Date().getTime();
+
+      console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1);
+
+
       // scan hierarchy completely, taking into account visibility flags
       var numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis);
+      var numvis2 = this._clones.CountVisible();
+
+      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis, numvis2);
 
       var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
       maxlimit *= this.options.more;
@@ -1114,7 +1077,7 @@
 
          var t1 = new Date().getTime();
          // sort in reverse order (big first)
-         this._data.vismap.sort(function(a,b) { return b._volume - a._volume; })
+         this._data.vismap.sort(function(a,b) { return b._volume - a._volume; });
          var t2 = new Date().getTime();
          console.log('sort time', (t2-t1).toFixed(1));
 
@@ -1128,32 +1091,15 @@
 
          numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-         console.log('Selected numvis', numvis);
+         this._clones.minVolume = this._clones.DefineMinVolume(maxlimit);
 
+         numvis2 = this._clones.CountVisible();
 
-         this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
-/*
-         t1 = new Date().getTime();
-         var numcam = this.CountCameraNodes(this.GetObject(), this._data);
-         t2 = new Date().getTime();
-
-         console.log('Selected numcam', numcam, 'time', (t2-t1).toFixed(1));
-         if (numcam > maxlimit) {
-            console.log('too many object seen by camera, reduce map', this._data.cammap.length)
-            this._data.cammap.sort(function(a,b) { return b._volume - a._volume; })
-            var cnt = 0, indx = 0;
-            while ((cnt < maxlimit) && (indx < this._data.cammap.length-1))
-               cnt += this._data.cammap[indx++]._camcnt;
-            this._data.minCamVolume = this._data.cammap[indx]._volume;
-            console.log('Select ', cnt, 'nodes for camera, minimal volume', this._data.minCamVolume);
-            t1 = new Date().getTime();
-            numcam = this.CountCameraNodes(this.GetObject(), this._data);
-            t2 = new Date().getTime();
-            console.log('Selected numcam again', numcam, 'time', (t2-t1).toFixed(1));
-            return;
-         }
-*/
+         console.log('Selected numvis', numvis, numvis2);
       }
+
+
+      this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
 

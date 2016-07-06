@@ -1122,12 +1122,140 @@
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromMatrix( cameraProjectionMatrix );
 
-      var boundingBox = new THREE.Box3( 
-        new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ), 
+      var boundingBox = new THREE.Box3(
+        new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ) ).applyMatrix4( matrix );
 
       return frustum.intersectsBox( boundingBox );
    }
+
+   // ====================================================================
+
+   // class for working with cloned nodes
+
+   JSROOT.GEO.ClonedNodes = function(map, clones) {
+      this.origin = map; // original array of the unique nodes
+      this.nodes = clones; // array of cloned nodes
+
+      if (this.origin && !this.nodes) this.CreateClones();
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.CreateClones = function() {
+      if (!this.origin) return false;
+
+      for (var n=0;n<this.origin.length;++n)
+         this.origin[n]._refid = n; // mark all objects, need for the dereferencing
+
+      this.nodes = [];
+
+      // first create nodes themself
+      for (var n=0;n<this.origin.length;++n) {
+         var obj = this.origin[n];
+         this.nodes.push({ vis: obj._visible, vol: obj._volume, numvischld: obj._numvischld });
+      }
+
+      // than fill childrens lists
+      for (var n=0;n<this.origin.length;++n) {
+         var obj = this.origin[n], clone = this.nodes[n];
+
+         if (obj._visdepth !== undefined)
+            clone.depth = obj._visdepth;
+
+         var kind = JSROOT.GEO.NodeKind(obj);
+
+         var chlds = null, shape = null;
+
+         if (kind === 0) {
+            if (obj.fVolume) {
+               shape = obj.fVolume.fShape;
+               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
+            }
+         } else {
+            shape = obj.fShape;
+            if (obj.fElements) chlds = obj.fElements.arr;
+         }
+
+
+         var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
+         if (matrix) clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+         if (shape) {
+            clone.fDX = shape.fDX;
+            clone.fDY = shape.fDY;
+            clone.fDZ = shape.fDZ;
+         }
+
+         if (!chlds) continue;
+
+         clone.chlds = [];
+         for (var k=0;k<chlds.length;++k) {
+            var chld = chlds[k];
+            clone.chlds.push(this.nodes[chld._refid]);
+         }
+      }
+
+      return true;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.CountVisible = function(node, vislvl) {
+      // Count number of visisble node, starting from nodeid
+      // At the end list of visible nodes are created (this.vismap) and counter how often each node is shown
+
+      if (!this.nodes) return 0;
+
+      if (vislvl === undefined) {
+         node = this.nodes[0];
+         vislvl = 9999;
+         this.vismap = []; // list of all visible nodes (after volume cut)
+         if (this.minVolume === undefined) this.minVolume = 0;
+
+         for (var n=0;n<this.nodes.length;++n) {
+            delete this.nodes[n]._viscnt; // how often node was counted as visible
+         }
+      }
+
+      if (vislvl<0) return 0;
+
+      var res = 0;
+
+      if (node.vis && (node.vol > this.minVolume)) {
+         if (node._viscnt === undefined) {
+             node._viscnt = 0;
+             this.vismap.push(node);
+         }
+         node._viscnt++;
+         res++;
+      }
+
+      if (node.depth !== undefined) vislvl = node.depth;
+
+      if (node.chlds && (node.numvischld > 0) && (vislvl > 0))
+         for (var i = 0; i < node.chlds.length; ++i)
+            res += this.CountVisible(node.chlds[i], vislvl-1);
+
+      return res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.DefineMinVolume = function(maxnumvis) {
+      // function defines boundary for visible volumes, based on required limit
+      if (!this.vismap) return;
+
+      var t1 = new Date().getTime();
+      // sort in reverse order (big first)
+      this.vismap.sort(function(a,b) { return b.vol - a.vol; });
+
+      var cnt = 0, indx = 0;
+      while ((cnt < maxnumvis) && (indx < this.vismap.length-1))
+         cnt += this.vismap[indx++]._viscnt;
+
+      var res = this.vismap[indx].vol;
+
+      var t2 = new Date().getTime();
+
+      console.log('Select ', cnt, 'nodes, minimal volume', res,'takes', t2-t1);
+
+      return res;
+   }
+
 
    return JSROOT;
 
