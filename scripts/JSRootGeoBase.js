@@ -1177,7 +1177,10 @@
 
 
          var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-         if (matrix) clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+         if (matrix) {
+            clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+            console.log('create matrix for clone element', clone.id, 'matrix', clone.matrix);
+         }
          if (shape) {
             clone.fDX = shape.fDX;
             clone.fDY = shape.fDY;
@@ -1195,7 +1198,7 @@
       return true;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
+   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl, node) {
       // Scan visible nodes in hierarchy, starting from nodeid
       // At the end list of visible nodes are created (this.vismap) and counter how often each node is shown
 
@@ -1203,17 +1206,19 @@
 
       if (vislvl === undefined) {
          vislvl = 9999;
-         this.stack = [ 0 ]; // list of all visible nodes (after volume cut)
+         this.stack = new Int32Array(100); // current stack
          this.last = 0;
+         this.stack[0] = 0;
+         node = this.nodes[0];
       }
 
       if (vislvl<0) return 0;
 
-      var res = 0, node = this.nodes[this.stack[this.last]];
+      var res = 0;
 
       if (node.vis) {
          if (arg && arg.func) {
-            if (arg.func(node, this.stack, this.last)) res++;
+            if (arg.func(node)) res++;
          } else {
             res++;
          }
@@ -1221,11 +1226,14 @@
 
       if (node.depth !== undefined) vislvl = node.depth;
 
+      if (this.last > this.stack.length - 2)
+         throw 'stack capacity is not enough ' + this.stack.length;
+
       if (node.chlds && (node.numvischld > 0) && (vislvl > 0)) {
          this.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
-            this.stack[this.last] = node.chlds[i];
-            res += this.ScanVisible(arg, vislvl-1);
+            this.stack[this.last] = i; // in the stack one store index of child, it is path in the hierarchy
+            res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
          }
          this.last--;
       }
@@ -1233,7 +1241,16 @@
       return res;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.CopyStack = function() {
+      var res = new Int32Array(this.last+1);
+      for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
+      return res;
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.DefineVisible = function(maxnum) {
+      // function collects visible nodes and build sorted map
+      // one can use map to define cut based on the volume or serious of cuts
+
       var arg = {
          viscnt: new Int32Array(this.nodes.length),
          // nodes: this.nodes,
@@ -1245,25 +1262,22 @@
 
       for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var res = { cnt0: 0, minVol: 0, cnt1: 0 };
+      var res = { cnt0: 0, minVol: 0, cnt1: 0, vismap: [] };
 
       var tm1 = new Date().getTime();
       res.cnt0 = this.ScanVisible(arg);
 
-      if (res.cnt0 < maxnum) { res.cnt1 = res.cnt0; return res; }
-
-      var vismap = []; // array of visible nodes to draw them
       for (var id=0;id<arg.viscnt.length;++id)
          if (arg.viscnt[id] > 0)
-            vismap.push(this.nodes[id]);
+            res.vismap.push(this.nodes[id]);
 
-      vismap.sort(function(a,b) { return b.vol - a.vol; });
+      res.vismap.sort(function(a,b) { return b.vol - a.vol; });
 
       var indx = 0;
-      while ((res.cnt1 < maxnum) && (indx < vismap.length-1))
-         res.cnt1 += arg.viscnt[vismap[indx++].id];
+      while ((res.cnt1 < maxnum) && (indx < res.vismap.length-1))
+         res.cnt1 += arg.viscnt[res.vismap[indx++].id];
 
-      res.minVol = vismap[indx].vol;
+      res.minVol = res.vismap[indx].vol;
 
       var tm2 = new Date().getTime();
 
@@ -1272,6 +1286,22 @@
       return res;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(minvol) {
+      var arg = {
+            min: minvol,
+            nodes: this,
+            res: [],
+            func: function(node) {
+               if (node.vol <= this.min) return false;
+               this.res.push(this.nodes.CopyStack());
+               return true;
+            }
+         };
+
+      this.ScanVisible(arg);
+
+      return arg.res;
+   }
 
    return JSROOT;
 

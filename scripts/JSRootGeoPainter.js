@@ -342,6 +342,8 @@
       // when transformation matrix includes one or several invertion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
+      console.log('Create flipped node');
+
       var m = parent.matrixWorld;
 
       var cnt = 0, flip = new THREE.Vector3(1,1,1);
@@ -503,11 +505,115 @@
       return arg.mesh;
    }
 
+   JSROOT.TGeoPainter.prototype.drawStackedNode = function() {
+      if (!this._draw_nodes || !this._clones) return false;
+
+      // item to draw, containes indexs of children, first element - 0
+
+      var item = this._draw_nodes.shift();
+      if (this._draw_nodes.length === 0) delete this._draw_nodes;
+
+      var node = this._clones.nodes[0], three_prnt = this._toplevel, obj3d;
+
+      console.log('draw item', item);
+
+      for(var lvl=0; lvl<item.length; ++lvl) {
+         var nchld = item[lvl];
+         // extract current node
+         if (lvl>0) node = this._clones.nodes[node.chlds[nchld]];
+
+         obj3d = undefined;
+
+         for (var i=0;i<three_prnt.children.length;++i) {
+            if (three_prnt.children[i].nchld === nchld) {
+               obj3d = three_prnt.children[i];
+               break;
+            }
+         }
+
+         if (!obj3d) {
+
+            obj3d = new THREE.Object3D();
+
+            if (node.matrix) {
+               // console.log('apply matrix');
+               obj3d.matrix.fromArray(node.matrix);
+               obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+            }
+
+            this.accountNodes(obj3d);
+
+            obj3d.name = 'any name';
+            obj3d.nchld = nchld; // mark index to find it again later
+
+            // add the mesh to the scene
+            three_prnt.add(obj3d);
+
+            // this is only for debugging - test invertion of whole geometry
+            if ((lvl==0) && (this.options.scale !== null)) {
+               if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
+                  obj3d.scale.copy(this.options.scale);
+                  obj3d.updateMatrix();
+               }
+            }
+
+            obj3d.updateMatrixWorld();
+         }
+
+         three_prnt = obj3d;
+      }
+
+      // original object, extracted from the map
+      var nodeobj = this._data.map[node.id];
+      var kind = JSROOT.GEO.NodeKind(nodeobj);
+
+      if (kind<0) return false;
+
+      var prop = this.getNodeProperties(kind, nodeobj, true);
+
+      this._drawcnt++;
+
+      if (prop.shape._geom === undefined) {
+         prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
+         this.accountGeom(prop.shape._geom, prop.shape._typename);
+      }
+
+      var mesh = null;
+
+      if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+
+         if (three_prnt.matrixWorld.determinant() > -0.9) {
+            mesh = new THREE.Mesh( prop.shape._geom, prop.material );
+         } else {
+            mesh = this.createFlippedMesh(three_prnt, prop.shape, prop.material);
+         }
+
+         three_prnt.add(mesh);
+      }
+
+      if (mesh && (this.options._debug || this.options._full)) {
+         var helper = new THREE.WireframeHelper(mesh);
+         helper.material.color.set(prop.fillcolor);
+         helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
+         three_prnt.add(helper);
+      }
+
+      if (mesh && (this.options._bound || this.options._full)) {
+         var boxHelper = new THREE.BoxHelper( mesh );
+         three_prnt.add( boxHelper );
+      }
+
+      return true;
+   }
+
+
    // Central function of TGeoNode drawing
    // Automatically traverse complete hierarchy
    // Also can be used to update existing drawing
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
+
+      return this.drawStackedNode();
 
       if (!this._stack || (this._stack.length == 0)) return false;
 
@@ -1083,7 +1189,7 @@
          // sort in reverse order (big first)
          this._data.vismap.sort(function(a,b) { return b._volume - a._volume; });
          var t2 = new Date().getTime();
-         console.log('sort time', (t2-t1).toFixed(1));
+         console.log('sort time', t2-t1);
 
          var cnt = 0, indx = 0;
          while ((cnt < maxlimit) && (indx < this._data.vismap.length-1))
@@ -1095,10 +1201,16 @@
 
          numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-         var res2 = this._clones.DefineVisible(maxlimit);
-
-         console.log('Selected numvis', numvis, res2);
+         console.log('Selected numvis', numvis);
       }
+
+      t1 = new Date().getTime();
+
+      var res2 = this._clones.DefineVisible(maxlimit);
+      this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
+      t2 = new Date().getTime();
+
+      console.log('Collect visibles', this._draw_nodes.length, 'takes time', t2-t1);
 
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
