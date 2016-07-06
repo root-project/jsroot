@@ -1129,6 +1129,9 @@
          numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
          console.log('Selected numvis', numvis);
+
+
+         this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 /*
          t1 = new Date().getTime();
          var numcam = this.CountCameraNodes(this.GetObject(), this._data);
@@ -1151,8 +1154,6 @@
          }
 */
       }
-
-      this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
