@@ -342,8 +342,6 @@
       // when transformation matrix includes one or several invertion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
-      console.log('Create flipped node');
-
       var m = parent.matrixWorld;
 
       var cnt = 0, flip = new THREE.Vector3(1,1,1);
@@ -511,11 +509,13 @@
       // item to draw, containes indexs of children, first element - 0
 
       var item = this._draw_nodes.shift();
+
+
       if (this._draw_nodes.length === 0) delete this._draw_nodes;
 
       var node = this._clones.nodes[0], three_prnt = this._toplevel, obj3d;
 
-      console.log('draw item', item);
+      // console.log('draw item', item);
 
       for(var lvl=0; lvl<item.length; ++lvl) {
          var nchld = item[lvl];
@@ -537,6 +537,8 @@
 
             if (node.matrix) {
                // console.log('apply matrix');
+
+               //obj3d.applyMatrix(node.matrix);
                obj3d.matrix.fromArray(node.matrix);
                obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
             }

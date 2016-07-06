@@ -1177,10 +1177,8 @@
 
 
          var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-         if (matrix) {
+         if (matrix)
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-            console.log('create matrix for clone element', clone.id, 'matrix', clone.matrix);
-         }
          if (shape) {
             clone.fDX = shape.fDX;
             clone.fDY = shape.fDY;
@@ -1273,11 +1271,12 @@
 
       res.vismap.sort(function(a,b) { return b.vol - a.vol; });
 
-      var indx = 0;
-      while ((res.cnt1 < maxnum) && (indx < res.vismap.length-1))
-         res.cnt1 += arg.viscnt[res.vismap[indx++].id];
-
-      res.minVol = res.vismap[indx].vol;
+      if (res.cnt0 > maxnum) {
+         var indx = 0;
+         while ((res.cnt1 < maxnum) && (indx < res.vismap.length-1))
+            res.cnt1 += arg.viscnt[res.vismap[indx++].id];
+         res.minVol = res.vismap[indx].vol;
+      }
 
       var tm2 = new Date().getTime();
 
