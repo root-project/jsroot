@@ -1151,7 +1151,7 @@
       // first create nodes themself
       for (var n=0;n<this.origin.length;++n) {
          var obj = this.origin[n];
-         this.nodes.push({ vis: obj._visible, vol: obj._volume, numvischld: obj._numvischld });
+         this.nodes.push({ id: n, vis: obj._visible, vol: obj._volume, numvischld: obj._numvischld });
       }
 
       // than fill childrens lists
@@ -1186,72 +1186,88 @@
 
          if (!chlds) continue;
 
-         clone.chlds = [];
-         for (var k=0;k<chlds.length;++k) {
-            var chld = chlds[k];
-            clone.chlds.push(this.nodes[chld._refid]);
-         }
+         // in cloned object childs is only list of ids
+         clone.chlds = new Int32Array(chlds.length);
+         for (var k=0;k<chlds.length;++k)
+            clone.chlds[k] = chlds[k]._refid;
       }
 
       return true;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CountVisible = function(node, vislvl) {
-      // Count number of visisble node, starting from nodeid
+   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
+      // Scan visible nodes in hierarchy, starting from nodeid
       // At the end list of visible nodes are created (this.vismap) and counter how often each node is shown
 
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         node = this.nodes[0];
          vislvl = 9999;
-         this.vismap = []; // list of all visible nodes (after volume cut)
-         if (this.minVolume === undefined) this.minVolume = 0;
-
-         for (var n=0;n<this.nodes.length;++n) {
-            delete this.nodes[n]._viscnt; // how often node was counted as visible
-         }
+         this.stack = [ 0 ]; // list of all visible nodes (after volume cut)
+         this.last = 0;
       }
 
       if (vislvl<0) return 0;
 
-      var res = 0;
+      var res = 0, node = this.nodes[this.stack[this.last]];
 
-      if (node.vis && (node.vol > this.minVolume)) {
-         if (node._viscnt === undefined) {
-             node._viscnt = 0;
-             this.vismap.push(node);
+      if (node.vis) {
+         if (arg && arg.func) {
+            if (arg.func(node, this.stack, this.last)) res++;
+         } else {
+            res++;
          }
-         node._viscnt++;
-         res++;
       }
 
       if (node.depth !== undefined) vislvl = node.depth;
 
-      if (node.chlds && (node.numvischld > 0) && (vislvl > 0))
-         for (var i = 0; i < node.chlds.length; ++i)
-            res += this.CountVisible(node.chlds[i], vislvl-1);
+      if (node.chlds && (node.numvischld > 0) && (vislvl > 0)) {
+         this.last++;
+         for (var i = 0; i < node.chlds.length; ++i) {
+            this.stack[this.last] = node.chlds[i];
+            res += this.ScanVisible(arg, vislvl-1);
+         }
+         this.last--;
+      }
 
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.DefineMinVolume = function(maxnumvis) {
-      // function defines boundary for visible volumes, based on required limit
-      if (!this.vismap) return;
+   JSROOT.GEO.ClonedNodes.prototype.DefineVisible = function(maxnum) {
+      var arg = {
+         viscnt: new Int32Array(this.nodes.length),
+         // nodes: this.nodes,
+         func: function(node) {
+            this.viscnt[node.id]++;
+            return true;
+         }
+      };
 
-      var t1 = new Date().getTime();
-      // sort in reverse order (big first)
-      this.vismap.sort(function(a,b) { return b.vol - a.vol; });
+      for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var cnt = 0, indx = 0;
-      while ((cnt < maxnumvis) && (indx < this.vismap.length-1))
-         cnt += this.vismap[indx++]._viscnt;
+      var res = { cnt0: 0, minVol: 0, cnt1: 0 };
 
-      var res = this.vismap[indx].vol;
+      var tm1 = new Date().getTime();
+      res.cnt0 = this.ScanVisible(arg);
 
-      var t2 = new Date().getTime();
+      if (res.cnt0 < maxnum) { res.cnt1 = res.cnt0; return res; }
 
-      console.log('Select ', cnt, 'nodes, minimal volume', res,'takes', t2-t1);
+      var vismap = []; // array of visible nodes to draw them
+      for (var id=0;id<arg.viscnt.length;++id)
+         if (arg.viscnt[id] > 0)
+            vismap.push(this.nodes[id]);
+
+      vismap.sort(function(a,b) { return b.vol - a.vol; });
+
+      var indx = 0;
+      while ((res.cnt1 < maxnum) && (indx < vismap.length-1))
+         res.cnt1 += arg.viscnt[vismap[indx++].id];
+
+      res.minVol = vismap[indx].vol;
+
+      var tm2 = new Date().getTime();
+
+      console.log('scan objects takes', tm2-tm1);
 
       return res;
    }

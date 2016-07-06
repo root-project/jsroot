@@ -1064,9 +1064,13 @@
       // scan hierarchy completely, taking into account visibility flags
       var numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-      var numvis2 = this._clones.CountVisible();
+      tm1 = new Date().getTime();
 
-      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis, numvis2);
+      var numvis2 = this._clones.ScanVisible();
+
+      tm2 = new Date().getTime();
+
+      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis, numvis2, 'count takes', tm2-tm1);
 
       var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
       maxlimit *= this.options.more;
@@ -1091,11 +1095,9 @@
 
          numvis = this.CountVisibleNodes(this.GetObject(), this._data);
 
-         this._clones.minVolume = this._clones.DefineMinVolume(maxlimit);
+         var res2 = this._clones.DefineVisible(maxlimit);
 
-         numvis2 = this._clones.CountVisible();
-
-         console.log('Selected numvis', numvis, numvis2);
+         console.log('Selected numvis', numvis, res2);
       }
 
 
@@ -1222,7 +1224,7 @@
 
       if (close_progress) JSROOT.progress();
 
-      this.CreateClonedStructures(this._data);
+      // this.CreateClonedStructures(this._data);
 
       this._data.clear();
 
@@ -1650,19 +1652,19 @@
    JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
       if ((hitem==null) || (obj==null)) return false;
 
-      hitem['_childs'] = [];
+      hitem._childs = [];
 
-      var item1 = { _name : "Materials", _kind : "Folder", _title : "list of materials" };
+      var item1 = { _name: "Materials", _kind: "Folder", _title: "list of materials" };
       JSROOT.expandGeoList(item1, obj.fMaterials);
-      hitem['_childs'].push(item1);
+      hitem._childs.push(item1);
 
-      var item2 = { _name : "Media", _kind : "Folder", _title : "list of media" };
+      var item2 = { _name: "Media", _kind: "Folder", _title: "list of media" };
       JSROOT.expandGeoList(item2, obj.fMedia);
-      hitem['_childs'].push(item2);
+      hitem._childs.push(item2);
 
-      var item3 = { _name : "Tracks", _kind : "Folder", _title : "list of tracks" };
+      var item3 = { _name: "Tracks", _kind: "Folder", _title: "list of tracks" };
       JSROOT.expandGeoList(item3, obj.fTracks);
-      hitem['_childs'].push(item3);
+      hitem._childs.push(item3);
 
       JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
 
