@@ -307,7 +307,7 @@
       res.Change = function(color, style, size) {
 
          this.changed = true;
-         
+
          if (color!==undefined) this.color = color;
          if (style!==undefined) this.style = style;
          if (size!==undefined) this.size = size; else size = this.size;
@@ -419,7 +419,7 @@
       res.func = res.Apply.bind(res);
 
       res.Change(marker_color, style, attmarker.fMarkerSize);
-      
+
       res.changed = false;
 
       return res;
@@ -461,7 +461,7 @@
             line.excl_width = Math.floor(line.width / 100) * 5;
             line.width = line.width % 100; // line width
          }
-         
+
          line.ChangeExcl = function(side,width) {
             if (width !== undefined) this.excl_width = width;
             if (side !== undefined) {
@@ -489,14 +489,14 @@
                selection.style('stroke-dasharray', this.dash);
          }
       }
-      
+
       line.Change = function(color, width, dash) {
          if (color !== undefined) this.color = color;
          if (width !== undefined) this.width = width;
          if (dash !== undefined) this.dash = dash;
          this.changed = true;
       }
-      
+
       line.func = line.Apply.bind(line);
 
       return line;
@@ -1597,7 +1597,7 @@
 
       fill.Change = function(color, pattern, svg) {
          this.changed = true;
-         
+
          if ((color !== undefined) && !isNaN(color))
             this.colorindx = color;
 
@@ -1706,7 +1706,7 @@
       }
 
       fill.Change(color, pattern, this.svg_canvas());
-      
+
       fill.changed = false;
 
       return fill;
@@ -3620,7 +3620,7 @@
          if (JSROOT.gStyle.ContextMenu)
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
       }
-      
+
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
 
@@ -3937,7 +3937,7 @@
       this.pad.fRightMargin  = obj.fRightMargin;
       this.pad.fBottomMargin = obj.fBottomMargin
       this.pad.fTopMargin    = obj.fTopMargin;
-      
+
       this.pad.fFillColor = obj.fFillColor;
       this.pad.fFillStyle = obj.fFillStyle;
       this.pad.fLineColor = obj.fLineColor;
@@ -5288,7 +5288,7 @@
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
 
       if (!this.is_main_painter()) return;
-      
+
       this.zoom_xmin = this.zoom_xmax = 0;
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
@@ -5340,7 +5340,7 @@
             }
       }
    }
-   
+
    JSROOT.THistPainter.prototype.CheckHistDrawAttributes = function() {
 
       if (!this.fillatt || !this.fillatt.changed)
@@ -5377,7 +5377,7 @@
       histo.fLineColor = obj.fLineColor;
       histo.fLineStyle = obj.fLineStyle;
       histo.fLineWidth = obj.fLineWidth;
-      
+
       histo.fEntries = obj.fEntries;
       histo.fTsumw = obj.fTsumw;
       histo.fTsumwx = obj.fTsumwx;
@@ -7072,7 +7072,7 @@
       // all points will be used, compress expression when too large
 
       this.CheckHistDrawAttributes();
-      
+
       if (this.options.Bar > 0)
          return this.DrawBars();
 
@@ -9662,8 +9662,8 @@
    JSROOT.addDrawFunc({ name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
    JSROOT.addDrawFunc({ name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
    JSROOT.addDrawFunc({ name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
-   JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", opt:"all;count;limit;maxlvl2;" });
-   JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", opt: ";count;limit;maxlvl2"  });
+   JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", opt:";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", opt: ";more;all;count"  });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy" });
    JSROOT.addDrawFunc({ name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: "all" });
    // these are not draw functions, but provide extra info about correspondent classes
