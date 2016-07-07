@@ -695,7 +695,7 @@
 
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-      var maxlimit = this._webgl ? 2000 : 1000;
+      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
       tm1 = new Date().getTime();
       var res2 = this._clones.DefineVisible(maxlimit);
