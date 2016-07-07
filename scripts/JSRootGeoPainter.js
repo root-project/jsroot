@@ -659,52 +659,6 @@
       return res;
    }
 
-   JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
-      // after flags are set, one should eplicitly count how often each nodes is visible
-      // one could use volume cut if necessary
-      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
-
-      if (!arg) return 0;
-
-      if (vislvl === undefined) {
-         vislvl = 9999;
-         arg.vismap = []; // list of all visible nodes (after volume cut)
-         if (arg.minVolume === undefined) arg.minVolume = 0;
-
-         for (var n=0;n<arg.map.length;++n) {
-            delete arg.map[n]._viscnt; // how often node was counted as visible
-         }
-      }
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      if ((kind<0) || (vislvl<0)) return 0;
-
-      var chlds = null, res = 0;
-      if (kind === 0) {
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-      } else {
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-      }
-
-      if (obj._visible && (obj._volume > arg.minVolume)) {
-         if (obj._viscnt === undefined) {
-             obj._viscnt = 0;
-             arg.vismap.push(obj);
-         }
-         obj._viscnt++;
-         res++;
-      }
-
-      if ('_visdepth' in obj) vislvl = obj._visdepth;
-
-      if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
-         for (var i = 0; i < chlds.length; ++i)
-            res += this.CountVisibleNodes(chlds[i], arg, vislvl-1);
-
-      return res;
-   }
-
    JSROOT.TGeoPainter.prototype.CountCameraNodes = function(obj, arg, vislvl, parentMatrix) {
       // Count how many nodes are seen by camera
       // Only node which inside (minCamVolume..minVolume] interval are recognized

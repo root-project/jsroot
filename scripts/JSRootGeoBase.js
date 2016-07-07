@@ -1134,11 +1134,11 @@
    // class for working with cloned nodes
 
    JSROOT.GEO.ClonedNodes = function(obj, clones) {
-      if (obj) this.CreateClonesNew(obj); else
+      if (obj) this.CreateClones(obj); else
       if (clones) this.nodes = clones;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CreateClonesNew = function(obj, sublevel) {
+   JSROOT.GEO.ClonedNodes.prototype.CreateClones = function(obj, sublevel) {
        if (!sublevel) {
           this.origin = [];
           sublevel = 1;
@@ -1159,70 +1159,57 @@
 
        if (chlds !== null)
           for (var i = 0; i < chlds.length; ++i)
-            this.CreateClonesNew(chlds[i], sublevel+1);
+            this.CreateClones(chlds[i], sublevel+1);
 
        if (sublevel > 1) return;
 
-       this.CreateClones();
+       this.nodes = [];
 
-       // remove intermediate identifiers
+       // first create nodes objects
+       for (var n=0;n<this.origin.length;++n) {
+          var obj = this.origin[n];
+          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0 });
+       }
+
+       // than fill childrens lists
+       for (var n=0;n<this.origin.length;++n) {
+          var obj = this.origin[n], clone = this.nodes[n];
+
+          var chlds = null, shape = null;
+
+          if (clone.kind === 0) {
+             if (obj.fVolume) {
+                shape = obj.fVolume.fShape;
+                if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
+             }
+          } else {
+             shape = obj.fShape;
+             if (obj.fElements) chlds = obj.fElements.arr;
+          }
+
+          var matrix = JSROOT.GEO.getNodeMatrix(clone.kind, obj);
+          if (matrix)
+             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+          if (shape) {
+             clone.fDX = shape.fDX;
+             clone.fDY = shape.fDY;
+             clone.fDZ = shape.fDZ;
+             clone.vol = shape.fDX*shape.fDY*shape.fDZ;
+          }
+
+          if (!chlds) continue;
+
+          // in cloned object childs is only list of ids
+          clone.chlds = new Int32Array(chlds.length);
+          for (var k=0;k<chlds.length;++k)
+             clone.chlds[k] = chlds[k]._refid;
+       }
+
+       // remove _refid identifiers from original objects
        for (var n=0;n<this.origin.length;++n)
           delete this.origin[n]._refid;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CreateClones = function() {
-      if (!this.origin) return false;
-
-      //for (var n=0;n<this.origin.length;++n)
-      //   this.origin[n]._refid = n; // mark all objects, need for the dereferencing
-
-      this.nodes = [];
-
-      // first create nodes themself
-      for (var n=0;n<this.origin.length;++n) {
-         var obj = this.origin[n];
-         this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0 });
-      }
-
-      // than fill childrens lists
-      for (var n=0;n<this.origin.length;++n) {
-         var obj = this.origin[n], clone = this.nodes[n];
-
-         //if (obj._visdepth !== undefined)
-         //   clone.depth = obj._visdepth;
-
-         var chlds = null, shape = null;
-
-         if (clone.kind === 0) {
-            if (obj.fVolume) {
-               shape = obj.fVolume.fShape;
-               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
-            }
-         } else {
-            shape = obj.fShape;
-            if (obj.fElements) chlds = obj.fElements.arr;
-         }
-
-         var matrix = JSROOT.GEO.getNodeMatrix(clone.kind, obj);
-         if (matrix)
-            clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-         if (shape) {
-            clone.fDX = shape.fDX;
-            clone.fDY = shape.fDY;
-            clone.fDZ = shape.fDZ;
-            clone.vol = shape.fDX*shape.fDY*shape.fDZ;
-         }
-
-         if (!chlds) continue;
-
-         // in cloned object childs is only list of ids
-         clone.chlds = new Int32Array(chlds.length);
-         for (var k=0;k<chlds.length;++k)
-            clone.chlds[k] = chlds[k]._refid;
-      }
-
-      return true;
-   }
 
    JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen) {
       if (!this.origin || !this.nodes) return 0;
