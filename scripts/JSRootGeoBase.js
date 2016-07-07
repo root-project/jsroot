@@ -1366,25 +1366,6 @@
       return arg.res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CheckWithMatrix = function() {
-      // only for debugging, check scanning speed with matrixes
-
-      var arg = {
-            domatrix: true,
-            func: function(node) {
-               return true;
-            }
-         };
-
-      var tm1 = new Date().getTime();
-
-      this.ScanVisible(arg);
-
-      var tm2 = new Date().getTime();
-
-      console.log('scan objects with matrixes takes', tm2-tm1);
-   }
-
    return JSROOT;
 
 }));

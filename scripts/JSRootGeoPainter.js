@@ -461,7 +461,7 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawStackedNode = function() {
+   JSROOT.TGeoPainter.prototype.drawNode = function() {
       if (!this._draw_nodes || !this._clones) return false;
 
       // item to draw, containes indexs of children, first element - 0
@@ -566,99 +566,6 @@
       return true;
    }
 
-
-   JSROOT.TGeoPainter.prototype.CountGeoNodes = function(obj, arg, lvl) {
-      // Scan nodes hierarchy, finds unique nodes and create map of such nodes
-      // Extract visibility flags. calculates volume
-      // Function should be called once every time object flags are changed
-      // Selection based on camera position will be done in different place
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
-      if (kind < 0) return res;
-
-      if (lvl === undefined) {
-         lvl = 0;
-         if (!arg) arg = { erase: true };
-         if (!('map' in arg)) arg.map = [];
-         if (!('clear' in arg))
-            arg.clear = function() {
-               for (var n=0;n<this.map.length;++n) {
-                  delete this.map[n]._refcnt;
-                  delete this.map[n]._numchld;
-                  delete this.map[n]._numvischld;
-                  delete this.map[n]._visible;
-                  delete this.map[n]._visdepth;
-                  delete this.map[n]._volume;
-                  delete this.map[n]._matrix;
-                  delete this.map[n]._viscnt;
-                  delete this.map[n]._camcnt;
-               }
-               this.map = [];
-               delete this.vismap;
-               delete this.cammap;
-            };
-      }
-
-      var chlds = null, shape = null, vis = false;
-      if (kind === 0) {
-         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
-
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return res;
-         shape = obj.fVolume.fShape;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
-         if (arg.screen_vis) {
-            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
-         } else {
-            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis);
-            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) obj._visdepth = 1; else
-            if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) obj._visdepth = 0;
-         }
-
-      } else {
-         if (obj.fShape === undefined) return res;
-         shape = obj.fShape;
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-         vis = obj.fRnrSelf;
-      }
-
-      if ('cnt' in arg) {
-         if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
-         arg.cnt[lvl] += 1;
-      }
-
-      if ('_refcnt' in obj) {
-          obj._refcnt++;
-      } else {
-         obj._refcnt = 1;
-         obj._numchld = 0; // count number of childs
-         obj._numvischld = 0; // count number of visible childs
-         arg.map.push(obj);
-
-         //  var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
-         obj._volume = shape ? shape.fDX * shape.fDY * shape.fDZ : 0;
-         obj._visible = vis;
-
-         if (chlds !== null)
-            for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoNodes(chlds[i], arg, lvl+1);
-               obj._numchld += chld_res.cnt;
-               obj._numvischld += chld_res.vis;
-            }
-      }
-
-      if ((lvl === 0) && arg.erase) arg.clear();
-
-      res.cnt = 1 + obj._numchld; // account number of volumes
-      res.vis = (obj._visible ? 1 : 0) + obj._numvischld; // account number of visible volumes
-
-      return res;
-   }
-
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
 
       if ((node1===null) || (node2===null)) return node1 === node2;
@@ -675,59 +582,6 @@
 
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
     }
-
-   JSROOT.TGeoPainter.prototype.ScanUniqueVisVolumes = function(obj, lvl, arg) {
-      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object') ||
-          (obj.fVolume === undefined) || (obj.fVolume == null)) return 0;
-
-      if (lvl === 0) {
-         arg.master = null;
-         arg.vis_unique = true;
-         arg.vis_master = null; // master used to verify material attributes
-         arg.same_material = true;
-      }
-
-      var res = obj._visible ? 1 : 0;
-
-      if (obj._refcnt > 1) arg.vis_unique = false;
-      if (arg.master!==null)
-         if (!this.SameMaterial(arg.master, obj)) arg.same_material = false;
-
-      var top_unique = arg.vis_unique;
-      arg.vis_unique = true;
-
-      var top_master = arg.master, top_same = arg.same_material;
-
-      arg.master = obj._visible ? obj : null;
-      arg.same_material = true;
-
-      var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
-      var numvis = 0;
-      if (arr !== null)
-         for (var i = 0; i < arr.length; ++i)
-            numvis += this.ScanUniqueVisVolumes(arr[i], lvl+1, arg);
-
-      obj._numvis = numvis;
-      obj._visunique  = arg.vis_unique;
-      obj._samematerial = arg.same_material;
-
-      if (obj._samematerial) {
-         if (top_same && (top_master!=null) && (arg.master!==null))
-            arg.same_material = this.SameMaterial(top_master, arg.master);
-         else
-            arg.same_material = top_same;
-
-         if (top_master !== null) arg.master = top_master;
-      } else {
-         arg.master = null; // when material differ, no need to preserve master
-         arg.same_material = false;
-      }
-
-      arg.vis_unique = top_unique && obj._visunique;
-
-      return res + numvis;
-   }
 
    JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
@@ -820,48 +674,43 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawCount = function() {
+   JSROOT.TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
-      var tm1 = new Date();
+      var res = 'Unique nodes: ' + this._clones.nodes.length + '<br/>' +
+                'Unique visible: ' + unqievis + '<br/>' +
+                'Time to clone: ' + clonetm + 'ms <br/>';
 
-      var arg = { cnt : [], screen_vis: true };
-      var count = this.CountGeoNodes(this.GetObject(), arg);
+      var arg = {
+         cnt: [],
+         func: function(node) {
+            if (this.cnt[this.last]===undefined)
+               this.cnt[this.last] = 1;
+            else
+               this.cnt[this.last]++;
+            return true;
+         }
+      };
 
-      var res = 'Total number: ' + count.cnt + '<br/>';
+      var tm1 = new Date().getTime();
+      var numvis = this._clones.ScanVisible(arg);
+      var tm2 = new Date().getTime();
+
+      res += 'Total visible nodes: ' + numvis + '<br/>';
+
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
-         if (arg.cnt[lvl] !== 0)
+         if (arg.cnt[lvl] !== undefined)
             res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
-      res += "Unique volumes: " + arg.map.length + '<br/>';
 
-      if (count.vis === 0) {
-         arg.clear(); arg.screen_vis = false;
-         count = this.CountGeoNodes(this.GetObject(), arg);
-      }
+      res += "Time to scan: " + (tm2-tm1) + "ms <br/>";
 
-      res += "Visible volumes: " + count.vis + '<br/>';
+      arg.domatrix = true;
 
-      if (count.cnt<200000) {
-         this.ScanUniqueVisVolumes(this.GetObject(), 0, arg);
+      tm1 = new Date().getTime();
+      numvis = this._clones.ScanVisible(arg);
+      tm2 = new Date().getTime();
 
-         for (var n=0;n<arg.map.length;++n)
-            if (arg.map[n]._refcnt > 1) {
-               res += (arg.map[n]._visible ? "vis" : "map") + n + " " + arg.map[n].fName + "  nref:"+arg.map[n]._refcnt +
-               ' chld:'+ arg.map[n]._numvis + "(" + arg.map[n]._numchld + ')' +
-               " unique:" + arg.map[n]._visunique + " same:" + arg.map[n]._samematerial;
-
-               if (arg.map[n]._samematerial) {
-                  if (arg.map[n]._visunique && (arg.map[n]._numvis>0)) res+=" (can merge with childs in Worker)"; else
-                     if ((arg.map[n]._refcnt > 4) && (arg.map[n]._numvis>1)) res+=" (make sense merge in main thread)";
-               }
-
-               res += "<br/>";
-            }
-      }
-
-      var tm2 = new Date();
-
-      res +=  "Elapsed time: " + (tm2.getTime() - tm1.getTime()) + "ms <br/>";
+      res += "Time to scan with matrix: " + (tm2-tm1) + "ms <br/>";
 
       this.select_main().style('overflow', 'auto').html(res);
 
@@ -871,9 +720,6 @@
 
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
-
-      if (opt === 'count')
-         return this.drawCount();
 
       var size = this.size_for_3d();
 
@@ -890,10 +736,13 @@
       var uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
       if ((uniquevis <= 0) && this.options.screen_vis) {
          this.options.screen_vis = false;
-         uniquevis = this._clones.MarkVisisble(this.options.screen_vis)
+         uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
       }
 
       var tm2 = new Date().getTime();
+
+      if (opt === 'count')
+         return this.drawCount(uniquevis, tm2-tm1);
 
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
@@ -905,8 +754,6 @@
       tm2 = new Date().getTime();
 
       console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
-
-      // this._clones.CheckWithMatrix();
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
@@ -930,7 +777,7 @@
       var previewInterval = this._webgl ? 1000 : 2000;
 
       while(true) {
-         if (this.drawStackedNode()) {
+         if (this.drawNode()) {
             log = "Creating meshes " + this._drawcnt;
          } else
             break;
