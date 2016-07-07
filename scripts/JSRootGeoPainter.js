@@ -524,7 +524,7 @@
       }
 
       // original object, extracted from the map
-      var nodeobj = this._data.map[node.id];
+      var nodeobj = this._clones.origin[node.id];
       var kind = JSROOT.GEO.NodeKind(nodeobj);
 
       if (kind<0) return false;
@@ -986,71 +986,24 @@
 
       this._webgl = JSROOT.Painter.TestWebGL();
 
-      this._data = { cnt: [], screen_vis: true }; // now count volumes which should go to the processing
-
-      var total = this.CountGeoNodes(this.GetObject(), this._data);
-
-      // if no any volume was selected, probably it is because of visibility flags
-      if ((total.cnt > 0) && (total.vis == 0)) {
-
-         console.log('switch to normal visisbility flags');
-
-         this._data.clear();
-         this._data.screen_vis = false;
-         total = this.CountGeoNodes(this.GetObject(), this._data);
-      }
-
       var tm1 = new Date().getTime();
-      this._clones = new JSROOT.GEO.ClonedNodes(this._data.map);
+
+      this._clones = new JSROOT.GEO.ClonedNodes(this.GetObject());
+      var uniquevis = this._clones.MarkVisisble(true);
+      if (uniquevis <= 0) this._clones.MarkVisisble(false)
+
       var tm2 = new Date().getTime();
 
-      console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1);
+      console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-
-      // scan hierarchy completely, taking into account visibility flags
-      var numvis = this.CountVisibleNodes(this.GetObject(), this._data);
+      var maxlimit = this._webgl ? 2000 : 1000;
 
       tm1 = new Date().getTime();
-
-      var numvis2 = this._clones.ScanVisible();
-
-      tm2 = new Date().getTime();
-
-      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis, numvis2, 'count takes', tm2-tm1);
-
-      var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
-      maxlimit *= this.options.more;
-
-      if (numvis > maxlimit)  {
-
-         console.log('selected number of volumes ' + numvis + ' cannot be disaplyed, try to reduce');
-
-         var t1 = new Date().getTime();
-         // sort in reverse order (big first)
-         this._data.vismap.sort(function(a,b) { return b._volume - a._volume; });
-         var t2 = new Date().getTime();
-         console.log('sort time', t2-t1);
-
-         var cnt = 0, indx = 0;
-         while ((cnt < maxlimit) && (indx < this._data.vismap.length-1))
-            cnt += this._data.vismap[indx++]._viscnt;
-
-         this._data.minVolume = this._data.vismap[indx]._volume;
-
-         console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
-
-         numvis = this.CountVisibleNodes(this.GetObject(), this._data);
-
-         console.log('Selected numvis', numvis);
-      }
-
-      t1 = new Date().getTime();
-
       var res2 = this._clones.DefineVisible(maxlimit);
       this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
-      t2 = new Date().getTime();
+      tm2 = new Date().getTime();
 
-      console.log('Collect visibles', this._draw_nodes.length, 'takes time', t2-t1);
+      console.log('Collect visibles', this._draw_nodes.length, 'takes time', tm2-tm1);
 
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
@@ -1175,8 +1128,6 @@
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
-
-      this._data.clear();
 
       // pointer used in the event handlers
       var pthis = this;

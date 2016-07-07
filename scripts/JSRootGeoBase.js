@@ -1133,39 +1133,67 @@
 
    // class for working with cloned nodes
 
-   JSROOT.GEO.ClonedNodes = function(map, clones) {
-      this.origin = map; // original array of the unique nodes
-      this.nodes = clones; // array of cloned nodes
+   JSROOT.GEO.ClonedNodes = function(obj, clones) {
+      if (obj) this.CreateClonesNew(obj); else
+      if (clones) this.nodes = clones;
+   }
 
-      if (this.origin && !this.nodes) this.CreateClones();
+   JSROOT.GEO.ClonedNodes.prototype.CreateClonesNew = function(obj, sublevel) {
+       if (!sublevel) {
+          this.origin = [];
+          sublevel = 1;
+       }
+
+       var kind = JSROOT.GEO.NodeKind(obj);
+       if ((kind < 0) || ('_refid' in obj)) return;
+
+       obj._refid = this.origin.length;
+       this.origin.push(obj);
+
+       var chlds = null;
+       if (kind === 0) {
+          chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
+       } else {
+          chlds = obj.fElements ? obj.fElements.arr : null;
+       }
+
+       if (chlds !== null)
+          for (var i = 0; i < chlds.length; ++i)
+            this.CreateClonesNew(chlds[i], sublevel+1);
+
+       if (sublevel > 1) return;
+
+       this.CreateClones();
+
+       // remove intermediate identifiers
+       for (var n=0;n<this.origin.length;++n)
+          delete this.origin[n]._refid;
    }
 
    JSROOT.GEO.ClonedNodes.prototype.CreateClones = function() {
       if (!this.origin) return false;
 
-      for (var n=0;n<this.origin.length;++n)
-         this.origin[n]._refid = n; // mark all objects, need for the dereferencing
+      //for (var n=0;n<this.origin.length;++n)
+      //   this.origin[n]._refid = n; // mark all objects, need for the dereferencing
 
       this.nodes = [];
 
       // first create nodes themself
       for (var n=0;n<this.origin.length;++n) {
          var obj = this.origin[n];
-         this.nodes.push({ id: n, vis: obj._visible, vol: obj._volume, numvischld: obj._numvischld });
+         this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0 });
       }
 
       // than fill childrens lists
       for (var n=0;n<this.origin.length;++n) {
          var obj = this.origin[n], clone = this.nodes[n];
 
-         if (obj._visdepth !== undefined)
-            clone.depth = obj._visdepth;
-
-         var kind = JSROOT.GEO.NodeKind(obj);
+         //if (obj._visdepth !== undefined)
+         //   clone.depth = obj._visdepth;
 
          var chlds = null, shape = null;
 
-         if (kind === 0) {
+         if (clone.kind === 0) {
             if (obj.fVolume) {
                shape = obj.fVolume.fShape;
                if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
@@ -1175,14 +1203,14 @@
             if (obj.fElements) chlds = obj.fElements.arr;
          }
 
-
-         var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
+         var matrix = JSROOT.GEO.getNodeMatrix(clone.kind, obj);
          if (matrix)
             clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
          if (shape) {
             clone.fDX = shape.fDX;
             clone.fDY = shape.fDY;
             clone.fDZ = shape.fDZ;
+            clone.vol = shape.fDX*shape.fDY*shape.fDZ;
          }
 
          if (!chlds) continue;
@@ -1196,9 +1224,39 @@
       return true;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen) {
+      if (!this.origin || !this.nodes) return 0;
+
+      var res = 0;
+
+      for (var n=0;n<this.origin.length;++n) {
+         var obj = this.origin[n], clone = this.nodes[n];
+
+         clone.vis = false;
+         delete clone.depth;
+
+         if (clone.kind === 0) {
+            if (obj.fVolume) {
+               if (on_screen) {
+                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
+               } else {
+                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis);
+                  if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) clone.depth = 1; else
+                  if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) clone.depth = 0;
+               }
+            }
+         } else {
+            clone.vis = obj.fRnrSelf;
+         }
+
+         if (clone.vis) res++;
+      }
+
+      return res;
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl, node) {
       // Scan visible nodes in hierarchy, starting from nodeid
-      // At the end list of visible nodes are created (this.vismap) and counter how often each node is shown
 
       if (!this.nodes) return 0;
 
@@ -1227,7 +1285,7 @@
       if (this.last > this.stack.length - 2)
          throw 'stack capacity is not enough ' + this.stack.length;
 
-      if (node.chlds && (node.numvischld > 0) && (vislvl > 0)) {
+      if (node.chlds && (vislvl > 0)) {
          this.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
             this.stack[this.last] = i; // in the stack one store index of child, it is path in the hierarchy
