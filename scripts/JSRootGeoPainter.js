@@ -659,62 +659,6 @@
       return res;
    }
 
-   JSROOT.TGeoPainter.prototype.CountCameraNodes = function(obj, arg, vislvl, parentMatrix) {
-      // Count how many nodes are seen by camera
-      // Only node which inside (minCamVolume..minVolume] interval are recognized
-      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
-
-      if (!arg) return 0;
-
-      if (vislvl === undefined) {
-         vislvl = 9999;
-         arg.cammap = []; // list of all visible by camera nodes (after volume cut)
-         if (arg.minCamVolume === undefined) arg.minCamVolume = 0;
-         for (var n=0;n<arg.map.length;++n)
-            delete arg.map[n]._camcnt; // how often node was counted as visible by camera
-      }
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      if ((kind<0) || (vislvl<0)) return 0;
-
-      var chlds = null, shape, matrix, res = 0;
-      if (kind === 0) {
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
-         shape = obj.fVolume.fShape;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-      } else {
-         shape = obj.fShape;
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-      }
-
-      if ('_visdepth' in obj) vislvl = obj._visdepth;
-
-      if (parentMatrix) matrix = parentMatrix.clone();
-                   else matrix = new THREE.Matrix4();
-
-      if (obj._matrix === undefined)
-         obj._matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-
-      if (obj._matrix) matrix.multiply(obj._matrix);
-
-      if (obj._visible && (obj._volume <= arg.minVolume) && (obj._volume > arg.minCamVolume))
-         if (JSROOT.GEO.VisibleByCamera(this._camera, matrix, shape)) {
-            if (!('_camcnt' in obj)) {
-               obj._camcnt = 0;
-               arg.cammap.push(obj);
-            }
-            obj._camcnt++;
-            res++;
-         }
-
-      if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
-         for (var i = 0; i < chlds.length; ++i)
-            res += this.CountCameraNodes(chlds[i], arg, vislvl-1, matrix);
-
-      return res;
-   }
-
-
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
 
       if ((node1===null) || (node2===null)) return node1 === node2;
@@ -962,6 +906,7 @@
 
       console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
 
+      // this._clones.CheckWithMatrix();
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 

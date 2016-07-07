@@ -1260,13 +1260,22 @@
             for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
             return res;
          }
+
+         if (arg.domatrix) arg.matrices = [];
       }
 
       if (vislvl<0) return 0;
 
       var res = 0;
 
-      if (arg.enter) arg.enter(this.last, node);
+      if (arg.domatrix) {
+         var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
+         if (node.matrix) {
+            arg.matrices[arg.last] = prnt.clone().multiply(new THREE.Matrix4().fromArray(node.matrix));
+         } else {
+            arg.matrices[arg.last] = prnt;
+         }
+      }
 
       if (node.vis) {
          if (arg.func) {
@@ -1288,6 +1297,12 @@
             res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
          }
          arg.last--;
+      }
+
+      if (arg.last === 0) {
+         delete arg.last;
+         delete arg.stack;
+         delete arg.CopyStack;
       }
 
       return res;
@@ -1349,6 +1364,25 @@
       this.ScanVisible(arg);
 
       return arg.res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.CheckWithMatrix = function() {
+      // only for debugging, check scanning speed with matrixes
+
+      var arg = {
+            domatrix: true,
+            func: function(node) {
+               return true;
+            }
+         };
+
+      var tm1 = new Date().getTime();
+
+      this.ScanVisible(arg);
+
+      var tm2 = new Date().getTime();
+
+      console.log('scan objects with matrixes takes', tm2-tm1);
    }
 
    return JSROOT;
