@@ -462,57 +462,113 @@
 
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
+      // return false when nothing todo
+      // return true if creates next node
+      // return 1 when waiting for Worker
+
       if (!this._draw_nodes || !this._clones) return false;
 
-      // item to draw, containes indexs of children, first element - 0
+      // first of all, create geometries (using worker if available)
 
-      var item = this._draw_nodes.shift();
+      var todo = [], ready = [], waiting = 0;
 
-      if (this._draw_nodes.length === 0) delete this._draw_nodes;
+      for (var n=0;n<this._draw_nodes.length;++n) {
+         var node_indx = this._draw_nodes[n][0];
+         if (node_indx < 0) continue;
 
-      var obj3d = this._clones.CreateObject3D(item, this._toplevel, this.options);
+         var shape = this._clones.GetNodeShape(node_indx);
 
-      // original object, extracted from the map
-      var nodeobj = this._clones.origin[item[0]];
-      var kind = JSROOT.GEO.NodeKind(nodeobj);
+         if (!shape) { this._draw_nodes[n][0] = -1; continue; }
 
-      if (kind<0) return false;
-
-      var prop = this.getNodeProperties(kind, nodeobj, true);
-
-      this._drawcnt++;
-
-      if (prop.shape._geom === undefined) {
-         prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
-         this.accountGeom(prop.shape._geom, prop.shape._typename);
+         // if not geometry exists, either create it or submit to worker
+         if (shape._geom !== undefined) {
+            if (ready.length < 200) ready.push(n);
+         } else
+         if (!shape._geom_worker) {
+            shape._geom_worker = true;
+            todo.push({ indx: n, node_indx: node_indx, shape: shape });
+            if (todo.length > 50) break;
+         } else {
+            waiting++; // number of waiting for worker
+         }
       }
 
-      var mesh = null;
+      // console.log('collected todo', todo.length,'ready', ready.length, 'waiting', waiting);
 
-      if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+      if (this.canSubmitToWorker() && (todo.length > 0)) {
+         for (var s=0;s<todo.length;++s)
+            todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
+         this.submitToWorker({ shapes: todo });
+         if (ready.length == 0) return 1; //
+         todo = [];
+      }
 
-         if (obj3d.matrixWorld.determinant() > -0.9) {
-            mesh = new THREE.Mesh( prop.shape._geom, prop.material );
-         } else {
-            mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
+      // create geometries
+      if (todo.length > 0) {
+         for (var s=0;s<todo.length;++s) {
+            var shape = todo[s].shape;
+            shape._geom = JSROOT.GEO.createGeometry(shape);
+            this.accountGeom(shape._geom, shape._typename);
+            delete shape._geom_worker; // remove flag
+            ready.push(todo[s].indx); // one could add it to ready list
+         }
+      }
+
+      // create
+      for (var n=0;n<ready.length;++n) {
+         // item to draw, containes indexs of children, first element - node index
+
+         var item = this._draw_nodes[ready[n]];
+
+         var obj3d = this._clones.CreateObject3D(item, this._toplevel, this.options);
+
+         // original object, extracted from the map
+         var nodeobj = this._clones.origin[item[0]];
+         var clone = this._clones.nodes[item[0]];
+
+         var prop = this.getNodeProperties(clone.kind, nodeobj, true);
+
+         this._drawcnt++;
+
+         var mesh = null;
+
+         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+
+            if (obj3d.matrixWorld.determinant() > -0.9) {
+               mesh = new THREE.Mesh( prop.shape._geom, prop.material );
+            } else {
+               mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
+            }
+
+            obj3d.add(mesh);
          }
 
-         obj3d.add(mesh);
+         if (mesh && (this.options._debug || this.options._full)) {
+            var helper = new THREE.WireframeHelper(mesh);
+            helper.material.color.set(prop.fillcolor);
+            helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
+            obj3d.add(helper);
+         }
+
+         if (mesh && (this.options._bound || this.options._full)) {
+            var boxHelper = new THREE.BoxHelper( mesh );
+            obj3d.add( boxHelper );
+         }
+
+         item[0] = -1; // mark element as processed
       }
 
-      if (mesh && (this.options._debug || this.options._full)) {
-         var helper = new THREE.WireframeHelper(mesh);
-         helper.material.color.set(prop.fillcolor);
-         helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
-         obj3d.add(helper);
-      }
+      // doing its job well, can be called next time
+      if ((todo.length > 0) || (ready.length > 0)) return true;
 
-      if (mesh && (this.options._bound || this.options._full)) {
-         var boxHelper = new THREE.BoxHelper( mesh );
-         obj3d.add( boxHelper );
-      }
+      // worker does not deliver results, wait little longer
+      if (waiting > 0) return 1;
 
-      return true;
+      // here everything is completed, we could cleanup data and finish
+
+      delete this._draw_nodes;
+
+      return false;
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -695,7 +751,7 @@
 
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
+      var maxlimit = (this._webgl ? 2000 : 2000) * this.options.more;
 
       tm1 = new Date().getTime();
       var res2 = this._clones.DefineVisible(maxlimit);
@@ -703,6 +759,9 @@
       tm2 = new Date().getTime();
 
       console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
+
+      // activate worker
+      // if (this._draw_nodes.length > 10) this.startWorker();
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
@@ -712,37 +771,47 @@
 
       this._startm = new Date().getTime();
 
+      this._last_render_tm = this._startm;
+      this._last_render_cnt = 0;
+
       this._drawcnt = 0; // counter used to build meshes
 
       this.CreateToolbar( { container: this.select_main().node() } );
 
-      return this.continueDraw();
+      this.continueDraw();
+
+      return this;
    }
 
    JSROOT.TGeoPainter.prototype.continueDraw = function() {
-      var curr = new Date().getTime();
 
-      var log = "";
-      var previewInterval = this._webgl ? 1000 : 2000;
+      var currtm = new Date().getTime();
+
+      var interval = 300;
 
       while(true) {
-         if (this.drawNode()) {
-            log = "Creating meshes " + this._drawcnt;
-         } else
-            break;
+
+         var res = this.drawNode();
+
+         if (!res) break;
+
+         var log = "Creating meshes " + this._drawcnt;
 
          var now = new Date().getTime();
 
-         if (now - curr > previewInterval) {
-            JSROOT.progress(log);
-            setTimeout(this.continueDraw.bind(this), 0);
-            this.adjustCameraPosition();
-            this._renderer.render(this._scene, this._camera);
-            return this;
-         }
-
-         // stop creation, render as is
+         // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) break;
+
+         if ((now - currtm > interval) || (res === 1)) {
+            JSROOT.progress(log);
+            if (this._webgl && (now - this._last_render_tm > interval) && (this._last_render_cnt != this._drawcnt)) {
+               this.adjustCameraPosition();
+               this._renderer.render(this._scene, this._camera);
+               this._last_render_tm = new Date().getTime();
+               this._last_render_cnt = this._drawcnt;
+            }
+            return setTimeout(this.continueDraw.bind(this), 10);
+         }
       }
 
       var t2 = new Date().getTime();
@@ -750,11 +819,10 @@
 
       if (t2 - this._startm > 300) {
          JSROOT.progress('Rendering geometry');
-         setTimeout(this.completeDraw.bind(this, true), 0);
-         return this;
+         return setTimeout(this.completeDraw.bind(this, true), 0);
       }
 
-      return this.completeDraw(true);
+      this.completeDraw(true);
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout) {
@@ -791,6 +859,13 @@
 
    JSROOT.TGeoPainter.prototype.startWorker = function() {
 
+      if (this._worker) return;
+
+      this._worker_ready = false;
+      this._worker_jobs = 0; // counter how many requests send to worker
+
+      var pthis = this;
+
       this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
 
       this._worker.onmessage = function(e) {
@@ -800,11 +875,58 @@
          if ('log' in e.data)
             return JSROOT.console('geo: ' + e.data.log);
 
-         if ('init' in e.data)
-            return JSROOT.console('full init tm: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+         if ('init' in e.data) {
+            pthis._worker_ready = true;
+            return JSROOT.console('Worker ready: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+         }
+
+         pthis.processWorkerReply(e.data);
       };
 
-      this._worker.postMessage( { init: true, tm0: new Date() } );
+      // send initialization message with clones
+      this._worker.postMessage( { init: true, tm0: new Date(), clones: this._clones.nodes } );
+   }
+
+   JSROOT.TGeoPainter.prototype.canSubmitToWorker = function() {
+      if (!this._worker) return false;
+
+      // if (!this._worker_ready || (this._worker_jobs > 3)) return false;
+
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.submitToWorker = function(job) {
+      if (!this._worker) return false;
+
+      this._worker_jobs++;
+
+      this._worker.postMessage(job);
+   }
+
+   JSROOT.TGeoPainter.prototype.processWorkerReply = function(job) {
+      this._worker_jobs--;
+
+      if ('shapes' in job) {
+         var loader = new THREE.JSONLoader();
+
+         for (var n=0;n<job.shapes.length;++n) {
+            var item = job.shapes[n];
+
+            var shape = this._clones.GetNodeShape(item.node_indx);
+
+            var object = loader.parse(item.json.data);
+            shape._geom = object.geometry;
+            this.accountGeom(shape._geom, shape._typename);
+
+            delete shape._geom_worker;
+
+            // TEMPORARY CODE
+            // just create geometry locally, while tranfered geometry now works
+            shape._geom = JSROOT.GEO.createGeometry(shape);
+         }
+
+         return;
+      }
    }
 
 
@@ -877,6 +999,11 @@
       this._controls = null;
       this._tcontrols = null;
       this._toolbar = null;
+
+      if (this._worker) {
+         this._worker.terminate();
+         delete this._worker;
+      }
    }
 
    JSROOT.TGeoPainter.prototype.helpText = function(msg) {

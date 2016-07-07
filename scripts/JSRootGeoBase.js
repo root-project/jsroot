@@ -1138,6 +1138,18 @@
       if (clones) this.nodes = clones;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.GetNodeShape = function(indx) {
+      if (!this.origin || !this.nodes) return null;
+      var obj = this.origin[indx], clone = this.nodes[indx];
+      if (!obj || !clone) return null;
+      if (clone.kind === 0) {
+         if (obj.fVolume) return obj.fVolume.fShape;
+      } else {
+         return obj.fShape;
+      }
+      return null;
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.CreateClones = function(obj, sublevel) {
        if (!sublevel) {
           this.origin = [];
