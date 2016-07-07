@@ -943,8 +943,11 @@
       var tm1 = new Date().getTime();
 
       this._clones = new JSROOT.GEO.ClonedNodes(this.GetObject());
-      var uniquevis = this._clones.MarkVisisble(true);
-      if (uniquevis <= 0) this._clones.MarkVisisble(false)
+      var uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
+      if ((uniquevis <= 0) && this.options.screen_vis) {
+         this.options.screen_vis = false;
+         uniquevis = this._clones.MarkVisisble(this.options.screen_vis)
+      }
 
       var tm2 = new Date().getTime();
 
@@ -957,7 +960,7 @@
       this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
       tm2 = new Date().getTime();
 
-      console.log('Collect visibles', this._draw_nodes.length, 'takes time', tm2-tm1);
+      console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
 
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);

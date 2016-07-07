@@ -1248,19 +1248,28 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = 9999;
-         this.stack = new Int32Array(100); // current stack
-         this.last = 0;
-         this.stack[0] = 0;
+         vislvl = 999999;
          node = this.nodes[0];
+
+         if (!arg) arg = {};
+         arg.stack = new Int32Array(100); // current stack
+         arg.last = 0;
+         arg.stack[0] = 0;
+         arg.CopyStack = function() {
+            var res = new Int32Array(this.last+1);
+            for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
+            return res;
+         }
       }
 
       if (vislvl<0) return 0;
 
       var res = 0;
 
+      if (arg.enter) arg.enter(this.last, node);
+
       if (node.vis) {
-         if (arg && arg.func) {
+         if (arg.func) {
             if (arg.func(node)) res++;
          } else {
             res++;
@@ -1269,26 +1278,21 @@
 
       if (node.depth !== undefined) vislvl = node.depth;
 
-      if (this.last > this.stack.length - 2)
-         throw 'stack capacity is not enough ' + this.stack.length;
+      if (arg.last > arg.stack.length - 2)
+         throw 'stack capacity is not enough ' + arg.stack.length;
 
       if (node.chlds && (vislvl > 0)) {
-         this.last++;
+         arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
-            this.stack[this.last] = i; // in the stack one store index of child, it is path in the hierarchy
+            arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
             res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
          }
-         this.last--;
+         arg.last--;
       }
 
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CopyStack = function() {
-      var res = new Int32Array(this.last+1);
-      for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
-      return res;
-   }
 
    JSROOT.GEO.ClonedNodes.prototype.DefineVisible = function(maxnum) {
       // function collects visible nodes and build sorted map
@@ -1308,6 +1312,7 @@
       var res = { cnt0: 0, minVol: 0, cnt1: 0, vismap: [] };
 
       var tm1 = new Date().getTime();
+
       res.cnt0 = this.ScanVisible(arg);
 
       for (var id=0;id<arg.viscnt.length;++id)
@@ -1333,11 +1338,10 @@
    JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(minvol) {
       var arg = {
             min: minvol,
-            nodes: this,
             res: [],
             func: function(node) {
                if (node.vol <= this.min) return false;
-               this.res.push(this.nodes.CopyStack());
+               this.res.push(this.CopyStack());
                return true;
             }
          };
