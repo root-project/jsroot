@@ -1188,8 +1188,15 @@
           }
 
           var matrix = JSROOT.GEO.getNodeMatrix(clone.kind, obj);
-          if (matrix)
+          if (matrix) {
              clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
+             if (clone.matrix[0] === 1) {
+                var issimple = true;
+                for (var k=1;(k<clone.matrix.length) && issimple;++k)
+                   issimple = (clone.matrix[k] === ((k===5) || (k===10) || (k===15) ? 1 : 0));
+                if (issimple) delete clone.matrix;
+             }
+          }
           if (shape) {
              clone.fDX = shape.fDX;
              clone.fDY = shape.fDY;
