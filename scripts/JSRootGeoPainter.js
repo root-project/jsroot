@@ -461,48 +461,6 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.create3DObjects = function(arg) {
-      // function used to create Object3D hierarchy to current stack point
-      // Called only if object need to be drawn
-
-      if (arg.mesh) return arg.mesh;
-
-      var parent = this._stack[0].toplevel;
-
-      for (var n=0;n<this._stack.length;++n) {
-         arg = this._stack[n];
-         if (arg.mesh === undefined) {
-            if (arg.node._matrix === undefined)
-               arg.node._matrix = JSROOT.GEO.getNodeMatrix(JSROOT.GEO.NodeKind(arg.node), arg.node);
-
-            var nodeObj = new THREE.Object3D();
-            if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
-            this.accountNodes(nodeObj);
-
-            nodeObj.name = arg.node.fName;
-
-            // add the mesh to the scene
-            parent.add(nodeObj);
-
-            // this is only for debugging - test invertion of whole geometry
-            if (arg.main && (this.options.scale !== null)) {
-               if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
-                  nodeObj.scale.copy(this.options.scale);
-                  nodeObj.updateMatrix();
-               }
-            }
-
-            nodeObj.updateMatrixWorld();
-
-            arg.mesh = nodeObj;
-         }
-
-         parent = arg.mesh;
-      }
-
-      return arg.mesh;
-   }
-
    JSROOT.TGeoPainter.prototype.drawStackedNode = function() {
       if (!this._draw_nodes || !this._clones) return false;
 
@@ -609,93 +567,6 @@
    }
 
 
-   // Central function of TGeoNode drawing
-   // Automatically traverse complete hierarchy
-   // Also can be used to update existing drawing
-
-   JSROOT.TGeoPainter.prototype.drawNode = function() {
-
-      return this.drawStackedNode();
-
-      if (!this._stack || (this._stack.length == 0)) return false;
-
-      var arg = this._stack[this._stack.length - 1];
-
-      if (arg.main && arg.mesh) {
-         // end of iteration
-         this._stack.pop();
-         return false;
-      }
-
-      if ('nchild' in arg) {
-         if (arg.nchild >= arg.chlds.length) {
-            this._stack.pop();
-            return true; // no more childs
-         }
-         // extract next child
-         arg.node = arg.chlds[arg.nchild++];
-         delete arg.mesh; // remove mesh on previous child
-      }
-
-      var kind = JSROOT.GEO.NodeKind(arg.node);
-      if (kind < 0) return false;
-
-      var visible = arg.node._visible && (arg.node._volume > this._data.minVolume) && (arg.vislvl >= 0);
-      if (arg.main) this.create3DObjects(arg);
-
-      var prop = this.getNodeProperties(kind, arg.node, visible);
-
-      // console.log(this._stack.length, 'vislvl', arg.vislvl, 'visible', visible, 'chlds', prop.chlds, 'numvis', arg.node._numvischld);
-
-      if (visible) {
-         var nodeObj = this.create3DObjects(arg);
-
-         this._drawcnt++;
-
-         if (typeof prop.shape._geom === 'undefined') {
-            prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
-            this.accountGeom(prop.shape._geom, prop.shape._typename);
-         }
-
-         var mesh = null;
-
-         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
-
-            if (nodeObj.matrixWorld.determinant() > -0.9) {
-               mesh = new THREE.Mesh( prop.shape._geom, prop.material );
-            } else {
-               mesh = this.createFlippedMesh(nodeObj, prop.shape, prop.material);
-            }
-
-            nodeObj.add(mesh);
-         }
-
-         if (mesh && (this.options._debug || this.options._full)) {
-            var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(prop.fillcolor);
-            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-            nodeObj.add(helper);
-         }
-
-         if (mesh && (this.options._bound || this.options._full)) {
-            var boxHelper = new THREE.BoxHelper( mesh );
-            nodeObj.add( boxHelper );
-         }
-      }
-
-      var vislvl = ('_visdepth' in arg.node) ? arg.node._visdepth : arg.vislvl;
-
-      if (prop.chlds && (prop.chlds.length > 0) && (arg.node._numvischld > 0) && (vislvl > 0)) {
-         this._stack.push({
-            nchild: 0,
-            chlds: prop.chlds,
-            vislvl: vislvl - 1,
-         });
-      }
-
-      return true;
-   }
-
    JSROOT.TGeoPainter.prototype.CountGeoNodes = function(obj, arg, lvl) {
       // Scan nodes hierarchy, finds unique nodes and create map of such nodes
       // Extract visibility flags. calculates volume
@@ -786,32 +657,6 @@
       res.vis = (obj._visible ? 1 : 0) + obj._numvischld; // account number of visible volumes
 
       return res;
-   }
-
-   JSROOT.TGeoPainter.prototype.CreateClonedStructures = function(arg) {
-      if (!arg || !arg.map) return;
-
-      var tm1 = new Date().getTime();
-
-      var clones = new JSROOT.GEO.ClonedNodes(arg.map);
-
-      var tm2 = new Date().getTime();
-
-      console.log('Create clones', clones.nodes.length, tm2-tm1);
-
-      this.startWorker();
-
-      var tm3 = new Date().getTime();
-
-      console.log('Start worker in main context takes', tm3-tm2);
-
-      this._worker.postMessage( { map: clones.nodes, tm0: new Date() } );
-
-      var tm4 = new Date().getTime();
-
-      console.log('Post message in main thread takes ', tm4-tm3);
-
-      console.log('Full clone and worker initialization took ', tm4-tm1);
    }
 
    JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
@@ -923,8 +768,8 @@
       if (node1.fVolume.fLineColor >= 0)
          return (node1.fVolume.fLineColor === node2.fVolume.fLineColor);
 
-       var m1 = (node1.fVolume['fMedium'] !== null) ? node1.fVolume['fMedium']['fMaterial'] : null;
-       var m2 = (node2.fVolume['fMedium'] !== null) ? node2.fVolume['fMedium']['fMaterial'] : null;
+       var m1 = (node1.fVolume.fMedium !== null) ? node1.fVolume.fMedium.fMaterial : null;
+       var m2 = (node2.fVolume.fMedium !== null) ? node2.fVolume.fMedium.fMaterial : null;
 
        if (m1 === m2) return true;
 
@@ -1020,13 +865,6 @@
 
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
-      if (this.MatchObjectType("TGeoNode"))  {
-         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), vislvl:9999, main: true } ];
-      }
-      else if (this.MatchObjectType('TEveGeoShapeExtract')) {
-         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), vislvl:9999, main: true } ];
-      }
-
       this.accountClear();
    }
 
@@ -1237,7 +1075,7 @@
       var previewInterval = this._webgl ? 1000 : 2000;
 
       while(true) {
-         if (this.drawNode()) {
+         if (this.drawStackedNode()) {
             log = "Creating meshes " + this._drawcnt;
          } else
             break;
@@ -1338,8 +1176,6 @@
 
       if (close_progress) JSROOT.progress();
 
-      // this.CreateClonedStructures(this._data);
-
       this._data.clear();
 
       // pointer used in the event handlers
@@ -1384,7 +1220,7 @@
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
-      this._stack = null;
+      delete this._clone;
       this._camera = null;
 
       this.first_render_tm = 0;
