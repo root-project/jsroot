@@ -1255,7 +1255,7 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = 999999;
+         vislvl = 99999;
          node = this.nodes[0];
 
          if (!arg) arg = {};
@@ -1300,6 +1300,7 @@
       if (node.chlds && (vislvl > 0)) {
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
+            arg.stack[0] = node.chlds[i]; // first element in stack is ID of current node
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
             res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
          }
@@ -1313,6 +1314,61 @@
       }
 
       return res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
+
+      var node = this.nodes[0], three_prnt = toplevel, obj3d;
+
+      for(var lvl=0; lvl<stack.length; ++lvl) {
+         var nchld = (lvl > 0) ? stack[lvl] : 0; // first item in stack is nodeid of last element
+         // extract current node
+         if (lvl>0) node = this.nodes[node.chlds[nchld]];
+
+         obj3d = undefined;
+
+         for (var i=0;i<three_prnt.children.length;++i) {
+            if (three_prnt.children[i].nchld === nchld) {
+               obj3d = three_prnt.children[i];
+               break;
+            }
+         }
+
+         if (!obj3d) {
+
+            obj3d = new THREE.Object3D();
+
+            if (node.matrix) {
+               // console.log('apply matrix');
+
+               //obj3d.applyMatrix(node.matrix);
+               obj3d.matrix.fromArray(node.matrix);
+               obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+            }
+
+            // this.accountNodes(obj3d);
+
+            obj3d.name = 'any name';
+            obj3d.nchld = nchld; // mark index to find it again later
+
+            // add the mesh to the scene
+            three_prnt.add(obj3d);
+
+            // this is only for debugging - test invertion of whole geometry
+            if ((lvl==0) && options && options.scale) {
+               if ((options.scale.x<0) || (options.scale.y<0) || (options.scale.z<0)) {
+                  obj3d.scale.copy(options.scale);
+                  obj3d.updateMatrix();
+               }
+            }
+
+            obj3d.updateMatrixWorld();
+         }
+
+         three_prnt = obj3d;
+      }
+
+      return three_prnt;
    }
 
 

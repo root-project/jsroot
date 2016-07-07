@@ -468,63 +468,12 @@
 
       var item = this._draw_nodes.shift();
 
-
       if (this._draw_nodes.length === 0) delete this._draw_nodes;
 
-      var node = this._clones.nodes[0], three_prnt = this._toplevel, obj3d;
-
-      // console.log('draw item', item);
-
-      for(var lvl=0; lvl<item.length; ++lvl) {
-         var nchld = item[lvl];
-         // extract current node
-         if (lvl>0) node = this._clones.nodes[node.chlds[nchld]];
-
-         obj3d = undefined;
-
-         for (var i=0;i<three_prnt.children.length;++i) {
-            if (three_prnt.children[i].nchld === nchld) {
-               obj3d = three_prnt.children[i];
-               break;
-            }
-         }
-
-         if (!obj3d) {
-
-            obj3d = new THREE.Object3D();
-
-            if (node.matrix) {
-               // console.log('apply matrix');
-
-               //obj3d.applyMatrix(node.matrix);
-               obj3d.matrix.fromArray(node.matrix);
-               obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-            }
-
-            this.accountNodes(obj3d);
-
-            obj3d.name = 'any name';
-            obj3d.nchld = nchld; // mark index to find it again later
-
-            // add the mesh to the scene
-            three_prnt.add(obj3d);
-
-            // this is only for debugging - test invertion of whole geometry
-            if ((lvl==0) && (this.options.scale !== null)) {
-               if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
-                  obj3d.scale.copy(this.options.scale);
-                  obj3d.updateMatrix();
-               }
-            }
-
-            obj3d.updateMatrixWorld();
-         }
-
-         three_prnt = obj3d;
-      }
+      var obj3d = this._clones.CreateObject3D(item, this._toplevel, this.options);
 
       // original object, extracted from the map
-      var nodeobj = this._clones.origin[node.id];
+      var nodeobj = this._clones.origin[item[0]];
       var kind = JSROOT.GEO.NodeKind(nodeobj);
 
       if (kind<0) return false;
@@ -542,25 +491,25 @@
 
       if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
 
-         if (three_prnt.matrixWorld.determinant() > -0.9) {
+         if (obj3d.matrixWorld.determinant() > -0.9) {
             mesh = new THREE.Mesh( prop.shape._geom, prop.material );
          } else {
-            mesh = this.createFlippedMesh(three_prnt, prop.shape, prop.material);
+            mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
          }
 
-         three_prnt.add(mesh);
+         obj3d.add(mesh);
       }
 
       if (mesh && (this.options._debug || this.options._full)) {
          var helper = new THREE.WireframeHelper(mesh);
          helper.material.color.set(prop.fillcolor);
          helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
-         three_prnt.add(helper);
+         obj3d.add(helper);
       }
 
       if (mesh && (this.options._bound || this.options._full)) {
          var boxHelper = new THREE.BoxHelper( mesh );
-         three_prnt.add( boxHelper );
+         obj3d.add( boxHelper );
       }
 
       return true;
