@@ -1272,18 +1272,17 @@
 
          if (!arg) arg = {};
          arg.stack = new Int32Array(100); // current stack
+         arg.current_id = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
          arg.stack[0] = 0;
          arg.CopyStack = function() {
-            var res = new Int32Array(this.last+1);
-            for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
-            return res;
+            var entry = { seqid: this.current_id, stack: new Int32Array(this.last+1) };
+            for (var n=0;n<=this.last;++n) entry.stack[n] = this.stack[n];
+            return entry;
          }
 
          if (arg.domatrix) arg.matrices = [];
       }
-
-      if (vislvl<0) return 0;
 
       var res = 0;
 
@@ -1296,20 +1295,18 @@
          }
       }
 
-      if (node.vis) {
-         if (arg.func) {
-            if (arg.func(node)) res++;
-         } else {
-            res++;
-         }
+      if (node.vis && (vislvl>=0)) {
+         if (!arg.func || arg.func(node)) res++;
       }
 
-      if (node.depth !== undefined) vislvl = node.depth;
+      arg.current_id++;
+
+      if ((node.depth !== undefined) && (vislvl > node.depth)) vislvl = node.depth;
 
       if (arg.last > arg.stack.length - 2)
          throw 'stack capacity is not enough ' + arg.stack.length;
 
-      if (node.chlds && (vislvl > 0)) {
+      if (node.chlds) {
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
             arg.stack[0] = node.chlds[i]; // first element in stack is ID of current node
@@ -1323,6 +1320,7 @@
          delete arg.last;
          delete arg.stack;
          delete arg.CopyStack;
+         delete arg.current_id;
       }
 
       return res;

@@ -473,12 +473,13 @@
       var todo = [], ready = [], waiting = 0;
 
       for (var n=0;n<this._draw_nodes.length;++n) {
-         var node_indx = this._draw_nodes[n][0];
-         if (node_indx < 0) continue;
+         var entry = this._draw_nodes[n];
+         if (entry.done) continue;
 
+         var node_indx = entry.stack[0];
          var shape = this._clones.GetNodeShape(node_indx);
 
-         if (!shape) { this._draw_nodes[n][0] = -1; continue; }
+         if (!shape) { entry.done = true; continue; }
 
          // if not geometry exists, either create it or submit to worker
          if (shape._geom !== undefined) {
@@ -518,13 +519,13 @@
       for (var n=0;n<ready.length;++n) {
          // item to draw, containes indexs of children, first element - node index
 
-         var item = this._draw_nodes[ready[n]];
+         var entry = this._draw_nodes[ready[n]];
 
-         var obj3d = this._clones.CreateObject3D(item, this._toplevel, this.options);
+         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
          // original object, extracted from the map
-         var nodeobj = this._clones.origin[item[0]];
-         var clone = this._clones.nodes[item[0]];
+         var nodeobj = this._clones.origin[entry.stack[0]];
+         var clone = this._clones.nodes[entry.stack[0]];
 
          var prop = this.getNodeProperties(clone.kind, nodeobj, true);
 
@@ -533,13 +534,11 @@
          var mesh = null;
 
          if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
-
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
                mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
             }
-
             obj3d.add(mesh);
          }
 
@@ -555,7 +554,7 @@
             obj3d.add( boxHelper );
          }
 
-         item[0] = -1; // mark element as processed
+         entry.done = true; // mark element as processed
       }
 
       // doing its job well, can be called next time
@@ -751,7 +750,7 @@
 
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-      var maxlimit = (this._webgl ? 2000 : 2000) * this.options.more;
+      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
       tm1 = new Date().getTime();
       var res2 = this._clones.DefineVisible(maxlimit);
