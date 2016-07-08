@@ -110,7 +110,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, scale: new THREE.Vector3(1,1,1), more:1 };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -155,6 +155,12 @@
          res.scale.x = -1;
          opt = opt.replace("invx", " ");
       }
+
+      if (opt.indexOf("worker")>=0) {
+         res.use_worker = true;
+         opt = opt.replace("worker", " ");
+      }
+
       if (opt.indexOf("invy")>=0) {
          res.scale.y = -1;
          opt = opt.replace("invy", " ");
@@ -775,7 +781,7 @@
       this._first_drawing = true;
 
       // activate worker
-      // if (this._draw_nodes.length > 10) this.startWorker();
+      if (this.options.use_worker) this.startWorker();
 
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
