@@ -623,8 +623,45 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
+   JSROOT.TGeoPainter.prototype.startDrawGeometry = function(force) {
+
+      if (!force && !this._draw_nodes_ready) {
+         this._draw_nodes_again = true;
+         return;
+      }
+
       this.accountClear();
+
+      tm1 = new Date().getTime();
+
+      if (this._draw_nodes_again)
+         this._clones.MarkVisisble(this.options.screen_vis);
+
+      var res2 = this._clones.DefineVisible(this.options.maxlimit);
+      var newnodes = this._clones.CollectVisibles(res2.minVol);
+      tm2 = new Date().getTime();
+
+      console.log('Collect visibles', newnodes.length, 'minvol', res2.minVol, 'takes', tm2-tm1);
+
+      if (this._draw_nodes) {
+         var del = this._clones.MergeVisibles(newnodes, this._draw_nodes);
+         // remove should be fast, do it here
+         for (var n=0;n<del.length;++n) {
+            var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel, this.options);
+            if (obj3d) obj3d.parent.remove(obj3d);
+         }
+      }
+
+      this._draw_nodes = newnodes;
+
+      this._startm = new Date().getTime();
+      this._last_render_tm = this._startm;
+      this._last_render_cnt = 0;
+      this._drawcnt = 0; // counter used to build meshes
+      this._draw_nodes_ready = false;
+      delete this._draw_nodes_again; // forget about such flag
+
+      this.continueDraw();
    }
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
@@ -753,15 +790,7 @@
 
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
-
-      tm1 = new Date().getTime();
-      var res2 = this._clones.DefineVisible(maxlimit);
-      this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
-      this._draw_nodes_ready = false;
-      tm2 = new Date().getTime();
-
-      console.log('Collect visibles', this._draw_nodes.length, 'minvol', res2.minVol, 'takes', tm2-tm1);
+      this.options.maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
       // activate worker
       // if (this._draw_nodes.length > 10) this.startWorker();
@@ -770,16 +799,9 @@
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
-      this.startDrawGeometry();
-
-      this._startm = new Date().getTime();
-      this._last_render_tm = this._startm;
-      this._last_render_cnt = 0;
-      this._drawcnt = 0; // counter used to build meshes
-
       this.CreateToolbar( { container: this.select_main().node() } );
 
-      this.continueDraw();
+      this.startDrawGeometry(true);
 
       return this;
    }
@@ -931,40 +953,13 @@
    }
 
    JSROOT.TGeoPainter.prototype.testChanges = function() {
-      console.log('First, modify flags');
 
       this.ModifyVisisbility("YOUT*","+");
       this.ModifyVisisbility("Dipole","-");
 
-      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
+      this._draw_nodes_again = true;
 
-      var tm1 = new Date().getTime();
-      this._clones.MarkVisisble(this.options.screen_vis);
-      var res2 = this._clones.DefineVisible(maxlimit);
-      var draw2 = this._clones.CollectVisibles(res2.minVol);
-      var del = this._clones.MergeVisibles(draw2, this._draw_nodes);
-
-      var tm2 = new Date().getTime();
-
-      console.log('Collect visibles', draw2.length, 'minvol', res2.minVol, 'delete', del.length, 'takes', tm2-tm1);
-
-      // now remove
-      for (var n=0;n<del.length;++n) {
-         var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel, this.options);
-         if (obj3d) obj3d.parent.remove(obj3d);
-      }
-
-      // assign new drawing list
-      this._draw_nodes = draw2;
-      this._draw_nodes_ready = false;
-
-      // prepare for new drawing
-      this._startm = new Date().getTime();
-      this._last_render_tm = this._startm;
-      this._last_render_cnt = 0;
-      this._drawcnt = 0; // counter used for build meshes
-
-      this.continueDraw();
+      this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
@@ -1008,10 +1003,12 @@
          };
       }
 
-//      if (!this._did_test) {
-//         this._did_test = true;
-//         setTimeout(this.testChanges.bind(this),3000);
-//      }
+      if (!this._did_test) {
+         this._did_test = true;
+         // setTimeout(this.testChanges.bind(this),3000);
+      }
+
+      if (this._draw_nodes_again) this.startDrawGeometry();
 
       return this.DrawingReady();
    }
