@@ -8263,6 +8263,7 @@
       }
 
       // check if item already has assigned object
+      // console.log('get', itemname, 'item._get', (item ? item._get : "-"), 'item._obj', (item ? item._obj : -1));
 
       if ((item !== null) && (typeof item._obj == 'object'))
          return JSROOT.CallBack(call_back, item, item._obj);
@@ -8695,16 +8696,17 @@
       var pthis = this;
       JSROOT.NewHttpRequest(filepath,'object', function(res) {
          if (res == null) return JSROOT.CallBack(call_back);
-         var h1 = { _jsonfile : filepath, _kind : "ROOT." + res._typename, _jsontmp : res, _name: filepath.split("/").pop() };
+         var h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if ('fTitle' in res) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
             if ('_jsontmp' in item) {
-               var res = item._jsontmp;
-               delete item._jsontmp;
-               return JSROOT.CallBack(callback, item, res);
+               //var res = item._jsontmp;
+               //delete item._jsontmp;
+               return JSROOT.CallBack(callback, item, item._jsontmp);
             }
             JSROOT.NewHttpRequest(item._jsonfile, 'object', function(res) {
-               return JSROOT.CallBack(callback, item, res);
+               item._jsontmp = res;
+               return JSROOT.CallBack(callback, item, item._jsontmp);
             }).send(null);
          }
          if (pthis.h == null) pthis.h = h1; else
