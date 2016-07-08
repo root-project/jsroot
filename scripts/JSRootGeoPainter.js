@@ -760,6 +760,8 @@
 
       this.options.maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
+      this._first_drawing = true;
+
       // activate worker
       // if (this._draw_nodes.length > 10) this.startWorker();
 
@@ -796,7 +798,8 @@
          if ((now - currtm > interval) || (res === 1)) {
             JSROOT.progress(log);
             if (this._webgl && (now - this._last_render_tm > interval) && (this._last_render_cnt != this._drawcnt)) {
-               this.adjustCameraPosition();
+               if (this._first_drawing)
+                  this.adjustCameraPosition();
                this._renderer.render(this._scene, this._camera);
                this._last_render_tm = new Date().getTime();
                this._last_render_cnt = this._drawcnt;
@@ -927,7 +930,10 @@
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
-      this.adjustCameraPosition();
+      if (this._first_drawing) {
+         this.adjustCameraPosition();
+         this._first_drawing = false;
+      }
 
       this.completeScene();
 
