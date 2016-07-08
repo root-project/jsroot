@@ -966,16 +966,10 @@
          };
       }
 
-      if (false /*!this._did_test*/) {
-         this._did_test = true;
-         this.ModifyVisisbility("YOUT*","+");
-         this.ModifyVisisbility("Dipole","-");
-         setTimeout(this.testGeomChanges.bind(this),3000);
-      }
-
-      if (this._draw_nodes_again) this.startDrawGeometry();
-
-      return this.DrawingReady();
+      if (this._draw_nodes_again)
+         this.startDrawGeometry(); // relaunch drawing
+      else
+         this.DrawingReady();
    }
 
 

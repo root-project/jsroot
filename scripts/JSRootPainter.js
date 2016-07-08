@@ -8258,12 +8258,10 @@
          return this.expand(parentname, function(res) {
             if (!res) JSROOT.CallBack(call_back);
             var newparentname = hpainter.itemFullName(d.last);
-            hpainter.get( { arg: newparentname + "/" + d.rest, rest: d.rest }, call_back, options);
+            if (newparentname.length>0) newparentname+="/";
+            hpainter.get( { arg: newparentname + d.rest, rest: d.rest }, call_back, options);
          });
       }
-
-      // check if item already has assigned object
-      // console.log('get', itemname, 'item._get', (item ? item._get : "-"), 'item._obj', (item ? item._obj : -1));
 
       if ((item !== null) && (typeof item._obj == 'object'))
          return JSROOT.CallBack(call_back, item, item._obj);
@@ -8594,7 +8592,7 @@
    JSROOT.HierarchyPainter.prototype.reload = function() {
       var hpainter = this;
       if ('_online' in this.h)
-         this.OpenOnline(this.h['_online'], function() {
+         this.OpenOnline(this.h._online, function() {
             hpainter.RefreshHtml();
          });
    }
@@ -8625,8 +8623,10 @@
             if (handle && ('expand' in handle)) {
                JSROOT.AssertPrerequisites(handle.prereq, function() {
                   _item._expand = JSROOT.findFunction(handle.expand);
-                  if (typeof _item._expand != 'function') { delete _item._expand; return; }
-                  hpainter.expand(_name, call_back, d3cont);
+                  if (typeof _item._expand !== 'function')
+                     delete _item._expand;
+                  else
+                     hpainter.expand(_name, call_back, d3cont);
                });
                return true;
             }
@@ -9949,7 +9949,7 @@
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
-         if (typeof painter['Cleanup'] === 'function')
+         if (typeof painter.Cleanup === 'function')
             painter.Cleanup();
       });
       dummy.select_main().html("");
