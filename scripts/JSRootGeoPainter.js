@@ -933,7 +933,7 @@
             delete shape._geom_worker;
 
             // TEMPORARY CODE
-            // just create geometry locally, while tranfered geometry now works
+            // just create geometry again, while tranfered geometry not works
             shape._geom = JSROOT.GEO.createGeometry(shape);
          }
 
