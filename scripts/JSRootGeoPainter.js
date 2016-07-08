@@ -36,37 +36,6 @@
    // ======= Geometry painter================================================
 
 
-   JSROOT.EGeoVisibilityAtt = {
-         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
-         kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-         kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-         kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-         kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
-         kVisStreamed     : JSROOT.BIT(5),           // true if attributes have been streamed
-         kVisTouched      : JSROOT.BIT(6),           // true if attributes are changed after closing geom
-         kVisOnScreen     : JSROOT.BIT(7),           // true if volume is visible on screen
-         kVisContainers   : JSROOT.BIT(12),          // all containers visible
-         kVisOnly         : JSROOT.BIT(13),          // just this visible
-         kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
-         kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
-      };
-
-   JSROOT.TestGeoAttBit = function(volume, f) {
-      var att = volume.fGeoAtt;
-      return att === undefined ? false : ((att & f) !== 0);
-   }
-
-   JSROOT.SetGeoAttBit = function(volume, f, value) {
-      if (volume.fGeoAtt === undefined) return;
-      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
-   }
-
-
-   JSROOT.ToggleGeoAttBit = function(volume, f) {
-      if (volume.fGeoAtt !== undefined)
-         volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
-   }
-
    JSROOT.TGeoPainter = function( geometry ) {
       if ((geometry !== null) && (geometry._typename.indexOf('TGeoVolume') === 0))
          geometry = { _typename:"TGeoNode", fVolume: geometry, fName:"TopLevel" };
@@ -108,7 +77,7 @@
       var prop = this.getNodeProperties(kind, node);
 
       if (name == "")
-         return JSROOT.SetGeoAttBit(prop.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+         return JSROOT.GEO.SetBit(prop.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
 
       var regexp;
 
@@ -122,14 +91,14 @@
             var chld = this.getNodeProperties(kind, prop.chlds[n]);
 
             if (regexp.test(chld.name) && chld.volume) {
-               JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
-               JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisDaughters, (sign === "+"));
+               JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
+               JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisDaughters, (sign === "+"));
             }
          }
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1), more:1 };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, scale: new THREE.Vector3(1,1,1), more:1 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -634,8 +603,7 @@
 
       tm1 = new Date().getTime();
 
-      if (this._draw_nodes_again)
-         this._clones.MarkVisisble(this.options.screen_vis);
+      if (this._draw_nodes_again) this._clones.MarkVisisble();
 
       var res2 = this._clones.DefineVisible(this.options.maxlimit);
       var newnodes = this._clones.CollectVisibles(res2.minVol);
@@ -777,11 +745,11 @@
       var tm1 = new Date().getTime();
 
       this._clones = new JSROOT.GEO.ClonedNodes(this.GetObject());
-      var uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
-      if ((uniquevis <= 0) && this.options.screen_vis) {
-         this.options.screen_vis = false;
-         uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
-      }
+      var uniquevis = this._clones.MarkVisisble(true);
+      if (uniquevis <= 0)
+         uniquevis = this._clones.MarkVisisble(false);
+      else
+         uniquevis = this._clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
 
       var tm2 = new Date().getTime();
 
@@ -952,13 +920,8 @@
       }
    }
 
-   JSROOT.TGeoPainter.prototype.testChanges = function() {
-
-      this.ModifyVisisbility("YOUT*","+");
-      this.ModifyVisisbility("Dipole","-");
-
+   JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
       this._draw_nodes_again = true;
-
       this.startDrawGeometry();
    }
 
@@ -1003,9 +966,11 @@
          };
       }
 
-      if (!this._did_test) {
+      if (false /*!this._did_test*/) {
          this._did_test = true;
-         // setTimeout(this.testChanges.bind(this),3000);
+         this.ModifyVisisbility("YOUT*","+");
+         this.ModifyVisisbility("Dipole","-");
+         setTimeout(this.testGeomChanges.bind(this),3000);
       }
 
       if (this._draw_nodes_again) this.startDrawGeometry();
@@ -1016,7 +981,7 @@
 
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
-      if (first_time === undefined) {
+      if (!first_time) {
          this.helpText();
          if (this._scene !== null)
             this.deleteChildren(this._scene);
@@ -1024,6 +989,11 @@
             this._tcontrols.dispose();
          if (this._controls !== null)
             this._controls.dispose();
+
+         var obj = this.GetObject();
+         if (obj) delete obj._painter;
+
+         if (this._worker) this._worker.terminate();
       }
 
       this._scene = null;
@@ -1040,10 +1010,7 @@
       this._tcontrols = null;
       this._toolbar = null;
 
-      if (this._worker) {
-         this._worker.terminate();
-         delete this._worker;
-      }
+      delete this._worker;
    }
 
    JSROOT.TGeoPainter.prototype.helpText = function(msg) {
@@ -1133,6 +1100,8 @@
 
       this.SetDivId(divid, 5);
 
+      geometry._painter = this; // set painter, use for drawing update
+
       return this.DrawGeometry(opt);
    }
 
@@ -1151,6 +1120,7 @@
       if (node !== null) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
+         node._painter = this; // set painter, use for drawing update
          return this.DrawGeometry(opt);
       }
 
@@ -1204,10 +1174,10 @@
    JSROOT.expandGeoList = function(item, lst) {
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
 
-      item['_more'] = true;
-      item['_geolst'] = lst;
+      item._more = true;
+      item._geolst = lst;
 
-      item['_get'] = function(item, itemname, callback) {
+      item._get = function(item, itemname, callback) {
          if ('_geolst' in item)
             JSROOT.CallBack(callback, item, item._geolst);
 
@@ -1216,11 +1186,11 @@
 
          JSROOT.CallBack(callback, item, null);
       }
-      item['_expand'] = function(node, lst) {
+      item._expand = function(node, lst) {
          // only childs
          if (!('arr' in lst)) return false;
 
-         node['_childs'] = [];
+         node._childs = [];
 
          for (var n in lst.arr) {
             var obj = lst.arr[n];
@@ -1246,10 +1216,10 @@
    JSROOT.provideGeoVisStyle = function(volume) {
       var res = "";
 
-      if (JSROOT.TestGeoAttBit(volume, JSROOT.EGeoVisibilityAtt.kVisThis))
+      if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis))
          res += " geovis_this";
 
-      if (JSROOT.TestGeoAttBit(volume, JSROOT.EGeoVisibilityAtt.kVisDaughters))
+      if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisDaughters))
          res += " geovis_daughters";
 
       return res;
@@ -1262,28 +1232,43 @@
       var vol = item._volume;
 
       function ToggleMenuBit(arg) {
-         JSROOT.ToggleGeoAttBit(vol, arg);
+         JSROOT.GEO.ToggleBit(vol, arg);
          item._icon = item._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(vol);
          hpainter.UpdateTreeNode(item);
+         JSROOT.geoItemChanged(item);
       }
 
-      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisNone), "Invisible",
-            JSROOT.EGeoVisibilityAtt.kVisNone, ToggleMenuBit);
-      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisThis), "Visible",
-            JSROOT.EGeoVisibilityAtt.kVisThis, ToggleMenuBit);
-      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisDaughters), "Daughters",
-            JSROOT.EGeoVisibilityAtt.kVisDaughters, ToggleMenuBit);
-      menu.addchk(JSROOT.TestGeoAttBit(vol, JSROOT.EGeoVisibilityAtt.kVisOneLevel), "1lvl daughters",
-            JSROOT.EGeoVisibilityAtt.kVisOneLevel, ToggleMenuBit);
+      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
+            JSROOT.GEO.BITS.kVisNone, ToggleMenuBit);
+      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisThis), "Visible",
+            JSROOT.GEO.BITS.kVisThis, ToggleMenuBit);
+      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisDaughters), "Daughters",
+            JSROOT.GEO.BITS.kVisDaughters, ToggleMenuBit);
+      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisOneLevel), "1lvl daughters",
+            JSROOT.GEO.BITS.kVisOneLevel, ToggleMenuBit);
 
       return true;
    }
 
+   JSROOT.geoItemChanged = function(hitem) {
+      while (hitem) {
+         if (hitem._volume && hitem._volume._painter)
+            return hitem._volume._painter.testGeomChanges();
+
+         hitem = hitem._parent;
+      }
+   }
+
    JSROOT.geoIconClick = function(hitem) {
       if ((hitem==null) || (hitem._volume == null)) return false;
-      JSROOT.ToggleGeoAttBit(hitem._volume, JSROOT.EGeoVisibilityAtt.kVisDaughters);
+
+      if (hitem._more)
+         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
+      else
+         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
       hitem._icon = hitem._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(hitem._volume);
-      return true; // hpainter.UpdateTreeNode(hitem);
+      JSROOT.geoItemChanged(hitem);
+      return true;
    }
 
    JSROOT.getGeoShapeIcon = function(shape) {
@@ -1359,8 +1344,8 @@
          }
       };
 
-      if (item['_more']) {
-        item['_expand'] = function(node, obj) {
+      if (item._more) {
+        item._expand = function(node, obj) {
            var subnodes = obj.fNodes.arr;
            for (var i in subnodes)
               JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
@@ -1368,8 +1353,8 @@
         }
       } else
       if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
-         item['_more'] = true;
-         item['_expand'] = function(node, obj) {
+         item._more = true;
+         item._expand = function(node, obj) {
             JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
             JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
             return true;
@@ -1389,7 +1374,7 @@
       if (!('_childs' in parent)) parent['_childs'] = [];
 
       if (!('_icon' in item))
-         item._icon = item['_more'] ? "img_geocombi" : "img_geobbox";
+         item._icon = item._more ? "img_geocombi" : "img_geobbox";
 
       item._icon += JSROOT.provideGeoVisStyle(volume);
 
@@ -1399,8 +1384,8 @@
          if (curr_name.length == 0) curr_name = "item";
          if (cnt>0) curr_name+= "_"+cnt;
          // avoid name duplication
-         for (var n in parent['_childs']) {
-            if (parent['_childs'][n]['_name'] == curr_name) {
+         for (var n in parent._childs) {
+            if (parent._childs[n]._name == curr_name) {
                curr_name = ""; break;
             }
          }
@@ -1410,7 +1395,7 @@
          }
       }
 
-      parent['_childs'].push(item);
+      parent._childs.push(item);
 
       return true;
    }

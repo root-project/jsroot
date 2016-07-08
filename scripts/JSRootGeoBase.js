@@ -17,6 +17,36 @@
 
    JSROOT.GEO = {};
 
+   JSROOT.GEO.BITS = {
+         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
+         kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
+         kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
+         kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
+         kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+         kVisStreamed     : JSROOT.BIT(5),           // true if attributes have been streamed
+         kVisTouched      : JSROOT.BIT(6),           // true if attributes are changed after closing geom
+         kVisOnScreen     : JSROOT.BIT(7),           // true if volume is visible on screen
+         kVisContainers   : JSROOT.BIT(12),          // all containers visible
+         kVisOnly         : JSROOT.BIT(13),          // just this visible
+         kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
+         kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
+      };
+
+   JSROOT.GEO.TestBit = function(volume, f) {
+      var att = volume.fGeoAtt;
+      return att === undefined ? false : ((att & f) !== 0);
+   }
+
+   JSROOT.GEO.SetBit = function(volume, f, value) {
+      if (volume.fGeoAtt === undefined) return;
+      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
+   }
+
+   JSROOT.GEO.ToggleBit = function(volume, f) {
+      if (volume.fGeoAtt !== undefined)
+         volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
+   }
+
    // method used to avoid duplication of warnings
    JSROOT.GEO.warn = function(msg) {
       if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
@@ -1230,7 +1260,7 @@
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen) {
+   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen, copy_bits) {
       if (!this.origin || !this.nodes) return 0;
 
       var res = 0;
@@ -1244,11 +1274,15 @@
          if (clone.kind === 0) {
             if (obj.fVolume) {
                if (on_screen) {
-                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
+                  clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOnScreen);
+                  if (copy_bits) {
+                     JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis, clone.vis);
+                     JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters, true);
+                  }
                } else {
-                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis);
-                  if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) clone.depth = 1; else
-                  if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) clone.depth = 0;
+                  clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis);
+                  if (!JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters))
+                     clone.depth = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOneLevel) ? 1 : 0;
                }
             }
          } else {
@@ -1400,8 +1434,6 @@
 
       var res = { cnt0: 0, minVol: 0, cnt1: 0, vismap: [] };
 
-      var tm1 = new Date().getTime();
-
       res.cnt0 = this.ScanVisible(arg);
 
       for (var id=0;id<arg.viscnt.length;++id)
@@ -1416,10 +1448,6 @@
             res.cnt1 += arg.viscnt[res.vismap[indx++].id];
          res.minVol = res.vismap[indx].vol;
       }
-
-      var tm2 = new Date().getTime();
-
-      console.log('scan objects takes', tm2-tm1);
 
       return res;
    }
