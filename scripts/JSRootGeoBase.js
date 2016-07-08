@@ -1261,30 +1261,29 @@
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl, node) {
+   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
       // Scan visible nodes in hierarchy, starting from nodeid
+      // Each entry in hierarchy get its unique id, which is not changed with visibility flags
 
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
          vislvl = 99999;
-         node = this.nodes[0];
-
          if (!arg) arg = {};
          arg.stack = new Int32Array(100); // current stack
-         arg.current_id = 0; // sequence ID of the node, used to identify it later
+         arg.nodeid = 0;
+         arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
-         arg.stack[0] = 0;
          arg.CopyStack = function() {
-            var entry = { seqid: this.current_id, stack: new Int32Array(this.last+1) };
-            for (var n=0;n<=this.last;++n) entry.stack[n] = this.stack[n];
+            var entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Int32Array(this.last) };
+            for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1];
             return entry;
          }
 
          if (arg.domatrix) arg.matrices = [];
       }
 
-      var res = 0;
+      var res = 0, node = this.nodes[arg.nodeid];
 
       if (arg.domatrix) {
          var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
@@ -1299,7 +1298,7 @@
          if (!arg.func || arg.func(node)) res++;
       }
 
-      arg.current_id++;
+      arg.counter++;
 
       if ((node.depth !== undefined) && (vislvl > node.depth)) vislvl = node.depth;
 
@@ -1309,9 +1308,9 @@
       if (node.chlds) {
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
-            arg.stack[0] = node.chlds[i]; // first element in stack is ID of current node
+            arg.nodeid = node.chlds[i];
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
-            res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
+            res += this.ScanVisible(arg, vislvl-1);
          }
          arg.last--;
       }
@@ -1320,7 +1319,7 @@
          delete arg.last;
          delete arg.stack;
          delete arg.CopyStack;
-         delete arg.current_id;
+         delete arg.counter;
       }
 
       return res;
@@ -1330,8 +1329,8 @@
 
       var node = this.nodes[0], three_prnt = toplevel, obj3d;
 
-      for(var lvl=0; lvl<stack.length; ++lvl) {
-         var nchld = (lvl > 0) ? stack[lvl] : 0; // first item in stack is nodeid of last element
+      for(var lvl=0; lvl<=stack.length; ++lvl) {
+         var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
          if (lvl>0) node = this.nodes[node.chlds[nchld]];
 

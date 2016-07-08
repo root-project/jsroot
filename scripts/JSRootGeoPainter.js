@@ -466,7 +466,7 @@
       // return true if creates next node
       // return 1 when waiting for Worker
 
-      if (!this._draw_nodes || !this._clones) return false;
+      if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
 
       // first of all, create geometries (using worker if available)
 
@@ -476,8 +476,7 @@
          var entry = this._draw_nodes[n];
          if (entry.done) continue;
 
-         var node_indx = entry.stack[0];
-         var shape = this._clones.GetNodeShape(node_indx);
+         var shape = this._clones.GetNodeShape(entry.nodeid);
 
          if (!shape) { entry.done = true; continue; }
 
@@ -487,7 +486,7 @@
          } else
          if (!shape._geom_worker) {
             shape._geom_worker = true;
-            todo.push({ indx: n, node_indx: node_indx, shape: shape });
+            todo.push({ indx: n, nodeid: entry.nodeid, shape: shape });
             if (todo.length > 50) break;
          } else {
             waiting++; // number of waiting for worker
@@ -524,8 +523,8 @@
          var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
          // original object, extracted from the map
-         var nodeobj = this._clones.origin[entry.stack[0]];
-         var clone = this._clones.nodes[entry.stack[0]];
+         var nodeobj = this._clones.origin[entry.nodeid];
+         var clone = this._clones.nodes[entry.nodeid];
 
          var prop = this.getNodeProperties(clone.kind, nodeobj, true);
 
@@ -565,7 +564,7 @@
 
       // here everything is completed, we could cleanup data and finish
 
-      delete this._draw_nodes;
+      this._draw_nodes_ready = true;
 
       return false;
    }
@@ -755,6 +754,7 @@
       tm1 = new Date().getTime();
       var res2 = this._clones.DefineVisible(maxlimit);
       this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
+      this._draw_nodes_ready = false;
       tm2 = new Date().getTime();
 
       console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
@@ -911,7 +911,7 @@
          for (var n=0;n<job.shapes.length;++n) {
             var item = job.shapes[n];
 
-            var shape = this._clones.GetNodeShape(item.node_indx);
+            var shape = this._clones.GetNodeShape(item.nodeid);
 
             var object = loader.parse(item.json.data);
             shape._geom = object.geometry;
