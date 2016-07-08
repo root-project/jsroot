@@ -7980,7 +7980,8 @@
       this.with_icons = true;
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      if (frameid != null) this.SetDivId(frameid);
+      this.nobrowser = frameid === null;
+      if (!this.nobrowser) this.SetDivId(frameid);
 
       // remember only very first instance
       if (JSROOT.hpainter == null)
@@ -7988,6 +7989,31 @@
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+
+   JSROOT.HierarchyPainter.prototype.ToggleFloatBrowser = function() {
+      if (!this.nobrowser || !this.disp) return;
+
+      var elem = d3.select("#"+this.disp.frameid);
+      if (elem.empty()) return;
+
+      var container = d3.select(elem.node().parentNode);
+
+      var main = container.select('.float_browser');
+
+      if (main.empty()) {
+         var div = container.append("div").attr("class","jsroot");
+         main = div.append("div").attr("class","float_browser").style('left', '-320px');
+         main.transition().delay(700).style('left', '5px');
+         this.SetDivId(main.node());
+         this.RefreshHtml();
+
+      } else {
+         if (main.style('left') == '5px')
+            main.transition().delay(700).style('left', '-320px');
+         else
+            main.transition().delay(700).style('left', '5px');
+      }
+   }
 
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser

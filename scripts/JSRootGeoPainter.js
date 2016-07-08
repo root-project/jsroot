@@ -67,6 +67,18 @@
             }
          }
       }];
+
+      if (JSROOT.hpainter && JSROOT.hpainter.nobrowser)
+         buttonList.push({
+            name: 'browser',
+            title: 'Show hierarchy browser',
+            icon: JSROOT.ToolbarIcons.arrow_right,
+            click: function() {
+               if (JSROOT.hpainter)
+                  JSROOT.hpainter.ToggleFloatBrowser();
+            }
+         });
+
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 

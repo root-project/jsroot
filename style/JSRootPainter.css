@@ -426,7 +426,16 @@
     border: 2px dotted #00F;
 }
 
-
+/* stylesheet for floating browser */
+.jsroot .float_browser {
+    position: absolute;
+    bottom: 35px;
+    top: 5px;
+    width: 300px;
+    background: #E6E6FA;
+    padding: 5px;
+}
+#    left: 5px; // used in animation
 
 /*--------------------------------------------------
   progress message
