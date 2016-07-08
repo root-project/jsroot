@@ -968,8 +968,8 @@
       var dom = this.select_main().node();
 
       if (dom !== null) {
-         dom.tabIndex = 0;
-         dom.focus();
+         // dom.tabIndex = 0;
+         // dom.focus();
          dom.onkeypress = function(e) {
             if (!e) e = event;
             switch ( e.keyCode ) {
