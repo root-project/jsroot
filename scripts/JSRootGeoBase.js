@@ -1326,6 +1326,8 @@
    }
 
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
+      // create hierarchy of Object3D for given stack entry
+      // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
       var node = this.nodes[0], three_prnt = toplevel, obj3d;
 
@@ -1436,6 +1438,28 @@
       this.ScanVisible(arg);
 
       return arg.res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {
+      // merge list of drawn objects
+      // in current list we should mark if object already exists
+      // from previous list we should collect objects which are not there
+
+      var indx2 = 0, del = [];
+      for (var indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
+
+         while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
+            del.push(prev[indx2]); // this entry should be removed
+            indx2++;
+         }
+
+         if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
+            if (prev[indx2].done) current[indx1].done = true; // copy ready flag
+            indx2++;
+         }
+      }
+
+      return del; //
    }
 
    return JSROOT;

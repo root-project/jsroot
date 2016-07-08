@@ -101,6 +101,33 @@
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
+   JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
+      var node = this.GetObject();
+
+      var kind = JSROOT.GEO.NodeKind(node);
+      var prop = this.getNodeProperties(kind, node);
+
+      if (name == "")
+         return JSROOT.SetGeoAttBit(prop.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+
+      var regexp;
+
+      if (name.indexOf("*") < 0)
+         regexp = new RegExp(name);
+      else
+         regexp = new RegExp("^" + name.split("*").join(".*") + "$");
+
+      if (prop.chlds!==null)
+         for (var n=0;n<prop.chlds.length;++n) {
+            var chld = this.getNodeProperties(kind, prop.chlds[n]);
+
+            if (regexp.test(chld.name) && chld.volume) {
+               JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
+               JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisDaughters, (sign === "+"));
+            }
+         }
+   }
+
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
       var res = { _grid: false, _bound: false, _debug: false, _full: false, screen_vis: true, _axis:false, scale: new THREE.Vector3(1,1,1), more:1 };
 
@@ -126,30 +153,7 @@
 
          console.log("Modify visibility", sign,':',name);
 
-         var node = this.GetObject();
-
-         var kind = JSROOT.GEO.NodeKind(node);
-         var prop = this.getNodeProperties(kind, node);
-
-         if (name == "") {
-            JSROOT.SetGeoAttBit(prop.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
-            continue;
-         }
-
-         if (name.indexOf("*") < 0)
-            regexp = new RegExp(name);
-         else
-            regexp = new RegExp("^" + name.split("*").join(".*") + "$");
-
-         if (prop.chlds!==null)
-            for (var n=0;n<prop.chlds.length;++n) {
-               var chld = this.getNodeProperties(kind, prop.chlds[n]);
-
-               if (regexp.test(chld.name) && chld.volume) {
-                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisThis, (sign === "+"));
-                  JSROOT.SetGeoAttBit(chld.volume, JSROOT.EGeoVisibilityAtt.kVisDaughters, (sign === "+"));
-               }
-            }
+         this.ModifyVisisbility(name, sign);
       }
 
       opt = opt.toLowerCase();
@@ -757,7 +761,7 @@
       this._draw_nodes_ready = false;
       tm2 = new Date().getTime();
 
-      console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
+      console.log('Collect visibles', this._draw_nodes.length, 'minvol', res2.minVol, 'takes', tm2-tm1);
 
       // activate worker
       // if (this._draw_nodes.length > 10) this.startWorker();
@@ -769,10 +773,8 @@
       this.startDrawGeometry();
 
       this._startm = new Date().getTime();
-
       this._last_render_tm = this._startm;
       this._last_render_cnt = 0;
-
       this._drawcnt = 0; // counter used to build meshes
 
       this.CreateToolbar( { container: this.select_main().node() } );
@@ -928,6 +930,42 @@
       }
    }
 
+   JSROOT.TGeoPainter.prototype.testChanges = function() {
+      console.log('First, modify flags');
+
+      this.ModifyVisisbility("YOUT*","+");
+      this.ModifyVisisbility("Dipole","-");
+
+      var maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
+
+      var tm1 = new Date().getTime();
+      this._clones.MarkVisisble(this.options.screen_vis);
+      var res2 = this._clones.DefineVisible(maxlimit);
+      var draw2 = this._clones.CollectVisibles(res2.minVol);
+      var del = this._clones.MergeVisibles(draw2, this._draw_nodes);
+
+      var tm2 = new Date().getTime();
+
+      console.log('Collect visibles', draw2.length, 'minvol', res2.minVol, 'delete', del.length, 'takes', tm2-tm1);
+
+      // now remove
+      for (var n=0;n<del.length;++n) {
+         var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel, this.options);
+         if (obj3d) obj3d.parent.remove(obj3d);
+      }
+
+      // assign new drawing list
+      this._draw_nodes = draw2;
+      this._draw_nodes_ready = false;
+
+      // prepare for new drawing
+      this._startm = new Date().getTime();
+      this._last_render_tm = this._startm;
+      this._last_render_cnt = 0;
+      this._drawcnt = 0; // counter used for build meshes
+
+      this.continueDraw();
+   }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
@@ -940,6 +978,7 @@
          axis._typename = "TAxis3D";
          axis._main = this;
          JSROOT.draw(this.divid, axis); // it will include drawing of
+         this.options._axis = false;
       }
 
       this._scene.overrideMaterial = null;
@@ -968,6 +1007,11 @@
             dom.focus();
          };
       }
+
+//      if (!this._did_test) {
+//         this._did_test = true;
+//         setTimeout(this.testChanges.bind(this),3000);
+//      }
 
       return this.DrawingReady();
    }
