@@ -710,6 +710,9 @@
                 'Unique visible: ' + unqievis + '<br/>' +
                 'Time to clone: ' + clonetm + 'ms <br/>';
 
+      // need to fill cached value line numvischld
+      this._clones.ScanVisible();
+
       var arg = {
          cnt: [],
          func: function(node) {

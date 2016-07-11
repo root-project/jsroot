@@ -1210,7 +1210,7 @@
        // first create nodes objects
        for (var n=0;n<this.origin.length;++n) {
           var obj = this.origin[n];
-          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0 });
+          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, numvischld: 1, idshift: 0 });
        }
 
        // than fill childrens lists
@@ -1269,6 +1269,8 @@
          var obj = this.origin[n], clone = this.nodes[n];
 
          clone.vis = false;
+         clone.numvischld = 1; // reset vis counter, will be filled wit next scan
+         clone.idshift = 0;
          delete clone.depth;
 
          if (clone.kind === 0) {
@@ -1314,15 +1316,22 @@
             return entry;
          }
 
-         if (arg.domatrix) arg.matrices = [];
+         if (arg.domatrix) {
+            arg.matrices = [];
+            arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
+         }
       }
 
       var res = 0, node = this.nodes[arg.nodeid];
 
       if (arg.domatrix) {
+         if (!arg.mpool[arg.last+1])
+            arg.mpool[arg.last+1] = new THREE.Matrix4();
+
          var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
          if (node.matrix) {
-            arg.matrices[arg.last] = prnt.clone().multiply(new THREE.Matrix4().fromArray(node.matrix));
+            arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
+            arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
          } else {
             arg.matrices[arg.last] = prnt;
          }
@@ -1339,14 +1348,22 @@
       if (arg.last > arg.stack.length - 2)
          throw 'stack capacity is not enough ' + arg.stack.length;
 
-      if (node.chlds) {
+      if (node.chlds && (node.numvischld > 0)) {
+         var currid = arg.counter, numvischld = 0;
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
             arg.nodeid = node.chlds[i];
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
-            res += this.ScanVisible(arg, vislvl-1);
+            numvischld += this.ScanVisible(arg, vislvl-1);
          }
          arg.last--;
+         res += numvischld;
+         if (numvischld === 0) {
+            node.numvischld = 0;
+            node.idshift = arg.counter - currid;
+         }
+      } else {
+         arg.counter += node.idshift;
       }
 
       if (arg.last === 0) {
@@ -1354,6 +1371,8 @@
          delete arg.stack;
          delete arg.CopyStack;
          delete arg.counter;
+         delete arg.matrices;
+         delete arg.mpool;
       }
 
       return res;
