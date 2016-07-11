@@ -467,7 +467,10 @@
 
       var names = name.split('.'), elem = window;
       for (var n=0;n<names.length;++n) {
-         elem = elem[names[n]];
+         if ((n==0) && (names[0]==='JSROOT'))
+            elem = this;
+         else
+            elem = elem[names[n]];
          if (!elem) return null;
       }
 
