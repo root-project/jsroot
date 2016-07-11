@@ -1235,7 +1235,7 @@
                sub._title = "node:"  + obj._typename;
                if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
                if (obj.fVolume.fShape) {
-                  sub._icon = JSROOT.getGeoShapeIcon(obj.fVolume.fShape);
+                  sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
                   sub._title += " shape:" + obj.fVolume.fShape._typename;
                }
                if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
@@ -1251,7 +1251,7 @@
       }
    };
 
-   JSROOT.provideGeoVisStyle = function(volume) {
+   JSROOT.GEO.provideVisStyle = function(volume) {
       var res = "";
 
       if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis))
@@ -1263,7 +1263,7 @@
       return res;
    }
 
-   JSROOT.provideGeoMenu = function(menu, item, hpainter) {
+   JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
       if (! ('_volume' in item)) return false;
 
       menu.add("separator");
@@ -1271,9 +1271,9 @@
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
-         item._icon = item._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(vol);
+         item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
          hpainter.UpdateTreeNode(item);
-         JSROOT.geoItemChanged(item);
+         JSROOT.GEO.browserItemChanged(item);
       }
 
       menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
@@ -1288,7 +1288,7 @@
       return true;
    }
 
-   JSROOT.geoItemChanged = function(hitem) {
+   JSROOT.GEO.browserItemChanged = function(hitem) {
       while (hitem) {
          if (hitem._volume && hitem._volume._painter)
             return hitem._volume._painter.testGeomChanges();
@@ -1297,19 +1297,19 @@
       }
    }
 
-   JSROOT.geoIconClick = function(hitem) {
+   JSROOT.GEO.browserIconClick = function(hitem) {
       if ((hitem==null) || (hitem._volume == null)) return false;
 
       if (hitem._more)
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
-      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(hitem._volume);
-      JSROOT.geoItemChanged(hitem);
+      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
+      JSROOT.GEO.browserItemChanged(hitem);
       return true;
    }
 
-   JSROOT.getGeoShapeIcon = function(shape) {
+   JSROOT.GEO.getShapeIcon = function(shape) {
       switch (shape._typename) {
          case "TGeoArb8" : return "img_geoarb8"; break;
          case "TGeoCone" : return "img_geocone"; break;
@@ -1336,12 +1336,12 @@
       return "img_geotube";
    }
 
-   JSROOT.expandGeoShape = function(parent, shape, itemname) {
+   JSROOT.GEO.expandShape = function(parent, shape, itemname) {
       var item = {
             _kind : "ROOT." + shape._typename,
             _name : itemname,
             _title : shape._typename,
-            _icon : JSROOT.getGeoShapeIcon(shape),
+            _icon : JSROOT.GEO.getShapeIcon(shape),
             _parent : parent,
             _shape : shape,
             _get : function(item, itemname, callback) {
@@ -1351,12 +1351,12 @@
             }
          };
 
-      if (!('_childs' in parent)) parent['_childs'] = [];
+      if (!('_childs' in parent)) parent._childs = [];
       parent._childs.push(item);
       return true;
    }
 
-   JSROOT.expandGeoVolume = function(parent, volume, arg) {
+   JSROOT.GEO.expandVolume = function(parent, volume, arg) {
 
       if (!parent || !volume) return false;
 
@@ -1372,8 +1372,8 @@
          _parent : parent,
          _volume : volume, // keep direct reference
          _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
-         _menu : JSROOT.provideGeoMenu,
-         _icon_click : JSROOT.geoIconClick,
+         _menu : JSROOT.GEO.provideMenu,
+         _icon_click : JSROOT.GEO.browserIconClick,
          _get : function(item, itemname, callback) {
             if ((item!=null) && ('_volume' in item))
                return JSROOT.CallBack(callback, item, item._volume);
@@ -1386,15 +1386,15 @@
         item._expand = function(node, obj) {
            var subnodes = obj.fNodes.arr;
            for (var i in subnodes)
-              JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
+              JSROOT.GEO.expandVolume(node, subnodes[i].fVolume);
            return true;
         }
       } else
       if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
          item._more = true;
          item._expand = function(node, obj) {
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
+            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fLeft, 'Left');
+            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fRight, 'Right');
             return true;
          }
       }
@@ -1406,7 +1406,7 @@
          if (item._title == "")
             item._title = volume.fShape._typename;
 
-         item._icon = JSROOT.getGeoShapeIcon(volume.fShape);
+         item._icon = JSROOT.GEO.getShapeIcon(volume.fShape);
       }
 
       if (!('_childs' in parent)) parent['_childs'] = [];
@@ -1414,84 +1414,7 @@
       if (!('_icon' in item))
          item._icon = item._more ? "img_geocombi" : "img_geobbox";
 
-      item._icon += JSROOT.provideGeoVisStyle(volume);
-
-      // avoid name duplication of the items
-      for (var cnt=0;cnt<1000000;cnt++) {
-         var curr_name = item._name;
-         if (curr_name.length == 0) curr_name = "item";
-         if (cnt>0) curr_name+= "_"+cnt;
-         // avoid name duplication
-         for (var n in parent._childs) {
-            if (parent._childs[n]._name == curr_name) {
-               curr_name = ""; break;
-            }
-         }
-         if (curr_name.length > 0) {
-            if (cnt>0) item._name = curr_name;
-            break;
-         }
-      }
-
-      parent._childs.push(item);
-
-      return true;
-   }
-
-   JSROOT.expandGeoNodes = function(parent, volume) {
-
-      if (!parent || !volume) return false;
-
-      var item = {
-         _kind : "ROOT.TGeoVolume",
-         _name : (arg!=null) ? arg : volume.fName,
-         _title : volume.fTitle,
-         _parent : parent,
-         _volume : volume, // keep direct reference
-         _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
-         _menu : JSROOT.provideGeoMenu,
-         _icon_click : JSROOT.geoIconClick,
-         _get : function(item, itemname, callback) {
-            if ((item!=null) && ('_volume' in item))
-               return JSROOT.CallBack(callback, item, item._volume);
-
-            JSROOT.CallBack(callback, item, null);
-         }
-      };
-
-      if (item._more) {
-        item._expand = function(node, obj) {
-           var subnodes = obj.fNodes.arr;
-           for (var i in subnodes)
-              JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
-           return true;
-        }
-      } else
-      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
-         item._more = true;
-         item._expand = function(node, obj) {
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
-            return true;
-         }
-      }
-
-      if (item._title == "")
-         if (volume._typename != "TGeoVolume") item._title = volume._typename;
-
-      if (volume.fShape !== null) {
-         if (item._title == "")
-            item._title = volume.fShape._typename;
-
-         item._icon = JSROOT.getGeoShapeIcon(volume.fShape);
-      }
-
-      if (!('_childs' in parent)) parent['_childs'] = [];
-
-      if (!('_icon' in item))
-         item._icon = item._more ? "img_geocombi" : "img_geobbox";
-
-      item._icon += JSROOT.provideGeoVisStyle(volume);
+      item._icon += JSROOT.GEO.provideVisStyle(volume);
 
       // avoid name duplication of the items
       for (var cnt=0;cnt<1000000;cnt++) {
@@ -1516,7 +1439,10 @@
    }
 
 
-   JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
+   JSROOT.GEO.expandManagerHierarchy = function(hitem, obj) {
+
+      console.log('expandManagerHierarchy');
+
       if ((hitem==null) || (obj==null)) return false;
 
       hitem._childs = [];
@@ -1534,7 +1460,7 @@
       hitem._childs.push(item3);
 
       if (obj.fMasterVolume) {
-         JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
+         JSROOT.GEO.expandVolume(hitem, obj.fMasterVolume, "Volume");
          var item4 = { _name: "Nodes", _kind: "Folder", _title: "Hierarchy of TGeoNodes" };
          JSROOT.GEO.expandList(item4, obj.fMasterVolume.fNodes);
          hitem._childs.push(item4);
@@ -1543,7 +1469,7 @@
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: JSROOT.GEO.expandVolume, opt : ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
