@@ -461,398 +461,115 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.create3DObjects = function(arg) {
-      // function used to create Object3D hierarchy to current stack point
-      // Called only if object need to be drawn
-
-      if (arg.mesh) return arg.mesh;
-
-      var parent = this._stack[0].toplevel;
-
-      for (var n=0;n<this._stack.length;++n) {
-         arg = this._stack[n];
-         if (arg.mesh === undefined) {
-            if (arg.node._matrix === undefined)
-               arg.node._matrix = JSROOT.GEO.getNodeMatrix(JSROOT.GEO.NodeKind(arg.node), arg.node);
-
-            var nodeObj = new THREE.Object3D();
-            if (arg.node._matrix) nodeObj.applyMatrix(arg.node._matrix);
-            this.accountNodes(nodeObj);
-
-            nodeObj.name = arg.node.fName;
-
-            // add the mesh to the scene
-            parent.add(nodeObj);
-
-            // this is only for debugging - test invertion of whole geometry
-            if (arg.main && (this.options.scale !== null)) {
-               if ((this.options.scale.x<0) || (this.options.scale.y<0) || (this.options.scale.z<0)) {
-                  nodeObj.scale.copy(this.options.scale);
-                  nodeObj.updateMatrix();
-               }
-            }
-
-            nodeObj.updateMatrixWorld();
-
-            arg.mesh = nodeObj;
-         }
-
-         parent = arg.mesh;
-      }
-
-      return arg.mesh;
-   }
-
-   // Central function of TGeoNode drawing
-   // Automatically traverse complete hierarchy
-   // Also can be used to update existing drawing
-
    JSROOT.TGeoPainter.prototype.drawNode = function() {
+      // return false when nothing todo
+      // return true if creates next node
+      // return 1 when waiting for Worker
 
-      if (!this._stack || (this._stack.length == 0)) return false;
+      if (!this._draw_nodes || !this._clones) return false;
 
-      var arg = this._stack[this._stack.length - 1];
+      // first of all, create geometries (using worker if available)
 
-      if (arg.main && arg.mesh) {
-         // end of iteration
-         this._stack.pop();
-         return false;
-      }
+      var todo = [], ready = [], waiting = 0;
 
-      if ('nchild' in arg) {
-         if (arg.nchild >= arg.chlds.length) {
-            this._stack.pop();
-            return true; // no more childs
+      for (var n=0;n<this._draw_nodes.length;++n) {
+         var node_indx = this._draw_nodes[n][0];
+         if (node_indx < 0) continue;
+
+         var shape = this._clones.GetNodeShape(node_indx);
+
+         if (!shape) { this._draw_nodes[n][0] = -1; continue; }
+
+         // if not geometry exists, either create it or submit to worker
+         if (shape._geom !== undefined) {
+            if (ready.length < 200) ready.push(n);
+         } else
+         if (!shape._geom_worker) {
+            shape._geom_worker = true;
+            todo.push({ indx: n, node_indx: node_indx, shape: shape });
+            if (todo.length > 50) break;
+         } else {
+            waiting++; // number of waiting for worker
          }
-         // extract next child
-         arg.node = arg.chlds[arg.nchild++];
-         delete arg.mesh; // remove mesh on previous child
       }
 
-      var kind = JSROOT.GEO.NodeKind(arg.node);
-      if (kind < 0) return false;
+      // console.log('collected todo', todo.length,'ready', ready.length, 'waiting', waiting);
 
-      var visible = arg.node._visible && (arg.node._volume > this._data.minVolume) && (arg.vislvl >= 0);
-      if (arg.main) this.create3DObjects(arg);
+      if (this.canSubmitToWorker() && (todo.length > 0)) {
+         for (var s=0;s<todo.length;++s)
+            todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
+         this.submitToWorker({ shapes: todo });
+         if (ready.length == 0) return 1; //
+         todo = [];
+      }
 
-      var prop = this.getNodeProperties(kind, arg.node, visible);
+      // create geometries
+      if (todo.length > 0) {
+         for (var s=0;s<todo.length;++s) {
+            var shape = todo[s].shape;
+            shape._geom = JSROOT.GEO.createGeometry(shape);
+            this.accountGeom(shape._geom, shape._typename);
+            delete shape._geom_worker; // remove flag
+            ready.push(todo[s].indx); // one could add it to ready list
+         }
+      }
 
-      // console.log(this._stack.length, 'vislvl', arg.vislvl, 'visible', visible, 'chlds', prop.chlds, 'numvis', arg.node._numvischld);
+      // create
+      for (var n=0;n<ready.length;++n) {
+         // item to draw, containes indexs of children, first element - node index
 
-      if (visible) {
-         var nodeObj = this.create3DObjects(arg);
+         var item = this._draw_nodes[ready[n]];
+
+         var obj3d = this._clones.CreateObject3D(item, this._toplevel, this.options);
+
+         // original object, extracted from the map
+         var nodeobj = this._clones.origin[item[0]];
+         var clone = this._clones.nodes[item[0]];
+
+         var prop = this.getNodeProperties(clone.kind, nodeobj, true);
 
          this._drawcnt++;
-
-         if (typeof prop.shape._geom === 'undefined') {
-            prop.shape._geom = JSROOT.GEO.createGeometry(prop.shape);
-            this.accountGeom(prop.shape._geom, prop.shape._typename);
-         }
 
          var mesh = null;
 
          if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
 
-            if (nodeObj.matrixWorld.determinant() > -0.9) {
+            if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
-               mesh = this.createFlippedMesh(nodeObj, prop.shape, prop.material);
+               mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
             }
 
-            nodeObj.add(mesh);
+            obj3d.add(mesh);
          }
 
          if (mesh && (this.options._debug || this.options._full)) {
             var helper = new THREE.WireframeHelper(mesh);
             helper.material.color.set(prop.fillcolor);
-            helper.material.linewidth = ('fVolume' in arg.node) ? arg.node.fVolume.fLineWidth : 1;
-            nodeObj.add(helper);
+            helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
+            obj3d.add(helper);
          }
 
          if (mesh && (this.options._bound || this.options._full)) {
             var boxHelper = new THREE.BoxHelper( mesh );
-            nodeObj.add( boxHelper );
+            obj3d.add( boxHelper );
          }
+
+         item[0] = -1; // mark element as processed
       }
 
-      var vislvl = ('_visdepth' in arg.node) ? arg.node._visdepth : arg.vislvl;
+      // doing its job well, can be called next time
+      if ((todo.length > 0) || (ready.length > 0)) return true;
 
-      if (prop.chlds && (prop.chlds.length > 0) && (arg.node._numvischld > 0) && (vislvl > 0)) {
-         this._stack.push({
-            nchild: 0,
-            chlds: prop.chlds,
-            vislvl: vislvl - 1,
-         });
-      }
+      // worker does not deliver results, wait little longer
+      if (waiting > 0) return 1;
 
-      return true;
+      // here everything is completed, we could cleanup data and finish
+
+      delete this._draw_nodes;
+
+      return false;
    }
-
-   JSROOT.TGeoPainter.prototype.CountGeoNodes = function(obj, arg, lvl) {
-      // Scan nodes hierarchy, finds unique nodes and create map of such nodes
-      // Extract visibility flags. calculates volume
-      // Function should be called once every time object flags are changed
-      // Selection based on camera position will be done in different place
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      var res = { cnt: 0, vis: 0 }; // return number of nodes and number of visible nodes
-      if (kind < 0) return res;
-
-      if (lvl === undefined) {
-         lvl = 0;
-         if (!arg) arg = { erase: true };
-         if (!('map' in arg)) arg.map = [];
-         if (!('clear' in arg))
-            arg.clear = function() {
-               for (var n=0;n<this.map.length;++n) {
-                  delete this.map[n]._refcnt;
-                  delete this.map[n]._numchld;
-                  delete this.map[n]._numvischld;
-                  delete this.map[n]._visible;
-                  delete this.map[n]._visdepth;
-                  delete this.map[n]._volume;
-                  delete this.map[n]._matrix;
-                  delete this.map[n]._viscnt;
-                  delete this.map[n]._camcnt;
-               }
-               this.map = [];
-               delete this.vismap;
-               delete this.cammap;
-            };
-      }
-
-      var chlds = null, shape = null, vis = false;
-      if (kind === 0) {
-         // kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
-         // kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
-         // kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
-         // kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
-
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return res;
-         shape = obj.fVolume.fShape;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
-         if (arg.screen_vis) {
-            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
-         } else {
-            vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis);
-            if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) obj._visdepth = 1; else
-            if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) obj._visdepth = 0;
-         }
-
-      } else {
-         if (obj.fShape === undefined) return res;
-         shape = obj.fShape;
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-         vis = obj.fRnrSelf;
-      }
-
-      if ('cnt' in arg) {
-         if (arg.cnt[lvl] === undefined) arg.cnt[lvl] = 0;
-         arg.cnt[lvl] += 1;
-      }
-
-      if ('_refcnt' in obj) {
-          obj._refcnt++;
-      } else {
-         obj._refcnt = 1;
-         obj._numchld = 0; // count number of childs
-         obj._numvischld = 0; // count number of visible childs
-         arg.map.push(obj);
-
-         //  var min = Math.min( Math.min( shape.fDX, shape.fDY ), shape.fDZ );
-         obj._volume = shape ? shape.fDX * shape.fDY * shape.fDZ : 0;
-         obj._visible = vis;
-
-         if (chlds !== null)
-            for (var i = 0; i < chlds.length; ++i) {
-               var chld_res = this.CountGeoNodes(chlds[i], arg, lvl+1);
-               obj._numchld += chld_res.cnt;
-               obj._numvischld += chld_res.vis;
-            }
-      }
-
-      if ((lvl === 0) && arg.erase) arg.clear();
-
-      res.cnt = 1 + obj._numchld; // account number of volumes
-      res.vis = (obj._visible ? 1 : 0) + obj._numvischld; // account number of visible volumes
-
-      return res;
-   }
-
-   JSROOT.TGeoPainter.prototype.CreateClonedStructures = function(arg) {
-      if (!arg || !arg.map) return;
-
-      var tm1 = new Date().getTime();
-
-      for (var n=0;n<arg.map.length;++n)
-         arg.map[n]._refid = n; // mark all objects, need for the dereferencing
-
-      var cloned_map = [];
-
-      // first create nodes themself
-      for (var n=0;n<arg.map.length;++n) {
-         var obj = arg.map[n];
-         cloned_map.push({ vol: obj._volume,  vis: obj._visible });
-      }
-
-      // than fill childrens lists
-      for (var n=0;n<arg.map.length;++n) {
-         var obj = arg.map[n];
-
-         var kind = JSROOT.GEO.NodeKind(obj);
-
-         var chlds = null, shape = null;
-
-         if (kind === 0) {
-            if (obj.fVolume) {
-               shape = obj.fVolume.fShape;
-               if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes;
-            }
-         } else {
-            shape = obj.fShape;
-            if (obj.fElements) chlds = obj.fElements.arr;
-         }
-
-         var clone = cloned_map[n];
-
-         var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-         if (matrix) clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
-         if (shape) {
-            clone.fDX = shape.fDX;
-            clone.fDY = shape.fDY;
-            clone.fDZ = shape.fDZ;
-         }
-
-         if (!chlds) continue;
-
-         clone.chlds = [];
-         for (var k=0;k<chlds.length;++k) {
-            var chld = chlds[k];
-            clone.chlds.push(cloned_map[chld._refid]);
-         }
-      }
-
-      var tm2 = new Date().getTime();
-
-      console.log('Creating clone takes', tm2-tm1);
-
-      this.startWorker();
-
-      var tm3 = new Date().getTime();
-
-      console.log('Start worker in main context takes', tm3-tm2);
-
-      this._worker.postMessage( { map: cloned_map, tm0: new Date() } );
-
-      var tm4 = new Date().getTime();
-
-      console.log('Post message in main thread takes ', tm4-tm3);
-
-      console.log('Full clone and worker initialization took ', tm4-tm1);
-   }
-
-   JSROOT.TGeoPainter.prototype.CountVisibleNodes = function(obj, arg, vislvl) {
-      // after flags are set, one should eplicitly count how often each nodes is visible
-      // one could use volume cut if necessary
-      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
-
-      if (!arg) return 0;
-
-      if (vislvl === undefined) {
-         vislvl = 9999;
-         arg.vismap = []; // list of all visible nodes (after volume cut)
-         if (arg.minVolume === undefined) arg.minVolume = 0;
-
-         for (var n=0;n<arg.map.length;++n) {
-            delete arg.map[n]._viscnt; // how often node was counted as visible
-         }
-      }
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      if ((kind<0) || (vislvl<0)) return 0;
-
-      var chlds = null, res = 0;
-      if (kind === 0) {
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-      } else {
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-      }
-
-      if (obj._visible && (obj._volume > arg.minVolume)) {
-         if (obj._viscnt === undefined) {
-             obj._viscnt = 0;
-             arg.vismap.push(obj);
-         }
-         obj._viscnt++;
-         res++;
-      }
-
-      if ('_visdepth' in obj) vislvl = obj._visdepth;
-
-      if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
-         for (var i = 0; i < chlds.length; ++i)
-            res += this.CountVisibleNodes(chlds[i], arg, vislvl-1);
-
-      return res;
-   }
-
-   JSROOT.TGeoPainter.prototype.CountCameraNodes = function(obj, arg, vislvl, parentMatrix) {
-      // Count how many nodes are seen by camera
-      // Only node which inside (minCamVolume..minVolume] interval are recognized
-      // At the end list of visible nodes are created (arg.vismap) and counter how often each node is shown
-
-      if (!arg) return 0;
-
-      if (vislvl === undefined) {
-         vislvl = 9999;
-         arg.cammap = []; // list of all visible by camera nodes (after volume cut)
-         if (arg.minCamVolume === undefined) arg.minCamVolume = 0;
-         for (var n=0;n<arg.map.length;++n)
-            delete arg.map[n]._camcnt; // how often node was counted as visible by camera
-      }
-
-      var kind = JSROOT.GEO.NodeKind(obj);
-      if ((kind<0) || (vislvl<0)) return 0;
-
-      var chlds = null, shape, matrix, res = 0;
-      if (kind === 0) {
-         if ((obj.fVolume === undefined) || (obj.fVolume === null)) return 0;
-         shape = obj.fVolume.fShape;
-         chlds = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-      } else {
-         shape = obj.fShape;
-         chlds = (obj.fElements !== null) ? obj.fElements.arr : null;
-      }
-
-      if ('_visdepth' in obj) vislvl = obj._visdepth;
-
-      if (parentMatrix) matrix = parentMatrix.clone();
-                   else matrix = new THREE.Matrix4();
-
-      if (obj._matrix === undefined)
-         obj._matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
-
-      if (obj._matrix) matrix.multiply(obj._matrix);
-
-      if (obj._visible && (obj._volume <= arg.minVolume) && (obj._volume > arg.minCamVolume))
-         if (JSROOT.GEO.VisibleByCamera(this._camera, matrix, shape)) {
-            if (!('_camcnt' in obj)) {
-               obj._camcnt = 0;
-               arg.cammap.push(obj);
-            }
-            obj._camcnt++;
-            res++;
-         }
-
-      if ((chlds !== null) && (obj._numvischld > 0) && (vislvl > 0))
-         for (var i = 0; i < chlds.length; ++i)
-            res += this.CountCameraNodes(chlds[i], arg, vislvl-1, matrix);
-
-      return res;
-   }
-
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
 
@@ -861,8 +578,8 @@
       if (node1.fVolume.fLineColor >= 0)
          return (node1.fVolume.fLineColor === node2.fVolume.fLineColor);
 
-       var m1 = (node1.fVolume['fMedium'] !== null) ? node1.fVolume['fMedium']['fMaterial'] : null;
-       var m2 = (node2.fVolume['fMedium'] !== null) ? node2.fVolume['fMedium']['fMaterial'] : null;
+       var m1 = (node1.fVolume.fMedium !== null) ? node1.fVolume.fMedium.fMaterial : null;
+       var m2 = (node2.fVolume.fMedium !== null) ? node2.fVolume.fMedium.fMaterial : null;
 
        if (m1 === m2) return true;
 
@@ -870,59 +587,6 @@
 
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
     }
-
-   JSROOT.TGeoPainter.prototype.ScanUniqueVisVolumes = function(obj, lvl, arg) {
-      if ((obj === undefined) || (obj===null) || (typeof obj !== 'object') ||
-          (obj.fVolume === undefined) || (obj.fVolume == null)) return 0;
-
-      if (lvl === 0) {
-         arg.master = null;
-         arg.vis_unique = true;
-         arg.vis_master = null; // master used to verify material attributes
-         arg.same_material = true;
-      }
-
-      var res = obj._visible ? 1 : 0;
-
-      if (obj._refcnt > 1) arg.vis_unique = false;
-      if (arg.master!==null)
-         if (!this.SameMaterial(arg.master, obj)) arg.same_material = false;
-
-      var top_unique = arg.vis_unique;
-      arg.vis_unique = true;
-
-      var top_master = arg.master, top_same = arg.same_material;
-
-      arg.master = obj._visible ? obj : null;
-      arg.same_material = true;
-
-      var arr = (obj.fVolume.fNodes !== null) ? obj.fVolume.fNodes.arr : null;
-
-      var numvis = 0;
-      if (arr !== null)
-         for (var i = 0; i < arr.length; ++i)
-            numvis += this.ScanUniqueVisVolumes(arr[i], lvl+1, arg);
-
-      obj._numvis = numvis;
-      obj._visunique  = arg.vis_unique;
-      obj._samematerial = arg.same_material;
-
-      if (obj._samematerial) {
-         if (top_same && (top_master!=null) && (arg.master!==null))
-            arg.same_material = this.SameMaterial(top_master, arg.master);
-         else
-            arg.same_material = top_same;
-
-         if (top_master !== null) arg.master = top_master;
-      } else {
-         arg.master = null; // when material differ, no need to preserve master
-         arg.same_material = false;
-      }
-
-      arg.vis_unique = top_unique && obj._visunique;
-
-      return res + numvis;
-   }
 
    JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
@@ -958,13 +622,6 @@
 
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function() {
-      if (this.MatchObjectType("TGeoNode"))  {
-         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), vislvl:9999, main: true } ];
-      }
-      else if (this.MatchObjectType('TEveGeoShapeExtract')) {
-         this._stack = [ { toplevel: this._toplevel, node: this.GetObject(), vislvl:9999, main: true } ];
-      }
-
       this.accountClear();
    }
 
@@ -1022,48 +679,43 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawCount = function() {
+   JSROOT.TGeoPainter.prototype.drawCount = function(unqievis, clonetm) {
 
-      var tm1 = new Date();
+      var res = 'Unique nodes: ' + this._clones.nodes.length + '<br/>' +
+                'Unique visible: ' + unqievis + '<br/>' +
+                'Time to clone: ' + clonetm + 'ms <br/>';
 
-      var arg = { cnt : [], screen_vis: true };
-      var count = this.CountGeoNodes(this.GetObject(), arg);
+      var arg = {
+         cnt: [],
+         func: function(node) {
+            if (this.cnt[this.last]===undefined)
+               this.cnt[this.last] = 1;
+            else
+               this.cnt[this.last]++;
+            return true;
+         }
+      };
 
-      var res = 'Total number: ' + count.cnt + '<br/>';
+      var tm1 = new Date().getTime();
+      var numvis = this._clones.ScanVisible(arg);
+      var tm2 = new Date().getTime();
+
+      res += 'Total visible nodes: ' + numvis + '<br/>';
+
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
-         if (arg.cnt[lvl] !== 0)
+         if (arg.cnt[lvl] !== undefined)
             res += ('  lvl' + lvl + ': ' + arg.cnt[lvl] + '<br/>');
       }
-      res += "Unique volumes: " + arg.map.length + '<br/>';
 
-      if (count.vis === 0) {
-         arg.clear(); arg.screen_vis = false;
-         count = this.CountGeoNodes(this.GetObject(), arg);
-      }
+      res += "Time to scan: " + (tm2-tm1) + "ms <br/>";
 
-      res += "Visible volumes: " + count.vis + '<br/>';
+      arg.domatrix = true;
 
-      if (count.cnt<200000) {
-         this.ScanUniqueVisVolumes(this.GetObject(), 0, arg);
+      tm1 = new Date().getTime();
+      numvis = this._clones.ScanVisible(arg);
+      tm2 = new Date().getTime();
 
-         for (var n=0;n<arg.map.length;++n)
-            if (arg.map[n]._refcnt > 1) {
-               res += (arg.map[n]._visible ? "vis" : "map") + n + " " + arg.map[n].fName + "  nref:"+arg.map[n]._refcnt +
-               ' chld:'+ arg.map[n]._numvis + "(" + arg.map[n]._numchld + ')' +
-               " unique:" + arg.map[n]._visunique + " same:" + arg.map[n]._samematerial;
-
-               if (arg.map[n]._samematerial) {
-                  if (arg.map[n]._visunique && (arg.map[n]._numvis>0)) res+=" (can merge with childs in Worker)"; else
-                     if ((arg.map[n]._refcnt > 4) && (arg.map[n]._numvis>1)) res+=" (make sense merge in main thread)";
-               }
-
-               res += "<br/>";
-            }
-      }
-
-      var tm2 = new Date();
-
-      res +=  "Elapsed time: " + (tm2.getTime() - tm1.getTime()) + "ms <br/>";
+      res += "Time to scan with matrix: " + (tm2-tm1) + "ms <br/>";
 
       this.select_main().style('overflow', 'auto').html(res);
 
@@ -1074,9 +726,6 @@
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
       if (typeof opt !== 'string') opt = "";
 
-      if (opt === 'count')
-         return this.drawCount();
-
       var size = this.size_for_3d();
 
       this.options = this.decodeOptions(opt);
@@ -1086,74 +735,35 @@
 
       this._webgl = JSROOT.Painter.TestWebGL();
 
-      this._data = { cnt: [], screen_vis: true }; // now count volumes which should go to the processing
+      var tm1 = new Date().getTime();
 
-      var total = this.CountGeoNodes(this.GetObject(), this._data);
-
-      // if no any volume was selected, probably it is because of visibility flags
-      if ((total.cnt > 0) && (total.vis == 0)) {
-
-         console.log('switch to normal visisbility flags');
-
-         this._data.clear();
-         this._data.screen_vis = false;
-         total = this.CountGeoNodes(this.GetObject(), this._data);
+      this._clones = new JSROOT.GEO.ClonedNodes(this.GetObject());
+      var uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
+      if ((uniquevis <= 0) && this.options.screen_vis) {
+         this.options.screen_vis = false;
+         uniquevis = this._clones.MarkVisisble(this.options.screen_vis);
       }
 
-      // scan hierarchy completely, taking into account visibility flags
-      var numvis = this.CountVisibleNodes(this.GetObject(), this._data);
+      var tm2 = new Date().getTime();
 
-      console.log('unique nodes', this._data.map.length, 'with flag', total.vis, 'visible',  numvis);
+      if (opt === 'count')
+         return this.drawCount(uniquevis, tm2-tm1);
 
-      var maxlimit = this._webgl ? 2000 : 1000; // maximal number of allowed nodes to be displayed at once
-      maxlimit *= this.options.more;
+      console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
 
-      if (numvis > maxlimit)  {
+      var maxlimit = (this._webgl ? 2000 : 2000) * this.options.more;
 
-         console.log('selected number of volumes ' + numvis + ' cannot be disaplyed, try to reduce');
+      tm1 = new Date().getTime();
+      var res2 = this._clones.DefineVisible(maxlimit);
+      this._draw_nodes = this._clones.CollectVisibles(res2.minVol);
+      tm2 = new Date().getTime();
 
-         var t1 = new Date().getTime();
-         // sort in reverse order (big first)
-         this._data.vismap.sort(function(a,b) { return b._volume - a._volume; })
-         var t2 = new Date().getTime();
-         console.log('sort time', (t2-t1).toFixed(1));
+      console.log('Collect visibles', this._draw_nodes.length, 'takes', tm2-tm1);
 
-         var cnt = 0, indx = 0;
-         while ((cnt < maxlimit) && (indx < this._data.vismap.length-1))
-            cnt += this._data.vismap[indx++]._viscnt;
+      // activate worker
+      // if (this._draw_nodes.length > 10) this.startWorker();
 
-         this._data.minVolume = this._data.vismap[indx]._volume;
-
-         console.log('Select ', cnt, 'nodes, minimal volume', this._data.minVolume);
-
-         numvis = this.CountVisibleNodes(this.GetObject(), this._data);
-
-         console.log('Selected numvis', numvis);
-
-
-         this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
-/*
-         t1 = new Date().getTime();
-         var numcam = this.CountCameraNodes(this.GetObject(), this._data);
-         t2 = new Date().getTime();
-
-         console.log('Selected numcam', numcam, 'time', (t2-t1).toFixed(1));
-         if (numcam > maxlimit) {
-            console.log('too many object seen by camera, reduce map', this._data.cammap.length)
-            this._data.cammap.sort(function(a,b) { return b._volume - a._volume; })
-            var cnt = 0, indx = 0;
-            while ((cnt < maxlimit) && (indx < this._data.cammap.length-1))
-               cnt += this._data.cammap[indx++]._camcnt;
-            this._data.minCamVolume = this._data.cammap[indx]._volume;
-            console.log('Select ', cnt, 'nodes for camera, minimal volume', this._data.minCamVolume);
-            t1 = new Date().getTime();
-            numcam = this.CountCameraNodes(this.GetObject(), this._data);
-            t2 = new Date().getTime();
-            console.log('Selected numcam again', numcam, 'time', (t2-t1).toFixed(1));
-            return;
-         }
-*/
-      }
+      this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
@@ -1161,37 +771,47 @@
 
       this._startm = new Date().getTime();
 
+      this._last_render_tm = this._startm;
+      this._last_render_cnt = 0;
+
       this._drawcnt = 0; // counter used to build meshes
 
       this.CreateToolbar( { container: this.select_main().node() } );
 
-      return this.continueDraw();
+      this.continueDraw();
+
+      return this;
    }
 
    JSROOT.TGeoPainter.prototype.continueDraw = function() {
-      var curr = new Date().getTime();
 
-      var log = "";
-      var previewInterval = this._webgl ? 1000 : 2000;
+      var currtm = new Date().getTime();
+
+      var interval = 300;
 
       while(true) {
-         if (this.drawNode()) {
-            log = "Creating meshes " + this._drawcnt;
-         } else
-            break;
+
+         var res = this.drawNode();
+
+         if (!res) break;
+
+         var log = "Creating meshes " + this._drawcnt;
 
          var now = new Date().getTime();
 
-         if (now - curr > previewInterval) {
-            JSROOT.progress(log);
-            setTimeout(this.continueDraw.bind(this), 0);
-            this.adjustCameraPosition();
-            this._renderer.render(this._scene, this._camera);
-            return this;
-         }
-
-         // stop creation, render as is
+         // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) break;
+
+         if ((now - currtm > interval) || (res === 1)) {
+            JSROOT.progress(log);
+            if (this._webgl && (now - this._last_render_tm > interval) && (this._last_render_cnt != this._drawcnt)) {
+               this.adjustCameraPosition();
+               this._renderer.render(this._scene, this._camera);
+               this._last_render_tm = new Date().getTime();
+               this._last_render_cnt = this._drawcnt;
+            }
+            return setTimeout(this.continueDraw.bind(this), 10);
+         }
       }
 
       var t2 = new Date().getTime();
@@ -1199,11 +819,10 @@
 
       if (t2 - this._startm > 300) {
          JSROOT.progress('Rendering geometry');
-         setTimeout(this.completeDraw.bind(this, true), 0);
-         return this;
+         return setTimeout(this.completeDraw.bind(this, true), 0);
       }
 
-      return this.completeDraw(true);
+      this.completeDraw(true);
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout) {
@@ -1240,6 +859,13 @@
 
    JSROOT.TGeoPainter.prototype.startWorker = function() {
 
+      if (this._worker) return;
+
+      this._worker_ready = false;
+      this._worker_jobs = 0; // counter how many requests send to worker
+
+      var pthis = this;
+
       this._worker = new Worker(JSROOT.source_dir + "scripts/JSRootGeoWorker.js");
 
       this._worker.onmessage = function(e) {
@@ -1249,11 +875,58 @@
          if ('log' in e.data)
             return JSROOT.console('geo: ' + e.data.log);
 
-         if ('init' in e.data)
-            return JSROOT.console('full init tm: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+         if ('init' in e.data) {
+            pthis._worker_ready = true;
+            return JSROOT.console('Worker ready: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+         }
+
+         pthis.processWorkerReply(e.data);
       };
 
-      this._worker.postMessage( { init: true, tm0: new Date() } );
+      // send initialization message with clones
+      this._worker.postMessage( { init: true, tm0: new Date(), clones: this._clones.nodes } );
+   }
+
+   JSROOT.TGeoPainter.prototype.canSubmitToWorker = function() {
+      if (!this._worker) return false;
+
+      // if (!this._worker_ready || (this._worker_jobs > 3)) return false;
+
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.submitToWorker = function(job) {
+      if (!this._worker) return false;
+
+      this._worker_jobs++;
+
+      this._worker.postMessage(job);
+   }
+
+   JSROOT.TGeoPainter.prototype.processWorkerReply = function(job) {
+      this._worker_jobs--;
+
+      if ('shapes' in job) {
+         var loader = new THREE.JSONLoader();
+
+         for (var n=0;n<job.shapes.length;++n) {
+            var item = job.shapes[n];
+
+            var shape = this._clones.GetNodeShape(item.node_indx);
+
+            var object = loader.parse(item.json.data);
+            shape._geom = object.geometry;
+            this.accountGeom(shape._geom, shape._typename);
+
+            delete shape._geom_worker;
+
+            // TEMPORARY CODE
+            // just create geometry locally, while tranfered geometry now works
+            shape._geom = JSROOT.GEO.createGeometry(shape);
+         }
+
+         return;
+      }
    }
 
 
@@ -1275,10 +948,6 @@
       this.Render3D();
 
       if (close_progress) JSROOT.progress();
-
-      this.CreateClonedStructures(this._data);
-
-      this._data.clear();
 
       // pointer used in the event handlers
       var pthis = this;
@@ -1322,7 +991,7 @@
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
-      this._stack = null;
+      delete this._clone;
       this._camera = null;
 
       this.first_render_tm = 0;
@@ -1330,6 +999,11 @@
       this._controls = null;
       this._tcontrols = null;
       this._toolbar = null;
+
+      if (this._worker) {
+         this._worker.terminate();
+         delete this._worker;
+      }
    }
 
    JSROOT.TGeoPainter.prototype.helpText = function(msg) {
@@ -1704,26 +1378,26 @@
    JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
       if ((hitem==null) || (obj==null)) return false;
 
-      hitem['_childs'] = [];
+      hitem._childs = [];
 
-      var item1 = { _name : "Materials", _kind : "Folder", _title : "list of materials" };
+      var item1 = { _name: "Materials", _kind: "Folder", _title: "list of materials" };
       JSROOT.expandGeoList(item1, obj.fMaterials);
-      hitem['_childs'].push(item1);
+      hitem._childs.push(item1);
 
-      var item2 = { _name : "Media", _kind : "Folder", _title : "list of media" };
+      var item2 = { _name: "Media", _kind: "Folder", _title: "list of media" };
       JSROOT.expandGeoList(item2, obj.fMedia);
-      hitem['_childs'].push(item2);
+      hitem._childs.push(item2);
 
-      var item3 = { _name : "Tracks", _kind : "Folder", _title : "list of tracks" };
+      var item3 = { _name: "Tracks", _kind: "Folder", _title: "list of tracks" };
       JSROOT.expandGeoList(item3, obj.fTracks);
-      hitem['_childs'].push(item3);
+      hitem._childs.push(item3);
 
       JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
 
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : "all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
