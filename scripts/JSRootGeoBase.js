@@ -65,6 +65,71 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
+   JSROOT.GEO.getNodeProperties = function(kind, node, visible) {
+      // function return different properties for specified node
+      // Only if node visible, material will be created
+
+      if (kind === 1) {
+         // special handling for EVE nodes
+
+         var prop = { name: node.fName, nname: node.fName, shape: node.fShape, material: null, chlds: null };
+
+         if (node.fElements !== null) prop.chlds = node.fElements.arr;
+
+         if (visible) {
+            var _transparent = false, _opacity = 1.0;
+            if ( node.fRGBA[3] < 1.0) {
+               _transparent = true;
+               _opacity = node.fRGBA[3];
+            }
+            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             overdraw: 0. } );
+         }
+
+         return prop;
+      }
+
+      var volume = node.fVolume;
+
+      var prop = { name: volume.fName, nname: node.fName, volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+
+      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
+
+      if (visible) {
+         var _transparent = false, _opacity = 1.0;
+         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
+         else
+         if (volume.fLineColor >= 0)
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+
+         if (volume.fMedium && volume.fMedium.fMaterial) {
+            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
+            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+            if (transparency > 0) {
+               _transparent = true;
+               _opacity = (100.0 - transparency) / 100.0;
+            }
+            if (prop.fillcolor === undefined)
+               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
+         }
+         if (prop.fillcolor === undefined)
+            prop.fillcolor = "lightgrey";
+
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              overdraw: 0. } );
+      }
+
+      return prop;
+   }
+
+
+
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -1382,12 +1447,23 @@
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
-      var node = this.nodes[0], three_prnt = toplevel, obj3d;
+      var node = this.nodes[0], three_prnt = toplevel, obj3d,
+          vname = "Volume", nname = "Node";
 
       for(var lvl=0; lvl<=stack.length; ++lvl) {
          var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
-         if (lvl>0) node = this.nodes[node.chlds[nchld]];
+         if (lvl>0) {
+
+            var prop = this.origin ?
+                        JSROOT.GEO.getNodeProperties(node.kind, this.origin[node.chlds[nchld]]) :
+                         { name: nchld, nname: nchld };
+
+            vname += "/" + prop.name;
+            nname += "/" + prop.nname;
+
+            node = this.nodes[node.chlds[nchld]];
+         }
 
          obj3d = undefined;
 
@@ -1404,16 +1480,14 @@
             obj3d = new THREE.Object3D();
 
             if (node.matrix) {
-               // console.log('apply matrix');
-
-               //obj3d.applyMatrix(node.matrix);
                obj3d.matrix.fromArray(node.matrix);
                obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
             }
 
             // this.accountNodes(obj3d);
 
-            obj3d.name = 'any name';
+            obj3d.name = vname;
+            obj3d.nname = nname;
             obj3d.nchld = nchld; // mark index to find it again later
 
             // add the mesh to the scene

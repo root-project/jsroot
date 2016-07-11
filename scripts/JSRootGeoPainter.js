@@ -86,7 +86,7 @@
       var node = this.GetObject();
 
       var kind = JSROOT.GEO.NodeKind(node);
-      var prop = this.getNodeProperties(kind, node);
+      var prop = JSROOT.GEO.getNodeProperties(kind, node);
 
       if (name == "")
          return JSROOT.GEO.SetBit(prop.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
@@ -100,7 +100,7 @@
 
       if (prop.chlds!==null)
          for (var n=0;n<prop.chlds.length;++n) {
-            var chld = this.getNodeProperties(kind, prop.chlds[n]);
+            var chld = JSROOT.GEO.getNodeProperties(kind, prop.chlds[n]);
 
             if (regexp.test(chld.name) && chld.volume) {
                JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
@@ -391,70 +391,6 @@
       return mesh;
    }
 
-   JSROOT.TGeoPainter.prototype.getNodeProperties = function(kind, node, visible) {
-      // function return matrix, shape and material for specified node
-      // Only if node visible, material is created
-
-      if (kind === 1) {
-         // special handling for EVE nodes
-
-         var prop = { name: node.fName, shape: node.fShape, material: null, chlds: null };
-
-         if (node.fElements !== null) prop.chlds = node.fElements.arr;
-
-         if (visible) {
-            var _transparent = false, _opacity = 1.0;
-            if ( node.fRGBA[3] < 1.0) {
-               _transparent = true;
-               _opacity = node.fRGBA[3];
-            }
-            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0. } );
-         }
-
-         return prop;
-      }
-
-      var volume = node.fVolume;
-
-      var prop = { name: volume.fName, volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
-
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
-
-      if (visible) {
-         var _transparent = false, _opacity = 1.0;
-         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
-         else
-         if (volume.fLineColor >= 0)
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
-
-         if (('fMedium' in volume) && (volume.fMedium !== null) &&
-             ('fMaterial' in volume.fMedium) && (volume.fMedium.fMaterial !== null)) {
-            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
-            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
-            if (transparency > 0) {
-               _transparent = true;
-               _opacity = (100.0 - transparency) / 100.0;
-            }
-            if (prop.fillcolor === undefined)
-               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
-         }
-         if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
-
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0. } );
-      }
-
-      return prop;
-   }
-
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
       // return false when nothing todo
@@ -521,7 +457,7 @@
          var nodeobj = this._clones.origin[entry.nodeid];
          var clone = this._clones.nodes[entry.nodeid];
 
-         var prop = this.getNodeProperties(clone.kind, nodeobj, true);
+         var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
 
          this._drawcnt++;
 
