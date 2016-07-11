@@ -8649,7 +8649,7 @@
             if (handle && ('expand' in handle)) {
                JSROOT.AssertPrerequisites(handle.prereq, function() {
                   _item._expand = JSROOT.findFunction(handle.expand);
-                  if (typeof _item._expand !== 'function')
+                  if (!_item._expand)
                      delete _item._expand;
                   else
                      hpainter.expand(_name, call_back, d3cont);
@@ -9692,7 +9692,7 @@
    JSROOT.addDrawFunc({ name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", expand: "JSROOT.expandGeoVolume", opt:";more;all;count" });
    JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeometry", opt: ";more;all;count"  });
-   JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.expandGeoManagerHierarchy", func: "JSROOT.Painter.drawGeoObject", opt: "all", dflt: "expand" });
+   JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandManagerHierarchy", func: "JSROOT.Painter.drawGeoObject", opt: "all", dflt: "expand" });
    JSROOT.addDrawFunc({ name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: "all" });
    // these are not draw functions, but provide extra info about correspondent classes
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });

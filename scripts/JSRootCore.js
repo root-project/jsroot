@@ -462,16 +462,16 @@
 
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
-      var func = window[name];
-      if (typeof func == 'function') return func;
-      var separ = name.lastIndexOf(".");
-      if (separ<0) return null;
-      var namespace = name.slice(0, separ);
-      name = name.slice(separ+1);
-      if (namespace=="JSROOT") func = this[name]; else
-      if (namespace=="JSROOT.Painter") { if ('Painter' in this) func = this['Painter'][name]; } else
-      if (window[namespace]) func = window[namespace][name];
-      return (typeof func == 'function') ? func : null;
+      if (typeof window[name] == 'function') return window[name];
+      if ((typeof name !== 'string') || (name.indexOf(".") < 0)) return null;
+
+      var names = name.split('.'), elem = window;
+      for (var n=0;n<names.length;++n) {
+         elem = elem[names[n]];
+         if (!elem) return null;
+      }
+
+      return (typeof elem == 'function') ? elem : null;
    }
 
    JSROOT.CallBack = function(func, arg1, arg2) {
