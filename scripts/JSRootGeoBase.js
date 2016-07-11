@@ -1372,12 +1372,13 @@
 
          obj3d = undefined;
 
-         for (var i=0;i<three_prnt.children.length;++i) {
-            if (three_prnt.children[i].nchld === nchld) {
-               obj3d = three_prnt.children[i];
-               break;
+         if (three_prnt.children)
+            for (var i=0;i<three_prnt.children.length;++i) {
+               if (three_prnt.children[i].nchld === nchld) {
+                  obj3d = three_prnt.children[i];
+                  break;
+               }
             }
-         }
 
          if (!obj3d) {
 

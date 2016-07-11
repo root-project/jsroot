@@ -1132,10 +1132,14 @@
          node = JSROOT.Create("TEveGeoShapeExtract");
          JSROOT.extend(node, { fTrans:null, fShape: obj, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
       } else
-      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume'))
+      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          node = obj;
+      } else
+      if ((obj._typename === 'TGeoManager')) {
+         node = obj.fMasterVolume;
+      }
 
-      if (node !== null) {
+      if (node && (typeof node == 'object')) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
          node._painter = this; // set painter, use for drawing update
