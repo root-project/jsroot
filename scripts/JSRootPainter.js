@@ -7980,7 +7980,8 @@
       this.with_icons = true;
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      if (frameid != null) this.SetDivId(frameid);
+      this.nobrowser = frameid === null;
+      if (!this.nobrowser) this.SetDivId(frameid);
 
       // remember only very first instance
       if (JSROOT.hpainter == null)
@@ -7988,6 +7989,31 @@
    }
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+
+   JSROOT.HierarchyPainter.prototype.ToggleFloatBrowser = function() {
+      if (!this.nobrowser || !this.disp) return;
+
+      var elem = d3.select("#"+this.disp.frameid);
+      if (elem.empty()) return;
+
+      var container = d3.select(elem.node().parentNode);
+
+      var main = container.select('.float_browser');
+
+      if (main.empty()) {
+         var div = container.append("div").attr("class","jsroot");
+         main = div.append("div").attr("class","float_browser").style('left', '-320px');
+         main.transition().delay(700).style('left', '5px');
+         this.SetDivId(main.node());
+         this.RefreshHtml();
+
+      } else {
+         if (main.style('left') == '5px')
+            main.transition().delay(700).style('left', '-320px');
+         else
+            main.transition().delay(700).style('left', '5px');
+      }
+   }
 
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
@@ -8258,11 +8284,10 @@
          return this.expand(parentname, function(res) {
             if (!res) JSROOT.CallBack(call_back);
             var newparentname = hpainter.itemFullName(d.last);
-            hpainter.get( { arg: newparentname + "/" + d.rest, rest: d.rest }, call_back, options);
+            if (newparentname.length>0) newparentname+="/";
+            hpainter.get( { arg: newparentname + d.rest, rest: d.rest }, call_back, options);
          });
       }
-
-      // check if item already has assigned object
 
       if ((item !== null) && (typeof item._obj == 'object'))
          return JSROOT.CallBack(call_back, item, item._obj);
@@ -8593,7 +8618,7 @@
    JSROOT.HierarchyPainter.prototype.reload = function() {
       var hpainter = this;
       if ('_online' in this.h)
-         this.OpenOnline(this.h['_online'], function() {
+         this.OpenOnline(this.h._online, function() {
             hpainter.RefreshHtml();
          });
    }
@@ -8624,8 +8649,10 @@
             if (handle && ('expand' in handle)) {
                JSROOT.AssertPrerequisites(handle.prereq, function() {
                   _item._expand = JSROOT.findFunction(handle.expand);
-                  if (typeof _item._expand != 'function') { delete _item._expand; return; }
-                  hpainter.expand(_name, call_back, d3cont);
+                  if (typeof _item._expand !== 'function')
+                     delete _item._expand;
+                  else
+                     hpainter.expand(_name, call_back, d3cont);
                });
                return true;
             }
@@ -8695,16 +8722,17 @@
       var pthis = this;
       JSROOT.NewHttpRequest(filepath,'object', function(res) {
          if (res == null) return JSROOT.CallBack(call_back);
-         var h1 = { _jsonfile : filepath, _kind : "ROOT." + res._typename, _jsontmp : res, _name: filepath.split("/").pop() };
+         var h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if ('fTitle' in res) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
             if ('_jsontmp' in item) {
-               var res = item._jsontmp;
-               delete item._jsontmp;
-               return JSROOT.CallBack(callback, item, res);
+               //var res = item._jsontmp;
+               //delete item._jsontmp;
+               return JSROOT.CallBack(callback, item, item._jsontmp);
             }
             JSROOT.NewHttpRequest(item._jsonfile, 'object', function(res) {
-               return JSROOT.CallBack(callback, item, res);
+               item._jsontmp = res;
+               return JSROOT.CallBack(callback, item, item._jsontmp);
             }).send(null);
          }
          if (pthis.h == null) pthis.h = h1; else
@@ -9947,7 +9975,7 @@
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
-         if (typeof painter['Cleanup'] === 'function')
+         if (typeof painter.Cleanup === 'function')
             painter.Cleanup();
       });
       dummy.select_main().html("");

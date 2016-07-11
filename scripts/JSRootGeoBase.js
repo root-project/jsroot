@@ -17,6 +17,36 @@
 
    JSROOT.GEO = {};
 
+   JSROOT.GEO.BITS = {
+         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
+         kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
+         kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
+         kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
+         kVisOneLevel     : JSROOT.BIT(4),           // first level daughters are visible
+         kVisStreamed     : JSROOT.BIT(5),           // true if attributes have been streamed
+         kVisTouched      : JSROOT.BIT(6),           // true if attributes are changed after closing geom
+         kVisOnScreen     : JSROOT.BIT(7),           // true if volume is visible on screen
+         kVisContainers   : JSROOT.BIT(12),          // all containers visible
+         kVisOnly         : JSROOT.BIT(13),          // just this visible
+         kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
+         kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
+      };
+
+   JSROOT.GEO.TestBit = function(volume, f) {
+      var att = volume.fGeoAtt;
+      return att === undefined ? false : ((att & f) !== 0);
+   }
+
+   JSROOT.GEO.SetBit = function(volume, f, value) {
+      if (volume.fGeoAtt === undefined) return;
+      volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
+   }
+
+   JSROOT.GEO.ToggleBit = function(volume, f) {
+      if (volume.fGeoAtt !== undefined)
+         volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
+   }
+
    // method used to avoid duplication of warnings
    JSROOT.GEO.warn = function(msg) {
       if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
@@ -1121,22 +1151,12 @@
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromMatrix( cameraProjectionMatrix );
-      
-      var corners = [
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 )
-               ];
-      for (var i = 0; i < corners.length; i++) {
-         if (frustum.containsPoint(corners[i])) return true;
-      }
 
-      return false;
+      var boundingBox = new THREE.Box3(
+        new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
+        new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ) ).applyMatrix4( matrix );
+
+      return frustum.intersectsBox( boundingBox );
    }
 
    // ====================================================================
@@ -1240,7 +1260,7 @@
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen) {
+   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen, copy_bits) {
       if (!this.origin || !this.nodes) return 0;
 
       var res = 0;
@@ -1254,11 +1274,15 @@
          if (clone.kind === 0) {
             if (obj.fVolume) {
                if (on_screen) {
-                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOnScreen);
+                  clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOnScreen);
+                  if (copy_bits) {
+                     JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis, clone.vis);
+                     JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters, true);
+                  }
                } else {
-                  clone.vis = JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisThis);
-                  if (JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisOneLevel)) clone.depth = 1; else
-                  if (!JSROOT.TestGeoAttBit(obj.fVolume, JSROOT.EGeoVisibilityAtt.kVisDaughters)) clone.depth = 0;
+                  clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis);
+                  if (!JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters))
+                     clone.depth = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOneLevel) ? 1 : 0;
                }
             }
          } else {
@@ -1271,31 +1295,29 @@
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl, node) {
+   JSROOT.GEO.ClonedNodes.prototype.ScanVisible = function(arg, vislvl) {
       // Scan visible nodes in hierarchy, starting from nodeid
+      // Each entry in hierarchy get its unique id, which is not changed with visibility flags
 
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
          vislvl = 99999;
-         node = this.nodes[0];
-
          if (!arg) arg = {};
          arg.stack = new Int32Array(100); // current stack
+         arg.nodeid = 0;
+         arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
-         arg.stack[0] = 0;
          arg.CopyStack = function() {
-            var res = new Int32Array(this.last+1);
-            for (var n=0;n<=this.last;++n) res[n] = this.stack[n];
-            return res;
+            var entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Int32Array(this.last) };
+            for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1];
+            return entry;
          }
 
          if (arg.domatrix) arg.matrices = [];
       }
 
-      if (vislvl<0) return 0;
-
-      var res = 0;
+      var res = 0, node = this.nodes[arg.nodeid];
 
       if (arg.domatrix) {
          var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
@@ -1306,25 +1328,23 @@
          }
       }
 
-      if (node.vis) {
-         if (arg.func) {
-            if (arg.func(node)) res++;
-         } else {
-            res++;
-         }
+      if (node.vis && (vislvl>=0)) {
+         if (!arg.func || arg.func(node)) res++;
       }
 
-      if (node.depth !== undefined) vislvl = node.depth;
+      arg.counter++;
+
+      if ((node.depth !== undefined) && (vislvl > node.depth)) vislvl = node.depth;
 
       if (arg.last > arg.stack.length - 2)
          throw 'stack capacity is not enough ' + arg.stack.length;
 
-      if (node.chlds && (vislvl > 0)) {
+      if (node.chlds) {
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
-            arg.stack[0] = node.chlds[i]; // first element in stack is ID of current node
+            arg.nodeid = node.chlds[i];
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
-            res += this.ScanVisible(arg, vislvl-1, this.nodes[node.chlds[i]]);
+            res += this.ScanVisible(arg, vislvl-1);
          }
          arg.last--;
       }
@@ -1333,17 +1353,20 @@
          delete arg.last;
          delete arg.stack;
          delete arg.CopyStack;
+         delete arg.counter;
       }
 
       return res;
    }
 
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
+      // create hierarchy of Object3D for given stack entry
+      // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
       var node = this.nodes[0], three_prnt = toplevel, obj3d;
 
-      for(var lvl=0; lvl<stack.length; ++lvl) {
-         var nchld = (lvl > 0) ? stack[lvl] : 0; // first item in stack is nodeid of last element
+      for(var lvl=0; lvl<=stack.length; ++lvl) {
+         var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
          if (lvl>0) node = this.nodes[node.chlds[nchld]];
 
@@ -1411,8 +1434,6 @@
 
       var res = { cnt0: 0, minVol: 0, cnt1: 0, vismap: [] };
 
-      var tm1 = new Date().getTime();
-
       res.cnt0 = this.ScanVisible(arg);
 
       for (var id=0;id<arg.viscnt.length;++id)
@@ -1427,10 +1448,6 @@
             res.cnt1 += arg.viscnt[res.vismap[indx++].id];
          res.minVol = res.vismap[indx].vol;
       }
-
-      var tm2 = new Date().getTime();
-
-      console.log('scan objects takes', tm2-tm1);
 
       return res;
    }
@@ -1449,6 +1466,28 @@
       this.ScanVisible(arg);
 
       return arg.res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {
+      // merge list of drawn objects
+      // in current list we should mark if object already exists
+      // from previous list we should collect objects which are not there
+
+      var indx2 = 0, del = [];
+      for (var indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
+
+         while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
+            del.push(prev[indx2]); // this entry should be removed
+            indx2++;
+         }
+
+         if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
+            if (prev[indx2].done) current[indx1].done = true; // copy ready flag
+            indx2++;
+         }
+      }
+
+      return del; //
    }
 
    return JSROOT;
