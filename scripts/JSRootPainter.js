@@ -8034,12 +8034,12 @@
 
             var fff = this; // file item
 
-            if ((item!=null) && (item._readobj != null))
+            if (item && item._readobj) {
+               console.log('return existing object', itemname);
                return JSROOT.CallBack(callback, item, item._readobj);
+            }
 
             if (item!=null) itemname = painter.itemFullName(item, fff);
-            // var pos = fullname.lastIndexOf(";");
-            // if (pos>0) fullname = fullname.slice(0, pos);
 
             function ReadFileObject(file) {
                if (fff._file==null) fff._file = file;
@@ -8511,13 +8511,14 @@
       var painter = this;
 
       // force all files to read again (normally in non-browser mode)
-      if (this.files_monitoring)
+      if (this.files_monitoring && !only_auto_items)
          this.ForEachRootFile(function(item) {
             painter.ForEach(function(fitem) { delete fitem._readobj; }, item);
             delete item._file;
          });
 
-      this.displayAll(allitems, options);
+      if (allitems.length > 0)
+         this.displayAll(allitems, options);
    }
 
    JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
@@ -8954,9 +8955,9 @@
                if (!('_drawfunc' in item) || !('_kind' in item)) return;
                var typename = "kind:" + item._kind;
                if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
-               var drawopt = item['_drawopt'];
+               var drawopt = item._drawopt;
                if (!JSROOT.canDraw(typename) || (drawopt!=null))
-                  JSROOT.addDrawFunc({ name: typename, func: item['_drawfunc'], script:item['_drawscript'], opt: drawopt});
+                  JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
             });
 
             JSROOT.CallBack(user_callback, painter);
@@ -9143,11 +9144,12 @@
    }
 
    JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
-      var hpainter = this;
-      var filesarr = JSROOT.GetUrlOptionAsArray("file;files");
-      var jsonarr = JSROOT.GetUrlOptionAsArray("json");
-      var filesdir = JSROOT.GetUrlOption("path");
-      var expanditems = JSROOT.GetUrlOptionAsArray("expand");
+      var hpainter = this,
+          filesarr = JSROOT.GetUrlOptionAsArray("file;files"),
+          jsonarr = JSROOT.GetUrlOptionAsArray("json"),
+          filesdir = JSROOT.GetUrlOption("path"),
+          expanditems = JSROOT.GetUrlOptionAsArray("expand");
+
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand")=="")) expanditems.push("");
 
       if (filesdir!=null) {
@@ -9158,9 +9160,8 @@
       var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
       if ((itemsarr.length==0) && JSROOT.GetUrlOption("item")=="") itemsarr.push("");
 
-      var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts");
-
-      var monitor = JSROOT.GetUrlOption("monitoring");
+      var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts"),
+          monitor = JSROOT.GetUrlOption("monitoring");
 
       if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
@@ -9196,7 +9197,9 @@
 
                JSROOT.RegisterForResize(hpainter);
 
-               setInterval(function() { hpainter.updateAll(!hpainter.IsMonitoring()); }, hpainter.MonitoringInterval());
+               // assign regular update only when monitoring specified (or when work with online application)
+               if (h0 || hpainter.GetTopOnlineItem() || hpainter.IsMonitoring())
+                  setInterval(function() { hpainter.updateAll(!hpainter.IsMonitoring()); }, hpainter.MonitoringInterval());
 
                JSROOT.CallBack(call_back);
            });
@@ -9224,8 +9227,8 @@
          OpenAllFiles();
       }
 
-      if (h0!=null) hpainter.OpenOnline(h0, AfterOnlineOpened);
-               else OpenAllFiles();
+      if (h0) hpainter.OpenOnline(h0, AfterOnlineOpened);
+          else OpenAllFiles();
    }
 
    JSROOT.BuildNobrowserGUI = function() {

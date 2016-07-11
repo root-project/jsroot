@@ -110,7 +110,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, _count:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -118,7 +118,6 @@
       if (_opt !== null && _opt == "true") { res._debug = true; res._grid = true; }
       if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
-
 
       while (true) {
          var pp = opt.indexOf("+"), pm = opt.indexOf("-");
@@ -168,6 +167,11 @@
       if (opt.indexOf("invz")>=0) {
          res.scale.z = -1;
          opt = opt.replace("invz", " ");
+      }
+
+      if (opt.indexOf("count")>=0) {
+         res._count = true;
+         opt = opt.replace("count", " ");
       }
 
       if (opt.indexOf("d")>=0) res._debug = true;
@@ -778,10 +782,10 @@
 
       var tm2 = new Date().getTime();
 
-      if (opt === 'count')
-         return this.drawCount(uniquevis, tm2-tm1);
-
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
+
+      if (this.options._count)
+         return this.drawCount(uniquevis, tm2-tm1);
 
       this.options.maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
@@ -849,7 +853,7 @@
 
       if (tmout <= 0) {
          if ('render_tmout' in this)
-            clearTimeout(this['render_tmout']);
+            clearTimeout(this.render_tmout);
 
          var tm1 = new Date();
 
@@ -858,7 +862,7 @@
 
          var tm2 = new Date();
 
-         delete this['render_tmout'];
+         delete this.render_tmout;
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
@@ -869,10 +873,9 @@
          return;
       }
 
-      // no need to shoot rendering once again
-      if ('render_tmout' in this) return;
-
-      this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
+      // do not shoot timeout many times
+      if (!this.render_tmout)
+         this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
 
@@ -1367,14 +1370,9 @@
 
       if (!parent || !volume) return false;
 
-      // avoid duplication
-      if ('_childs' in parent)
-         for (var n=0;n<parent._childs.length;++n)
-            if (volume === parent._childs[n]._volume) return true;
-
       var item = {
          _kind : "ROOT.TGeoVolume",
-         _name : (arg!=null) ? arg : volume.fName,
+         _name : arg ? arg : volume.fName,
          _title : volume.fTitle,
          _parent : parent,
          _volume : volume, // keep direct reference
@@ -1391,9 +1389,16 @@
 
       if (item._more) {
         item._expand = function(node, obj) {
-           var subnodes = obj.fNodes.arr;
-           for (var i in subnodes)
-              JSROOT.GEO.expandVolume(node, subnodes[i].fVolume);
+           var subnodes = obj.fNodes.arr, map = [];
+           for (var i=0;i<subnodes.length;++i) {
+              var vol = subnodes[i].fVolume;
+              if (map.indexOf(vol) < 0) {
+                 // avoid duplication of similar volume
+                 map.push(vol);
+                 JSROOT.GEO.expandVolume(node, vol);
+              }
+           }
+
            return true;
         }
       } else
@@ -1416,7 +1421,7 @@
          item._icon = JSROOT.GEO.getShapeIcon(volume.fShape);
       }
 
-      if (!('_childs' in parent)) parent['_childs'] = [];
+      if (!('_childs' in parent)) parent._childs = [];
 
       if (!('_icon' in item))
          item._icon = item._more ? "img_geocombi" : "img_geobbox";
