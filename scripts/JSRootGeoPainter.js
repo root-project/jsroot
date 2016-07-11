@@ -734,15 +734,19 @@
 
       res += "Time to scan: " + (tm2-tm1) + "ms <br/>";
 
-      arg.domatrix = true;
+      res += "<br/><br/>Check timing for matrix calculations ...<br/>";
 
-      tm1 = new Date().getTime();
-      numvis = this._clones.ScanVisible(arg);
-      tm2 = new Date().getTime();
+      var elem = this.select_main().style('overflow', 'auto').html(res);
 
-      res += "Time to scan with matrix: " + (tm2-tm1) + "ms <br/>";
+      var painter = this;
 
-      this.select_main().style('overflow', 'auto').html(res);
+      setTimeout(function() {
+         arg.domatrix = true;
+         tm1 = new Date().getTime();
+         numvis = painter._clones.ScanVisible(arg);
+         tm2 = new Date().getTime();
+         elem.append("p").text("Time to scan with matrix: " + (tm2-tm1) + "ms");
+      }, 100);
 
       return this.DrawingReady();
    }
@@ -1440,8 +1444,6 @@
 
 
    JSROOT.GEO.expandManagerHierarchy = function(hitem, obj) {
-
-      console.log('expandManagerHierarchy');
 
       if ((hitem==null) || (obj==null)) return false;
 
