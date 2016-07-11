@@ -433,13 +433,21 @@
             if ('aslink' in handle)
                return window.open(itemname + "/");
 
-            if ('func' in handle)
-               return this.display(itemname);
-
             if ('execute' in handle)
                return this.ExecuteCommand(itemname, node.parentNode);
 
-            if (('expand' in handle) && (hitem._childs == null))
+            var can_draw = 'func' in handle,
+                can_expand = ('expand' in handle) && (hitem._childs == null);
+
+            if (can_draw && can_expand) {
+               // if default action specified as expand, disable drawing
+               if (handle.dflt === 'expand') can_draw = false;
+            }
+
+            if (can_draw)
+               return this.display(itemname);
+
+            if (can_expand)
                return this.expand(itemname, null, d3cont);
          }
 
