@@ -1137,6 +1137,9 @@
       } else
       if ((obj._typename === 'TGeoManager')) {
          node = obj.fMasterVolume;
+      } else
+      if ('fVolume' in obj) {
+         node = obj.fVolume;
       }
 
       if (node && (typeof node == 'object')) {
@@ -1193,16 +1196,13 @@
 
    // ===============================================================================
 
-   JSROOT.expandGeoList = function(item, lst) {
+   JSROOT.GEO.expandList = function(item, lst) {
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
 
       item._more = true;
-      item._geolst = lst;
+      item._geoobj = lst;
 
       item._get = function(item, itemname, callback) {
-         if ('_geolst' in item)
-            JSROOT.CallBack(callback, item, item._geolst);
-
          if ('_geoobj' in item)
             return JSROOT.CallBack(callback, item, item._geoobj);
 
@@ -1210,6 +1210,10 @@
       }
       item._expand = function(node, lst) {
          // only childs
+
+         if ('fVolume' in lst)
+            lst = lst.fVolume.fNodes;
+
          if (!('arr' in lst)) return false;
 
          node._childs = [];
@@ -1226,9 +1230,21 @@
 
             if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
             if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
-            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture";
+            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
+            if (obj.fVolume) {
+               sub._title = "node:"  + obj._typename;
+               if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
+               if (obj.fVolume.fShape) {
+                  sub._icon = JSROOT.getGeoShapeIcon(obj.fVolume.fShape);
+                  sub._title += " shape:" + obj.fVolume.fShape._typename;
+               }
+               if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
+                  sub._more = true;
+                  sub._expand = node._expand;
+               }
+            }
 
-            node['_childs'].push(sub);
+            node._childs.push(sub);
          }
 
          return true;
@@ -1342,7 +1358,7 @@
 
    JSROOT.expandGeoVolume = function(parent, volume, arg) {
 
-      if ((parent == null) || (volume==null)) return false;
+      if (!parent || !volume) return false;
 
       // avoid duplication
       if ('_childs' in parent)
@@ -1422,24 +1438,107 @@
       return true;
    }
 
+   JSROOT.expandGeoNodes = function(parent, volume) {
+
+      if (!parent || !volume) return false;
+
+      var item = {
+         _kind : "ROOT.TGeoVolume",
+         _name : (arg!=null) ? arg : volume.fName,
+         _title : volume.fTitle,
+         _parent : parent,
+         _volume : volume, // keep direct reference
+         _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
+         _menu : JSROOT.provideGeoMenu,
+         _icon_click : JSROOT.geoIconClick,
+         _get : function(item, itemname, callback) {
+            if ((item!=null) && ('_volume' in item))
+               return JSROOT.CallBack(callback, item, item._volume);
+
+            JSROOT.CallBack(callback, item, null);
+         }
+      };
+
+      if (item._more) {
+        item._expand = function(node, obj) {
+           var subnodes = obj.fNodes.arr;
+           for (var i in subnodes)
+              JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
+           return true;
+        }
+      } else
+      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
+         item._more = true;
+         item._expand = function(node, obj) {
+            JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
+            JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
+            return true;
+         }
+      }
+
+      if (item._title == "")
+         if (volume._typename != "TGeoVolume") item._title = volume._typename;
+
+      if (volume.fShape !== null) {
+         if (item._title == "")
+            item._title = volume.fShape._typename;
+
+         item._icon = JSROOT.getGeoShapeIcon(volume.fShape);
+      }
+
+      if (!('_childs' in parent)) parent['_childs'] = [];
+
+      if (!('_icon' in item))
+         item._icon = item._more ? "img_geocombi" : "img_geobbox";
+
+      item._icon += JSROOT.provideGeoVisStyle(volume);
+
+      // avoid name duplication of the items
+      for (var cnt=0;cnt<1000000;cnt++) {
+         var curr_name = item._name;
+         if (curr_name.length == 0) curr_name = "item";
+         if (cnt>0) curr_name+= "_"+cnt;
+         // avoid name duplication
+         for (var n in parent._childs) {
+            if (parent._childs[n]._name == curr_name) {
+               curr_name = ""; break;
+            }
+         }
+         if (curr_name.length > 0) {
+            if (cnt>0) item._name = curr_name;
+            break;
+         }
+      }
+
+      parent._childs.push(item);
+
+      return true;
+   }
+
+
    JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
       if ((hitem==null) || (obj==null)) return false;
 
       hitem._childs = [];
 
       var item1 = { _name: "Materials", _kind: "Folder", _title: "list of materials" };
-      JSROOT.expandGeoList(item1, obj.fMaterials);
+      JSROOT.GEO.expandList(item1, obj.fMaterials);
       hitem._childs.push(item1);
 
       var item2 = { _name: "Media", _kind: "Folder", _title: "list of media" };
-      JSROOT.expandGeoList(item2, obj.fMedia);
+      JSROOT.GEO.expandList(item2, obj.fMedia);
       hitem._childs.push(item2);
 
       var item3 = { _name: "Tracks", _kind: "Folder", _title: "list of tracks" };
-      JSROOT.expandGeoList(item3, obj.fTracks);
+      JSROOT.GEO.expandList(item3, obj.fTracks);
       hitem._childs.push(item3);
 
-      JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
+      if (obj.fMasterVolume) {
+         JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
+         var item4 = { _name: "Nodes", _kind: "Folder", _title: "Hierarchy of TGeoNodes" };
+         JSROOT.GEO.expandList(item4, obj.fMasterVolume.fNodes);
+         hitem._childs.push(item4);
+      }
 
       return true;
    }
