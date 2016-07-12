@@ -306,9 +306,9 @@
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
 
-      if (geom && ((geom.vertices.length==0) || (geom.faces.length==0))) {
-         console.log('Problem with ' + shape_typename);
-      }
+   //   if (geom && ((geom.getAttribute('position').count==0))) {
+   //      console.log('Problem with ' + shape_typename);
+   //   }
 
       // used to calculate statistic over created geometry
       if (shape_typename === 'TGeoShapeAssembly')
@@ -323,8 +323,8 @@
       } else {
 
          var attr = geom.getAttribute('position');
-         // this._num_vertices += attr.count() / 3;
-         // this._num_faces += geom.index.count() / 3;
+         this._num_vertices += attr.count / 3;
+         this._num_faces += attr.count / 9;//geom.index.count / 3;
       }
    }
 
@@ -367,12 +367,6 @@
          geom = shape._geom.clone();
 
          geom.scale(flip.x, flip.y, flip.z);
-
-         var face, d;
-         for (var n=0;n<geom.faces.length;++n) {
-            face = geom.faces[n];
-            d = face.b; face.b = face.c; face.c = d;
-         }
 
          // geom.computeBoundingSphere();
          geom.computeFaceNormals();
@@ -463,7 +457,7 @@
 
          var mesh = null;
 
-         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+         if (prop.shape._geom !== null) {
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
@@ -865,22 +859,21 @@
       this._worker_jobs--;
 
       if ('shapes' in job) {
-         var loader = new THREE.JSONLoader();
+         var loader = new THREE.BufferGeometryLoader();
 
          for (var n=0;n<job.shapes.length;++n) {
             var item = job.shapes[n];
 
             var shape = this._clones.GetNodeShape(item.nodeid);
 
-            var object = loader.parse(item.json.data);
-            shape._geom = object.geometry;
-            this.accountGeom(shape._geom, shape._typename);
+            if (item.json) {
+               var object = loader.parse(item.json);
+               shape._geom = object;
+               this.accountGeom(shape._geom, shape._typename);
+            }
 
             delete shape._geom_worker;
 
-            // TEMPORARY CODE
-            // just create geometry again, while tranfered geometry not works
-            shape._geom = JSROOT.GEO.createGeometry(shape);
          }
 
          return;
