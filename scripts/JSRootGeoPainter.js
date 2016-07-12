@@ -359,6 +359,7 @@
          geom.scale(flip.x, flip.y, flip.z);
 
          if (geom.type == 'BufferGeometry') {
+
             var attr = geom.getAttribute('position'), d;
 
             // we should swap second and third point in each face
@@ -369,16 +370,19 @@
                   attr.array[n+k+6] = d;
                }
 
-            geom.computeVertexNormals();
+            // normals are calculated with normal geometry and correctly scaled
+            // geom.computeVertexNormals();
 
          } else {
+
             var face, d;
             for (var n=0;n<geom.faces.length;++n) {
                face = geom.faces[n];
                d = face.b; face.b = face.c; face.c = d;
             }
 
-            geom.computeFaceNormals();
+            // normals are calculated with normal geometry and correctly scaled
+            // geom.computeFaceNormals();
          }
 
          shape[gname] = geom;
