@@ -37,12 +37,13 @@ onmessage = function(e) {
 
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
-         var geom = JSROOT.GEO.createGeometry(item.shape);
-         item.json = geom.toJSON()
 
-         //var bufgeom = new THREE.BufferGeometry();
-         //bufgeom.fromGeometry(geom);
-         //item.json = bufgeom.toJSON(); // convert to data which can be transfered to the main thread
+         if (item.shape._typename !== "TGeoShapeAssembly") {
+            var geom = JSROOT.GEO.createGeometry(item.shape);
+            var bufgeom = new THREE.BufferGeometry();
+            bufgeom.fromGeometry(geom);
+            item.json = bufgeom.toJSON(); // convert to data which can be transfered to the main thread
+         }
 
          delete item.shape; // no need to send back shape
       }

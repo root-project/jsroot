@@ -65,6 +65,71 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
+   JSROOT.GEO.getNodeProperties = function(kind, node, visible) {
+      // function return different properties for specified node
+      // Only if node visible, material will be created
+
+      if (kind === 1) {
+         // special handling for EVE nodes
+
+         var prop = { name: node.fName, nname: node.fName, shape: node.fShape, material: null, chlds: null };
+
+         if (node.fElements !== null) prop.chlds = node.fElements.arr;
+
+         if (visible) {
+            var _transparent = false, _opacity = 1.0;
+            if ( node.fRGBA[3] < 1.0) {
+               _transparent = true;
+               _opacity = node.fRGBA[3];
+            }
+            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             overdraw: 0. } );
+         }
+
+         return prop;
+      }
+
+      var volume = node.fVolume;
+
+      var prop = { name: volume.fName, nname: node.fName, volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+
+      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
+
+      if (visible) {
+         var _transparent = false, _opacity = 1.0;
+         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
+         else
+         if (volume.fLineColor >= 0)
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+
+         if (volume.fMedium && volume.fMedium.fMaterial) {
+            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
+            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+            if (transparency > 0) {
+               _transparent = true;
+               _opacity = (100.0 - transparency) / 100.0;
+            }
+            if (prop.fillcolor === undefined)
+               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
+         }
+         if (prop.fillcolor === undefined)
+            prop.fillcolor = "lightgrey";
+
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              overdraw: 0. } );
+      }
+
+      return prop;
+   }
+
+
+
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -1151,22 +1216,12 @@
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromMatrix( cameraProjectionMatrix );
-      
-      var corners = [
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
-         new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 )
-               ];
-      for (var i = 0; i < corners.length; i++) {
-         if (frustum.containsPoint(corners[i])) return true;
-      }
 
-      return false;
+      var boundingBox = new THREE.Box3(
+        new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 ),
+        new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ) ).applyMatrix4( matrix );
+
+      return frustum.intersectsBox( boundingBox );
    }
 
    // ====================================================================
@@ -1220,7 +1275,7 @@
        // first create nodes objects
        for (var n=0;n<this.origin.length;++n) {
           var obj = this.origin[n];
-          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0 });
+          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, numvischld: 1, idshift: 0 });
        }
 
        // than fill childrens lists
@@ -1279,6 +1334,8 @@
          var obj = this.origin[n], clone = this.nodes[n];
 
          clone.vis = false;
+         clone.numvischld = 1; // reset vis counter, will be filled wit next scan
+         clone.idshift = 0;
          delete clone.depth;
 
          if (clone.kind === 0) {
@@ -1324,15 +1381,22 @@
             return entry;
          }
 
-         if (arg.domatrix) arg.matrices = [];
+         if (arg.domatrix) {
+            arg.matrices = [];
+            arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
+         }
       }
 
       var res = 0, node = this.nodes[arg.nodeid];
 
       if (arg.domatrix) {
+         if (!arg.mpool[arg.last+1])
+            arg.mpool[arg.last+1] = new THREE.Matrix4();
+
          var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
          if (node.matrix) {
-            arg.matrices[arg.last] = prnt.clone().multiply(new THREE.Matrix4().fromArray(node.matrix));
+            arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
+            arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
          } else {
             arg.matrices[arg.last] = prnt;
          }
@@ -1349,14 +1413,22 @@
       if (arg.last > arg.stack.length - 2)
          throw 'stack capacity is not enough ' + arg.stack.length;
 
-      if (node.chlds) {
+      if (node.chlds && (node.numvischld > 0)) {
+         var currid = arg.counter, numvischld = 0;
          arg.last++;
          for (var i = 0; i < node.chlds.length; ++i) {
             arg.nodeid = node.chlds[i];
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
-            res += this.ScanVisible(arg, vislvl-1);
+            numvischld += this.ScanVisible(arg, vislvl-1);
          }
          arg.last--;
+         res += numvischld;
+         if (numvischld === 0) {
+            node.numvischld = 0;
+            node.idshift = arg.counter - currid;
+         }
+      } else {
+         arg.counter += node.idshift;
       }
 
       if (arg.last === 0) {
@@ -1364,6 +1436,8 @@
          delete arg.stack;
          delete arg.CopyStack;
          delete arg.counter;
+         delete arg.matrices;
+         delete arg.mpool;
       }
 
       return res;
@@ -1373,37 +1447,47 @@
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
-      var node = this.nodes[0], three_prnt = toplevel, obj3d;
+      var node = this.nodes[0], three_prnt = toplevel, obj3d,
+          vname = "Volume", nname = "Node";
 
       for(var lvl=0; lvl<=stack.length; ++lvl) {
          var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
-         if (lvl>0) node = this.nodes[node.chlds[nchld]];
+         if (lvl>0) {
+
+            var prop = this.origin ?
+                        JSROOT.GEO.getNodeProperties(node.kind, this.origin[node.chlds[nchld]]) :
+                         { name: nchld, nname: nchld };
+
+            vname += "/" + prop.name;
+            nname += "/" + prop.nname;
+
+            node = this.nodes[node.chlds[nchld]];
+         }
 
          obj3d = undefined;
 
-         for (var i=0;i<three_prnt.children.length;++i) {
-            if (three_prnt.children[i].nchld === nchld) {
-               obj3d = three_prnt.children[i];
-               break;
+         if (three_prnt.children)
+            for (var i=0;i<three_prnt.children.length;++i) {
+               if (three_prnt.children[i].nchld === nchld) {
+                  obj3d = three_prnt.children[i];
+                  break;
+               }
             }
-         }
 
          if (!obj3d) {
 
             obj3d = new THREE.Object3D();
 
             if (node.matrix) {
-               // console.log('apply matrix');
-
-               //obj3d.applyMatrix(node.matrix);
                obj3d.matrix.fromArray(node.matrix);
                obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
             }
 
             // this.accountNodes(obj3d);
 
-            obj3d.name = 'any name';
+            obj3d.name = vname;
+            obj3d.nname = nname;
             obj3d.nchld = nchld; // mark index to find it again later
 
             // add the mesh to the scene

@@ -86,7 +86,7 @@
       var node = this.GetObject();
 
       var kind = JSROOT.GEO.NodeKind(node);
-      var prop = this.getNodeProperties(kind, node);
+      var prop = JSROOT.GEO.getNodeProperties(kind, node);
 
       if (name == "")
          return JSROOT.GEO.SetBit(prop.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
@@ -100,7 +100,7 @@
 
       if (prop.chlds!==null)
          for (var n=0;n<prop.chlds.length;++n) {
-            var chld = this.getNodeProperties(kind, prop.chlds[n]);
+            var chld = JSROOT.GEO.getNodeProperties(kind, prop.chlds[n]);
 
             if (regexp.test(chld.name) && chld.volume) {
                JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
@@ -110,7 +110,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
+      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, _count:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -118,7 +118,6 @@
       if (_opt !== null && _opt == "true") { res._debug = true; res._grid = true; }
       if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
-
 
       while (true) {
          var pp = opt.indexOf("+"), pm = opt.indexOf("-");
@@ -168,6 +167,11 @@
       if (opt.indexOf("invz")>=0) {
          res.scale.z = -1;
          opt = opt.replace("invz", " ");
+      }
+
+      if (opt.indexOf("count")>=0) {
+         res._count = true;
+         opt = opt.replace("count", " ");
       }
 
       if (opt.indexOf("d")>=0) res._debug = true;
@@ -302,9 +306,9 @@
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
 
-      if (geom && ((geom.vertices.length==0) || (geom.faces.length==0))) {
-         console.log('Problem with ' + shape_typename);
-      }
+   //   if (geom && ((geom.getAttribute('position').count==0))) {
+   //      console.log('Problem with ' + shape_typename);
+   //   }
 
       // used to calculate statistic over created geometry
       if (shape_typename === 'TGeoShapeAssembly')
@@ -319,8 +323,8 @@
       } else {
 
          var attr = geom.getAttribute('position');
-         // this._num_vertices += attr.count() / 3;
-         // this._num_faces += geom.index.count() / 3;
+         this._num_vertices += attr.count / 3;
+         this._num_faces += attr.count / 9;//geom.index.count / 3;
       }
    }
 
@@ -364,12 +368,6 @@
 
          geom.scale(flip.x, flip.y, flip.z);
 
-         var face, d;
-         for (var n=0;n<geom.faces.length;++n) {
-            face = geom.faces[n];
-            d = face.b; face.b = face.c; face.c = d;
-         }
-
          // geom.computeBoundingSphere();
          geom.computeFaceNormals();
 
@@ -385,70 +383,6 @@
       mesh.updateMatrix();
 
       return mesh;
-   }
-
-   JSROOT.TGeoPainter.prototype.getNodeProperties = function(kind, node, visible) {
-      // function return matrix, shape and material for specified node
-      // Only if node visible, material is created
-
-      if (kind === 1) {
-         // special handling for EVE nodes
-
-         var prop = { name: node.fName, shape: node.fShape, material: null, chlds: null };
-
-         if (node.fElements !== null) prop.chlds = node.fElements.arr;
-
-         if (visible) {
-            var _transparent = false, _opacity = 1.0;
-            if ( node.fRGBA[3] < 1.0) {
-               _transparent = true;
-               _opacity = node.fRGBA[3];
-            }
-            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0. } );
-         }
-
-         return prop;
-      }
-
-      var volume = node.fVolume;
-
-      var prop = { name: volume.fName, volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
-
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
-
-      if (visible) {
-         var _transparent = false, _opacity = 1.0;
-         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
-         else
-         if (volume.fLineColor >= 0)
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
-
-         if (('fMedium' in volume) && (volume.fMedium !== null) &&
-             ('fMaterial' in volume.fMedium) && (volume.fMedium.fMaterial !== null)) {
-            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
-            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
-            if (transparency > 0) {
-               _transparent = true;
-               _opacity = (100.0 - transparency) / 100.0;
-            }
-            if (prop.fillcolor === undefined)
-               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
-         }
-         if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
-
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0. } );
-      }
-
-      return prop;
    }
 
 
@@ -517,13 +451,13 @@
          var nodeobj = this._clones.origin[entry.nodeid];
          var clone = this._clones.nodes[entry.nodeid];
 
-         var prop = this.getNodeProperties(clone.kind, nodeobj, true);
+         var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
 
          this._drawcnt++;
 
          var mesh = null;
 
-         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+         if (prop.shape._geom !== null) {
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
@@ -710,6 +644,9 @@
                 'Unique visible: ' + unqievis + '<br/>' +
                 'Time to clone: ' + clonetm + 'ms <br/>';
 
+      // need to fill cached value line numvischld
+      this._clones.ScanVisible();
+
       var arg = {
          cnt: [],
          func: function(node) {
@@ -734,15 +671,19 @@
 
       res += "Time to scan: " + (tm2-tm1) + "ms <br/>";
 
-      arg.domatrix = true;
+      res += "<br/><br/>Check timing for matrix calculations ...<br/>";
 
-      tm1 = new Date().getTime();
-      numvis = this._clones.ScanVisible(arg);
-      tm2 = new Date().getTime();
+      var elem = this.select_main().style('overflow', 'auto').html(res);
 
-      res += "Time to scan with matrix: " + (tm2-tm1) + "ms <br/>";
+      var painter = this;
 
-      this.select_main().style('overflow', 'auto').html(res);
+      setTimeout(function() {
+         arg.domatrix = true;
+         tm1 = new Date().getTime();
+         numvis = painter._clones.ScanVisible(arg);
+         tm2 = new Date().getTime();
+         elem.append("p").text("Time to scan with matrix: " + (tm2-tm1) + "ms");
+      }, 100);
 
       return this.DrawingReady();
    }
@@ -771,10 +712,10 @@
 
       var tm2 = new Date().getTime();
 
-      if (opt === 'count')
-         return this.drawCount(uniquevis, tm2-tm1);
-
       console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
+
+      if (this.options._count)
+         return this.drawCount(uniquevis, tm2-tm1);
 
       this.options.maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
 
@@ -842,7 +783,7 @@
 
       if (tmout <= 0) {
          if ('render_tmout' in this)
-            clearTimeout(this['render_tmout']);
+            clearTimeout(this.render_tmout);
 
          var tm1 = new Date();
 
@@ -851,7 +792,7 @@
 
          var tm2 = new Date();
 
-         delete this['render_tmout'];
+         delete this.render_tmout;
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
@@ -862,10 +803,9 @@
          return;
       }
 
-      // no need to shoot rendering once again
-      if ('render_tmout' in this) return;
-
-      this['render_tmout'] = setTimeout(this.Render3D.bind(this,0), tmout);
+      // do not shoot timeout many times
+      if (!this.render_tmout)
+         this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
 
@@ -919,22 +859,21 @@
       this._worker_jobs--;
 
       if ('shapes' in job) {
-         var loader = new THREE.JSONLoader();
+         var loader = new THREE.BufferGeometryLoader();
 
          for (var n=0;n<job.shapes.length;++n) {
             var item = job.shapes[n];
 
             var shape = this._clones.GetNodeShape(item.nodeid);
 
-            var object = loader.parse(item.json.data);
-            shape._geom = object.geometry;
-            this.accountGeom(shape._geom, shape._typename);
+            if (item.json) {
+               var object = loader.parse(item.json);
+               shape._geom = object;
+               this.accountGeom(shape._geom, shape._typename);
+            }
 
             delete shape._geom_worker;
 
-            // TEMPORARY CODE
-            // just create geometry again, while tranfered geometry not works
-            shape._geom = JSROOT.GEO.createGeometry(shape);
          }
 
          return;
@@ -1132,10 +1071,17 @@
          node = JSROOT.Create("TEveGeoShapeExtract");
          JSROOT.extend(node, { fTrans:null, fShape: obj, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
       } else
-      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume'))
+      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          node = obj;
+      } else
+      if ((obj._typename === 'TGeoManager')) {
+         node = obj.fMasterVolume;
+      } else
+      if ('fVolume' in obj) {
+         node = obj.fVolume;
+      }
 
-      if (node !== null) {
+      if (node && (typeof node == 'object')) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
          node._painter = this; // set painter, use for drawing update
@@ -1189,16 +1135,13 @@
 
    // ===============================================================================
 
-   JSROOT.expandGeoList = function(item, lst) {
+   JSROOT.GEO.expandList = function(item, lst) {
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
 
       item._more = true;
-      item._geolst = lst;
+      item._geoobj = lst;
 
       item._get = function(item, itemname, callback) {
-         if ('_geolst' in item)
-            JSROOT.CallBack(callback, item, item._geolst);
-
          if ('_geoobj' in item)
             return JSROOT.CallBack(callback, item, item._geoobj);
 
@@ -1206,6 +1149,10 @@
       }
       item._expand = function(node, lst) {
          // only childs
+
+         if ('fVolume' in lst)
+            lst = lst.fVolume.fNodes;
+
          if (!('arr' in lst)) return false;
 
          node._childs = [];
@@ -1222,16 +1169,28 @@
 
             if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
             if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
-            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture";
+            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
+            if (obj.fVolume) {
+               sub._title = "node:"  + obj._typename;
+               if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
+               if (obj.fVolume.fShape) {
+                  sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
+                  sub._title += " shape:" + obj.fVolume.fShape._typename;
+               }
+               if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
+                  sub._more = true;
+                  sub._expand = node._expand;
+               }
+            }
 
-            node['_childs'].push(sub);
+            node._childs.push(sub);
          }
 
          return true;
       }
    };
 
-   JSROOT.provideGeoVisStyle = function(volume) {
+   JSROOT.GEO.provideVisStyle = function(volume) {
       var res = "";
 
       if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis))
@@ -1243,7 +1202,7 @@
       return res;
    }
 
-   JSROOT.provideGeoMenu = function(menu, item, hpainter) {
+   JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
       if (! ('_volume' in item)) return false;
 
       menu.add("separator");
@@ -1251,9 +1210,9 @@
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
-         item._icon = item._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(vol);
+         item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
          hpainter.UpdateTreeNode(item);
-         JSROOT.geoItemChanged(item);
+         JSROOT.GEO.browserItemChanged(item);
       }
 
       menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
@@ -1268,7 +1227,7 @@
       return true;
    }
 
-   JSROOT.geoItemChanged = function(hitem) {
+   JSROOT.GEO.browserItemChanged = function(hitem) {
       while (hitem) {
          if (hitem._volume && hitem._volume._painter)
             return hitem._volume._painter.testGeomChanges();
@@ -1277,19 +1236,19 @@
       }
    }
 
-   JSROOT.geoIconClick = function(hitem) {
+   JSROOT.GEO.browserIconClick = function(hitem) {
       if ((hitem==null) || (hitem._volume == null)) return false;
 
       if (hitem._more)
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
-      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.provideGeoVisStyle(hitem._volume);
-      JSROOT.geoItemChanged(hitem);
+      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
+      JSROOT.GEO.browserItemChanged(hitem);
       return true;
    }
 
-   JSROOT.getGeoShapeIcon = function(shape) {
+   JSROOT.GEO.getShapeIcon = function(shape) {
       switch (shape._typename) {
          case "TGeoArb8" : return "img_geoarb8"; break;
          case "TGeoCone" : return "img_geocone"; break;
@@ -1316,12 +1275,12 @@
       return "img_geotube";
    }
 
-   JSROOT.expandGeoShape = function(parent, shape, itemname) {
+   JSROOT.GEO.expandShape = function(parent, shape, itemname) {
       var item = {
             _kind : "ROOT." + shape._typename,
             _name : itemname,
             _title : shape._typename,
-            _icon : JSROOT.getGeoShapeIcon(shape),
+            _icon : JSROOT.GEO.getShapeIcon(shape),
             _parent : parent,
             _shape : shape,
             _get : function(item, itemname, callback) {
@@ -1331,29 +1290,24 @@
             }
          };
 
-      if (!('_childs' in parent)) parent['_childs'] = [];
+      if (!('_childs' in parent)) parent._childs = [];
       parent._childs.push(item);
       return true;
    }
 
-   JSROOT.expandGeoVolume = function(parent, volume, arg) {
+   JSROOT.GEO.expandVolume = function(parent, volume, arg) {
 
-      if ((parent == null) || (volume==null)) return false;
-
-      // avoid duplication
-      if ('_childs' in parent)
-         for (var n=0;n<parent._childs.length;++n)
-            if (volume === parent._childs[n]._volume) return true;
+      if (!parent || !volume) return false;
 
       var item = {
          _kind : "ROOT.TGeoVolume",
-         _name : (arg!=null) ? arg : volume.fName,
+         _name : arg ? arg : volume.fName,
          _title : volume.fTitle,
          _parent : parent,
          _volume : volume, // keep direct reference
          _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
-         _menu : JSROOT.provideGeoMenu,
-         _icon_click : JSROOT.geoIconClick,
+         _menu : JSROOT.GEO.provideMenu,
+         _icon_click : JSROOT.GEO.browserIconClick,
          _get : function(item, itemname, callback) {
             if ((item!=null) && ('_volume' in item))
                return JSROOT.CallBack(callback, item, item._volume);
@@ -1364,17 +1318,24 @@
 
       if (item._more) {
         item._expand = function(node, obj) {
-           var subnodes = obj.fNodes.arr;
-           for (var i in subnodes)
-              JSROOT.expandGeoVolume(node, subnodes[i].fVolume);
+           var subnodes = obj.fNodes.arr, map = [];
+           for (var i=0;i<subnodes.length;++i) {
+              var vol = subnodes[i].fVolume;
+              if (map.indexOf(vol) < 0) {
+                 // avoid duplication of similar volume
+                 map.push(vol);
+                 JSROOT.GEO.expandVolume(node, vol);
+              }
+           }
+
            return true;
         }
       } else
       if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
          item._more = true;
          item._expand = function(node, obj) {
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fLeft, 'Left');
-            JSROOT.expandGeoShape(node, obj.fShape.fNode.fRight, 'Right');
+            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fLeft, 'Left');
+            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fRight, 'Right');
             return true;
          }
       }
@@ -1386,15 +1347,15 @@
          if (item._title == "")
             item._title = volume.fShape._typename;
 
-         item._icon = JSROOT.getGeoShapeIcon(volume.fShape);
+         item._icon = JSROOT.GEO.getShapeIcon(volume.fShape);
       }
 
-      if (!('_childs' in parent)) parent['_childs'] = [];
+      if (!('_childs' in parent)) parent._childs = [];
 
       if (!('_icon' in item))
          item._icon = item._more ? "img_geocombi" : "img_geobbox";
 
-      item._icon += JSROOT.provideGeoVisStyle(volume);
+      item._icon += JSROOT.GEO.provideVisStyle(volume);
 
       // avoid name duplication of the items
       for (var cnt=0;cnt<1000000;cnt++) {
@@ -1418,29 +1379,36 @@
       return true;
    }
 
-   JSROOT.expandGeoManagerHierarchy = function(hitem, obj) {
+
+   JSROOT.GEO.expandManagerHierarchy = function(hitem, obj) {
+
       if ((hitem==null) || (obj==null)) return false;
 
       hitem._childs = [];
 
       var item1 = { _name: "Materials", _kind: "Folder", _title: "list of materials" };
-      JSROOT.expandGeoList(item1, obj.fMaterials);
+      JSROOT.GEO.expandList(item1, obj.fMaterials);
       hitem._childs.push(item1);
 
       var item2 = { _name: "Media", _kind: "Folder", _title: "list of media" };
-      JSROOT.expandGeoList(item2, obj.fMedia);
+      JSROOT.GEO.expandList(item2, obj.fMedia);
       hitem._childs.push(item2);
 
       var item3 = { _name: "Tracks", _kind: "Folder", _title: "list of tracks" };
-      JSROOT.expandGeoList(item3, obj.fTracks);
+      JSROOT.GEO.expandList(item3, obj.fTracks);
       hitem._childs.push(item3);
 
-      JSROOT.expandGeoVolume(hitem, obj.fMasterVolume, "Volume");
+      if (obj.fMasterVolume) {
+         JSROOT.GEO.expandVolume(hitem, obj.fMasterVolume, "Volume");
+         var item4 = { _name: "Nodes", _kind: "Folder", _title: "Hierarchy of TGeoNodes" };
+         JSROOT.GEO.expandList(item4, obj.fMasterVolume.fNodes);
+         hitem._childs.push(item4);
+      }
 
       return true;
    }
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: "JSROOT.expandGeoVolume", opt : ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: JSROOT.GEO.expandVolume, opt : ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
