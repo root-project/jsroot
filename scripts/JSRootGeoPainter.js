@@ -201,7 +201,38 @@
       this._controls.target.copy(this._lookat);
       this._controls.update();
 
-      this._controls.addEventListener( 'change', function() { painter.Render3D(0); } );
+      var control_changed = false, mouse = { x:0, y: 0 };
+
+      this._controls.addEventListener( 'change', function() { control_changed = true; painter.Render3D(0); } );
+
+      this._controls.addEventListener( 'end', function() {
+         if (control_changed) return;
+
+         mouse.x = mouse.x / painter._renderer.domElement.width * 2 - 1;
+         mouse.y = -mouse.y / painter._renderer.domElement.height * 2 + 1;
+         var raycaster = new THREE.Raycaster();
+
+         raycaster.setFromCamera( mouse, painter._camera );
+         var intersects = raycaster.intersectObjects(painter._scene.children, true);
+
+         console.log('context', mouse, 'intersects', intersects.length);
+
+         for (var n=0;n<intersects.length;++n) {
+            var obj = intersects[n].object;
+            console.log(obj.type, 'name', obj.name,'nname', obj.nname);
+         }
+
+         control_changed = true;
+      });
+
+      this._context_menu = function(evnt) {
+         control_changed = false;
+
+         mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
+         mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
+      }
+
+      this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
@@ -489,6 +520,10 @@
             } else {
                mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
             }
+
+            mesh.name = prop.name;
+            mesh.nname = prop.nname;
+
             obj3d.add(mesh);
          }
 
@@ -979,8 +1014,12 @@
             this.deleteChildren(this._scene);
          if ( this._tcontrols !== null)
             this._tcontrols.dispose();
+
          if (this._controls)
             this._controls.dispose();
+
+         if (this._context_menu)
+            this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
 
          var obj = this.GetObject();
          if (obj) delete obj._painter;
@@ -999,6 +1038,7 @@
       this.first_render_tm = 0;
 
       delete this._controls;
+      delete this._context_menu;
       delete this._tcontrols;
       delete this._toolbar;
 
