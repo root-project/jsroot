@@ -48,7 +48,7 @@
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TGeoPainter.prototype.CreateToolbar = function(args) {
-      if ( this._toolbar !== null ) return;
+      if (this._toolbar) return;
       var painter = this;
       var buttonList = [{
          name: 'toImage',
@@ -754,7 +754,7 @@
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
-      this.CreateToolbar( { container: this.select_main().node() } );
+      this.CreateToolbar();
 
       this.startDrawGeometry(true);
 
