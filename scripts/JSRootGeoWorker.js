@@ -40,8 +40,9 @@ onmessage = function(e) {
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
 
-         if (item.shape._typename !== "TGeoShapeAssembly") {
-            var geom = JSROOT.GEO.createGeometry(item.shape);
+         var geom = JSROOT.GEO.createGeometry(item.shape);
+
+         if (geom !== null) {
             var bufgeom = new THREE.BufferGeometry();
             bufgeom.fromGeometry(geom);
             item.json = bufgeom.toJSON(); // convert to data which can be transfered to the main thread

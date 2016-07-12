@@ -409,7 +409,7 @@
 
       // first of all, create geometries (using worker if available)
 
-      var todo = [], ready = [], waiting = 0;
+      var unique = [], todo = [], ready = [], waiting = 0;
 
       for (var n=0;n<this._draw_nodes.length;++n) {
          var entry = this._draw_nodes[n];
@@ -423,29 +423,39 @@
          if (shape._geom !== undefined) {
             if (ready.length < 200) ready.push(n);
          } else
-         if (!shape._geom_worker) {
-            shape._geom_worker = true;
+         if (shape._geom_worker) {
+            waiting++; // number of waiting for worker
+         } else
+         if (unique.indexOf(shape) < 0) {
+            unique.push(shape); // only to avoid duplication
             todo.push({ indx: n, nodeid: entry.nodeid, shape: shape });
             if (todo.length > 50) break;
-         } else {
-            waiting++; // number of waiting for worker
          }
       }
 
       // console.log('collected todo', todo.length,'ready', ready.length, 'waiting', waiting);
 
-      if (this.canSubmitToWorker() && (todo.length > 0)) {
-         for (var s=0;s<todo.length;++s)
-            todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
-         this.submitToWorker({ shapes: todo });
-         if (ready.length == 0) return 1; //
-         todo = [];
+      if ((todo.length > 0) && this._worker) {
+         var useworker = this.options.use_worker;
+         if (this.canSubmitToWorker()) {
+            for (var s=0;s<todo.length;++s) {
+               unique[s]._geom_worker = true; // mark shape as processed by worker
+               todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
+            }
+            this.submitToWorker({ shapes: todo });
+            useworker = true;
+         }
+         if (useworker) {
+            if (ready.length == 0) return 1; // wait when worker ready, delay can be longer
+            todo = [];
+         }
       }
 
       // create geometries
       if (todo.length > 0) {
          for (var s=0;s<todo.length;++s) {
             var shape = todo[s].shape;
+            console.log('Create geomtry here ', shape._typename)
             shape._geom = JSROOT.GEO.createGeometry(shape);
             this.accountGeom(shape._geom, shape._typename);
             delete shape._geom_worker; // remove flag
@@ -777,7 +787,7 @@
                this._last_render_tm = new Date().getTime();
                this._last_render_cnt = this._drawcnt;
             }
-            return setTimeout(this.continueDraw.bind(this), 10);
+            return setTimeout(this.continueDraw.bind(this), (res===1) ? 100 : 10);
          }
       }
 
@@ -856,9 +866,7 @@
    JSROOT.TGeoPainter.prototype.canSubmitToWorker = function() {
       if (!this._worker) return false;
 
-      // if (!this._worker_ready || (this._worker_jobs > 3)) return false;
-
-      return true;
+      return this._worker_ready && (this._worker_jobs < 4);
    }
 
    JSROOT.TGeoPainter.prototype.submitToWorker = function(job) {
@@ -884,10 +892,11 @@
                var object = loader.parse(item.json);
                shape._geom = object;
                this.accountGeom(shape._geom, shape._typename);
+            } else {
+               shape._geom = null; // mark that geometry should not be created
             }
 
             delete shape._geom_worker;
-
          }
 
          return;
