@@ -1239,7 +1239,7 @@
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
-         return attr ? attr.count / 9 : 0;
+         return attr ? attr.count / 3 : 0;
       }
 
       return geom.faces.length;
@@ -1250,7 +1250,7 @@
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
-         return attr ? attr.count / 3 : 0;
+         return attr ? attr.count : 0;
       }
 
       return geom.vertices.length;

@@ -359,6 +359,15 @@
          geom.scale(flip.x, flip.y, flip.z);
 
          if (geom.type == 'BufferGeometry') {
+            var attr = geom.getAttribute('position'), d;
+
+            // we should swap second and third point in each face
+            for (var n=0;n<attr.array.length;n+=9)
+               for (var k=0;k<3;++k) {
+                  d = attr.array[n+k+3];
+                  attr.array[n+k+3] = attr.array[n+k+6];
+                  attr.array[n+k+6] = d;
+               }
 
             geom.computeVertexNormals();
 
@@ -374,7 +383,7 @@
 
          shape[gname] = geom;
 
-         this.accountGeom(geom);
+         this.accountGeom(geom, shape._typename);
       }
 
       var mesh = new THREE.Mesh( geom, material );
