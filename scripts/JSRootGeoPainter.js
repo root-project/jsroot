@@ -403,7 +403,8 @@
    JSROOT.TGeoPainter.prototype.drawNode = function() {
       // return false when nothing todo
       // return true if creates next node
-      // return 1 when waiting for Worker
+      // return 1 when call after short timeout
+      // return 2 when call be done from processWorkerReply
 
       if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
 
@@ -421,7 +422,7 @@
 
          // if not geometry exists, either create it or submit to worker
          if (shape._geom !== undefined) {
-            if (ready.length < 200) ready.push(n);
+            if (ready.length < 1000) ready.push(n);
          } else
          if (shape._geom_worker) {
             waiting++; // number of waiting for worker
@@ -435,27 +436,28 @@
 
       // console.log('collected todo', todo.length,'ready', ready.length, 'waiting', waiting);
 
-      if ((todo.length > 0) && this._worker) {
-         var useworker = this.options.use_worker;
+      if ((todo.length > 0) && this.options.use_worker) {
          if (this.canSubmitToWorker()) {
             for (var s=0;s<todo.length;++s) {
                unique[s]._geom_worker = true; // mark shape as processed by worker
                todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
             }
+            waiting += todo.length;
             this.submitToWorker({ shapes: todo });
-            useworker = true;
+         } else {
+            if (!this._worker_ready) return 1;
          }
-         if (useworker) {
-            if (ready.length == 0) return 1; // wait when worker ready, delay can be longer
-            todo = [];
-         }
+
+         todo = [];
       }
+
+      // we wait reply from the worker, no need to set timeout
+      if ((waiting > 0) && this.options.use_worker && (ready.length == 0)) return 2;
 
       // create geometries
       if (todo.length > 0) {
          for (var s=0;s<todo.length;++s) {
             var shape = todo[s].shape;
-            console.log('Create geomtry here ', shape._typename)
             shape._geom = JSROOT.GEO.createGeometry(shape);
             this.accountGeom(shape._geom, shape._typename);
             delete shape._geom_worker; // remove flag
@@ -778,7 +780,7 @@
          // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) break;
 
-         if ((now - currtm > interval) || (res === 1)) {
+         if ((now - currtm > interval) || (res === 1) || (res === 2)) {
             JSROOT.progress(log);
             if (this._webgl && (now - this._last_render_tm > interval) && (this._last_render_cnt != this._drawcnt)) {
                if (this._first_drawing)
@@ -787,7 +789,8 @@
                this._last_render_tm = new Date().getTime();
                this._last_render_cnt = this._drawcnt;
             }
-            return setTimeout(this.continueDraw.bind(this), (res===1) ? 100 : 10);
+            if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
+            return;
          }
       }
 
@@ -796,7 +799,7 @@
 
       if (t2 - this._startm > 300) {
          JSROOT.progress('Rendering geometry');
-         return setTimeout(this.completeDraw.bind(this, true), 0);
+         return setTimeout(this.completeDraw.bind(this, true), 10);
       }
 
       this.completeDraw(true);
@@ -851,28 +854,32 @@
          if ('log' in e.data)
             return JSROOT.console('geo: ' + e.data.log);
 
+         e.data.tm3 = new Date().getTime();
+
          if ('init' in e.data) {
             pthis._worker_ready = true;
-            return JSROOT.console('Worker ready: ' + ((new Date()).getTime() - e.data.tm0.getTime()));
+            return JSROOT.console('Worker ready: ' + (e.data.tm3 - e.data.tm0));
          }
 
          pthis.processWorkerReply(e.data);
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, tm0: new Date(), clones: this._clones.nodes } );
+      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes } );
    }
 
    JSROOT.TGeoPainter.prototype.canSubmitToWorker = function() {
       if (!this._worker) return false;
 
-      return this._worker_ready && (this._worker_jobs < 4);
+      return this._worker_ready && (this._worker_jobs == 0);
    }
 
    JSROOT.TGeoPainter.prototype.submitToWorker = function(job) {
       if (!this._worker) return false;
 
       this._worker_jobs++;
+
+      job.tm0 = new Date().getTime();
 
       this._worker.postMessage(job);
    }
@@ -899,7 +906,12 @@
             delete shape._geom_worker;
          }
 
-         return;
+         job.tm4 = new Date().getTime();
+
+         console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
+
+         // invoke methods immediately
+         return this.continueDraw();
       }
    }
 
@@ -927,7 +939,7 @@
 
       this._scene.overrideMaterial = null;
 
-      this.Render3D();
+      this.Render3D(0);
 
       if (close_progress) JSROOT.progress();
 

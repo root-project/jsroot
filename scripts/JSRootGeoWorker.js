@@ -17,9 +17,10 @@ onmessage = function(e) {
 
    if (typeof e.data != 'object') return;
 
+   e.data.tm1 = new Date().getTime();
+
    if (e.data.init) {
-      e.data.tm1 = new Date();
-      console.log('start worker ' +  (e.data.tm1.getTime() -  e.data.tm0.getTime()));
+      console.log('start worker ' +  (e.data.tm1 -  e.data.tm0));
 
       var nodes = e.data.clones;
       if (nodes) {
@@ -27,6 +28,9 @@ onmessage = function(e) {
          clones = new JSROOT.GEO.ClonedNodes(null, nodes);
          delete e.data.clones;
       }
+
+      e.data.tm2 = new Date().getTime();
+
       return postMessage(e.data);
    }
 
@@ -35,23 +39,37 @@ onmessage = function(e) {
 
       var shapes = e.data.shapes;
 
-      console.log('creating shapes ' + shapes.length);
+      var tm1 = new Date().getTime();
+
+      for (var n=0;n<shapes.length;++n) {
+         var item = shapes[n];
+         item.geom = JSROOT.GEO.createGeometry(item.shape);
+      }
+
+      var tm2 = new Date().getTime();
 
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
 
-         var geom = JSROOT.GEO.createGeometry(item.shape);
-
-         if (geom !== null) {
+         if (item.geom) {
             var bufgeom = new THREE.BufferGeometry();
-            bufgeom.fromGeometry(geom);
+            bufgeom.fromGeometry(item.geom);
             item.json = bufgeom.toJSON(); // convert to data which can be transfered to the main thread
          }
 
          delete item.shape; // no need to send back shape
+         delete item.geom;
+         // delete item.json;
       }
 
-      console.log('send geometry back ' +  shapes.length);
+      var tm3 = new Date().getTime();
+
+      console.log('Worker create ' +  shapes.length + ' geom takes ' + (tm2-tm1) + '  conversion ' + (tm3-tm2));
+
+      e.data.tm2 = new Date().getTime();
+
+      var res = { shapes : [] };
+      res.tm2 = new Date().getTime();
 
       return postMessage(e.data);
    }

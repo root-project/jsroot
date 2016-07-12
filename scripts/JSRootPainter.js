@@ -8034,10 +8034,8 @@
 
             var fff = this; // file item
 
-            if (item && item._readobj) {
-               console.log('return existing object', itemname);
+            if (item && item._readobj)
                return JSROOT.CallBack(callback, item, item._readobj);
-            }
 
             if (item!=null) itemname = painter.itemFullName(item, fff);
 
