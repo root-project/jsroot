@@ -188,7 +188,7 @@
 
    JSROOT.TGeoPainter.prototype.addControls = function() {
 
-      if (this._controls !== null) return;
+      if (this._controls) return;
 
       var painter = this;
 
@@ -641,7 +641,7 @@
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
 
-      if (this._controls !== null) {
+      if (this._controls) {
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
@@ -947,9 +947,9 @@
       var pthis = this;
       var dom = this.select_main().node();
 
-      if (dom !== null) {
-         // dom.tabIndex = 0;
-         // dom.focus();
+      if (dom) {
+         dom.focus();
+         dom.tabIndex = 0;
          dom.onkeypress = function(e) {
             if (!e) e = event;
             switch ( e.keyCode ) {
@@ -979,7 +979,7 @@
             this.deleteChildren(this._scene);
          if ( this._tcontrols !== null)
             this._tcontrols.dispose();
-         if (this._controls !== null)
+         if (this._controls)
             this._controls.dispose();
 
          var obj = this.GetObject();
@@ -998,9 +998,9 @@
 
       this.first_render_tm = 0;
 
-      this._controls = null;
-      this._tcontrols = null;
-      this._toolbar = null;
+      delete this._controls;
+      delete this._tcontrols;
+      delete this._toolbar;
 
       delete this._worker;
    }
@@ -1047,13 +1047,12 @@
    JSROOT.TGeoPainter.prototype.toggleWireFrame = function(obj) {
       var painter = this;
 
-      var f = function(obj2) {
+      obj.traverse(function(obj2) {
          if ( obj2.hasOwnProperty("material") && !(obj2 instanceof THREE.GridHelper) ) {
             if (!painter.ownedByTransformControls(obj2))
                obj2.material.wireframe = !obj2.material.wireframe;
          }
-      }
-      obj.traverse(f);
+      });
       this.Render3D();
    }
 
