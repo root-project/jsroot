@@ -390,6 +390,7 @@
       // return false when nothing todo
       // return true if creates next node
       // return 1 when waiting for Worker
+<<<<<<< HEAD
 
       if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
 
@@ -405,6 +406,23 @@
 
          if (!shape) { entry.done = true; continue; }
 
+=======
+
+      if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
+
+      // first of all, create geometries (using worker if available)
+
+      var todo = [], ready = [], waiting = 0;
+
+      for (var n=0;n<this._draw_nodes.length;++n) {
+         var entry = this._draw_nodes[n];
+         if (entry.done) continue;
+
+         var shape = this._clones.GetNodeShape(entry.nodeid);
+
+         if (!shape) { entry.done = true; continue; }
+
+>>>>>>> 9b7c6954610082640871967663f6fee50145b7d6
          // if not geometry exists, either create it or submit to worker
          if (shape._geom !== undefined) {
             if (ready.length < 200) ready.push(n);
@@ -457,7 +475,11 @@
 
          var mesh = null;
 
+<<<<<<< HEAD
          if (prop.shape._geom !== null) {
+=======
+         if ((prop.shape._geom !== null) && (prop.shape._geom.faces.length > 0)) {
+>>>>>>> 9b7c6954610082640871967663f6fee50145b7d6
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
@@ -853,6 +875,7 @@
       this._worker_jobs++;
 
       this._worker.postMessage(job);
+<<<<<<< HEAD
    }
 
    JSROOT.TGeoPainter.prototype.processWorkerReply = function(job) {
@@ -880,6 +903,36 @@
       }
    }
 
+=======
+   }
+
+   JSROOT.TGeoPainter.prototype.processWorkerReply = function(job) {
+      this._worker_jobs--;
+
+      if ('shapes' in job) {
+         var loader = new THREE.JSONLoader();
+
+         for (var n=0;n<job.shapes.length;++n) {
+            var item = job.shapes[n];
+
+            var shape = this._clones.GetNodeShape(item.nodeid);
+
+            var object = loader.parse(item.json.data);
+            shape._geom = object.geometry;
+            this.accountGeom(shape._geom, shape._typename);
+
+            delete shape._geom_worker;
+
+            // TEMPORARY CODE
+            // just create geometry again, while tranfered geometry not works
+            shape._geom = JSROOT.GEO.createGeometry(shape);
+         }
+
+         return;
+      }
+   }
+
+>>>>>>> 9b7c6954610082640871967663f6fee50145b7d6
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
       this._draw_nodes_again = true;
       this.startDrawGeometry();
