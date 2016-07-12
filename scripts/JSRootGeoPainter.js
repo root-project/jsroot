@@ -1010,9 +1010,9 @@
 
       if (!first_time) {
          this.helpText();
-         if (this._scene !== null)
+         if (this._scene)
             this.deleteChildren(this._scene);
-         if ( this._tcontrols !== null)
+         if (this._tcontrols)
             this._tcontrols.dispose();
 
          if (this._controls)
@@ -1027,7 +1027,7 @@
          if (this._worker) this._worker.terminate();
       }
 
-      this._scene = null;
+      delete this._scene;
       this._scene_width = 0;
       this._scene_height = 0;
       this._renderer = null;
