@@ -1216,7 +1216,7 @@
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromMatrix( cameraProjectionMatrix );
-      
+
       var corners = [
          new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
          new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
@@ -1232,6 +1232,28 @@
       }
 
       return false;
+   }
+
+   JSROOT.GEO.numGeometryFaces = function(geom) {
+      if (!geom) return 0;
+
+      if (geom.type == 'BufferGeometry') {
+         var attr = geom.getAttribute('position');
+         return attr ? attr.count / 9 : 0;
+      }
+
+      return geom.faces.length;
+   }
+
+   JSROOT.GEO.numGeometryVertices = function(geom) {
+      if (!geom) return 0;
+
+      if (geom.type == 'BufferGeometry') {
+         var attr = geom.getAttribute('position');
+         return attr ? attr.count / 3 : 0;
+      }
+
+      return geom.vertices.length;
    }
 
    // ====================================================================

@@ -305,27 +305,17 @@
    }
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
+      // used to calculate statistic over created geometries
 
-   //   if (geom && ((geom.getAttribute('position').count==0))) {
-   //      console.log('Problem with ' + shape_typename);
-   //   }
+      if (shape_typename === 'TGeoShapeAssembly') return;
 
-      // used to calculate statistic over created geometry
-      if (shape_typename === 'TGeoShapeAssembly')
-         return;
-      if (geom === null)
-         return JSROOT.GEO.warn('Not supported ' + shape_typename);
+      if (!geom) return JSROOT.GEO.warn('Not supported ' + shape_typename);
 
       this._num_geom++;
 
-      if (geom.type == 'BufferGeometry') {
-         var attr = geom.getAttribute('position');
-         this._num_vertices += attr.count / 3;
-         this._num_faces += attr.count / 9;//geom.index.count / 3;
-      } else {
-         this._num_vertices += geom.vertices.length;
-         this._num_faces += geom.faces.length;
-      }
+      this._num_faces += JSROOT.GEO.numGeometryFaces(geom);
+
+      this._num_vertices += JSROOT.GEO.numGeometryVertices(geom);
    }
 
    JSROOT.TGeoPainter.prototype.accountNodes = function(mesh) {
@@ -381,8 +371,6 @@
 
             geom.computeFaceNormals();
          }
-
-
 
          shape[gname] = geom;
 
@@ -470,7 +458,7 @@
 
          var mesh = null;
 
-         if (prop.shape._geom !== null) {
+         if (JSROOT.GEO.numGeometryFaces(prop.shape._geom) > 0) {
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
