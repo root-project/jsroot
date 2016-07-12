@@ -35,6 +35,8 @@ onmessage = function(e) {
 
       var shapes = e.data.shapes;
 
+      console.log('creating shapes ' + shapes.length);
+
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
 
@@ -48,7 +50,7 @@ onmessage = function(e) {
          delete item.shape; // no need to send back shape
       }
 
-      console.log('send geometry back', shapes.length);
+      console.log('send geometry back ' +  shapes.length);
 
       return postMessage(e.data);
    }

@@ -317,14 +317,14 @@
          return JSROOT.GEO.warn('Not supported ' + shape_typename);
 
       this._num_geom++;
-      if (('vertices' in geom) && ('faces' in geom)) {
-         this._num_vertices += geom.vertices.length;
-         this._num_faces += geom.faces.length;
-      } else {
 
+      if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
          this._num_vertices += attr.count / 3;
          this._num_faces += attr.count / 9;//geom.index.count / 3;
+      } else {
+         this._num_vertices += geom.vertices.length;
+         this._num_faces += geom.faces.length;
       }
    }
 
@@ -368,8 +368,21 @@
 
          geom.scale(flip.x, flip.y, flip.z);
 
-         // geom.computeBoundingSphere();
-         geom.computeFaceNormals();
+         if (geom.type == 'BufferGeometry') {
+
+            geom.computeVertexNormals();
+
+         } else {
+            var face, d;
+            for (var n=0;n<geom.faces.length;++n) {
+               face = geom.faces[n];
+               d = face.b; face.b = face.c; face.c = d;
+            }
+
+            geom.computeFaceNormals();
+         }
+
+
 
          shape[gname] = geom;
 
