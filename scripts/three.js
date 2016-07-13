@@ -23883,7 +23883,7 @@ THREE.ShaderChunk[ 'bumpmap_pars_fragment' ] = "#ifdef USE_BUMPMAP\n	uniform sam
 
 // File:src/renderers/shaders/ShaderChunk/clipping_planes_fragment.glsl
 
-THREE.ShaderChunk[ 'clipping_planes_fragment' ] = "#if NUM_CLIPPING_PLANES > 0\n	bool clipped = true;\n   for ( int i = 0; i < NUM_CLIPPING_PLANES; ++ i ) {\n		vec4 plane = clippingPlanes[ i ];\n		clipped = ( dot( vViewPosition, plane.xyz ) > plane.w ) && clipped;\n	}\n   if (clipped) discard;\n#endif\n";
+THREE.ShaderChunk[ 'clipping_planes_fragment' ] = "#if NUM_CLIPPING_PLANES > 0\n	for ( int i = 0; i < NUM_CLIPPING_PLANES; ++ i ) {\n		vec4 plane = clippingPlanes[ i ];\n		if ( dot( vViewPosition, plane.xyz ) > plane.w ) discard;\n	}\n#endif\n";
 
 // File:src/renderers/shaders/ShaderChunk/clipping_planes_pars_fragment.glsl
 
