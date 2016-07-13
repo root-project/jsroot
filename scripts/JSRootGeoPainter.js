@@ -230,6 +230,31 @@
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
       }
 
+      this._datgui = new dat.GUI({width:650});
+      var self = this;
+      var toggleclip = this._datgui.add(this, 'enableClipping');
+      toggleclip.onChange( function (value) {
+         self.enableClipping = value;
+         self.updateClipping();
+      });
+
+      var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+      var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+      var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+      xclip.onChange( function (value) {
+         self.clipX = value;
+         self.updateClipping();
+      });
+      yclip.onChange( function (value) {
+         self.clipY = value;
+         self.updateClipping();
+      });
+      zclip.onChange( function (value) {
+         self.clipZ = value;
+         self.updateClipping();
+      });
+
+
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if ( this.options._debug || this.options._grid ) {
@@ -589,6 +614,16 @@
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
+      // Clipping Planes
+      this.enableClipping = false;
+      this.clipX = 0.0;
+      this.clipY = 0.0;
+      this.clipZ = 0.0;
+
+      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX), 
+                           new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
+                           new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
+
       var pointLight = new THREE.PointLight(0xefefef);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
@@ -641,6 +676,14 @@
       delete this._draw_nodes_again; // forget about such flag
 
       this.continueDraw();
+   }
+
+   JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
+      this._renderer.clippingPlanes = this.enableClipping ? this._clipPlanes : [];
+      this._clipPlanes[0].constant = this.clipX;
+      this._clipPlanes[1].constant = this.clipY;
+      this._clipPlanes[2].constant = this.clipZ;
+      this.Render3D(0);
    }
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
@@ -1018,6 +1061,8 @@
 
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
+
+         this._datgui.destroy();
 
          var obj = this.GetObject();
          if (obj) delete obj._painter;
