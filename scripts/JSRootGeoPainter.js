@@ -260,10 +260,11 @@
                var obj = intersects[n].object;
                var name = painter._clones.GetNodeName(obj.stack);
 
-               menu.add((many ? "sub:" : "header:") + name.substr(6));
+               menu.add((many ? "sub:" : "header:") + name.substr(6), name, function(arg) { this.ActiavteInBrowser([arg], true); });
+
+               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                menu.add("Focus", n, function(arg) { console.log('Focus '+arg); })
-               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                if (many) menu.add("endsub:");
             }

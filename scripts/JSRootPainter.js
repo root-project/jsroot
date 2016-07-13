@@ -8628,15 +8628,19 @@
 
       if (typeof items == 'string') items = [ items ];
 
-      var active = [], painter = this; // array of active items
+      var active = [],  // array of elements to activate
+          painter = this, // painter itself
+          update = []; // array of elements to update
       this.ForEach(function(item) { if (item._background) { active.push(item); delete item._background; } });
 
       function mark_active() {
-         if (typeof painter.UpdateBackground == 'function')
-            for (var n=0;n<active.length;++n) {
-               // console.log('change', painter.itemFullName(active[n]));
-               painter.UpdateBackground(active[n], force);
-            }
+         if (typeof painter.UpdateBackground !== 'function') return;
+
+         for (var n=update.length-1;n>=0;--n)
+            painter.UpdateTreeNode(update[n]);
+
+         for (var n=0;n<active.length;++n)
+            painter.UpdateBackground(active[n], force);
       }
 
       function find_next(itemname) {
@@ -8663,6 +8667,22 @@
          }
 
          if (hitem) {
+            // check that item is visible (opened), otherwise should enable parent
+
+            var prnt = hitem._parent;
+            while (prnt) {
+               if (!prnt._isopen) {
+                  if (force) {
+                     prnt._isopen = true;
+                     if (update.indexOf(prnt)<0) update.push(prnt);
+                  } else {
+                     hitem = prnt; break;
+                  }
+               }
+               prnt = prnt._parent;
+            }
+
+
             hitem._background = 'grey';
             if (active.indexOf(hitem)<0) active.push(hitem);
          }
