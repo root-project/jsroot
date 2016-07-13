@@ -230,30 +230,31 @@
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
       }
 
-      this._datgui = new dat.GUI({width:650});
-      var self = this;
-      var toggleclip = this._datgui.add(this, 'enableClipping');
-      toggleclip.onChange( function (value) {
-         self.enableClipping = value;
-         self.updateClipping();
-      });
+      if (this._webgl) {
+         this._datgui = new dat.GUI({width:650});
+         var self = this;
+         var toggleclip = this._datgui.add(this, 'enableClipping');
+         toggleclip.onChange( function (value) {
+            self.enableClipping = value;
+            self.updateClipping();
+         });
 
-      var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
-      var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
-      var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
-      xclip.onChange( function (value) {
-         self.clipX = value;
-         self.updateClipping();
-      });
-      yclip.onChange( function (value) {
-         self.clipY = value;
-         self.updateClipping();
-      });
-      zclip.onChange( function (value) {
-         self.clipZ = value;
-         self.updateClipping();
-      });
-
+         var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+         xclip.onChange( function (value) {
+            self.clipX = value;
+            self.updateClipping();
+         });
+         yclip.onChange( function (value) {
+            self.clipY = value;
+            self.updateClipping();
+         });
+         zclip.onChange( function (value) {
+            self.clipZ = value;
+            self.updateClipping();
+         });
+      }
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
@@ -620,7 +621,7 @@
       this.clipY = 0.0;
       this.clipZ = 0.0;
 
-      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX), 
+      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX),
                            new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
 
