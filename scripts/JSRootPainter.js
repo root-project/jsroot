@@ -8628,30 +8628,50 @@
 
       if (typeof items == 'string') items = [ items ];
 
-      var active = []; // array of active items
+      var active = [], painter = this; // array of active items
       this.ForEach(function(item) { if (item._background) { active.push(item); delete item._background; } });
 
-      for (var n=0; n<items.length;++n) {
-         var hitem = this.Find(items[n]);
-
-         if (!hitem) {
-            var d = this.Find({ name: items[n], last_exists: true, check_keys: true, allow_index: true });
-            if (d && d.last) hitem = d.last;
-         }
-
-         if (!hitem) continue;
-
-         hitem._background = 'grey';
-         if (active.indexOf(hitem)<0) active.push(hitem);
+      function mark_active() {
+         if (typeof painter.UpdateBackground == 'function')
+            for (var n=0;n<active.length;++n) {
+               // console.log('change', painter.itemFullName(active[n]));
+               painter.UpdateBackground(active[n], force);
+            }
       }
 
-      // console.log('Actiavte', this.itemFullName(hitem));
-
-      if (typeof this.UpdateBackground == 'function')
-         for (var n=0;n<active.length;++n) {
-            // console.log('change', this.itemFullName(active[n]));
-            this.UpdateBackground(active[n]);
+      function find_next(itemname) {
+         if (itemname === undefined) {
+            // extract next element
+            if (items.length == 0) return mark_active();
+            itemname = items.shift();
          }
+
+         var hitem = painter.Find(itemname);
+
+         if (!hitem) {
+            var d = painter.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+            if (!d || !d.last) return find_next();
+            if (force) {
+               return painter.expand(painter.itemFullName(d.last), function(res) {
+                  if (!res) return find_next();
+                  var newname = painter.itemFullName(d.last);
+                  if (newname.length>0) newname+="/";
+                  find_next(newname + d.rest);
+               });
+            }
+            hitem = d.last;
+         }
+
+         if (hitem) {
+            hitem._background = 'grey';
+            if (active.indexOf(hitem)<0) active.push(hitem);
+         }
+
+         find_next();
+      }
+
+      // use recursion
+      find_next();
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont) {

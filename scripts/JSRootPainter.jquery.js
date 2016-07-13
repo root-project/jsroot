@@ -397,15 +397,20 @@
       this.addItemHtml(hitem, d3cont, true);
    }
 
-   JSROOT.HierarchyPainter.prototype.UpdateBackground = function(hitem) {
+   JSROOT.HierarchyPainter.prototype.UpdateBackground = function(hitem, scroll_into_view) {
 
       if (!hitem || !hitem._d3cont) return;
 
       var d3cont = d3.select(hitem._d3cont);
 
+      if (d3cont.empty()) return;
+
       var d3a = d3cont.select(".h_item");
 
       d3a.style('background', hitem._background ? hitem._background : null);
+
+      if (scroll_into_view && hitem._background)
+         d3a.node().scrollIntoView(false);
    }
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {

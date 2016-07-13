@@ -185,12 +185,15 @@
       return res;
    }
 
-   JSROOT.TGeoPainter.prototype.ActiavteInBrowser = function(names) {
+   JSROOT.TGeoPainter.prototype.ActiavteInBrowser = function(names, force) {
       if (typeof names == 'string') names = [ names ];
-      for (var n=0;n<names.length;++n)
-         names[n] = this.GetItemName() + '/' + names[n];
+
+      if (this.GetItemName().length > 0)
+         for (var n=0;n<names.length;++n)
+            names[n] = this.GetItemName() + '/' + names[n];
+
       if (JSROOT.hpainter)
-         JSROOT.hpainter.actiavte(names);
+         JSROOT.hpainter.actiavte(names, force);
    }
 
 
@@ -260,7 +263,7 @@
                menu.add((many ? "sub:" : "header:") + name.substr(6));
 
                menu.add("Focus", n, function(arg) { console.log('Focus '+arg); })
-               menu.add("Browse", name, painter.ActiavteInBrowser );
+               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                if (many) menu.add("endsub:");
             }
