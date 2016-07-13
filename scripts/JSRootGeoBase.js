@@ -1479,23 +1479,12 @@
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
-      var node = this.nodes[0], three_prnt = toplevel, obj3d,
-          vname = "Volume", nname = "Node";
+      var node = this.nodes[0], three_prnt = toplevel, obj3d;
 
       for(var lvl=0; lvl<=stack.length; ++lvl) {
          var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
-         if (lvl>0) {
-
-            var prop = this.origin ?
-                        JSROOT.GEO.getNodeProperties(node.kind, this.origin[node.chlds[nchld]]) :
-                         { name: nchld, nname: nchld };
-
-            vname += "/" + prop.name;
-            nname += "/" + prop.nname;
-
-            node = this.nodes[node.chlds[nchld]];
-         }
+         if (lvl>0)  node = this.nodes[node.chlds[nchld]];
 
          obj3d = undefined;
 
@@ -1517,9 +1506,6 @@
             }
 
             // this.accountNodes(obj3d);
-
-            obj3d.name = vname;
-            obj3d.nname = nname;
             obj3d.nchld = nchld; // mark index to find it again later
 
             // add the mesh to the scene

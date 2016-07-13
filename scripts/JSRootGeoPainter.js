@@ -201,7 +201,7 @@
       this._controls.target.copy(this._lookat);
       this._controls.update();
 
-      var control_changed = false, mouse = { x:0, y: 0 };
+      var control_changed = false, mouse = { x:0, y: 0 }, raycaster = new THREE.Raycaster(), INTERSECTED = null;
 
       this._controls.addEventListener( 'change', function() { control_changed = true; painter.Render3D(0); } );
 
@@ -214,8 +214,6 @@
 
          raycaster.setFromCamera( mouse, painter._camera );
          var intersects = raycaster.intersectObjects(painter._scene.children, true);
-
-         console.log('context', mouse, 'intersects', intersects.length);
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
@@ -280,7 +278,7 @@
          this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
 
-      var raycaster = new THREE.Raycaster(), INTERSECTED = null;
+
 
       function findIntersection(mouse) {
          // find intersections
@@ -521,8 +519,8 @@
                mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
             }
 
-            mesh.name = prop.name;
-            mesh.nname = prop.nname;
+            // keep full stack of nodes
+            mesh.stack = entry.stack;
 
             obj3d.add(mesh);
          }
