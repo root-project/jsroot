@@ -255,6 +255,12 @@
          var toggleclip = this._datgui.add(this, 'enableClipping');
          toggleclip.onChange( function (value) {
             self.enableClipping = value;
+            painter._scene.traverse(function(obj) {
+               if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
+                  obj.material.side = painter.enableClipping ? THREE.DoubleSide : THREE.FrontSide;
+                  obj.material.needsUpdate = true;
+               }
+            });
             self.updateClipping();
          });
 
