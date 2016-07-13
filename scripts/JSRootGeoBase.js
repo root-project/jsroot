@@ -85,7 +85,7 @@
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
             prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             side: /*THREE.FrontSide*/ THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                              overdraw: 0. } );
          }
 
@@ -121,7 +121,7 @@
 
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              side: /*THREE.FrontSide*/  THREE.DoubleSide, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
 

@@ -613,6 +613,7 @@
                            new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
 
+      // TODO: should we change/increase number of light points??
       var pointLight = new THREE.PointLight(0xefefef);
       this._camera.add( pointLight );
       pointLight.position.set(10, 10, 10);
