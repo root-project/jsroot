@@ -20,6 +20,7 @@
             'rawinflate'           : dir+'rawinflate'+ext,
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
+            'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three'+ext,
             'threejs_all'          : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
@@ -842,9 +843,10 @@
       if (kind.indexOf("geom;")>=0) {
          mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
                       "$$$scripts/JSRootGeoBase" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
+                      "$$$scripts/JSRootGeoPainter" + ext + ".js;" +
+                      "$$$scripts/dat.gui.min.js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter');
+         modules.push('ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter', 'dat.gui');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
