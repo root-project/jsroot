@@ -185,6 +185,14 @@
       return res;
    }
 
+   JSROOT.TGeoPainter.prototype.ActiavteInBrowser = function(names) {
+      if (typeof names == 'string') names = [ names ];
+      for (var n=0;n<names.length;++n)
+         names[n] = this.GetItemName() + '/' + names[n];
+      if (JSROOT.hpainter)
+         JSROOT.hpainter.actiavte(names);
+   }
+
 
    JSROOT.TGeoPainter.prototype.addControls = function() {
 
@@ -213,6 +221,8 @@
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
+         mouse.clientX = evnt.clientX;
+         mouse.clientY = evnt.clientY;
       }
 
       function GetIntersects(mouse) {
@@ -231,15 +241,33 @@
 
       this._controls.addEventListener( 'end', function() {
          control_active = false;
-         if (mouse_ctxt.on) {
-            mouse_ctxt.on = false;
-            var intersects = GetIntersects(mouse_ctxt);
+         if (!mouse_ctxt.on) return;
+         mouse_ctxt.on = false;
+         var intersects = GetIntersects(mouse_ctxt);
+
+         if (!intersects || (intersects.length==0)) return;
+
+         JSROOT.Painter.createMenu(function(menu) {
+            menu.painter = painter; // set as this in callbacks
+            var many = (intersects.length > 1);
+
+            if (many) menu.add("header: Nodes");
 
             for (var n=0;n<intersects.length;++n) {
                var obj = intersects[n].object;
-               // console.log(obj.type, 'stack', obj.stack);
+               var name = painter._clones.GetNodeName(obj.stack);
+
+               menu.add((many ? "sub:" : "header:") + name.substr(6));
+
+               menu.add("Focus", n, function(arg) { console.log('Focus '+arg); })
+               menu.add("Browse", name, painter.ActiavteInBrowser );
+
+               if (many) menu.add("endsub:");
             }
-         }
+
+            menu.show(mouse_ctxt);
+         });
+
       });
 
       this._context_menu = function(evnt) {
@@ -250,7 +278,7 @@
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if (this._webgl) {
-         this._datgui = new dat.GUI({width:650});
+         this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
          var self = this;
          var toggleclip = this._datgui.add(this, 'enableClipping');
          toggleclip.onChange( function (value) {
@@ -336,14 +364,24 @@
          evnt.preventDefault();
 
          var intersects = GetIntersects(mouse);
+         var names = [];
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
-            // console.log(obj.type, 'stack', obj.stack);
+            var name = painter._clones.GetNodeName(obj.stack);
+            names.push(name);
          }
+
+         painter.ActiavteInBrowser(names);
       }
 
       this._renderer.domElement.addEventListener('mousemove', mousemove);
+
+      function mouseleave(evnt) {
+         painter.ActiavteInBrowser([]);
+      }
+
+      this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
 
    JSROOT.TGeoPainter.prototype.accountClear = function() {

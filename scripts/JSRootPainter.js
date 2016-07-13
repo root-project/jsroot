@@ -3328,16 +3328,16 @@
          fmt = "14.7g";
       } else
       if (fmt=="last") {
-         fmt = this['lastformat'];
+         fmt = this.lastformat;
       }
 
-      delete this['lastformat'];
+      delete this.lastformat;
 
       if (!fmt) fmt = "6.4g";
 
       var res = JSROOT.FFormat(value, fmt);
 
-      this['lastformat'] = JSROOT.lastFFormat;
+      this.lastformat = JSROOT.lastFFormat;
 
       return res;
    }
@@ -8163,7 +8163,7 @@
 
          } while (pos > 0);
 
-         return ('last_exists' in arg) && (top!=null) ? { last : top, rest : fullname } : null;
+         return ('last_exists' in arg) && (top!=null) ? { last: top, rest: fullname } : null;
       }
 
       var top = this.h;
@@ -8620,6 +8620,38 @@
          this.OpenOnline(this.h._online, function() {
             hpainter.RefreshHtml();
          });
+   }
+
+   JSROOT.HierarchyPainter.prototype.actiavte = function(items, force) {
+      // activate (select) specified item
+      // if force specified, all required sub-levels will be opened
+
+      if (typeof items == 'string') items = [ items ];
+
+      var active = []; // array of active items
+      this.ForEach(function(item) { if (item._background) { active.push(item); delete item._background; } });
+
+      for (var n=0; n<items.length;++n) {
+         var hitem = this.Find(items[n]);
+
+         if (!hitem) {
+            var d = this.Find({ name: items[n], last_exists: true, check_keys: true, allow_index: true });
+            if (d && d.last) hitem = d.last;
+         }
+
+         if (!hitem) continue;
+
+         hitem._background = 'grey';
+         if (active.indexOf(hitem)<0) active.push(hitem);
+      }
+
+      // console.log('Actiavte', this.itemFullName(hitem));
+
+      if (typeof this.UpdateBackground == 'function')
+         for (var n=0;n<active.length;++n) {
+            // console.log('change', this.itemFullName(active[n]));
+            this.UpdateBackground(active[n]);
+         }
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont) {

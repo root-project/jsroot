@@ -1475,6 +1475,23 @@
       return res;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.GetNodeName = function(stack) {
+      var name  = "Nodes";
+      if (!stack || (stack.length == 0) || !this.origin) return name;
+
+      var node = this.nodes[0];
+
+      for(var lvl=0;lvl<stack.length;++lvl) {
+         var chldid = node.chlds[stack[lvl]];
+         var obj = this.origin[chldid];
+         name += "/" + obj.fName;
+         node = this.nodes[chldid];
+      }
+      return name;
+   }
+
+
+
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing

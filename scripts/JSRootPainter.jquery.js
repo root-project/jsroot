@@ -205,6 +205,7 @@
          d3cont = d3prnt.append("div");
       }
 
+      hitem._d3cont = d3cont.node(); // set for direct referencing
       d3cont.attr("item", itemname);
 
       // build indent
@@ -293,7 +294,8 @@
          element_title = element_name;
 
       d3a.attr('title', element_title)
-         .text(element_name + ('_value' in hitem ? ":" : ""));
+         .text(element_name + ('_value' in hitem ? ":" : ""))
+         .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
          var d3p = d3cont.append("p");
@@ -318,14 +320,16 @@
 
       d3elem.html(""); // clear html - most simple way
 
-      if ((this.h == null) || d3elem.empty())
-         return JSROOT.CallBack(callback);
-
       var h = this, factcmds = [], status_item = null;
       this.ForEach(function(item) {
+         delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
          if (('_status' in item) && (status_item==null)) status_item = item;
       });
+
+      if ((this.h == null) || d3elem.empty())
+         return JSROOT.CallBack(callback);
+
 
       var maindiv =
          d3elem.append("div")
@@ -381,14 +385,27 @@
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
       if ((d3cont===undefined) || d3cont.empty())  {
          var name = this.itemFullName(hitem);
-         d3cont = this.select_main().select("[item='" + name + "']");
-         //node = $(this.select_main().node()).find("[item='" + name + "']");
+         d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
+
+         if (d3cont.empty())
+            d3cont = this.select_main().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
             d3cont = this.select_main().select("[item='" + name + ";" + hitem._cycle + "']");
          if (d3cont.empty()) return;
       }
 
       this.addItemHtml(hitem, d3cont, true);
+   }
+
+   JSROOT.HierarchyPainter.prototype.UpdateBackground = function(hitem) {
+
+      if (!hitem || !hitem._d3cont) return;
+
+      var d3cont = d3.select(hitem._d3cont);
+
+      var d3a = d3cont.select(".h_item");
+
+      d3a.style('background', hitem._background ? hitem._background : null);
    }
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
