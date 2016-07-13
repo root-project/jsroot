@@ -201,34 +201,53 @@
       this._controls.target.copy(this._lookat);
       this._controls.update();
 
-      var control_changed = false, mouse = { x:0, y: 0 }, raycaster = new THREE.Raycaster(), INTERSECTED = null;
+      var mouse_ctxt = { x:0, y: 0, on: false },
+          raycaster = new THREE.Raycaster(),
+          control_active = false;
 
-      this._controls.addEventListener( 'change', function() { control_changed = true; painter.Render3D(0); } );
-
-      this._controls.addEventListener( 'end', function() {
-         if (control_changed) return;
-
-         mouse.x = mouse.x / painter._renderer.domElement.width * 2 - 1;
-         mouse.y = -mouse.y / painter._renderer.domElement.height * 2 + 1;
-         var raycaster = new THREE.Raycaster();
-
-         raycaster.setFromCamera( mouse, painter._camera );
-         var intersects = raycaster.intersectObjects(painter._scene.children, true);
-
-         for (var n=0;n<intersects.length;++n) {
-            var obj = intersects[n].object;
-            console.log(obj.type, 'name', obj.name,'nname', obj.nname);
-         }
-
-         control_changed = true;
+      this._controls.addEventListener( 'change', function() {
+          mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+          painter.Render3D(0);
       });
 
-      this._context_menu = function(evnt) {
-         control_changed = false;
-
+      function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
       }
+
+      function GetIntersects(mouse) {
+         var pnt = {
+            x: mouse.x / painter._renderer.domElement.width * 2 - 1,
+            y: -mouse.y / painter._renderer.domElement.height * 2 + 1
+         }
+
+         raycaster.setFromCamera( pnt, painter._camera );
+         return raycaster.intersectObjects(painter._scene.children, true);
+      }
+
+      this._controls.addEventListener( 'start', function() {
+         control_active = true;
+      });
+
+      this._controls.addEventListener( 'end', function() {
+         control_active = false;
+         if (mouse_ctxt.on) {
+            mouse_ctxt.on = false;
+            var intersects = GetIntersects(mouse_ctxt);
+
+            for (var n=0;n<intersects.length;++n) {
+               var obj = intersects[n].object;
+               // console.log(obj.type, 'stack', obj.stack);
+            }
+         }
+      });
+
+      this._context_menu = function(evnt) {
+         GetMousePos(evnt, mouse_ctxt);
+         mouse_ctxt.on = true;
+      }
+
+      this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if (this._webgl) {
          this._datgui = new dat.GUI({width:650});
@@ -256,7 +275,6 @@
          });
       }
 
-      this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
@@ -304,49 +322,19 @@
          this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
       }
 
+      function mousemove(evnt) {
+         if (control_active) return;
 
+         var mouse = {};
+         GetMousePos(evnt, mouse);
+         evnt.preventDefault();
 
-      function findIntersection(mouse) {
-         // find intersections
+         var intersects = GetIntersects(mouse);
 
-         // if (JSROOT.gStyle.Tooltip<=0) return tooltip.hide();
-
-         raycaster.setFromCamera( mouse, painter._camera );
-         var intersects = raycaster.intersectObjects(painter._scene.children, true);
-         if (intersects.length > 0) {
-            var pick = null;
-            for (var i = 0; i < intersects.length; ++i) {
-               if ('emissive' in intersects[i].object.material) {
-                  pick = intersects[i].object;
-                  break;
-               }
-            }
-            if (pick && INTERSECTED != pick) {
-               INTERSECTED = pick;
-
-               var name = INTERSECTED.name;
-
-               var p = INTERSECTED.parent;
-               while ((p!==undefined) && (p!==null)) {
-                  if ('name' in p) name = p.name+'/'+name;
-                  p = p.parent;
-               }
-
-               // console.log('intersect ' + name);
-            }
-         } else {
-            // INTERSECTED = null;
+         for (var n=0;n<intersects.length;++n) {
+            var obj = intersects[n].object;
+            // console.log(obj.type, 'stack', obj.stack);
          }
-      };
-
-      function mousemove(e) {
-         var mouse_x = ('offsetX' in e) ? e.offsetX : e.layerX;
-         var mouse_y = ('offsetY' in e) ? e.offsetY : e.layerY;
-         var mouse = { x: (mouse_x / painter._renderer.domElement.width) * 2 - 1,
-                   y: -(mouse_y / painter._renderer.domElement.height) * 2 + 1 };
-
-         findIntersection(mouse);
-         e.preventDefault();
       }
 
       this._renderer.domElement.addEventListener('mousemove', mousemove);
