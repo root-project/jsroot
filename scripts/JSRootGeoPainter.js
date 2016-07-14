@@ -111,9 +111,9 @@
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
       var res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis:false, _count:false,
+                  _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
-                   use_worker: false, update_browser: true, control: this._webgl };
+                   use_worker: false, update_browser: true, clip_control: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -158,9 +158,19 @@
          opt = opt.replace("invx", " ");
       }
 
+      if (opt.indexOf("clip")>=0) {
+         res.clip_control = true;
+         opt = opt.replace("clip", " ");
+      }
+
       if (opt.indexOf("worker")>=0) {
          res.use_worker = true;
          opt = opt.replace("worker", " ");
+      }
+
+      if (opt.indexOf("wire")>=0) {
+         res.wireframe = true;
+         opt = opt.replace("wire", " ");
       }
 
       if (opt.indexOf("invy")>=0) {
@@ -180,6 +190,7 @@
       if (opt.indexOf("d")>=0) res._debug = true;
       if (opt.indexOf("g")>=0) res._grid = true;
       if (opt.indexOf("b")>=0) res._bound = true;
+      if (opt.indexOf("w")>=0) res.wireframe = true;
       if (opt.indexOf("f")>=0) res._full = true;
       if (opt.indexOf("a")>=0) { res._axis = true; res._yup = false; }
       if (opt.indexOf("y")>=0) res._yup = true;
@@ -212,9 +223,13 @@
          this.options.update_browser = !this.options.update_browser;
          if (!this.options.update_browser) this.ActiavteInBrowser([]);
       });
-      menu.addchk(this.options.control, "Control", function() {
-         this.options.control = !this.options.control;
-         this.showClipControls(this.options.control);
+      menu.addchk(this.options.clip_control, "Control", function() {
+         this.options.clip_control = !this.options.clip_control;
+         this.showClipControls(this.options.clip_control);
+      });
+      menu.addchk(this.options.wireframe, "Wire frame", function() {
+         this.options.wireframe = !this.options.wireframe;
+         this.changeWireFrame(this._scene, this.options.wireframe);
       });
       menu.add("Test visisble", function() {
          console.log('Implement test visible');
@@ -230,6 +245,8 @@
          delete this._datgui;
          return;
       }
+
+      if (!on) return;
 
       var painter = this;
 
@@ -649,6 +666,8 @@
          var mesh = null;
 
          if (JSROOT.GEO.numGeometryFaces(prop.shape._geom) > 0) {
+            prop.material.wireframe = this.options.wireframe;
+
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
@@ -1159,28 +1178,7 @@
 
       this.addOrbitControls();
 
-      this.showClipControls(this.options.control);
-
-      // pointer used in the event handlers
-      var pthis = this;
-      var dom = this.select_main().node();
-
-      if (dom) {
-         dom.focus();
-         dom.tabIndex = 0;
-         dom.onkeypress = function(e) {
-            if (!e) e = event;
-            switch ( e.keyCode ) {
-               case 87:  // W
-               case 119: // w
-                  pthis.toggleWireFrame(pthis._scene);
-                  break;
-            }
-         };
-         dom.onclick = function(e) {
-            dom.focus();
-         };
-      }
+      this.showClipControls(this.options.clip_control);
 
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
@@ -1269,13 +1267,13 @@
       return (obj && (obj instanceof THREE.TransformControls));
    }
 
-   JSROOT.TGeoPainter.prototype.toggleWireFrame = function(obj) {
+   JSROOT.TGeoPainter.prototype.changeWireFrame = function(obj, on) {
       var painter = this;
 
       obj.traverse(function(obj2) {
          if ( obj2.hasOwnProperty("material") && !(obj2 instanceof THREE.GridHelper) ) {
             if (!painter.ownedByTransformControls(obj2))
-               obj2.material.wireframe = !obj2.material.wireframe;
+               obj2.material.wireframe = on;
          }
       });
       this.Render3D();
