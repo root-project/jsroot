@@ -283,20 +283,38 @@
 
       if (this._webgl) {
          this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
-         var toggleclip = this._datgui.add(this, 'activePlanes', [0, 1, 2, 3]);
-         toggleclip.onChange( function (value) {
-            painter.activePlanes = value;
-            painter._scene.traverse(function(obj) {
-               if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-                  obj.material.side = (painter.activePlanes > 0) ? THREE.DoubleSide : THREE.FrontSide;
-                  obj.material.needsUpdate = true;
-               }
-            });
+
+         var setSide = function(obj) {
+            if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
+               obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
+               obj.material.needsUpdate = true;
+            }
+         }
+
+         var toggleX = this._datgui.add(this, 'enableX');
+         toggleX.onChange( function (value) {
+            painter.enableX = value;
+            painter._scene.traverse( setSide );
             painter.updateClipping();
          });
 
          var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+
+         var toggleY = this._datgui.add(this, 'enableY');
+         toggleY.onChange( function (value) {
+            painter.enableY = value;
+            painter._scene.traverse( setSide );
+            painter.updateClipping();
+         });
          var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+
+         var toggleZ = this._datgui.add(this, 'enableZ');
+         toggleZ.onChange( function (value) {
+            painter.enableZ = value;
+            painter._scene.traverse( setSide );
+            painter.updateClipping();
+         });
+
          var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
          xclip.onChange( function (value) {
             painter.clipX = value;
@@ -651,8 +669,9 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
-    //  this.enableClipping = false;
-      this.activePlanes = 0;
+      this.enableX = false;
+      this.enableY = false;
+      this.enableZ = false;
       this.clipX = 0.0;
       this.clipY = 0.0;
       this.clipZ = 0.0;
@@ -721,9 +740,9 @@
       this._clipPlanes[1].constant = this.clipY;
       this._clipPlanes[2].constant = this.clipZ;
       this._renderer.clippingPlanes = [];
-      for (var p = 0; p < this.activePlanes; ++p) {
-         this._renderer.clippingPlanes.push(this._clipPlanes[p]);
-      }
+      if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
+      if (this.enableY) this._renderer.clippingPlanes.push(this._clipPlanes[1]);
+      if (this.enableZ) this._renderer.clippingPlanes.push(this._clipPlanes[2]);
       this.Render3D(0);
    }
 
