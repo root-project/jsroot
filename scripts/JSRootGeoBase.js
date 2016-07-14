@@ -1228,7 +1228,7 @@
          new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 )
                ];
       for (var i = 0; i < corners.length; i++) {
-         if (frustum.containsPoint(corners[i])) return true;
+         if (frustum.containsPoint(corners[i].applyMatrix4(matrix))) return true;
       }
 
       return false;
@@ -1475,21 +1475,24 @@
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.GetNodeName = function(stack) {
-      var name  = "Nodes";
-      if (!stack || (stack.length == 0) || !this.origin) return name;
+   JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack) {
 
-      var node = this.nodes[0];
+      var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
 
-      for(var lvl=0;lvl<stack.length;++lvl) {
-         var chldid = node.chlds[stack[lvl]];
-         var obj = this.origin[chldid];
-         name += "/" + obj.fName;
-         node = this.nodes[chldid];
-      }
-      return name;
+      if (this.origin) res.obj = this.origin[0];
+
+      if (stack)
+         for(var lvl=0;lvl<stack.length;++lvl) {
+            res.id = res.node.chlds[stack[lvl]];
+            res.node = this.nodes[res.id];
+            if (this.origin) {
+               res.obj = this.origin[res.id];
+               res.name += "/" + res.obj.fName;
+            }
+         }
+
+      return res;
    }
-
 
 
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {

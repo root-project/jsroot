@@ -213,17 +213,37 @@
          if (!this.options.update_browser)
             setTimeout(function() { JSROOT.hpainter.actiavte([]); }, 2000);
       }
+   }
 
+   JSROOT.TGeoPainter.prototype.TestVisibleObjects = function() {
+      console.log('Start test visible');
+
+      var painter = this, cnt = 0, totalcnt = 0;
+
+      this._scene.traverse(function(obj) {
+         if (!obj.stack) return;
+
+         var res = painter._clones.ResolveStack(obj.stack);
+
+         var shape = painter._clones.GetNodeShape(res.id);
+
+         var test = JSROOT.GEO.VisibleByCamera(painter._camera, obj.matrixWorld, shape);
+
+         totalcnt++;
+         if (test) cnt++;
+      });
+
+      console.log('End test visible total', totalcnt, 'visible', cnt);
    }
 
    JSROOT.TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
-      menu.addchk(this.options.update_browser, "Browsing", function() {
+      menu.addchk(this.options.update_browser, "Browser update", function() {
          this.options.update_browser = !this.options.update_browser;
          if (!this.options.update_browser) this.ActiavteInBrowser([]);
       });
-      menu.addchk(this.options.clip_control, "Control", function() {
+      menu.addchk(this.options.clip_control, "Clip control", function() {
          this.options.clip_control = !this.options.clip_control;
          this.showClipControls(this.options.clip_control);
       });
@@ -232,7 +252,7 @@
          this.changeWireFrame(this._scene, this.options.wireframe);
       });
       menu.add("Test visisble", function() {
-         console.log('Implement test visible');
+         this.TestVisibleObjects();
       });
    }
 
@@ -365,7 +385,7 @@
 
                for (var n=0;n<intersects.length;++n) {
                   var obj = intersects[n].object;
-                  var name = painter._clones.GetNodeName(obj.stack);
+                  var name = painter._clones.ResolveStack(obj.stack).name;
 
                   menu.add((many ? "sub:" : "header:") + name.substr(6), name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
@@ -473,7 +493,7 @@
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
-            var name = painter._clones.GetNodeName(obj.stack);
+            var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
          }
 
