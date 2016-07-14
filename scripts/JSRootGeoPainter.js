@@ -264,7 +264,23 @@
 
                menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
-               menu.add("Focus", n, function(arg) { console.log('Focus '+arg); })
+               menu.add("Focus", n, function(arg) {
+
+                  var newFocus = this.focusCamera(obj);
+                  // Interpolate
+                  var stepcount = 200;
+                  var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                  /*
+                  for (var step = 0; step < stepcount; ++step) {
+                     setTimeout( function() {
+                        painter._camera.position.add(difference);
+                        painter._camera.updateProjectionMatrix();
+                        painter.Render3D();
+                     }, 20);
+                  }
+                  */
+                  console.log('Focus '+arg); 
+               });
 
                if (many) menu.add("endsub:");
             }
@@ -786,6 +802,28 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+   }
+
+   JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
+
+      var box = new THREE.Box3().setFromObject(focus);
+
+      var sizex = box.max.x - box.min.x,
+          sizey = box.max.y - box.min.y,
+          sizez = box.max.z - box.min.z,
+          midx = (box.max.x + box.min.x)/2,
+          midy = (box.max.y + box.min.y)/2,
+          midz = (box.max.z + box.min.z)/2;
+
+      var position;
+      if (this.options._yup)
+         position = new THREE.Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+      else
+         position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+
+      var target = new THREE.Vector3(midx, midy, midz);
+
+      return { position:position, target:target };
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
