@@ -113,7 +113,7 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis:false, _count:false,
                    scale: new THREE.Vector3(1,1,1), more:1,
-                   use_worker: false, update_browser: true, control: true };
+                   use_worker: false, update_browser: true, control: this._webgl };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -214,13 +214,78 @@
       });
       menu.addchk(this.options.control, "Control", function() {
          this.options.control = !this.options.control;
+         this.showClipControls(this.options.control);
       });
       menu.add("Test visisble", function() {
          console.log('Implement test visible');
       });
    }
 
-   JSROOT.TGeoPainter.prototype.addControls = function() {
+   JSROOT.TGeoPainter.prototype.showClipControls = function(on) {
+
+      if (this._datgui) {
+         if (on) return;
+
+         this._datgui.destroy();
+         delete this._datgui;
+         return;
+      }
+
+      var painter = this;
+
+      this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
+
+      function setSide() {
+         painter._scene.traverse( function(obj) {
+            if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
+               obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
+               obj.material.needsUpdate = true;
+            }
+         });
+         painter.updateClipping();
+      }
+
+      var toggleX = this._datgui.add(this, 'enableX');
+      toggleX.onChange( function (value) {
+         painter.enableX = value;
+         setSide();
+      });
+
+      var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+
+      xclip.onChange( function (value) {
+         painter.clipX = value;
+         painter.updateClipping();
+      });
+
+      var toggleY = this._datgui.add(this, 'enableY');
+      toggleY.onChange( function (value) {
+         painter.enableY = value;
+         setSide();
+      });
+
+      var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+
+      yclip.onChange( function (value) {
+         painter.clipY = value;
+         painter.updateClipping();
+      });
+
+      var toggleZ = this._datgui.add(this, 'enableZ');
+      toggleZ.onChange( function (value) {
+         painter.enableZ = value;
+         setSide();
+      });
+
+      var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+
+      zclip.onChange( function (value) {
+         painter.clipZ = value;
+         painter.updateClipping();
+      });
+   }
+
+   JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls) return;
 
@@ -322,61 +387,6 @@
       }
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
-
-      if (this._webgl) {
-
-         this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
-
-         function setSide() {
-            painter._scene.traverse( function(obj) {
-               if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-                  obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
-                  obj.material.needsUpdate = true;
-               }
-            });
-            painter.updateClipping();
-         }
-
-         var toggleX = this._datgui.add(this, 'enableX');
-         toggleX.onChange( function (value) {
-            painter.enableX = value;
-            setSide();
-         });
-
-         var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
-
-         xclip.onChange( function (value) {
-            painter.clipX = value;
-            painter.updateClipping();
-         });
-
-         var toggleY = this._datgui.add(this, 'enableY');
-         toggleY.onChange( function (value) {
-            painter.enableY = value;
-            setSide();
-         });
-
-         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
-
-         yclip.onChange( function (value) {
-            painter.clipY = value;
-            painter.updateClipping();
-         });
-
-         var toggleZ = this._datgui.add(this, 'enableZ');
-         toggleZ.onChange( function (value) {
-            painter.enableZ = value;
-            setSide();
-         });
-
-         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
-
-         zclip.onChange( function (value) {
-            painter.clipZ = value;
-            painter.updateClipping();
-         });
-      }
-
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
@@ -925,12 +935,12 @@
 
       var size = this.size_for_3d();
 
+      this._webgl = JSROOT.Painter.TestWebGL();
+
       this.options = this.decodeOptions(opt);
 
       if (!('_yup' in this.options))
          this.options._yup = this.svg_canvas().empty();
-
-      this._webgl = JSROOT.Painter.TestWebGL();
 
       var tm1 = new Date().getTime();
 
@@ -1029,7 +1039,6 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             JSROOT.console('First render tm = ' + this.first_render_tm);
-            this.addControls();
          }
 
          return;
@@ -1147,6 +1156,10 @@
       this.Render3D(0);
 
       if (close_progress) JSROOT.progress();
+
+      this.addOrbitControls();
+
+      this.showClipControls(this.options.control);
 
       // pointer used in the event handlers
       var pthis = this;
