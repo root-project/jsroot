@@ -283,33 +283,32 @@
 
       if (this._webgl) {
          this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
-         var self = this;
-         var toggleclip = this._datgui.add(this, 'enableClipping');
+         var toggleclip = this._datgui.add(this, 'activePlanes', [0, 1, 2, 3]);
          toggleclip.onChange( function (value) {
-            self.enableClipping = value;
+            painter.activePlanes = value;
             painter._scene.traverse(function(obj) {
                if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-                  obj.material.side = painter.enableClipping ? THREE.DoubleSide : THREE.FrontSide;
+                  obj.material.side = (painter.activePlanes > 0) ? THREE.DoubleSide : THREE.FrontSide;
                   obj.material.needsUpdate = true;
                }
             });
-            self.updateClipping();
+            painter.updateClipping();
          });
 
          var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
          var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
          var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
          xclip.onChange( function (value) {
-            self.clipX = value;
-            self.updateClipping();
+            painter.clipX = value;
+            painter.updateClipping();
          });
          yclip.onChange( function (value) {
-            self.clipY = value;
-            self.updateClipping();
+            painter.clipY = value;
+            painter.updateClipping();
          });
          zclip.onChange( function (value) {
-            self.clipZ = value;
-            self.updateClipping();
+            painter.clipZ = value;
+            painter.updateClipping();
          });
       }
 
@@ -652,7 +651,8 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
-      this.enableClipping = false;
+    //  this.enableClipping = false;
+      this.activePlanes = 0;
       this.clipX = 0.0;
       this.clipY = 0.0;
       this.clipZ = 0.0;
@@ -717,10 +717,13 @@
    }
 
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
-      this._renderer.clippingPlanes = this.enableClipping ? this._clipPlanes : [];
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = this.clipY;
       this._clipPlanes[2].constant = this.clipZ;
+      this._renderer.clippingPlanes = [];
+      for (var p = 0; p < this.activePlanes; ++p) {
+         this._renderer.clippingPlanes.push(this._clipPlanes[p]);
+      }
       this.Render3D(0);
    }
 
