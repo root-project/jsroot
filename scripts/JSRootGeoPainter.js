@@ -110,7 +110,10 @@
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
-      var res = { _grid: false, _bound: false, _debug: false, _full: false, _axis:false, _count:false, scale: new THREE.Vector3(1,1,1), more:1, use_worker: false };
+      var res = { _grid: false, _bound: false, _debug: false,
+                  _full: false, _axis:false, _count:false,
+                   scale: new THREE.Vector3(1,1,1), more:1,
+                   use_worker: false, update_browser: true, control: true };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -192,10 +195,30 @@
          for (var n=0;n<names.length;++n)
             names[n] = this.GetItemName() + '/' + names[n];
 
-      if (JSROOT.hpainter)
+      if (JSROOT.hpainter) {
          JSROOT.hpainter.actiavte(names, force);
+
+         // if highlight in the browser disabled, suppress in few seconds
+         if (!this.options.update_browser)
+            setTimeout(function() { JSROOT.hpainter.actiavte([]); }, 2000);
+      }
+
    }
 
+   JSROOT.TGeoPainter.prototype.FillContextMenu = function(menu) {
+      menu.add("header: Draw options");
+
+      menu.addchk(this.options.update_browser, "Browsing", function() {
+         this.options.update_browser = !this.options.update_browser;
+         if (!this.options.update_browser) this.ActiavteInBrowser([]);
+      });
+      menu.addchk(this.options.control, "Control", function() {
+         this.options.control = !this.options.control;
+      });
+      menu.add("Test visisble", function() {
+         console.log('Implement test visible');
+      });
+   }
 
    JSROOT.TGeoPainter.prototype.addControls = function() {
 
@@ -248,41 +271,44 @@
          mouse_ctxt.on = false;
          var intersects = GetIntersects(mouse_ctxt);
 
-         if (!intersects || (intersects.length==0)) return;
-
          JSROOT.Painter.createMenu(function(menu) {
             menu.painter = painter; // set as this in callbacks
-            var many = (intersects.length > 1);
 
-            if (many) menu.add("header: Nodes");
+            if (!intersects || (intersects.length==0)) {
+               painter.FillContextMenu(menu);
+            } else {
+               var many = (intersects.length > 1);
 
-            for (var n=0;n<intersects.length;++n) {
-               var obj = intersects[n].object;
-               var name = painter._clones.GetNodeName(obj.stack);
+               if (many) menu.add("header: Nodes");
 
-               menu.add((many ? "sub:" : "header:") + name.substr(6), name, function(arg) { this.ActiavteInBrowser([arg], true); });
+               for (var n=0;n<intersects.length;++n) {
+                  var obj = intersects[n].object;
+                  var name = painter._clones.GetNodeName(obj.stack);
 
-               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
+                  menu.add((many ? "sub:" : "header:") + name.substr(6), name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
-               menu.add("Focus", n, function(arg) {
+                  menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
-                  var newFocus = this.focusCamera(obj);
-                  // Interpolate
-                  var stepcount = 200;
-                  var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
-                  /*
-                  for (var step = 0; step < stepcount; ++step) {
-                     setTimeout( function() {
-                        painter._camera.position.add(difference);
-                        painter._camera.updateProjectionMatrix();
-                        painter.Render3D();
-                     }, 20);
-                  }
-                  */
-                  console.log('Focus '+arg); 
-               });
+                  menu.add("Focus", n, function(arg) {
 
-               if (many) menu.add("endsub:");
+                     var newFocus = this.focusCamera(obj);
+                     // Interpolate
+                     var stepcount = 200;
+                     var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                     /*
+                     for (var step = 0; step < stepcount; ++step) {
+                        setTimeout( function() {
+                          painter._camera.position.add(difference);
+                          painter._camera.updateProjectionMatrix();
+                          painter.Render3D();
+                       }, 20);
+                     }
+                      */
+                     console.log('Focus '+arg);
+                  });
+
+                  if (many) menu.add("endsub:");
+               }
             }
 
             menu.show(mouse_ctxt);
@@ -399,7 +425,7 @@
       }
 
       function mousemove(evnt) {
-         if (control_active) return;
+         if (control_active || !painter.options.update_browser) return;
 
          var mouse = {};
          GetMousePos(evnt, mouse);
