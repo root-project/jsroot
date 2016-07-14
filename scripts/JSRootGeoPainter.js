@@ -264,7 +264,23 @@
 
                menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
-               menu.add("Focus", n, function(arg) { console.log('Focus '+arg); })
+               menu.add("Focus", n, function(arg) {
+
+                  var newFocus = this.focusCamera(obj);
+                  // Interpolate
+                  var stepcount = 200;
+                  var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                  /*
+                  for (var step = 0; step < stepcount; ++step) {
+                     setTimeout( function() {
+                        painter._camera.position.add(difference);
+                        painter._camera.updateProjectionMatrix();
+                        painter.Render3D();
+                     }, 20);
+                  }
+                  */
+                  console.log('Focus '+arg); 
+               });
 
                if (many) menu.add("endsub:");
             }
@@ -282,34 +298,56 @@
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if (this._webgl) {
+
          this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
-         var self = this;
-         var toggleclip = this._datgui.add(this, 'enableClipping');
-         toggleclip.onChange( function (value) {
-            self.enableClipping = value;
-            painter._scene.traverse(function(obj) {
+
+         function setSide() {
+            painter._scene.traverse( function(obj) {
                if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-                  obj.material.side = painter.enableClipping ? THREE.DoubleSide : THREE.FrontSide;
+                  obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
                   obj.material.needsUpdate = true;
                }
             });
-            self.updateClipping();
+            painter.updateClipping();
+         }
+
+         var toggleX = this._datgui.add(this, 'enableX');
+         toggleX.onChange( function (value) {
+            painter.enableX = value;
+            setSide();
          });
 
          var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
-         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
-         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+
          xclip.onChange( function (value) {
-            self.clipX = value;
-            self.updateClipping();
+            painter.clipX = value;
+            painter.updateClipping();
          });
+
+         var toggleY = this._datgui.add(this, 'enableY');
+         toggleY.onChange( function (value) {
+            painter.enableY = value;
+            setSide();
+         });
+
+         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+
          yclip.onChange( function (value) {
-            self.clipY = value;
-            self.updateClipping();
+            painter.clipY = value;
+            painter.updateClipping();
          });
+
+         var toggleZ = this._datgui.add(this, 'enableZ');
+         toggleZ.onChange( function (value) {
+            painter.enableZ = value;
+            setSide();
+         });
+
+         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+
          zclip.onChange( function (value) {
-            self.clipZ = value;
-            self.updateClipping();
+            painter.clipZ = value;
+            painter.updateClipping();
          });
       }
 
@@ -652,7 +690,9 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
-      this.enableClipping = false;
+      this.enableX = false;
+      this.enableY = false;
+      this.enableZ = false;
       this.clipX = 0.0;
       this.clipY = 0.0;
       this.clipZ = 0.0;
@@ -717,10 +757,13 @@
    }
 
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
-      this._renderer.clippingPlanes = this.enableClipping ? this._clipPlanes : [];
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = this.clipY;
       this._clipPlanes[2].constant = this.clipZ;
+      this._renderer.clippingPlanes = [];
+      if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
+      if (this.enableY) this._renderer.clippingPlanes.push(this._clipPlanes[1]);
+      if (this.enableZ) this._renderer.clippingPlanes.push(this._clipPlanes[2]);
       this.Render3D(0);
    }
 
@@ -759,6 +802,28 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+   }
+
+   JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
+
+      var box = new THREE.Box3().setFromObject(focus);
+
+      var sizex = box.max.x - box.min.x,
+          sizey = box.max.y - box.min.y,
+          sizez = box.max.z - box.min.z,
+          midx = (box.max.x + box.min.x)/2,
+          midy = (box.max.y + box.min.y)/2,
+          midz = (box.max.z + box.min.z)/2;
+
+      var position;
+      if (this.options._yup)
+         position = new THREE.Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+      else
+         position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+
+      var target = new THREE.Vector3(midx, midy, midz);
+
+      return { position:position, target:target };
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
