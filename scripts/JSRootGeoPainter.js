@@ -371,6 +371,16 @@
 
                   menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
+                  var wireframe = painter.accessObjectWireFrame(obj);
+
+                  if (wireframe!==undefined)
+                     menu.addchk(wireframe, "Wireframe", n,
+                           function(indx) {
+                              var m = intersects[indx].object.material;
+                              m.wireframe = !m.wireframe;
+                              this.Render3D();
+                            });
+
                   menu.add("Focus", n, function(arg) {
 
                      var newFocus = this.focusCamera(obj);
@@ -1267,15 +1277,26 @@
       return (obj && (obj instanceof THREE.TransformControls));
    }
 
+   JSROOT.TGeoPainter.prototype.accessObjectWireFrame = function(obj, on) {
+      // either change mesh wireframe or return current value
+      // return undefined when wireframe cannot be accessed
+
+      if (!obj.hasOwnProperty("material") || (obj instanceof THREE.GridHelper)) return;
+
+      if (this.ownedByTransformControls(obj)) return;
+
+      if (on !== undefined)
+         obj.material.wireframe = on;
+
+      return obj.material.wireframe;
+   }
+
+
    JSROOT.TGeoPainter.prototype.changeWireFrame = function(obj, on) {
       var painter = this;
 
-      obj.traverse(function(obj2) {
-         if ( obj2.hasOwnProperty("material") && !(obj2 instanceof THREE.GridHelper) ) {
-            if (!painter.ownedByTransformControls(obj2))
-               obj2.material.wireframe = on;
-         }
-      });
+      obj.traverse(function(obj2) { painter.accessObjectWireFrame(obj2, on); });
+
       this.Render3D();
    }
 
