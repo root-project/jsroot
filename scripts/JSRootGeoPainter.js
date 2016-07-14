@@ -282,48 +282,53 @@
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
 
       if (this._webgl) {
+
          this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
 
-         var setSide = function(obj) {
-            if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-               obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
-               obj.material.needsUpdate = true;
-            }
+         function setSide() {
+            painter._scene.traverse( function(obj) {
+               if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
+                  obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
+                  obj.material.needsUpdate = true;
+               }
+            });
+            painter.updateClipping();
          }
 
          var toggleX = this._datgui.add(this, 'enableX');
          toggleX.onChange( function (value) {
             painter.enableX = value;
-            painter._scene.traverse( setSide );
-            painter.updateClipping();
+            setSide();
          });
 
          var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
 
-         var toggleY = this._datgui.add(this, 'enableY');
-         toggleY.onChange( function (value) {
-            painter.enableY = value;
-            painter._scene.traverse( setSide );
-            painter.updateClipping();
-         });
-         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
-
-         var toggleZ = this._datgui.add(this, 'enableZ');
-         toggleZ.onChange( function (value) {
-            painter.enableZ = value;
-            painter._scene.traverse( setSide );
-            painter.updateClipping();
-         });
-
-         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
          xclip.onChange( function (value) {
             painter.clipX = value;
             painter.updateClipping();
          });
+
+         var toggleY = this._datgui.add(this, 'enableY');
+         toggleY.onChange( function (value) {
+            painter.enableY = value;
+            setSide();
+         });
+
+         var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+
          yclip.onChange( function (value) {
             painter.clipY = value;
             painter.updateClipping();
          });
+
+         var toggleZ = this._datgui.add(this, 'enableZ');
+         toggleZ.onChange( function (value) {
+            painter.enableZ = value;
+            setSide();
+         });
+
+         var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+
          zclip.onChange( function (value) {
             painter.clipZ = value;
             painter.updateClipping();
