@@ -2490,7 +2490,7 @@
          for (var i=0;i<contour.length-1;++i) {
             var z0 = z(contour[i]);
             var z1 = z(contour[i+1]);
-            var col = this.main_painter().getValueColor(contour[i]);
+            var col = this.main_painter().getValueColor((contour[i]+contour[i+1])/2);
 
             var pnt = { x: 128, width: 256, y: Math.round(z1/h*512) , height: Math.round((z0-z1)/h*512), fill: col };
 
@@ -2552,7 +2552,7 @@
             for (var i=0;i<contour.length-1;++i) {
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
-                   col = this.main_painter().getValueColor(contour[i]);
+                   col = this.main_painter().getValueColor((contour[i]+contour[i+1])/2);
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
@@ -2561,7 +2561,6 @@
                           .attr("height", (z0-z1).toFixed(1))
                           .style("fill", col)
                           .style("stroke", col);
-
 
                if (JSROOT.gStyle.Tooltip > 0)
                   r.on('mouseover', function() {
