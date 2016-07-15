@@ -384,21 +384,23 @@
                   menu.add("Focus", n, function(arg) {
 
                      var newFocus = this.focusCamera(obj);
+                     // Find to points to animate "lookAt" between
                      var dist = this._camera.position.distanceTo(newFocus.target);
                      var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
 
-                     // Interpolate
                      var stepcount = 150;
+                     // Amount to change camera position at each step
                      var posDifference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                     // Amount to change "lookAt" so it will end pointed at target
                      var targetDifference = newFocus.target.sub(oldTarget).divideScalar(stepcount);
-                     
+
+                     // Interpolate //
                      for (var step = 0; step < stepcount; ++step) {
                         setTimeout( function() {
                           painter._camera.position.add(posDifference);
                           oldTarget.add(targetDifference);
                           painter._lookat = oldTarget;
                           painter._camera.lookAt(painter._lookat);
-                      //    painter._camera.updateProjectionMatrix();
                           painter.Render3D();
                        }, step * 20);
                      }
