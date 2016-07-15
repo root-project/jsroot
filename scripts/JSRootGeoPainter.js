@@ -79,6 +79,26 @@
             }
          });
 
+      buttonList.push({
+         name: 'menu',
+         title: 'Show context menu',
+         icon: JSROOT.ToolbarIcons.question,
+         click: function() {
+
+            var evnt = d3.event;
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+
+            JSROOT.Painter.createMenu(function(menu) {
+               menu.painter = painter; // set as this in callbacks
+               painter.FillContextMenu(menu);
+               menu.show(evnt);
+            });
+         }
+      });
+
+
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
@@ -559,7 +579,7 @@
                      }
                      this._controls.target = newFocus.target;
                      this._controls.update();
-                      
+
                      console.log('Focus '+arg);
                   });
 
