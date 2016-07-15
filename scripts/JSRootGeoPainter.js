@@ -384,17 +384,26 @@
                   menu.add("Focus", n, function(arg) {
 
                      var newFocus = this.focusCamera(obj);
+                     var dist = this._camera.position.distanceTo(newFocus.target);
+                     var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
+
                      // Interpolate
-                     var stepcount = 200;
-                     var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                     var stepcount = 150;
+                     var posDifference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                     var targetDifference = newFocus.target.sub(oldTarget).divideScalar(stepcount);
                      
                      for (var step = 0; step < stepcount; ++step) {
                         setTimeout( function() {
-                          painter._camera.position.add(difference);
+                          painter._camera.position.add(posDifference);
+                          oldTarget.add(targetDifference);
+                          painter._lookat = oldTarget;
+                          painter._camera.lookAt(painter._lookat);
                       //    painter._camera.updateProjectionMatrix();
                           painter.Render3D();
                        }, step * 20);
                      }
+                     this._controls.target = newFocus.target;
+                     this._controls.update();
                       
                      console.log('Focus '+arg);
                   });
