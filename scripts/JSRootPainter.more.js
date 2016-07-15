@@ -3735,11 +3735,11 @@
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
-      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : -100;
+      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : 0;
 
-      // console.log('find = ' + find + '  binz = ' + binz + '  minbin ' + this.minbin);
+      var colindx = (find === 2) ? this.getValueColor(binz, true) : null;
 
-      if ((find !== 2) || (binz === 0) || (binz < this.minbin)) {
+      if ((find !== 2) || (colindx === null)) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
