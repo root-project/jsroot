@@ -2,6 +2,7 @@
 
 ## Changes in 4.5.x
 1. Fix - position of TFrame in canvas/pad
+2. Fix - use histogram fMinimum/fMaximum when creating color palette
 
 
 ## Changes in 4.5.1

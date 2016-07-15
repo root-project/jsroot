@@ -3113,6 +3113,10 @@
                zmin = this.zoom_zmin;
                zmax = this.zoom_zmax;
             }
+            if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
+               zmin = this.histo.fMinimum;
+               zmax = this.histo.fMaximum;
+            }
             this.CreateContour(nlevels, zmin, zmax, this.minposbin);
          }
       }
