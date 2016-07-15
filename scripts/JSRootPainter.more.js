@@ -3121,6 +3121,10 @@
                zmin = this.zoom_zmin;
                zmax = this.zoom_zmax;
             }
+            if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
+               zmin = this.histo.fMinimum;
+               zmax = this.histo.fMaximum;
+            }
             this.CreateContour(nlevels, zmin, zmax, this.minposbin);
          }
       }
@@ -3790,7 +3794,7 @@
    JSROOT.TH2Painter.prototype.DrawBins = function() {
 
       this.CheckHistDrawAttributes();
-      
+
       this.RecreateDrawG(false, "main_layer");
 
       var w = this.frame_width(), h = this.frame_height();
