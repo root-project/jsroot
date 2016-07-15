@@ -2391,7 +2391,7 @@
       // options
    }
 
-   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g) {
+   JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
       // we need to preserve font to be able rescle at the end
 
       if (!draw_g) draw_g = this.draw_g;
@@ -2404,6 +2404,7 @@
       draw_g.property('mathjax_use', false);
       draw_g.property('text_factor', 0.);
       draw_g.property('max_text_width', 0); // keep maximal text width, use it later
+      draw_g.property('max_font_size', max_font_size);
    }
 
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
@@ -2464,6 +2465,8 @@
       if ((f>0) && ((f<0.9) || (f>1.))) {
          var font = draw_g.property('text_font');
          font.size = Math.floor(font.size/f);
+         if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
+            font.size = draw_g.property('max_font_size');
          draw_g.call(font.func);
       }
 
