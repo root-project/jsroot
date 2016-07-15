@@ -3936,9 +3936,11 @@
       for (j = h.j1; j <= h.j2; ++j)
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
 
-      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : -100;
+      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : 0;
 
-      if ((find !== 2) || (binz === 0) || (binz < this.minbin)) {
+      var colindx = (find === 2) ? this.getValueColor(binz, true) : null;
+
+      if ((find !== 2) || (colindx == null)) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
