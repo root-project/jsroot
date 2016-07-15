@@ -593,6 +593,7 @@
       });
 
       this._context_menu = function(evnt) {
+         evnt.preventDefault();
          GetMousePos(evnt, mouse_ctxt);
          mouse_ctxt.on = true;
       }
