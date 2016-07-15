@@ -404,6 +404,10 @@
          this.options.wireframe = !this.options.wireframe;
          this.changeWireFrame(this._scene, this.options.wireframe);
       });
+      menu.addchk(this.options.wireframe, "Reset camera position", function() {
+         this.adjustCameraPosition();
+         this.Render3D();
+      });
       menu.add("Test visisble", function() {
          this.TestVisibleObjects();
       });
