@@ -3140,17 +3140,20 @@
          return l;
       }
 
+      // bins less than zmin not drawn
+      if (zc < this.zmin) return -111;
+
+      // if bin content exactly zmin, draw it when col0 specified or when content is positive
+      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111)) ? 0 : -1;
+
       return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
    }
 
    JSROOT.TH2Painter.prototype.getValueColor = function(zc, asindx) {
+
       var index = this.getContourIndex(zc);
 
-      if (index<0) {
-         // do not draw bin where color is negative, only with col0 option minimal values are shown
-         if (this.options.Color !== 111) return null;
-         index = 0;
-      }
+      if (index < 0) return null;
 
       if (this.fPalette == null)
          this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
@@ -3443,7 +3446,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
+            // if ((binz == 0) || (binz < this.minbin)) continue;
 
             colindx = this.getValueColor(binz, true);
             if (colindx === null) continue;
@@ -3491,7 +3494,7 @@
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
+            // if ((binz == 0) || (binz < this.minbin)) continue;
 
             colindx = this.getValueColor(binz, true);
             if (colindx === null) continue;
@@ -3507,7 +3510,7 @@
 
             this.DrawText(22, Math.round(handle.grx[i] + binw*0.1), Math.round(handle.gry[j+1] + binh*0.1),
                               Math.round(binw*0.8), Math.round(binh*0.8),
-                          lbl, "black", 0, text_g);
+                              lbl, "black", 0, text_g);
          }
 
       this.FinishTextDrawing(text_g);
