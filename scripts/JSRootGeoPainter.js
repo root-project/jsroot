@@ -387,15 +387,15 @@
                      // Interpolate
                      var stepcount = 200;
                      var difference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
-                     /*
+                     
                      for (var step = 0; step < stepcount; ++step) {
                         setTimeout( function() {
                           painter._camera.position.add(difference);
-                          painter._camera.updateProjectionMatrix();
+                      //    painter._camera.updateProjectionMatrix();
                           painter.Render3D();
-                       }, 20);
+                       }, step * 20);
                      }
-                      */
+                      
                      console.log('Focus '+arg);
                   });
 
