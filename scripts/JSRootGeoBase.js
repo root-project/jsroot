@@ -1208,6 +1208,42 @@
       return null;
    }
 
+   JSROOT.GEO.CreateFrustum = function(camera) {
+      var frustum = new THREE.Frustum();
+      var cameraProjectionMatrix = new THREE.Matrix4();
+
+      camera.updateMatrixWorld();
+      camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+      cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromMatrix( cameraProjectionMatrix );
+
+      frustum.corners = [
+         new THREE.Vector3(  0.5,  0.5,  0.5 ),
+         new THREE.Vector3(  0.5,  0.5, -0.5 ),
+         new THREE.Vector3(  0.5, -0.5,  0.5 ),
+         new THREE.Vector3(  0.5, -0.5, -0.5 ),
+         new THREE.Vector3( -0.5,  0.5,  0.5 ),
+         new THREE.Vector3( -0.5,  0.5, -0.5 ),
+         new THREE.Vector3( -0.5, -0.5,  0.5 ),
+         new THREE.Vector3( -0.5, -0.5, -0.5 )
+      ];
+
+      frustum.test = new THREE.Vector3(0,0,0);
+
+      frustum.CheckShape = function(matrix, shape) {
+         for (var i = 0; i < this.corners.length; i++) {
+            this.test.x = this.corners[i].x * shape.fDX;
+            this.test.y = this.corners[i].y * shape.fDY;
+            this.test.z = this.corners[i].z * shape.fDZ;
+            if (this.containsPoint(this.test.applyMatrix4(matrix))) return true;
+        }
+        return false;
+
+      }
+
+      return frustum;
+   }
+
    JSROOT.GEO.VisibleByCamera = function(camera, matrix, shape) {
       var frustum = new THREE.Frustum();
       var cameraProjectionMatrix = new THREE.Matrix4();

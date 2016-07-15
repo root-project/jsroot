@@ -238,7 +238,7 @@
    JSROOT.TGeoPainter.prototype.TestMatrixes = function() {
       // method can be used to check matrix calculations with current three.js model
 
-      var painter = this, errcnt = 0, totalcnt = 0;
+      var painter = this, errcnt = 0, totalcnt = 0, totalmax = 0;
 
       var arg = {
             domatrix: true,
@@ -254,11 +254,12 @@
 
                totalcnt++;
 
-               var m1 = mesh.matrixWorld;
+               var m1 = mesh.matrixWorld, flip, origm2;
 
                if (m1.equals(m2)) return true
-               if (m1.determinant()>0 && m2.determinant()<0) {
-                  var flip = painter.getMatrixFlip(m2);
+               if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
+                  flip = painter.getMatrixFlip(m2);
+                  origm2 = m2;
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
                }
@@ -267,7 +268,11 @@
                for (var k=0;k<16;++k)
                   max = Math.max(max, Math.abs(m1.elements[k] - m2.elements[k]));
 
-               console.log(painter._clones.ResolveStack(entry.stack).name, 'maxdiff', max, m1.determinant(), m2.determinant());
+               totalmax = Math.max(max, totalmax);
+
+               if (max < 1e-4) return true;
+
+               console.log(painter._clones.ResolveStack(entry.stack).name, 'maxdiff', max, 'determ', m1.determinant(), m2.determinant());
 
                errcnt++;
 
@@ -282,26 +287,22 @@
 
       tm2 = new Date().getTime();
 
-      console.log('Compare matrixes total',totalcnt,'errors',errcnt, 'takes', tm2-tm1);
+      console.log('Compare matrixes total',totalcnt,'errors',errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
    }
 
 
    JSROOT.TGeoPainter.prototype.TestVisibleObjects = function() {
       this.TestMatrixes();
-      return;
 
-
-      var painter = this, cnt = 0, totalcnt = 0,
-          m1 = [], m2 = [], names1 = [], names2 = [], s1 = [], s2 = [];
+      var painter = this, cnt = 0, totalcnt = 0;
 
       var tm1 = new Date().getTime();
 
+      for (var n=0;n<1;++n)
       this._scene.traverse(function(obj) {
          if (!obj.stack) return;
 
          var res = painter._clones.ResolveStack(obj.stack);
-
-         s1.push(obj.stack);
 
          var shape = painter._clones.GetNodeShape(res.id);
 
@@ -309,9 +310,6 @@
 
          totalcnt++;
          if (test) cnt++;
-
-         m1.push(obj.matrixWorld);
-         names1.push(res.name);
       });
 
       var tm2 = new Date().getTime();
@@ -322,71 +320,36 @@
 
       var arg = {
             domatrix: true,
+            frustum: JSROOT.GEO.CreateFrustum(painter._camera),
             func: function(node) {
-               cnt++;
+
                totalcnt++;
-               m2.push(this.getmatrix().clone());
 
-               var entry = this.CopyStack();
+               // if (node.vol<=0) return false;
 
-               s2.push(entry.stack);
+               var m = this.getmatrix();
 
-               var res = painter._clones.ResolveStack(entry.stack);
-               names2.push(res.name);
+               // var res = JSROOT.GEO.VisibleByCamera(painter._camera, m, node);
+
+               var res = this.frustum.CheckShape(m, node);
+
+               if (res) cnt++;
 
                return true;
             }
          };
 
 
+      this._clones.MarkVisisble();
+
       tm1 = new Date().getTime();
 
-      this._clones.ScanVisible(arg);
+      for (var n=0;n<1;++n)
+         this._clones.ScanVisible(arg);
 
       tm2 = new Date().getTime();
 
       console.log('Test visible total', totalcnt, 'visible', cnt, 'takes', tm2-tm1);
-
-      cnt = 0; totalcnt = 0;
-      for (var n=0;n<s1.length;++n) {
-         // first find same stack entry
-
-         var n2 = -1;
-         while (++n2 < s2.length) {
-            if (s1[n].length != s2[n2].length) continue;
-            var same = true;
-            for (var k=0;(k<s1[n].length) && same;++k)
-               same = same && (s1[n][k]===s2[n2][k]);
-            if (same) break;
-         }
-
-         if (n2 >= s2.length) {
-            console.log('Not found', names1[n]);
-            continue;
-         }
-
-
-         if (names1[n] !== names2[n2]) {
-            console.log('missmatch', names1[n], names2[n2]);
-            console.log('missmatch', s1[n], s2[n2]);
-            break;
-         }
-
-         if (m1[n].equals(m2[n2])) { cnt++; continue; }
-         if (m1[n].determinant()>0 && m2[n2].determinant() < 0) {
-            var flip = this.getMatrixFlip(m2[n2]);
-            m2[n2].scale(flip);
-            if (m1[n].equals(m2[n2])) { cnt++; continue; }
-         }
-
-         var max = 0;
-         for (var k=0;k<16;++k)
-            max = Math.max(max, Math.abs(m1[n].elements[k] - m2[n2].elements[k]));
-         console.log('maxdiff', max, m1[n].determinant(), m2[n2].determinant());
-      }
-
-      console.log('Total equals', cnt);
-
    }
 
    JSROOT.TGeoPainter.prototype.FillContextMenu = function(menu) {
@@ -705,7 +668,21 @@
    }
 
    JSROOT.TGeoPainter.prototype.getMatrixFlip = function(matrix) {
+      // create flip vector for matrix that it does not have axis mirroring
+      // such kind of mesh does not supported by three.js/webgl
+
+      // always flip Z axis in mesh, same flip will be done for the geometry
+      // Actually, it is not really matter which axis to flip
+      return new THREE.Vector3(1,1,-1);
+
       var elem = matrix.elements, cnt = 0, flip = new THREE.Vector3(1,1,1);
+
+      if ((elem[0] < -0.5) || (elem[4] < -0.5) || (elem[8] < -0.5)) { flip.x = -1; cnt++; }
+      if ((elem[1] < -0.5) || (elem[5] < -0.5) || (elem[9] < -0.5)) { flip.y = -1; cnt++; }
+      if ((elem[2] < -0.5) || (elem[6] < -0.5) || (elem[10] < -0.5)) { flip.z = -1; cnt++; }
+      if  ((cnt===1) || (cnt===3)) return flip;
+
+      flip.set(1,1,1); cnt = 0;
 
       if (elem[0]===-1 && elem[1]=== 0 && elem[2] === 0) { flip.x = -1; cnt++; }
       if (elem[4]=== 0 && elem[5]===-1 && elem[6] === 0) { flip.y = -1; cnt++; }
@@ -713,11 +690,11 @@
 
       if ((cnt===0) || (cnt ===2)) {
          flip.set(1,1,1); cnt = 0;
-         if (elem[0] + elem[1] + elem[2] === -1) { flip.x = -1; cnt++; }
-         if (elem[4] + elem[5] + elem[6] === -1) { flip.y = -1; cnt++; }
-         if (elem[8] + elem[9] + elem[10] === -1) { flip.z = -1; cnt++; }
+         if (Math.abs(elem[0] + elem[1] + elem[2] + 1) < 4e-8) { flip.x = -1; cnt++; }
+         if (Math.abs(elem[4] + elem[5] + elem[6] + 1) < 4e-8) { flip.y = -1; cnt++; }
+         if (Math.abs(elem[8] + elem[9] + elem[10] + 1) < 4e-8) { flip.z = -1; cnt++; }
          if ((cnt === 0) || (cnt === 2)) {
-            // console.log('not found proper axis, use Z ' + JSON.stringify(flip) + '  m = ' + JSON.stringify(elem));
+            console.log('determ', matrix.determinant(), 'not found flip', elem);
             flip.z = -flip.z;
          }
       }
@@ -728,24 +705,8 @@
       // when transformation matrix includes one or several invertion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
-      var m = parent.matrixWorld;
+      var flip = this.getMatrixFlip(parent.matrixWorld);
 
-      var cnt = 0, flip = new THREE.Vector3(1,1,1);
-
-      if (m.elements[0]===-1 && m.elements[1]=== 0 && m.elements[2] === 0) { flip.x = -1; cnt++; }
-      if (m.elements[4]=== 0 && m.elements[5]===-1 && m.elements[6] === 0) { flip.y = -1; cnt++; }
-      if (m.elements[8]=== 0 && m.elements[9]=== 0 && m.elements[10]===-1) { flip.z = -1; cnt++; }
-
-      if ((cnt===0) || (cnt ===2)) {
-         flip.set(1,1,1); cnt = 0;
-         if (m.elements[0] + m.elements[1] + m.elements[2] === -1) { flip.x = -1; cnt++; }
-         if (m.elements[4] + m.elements[5] + m.elements[6] === -1) { flip.y = -1; cnt++; }
-         if (m.elements[8] + m.elements[9] + m.elements[10] === -1) { flip.z = -1; cnt++; }
-         if ((cnt === 0) || (cnt === 2)) {
-            // console.log('not found proper axis, use Z ' + JSON.stringify(flip) + '  m = ' + JSON.stringify(m.elements));
-            flip.z = -flip.z;
-         }
-      }
       var gname = "_geom";
       if (flip.x<0) gname += "X";
       if (flip.y<0) gname += "Y";
@@ -1421,7 +1382,8 @@
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
 
-         this._datgui.destroy();
+         if (this._datgui)
+            this._datgui.destroy();
 
          var obj = this.GetObject();
          if (obj) delete obj._painter;
@@ -1439,6 +1401,7 @@
 
       this.first_render_tm = 0;
 
+      delete this._datgui;
       delete this._controls;
       delete this._context_menu;
       delete this._tcontrols;
