@@ -1416,6 +1416,7 @@
          if (arg.domatrix) {
             arg.matrices = [];
             arg.mpool = [ new THREE.Matrix4() ]; // pool of Matrix objects to avoid permanent creation
+            arg.getmatrix = function() { return this.matrices[this.last]; }
          }
       }
 
@@ -1470,6 +1471,7 @@
          delete arg.counter;
          delete arg.matrices;
          delete arg.mpool;
+         delete arg.getmatrix;
       }
 
       return res;
@@ -1499,14 +1501,15 @@
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
 
-      var node = this.nodes[0], three_prnt = toplevel, obj3d;
+      var node = this.nodes[0], three_prnt = toplevel,
+          force = (typeof options == 'object') || (options==='force');
 
       for(var lvl=0; lvl<=stack.length; ++lvl) {
          var nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
          if (lvl>0)  node = this.nodes[node.chlds[nchld]];
 
-         obj3d = undefined;
+         var obj3d = undefined;
 
          if (three_prnt.children)
             for (var i=0;i<three_prnt.children.length;++i) {
@@ -1516,33 +1519,47 @@
                }
             }
 
-         if (!obj3d) {
-
-            obj3d = new THREE.Object3D();
-
-            if (node.matrix) {
-               obj3d.matrix.fromArray(node.matrix);
-               obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
-            }
-
-            // this.accountNodes(obj3d);
-            obj3d.nchld = nchld; // mark index to find it again later
-
-            // add the mesh to the scene
-            three_prnt.add(obj3d);
-
-            // this is only for debugging - test invertion of whole geometry
-            if ((lvl==0) && options && options.scale) {
-               if ((options.scale.x<0) || (options.scale.y<0) || (options.scale.z<0)) {
-                  obj3d.scale.copy(options.scale);
-                  obj3d.updateMatrix();
-               }
-            }
-
-            obj3d.updateMatrixWorld();
+         if (obj3d) {
+            three_prnt = obj3d;
+            continue;
          }
 
+         if (!force) return null;
+
+         obj3d = new THREE.Object3D();
+
+         if (node.matrix) {
+            obj3d.matrix.fromArray(node.matrix);
+            obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
+         }
+
+         // this.accountNodes(obj3d);
+         obj3d.nchld = nchld; // mark index to find it again later
+
+         // add the mesh to the scene
+         three_prnt.add(obj3d);
+
+         // this is only for debugging - test invertion of whole geometry
+         if ((lvl==0) && (typeof options == 'object') && options.scale) {
+            if ((options.scale.x<0) || (options.scale.y<0) || (options.scale.z<0)) {
+               obj3d.scale.copy(options.scale);
+               obj3d.updateMatrix();
+            }
+         }
+
+         obj3d.updateMatrixWorld();
+
          three_prnt = obj3d;
+      }
+
+      if (options === 'mesh') {
+         if (three_prnt)
+            for (var n=0;n<three_prnt.children.length;++n) {
+               var chld = three_prnt.children[n];
+               if ((chld.type === 'Mesh') && (chld.nchld === undefined)) return chld;
+            }
+
+         return null;
       }
 
       return three_prnt;
