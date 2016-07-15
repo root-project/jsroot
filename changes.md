@@ -4,6 +4,7 @@
 1. Fix - position of TFrame in canvas/pad
 2. Fix - use histogram fMinimum/fMaximum when creating color palette
 3. Fix - correctly draw empty th2 bins when zmin<0 is specified  
+4. Fix - limit th2 text output size 
 
 
 ## Changes in 4.5.1

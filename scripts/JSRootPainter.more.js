@@ -3475,7 +3475,7 @@
                        .append("svg:g")
                        .attr("class","th2_text");
 
-      this.StartTextDrawing(42, 20, text_g);
+      this.StartTextDrawing(42, 20, text_g, 20);
 
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
