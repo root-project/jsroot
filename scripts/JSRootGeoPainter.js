@@ -1648,21 +1648,19 @@
                   sub._expand = node._expand;
                }
 
-               if (JSROOT.GEO.findItemWithPainter(node))
-                  // one only can focus item which is drawn - we should check painter first
-                  sub._menu = function(menu, item, hpainter) {
-                     menu.add("Focus", function() {
+               // one only can focus item which is drawn - we should check painter first
+               sub._menu = function(menu, item, hpainter) {
+                  if (JSROOT.GEO.findItemWithPainter(item))
+                    menu.add("Focus", function() {
 
-                        var drawitem = JSROOT.GEO.findItemWithPainter(item);
-                        if (!drawitem) return;
+                      var drawitem = JSROOT.GEO.findItemWithPainter(item);
+                      if (!drawitem) return;
 
-                        var fullname = hpainter.itemFullName(item, drawitem);
-
-                        if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
-                           drawitem._painter.focusOnItem(fullname);
-                     });
-                 }
-
+                      var fullname = hpainter.itemFullName(item, drawitem);
+                      if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
+                         drawitem._painter.focusOnItem(fullname);
+                    });
+               }
             }
 
             node._childs.push(sub);
