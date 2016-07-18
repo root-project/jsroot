@@ -573,8 +573,6 @@
                });
             }
 
-            menu.add("Focus", function() { painter.focusCamera(hitem); });
-
             if (!('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add("Expand", function() { painter.expand(itemname); });
          }
