@@ -564,6 +564,8 @@
             if (opts!=null)
                menu.addDrawMenu("Draw", opts, function(arg) { this.display(itemname, arg); });
 
+            menu.add("Focus", function() { this.focusCamera(hitem); });
+
             if ((fileprop!=null) && (opts!=null)) {
                var filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(JSROOT.source_dir) == 0)

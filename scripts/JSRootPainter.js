@@ -9071,7 +9071,7 @@
    JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
 
       var painter = this;
-
+      
       var node = this.Find(itemname);
       var opts = JSROOT.getDrawOptions(node._kind, 'nosame');
       var handle = JSROOT.getDrawHandle(node._kind);
@@ -9082,6 +9082,8 @@
 
       if ((node['_childs'] == null) && (node['_more'] || root_type))
          menu.add("Expand", function() { painter.expand(itemname); });
+
+      menu.add("Focus", function() { painter.focusCamera(node); });
 
       if (handle && ('execute' in handle))
          menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu.tree_node); });
@@ -9103,6 +9105,7 @@
 
       if ('_player' in node)
          menu.add("Player", function() { painter.player(itemname); });
+       
    }
 
    JSROOT.HierarchyPainter.prototype.Adopt = function(h) {
