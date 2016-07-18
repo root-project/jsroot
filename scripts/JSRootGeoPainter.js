@@ -402,13 +402,16 @@
          painter.updateClipping();
       }
 
+      var bound = new THREE.Box3().setFromObject(this._toplevel);
+      bound.expandByVector(bound.size().multiplyScalar(0.01));
+
       var toggleX = this._datgui.add(this, 'enableX');
       toggleX.onChange( function (value) {
          painter.enableX = value;
          setSide();
       });
 
-      var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+      var xclip = this._datgui.add(this, 'clipX', bound.min.x, bound.max.x);
 
       xclip.onChange( function (value) {
          painter.clipX = value;
@@ -421,7 +424,7 @@
          setSide();
       });
 
-      var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+      var yclip = this._datgui.add(this, 'clipY', bound.min.y, bound.max.y);
 
       yclip.onChange( function (value) {
          painter.clipY = value;
@@ -434,7 +437,7 @@
          setSide();
       });
 
-      var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+      var zclip = this._datgui.add(this, 'clipZ', bound.min.z, bound.max.z);
 
       zclip.onChange( function (value) {
          painter.clipZ = value;
@@ -925,6 +928,7 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
+      
       this.enableX = false;
       this.enableY = false;
       this.enableZ = false;
