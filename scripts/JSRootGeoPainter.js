@@ -526,29 +526,7 @@
 
                   menu.add("Focus", n, function(arg) {
 
-                     var newFocus = this.focusCamera(obj);
-                     // Find to points to animate "lookAt" between
-                     var dist = this._camera.position.distanceTo(newFocus.target);
-                     var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
-
-                     var stepcount = 150;
-                     // Amount to change camera position at each step
-                     var posDifference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
-                     // Amount to change "lookAt" so it will end pointed at target
-                     var targetDifference = newFocus.target.sub(oldTarget).divideScalar(stepcount);
-
-                     // Interpolate //
-                     for (var step = 0; step < stepcount; ++step) {
-                        setTimeout( function() {
-                          painter._camera.position.add(posDifference);
-                          oldTarget.add(targetDifference);
-                          painter._lookat = oldTarget;
-                          painter._camera.lookAt(painter._lookat);
-                          painter.Render3D();
-                       }, step * 20);
-                     }
-                     this._controls.target = newFocus.target;
-                     this._controls.update();
+                     this.focusCamera(obj);
 
                      console.log('Focus '+arg);
                   });
@@ -1062,7 +1040,30 @@
 
       var target = new THREE.Vector3(midx, midy, midz);
 
-      return { position:position, target:target };
+      // Find to points to animate "lookAt" between
+      var dist = this._camera.position.distanceTo(target);
+      var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
+
+      var stepcount = 150;
+      // Amount to change camera position at each step
+      var posDifference = position.sub(this._camera.position).divideScalar(stepcount);
+      // Amount to change "lookAt" so it will end pointed at target
+      var targetDifference = target.sub(oldTarget).divideScalar(stepcount);
+
+      // Interpolate //
+      var painter = this;
+      for (var step = 0; step < stepcount; ++step) {
+         setTimeout( function() {
+           painter._camera.position.add(posDifference);
+           oldTarget.add(targetDifference);
+           painter._lookat = oldTarget;
+           painter._camera.lookAt(painter._lookat);
+           painter.Render3D();
+        }, step * 20);
+      }
+      this._controls.target = target;
+      this._controls.update();
+
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
