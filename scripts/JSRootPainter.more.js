@@ -3940,7 +3940,7 @@
 
       var colindx = (find === 2) ? this.getValueColor(binz, true) : null;
 
-      if ((find !== 2) || (colindx == null)) {
+      if ((find !== 2) || (colindx === null)) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
