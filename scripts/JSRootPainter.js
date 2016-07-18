@@ -8412,6 +8412,7 @@
                   d3.select(frame).html("");
                   mdi.ActivateFrame(frame);
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
+                  item._painter = painter;
                   if (JSROOT.gStyle.DragAndDrop)
                      h.enable_dropping(frame, itemname);
                }
@@ -9151,19 +9152,20 @@
    }
 
    JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
-      if ('disp' in this) {
+      if (this.disp) {
          this.disp.Reset();
          delete this.disp;
       }
 
+      this.ForEach(function(item) {
+         delete item._painter; // remove reference on the painter
+         // when only display cleared, try to clear all browser items
+         if (!withbrowser && (typeof item.clear=='function')) item.clear();
+      });
+
       if (withbrowser) {
          this.select_main().html("");
          delete this.h;
-      } else {
-         // when only display cleared, try to clear all browser items
-         this.ForEach(function(item) {
-            if (('clear' in item) && (typeof item.clear=='function')) item.clear();
-         });
       }
    }
 
