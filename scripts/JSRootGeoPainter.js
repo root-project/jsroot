@@ -402,13 +402,16 @@
          painter.updateClipping();
       }
 
+      var bound = new THREE.Box3().setFromObject(this._toplevel);
+      bound.expandByVector(bound.size().multiplyScalar(0.01));
+
       var toggleX = this._datgui.add(this, 'enableX');
       toggleX.onChange( function (value) {
          painter.enableX = value;
          setSide();
       });
 
-      var xclip = this._datgui.add(this, 'clipX', -2000, 2000);
+      var xclip = this._datgui.add(this, 'clipX', bound.min.x, bound.max.x);
 
       xclip.onChange( function (value) {
          painter.clipX = value;
@@ -421,7 +424,7 @@
          setSide();
       });
 
-      var yclip = this._datgui.add(this, 'clipY', -2000, 2000);
+      var yclip = this._datgui.add(this, 'clipY', bound.min.y, bound.max.y);
 
       yclip.onChange( function (value) {
          painter.clipY = value;
@@ -434,7 +437,7 @@
          setSide();
       });
 
-      var zclip = this._datgui.add(this, 'clipZ', -2000, 2000);
+      var zclip = this._datgui.add(this, 'clipZ', bound.min.z, bound.max.z);
 
       zclip.onChange( function (value) {
          painter.clipZ = value;
@@ -523,29 +526,7 @@
 
                   menu.add("Focus", n, function(arg) {
 
-                     var newFocus = this.focusCamera(obj);
-                     // Find to points to animate "lookAt" between
-                     var dist = this._camera.position.distanceTo(newFocus.target);
-                     var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
-
-                     var stepcount = 150;
-                     // Amount to change camera position at each step
-                     var posDifference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
-                     // Amount to change "lookAt" so it will end pointed at target
-                     var targetDifference = newFocus.target.sub(oldTarget).divideScalar(stepcount);
-
-                     // Interpolate //
-                     for (var step = 0; step < stepcount; ++step) {
-                        setTimeout( function() {
-                          painter._camera.position.add(posDifference);
-                          oldTarget.add(targetDifference);
-                          painter._lookat = oldTarget;
-                          painter._camera.lookAt(painter._lookat);
-                          painter.Render3D();
-                       }, step * 20);
-                     }
-                     this._controls.target = newFocus.target;
-                     this._controls.update();
+                     this.focusCamera(obj);
 
                      console.log('Focus '+arg);
                   });
@@ -925,6 +906,7 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
+      
       this.enableX = false;
       this.enableY = false;
       this.enableZ = false;
@@ -1058,7 +1040,30 @@
 
       var target = new THREE.Vector3(midx, midy, midz);
 
-      return { position:position, target:target };
+      // Find to points to animate "lookAt" between
+      var dist = this._camera.position.distanceTo(target);
+      var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
+
+      var stepcount = 150;
+      // Amount to change camera position at each step
+      var posDifference = position.sub(this._camera.position).divideScalar(stepcount);
+      // Amount to change "lookAt" so it will end pointed at target
+      var targetDifference = target.sub(oldTarget).divideScalar(stepcount);
+
+      // Interpolate //
+      var painter = this;
+      for (var step = 0; step < stepcount; ++step) {
+         setTimeout( function() {
+           painter._camera.position.add(posDifference);
+           oldTarget.add(targetDifference);
+           painter._lookat = oldTarget;
+           painter._camera.lookAt(painter._lookat);
+           painter.Render3D();
+        }, step * 20);
+      }
+      this._controls.target = target;
+      this._controls.update();
+
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
