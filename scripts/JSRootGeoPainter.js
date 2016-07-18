@@ -480,7 +480,7 @@
          }
 
          raycaster.setFromCamera( pnt, painter._camera );
-         return raycaster.intersectObject(painter._toplevel/*painter._scene.children*/, true);
+         return raycaster.intersectObjects(painter._scene.children, true);
       }
 
       this._controls.addEventListener( 'start', function() {
@@ -492,21 +492,6 @@
          if (!mouse_ctxt.on) return;
          mouse_ctxt.on = false;
          var intersects = GetIntersects(mouse_ctxt);
-         var trimmedIntersects = [];
-         for (var i = 0; i < intersects.length; ++i) {
-            clipped = false;
-            if (this.enableX && this._clipPlanes[0].normal.dot(intersects[i].point) > this.clippingPlanes[0].constant ) {
-               clipped = true;
-            } else if (this.enableY && this._clipPlanes[1].normal.dot(intersects[i].point) > this.clippingPlanes[1].constant ) {
-               clipped = true;
-            } else if (this.enableZ && this._clipPlanes[2].normal.dot(intersects[i].point) > this.clippingPlanes[2].constant ) {
-               clipped = true;
-            }
-            if (!clipped) {
-               trimmedIntersects.push(intersects[i]);
-            }
-         }
-         intersects = trimmedIntersects;
 
          JSROOT.Painter.createMenu(function(menu) {
             menu.painter = painter; // set as this in callbacks
@@ -538,7 +523,29 @@
 
                   menu.add("Focus", n, function(arg) {
 
-                     this.focusCamera(obj);
+                     var newFocus = this.focusCamera(obj);
+                     // Find to points to animate "lookAt" between
+                     var dist = this._camera.position.distanceTo(newFocus.target);
+                     var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
+
+                     var stepcount = 150;
+                     // Amount to change camera position at each step
+                     var posDifference = newFocus.position.sub(this._camera.position).divideScalar(stepcount);
+                     // Amount to change "lookAt" so it will end pointed at target
+                     var targetDifference = newFocus.target.sub(oldTarget).divideScalar(stepcount);
+
+                     // Interpolate //
+                     for (var step = 0; step < stepcount; ++step) {
+                        setTimeout( function() {
+                          painter._camera.position.add(posDifference);
+                          oldTarget.add(targetDifference);
+                          painter._lookat = oldTarget;
+                          painter._camera.lookAt(painter._lookat);
+                          painter.Render3D();
+                       }, step * 20);
+                     }
+                     this._controls.target = newFocus.target;
+                     this._controls.update();
 
                      console.log('Focus '+arg);
                   });
@@ -1050,30 +1057,8 @@
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
       var target = new THREE.Vector3(midx, midy, midz);
-      this._controls.target = target;
-      // Find to points to animate "lookAt" between
-      var dist = this._camera.position.distanceTo(target);
-      var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
 
-      var stepcount = 150;
-      // Amount to change camera position at each step
-      var posDifference = position.sub(this._camera.position).divideScalar(stepcount);
-      // Amount to change "lookAt" so it will end pointed at target
-      var targetDifference = target.sub(oldTarget).divideScalar(stepcount);
-
-      var painter = this;
-      // Interpolate //
-      for (var step = 0; step < stepcount; ++step) {
-         setTimeout( function() {
-           painter._camera.position.add(posDifference);
-           oldTarget.add(targetDifference);
-           painter._lookat = oldTarget;
-           painter._camera.lookAt(painter._lookat);
-           painter.Render3D();
-        }, step * 20);
-      }
-      this._controls.update();
-
+      return { position:position, target:target };
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
