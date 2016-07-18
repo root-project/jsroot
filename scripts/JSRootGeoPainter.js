@@ -415,7 +415,7 @@
 
       xclip.onChange( function (value) {
          painter.clipX = value;
-         painter.updateClipping();
+         if (painter.enableX) painter.updateClipping();
       });
 
       var toggleY = this._datgui.add(this, 'enableY');
@@ -428,7 +428,7 @@
 
       yclip.onChange( function (value) {
          painter.clipY = value;
-         painter.updateClipping();
+         if (painter.enableY) painter.updateClipping();
       });
 
       var toggleZ = this._datgui.add(this, 'enableZ');
@@ -441,7 +441,7 @@
 
       zclip.onChange( function (value) {
          painter.clipZ = value;
-         painter.updateClipping();
+         if (painter.enableZ) painter.updateClipping();
       });
    }
 
