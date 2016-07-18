@@ -1517,7 +1517,10 @@
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
 
-      if (withmatrix) res.matrix = new THREE.Matrix4();
+      if (withmatrix) {
+         res.matrix = new THREE.Matrix4();
+         if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
+      }
 
       if (this.origin) res.obj = this.origin[0];
 
