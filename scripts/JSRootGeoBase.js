@@ -1513,9 +1513,11 @@
       return res;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack) {
+   JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
+
+      if (withmatrix) res.matrix = new THREE.Matrix4();
 
       if (this.origin) res.obj = this.origin[0];
 
@@ -1527,11 +1529,37 @@
                res.obj = this.origin[res.id];
                res.name += "/" + res.obj.fName;
             }
+
+            if (withmatrix && res.node.matrix)
+               res.matrix.multiply(new THREE.Matrix4().fromArray(res.node.matrix));
          }
 
       return res;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
+      if (!this.origin) return null;
+
+      var names = fullname.split('/');
+
+      var currid = 0, stack = [];
+
+      for (var n=0;n<names.length;++n) {
+         var node = this.nodes[currid];
+         if (!node.chlds) return null;
+
+         for (var k=0;k<node.chlds.length;++k) {
+            var chldid = node.chlds[k];
+            var obj = this.origin[chldid];
+            if (obj && (obj.fName === names[n])) { stack.push(k); currid = chldid; break; }
+         }
+
+         // no new entry - not found stack
+         if (stack.length == n) return null;
+      }
+
+      return stack;
+   }
 
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
       // create hierarchy of Object3D for given stack entry

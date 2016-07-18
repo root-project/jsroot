@@ -525,10 +525,7 @@
                             });
 
                   menu.add("Focus", n, function(arg) {
-
-                     this.focusCamera(obj);
-
-                     console.log('Focus '+arg);
+                     this.focusCamera(intersects[arg].object);
                   });
 
                   if (many) menu.add("endsub:");
@@ -906,7 +903,7 @@
       this._renderer.setSize(w, h);
 
       // Clipping Planes
-      
+
       this.enableX = false;
       this.enableY = false;
       this.enableZ = false;
@@ -1019,6 +1016,22 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+   }
+
+   JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
+      console.log('Focus on the element', itemname);
+
+      if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
+
+      var stack = this._clones.FindStackByName(itemname.substr(6));
+
+      if (!stack) return;
+
+      var info = this._clones.ResolveStack(stack, true);
+
+      console.log('transfrom matrix', info.matrix.elements);
+
+      console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
    }
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
@@ -1512,8 +1525,6 @@
 
       this.SetDivId(divid, 5);
 
-      geometry._painter = this; // set painter, use for drawing update
-
       return this.DrawGeometry(opt);
    }
 
@@ -1539,7 +1550,6 @@
       if (node && (typeof node == 'object')) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(node));
          this.SetDivId(divid, 5);
-         node._painter = this; // set painter, use for drawing update
          return this.DrawGeometry(opt);
       }
 
@@ -1602,6 +1612,7 @@
 
          JSROOT.CallBack(callback, item, null);
       }
+
       item._expand = function(node, lst) {
          // only childs
 
@@ -1636,6 +1647,22 @@
                   sub._more = true;
                   sub._expand = node._expand;
                }
+
+               if (JSROOT.GEO.findItemWithPainter(node))
+                  // one only can focus item which is drawn - we should check painter first
+                  sub._menu = function(menu, item, hpainter) {
+                     menu.add("Focus", function() {
+
+                        var drawitem = JSROOT.GEO.findItemWithPainter(item);
+                        if (!drawitem) return;
+
+                        var fullname = hpainter.itemFullName(item, drawitem);
+
+                        if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
+                           drawitem._painter.focusOnItem(fullname);
+                     });
+                 }
+
             }
 
             node._childs.push(sub);
@@ -1667,7 +1694,7 @@
          JSROOT.GEO.ToggleBit(vol, arg);
          item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
          hpainter.UpdateTreeNode(item);
-         JSROOT.GEO.browserItemChanged(item);
+         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       }
 
       menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
@@ -1682,13 +1709,16 @@
       return true;
    }
 
-   JSROOT.GEO.browserItemChanged = function(hitem) {
+   JSROOT.GEO.findItemWithPainter = function(hitem, funcname) {
       while (hitem) {
-         if (hitem._volume && hitem._volume._painter)
-            return hitem._volume._painter.testGeomChanges();
-
+         if (hitem._painter) {
+            if (funcname && typeof hitem._painter[funcname] == 'function')
+               hitem._painter[funcname]();
+            return hitem;
+         }
          hitem = hitem._parent;
       }
+      return null;
    }
 
    JSROOT.GEO.browserIconClick = function(hitem) {
@@ -1699,7 +1729,7 @@
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
       hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
-      JSROOT.GEO.browserItemChanged(hitem);
+      JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       return true;
    }
 
