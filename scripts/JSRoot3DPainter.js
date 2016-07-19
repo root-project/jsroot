@@ -115,21 +115,21 @@
             if ((pick!==null) && (INTERSECTED !== pick)) {
                if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
                   INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-                  // 0.96 and 1.04166 are inverse, allowing "highlight" bins to buldge
+                  // 0.992 and 1.00806 are inverse, allowing "highlight" bins to buldge
                   // slightly and be visible over the unhighlighted ones
-                  INTERSECTED.scale.x *= 0.96;
-                  INTERSECTED.scale.y *= 0.96;
-                  INTERSECTED.scale.z *= 0.96;
-                  INTERSECTED.material.visible = false;
+                  INTERSECTED.scale.x *= 0.992;
+                  INTERSECTED.scale.y *= 0.992;
+                  INTERSECTED.scale.z *= 0.992;
+            //      INTERSECTED.material.visible = false;
                }
 
                INTERSECTED = pick;
                if (do_bins_highlight && ('emissive' in INTERSECTED.material)) {
                   INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                   INTERSECTED.material.emissive.setHex(0x5f5f5f);
-                  INTERSECTED.scale.x *= 1.04166666666666;
-                  INTERSECTED.scale.y *= 1.04166666666666;
-                  INTERSECTED.scale.z *= 1.04166666666666;
+                  INTERSECTED.scale.x *= 1.00806451612903;
+                  INTERSECTED.scale.y *= 1.00806451612903;
+                  INTERSECTED.scale.z *= 1.00806451612903;
                   INTERSECTED.material.visible = true;
                   painter.Render3D(0);
                }
@@ -139,10 +139,10 @@
          } else {
             if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               INTERSECTED.scale.x *= 0.96;
-               INTERSECTED.scale.y *= 0.96;
-               INTERSECTED.scale.z *= 0.96;
-               INTERSECTED.material.visible = false;
+               INTERSECTED.scale.x *= 0.992;
+               INTERSECTED.scale.y *= 0.992;
+               INTERSECTED.scale.z *= 0.992;
+            //   INTERSECTED.material.visible = false;
                painter.Render3D(0);
             }
             INTERSECTED = null;
