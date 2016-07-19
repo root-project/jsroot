@@ -1208,14 +1208,24 @@
       return null;
    }
 
-   JSROOT.GEO.CreateFrustum = function(camera) {
-      var frustum = new THREE.Frustum();
+   JSROOT.GEO.CreateProjectionMatrix = function(camera) {
       var cameraProjectionMatrix = new THREE.Matrix4();
 
       camera.updateMatrixWorld();
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
-      frustum.setFromMatrix( cameraProjectionMatrix );
+
+      return cameraProjectionMatrix;
+   }
+
+   JSROOT.GEO.CreateFrustum = function(source) {
+      if (!source) return null;
+
+      if (source instanceof THREE.PerspectiveCamera)
+         source = JSROOT.GEO.CreateProjectionMatrix(source);
+
+      var frustum = new THREE.Frustum();
+      frustum.setFromMatrix(source);
 
       frustum.corners = [
          new THREE.Vector3(  0.5,  0.5,  0.5 ),
@@ -1393,18 +1403,29 @@
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen, copy_bits) {
-      if (!this.origin || !this.nodes) return 0;
+   JSROOT.GEO.ClonedNodes.prototype.MarkVisisble = function(on_screen, copy_bits, cloning) {
+      if (!this.nodes) return 0;
 
-      var res = 0;
+      var res = 0, simple_copy = cloning && (cloning.length === this.nodes.length);
 
-      for (var n=0;n<this.origin.length;++n) {
-         var obj = this.origin[n], clone = this.nodes[n];
+      if (!simple_copy && !this.origin) return 0;
+
+      for (var n=0;n<this.nodes.length;++n) {
+         var clone = this.nodes[n];
 
          clone.vis = false;
          clone.numvischld = 1; // reset vis counter, will be filled with next scan
          clone.idshift = 0;
          delete clone.depth;
+
+         if (simple_copy) {
+            clone.vis = cloning[n].vis;
+            if (cloning[n].depth !== undefined) clone.depth = cloning[n].depth;
+            if (clone.vis) res++;
+            continue;
+         }
+
+         var obj = this.origin[n];
 
          if (clone.kind === 0) {
             if (obj.fVolume) {
@@ -1427,6 +1448,17 @@
          if (clone.vis) res++;
       }
 
+      return res;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.GetVisibleFlags = function() {
+      // function extract only visibility flags, used to transfer them to the worker
+      var res = [];
+      for (var n=0;n<this.nodes.length;++n) {
+         var elem = { vis: this.nodes[n].vis };
+         if ('depth' in this.nodes[n]) elem.depth = this.nodes[n].depth;
+         res.push(elem);
+      }
       return res;
    }
 
@@ -1646,13 +1678,13 @@
       while ((cnt < limit) && (indx < vismap.length-1))
          cnt += viscnt[vismap[indx++].id];
 
-      console.log('Volume', vismap[indx].vol, 'Counter', cnt);
+      console.log('Volume voundary ' + vismap[indx].vol + '  counter ' + cnt);
 
       return vismap[indx].vol;
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum, camera) {
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum, frustum) {
       // function collects visible nodes, using maxlimit
       // one can use map to define cut based on the volume or serious of cuts
 
@@ -1669,7 +1701,7 @@
 
       var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
 
-      console.log('Total visible nodes', total);
+      console.log('Total visible nodes ' + total);
 
       if (total > maxnum) {
 
@@ -1677,9 +1709,9 @@
          minVol = this.GetVolumeBoundary(arg.viscnt, maxnum);
 
          // if we have camera and too many volumes, try to select some of them in camera view
-         if (camera && (total>=maxnum*1.25)) {
+         if (frustum && (total>=maxnum*1.25)) {
              arg.domatrix = true;
-             arg.frustum = JSROOT.GEO.CreateFrustum(camera);
+             arg.frustum = frustum;
              arg.totalcam = 0;
              arg.func = function(node) {
                 if (node.vol <= minVol) // only small volumes are interesting
@@ -1700,7 +1732,7 @@
              else
                 camVol = 0;
 
-             console.log('Limit for camera', camVol, 'in camera view', arg.totalcam);
+             console.log('Limit for camera ' + camVol + '  objects in camera view ' + arg.totalcam);
          }
       }
 

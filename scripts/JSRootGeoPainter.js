@@ -297,8 +297,6 @@
       return this.startDrawGeometry();
 
 
-
-
       var painter = this, cnt = 0, totalcnt = 0;
 
       var tm1 = new Date().getTime();
@@ -747,11 +745,83 @@
 
    JSROOT.TGeoPainter.prototype.drawNode = function() {
       // return false when nothing todo
-      // return true if creates next node
+      // return true if one could perform next action immediately
       // return 1 when call after short timeout required
       // return 2 when call must be done from processWorkerReply
 
-      if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
+      if (!this._clones || (this.drawing_stage == 0)) return false;
+
+
+      if (this.drawing_stage == 1) {
+         // first copy visibility flags, one should deliver info to the worker
+         this._clones.MarkVisisble();
+         this.drawing_stage = 2;
+         return true;
+      }
+
+      if (this.drawing_stage == 2) {
+         var matrix = this._first_drawing ? null : JSROOT.GEO.CreateProjectionMatrix(this._camera);
+
+         // here we decide if we use worker for the collection of nodes to draw
+         // main reason - too large geometry and large time to scan all camera positions
+
+         var use_worker = false;
+         if (this._worker_ready && matrix)
+            if (this._clones.ScanVisible() > 1e5) use_worker = true;
+         use_worker = false;
+
+         if (!use_worker) {
+            var tm1 = new Date().getTime();
+            this._new_draw_nodes = this._clones.CollectVisibles(this.options.maxlimit, JSROOT.GEO.CreateFrustum(matrix));
+            var tm2 = new Date().getTime();
+            console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
+            this.drawing_stage = 4;
+            return true;
+         }
+
+         var job = {
+               collect: this.options.maxlimit,   // indicator for the command
+               visible: this._clones.GetVisibleFlags(),
+               matrix: matrix ? matrix.elements : null
+         };
+
+         this.submitToWorker(job);
+
+         this.drawing_stage = 3;
+
+         return 2; // we now waiting for the worker reply
+      }
+
+      if (this.drawing_stage == 3) {
+         // do nothing, we are waiting for worker reply
+
+         return 2;
+      }
+
+      if (this.drawing_stage == 4) {
+         if (this._draw_nodes) {
+            var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes), dcnt = 0;
+            // remove should be fast, do it here
+            for (var n=0;n<del.length;++n) {
+               var mesh = this._clones.CreateObject3D(del[n].stack, this._toplevel, 'mesh');
+               while (mesh && (mesh !== this._toplevel)) {
+                  var prnt = mesh.parent;
+                  prnt.remove(mesh); ++dcnt;
+                  mesh = (prnt.children.length == 0) ? prnt : null; // remove all parents if they are not necessary
+               }
+            }
+            console.log('delete nodes', del.length,'really', dcnt);
+         }
+
+         this._draw_nodes = this._new_draw_nodes;
+         delete this._new_draw_nodes;
+         this.drawing_stage = 5;
+         return true;
+      }
+
+      // here is last and main stage, create geometries and build full mesh
+      // TODO: make it with few more stages
+      if (!this._draw_nodes) return false;
 
       // first of all, create geometries (using worker if available)
 
@@ -866,7 +936,7 @@
 
       // here everything is completed, we could cleanup data and finish
 
-      this._draw_nodes_ready = true;
+      this.drawing_stage = 0;
 
       return false;
    }
@@ -937,41 +1007,18 @@
 
    JSROOT.TGeoPainter.prototype.startDrawGeometry = function(force) {
 
-      if (!force && !this._draw_nodes_ready) {
+      if (!force && (this.drawing_stage!==0)) {
          this._draw_nodes_again = true;
          return;
       }
 
       this.accountClear();
 
-      tm1 = new Date().getTime();
-
-      if (this._draw_nodes_again) this._clones.MarkVisisble();
-
-      var camera = this._first_drawing ? null : this._camera;
-
-      var newnodes = this._clones.CollectVisibles(this.options.maxlimit, camera);
-      tm2 = new Date().getTime();
-
-      console.log('Collect visibles', newnodes.length, 'takes', tm2-tm1);
-
-      if (this._draw_nodes) {
-         var del = this._clones.MergeVisibles(newnodes, this._draw_nodes), dcnt = 0;
-         // remove should be fast, do it here
-         for (var n=0;n<del.length;++n) {
-            var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel);
-            if (obj3d) { obj3d.parent.remove(obj3d); ++dcnt; }
-         }
-         console.log('delete nodes', del.length,'really', dcnt)
-      }
-
-      this._draw_nodes = newnodes;
-
       this._startm = new Date().getTime();
       this._last_render_tm = this._startm;
       this._last_render_cnt = 0;
       this._drawcnt = 0; // counter used to build meshes
-      this._draw_nodes_ready = false;
+      this.drawing_stage = 1;
       delete this._draw_nodes_again; // forget about such flag
 
       this.continueDraw();
@@ -1306,10 +1353,10 @@
       this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes } );
    }
 
-   JSROOT.TGeoPainter.prototype.canSubmitToWorker = function() {
+   JSROOT.TGeoPainter.prototype.canSubmitToWorker = function(force) {
       if (!this._worker) return false;
 
-      return this._worker_ready && (this._worker_jobs == 0);
+      return this._worker_ready && ((this._worker_jobs == 0) || force);
    }
 
    JSROOT.TGeoPainter.prototype.submitToWorker = function(job) {
@@ -1324,6 +1371,13 @@
 
    JSROOT.TGeoPainter.prototype.processWorkerReply = function(job) {
       this._worker_jobs--;
+
+      if ('collect' in job) {
+         this._new_draw_nodes = job.new_nodes;
+         this.drawing_stage = 4;
+         // invoke methods immediately
+         return this.continueDraw();
+      }
 
       if ('shapes' in job) {
          var loader = new THREE.BufferGeometryLoader();
@@ -1351,6 +1405,7 @@
          // invoke methods immediately
          return this.continueDraw();
       }
+
    }
 
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
@@ -1425,6 +1480,8 @@
       this._camera = null;
 
       this.first_render_tm = 0;
+
+      this.drawing_stage = 0;
 
       delete this._datgui;
       delete this._controls;

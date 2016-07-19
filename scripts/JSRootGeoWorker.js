@@ -74,4 +74,25 @@ onmessage = function(e) {
       return postMessage(e.data);
    }
 
+   if (e.data.collect !== undefined) {
+      // this is task to collect visible nodes using camera position
+
+      // first mark all visible flags
+      clones.MarkVisisble(false, false, e.data.visible);
+      delete e.data.visible;
+
+      var matrix = null;
+      if (e.data.matrix)
+         matrix = new THREE.Matrix4().fromArray(e.data.matrix);
+      delete e.data.matrix;
+
+      e.data.new_nodes = clones.CollectVisibles(e.data.collect, JSROOT.GEO.CreateFrustum(matrix));
+
+      e.data.tm2 = new Date().getTime();
+
+      console.log('Collect visibles in worker ' + e.data.new_nodes.length + ' takes ' + (e.data.tm2-e.data.tm1));
+
+      return postMessage(e.data);
+   }
+
 }
