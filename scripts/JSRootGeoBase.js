@@ -1633,12 +1633,12 @@
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.DefineVisible = function(maxnum) {
-      // function collects visible nodes and build sorted map
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum) {
+      // function collects visible nodes, using maxlimit
       // one can use map to define cut based on the volume or serious of cuts
 
       var arg = {
-         viscnt: new Int32Array(this.nodes.length),
+         viscnt: new Int32Array(this.nodes.length), // counter for each node
          // nodes: this.nodes,
          func: function(node) {
             this.viscnt[node.id]++;
@@ -1648,40 +1648,36 @@
 
       for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var res = { cnt0: 0, minVol: 0, cnt1: 0, vismap: [] };
+      var total = this.ScanVisible(arg), minVol = 0;
 
-      res.cnt0 = this.ScanVisible(arg);
+      if (total > maxnum) {
+         var vismap = [];
+         for (var id=0;id<arg.viscnt.length;++id)
+            if (arg.viscnt[id] > 0)
+               vismap.push(this.nodes[id]);
 
-      for (var id=0;id<arg.viscnt.length;++id)
-         if (arg.viscnt[id] > 0)
-            res.vismap.push(this.nodes[id]);
+         // sort in reverse order (big volumes first)
+         vismap.sort(function(a,b) { return b.vol - a.vol; })
 
-      res.vismap.sort(function(a,b) { return b.vol - a.vol; });
+         var indx = 0, cnt = 0;
+         while ((cnt < maxnum) && (indx < vismap.length-1))
+            cnt += arg.viscnt[vismap[indx++].id];
 
-      if (res.cnt0 > maxnum) {
-         var indx = 0;
-         while ((res.cnt1 < maxnum) && (indx < res.vismap.length-1))
-            res.cnt1 += arg.viscnt[res.vismap[indx++].id];
-         res.minVol = res.vismap[indx].vol;
+         // define minimal volume, which always shown
+         minVol = vismap[indx].vol;
       }
 
-      return res;
-   }
+      arg.items = [];
 
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(minvol) {
-      var arg = {
-            min: minvol,
-            res: [],
-            func: function(node) {
-               if (node.vol <= this.min) return false;
-               this.res.push(this.CopyStack());
-               return true;
-            }
-         };
+      arg.func = function(node) {
+         if (node.vol <= minVol) return false;
+         this.items.push(this.CopyStack());
+         return true;
+      }
 
       this.ScanVisible(arg);
 
-      return arg.res;
+      return arg.items;
    }
 
    JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {

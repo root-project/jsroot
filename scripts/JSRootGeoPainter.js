@@ -943,17 +943,16 @@
 
       if (this._draw_nodes_again) this._clones.MarkVisisble();
 
-      var res2 = this._clones.DefineVisible(this.options.maxlimit);
-      var newnodes = this._clones.CollectVisibles(res2.minVol);
+      var newnodes = this._clones.CollectVisibles(this.options.maxlimit);
       tm2 = new Date().getTime();
 
-      console.log('Collect visibles', newnodes.length, 'minvol', res2.minVol, 'takes', tm2-tm1);
+      console.log('Collect visibles', newnodes.length, 'takes', tm2-tm1);
 
       if (this._draw_nodes) {
          var del = this._clones.MergeVisibles(newnodes, this._draw_nodes);
          // remove should be fast, do it here
          for (var n=0;n<del.length;++n) {
-            var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel, this.options);
+            var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel);
             if (obj3d) obj3d.parent.remove(obj3d);
          }
       }
