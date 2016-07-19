@@ -2918,6 +2918,10 @@
                if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
          }
       }
+      if ((histo.fMinimum != -1111) && (histo.fMaximum != -1111)) {
+         this.gminbin = histo.fMinimum;
+         this.gmaxbin = histo.fMaximum;
+      }
 
       // this value used for logz scale drawing
       if (this.gmin0bin === null) this.gmin0bin = this.gmaxbin*1e-4;
