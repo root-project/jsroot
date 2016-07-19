@@ -1402,7 +1402,7 @@
          var obj = this.origin[n], clone = this.nodes[n];
 
          clone.vis = false;
-         clone.numvischld = 1; // reset vis counter, will be filled wit next scan
+         clone.numvischld = 1; // reset vis counter, will be filled with next scan
          clone.idshift = 0;
          delete clone.depth;
 
@@ -1632,8 +1632,27 @@
       return three_prnt;
    }
 
+   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, limit) {
+      var vismap = [];
 
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum) {
+      for (var id=0;id<viscnt.length;++id)
+         if (viscnt[id] > 0)
+            vismap.push(this.nodes[id]);
+
+      // sort in reverse order (big volumes first)
+      vismap.sort(function(a,b) { return b.vol - a.vol; })
+
+      var indx = 0, cnt = 0;
+      while ((cnt < limit) && (indx < vismap.length-1))
+         cnt += viscnt[vismap[indx++].id];
+
+      console.log('Volume', vismap[indx].vol, 'Counter', cnt);
+
+      return vismap[indx].vol;
+   }
+
+
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum, camera) {
       // function collects visible nodes, using maxlimit
       // one can use map to define cut based on the volume or serious of cuts
 
@@ -1648,30 +1667,53 @@
 
       for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var total = this.ScanVisible(arg), minVol = 0;
+      var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
+
+      console.log('Total visible nodes', total);
 
       if (total > maxnum) {
-         var vismap = [];
-         for (var id=0;id<arg.viscnt.length;++id)
-            if (arg.viscnt[id] > 0)
-               vismap.push(this.nodes[id]);
-
-         // sort in reverse order (big volumes first)
-         vismap.sort(function(a,b) { return b.vol - a.vol; })
-
-         var indx = 0, cnt = 0;
-         while ((cnt < maxnum) && (indx < vismap.length-1))
-            cnt += arg.viscnt[vismap[indx++].id];
 
          // define minimal volume, which always shown
-         minVol = vismap[indx].vol;
+         minVol = this.GetVolumeBoundary(arg.viscnt, maxnum);
+
+         // if we have camera and too many volumes, try to select some of them in camera view
+         if (camera && (total>=maxnum*1.25)) {
+             arg.domatrix = true;
+             arg.frustum = JSROOT.GEO.CreateFrustum(camera);
+             arg.totalcam = 0;
+             arg.func = function(node) {
+                if (node.vol <= minVol) // only small volumes are interesting
+                   if (this.frustum.CheckShape(this.getmatrix(), node)) {
+                      this.viscnt[node.id]++;
+                      this.totalcam++;
+                   }
+
+                return true;
+             }
+
+             for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
+
+             this.ScanVisible(arg);
+
+             if (arg.totalcam > maxnum*0.25)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnum*0.25);
+             else
+                camVol = 0;
+
+             console.log('Limit for camera', camVol, 'in camera view', arg.totalcam);
+         }
       }
 
       arg.items = [];
 
       arg.func = function(node) {
-         if (node.vol <= minVol) return false;
-         this.items.push(this.CopyStack());
+         if (node.vol > minVol) {
+            this.items.push(this.CopyStack());
+         } else
+         if ((camVol >= 0) && (node.vol > camVol))
+            if (this.frustum.CheckShape(this.getmatrix(), node)) {
+               this.items.push(this.CopyStack());
+            }
          return true;
       }
 

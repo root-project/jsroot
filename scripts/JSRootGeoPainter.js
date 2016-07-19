@@ -294,6 +294,11 @@
    JSROOT.TGeoPainter.prototype.TestVisibleObjects = function() {
       this.TestMatrixes();
 
+      return this.startDrawGeometry();
+
+
+
+
       var painter = this, cnt = 0, totalcnt = 0;
 
       var tm1 = new Date().getTime();
@@ -743,8 +748,8 @@
    JSROOT.TGeoPainter.prototype.drawNode = function() {
       // return false when nothing todo
       // return true if creates next node
-      // return 1 when call after short timeout
-      // return 2 when call be done from processWorkerReply
+      // return 1 when call after short timeout required
+      // return 2 when call must be done from processWorkerReply
 
       if (!this._clones || !this._draw_nodes || this._draw_nodes_ready) return false;
 
@@ -943,18 +948,21 @@
 
       if (this._draw_nodes_again) this._clones.MarkVisisble();
 
-      var newnodes = this._clones.CollectVisibles(this.options.maxlimit);
+      var camera = this._first_drawing ? null : this._camera;
+
+      var newnodes = this._clones.CollectVisibles(this.options.maxlimit, camera);
       tm2 = new Date().getTime();
 
       console.log('Collect visibles', newnodes.length, 'takes', tm2-tm1);
 
       if (this._draw_nodes) {
-         var del = this._clones.MergeVisibles(newnodes, this._draw_nodes);
+         var del = this._clones.MergeVisibles(newnodes, this._draw_nodes), dcnt = 0;
          // remove should be fast, do it here
          for (var n=0;n<del.length;++n) {
             var obj3d = this._clones.CreateObject3D(del[n].stack, this._toplevel);
-            if (obj3d) obj3d.parent.remove(obj3d);
+            if (obj3d) { obj3d.parent.remove(obj3d); ++dcnt; }
          }
+         console.log('delete nodes', del.length,'really', dcnt)
       }
 
       this._draw_nodes = newnodes;
