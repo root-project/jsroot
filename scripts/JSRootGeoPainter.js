@@ -631,7 +631,6 @@
       this._num_geom = 0;
       this._num_vertices = 0;
       this._num_faces = 0;
-      this._num_nodes = 0;
    }
 
    JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
@@ -646,11 +645,6 @@
       this._num_faces += JSROOT.GEO.numGeometryFaces(geom);
 
       this._num_vertices += JSROOT.GEO.numGeometryVertices(geom);
-   }
-
-   JSROOT.TGeoPainter.prototype.accountNodes = function(mesh) {
-      // used to calculate statistic over created meshes
-      if (mesh !== null) this._num_nodes++;
    }
 
    JSROOT.TGeoPainter.prototype.getMatrixFlip = function(matrix) {
@@ -734,8 +728,6 @@
          }
 
          shape[gname] = geom;
-
-         this.accountGeom(geom, shape._typename);
       }
 
       var mesh = new THREE.Mesh( geom, material );
@@ -748,7 +740,7 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawNode = function() {
+   JSROOT.TGeoPainter.prototype.nextDrawAction = function() {
       // return false when nothing todo
       // return true if one could perform next action immediately
       // return 1 when call after short timeout required
@@ -757,6 +749,10 @@
       if (!this._clones || (this.drawing_stage == 0)) return false;
 
       if (this.drawing_stage == 1) {
+
+         // wait until worker is really started
+         if ((this.options.use_worker>0) && this._worker && !this._worker_ready) return 1;
+
          // first copy visibility flags and check how many unique visible nodes exists
          var numvis = this._clones.MarkVisisble();
 
@@ -876,8 +872,12 @@
             // do not create composite in main thread, when worker is exists (exclude first drawing)
             if (this._worker && (shape._typename == 'TGeoCompositeShape') && !this._first_drawing) continue;
 
+            //if (shape.fName == 'Rich1AerogelWrapSubQ3') {
+            //   var item = this._draw_nodes[todo[s].indx];
+            //   console.log('stack ' + this._clones.ResolveStack(item.stack).name);
+            //}
+
             shape._geom = JSROOT.GEO.createGeometry(shape);
-            this.accountGeom(shape._geom, shape._typename);
             delete shape._geom_worker; // remove flag
             ready.push(todo[s].indx); // one could add it to ready list
 
@@ -899,11 +899,14 @@
 
          var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
 
-         this._drawcnt++;
-
          var mesh = null;
 
          if (JSROOT.GEO.numGeometryFaces(prop.shape._geom) > 0) {
+
+            this._drawcnt++;
+
+            this.accountGeom(prop.shape._geom, prop.shape._typename);
+
             prop.material.wireframe = this.options.wireframe;
 
             if (obj3d.matrixWorld.determinant() > -0.9) {
@@ -1023,7 +1026,7 @@
       this.accountClear();
 
       this._startm = new Date().getTime();
-      this._last_render_tm = this._startm;
+      this._last_render_at = this._startm;
       this._last_render_cnt = 0;
       this._drawcnt = 0; // counter used to build meshes
       this.drawing_stage = 1;
@@ -1138,7 +1141,6 @@
       }
       this._controls.target = target;
       this._controls.update();
-
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -1265,13 +1267,14 @@
 
       while(true) {
 
-         var res = this.drawNode();
+         var res = this.nextDrawAction();
 
          now = new Date().getTime();
 
          if (!res) break;
 
          var log = "Creating meshes " + this._drawcnt;
+         if (this.drawing_stage < 5) log = "Collecting visibles";
 
          // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) {
@@ -1281,11 +1284,11 @@
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
             JSROOT.progress(log);
-            if (this._webgl && (now - this._last_render_tm > interval) && (this._last_render_cnt != this._drawcnt)) {
+            if (this._webgl && (this._last_render_cnt != this._drawcnt) && (now - this._last_render_at > this.last_render_tm)) {
                if (this._first_drawing)
                   this.adjustCameraPosition();
-               this._renderer.render(this._scene, this._camera);
-               this._last_render_tm = new Date().getTime();
+               this.Render3D(-1);
+               this._last_render_at = new Date().getTime();
                this._last_render_cnt = this._drawcnt;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
@@ -1295,7 +1298,7 @@
 
       var take_time = now - this._startm;
 
-      JSROOT.console('Create tm = ' + take_time + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces + ' nodes ' + this._num_nodes);
+      JSROOT.console('Create tm = ' + take_time + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -1319,10 +1322,12 @@
 
          var tm2 = new Date();
 
+         this.last_render_tm = tm2.getTime() - tm1.getTime();
+
          delete this.render_tmout;
 
-         if (this.first_render_tm === 0) {
-            this.first_render_tm = tm2.getTime() - tm1.getTime();
+         if ((this.first_render_tm === 0) && (tmout===0)) {
+            this.first_render_tm = this.last_render_tm;
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
 
@@ -1402,9 +1407,7 @@
             var shape = this._clones.GetNodeShape(item.nodeid);
 
             if (item.json) {
-               var object = loader.parse(item.json);
-               shape._geom = object;
-               this.accountGeom(shape._geom, shape._typename);
+               shape._geom = loader.parse(item.json);
             } else {
                shape._geom = null; // mark that geometry should not be created
             }
@@ -1494,6 +1497,7 @@
       this._camera = null;
 
       this.first_render_tm = 0;
+      this.last_render_tm = 2000;
 
       this.drawing_stage = 0;
 
