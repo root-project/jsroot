@@ -4400,7 +4400,19 @@
          return (this.kind !== 1) ? false : this.nmajor == this.major.length;
       }
 
+      handle.next_major_grpos = function() {
+         if (this.nmajor >= this.major.length) return null;
+         return this.func(this.major[this.nmajor]);
+      }
+
       return handle;
+   }
+
+   JSROOT.TAxisPainter.prototype.IsCenterLabels = function() {
+      if (this.kind === 'labels') return true;
+      if (this.kind === 'log') return false;
+      var axis = this.GetObject();
+      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
    JSROOT.TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
@@ -4453,10 +4465,8 @@
 
       this.CreateFormatFuncs();
 
-      var center = (this.kind == 'labels') ||
-                   (this.kind !== 'log' && axis.TestBit(JSROOT.EAxisBits.kCenterLabels));
-
-      var res = "", res2 = "", lastpos = 0, lasth = 0, textscale = 1;
+      var center_lbls = this.IsCenterLabels(),
+          res = "", res2 = "", lastpos = 0, lasth = 0, textscale = 1;
 
       // first draw ticks
 
@@ -4550,7 +4560,7 @@
             if ((space > 0) && (tsize.height > 5) && (this.kind !== 'log'))
                textscale = Math.min(textscale, space / tsize.height);
 
-            if (center) {
+            if (center_lbls) {
                // if position too far top, remove label
                if (pos + space_after/2 - textscale*tsize.height/2 < -10)
                   t.remove();
@@ -4564,7 +4574,7 @@
             if ((space > 0) && (tsize.width > 10) && (this.kind !== 'log'))
                textscale = Math.min(textscale, space / tsize.width);
 
-            if (center) {
+            if (center_lbls) {
                // if position too far right, remove label
                if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
                   t.remove();

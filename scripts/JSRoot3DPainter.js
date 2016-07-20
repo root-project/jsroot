@@ -387,8 +387,10 @@
          this.x_kind = "log";
       } else {
          this.tx = d3.scale.linear();
-         this.x_kind = "lin";
+         if (histo && histo.fXaxis.fLabels) this.x_kind = 'labels';
+                                       else this.x_kind = "lin";
       }
+
       this.tx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
       this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
@@ -407,7 +409,8 @@
          this.y_kind = "log";
       } else {
          this.ty = d3.scale.linear();
-         this.y_kind = "lin";
+         if (histo && histo.fYaxis.fLabels) this.y_kind = 'labels';
+                                       else this.y_kind = "lin";
       }
       this.ty.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
       this.y_handle = new JSROOT.TAxisPainter(histo ? histo.fYaxis : null);
@@ -432,7 +435,7 @@
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
       var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 
-      var ticklen = textsize * 0.5, text, tick;
+      var ticklen = textsize*0.5, text, tick, lbls = [], text_scale = 1;
 
       var xticks = this.x_handle.CreateTicks();
 
@@ -449,25 +452,36 @@
             if (lbl === null) { is_major = false; lbl = ""; }
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
-         if (is_major) {
-            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
+         if (is_major && lbl && (lbl.length>0)) {
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 10 });
             text3d.computeBoundingBox();
-            var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+            var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
+            text3d.translate(-draw_width/2, 0, 0);
+            var text_pos = grx;
+
+            if (!xticks.last_major()) {
+               var space = (xticks.next_major_grpos() - grx);
+               if (draw_width > 0)
+                  text_scale = Math.min(text_scale, 0.95*space/draw_width)
+               if (this.x_handle.IsCenterLabels()) text_pos += space/2;
+            }
 
             if (bothsides) {
                text = new THREE.Mesh(text3d, textMaterial);
-               text.position.set(grx + centerOffset, grmaxy + plen + textsize,  grminz - plen - textsize);
+               text.position.set(text_pos, grmaxy + plen + textsize,  grminz - plen - textsize);
                text.rotation.x = Math.PI*3/4;
                text.rotation.y = Math.PI;
                text.name = "X axis";
                this.toplevel.add(text);
+               lbls.push(text);
             }
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grx - centerOffset, grminy - plen - textsize, grminz - plen - textsize);
+            text.position.set(text_pos, grminy - plen - textsize, grminz - plen - textsize);
             text.rotation.x = Math.PI/4;
             text.name = "X axis";
             this.toplevel.add(text);
+            lbls.push(text);
          }
 
          if (bothsides) {
@@ -500,26 +514,39 @@
          var plen = (is_major ? ticklen : ticklen*0.6) * Math.sin(Math.PI/4);
 
          if (is_major) {
-            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 10 });
+            text3d.computeBoundingBox();
+            var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x;
+            text3d.translate(-draw_width/2, 0, 0);
+            var text_pos = gry;
+
+            if (!yticks.last_major()) {
+               var space = (yticks.next_major_grpos() - gry);
+               if (draw_width > 0)
+                  text_scale = Math.min(text_scale, 0.95*space/draw_width)
+               if (this.y_handle.IsCenterLabels()) text_pos += space/2;
+            }
 
             text3d.computeBoundingBox();
             var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 
             if (bothsides) {
                text = new THREE.Mesh(text3d, textMaterial);
-               text.position.set(grmaxx + plen + textsize, gry + centerOffset, grminz - plen - textsize);
+               text.position.set(grmaxx + plen + textsize, text_pos, grminz - plen - textsize);
                text.rotation.y = Math.PI / 4;
                text.rotation.z = Math.PI / 2;
                text.name = "Y axis";
                this.toplevel.add(text);
+               lbls.push(text);
             }
 
             text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - plen - textsize, gry + centerOffset, grminz - plen - textsize);
+            text.position.set(grminx - plen - textsize, text_pos, grminz - plen - textsize);
             text.rotation.y = -Math.PI / 4;
             text.rotation.z = -Math.PI / 2;
             text.name = "Y axis";
             this.toplevel.add(text);
+            lbls.push(text);
          }
          if (bothsides) {
             tick = new THREE.Line(geometry, lineMaterial);
@@ -548,9 +575,8 @@
          if (lbl === null) { is_major = false; lbl = ""; }
          var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
 
-         if (is_major) {
+         if (is_major && lbl && (lbl.length>0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
-
             text3d.computeBoundingBox();
             var offset = 0.8 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x) + 0.7 * textsize;
 
@@ -563,6 +589,7 @@
                text.rotation.y = -0.75 * Math.PI;
                text.name = "Z axis";
                this.toplevel.add(text);
+               lbls.push(text);
 
                text = new THREE.Mesh(text3d, textMaterial);
                text.position.set(grmaxx + offset, grminy - offset, textz);
@@ -570,6 +597,7 @@
                text.rotation.y = 0.75*Math.PI;
                text.name = "Z axis";
                this.toplevel.add(text);
+               lbls.push(text);
 
                text = new THREE.Mesh(text3d, textMaterial);
                text.position.set(grminx - offset, grminy - offset, textz);
@@ -577,6 +605,7 @@
                text.rotation.y = 0.25*Math.PI;
                text.name = "Z axis";
                this.toplevel.add(text);
+               lbls.push(text);
             }
 
             text = new THREE.Mesh(text3d, textMaterial);
@@ -585,6 +614,7 @@
             text.rotation.y = -0.25*Math.PI;
             text.name = "Z axis";
             this.toplevel.add(text);
+            lbls.push(text);
          }
          if (bothsides) {
             tick = new THREE.Line(geometry, lineMaterial);
@@ -615,6 +645,9 @@
          tick.name = "Z axis " + this.z_handle.format(zticks.tick);
          this.toplevel.add(tick);
       }
+
+      if (text_scale < 1)
+         lbls.forEach(function(mesh) { mesh.scale.set(text_scale, text_scale, 1); });
 
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;

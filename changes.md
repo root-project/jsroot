@@ -8,6 +8,13 @@
 5. Preliminary support of websocket communication
 6. Update many draw attributes (fill/line/position) when monitor objects  
 7. Floating browser can be activated in non-browser mode (only for TGeo drawings)
+8. Many significant changes in TGeo 3D drawing
+   - select and draw only most significant volumes, let work with large geometry models
+   - one could activate several clip planes (only with WebGL support)
+   - interaction with object browser to change visibility flags or focus on selected volume
+   - intensive use of HTML Worker to offload computation tasks and keep interactivity   
+   - enable more details when changing camera position/zoom
+9. Support axis labels draw in 3D plots (like lego for th2) 
 
 
 ## Changes in 4.5.0
