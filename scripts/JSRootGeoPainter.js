@@ -1709,11 +1709,98 @@
 
    // ===============================================================================
 
-   JSROOT.GEO.expandList = function(item, lst) {
+   JSROOT.GEO.getBrowserItem = function(item, itemname, callback) {
+      JSROOT.CallBack(callback, item, item._geoobj);
+   }
+
+   JSROOT.GEO.createItem = function(node, obj, name) {
+      var sub = {
+         _kind: "ROOT." + obj._typename,
+         _name: name ? name : obj.fName,
+         _title: obj.fTitle,
+         _parent: node,
+         _geoobj: obj,
+         _get: JSROOT.GEO.getBrowserItem
+      };
+
+      if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
+      if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
+      if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
+      if (obj.fVolume) {
+         sub._title = "node:"  + obj._typename;
+         if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
+         if (obj.fVolume.fShape) {
+            sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
+            sub._title += " shape:" + obj.fVolume.fShape._typename;
+         }
+         if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
+            sub._more = true;
+            sub._expand = JSROOT.GEO.expandObject;
+         }
+
+         // one only can focus item which is drawn - we should check painter first
+         sub._menu = function(menu, item, hpainter) {
+            if (JSROOT.GEO.findItemWithPainter(item))
+              menu.add("Focus", function() {
+
+                var drawitem = JSROOT.GEO.findItemWithPainter(item);
+                if (!drawitem) return;
+
+                var fullname = hpainter.itemFullName(item, drawitem);
+                if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
+                   drawitem._painter.focusOnItem(fullname);
+              });
+         }
+      } else
+      if (obj._typename.indexOf("TGeoVolume")===0) {
+         if ((obj.fNodes && obj.fNodes.arr.length>0)) {
+            sub._more = true;
+            sub._expand = JSROOT.GEO.expandObject;
+         } else
+         if ((obj.fShape !== null) && (obj.fShape._typename === "TGeoCompositeShape") && (obj.fShape.fNode !== null)) {
+            sub._more = true;
+            sub._expand = function(node, obj) {
+               JSROOT.GEO.expandShape(node, obj.fShape.fNode.fLeft, 'Left');
+               JSROOT.GEO.expandShape(node, obj.fShape.fNode.fRight, 'Right');
+               return true;
+            }
+         }
+
+         if (sub._title == "")
+            if (obj._typename != "TGeoVolume") sub._title = obj._typename;
+
+         if (obj.fShape !== null) {
+            if (sub._title == "")
+               sub._title = obj.fShape._typename;
+
+            sub._icon = JSROOT.GEO.getShapeIcon(obj.fShape);
+         } else {
+            sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
+         }
+
+         sub._icon += JSROOT.GEO.provideVisStyle(obj);
+
+         sub._menu = JSROOT.GEO.provideMenu;
+         sub._icon_click  = JSROOT.GEO.browserIconClick;
+      }
+
+      node._childs.push(sub);
+
+      return sub;
+   }
+
+   JSROOT.GEO.createList = function(parent, lst, name, title) {
+
       if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
 
-      item._more = true;
-      item._geoobj = lst;
+      var item = {
+          _name: name,
+          _kind: "Folder",
+          _title: title,
+          _more: true,
+          _geoobj: lst,
+          _parent: parent,
+      }
 
       item._get = function(item, itemname, callback) {
          if ('_geoobj' in item)
@@ -1732,51 +1819,14 @@
 
          node._childs = [];
 
-         for (var n in lst.arr) {
-            var obj = lst.arr[n];
-            var sub = {
-               _kind : "ROOT." + obj._typename,
-               _name : obj.fName,
-               _title : obj.fTitle,
-               _parent : node,
-               _geoobj : obj
-            };
-
-            if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
-            if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
-            if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-            if (obj.fVolume) {
-               sub._title = "node:"  + obj._typename;
-               if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
-               if (obj.fVolume.fShape) {
-                  sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
-                  sub._title += " shape:" + obj.fVolume.fShape._typename;
-               }
-               if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
-                  sub._more = true;
-                  sub._expand = node._expand;
-               }
-
-               // one only can focus item which is drawn - we should check painter first
-               sub._menu = function(menu, item, hpainter) {
-                  if (JSROOT.GEO.findItemWithPainter(item))
-                    menu.add("Focus", function() {
-
-                      var drawitem = JSROOT.GEO.findItemWithPainter(item);
-                      if (!drawitem) return;
-
-                      var fullname = hpainter.itemFullName(item, drawitem);
-                      if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
-                         drawitem._painter.focusOnItem(fullname);
-                    });
-               }
-            }
-
-            node._childs.push(sub);
-         }
+         for (var n in lst.arr)
+            JSROOT.GEO.createItem(node, lst.arr[n]);
 
          return true;
       }
+
+      parent._childs.push(item);
+
    };
 
    JSROOT.GEO.provideVisStyle = function(volume) {
@@ -1792,10 +1842,8 @@
    }
 
    JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
-      if (! ('_volume' in item)) return false;
-
       menu.add("separator");
-      var vol = item._volume;
+      var vol = item._volume ? item._volume : item._geoobj;
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
@@ -1829,13 +1877,14 @@
    }
 
    JSROOT.GEO.browserIconClick = function(hitem) {
-      if ((hitem==null) || (hitem._volume == null)) return false;
+      var vol = hitem._volume ? hitem._volume : hitem._geoobj;
+      if (!vol) return false;
 
       if (hitem._more)
-         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
+         JSROOT.GEO.ToggleBit(vol, JSROOT.GEO.BITS.kVisDaughters);
       else
-         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
-      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
+         JSROOT.GEO.ToggleBit(vol, JSROOT.GEO.BITS.kVisThis);
+      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
       JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       return true;
    }
@@ -1866,6 +1915,56 @@
       }
       return "img_geotube";
    }
+
+   JSROOT.GEO.expandObject = function(parent, obj) {
+      if (!parent || !obj) return false;
+
+      var isnode = (obj._typename.indexOf('TGeoNode') === 0),
+          isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
+          ismanager = (obj._typename === 'TGeoManager');
+
+      if (!isnode && !isvolume && !ismanager) return false;
+
+      if (!parent._childs) parent._childs = [];
+
+      var volume = isnode ? obj.fVolume : obj;
+
+      if ((parent._geoobj === undefined) || ismanager) {
+         if (ismanager) {
+            volume = obj.fMasterVolume;
+            JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
+            JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
+            JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
+         }
+
+         if (volume) {
+            JSROOT.GEO.createItem(parent, volume, "Volumes");
+            JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", "Hierarchy of TGeoNodes");
+         }
+
+         return true;
+      }
+
+      if (!volume) return false;
+
+      var subnodes = volume.fNodes.arr, map = [];
+
+      for (var i=0;i<subnodes.length;++i) {
+         if (isnode)
+            JSROOT.GEO.createItem(parent, subnodes[i]);
+         else
+         if (isvolume) {
+            var vol = subnodes[i].fVolume;
+            if (map.indexOf(vol) < 0) {
+               map.push(vol); // avoid duplication of similar volume
+               JSROOT.GEO.createItem(parent, vol);
+            }
+         }
+      }
+
+      return true;
+   }
+
 
    JSROOT.GEO.expandShape = function(parent, shape, itemname) {
       var item = {
@@ -1901,7 +2000,7 @@
          _menu : JSROOT.GEO.provideMenu,
          _icon_click : JSROOT.GEO.browserIconClick,
          _get : function(item, itemname, callback) {
-            if ((item!=null) && ('_volume' in item))
+            if (item && item._volume)
                return JSROOT.CallBack(callback, item, item._volume);
 
             JSROOT.CallBack(callback, item, null);
@@ -1972,35 +2071,7 @@
    }
 
 
-   JSROOT.GEO.expandManagerHierarchy = function(hitem, obj) {
-
-      if ((hitem==null) || (obj==null)) return false;
-
-      hitem._childs = [];
-
-      var item1 = { _name: "Materials", _kind: "Folder", _title: "list of materials" };
-      JSROOT.GEO.expandList(item1, obj.fMaterials);
-      hitem._childs.push(item1);
-
-      var item2 = { _name: "Media", _kind: "Folder", _title: "list of media" };
-      JSROOT.GEO.expandList(item2, obj.fMedia);
-      hitem._childs.push(item2);
-
-      var item3 = { _name: "Tracks", _kind: "Folder", _title: "list of tracks" };
-      JSROOT.GEO.expandList(item3, obj.fTracks);
-      hitem._childs.push(item3);
-
-      if (obj.fMasterVolume) {
-         JSROOT.GEO.expandVolume(hitem, obj.fMasterVolume, "Volume");
-         var item4 = { _name: "Nodes", _kind: "Folder", _title: "Hierarchy of TGeoNodes" };
-         JSROOT.GEO.expandList(item4, obj.fMasterVolume.fNodes);
-         hitem._childs.push(item4);
-      }
-
-      return true;
-   }
-
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: JSROOT.GEO.expandVolume, opt : ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;
