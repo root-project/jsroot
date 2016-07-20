@@ -3236,7 +3236,8 @@
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if (binz != 0) nbins++;
+            //if (binz != 0) nbins++;
+            nbins++;
             if (binz>this.maxbin) this.maxbin = binz; else
             if (binz<this.minbin) this.minbin = binz;
          }
@@ -3250,7 +3251,8 @@
          for (i = i1; i < i2; ++i) {
             for (j = j1; j < j2; ++j) {
                binz = histo.getBinContent(i+1, j+1);
-               if ((binz == 0) || (binz < this.minbin)) continue;
+               //if ((binz == 0) || (binz < this.minbin)) continue;
+               if (binz < this.minbin) continue;
                nbins++;
                xx[i-i1].cnt+=1;
                yy[j-j1].cnt+=1;
@@ -3292,7 +3294,8 @@
                   }
             }
 
-            if ((binz == 0) || (binz < this.minbin)) continue;
+            //if ((binz == 0) || (binz < this.minbin)) continue;
+            if (binz < this.minbin) continue;
 
             var point = {
                x1: xx[i].axis,
