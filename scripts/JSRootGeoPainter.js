@@ -133,7 +133,7 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
-                   use_worker: 0, update_browser: true, clip_control: false };
+                   use_worker: false, update_browser: true, clip_control: false, highlight:false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -191,6 +191,11 @@
       if (opt.indexOf("worker")>=0) {
          res.use_worker = 1;
          opt = opt.replace("worker", " ");
+      }
+
+      if (opt.indexOf("highlight")>=0) {
+         res.highlight = true;
+         opt = opt.replace("highlight", " ");
       }
 
       if (opt.indexOf("wire")>=0) {
@@ -491,7 +496,10 @@
          }
 
          raycaster.setFromCamera( pnt, painter._camera );
-         return raycaster.intersectObjects(painter._scene.children, true);
+         var intersects = raycaster.intersectObjects(painter._scene.children, true);
+
+         return intersects;
+
       }
 
       this._controls.addEventListener( 'start', function() {
@@ -503,6 +511,8 @@
          if (!mouse_ctxt.on) return;
          mouse_ctxt.on = false;
          var intersects = GetIntersects(mouse_ctxt);
+
+         console.log(intersects);
 
          JSROOT.Painter.createMenu(function(menu) {
             menu.painter = painter; // set as this in callbacks
@@ -607,6 +617,21 @@
          evnt.preventDefault();
 
          var intersects = GetIntersects(mouse);
+
+         if (painter.options.highlight) {
+
+            if (painter._selected.mesh !== null) {
+               painter._selected.mesh.material.color = painter._selected.originalColor;
+            }
+
+            if (intersects.length > 0) {
+               painter._selected.mesh = intersects[0].object;
+               painter._selected.originalColor = painter._selected.mesh.material.color;
+               painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
+               painter.Render3D(0);
+            }
+         }
+
          var names = [];
 
          for (var n=0;n<intersects.length;++n) {
@@ -1011,6 +1036,8 @@
       this._toplevel = new THREE.Object3D();
 
       this._scene.add(this._toplevel);
+
+      this._selected = {mesh:null, originalColor:null};
 
       this._overall_size = 10;
    }
