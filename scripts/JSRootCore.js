@@ -295,7 +295,10 @@
          map.obj.push(src);
          map.clones.push(tgt);
          for (var i = 0; i < src.length; ++i)
-            tgt.push(JSROOT.clone(src[i], map));
+            if (typeof src[i] === 'object')
+               tgt.push(JSROOT.clone(src[i], map));
+            else
+               tgt.push(src[i]);
 
          return tgt;
       }
