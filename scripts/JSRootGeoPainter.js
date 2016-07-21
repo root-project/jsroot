@@ -1750,7 +1750,16 @@
          if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length > 0)) {
             sub._more = true;
             sub._expand = JSROOT.GEO.expandObject;
+         } else
+         if (obj.fVolume.fShape && (obj.fVolume.fShape._typename === "TGeoCompositeShape") && obj.fVolume.fShape.fNode) {
+            sub._more = true;
+            sub._expand = function(node, obj) {
+               JSROOT.GEO.createItem(node, obj.fVolume.fShape.fNode.fLeft, 'Left');
+               JSROOT.GEO.createItem(node, obj.fVolume.fShape.fNode.fRight, 'Right');
+               return true;
+            }
          }
+
          if (obj.fVolume.fShape) {
             sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
             sub._title += " shape:" + obj.fVolume.fShape._typename;
@@ -1914,7 +1923,7 @@
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
       if (!hitem._volume) return false;
 
-      if (hitem._more)
+      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
