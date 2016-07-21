@@ -1726,33 +1726,30 @@
       if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
       if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
       if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
-      if (obj.fVolume) {
+      if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
          sub._title = "node:"  + obj._typename;
          if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
-         if (obj.fVolume.fShape) {
-            sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
-            sub._title += " shape:" + obj.fVolume.fShape._typename;
-         }
-         if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length>0)) {
+
+         sub._volume = obj.fVolume;
+
+         if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length > 0)) {
             sub._more = true;
             sub._expand = JSROOT.GEO.expandObject;
          }
-
-         // one only can focus item which is drawn - we should check painter first
-         sub._menu = function(menu, item, hpainter) {
-            if (JSROOT.GEO.findItemWithPainter(item))
-              menu.add("Focus", function() {
-
-                var drawitem = JSROOT.GEO.findItemWithPainter(item);
-                if (!drawitem) return;
-
-                var fullname = hpainter.itemFullName(item, drawitem);
-                if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
-                   drawitem._painter.focusOnItem(fullname);
-              });
+         if (obj.fVolume.fShape) {
+            sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
+            sub._title += " shape:" + obj.fVolume.fShape._typename;
+         } else {
+            sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
          }
+
+         sub._icon += JSROOT.GEO.provideVisStyle(obj.fVolume);
+
+         sub._menu = JSROOT.GEO.provideMenu;
+         sub._icon_click  = JSROOT.GEO.browserIconClick;
       } else
       if (obj._typename.indexOf("TGeoVolume")===0) {
+         sub._volume = obj;
          if ((obj.fNodes && obj.fNodes.arr.length>0)) {
             sub._more = true;
             sub._expand = JSROOT.GEO.expandObject;
@@ -1760,8 +1757,8 @@
          if ((obj.fShape !== null) && (obj.fShape._typename === "TGeoCompositeShape") && (obj.fShape.fNode !== null)) {
             sub._more = true;
             sub._expand = function(node, obj) {
-               JSROOT.GEO.expandShape(node, obj.fShape.fNode.fLeft, 'Left');
-               JSROOT.GEO.expandShape(node, obj.fShape.fNode.fRight, 'Right');
+               JSROOT.GEO.createItem(node, obj.fShape.fNode.fLeft, 'Left');
+               JSROOT.GEO.createItem(node, obj.fShape.fNode.fRight, 'Right');
                return true;
             }
          }
@@ -1769,7 +1766,7 @@
          if (sub._title == "")
             if (obj._typename != "TGeoVolume") sub._title = obj._typename;
 
-         if (obj.fShape !== null) {
+         if (obj.fShape) {
             if (sub._title == "")
                sub._title = obj.fShape._typename;
 
@@ -1782,8 +1779,21 @@
 
          sub._menu = JSROOT.GEO.provideMenu;
          sub._icon_click  = JSROOT.GEO.browserIconClick;
+      } else
+      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
+         sub._title = obj._typename;
+         sub._icon = JSROOT.GEO.getShapeIcon(obj);
+         if ((obj._typename === "TGeoCompositeShape") && obj.fNode) {
+            sub._more = true;
+            sub._expand = function(node, obj) {
+               JSROOT.GEO.createItem(node, obj.fNode.fLeft, 'Left');
+               JSROOT.GEO.createItem(node, obj.fNode.fRight, 'Right');
+               return true;
+            }
+         }
       }
 
+      if (!node._childs) node._childs = [];
       node._childs.push(sub);
 
       return sub;
@@ -1842,8 +1852,11 @@
    }
 
    JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
+
+      if (!item._volume || !item._geoobj) return false;
+
       menu.add("separator");
-      var vol = item._volume ? item._volume : item._geoobj;
+      var vol = item._volume;
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
@@ -1851,6 +1864,17 @@
          hpainter.UpdateTreeNode(item);
          JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       }
+
+      if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
+         menu.add("Focus", function() {
+
+           var drawitem = JSROOT.GEO.findItemWithPainter(item);
+           if (!drawitem) return;
+
+           var fullname = hpainter.itemFullName(item, drawitem);
+           if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
+              drawitem._painter.focusOnItem(fullname);
+         });
 
       menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
             JSROOT.GEO.BITS.kVisNone, ToggleMenuBit);
@@ -1877,14 +1901,13 @@
    }
 
    JSROOT.GEO.browserIconClick = function(hitem) {
-      var vol = hitem._volume ? hitem._volume : hitem._geoobj;
-      if (!vol) return false;
+      if (!hitem._volume) return false;
 
       if (hitem._more)
-         JSROOT.GEO.ToggleBit(vol, JSROOT.GEO.BITS.kVisDaughters);
+         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
       else
-         JSROOT.GEO.ToggleBit(vol, JSROOT.GEO.BITS.kVisThis);
-      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
+         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
+      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
       JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       return true;
    }
@@ -1961,111 +1984,6 @@
             }
          }
       }
-
-      return true;
-   }
-
-
-   JSROOT.GEO.expandShape = function(parent, shape, itemname) {
-      var item = {
-            _kind : "ROOT." + shape._typename,
-            _name : itemname,
-            _title : shape._typename,
-            _icon : JSROOT.GEO.getShapeIcon(shape),
-            _parent : parent,
-            _shape : shape,
-            _get : function(item, itemname, callback) {
-               if ((item!==null) && ('_shape' in item))
-                  return JSROOT.CallBack(callback, item, item._shape);
-               JSROOT.CallBack(callback, item, null);
-            }
-         };
-
-      if (!('_childs' in parent)) parent._childs = [];
-      parent._childs.push(item);
-      return true;
-   }
-
-   JSROOT.GEO.expandVolume = function(parent, volume, arg) {
-
-      if (!parent || !volume) return false;
-
-      var item = {
-         _kind : "ROOT.TGeoVolume",
-         _name : arg ? arg : volume.fName,
-         _title : volume.fTitle,
-         _parent : parent,
-         _volume : volume, // keep direct reference
-         _more : (volume.fNodes !== undefined) && (volume.fNodes !== null),
-         _menu : JSROOT.GEO.provideMenu,
-         _icon_click : JSROOT.GEO.browserIconClick,
-         _get : function(item, itemname, callback) {
-            if (item && item._volume)
-               return JSROOT.CallBack(callback, item, item._volume);
-
-            JSROOT.CallBack(callback, item, null);
-         }
-      };
-
-      if (item._more) {
-        item._expand = function(node, obj) {
-           var subnodes = obj.fNodes.arr, map = [];
-           for (var i=0;i<subnodes.length;++i) {
-              var vol = subnodes[i].fVolume;
-              if (map.indexOf(vol) < 0) {
-                 // avoid duplication of similar volume
-                 map.push(vol);
-                 JSROOT.GEO.expandVolume(node, vol);
-              }
-           }
-
-           return true;
-        }
-      } else
-      if ((volume.fShape !== null) && (volume.fShape._typename === "TGeoCompositeShape") && (volume.fShape.fNode !== null)) {
-         item._more = true;
-         item._expand = function(node, obj) {
-            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fLeft, 'Left');
-            JSROOT.GEO.expandShape(node, obj.fShape.fNode.fRight, 'Right');
-            return true;
-         }
-      }
-
-      if (item._title == "")
-         if (volume._typename != "TGeoVolume") item._title = volume._typename;
-
-      if (volume.fShape !== null) {
-         if (item._title == "")
-            item._title = volume.fShape._typename;
-
-         item._icon = JSROOT.GEO.getShapeIcon(volume.fShape);
-      }
-
-      if (!('_childs' in parent)) parent._childs = [];
-
-      if (!('_icon' in item))
-         item._icon = item._more ? "img_geocombi" : "img_geobbox";
-
-      item._icon += JSROOT.GEO.provideVisStyle(volume);
-
-      // avoid name duplication of the items
-      for (var cnt=0;cnt<1000000;cnt++) {
-         var curr_name = item._name;
-         if (curr_name.length == 0) curr_name = "item";
-         if (cnt>0) curr_name+= "_"+cnt;
-         // avoid name duplication
-         for (var n in parent._childs) {
-            if (parent._childs[n]._name == curr_name) {
-               curr_name = ""; break;
-            }
-         }
-         if (curr_name.length > 0) {
-            if (cnt>0) item._name = curr_name;
-            break;
-         }
-      }
-
-      parent._childs.push(item);
 
       return true;
    }
