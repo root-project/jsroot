@@ -3277,6 +3277,11 @@
 
       var local_bins = [];
 
+      function FormatEntries(v) {
+         var r = Math.round(v);
+         return (v === r) ? r.toFixed(0) : JSROOT.FFormat(v, JSROOT.gStyle.StatFormat);
+      }
+
       for (i = 0; i < xx.length-1; ++i) {
 
          for (j = 0; j < yy.length-1; ++j) {
@@ -3327,10 +3332,9 @@
                }
 
                if (sumz == binz)
-                  point.tip += "entries = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat);
+                  point.tip += "entries = " + FormatEntries(sumz);
                else
-                  point.tip += "sum = " + JSROOT.FFormat(sumz, JSROOT.gStyle.StatFormat) +
-                               " max = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+                  point.tip += "sum = " + FormatEntries(sumz) + " max = " + FormatEntries(binz);
             }
             local_bins.push(point);
          }

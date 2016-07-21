@@ -15,6 +15,7 @@
    - intensive use of HTML Worker to offload computation tasks and keep interactivity   
    - enable more details when changing camera position/zoom
 9. Support axis labels draw in 3D plots (like lego for th2) 
+10. Support lego0 draw option (without minimal values)
 
 
 ## Changes in 4.5.0

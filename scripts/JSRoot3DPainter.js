@@ -737,31 +737,6 @@
 
       var local_bins = this.CreateDrawBins(100, 100);
 
-      // create the bin cubes
-      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1];
-
-      var z1 = this.tz(zmin), draw_bins = [];
-
-      for (var i = 0; i < local_bins.length; ++i) {
-         var hh = local_bins[i];
-         if (hh.z <= zmin) continue;
-
-         hh.x1 = this.tx(hh.x1);
-         hh.x2 = this.tx(hh.x2);
-         hh.y1 = this.ty(hh.y1);
-         hh.y2 = this.ty(hh.y2);
-         hh.z = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
-
-         if ((hh.x1 < -1.001*this.size3d) || (hh.x2 > 1.001*this.size3d) ||
-             (hh.y1 < -1.001*this.size3d) || (hh.y2 > 1.001*this.size3d)) continue;
-
-         // select only interested bins
-         draw_bins.push(hh);
-      }
-
-
-      if (draw_bins.length == 0) return;
-
       var vertices = [];
       vertices.push( new THREE.Vector3(1, 1, 1) );
       vertices.push( new THREE.Vector3(1, 1, 0) );
@@ -777,26 +752,80 @@
       // normals for each  pair of faces
       var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
 
-      var positions = new Float32Array( draw_bins.length * indicies.length * 3 );
-      var normals = new Float32Array( draw_bins.length * indicies.length * 3 );
-      //var colors = new Float32Array( draw_bins.length * indicies.length * 3 );
-
+      // line segments
       var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
 
-      var lpositions = new Float32Array( draw_bins.length * vertices.length * 3 );
-      var lindicies = new Uint16Array( draw_bins.length * segments.length );
+      // reduced line segments
+      var rsegments = [0, 1, 1, 2, 2, 3, 3, 0];
+
+      // reduced vertices
+      var rvertices = [];
+      rvertices.push( new THREE.Vector3(0, 0, 0) );
+      rvertices.push( new THREE.Vector3(0, 1, 0) );
+      rvertices.push( new THREE.Vector3(1, 1, 0) );
+      rvertices.push( new THREE.Vector3(1, 0, 0) );
+
+      // create the bin cubes
+      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1], numvertices = 0, numlinevertices = 0, numsegments = 0;
+
+      var z1 = this.tz(zmin), draw_bins = [], showmin = (this.options.Zero === 0);
+
+      for (var i = 0; i < local_bins.length; ++i) {
+         var hh = local_bins[i];
+         if (hh.z < zmin) continue;
+
+         if (hh.z == zmin) {
+            if (!showmin) continue;
+            hh.reduced = true;
+         }
+
+         hh.x1 = this.tx(hh.x1);
+         hh.x2 = this.tx(hh.x2);
+         hh.y1 = this.ty(hh.y1);
+         hh.y2 = this.ty(hh.y2);
+         hh.z = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
+
+         if ((hh.x1 < -1.001*this.size3d) || (hh.x2 > 1.001*this.size3d) ||
+             (hh.y1 < -1.001*this.size3d) || (hh.y2 > 1.001*this.size3d)) continue;
+
+         // select only interested bins
+         draw_bins.push(hh);
+
+         // calculate required buffer size
+         numvertices += (hh.reduced ? 12 : indicies.length);
+         numlinevertices += (hh.reduced ? rvertices.length : vertices.length);
+         numsegments += (hh.reduced ? rsegments.length : segments.length);
+      }
+
+
+      if (draw_bins.length == 0) return;
+
+
+      var positions = new Float32Array( numvertices * 3 );
+      var normals = new Float32Array( numvertices * 3 );
+      //var colors = new Float32Array( numvertices * 3 );
+
+      var lpositions = new Float32Array( numlinevertices * 3 );
+      var lindicies = new Uint16Array( numsegments );
 
       // console.log('Create buffer array of ', positions.length)
 
-      var i = 0, vert, bin, nn, ll = 0, ii = 0;
+      var i = 0, vert, bin, k, nn, ll = 0, ii = 0;
 
       for (var n = 0; n < draw_bins.length; ++n) {
          bin = draw_bins[n];
 
          nn = -3; // counter over the normals, each normals correspond to 6 vertices
+         k = 0;
+
+         if (bin.reduced) {
+            // we skip all side faces, keep only top and bottom
+            nn += 12;
+            k += 24;
+         }
 
          // array over all vertices of the single bin
-         for (var k=0; k < indicies.length; ++k) {
+         while(k < indicies.length) {
 
             if (k%6 === 0) nn+=3;
 
@@ -810,22 +839,21 @@
             normals[i+1] = vnormals[nn+1];
             normals[i+2] = vnormals[nn+2];
 
-            // colors[i] = fcolor.r;
-            //colors[i+1] = fcolor.g;
-            //colors[i+2] = fcolor.b;
-
-            i+=3;
+            i+=3; ++k;
          }
 
          bin.vertex_index = i; // this is index boundary of vertices for the bin
 
+         var seg = bin.reduced ? rsegments : segments;
+         var vvv = bin.reduced ? rvertices : vertices;
+
          // array of indicies for the lines, to avoid duplication of points
-         for (var k=0; k < segments.length; ++k) {
-            lindicies[ii++] = ll/3 + segments[k];
+         for (k=0; k < seg.length; ++k) {
+            lindicies[ii++] = ll/3 + seg[k];
          }
 
-         for (var k=0; k < vertices.length; ++k) {
-            vert = vertices[k];
+         for (k=0; k < vvv.length; ++k) {
+            vert = vvv[k];
             lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
             lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
             lpositions[ll+2] = z1 + vert.z * (bin.z - z1);
@@ -953,12 +981,14 @@
       var logz = this.root_pad().fLogz;
 
       this.zmin = logz ? this.gmin0bin * 0.3 : this.gminbin;
-      this.zmax = this.gmaxbin * 1.05; // not very nice
+      this.zmax = this.gmaxbin;
 
       if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
       if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
 
       if (logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+      this.zmax *= 1.1; // as it done in ROOT
 
       this.DrawXYZ();
 
