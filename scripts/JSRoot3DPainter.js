@@ -357,7 +357,7 @@
           grminy = -this.size3d, grmaxy = this.size3d,
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.07),
-          bothsides = (this.size3d !== 0),
+          zsides = this.scale_z_sides,
           pad = this.root_pad(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
@@ -369,7 +369,12 @@
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
          textsize = (grmaxz - grminz) * 0.05;
+         if (!zsides) zsides = [true, false, false, false];
       }
+
+      if (!zsides) zsides = [true, true, true, true];
+
+      var bothsides = zsides[1] || zsides[2] || zsides[3];
 
       if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
          xmin = this.zoom_xmin; xmax = this.zoom_xmax;
@@ -590,7 +595,17 @@
 
             var textz = grz - 0.4*textsize;
 
-            if (bothsides) {
+            if (zsides[0]) {
+               text = new THREE.Mesh(text3d, textMaterial);
+               text.position.set(grminx - offset, grmaxy + offset, textz);
+               text.rotation.x = 0.5*Math.PI;
+               text.rotation.y = -0.25*Math.PI;
+               text.name = "Z axis";
+               this.toplevel.add(text);
+               lbls.push(text);
+            }
+
+            if (zsides[1]) {
                text = new THREE.Mesh(text3d, textMaterial);
                text.position.set(grmaxx + offset, grmaxy + offset, textz);
                text.rotation.x = 0.5*Math.PI;
@@ -598,7 +613,9 @@
                text.name = "Z axis";
                this.toplevel.add(text);
                lbls.push(text);
+            }
 
+            if (zsides[2]) {
                text = new THREE.Mesh(text3d, textMaterial);
                text.position.set(grmaxx + offset, grminy - offset, textz);
                text.rotation.x = 0.5*Math.PI;
@@ -606,7 +623,9 @@
                text.name = "Z axis";
                this.toplevel.add(text);
                lbls.push(text);
+            }
 
+            if (zsides[3]) {
                text = new THREE.Mesh(text3d, textMaterial);
                text.position.set(grminx - offset, grminy - offset, textz);
                text.rotation.x = 0.5*Math.PI;
@@ -615,30 +634,36 @@
                this.toplevel.add(text);
                lbls.push(text);
             }
-
-            text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(grminx - offset, grmaxy + offset, textz);
-            text.rotation.x = 0.5*Math.PI;
-            text.rotation.y = -0.25*Math.PI;
-            text.name = "Z axis";
-            this.toplevel.add(text);
-            lbls.push(text);
          }
-         if (bothsides) {
+
+         if (zsides[0]) {
+            tick = new THREE.Line(geometry, lineMaterial);
+            tick.position.set(grminx,grmaxy,grz);
+            tick.scale.set(plen,plen,1);
+            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
+            this.toplevel.add(tick);
+         }
+
+
+         if (zsides[1]) {
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grmaxx,grmaxy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = -Math.PI/2;
             tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
+         }
 
+         if (zsides[2]) {
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grmaxx,grminy,grz);
             tick.scale.set(plen,plen,1);
             tick.rotation.z = Math.PI;
             tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
+         }
 
+         if (zsides[3]) {
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grminx,grminy,grz);
             tick.scale.set(plen,plen,1);
@@ -647,11 +672,6 @@
             this.toplevel.add(tick);
          }
 
-         tick = new THREE.Line(geometry, lineMaterial);
-         tick.position.set(grminx,grmaxy,grz);
-         tick.scale.set(plen,plen,1);
-         tick.name = "Z axis " + this.z_handle.format(zticks.tick);
-         this.toplevel.add(tick);
       }
 
       if (text_scale < 1)
@@ -660,27 +680,84 @@
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
 
-      var wireMaterial = new THREE.MeshBasicMaterial({
-         color : 0x000000,
-         wireframe : true,
-         wireframeLinewidth : 0.5,
-         side : THREE.DoubleSide
-      });
 
+      if (zsides[0] && zsides[1] && zsides[2] && zsides[3]) {
+         // draw complete box - use BoxGeometry
 
-      // create a new mesh with cube geometry
-      var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);
-      //cube.position.y = size;
+         var wireMaterial = new THREE.MeshBasicMaterial({
+            color : 0x000000,
+            wireframe : true,
+            wireframeLinewidth : 0.5,
+            side : THREE.DoubleSide
+         });
 
-      var helper = new THREE.BoxHelper(cube);
-      helper.material.color.set(0x000000);
+         // create a new mesh with cube geometry
+         var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);
+         //cube.position.y = size;
 
-      var box = new THREE.Object3D();
-      box.add(helper);
-      box.position.z = this.size3d;
+         var helper = new THREE.BoxHelper(cube);
+         helper.material.color.set(0x000000);
 
-      // add the cube to the scene
-      this.toplevel.add(box);
+         var box = new THREE.Object3D();
+         box.add(helper);
+         box.position.z = this.size3d;
+
+         // add the cube to the scene
+         this.toplevel.add(box);
+      } else {
+         var geom = new THREE.Geometry();
+
+         geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
+         geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
+
+         geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
+         geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
+
+         if (bothsides) {
+            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
+
+            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
+         }
+
+         if (zsides[0]) {
+            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
+            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
+         }
+
+         if (zsides[1]) {
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
+
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
+            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
+
+            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
+         }
+
+         if (zsides[2]) {
+            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
+         }
+
+         if (zsides[3]) {
+            geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
+            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
+
+            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
+            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
+
+            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
+            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
+         }
+
+         var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 1 });
+
+         var lines = new THREE.LineSegments(geom, material);
+         this.toplevel.add(lines);
+      }
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
@@ -989,6 +1066,11 @@
       if (logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
       this.zmax *= 1.1; // as it done in ROOT
+
+      this.scale_z_sides = [true, true, true, true];
+      if (!this.options.BackBox) this.scale_z_sides[1] = false;
+      if (!this.options.FrontBox) this.scale_z_sides[3] = false;
+      if (!this.options.BackBox && !this.options.FrontBox) this.scale_z_sides[2] = false;
 
       this.DrawXYZ();
 
