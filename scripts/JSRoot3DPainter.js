@@ -735,16 +735,9 @@
    JSROOT.Painter.TH2Painter_Draw3DBinsBuf = function() {
       // try to implement drawing with BufferGeometry
 
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
-
       var local_bins = this.CreateDrawBins(100, 100);
 
       // create the bin cubes
-      var fillcolor = new THREE.Color(0xAAAAAA);
-      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
-
-      var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-
       var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1];
 
       var z1 = this.tz(zmin), draw_bins = [];
@@ -792,10 +785,8 @@
 
       var lpositions = new Float32Array( draw_bins.length * vertices.length * 3 );
       var lindicies = new Uint16Array( draw_bins.length * segments.length );
-      // var lcolors = new Float32Array( draw_bins.length * vertices.length * 3 );
 
-
-      console.log('Create buffer array of ', positions.length)
+      // console.log('Create buffer array of ', positions.length)
 
       var i = 0, vert, bin, nn, ll = 0, ii = 0;
 
@@ -835,59 +826,46 @@
 
          for (var k=0; k < vertices.length; ++k) {
             vert = vertices[k];
-
             lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
             lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
             lpositions[ll+2] = z1 + vert.z * (bin.z - z1);
-
-            //lcolors[ll] = 0;
-            //lcolors[ll+1] = 1;
-            //lcolors[ll+2] = 0;
-
             ll+=3;
          }
 
          bin.line_index = ll; // this is index boundary for lines
-
       }
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+
+      // color is not handled in CanvasRenderer, keep it away
       // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 
-      //geometry.computeVertexNormals();
 
-      // geometry.computeBoundingSphere();
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
-      //var fillcolor = new THREE.Color( 0, 0, 1 );
-      // var fillcolor = new THREE.Color( fcolor.r/255, fcolor.g/255, fcolor.b/255 );
-      fillcolor = new THREE.Color( 0, 0, 100 );
       var material = new THREE.MeshLambertMaterial( { transparent: false,
-                       opacity: 1, wireframe: false, color: fillcolor,
+                       opacity: 1, wireframe: false, color: new THREE.Color(fcolor.r, fcolor.g, fcolor.b),
                        side: THREE.FrontSide /*THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                        overdraw: 0. } );
-
-      //var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-
-      //var material = new THREE.MeshPhongMaterial( {
-      //   /* color: 0xaaaaaa, specular: 0xffffff, shininess: 250,*/
-      //   side: THREE.DoubleSide, vertexColors: THREE.VertexColors
-      //} );
-
-      //material = new THREE.MeshNormalMaterial();
 
       var mesh = new THREE.Mesh(geometry, material);
 
       mesh.bins = draw_bins;
 
+      function findbin(bins, indx, kind) {
+         var l = 0, r = bins.length-1, mid;
+         if ((indx < 0) || (indx >= bins[r][kind])) return null;
+         while (r > l+1) {
+            mid = Math.round((r+l)/2);
+            if (indx >= bins[mid][kind]) l = mid; else r = mid;
+         }
+         return (indx < bins[l][kind]) ? bins[l].tip : bins[r].tip;
+      }
+
       mesh.tooltip = function(intersect) {
-         if (!intersect) return;
-
-         var n = 0, indx = intersect.index * 3;
-         while ((n < this.bins.length) && (indx >= this.bins[n].vertex_index)) n++;
-
-         return (n < this.bins.length) ? this.bins[n].tip : null;
+         return findbin(this.bins, intersect.index * 3, 'vertex_index');
       }
 
       this.toplevel.add(mesh);
@@ -896,16 +874,16 @@
       geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
       geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
-      material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+
+      var lcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fLineColor]);
+
+      material = new THREE.LineBasicMaterial({ color: new THREE.Color( lcolor.r, lcolor.g, lcolor.b ),
+                                               linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
       line.bins = draw_bins;
       line.tooltip = function(intersect) {
-         if (!intersect) return;
-         var n = 0, indx = intersect.index;
-         while ((n < this.bins.length) && (indx >= this.bins[n].line_index)) n++;
-         return (n < this.bins.length) ? this.bins[n].tip : null;
-         // console.log('line intersect', intersect);
+         return findbin(this.bins, intersect.index, 'line_index');
       }
 
       this.toplevel.add(line);
