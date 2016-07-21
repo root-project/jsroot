@@ -3205,7 +3205,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", 0),
           j2 = this.GetSelectIndex("y", "right", 1),
-          name = this.GetTipName("\n"),
+          name = this.GetTipName("<br/>"),
           xx = [], yy = [], i, j, x, y,
           nbins = 0, binz = 0, sumz = 0;
 
