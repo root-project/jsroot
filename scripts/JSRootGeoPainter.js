@@ -512,8 +512,6 @@
          mouse_ctxt.on = false;
          var intersects = GetIntersects(mouse_ctxt);
 
-         console.log(intersects);
-
          JSROOT.Painter.createMenu(function(menu) {
             menu.painter = painter; // set as this in callbacks
 

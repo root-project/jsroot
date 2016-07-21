@@ -1763,8 +1763,7 @@
       for (var indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
 
          while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
-            del.push(prev[indx2]); // this entry should be removed
-            indx2++;
+            del.push(prev[indx2++]); // this entry should be removed
          }
 
          if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
@@ -1772,6 +1771,10 @@
             indx2++;
          }
       }
+
+      // remove rest
+      while (indx2<prev.length)
+         del.push(prev[indx2++]);
 
       return del; //
    }
