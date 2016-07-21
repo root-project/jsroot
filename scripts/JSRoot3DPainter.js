@@ -580,6 +580,7 @@
       geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(-1, 1, 0));
+      var zgrid = new THREE.Geometry(); // container for grid
       while (zticks.next()) {
          var grz = zticks.grpos;
          var is_major = zticks.kind == 1;
@@ -636,6 +637,15 @@
             }
          }
 
+         // create grid
+         if (zsides[1] && (this.size3d !== 0) && is_major) {
+            zgrid.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
+            zgrid.vertices.push(new THREE.Vector3(grminx, grmaxy, grz));
+
+            zgrid.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
+            zgrid.vertices.push(new THREE.Vector3(grmaxx, grminy, grz));
+         }
+
          if (zsides[0]) {
             tick = new THREE.Line(geometry, lineMaterial);
             tick.position.set(grminx,grmaxy,grz);
@@ -671,7 +681,13 @@
             tick.name = "Z axis " + this.z_handle.format(zticks.tick);
             this.toplevel.add(tick);
          }
+      }
 
+      if ((zgrid.vertices.length > 0) && false) {
+         // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
+         var lines = new THREE.LineSegments(zgrid, material);
+         this.toplevel.add(lines);
       }
 
       if (text_scale < 1)
