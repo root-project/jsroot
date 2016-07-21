@@ -107,6 +107,14 @@
          if (intersects.length > 0) {
             var pick = null;
             for (var i = 0; i < intersects.length; ++i) {
+
+               if (intersects[i].object.tooltip) {
+                  var res = intersects[i].object.tooltip(intersects[i]);
+                  if (res) tooltip.show(res, 200);
+                      else tooltip.hide();
+                  break;
+               }
+
                if (('name' in intersects[i].object) && (intersects[i].object.name.length > 0)) {
                   pick = intersects[i].object;
                   break;
@@ -778,13 +786,14 @@
 
       var positions = new Float32Array( draw_bins.length * indicies.length * 3 );
       var normals = new Float32Array( draw_bins.length * indicies.length * 3 );
+      //var colors = new Float32Array( draw_bins.length * indicies.length * 3 );
 
       var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
 
       var lpositions = new Float32Array( draw_bins.length * vertices.length * 3 );
       var lindicies = new Uint16Array( draw_bins.length * segments.length );
+      // var lcolors = new Float32Array( draw_bins.length * vertices.length * 3 );
 
-      //var colors = new Float32Array( draw_bins.length * indicies.length * 3 );
 
       console.log('Create buffer array of ', positions.length)
 
@@ -817,10 +826,12 @@
             i+=3;
          }
 
-         for (var k=0; k < segments.length; ++k) {
-            lindicies[ii++] = segments[k] + ll/3;
-         }
+         bin.vertex_index = i; // this is index boundary of vertices for the bin
 
+         // array of indicies for the lines, to avoid duplication of points
+         for (var k=0; k < segments.length; ++k) {
+            lindicies[ii++] = ll/3 + segments[k];
+         }
 
          for (var k=0; k < vertices.length; ++k) {
             vert = vertices[k];
@@ -829,8 +840,14 @@
             lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
             lpositions[ll+2] = z1 + vert.z * (bin.z - z1);
 
+            //lcolors[ll] = 0;
+            //lcolors[ll+1] = 1;
+            //lcolors[ll+2] = 0;
+
             ll+=3;
          }
+
+         bin.line_index = ll; // this is index boundary for lines
 
       }
 
@@ -845,6 +862,7 @@
 
       //var fillcolor = new THREE.Color( 0, 0, 1 );
       // var fillcolor = new THREE.Color( fcolor.r/255, fcolor.g/255, fcolor.b/255 );
+      fillcolor = new THREE.Color( 0, 0, 100 );
       var material = new THREE.MeshLambertMaterial( { transparent: false,
                        opacity: 1, wireframe: false, color: fillcolor,
                        side: THREE.FrontSide /*THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
@@ -861,7 +879,16 @@
 
       var mesh = new THREE.Mesh(geometry, material);
 
-      // mesh.name = "BufferGeometry";
+      mesh.bins = draw_bins;
+
+      mesh.tooltip = function(intersect) {
+         if (!intersect) return;
+
+         var n = 0, indx = intersect.index * 3;
+         while ((n < this.bins.length) && (indx >= this.bins[n].vertex_index)) n++;
+
+         return (n < this.bins.length) ? this.bins[n].tip : null;
+      }
 
       this.toplevel.add(mesh);
 
@@ -869,9 +896,18 @@
       geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
       geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
-      material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+      material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
 
       var line = new THREE.LineSegments(geometry, material);
+      line.bins = draw_bins;
+      line.tooltip = function(intersect) {
+         if (!intersect) return;
+         var n = 0, indx = intersect.index;
+         while ((n < this.bins.length) && (indx >= this.bins[n].line_index)) n++;
+         return (n < this.bins.length) ? this.bins[n].tip : null;
+         // console.log('line intersect', intersect);
+      }
+
       this.toplevel.add(line);
    }
 

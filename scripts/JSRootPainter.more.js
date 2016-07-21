@@ -3215,7 +3215,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", 0),
           j2 = this.GetSelectIndex("y", "right", 1),
-          name = this.GetTipName("\n"),
+          name = this.GetTipName("<br/>"),
           xx = [], yy = [], i, j, x, y,
           nbins = 0, binz = 0, sumz = 0;
 
@@ -4022,7 +4022,7 @@
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
          this['Create3DScene'] = JSROOT.Painter.HPainter_Create3DScene;
-         this['Draw3DBins'] = JSROOT.Painter.TH2Painter_Draw3DBins;
+         this['Draw3DBins'] = JSROOT.Painter.TH2Painter_Draw3DBinsBuf;
          this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
          this['Draw3D'](call_back);
       }.bind(this));
