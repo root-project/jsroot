@@ -1,3 +1,9 @@
+/// @file JSRootGeoBase.js
+/// Basic functions for work with TGeo classes
+
+/// @namespace JSROOT.GEO
+/// Holder of all TGeo-related functions and classes
+
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
@@ -17,6 +23,7 @@
 
    JSROOT.GEO = {};
 
+   /// @memberof JSROOT.GEO
    JSROOT.GEO.BITS = {
          kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
          kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
@@ -31,6 +38,7 @@
          kVisBranch       : JSROOT.BIT(14),          // only a given branch visible
          kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
       };
+
 
    JSROOT.GEO.TestBit = function(volume, f) {
       var att = volume.fGeoAtt;
