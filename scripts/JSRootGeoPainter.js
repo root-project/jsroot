@@ -1447,7 +1447,6 @@
          // invoke methods immediately
          return this.continueDraw();
       }
-
    }
 
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
@@ -1895,7 +1894,7 @@
 
    JSROOT.GEO.findItemWithPainter = function(hitem, funcname) {
       while (hitem) {
-         if (hitem._painter) {
+         if (hitem._painter && hitem._painter._camera) {
             if (funcname && typeof hitem._painter[funcname] == 'function')
                hitem._painter[funcname]();
             return hitem;
