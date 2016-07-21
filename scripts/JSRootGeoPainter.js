@@ -1705,6 +1705,22 @@
 
    // ===============================================================================
 
+   JSROOT.GEO.provideVisStyle = function(volume) {
+      var vis = !JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisNone) &&
+                JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis);
+
+      var chld = JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisDaughters) ||
+                 JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisOneLevel);
+
+      if (chld && (!volume.fNodes || (volume.fNodes.arr.length === 0))) chld = false;
+
+      if (vis && chld) return " geovis_all";
+      if (vis) return " geovis_this";
+      if (chld) return " geovis_daughters";
+      return "";
+   }
+
+
    JSROOT.GEO.getBrowserItem = function(item, itemname, callback) {
       JSROOT.CallBack(callback, item, item._geoobj);
    }
@@ -1834,18 +1850,6 @@
       parent._childs.push(item);
 
    };
-
-   JSROOT.GEO.provideVisStyle = function(volume) {
-      var res = "";
-
-      if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis))
-         res += " geovis_this";
-
-      if (JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisDaughters))
-         res += " geovis_daughters";
-
-      return res;
-   }
 
    JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
 

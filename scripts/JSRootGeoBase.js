@@ -1432,11 +1432,13 @@
                if (on_screen) {
                   clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOnScreen);
                   if (copy_bits) {
+                     JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisNone, false);
                      JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis, clone.vis);
                      JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters, true);
                   }
                } else {
-                  clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis);
+                  clone.vis = !JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisNone) &&
+                               JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis);
                   if (!JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters))
                      clone.depth = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOneLevel) ? 1 : 0;
                }
