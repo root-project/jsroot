@@ -1488,7 +1488,6 @@
          this.DrawingReady();
    }
 
-
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
@@ -1898,7 +1897,7 @@
       return null;
    }
 
-   JSROOT.GEO.browserIconClick = function(hitem) {
+   JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
       if (!hitem._volume) return false;
 
       if (hitem._more)
@@ -1906,8 +1905,17 @@
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
       hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
+
+      hpainter.ForEach(function(item) {
+         // update all other items with that volume
+         if (item._volume === hitem._volume) {
+            if (item!==hitem) item._icon = hitem._icon;
+            hpainter.UpdateTreeNode(item);
+         }
+      });
+
       JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
-      return true;
+      return false; // no need to update icon - we did it ourself
    }
 
    JSROOT.GEO.getShapeIcon = function(shape) {

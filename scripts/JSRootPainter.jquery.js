@@ -384,9 +384,8 @@
 
    JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
       if ((d3cont===undefined) || d3cont.empty())  {
-         var name = this.itemFullName(hitem);
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
-
+         var name = this.itemFullName(hitem);
          if (d3cont.empty())
             d3cont = this.select_main().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
@@ -432,7 +431,7 @@
 
       if (place == "icon") {
          if (('_icon_click' in hitem) && (typeof hitem._icon_click == 'function'))
-            if (hitem._icon_click(hitem))
+            if (hitem._icon_click(hitem, this))
                this.UpdateTreeNode(hitem, d3cont);
          return;
       }
