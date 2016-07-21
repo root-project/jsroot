@@ -1857,9 +1857,17 @@
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
-         item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
+         var newname = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(vol);
+         hpainter.ForEach(function(m) {
+            // update all items with that volume
+            if (item._volume === m._volume) {
+               m._icon = newname;
+               hpainter.UpdateTreeNode(m);
+            }
+         });
+
          hpainter.UpdateTreeNode(item);
-         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
+         JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
@@ -1904,13 +1912,14 @@
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
-      hitem._icon = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
 
-      hpainter.ForEach(function(item) {
-         // update all other items with that volume
-         if (item._volume === hitem._volume) {
-            if (item!==hitem) item._icon = hitem._icon;
-            hpainter.UpdateTreeNode(item);
+      var newname = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
+
+      hpainter.ForEach(function(m) {
+         // update all items with that volume
+         if (hitem._volume === m._volume) {
+            m._icon = newname;
+            hpainter.UpdateTreeNode(m);
          }
       });
 
