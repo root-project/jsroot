@@ -3878,10 +3878,11 @@
          return null;
       }
 
+      if (!this.draw_g) return null;
+
       var histo = this.GetObject(),
           h = this.tt_handle, i,
           ttrect = this.draw_g.select(".tooltip_bin");
-
 
       if (h.candle) {
          // process tooltips for candle

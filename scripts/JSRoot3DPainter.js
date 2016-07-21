@@ -723,6 +723,158 @@
       local_bins = null;
    }
 
+
+   JSROOT.Painter.TH2Painter_Draw3DBinsBuf = function() {
+      // try to implement drawing with BufferGeometry
+
+      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
+
+      var local_bins = this.CreateDrawBins(100, 100);
+
+      // create the bin cubes
+      var fillcolor = new THREE.Color(0xAAAAAA);
+      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
+
+      var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
+
+      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1];
+
+      var z1 = this.tz(zmin), draw_bins = [];
+
+      for (var i = 0; i < local_bins.length; ++i) {
+         var hh = local_bins[i];
+         if (hh.z <= zmin) continue;
+
+         hh.x1 = this.tx(hh.x1);
+         hh.x2 = this.tx(hh.x2);
+         hh.y1 = this.ty(hh.y1);
+         hh.y2 = this.ty(hh.y2);
+         hh.z = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
+
+         if ((hh.x1 < -1.001*this.size3d) || (hh.x2 > 1.001*this.size3d) ||
+             (hh.y1 < -1.001*this.size3d) || (hh.y2 > 1.001*this.size3d)) continue;
+
+         // select only interested bins
+         draw_bins.push(hh);
+      }
+
+
+      if (draw_bins.length == 0) return;
+
+      var vertices = [];
+      vertices.push( new THREE.Vector3(1, 1, 1) );
+      vertices.push( new THREE.Vector3(1, 1, 0) );
+      vertices.push( new THREE.Vector3(1, 0, 1) );
+      vertices.push( new THREE.Vector3(1, 0, 0) );
+      vertices.push( new THREE.Vector3(0, 1, 0) );
+      vertices.push( new THREE.Vector3(0, 1, 1) );
+      vertices.push( new THREE.Vector3(0, 0, 0) );
+      vertices.push( new THREE.Vector3(0, 0, 1) );
+
+      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
+
+      // normals for each  pair of faces
+      var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
+
+      var positions = new Float32Array( draw_bins.length * indicies.length * 3 );
+      var normals = new Float32Array( draw_bins.length * indicies.length * 3 );
+
+      var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
+
+      var lpositions = new Float32Array( draw_bins.length * vertices.length * 3 );
+      var lindicies = new Uint16Array( draw_bins.length * segments.length );
+
+      //var colors = new Float32Array( draw_bins.length * indicies.length * 3 );
+
+      console.log('Create buffer array of ', positions.length)
+
+      var i = 0, vert, bin, nn, ll = 0, ii = 0;
+
+      for (var n = 0; n < draw_bins.length; ++n) {
+         bin = draw_bins[n];
+
+         nn = -3; // counter over the normals, each normals correspond to 6 vertices
+
+         // array over all vertices of the single bin
+         for (var k=0; k < indicies.length; ++k) {
+
+            if (k%6 === 0) nn+=3;
+
+            vert = vertices[indicies[k]];
+
+            positions[i]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
+            positions[i+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
+            positions[i+2] = z1 + vert.z * (bin.z - z1);
+
+            normals[i] = vnormals[nn];
+            normals[i+1] = vnormals[nn+1];
+            normals[i+2] = vnormals[nn+2];
+
+            // colors[i] = fcolor.r;
+            //colors[i+1] = fcolor.g;
+            //colors[i+2] = fcolor.b;
+
+            i+=3;
+         }
+
+         for (var k=0; k < segments.length; ++k) {
+            lindicies[ii++] = segments[k] + ll/3;
+         }
+
+
+         for (var k=0; k < vertices.length; ++k) {
+            vert = vertices[k];
+
+            lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
+            lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
+            lpositions[ll+2] = z1 + vert.z * (bin.z - z1);
+
+            ll+=3;
+         }
+
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+      // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+      //geometry.computeVertexNormals();
+
+      // geometry.computeBoundingSphere();
+
+      //var fillcolor = new THREE.Color( 0, 0, 1 );
+      // var fillcolor = new THREE.Color( fcolor.r/255, fcolor.g/255, fcolor.b/255 );
+      var material = new THREE.MeshLambertMaterial( { transparent: false,
+                       opacity: 1, wireframe: false, color: fillcolor,
+                       side: THREE.FrontSide /*THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                       overdraw: 0. } );
+
+      //var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
+
+      //var material = new THREE.MeshPhongMaterial( {
+      //   /* color: 0xaaaaaa, specular: 0xffffff, shininess: 250,*/
+      //   side: THREE.DoubleSide, vertexColors: THREE.VertexColors
+      //} );
+
+      //material = new THREE.MeshNormalMaterial();
+
+      var mesh = new THREE.Mesh(geometry, material);
+
+      // mesh.name = "BufferGeometry";
+
+      this.toplevel.add(mesh);
+
+      // create boxes
+      geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
+      geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
+      material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+
+      var line = new THREE.LineSegments(geometry, material);
+      this.toplevel.add(line);
+   }
+
    JSROOT.Painter.Render3D = function(tmout) {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
