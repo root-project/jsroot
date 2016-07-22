@@ -500,9 +500,31 @@
 
          raycaster.setFromCamera( pnt, painter._camera );
          var intersects = raycaster.intersectObjects(painter._scene.children, true);
+         var clippedIntersects = [];
 
+         if (painter.enableX || painter.enableY || painter.enableZ ) {
+
+            for (var i = 0; i < intersects.length; ++i) {
+               var clipped = false;
+               var point = intersects[i].point;
+
+               if (painter.enableX && painter._clipPlanes[0].normal.dot(point) > painter._clipPlanes[0].constant ) {
+                  clipped = true;
+               } else if (painter.enableY && painter._clipPlanes[1].normal.dot(point) > painter._clipPlanes[1].constant ) {
+                  clipped = true;
+               } else if (painter.enableZ && painter._clipPlanes[2].normal.dot(point) > painter._clipPlanes[2].constant ) {
+                  clipped = true;
+               }
+            
+               if (clipped === true) {
+                  clippedIntersects.push(intersects[i]);
+               }
+            }
+            
+            intersects = clippedIntersects;
+         }
+         //console.log("intersects " + intersects.length);
          return intersects;
-
       }
 
       this._controls.addEventListener( 'start', function() {
