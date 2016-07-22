@@ -906,7 +906,7 @@
                   k += 24;
                }
 
-               var size = indicies.length;
+               var size = indicies.length, bin_index = this.histo.getBin(i+1, j+1);
                if (nobottom) size -= 6;
 
                // array over all vertices of the single bin
@@ -922,7 +922,7 @@
                   normals[v+1] = vnormals[nn+1];
                   normals[v+2] = vnormals[nn+2];
 
-                  bins_index[v/3] = this.histo.getBin(i+1, j+1); // remember which bin corresponds to the vertex
+                  bins_index[v/3] = bin_index; // remember which bin corresponds to the vertex
 
                   v+=3; ++k;
 
@@ -1014,9 +1014,11 @@
             var seg = reduced ? rsegments : segments;
             var vvv = reduced ? rvertices : vertices;
 
+            var bin_index = this.histo.getBin(i+1, j+1);
+
             // array of indicies for the lines, to avoid duplication of points
             for (k=0; k < seg.length; ++k) {
-               bins_index[ii] = this.histo.getBin(i+1, j+1);
+               bins_index[ii] = bin_index;
                lindicies[ii++] = ll/3 + seg[k];
             }
 
