@@ -2482,7 +2482,7 @@
 
       this.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
       this.z_handle.SetDivId(divid, -1);
-
+/*
       this['MakeIcon'] = function(contour, z) {
          var h = this.frame_height();
          var res = "";
@@ -2509,6 +2509,7 @@
 
          res += "]";
       }
+*/
 
       this.DrawAxisPalette = function(s_width, s_height) {
 

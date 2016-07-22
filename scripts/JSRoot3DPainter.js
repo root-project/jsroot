@@ -860,16 +860,18 @@
       rvertices.push( new THREE.Vector3(1, 1, 0) );
       rvertices.push( new THREE.Vector3(1, 0, 0) );
 
-      // create the bin cubes
-      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1], numvertices = 0, numlinevertices = 0, numsegments = 0;
+      var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
-      var z1 = this.tz(zmin), draw_bins = [], showmin = (this.options.Zero === 0);
+      // create the bin cubes
+      var zmin = axis_zmin, zmax = axis_zmax, numvertices = 0, numlinevertices = 0, numsegments = 0;
+
+      var draw_bins = [], showmin = (this.options.Zero === 0);
 
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
-         if (hh.z < zmin) continue;
+         if (hh.z < axis_zmin) continue;
 
-         if (hh.z == zmin) {
+         if (hh.z == axis_zmin) {
             if (!showmin) continue;
             hh.reduced = true;
          }
@@ -878,7 +880,6 @@
          hh.x2 = this.tx(hh.x2);
          hh.y1 = this.ty(hh.y1);
          hh.y2 = this.ty(hh.y2);
-         hh.z = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
 
          if ((hh.x1 < -1.001*this.size3d) || (hh.x2 > 1.001*this.size3d) ||
              (hh.y1 < -1.001*this.size3d) || (hh.y2 > 1.001*this.size3d)) continue;
@@ -895,7 +896,6 @@
 
       if (draw_bins.length == 0) return;
 
-
       var positions = new Float32Array( numvertices * 3 );
       var normals = new Float32Array( numvertices * 3 );
       //var colors = new Float32Array( numvertices * 3 );
@@ -905,10 +905,14 @@
 
       // console.log('Create buffer array of ', positions.length)
 
-      var i = 0, vert, bin, k, nn, ll = 0, ii = 0;
+      var i = 0, vert, bin, k, nn, ll = 0, ii = 0,
+          zmin = axis_zmin, zmax = axis_zmax,
+          z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax);
 
       for (var n = 0; n < draw_bins.length; ++n) {
          bin = draw_bins[n];
+
+         z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
 
          nn = -3; // counter over the normals, each normals correspond to 6 vertices
          k = 0;
@@ -928,7 +932,7 @@
 
             positions[i]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
             positions[i+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-            positions[i+2] = z1 + vert.z * (bin.z - z1);
+            positions[i+2] = z1 + vert.z * (z2 - z1);
 
             normals[i] = vnormals[nn];
             normals[i+1] = vnormals[nn+1];
@@ -951,12 +955,13 @@
             vert = vvv[k];
             lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
             lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-            lpositions[ll+2] = z1 + vert.z * (bin.z - z1);
+            lpositions[ll+2] = z1 + vert.z * (z2 - z1);
             ll+=3;
          }
 
          bin.line_index = ll; // this is index boundary for lines
       }
+
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
@@ -964,7 +969,6 @@
 
       // color is not handled in CanvasRenderer, keep it away
       // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-
 
       var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
