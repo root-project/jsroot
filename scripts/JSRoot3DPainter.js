@@ -889,93 +889,111 @@
 
       // DRAW ALL CUBES
 
-      // console.log('Create buffer array of ', positions.length)
-      var zmin = axis_zmin, zmax = axis_zmax,
-          z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax),
-          numvertices = 0;
+      var levels = [ axis_zmin, axis_zmax ], palette = null;
 
-      // now calculate size of buffer geometry for boxes
-
-
-      for (var i = 0; i < draw_bins.length; ++i) {
-         var bin = draw_bins[i];
-
-         if (bin.z < zmin) continue;
-
-         bin.reduced = false;
-
-         if (bin.z == zmin) {
-            if (!showmin) continue;
-            bin.reduced = true;
-         }
-         numvertices += (bin.reduced ? 12 : indicies.length);
+      if (this.options.Lego == 12) {
+         levels = this.CreateContour(20, axis_zmin, axis_zmax, this.minposbin);
+         palette = this.GetPalette();
+         // console.log('levels', levels, 'palette', palette);
       }
 
-      var positions = new Float32Array( numvertices * 3 );
-      var normals = new Float32Array( numvertices * 3 );
-      var bins_index = new Uint16Array(numvertices);
-      var i = 0, vert, bin, k, nn;
+      for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
 
-      for (var n = 0; n < draw_bins.length; ++n) {
-         bin = draw_bins[n];
+         var zmin = levels[nlevel], zmax = levels[nlevel+1],
+             z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax),
+             numvertices = 0;
 
-         z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
+         // now calculate size of buffer geometry for boxes
 
-         nn = -3; // counter over the normals, each normals correspond to 6 vertices
-         k = 0;
+         for (var i = 0; i < draw_bins.length; ++i) {
+            var bin = draw_bins[i];
 
-         if (bin.reduced) {
-            // we skip all side faces, keep only top and bottom
-            nn += 12;
-            k += 24;
+            bin.shown = false; // not shown at all
+            bin.reduced = false;
+            if (bin.z < zmin) continue;
+
+            if (bin.z == zmin) {
+               if (nlevel>0) continue;
+               bin.reduced = true;
+            }
+
+            bin.shown = true;
+            numvertices += (bin.reduced ? 12 : indicies.length);
          }
 
-         // array over all vertices of the single bin
-         while(k < indicies.length) {
+         var positions = new Float32Array( numvertices * 3 );
+         var normals = new Float32Array( numvertices * 3 );
+         var bins_index = new Uint16Array(numvertices);
+         var i = 0, vert, bin, k, nn;
 
-            if (k%6 === 0) nn+=3;
+         for (var n = 0; n < draw_bins.length; ++n) {
+            bin = draw_bins[n];
+            if (!bin.shown) continue;
 
-            vert = vertices[indicies[k]];
+            z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
 
-            positions[i]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
-            positions[i+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-            positions[i+2] = z1 + vert.z * (z2 - z1);
+            nn = -3; // counter over the normals, each normals correspond to 6 vertices
+            k = 0;
 
-            normals[i] = vnormals[nn];
-            normals[i+1] = vnormals[nn+1];
-            normals[i+2] = vnormals[nn+2];
+            if (bin.reduced) {
+               // we skip all side faces, keep only top and bottom
+               nn += 12;
+               k += 24;
+            }
 
-            i+=3; ++k;
+            // array over all vertices of the single bin
+            while(k < indicies.length) {
 
-            bins_index[i/3] = n; // remember which bin corresponds to the vertex
+               if (k%6 === 0) nn+=3;
+
+               vert = vertices[indicies[k]];
+
+               positions[i]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
+               positions[i+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
+               positions[i+2] = z1 + vert.z * (z2 - z1);
+
+               normals[i] = vnormals[nn];
+               normals[i+1] = vnormals[nn+1];
+               normals[i+2] = vnormals[nn+2];
+
+               i+=3; ++k;
+
+               bins_index[i/3] = n; // remember which bin corresponds to the vertex
+            }
          }
+
+         var geometry = new THREE.BufferGeometry();
+         geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+         geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+
+         // color is not handled in CanvasRenderer, keep it away
+         // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+         var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
+
+         if (palette) {
+            var indx = Math.floor((nlevel+0.99)*palette.length/(levels.length-1));
+            if (indx > palette.length-1) indx = palette.length-1;
+            fcolor = palette[indx];
+         }
+
+         var material = new THREE.MeshLambertMaterial( { transparent: false,
+            opacity: 1, wireframe: false, color: new THREE.Color(fcolor),
+            side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.FaceColors*/,
+            overdraw: 0. } );
+
+         var mesh = new THREE.Mesh(geometry, material);
+
+         mesh.bins = draw_bins;
+         mesh.bins_index = bins_index;
+
+         mesh.tooltip = function(intersect) {
+            if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
+            return this.bins[this.bins_index[intersect.index]].tip;
+         }
+
+         this.toplevel.add(mesh);
       }
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
-
-      // color is not handled in CanvasRenderer, keep it away
-      // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
-
-      var material = new THREE.MeshLambertMaterial( { transparent: false,
-                       opacity: 1, wireframe: false, color: new THREE.Color(fcolor.r, fcolor.g, fcolor.b),
-                       side: THREE.FrontSide /*THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                       overdraw: 0. } );
-
-      var mesh = new THREE.Mesh(geometry, material);
-
-      mesh.bins = draw_bins;
-      mesh.bins_index = bins_index;
-
-      mesh.tooltip = function(intersect) {
-         if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-         return this.bins[this.bins_index[intersect.index]].tip;
-      }
-
-      this.toplevel.add(mesh);
 
 
       // DRAW LINE BOXES
@@ -1000,17 +1018,14 @@
       var lindicies = new Uint16Array( numsegments );
       bins_index = new Uint16Array( numsegments );
 
-      zmin = axis_zmin;
-      zmax = axis_zmax;
-      z2 = z1 = this.tz(zmin);
-      zzz = this.tz(zmax);
+      var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
 
       var ll = 0, ii = 0;
 
       for (var n = 0; n < draw_bins.length; ++n) {
          bin = draw_bins[n];
 
-         z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
+         z2 = (bin.z > axis_zmax) ? zzz : this.tz(bin.z);
 
          var seg = bin.reduced ? rsegments : segments;
          var vvv = bin.reduced ? rvertices : vertices;
@@ -1030,16 +1045,14 @@
          }
       }
 
-
       // create boxes
       geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
       geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
 
-      var lcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fLineColor]);
+      var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
 
-      material = new THREE.LineBasicMaterial({ color: new THREE.Color( lcolor.r, lcolor.g, lcolor.b ),
-                                               linewidth: this.GetObject().fLineWidth });
+      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
       line.bins = draw_bins;

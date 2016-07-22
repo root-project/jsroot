@@ -3110,6 +3110,14 @@
          for (var level=0; level<=nlevels; level++)
             this.fContour.push(this.zmin + dz*level);
       }
+
+      return this.fContour;
+   }
+
+   JSROOT.TH2Painter.prototype.GetPalette = function() {
+      if (this.fPalette == null)
+         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
+      return this.fPalette;
    }
 
    JSROOT.TH2Painter.prototype.getContourIndex = function(zc) {
@@ -3165,12 +3173,11 @@
 
       if (index < 0) return null;
 
-      if (this.fPalette == null)
-         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
+      var palette = this.GetPalette();
 
-      var theColor = Math.floor((index+0.99)*this.fPalette.length/(this.fContour.length-1));
-      if (theColor > this.fPalette.length-1) theColor = this.fPalette.length-1;
-      return asindx ? theColor : this.fPalette[theColor];
+      var theColor = Math.floor((index+0.99)*palette.length/(this.fContour.length-1));
+      if (theColor > palette.length-1) theColor = palette.length-1;
+      return asindx ? theColor : palette[theColor];
    }
 
    JSROOT.TH2Painter.prototype.CompressAxis = function(arr, maxlen, regular) {
