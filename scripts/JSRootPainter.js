@@ -4843,18 +4843,19 @@
          option.NoStat = 1;
          chopt = chopt.replace('NOSTAT', '');
       }
-      if (chopt.indexOf('LOGX') != -1) {
-         pad.fLogx = 1;
-         chopt = chopt.replace('LOGX', '');
+
+      function pad_option(name,field,value) {
+         if (chopt.indexOf(name) != -1) {
+            pad[field] = (value!==undefined) ? value : 1;
+            chopt = chopt.replace(name, '');
+         }
       }
-      if (chopt.indexOf('LOGY') != -1) {
-         pad.fLogy = 1;
-         chopt = chopt.replace('LOGY', '');
-      }
-      if (chopt.indexOf('LOGZ') != -1) {
-         pad.fLogz = 1;
-         chopt = chopt.replace('LOGZ', '');
-      }
+      pad_option('LOGX', 'fLogx');
+      pad_option('LOGY', 'fLogy');
+      pad_option('LOGZ', 'fLogz');
+      pad_option('GRIDX', 'fGridx');
+      pad_option('GRIDY', 'fGridy');
+      pad_option('GRIDZ', 'fGridz');
 
       chopt = chopt.trim();
       while ((chopt.length>0) && (chopt[0]==',' || chopt[0]==';')) chopt = chopt.substr(1);
