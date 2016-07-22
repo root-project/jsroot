@@ -781,7 +781,7 @@
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
       // Perform TH2 lego plot with BufferGeometry
 
-      var local_bins = this.CreateDrawBins(100, 100);
+      // var local_bins = this.CreateDrawBins(100, 100);
 
       var vertices = [];
       vertices.push( new THREE.Vector3(1, 1, 1) );
@@ -814,29 +814,35 @@
       var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
       // create the bin cubes
-      var draw_bins = [], showmin = (this.options.Zero === 0);
+      var showmin = (this.options.Zero === 0);
 
-      for (var i = 0; i < local_bins.length; ++i) {
-         var hh = local_bins[i];
-         if (hh.z < axis_zmin) continue;
+      var i1 = this.GetSelectIndex("x", "left", 0),
+          i2 = this.GetSelectIndex("x", "right", 1),
+          j1 = this.GetSelectIndex("y", "left", 0),
+          j2 = this.GetSelectIndex("y", "right", 1),
+          i, j, x1, x2, y1, y2, binz,
+          main = this.main_painter();
 
-         if ((hh.z == axis_zmin) && (!showmin)) continue;
 
-         hh.x1 = this.tx(hh.x1);
-         hh.x2 = this.tx(hh.x2);
-         hh.y1 = this.ty(hh.y1);
-         hh.y2 = this.ty(hh.y2);
+      // first adjust ranges
+      for (i=i1;i<i2;++i) {
+         x1 = this.GetBinX(i);
+         if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
+         if (this.tx(x1) < -1.001*this.size3d) { i1 = i+1; continue; }
 
-         if ((hh.x1 < -1.001*this.size3d) || (hh.x2 > 1.001*this.size3d) ||
-             (hh.y1 < -1.001*this.size3d) || (hh.y2 > 1.001*this.size3d)) continue;
-
-         // select only interested bins
-         draw_bins.push(hh);
+         x2 = this.GetBinX(i+1);
+         if (this.tx(x2) > 1.001*this.size3d) { i2 = i; break; }
       }
 
-      if (draw_bins.length == 0) return;
+      for (j=j1;j<j2;++j) {
+         y1 = this.GetBinY(j);
+         if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
+         if (this.ty(y1) < -1.001*this.size3d) { j1 = j+1; continue; }
+         y2 = this.GetBinY(j+1);
+         if (this.ty(y2) > 1.001*this.size3d) { j2 = j; break; }
+      }
 
-      //var colors = new Float32Array( numvertices * 3 );
+      if ((i1 >= i2) || (j1>=j2)) return;
 
       // DRAW ALL CUBES
 
@@ -856,72 +862,77 @@
 
          // now calculate size of buffer geometry for boxes
 
-         for (var i = 0; i < draw_bins.length; ++i) {
-            var bin = draw_bins[i];
+         for (i=i1;i<i2;++i)
+            for (j=j1;j<j2;++j) {
+               var binz = this.histo.getBinContent(i+1, j+1);
+               if (binz < zmin) continue;
+               var reduced = (binz === zmin);
+               if (reduced && ((nlevel>0) || !showmin)) continue;
+               var nobottom = !reduced && (nlevel>0);
+               var notop = !reduced && (binz > zmax);
 
-            bin.shown = false; // not shown at all
-            bin.reduced = false;
-            if (bin.z < zmin) continue;
-
-            if (bin.z == zmin) {
-               if (nlevel>0) continue;
-               bin.reduced = true;
+               numvertices += (reduced ? 12 : indicies.length);
+               if (nobottom) numvertices -= 6;
+               if (notop) numvertices -= 6;
             }
-
-            bin.shown = true;
-            bin.nobottom = !bin.reduced && (nlevel>0);
-            bin.notop = !bin.reduced && (bin.z > zmax);
-            numvertices += (bin.reduced ? 12 : indicies.length);
-            if (bin.nobottom) numvertices -= 6;
-            if (bin.notop) numvertices -= 6;
-         }
 
          totalvertices+=numvertices;
 
          var positions = new Float32Array( numvertices * 3 );
          var normals = new Float32Array( numvertices * 3 );
-         var bins_index = new Uint16Array(numvertices);
-         var i = 0, vert, bin, k, nn;
+         var bins_index = new Uint32Array(numvertices);
+         var v = 0, vert, bin, k, nn;
 
-         for (var n = 0; n < draw_bins.length; ++n) {
-            bin = draw_bins[n];
-            if (!bin.shown) continue;
+         for (i=i1;i<i2;++i) {
+            x1 = this.tx(this.GetBinX(i));
+            x2 = this.tx(this.GetBinX(i+1));
+            for (j=j1;j<j2;++j) {
+               var binz = this.histo.getBinContent(i+1, j+1);
+               if (binz < zmin) continue;
+               var reduced = (binz === zmin);
+               if (reduced && ((nlevel>0) || !showmin)) continue;
+               var nobottom = !reduced && (nlevel>0);
+               var notop = !reduced && (binz > zmax);
 
-            z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
+               y1 = this.ty(this.GetBinY(j));
+               y2 = this.ty(this.GetBinY(j+1));
 
-            nn = 0; // counter over the normals, each normals correspond to 6 vertices
-            k = 0; // counter over vertices
+               z2 = (binz > zmax) ? zzz : this.tz(binz);
 
-            if (bin.reduced) {
-               // we skip all side faces, keep only top and bottom
-               nn += 12;
-               k += 24;
-            }
+               nn = 0; // counter over the normals, each normals correspond to 6 vertices
+               k = 0; // counter over vertices
 
-            var size = indicies.length;
-            if (bin.nobottom) size -= 6;
+               if (reduced) {
+                  // we skip all side faces, keep only top and bottom
+                  nn += 12;
+                  k += 24;
+               }
 
-            // array over all vertices of the single bin
-            while(k < size) {
+               var size = indicies.length;
+               if (nobottom) size -= 6;
 
-               vert = vertices[indicies[k]];
+               // array over all vertices of the single bin
+               while(k < size) {
 
-               positions[i]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
-               positions[i+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-               positions[i+2] = z1 + vert.z * (z2 - z1);
+                  vert = vertices[indicies[k]];
 
-               normals[i] = vnormals[nn];
-               normals[i+1] = vnormals[nn+1];
-               normals[i+2] = vnormals[nn+2];
+                  positions[v]   = x1 + vert.x * (x2 - x1);
+                  positions[v+1] = y1 + vert.y * (y2 - y1);
+                  positions[v+2] = z1 + vert.z * (z2 - z1);
 
-               bins_index[i/3] = n; // remember which bin corresponds to the vertex
+                  normals[v] = vnormals[nn];
+                  normals[v+1] = vnormals[nn+1];
+                  normals[v+2] = vnormals[nn+2];
 
-               i+=3; ++k;
+                  bins_index[v/3] = this.histo.getBin(i+1, j+1); // remember which bin corresponds to the vertex
 
-               if (k%6 === 0) {
-                  nn+=3;
-                  if (bin.notop && (k === indicies.length - 12)) {
-                     k+=6; nn+=3; // jump over notop indexes
+                  v+=3; ++k;
+
+                  if (k%6 === 0) {
+                     nn+=3;
+                     if (notop && (k === indicies.length - 12)) {
+                        k+=6; nn+=3; // jump over notop indexes
+                     }
                   }
                }
             }
@@ -949,12 +960,11 @@
 
          var mesh = new THREE.Mesh(geometry, material);
 
-         mesh.bins = draw_bins;
          mesh.bins_index = bins_index;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            return this.bins[this.bins_index[intersect.index]].tip;
+            return "bin" + this.bins_index[intersect.index];
          }
 
          this.toplevel.add(mesh);
@@ -966,48 +976,58 @@
 
       var numlinevertices = 0, numsegments = 0;
 
-      for (var n = 0; n < draw_bins.length; ++n) {
-         var bin = draw_bins[n];
+      for (i=i1;i<i2;++i)
+         for (j=j1;j<j2;++j) {
+            var binz = this.histo.getBinContent(i+1, j+1);
+            if (binz < axis_zmin) continue;
+            var reduced = (binz == axis_zmin);
+            if (reduced && !showmin) continue;
 
-         bin.reduced = false;
-
-         if (bin.z == axis_zmin)
-            bin.reduced = true;
-
-         // calculate required buffer size for line segments
-         numlinevertices += (bin.reduced ? rvertices.length : vertices.length);
-         numsegments += (bin.reduced ? rsegments.length : segments.length);
-      }
+            // calculate required buffer size for line segments
+            numlinevertices += (reduced ? rvertices.length : vertices.length);
+            numsegments += (reduced ? rsegments.length : segments.length);
+         }
 
 
       var lpositions = new Float32Array( numlinevertices * 3 );
       var lindicies = new Uint16Array( numsegments );
-      bins_index = new Uint16Array( numsegments );
+      bins_index = new Uint32Array( numsegments );
 
       var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
 
       var ll = 0, ii = 0;
 
-      for (var n = 0; n < draw_bins.length; ++n) {
-         bin = draw_bins[n];
+      for (i=i1;i<i2;++i) {
+         x1 = this.tx(this.GetBinX(i));
+         x2 = this.tx(this.GetBinX(i+1));
+         for (j=j1;j<j2;++j) {
 
-         z2 = (bin.z > axis_zmax) ? zzz : this.tz(bin.z);
+            var binz = this.histo.getBinContent(i+1, j+1);
+            if (binz < axis_zmin) continue;
+            var reduced = (binz == axis_zmin);
+            if (reduced && !showmin) continue;
 
-         var seg = bin.reduced ? rsegments : segments;
-         var vvv = bin.reduced ? rvertices : vertices;
+            y1 = this.ty(this.GetBinY(j));
+            y2 = this.ty(this.GetBinY(j+1));
 
-         // array of indicies for the lines, to avoid duplication of points
-         for (k=0; k < seg.length; ++k) {
-            bins_index[ii] = n;
-            lindicies[ii++] = ll/3 + seg[k];
-         }
+            z2 = (binz > zmax) ? zzz : this.tz(binz);
 
-         for (k=0; k < vvv.length; ++k) {
-            vert = vvv[k];
-            lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
-            lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-            lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-            ll+=3;
+            var seg = reduced ? rsegments : segments;
+            var vvv = reduced ? rvertices : vertices;
+
+            // array of indicies for the lines, to avoid duplication of points
+            for (k=0; k < seg.length; ++k) {
+               bins_index[ii] = this.histo.getBin(i+1, j+1);
+               lindicies[ii++] = ll/3 + seg[k];
+            }
+
+            for (k=0; k < vvv.length; ++k) {
+               vert = vvv[k];
+               lpositions[ll]   = x1 + vert.x * (x2 - x1);
+               lpositions[ll+1] = y1 + vert.y * (y2 - y1);
+               lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+               ll+=3;
+            }
          }
       }
 
@@ -1021,14 +1041,12 @@
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
-      line.bins = draw_bins;
       line.bins_index = bins_index;
 
       line.tooltip = function(intersect) {
          if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-         return this.bins[this.bins_index[intersect.index]].tip;
+         return "line" + this.bins_index[intersect.index];
       }
-
 
       this.toplevel.add(line);
    }

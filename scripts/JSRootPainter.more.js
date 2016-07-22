@@ -3246,7 +3246,7 @@
       for (j = j1; j <= j2; ++j) {
          y = this.GetBinY(j);
          if (main.logy && (y <= 0)) { j1 = j+1; continue; }
-         yy.push({indx:j, axis:y, gr: main.gry(y), cnt:0});
+         yy.push({indx:j, axis: y, gr: main.gry(y), cnt:0});
       }
 
       // first found min/max values in selected range, and number of non-zero bins
