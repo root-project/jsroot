@@ -779,56 +779,7 @@
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
-
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
-
-      var local_bins = this.CreateDrawBins(100, 100);
-
-      // create the bin cubes
-      var fillcolor = new THREE.Color(0xDDDDDD);
-      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255, fcolor.b / 255);
-
-      var material = new THREE.MeshLambertMaterial({ color : fillcolor.getHex() });
-
-      var geom = new THREE.BoxGeometry(1, 1, 1);
-
-      var zmin = this.tz.domain()[0], zmax = this.tz.domain()[1];
-
-      var z1 = this.tz(zmin);
-
-      for (var i = 0; i < local_bins.length; ++i) {
-         var hh = local_bins[i];
-         if (hh.z <= zmin) continue;
-
-         var x1 = this.tx(hh.x1), x2 = this.tx(hh.x2),
-             y1 = this.ty(hh.y1), y2 = this.ty(hh.y2),
-             z2 = (hh.z > zmax) ? this.tz(zmax) : this.tz(hh.z);
-
-         if ((x1 < -1.001*this.size3d) || (x2 > 1.001*this.size3d) ||
-             (y1 < -1.001*this.size3d) || (y2 > 1.001*this.size3d)) continue;
-
-         // create a new mesh with cube geometry
-         var bin = new THREE.Mesh(geom, material.clone());
-
-         bin.position.set((x1+x2)/2, (y1+y2)/2, (z1+z2)/2);
-         bin.scale.set(x2-x1,y2-y1,z2-z1);
-
-         if ('tip' in hh) bin.name = hh.tip;
-         this.toplevel.add(bin);
-
-         var helper = new THREE.BoxHelper(bin);
-         helper.material.color.set(0x000000);
-         helper.material.linewidth = 1.0;
-         this.toplevel.add(helper);
-      }
-
-      delete local_bins;
-      local_bins = null;
-   }
-
-
-   JSROOT.Painter.TH2Painter_Draw3DBinsBuf = function() {
-      // try to implement drawing with BufferGeometry
+      // Perform TH2 lego plot with BufferGeometry
 
       var local_bins = this.CreateDrawBins(100, 100);
 
