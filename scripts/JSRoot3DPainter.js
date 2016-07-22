@@ -863,18 +863,13 @@
       var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
       // create the bin cubes
-      var zmin = axis_zmin, zmax = axis_zmax, numvertices = 0, numlinevertices = 0, numsegments = 0;
-
       var draw_bins = [], showmin = (this.options.Zero === 0);
 
       for (var i = 0; i < local_bins.length; ++i) {
          var hh = local_bins[i];
          if (hh.z < axis_zmin) continue;
 
-         if (hh.z == axis_zmin) {
-            if (!showmin) continue;
-            hh.reduced = true;
-         }
+         if ((hh.z == axis_zmin) && (!showmin)) continue;
 
          hh.x1 = this.tx(hh.x1);
          hh.x2 = this.tx(hh.x2);
@@ -886,28 +881,40 @@
 
          // select only interested bins
          draw_bins.push(hh);
-
-         // calculate required buffer size
-         numvertices += (hh.reduced ? 12 : indicies.length);
-         numlinevertices += (hh.reduced ? rvertices.length : vertices.length);
-         numsegments += (hh.reduced ? rsegments.length : segments.length);
       }
-
 
       if (draw_bins.length == 0) return;
 
-      var positions = new Float32Array( numvertices * 3 );
-      var normals = new Float32Array( numvertices * 3 );
       //var colors = new Float32Array( numvertices * 3 );
 
-      var lpositions = new Float32Array( numlinevertices * 3 );
-      var lindicies = new Uint16Array( numsegments );
+      // DRAW ALL CUBES
 
       // console.log('Create buffer array of ', positions.length)
+      var zmin = axis_zmin, zmax = axis_zmax,
+          z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax),
+          numvertices = 0;
 
-      var i = 0, vert, bin, k, nn, ll = 0, ii = 0,
-          zmin = axis_zmin, zmax = axis_zmax,
-          z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax);
+      // now calculate size of buffer geometry for boxes
+
+
+      for (var i = 0; i < draw_bins.length; ++i) {
+         var bin = draw_bins[i];
+
+         if (bin.z < zmin) continue;
+
+         bin.reduced = false;
+
+         if (bin.z == zmin) {
+            if (!showmin) continue;
+            bin.reduced = true;
+         }
+         numvertices += (bin.reduced ? 12 : indicies.length);
+      }
+
+      var positions = new Float32Array( numvertices * 3 );
+      var normals = new Float32Array( numvertices * 3 );
+      var bins_index = new Uint16Array(numvertices);
+      var i = 0, vert, bin, k, nn;
 
       for (var n = 0; n < draw_bins.length; ++n) {
          bin = draw_bins[n];
@@ -939,29 +946,10 @@
             normals[i+2] = vnormals[nn+2];
 
             i+=3; ++k;
+
+            bins_index[i/3] = n; // remember which bin corresponds to the vertex
          }
-
-         bin.vertex_index = i; // this is index boundary of vertices for the bin
-
-         var seg = bin.reduced ? rsegments : segments;
-         var vvv = bin.reduced ? rvertices : vertices;
-
-         // array of indicies for the lines, to avoid duplication of points
-         for (k=0; k < seg.length; ++k) {
-            lindicies[ii++] = ll/3 + seg[k];
-         }
-
-         for (k=0; k < vvv.length; ++k) {
-            vert = vvv[k];
-            lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
-            lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
-            lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-            ll+=3;
-         }
-
-         bin.line_index = ll; // this is index boundary for lines
       }
-
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
@@ -980,22 +968,68 @@
       var mesh = new THREE.Mesh(geometry, material);
 
       mesh.bins = draw_bins;
-
-      function findbin(bins, indx, kind) {
-         var l = 0, r = bins.length-1, mid;
-         if ((indx < 0) || (indx >= bins[r][kind])) return null;
-         while (r > l+1) {
-            mid = Math.round((r+l)/2);
-            if (indx >= bins[mid][kind]) l = mid; else r = mid;
-         }
-         return (indx < bins[l][kind]) ? bins[l].tip : bins[r].tip;
-      }
+      mesh.bins_index = bins_index;
 
       mesh.tooltip = function(intersect) {
-         return findbin(this.bins, intersect.index * 3, 'vertex_index');
+         if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
+         return this.bins[this.bins_index[intersect.index]].tip;
       }
 
       this.toplevel.add(mesh);
+
+
+      // DRAW LINE BOXES
+
+      var numlinevertices = 0, numsegments = 0;
+
+      for (var n = 0; n < draw_bins.length; ++n) {
+         var bin = draw_bins[n];
+
+         bin.reduced = false;
+
+         if (bin.z == axis_zmin)
+            bin.reduced = true;
+
+         // calculate required buffer size for line segments
+         numlinevertices += (bin.reduced ? rvertices.length : vertices.length);
+         numsegments += (bin.reduced ? rsegments.length : segments.length);
+      }
+
+
+      var lpositions = new Float32Array( numlinevertices * 3 );
+      var lindicies = new Uint16Array( numsegments );
+      bins_index = new Uint16Array( numsegments );
+
+      zmin = axis_zmin;
+      zmax = axis_zmax;
+      z2 = z1 = this.tz(zmin);
+      zzz = this.tz(zmax);
+
+      var ll = 0, ii = 0;
+
+      for (var n = 0; n < draw_bins.length; ++n) {
+         bin = draw_bins[n];
+
+         z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
+
+         var seg = bin.reduced ? rsegments : segments;
+         var vvv = bin.reduced ? rvertices : vertices;
+
+         // array of indicies for the lines, to avoid duplication of points
+         for (k=0; k < seg.length; ++k) {
+            bins_index[ii] = n;
+            lindicies[ii++] = ll/3 + seg[k];
+         }
+
+         for (k=0; k < vvv.length; ++k) {
+            vert = vvv[k];
+            lpositions[ll]   = bin.x1 + vert.x * (bin.x2 - bin.x1);
+            lpositions[ll+1] = bin.y1 + vert.y * (bin.y2 - bin.y1);
+            lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+            ll+=3;
+         }
+      }
+
 
       // create boxes
       geometry = new THREE.BufferGeometry();
@@ -1009,9 +1043,13 @@
 
       var line = new THREE.LineSegments(geometry, material);
       line.bins = draw_bins;
+      line.bins_index = bins_index;
+
       line.tooltip = function(intersect) {
-         return findbin(this.bins, intersect.index, 'line_index');
+         if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
+         return this.bins[this.bins_index[intersect.index]].tip;
       }
+
 
       this.toplevel.add(line);
    }
