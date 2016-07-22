@@ -4846,7 +4846,7 @@
 
       function pad_option(name,field,value) {
          if (chopt.indexOf(name) != -1) {
-            pad[field] = (value!==undefined) ? value : 1;
+            pad[field] = 1;
             chopt = chopt.replace(name, '');
          }
       }
@@ -4856,6 +4856,8 @@
       pad_option('GRIDX', 'fGridx');
       pad_option('GRIDY', 'fGridy');
       pad_option('GRIDZ', 'fGridz');
+      pad_option('TICKX', 'fTickx');
+      pad_option('TICKY', 'fTicky');
 
       chopt = chopt.trim();
       while ((chopt.length>0) && (chopt[0]==',' || chopt[0]==';')) chopt = chopt.substr(1);
