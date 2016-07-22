@@ -16,6 +16,7 @@
    - enable more details when changing camera position/zoom
 9. Support axis labels draw in 3D plots (like lego for th2) 
 10. Support more lego options: lego0, lego2, legofb, legobb
+11. Significant performance improvement of 3D histograms drawings
 
 
 ## Changes in 4.5.0
