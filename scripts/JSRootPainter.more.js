@@ -2703,7 +2703,7 @@
       // painter automatically bind to mene callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0"], function(arg) {
          this.options = this.DecodeOptions(arg);
          if (this.options.Zscale > 0)
             // draw new palette, resize frame if required

@@ -3819,18 +3819,21 @@
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
             if (!main) return;
 
+            if (arg === 'fGridz') return main.Redraw();
+
             if ((arg.indexOf('fGrid')==0) && (typeof main.DrawGrids == 'function'))
-               main.DrawGrids();
+               return main.DrawGrids();
 
             if ((arg.indexOf('fTick')==0) && (typeof main.DrawAxes == 'function'))
-               main.DrawAxes();
+               return main.DrawAxes();
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleField);
          menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleField);
+         if (this.pad.fGridz !== undefined)
+            menu.addchk(this.pad.fGridz, 'Grid z', 'fGridz', ToggleField);
          menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
          menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
-
 
          this.FillAttContextMenu(menu);
       }
@@ -9756,7 +9759,7 @@
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;same" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;LEGO0;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "THStack", prereq: "more2d", func: "JSROOT.Painter.drawHStack" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });

@@ -580,7 +580,9 @@
       geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
       geometry.vertices.push(new THREE.Vector3(-1, 1, 0));
-      var zgrid = new THREE.Geometry(); // container for grid
+      var zgrid = null;
+      if (this.scale_z_grid && zsides[1] && (this.size3d !== 0))
+         zgrid = new THREE.Geometry(); // container for grid
       while (zticks.next()) {
          var grz = zticks.grpos;
          var is_major = zticks.kind == 1;
@@ -638,7 +640,7 @@
          }
 
          // create grid
-         if (zsides[1] && (this.size3d !== 0) && is_major) {
+         if (zgrid && is_major) {
             zgrid.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
             zgrid.vertices.push(new THREE.Vector3(grminx, grmaxy, grz));
 
@@ -683,7 +685,7 @@
          }
       }
 
-      if ((zgrid.vertices.length > 0) && false) {
+      if (zgrid && (zgrid.vertices.length > 0)) {
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
          var lines = new THREE.LineSegments(zgrid, material);
@@ -1071,15 +1073,16 @@
 
       this.Create3DScene();
 
-      var logz = this.root_pad().fLogz;
+      var pad = this.root_pad();
+      if (pad.fGridz === undefined) pad.fGridz = false;
 
-      this.zmin = logz ? this.gmin0bin * 0.3 : this.gminbin;
+      this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin;
 
       if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
       if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
 
-      if (logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+      if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
       this.zmax *= 1.1; // as it done in ROOT
 
@@ -1087,6 +1090,7 @@
       if (!this.options.BackBox) this.scale_z_sides[1] = false;
       if (!this.options.FrontBox) this.scale_z_sides[3] = false;
       if (!this.options.BackBox && !this.options.FrontBox) this.scale_z_sides[2] = false;
+      this.scale_z_grid = pad.fGridz && this.scale_z_sides[1];
 
       this.DrawXYZ();
 
