@@ -961,10 +961,11 @@
          var mesh = new THREE.Mesh(geometry, material);
 
          mesh.bins_index = bins_index;
+         mesh.painter = this;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            return "bin" + this.bins_index[intersect.index];
+            return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
          }
 
          this.toplevel.add(mesh);
@@ -1042,10 +1043,11 @@
 
       var line = new THREE.LineSegments(geometry, material);
       line.bins_index = bins_index;
+      line.painter = this;
 
       line.tooltip = function(intersect) {
          if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-         return "line" + this.bins_index[intersect.index];
+         return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
       }
 
       this.toplevel.add(line);

@@ -3877,6 +3877,16 @@
       return lines;
    }
 
+   JSROOT.TH2Painter.prototype.Get3DToolTip = function(indx) {
+      var ix = indx % (this.nbinsx + 2),
+          iy = (indx - ix) / (this.nbinsx + 2);
+
+      var tips = this.GetBinTips(ix, iy);
+      var res = tips[0];
+      for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
+      return res;
+   }
+
    JSROOT.TH2Painter.prototype.GetCandleTips = function(p) {
       var lines = [], main = this.main_painter();
 
