@@ -1354,7 +1354,7 @@
 
       var fillcolor = new THREE.Color(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
 
-      var material = null, geom = null;
+      var material = null, geom = null, helper = null;
 
       if (this.options.Box == 11) {
          material = new THREE.MeshPhongMaterial({ color : fillcolor, specular : 0x4f4f4f });
@@ -1364,6 +1364,7 @@
       } else {
          material = new THREE.MeshLambertMaterial({ color : fillcolor });
          geom = new THREE.BoxGeometry(1, 1, 1);
+         helper = new THREE.BoxHelper(new THREE.Mesh(geom));
       }
 
       var histo = this.GetObject(),
@@ -1380,13 +1381,7 @@
           scalez = (this.tz(this.GetBinZ(k2+0.5)) - this.tz(this.GetBinZ(k1+0.5))) / (k2-k1);
 
       // Single Object3Ds that contain all bins and helpers
-      var all_bins = new THREE.Object3D();
-      var all_helpers = new THREE.Object3D();
-
       var buffer_size = geom.faces.length*9;
-      // BufferGeometries that store geometry of all bins
-      var all_bins_buffgeom = new THREE.BufferGeometry();
-      var all_bins_linebuff = new THREE.BufferGeometry();
 
       var single_bin_verts = new Float32Array(buffer_size);
       var single_bin_norms = new Float32Array(buffer_size);
@@ -1431,11 +1426,21 @@
          }
       }
 
-      console.log("Create buffer for", nbins, 'bins fullsize', nbins * buffer_size);
+      // console.log("Create buffer for", nbins, 'bins fullsize', nbins * buffer_size);
 
       var bin_verts = new Float32Array(nbins * buffer_size);
       var bin_norms = new Float32Array(nbins * buffer_size);
       var bins = new Int32Array(nbins);
+
+
+      var helper_indexes, helper_positions, helper_single_indexes, helper_single_position, helper_bins;
+
+      if (helper) {
+         helper_single_indexes = helper.geometry.index.array;
+         helper_single_position = helper.geometry.getAttribute('position').array;
+         helper_indexes = new Uint32Array(nbins * helper_single_indexes.length);
+         helper_positions = new Float32Array(nbins * helper_single_position.length);
+      }
 
       var binx, grx, biny, gry, binz, grz;
 
@@ -1454,28 +1459,6 @@
 
                binz = this.GetBinZ(k+0.5); grz = this.tz(binz);
 
-
-               /*
-               var bin = new THREE.Mesh(geom, material.clone());
-
-               bin.position.set( grx, gry, grz );
-
-               bin.scale.set(scalex*wei, scaley*wei, scalez*wei);
-
-               // Make old bins invisible so they don't hurt performance but
-               // still cause tooltip to show up
-               bin.material.visible = false;
-
-               if (JSROOT.gStyle.Tooltip > 0)
-                  bin.name = name + 'x=' + JSROOT.FFormat(binx,"6.4g") + ' bin=' + (i+1) + '<br/>'
-                                  + 'y=' + JSROOT.FFormat(biny,"6.4g") + ' bin=' + (j+1) + '<br/>'
-                                  + 'z=' + JSROOT.FFormat(binz,"6.4g") + ' bin=' + (k+1) + '<br/>'
-                                  + 'entries=' + JSROOT.FFormat(bin_content, "7.0g");
-
-               all_bins.add(bin);
-               */
-
-
                // remeber bin index for tooltip
                bins[nbins] = histo.getBin(i+1, j+1, k+1);
 
@@ -1492,81 +1475,66 @@
                   bin_norms[vvv+2] = single_bin_norms[vi+2];
                }
 
-               nbins++;
 
-               /*
-               if (this.options.Box !== 11) {
-                  var helper = new THREE.BoxHelper(bin);
-                  helper.material.color.set(0x000000);
-                  helper.material.linewidth = 1.0;
-                  helper.material.visible = false;
-                  all_helpers.add(helper)
+               if (helper) {
+                  var iii = nbins * helper_single_indexes.length,
+                      vvv = nbins * helper_single_position.length;
+
+                  for (var n=0;n<helper_single_indexes.length;++n)
+                     helper_indexes[iii+n] = vvv/3 + helper_single_indexes[n];
+
+                  for (var vi=0;vi < helper_single_position.length; vi+=3, vvv+=3) {
+                     helper_positions[vvv]   = grx + helper_single_position[vi]*scalex*wei;
+                     helper_positions[vvv+1] = gry + helper_single_position[vi+1]*scaley*wei;
+                     helper_positions[vvv+2] = grz + helper_single_position[vi+2]*scalez*wei;
+                  }
                }
-               */
+
+               nbins++;
             }
          }
       }
 
-      // Fill full size typed arrays with vertex and normal data
-      //bin_verts = new Float32Array(temp_bin_verts.length);
-      //bin_norms = new Float32Array(temp_bin_verts.length);
-      //for (var i = 0; i<temp_bin_verts.length; ++i) {
-      //   bin_verts[i] = temp_bin_verts[i];
-      //   bin_norms[i] = single_bin_norms[i%single_bin_norms.length];
-      //}
+
+      // BufferGeometries that store geometry of all bins
+      var all_bins_buffgeom = new THREE.BufferGeometry();
 
       // Create mesh from bin buffergeometry
-      all_bins_buffgeom.addAttribute( 'position',
-         new THREE.BufferAttribute( bin_verts, 3 ) );
-      all_bins_buffgeom.addAttribute( 'normal',
-         new THREE.BufferAttribute( bin_norms, 3 ) );
+      all_bins_buffgeom.addAttribute('position', new THREE.BufferAttribute( bin_verts, 3 ) );
+      all_bins_buffgeom.addAttribute('normal', new THREE.BufferAttribute( bin_norms, 3 ) );
+
       var combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
       combined_bins.bins = bins;
       combined_bins.bins_faces = buffer_size/3;
       combined_bins.painter = this;
 
-
       combined_bins.tooltip = function(intersect) {
-
          var indx = Math.floor(intersect.index / this.bins_faces);
-
          if ((indx<0) || (indx >= this.bins.length)) return null;
          return this.painter.GetToolTip(this.bins[indx]);
       }
 
       this.toplevel.add(combined_bins);
 
-      // Extract geometry from helper cubes to create efficient single mesh
-      if ((this.options.Box !== 11) && false) {
-         var line_verts = [];
-         var line_indices = [];
-         // Vertex and Index data
-         for (var i = 0; i < all_helpers.children.length; ++i) {
-            var current_v = all_helpers.children[i].geometry.getAttribute('position').array;
-            for (var v = 0; v < current_v.length; ++v) {
-               line_verts.push(current_v[v]);
-            }
-            var current_i = all_helpers.children[i].geometry.index.array;
-            for (var ci = 0; ci < current_i.length; ++ci) {
-               line_indices.push(current_i[ci]+i*8);
-            }
-         }
 
-         all_bins_linebuff.setIndex(
-          new THREE.BufferAttribute( new Uint16Array(line_indices), 1 ) );
-         all_bins_linebuff.addAttribute( 'position',
-              new THREE.BufferAttribute( new Float32Array(line_verts), 3 ) );
+      if (helper) {
+         var helper_geom = new THREE.BufferGeometry();
+         helper_geom.setIndex(  new THREE.BufferAttribute(helper_indexes, 1) );
+         helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions, 3 ) );
 
-         var combined_lines = new THREE.LineSegments(
-              all_bins_linebuff, all_helpers.children[0].material.clone());
+         var helper_material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 1.0 } );
 
-         combined_lines.material.visible = true;
-         this.toplevel.add(combined_lines);
+         var lines = new THREE.LineSegments(helper_geom, helper_material );
+
+         lines.bins = bins;
+         lines.bins_faces = helper_single_indexes.length;
+         lines.painter = this;
+
+         lines.tooltip = combined_bins.tooltip;
+
+         this.toplevel.add(lines);
       }
-
-      //this.toplevel.add(all_bins);
-      //this.toplevel.add(all_helpers);
    }
 
    JSROOT.TH3Painter.prototype.Redraw = function(resize) {
