@@ -50,7 +50,6 @@
 
       var painter = this;
       var mouseX, mouseY, distXY = 0, mouseDowned = false;
-      var INTERSECTED = null;
 
       var tooltip = {
          tt: null, cont: null,
@@ -64,6 +63,8 @@
          },
          show : function(v) {
             if (JSROOT.gStyle.Tooltip <= 0) return;
+            if (!v || v==="") return this.hide();
+
             if (this.tt === null) {
                this.tt = document.createElement('div');
                this.tt.setAttribute('class', 'jsroot');
@@ -104,58 +105,16 @@
 
          raycaster.setFromCamera( mouse, painter.camera );
          var intersects = raycaster.intersectObjects(painter.scene.children, true);
-         if (intersects.length > 0) {
-            var pick = null;
-            for (var i = 0; i < intersects.length; ++i) {
-
-               if (intersects[i].object.tooltip) {
-                  var res = intersects[i].object.tooltip(intersects[i]);
-                  if (res) tooltip.show(res, 200);
-                      else tooltip.hide();
-                  break;
-               }
-
-               if (('name' in intersects[i].object) && (intersects[i].object.name.length > 0)) {
-                  pick = intersects[i].object;
-                  break;
-               }
-            }
-            if ((pick!==null) && (INTERSECTED !== pick)) {
-               if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
-                  INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-                  // 0.992 and 1.00806 are inverse, allowing "highlight" bins to buldge
-                  // slightly and be visible over the unhighlighted ones
-                  INTERSECTED.scale.x *= 0.992;
-                  INTERSECTED.scale.y *= 0.992;
-                  INTERSECTED.scale.z *= 0.992;
-            //      INTERSECTED.material.visible = false;
-               }
-
-               INTERSECTED = pick;
-               if (do_bins_highlight && ('emissive' in INTERSECTED.material)) {
-                  INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                  INTERSECTED.material.emissive.setHex(0x5f5f5f);
-                  INTERSECTED.scale.x *= 1.00806451612903;
-                  INTERSECTED.scale.y *= 1.00806451612903;
-                  INTERSECTED.scale.z *= 1.00806451612903;
-                  INTERSECTED.material.visible = true;
-                  painter.Render3D(0);
-               }
-
-               tooltip.show(INTERSECTED.name, 200);
-            }
-         } else {
-            if (INTERSECTED && do_bins_highlight && ('emissive' in INTERSECTED.material)) {
-               INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-               INTERSECTED.scale.x *= 0.992;
-               INTERSECTED.scale.y *= 0.992;
-               INTERSECTED.scale.z *= 0.992;
-            //   INTERSECTED.material.visible = false;
-               painter.Render3D(0);
-            }
-            INTERSECTED = null;
-            tooltip.hide();
+         for (var i = 0; i < intersects.length; ++i) {
+            if (intersects[i].object.tooltip) {
+               var res = intersects[i].object.tooltip(intersects[i]);
+               if (res) return tooltip.show(res, 200);
+            } else
+            if (typeof intersects[i].object.name == 'string')
+               return tooltip.show(intersects[i].object.name, 200);
          }
+
+         tooltip.hide();
       };
 
       function coordinates(e) {
