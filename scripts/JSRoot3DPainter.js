@@ -845,7 +845,7 @@
       var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
 
       // normals for each  pair of faces
-      var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
+      var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
 
       // line segments
       var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
@@ -889,7 +889,7 @@
 
       // DRAW ALL CUBES
 
-      var levels = [ axis_zmin, axis_zmax ], palette = null;
+      var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       if (this.options.Lego == 12) {
          levels = this.CreateContour(20, axis_zmin, axis_zmax, this.minposbin);
@@ -918,8 +918,14 @@
             }
 
             bin.shown = true;
+            bin.nobottom = !bin.reduced && (nlevel>0);
+            bin.notop = !bin.reduced && (bin.z > zmax);
             numvertices += (bin.reduced ? 12 : indicies.length);
+            if (bin.nobottom) numvertices -= 6;
+            if (bin.notop) numvertices -= 6;
          }
+
+         totalvertices+=numvertices;
 
          var positions = new Float32Array( numvertices * 3 );
          var normals = new Float32Array( numvertices * 3 );
@@ -932,8 +938,8 @@
 
             z2 = (bin.z > zmax) ? zzz : this.tz(bin.z);
 
-            nn = -3; // counter over the normals, each normals correspond to 6 vertices
-            k = 0;
+            nn = 0; // counter over the normals, each normals correspond to 6 vertices
+            k = 0; // counter over vertices
 
             if (bin.reduced) {
                // we skip all side faces, keep only top and bottom
@@ -941,10 +947,11 @@
                k += 24;
             }
 
-            // array over all vertices of the single bin
-            while(k < indicies.length) {
+            var size = indicies.length;
+            if (bin.nobottom) size -= 6;
 
-               if (k%6 === 0) nn+=3;
+            // array over all vertices of the single bin
+            while(k < size) {
 
                vert = vertices[indicies[k]];
 
@@ -956,9 +963,16 @@
                normals[i+1] = vnormals[nn+1];
                normals[i+2] = vnormals[nn+2];
 
+               bins_index[i/3] = n; // remember which bin corresponds to the vertex
+
                i+=3; ++k;
 
-               bins_index[i/3] = n; // remember which bin corresponds to the vertex
+               if (k%6 === 0) {
+                  nn+=3;
+                  if (bin.notop && (k === indicies.length - 12)) {
+                     k+=6; nn+=3; // jump over notop indexes
+                  }
+               }
             }
          }
 
@@ -995,6 +1009,7 @@
          this.toplevel.add(mesh);
       }
 
+      // console.log('Total number of vertices ',totalvertices);
 
       // DRAW LINE BOXES
 
