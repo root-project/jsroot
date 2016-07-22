@@ -948,7 +948,7 @@
 
 
       var lpositions = new Float32Array( numlinevertices * 3 );
-      var lindicies = new Uint16Array( numsegments );
+      var lindicies = new Uint32Array( numsegments );
       bins_index = new Uint32Array( numsegments );
 
       var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
