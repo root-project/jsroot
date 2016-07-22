@@ -2711,6 +2711,16 @@
          this.RedrawPad();
          if (this.options.Lego == 0) this.AddInteractive();
       });
+
+      if (this.options.Lego > 0) {
+         var pad = this.root_pad();
+         if (pad.fGridz === undefined) pad.fGridz = false;
+         menu.addchk(pad.fGridz, 'Grid z', function() {
+            pad.fGridz = !pad.fGridz;
+            this.RedrawPad();
+         });
+
+      }
    }
 
    JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
