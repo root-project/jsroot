@@ -781,8 +781,6 @@
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
       // Perform TH2 lego plot with BufferGeometry
 
-      // var local_bins = this.CreateDrawBins(100, 100);
-
       var vertices = [];
       vertices.push( new THREE.Vector3(1, 1, 1) );
       vertices.push( new THREE.Vector3(1, 1, 0) );
