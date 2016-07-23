@@ -462,7 +462,7 @@
 
       appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
          painter.Render3D(0);
-      });
+      }).listen();
 
       appearance.add(this.options, 'highlight').name('Highlight Volumes').onChange( function (value) {
          if (value === false) {
@@ -484,23 +484,38 @@
 
       var advanced = this._datgui.addFolder('Advanced');
 
-      var advceOptions = { aoClamp: this._ssaoPass.uniforms[ 'aoClamp' ].value, 
-                   lumInfluence: this._ssaoPass.uniforms[ 'lumInfluence' ].value
-                   // metalness
-                   // roughness
-                   };
-
-
-      advanced.add( advceOptions, 'aoClamp').onChange( function (value) {
+      advanced.add( this._advceOptions, 'aoClamp').onChange( function (value) {
          painter._ssaoPass.uniforms[ 'aoClamp' ].value = value;
          painter._enableSSAO = true;
          painter.Render3D(0);
-      });
+      }).listen();
 
-      advanced.add( advceOptions, 'lumInfluence').onChange( function (value) {
+      advanced.add( this._advceOptions, 'lumInfluence').onChange( function (value) {
          painter._ssaoPass.uniforms[ 'lumInfluence' ].value = value;
          painter._enableSSAO = true;
          painter.Render3D(0);
+      }).listen();
+
+      advanced.add(this._advceOptions, 'metalness').onChange( function (value) {
+         painter._toplevel.traverse( function (node) {
+            if (node instanceof THREE.Mesh) {
+               node.material.metalness = value;
+            }
+         });
+         painter.Render3D(0);
+      }).listen();
+
+      advanced.add(this._advceOptions, 'roughness').onChange( function (value) {
+         painter._toplevel.traverse( function (node) {
+            if (node instanceof THREE.Mesh) {
+               node.material.roughness = value;
+            }
+         });
+         painter.Render3D(0);
+      }).listen();
+
+      advanced.add(this, 'resetAdvanced').name('Reset').onChange( function() {
+
       });
 
       this._datgui.close();
@@ -519,6 +534,7 @@
       this._controls.enableDamping = false;
       this._controls.dampingFactor = 0.25;
       this._controls.enableZoom = true;
+      this._controls.zoomSpeed = 2.5;
       this._controls.target.copy(this._lookat);
       this._controls.update();
 
@@ -540,8 +556,8 @@
 
       function GetIntersects(mouse) {
          var pnt = {
-            x: mouse.x / painter._renderer.domElement.width * 2 - 1,
-            y: -mouse.y / painter._renderer.domElement.height * 2 + 1
+            x: mouse.x / painter._renderer.getSize().width * 2 - 1,
+            y: -mouse.y / painter._renderer.getSize().height * 2 + 1
          }
 
          raycaster.setFromCamera( pnt, painter._camera );
@@ -1150,8 +1166,6 @@
          this._ssaoPass.renderToScreen = true;
          this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
          this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
-     //    this._ssaoPass.uniforms[ 'cameraNear' ].value = this._overall_size/800;
-     //    this._ssaoPass.uniforms[ 'cameraFar' ].value = this._overall_size*100;
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
          this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
          this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
@@ -1162,6 +1176,8 @@
          this._effectComposer.addPass( renderPass );
          this._effectComposer.addPass( this._ssaoPass );
       }
+
+      this.resetAdvanced();
 
    }
 
@@ -1183,6 +1199,28 @@
       delete this._draw_nodes_again; // forget about such flag
 
       this.continueDraw();
+   }
+
+   JSROOT.TGeoPainter.prototype.resetAdvanced = function() {
+      this._advceOptions = { aoClamp: 0.3, 
+                   lumInfluence: 0.2,
+                   metalness: 0.8,
+                   roughness: 0.5
+                   };
+
+      this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
+      this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
+      this._toplevel.traverse( function (node) {
+            if (node instanceof THREE.Mesh) {
+               node.material.metalness = 0.8;
+            }
+         });
+      this._toplevel.traverse( function (node) {
+            if (node instanceof THREE.Mesh) {
+               node.material.roughness = 0.5;
+            }
+         });
+      this.Render3D(0);
    }
 
    JSROOT.TGeoPainter.prototype.updateBoundingBox = function() {
