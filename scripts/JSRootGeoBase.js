@@ -91,10 +91,10 @@
                _opacity = node.fRGBA[3];
             }
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0. } );
+            prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.8,
+                           opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.5,
+                           side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                           overdraw: 0. } );
          }
 
          return prop;
@@ -127,8 +127,8 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+         prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.8,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.5,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
