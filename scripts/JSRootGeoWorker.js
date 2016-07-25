@@ -52,9 +52,19 @@ onmessage = function(e) {
          var item = shapes[n];
 
          if (item.geom) {
-            var bufgeom = new THREE.BufferGeometry();
-            bufgeom.fromGeometry(item.geom);
-            item.json = bufgeom.toJSON(); // convert to data which can be transfered to the main thread
+            var bufgeom;
+            if (item.geom instanceof THREE.BufferGeometry) {
+               console.log('Use bufgeom as is');
+               bufgeom = item.geom;
+            } else {
+               var bufgeom = new THREE.BufferGeometry();
+               bufgeom.fromGeometry(item.geom);
+            }
+
+            // item.geom = bufgeom.toJSON(); // convert to data which can be transfered to the main thread
+
+            item.buf_pos = bufgeom.attributes.position.array;
+            item.buf_norm = bufgeom.attributes.normal.array;
          }
 
          delete item.shape; // no need to send back shape

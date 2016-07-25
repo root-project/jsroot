@@ -1449,15 +1449,17 @@
       }
 
       if ('shapes' in job) {
-         var loader = new THREE.BufferGeometryLoader();
+         // var loader = new THREE.BufferGeometryLoader();
 
          for (var n=0;n<job.shapes.length;++n) {
             var item = job.shapes[n];
 
             var shape = this._clones.GetNodeShape(item.nodeid);
 
-            if (item.json) {
-               shape._geom = loader.parse(item.json);
+            if (item.buf_pos && item.buf_norm) {
+               shape._geom = new THREE.BufferGeometry();
+               shape._geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(item.buf_pos), 3 ) );
+               shape._geom.addAttribute( 'normal', new THREE.BufferAttribute( new Float32Array(item.buf_norm), 3 ) );
             } else {
                shape._geom = null; // mark that geometry should not be created
             }
