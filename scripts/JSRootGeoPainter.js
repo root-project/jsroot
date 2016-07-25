@@ -920,11 +920,6 @@
             // do not create composite in main thread, when worker is exists (exclude first drawing)
             if (this._worker && (shape._typename == 'TGeoCompositeShape') && !this._first_drawing) continue;
 
-            //if (shape.fName == 'Rich1AerogelWrapSubQ3') {
-            //   var item = this._draw_nodes[todo[s].indx];
-            //   console.log('stack ' + this._clones.ResolveStack(item.stack).name);
-            //}
-
             shape._geom = JSROOT.GEO.createGeometry(shape);
             delete shape._geom_worker; // remove flag
             ready.push(todo[s].indx); // one could add it to ready list

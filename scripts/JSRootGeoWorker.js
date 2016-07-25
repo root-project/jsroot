@@ -67,11 +67,11 @@ onmessage = function(e) {
             // we allow to take ownership of buffer from local array
             // therefore buffer content not need to be copied
             transferables.push(item.buf_pos.buffer, item.buf_norm.buffer);
+
+            delete item.geom;
          }
 
          delete item.shape; // no need to send back shape
-         delete item.geom;
-         // delete item.json;
       }
 
       var tm3 = new Date().getTime();

@@ -170,8 +170,51 @@
       }
 
       return geom;
-
    }
+
+   JSROOT.GEO.createCubeBuffer = function( shape ) {
+      var vertices = [
+        shape.fDX,  shape.fDY,  shape.fDZ,
+        shape.fDX,  shape.fDY, -shape.fDZ,
+        shape.fDX, -shape.fDY,  shape.fDZ,
+        shape.fDX, -shape.fDY, -shape.fDZ,
+       -shape.fDX,  shape.fDY, -shape.fDZ,
+       -shape.fDX,  shape.fDY,  shape.fDZ,
+       -shape.fDX, -shape.fDY, -shape.fDZ,
+       -shape.fDX, -shape.fDY,  shape.fDZ];
+
+      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
+
+      // normals for each  pair of faces
+      var normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
+
+      var buf_pos = new Float32Array(indicies.length*3);
+      var buf_norm = new Float32Array(indicies.length*3);
+
+      var indx = 0, indx_norm = -3;
+      for (var n=0; n < indicies.length; ++n) {
+         var v = indicies[n] * 3;
+         buf_pos[indx] = vertices[v];
+         buf_pos[indx+1] = vertices[v+1];
+         buf_pos[indx+2] = vertices[v+2];
+
+         if (n % 6 === 0) indx_norm+=3;
+         buf_norm[indx] = normals[indx_norm];
+         buf_norm[indx+1] = normals[indx_norm+1];
+         buf_norm[indx+2] = normals[indx_norm+2];
+
+         indx+=3;
+      }
+
+      // console.log('indx', indx, 'len', indicies.length*3, 'indx_normal',indx_norm,'len', normals.length);
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( buf_norm, 3 ) );
+
+      return geometry;
+   }
+
 
    JSROOT.GEO.createPara = function( shape ) {
 
@@ -204,6 +247,41 @@
       geom.computeFaceNormals();
 
       return geom;
+   }
+
+   JSROOT.GEO.createParaBuffer = function( shape ) {
+
+      var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
+
+      var vertices = [
+          -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
+          -shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
+           shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
+           shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
+
+      var indicies = [ 4,6,5,   4,7,6,   0,3,7,   7,4,0,
+                       4,5,1,   1,0,4,   6,2,1,   1,5,6,
+                       7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      var buf_pos = new Float32Array(indicies.length*3);
+
+      var indx = 0;
+      for (var n=0; n < indicies.length; ++n) {
+         var v = indicies[n] * 3;
+         buf_pos[indx] = vertices[v];
+         buf_pos[indx+1] = vertices[v+1];
+         buf_pos[indx+2] = vertices[v+2];
+         indx+=3;
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
+      geometry.computeVertexNormals();
+      return geometry;
    }
 
 
@@ -1200,8 +1278,8 @@
    JSROOT.GEO.createGeometry = function( shape, limit, return_bsp ) {
 
       switch (shape._typename) {
-         case "TGeoBBox": return JSROOT.GEO.createCube( shape );
-         case "TGeoPara": return JSROOT.GEO.createPara( shape );
+         case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape );
+         case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape );
          case "TGeoTrd1":
          case "TGeoTrd2": return JSROOT.GEO.createTrapezoid( shape );
          case "TGeoArb8":

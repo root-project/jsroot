@@ -28,10 +28,10 @@ function ThreeBSPfactory() {
          this.matrix = null; // new THREE.Matrix4;
          return this;
       } else if ( geometry instanceof THREE.BufferGeometry ) {
-         var pos_buf = geom.getAttribute('position').array,
-             norm_buf = geom.getAttribute('normal').array;
+         var pos_buf = geometry.getAttribute('position').array,
+             norm_buf = geometry.getAttribute('normal').array;
 
-         console.log('From buffer geometry');
+         // console.log('From buffer geometry');
 
          for (var i=0; i < pos_buf.length; i+=9) {
             polygon = new ThreeBSP.Polygon;
