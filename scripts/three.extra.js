@@ -4227,6 +4227,671 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 }() );
 
+// Content of examples/js/shaders/CopyShader.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Full-screen textured quad shader
+ */
+
+THREE.CopyShader = {
+
+	uniforms: {
+
+		"tDiffuse": { type: "t", value: null },
+		"opacity":  { type: "f", value: 1.0 }
+
+	},
+
+	vertexShader: [
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join( "\n" ),
+
+	fragmentShader: [
+
+		"uniform float opacity;",
+
+		"uniform sampler2D tDiffuse;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vec4 texel = texture2D( tDiffuse, vUv );",
+			"gl_FragColor = opacity * texel;",
+
+		"}"
+
+	].join( "\n" )
+
+};
+
+// Content of examples/js/postprocessing/EffectComposer.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.EffectComposer = function ( renderer, renderTarget ) {
+
+	this.renderer = renderer;
+
+	if ( renderTarget === undefined ) {
+
+		var parameters = {
+			minFilter: THREE.LinearFilter,
+			magFilter: THREE.LinearFilter,
+			format: THREE.RGBAFormat,
+			stencilBuffer: false
+		};
+		var size = renderer.getSize();
+		renderTarget = new THREE.WebGLRenderTarget( size.width, size.height, parameters );
+
+	}
+
+	this.renderTarget1 = renderTarget;
+	this.renderTarget2 = renderTarget.clone();
+
+	this.writeBuffer = this.renderTarget1;
+	this.readBuffer = this.renderTarget2;
+
+	this.passes = [];
+
+	if ( THREE.CopyShader === undefined )
+		console.error( "THREE.EffectComposer relies on THREE.CopyShader" );
+
+	this.copyPass = new THREE.ShaderPass( THREE.CopyShader );
+
+};
+
+Object.assign( THREE.EffectComposer.prototype, {
+
+	swapBuffers: function() {
+
+		var tmp = this.readBuffer;
+		this.readBuffer = this.writeBuffer;
+		this.writeBuffer = tmp;
+
+	},
+
+	addPass: function ( pass ) {
+
+		this.passes.push( pass );
+
+		var size = this.renderer.getSize();
+		pass.setSize( size.width, size.height );
+
+	},
+
+	insertPass: function ( pass, index ) {
+
+		this.passes.splice( index, 0, pass );
+
+	},
+
+	render: function ( delta ) {
+
+		var maskActive = false;
+
+		var pass, i, il = this.passes.length;
+
+		for ( i = 0; i < il; i ++ ) {
+
+			pass = this.passes[ i ];
+
+			if ( pass.enabled === false ) continue;
+
+			pass.render( this.renderer, this.writeBuffer, this.readBuffer, delta, maskActive );
+
+			if ( pass.needsSwap ) {
+
+				if ( maskActive ) {
+
+					var context = this.renderer.context;
+
+					context.stencilFunc( context.NOTEQUAL, 1, 0xffffffff );
+
+					this.copyPass.render( this.renderer, this.writeBuffer, this.readBuffer, delta );
+
+					context.stencilFunc( context.EQUAL, 1, 0xffffffff );
+
+				}
+
+				this.swapBuffers();
+
+			}
+
+			if ( pass instanceof THREE.MaskPass ) {
+
+				maskActive = true;
+
+			} else if ( pass instanceof THREE.ClearMaskPass ) {
+
+				maskActive = false;
+
+			}
+
+		}
+
+	},
+
+	reset: function ( renderTarget ) {
+
+		if ( renderTarget === undefined ) {
+
+			var size = this.renderer.getSize();
+
+			renderTarget = this.renderTarget1.clone();
+			renderTarget.setSize( size.width, size.height );
+
+		}
+
+		this.renderTarget1.dispose();
+		this.renderTarget2.dispose();
+		this.renderTarget1 = renderTarget;
+		this.renderTarget2 = renderTarget.clone();
+
+		this.writeBuffer = this.renderTarget1;
+		this.readBuffer = this.renderTarget2;
+
+	},
+
+	setSize: function ( width, height ) {
+
+		this.renderTarget1.setSize( width, height );
+		this.renderTarget2.setSize( width, height );
+
+		for ( var i = 0; i < this.passes.length; i ++ ) {
+
+			this.passes[i].setSize( width, height );
+
+		}
+
+	}
+
+} );
+
+
+THREE.Pass = function () {
+
+	// if set to true, the pass is processed by the composer
+	this.enabled = true;
+
+	// if set to true, the pass indicates to swap read and write buffer after rendering
+	this.needsSwap = true;
+
+	// if set to true, the pass clears its buffer before rendering
+	this.clear = false;
+
+	// if set to true, the result of the pass is rendered to screen
+	this.renderToScreen = false;
+
+};
+
+Object.assign( THREE.Pass.prototype, {
+
+	setSize: function( width, height ) {},
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		console.error( "THREE.Pass: .render() must be implemented in derived pass." );
+
+	}
+
+} );
+
+// Content of examples/js/postprocessing/MaskPass.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.MaskPass = function ( scene, camera ) {
+
+	THREE.Pass.call( this );
+
+	this.scene = scene;
+	this.camera = camera;
+
+	this.clear = true;
+	this.needsSwap = false;
+
+	this.inverse = false;
+
+};
+
+THREE.MaskPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+
+	constructor: THREE.MaskPass,
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		var context = renderer.context;
+		var state = renderer.state;
+
+		// don't update color or depth
+
+		state.buffers.color.setMask( false );
+		state.buffers.depth.setMask( false );
+
+		// lock buffers
+
+		state.buffers.color.setLocked( true );
+		state.buffers.depth.setLocked( true );
+
+		// set up stencil
+
+		var writeValue, clearValue;
+
+		if ( this.inverse ) {
+
+			writeValue = 0;
+			clearValue = 1;
+
+		} else {
+
+			writeValue = 1;
+			clearValue = 0;
+
+		}
+
+		state.buffers.stencil.setTest( true );
+		state.buffers.stencil.setOp( context.REPLACE, context.REPLACE, context.REPLACE );
+		state.buffers.stencil.setFunc( context.ALWAYS, writeValue, 0xffffffff );
+		state.buffers.stencil.setClear( clearValue );
+
+		// draw into the stencil buffer
+
+		renderer.render( this.scene, this.camera, readBuffer, this.clear );
+		renderer.render( this.scene, this.camera, writeBuffer, this.clear );
+
+		// unlock color and depth buffer for subsequent rendering
+
+		state.buffers.color.setLocked( false );
+		state.buffers.depth.setLocked( false );
+
+		// only render where stencil is set to 1
+
+		state.buffers.stencil.setFunc( context.EQUAL, 1, 0xffffffff );  // draw if == 1
+		state.buffers.stencil.setOp( context.KEEP, context.KEEP, context.KEEP );
+
+	}
+
+} );
+
+
+THREE.ClearMaskPass = function () {
+
+	THREE.Pass.call( this );
+
+	this.needsSwap = false;
+
+};
+
+THREE.ClearMaskPass.prototype = Object.create( THREE.Pass.prototype );
+
+Object.assign( THREE.ClearMaskPass.prototype, {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		renderer.state.buffers.stencil.setTest( false );
+
+	}
+
+} );
+
+// Content of examples/js/postprocessing/RenderPass.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
+
+	THREE.Pass.call( this );
+
+	this.scene = scene;
+	this.camera = camera;
+
+	this.overrideMaterial = overrideMaterial;
+
+	this.clearColor = clearColor;
+	this.clearAlpha = ( clearAlpha !== undefined ) ? clearAlpha : 1;
+
+	this.oldClearColor = new THREE.Color();
+	this.oldClearAlpha = 1;
+
+	this.clear = true;
+	this.needsSwap = false;
+
+};
+
+THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+
+	constructor: THREE.RenderPass,
+
+	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		this.scene.overrideMaterial = this.overrideMaterial;
+
+		if ( this.clearColor ) {
+
+			this.oldClearColor.copy( renderer.getClearColor() );
+			this.oldClearAlpha = renderer.getClearAlpha();
+
+			renderer.setClearColor( this.clearColor, this.clearAlpha );
+
+		}
+
+		renderer.render( this.scene, this.camera, readBuffer, this.clear );
+
+		if ( this.clearColor ) {
+
+			renderer.setClearColor( this.oldClearColor, this.oldClearAlpha );
+
+		}
+
+		this.scene.overrideMaterial = null;
+
+	}
+
+} );
+
+// Content of examples/js/postprocessing/ShaderPass.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.ShaderPass = function ( shader, textureID ) {
+
+	THREE.Pass.call( this );
+
+	this.textureID = ( textureID !== undefined ) ? textureID : "tDiffuse";
+
+	if ( shader instanceof THREE.ShaderMaterial ) {
+
+		this.uniforms = shader.uniforms;
+
+		this.material = shader;
+
+	} else if ( shader ) {
+
+		this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+		this.material = new THREE.ShaderMaterial( {
+
+			defines: shader.defines || {},
+			uniforms: this.uniforms,
+			vertexShader: shader.vertexShader,
+			fragmentShader: shader.fragmentShader
+
+		} );
+
+	}
+
+	this.camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1 );
+	this.scene = new THREE.Scene();
+
+	this.quad = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), null );
+	this.scene.add( this.quad );
+
+};
+
+THREE.ShaderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+
+	constructor: THREE.ShaderPass,
+
+	render: function( renderer, writeBuffer, readBuffer, delta, maskActive ) {
+
+		if ( this.uniforms[ this.textureID ] ) {
+
+			this.uniforms[ this.textureID ].value = readBuffer.texture;
+
+		}
+
+		this.quad.material = this.material;
+
+		if ( this.renderToScreen ) {
+
+			renderer.render( this.scene, this.camera );
+
+		} else {
+
+			renderer.render( this.scene, this.camera, writeBuffer, this.clear );
+
+		}
+
+	}
+
+} );
+
+// Content of examples/js/shaders/SSAOShader.js
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Screen-space ambient occlusion shader
+ * - ported from
+ *   SSAO GLSL shader v1.2
+ *   assembled by Martins Upitis (martinsh) (http://devlog-martinsh.blogspot.com)
+ *   original technique is made by ArKano22 (http://www.gamedev.net/topic/550699-ssao-no-halo-artifacts/)
+ * - modifications
+ * - modified to use RGBA packed depth texture (use clear color 1,1,1,1 for depth pass)
+ * - refactoring and optimizations
+ */
+
+THREE.SSAOShader = {
+
+	uniforms: {
+
+		"tDiffuse":     { type: "t", value: null },
+		"tDepth":       { type: "t", value: null },
+		"size":         { type: "v2", value: new THREE.Vector2( 512, 512 ) },
+		"cameraNear":   { type: "f", value: 1 },
+		"cameraFar":    { type: "f", value: 100 },
+		"onlyAO":       { type: "i", value: 0 },
+		"aoClamp":      { type: "f", value: 0.5 },
+		"lumInfluence": { type: "f", value: 0.5 }
+
+	},
+
+	vertexShader: [
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv;",
+
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join( "\n" ),
+
+	fragmentShader: [
+
+		"uniform float cameraNear;",
+		"uniform float cameraFar;",
+
+		"uniform bool onlyAO;",      // use only ambient occlusion pass?
+
+		"uniform vec2 size;",        // texture width, height
+		"uniform float aoClamp;",    // depth clamp - reduces haloing at screen edges
+
+		"uniform float lumInfluence;",  // how much luminance affects occlusion
+
+		"uniform sampler2D tDiffuse;",
+		"uniform sampler2D tDepth;",
+
+		"varying vec2 vUv;",
+
+		// "#define PI 3.14159265",
+		"#define DL 2.399963229728653",  // PI * ( 3.0 - sqrt( 5.0 ) )
+		"#define EULER 2.718281828459045",
+
+		// user variables
+
+		"const int samples = 8;",     // ao sample count
+		"const float radius = 5.0;",  // ao radius
+
+		"const bool useNoise = false;",      // use noise instead of pattern for sample dithering
+		"const float noiseAmount = 0.0003;", // dithering amount
+
+		"const float diffArea = 0.4;",   // self-shadowing reduction
+		"const float gDisplace = 0.4;",  // gauss bell center
+
+
+		// RGBA depth
+
+		"#include <packing>",
+
+		// generating noise / pattern texture for dithering
+
+		"vec2 rand( const vec2 coord ) {",
+
+			"vec2 noise;",
+
+			"if ( useNoise ) {",
+
+				"float nx = dot ( coord, vec2( 12.9898, 78.233 ) );",
+				"float ny = dot ( coord, vec2( 12.9898, 78.233 ) * 2.0 );",
+
+				"noise = clamp( fract ( 43758.5453 * sin( vec2( nx, ny ) ) ), 0.0, 1.0 );",
+
+			"} else {",
+
+				"float ff = fract( 1.0 - coord.s * ( size.x / 2.0 ) );",
+				"float gg = fract( coord.t * ( size.y / 2.0 ) );",
+
+				"noise = vec2( 0.25, 0.75 ) * vec2( ff ) + vec2( 0.75, 0.25 ) * gg;",
+
+			"}",
+
+			"return ( noise * 2.0  - 1.0 ) * noiseAmount;",
+
+		"}",
+
+		"float readDepth( const in vec2 coord ) {",
+
+			"float cameraFarPlusNear = cameraFar + cameraNear;",
+			"float cameraFarMinusNear = cameraFar - cameraNear;",
+			"float cameraCoef = 2.0 * cameraNear;",
+
+			// "return ( 2.0 * cameraNear ) / ( cameraFar + cameraNear - unpackDepth( texture2D( tDepth, coord ) ) * ( cameraFar - cameraNear ) );",
+			"return cameraCoef / ( cameraFarPlusNear - unpackRGBAToDepth( texture2D( tDepth, coord ) ) * cameraFarMinusNear );",
+
+
+		"}",
+
+		"float compareDepths( const in float depth1, const in float depth2, inout int far ) {",
+
+			"float garea = 2.0;",                         // gauss bell width
+			"float diff = ( depth1 - depth2 ) * 100.0;",  // depth difference (0-100)
+
+			// reduce left bell width to avoid self-shadowing
+
+			"if ( diff < gDisplace ) {",
+
+				"garea = diffArea;",
+
+			"} else {",
+
+				"far = 1;",
+
+			"}",
+
+			"float dd = diff - gDisplace;",
+			"float gauss = pow( EULER, -2.0 * dd * dd / ( garea * garea ) );",
+			"return gauss;",
+
+		"}",
+
+		"float calcAO( float depth, float dw, float dh ) {",
+
+			"float dd = radius - depth * radius;",
+			"vec2 vv = vec2( dw, dh );",
+
+			"vec2 coord1 = vUv + dd * vv;",
+			"vec2 coord2 = vUv - dd * vv;",
+
+			"float temp1 = 0.0;",
+			"float temp2 = 0.0;",
+
+			"int far = 0;",
+			"temp1 = compareDepths( depth, readDepth( coord1 ), far );",
+
+			// DEPTH EXTRAPOLATION
+
+			"if ( far > 0 ) {",
+
+				"temp2 = compareDepths( readDepth( coord2 ), depth, far );",
+				"temp1 += ( 1.0 - temp1 ) * temp2;",
+
+			"}",
+
+			"return temp1;",
+
+		"}",
+
+		"void main() {",
+
+			"vec2 noise = rand( vUv );",
+			"float depth = readDepth( vUv );",
+
+			"float tt = clamp( depth, aoClamp, 1.0 );",
+
+			"float w = ( 1.0 / size.x )  / tt + ( noise.x * ( 1.0 - noise.x ) );",
+			"float h = ( 1.0 / size.y ) / tt + ( noise.y * ( 1.0 - noise.y ) );",
+
+			"float ao = 0.0;",
+
+			"float dz = 1.0 / float( samples );",
+			"float z = 1.0 - dz / 2.0;",
+			"float l = 0.0;",
+
+			"for ( int i = 0; i <= samples; i ++ ) {",
+
+				"float r = sqrt( 1.0 - z );",
+
+				"float pw = cos( l ) * r;",
+				"float ph = sin( l ) * r;",
+				"ao += calcAO( depth, pw * w, ph * h );",
+				"z = z - dz;",
+				"l = l + DL;",
+
+			"}",
+
+			"ao /= float( samples );",
+			"ao = 1.0 - ao;",
+
+			"vec3 color = texture2D( tDiffuse, vUv ).rgb;",
+
+			"vec3 lumcoeff = vec3( 0.299, 0.587, 0.114 );",
+			"float lum = dot( color.rgb, lumcoeff );",
+			"vec3 luminance = vec3( lum );",
+
+			"vec3 final = vec3( color * mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // mix( color * ao, white, luminance )
+
+			"if ( onlyAO ) {",
+
+				"final = vec3( mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // ambient occlusion only
+
+			"}",
+
+			"gl_FragColor = vec4( final, 1.0 );",
+
+		"}"
+
+	].join( "\n" )
+
+};
+
 // Small initialisation part for THREE fonts
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
