@@ -1148,29 +1148,27 @@
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
+
       if (geom1 instanceof ThreeBSP) {
          bsp1 = geom1;
       } else {
          if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-         if (matrix1) {
-            if (matrix1.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
-            geom1.applyMatrix(matrix1);
-         }
-         bsp1 = new ThreeBSP(geom1);
+         if (matrix1 && (matrix1.determinant() < -0.9))
+            JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+         bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
       var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2, !matrix2);
+
       if (geom2 instanceof ThreeBSP) {
          bsp2 = geom2;
       } else {
          if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-         if (matrix2) {
-            if (matrix2.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
-            geom2.applyMatrix(matrix2);
-         }
-         bsp2 = new ThreeBSP(geom2);
+         if (matrix2 && (matrix2.determinant() < -0.9))
+            JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
+         bsp2 = new ThreeBSP(geom2, matrix2);
       }
 
       var bsp = null;
@@ -1189,12 +1187,11 @@
          return geom1;
       }
 
-      if (return_bsp) return bsp;
-
-      var res = bsp.toBufferGeometry();
+      var res = return_bsp ? bsp : bsp.toBufferGeometry();
 
       if (JSROOT.GEO.numGeometryFaces(res) === 0)
-         JSROOT.GEO.warn('Composite shape problem ' + shape.fNode.fLeft._typename + ' faces ' + JSROOT.GEO.numGeometryFaces(geom1) + ' ' + shape.fNode.fRight._typename + 'faces ' + JSROOT.GEO.numGeometryFaces(geom2) + '  res_faces 0');
+         JSROOT.GEO.warn('Zero faces in comp shape left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
+                                             + '  right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces');
 
       return res;
    }
@@ -1306,7 +1303,7 @@
       if (!geom) return 0;
 
       if (geom instanceof ThreeBSP)
-         return geom.numPolygons();
+         return geom.tree.numPolygons();
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
@@ -1320,7 +1317,7 @@
       if (!geom) return 0;
 
       if (geom instanceof ThreeBSP)
-         return geom.numPolygons() * 3;
+         return geom.tree.numPolygons() * 3;
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
