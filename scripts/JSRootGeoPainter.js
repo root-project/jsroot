@@ -464,7 +464,7 @@
          painter.Render3D(0);
       }).listen();
 
-      appearance.add(this.options, 'highlight').name('Highlight Volumes').onChange( function (value) {
+      appearance.add(this.options, 'highlight').name('Highlight Selection').onChange( function (value) {
          if (value === false) {
             if (painter._selected.mesh !== null) {
                painter._selected.mesh.material.color = painter._selected.originalColor;
@@ -514,9 +514,7 @@
          painter.Render3D(0);
       }).listen();
 
-      advanced.add(this, 'resetAdvanced').name('Reset').onChange( function() {
-
-      });
+      advanced.add(this, 'resetAdvanced').name('Reset');
 
       this._datgui.close();
 
@@ -1133,17 +1131,18 @@
 
       this._lights = new THREE.Object3D();
       var intensity = 0.8;
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
+      var lightColor = 0xc0c0c0;
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
-      this._lights.add( new THREE.PointLight(0xffffff, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._lights.add( new THREE.PointLight(0xffffff, 0.8) );
+      this._lights.add( new THREE.PointLight(lightColor, 0.8) );
 
       this._scene.add( this._lights );
       this.updateLights(8000);  
@@ -1152,6 +1151,11 @@
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
       this._enableSSAO = false;
+
+      this._advceOptions = { aoClamp: 0.35,
+                        lumInfluence: 0.4,
+                           metalness: 0.7,
+                           roughness: 0.65 };
 
       if (webgl) {
          var renderPass = new THREE.RenderPass( this._scene, this._camera );
@@ -1169,15 +1173,13 @@
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
          this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
          this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
-         this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
-         this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._advceOptions.aoClamp;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._advceOptions.lumInfluence;
          // Add pass to effect composer
          this._effectComposer = new THREE.EffectComposer( this._renderer );
          this._effectComposer.addPass( renderPass );
          this._effectComposer.addPass( this._ssaoPass );
       }
-
-      this.resetAdvanced();
 
    }
 
@@ -1202,24 +1204,23 @@
    }
 
    JSROOT.TGeoPainter.prototype.resetAdvanced = function() {
-      this._advceOptions = { aoClamp: 0.3, 
-                   lumInfluence: 0.2,
-                   metalness: 0.8,
-                   roughness: 0.5
-                   };
+      this._advceOptions.aoClamp = 0.35; 
+      this._advceOptions.lumInfluence = 0.4;
+      this._advceOptions.metalness = 0.7;
+      this._advceOptions.roughness = 0.65;
 
-      this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
-      this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.2;
+      this._ssaoPass.uniforms[ 'aoClamp' ].value = 0.35;
+      this._ssaoPass.uniforms[ 'lumInfluence' ].value = 0.4;
       this._toplevel.traverse( function (node) {
-            if (node instanceof THREE.Mesh) {
-               node.material.metalness = 0.8;
-            }
-         });
+         if (node instanceof THREE.Mesh) {
+            node.material.metalness = 0.7;
+         }
+      });
       this._toplevel.traverse( function (node) {
-            if (node instanceof THREE.Mesh) {
-               node.material.roughness = 0.5;
-            }
-         });
+         if (node instanceof THREE.Mesh) {
+            node.material.roughness = 0.65;
+         }
+      });
       this.Render3D(0);
    }
 

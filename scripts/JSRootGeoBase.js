@@ -91,8 +91,8 @@
                _opacity = node.fRGBA[3];
             }
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.8,
-                           opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.5,
+            prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.7,
+                           opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.65,
                            side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                            overdraw: 0. } );
          }
@@ -127,8 +127,8 @@
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.8,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.5,
+         prop.material = new THREE.MeshStandardMaterial( { transparent: _transparent, metalness: 0.7,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor, roughness: 0.65,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
       }
