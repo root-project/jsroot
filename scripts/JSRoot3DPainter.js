@@ -780,23 +780,26 @@
           i, j, x1, x2, y1, y2, binz,
           main = this.main_painter();
 
+      var xx = new Float32Array(i2+1),
+          yy = new Float32Array(j2+1);
+
 
       // first adjust ranges
-      for (i=i1;i<i2;++i) {
+      for (i=i1;i<=i2;++i) {
          x1 = this.GetBinX(i);
          if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
-         if (this.tx(x1) < -1.001*this.size3d) { i1 = i+1; continue; }
+         xx[i] = this.tx(x1);
 
-         x2 = this.GetBinX(i+1);
-         if (this.tx(x2) > 1.001*this.size3d) { i2 = i; break; }
+         if (xx[i] < -1.001*this.size3d) i1 = i+1;
+         if (xx[i] > 1.001*this.size3d) i2 = i-1;
       }
 
-      for (j=j1;j<j2;++j) {
+      for (j=j1;j<=j2;++j) {
          y1 = this.GetBinY(j);
          if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-         if (this.ty(y1) < -1.001*this.size3d) { j1 = j+1; continue; }
-         y2 = this.GetBinY(j+1);
-         if (this.ty(y2) > 1.001*this.size3d) { j2 = j; break; }
+         yy[j] = this.ty(y1);
+         if (yy[j] < -1.001*this.size3d) j1 = j+1;
+         if (yy[j] > 1.001*this.size3d) j2 = j-1;
       }
 
       if ((i1 >= i2) || (j1>=j2)) return;
@@ -841,8 +844,8 @@
          var v = 0, vert, bin, k, nn;
 
          for (i=i1;i<i2;++i) {
-            x1 = this.tx(this.GetBinX(i));
-            x2 = this.tx(this.GetBinX(i+1));
+            x1 = xx[i];
+            x2 = xx[i+1];
             for (j=j1;j<j2;++j) {
                var binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
@@ -851,8 +854,8 @@
                var nobottom = !reduced && (nlevel>0);
                var notop = !reduced && (binz > zmax);
 
-               y1 = this.ty(this.GetBinY(j));
-               y2 = this.ty(this.GetBinY(j+1));
+               y1 = yy[j];
+               y2 = yy[j+1];
 
                z2 = (binz > zmax) ? zzz : this.tz(binz);
 
@@ -956,8 +959,8 @@
       var ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
-         x1 = this.tx(this.GetBinX(i));
-         x2 = this.tx(this.GetBinX(i+1));
+         x1 = xx[i];
+         x2 = xx[i+1];
          for (j=j1;j<j2;++j) {
 
             var binz = this.histo.getBinContent(i+1, j+1);
@@ -965,8 +968,8 @@
             var reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
-            y1 = this.ty(this.GetBinY(j));
-            y2 = this.ty(this.GetBinY(j+1));
+            y1 = yy[j];
+            y2 = yy[j+1];
 
             z2 = (binz > zmax) ? zzz : this.tz(binz);
 
