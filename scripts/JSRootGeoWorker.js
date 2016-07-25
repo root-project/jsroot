@@ -37,7 +37,7 @@ onmessage = function(e) {
    if (e.data.shapes) {
       // this is task to create geometries in the worker
 
-      var shapes = e.data.shapes;
+      var shapes = e.data.shapes, debug, transferables = [];
 
       var tm1 = new Date().getTime();
 
@@ -54,7 +54,6 @@ onmessage = function(e) {
          if (item.geom) {
             var bufgeom;
             if (item.geom instanceof THREE.BufferGeometry) {
-               console.log('Use bufgeom as is');
                bufgeom = item.geom;
             } else {
                var bufgeom = new THREE.BufferGeometry();
@@ -65,6 +64,10 @@ onmessage = function(e) {
 
             item.buf_pos = bufgeom.attributes.position.array;
             item.buf_norm = bufgeom.attributes.normal.array;
+
+            transferables.push(item.buf_pos.buffer, item.buf_norm.buffer);
+
+            if (!debug) debug = item;
          }
 
          delete item.shape; // no need to send back shape
@@ -81,7 +84,7 @@ onmessage = function(e) {
       var res = { shapes : [] };
       res.tm2 = new Date().getTime();
 
-      return postMessage(e.data);
+      return postMessage(e.data, transferables);
    }
 
    if (e.data.collect !== undefined) {

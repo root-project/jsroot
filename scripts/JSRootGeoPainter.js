@@ -1458,8 +1458,8 @@
 
             if (item.buf_pos && item.buf_norm) {
                shape._geom = new THREE.BufferGeometry();
-               shape._geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(item.buf_pos), 3 ) );
-               shape._geom.addAttribute( 'normal', new THREE.BufferAttribute( new Float32Array(item.buf_norm), 3 ) );
+               shape._geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
+               shape._geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
             } else {
                shape._geom = null; // mark that geometry should not be created
             }
