@@ -515,12 +515,12 @@
                } else if (painter.enableZ && painter._clipPlanes[2].normal.dot(point) > painter._clipPlanes[2].constant ) {
                   clipped = true;
                }
-            
+
                if (clipped === true) {
                   clippedIntersects.push(intersects[i]);
                }
             }
-            
+
             intersects = clippedIntersects;
          }
          //console.log("intersects " + intersects.length);
@@ -1334,7 +1334,7 @@
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
             JSROOT.progress(log);
-            if (this._webgl && (this._last_render_cnt != this._drawcnt) && (now - this._last_render_at > this.last_render_tm)) {
+            if (false && this._webgl && (this._last_render_cnt != this._drawcnt) && (now - this._last_render_at > this.last_render_tm)) {
                if (this._first_drawing)
                   this.adjustCameraPosition();
                this.Render3D(-1);
