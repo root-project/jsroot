@@ -324,7 +324,50 @@
    }
 
 
-   JSROOT.GEO.createArb8 = function( shape ) {
+   JSROOT.GEO.createTrapezoidBuffer = function( shape ) {
+      var y1, y2;
+      if (shape._typename == "TGeoTrd1") {
+         y1 = y2 = shape.fDY;
+      } else {
+         y1 = shape.fDy1; y2 = shape.fDy2;
+      }
+
+      var vertices = [
+            -shape.fDx1,  y1, -shape.fDZ,
+             shape.fDx1,  y1, -shape.fDZ,
+             shape.fDx1, -y1, -shape.fDZ,
+            -shape.fDx1, -y1, -shape.fDZ,
+            -shape.fDx2,  y2,  shape.fDZ,
+             shape.fDx2,  y2,  shape.fDZ,
+             shape.fDx2, -y2,  shape.fDZ,
+            -shape.fDx2, -y2,  shape.fDZ
+         ];
+
+      var indicies = [
+          4,6,5,   4,7,6,   0,3,7,   7,4,0,
+          4,5,1,   1,0,4,   6,2,1,   1,5,6,
+          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      var buf_pos = new Float32Array(indicies.length*3);
+
+      var indx = 0;
+      for (var n=0; n < indicies.length; ++n) {
+         var v = indicies[n] * 3;
+         buf_pos[indx] = vertices[v];
+         buf_pos[indx+1] = vertices[v+1];
+         buf_pos[indx+2] = vertices[v+2];
+         indx+=3;
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
+      geometry.computeVertexNormals();
+      return geometry;
+   }
+
+
+   JSROOT.GEO.createArb8Old = function( shape ) {
+      // Old method to create Arb8, was not correctly implemented
 
       var verticesOfShape = [
             shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
@@ -372,6 +415,146 @@
       geometry.computeFaceNormals();
       return geometry;
    }
+
+   JSROOT.GEO.createArb8 = function( shape ) {
+
+      var vertices = [
+           shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
+           shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
+           shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
+           shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
+           shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
+           shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
+           shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
+           shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
+      ];
+      var indicies = [
+                      4,6,5,   4,7,6,   0,3,7,   7,4,0,
+                      4,5,1,   1,0,4,   6,2,1,   1,5,6,
+                      7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      // detect same vertecies
+      for (var n=3; n<vertices.length; n+=3) {
+         if ((vertices[n-3] === vertices[n]) &&
+             (vertices[n-2] === vertices[n+1]) &&
+             (vertices[n-1] === vertices[n+2])) {
+                for (var k=0;k<indicies.length;++k)
+                   if (indicies[k] === n/3) indicies[k] = n/3-1;
+            }
+         }
+
+
+      // detect duplicated faces or faces with same vertex
+      var map = []; // list of existing faces (with all rotations
+      var usage = [0,0,0,0,0,0,0,0]; // usage counter
+
+      for (var k=0;k<indicies.length;k+=3) {
+         var id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
+             id2 = indicies[k+1]*100 + indicies[k+2]*10 + indicies[k],
+             id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
+
+         if ((indicies[k] == indicies[k+1]) || (indicies[k] == indicies[k+2]) || (indicies[k+1] == indicies[k+2]) ||
+             (map.indexOf(id1)>=0) || (map.indexOf(id2)>=0) || (map.indexOf(id3)>=0)) {
+            indicies[k] = indicies[k+1] = indicies[k+2] = -1;
+         } else {
+            map.push(id1,id2,id3);
+            usage[indicies[k]]++;
+            usage[indicies[k+1]]++;
+            usage[indicies[k+2]]++;
+         }
+      }
+
+      var geometry = new THREE.Geometry();
+      for (var i = 0; i < 8; ++i) {
+         if (usage[i] > 0) {
+            usage[i] = geometry.vertices.length; // use array to remap old vertices
+            geometry.vertices.push( new THREE.Vector3( vertices[i*3], vertices[i*3+1], vertices[i*3+2] ) );
+         }
+         else {
+            usage[i] = -1;
+         }
+      }
+
+      var color = new THREE.Color();
+
+      for (var i = 0; i < 36; i += 3) {
+         if (indicies[i]<0) continue;
+
+         var a = usage[indicies[i]],
+             b = usage[indicies[i+1]],
+             c = usage[indicies[i+2]];
+
+         geometry.faces.push( new THREE.Face3( a, b, c, null, color, 0 ) );
+      }
+
+      geometry.computeFaceNormals();
+      return geometry;
+   }
+
+   JSROOT.GEO.createArb8Buffer = function( shape ) {
+
+      var vertices = [
+            shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
+            shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
+            shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
+            shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
+            shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
+            shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
+            shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
+            shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
+         ];
+
+      var indicies = [
+          4,6,5,   4,7,6,   0,3,7,   7,4,0,
+          4,5,1,   1,0,4,   6,2,1,   1,5,6,
+          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+
+      // detect same vertecies
+      for (var n=3; n<vertices.length; n+=3) {
+         if ((vertices[n-3] === vertices[n]) &&
+             (vertices[n-2] === vertices[n+1]) &&
+             (vertices[n-1] === vertices[n+2])) {
+                for (var k=0;k<indicies.length;++k)
+                   if (indicies[k] === n/3) indicies[k] = n/3-1;
+            }
+         }
+
+
+      var map = []; // list of existing faces (with all rotations)
+      var numfaces = 0;
+
+      for (var k=0;k<indicies.length;k+=3) {
+         var id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
+             id2 = indicies[k+1]*100 + indicies[k+2]*10 + indicies[k],
+             id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
+
+         if ((indicies[k] == indicies[k+1]) || (indicies[k] == indicies[k+2]) || (indicies[k+1] == indicies[k+2]) ||
+             (map.indexOf(id1)>=0) || (map.indexOf(id2)>=0) || (map.indexOf(id3)>=0)) {
+            indicies[k] = indicies[k+1] = indicies[k+2] = -1;
+         } else {
+            map.push(id1,id2,id3);
+            numfaces++;
+         }
+      }
+
+      var buf_pos = new Float32Array(numfaces*9);
+
+      var indx = 0;
+      for (var n=0; n < indicies.length; ++n) {
+         if (indicies[n] < 0) continue;
+         var v = indicies[n] * 3;
+         buf_pos[indx] = vertices[v];
+         buf_pos[indx+1] = vertices[v+1];
+         buf_pos[indx+2] = vertices[v+2];
+         indx+=3;
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
+      geometry.computeVertexNormals();
+      return geometry;
+   }
+
 
 
    JSROOT.GEO.createSphere = function( shape, faces_limit ) {
@@ -1281,10 +1464,10 @@
          case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape );
          case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape );
          case "TGeoTrd1":
-         case "TGeoTrd2": return JSROOT.GEO.createTrapezoid( shape );
+         case "TGeoTrd2": return JSROOT.GEO.createTrapezoidBuffer( shape );
          case "TGeoArb8":
          case "TGeoTrap":
-         case "TGeoGtra": return JSROOT.GEO.createArb8( shape );
+         case "TGeoGtra": return JSROOT.GEO.createArb8Buffer( shape );
          case "TGeoSphere": return JSROOT.GEO.createSphere( shape, limit );
          case "TGeoCone":
          case "TGeoConeSeg":
