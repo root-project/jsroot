@@ -1449,7 +1449,6 @@
       }
 
       if ('shapes' in job) {
-         // var loader = new THREE.BufferGeometryLoader();
 
          for (var n=0;n<job.shapes.length;++n) {
             var item = job.shapes[n];
