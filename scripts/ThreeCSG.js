@@ -27,6 +27,35 @@ function ThreeBSPfactory() {
          this.tree = geometry;
          this.matrix = null; // new THREE.Matrix4;
          return this;
+      } else if ( geometry instanceof THREE.Geometry ) {
+         var pos_buf = geom.getAttribute('position').array,
+             norm_buf = geom.getAttribute('normal').array;
+
+         console.log('From buffer geometry');
+
+         for (var i=0; i < pos_buf.length; i+=9) {
+            polygon = new ThreeBSP.Polygon;
+
+            vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], new THREE.Vector3(norm_buf[i], norm_buf[i+1], norm_buf[i+2]));
+            if (this.matrix) vertex.applyMatrix4(this.matrix);
+            polygon.vertices.push( vertex );
+
+            vertex = new ThreeBSP.Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], new THREE.Vector3(norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]));
+            if (this.matrix) vertex.applyMatrix4(this.matrix);
+            polygon.vertices.push( vertex );
+
+            vertex = new ThreeBSP.Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], new THREE.Vector3(norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]));
+            if (this.matrix) vertex.applyMatrix4(this.matrix);
+            polygon.vertices.push( vertex );
+
+            polygon.calculateProperties();
+            polygons.push( polygon );
+         }
+
+         this.tree = new ThreeBSP.Node( polygons );
+         return this;
+
+
       } else {
          throw 'ThreeBSP: Given geometry is unsupported';
       }
@@ -199,6 +228,69 @@ function ThreeBSPfactory() {
          }
 
       }
+      return geometry;
+   };
+   ThreeBSP.prototype.toBufferGeometry = function() {
+      var i, j,
+         polygons = this.tree.allPolygons(),
+         polygon_count = polygons.length,
+         buf_size = 0;
+
+      for ( i = 0; i < polygon_count; ++i ) {
+         buf_size += (polygons[i].vertices.length - 2) * 9;
+      }
+
+      var positions_buf = new Float32Array(buf_size),
+          normals_buf = new Float32Array(buf_size),
+          iii = 0, polygon, vertex;
+
+      for ( i = 0; i < polygon_count; ++i ) {
+         polygon = polygons[i];
+
+         for ( j = 2; j < polygon.vertices.length; ++j ) {
+            // verticeUvs = [];
+
+            vertex = polygon.vertices[0];
+
+            positions_buf[iii] = vertex.x;
+            positions_buf[iii+1] = vertex.y;
+            positions_buf[iii+2] = vertex.z;
+
+            normals_buf[iii] = polygon.normal.x;
+            normals_buf[iii+1] = polygon.normal.y;
+            normals_buf[iii+2] = polygon.normal.z;
+
+            iii+=3;
+
+            vertex = polygon.vertices[j-1];
+
+            positions_buf[iii] = vertex.x;
+            positions_buf[iii+1] = vertex.y;
+            positions_buf[iii+2] = vertex.z;
+
+            normals_buf[iii] = polygon.normal.x;
+            normals_buf[iii+1] = polygon.normal.y;
+            normals_buf[iii+2] = polygon.normal.z;
+
+            iii+=3;
+
+            vertex = polygon.vertices[j];
+
+            positions_buf[iii] = vertex.x;
+            positions_buf[iii+1] = vertex.y;
+            positions_buf[iii+2] = vertex.z;
+
+            normals_buf[iii] = polygon.normal.x;
+            normals_buf[iii+1] = polygon.normal.y;
+            normals_buf[iii+2] = polygon.normal.z;
+
+            iii+=3;
+         }
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
       return geometry;
    };
    ThreeBSP.prototype.toMesh = function( material ) {
@@ -502,6 +594,13 @@ function ThreeBSPfactory() {
       if ( this.back ) polygons = polygons.concat( this.back.allPolygons() );
       return polygons;
    };
+   ThreeBSP.Node.prototype.numPolygons = function() {
+      var res = this.polygons.length;
+      if ( this.front ) res += this.front.numPolygons();
+      if ( this.back ) res += this.back.numPolygons();
+      return res;
+   }
+
    ThreeBSP.Node.prototype.clone = function() {
       var node = new ThreeBSP.Node();
 

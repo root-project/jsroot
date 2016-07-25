@@ -1151,7 +1151,7 @@
       if (geom1 instanceof ThreeBSP) {
          bsp1 = geom1;
       } else {
-         geom1.computeVertexNormals();
+         if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
          if (matrix1) {
             if (matrix1.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
             geom1.applyMatrix(matrix1);
@@ -1165,7 +1165,7 @@
       if (geom2 instanceof ThreeBSP) {
          bsp2 = geom2;
       } else {
-         geom2.computeVertexNormals();
+         if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
          if (matrix2) {
             if (matrix2.determinant() < -0.9) JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
             geom2.applyMatrix(matrix2);
@@ -1191,10 +1191,10 @@
 
       if (return_bsp) return bsp;
 
-      var res = bsp.toGeometry();
+      var res = bsp.toBufferGeometry();
 
-      if (res.faces.length === 0)
-         JSROOT.GEO.warn('Composite shape problem ' + shape.fNode.fLeft._typename + ' faces ' + geom1.faces.length + ' '+shape.fNode.fRight._typename + 'faces ' + geom2.faces.length + '  res_faces ' + res.faces.length);
+      if (JSROOT.GEO.numGeometryFaces(res) === 0)
+         JSROOT.GEO.warn('Composite shape problem ' + shape.fNode.fLeft._typename + ' faces ' + JSROOT.GEO.numGeometryFaces(geom1) + ' ' + shape.fNode.fRight._typename + 'faces ' + JSROOT.GEO.numGeometryFaces(geom2) + '  res_faces 0');
 
       return res;
    }
@@ -1305,6 +1305,9 @@
    JSROOT.GEO.numGeometryFaces = function(geom) {
       if (!geom) return 0;
 
+      if (geom instanceof ThreeBSP)
+         return geom.numPolygons();
+
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
          return attr ? attr.count / 3 : 0;
@@ -1315,6 +1318,9 @@
 
    JSROOT.GEO.numGeometryVertices = function(geom) {
       if (!geom) return 0;
+
+      if (geom instanceof ThreeBSP)
+         return geom.numPolygons() * 3;
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
