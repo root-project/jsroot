@@ -250,6 +250,23 @@
       }
    }
 
+   JSROOT.GEO.GeometryCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
+      // special shortcut, when same normals can be applied
+      if (!this.last4)
+         return console.error('can not use SetNormal_12_34 if not face4');
+
+      var indx = this.indx - 18, norm = this.norm;
+
+      norm[indx]   = norm[indx+3] = norm[indx+9]  = nx12;
+      norm[indx+1] = norm[indx+4] = norm[indx+10] = ny12;
+      norm[indx+2] = norm[indx+5] = norm[indx+11] = nz12;
+
+      norm[indx+6] = norm[indx+12] = norm[indx+15] = nx34;
+      norm[indx+7] = norm[indx+13] = norm[indx+16] = ny34;
+      norm[indx+8] = norm[indx+14] = norm[indx+17] = nz34;
+   }
+
+
 
    JSROOT.GEO.GeometryCreator.prototype.Create = function() {
       if (this.nfaces !== this.indx/9)
@@ -1220,13 +1237,23 @@
 
       var creator = new JSROOT.GEO.GeometryCreator((radiusSegments-1)*4);
 
+      var nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
+
       // create tube faces
       for (var seg=0; seg<radiusSegments-1; ++seg) {
          creator.AddFace4(x[seg],   y[seg],   +shape.fDZ,
                           x[seg],   y[seg],   -shape.fDZ,
                           x[seg+1], y[seg+1], -shape.fDZ,
                           x[seg+1], y[seg+1],  shape.fDZ);
-         creator.CalcNormal();
+
+         // calculate normals ourself
+         nx1 = nx2; ny1 = ny2;
+         nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
+         ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
+         var dist = Math.sqrt(nx2*nx2 + ny2*ny2);
+         nx2 = nx2 / dist; ny2 = ny2/dist;
+
+         creator.SetNormal_12_34(nx1,ny1,0,nx2,ny2,0);
       }
 
       // create top/bottom sides
