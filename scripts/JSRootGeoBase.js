@@ -136,6 +136,115 @@
    }
 
 
+   JSROOT.GEO.GeometryCreator = function(numfaces) {
+      this.nfaces = numfaces;
+      this.indx = 0;
+      this.pos = new Float32Array(numfaces*9);
+      this.norm = new Float32Array(numfaces*9);
+
+      this.pA = new THREE.Vector3();
+      this.pB = new THREE.Vector3();
+      this.pC = new THREE.Vector3();
+      this.cb = new THREE.Vector3();
+      this.ab = new THREE.Vector3();
+
+      return this;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
+                                                            x2,y2,z2,
+                                                            x3,y3,z3,
+                                                            x4,y4,z4,
+                                                            reduce) {
+      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
+      // if (reduce==1), first face is reduced
+      // if (reduce==2), second face is reduced
+
+      var indx = this.indx, pos = this.pos;
+
+      if (reduce!==1) {
+         pos[indx] = x1;
+         pos[indx+1] = y1;
+         pos[indx+2] = z1;
+         pos[indx+3] = x2;
+         pos[indx+4] = y2;
+         pos[indx+5] = z2;
+         pos[indx+6] = x3;
+         pos[indx+7] = y3;
+         pos[indx+8] = z3;
+         indx+=9;
+      }
+
+      if (reduce!==2) {
+         pos[indx] = x1;
+         pos[indx+1] = y1;
+         pos[indx+2] = z1;
+         pos[indx+3] = x3;
+         pos[indx+4] = y3;
+         pos[indx+5] = z3;
+         pos[indx+6] = x4;
+         pos[indx+7] = y4;
+         pos[indx+8] = z4;
+         indx+=9;
+      }
+
+      this.last4 = (indx !== this.indx + 9);
+      this.indx = indx;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.RecalZ4 = function(func) {
+      var pos = this.pos,
+          last = this.indx,
+          indx = last - this.last4 ? 18 : 9;
+
+      while (indx < last) {
+         pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
+         indx+=3;
+      }
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.CalcNormal4 = function() {
+      var indx = this.indx, norm = this.norm, cb = this.cb;
+
+      this.pA.fromArray( this.pos, this.indx - 9 );
+      this.pB.fromArray( this.pos, this.indx - 6 );
+      this.pC.fromArray( this.pos, this.indx - 3 );
+
+      cb.subVectors( this.pC, this.pB );
+      this.ab.subVectors( this.pA, this.pB );
+      cb.cross( this.ab );
+
+      this.SetNormal4(cb.x, cb.y, cb.z);
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.SetNormal4 = function(nx,ny,nz) {
+      var indx = this.indx - 9, norm = this.norm;
+
+      norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
+      norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
+      norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
+
+      if (this.last4) {
+         indx -= 9;
+         norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
+         norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
+         norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
+      }
+   }
+
+
+   JSROOT.GEO.GeometryCreator.prototype.Create = function() {
+      if (this.nfaces !== this.indx/9)
+         console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+      return geometry;
+   }
+
+
+   // ================= all functions to create geometry ===================================
 
    JSROOT.GEO.createCube = function( shape ) {
 
@@ -364,56 +473,6 @@
       return geometry;
    }
 
-
-   JSROOT.GEO.createArb8Old = function( shape ) {
-      // Old method to create Arb8, was not correctly implemented
-
-      var verticesOfShape = [
-            shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
-            shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
-            shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
-            shape.fXY[3][0], shape.fXY[3][1], -shape.fDZ,
-            shape.fXY[4][0], shape.fXY[4][1],  shape.fDZ,
-            shape.fXY[5][0], shape.fXY[5][1],  shape.fDZ,
-            shape.fXY[6][0], shape.fXY[6][1],  shape.fDZ,
-            shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
-         ];
-
-      var indicies = [];
-
-      var indicesOfFaces = [
-          4,6,5,   4,7,6,   0,3,7,   7,4,0,
-          4,5,1,   1,0,4,   6,2,1,   1,5,6,
-          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
-
-      var geometry = new THREE.Geometry();
-      for (var i = 0; i < 8; ++i) {
-         var ii = i*3;
-         if ((i>0) && (verticesOfShape[ii] === verticesOfShape[ii-3]) &&
-             (verticesOfShape[ii+1] === verticesOfShape[ii-2]) &&
-             (verticesOfShape[ii+2] === verticesOfShape[ii-1])) {
-            indicies[i] = indicies[i-1];
-            continue;
-         }
-
-         indicies[i] = geometry.vertices.length;
-
-         geometry.vertices.push( new THREE.Vector3( verticesOfShape[ii], verticesOfShape[ii+1], verticesOfShape[ii+2] ) );
-      }
-
-      var color = new THREE.Color();
-
-      for (var i = 0; i < 36; i += 3) {
-         var a = indicies[indicesOfFaces[i]],
-             b = indicies[indicesOfFaces[i+1]],
-             c = indicies[indicesOfFaces[i+2]];
-         if ((a!==b) && (b!==c) && (a!==c))
-            geometry.faces.push( new THREE.Face3( a, b, c, null, color, 0 ) );
-      }
-
-      geometry.computeFaceNormals();
-      return geometry;
-   }
 
    JSROOT.GEO.createArb8 = function( shape ) {
 
@@ -675,315 +734,6 @@
       }
 
       geometry.computeFaceNormals();
-
-      return geometry;
-   }
-
-   JSROOT.GEO.createSphereBufferPrev = function( shape, faces_limit ) {
-      var outerRadius = shape.fRmax,
-          innerRadius = shape.fRmin,
-          phiStart = shape.fPhi1,
-          phiLength = shape.fPhi2 - shape.fPhi1,
-          thetaStart = shape.fTheta1,
-          thetaLength = shape.fTheta2 - shape.fTheta1,
-          widthSegments = shape.fNseg,
-          heightSegments = shape.fNz;
-
-      var noInside = (innerRadius <= 0);
-
-      if (faces_limit !== undefined) {
-         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
-
-         if (fact > 1.) {
-            widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
-            heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
-         }
-      }
-
-      var _sin_phi = new Float32Array(widthSegments),
-          _cos_phi = new Float32Array(widthSegments),
-          _sin_theta = new Float32Array(heightSegments),
-          _cos_theta = new Float32Array(heightSegments);
-
-      for (var n=0;n<heightSegments;++n) {
-         var theta = (thetaStart + thetaLength/(heightSegments-1)*n)*Math.PI/180;
-         _sin_theta[n] = Math.sin(theta);
-         _cos_theta[n] = Math.cos(theta);
-      }
-
-      for (var n=0;n<widthSegments;++n) {
-         var phi = (phiStart + phiLength/(widthSegments-1)*n)*Math.PI/180;
-         _sin_phi[n] = Math.sin(phi);
-         _cos_phi[n] = Math.cos(phi);
-      }
-
-      var numoutside = widthSegments * heightSegments * 2,
-          numtop = widthSegments * 2,
-          numbottom = widthSegments * 2,
-          numcut = 0;
-
-      if (phiLength < 360)
-         numcut = heightSegments * (noInside ? 2 : 4);
-
-      if (!noInside) numbottom = numtop = widthSegments;
-
-      if (_sin_theta[0] === 0) { numoutside -= widthSegments; numtop = 0; }
-      if (_sin_theta[heightSegments-1] === 0) { numoutside -= widthSegments; numbottom = 0; }
-
-      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
-
-      var pos = new Float32Array(numfaces*9),
-          norm = new Float32Array(numfaces*9),
-          indx = 0;
-
-      for (var k=0;k<heightSegments-1;++k) {
-         for (var n=0;n<widthSegments-1;++n) {
-            if (_sin_theta[k+1] !== 0) {
-               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
-               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
-               norm[indx+2] = _cos_theta[k];
-
-               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n];
-               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n];
-               norm[indx+5] = _cos_theta[k+1];
-
-               norm[indx+6] = _sin_theta[k+1] * _cos_phi[n+1];
-               norm[indx+7] = _sin_theta[k+1] * _sin_phi[n+1];
-               norm[indx+8] = _cos_theta[k+1];
-               indx+=9;
-            }
-
-            if (_sin_theta[k] !== 0) {
-               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
-               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
-               norm[indx+2] = _cos_theta[k];
-
-               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n+1];
-               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n+1];
-               norm[indx+5] = _cos_theta[k+1];
-
-               norm[indx+6] = _sin_theta[k] * _cos_phi[n+1];
-               norm[indx+7] = _sin_theta[k] * _sin_phi[n+1];
-               norm[indx+8] = _cos_theta[k];
-               indx+=9;
-            }
-         }
-      }
-
-      for (var n=0;n<indx;++n)
-         pos[n] = norm[n] * outerRadius;
-
-      if (!noInside) {
-         for(var n=0;n<indx;n+=9) {
-            var nn = indx + n;
-
-            pos[nn+0] = innerRadius * norm[n+0];
-            pos[nn+1] = innerRadius * norm[n+1];
-            pos[nn+2] = innerRadius * norm[n+2];
-            norm[nn+0] = -norm[n+0];
-            norm[nn+1] = -norm[n+1];
-            norm[nn+2] = -norm[n+2];
-
-            pos[nn+3] = innerRadius * norm[n+6];
-            pos[nn+4] = innerRadius * norm[n+7];
-            pos[nn+5] = innerRadius * norm[n+8];
-            norm[nn+3] = -norm[n+6];
-            norm[nn+4] = -norm[n+7];
-            norm[nn+5] = -norm[n+8];
-
-            pos[nn+6] = innerRadius * norm[n+3];
-            pos[nn+7] = innerRadius * norm[n+4];
-            pos[nn+8] = innerRadius * norm[n+5];
-            norm[nn+6] = -norm[n+3];
-            norm[nn+7] = -norm[n+4];
-            norm[nn+8] = -norm[n+5];
-         }
-         indx *= 2;
-      }
-
-
-      var pA = new THREE.Vector3(),
-          pB = new THREE.Vector3(),
-          pC = new THREE.Vector3(),
-          cb = new THREE.Vector3(),
-          ab = new THREE.Vector3();
-
-      function CalcNormal() {
-         pA.fromArray( pos, indx );
-         pB.fromArray( pos, indx + 3 );
-         pC.fromArray( pos, indx + 6 );
-
-         cb.subVectors( pC, pB );
-         ab.subVectors( pA, pB );
-         cb.cross( ab );
-
-         norm[indx+0] = cb.x;
-         norm[indx+1] = cb.y;
-         norm[indx+2] = cb.z;
-         norm[indx+3] = cb.x;
-         norm[indx+4] = cb.y;
-         norm[indx+5] = cb.z;
-         norm[indx+6] = cb.x;
-         norm[indx+7] = cb.y;
-         norm[indx+8] = cb.z;
-      }
-
-      function CopyNormal() {
-         norm[indx+0] = norm[indx-9];
-         norm[indx+1] = norm[indx-8];
-         norm[indx+2] = norm[indx-7];
-         norm[indx+3] = norm[indx-6];
-         norm[indx+4] = norm[indx-5];
-         norm[indx+5] = norm[indx-4];
-         norm[indx+6] = norm[indx-3];
-         norm[indx+7] = norm[indx-2];
-         norm[indx+8] = norm[indx-1];
-      }
-
-      // top
-      if (_sin_theta[0] !== 0) {
-         var ss = _sin_theta[0], cc = _cos_theta[0];
-         for (var n=0;n<widthSegments-1;++n) {
-            pos[indx+0] = innerRadius * ss * _cos_phi[n];
-            pos[indx+1] = innerRadius * ss * _sin_phi[n];
-            pos[indx+2] = innerRadius * cc;
-            pos[indx+3] = outerRadius * ss * _cos_phi[n];
-            pos[indx+4] = outerRadius * ss * _sin_phi[n];
-            pos[indx+5] = outerRadius * cc;
-            pos[indx+6] = outerRadius * ss * _cos_phi[n+1];
-            pos[indx+7] = outerRadius * ss * _sin_phi[n+1];
-            pos[indx+8] = outerRadius * cc;
-            CalcNormal();
-            indx += 9;
-
-            if (noInside) continue;
-
-            pos[indx+0] = innerRadius * ss * _cos_phi[n];
-            pos[indx+1] = innerRadius * ss * _sin_phi[n];
-            pos[indx+2] = innerRadius * cc;
-            pos[indx+3] = outerRadius * ss * _cos_phi[n+1];
-            pos[indx+4] = outerRadius * ss * _sin_phi[n+1];
-            pos[indx+5] = outerRadius * cc;
-            pos[indx+6] = innerRadius * ss * _cos_phi[n+1];
-            pos[indx+7] = innerRadius * ss * _sin_phi[n+1];
-            pos[indx+8] = innerRadius * cc;
-            CopyNormal();
-            indx += 9;
-         }
-      }
-
-      // bottom
-      if (_sin_theta[heightSegments-1] !== 0) {
-         var ss = _sin_theta[heightSegments-1], cc = _cos_theta[heightSegments-1];
-         for (var n=0;n<widthSegments-1;++n) {
-            pos[indx+0] = innerRadius * ss * _cos_phi[n];
-            pos[indx+1] = innerRadius * ss * _sin_phi[n];
-            pos[indx+2] = innerRadius * cc;
-            pos[indx+3] = outerRadius * ss * _cos_phi[n+1];
-            pos[indx+4] = outerRadius * ss * _sin_phi[n+1];
-            pos[indx+5] = outerRadius * cc;
-            pos[indx+6] = outerRadius * ss * _cos_phi[n];
-            pos[indx+7] = outerRadius * ss * _sin_phi[n];
-            pos[indx+8] = outerRadius * cc;
-            CalcNormal();
-            indx += 9;
-
-            if (noInside) continue;
-
-            pos[indx+0] = innerRadius * ss * _cos_phi[n];
-            pos[indx+1] = innerRadius * ss * _sin_phi[n];
-            pos[indx+2] = innerRadius * cc;
-            pos[indx+3] = innerRadius * ss * _cos_phi[n+1];
-            pos[indx+4] = innerRadius * ss * _sin_phi[n+1];
-            pos[indx+5] = innerRadius * cc;
-            pos[indx+6] = outerRadius * ss * _cos_phi[n+1];
-            pos[indx+7] = outerRadius * ss * _sin_phi[n+1];
-            pos[indx+8] = outerRadius * cc;
-            CopyNormal();
-            indx += 9;
-         }
-      }
-
-      // cut side
-      if (phiLength < 360) {
-
-         // left side
-         var ss = _sin_phi[widthSegments-1], cc = _cos_phi[widthSegments-1];
-         for (var k=0;k<heightSegments-1;++k) {
-            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
-            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
-            pos[indx+2] = innerRadius * _cos_theta[k];
-
-            pos[indx+3] = outerRadius * _sin_theta[k] * cc;
-            pos[indx+4] = outerRadius * _sin_theta[k] * ss;
-            pos[indx+5] = outerRadius * _cos_theta[k];
-
-            pos[indx+6] = outerRadius * _sin_theta[k+1] * cc;
-            pos[indx+7] = outerRadius * _sin_theta[k+1] * ss;
-            pos[indx+8] = outerRadius * _cos_theta[k+1];
-
-            CalcNormal();
-            indx+=9;
-
-            if (noInside) continue;
-
-            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
-            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
-            pos[indx+2] = innerRadius * _cos_theta[k];
-
-            pos[indx+3] = outerRadius * _sin_theta[k+1] * cc;
-            pos[indx+4] = outerRadius * _sin_theta[k+1] * ss;
-            pos[indx+5] = outerRadius * _cos_theta[k+1];
-
-            pos[indx+6] = innerRadius * _sin_theta[k+1] * cc;
-            pos[indx+7] = innerRadius * _sin_theta[k+1] * ss;
-            pos[indx+8] = innerRadius * _cos_theta[k+1];
-
-            CopyNormal();
-            indx += 9;
-         }
-
-         // right side
-         var ss = _sin_phi[0], cc = _cos_phi[0];
-         for (var k=0;k<heightSegments-1;++k) {
-            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
-            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
-            pos[indx+2] = innerRadius * _cos_theta[k];
-
-            pos[indx+3] = outerRadius * _sin_theta[k+1] * cc;
-            pos[indx+4] = outerRadius * _sin_theta[k+1] * ss;
-            pos[indx+5] = outerRadius * _cos_theta[k+1];
-
-            pos[indx+6] = outerRadius * _sin_theta[k] * cc;
-            pos[indx+7] = outerRadius * _sin_theta[k] * ss;
-            pos[indx+8] = outerRadius * _cos_theta[k];
-
-            CalcNormal();
-            indx+=9;
-
-            if (noInside) continue;
-
-            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
-            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
-            pos[indx+2] = innerRadius * _cos_theta[k];
-
-            pos[indx+3] = innerRadius * _sin_theta[k+1] * cc;
-            pos[indx+4] = innerRadius * _sin_theta[k+1] * ss;
-            pos[indx+5] = innerRadius * _cos_theta[k+1];
-
-            pos[indx+6] = outerRadius * _sin_theta[k+1] * cc;
-            pos[indx+7] = outerRadius * _sin_theta[k+1] * ss;
-            pos[indx+8] = outerRadius * _cos_theta[k+1];
-
-            CopyNormal();
-            indx += 9;
-         }
-      }
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-      // geometry.computeVertexNormals();
 
       return geometry;
    }
@@ -1287,131 +1037,22 @@
       return geometry;
    }
 
-   JSROOT.GEO.GeometryCreator = function(numfaces) {
-      this.nfaces = numfaces;
-      this.indx = 0;
-      this.pos = new Float32Array(numfaces*9);
-      this.norm = new Float32Array(numfaces*9);
-
-      this.pA = new THREE.Vector3();
-      this.pB = new THREE.Vector3();
-      this.pC = new THREE.Vector3();
-      this.cb = new THREE.Vector3();
-      this.ab = new THREE.Vector3();
-
-      return this;
-   }
-
-   JSROOT.GEO.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
-                                                            x2,y2,z2,
-                                                            x3,y3,z3,
-                                                            x4,y4,z4,
-                                                            reduce) {
-      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
-      // if (reduce==1), first face is reduced
-      // if (reduce==2), second face is reduced
-
-      var indx = this.indx, pos = this.pos;
-
-      if (reduce!==1) {
-         pos[indx] = x1;
-         pos[indx+1] = y1;
-         pos[indx+2] = z1;
-         pos[indx+3] = x2;
-         pos[indx+4] = y2;
-         pos[indx+5] = z2;
-         pos[indx+6] = x3;
-         pos[indx+7] = y3;
-         pos[indx+8] = z3;
-         indx+=9;
-      }
-
-      if (reduce!==2) {
-         pos[indx] = x1;
-         pos[indx+1] = y1;
-         pos[indx+2] = z1;
-         pos[indx+3] = x3;
-         pos[indx+4] = y3;
-         pos[indx+5] = z3;
-         pos[indx+6] = x4;
-         pos[indx+7] = y4;
-         pos[indx+8] = z4;
-         indx+=9;
-      }
-
-      this.last4 = (indx !== this.indx + 9);
-      this.indx = indx;
-   }
-
-   JSROOT.GEO.GeometryCreator.prototype.RecalZ4 = function(func) {
-      var pos = this.pos,
-          last = this.indx,
-          indx = last - this.last4 ? 18 : 9;
-
-      while (indx < last) {
-         pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
-         indx+=3;
-      }
-   }
-
-   JSROOT.GEO.GeometryCreator.prototype.CalcNormal4 = function() {
-      var indx = this.indx, norm = this.norm, cb = this.cb;
-
-      this.pA.fromArray( this.pos, this.indx - 9 );
-      this.pB.fromArray( this.pos, this.indx - 6 );
-      this.pC.fromArray( this.pos, this.indx - 3 );
-
-      cb.subVectors( this.pC, this.pB );
-      this.ab.subVectors( this.pA, this.pB );
-      cb.cross( this.ab );
-
-      this.SetNormal4(cb.x, cb.y, cb.z);
-   }
-
-   JSROOT.GEO.GeometryCreator.prototype.SetNormal4 = function(nx,ny,nz) {
-      var indx = this.indx - 9, norm = this.norm;
-
-      norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
-      norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
-      norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
-
-      if (this.last4) {
-         indx -= 9;
-         norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
-         norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
-         norm[indx+2] = norm[indx+5] = norm[indx+8] = nz;
-      }
-   }
-
-
-   JSROOT.GEO.GeometryCreator.prototype.Create = function() {
-      if (this.nfaces !== this.indx/9)
-         console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
-      return geometry;
-   }
-
 
    JSROOT.GEO.createTubeBuffer = function( shape ) {
-      var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
+      var outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
-         outerRadius1 = shape.fRmax2;
-         innerRadius1 = shape.fRmin2;
-         outerRadius2 = shape.fRmax1;
-         innerRadius2 = shape.fRmin1;
+         outerR = [ shape.fRmax2, shape.fRmax1 ];
+         innerR = [ shape.fRmin2, shape.fRmin1 ];
       } else {
-         outerRadius1 = outerRadius2 = shape.fRmax;
-         innerRadius1 = innerRadius2 = shape.fRmin;
+         outerR = [ shape.fRmax, shape.fRmax ];
+         innerR = [ shape.fRmin, shape.fRmin ];
       }
 
-      var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
+      var hasrmin = (innerR[0] > 0) || (innerR[1] > 0);
 
       if (hasrmin) {
-         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
-         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerR[0] <= 0) { innerR[0] = Math.min(outerR[0] * 1e-5, 1e-5); JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerR[1] <= 0) { innerR[1] = Math.min(outerR[1] * 1e-5, 1e-5); JSROOT.GEO.warn('zero inner radius2 in tube - not yet supported'); }
       }
 
       var thetaStart = 0, thetaLength = 360;
@@ -1445,65 +1086,54 @@
             return ((z<0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
          }
 
-      // create outer tube
-      for (var seg=0;seg<radiusSegments-1;++seg) {
-         creator.AddFace4(outerRadius1 * _cos[seg],   outerRadius1 * _sin[seg],    shape.fDZ,
-                          outerRadius2 * _cos[seg],   outerRadius2 * _sin[seg],   -shape.fDZ,
-                          outerRadius2 * _cos[seg+1], outerRadius2 * _sin[seg+1], -shape.fDZ,
-                          outerRadius1 * _cos[seg+1], outerRadius1 * _sin[seg+1],  shape.fDZ );
+      // create outer/inner tube
+      for (var side = 0; side<2; ++side) {
+         if ((side === 1) && !hasrmin) break;
 
-         if (calcZ) creator.RecalZ4(calcZ);
+         var R = (side === 0) ? outerR : innerR,
+             d1 = side, d2 = 1- side;
 
-         creator.CalcNormal4();
+         for (var seg=0;seg<radiusSegments-1;++seg) {
+            creator.AddFace4(
+                  R[0] * _cos[seg+d1], R[0] * _sin[seg+d1],  shape.fDZ,
+                  R[1] * _cos[seg+d1], R[1] * _sin[seg+d1], -shape.fDZ,
+                  R[1] * _cos[seg+d2], R[1] * _sin[seg+d2], -shape.fDZ,
+                  R[0] * _cos[seg+d2], R[0] * _sin[seg+d2],  shape.fDZ );
+
+            if (calcZ) creator.RecalZ4(calcZ);
+
+            creator.CalcNormal4();
+         }
       }
 
-      // create inner tube (if exists)
-      if (hasrmin)
+      // create upper/bottom part
+      for (var side = 0; side<2; ++side) {
+         var d1 = side, d2 = 1- side, sign = (side == 0) ? 1 : -1;
          for (var seg=0;seg<radiusSegments-1;++seg) {
-            creator.AddFace4(innerRadius1 * _cos[seg+1], innerRadius1 * _sin[seg+1],  shape.fDZ,
-                  innerRadius2 * _cos[seg+1], innerRadius2 * _sin[seg+1], -shape.fDZ,
-                  innerRadius2 * _cos[seg],   innerRadius2 * _sin[seg],   -shape.fDZ,
-                  innerRadius1 * _cos[seg],   innerRadius1 * _sin[seg],    shape.fDZ);
+            creator.AddFace4(
+                  innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
+                  outerR[side] * _cos[seg+d1], outerR[side] * _sin[seg+d1], sign*shape.fDZ,
+                  outerR[side] * _cos[seg+d2], outerR[side] * _sin[seg+d2], sign*shape.fDZ,
+                  innerR[side] * _cos[seg+d2], innerR[side] * _sin[seg+d2], sign*shape.fDZ,
+                  hasrmin ? 0 : 2);
             if (calcZ) creator.RecalZ4(calcZ);
             creator.CalcNormal4();
          }
-
-      // create upper part
-      for (var seg=0;seg<radiusSegments-1;++seg) {
-         creator.AddFace4(innerRadius1 * _cos[seg],   innerRadius1 * _sin[seg],   shape.fDZ,
-                          outerRadius1 * _cos[seg],   outerRadius1 * _sin[seg],   shape.fDZ,
-                          outerRadius1 * _cos[seg+1], outerRadius1 * _sin[seg+1], shape.fDZ,
-                          innerRadius1 * _cos[seg+1], innerRadius1 * _sin[seg+1], shape.fDZ,
-                          hasrmin ? 0 : 2);
-         if (calcZ) creator.RecalZ4(calcZ);
-         creator.CalcNormal4();
-      }
-
-      // create bottom part
-      for (var seg=0;seg<radiusSegments-1;++seg) {
-         creator.AddFace4(innerRadius2 * _cos[seg+1], innerRadius2 * _sin[seg+1], -shape.fDZ,
-                          outerRadius2 * _cos[seg+1], outerRadius2 * _sin[seg+1], -shape.fDZ,
-                          outerRadius2 * _cos[seg],   outerRadius2 * _sin[seg],   -shape.fDZ,
-                          innerRadius2 * _cos[seg],   innerRadius2 * _sin[seg],   -shape.fDZ,
-                          hasrmin ? 0 : 2);
-
-         if (calcZ) creator.RecalZ4(calcZ);
-         creator.CalcNormal4();
       }
 
       // create cut surfaces
       if (thetaLength < 360) {
-         creator.AddFace4(innerRadius2 * _cos[0], innerRadius2 * _sin[0], -shape.fDZ,
-                          outerRadius2 * _cos[0], outerRadius2 * _sin[0], -shape.fDZ,
-                          outerRadius1 * _cos[0], outerRadius1 * _sin[0],  shape.fDZ,
-                          innerRadius1 * _cos[0], innerRadius1 * _sin[0],  shape.fDZ);
+         creator.AddFace4(innerR[1] * _cos[0], innerR[1] * _sin[0], -shape.fDZ,
+                          outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
+                          outerR[0] * _cos[0], outerR[0] * _sin[0],  shape.fDZ,
+                          innerR[0] * _cos[0], innerR[0] * _sin[0],  shape.fDZ);
          if (calcZ) creator.RecalZ4(calcZ);
          creator.CalcNormal4();
 
-         creator.AddFace4(innerRadius1 * _cos[radiusSegments-1], innerRadius1 * _sin[radiusSegments-1],  shape.fDZ,
-                          outerRadius1 * _cos[radiusSegments-1], outerRadius1 * _sin[radiusSegments-1],  shape.fDZ,
-                          outerRadius2 * _cos[radiusSegments-1], outerRadius2 * _sin[radiusSegments-1], -shape.fDZ,
-                          innerRadius2 * _cos[radiusSegments-1], innerRadius2 * _sin[radiusSegments-1], -shape.fDZ);
+         creator.AddFace4(innerR[0] * _cos[radiusSegments-1], innerR[0] * _sin[radiusSegments-1],  shape.fDZ,
+                          outerR[0] * _cos[radiusSegments-1], outerR[0] * _sin[radiusSegments-1],  shape.fDZ,
+                          outerR[1] * _cos[radiusSegments-1], outerR[1] * _sin[radiusSegments-1], -shape.fDZ,
+                          innerR[1] * _cos[radiusSegments-1], innerR[1] * _sin[radiusSegments-1], -shape.fDZ);
 
          if (calcZ) creator.RecalZ4(calcZ);
          creator.CalcNormal4();
