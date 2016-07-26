@@ -371,8 +371,8 @@
       if (shape._typename == "TGeoCtub")
          for (var n=0;n<geometry.vertices.length;++n) {
             var vertex = geometry.vertices[n];
-            if (vertex.z<0) vertex.z = -shape.fDz-(vertex.x*shape.fNlow[0]+vertex.x*shape.fNlow[1])/shape.fNlow[2];
-                       else vertex.z = shape.fDz-(vertex.y*shape.fNhigh[0]+vertex.y*shape.fNhigh[1])/shape.fNhigh[2];
+            if (vertex.z<0) vertex.z = -shape.fDz-(vertex.x*shape.fNlow[0]+vertex.y*shape.fNlow[1])/shape.fNlow[2];
+                       else vertex.z = shape.fDz-(vertex.x*shape.fNhigh[0]+vertex.y*shape.fNhigh[1])/shape.fNhigh[2];
          }
 
       var color = new THREE.Color(); // make dummy color for all faces

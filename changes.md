@@ -6,6 +6,7 @@
 3. Fix - correctly draw empty th2 bins when zmin<0 is specified  
 4. Fix - limit th2 text output size 
 5. Fix - use histogram fMinimum/fMaximum when drawing z axis in lego plot 
+6. Fix - error in TGeoCtub shape creation
 
 
 ## Changes in 4.5.1
