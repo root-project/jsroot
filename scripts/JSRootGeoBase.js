@@ -151,6 +151,24 @@
       return this;
    }
 
+   JSROOT.GEO.GeometryCreator.prototype.AddFace3 = function(x1,y1,z1,
+                                                            x2,y2,z2,
+                                                            x3,y3,z3) {
+      var indx = this.indx, pos = this.pos;
+      pos[indx] = x1;
+      pos[indx+1] = y1;
+      pos[indx+2] = z1;
+      pos[indx+3] = x2;
+      pos[indx+4] = y2;
+      pos[indx+5] = z2;
+      pos[indx+6] = x3;
+      pos[indx+7] = y3;
+      pos[indx+8] = z3;
+      this.last4 = false;
+      this.indx = indx + 9;
+   }
+
+
    JSROOT.GEO.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
                                                             x2,y2,z2,
                                                             x3,y3,z3,
@@ -192,7 +210,7 @@
       this.indx = indx;
    }
 
-   JSROOT.GEO.GeometryCreator.prototype.RecalZ4 = function(func) {
+   JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
       var pos = this.pos,
           last = this.indx,
           indx = last - this.last4 ? 18 : 9;
@@ -203,7 +221,7 @@
       }
    }
 
-   JSROOT.GEO.GeometryCreator.prototype.CalcNormal4 = function() {
+   JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
       var indx = this.indx, norm = this.norm, cb = this.cb;
 
       this.pA.fromArray( this.pos, this.indx - 9 );
@@ -214,10 +232,10 @@
       this.ab.subVectors( this.pA, this.pB );
       cb.cross( this.ab );
 
-      this.SetNormal4(cb.x, cb.y, cb.z);
+      this.SetNormal(cb.x, cb.y, cb.z);
    }
 
-   JSROOT.GEO.GeometryCreator.prototype.SetNormal4 = function(nx,ny,nz) {
+   JSROOT.GEO.GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
       var indx = this.indx - 9, norm = this.norm;
 
       norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
@@ -876,7 +894,7 @@
                      outerRadius * ss * _cos_phi[n+d2], outerRadius * ss * _sin_phi[n+d2], outerRadius * cc,
                      innerRadius * ss * _cos_phi[n+d2], innerRadius * ss * _sin_phi[n+d2], innerRadius * cc,
                      noInside ? 2 : 0);
-               creator.CalcNormal4();
+               creator.CalcNormal();
             }
          }
 
@@ -893,7 +911,7 @@
                      outerRadius * _sin_theta[k+d2] * cc, outerRadius * _sin_theta[k+d2] * ss, outerRadius * _cos_theta[k+d2],
                      innerRadius * _sin_theta[k+d2] * cc, innerRadius * _sin_theta[k+d2] * ss, innerRadius * _cos_theta[k+d2],
                      noInside ? 2 : 0);
-               creator.CalcNormal4();
+               creator.CalcNormal();
             }
          }
       }
@@ -1100,9 +1118,9 @@
                   R[1] * _cos[seg+d2], R[1] * _sin[seg+d2], -shape.fDZ,
                   R[0] * _cos[seg+d2], R[0] * _sin[seg+d2],  shape.fDZ );
 
-            if (calcZ) creator.RecalZ4(calcZ);
+            if (calcZ) creator.RecalcZ(calcZ);
 
-            creator.CalcNormal4();
+            creator.CalcNormal();
          }
       }
 
@@ -1116,8 +1134,8 @@
                   outerR[side] * _cos[seg+d2], outerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   innerR[side] * _cos[seg+d2], innerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   hasrmin ? 0 : 2);
-            if (calcZ) creator.RecalZ4(calcZ);
-            creator.CalcNormal4();
+            if (calcZ) creator.RecalcZ(calcZ);
+            creator.CalcNormal();
          }
       }
 
@@ -1127,16 +1145,16 @@
                           outerR[1] * _cos[0], outerR[1] * _sin[0], -shape.fDZ,
                           outerR[0] * _cos[0], outerR[0] * _sin[0],  shape.fDZ,
                           innerR[0] * _cos[0], innerR[0] * _sin[0],  shape.fDZ);
-         if (calcZ) creator.RecalZ4(calcZ);
-         creator.CalcNormal4();
+         if (calcZ) creator.RecalcZ(calcZ);
+         creator.CalcNormal();
 
          creator.AddFace4(innerR[0] * _cos[radiusSegments-1], innerR[0] * _sin[radiusSegments-1],  shape.fDZ,
                           outerR[0] * _cos[radiusSegments-1], outerR[0] * _sin[radiusSegments-1],  shape.fDZ,
                           outerR[1] * _cos[radiusSegments-1], outerR[1] * _sin[radiusSegments-1], -shape.fDZ,
                           innerR[1] * _cos[radiusSegments-1], innerR[1] * _sin[radiusSegments-1], -shape.fDZ);
 
-         if (calcZ) creator.RecalZ4(calcZ);
-         creator.CalcNormal4();
+         if (calcZ) creator.RecalcZ(calcZ);
+         creator.CalcNormal();
       }
 
       return creator.Create();
@@ -1187,6 +1205,45 @@
       geometry.computeFaceNormals();
       return geometry;
    }
+
+   JSROOT.GEO.createEltuBuffer = function( shape ) {
+      var radiusSegments = Math.floor(360/6);
+
+      // calculate all sin/cos tables in advance
+      var x = new Float32Array(radiusSegments),
+          y = new Float32Array(radiusSegments);
+      for (var seg=0; seg<radiusSegments; ++seg) {
+          var phi = seg/(radiusSegments-1)*2*Math.PI;
+          x[seg] = shape.fRmin*Math.cos(phi);
+          y[seg] = shape.fRmax*Math.sin(phi);
+      }
+
+      var creator = new JSROOT.GEO.GeometryCreator((radiusSegments-1)*4);
+
+      // create tube faces
+      for (var seg=0; seg<radiusSegments-1; ++seg) {
+         creator.AddFace4(x[seg],   y[seg],   +shape.fDZ,
+                          x[seg],   y[seg],   -shape.fDZ,
+                          x[seg+1], y[seg+1], -shape.fDZ,
+                          x[seg+1], y[seg+1],  shape.fDZ);
+         creator.CalcNormal();
+      }
+
+      // create top/bottom sides
+      for (var side=0;side<2;++side) {
+         var sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
+         for (var seg=0; seg<radiusSegments-1; ++seg) {
+            creator.AddFace3(0,          0,          sign*shape.fDZ,
+                             x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
+                             x[seg+d2],  y[seg+d2],  sign*shape.fDZ);
+            creator.SetNormal(0, 0, sign);
+         }
+      }
+
+      return creator.Create();
+
+   }
+
 
 
    JSROOT.GEO.createTorus = function( shape, faces_limit ) {
@@ -1818,7 +1875,7 @@
          case "TGeoTube":
          case "TGeoTubeSeg":
          case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape ); break;
-         case "TGeoEltu": geom = JSROOT.GEO.createEltu( shape ); break;
+         case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
          case "TGeoPgon": geom = JSROOT.GEO.createPolygon( shape ); break;
