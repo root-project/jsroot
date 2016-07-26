@@ -679,7 +679,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
+   JSROOT.GEO.createSphereBufferPrev = function( shape, faces_limit ) {
       var outerRadius = shape.fRmax,
           innerRadius = shape.fRmin,
           phiStart = shape.fPhi1,
@@ -989,6 +989,185 @@
    }
 
 
+   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
+      var outerRadius = shape.fRmax,
+          innerRadius = shape.fRmin,
+          phiStart = shape.fPhi1,
+          phiLength = shape.fPhi2 - shape.fPhi1,
+          thetaStart = shape.fTheta1,
+          thetaLength = shape.fTheta2 - shape.fTheta1,
+          widthSegments = shape.fNseg,
+          heightSegments = shape.fNz;
+
+      var noInside = (innerRadius <= 0);
+
+      if (faces_limit !== undefined) {
+         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+
+         if (fact > 1.) {
+            widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
+            heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
+         }
+      }
+
+      var _sin_phi = new Float32Array(widthSegments),
+          _cos_phi = new Float32Array(widthSegments),
+          _sin_theta = new Float32Array(heightSegments),
+          _cos_theta = new Float32Array(heightSegments);
+
+      for (var n=0;n<heightSegments;++n) {
+         var theta = (thetaStart + thetaLength/(heightSegments-1)*n)*Math.PI/180;
+         _sin_theta[n] = Math.sin(theta);
+         _cos_theta[n] = Math.cos(theta);
+      }
+
+      for (var n=0;n<widthSegments;++n) {
+         var phi = (phiStart + phiLength/(widthSegments-1)*n)*Math.PI/180;
+         _sin_phi[n] = Math.sin(phi);
+         _cos_phi[n] = Math.cos(phi);
+      }
+
+      var numoutside = (widthSegments-1) * (heightSegments-1) * 2,
+          numtop = (widthSegments-1) * 2,
+          numbottom = (widthSegments-1) * 2,
+          numcut = 0;
+
+      if (phiLength < 360)
+         numcut = (heightSegments - 1) * (noInside ? 2 : 4);
+
+      if (noInside) numbottom = numtop = widthSegments-1;
+
+      if (_sin_theta[0] === 0) { numoutside -= (widthSegments-1); numtop = 0; }
+      if (_sin_theta[heightSegments-1] === 0) { numoutside -= (widthSegments-1); numbottom = 0; }
+
+      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
+
+      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+
+      var pos = creator.pos, norm = creator.norm, indx = 0;
+
+      // use direct algorithm for the sphere - here normals and position can be calculated direclty
+      for (var k=0;k<heightSegments-1;++k) {
+         for (var n=0;n<widthSegments-1;++n) {
+            if (_sin_theta[k+1] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k+1];
+               indx+=9;
+            }
+
+            if (_sin_theta[k] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k];
+               indx+=9;
+            }
+         }
+      }
+
+      for (var n=0;n<indx;++n)
+         pos[n] = norm[n] * outerRadius;
+
+      if (!noInside) {
+         for(var n=0;n<indx;n+=9) {
+            var nn = indx + n;
+
+            pos[nn+0] = innerRadius * norm[n+0];
+            pos[nn+1] = innerRadius * norm[n+1];
+            pos[nn+2] = innerRadius * norm[n+2];
+            norm[nn+0] = -norm[n+0];
+            norm[nn+1] = -norm[n+1];
+            norm[nn+2] = -norm[n+2];
+
+            pos[nn+3] = innerRadius * norm[n+6];
+            pos[nn+4] = innerRadius * norm[n+7];
+            pos[nn+5] = innerRadius * norm[n+8];
+            norm[nn+3] = -norm[n+6];
+            norm[nn+4] = -norm[n+7];
+            norm[nn+5] = -norm[n+8];
+
+            pos[nn+6] = innerRadius * norm[n+3];
+            pos[nn+7] = innerRadius * norm[n+4];
+            pos[nn+8] = innerRadius * norm[n+5];
+            norm[nn+6] = -norm[n+3];
+            norm[nn+7] = -norm[n+4];
+            norm[nn+8] = -norm[n+5];
+         }
+         indx *= 2;
+      }
+
+      creator.indx = indx; // from here is normal functionality
+
+      // top
+      if (_sin_theta[0] !== 0) {
+         var ss = _sin_theta[0], cc = _cos_theta[0];
+         for (var n=0;n<widthSegments-1;++n) {
+            creator.AddFace4( innerRadius * ss * _cos_phi[n],   innerRadius * ss * _sin_phi[n],   innerRadius * cc,
+                              outerRadius * ss * _cos_phi[n],   outerRadius * ss * _sin_phi[n],   outerRadius * cc,
+                              outerRadius * ss * _cos_phi[n+1], outerRadius * ss * _sin_phi[n+1], outerRadius * cc,
+                              innerRadius * ss * _cos_phi[n+1], innerRadius * ss * _sin_phi[n+1], innerRadius * cc,
+                              noInside ? 2 : 0);
+            creator.CalcNormal4();
+         }
+      }
+
+      // bottom
+      if (_sin_theta[heightSegments-1] !== 0) {
+         var ss = _sin_theta[heightSegments-1], cc = _cos_theta[heightSegments-1];
+         for (var n=0;n<widthSegments-1;++n) {
+            creator.AddFace4(
+                  innerRadius * ss * _cos_phi[n+1], innerRadius * ss * _sin_phi[n+1], innerRadius * cc,
+                  outerRadius * ss * _cos_phi[n+1], outerRadius * ss * _sin_phi[n+1], outerRadius * cc,
+                  outerRadius * ss * _cos_phi[n],   outerRadius * ss * _sin_phi[n],   outerRadius * cc,
+                  innerRadius * ss * _cos_phi[n],   innerRadius * ss * _sin_phi[n],   innerRadius * cc,
+                  noInside ? 2 : 0);
+           creator.CalcNormal4();
+         }
+      }
+
+      // cut side
+      if (phiLength < 360) {
+         for (var side=0;side<heightSegments;side+=(heightSegments-1)) {
+            // side==0 - left, otherwise right
+            var ss = _sin_phi[side],
+                cc = _cos_phi[side],
+                d1 = (side === 0) ? 1 : 0,
+                d2 = 1 - d1;
+
+            console.log('d1',d1,'d2',d2);
+
+            for (var k=0;k<heightSegments-1;++k) {
+               creator.AddFace4(
+                     innerRadius * _sin_theta[k+d1] * cc, innerRadius * _sin_theta[k+d1] * ss, innerRadius * _cos_theta[k+d1],
+                     outerRadius * _sin_theta[k+d1] * cc, outerRadius * _sin_theta[k+d1] * ss, outerRadius * _cos_theta[k+d1],
+                     outerRadius * _sin_theta[k+d2] * cc, outerRadius * _sin_theta[k+d2] * ss, outerRadius * _cos_theta[k+d2],
+                     innerRadius * _sin_theta[k+d2] * cc, innerRadius * _sin_theta[k+d2] * ss, innerRadius * _cos_theta[k+d2],
+                     noInside ? 2 : 0);
+               creator.CalcNormal4();
+            }
+         }
+      }
+
+      return creator.Create();
+   }
+
+
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
@@ -1143,22 +1322,27 @@
                                                             x2,y2,z2,
                                                             x3,y3,z3,
                                                             x4,y4,z4,
-                                                            reduced) {
+                                                            reduce) {
+      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
+      // if (reduce==1), first face is reduced
+      // if (reduce==2), second face is reduced
+
       var indx = this.indx, pos = this.pos;
-      pos[indx] = x1;
-      pos[indx+1] = y1;
-      pos[indx+2] = z1;
-      pos[indx+3] = x2;
-      pos[indx+4] = y2;
-      pos[indx+5] = z2;
-      pos[indx+6] = x3;
-      pos[indx+7] = y3;
-      pos[indx+8] = z3;
-      if (reduced) {
-         this.last4 = false;
-      } else {
-         this.last4 = true;
+
+      if (reduce!==1) {
+         pos[indx] = x1;
+         pos[indx+1] = y1;
+         pos[indx+2] = z1;
+         pos[indx+3] = x2;
+         pos[indx+4] = y2;
+         pos[indx+5] = z2;
+         pos[indx+6] = x3;
+         pos[indx+7] = y3;
+         pos[indx+8] = z3;
          indx+=9;
+      }
+
+      if (reduce!==2) {
          pos[indx] = x1;
          pos[indx+1] = y1;
          pos[indx+2] = z1;
@@ -1168,8 +1352,11 @@
          pos[indx+6] = x4;
          pos[indx+7] = y4;
          pos[indx+8] = z4;
+         indx+=9;
       }
-      this.indx = indx+9;
+
+      this.last4 = (indx !== this.indx + 9);
+      this.indx = indx;
    }
 
    JSROOT.GEO.GeometryCreator.prototype.RecalZ4 = function(func) {
@@ -1215,7 +1402,7 @@
 
    JSROOT.GEO.GeometryCreator.prototype.Create = function() {
       if (this.nfaces !== this.indx/9)
-         console.error('Mismatch with crceated ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
+         console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
@@ -1286,15 +1473,16 @@
          creator.CalcNormal4();
       }
 
-      // create inner tube
-      for (var seg=0;seg<radiusSegments-1;++seg) {
-         creator.AddFace4(innerRadius1 * _cos[seg+1], innerRadius1 * _sin[seg+1],  shape.fDZ,
-                          innerRadius2 * _cos[seg+1], innerRadius2 * _sin[seg+1], -shape.fDZ,
-                          innerRadius2 * _cos[seg],   innerRadius2 * _sin[seg],   -shape.fDZ,
-                          innerRadius1 * _cos[seg],   innerRadius1 * _sin[seg],    shape.fDZ);
-         if (calcZ) creator.RecalZ4(calcZ);
-         creator.CalcNormal4();
-      }
+      // create inner tube (if exists)
+      if (hasrmin)
+         for (var seg=0;seg<radiusSegments-1;++seg) {
+            creator.AddFace4(innerRadius1 * _cos[seg+1], innerRadius1 * _sin[seg+1],  shape.fDZ,
+                  innerRadius2 * _cos[seg+1], innerRadius2 * _sin[seg+1], -shape.fDZ,
+                  innerRadius2 * _cos[seg],   innerRadius2 * _sin[seg],   -shape.fDZ,
+                  innerRadius1 * _cos[seg],   innerRadius1 * _sin[seg],    shape.fDZ);
+            if (calcZ) creator.RecalZ4(calcZ);
+            creator.CalcNormal4();
+         }
 
       // create upper part
       for (var seg=0;seg<radiusSegments-1;++seg) {
@@ -1302,7 +1490,7 @@
                           outerRadius1 * _cos[seg],   outerRadius1 * _sin[seg],   shape.fDZ,
                           outerRadius1 * _cos[seg+1], outerRadius1 * _sin[seg+1], shape.fDZ,
                           innerRadius1 * _cos[seg+1], innerRadius1 * _sin[seg+1], shape.fDZ,
-                          !hasrmin);
+                          hasrmin ? 0 : 2);
          if (calcZ) creator.RecalZ4(calcZ);
          creator.CalcNormal4();
       }
@@ -1313,7 +1501,7 @@
                           outerRadius2 * _cos[seg+1], outerRadius2 * _sin[seg+1], -shape.fDZ,
                           outerRadius2 * _cos[seg],   outerRadius2 * _sin[seg],   -shape.fDZ,
                           innerRadius2 * _cos[seg],   innerRadius2 * _sin[seg],   -shape.fDZ,
-                          !hasrmin);
+                          hasrmin ? 0 : 2);
 
          if (calcZ) creator.RecalZ4(calcZ);
          creator.CalcNormal4();
