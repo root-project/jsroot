@@ -691,19 +691,12 @@
 
       var noInside = (innerRadius <= 0);
 
-      while (phiStart >= 360) phiStart-=360;
-
-      console.log('create sphere ' + outerRadius + ' ' + innerRadius + ' nseg ' + widthSegments + ":" +  heightSegments + ' expected ' + (noInside ? 2 : 4) * widthSegments * heightSegments);
-      console.log('phi ' + phiStart + ' : ' + phiLength + '  theta ' + thetaStart + ' : ' + thetaLength);
-
       if (faces_limit !== undefined) {
-
-
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
          if (fact > 1.) {
-            widthSegments = Math.round(widthSegments/Math.sqrt(fact));
-            heightSegments = Math.round(heightSegments/Math.sqrt(fact));
+            widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
+            heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
          }
       }
 
@@ -724,17 +717,20 @@
          _cos_phi[n] = Math.cos(phi);
       }
 
-      var numoutside = widthSegments * heightSegments * 2;
-      if (_sin_theta[0] == 0) numoutside -= widthSegments;
-      if (_sin_theta[heightSegments-1] === 0) numoutside -= widthSegments;
+      var numoutside = widthSegments * heightSegments * 2,
+          numtop = widthSegments * 2,
+          numbottom = widthSegments * 2,
+          numcut = 0;
 
-      //var numtop = widthSegments*2;
-      //var numside = heightSegments * 2;
-      //if (thetaStart === 0) numoutside -= widthSegments;
-      //if (thetaStart + thetaLength === 180) numoutside -= widthSegments;
-      //var numinside = noInside ? 0 : numoutside;
+      if (phiLength < 360)
+         numcut = heightSegments * (noInside ? 2 : 4);
 
-      var numfaces = numoutside * (noInside ? 1 : 2);
+      if (!noInside) numbottom = numtop = widthSegments;
+
+      if (_sin_theta[0] === 0) { numoutside -= widthSegments; numtop = 0; }
+      if (_sin_theta[heightSegments-1] === 0) { numoutside -= widthSegments; numbottom = 0; }
+
+      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
       var pos = new Float32Array(numfaces*9),
           norm = new Float32Array(numfaces*9),
@@ -802,7 +798,186 @@
             norm[nn+7] = -norm[n+4];
             norm[nn+8] = -norm[n+5];
          }
-         // indx *= 2;
+         indx *= 2;
+      }
+
+
+      var pA = new THREE.Vector3(),
+          pB = new THREE.Vector3(),
+          pC = new THREE.Vector3(),
+          cb = new THREE.Vector3(),
+          ab = new THREE.Vector3();
+
+      function CalcNormal() {
+         pA.fromArray( pos, indx );
+         pB.fromArray( pos, indx + 3 );
+         pC.fromArray( pos, indx + 6 );
+
+         cb.subVectors( pC, pB );
+         ab.subVectors( pA, pB );
+         cb.cross( ab );
+
+         norm[indx+0] = cb.x;
+         norm[indx+1] = cb.y;
+         norm[indx+2] = cb.z;
+         norm[indx+3] = cb.x;
+         norm[indx+4] = cb.y;
+         norm[indx+5] = cb.z;
+         norm[indx+6] = cb.x;
+         norm[indx+7] = cb.y;
+         norm[indx+8] = cb.z;
+      }
+
+      function CopyNormal() {
+         norm[indx+0] = norm[indx-9];
+         norm[indx+1] = norm[indx-8];
+         norm[indx+2] = norm[indx-7];
+         norm[indx+3] = norm[indx-6];
+         norm[indx+4] = norm[indx-5];
+         norm[indx+5] = norm[indx-4];
+         norm[indx+6] = norm[indx-3];
+         norm[indx+7] = norm[indx-2];
+         norm[indx+8] = norm[indx-1];
+      }
+
+      // top
+      if (_sin_theta[0] !== 0) {
+         var ss = _sin_theta[0], cc = _cos_theta[0];
+         for (var n=0;n<widthSegments-1;++n) {
+            pos[indx+0] = innerRadius * ss * _cos_phi[n];
+            pos[indx+1] = innerRadius * ss * _sin_phi[n];
+            pos[indx+2] = innerRadius * cc;
+            pos[indx+3] = outerRadius * ss * _cos_phi[n];
+            pos[indx+4] = outerRadius * ss * _sin_phi[n];
+            pos[indx+5] = outerRadius * cc;
+            pos[indx+6] = outerRadius * ss * _cos_phi[n+1];
+            pos[indx+7] = outerRadius * ss * _sin_phi[n+1];
+            pos[indx+8] = outerRadius * cc;
+            CalcNormal();
+            indx += 9;
+
+            if (noInside) continue;
+
+            pos[indx+0] = innerRadius * ss * _cos_phi[n];
+            pos[indx+1] = innerRadius * ss * _sin_phi[n];
+            pos[indx+2] = innerRadius * cc;
+            pos[indx+3] = outerRadius * ss * _cos_phi[n+1];
+            pos[indx+4] = outerRadius * ss * _sin_phi[n+1];
+            pos[indx+5] = outerRadius * cc;
+            pos[indx+6] = innerRadius * ss * _cos_phi[n+1];
+            pos[indx+7] = innerRadius * ss * _sin_phi[n+1];
+            pos[indx+8] = innerRadius * cc;
+            CopyNormal();
+            indx += 9;
+         }
+      }
+
+      // bottom
+      if (_sin_theta[heightSegments-1] !== 0) {
+         var ss = _sin_theta[heightSegments-1], cc = _cos_theta[heightSegments-1];
+         for (var n=0;n<widthSegments-1;++n) {
+            pos[indx+0] = innerRadius * ss * _cos_phi[n];
+            pos[indx+1] = innerRadius * ss * _sin_phi[n];
+            pos[indx+2] = innerRadius * cc;
+            pos[indx+3] = outerRadius * ss * _cos_phi[n+1];
+            pos[indx+4] = outerRadius * ss * _sin_phi[n+1];
+            pos[indx+5] = outerRadius * cc;
+            pos[indx+6] = outerRadius * ss * _cos_phi[n];
+            pos[indx+7] = outerRadius * ss * _sin_phi[n];
+            pos[indx+8] = outerRadius * cc;
+            CalcNormal();
+            indx += 9;
+
+            if (noInside) continue;
+
+            pos[indx+0] = innerRadius * ss * _cos_phi[n];
+            pos[indx+1] = innerRadius * ss * _sin_phi[n];
+            pos[indx+2] = innerRadius * cc;
+            pos[indx+3] = innerRadius * ss * _cos_phi[n+1];
+            pos[indx+4] = innerRadius * ss * _sin_phi[n+1];
+            pos[indx+5] = innerRadius * cc;
+            pos[indx+6] = outerRadius * ss * _cos_phi[n+1];
+            pos[indx+7] = outerRadius * ss * _sin_phi[n+1];
+            pos[indx+8] = outerRadius * cc;
+            CopyNormal();
+            indx += 9;
+         }
+      }
+
+      // cut side
+      if (phiLength < 360) {
+
+         // left side
+         var ss = _sin_phi[widthSegments-1], cc = _cos_phi[widthSegments-1];
+         for (var k=0;k<heightSegments-1;++k) {
+            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
+            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
+            pos[indx+2] = innerRadius * _cos_theta[k];
+
+            pos[indx+3] = outerRadius * _sin_theta[k] * cc;
+            pos[indx+4] = outerRadius * _sin_theta[k] * ss;
+            pos[indx+5] = outerRadius * _cos_theta[k];
+
+            pos[indx+6] = outerRadius * _sin_theta[k+1] * cc;
+            pos[indx+7] = outerRadius * _sin_theta[k+1] * ss;
+            pos[indx+8] = outerRadius * _cos_theta[k+1];
+
+            CalcNormal();
+            indx+=9;
+
+            if (noInside) continue;
+
+            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
+            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
+            pos[indx+2] = innerRadius * _cos_theta[k];
+
+            pos[indx+3] = outerRadius * _sin_theta[k+1] * cc;
+            pos[indx+4] = outerRadius * _sin_theta[k+1] * ss;
+            pos[indx+5] = outerRadius * _cos_theta[k+1];
+
+            pos[indx+6] = innerRadius * _sin_theta[k+1] * cc;
+            pos[indx+7] = innerRadius * _sin_theta[k+1] * ss;
+            pos[indx+8] = innerRadius * _cos_theta[k+1];
+
+            CopyNormal();
+            indx += 9;
+         }
+
+         // right side
+         var ss = _sin_phi[0], cc = _cos_phi[0];
+         for (var k=0;k<heightSegments-1;++k) {
+            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
+            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
+            pos[indx+2] = innerRadius * _cos_theta[k];
+
+            pos[indx+3] = outerRadius * _sin_theta[k+1] * cc;
+            pos[indx+4] = outerRadius * _sin_theta[k+1] * ss;
+            pos[indx+5] = outerRadius * _cos_theta[k+1];
+
+            pos[indx+6] = outerRadius * _sin_theta[k] * cc;
+            pos[indx+7] = outerRadius * _sin_theta[k] * ss;
+            pos[indx+8] = outerRadius * _cos_theta[k];
+
+            CalcNormal();
+            indx+=9;
+
+            if (noInside) continue;
+
+            pos[indx+0] = innerRadius * _sin_theta[k] * cc;
+            pos[indx+1] = innerRadius * _sin_theta[k] * ss;
+            pos[indx+2] = innerRadius * _cos_theta[k];
+
+            pos[indx+3] = innerRadius * _sin_theta[k+1] * cc;
+            pos[indx+4] = innerRadius * _sin_theta[k+1] * ss;
+            pos[indx+5] = innerRadius * _cos_theta[k+1];
+
+            pos[indx+6] = outerRadius * _sin_theta[k+1] * cc;
+            pos[indx+7] = outerRadius * _sin_theta[k+1] * ss;
+            pos[indx+8] = outerRadius * _cos_theta[k+1];
+
+            CopyNormal();
+            indx += 9;
+         }
       }
 
 
@@ -811,8 +986,6 @@
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
       // geometry.computeVertexNormals();
 
-      //console.log(norm[18],norm[19],norm[20]);
-      //console.log(norm[indx+18],norm[indx+19],norm[indx+20]);
 
       return geometry;
    }
@@ -1624,7 +1797,7 @@
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphere( shape, limit ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":

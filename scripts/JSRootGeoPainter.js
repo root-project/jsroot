@@ -1999,13 +1999,11 @@
 
       if (!isnode && !isvolume && !ismanager) return false;
 
-      if (!parent._childs) parent._childs = [];
+      var volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
+      var subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
 
-      var volume = isnode ? obj.fVolume : obj;
-
-      if ((parent._geoobj === undefined) || ismanager) {
+      if (ismanager || (!parent._geoobj && subnodes && subnodes.length)) {
          if (ismanager) {
-            volume = obj.fMasterVolume;
             JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
             JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
             JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
@@ -2021,7 +2019,19 @@
 
       if (!volume) return false;
 
-      var subnodes = volume.fNodes.arr, map = [];
+      if (!subnodes && volume.fShape &&
+           (volume.fShape._typename === "TGeoCompositeShape") && volume.fShape.fNode) {
+         if (!parent._childs) {
+            JSROOT.GEO.createItem(parent, volume.fShape.fNode.fLeft, 'Left');
+            JSROOT.GEO.createItem(parent, volume.fShape.fNode.fRight, 'Right');
+         }
+
+         return true;
+      }
+
+      if (!subnodes) return false;
+
+      var map = [];
 
       for (var i=0;i<subnodes.length;++i) {
          if (isnode)
