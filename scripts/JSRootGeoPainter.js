@@ -1452,6 +1452,9 @@
 
             if (item.buf_pos && item.buf_norm) {
                shape._geom = new THREE.BufferGeometry();
+               if ((item.buf_pos.length === 0) || (item.buf_pos.length !== item.buf_norm.length))
+                  console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
+
                shape._geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
                shape._geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
             } else {

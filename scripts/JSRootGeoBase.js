@@ -1,9 +1,6 @@
 /// @file JSRootGeoBase.js
 /// Basic functions for work with TGeo classes
 
-/// @namespace JSROOT.GEO
-/// Holder of all TGeo-related functions and classes
-
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
@@ -21,6 +18,8 @@
 } (function( JSROOT ) {
    // === functions to create THREE.Geometry for TGeo shapes ========================
 
+   /// @namespace JSROOT.GEO
+   /// Holder of all TGeo-related functions and classes
    JSROOT.GEO = {};
 
    /// @memberof JSROOT.GEO
@@ -558,19 +557,27 @@
 
 
    JSROOT.GEO.createSphere = function( shape, faces_limit ) {
-      var outerRadius = shape.fRmax;
-      var innerRadius = shape.fRmin;
-      var phiStart = shape.fPhi1 + 180;
-      var phiLength = shape.fPhi2 - shape.fPhi1;
-      var thetaStart = shape.fTheta1;
-      var thetaLength = shape.fTheta2 - shape.fTheta1;
-      var widthSegments = shape.fNseg;
-      var heightSegments = shape.fNz;
+      var outerRadius = shape.fRmax,
+          innerRadius = shape.fRmin,
+          phiStart = shape.fPhi1 + 180,
+          phiLength = shape.fPhi2 - shape.fPhi1,
+          thetaStart = shape.fTheta1,
+          thetaLength = shape.fTheta2 - shape.fTheta1,
+          widthSegments = shape.fNseg,
+          heightSegments = shape.fNz;
 
       var noInside = (innerRadius <= 0);
 
+      while (phiStart >= 360) phiStart-=360;
+
       if (faces_limit !== undefined) {
+
+         console.log('create sphere ' + outerRadius + ' ' + innerRadius + ' nseg ' + widthSegments + ":" +  heightSegments + ' expected ' + (noInside ? 2 : 4) * widthSegments * heightSegments);
+         console.log('phi ' + phiStart + ' : ' + phiLength + '  theta ' + thetaStart + ' : ' + thetaLength);
+
+
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+
          if (fact > 1.) {
             widthSegments = Math.round(widthSegments/Math.sqrt(fact));
             heightSegments = Math.round(heightSegments/Math.sqrt(fact));
@@ -671,6 +678,145 @@
 
       return geometry;
    }
+
+   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
+      var outerRadius = shape.fRmax,
+          innerRadius = shape.fRmin,
+          phiStart = shape.fPhi1,
+          phiLength = shape.fPhi2 - shape.fPhi1,
+          thetaStart = shape.fTheta1,
+          thetaLength = shape.fTheta2 - shape.fTheta1,
+          widthSegments = shape.fNseg,
+          heightSegments = shape.fNz;
+
+      var noInside = (innerRadius <= 0);
+
+      while (phiStart >= 360) phiStart-=360;
+
+      console.log('create sphere ' + outerRadius + ' ' + innerRadius + ' nseg ' + widthSegments + ":" +  heightSegments + ' expected ' + (noInside ? 2 : 4) * widthSegments * heightSegments);
+      console.log('phi ' + phiStart + ' : ' + phiLength + '  theta ' + thetaStart + ' : ' + thetaLength);
+
+      if (faces_limit !== undefined) {
+
+
+         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+
+         if (fact > 1.) {
+            widthSegments = Math.round(widthSegments/Math.sqrt(fact));
+            heightSegments = Math.round(heightSegments/Math.sqrt(fact));
+         }
+      }
+
+      var _sin_phi = new Float32Array(widthSegments),
+          _cos_phi = new Float32Array(widthSegments),
+          _sin_theta = new Float32Array(heightSegments),
+          _cos_theta = new Float32Array(heightSegments);
+
+      for (var n=0;n<heightSegments;++n) {
+         var theta = (thetaStart + thetaLength/(heightSegments-1)*n)*Math.PI/180;
+         _sin_theta[n] = Math.sin(theta);
+         _cos_theta[n] = Math.cos(theta);
+      }
+
+      for (var n=0;n<widthSegments;++n) {
+         var phi = (phiStart + phiLength/(widthSegments-1)*n)*Math.PI/180;
+         _sin_phi[n] = Math.sin(phi);
+         _cos_phi[n] = Math.cos(phi);
+      }
+
+      var numoutside = widthSegments * heightSegments * 2;
+      if (_sin_theta[0] == 0) numoutside -= widthSegments;
+      if (_sin_theta[heightSegments-1] === 0) numoutside -= widthSegments;
+
+      //var numtop = widthSegments*2;
+      //var numside = heightSegments * 2;
+      //if (thetaStart === 0) numoutside -= widthSegments;
+      //if (thetaStart + thetaLength === 180) numoutside -= widthSegments;
+      //var numinside = noInside ? 0 : numoutside;
+
+      var numfaces = numoutside * (noInside ? 1 : 2);
+
+      var pos = new Float32Array(numfaces*9),
+          norm = new Float32Array(numfaces*9),
+          indx = 0;
+
+      for (var k=0;k<heightSegments-1;++k) {
+         for (var n=0;n<widthSegments-1;++n) {
+            if (_sin_theta[k+1] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k+1];
+               indx+=9;
+            }
+
+            if (_sin_theta[k] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k];
+               indx+=9;
+            }
+         }
+      }
+
+      for (var n=0;n<indx;++n)
+         pos[n] = norm[n] * outerRadius;
+
+      if (!noInside) {
+         for(var n=0;n<indx;n+=9) {
+            var nn = indx + n;
+
+            pos[nn+0] = innerRadius * norm[n+0];
+            pos[nn+1] = innerRadius * norm[n+1];
+            pos[nn+2] = innerRadius * norm[n+2];
+            norm[nn+0] = -norm[n+0];
+            norm[nn+1] = -norm[n+1];
+            norm[nn+2] = -norm[n+2];
+
+            pos[nn+3] = innerRadius * norm[n+6];
+            pos[nn+4] = innerRadius * norm[n+7];
+            pos[nn+5] = innerRadius * norm[n+8];
+            norm[nn+3] = -norm[n+6];
+            norm[nn+4] = -norm[n+7];
+            norm[nn+5] = -norm[n+8];
+
+            pos[nn+6] = innerRadius * norm[n+3];
+            pos[nn+7] = innerRadius * norm[n+4];
+            pos[nn+8] = innerRadius * norm[n+5];
+            norm[nn+6] = -norm[n+3];
+            norm[nn+7] = -norm[n+4];
+            norm[nn+8] = -norm[n+5];
+         }
+         // indx *= 2;
+      }
+
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+      // geometry.computeVertexNormals();
+
+      //console.log(norm[18],norm[19],norm[20]);
+      //console.log(norm[indx+18],norm[indx+19],norm[indx+20]);
+
+      return geometry;
+   }
+
 
 
    JSROOT.GEO.createTube = function( shape ) {
@@ -1406,6 +1552,9 @@
 
       var bsp1, bsp2;
 
+      var debug = (shape.fNode.fLeft._typename === 'TGeoSphere');
+      // if (debug && faces_limit == 10000) faces_limit = 2000;
+
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
@@ -1416,7 +1565,10 @@
          if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
          if (matrix1 && (matrix1.determinant() < -0.9))
             JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+
+         if (debug) console.log('Convert geom1 ' + JSROOT.GEO.numGeometryFaces(geom1) + ' kind ' + shape.fNode.fLeft._typename + '  limit ' + faces_limit);
          bsp1 = new ThreeBSP(geom1, matrix1);
+         if (debug) console.log('Convert geom1 done');
       }
 
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
@@ -1450,9 +1602,11 @@
 
       var res = return_bsp ? bsp : bsp.toBufferGeometry();
 
-      if (JSROOT.GEO.numGeometryFaces(res) === 0)
+      if (JSROOT.GEO.numGeometryFaces(res) === 0) {
          JSROOT.GEO.warn('Zero faces in comp shape left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
                                              + '  right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces');
+         return null;
+      }
 
       return res;
    }
@@ -1460,32 +1614,37 @@
 
    JSROOT.GEO.createGeometry = function( shape, limit, return_bsp ) {
 
+      var geom = null;
+
       switch (shape._typename) {
-         case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape );
-         case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape );
+         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape ); break;
+         case "TGeoPara": geom = JSROOT.GEO.createParaBuffer( shape ); break;
          case "TGeoTrd1":
-         case "TGeoTrd2": return JSROOT.GEO.createTrapezoidBuffer( shape );
+         case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape ); break;
          case "TGeoArb8":
          case "TGeoTrap":
-         case "TGeoGtra": return JSROOT.GEO.createArb8Buffer( shape );
-         case "TGeoSphere": return JSROOT.GEO.createSphere( shape, limit );
+         case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphere( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
          case "TGeoTubeSeg":
-         case "TGeoCtub": return JSROOT.GEO.createTube( shape );
-         case "TGeoEltu": return JSROOT.GEO.createEltu( shape );
-         case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
+         case "TGeoCtub": geom = JSROOT.GEO.createTube( shape ); break;
+         case "TGeoEltu": geom = JSROOT.GEO.createEltu( shape ); break;
+         case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
-         case "TGeoPgon": return JSROOT.GEO.createPolygon( shape );
-         case "TGeoXtru": return JSROOT.GEO.createXtru( shape );
-         case "TGeoParaboloid": return JSROOT.GEO.createParaboloid( shape, limit );
-         case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
-         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit, return_bsp );
-         case "TGeoShapeAssembly": return null;
+         case "TGeoPgon": geom = JSROOT.GEO.createPolygon( shape ); break;
+         case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
+         case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloid( shape, limit ); break;
+         case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
+         case "TGeoCompositeShape": geom = JSROOT.GEO.createComposite( shape, limit, return_bsp ); break;
+         case "TGeoShapeAssembly": break;
       }
 
-      return null;
+      //if (geom && (geom instanceof THREE.Geometry))
+      //   geom = new THREE.BufferGeometry().fromGeometry(geom);
+
+      return geom;
    }
 
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
