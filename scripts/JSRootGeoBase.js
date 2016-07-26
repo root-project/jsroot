@@ -1162,7 +1162,9 @@
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var nfaces = radiusSegments * 2;
+      var nfaces = radiusSegments * (hasrmin ? 4 : 2) +
+                   radiusSegments * (hasrmin ? 4 : 2) +
+                   (thetaLength < 360 ? 4 : 0);
 
       var pos = new Float32Array(nfaces*9),
           norm = new Float32Array(nfaces*9),
@@ -1206,41 +1208,181 @@
          norm[indx+8] = norm[indx-1];
       }
 
-      var calcZ = function() { return 0; }
-
+      var calcZ;
 
       if (shape._typename == "TGeoCtub")
-         calcZ = function(shift) {
-            return 0;
+         calcZ = function(sign, shift) {
+            var arr = (sign<0) ? shape.fNlow : shape.fNhigh;
+            return sign*shape.fDz - (pos[indx+shift]*arr[0] + pos[indx+shift+1]*arr[1]) / arr[2];
          }
+      else
+         calcZ = function(sign) { return sign * shape.fDZ; }
 
 
       // create outer tube
       for (var seg=0;seg<radiusSegments-1;++seg) {
          pos[indx+0] = outerRadius1 * _cos[seg];
          pos[indx+1] = outerRadius1 * _sin[seg];
-         pos[indx+2] = shape.fDZ;
+         pos[indx+2] = calcZ(1, 0);
          pos[indx+3] = outerRadius2 * _cos[seg];
          pos[indx+4] = outerRadius2 * _sin[seg];
-         pos[indx+5] = -shape.fDZ;
+         pos[indx+5] = calcZ(-1, 3);
          pos[indx+6] = outerRadius2 * _cos[seg+1];
          pos[indx+7] = outerRadius2 * _sin[seg+1];
-         pos[indx+8] = -shape.fDZ;
+         pos[indx+8] = calcZ(-1, 6);
          CalcNormal();
          indx+=9;
 
          pos[indx+0] = outerRadius1 * _cos[seg];
          pos[indx+1] = outerRadius1 * _sin[seg];
-         pos[indx+2] = shape.fDZ;
+         pos[indx+2] = calcZ(1, 0);
          pos[indx+3] = outerRadius2 * _cos[seg+1];
          pos[indx+4] = outerRadius2 * _sin[seg+1];
-         pos[indx+5] = -shape.fDZ;
+         pos[indx+5] = calcZ(-1, 3);
          pos[indx+6] = outerRadius1 * _cos[seg+1];
          pos[indx+7] = outerRadius1 * _sin[seg+1];
-         pos[indx+8] = shape.fDZ;
+         pos[indx+8] = calcZ(1, 6);
          CopyNormal();
          indx+=9;
       }
+
+      // create inner tube
+      for (var seg=0;seg<radiusSegments-1;++seg) {
+         pos[indx+0] = innerRadius1 * _cos[seg];
+         pos[indx+1] = innerRadius1 * _sin[seg];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = innerRadius2 * _cos[seg+1];
+         pos[indx+4] = innerRadius2 * _sin[seg+1];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = innerRadius2 * _cos[seg];
+         pos[indx+7] = innerRadius2 * _sin[seg];
+         pos[indx+8] = calcZ(-1, 6);
+         CalcNormal();
+         indx+=9;
+
+         pos[indx+0] = innerRadius1 * _cos[seg];
+         pos[indx+1] = innerRadius1 * _sin[seg];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = innerRadius1 * _cos[seg+1];
+         pos[indx+4] = innerRadius1 * _sin[seg+1];
+         pos[indx+5] = calcZ(1, 3);
+         pos[indx+6] = innerRadius2 * _cos[seg+1];
+         pos[indx+7] = innerRadius2 * _sin[seg+1];
+         pos[indx+8] = calcZ(-1, 6);
+         CopyNormal();
+         indx+=9;
+      }
+
+      // create upper part
+      for (var seg=0;seg<radiusSegments-1;++seg) {
+         pos[indx+0] = innerRadius1 * _cos[seg];
+         pos[indx+1] = innerRadius1 * _sin[seg];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = outerRadius1 * _cos[seg];
+         pos[indx+4] = outerRadius1 * _sin[seg];
+         pos[indx+5] = calcZ(1, 3);
+         pos[indx+6] = outerRadius1 * _cos[seg+1];
+         pos[indx+7] = outerRadius1 * _sin[seg+1];
+         pos[indx+8] = calcZ(1, 6);
+         CalcNormal();
+         indx+=9;
+
+         if (!hasrmin) continue;
+
+         pos[indx+0] = innerRadius1 * _cos[seg];
+         pos[indx+1] = innerRadius1 * _sin[seg];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = outerRadius1 * _cos[seg+1];
+         pos[indx+4] = outerRadius1 * _sin[seg+1];
+         pos[indx+5] = calcZ(1, 3);
+         pos[indx+6] = innerRadius1 * _cos[seg+1];
+         pos[indx+7] = innerRadius1 * _sin[seg+1];
+         pos[indx+8] = calcZ(1, 6);
+         CopyNormal();
+         indx+=9;
+      }
+
+      // create bottom part
+      for (var seg=0;seg<radiusSegments-1;++seg) {
+         pos[indx+0] = innerRadius2 * _cos[seg];
+         pos[indx+1] = innerRadius2 * _sin[seg];
+         pos[indx+2] = calcZ(-1, 0);
+         pos[indx+3] = outerRadius2 * _cos[seg+1];
+         pos[indx+4] = outerRadius2 * _sin[seg+1];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = outerRadius2 * _cos[seg];
+         pos[indx+7] = outerRadius2 * _sin[seg];
+         pos[indx+8] = calcZ(-1, 6);
+         CalcNormal();
+         indx+=9;
+
+         if (!hasrmin) continue;
+
+         pos[indx+0] = innerRadius2 * _cos[seg];
+         pos[indx+1] = innerRadius2 * _sin[seg];
+         pos[indx+2] = calcZ(-1, 0);
+         pos[indx+3] = innerRadius2 * _cos[seg+1];
+         pos[indx+4] = innerRadius2 * _sin[seg+1];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = outerRadius2 * _cos[seg+1];
+         pos[indx+7] = outerRadius2 * _sin[seg+1];
+         pos[indx+8] = calcZ(-1, 6);
+         CopyNormal();
+         indx+=9;
+      }
+
+      // create cut surfaces
+      if (thetaLength < 360) {
+         pos[indx+0] = innerRadius1 * _cos[0];
+         pos[indx+1] = innerRadius1 * _sin[0];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = outerRadius2 * _cos[0];
+         pos[indx+4] = outerRadius2 * _sin[0];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = outerRadius1 * _cos[0];
+         pos[indx+7] = outerRadius1 * _sin[0];
+         pos[indx+8] = calcZ(1, 6);
+         CalcNormal();
+         indx+=9;
+
+         pos[indx+0] = innerRadius1 * _cos[0];
+         pos[indx+1] = innerRadius1 * _sin[0];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = innerRadius2 * _cos[0];
+         pos[indx+4] = innerRadius2 * _sin[0];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = outerRadius2 * _cos[0];
+         pos[indx+7] = outerRadius2 * _sin[0];
+         pos[indx+8] = calcZ(-1, 6);
+         CopyNormal();
+         indx+=9;
+
+         pos[indx+0] = innerRadius1 * _cos[radiusSegments-1];
+         pos[indx+1] = innerRadius1 * _sin[radiusSegments-1];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = outerRadius1 * _cos[radiusSegments-1];
+         pos[indx+4] = outerRadius1 * _sin[radiusSegments-1];
+         pos[indx+5] = calcZ(1, 3);
+         pos[indx+6] = outerRadius2 * _cos[radiusSegments-1];
+         pos[indx+7] = outerRadius2 * _sin[radiusSegments-1];
+         pos[indx+8] = calcZ(-1, 6);
+         CalcNormal();
+         indx+=9;
+
+         pos[indx+0] = innerRadius1 * _cos[radiusSegments-1];
+         pos[indx+1] = innerRadius1 * _sin[radiusSegments-1];
+         pos[indx+2] = calcZ(1, 0);
+         pos[indx+3] = outerRadius2 * _cos[radiusSegments-1];
+         pos[indx+4] = outerRadius2 * _sin[radiusSegments-1];
+         pos[indx+5] = calcZ(-1, 3);
+         pos[indx+6] = innerRadius2 * _cos[radiusSegments-1];
+         pos[indx+7] = innerRadius2 * _sin[radiusSegments-1];
+         pos[indx+8] = calcZ(-1, 6);
+         CopyNormal();
+         indx+=9;
+      }
+
+      console.log('Create faces ', indx/9, 'expects', nfaces );
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
@@ -1248,9 +1390,6 @@
       // geometry.computeVertexNormals();
 
       return geometry;
-
-
-      return geom;
    }
 
    JSROOT.GEO.createEltu = function( shape ) {
@@ -1927,7 +2066,7 @@
          case "TGeoConeSeg":
          case "TGeoTube":
          case "TGeoTubeSeg":
-         case "TGeoCtub": geom = JSROOT.GEO.createTube( shape ); break;
+         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape ); break;
          case "TGeoEltu": geom = JSROOT.GEO.createEltu( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
