@@ -980,16 +980,13 @@
          }
       }
 
-
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
       // geometry.computeVertexNormals();
 
-
       return geometry;
    }
-
 
 
    JSROOT.GEO.createTube = function( shape ) {
@@ -1059,8 +1056,8 @@
       if (shape._typename == "TGeoCtub")
          for (var n=0;n<geometry.vertices.length;++n) {
             var vertex = geometry.vertices[n];
-            if (vertex.z<0) vertex.z = -shape.fDz-(vertex.x*shape.fNlow[0]+vertex.x*shape.fNlow[1])/shape.fNlow[2];
-                       else vertex.z = shape.fDz-(vertex.y*shape.fNhigh[0]+vertex.y*shape.fNhigh[1])/shape.fNhigh[2];
+            if (vertex.z<0) vertex.z = -shape.fDz-(vertex.x*shape.fNlow[0]+vertex.y*shape.fNlow[1])/shape.fNlow[2];
+                       else vertex.z = shape.fDz-(vertex.x*shape.fNhigh[0]+vertex.y*shape.fNhigh[1])/shape.fNhigh[2];
          }
 
       var color = new THREE.Color(); // make dummy color for all faces
@@ -1127,6 +1124,134 @@
       return geometry;
    }
 
+   JSROOT.GEO.createTubeBuffer = function( shape ) {
+      var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
+      if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
+         outerRadius1 = shape.fRmax2;
+         innerRadius1 = shape.fRmin2;
+         outerRadius2 = shape.fRmax1;
+         innerRadius2 = shape.fRmin1;
+      } else {
+         outerRadius1 = outerRadius2 = shape.fRmax;
+         innerRadius1 = innerRadius2 = shape.fRmin;
+      }
+
+      var hasrmin = (innerRadius1 > 0) || (innerRadius2 > 0);
+
+      if (hasrmin) {
+         if (innerRadius1 <= 0) { innerRadius1 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+         if (innerRadius2 <= 0) { innerRadius2 = 0.0000001; JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
+      }
+
+      var thetaStart = 0, thetaLength = 360;
+      if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
+         thetaStart = shape.fPhi1;
+         thetaLength = shape.fPhi2 - shape.fPhi1;
+      }
+
+      var radiusSegments = Math.floor(thetaLength/6) + 1;
+      if (radiusSegments < 5) radiusSegments = 5;
+
+      var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/(radiusSegments-1)*Math.PI/180;
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments),
+          _cos = new Float32Array(radiusSegments);
+      for (var seg=0; seg<radiusSegments; ++seg) {
+         _cos[seg] = Math.cos(phi0+seg*dphi);
+         _sin[seg] = Math.sin(phi0+seg*dphi);
+      }
+
+      var nfaces = radiusSegments * 2;
+
+      var pos = new Float32Array(nfaces*9),
+          norm = new Float32Array(nfaces*9),
+          indx = 0;
+
+      var pA = new THREE.Vector3(),
+          pB = new THREE.Vector3(),
+          pC = new THREE.Vector3(),
+          cb = new THREE.Vector3(),
+          ab = new THREE.Vector3();
+
+      function CalcNormal() {
+         pA.fromArray( pos, indx );
+         pB.fromArray( pos, indx + 3 );
+         pC.fromArray( pos, indx + 6 );
+
+         cb.subVectors( pC, pB );
+         ab.subVectors( pA, pB );
+         cb.cross( ab );
+
+         norm[indx+0] = cb.x;
+         norm[indx+1] = cb.y;
+         norm[indx+2] = cb.z;
+         norm[indx+3] = cb.x;
+         norm[indx+4] = cb.y;
+         norm[indx+5] = cb.z;
+         norm[indx+6] = cb.x;
+         norm[indx+7] = cb.y;
+         norm[indx+8] = cb.z;
+      }
+
+      function CopyNormal() {
+         norm[indx+0] = norm[indx-9];
+         norm[indx+1] = norm[indx-8];
+         norm[indx+2] = norm[indx-7];
+         norm[indx+3] = norm[indx-6];
+         norm[indx+4] = norm[indx-5];
+         norm[indx+5] = norm[indx-4];
+         norm[indx+6] = norm[indx-3];
+         norm[indx+7] = norm[indx-2];
+         norm[indx+8] = norm[indx-1];
+      }
+
+      var calcZ = function() { return 0; }
+
+
+      if (shape._typename == "TGeoCtub")
+         calcZ = function(shift) {
+            return 0;
+         }
+
+
+      // create outer tube
+      for (var seg=0;seg<radiusSegments-1;++seg) {
+         pos[indx+0] = outerRadius1 * _cos[seg];
+         pos[indx+1] = outerRadius1 * _sin[seg];
+         pos[indx+2] = shape.fDZ;
+         pos[indx+3] = outerRadius2 * _cos[seg];
+         pos[indx+4] = outerRadius2 * _sin[seg];
+         pos[indx+5] = -shape.fDZ;
+         pos[indx+6] = outerRadius2 * _cos[seg+1];
+         pos[indx+7] = outerRadius2 * _sin[seg+1];
+         pos[indx+8] = -shape.fDZ;
+         CalcNormal();
+         indx+=9;
+
+         pos[indx+0] = outerRadius1 * _cos[seg];
+         pos[indx+1] = outerRadius1 * _sin[seg];
+         pos[indx+2] = shape.fDZ;
+         pos[indx+3] = outerRadius2 * _cos[seg+1];
+         pos[indx+4] = outerRadius2 * _sin[seg+1];
+         pos[indx+5] = -shape.fDZ;
+         pos[indx+6] = outerRadius1 * _cos[seg+1];
+         pos[indx+7] = outerRadius1 * _sin[seg+1];
+         pos[indx+8] = shape.fDZ;
+         CopyNormal();
+         indx+=9;
+      }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+      // geometry.computeVertexNormals();
+
+      return geometry;
+
+
+      return geom;
+   }
 
    JSROOT.GEO.createEltu = function( shape ) {
       var geometry = new THREE.Geometry();
@@ -1725,7 +1850,7 @@
 
       var bsp1, bsp2;
 
-      var debug = (shape.fNode.fLeft._typename === 'TGeoSphere');
+      var debug = false; //(shape.fNode.fLeft._typename === 'TGeoSphere');
       // if (debug && faces_limit == 10000) faces_limit = 2000;
 
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
