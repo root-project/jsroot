@@ -1124,6 +1124,76 @@
       return geometry;
    }
 
+   JSROOT.GEO.GeometryCreator = function(numfaces) {
+      this.nfaces = numfaces;
+      this.indx = 0;
+      this.pos = new Float32Array(numfaces*9);
+      this.norm = new Float32Array(numfaces*9);
+
+      this.pA = new THREE.Vector3();
+      this.pB = new THREE.Vector3();
+      this.pC = new THREE.Vector3();
+      this.cb = new THREE.Vector3();
+      this.ab = new THREE.Vector3();
+
+      return this;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
+                                                            x2,y2,z2,
+                                                            x3,y3,z4,
+                                                            x4,y4,z4) {
+      var indx = this.indx, pos = this.pos;
+      pos[indx] = x1;
+      pos[indx+1] = y1;
+      pos[indx+2] = z1;
+      pos[indx+3] = x2;
+      pos[indx+4] = y2;
+      pos[indx+5] = z2;
+      pos[indx+6] = x3;
+      pos[indx+7] = y3;
+      pos[indx+8] = z3;
+      indx+=9;
+      pos[indx] = x1;
+      pos[indx+1] = y1;
+      pos[indx+2] = z1;
+      pos[indx+3] = x3;
+      pos[indx+4] = y3;
+      pos[indx+5] = z3;
+      pos[indx+6] = x4;
+      pos[indx+7] = y4;
+      pos[indx+8] = z4;
+      this.indx = indx+9;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.CalcNormal4 = function() {
+
+      var indx = this.indx, norm = this.norm, cb = this.cb;
+
+      this.pA.fromArray( this.pos, this.indx - 18 );
+      this.pB.fromArray( this.pos, this.indx - 15 );
+      this.pC.fromArray( this.pos, this.indx - 12 );
+
+      cb.subVectors( this.pC, this.pB );
+      this.ab.subVectors( this.pA, this.pB );
+      cb.cross( this.ab );
+
+      norm[indx-18] = norm[indx-15] = norm[indx-12] = norm[indx-9] = norm[indx-6] = norm[indx-3] = cb.x;
+      norm[indx-17] = norm[indx-14] = norm[indx-11] = norm[indx-8] = norm[indx-5] = norm[indx-2] = cb.y;
+      norm[indx-16] = norm[indx-13] = norm[indx-10] = norm[indx-7] = norm[indx-4] = norm[indx-1] = cb.z;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.Create = function() {
+      if (this.nfaces !== this.indx/9)
+         console.error('Mismatch with crceated and filled number of faces');
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+      return geometry;
+   }
+
+
    JSROOT.GEO.createTubeBuffer = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
@@ -1381,8 +1451,6 @@
          CopyNormal();
          indx+=9;
       }
-
-      console.log('Create faces ', indx/9, 'expects', nfaces );
 
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
