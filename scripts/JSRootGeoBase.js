@@ -1114,43 +1114,27 @@
 
       creator.indx = indx; // from here is normal functionality
 
-      // top
-      if (_sin_theta[0] !== 0) {
-         var ss = _sin_theta[0], cc = _cos_theta[0];
-         for (var n=0;n<widthSegments-1;++n) {
-            creator.AddFace4( innerRadius * ss * _cos_phi[n],   innerRadius * ss * _sin_phi[n],   innerRadius * cc,
-                              outerRadius * ss * _cos_phi[n],   outerRadius * ss * _sin_phi[n],   outerRadius * cc,
-                              outerRadius * ss * _cos_phi[n+1], outerRadius * ss * _sin_phi[n+1], outerRadius * cc,
-                              innerRadius * ss * _cos_phi[n+1], innerRadius * ss * _sin_phi[n+1], innerRadius * cc,
-                              noInside ? 2 : 0);
-            creator.CalcNormal4();
+      // top/bottom
+      for (var side=0; side<heightSegments; side+=(heightSegments-1))
+         if (_sin_theta[side] !== 0) {
+            var ss = _sin_theta[side], cc = _cos_theta[side],
+                d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
+            for (var n=0;n<widthSegments-1;++n) {
+               creator.AddFace4(
+                     innerRadius * ss * _cos_phi[n+d1], innerRadius * ss * _sin_phi[n+d1], innerRadius * cc,
+                     outerRadius * ss * _cos_phi[n+d1], outerRadius * ss * _sin_phi[n+d1], outerRadius * cc,
+                     outerRadius * ss * _cos_phi[n+d2], outerRadius * ss * _sin_phi[n+d2], outerRadius * cc,
+                     innerRadius * ss * _cos_phi[n+d2], innerRadius * ss * _sin_phi[n+d2], innerRadius * cc,
+                     noInside ? 2 : 0);
+               creator.CalcNormal4();
+            }
          }
-      }
 
-      // bottom
-      if (_sin_theta[heightSegments-1] !== 0) {
-         var ss = _sin_theta[heightSegments-1], cc = _cos_theta[heightSegments-1];
-         for (var n=0;n<widthSegments-1;++n) {
-            creator.AddFace4(
-                  innerRadius * ss * _cos_phi[n+1], innerRadius * ss * _sin_phi[n+1], innerRadius * cc,
-                  outerRadius * ss * _cos_phi[n+1], outerRadius * ss * _sin_phi[n+1], outerRadius * cc,
-                  outerRadius * ss * _cos_phi[n],   outerRadius * ss * _sin_phi[n],   outerRadius * cc,
-                  innerRadius * ss * _cos_phi[n],   innerRadius * ss * _sin_phi[n],   innerRadius * cc,
-                  noInside ? 2 : 0);
-           creator.CalcNormal4();
-         }
-      }
-
-      // cut side
+      // cut left/right sides
       if (phiLength < 360) {
-         for (var side=0;side<heightSegments;side+=(heightSegments-1)) {
-            // side==0 - left, otherwise right
-            var ss = _sin_phi[side],
-                cc = _cos_phi[side],
-                d1 = (side === 0) ? 1 : 0,
-                d2 = 1 - d1;
-
-            console.log('d1',d1,'d2',d2);
+         for (var side=0;side<widthSegments;side+=(widthSegments-1)) {
+            var ss = _sin_phi[side], cc = _cos_phi[side],
+                d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
             for (var k=0;k<heightSegments-1;++k) {
                creator.AddFace4(
