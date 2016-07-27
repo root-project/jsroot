@@ -918,10 +918,19 @@
          for (var s=0;s<todo.length;++s) {
             var shape = todo[s].shape;
 
-            // do not create composite in main thread, when worker is exists (exclude first drawing)
+            // do not create composite in main thread, when worker is exists (excluding first drawing)
             if (this._worker && (shape._typename == 'TGeoCompositeShape') && !this._first_drawing) continue;
 
             shape._geom = JSROOT.GEO.createGeometry(shape);
+
+            if (shape._geom === null) {
+               console.log('Fail to create ', shape._typename, shape.fName);
+               var entry = this._draw_nodes[todo[s].indx];
+               console.log('Entry stack', entry.stack);
+               if (entry.stack)
+                  console.log('Entry path', this._clones.ResolveStack(entry.stack).name);
+            }
+
             delete shape._geom_worker; // remove flag
             ready.push(todo[s].indx); // one could add it to ready list
 
@@ -1648,43 +1657,71 @@
       obj = null;
    }
 
-   JSROOT.Painter.drawGeometry = function(divid, geometry, opt) {
-
-      // create painter and add it to canvas
-      JSROOT.extend(this, new JSROOT.TGeoPainter(geometry));
-
-      this.SetDivId(divid, 5);
-
-      return this.DrawGeometry(opt);
-   }
-
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (obj === null) return this.DrawingReady();
 
-      var node = null;
+      var vol = null, shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         node = JSROOT.Create("TEveGeoShapeExtract");
-         JSROOT.extend(node, { fTrans:null, fShape: obj, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
+         shape = obj;
       } else
       if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-         node = obj;
+         vol = obj;
       } else
       if ((obj._typename === 'TGeoManager')) {
-         node = obj.fMasterVolume;
+         vol = obj.fMasterVolume;
       } else
       if ('fVolume' in obj) {
-         node = obj.fVolume;
+         vol = obj.fVolume;
       }
 
-      if (node && (typeof node == 'object')) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(node));
+      if (opt && opt.indexOf("comp")==0) {
+         var comp = shape ? shape : (vol ? vol.fShape : null);
+
+         if (comp && comp.fNode && comp._typename == 'TGeoCompositeShape') {
+            opt = opt.substr(4);
+
+            vol = JSROOT.Create("TGeoVolume");
+            JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+
+            vol.fNodes = JSROOT.Create("TList");
+
+            var node1 = JSROOT.Create("TGeoNodeMatrix");
+            node1.fMatrix = comp.fNode.fLeftMat;
+            node1.fVolume = JSROOT.Create("TGeoVolume");
+            node1.fVolume.fShape = comp.fNode.fLeft;
+            node1.fVolume.fLineColor = 2;
+            JSROOT.GEO.SetBit(node1.fVolume, JSROOT.GEO.BITS.kVisThis, true);
+
+
+            var node2 = JSROOT.Create("TGeoNodeMatrix");
+            node2.fMatrix = comp.fNode.fRightMat;
+            node2.fVolume = JSROOT.Create("TGeoVolume");
+            node2.fVolume.fShape = comp.fNode.fRight;
+            node2.fVolume.fLineColor = 3;
+            JSROOT.GEO.SetBit(node2.fVolume, JSROOT.GEO.BITS.kVisThis, true);
+
+            vol.fNodes.Add(node1);
+            vol.fNodes.Add(node2);
+         }
+      }
+
+      if (!vol && shape) {
+         vol = JSROOT.Create("TEveGeoShapeExtract");
+         JSROOT.extend(vol, { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
+      }
+
+      if (vol && (typeof vol == 'object')) {
+         JSROOT.extend(this, new JSROOT.TGeoPainter(vol));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt);
       }
 
       return this.DrawingReady();
    }
+
+   // keep for backwards compatibility
+   JSROOT.Painter.drawGeometry = JSROOT.Painter.drawGeoObject;
 
    // ===================================================================================
 
@@ -2051,7 +2088,7 @@
    }
 
 
-   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeometry, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
+   JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
 
    return JSROOT.Painter;

@@ -69,6 +69,7 @@
       // -1 - unsupported type
 
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
+
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
@@ -2192,8 +2193,9 @@
       var res = return_bsp ? bsp : bsp.toBufferGeometry();
 
       if (JSROOT.GEO.numGeometryFaces(res) === 0) {
-         JSROOT.GEO.warn('Zero faces in comp shape left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
-                                             + '  right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces');
+         JSROOT.GEO.warn('Zero faces in comp shape'
+                          + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
+                          + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces');
          return null;
       }
 
@@ -2387,7 +2389,7 @@
        this.nodes = [];
 
        // first create nodes objects
-       for (var n=0;n<this.origin.length;++n) {
+       for (var n=0; n<this.origin.length; ++n) {
           var obj = this.origin[n];
           this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, numvischld: 1, idshift: 0 });
        }
