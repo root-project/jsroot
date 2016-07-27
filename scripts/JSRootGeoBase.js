@@ -1595,7 +1595,7 @@
             // let three.js calculate our faces
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
          }
-         numfaces += cut_faces.length;
+         numfaces += cut_faces.length*2;
       }
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
@@ -2096,7 +2096,7 @@
          case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
-         case "TGeoPgon": geom = JSROOT.GEO.createPolygon( shape ); break;
+         case "TGeoPgon": geom = JSROOT.GEO.createPolygonBuffer( shape ); break;
          case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
          case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloid( shape, limit ); break;
          case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
