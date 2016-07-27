@@ -1239,20 +1239,20 @@
       var radiusSegments = Math.floor(360/6);
 
       // calculate all sin/cos tables in advance
-      var x = new Float32Array(radiusSegments),
-          y = new Float32Array(radiusSegments);
-      for (var seg=0; seg<radiusSegments; ++seg) {
-          var phi = seg/(radiusSegments-1)*2*Math.PI;
+      var x = new Float32Array(radiusSegments+1),
+          y = new Float32Array(radiusSegments+1);
+      for (var seg=0; seg<=radiusSegments; ++seg) {
+          var phi = seg/radiusSegments*2*Math.PI;
           x[seg] = shape.fRmin*Math.cos(phi);
           y[seg] = shape.fRmax*Math.sin(phi);
       }
 
-      var creator = new JSROOT.GEO.GeometryCreator((radiusSegments-1)*4);
+      var creator = new JSROOT.GEO.GeometryCreator(radiusSegments*4);
 
       var nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
 
       // create tube faces
-      for (var seg=0; seg<radiusSegments-1; ++seg) {
+      for (var seg=0; seg<radiusSegments; ++seg) {
          creator.AddFace4(x[seg],   y[seg],   +shape.fDZ,
                           x[seg],   y[seg],   -shape.fDZ,
                           x[seg+1], y[seg+1], -shape.fDZ,
@@ -1271,7 +1271,7 @@
       // create top/bottom sides
       for (var side=0;side<2;++side) {
          var sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
-         for (var seg=0; seg<radiusSegments-1; ++seg) {
+         for (var seg=0; seg<radiusSegments; ++seg) {
             creator.AddFace3(0,          0,          sign*shape.fDZ,
                              x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
                              x[seg+d2],  y[seg+d2],  sign*shape.fDZ);
@@ -1519,17 +1519,17 @@
 
    JSROOT.GEO.createPolygonBuffer = function( shape ) {
 
-      var thetaStart = shape.fPhi1, thetaLength = shape.fDphi;
+      var thetaStart = shape.fPhi1,
+          thetaLength = shape.fDphi,
+          radiusSegments = 60;
 
-      var radiusSegments = 60;
       if ( shape._typename == "TGeoPgon" )
          radiusSegments = shape.fNedges;
       else
          radiusSegments = Math.max(Math.floor(thetaLength/6), 5);
 
-      var pnts = null;
-      if (thetaLength !== 360)
-         pnts = []; // coordinate of point on cut edge (x,z)
+      // coordinate of point on cut edge (x,z)
+      var pnts = (thetaLength === 360) ? null : [];
 
       var usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
 
@@ -1574,7 +1574,6 @@
       }
 
       var numfaces = numusedlayers*radiusSegments*2;
-
       if (shape.fRmin[0] !== shape.fRmax[0]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
       if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
 
@@ -1816,6 +1815,87 @@
    }
 
 
+   JSROOT.GEO.createParaboloidBuffer = function( shape, faces_limit ) {
+
+      var radiusSegments = Math.round(360/6), heightSegments = 30;
+
+      if (faces_limit !== undefined) {
+         var fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
+         if (fact > 1.) {
+            radiusSegments = Math.max(5, Math.floor(radiusSegments/Math.sqrt(fact)));
+            heightSegments = Math.max(5, Math.floor(heightSegments/Math.sqrt(fact)));
+         }
+      }
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments+1),
+          _cos = new Float32Array(radiusSegments+1);
+      for (var seg=0;seg<=radiusSegments;++seg) {
+         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
+         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
+      }
+
+      var zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
+
+      // if no radius at -z, find intersection
+      if (shape.fA >= 0) {
+         if (shape.fB > zmin) zmin = shape.fB;
+      } else {
+         if (shape.fB < zmax) zmax = shape.fB;
+      }
+
+      var ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
+
+      var numfaces = (heightSegments+1)*radiusSegments*2;
+      if (rmin===0) numfaces -= radiusSegments*2; // complete layer
+      if (rmax===0) numfaces -= radiusSegments*2; // complete layer
+
+      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+
+
+      var lastz = zmin, lastr = 0;
+
+      for (var layer = 0; layer <= heightSegments + 1; ++layer) {
+
+         var layerz = 0, radius = 0;
+
+         if ((layer === 0) && (rmin===0)) continue;
+
+         if ((layer === heightSegments + 1) && (lastr === 0)) break;
+
+         switch (layer) {
+            case 0: layerz = zmin; radius = rmin; break;
+            case heightSegments: layerz = zmax; radius = rmax; break;
+            case heightSegments + 1: layerz = zmax; radius = 0; break;
+            default: {
+               var tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
+               var delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+               radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
+               if (radius < 1e-6) radius = 0;
+               layerz = radius*tt;
+            }
+         }
+
+         var skip = 0;
+         if (lastr === 0) skip = 1; else
+         if (radius === 0) skip = 2;
+
+         for (var seg=0; seg<radiusSegments; ++seg) {
+            creator.AddFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
+                             lastr*_cos[seg],    lastr*_sin[seg], lastz,
+                             lastr*_cos[seg+1],  lastr*_sin[seg+1], lastz,
+                             radius*_cos[seg+1], radius*_sin[seg+1], layerz, skip);
+            creator.CalcNormal();
+         }
+
+         lastz = layerz; lastr = radius;
+      }
+
+      return creator.Create();
+   }
+
+
+
    JSROOT.GEO.createHype = function( shape, faces_limit ) {
 
       if ((shape.fTin===0) && (shape.fTout===0))
@@ -2015,9 +2095,6 @@
 
       var bsp1, bsp2;
 
-      var debug = false; //(shape.fNode.fLeft._typename === 'TGeoSphere');
-      // if (debug && faces_limit == 10000) faces_limit = 2000;
-
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
@@ -2029,9 +2106,7 @@
          if (matrix1 && (matrix1.determinant() < -0.9))
             JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
 
-         if (debug) console.log('Convert geom1 ' + JSROOT.GEO.numGeometryFaces(geom1) + ' kind ' + shape.fNode.fLeft._typename + '  limit ' + faces_limit);
          bsp1 = new ThreeBSP(geom1, matrix1);
-         if (debug) console.log('Convert geom1 done');
       }
 
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
@@ -2098,17 +2173,16 @@
          case "TGeoPcon":
          case "TGeoPgon": geom = JSROOT.GEO.createPolygonBuffer( shape ); break;
          case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
-         case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloid( shape, limit ); break;
+         case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloidBuffer( shape, limit ); break;
          case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
          case "TGeoCompositeShape": geom = JSROOT.GEO.createComposite( shape, limit, return_bsp ); break;
          case "TGeoShapeAssembly": break;
       }
 
-      if (geom && (geom instanceof THREE.Geometry))
-         console.log('Still '+shape._typename + '  faces ' + geom.faces.length);
-
-      if (geom && (geom instanceof THREE.Geometry))
-         geom = new THREE.BufferGeometry().fromGeometry(geom);
+      if (geom && (geom instanceof THREE.Geometry)) {
+         console.log('Still '+ shape._typename + ' as geometry,  faces ' + geom.faces.length);
+         // geom = new THREE.BufferGeometry().fromGeometry(geom);
+      }
 
       return geom;
    }
