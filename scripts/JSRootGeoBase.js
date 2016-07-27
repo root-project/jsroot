@@ -2176,6 +2176,8 @@
 
       var bsp = null;
 
+      console.log('comp type ' + shape.fNode._typename);
+
       if (shape.fNode._typename === 'TGeoIntersection')
          bsp = bsp1.intersect(bsp2);  // "*"
       else
@@ -2187,7 +2189,7 @@
 
       if (bsp === null) {
          JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
-         return geom1;
+         bsp = bsp1;
       }
 
       var res = return_bsp ? bsp : bsp.toBufferGeometry();

@@ -1687,14 +1687,15 @@
             vol.fNodes = JSROOT.Create("TList");
 
             var node1 = JSROOT.Create("TGeoNodeMatrix");
+            node1.fName = "Left";
             node1.fMatrix = comp.fNode.fLeftMat;
             node1.fVolume = JSROOT.Create("TGeoVolume");
             node1.fVolume.fShape = comp.fNode.fLeft;
             node1.fVolume.fLineColor = 2;
             JSROOT.GEO.SetBit(node1.fVolume, JSROOT.GEO.BITS.kVisThis, true);
 
-
             var node2 = JSROOT.Create("TGeoNodeMatrix");
+            node2.fName = "Right";
             node2.fMatrix = comp.fNode.fRightMat;
             node2.fVolume = JSROOT.Create("TGeoVolume");
             node2.fVolume.fShape = comp.fNode.fRight;
