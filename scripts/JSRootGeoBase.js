@@ -331,22 +331,22 @@
       // normals for each  pair of faces
       var normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
 
-      var buf_pos = new Float32Array(indicies.length*3);
-      var buf_norm = new Float32Array(indicies.length*3);
+      var buf_pos = new Float32Array(indicies.length*3),
+          buf_norm = new Float32Array(indicies.length*3);
 
-      var indx = 0, indx_norm = -3;
+      var indx = 0, indx_norm = 0;
       for (var n=0; n < indicies.length; ++n) {
          var v = indicies[n] * 3;
          buf_pos[indx] = vertices[v];
          buf_pos[indx+1] = vertices[v+1];
          buf_pos[indx+2] = vertices[v+2];
 
-         if (n % 6 === 0) indx_norm+=3;
          buf_norm[indx] = normals[indx_norm];
          buf_norm[indx+1] = normals[indx_norm+1];
          buf_norm[indx+2] = normals[indx_norm+2];
 
          indx+=3;
+         if (indx % 18 === 0) indx_norm+=3;
       }
 
       // console.log('indx', indx, 'len', indicies.length*3, 'indx_normal',indx_norm,'len', normals.length);
@@ -795,35 +795,35 @@
          }
       }
 
-      var _sin_phi = new Float32Array(widthSegments),
-          _cos_phi = new Float32Array(widthSegments),
-          _sin_theta = new Float32Array(heightSegments),
-          _cos_theta = new Float32Array(heightSegments);
+      var _sin_phi = new Float32Array(widthSegments+1),
+          _cos_phi = new Float32Array(widthSegments+1),
+          _sin_theta = new Float32Array(heightSegments+1),
+          _cos_theta = new Float32Array(heightSegments+1);
 
-      for (var n=0;n<heightSegments;++n) {
-         var theta = (thetaStart + thetaLength/(heightSegments-1)*n)*Math.PI/180;
+      for (var n=0;n<=heightSegments;++n) {
+         var theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
          _sin_theta[n] = Math.sin(theta);
          _cos_theta[n] = Math.cos(theta);
       }
 
-      for (var n=0;n<widthSegments;++n) {
-         var phi = (phiStart + phiLength/(widthSegments-1)*n)*Math.PI/180;
+      for (var n=0;n<=widthSegments;++n) {
+         var phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
          _sin_phi[n] = Math.sin(phi);
          _cos_phi[n] = Math.cos(phi);
       }
 
-      var numoutside = (widthSegments-1) * (heightSegments-1) * 2,
-          numtop = (widthSegments-1) * 2,
-          numbottom = (widthSegments-1) * 2,
+      var numoutside = widthSegments * heightSegments * 2,
+          numtop = widthSegments * 2,
+          numbottom = widthSegments * 2,
           numcut = 0;
 
       if (phiLength < 360)
-         numcut = (heightSegments - 1) * (noInside ? 2 : 4);
+         numcut = heightSegments * (noInside ? 2 : 4);
 
-      if (noInside) numbottom = numtop = widthSegments-1;
+      if (noInside) numbottom = numtop = widthSegments;
 
-      if (_sin_theta[0] === 0) { numoutside -= (widthSegments-1); numtop = 0; }
-      if (_sin_theta[heightSegments-1] === 0) { numoutside -= (widthSegments-1); numbottom = 0; }
+      if (_sin_theta[0] === 0) { numoutside -= widthSegments; numtop = 0; }
+      if (_sin_theta[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
@@ -832,8 +832,8 @@
       var pos = creator.pos, norm = creator.norm, indx = 0;
 
       // use direct algorithm for the sphere - here normals and position can be calculated direclty
-      for (var k=0;k<heightSegments-1;++k) {
-         for (var n=0;n<widthSegments-1;++n) {
+      for (var k=0;k<heightSegments;++k) {
+         for (var n=0;n<widthSegments;++n) {
             if (_sin_theta[k+1] !== 0) {
                norm[indx+0] = _sin_theta[k] * _cos_phi[n];
                norm[indx+1] = _sin_theta[k] * _sin_phi[n];
@@ -900,11 +900,11 @@
       creator.indx = indx; // from here is normal functionality
 
       // top/bottom
-      for (var side=0; side<heightSegments; side+=(heightSegments-1))
+      for (var side=0; side<=heightSegments; side+=heightSegments)
          if (_sin_theta[side] !== 0) {
             var ss = _sin_theta[side], cc = _cos_theta[side],
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
-            for (var n=0;n<widthSegments-1;++n) {
+            for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
                      innerRadius * ss * _cos_phi[n+d1], innerRadius * ss * _sin_phi[n+d1], innerRadius * cc,
                      outerRadius * ss * _cos_phi[n+d1], outerRadius * ss * _sin_phi[n+d1], outerRadius * cc,
@@ -917,11 +917,11 @@
 
       // cut left/right sides
       if (phiLength < 360) {
-         for (var side=0;side<widthSegments;side+=(widthSegments-1)) {
+         for (var side=0;side<=widthSegments;side+=widthSegments) {
             var ss = _sin_phi[side], cc = _cos_phi[side],
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
-            for (var k=0;k<heightSegments-1;++k) {
+            for (var k=0;k<heightSegments;++k) {
                creator.AddFace4(
                      innerRadius * _sin_theta[k+d1] * cc, innerRadius * _sin_theta[k+d1] * ss, innerRadius * _cos_theta[k+d1],
                      outerRadius * _sin_theta[k+d1] * cc, outerRadius * _sin_theta[k+d1] * ss, outerRadius * _cos_theta[k+d1],
