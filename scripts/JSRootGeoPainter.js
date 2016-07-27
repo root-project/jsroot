@@ -1025,13 +1025,13 @@
    JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
-      this._scene.fog = new THREE.Fog(0xffffff, 500, 300000);
+      this._scene.fog = new THREE.Fog(0xffffff, 1, 10000);
       this._scene.overrideMaterial = new THREE.MeshLambertMaterial( { color: 0x7000ff, transparent: true, opacity: 0.2, depthTest: false } );
 
       this._scene_width = w;
       this._scene_height = h;
 
-      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 100000);
+      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
       this._renderer = webgl ?
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
@@ -1114,8 +1114,11 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._camera.near = this._overall_size / 500;
-      this._camera.far = this._overall_size * 500;
+      this._scene.fog.near = this._camera.near = this._overall_size / 500;
+      this._scene.fog.far = this._camera.far = this._overall_size * 500;
+
+      // this._camera.far = 100000000000;
+
       this._camera.updateProjectionMatrix();
 
 //      if (this.options._yup)

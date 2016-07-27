@@ -2176,7 +2176,7 @@
 
       var bsp = null;
 
-      console.log('comp type ' + shape.fNode._typename);
+      // console.log('comp type ' + shape.fNode._typename);
 
       if (shape.fNode._typename === 'TGeoIntersection')
          bsp = bsp1.intersect(bsp2);  // "*"
@@ -2235,7 +2235,7 @@
       }
 
       if (geom && (geom instanceof THREE.Geometry)) {
-         console.log('Still '+ shape._typename + ' as geometry,  faces ' + geom.faces.length);
+         // console.log('Still '+ shape._typename + ' as geometry,  faces ' + geom.faces.length);
          // geom = new THREE.BufferGeometry().fromGeometry(geom);
       }
 
