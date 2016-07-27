@@ -1517,11 +1517,15 @@
       if (thetaLength !== 360)
          pnts = []; // coordinate of point on cut edge (x,z)
 
-      var usage = new Int16Array(2*shape.fNz), numusedlayers = 0;
+      var usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
+
+      for (var layer=0; layer < shape.fNz; ++layer)
+         if (shape.fRmin[layer] > 0) hasrmin = true;
 
       // first analyse levels - if we need to create all of them
       for (var side = 0; side < 2; ++side) {
          var rside = (side === 0) ? 'fRmax' : 'fRmin';
+
          for (var layer=0; layer < shape.fNz; ++layer) {
 
             // first create points for the layer
@@ -1539,7 +1543,7 @@
                   continue;
                }
 
-            if (layer>0) {
+            if ((layer>0) && ((side === 0) || hasrmin)) {
                usage[layer*2+side] = 1;
                numusedlayers++;
             }
@@ -1555,9 +1559,10 @@
          }
       }
 
-      if (shape.fRmin[0] !== shape.fRmax[0]) numusedlayers++;
-      if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1]) numusedlayers++;
+      var numfaces = numusedlayers*radiusSegments*2;
 
+      if (shape.fRmin[0] !== shape.fRmax[0]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
+      if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
 
       var cut_faces = null;
 
@@ -1576,8 +1581,8 @@
             // let three.js calculate our faces
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
          }
+         numfaces += cut_faces.length;
       }
-
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
 
@@ -1589,8 +1594,9 @@
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = new JSROOT.GEO.GeometryCreator(numusedlayers*radiusSegments*2 + (cut_faces ? cut_faces.length*2 : 0));
+      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
+      // add sides
       for (var side = 0; side < 2; ++side) {
          var rside = (side === 0) ? 'fRmax' : 'fRmin',
              z1 = shape.fZ[0], r1 = shape[rside][0],
@@ -1623,7 +1629,7 @@
          }
       }
 
-
+      // add top/bottom
       for (var layer=0; layer < shape.fNz; layer += (shape.fNz-1)) {
 
          var rmin = shape.fRmin[layer], rmax = shape.fRmax[layer];
@@ -1638,7 +1644,8 @@
             creator.AddFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d1], rmax * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d2], rmax * _sin[seg+d2], layerz,
-                             rmin * _cos[seg+d2], rmin * _sin[seg+d2], layerz);
+                             rmin * _cos[seg+d2], rmin * _sin[seg+d2], layerz,
+                             hasrmin ? 0 : 2);
             creator.SetNormal(0, 0, normalz);
          }
 
