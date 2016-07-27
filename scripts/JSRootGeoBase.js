@@ -1125,7 +1125,15 @@
          if ((side === 1) && !hasrmin) break;
 
          var R = (side === 0) ? outerR : innerR,
-             d1 = side, d2 = 1 - side;
+             d1 = side, d2 = 1 - side, nxy = 1., nz = 0;
+
+         if (R[0] !== R[1]) {
+            var angle = Math.atan((R[1]-R[0]) / 2 / shape.fDZ);
+            nxy = Math.cos(angle);
+            nz = Math.sin(angle);
+         }
+
+         if (side === 1) { nxy *= -1; nz *= -1; };
 
          for (var seg=0;seg<radiusSegments-1;++seg) {
             creator.AddFace4(
@@ -1136,10 +1144,7 @@
 
             if (calcZ) creator.RecalcZ(calcZ);
 
-            if (R[0] === R[1])
-               creator.SetNormal_12_34(_cos[seg+d1], _sin[seg+d1], 0, _cos[seg+d2], _sin[seg+d2], 0);
-            else
-               creator.CalcNormal();
+            creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
          }
       }
 
