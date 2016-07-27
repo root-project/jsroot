@@ -3949,7 +3949,8 @@
       painter.SetDivId(divid);  // now add to painters list
 
       painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot");
-      painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+      if (JSROOT.gStyle.ContextMenu)
+         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
       if (can==null) {
          if (opt.indexOf("noframe") < 0)
@@ -3977,7 +3978,8 @@
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         if (JSROOT.gStyle.ContextMenu)
+            painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
 
       var prev_name = "";
