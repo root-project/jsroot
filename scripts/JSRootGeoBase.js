@@ -213,7 +213,7 @@
    JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
       var pos = this.pos,
           last = this.indx,
-          indx = last - this.last4 ? 18 : 9;
+          indx = last - (this.last4 ? 18 : 9);
 
       while (indx < last) {
          pos[indx+2] = func(pos[indx], pos[indx+1], pos[indx+2]);
@@ -1096,8 +1096,7 @@
          thetaLength = shape.fPhi2 - shape.fPhi1;
       }
 
-      var radiusSegments = Math.floor(thetaLength/6) + 1;
-      if (radiusSegments < 5) radiusSegments = 5;
+      var radiusSegments = Math.max(5, Math.floor(thetaLength/6) + 1);
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/(radiusSegments-1)*Math.PI/180;
 
@@ -1126,7 +1125,7 @@
          if ((side === 1) && !hasrmin) break;
 
          var R = (side === 0) ? outerR : innerR,
-             d1 = side, d2 = 1- side;
+             d1 = side, d2 = 1 - side;
 
          for (var seg=0;seg<radiusSegments-1;++seg) {
             creator.AddFace4(
@@ -1137,7 +1136,10 @@
 
             if (calcZ) creator.RecalcZ(calcZ);
 
-            creator.CalcNormal();
+            if (R[0] === R[1])
+               creator.SetNormal_12_34(_cos[seg+d1], _sin[seg+d1], 0, _cos[seg+d2], _sin[seg+d2], 0);
+            else
+               creator.CalcNormal();
          }
       }
 
@@ -1151,8 +1153,12 @@
                   outerR[side] * _cos[seg+d2], outerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   innerR[side] * _cos[seg+d2], innerR[side] * _sin[seg+d2], sign*shape.fDZ,
                   hasrmin ? 0 : 2);
-            if (calcZ) creator.RecalcZ(calcZ);
-            creator.CalcNormal();
+            if (calcZ) {
+               creator.RecalcZ(calcZ);
+               creator.CalcNormal();
+            } else {
+               creator.SetNormal(0,0,sign);
+            }
          }
       }
 
