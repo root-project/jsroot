@@ -79,6 +79,7 @@
             }
          });
 
+      if (JSROOT.gStyle.ContextMenu)
       buttonList.push({
          name: 'menu',
          title: 'Show context menu',
