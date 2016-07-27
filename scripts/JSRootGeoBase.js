@@ -143,12 +143,6 @@
       this.pos = new Float32Array(numfaces*9);
       this.norm = new Float32Array(numfaces*9);
 
-      this.pA = new THREE.Vector3();
-      this.pB = new THREE.Vector3();
-      this.pC = new THREE.Vector3();
-      this.cb = new THREE.Vector3();
-      this.ab = new THREE.Vector3();
-
       return this;
    }
 
@@ -263,6 +257,14 @@
 
    JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
       var indx = this.indx, norm = this.norm, cb = this.cb;
+
+      if (!cb) {
+         this.pA = new THREE.Vector3();
+         this.pB = new THREE.Vector3();
+         this.pC = new THREE.Vector3();
+         cb = this.cb = new THREE.Vector3();
+         this.ab = new THREE.Vector3();
+      }
 
       this.pA.fromArray( this.pos, this.indx - 9 );
       this.pB.fromArray( this.pos, this.indx - 6 );
