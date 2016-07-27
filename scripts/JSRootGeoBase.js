@@ -210,6 +210,45 @@
       this.indx = indx;
    }
 
+   JSROOT.GEO.GeometryCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
+                                                              nx2,ny2,nz2,
+                                                              nx3,ny3,nz3,
+                                                              nx4,ny4,nz4,
+                                                              reduce) {
+     // same as AddFace4, assign normals for each individual vertex
+     // reduce has same meening and should be the same
+
+      if (this.last4 && reduce)
+         return console.error('missmatch between AddFace4 and SetNormal4 calls');
+
+      var indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
+
+      if (reduce!==1) {
+         norm[indx] = nx1;
+         norm[indx+1] = ny1;
+         norm[indx+2] = nz1;
+         norm[indx+3] = nx2;
+         norm[indx+4] = ny2;
+         norm[indx+5] = nz2;
+         norm[indx+6] = nx3;
+         norm[indx+7] = ny3;
+         norm[indx+8] = nz3;
+         indx+=9;
+      }
+
+      if (reduce!==2) {
+         norm[indx] = nx1;
+         norm[indx+1] = ny1;
+         norm[indx+2] = nz1;
+         norm[indx+3] = nx3;
+         norm[indx+4] = ny3;
+         norm[indx+5] = nz3;
+         norm[indx+6] = nx4;
+         norm[indx+7] = ny4;
+         norm[indx+8] = nz4;
+      }
+   }
+
    JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
       var pos = this.pos,
           last = this.indx,
@@ -251,7 +290,7 @@
    }
 
    JSROOT.GEO.GeometryCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
-      // special shortcut, when same normals can be applied
+      // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       if (!this.last4)
          return console.error('can not use SetNormal_12_34 if not face4');
 
@@ -265,7 +304,6 @@
       norm[indx+7] = norm[indx+13] = norm[indx+16] = ny34;
       norm[indx+8] = norm[indx+14] = norm[indx+17] = nz34;
    }
-
 
 
    JSROOT.GEO.GeometryCreator.prototype.Create = function() {
@@ -1853,11 +1891,11 @@
       var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
 
-      var lastz = zmin, lastr = 0;
+      var lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
       for (var layer = 0; layer <= heightSegments + 1; ++layer) {
 
-         var layerz = 0, radius = 0;
+         var layerz = 0, radius = 0, nxy = 0, nz = -1;
 
          if ((layer === 0) && (rmin===0)) continue;
 
@@ -1876,6 +1914,9 @@
             }
          }
 
+         nxy = shape.fA * radius;
+         nz = (shape.fA > 0) ? -1 : 1;
+
          var skip = 0;
          if (lastr === 0) skip = 1; else
          if (radius === 0) skip = 2;
@@ -1885,10 +1926,20 @@
                              lastr*_cos[seg],    lastr*_sin[seg], lastz,
                              lastr*_cos[seg+1],  lastr*_sin[seg+1], lastz,
                              radius*_cos[seg+1], radius*_sin[seg+1], layerz, skip);
-            creator.CalcNormal();
+
+            // use analitic normal values when open/closing parabaloid around 0
+            // cutted faces (top or bottom) set with simple normal
+            if ((skip===0) || ((layer===1) && (rmin===0)) || ((layer===heightSegments+1) && (rmax===0)))
+               creator.SetNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
+                                  lastnxy*_cos[seg],   lastnxy*_sin[seg],   lastnz,
+                                  lastnxy*_cos[seg+1], lastnxy*_sin[seg+1], lastnz,
+                                  nxy*_cos[seg+1],     nxy*_sin[seg+1],     nz, skip);
+            else
+               creator.SetNormal(0, 0, (layer < heightSegments) ? -1 : 1);
          }
 
          lastz = layerz; lastr = radius;
+         lastnxy = nxy; lastnz = nz;
       }
 
       return creator.Create();
