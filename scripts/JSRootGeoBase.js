@@ -1128,7 +1128,7 @@
              d1 = side, d2 = 1 - side, nxy = 1., nz = 0;
 
          if (R[0] !== R[1]) {
-            var angle = Math.atan((R[1]-R[0]) / 2 / shape.fDZ);
+            var angle = Math.atan2((R[1]-R[0]), 2*shape.fDZ);
             nxy = Math.cos(angle);
             nz = Math.sin(angle);
          }
@@ -1280,9 +1280,7 @@
       }
 
       return creator.Create();
-
    }
-
 
 
    JSROOT.GEO.createTorus = function( shape, faces_limit ) {
@@ -1505,27 +1503,23 @@
    }
 
 
-
    JSROOT.GEO.createPolygonBuffer = function( shape ) {
 
       var thetaStart = shape.fPhi1, thetaLength = shape.fDphi;
 
       var radiusSegments = 60;
-      if ( shape._typename == "TGeoPgon" ) {
+      if ( shape._typename == "TGeoPgon" )
          radiusSegments = shape.fNedges;
-      } else {
+      else
          radiusSegments = Math.max(Math.floor(thetaLength/6), 5);
-      }
 
       var pnts = null;
-      if (thetaLength !== 360) {
+      if (thetaLength !== 360)
          pnts = []; // coordinate of point on cut edge (x,z)
-      }
-
 
       var usage = new Int16Array(2*shape.fNz), numusedlayers = 0;
 
-      // first analyse levels - if we need to create them
+      // first analyse levels - if we need to create all of them
       for (var side = 0; side < 2; ++side) {
          var rside = (side === 0) ? 'fRmax' : 'fRmin';
          for (var layer=0; layer < shape.fNz; ++layer) {
@@ -1588,7 +1582,8 @@
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
 
       // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments+1), _cos = new Float32Array(radiusSegments+1);
+      var _sin = new Float32Array(radiusSegments+1),
+          _cos = new Float32Array(radiusSegments+1);
       for (var seg=0;seg<=radiusSegments;++seg) {
          _cos[seg] = Math.cos(phi0+seg*dphi);
          _sin[seg] = Math.sin(phi0+seg*dphi);
@@ -1598,28 +1593,36 @@
 
       for (var side = 0; side < 2; ++side) {
          var rside = (side === 0) ? 'fRmax' : 'fRmin',
-             prevz = shape.fZ[0], prevrad = shape[rside][0],
+             z1 = shape.fZ[0], r1 = shape[rside][0],
              d1 = 1 - side, d2 = side;
 
          for (var layer=0; layer < shape.fNz; ++layer) {
 
-            // first create points for the layer
-            var layerz = shape.fZ[layer], rad = shape[rside][layer];
-
             if (usage[layer*2+side] === 0) continue;
 
-            for (var seg=0;seg < radiusSegments;++seg) {
-               creator.AddFace4(prevrad * _cos[seg+d1], prevrad * _sin[seg+d1], prevz,
-                                rad     * _cos[seg+d1],     rad * _sin[seg+d1], layerz,
-                                rad     * _cos[seg+d2],     rad * _sin[seg+d2], layerz,
-                                prevrad * _cos[seg+d2], prevrad * _sin[seg+d2], prevz);
-               creator.CalcNormal();
+            var z2 = shape.fZ[layer], r2 = shape[rside][layer],
+                nxy = 1, nz = 0;
+
+            if ((r2 !== r1)) {
+               var angle = Math.atan2((r2-r1), (z2-z1));
+               nxy = Math.cos(angle);
+               nz = Math.sin(angle);
             }
 
-            prevz = layerz;
-            prevrad = rad;
+            if (side>0) { nxy*=-1; nz*=-1; }
+
+            for (var seg=0;seg < radiusSegments;++seg) {
+               creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
+                                r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
+                                r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
+                                r1 * _cos[seg+d2], r1 * _sin[seg+d2], z1);
+               creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
+            }
+
+            z1 = z2; r1 = r2;
          }
       }
+
 
       for (var layer=0; layer < shape.fNz; layer += (shape.fNz-1)) {
 
