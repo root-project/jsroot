@@ -2041,6 +2041,7 @@
 
       if (!isnode && !isvolume && !ismanager) return false;
 
+      if (!parent._childs) parent._childs = [];
       var volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
       var subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
 
