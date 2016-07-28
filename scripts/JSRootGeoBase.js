@@ -490,6 +490,14 @@
       this.v4.normal.set(nx,ny,nz);
    }
 
+   JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
+      this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
+      this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
+      this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
+      this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
+   }
+
+
    JSROOT.GEO.PolygonsCreator.prototype.Create = function() {
       return { polygons: this.polygons };
    }
@@ -1149,7 +1157,7 @@
             var ss = _sinp[side], cc = _cosp[side],
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
-            if (!noInside) creator.StartPolygon(); // indicate that all faces belong to same polygon
+            //if (!noInside) creator.StartPolygon();
             for (var k=0;k<heightSegments;++k) {
                creator.AddFace4(
                      radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
@@ -1159,7 +1167,7 @@
                      noInside ? 2 : 0);
                creator.CalcNormal();
             }
-            if (!noInside) creator.StopPolygon();
+            //if (!noInside) creator.StopPolygon();
          }
       }
 
@@ -1305,7 +1313,7 @@
    }
 
 
-   JSROOT.GEO.createTubeBuffer = function( shape ) {
+   JSROOT.GEO.createTubeBuffer = function( shape, faces_limit, return_bsp) {
       var outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
          outerR = [ shape.fRmax2, shape.fRmax1 ];
@@ -1340,9 +1348,14 @@
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = new JSROOT.GEO.GeometryCreator((radiusSegments-1) * (hasrmin ? 4 : 2) +
-                                                   (radiusSegments-1) * (hasrmin ? 4 : 2) +
-                                                   (thetaLength < 360 ? 4 : 0));
+
+      var numfaces = (radiusSegments-1) * (hasrmin ? 4 : 2) +
+                     (radiusSegments-1) * (hasrmin ? 4 : 2) +
+                     (thetaLength < 360 ? 4 : 0);
+
+      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+
+      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
       var calcZ;
 
@@ -2348,6 +2361,14 @@
 
       // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
+      var supported = ["TGeoCompositeShape", "TGeoBBox"];
+
+      if (supported.indexOf(shape.fNode.fLeft._typename)<0)
+         console.log('Left type ', shape.fNode.fLeft._typename);
+
+      if (supported.indexOf(shape.fNode.fRight._typename)<0)
+         console.log('Right type ', shape.fNode.fRight._typename);
+
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
 
       if (geom1 instanceof ThreeBSP) {
@@ -2420,7 +2441,7 @@
          case "TGeoConeSeg":
          case "TGeoTube":
          case "TGeoTubeSeg":
-         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape ); break;
+         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape, limit, return_bsp ); break;
          case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
