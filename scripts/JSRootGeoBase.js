@@ -926,8 +926,8 @@
 
       geometry.computeFaceNormals();
 
-
-/*      for (var n=0;n<2;n++) {
+      /*
+      for (var n=0;n<2;n++) {
          var face = geometry.faces[n],
              v1 = geometry.vertices[face.a],
              v2 = geometry.vertices[face.b],
@@ -938,7 +938,7 @@
       }
 
       this.createSphereBuffer(shape, undefined);
-*/
+      */
 
       return geometry;
    }
@@ -954,6 +954,8 @@
           heightSegments = shape.fNz;
 
       var noInside = (radius[1] <= 0);
+
+      //phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
       if (faces_limit !== undefined) {
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
@@ -996,8 +998,7 @@
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-
-      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -1006,35 +1007,36 @@
 
          var r = radius[side],
              s = (side===0) ? 1 : -1,
-             d1 = side, d2 = 1 - d1;
+             d1 = 1 - side, d2 = 1 - d1;
 
          // use direct algorithm for the sphere - here normals and position can be calculated direclty
          for (var k=0;k<heightSegments;++k) {
 
+            var k1 = k + d1, k2 = k + d2;
+
             var skip = 0;
-            if (_sint[k+1] === 0) skip = 2; else
-            if (_sint[k] === 0) skip = 1;
+            if (_sint[k1] === 0) skip = 1; else
+            if (_sint[k2] === 0) skip = 2;
 
             for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
-                     r*_sint[k]  *_cosp[n+d1], r*_sint[k]  *_sinp[n+d1], r*_cost[k],
-                     r*_sint[k+1]*_cosp[n+d1], r*_sint[k+1]*_sinp[n+d1], r*_cost[k+1],
-                     r*_sint[k+1]*_cosp[n+d2], r*_sint[k+1]*_sinp[n+d2], r*_cost[k+1],
-                     r*_sint[k]*_cosp[n+d2],   r*_sint[k]*_sinp[n+d2],   r*_cost[k],
+                     r*_sint[k1]*_cosp[n],   r*_sint[k1] *_sinp[n],   r*_cost[k1],
+                     r*_sint[k1]*_cosp[n+1], r*_sint[k1] *_sinp[n+1], r*_cost[k1],
+                     r*_sint[k2]*_cosp[n+1], r*_sint[k2] *_sinp[n+1], r*_cost[k2],
+                     r*_sint[k2]*_cosp[n],   r*_sint[k2] *_sinp[n],   r*_cost[k2],
                      skip);
                creator.SetNormal4(
-                     s*_sint[k]  *_cosp[n+d1], s*_sint[k]  *_sinp[n+d1], s*_cost[k],
-                     s*_sint[k+1]*_cosp[n+d1], s*_sint[k+1]*_sinp[n+d1], s*_cost[k+1],
-                     s*_sint[k+1]*_cosp[n+d2], s*_sint[k+1]*_sinp[n+d2], s*_cost[k+1],
-                     s*_sint[k]*_cosp[n+d2],   s*_sint[k]*_sinp[n+d2],   s*_cost[k],
+                     s*_sint[k1]*_cosp[n],   s*_sint[k1] *_sinp[n],   s*_cost[k1],
+                     s*_sint[k1]*_cosp[n+1], s*_sint[k1] *_sinp[n+1], s*_cost[k1],
+                     s*_sint[k2]*_cosp[n+1], s*_sint[k2] *_sinp[n+1], s*_cost[k2],
+                     s*_sint[k2]*_cosp[n],   s*_sint[k2] *_sinp[n],   s*_cost[k2],
                      skip);
             }
          }
       }
-
       /*
       var pos = creator.pos;
-      for (var n=0;n<2;n++) {
+      for (var n=0;n<2 && pos;n++) {
          var k = n*9;
          console.log(n,'v1', pos[k].toFixed(2),  pos[k+1].toFixed(2),pos[k+2].toFixed(2));
          console.log(n,'v2', pos[k+3].toFixed(2),pos[k+4].toFixed(2),pos[k+5].toFixed(2));
