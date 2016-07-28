@@ -539,11 +539,11 @@
    }
 
 
-   JSROOT.GEO.createCubeBuffer = function( shape, face_limit, return_bsp ) {
+   JSROOT.GEO.createCubeBuffer = function( shape, face_limit) {
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      var creator = (return_bsp || (face_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       // var creator = new JSROOT.GEO.GeometryCreator(12);
 
@@ -715,7 +715,7 @@
    }
 
 
-   JSROOT.GEO.createTrapezoidBuffer = function( shape ) {
+   JSROOT.GEO.createTrapezoidBuffer = function( shape, face_limit ) {
       var y1, y2;
       if (shape._typename == "TGeoTrd1") {
          y1 = y2 = shape.fDY;
@@ -723,7 +723,7 @@
          y1 = shape.fDy1; y2 = shape.fDy2;
       }
 
-      var vertices = [
+      var v = [
             -shape.fDx1,  y1, -shape.fDZ,
              shape.fDx1,  y1, -shape.fDZ,
              shape.fDx1, -y1, -shape.fDZ,
@@ -735,25 +735,26 @@
          ];
 
       var indicies = [
-          4,6,5,   4,7,6,   0,3,7,   7,4,0,
-          4,5,1,   1,0,4,   6,2,1,   1,5,6,
-          7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
+          4,7,6,5,   0,3,7,4,
+          4,5,1,0,   6,2,1,5,
+          7,3,2,6,   1,2,3,0 ];
 
-      var buf_pos = new Float32Array(indicies.length*3);
+      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
-      var indx = 0;
-      for (var n=0; n < indicies.length; ++n) {
-         var v = indicies[n] * 3;
-         buf_pos[indx] = vertices[v];
-         buf_pos[indx+1] = vertices[v+1];
-         buf_pos[indx+2] = vertices[v+2];
-         indx+=3;
+      // var creator = new JSROOT.GEO.GeometryCreator(12);
+
+      for (var n=0;n<indicies.length;n+=4) {
+         var i1 = indicies[n]*3,
+             i2 = indicies[n+1]*3,
+             i3 = indicies[n+2]*3,
+             i4 = indicies[n+3]*3;
+         creator.AddFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
+                          v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
+         if (n===0) creator.SetNormal(0,0,-1); else
+         if (n===20) creator.SetNormal(0,0,1); else creator.CalcNormal();
       }
 
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
-      geometry.computeVertexNormals();
-      return geometry;
+      return creator.Create();
    }
 
 
@@ -1035,7 +1036,7 @@
    }
 
 
-   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit, return_bsp ) {
+   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
       var radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
           phiLength = shape.fPhi2 - shape.fPhi1,
@@ -1089,7 +1090,7 @@
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -1313,7 +1314,7 @@
    }
 
 
-   JSROOT.GEO.createTubeBuffer = function( shape, faces_limit, return_bsp) {
+   JSROOT.GEO.createTubeBuffer = function( shape, faces_limit) {
       var outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
          outerR = [ shape.fRmax2, shape.fRmax1 ];
@@ -1353,7 +1354,7 @@
                      (radiusSegments-1) * (hasrmin ? 4 : 2) +
                      (thetaLength < 360 ? 4 : 0);
 
-      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -2361,7 +2362,8 @@
 
       // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
-      var supported = ["TGeoCompositeShape", "TGeoBBox"];
+      var supported = ["TGeoCompositeShape", "TGeoBBox", "TGeoCone", "TGeoSphere",
+                       "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2"];
 
       if (supported.indexOf(shape.fNode.fLeft._typename)<0)
          console.log('Left type ', shape.fNode.fLeft._typename);
@@ -2429,19 +2431,19 @@
       var geom = null;
 
       switch (shape._typename) {
-         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape, limit, return_bsp ); break;
+         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape, limit ); break;
          case "TGeoPara": geom = JSROOT.GEO.createParaBuffer( shape ); break;
          case "TGeoTrd1":
-         case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape ); break;
+         case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape, limit ); break;
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit, return_bsp ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
          case "TGeoTubeSeg":
-         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape, limit, return_bsp ); break;
+         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape, limit ); break;
          case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
