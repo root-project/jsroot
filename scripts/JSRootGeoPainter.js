@@ -134,7 +134,7 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
-                   use_worker: false, update_browser: true, clip_control: false, highlight: false };
+                   use_worker: false, update_browser: true, show_controls: false, highlight: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -179,9 +179,9 @@
          opt = opt.replace("invx", " ");
       }
 
-      if (opt.indexOf("clip")>=0) {
-         res.clip_control = true;
-         opt = opt.replace("clip", " ");
+      if (opt.indexOf("controls")>=0) {
+         res.show_controls = true;
+         opt = opt.replace("controls", " ");
       }
 
       if (opt.indexOf("noworker")>=0) {
@@ -373,9 +373,9 @@
          this.options.update_browser = !this.options.update_browser;
          if (!this.options.update_browser) this.ActiavteInBrowser([]);
       });
-      menu.addchk(this.options.clip_control, "Clip control", function() {
-         this.options.clip_control = !this.options.clip_control;
-         this.showClipControls(this.options.clip_control);
+      menu.addchk(this.options.show_controls, "Show Controls", function() {
+         this.options.show_controls = !this.options.show_controls;
+         this.showControlOptions(this.options.show_controls);
       });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
          this.options.wireframe = !this.options.wireframe;
@@ -393,7 +393,7 @@
       });
    }
 
-   JSROOT.TGeoPainter.prototype.showClipControls = function(on) {
+   JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
 
       if (this._datgui) {
          if (on) return;
@@ -402,12 +402,13 @@
          delete this._datgui;
          return;
       }
-
       if (!on) return;
 
       var painter = this;
 
       this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
+
+      // Clipping Options
 
       function setSide() {
          painter._scene.traverse( function(obj) {
@@ -422,44 +423,112 @@
       var bound = new THREE.Box3().setFromObject(this._toplevel);
       bound.expandByVector(bound.size().multiplyScalar(0.01));
 
-      var toggleX = this._datgui.add(this, 'enableX');
+      var clipFolder = this._datgui.addFolder('Clipping');
+
+      var toggleX = clipFolder.add(this, 'enableX').name('Enable X');
       toggleX.onChange( function (value) {
          painter.enableX = value;
          setSide();
       });
 
-      var xclip = this._datgui.add(this, 'clipX', bound.min.x, bound.max.x);
+      var xclip = clipFolder.add(this, 'clipX', bound.min.x, bound.max.x).name('X Position');
 
       xclip.onChange( function (value) {
          painter.clipX = value;
          if (painter.enableX) painter.updateClipping();
       });
 
-      var toggleY = this._datgui.add(this, 'enableY');
+      var toggleY = clipFolder.add(this, 'enableY').name('Enable Y');
       toggleY.onChange( function (value) {
          painter.enableY = value;
          setSide();
       });
 
-      var yclip = this._datgui.add(this, 'clipY', bound.min.y, bound.max.y);
+      var yclip = clipFolder.add(this, 'clipY', bound.min.y, bound.max.y).name('Y Position');
 
       yclip.onChange( function (value) {
          painter.clipY = value;
          if (painter.enableY) painter.updateClipping();
       });
 
-      var toggleZ = this._datgui.add(this, 'enableZ');
+      var toggleZ = clipFolder.add(this, 'enableZ').name('Enable Z');
       toggleZ.onChange( function (value) {
          painter.enableZ = value;
          setSide();
       });
 
-      var zclip = this._datgui.add(this, 'clipZ', bound.min.z, bound.max.z);
+      var zclip = clipFolder.add(this, 'clipZ', bound.min.z, bound.max.z).name('Z Position');
 
       zclip.onChange( function (value) {
          painter.clipZ = value;
          if (painter.enableZ) painter.updateClipping();
       });
+
+      // Appearance Options
+
+      var appearance = this._datgui.addFolder('Appearance');
+
+      if (this._webgl) {
+         appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
+            painter.Render3D(0);
+         }).listen();
+      }
+
+      appearance.add(this.options, 'highlight').name('Highlight Selection').onChange( function (value) {
+         if (value === false) {
+            if (painter._selected.mesh !== null) {
+               painter._selected.mesh.material.color = painter._selected.originalColor;
+               painter.Render3D(0);
+               painter._selected.mesh = null;
+            }
+         }
+      });
+
+      appearance.add(this._advceOptions, 'globalTransparency', 0.0, 1.0).listen().onChange( function (value) {
+            painter._toplevel.traverse( function (node) {
+               if (node instanceof THREE.Mesh) {
+                  node.material.transparent = value !== 1.0;
+                  node.material.opacity = value * value;
+               }
+            });
+            painter.Render3D(0);
+         });
+
+      appearance.add(this.options, 'wireframe').name('Wireframe').onChange( function (value) {
+         painter.changeWireFrame(painter._scene, painter.options.wireframe);
+      });
+
+      appearance.add(this, 'focusCamera').name('Reset camera position');
+
+      // Advanced Options
+
+      if (this._webgl) {
+         var advanced = this._datgui.addFolder('Advanced');
+         
+         advanced.add( this._advceOptions, 'aoClamp', 0.0, 1.0).listen().onChange( function (value) {
+            painter._ssaoPass.uniforms[ 'aoClamp' ].value = value;
+            painter._enableSSAO = true;
+            painter.Render3D(0);
+         });
+
+         advanced.add( this._advceOptions, 'lumInfluence', 0.0, 1.0).listen().onChange( function (value) {
+            painter._ssaoPass.uniforms[ 'lumInfluence' ].value = value;
+            painter._enableSSAO = true;
+            painter.Render3D(0);
+         });
+
+         advanced.add(this._advceOptions, 'depthTest').onChange( function (value) {
+            painter._toplevel.traverse( function (node) {
+               if (node instanceof THREE.Mesh) {
+                  node.material.depthTest = value;
+               }
+            });
+            painter.Render3D(0);
+         }).listen();
+
+         advanced.add(this, 'resetAdvanced').name('Reset');
+      }
+
    }
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
@@ -495,8 +564,9 @@
 
       function GetIntersects(mouse) {
          var pnt = {
-            x: mouse.x / painter._renderer.domElement.width * 2 - 1,
-            y: -mouse.y / painter._renderer.domElement.height * 2 + 1
+            // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
+            x: mouse.x / (painter._webgl ? painter._renderer.getSize().width : painter._renderer.domElement.width) * 2 - 1,
+            y: -mouse.y / (painter._webgl ? painter._renderer.getSize().height : painter._renderer.domElement.height) * 2 + 1
          }
 
          raycaster.setFromCamera( pnt, painter._camera );
@@ -654,6 +724,11 @@
                painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
                painter.Render3D(0);
             }
+         }
+         if (intersects.length === 0 && painter._selected.mesh !== null) {
+            painter._selected.mesh.material.color = painter._selected.originalColor;
+            painter.Render3D(0);
+            painter._selected.mesh = null;
          }
 
          var names = [];
@@ -1031,10 +1106,23 @@
       this._scene_width = w;
       this._scene_height = h;
 
+      this._boundingBox = new THREE.Box3();
+
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
+      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+      this._scene.add( this._camera );
+
+      this._selected = {mesh:null, originalColor:null};
+
+      this._overall_size = 10;
+
+      this._toplevel = new THREE.Object3D();
+
+      this._scene.add(this._toplevel);
+
       this._renderer = webgl ?
-                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
+                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: false,
                                                   preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio(pixel_ratio);
@@ -1054,20 +1142,66 @@
                            new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
 
-      // TODO: should we change/increase number of light points??
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set(10, 10, 10);
-      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
-      this._scene.add( this._camera );
+       // Lights 
 
-      this._toplevel = new THREE.Object3D();
+      this._lights = new THREE.Object3D();
+      var intensity = 0.5;
+      var lightColor = 0xe0e0e0;
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._scene.add(this._toplevel);
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._selected = {mesh:null, originalColor:null};
+      this._lights.add( new THREE.PointLight(lightColor, 0.5) );
 
-      this._overall_size = 10;
+      this._scene.add( this._lights );
+      this.updateLights(8000);
+
+      this._defaultAdvanced = { aoClamp: 0.70,
+                        lumInfluence: 0.4,
+                           shininess: 100,
+                           globalTransparency: 1.0,
+                           depthTest: true
+                          /* metalness: 0.7,
+                           roughness: 0.65*/ };
+
+      // Smooth Lighting Shader (Screen Space Ambient Occulsion) 
+      // http://threejs.org/examples/webgl_postprocessing_ssao.html
+
+      this._enableSSAO = false;
+
+      if (webgl) {
+         var renderPass = new THREE.RenderPass( this._scene, this._camera );
+         // Setup depth pass
+         this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
+         this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
+         this._depthMaterial.blending = THREE.NoBlending;
+         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+         this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
+         // Setup SSAO pass
+         this._ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+         this._ssaoPass.renderToScreen = true;
+         this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
+         this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
+         this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+         // Add pass to effect composer
+         this._effectComposer = new THREE.EffectComposer( this._renderer );
+         this._effectComposer.addPass( renderPass );
+         this._effectComposer.addPass( this._ssaoPass );
+      }
+
+      this._advceOptions = {};
+      this.resetAdvanced();
+
    }
 
 
@@ -1090,6 +1224,34 @@
       this.continueDraw();
    }
 
+   JSROOT.TGeoPainter.prototype.resetAdvanced = function() {
+      if (this._webgl) {
+         this._advceOptions.aoClamp = this._defaultAdvanced.aoClamp; 
+         this._advceOptions.lumInfluence = this._defaultAdvanced.lumInfluence;
+
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+      }
+
+      this._advceOptions.globalTransparency = this._defaultAdvanced.globalTransparency;
+      this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
+
+      var painter = this;
+      this._toplevel.traverse( function (node) {
+         if (node instanceof THREE.Mesh) {
+            node.material.depthTest = painter._defaultAdvanced.depthTest;
+            node.material.opacity = painter._defaultAdvanced.globalTransparency * painter._defaultAdvanced.globalTransparency;
+            node.material.transparent = painter._defaultAdvanced.globalTransparency !== 1.0;
+         }
+      });
+
+      this.Render3D(0);
+   }
+
+   JSROOT.TGeoPainter.prototype.updateBoundingBox = function() {
+      this._boundingBox.setFromObject(this._toplevel);
+   }
+
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = this.clipY;
@@ -1103,7 +1265,8 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
 
-      var box = new THREE.Box3().setFromObject(this._toplevel);
+      this.updateBoundingBox();
+      var box = this._boundingBox;
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1114,8 +1277,13 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._scene.fog.near = this._camera.near = this._overall_size / 500;
-      this._scene.fog.far = this._camera.far = this._overall_size * 500;
+      this._scene.fog.near = this._camera.near = this._overall_size / 300;
+      this._scene.fog.far = this._camera.far = this._overall_size * 5;
+
+      if (this._webgl) {
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
+      }
 
       // this._camera.far = 100000000000;
 
@@ -1141,6 +1309,22 @@
       }
    }
 
+   JSROOT.TGeoPainter.prototype.updateLights = function( distance ) {
+      this.updateBoundingBox();
+      var radius = distance === undefined ? 2 * this._boundingBox.getBoundingSphere().radius : distance;
+      this._lights.children[0].position.set( radius, radius, radius );
+      this._lights.children[1].position.set(-radius, radius, radius );
+      this._lights.children[2].position.set( radius, radius,-radius );
+      this._lights.children[3].position.set(-radius, radius,-radius );
+
+      this._lights.children[4].position.set(      0, radius/4, radius );
+      this._lights.children[5].position.set( radius, radius/4,      0 );
+      this._lights.children[6].position.set(      0, radius/4,-radius );
+      this._lights.children[7].position.set(-radius, radius/4,      0 );
+
+      this._lights.children[8].position.set(      0,  -radius,      0 );
+   }
+
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
       console.log('Focus on the element', itemname);
 
@@ -1159,7 +1343,13 @@
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
 
-      var box = new THREE.Box3().setFromObject(focus);
+      var box;
+      if (focus === undefined) {
+         this.updateBoundingBox();
+         box = this._boundingBox;
+      } else {
+         box = new THREE.Box3().setFromObject(focus);
+      }
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1193,15 +1383,19 @@
            painter._camera.position.add(posDifference);
            oldTarget.add(targetDifference);
            painter._lookat = oldTarget;
+           painter._controls.target = oldTarget;
            painter._camera.lookAt(painter._lookat);
            painter.Render3D();
         }, step * 20);
       }
-      this._controls.target = target;
+   //   this._controls.target = target;
       this._controls.update();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
+
+      this.updateLights();
+
       if ( this.options._debug || this.options._grid ) {
          if ( this.options._full ) {
             var boxHelper = new THREE.BoxHelper(this._toplevel);
@@ -1376,7 +1570,17 @@
          var tm1 = new Date();
 
          // do rendering, most consuming time
-         this._renderer.render(this._scene, this._camera);
+         // do rendering, most consuming time
+         if (this._webgl && this._enableSSAO) {
+            this._scene.overrideMaterial = this._depthMaterial;
+        //    this._renderer.logarithmicDepthBuffer = false;
+            this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
+            this._scene.overrideMaterial = null;
+            this._effectComposer.render();
+         } else {
+       //     this._renderer.logarithmicDepthBuffer = true;
+            this._renderer.render(this._scene, this._camera);
+         }
 
          var tm2 = new Date();
 
@@ -1516,7 +1720,7 @@
 
       this.addOrbitControls();
 
-      this.showClipControls(this.options.clip_control);
+      this.showControlOptions(this.options.show_controls);
 
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
@@ -1745,7 +1949,8 @@
          if ((main === null) || (main._toplevel === undefined))
             return console.warn('no geo object found for 3D axis drawing');
 
-         var box = new THREE.Box3().setFromObject(main._toplevel);
+         this.updateBoundingBox();
+         var box = this._boundingBox;
 
          this.xmin = box.min.x; this.xmax = box.max.x;
          this.ymin = box.min.y; this.ymax = box.max.y;
@@ -2041,6 +2246,7 @@
 
       if (!isnode && !isvolume && !ismanager) return false;
 
+      if (!parent._childs) parent._childs = [];
       var volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
       var subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
 
