@@ -557,11 +557,11 @@
    }
 
 
-   JSROOT.GEO.createCubeBuffer = function( shape, face_limit) {
+   JSROOT.GEO.createCubeBuffer = function( shape, faces_limit) {
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       // var creator = new JSROOT.GEO.GeometryCreator(12);
 
@@ -658,11 +658,11 @@
       return geom;
    }
 
-   JSROOT.GEO.create8edgesBuffer = function( v, face_limit ) {
+   JSROOT.GEO.create8edgesBuffer = function( v, faces_limit ) {
 
       var indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
 
-      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       // var creator = new JSROOT.GEO.GeometryCreator(12);
 
@@ -682,7 +682,7 @@
 
 
 
-   JSROOT.GEO.createParaBuffer = function( shape, face_limit ) {
+   JSROOT.GEO.createParaBuffer = function( shape, faces_limit ) {
 
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
 
@@ -696,7 +696,7 @@
            shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
            shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
 
-      return JSROOT.GEO.create8edgesBuffer(v, face_limit );
+      return JSROOT.GEO.create8edgesBuffer(v, faces_limit );
    }
 
 
@@ -739,7 +739,7 @@
    }
 
 
-   JSROOT.GEO.createTrapezoidBuffer = function( shape, face_limit ) {
+   JSROOT.GEO.createTrapezoidBuffer = function( shape, faces_limit ) {
       var y1, y2;
       if (shape._typename == "TGeoTrd1") {
          y1 = y2 = shape.fDY;
@@ -758,7 +758,7 @@
             -shape.fDx2, -y2,  shape.fDZ
          ];
 
-      return JSROOT.GEO.create8edgesBuffer(v, face_limit );
+      return JSROOT.GEO.create8edgesBuffer(v, faces_limit );
    }
 
 
@@ -837,7 +837,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createArb8Buffer = function( shape, face_limit ) {
+   JSROOT.GEO.createArb8Buffer = function( shape, faces_limit ) {
 
       var vertices = [
             shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
@@ -886,7 +886,7 @@
          }
       }
 
-      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -899,7 +899,7 @@
              i6 = indicies[n+5] * 3,
              norm = null;
 
-         if ((i1>=0) && (i4>=0) && face_limit) {
+         if ((i1>=0) && (i4>=0) && faces_limit) {
             // try to identify two faces with same normal - very useful if one can create face4
             if (n===0) norm = new THREE.Vector3(0,0,-1); else
             if (n===30) norm = new THREE.Vector3(0,0,1); else {
@@ -1810,7 +1810,7 @@
    }
 
 
-   JSROOT.GEO.createPolygonBuffer = function( shape, face_limit ) {
+   JSROOT.GEO.createPolygonBuffer = function( shape, faces_limit ) {
 
       var thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
@@ -1900,7 +1900,7 @@
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -2397,17 +2397,26 @@
    }
 
 
-   JSROOT.GEO.createComposite = function ( shape, faces_limit, return_bsp ) {
+   JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      if (faces_limit && !return_bsp) console.warn('unnecessary conversion');
+      var return_bsp = false;
 
+      if (faces_limit === undefined)
+         faces_limit = 10000;
+      else
+         return_bsp = true;
 
-      if (faces_limit === undefined) faces_limit = 10000;
 
       var bsp1, bsp2;
 
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
       var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
+
+      if (matrix1 && (matrix1.determinant() < -0.9))
+         JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+
+      if (matrix2 && (matrix2.determinant() < -0.9))
+         JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
 
       // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
@@ -2421,27 +2430,34 @@
       if (supported.indexOf(shape.fNode.fRight._typename)<0)
          console.log('Right type ', shape.fNode.fRight._typename);
 */
-      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
+      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
 
       if (geom1 instanceof ThreeBSP) {
-         bsp1 = geom1;
+         if (matrix1 === null) {
+            bsp1 = geom1;
+         } else {
+            // convert ourself
+            bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
+            JSROOT.GEO.warn('extra BSP1 convertion because of matrix - fix!!!');
+         }
       } else {
          if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-         if (matrix1 && (matrix1.determinant() < -0.9))
-            JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
 
          bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
 
-      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2, !matrix2);
+      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2);
 
       if (geom2 instanceof ThreeBSP) {
-         bsp2 = geom2;
+         if (matrix2 === null) {
+            bsp2 = geom2;
+         } else {
+            bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
+            JSROOT.GEO.warn('extra BSP2 convertion because of matrix - fix!!!');
+         }
       } else {
          if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-         if (matrix2 && (matrix2.determinant() < -0.9))
-            JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
          bsp2 = new ThreeBSP(geom2, matrix2);
       }
 
@@ -2476,7 +2492,7 @@
    }
 
 
-   JSROOT.GEO.createGeometry = function( shape, limit, return_bsp ) {
+   JSROOT.GEO.createGeometry = function( shape, limit ) {
 
       var geom = null;
 
@@ -2501,7 +2517,7 @@
          case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
          case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloidBuffer( shape, limit ); break;
          case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
-         case "TGeoCompositeShape": geom = JSROOT.GEO.createComposite( shape, limit, return_bsp ); break;
+         case "TGeoCompositeShape": geom = JSROOT.GEO.createComposite( shape, limit ); break;
          case "TGeoShapeAssembly": break;
       }
 
