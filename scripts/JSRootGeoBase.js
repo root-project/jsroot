@@ -811,7 +811,189 @@
 
       geometry.computeFaceNormals();
 
+/*      for (var n=0;n<2;n++) {
+         var face = geometry.faces[n],
+             v1 = geometry.vertices[face.a],
+             v2 = geometry.vertices[face.b],
+             v3 = geometry.vertices[face.c];
+         console.log(n,'v1', v1.x.toFixed(2), v1.y.toFixed(2), v1.z.toFixed(2));
+         console.log(n,'v2', v2.x.toFixed(2), v2.y.toFixed(2), v2.z.toFixed(2));
+         console.log(n,'v3', v3.x.toFixed(2), v3.y.toFixed(2), v3.z.toFixed(2));
+      }
+
+      this.createSphereBufferNew(shape, undefined);
+*/
       return geometry;
+   }
+
+
+   JSROOT.GEO.createSphereBufferNew = function( shape, faces_limit ) {
+      var outerRadius = shape.fRmax,
+          innerRadius = shape.fRmin,
+          phiStart = shape.fPhi1,
+          phiLength = shape.fPhi2 - shape.fPhi1,
+          thetaStart = shape.fTheta1,
+          thetaLength = shape.fTheta2 - shape.fTheta1,
+          widthSegments = shape.fNseg,
+          heightSegments = shape.fNz;
+
+      var noInside = (innerRadius <= 0);
+
+      if (faces_limit !== undefined) {
+         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+
+         if (fact > 1.) {
+            widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
+            heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
+         }
+      }
+
+      var _sin_phi = new Float32Array(widthSegments+1),
+          _cos_phi = new Float32Array(widthSegments+1),
+          _sin_theta = new Float32Array(heightSegments+1),
+          _cos_theta = new Float32Array(heightSegments+1);
+
+      for (var n=0;n<=heightSegments;++n) {
+         var theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
+         _sin_theta[n] = Math.sin(theta);
+         _cos_theta[n] = Math.cos(theta);
+      }
+
+      for (var n=0;n<=widthSegments;++n) {
+         var phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
+         _sin_phi[n] = Math.sin(phi);
+         _cos_phi[n] = Math.cos(phi);
+      }
+
+      var numoutside = widthSegments * heightSegments * 2,
+          numtop = widthSegments * 2,
+          numbottom = widthSegments * 2,
+          numcut = 0;
+
+      if (phiLength < 360)
+         numcut = heightSegments * (noInside ? 2 : 4);
+
+      if (noInside) numbottom = numtop = widthSegments;
+
+      if (_sin_theta[0] === 0) { numoutside -= widthSegments; numtop = 0; }
+      if (_sin_theta[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
+
+      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
+
+      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+
+      var pos = creator.pos, norm = creator.norm, indx = 0;
+
+      // use direct algorithm for the sphere - here normals and position can be calculated direclty
+      for (var k=0;k<heightSegments;++k) {
+         for (var n=0;n<widthSegments;++n) {
+            if (_sin_theta[k+1] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k+1];
+               indx+=9;
+            }
+
+            if (_sin_theta[k] !== 0) {
+               norm[indx+0] = _sin_theta[k] * _cos_phi[n];
+               norm[indx+1] = _sin_theta[k] * _sin_phi[n];
+               norm[indx+2] = _cos_theta[k];
+
+               norm[indx+3] = _sin_theta[k+1] * _cos_phi[n+1];
+               norm[indx+4] = _sin_theta[k+1] * _sin_phi[n+1];
+               norm[indx+5] = _cos_theta[k+1];
+
+               norm[indx+6] = _sin_theta[k] * _cos_phi[n+1];
+               norm[indx+7] = _sin_theta[k] * _sin_phi[n+1];
+               norm[indx+8] = _cos_theta[k];
+               indx+=9;
+            }
+         }
+      }
+
+      for (var n=0;n<indx;++n)
+         pos[n] = norm[n] * outerRadius;
+
+      for (var n=0;n<2;n++) {
+         var k = n*9;
+         console.log(n,'v1', pos[k].toFixed(2),  pos[k+1].toFixed(2),pos[k+2].toFixed(2));
+         console.log(n,'v2', pos[k+3].toFixed(2),pos[k+4].toFixed(2),pos[k+5].toFixed(2));
+         console.log(n,'v3', pos[k+6].toFixed(2),pos[k+7].toFixed(2),pos[k+8].toFixed(2));
+      }
+
+      if (!noInside) {
+         for(var n=0;n<indx;n+=9) {
+            var nn = indx + n;
+
+            pos[nn+0] = innerRadius * norm[n+0];
+            pos[nn+1] = innerRadius * norm[n+1];
+            pos[nn+2] = innerRadius * norm[n+2];
+            norm[nn+0] = -norm[n+0];
+            norm[nn+1] = -norm[n+1];
+            norm[nn+2] = -norm[n+2];
+
+            pos[nn+3] = innerRadius * norm[n+6];
+            pos[nn+4] = innerRadius * norm[n+7];
+            pos[nn+5] = innerRadius * norm[n+8];
+            norm[nn+3] = -norm[n+6];
+            norm[nn+4] = -norm[n+7];
+            norm[nn+5] = -norm[n+8];
+
+            pos[nn+6] = innerRadius * norm[n+3];
+            pos[nn+7] = innerRadius * norm[n+4];
+            pos[nn+8] = innerRadius * norm[n+5];
+            norm[nn+6] = -norm[n+3];
+            norm[nn+7] = -norm[n+4];
+            norm[nn+8] = -norm[n+5];
+         }
+         indx *= 2;
+      }
+
+      creator.indx = indx; // from here is normal functionality
+
+      // top/bottom
+      for (var side=0; side<=heightSegments; side+=heightSegments)
+         if (_sin_theta[side] !== 0) {
+            var ss = _sin_theta[side], cc = _cos_theta[side],
+                d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
+            for (var n=0;n<widthSegments;++n) {
+               creator.AddFace4(
+                     innerRadius * ss * _cos_phi[n+d1], innerRadius * ss * _sin_phi[n+d1], innerRadius * cc,
+                     outerRadius * ss * _cos_phi[n+d1], outerRadius * ss * _sin_phi[n+d1], outerRadius * cc,
+                     outerRadius * ss * _cos_phi[n+d2], outerRadius * ss * _sin_phi[n+d2], outerRadius * cc,
+                     innerRadius * ss * _cos_phi[n+d2], innerRadius * ss * _sin_phi[n+d2], innerRadius * cc,
+                     noInside ? 2 : 0);
+               creator.CalcNormal();
+            }
+         }
+
+      // cut left/right sides
+      if (phiLength < 360) {
+         for (var side=0;side<=widthSegments;side+=widthSegments) {
+            var ss = _sin_phi[side], cc = _cos_phi[side],
+                d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
+
+            for (var k=0;k<heightSegments;++k) {
+               creator.AddFace4(
+                     innerRadius * _sin_theta[k+d1] * cc, innerRadius * _sin_theta[k+d1] * ss, innerRadius * _cos_theta[k+d1],
+                     outerRadius * _sin_theta[k+d1] * cc, outerRadius * _sin_theta[k+d1] * ss, outerRadius * _cos_theta[k+d1],
+                     outerRadius * _sin_theta[k+d2] * cc, outerRadius * _sin_theta[k+d2] * ss, outerRadius * _cos_theta[k+d2],
+                     innerRadius * _sin_theta[k+d2] * cc, innerRadius * _sin_theta[k+d2] * ss, innerRadius * _cos_theta[k+d2],
+                     noInside ? 2 : 0);
+               creator.CalcNormal();
+            }
+         }
+      }
+
+      return creator.Create();
    }
 
 
@@ -2219,7 +2401,7 @@
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphere( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
