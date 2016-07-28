@@ -56,7 +56,7 @@ function ThreeBSPfactory() {
       } else if (geometry.polygons && (geometry.polygons[0] instanceof ThreeBSP.Polygon)) {
          polygons = geometry.polygons;
 
-         console.log('create from direct polygons size ' + polygons.length);
+         // console.log('create from direct polygons size ' + polygons.length);
 
          for (var i=0;i<polygons.length;++i) {
             var polygon = polygons[i];

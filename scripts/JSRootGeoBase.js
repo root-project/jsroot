@@ -456,7 +456,7 @@
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      var creator = (return_bsp || (face_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : JSROOT.GEO.GeometryCreator(12);
+      var creator = (return_bsp || (face_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       // var creator = new JSROOT.GEO.GeometryCreator(12);
 
@@ -2435,6 +2435,8 @@
          return attr ? attr.count / 3 : 0;
       }
 
+      if (geom && geom.polygons) return geom.polygons.length;
+
       return geom.faces.length;
    }
 
@@ -2448,6 +2450,8 @@
          var attr = geom.getAttribute('position');
          return attr ? attr.count : 0;
       }
+
+      if (geom && geom.polygons) return geom.polygons.length * 4;
 
       return geom.vertices.length;
    }
