@@ -95,6 +95,8 @@
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
                              overdraw: 0. } );
+            prop.material.alwaysTransparent = _transparent;
+            prop.material.inherentOpacity = _opacity;
          }
 
          return prop;
@@ -131,6 +133,8 @@
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
                               overdraw: 0. } );
+         prop.material.alwaysTransparent = _transparent;
+         prop.material.inherentOpacity = _opacity;
       }
 
       return prop;
