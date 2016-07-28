@@ -810,9 +810,8 @@
 
       geometry.computeFaceNormals();
 
-      geometry.computeVertexNormals();
 
-      for (var n=0;n<2;n++) {
+/*      for (var n=0;n<2;n++) {
          var face = geometry.faces[n],
              v1 = geometry.vertices[face.a],
              v2 = geometry.vertices[face.b],
@@ -822,13 +821,14 @@
          console.log(n,'v3', v3.x.toFixed(2), v3.y.toFixed(2), v3.z.toFixed(2));
       }
 
-      this.createSphereBufferNew(shape, undefined);
+      this.createSphereBuffer(shape, undefined);
+*/
 
       return geometry;
    }
 
 
-   JSROOT.GEO.createSphereBufferNew = function( shape, faces_limit ) {
+   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
       var outerRadius = shape.fRmax,
           innerRadius = shape.fRmin,
           phiStart = shape.fPhi1,
@@ -914,178 +914,15 @@
          }
       }
 
+      /*
       var pos = creator.pos;
-
       for (var n=0;n<2;n++) {
          var k = n*9;
          console.log(n,'v1', pos[k].toFixed(2),  pos[k+1].toFixed(2),pos[k+2].toFixed(2));
          console.log(n,'v2', pos[k+3].toFixed(2),pos[k+4].toFixed(2),pos[k+5].toFixed(2));
          console.log(n,'v3', pos[k+6].toFixed(2),pos[k+7].toFixed(2),pos[k+8].toFixed(2));
       }
-
-
-      // top/bottom
-      for (var side=0; side<=heightSegments; side+=heightSegments)
-         if (_sint[side] !== 0) {
-            var ss = _sint[side], cc = _cost[side],
-                d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
-            for (var n=0;n<widthSegments;++n) {
-               creator.AddFace4(
-                     innerRadius * ss * _cosp[n+d1], innerRadius * ss * _sinp[n+d1], innerRadius * cc,
-                     outerRadius * ss * _cosp[n+d1], outerRadius * ss * _sinp[n+d1], outerRadius * cc,
-                     outerRadius * ss * _cosp[n+d2], outerRadius * ss * _sinp[n+d2], outerRadius * cc,
-                     innerRadius * ss * _cosp[n+d2], innerRadius * ss * _sinp[n+d2], innerRadius * cc,
-                     noInside ? 2 : 0);
-               creator.CalcNormal();
-            }
-         }
-
-      // cut left/right sides
-      if (phiLength < 360) {
-         for (var side=0;side<=widthSegments;side+=widthSegments) {
-            var ss = _sinp[side], cc = _cosp[side],
-                d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
-
-            for (var k=0;k<heightSegments;++k) {
-               creator.AddFace4(
-                     innerRadius * _sint[k+d1] * cc, innerRadius * _sint[k+d1] * ss, innerRadius * _cost[k+d1],
-                     outerRadius * _sint[k+d1] * cc, outerRadius * _sint[k+d1] * ss, outerRadius * _cost[k+d1],
-                     outerRadius * _sint[k+d2] * cc, outerRadius * _sint[k+d2] * ss, outerRadius * _cost[k+d2],
-                     innerRadius * _sint[k+d2] * cc, innerRadius * _sint[k+d2] * ss, innerRadius * _cost[k+d2],
-                     noInside ? 2 : 0);
-               creator.CalcNormal();
-            }
-         }
-      }
-
-      return creator.Create();
-   }
-
-
-   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
-      var outerRadius = shape.fRmax,
-          innerRadius = shape.fRmin,
-          phiStart = shape.fPhi1,
-          phiLength = shape.fPhi2 - shape.fPhi1,
-          thetaStart = shape.fTheta1,
-          thetaLength = shape.fTheta2 - shape.fTheta1,
-          widthSegments = shape.fNseg,
-          heightSegments = shape.fNz;
-
-      var noInside = (innerRadius <= 0);
-
-      if (faces_limit !== undefined) {
-         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
-
-         if (fact > 1.) {
-            widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
-            heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
-         }
-      }
-
-      var _sinp = new Float32Array(widthSegments+1),
-          _cosp = new Float32Array(widthSegments+1),
-          _sint = new Float32Array(heightSegments+1),
-          _cost = new Float32Array(heightSegments+1);
-
-      for (var n=0;n<=heightSegments;++n) {
-         var theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
-         _sint[n] = Math.sin(theta);
-         _cost[n] = Math.cos(theta);
-      }
-
-      for (var n=0;n<=widthSegments;++n) {
-         var phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
-         _sinp[n] = Math.sin(phi);
-         _cosp[n] = Math.cos(phi);
-      }
-
-      var numoutside = widthSegments * heightSegments * 2,
-          numtop = widthSegments * 2,
-          numbottom = widthSegments * 2,
-          numcut = 0;
-
-      if (phiLength < 360)
-         numcut = heightSegments * (noInside ? 2 : 4);
-
-      if (noInside) numbottom = numtop = widthSegments;
-
-      if (_sint[0] === 0) { numoutside -= widthSegments; numtop = 0; }
-      if (_sint[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
-
-      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
-
-      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
-
-      var pos = creator.pos, norm = creator.norm, indx = 0;
-
-      // use direct algorithm for the sphere - here normals and position can be calculated direclty
-      for (var k=0;k<heightSegments;++k) {
-         for (var n=0;n<widthSegments;++n) {
-            if (_sint[k+1] !== 0) {
-               norm[indx+0] = _sint[k] * _cosp[n];
-               norm[indx+1] = _sint[k] * _sinp[n];
-               norm[indx+2] = _cost[k];
-
-               norm[indx+3] = _sint[k+1] * _cosp[n];
-               norm[indx+4] = _sint[k+1] * _sinp[n];
-               norm[indx+5] = _cost[k+1];
-
-               norm[indx+6] = _sint[k+1] * _cosp[n+1];
-               norm[indx+7] = _sint[k+1] * _sinp[n+1];
-               norm[indx+8] = _cost[k+1];
-               indx+=9;
-            }
-
-            if (_sint[k] !== 0) {
-               norm[indx+0] = _sint[k] * _cosp[n];
-               norm[indx+1] = _sint[k] * _sinp[n];
-               norm[indx+2] = _cost[k];
-
-               norm[indx+3] = _sint[k+1] * _cosp[n+1];
-               norm[indx+4] = _sint[k+1] * _sinp[n+1];
-               norm[indx+5] = _cost[k+1];
-
-               norm[indx+6] = _sint[k] * _cosp[n+1];
-               norm[indx+7] = _sint[k] * _sinp[n+1];
-               norm[indx+8] = _cost[k];
-               indx+=9;
-            }
-         }
-      }
-
-      for (var n=0;n<indx;++n)
-         pos[n] = norm[n] * outerRadius;
-
-      if (!noInside) {
-         for(var n=0;n<indx;n+=9) {
-            var nn = indx + n;
-
-            pos[nn+0] = innerRadius * norm[n+0];
-            pos[nn+1] = innerRadius * norm[n+1];
-            pos[nn+2] = innerRadius * norm[n+2];
-            norm[nn+0] = -norm[n+0];
-            norm[nn+1] = -norm[n+1];
-            norm[nn+2] = -norm[n+2];
-
-            pos[nn+3] = innerRadius * norm[n+6];
-            pos[nn+4] = innerRadius * norm[n+7];
-            pos[nn+5] = innerRadius * norm[n+8];
-            norm[nn+3] = -norm[n+6];
-            norm[nn+4] = -norm[n+7];
-            norm[nn+5] = -norm[n+8];
-
-            pos[nn+6] = innerRadius * norm[n+3];
-            pos[nn+7] = innerRadius * norm[n+4];
-            pos[nn+8] = innerRadius * norm[n+5];
-            norm[nn+6] = -norm[n+3];
-            norm[nn+7] = -norm[n+4];
-            norm[nn+8] = -norm[n+5];
-         }
-         indx *= 2;
-      }
-
-      creator.indx = indx; // from here is normal functionality
+      */
 
       // top/bottom
       for (var side=0; side<=heightSegments; side+=heightSegments)
@@ -2366,7 +2203,7 @@
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBufferNew( shape, limit ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
