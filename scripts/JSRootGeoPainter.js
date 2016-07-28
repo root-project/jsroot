@@ -1031,7 +1031,20 @@
       this._scene_width = w;
       this._scene_height = h;
 
+      this._boundingBox = new THREE.Box3();
+
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
+
+      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+      this._scene.add( this._camera );
+
+      this._selected = {mesh:null, originalColor:null};
+
+      this._overall_size = 10;
+
+      this._toplevel = new THREE.Object3D();
+
+      this._scene.add(this._toplevel);
 
       this._renderer = webgl ?
                         new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: true,
@@ -1054,20 +1067,65 @@
                            new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
 
-      // TODO: should we change/increase number of light points??
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set(10, 10, 10);
-      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
-      this._scene.add( this._camera );
+       // Lights 
 
-      this._toplevel = new THREE.Object3D();
+      this._lights = new THREE.Object3D();
+      var intensity = 0.5;
+      var lightColor = 0xc0c0c0;
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._scene.add(this._toplevel);
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._selected = {mesh:null, originalColor:null};
+      this._lights.add( new THREE.PointLight(lightColor, 0.5) );
 
-      this._overall_size = 10;
+      this._scene.add( this._lights );
+      this.updateLights(8000);
+
+      this._defaultAdvanced = { aoClamp: 0.35,
+                        lumInfluence: 0.4,
+                           shininess: 100,
+                           globalTransparency: false
+                          /* metalness: 0.7,
+                           roughness: 0.65*/ };
+
+      // Smooth Lighting Shader (Screen Space Ambient Occulsion) 
+      // http://threejs.org/examples/webgl_postprocessing_ssao.html
+
+      this._enableSSAO = false;
+
+      if (webgl) {
+         var renderPass = new THREE.RenderPass( this._scene, this._camera );
+         // Setup depth pass
+         this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
+         this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
+         this._depthMaterial.blending = THREE.NoBlending;
+         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+         this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
+         // Setup SSAO pass
+         this._ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+         this._ssaoPass.renderToScreen = true;
+         this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
+         this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
+         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
+         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
+         this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+         // Add pass to effect composer
+         this._effectComposer = new THREE.EffectComposer( this._renderer );
+         this._effectComposer.addPass( renderPass );
+         this._effectComposer.addPass( this._ssaoPass );
+      }
+
+      this._advceOptions = {};
+      this.resetAdvanced();
+
    }
 
 
@@ -1088,6 +1146,31 @@
       delete this._draw_nodes_again; // forget about such flag
 
       this.continueDraw();
+   }
+
+   JSROOT.TGeoPainter.prototype.resetAdvanced = function() {
+      if (this._webgl) {
+         this._advceOptions.aoClamp = this._defaultAdvanced.aoClamp; 
+         this._advceOptions.lumInfluence = this._defaultAdvanced.lumInfluence;
+
+         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
+         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+      }
+
+      var dfltshiny = this._defaultAdvanced.shininess;
+      this._advceOptions.shininess = dfltshiny;
+
+      this._toplevel.traverse( function (node) {
+         if (node instanceof THREE.Mesh) {
+            node.material.shininess = dfltshiny;
+         }
+      });
+
+      this.Render3D(0);
+   }
+
+   JSROOT.TGeoPainter.prototype.updateBoundingBox = function() {
+      this._boundingBox.setFromObject(this._toplevel);
    }
 
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
@@ -1139,6 +1222,22 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+   }
+
+   JSROOT.TGeoPainter.prototype.updateLights = function( distance ) {
+      this.updateBoundingBox();
+      var radius = distance === undefined ? 2 * this._boundingBox.getBoundingSphere().radius : distance;
+      this._lights.children[0].position.set( radius, radius, radius );
+      this._lights.children[1].position.set(-radius, radius, radius );
+      this._lights.children[2].position.set( radius, radius,-radius );
+      this._lights.children[3].position.set(-radius, radius,-radius );
+
+      this._lights.children[4].position.set(      0, radius/4, radius );
+      this._lights.children[5].position.set( radius, radius/4,      0 );
+      this._lights.children[6].position.set(      0, radius/4,-radius );
+      this._lights.children[7].position.set(-radius, radius/4,      0 );
+
+      this._lights.children[8].position.set(      0,  -radius,      0 );
    }
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
@@ -1193,15 +1292,19 @@
            painter._camera.position.add(posDifference);
            oldTarget.add(targetDifference);
            painter._lookat = oldTarget;
+           painter._controls.target = oldTarget;
            painter._camera.lookAt(painter._lookat);
            painter.Render3D();
         }, step * 20);
       }
-      this._controls.target = target;
+   //   this._controls.target = target;
       this._controls.update();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
+
+      this.updateLights();
+
       if ( this.options._debug || this.options._grid ) {
          if ( this.options._full ) {
             var boxHelper = new THREE.BoxHelper(this._toplevel);
