@@ -134,7 +134,8 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
-                   use_worker: false, update_browser: true, show_controls: false, highlight: false };
+                   use_worker: false, update_browser: true, show_controls: false,
+                   highlight: false, oldlight: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -224,6 +225,7 @@
       if (opt.indexOf("w")>=0) res.wireframe = true;
       if (opt.indexOf("f")>=0) res._full = true;
       if (opt.indexOf("a")>=0) { res._axis = true; res._yup = false; }
+      if (opt.indexOf("l")>=0) res.oldlight = true;
       if (opt.indexOf("y")>=0) res._yup = true;
       if (opt.indexOf("z")>=0) res._yup = false;
 
@@ -504,7 +506,7 @@
 
       if (this._webgl) {
          var advanced = this._datgui.addFolder('Advanced');
-         
+
          advanced.add( this._advceOptions, 'aoClamp', 0.0, 1.0).listen().onChange( function (value) {
             painter._ssaoPass.uniforms[ 'aoClamp' ].value = value;
             painter._enableSSAO = true;
@@ -1142,25 +1144,32 @@
                            new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
 
-       // Lights 
+       // Lights
 
-      this._lights = new THREE.Object3D();
-      var intensity = 0.5;
-      var lightColor = 0xe0e0e0;
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      if (this.options.oldlight) {
+         var pointLight = new THREE.PointLight(0xefefef);
+         this._camera.add( pointLight );
+         pointLight.position.set(10, 10, 10);
 
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
-      this._lights.add( new THREE.PointLight(lightColor, intensity) );
+      } else {
+         this._lights = new THREE.Object3D();
+         var intensity = 0.5;
+         var lightColor = 0xe0e0e0;
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._lights.add( new THREE.PointLight(lightColor, 0.5) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
+         this._lights.add( new THREE.PointLight(lightColor, intensity) );
 
-      this._scene.add( this._lights );
-      this.updateLights(8000);
+         this._lights.add( new THREE.PointLight(lightColor, 0.5) );
+
+         this._scene.add( this._lights );
+         this.updateLights(8000);
+      }
 
       this._defaultAdvanced = { aoClamp: 0.70,
                         lumInfluence: 0.4,
@@ -1170,7 +1179,7 @@
                           /* metalness: 0.7,
                            roughness: 0.65*/ };
 
-      // Smooth Lighting Shader (Screen Space Ambient Occulsion) 
+      // Smooth Lighting Shader (Screen Space Ambient Occulsion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
       this._enableSSAO = false;
@@ -1226,7 +1235,7 @@
 
    JSROOT.TGeoPainter.prototype.resetAdvanced = function() {
       if (this._webgl) {
-         this._advceOptions.aoClamp = this._defaultAdvanced.aoClamp; 
+         this._advceOptions.aoClamp = this._defaultAdvanced.aoClamp;
          this._advceOptions.lumInfluence = this._defaultAdvanced.lumInfluence;
 
          this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
@@ -1310,6 +1319,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.updateLights = function( distance ) {
+
+      if (!this._lights) return;
+
       this.updateBoundingBox();
       var radius = distance === undefined ? 2 * this._boundingBox.getBoundingSphere().radius : distance;
       this._lights.children[0].position.set( radius, radius, radius );
@@ -1949,8 +1961,9 @@
          if ((main === null) || (main._toplevel === undefined))
             return console.warn('no geo object found for 3D axis drawing');
 
-         this.updateBoundingBox();
-         var box = this._boundingBox;
+         //this.updateBoundingBox();
+         //var box = this._boundingBox;
+         var box = new THREE.Box3().setFromObject(main._toplevel);
 
          this.xmin = box.min.x; this.xmax = box.max.x;
          this.ymin = box.min.y; this.ymax = box.max.y;

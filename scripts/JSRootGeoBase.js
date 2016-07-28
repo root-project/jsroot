@@ -710,7 +710,6 @@
          console.log('create sphere ' + outerRadius + ' ' + innerRadius + ' nseg ' + widthSegments + ":" +  heightSegments + ' expected ' + (noInside ? 2 : 4) * widthSegments * heightSegments);
          console.log('phi ' + phiStart + ' : ' + phiLength + '  theta ' + thetaStart + ' : ' + thetaLength);
 
-
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
          if (fact > 1.) {
@@ -811,7 +810,9 @@
 
       geometry.computeFaceNormals();
 
-/*      for (var n=0;n<2;n++) {
+      geometry.computeVertexNormals();
+
+      for (var n=0;n<2;n++) {
          var face = geometry.faces[n],
              v1 = geometry.vertices[face.a],
              v2 = geometry.vertices[face.b],
@@ -822,7 +823,7 @@
       }
 
       this.createSphereBufferNew(shape, undefined);
-*/
+
       return geometry;
    }
 
