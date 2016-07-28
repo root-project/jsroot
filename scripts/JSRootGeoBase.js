@@ -136,6 +136,7 @@
       return prop;
    }
 
+   // ==========================================================================
 
    JSROOT.GEO.GeometryCreator = function(numfaces) {
       this.nfaces = numfaces;
@@ -319,6 +320,96 @@
       return geometry;
    }
 
+   // ================================================================================
+
+   // same methods as GeometryCreator, but this different implementation
+
+   JSROOT.GEO.PolygonsCreator = function() {
+      this.polygons = [];
+
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.AddFace4 = function(x1,y1,z1,
+                                                            x2,y2,z2,
+                                                            x3,y3,z3,
+                                                            x4,y4,z4,
+                                                            reduce) {
+      // from four vertices one normaly creates two faces (1,2,3) and (1,3,4)
+      // if (reduce==1), first face is reduced
+      //  if (reduce==2), second face is reduced
+
+      this.v1 = new ThreeBSP.Vertex( x1, y1, z1 ),
+      this.v2 = new ThreeBSP.Vertex( x2, y2, z2 ),
+      this.v3 = new ThreeBSP.Vertex( x3, y3, z3 ),
+      this.v4 = new ThreeBSP.Vertex( x4, y4, z4 ),
+      this.polygon = new ThreeBSP.Polygon;
+
+      switch (reduce) {
+         case 1: this.polygon.vertices.push(this.v1, this.v3, this.v4); break;
+         case 2: this.polygon.vertices.push(this.v1, this.v2, this.v3); break;
+         default: this.polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
+      }
+
+      this.reduce = reduce;
+
+      this.polygons.push(this.polygon);
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
+                                                              nx2,ny2,nz2,
+                                                              nx3,ny3,nz3,
+                                                              nx4,ny4,nz4,
+                                                              reduce) {
+      this.v1.normal.set(nx1,ny1,nz1);
+      this.v2.normal.set(nx2,ny2,nz2);
+      this.v3.normal.set(nx3,ny3,nz3);
+      this.v4.normal.set(nx4,ny4,nz4);
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
+      // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
+      this.v1.normal.set(nx12,ny12,nz12);
+      this.v2.normal.set(nx12,ny12,nz12);
+      this.v3.normal.set(nx34,ny34,nz34);
+      this.v4.normal.set(nx34,ny34,nz34);
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.CalcNormal = function() {
+
+      if (!this.cb) {
+         this.pA = new THREE.Vector3();
+         this.pB = new THREE.Vector3();
+         this.pC = new THREE.Vector3();
+         this.cb = new THREE.Vector3();
+         this.ab = new THREE.Vector3();
+      }
+
+      this.pA.set( this.v1.x, this.v1.y, this.v1.z);
+
+      if (this.reduce!==1) {
+         this.pB.set( this.v2.x, this.v2.y, this.v2.z);
+         this.pC.set( this.v3.x, this.v3.y, this.v3.z);
+      } else {
+         this.pB.set( this.v3.x, this.v3.y, this.v3.z);
+         this.pC.set( this.v4.x, this.v4.y, this.v4.z);
+      }
+
+      this.cb.subVectors( this.pC, this.pB );
+      this.ab.subVectors( this.pA, this.pB );
+      this.cb.cross( this.ab );
+
+      this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
+   }
+
+
+   JSROOT.GEO.PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
+      for (var n=0;n<this.polygon.vertices.length;++n)
+         this.polygon.vertices[n].normal.set(nx,ny,nz);
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.Create = function() {
+      return { polygons: this.polygons };
+   }
 
    // ================= all functions to create geometry ===================================
 
@@ -357,11 +448,13 @@
    }
 
 
-   JSROOT.GEO.createCubeBuffer = function( shape ) {
+   JSROOT.GEO.createCubeBuffer = function( shape, face_limit, return_bsp ) {
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      var creator = new JSROOT.GEO.GeometryCreator(12);
+      var creator = (return_bsp || (face_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : JSROOT.GEO.GeometryCreator(12);
+
+      // var creator = new JSROOT.GEO.GeometryCreator(12);
 
       creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
 
@@ -851,7 +944,7 @@
    }
 
 
-   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
+   JSROOT.GEO.createSphereBuffer = function( shape, faces_limit, return_bsp ) {
       var radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
           phiLength = shape.fPhi2 - shape.fPhi1,
@@ -903,7 +996,10 @@
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+
+      var creator = (return_bsp || (faces_limit!==undefined)) ? new JSROOT.GEO.PolygonsCreator : JSROOT.GEO.GeometryCreator(numfaces);
+
+      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
       for (var side=0;side<2;++side) {
          if ((side===1) && noInside) break;
@@ -2218,14 +2314,14 @@
       var geom = null;
 
       switch (shape._typename) {
-         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape ); break;
+         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape, limit, return_bsp ); break;
          case "TGeoPara": geom = JSROOT.GEO.createParaBuffer( shape ); break;
          case "TGeoTrd1":
          case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape ); break;
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit, return_bsp ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":

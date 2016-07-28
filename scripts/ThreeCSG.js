@@ -53,6 +53,23 @@ function ThreeBSPfactory() {
          this.tree = new ThreeBSP.Node( polygons );
          return this;
 
+      } else if (geometry.polygons && (geometry.polygons[0] instanceof ThreeBSP.Polygon)) {
+         polygons = geometry.polygons;
+
+         console.log('create from direct polygons size ' + polygons.length);
+
+         for (var i=0;i<polygons.length;++i) {
+            var polygon = polygons[i];
+            if (transfer_matrix)
+               for (var n=0;n<polygon.vertices.length;++n)
+                  polygon.vertices[n].applyMatrix4(transfer_matrix);
+
+            polygon.calculateProperties();
+         }
+
+         this.tree = new ThreeBSP.Node( polygons );
+         return this;
+
 
       } else {
          throw 'ThreeBSP: Given geometry is unsupported';
