@@ -1001,11 +1001,9 @@
             shape._geom = JSROOT.GEO.createGeometry(shape);
 
             if (shape._geom === null) {
-               console.log('Fail to create ', shape._typename, shape.fName);
                var entry = this._draw_nodes[todo[s].indx];
-               console.log('Entry stack', entry.stack);
                if (entry.stack)
-                  console.log('Entry path', this._clones.ResolveStack(entry.stack).name);
+                  console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
             }
 
             delete shape._geom_worker; // remove flag

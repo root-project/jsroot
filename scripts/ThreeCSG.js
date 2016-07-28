@@ -31,8 +31,6 @@ function ThreeBSPfactory() {
          var pos_buf = geometry.getAttribute('position').array,
              norm_buf = geometry.getAttribute('normal').array;
 
-         // console.log('From buffer geometry');
-
          for (var i=0; i < pos_buf.length; i+=9) {
             polygon = new ThreeBSP.Polygon;
 
