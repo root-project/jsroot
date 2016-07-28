@@ -262,14 +262,29 @@
       }
    }
 
-   JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
-      var indx = this.indx, norm = this.norm, cb = this.cb;
+   JSROOT.GEO.GetNormal = function(x1,y1,z1,x2,y2,z2,x3,y3,z3) {
 
-      if (!cb) {
+      var pA = new THREE.Vector3(x1,y1,z1),
+          pB = new THREE.Vector3(x2,y2,z2),
+          pC = new THREE.Vector3(x3,y3,z3),
+          cb = new THREE.Vector3(),
+          ab = new THREE.Vector3();
+
+      cb.subVectors( pC, pB );
+      ab.subVectors( pA, pB );
+      cb.cross(ab );
+
+      return cb;
+   }
+
+   JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
+      var indx = this.indx, norm = this.norm;
+
+      if (!this.cb) {
          this.pA = new THREE.Vector3();
          this.pB = new THREE.Vector3();
          this.pC = new THREE.Vector3();
-         cb = this.cb = new THREE.Vector3();
+         this.cb = new THREE.Vector3();
          this.ab = new THREE.Vector3();
       }
 
@@ -277,11 +292,11 @@
       this.pB.fromArray( this.pos, this.indx - 6 );
       this.pC.fromArray( this.pos, this.indx - 3 );
 
-      cb.subVectors( this.pC, this.pB );
+      this.cb.subVectors( this.pC, this.pB );
       this.ab.subVectors( this.pA, this.pB );
-      cb.cross( this.ab );
+      this.cb.cross( this.ab );
 
-      this.SetNormal(cb.x, cb.y, cb.z);
+      this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
    JSROOT.GEO.GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
@@ -349,14 +364,17 @@
             polygon.vertices.push(this.mleft[n]);
          for (var n=this.mright.length-1;n>=0;--n)
             polygon.vertices.push(this.mright[n]);
-
-         console.log('polygon ',polygon.vertices.length);
-
          this.polygons.push(polygon);
       }
 
       this.multi = 0;
       this.mleft = this.mright = null;
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
+                                                            x2,y2,z2,
+                                                             x3,y3,z3) {
+      this.AddFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
    }
 
 
@@ -640,11 +658,35 @@
       return geom;
    }
 
-   JSROOT.GEO.createParaBuffer = function( shape ) {
+   JSROOT.GEO.create8edgesBuffer = function( v, face_limit ) {
+
+      var indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
+
+      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+
+      // var creator = new JSROOT.GEO.GeometryCreator(12);
+
+      for (var n=0;n<indicies.length;n+=4) {
+         var i1 = indicies[n]*3,
+             i2 = indicies[n+1]*3,
+             i3 = indicies[n+2]*3,
+             i4 = indicies[n+3]*3;
+         creator.AddFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
+                          v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
+         if (n===0) creator.SetNormal(0,0,-1); else
+         if (n===20) creator.SetNormal(0,0,1); else creator.CalcNormal();
+      }
+
+      return creator.Create();
+   }
+
+
+
+   JSROOT.GEO.createParaBuffer = function( shape, face_limit ) {
 
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
 
-      var vertices = [
+      var v = [
           -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
           -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
           -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
@@ -654,25 +696,7 @@
            shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY+shape.fZ*tyz,   shape.fZ,
            shape.fZ*txz-txy*shape.fY+shape.fX, -shape.fY+shape.fZ*tyz,   shape.fZ ];
 
-      var indicies = [ 4,6,5,   4,7,6,   0,3,7,   7,4,0,
-                       4,5,1,   1,0,4,   6,2,1,   1,5,6,
-                       7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
-
-      var buf_pos = new Float32Array(indicies.length*3);
-
-      var indx = 0;
-      for (var n=0; n < indicies.length; ++n) {
-         var v = indicies[n] * 3;
-         buf_pos[indx] = vertices[v];
-         buf_pos[indx+1] = vertices[v+1];
-         buf_pos[indx+2] = vertices[v+2];
-         indx+=3;
-      }
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
-      geometry.computeVertexNormals();
-      return geometry;
+      return JSROOT.GEO.create8edgesBuffer(v, face_limit );
    }
 
 
@@ -734,27 +758,7 @@
             -shape.fDx2, -y2,  shape.fDZ
          ];
 
-      var indicies = [
-          4,7,6,5,   0,3,7,4,
-          4,5,1,0,   6,2,1,5,
-          7,3,2,6,   1,2,3,0 ];
-
-      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
-
-      // var creator = new JSROOT.GEO.GeometryCreator(12);
-
-      for (var n=0;n<indicies.length;n+=4) {
-         var i1 = indicies[n]*3,
-             i2 = indicies[n+1]*3,
-             i3 = indicies[n+2]*3,
-             i4 = indicies[n+3]*3;
-         creator.AddFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
-                          v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
-         if (n===0) creator.SetNormal(0,0,-1); else
-         if (n===20) creator.SetNormal(0,0,1); else creator.CalcNormal();
-      }
-
-      return creator.Create();
+      return JSROOT.GEO.create8edgesBuffer(v, face_limit );
    }
 
 
@@ -787,7 +791,7 @@
 
 
       // detect duplicated faces or faces with same vertex
-      var map = []; // list of existing faces (with all rotations
+      var map = []; // list of existing faces (with all rotations)
       var usage = [0,0,0,0,0,0,0,0]; // usage counter
 
       for (var k=0;k<indicies.length;k+=3) {
@@ -833,7 +837,7 @@
       return geometry;
    }
 
-   JSROOT.GEO.createArb8Buffer = function( shape ) {
+   JSROOT.GEO.createArb8Buffer = function( shape, face_limit ) {
 
       var vertices = [
             shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
@@ -847,19 +851,22 @@
          ];
 
       var indicies = [
-          4,6,5,   4,7,6,   0,3,7,   7,4,0,
+          4,7,6,   6,5,4,   0,3,7,   7,4,0,
           4,5,1,   1,0,4,   6,2,1,   1,5,6,
           7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
-      // detect same vertecies
-      for (var n=3; n<vertices.length; n+=3) {
-         if ((vertices[n-3] === vertices[n]) &&
-             (vertices[n-2] === vertices[n+1]) &&
-             (vertices[n-1] === vertices[n+2])) {
-                for (var k=0;k<indicies.length;++k)
-                   if (indicies[k] === n/3) indicies[k] = n/3-1;
-            }
-         }
+      // var face4 = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
+
+      // detect same vertecies on both Z-layers
+      for (var side=0;side<vertices.length;side += vertices.length/2)
+         for (var n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
+            for (var n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
+               if ((vertices[n1] === vertices[n2]) &&
+                   (vertices[n1+1] === vertices[n2+1]) &&
+                   (vertices[n1+2] === vertices[n2+2])) {
+                      for (var k=0;k<indicies.length;++k)
+                        if (indicies[k] === n2/3) indicies[k] = n1/3;
+                  }
 
 
       var map = []; // list of existing faces (with all rotations)
@@ -879,22 +886,62 @@
          }
       }
 
-      var buf_pos = new Float32Array(numfaces*9);
+      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      var indx = 0;
-      for (var n=0; n < indicies.length; ++n) {
-         if (indicies[n] < 0) continue;
-         var v = indicies[n] * 3;
-         buf_pos[indx] = vertices[v];
-         buf_pos[indx+1] = vertices[v+1];
-         buf_pos[indx+2] = vertices[v+2];
-         indx+=3;
+      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+
+      for (var n=0; n < indicies.length; n+=6) {
+         var i1 = indicies[n]   * 3,
+             i2 = indicies[n+1] * 3,
+             i3 = indicies[n+2] * 3,
+             i4 = indicies[n+3] * 3,
+             i5 = indicies[n+4] * 3,
+             i6 = indicies[n+5] * 3,
+             norm = null;
+
+         if ((i1>=0) && (i4>=0) && face_limit) {
+            // try to identify two faces with same normal - very useful if one can create face4
+            if (n===0) norm = new THREE.Vector3(0,0,-1); else
+            if (n===30) norm = new THREE.Vector3(0,0,1); else {
+               var norm1 = JSROOT.GEO.GetNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
+                                                vertices[i2], vertices[i2+1], vertices[i2+2],
+                                                vertices[i3], vertices[i3+1], vertices[i3+2]);
+
+               norm1.normalize();
+
+               var norm2 = JSROOT.GEO.GetNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
+                                                vertices[i5], vertices[i5+1], vertices[i5+2],
+                                                vertices[i6], vertices[i6+1], vertices[i6+2]);
+
+               norm2.normalize();
+
+               if (norm1.distanceToSquared(norm2) < 1e-12) norm = norm1;
+            }
+         }
+
+         if (norm !== null) {
+            creator.AddFace4(vertices[i1], vertices[i1+1], vertices[i1+2],
+                             vertices[i2], vertices[i2+1], vertices[i2+2],
+                             vertices[i3], vertices[i3+1], vertices[i3+2],
+                             vertices[i5], vertices[i5+1], vertices[i5+2]);
+            creator.SetNormal(norm.x, norm.y, norm.z);
+         }  else {
+            if (i1>=0) {
+               creator.AddFace3(vertices[i1], vertices[i1+1], vertices[i1+2],
+                                vertices[i2], vertices[i2+1], vertices[i2+2],
+                                vertices[i3], vertices[i3+1], vertices[i3+2]);
+               creator.CalcNormal();
+            }
+            if (i4>=0) {
+               creator.AddFace3(vertices[i4], vertices[i4+1], vertices[i4+2],
+                                vertices[i5], vertices[i5+1], vertices[i5+2],
+                                vertices[i6], vertices[i6+1], vertices[i6+2]);
+               creator.CalcNormal();
+            }
+         }
       }
 
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
-      geometry.computeVertexNormals();
-      return geometry;
+      return creator.Create();
    }
 
 
@@ -2363,7 +2410,8 @@
       // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
       var supported = ["TGeoCompositeShape", "TGeoBBox", "TGeoCone", "TGeoSphere",
-                       "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2"];
+                       "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
+                       "TGeoArb8", "TGeoTrap", "TGeoGtra"];
 
       if (supported.indexOf(shape.fNode.fLeft._typename)<0)
          console.log('Left type ', shape.fNode.fLeft._typename);
@@ -2437,7 +2485,7 @@
          case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape, limit ); break;
          case "TGeoArb8":
          case "TGeoTrap":
-         case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape ); break;
+         case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape, limit ); break;
          case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
