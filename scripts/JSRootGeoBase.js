@@ -168,6 +168,8 @@
       this.indx = indx + 9;
    }
 
+   JSROOT.GEO.GeometryCreator.prototype.StartPolygon = function() {}
+   JSROOT.GEO.GeometryCreator.prototype.StopPolygon = function() {}
 
    JSROOT.GEO.GeometryCreator.prototype.AddFace4 = function(x1,y1,z1,
                                                             x2,y2,z2,
@@ -330,8 +332,33 @@
 
    JSROOT.GEO.PolygonsCreator = function() {
       this.polygons = [];
-
    }
+
+   JSROOT.GEO.PolygonsCreator.prototype.StartPolygon = function() {
+      return;
+      this.multi = 1;
+      this.mleft = [];
+      this.mright = [];
+   }
+
+   JSROOT.GEO.PolygonsCreator.prototype.StopPolygon = function() {
+      if (!this.multi) return;
+      if (this.mleft.length + this.mright.length > 2) {
+         var polygon = new ThreeBSP.Polygon;
+         for (var n=0;n<this.mleft.length;++n)
+            polygon.vertices.push(this.mleft[n]);
+         for (var n=this.mright.length-1;n>=0;--n)
+            polygon.vertices.push(this.mright[n]);
+
+         console.log('polygon ',polygon.vertices.length);
+
+         this.polygons.push(polygon);
+      }
+
+      this.multi = 0;
+      this.mleft = this.mright = null;
+   }
+
 
    JSROOT.GEO.PolygonsCreator.prototype.AddFace4 = function(x1,y1,z1,
                                                             x2,y2,z2,
@@ -342,21 +369,71 @@
       // if (reduce==1), first face is reduced
       //  if (reduce==2), second face is reduced
 
-      this.v1 = new ThreeBSP.Vertex( x1, y1, z1 ),
-      this.v2 = new ThreeBSP.Vertex( x2, y2, z2 ),
-      this.v3 = new ThreeBSP.Vertex( x3, y3, z3 ),
-      this.v4 = new ThreeBSP.Vertex( x4, y4, z4 ),
-      this.polygon = new ThreeBSP.Polygon;
+      if (reduce === undefined) reduce = 0;
 
-      switch (reduce) {
-         case 1: this.polygon.vertices.push(this.v1, this.v3, this.v4); break;
-         case 2: this.polygon.vertices.push(this.v1, this.v2, this.v3); break;
-         default: this.polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
+      if (this.multi===2) {
+         // place where we can repair logic
+         var lv3 = this.mleft[1], lv4 = this.mright[1];
+
+         if ((lv3.x !== x2) || (lv3.y !== y2) || (lv3.z !== z2) ||
+             (lv4.x !== x1) || (lv4.y !== y1) || (lv4.z !== z1)) {
+            // fail to contstruct polygon, try to create as expected
+
+            console.log('try to repair with the polygon');
+
+            this.multi = 0;
+            this.mleft = this.mright = null;
+            var polygon = new ThreeBSP.Polygon;
+            polygon.vertices.push(this.v1, this.v2, this.v3, this.v4);
+            this.polygons.push(polygon);
+         }
       }
+
+
+      this.v1 = new ThreeBSP.Vertex( x1, y1, z1 );
+      this.v2 = new ThreeBSP.Vertex( x2, y2, z2 );
+      this.v3 = new ThreeBSP.Vertex( x3, y3, z3 );
+      this.v4 = new ThreeBSP.Vertex( x4, y4, z4 );
 
       this.reduce = reduce;
 
-      this.polygons.push(this.polygon);
+      if (this.multi) {
+         //console.log('v1:' + x1.toFixed(1) + ':' + y1.toFixed(1) + ':'+ z1.toFixed(1));
+         //console.log('v2:' + x2.toFixed(1) + ':' + y2.toFixed(1) + ':'+ z2.toFixed(1));
+         //console.log('v3:' + x3.toFixed(1) + ':' + y3.toFixed(1) + ':'+ z3.toFixed(1));
+         //console.log('v4:' + x4.toFixed(1) + ':' + y4.toFixed(1) + ':'+ z4.toFixed(1));
+
+         if (reduce!==0) console.error('polygon not yet supported for reduced surfaces')
+
+         if (this.multi++ === 1) {
+            this.mleft.push(this.v2);
+            this.mright.push(this.v1);
+         } else {
+            // just to ensure that everything correct
+            var lv3 = this.mleft[this.mleft.length-1],
+                lv4 = this.mright[this.mright.length-1];
+
+            if ((lv3.x !== x2) || (lv3.y !== y2) || (lv3.z !== z2))
+               console.error('vertex missmatch when building polygon');
+
+            if ((lv4.x !== x1) || (lv4.y !== y1) || (lv4.z !== z1))
+               console.error('vertex missmatch when building polygon');
+         }
+
+         this.mleft.push(this.v3);
+         this.mright.push(this.v4);
+         return;
+      }
+
+      var polygon = new ThreeBSP.Polygon;
+
+      switch (reduce) {
+         case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
+         case 1: polygon.vertices.push(this.v1, this.v3, this.v4); break;
+         case 2: polygon.vertices.push(this.v1, this.v2, this.v3); break;
+      }
+
+      this.polygons.push(polygon);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
@@ -407,8 +484,10 @@
 
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
-      for (var n=0;n<this.polygon.vertices.length;++n)
-         this.polygon.vertices[n].normal.set(nx,ny,nz);
+      this.v1.normal.set(nx,ny,nz);
+      this.v2.normal.set(nx,ny,nz);
+      this.v3.normal.set(nx,ny,nz);
+      this.v4.normal.set(nx,ny,nz);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.Create = function() {
@@ -1070,6 +1149,7 @@
             var ss = _sinp[side], cc = _cosp[side],
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
+            if (!noInside) creator.StartPolygon(); // indicate that all faces belong to same polygon
             for (var k=0;k<heightSegments;++k) {
                creator.AddFace4(
                      radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
@@ -1079,8 +1159,11 @@
                      noInside ? 2 : 0);
                creator.CalcNormal();
             }
+            if (!noInside) creator.StopPolygon();
          }
       }
+
+      // console.log('Sphere numfaces', numfaces);
 
       return creator.Create();
    }
@@ -2253,11 +2336,17 @@
 
    JSROOT.GEO.createComposite = function ( shape, faces_limit, return_bsp ) {
 
+      if (faces_limit && !return_bsp) console.warn('unnecessary conversion');
+
+
       if (faces_limit === undefined) faces_limit = 10000;
 
       var bsp1, bsp2;
 
       var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
+      var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
+
+      // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
 
@@ -2271,7 +2360,6 @@
          bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
-      var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
       var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2, !matrix2);
 
