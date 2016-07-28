@@ -489,8 +489,13 @@
       appearance.add(this._advceOptions, 'globalTransparency', 0.0, 1.0).listen().onChange( function (value) {
             painter._toplevel.traverse( function (node) {
                if (node instanceof THREE.Mesh) {
-                  node.material.transparent = value !== 1.0;
-                  node.material.opacity = value * value;
+                  if (node.material.alwaysTransparent !== undefined) {
+                     if (!node.material.alwaysTransparent) {
+                        node.material.transparent = value !== 1.0;
+                     }
+                     node.material.opacity = Math.min(value * value, node.material.inherentOpacity);
+                  }
+
                }
             });
             painter.Render3D(0);
@@ -1174,8 +1179,7 @@
                            shininess: 100,
                            globalTransparency: 1.0,
                            depthTest: true
-                          /* metalness: 0.7,
-                           roughness: 0.65*/ };
+                         };
 
       // Smooth Lighting Shader (Screen Space Ambient Occulsion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
@@ -1247,8 +1251,6 @@
       this._toplevel.traverse( function (node) {
          if (node instanceof THREE.Mesh) {
             node.material.depthTest = painter._defaultAdvanced.depthTest;
-            node.material.opacity = painter._defaultAdvanced.globalTransparency * painter._defaultAdvanced.globalTransparency;
-            node.material.transparent = painter._defaultAdvanced.globalTransparency !== 1.0;
          }
       });
 
@@ -1271,6 +1273,8 @@
    }
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
+
+      this.updateLights();
 
       this.updateBoundingBox();
       var box = this._boundingBox;
