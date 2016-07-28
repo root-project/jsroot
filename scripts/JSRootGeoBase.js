@@ -1810,7 +1810,7 @@
    }
 
 
-   JSROOT.GEO.createPolygonBuffer = function( shape ) {
+   JSROOT.GEO.createPolygonBuffer = function( shape, face_limit ) {
 
       var thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
@@ -1900,7 +1900,9 @@
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+      var creator = face_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+
+      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
       // add sides
       for (var side = 0; side < 2; ++side) {
@@ -2409,16 +2411,16 @@
 
       // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
 
-      var supported = ["TGeoCompositeShape", "TGeoBBox", "TGeoCone", "TGeoSphere",
+/*      var supported = ["TGeoCompositeShape", "TGeoBBox", "TGeoCone", "TGeoSphere",
                        "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
-                       "TGeoArb8", "TGeoTrap", "TGeoGtra"];
+                       "TGeoArb8", "TGeoTrap", "TGeoGtra", "TGeoPcon", "TGeoPgon"];
 
       if (supported.indexOf(shape.fNode.fLeft._typename)<0)
          console.log('Left type ', shape.fNode.fLeft._typename);
 
       if (supported.indexOf(shape.fNode.fRight._typename)<0)
          console.log('Right type ', shape.fNode.fRight._typename);
-
+*/
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2, !matrix1);
 
       if (geom1 instanceof ThreeBSP) {
@@ -2486,7 +2488,7 @@
          case "TGeoArb8":
          case "TGeoTrap":
          case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape, limit ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape, limit ); break;
+         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape , limit ); break;
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
@@ -2495,7 +2497,7 @@
          case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
          case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
          case "TGeoPcon":
-         case "TGeoPgon": geom = JSROOT.GEO.createPolygonBuffer( shape ); break;
+         case "TGeoPgon": geom = JSROOT.GEO.createPolygonBuffer( shape, limit ); break;
          case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
          case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloidBuffer( shape, limit ); break;
          case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
