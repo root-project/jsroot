@@ -356,7 +356,30 @@
       return geom;
    }
 
+
    JSROOT.GEO.createCubeBuffer = function( shape ) {
+
+      var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
+
+      var creator = new JSROOT.GEO.GeometryCreator(12);
+
+      creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
+
+      creator.AddFace4(-dx,dy,-dz, -dx,-dy,-dz, -dx,-dy,dz, -dx,dy,dz); creator.SetNormal(-1,0,0);
+
+      creator.AddFace4(-dx,dy,-dz, -dx,dy,dz, dx,dy,dz, dx,dy,-dz); creator.SetNormal(0,1,0);
+
+      creator.AddFace4(-dx,-dy,dz, -dx,-dy,-dz, dx,-dy,-dz, dx,-dy,dz); creator.SetNormal(0,-1,0);
+
+      creator.AddFace4(-dx,dy,dz, -dx,-dy,dz, dx,-dy,dz, dx,dy,dz); creator.SetNormal(0,0,1);
+
+      creator.AddFace4(dx,dy,-dz, dx,-dy,-dz, -dx,-dy,-dz, -dx,dy,-dz); creator.SetNormal(0,0,-1);
+
+      return creator.Create();
+   }
+
+
+   JSROOT.GEO.createCubeBufferPrev = function( shape ) {
       var vertices = [
         shape.fDX,  shape.fDY,  shape.fDZ,
         shape.fDX,  shape.fDY, -shape.fDZ,
@@ -829,8 +852,7 @@
 
 
    JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
-      var outerRadius = shape.fRmax,
-          innerRadius = shape.fRmin,
+      var radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
           phiLength = shape.fPhi2 - shape.fPhi1,
           thetaStart = shape.fTheta1,
@@ -838,7 +860,7 @@
           widthSegments = shape.fNseg,
           heightSegments = shape.fNz;
 
-      var noInside = (innerRadius <= 0);
+      var noInside = (radius[1] <= 0);
 
       if (faces_limit !== undefined) {
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
@@ -886,7 +908,7 @@
       for (var side=0;side<2;++side) {
          if ((side===1) && noInside) break;
 
-         var r = side===0 ? outerRadius : innerRadius,
+         var r = radius[side],
              s = (side===0) ? 1 : -1,
              d1 = side, d2 = 1 - d1;
 
@@ -899,8 +921,8 @@
 
             for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
-                     r*_sint[k]  *_cosp[n+d1], r*_sint[k]  *_sinp[n+d1],   r*_cost[k],
-                     r*_sint[k+1]*_cosp[n+d1], r*_sint[k+1]*_sinp[n+d1],   r*_cost[k+1],
+                     r*_sint[k]  *_cosp[n+d1], r*_sint[k]  *_sinp[n+d1], r*_cost[k],
+                     r*_sint[k+1]*_cosp[n+d1], r*_sint[k+1]*_sinp[n+d1], r*_cost[k+1],
                      r*_sint[k+1]*_cosp[n+d2], r*_sint[k+1]*_sinp[n+d2], r*_cost[k+1],
                      r*_sint[k]*_cosp[n+d2],   r*_sint[k]*_sinp[n+d2],   r*_cost[k],
                      skip);
@@ -931,10 +953,10 @@
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
             for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
-                     innerRadius * ss * _cosp[n+d1], innerRadius * ss * _sinp[n+d1], innerRadius * cc,
-                     outerRadius * ss * _cosp[n+d1], outerRadius * ss * _sinp[n+d1], outerRadius * cc,
-                     outerRadius * ss * _cosp[n+d2], outerRadius * ss * _sinp[n+d2], outerRadius * cc,
-                     innerRadius * ss * _cosp[n+d2], innerRadius * ss * _sinp[n+d2], innerRadius * cc,
+                     radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
+                     radius[0] * ss * _cosp[n+d1], radius[0] * ss * _sinp[n+d1], radius[0] * cc,
+                     radius[0] * ss * _cosp[n+d2], radius[0] * ss * _sinp[n+d2], radius[0] * cc,
+                     radius[1] * ss * _cosp[n+d2], radius[1] * ss * _sinp[n+d2], radius[1] * cc,
                      noInside ? 2 : 0);
                creator.CalcNormal();
             }
@@ -948,10 +970,10 @@
 
             for (var k=0;k<heightSegments;++k) {
                creator.AddFace4(
-                     innerRadius * _sint[k+d1] * cc, innerRadius * _sint[k+d1] * ss, innerRadius * _cost[k+d1],
-                     outerRadius * _sint[k+d1] * cc, outerRadius * _sint[k+d1] * ss, outerRadius * _cost[k+d1],
-                     outerRadius * _sint[k+d2] * cc, outerRadius * _sint[k+d2] * ss, outerRadius * _cost[k+d2],
-                     innerRadius * _sint[k+d2] * cc, innerRadius * _sint[k+d2] * ss, innerRadius * _cost[k+d2],
+                     radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
+                     radius[0] * _sint[k+d1] * cc, radius[0] * _sint[k+d1] * ss, radius[0] * _cost[k+d1],
+                     radius[0] * _sint[k+d2] * cc, radius[0] * _sint[k+d2] * ss, radius[0] * _cost[k+d2],
+                     radius[1] * _sint[k+d2] * cc, radius[1] * _sint[k+d2] * ss, radius[1] * _cost[k+d2],
                      noInside ? 2 : 0);
                creator.CalcNormal();
             }
