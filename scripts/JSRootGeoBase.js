@@ -493,13 +493,12 @@
       this.v4.normal.set(nx,ny,nz);
    }
 
-   JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
+   JSROOT.GEO.PolygonsCreator.prototype.RecalcZ = function(func) {
       this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
       this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
       this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
       this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
    }
-
 
    JSROOT.GEO.PolygonsCreator.prototype.Create = function() {
       return { polygons: this.polygons };
