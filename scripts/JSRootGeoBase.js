@@ -1863,6 +1863,8 @@
              d1 = (layer===0) ? 1 : 0, d2 = 1 - d1,
              normalz = (layer===0) ? -1: 1;
 
+         if (!hasrmin && !cut_faces) creator.StartPolygon(layer>0);
+
          for (var seg=0;seg < radiusSegments;++seg) {
             creator.AddFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d1], rmax * _sin[seg+d1], layerz,
@@ -1871,6 +1873,8 @@
                              hasrmin ? 0 : 2);
             creator.SetNormal(0, 0, normalz);
          }
+
+         creator.StopPolygon();
       }
 
       if (cut_faces)
