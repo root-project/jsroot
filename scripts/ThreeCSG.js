@@ -263,7 +263,6 @@ function ThreeBSPfactory() {
          polygon = polygons[i];
 
          for ( j = 2; j < polygon.vertices.length; ++j ) {
-            // verticeUvs = [];
 
             vertex = polygon.vertices[0];
 
@@ -271,9 +270,9 @@ function ThreeBSPfactory() {
             positions_buf[iii+1] = vertex.y;
             positions_buf[iii+2] = vertex.z;
 
-            normals_buf[iii] = polygon.normal.x;
-            normals_buf[iii+1] = polygon.normal.y;
-            normals_buf[iii+2] = polygon.normal.z;
+            normals_buf[iii] = vertex.normal.x;
+            normals_buf[iii+1] = vertex.normal.y;
+            normals_buf[iii+2] = vertex.normal.z;
 
             iii+=3;
 
@@ -283,9 +282,9 @@ function ThreeBSPfactory() {
             positions_buf[iii+1] = vertex.y;
             positions_buf[iii+2] = vertex.z;
 
-            normals_buf[iii] = polygon.normal.x;
-            normals_buf[iii+1] = polygon.normal.y;
-            normals_buf[iii+2] = polygon.normal.z;
+            normals_buf[iii] = vertex.normal.x;
+            normals_buf[iii+1] = vertex.normal.y;
+            normals_buf[iii+2] = vertex.normal.z;
 
             iii+=3;
 
@@ -295,9 +294,9 @@ function ThreeBSPfactory() {
             positions_buf[iii+1] = vertex.y;
             positions_buf[iii+2] = vertex.z;
 
-            normals_buf[iii] = polygon.normal.x;
-            normals_buf[iii+1] = polygon.normal.y;
-            normals_buf[iii+2] = polygon.normal.z;
+            normals_buf[iii] = vertex.normal.x;
+            normals_buf[iii+1] = vertex.normal.y;
+            normals_buf[iii+2] = vertex.normal.z;
 
             iii+=3;
          }
