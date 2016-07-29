@@ -362,7 +362,7 @@
 
    JSROOT.GEO.PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
                                                             x2,y2,z2,
-                                                             x3,y3,z3) {
+                                                            x3,y3,z3) {
       this.AddFace4(x1,y1,z1,x2,y2,z2,x3,y3,z3,x3,y3,z3,2);
    }
 
@@ -379,9 +379,9 @@
       if (reduce === undefined) reduce = 0;
 
       this.v1 = new ThreeBSP.Vertex( x1, y1, z1 );
-      this.v2 = new ThreeBSP.Vertex( x2, y2, z2 );
+      this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2 );
       this.v3 = new ThreeBSP.Vertex( x3, y3, z3 );
-      this.v4 = new ThreeBSP.Vertex( x4, y4, z4 );
+      this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4 );
 
       this.reduce = reduce;
 
@@ -445,17 +445,17 @@
                                                               nx4,ny4,nz4,
                                                               reduce) {
       this.v1.normal.set(nx1,ny1,nz1);
-      this.v2.normal.set(nx2,ny2,nz2);
+      if (this.v2) this.v2.normal.set(nx2,ny2,nz2);
       this.v3.normal.set(nx3,ny3,nz3);
-      this.v4.normal.set(nx4,ny4,nz4);
+      if (this.v4) this.v4.normal.set(nx4,ny4,nz4);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       this.v1.normal.set(nx12,ny12,nz12);
-      this.v2.normal.set(nx12,ny12,nz12);
+      if (this.v2) this.v2.normal.set(nx12,ny12,nz12);
       this.v3.normal.set(nx34,ny34,nz34);
-      this.v4.normal.set(nx34,ny34,nz34);
+      if (this.v4) this.v4.normal.set(nx34,ny34,nz34);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.CalcNormal = function() {
@@ -488,16 +488,16 @@
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
       this.v1.normal.set(nx,ny,nz);
-      this.v2.normal.set(nx,ny,nz);
+      if (this.v2) this.v2.normal.set(nx,ny,nz);
       this.v3.normal.set(nx,ny,nz);
-      this.v4.normal.set(nx,ny,nz);
+      if (this.v4) this.v4.normal.set(nx,ny,nz);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.RecalcZ = function(func) {
       this.v1.z = func(this.v1.x, this.v1.y, this.v1.z);
-      this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
+      if (this.v2) this.v2.z = func(this.v2.x, this.v2.y, this.v2.z);
       this.v3.z = func(this.v3.x, this.v3.y, this.v3.z);
-      this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
+      if (this.v4) this.v4.z = func(this.v4.x, this.v4.y, this.v4.z);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.Create = function() {
