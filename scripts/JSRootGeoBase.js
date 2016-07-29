@@ -1854,7 +1854,9 @@
 
          } else {
             // let three.js calculate our faces
+            console.log('trinagulate' + shape.fName);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
+            console.log('trinagulate done ' + cut_faces.length);
          }
          numfaces += cut_faces.length*2;
       }
@@ -1982,7 +1984,8 @@
       var pnts = [];
       for (var vert = 0; vert < shape.fNvert; ++vert)
          pnts.push( new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
-      var faces = THREE.ShapeUtils.triangulateShape(pnts, []);
+
+      var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
 
       for (var i = 0; i < faces.length; ++i) {
          face = faces[ i ];
@@ -1994,6 +1997,62 @@
 
       return geometry;
    }
+
+
+   /** @memberOf JSROOT.GEO */
+   JSROOT.GEO.createXtruBuffer = function( shape, faces_limit ) {
+      var nfaces = (shape.fNz-1) * shape.fNvert * 2;
+
+      if (faces_limit < 0) return nfaces + shape.fNvert*3;
+
+      // create points
+      var pnts = [];
+      for (var vert = 0; vert < shape.fNvert; ++vert)
+         pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
+
+      var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+      if (faces.length < pnts.length-2) {
+         JSROOT.GEO.warn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
+         faces = [];
+      } else {
+         nfaces += faces.length * 2;
+      }
+
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(nfaces);
+
+      for (var layer = 0; layer < shape.fNz-1; ++layer) {
+         var z1 = shape.fZ[layer], scale1 = shape.fScale[layer],
+             z2 = shape.fZ[layer+1], scale2 = shape.fScale[layer+1];
+
+         for (var vert1 = 0; vert1 < shape.fNvert; ++vert1) {
+            var vert2 = (vert1+1) % shape.fNvert;
+            creator.AddFace4(scale1 * shape.fX[vert1], scale1 * shape.fY[vert1], z1,
+                             scale2 * shape.fX[vert1], scale2 * shape.fY[vert1], z2,
+                             scale2 * shape.fX[vert2], scale2 * shape.fY[vert2], z2,
+                             scale1 * shape.fX[vert2], scale1 * shape.fY[vert2], z1);
+            creator.CalcNormal();
+         }
+      }
+
+      for (layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
+         var z = shape.fZ[layer], scale = shape.fScale[layer];
+
+         for (var n=0;n<faces.length;++n) {
+            var face = faces[n],
+                pnt1 = pnts[face[0]],
+                pnt2 = pnts[face[(layer===0) ? 2 : 1]],
+                pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+
+            creator.AddFace3(scale * pnt1.x, scale * pnt1.y, z,
+                             scale * pnt2.x, scale * pnt2.y, z,
+                             scale * pnt3.x, scale * pnt3.y, z);
+            creator.SetNormal(0,0,layer===0 ? -1 : 1);
+         }
+      }
+
+      return creator.Create();
+   }
+
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaboloid = function( shape, faces_limit ) {
@@ -2513,13 +2572,13 @@
             case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
             case "TGeoPcon":
             case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
-            case "TGeoXtru": return JSROOT.GEO.createXtru( shape, limit );
+            case "TGeoXtru": return JSROOT.GEO.createXtruBuffer( shape, limit );
             case "TGeoParaboloid": return JSROOT.GEO.createParaboloidBuffer( shape, limit );
             case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
             case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
          }
-      } catch(e) { JSROOT.GEO.warn("Failure when creating " + shape._typename); }
+      } catch(e) { JSROOT.GEO.warn(shape._typename + ' failure: ' + e.message); }
 
 
       return limit < 0 ? 0 : null;
@@ -3125,3 +3184,4 @@
    return JSROOT;
 
 }));
+

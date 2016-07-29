@@ -1005,11 +1005,11 @@
                      console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
                }
 
-               //if (shape._typename == 'TGeoCompositeShape') {
-               //   var entry = this._draw_nodes[todo[s].indx];
-               //   if (entry.stack)
-               //      console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
-               //}
+               if (shape._typename == 'TGeoXtru') {
+                  var entry = this._draw_nodes[todo[s].indx];
+                  if (entry.stack)
+                     console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
+               }
 
                delete shape._geom_worker; // remove flag
                ready.push(todo[s].indx); // one could add it to ready list
@@ -1589,7 +1589,7 @@
       this.completeDraw(true);
    }
 
-   JSROOT.TGeoPainter.prototype.Render3D = function(tmout) {
+   JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if (tmout <= 0) {
@@ -1617,7 +1617,7 @@
 
          delete this.render_tmout;
 
-         if ((this.first_render_tm === 0) && (tmout===0)) {
+         if ((this.first_render_tm === 0) && measure) {
             this.first_render_tm = this.last_render_tm;
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
@@ -1627,7 +1627,7 @@
 
       // do not shoot timeout many times
       if (!this.render_tmout)
-         this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
+         this.render_tmout = setTimeout(this.Render3D.bind(this,0,measure), tmout);
    }
 
 
@@ -1743,7 +1743,7 @@
 
       this._scene.overrideMaterial = null;
 
-      this.Render3D(0);
+      this.Render3D(0, true);
 
       if (close_progress) JSROOT.progress();
 
