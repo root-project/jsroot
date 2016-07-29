@@ -1293,8 +1293,8 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._scene.fog.near = this._camera.near = this._overall_size / 300;
-      this._scene.fog.far = this._camera.far = this._overall_size * 5;
+      this._scene.fog.near = this._camera.near = this._overall_size / 500;
+      this._scene.fog.far = this._camera.far = this._overall_size * 25;
 
       if (this._webgl) {
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
