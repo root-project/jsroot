@@ -545,6 +545,8 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createCubeBuffer = function( shape, faces_limit) {
 
+      if (faces_limit < 0) return 12;
+
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
       var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
@@ -627,6 +629,8 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaBuffer = function( shape, faces_limit ) {
 
+      if (faces_limit < 0) return 12;
+
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
 
       var v = [
@@ -683,6 +687,9 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTrapezoidBuffer = function( shape, faces_limit ) {
+
+      if (faces_limit < 0) return 12;
+
       var y1, y2;
       if (shape._typename == "TGeoTrd1") {
          y1 = y2 = shape.fDY;
@@ -782,6 +789,8 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createArb8Buffer = function( shape, faces_limit ) {
+
+      if (faces_limit < 0) return 12;
 
       var vertices = [
             shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
@@ -903,7 +912,7 @@
 
       while (phiStart >= 360) phiStart-=360;
 
-      if (faces_limit !== undefined) {
+      if (faces_limit  > 0) {
 
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
@@ -1022,7 +1031,7 @@
 
       //phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
-      if (faces_limit !== undefined) {
+      if (faces_limit > 0) {
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
          if (fact > 1.) {
@@ -1030,6 +1039,15 @@
             heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(fact)));
          }
       }
+
+      var numoutside = widthSegments * heightSegments * 2,
+          numtop = widthSegments * 2,
+          numbottom = widthSegments * 2,
+          numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4);
+
+      if (noInside) numbottom = numtop = widthSegments;
+
+      if (faces_limit < 0) return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
       var _sinp = new Float32Array(widthSegments+1),
           _cosp = new Float32Array(widthSegments+1),
@@ -1047,16 +1065,6 @@
          _sinp[n] = Math.sin(phi);
          _cosp[n] = Math.cos(phi);
       }
-
-      var numoutside = widthSegments * heightSegments * 2,
-          numtop = widthSegments * 2,
-          numbottom = widthSegments * 2,
-          numcut = 0;
-
-      if (phiLength < 360)
-         numcut = heightSegments * (noInside ? 2 : 4);
-
-      if (noInside) numbottom = numtop = widthSegments;
 
       if (_sint[0] === 0) { numoutside -= widthSegments; numtop = 0; }
       if (_sint[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
@@ -1300,19 +1308,21 @@
 
       var radiusSegments = Math.max(5, Math.floor(thetaLength/JSROOT.GEO.GradPerSegm) + 1);
 
-      var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/(radiusSegments-1)*Math.PI/180;
+      var numfaces = (radiusSegments-1) * (hasrmin ? 4 : 2) +
+                     (radiusSegments-1) * (hasrmin ? 4 : 2) +
+                     (thetaLength < 360 ? 4 : 0);
 
-      // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments),
+      if (faces_limit < 0) return numfaces;
+
+      var phi0 = thetaStart*Math.PI/180,
+          dphi = thetaLength/(radiusSegments-1)*Math.PI/180,
+          _sin = new Float32Array(radiusSegments),
           _cos = new Float32Array(radiusSegments);
+
       for (var seg=0; seg<radiusSegments; ++seg) {
          _cos[seg] = Math.cos(phi0+seg*dphi);
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
-
-      var numfaces = (radiusSegments-1) * (hasrmin ? 4 : 2) +
-                     (radiusSegments-1) * (hasrmin ? 4 : 2) +
-                     (thetaLength < 360 ? 4 : 0);
 
       var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
@@ -1444,8 +1454,11 @@
    }
 
 
-   JSROOT.GEO.createEltuBuffer = function( shape ) {
+   /** @memberOf JSROOT.GEO */
+   JSROOT.GEO.createEltuBuffer = function( shape , faces_limit ) {
       var radiusSegments = Math.floor(360/JSROOT.GEO.GradPerSegm);
+
+      if (faces_limit < 0) return radiusSegments*4;
 
       // calculate all sin/cos tables in advance
       var x = new Float32Array(radiusSegments+1),
@@ -1456,7 +1469,7 @@
           y[seg] = shape.fRmax*Math.sin(phi);
       }
 
-      var creator = new JSROOT.GEO.GeometryCreator(radiusSegments*4);
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(radiusSegments*4);
 
       var nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
 
@@ -1493,17 +1506,18 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTorus = function( shape, faces_limit ) {
-      var radius = shape.fR;
-      var innerTube = shape.fRmin;
-      var outerTube = shape.fRmax;
-      var arc = shape.fDphi - shape.fPhi1;
-      var rotation = shape.fPhi1;
-      var radialSegments = 30;
-      var tubularSegments = Math.max(8, Math.floor(arc/JSROOT.GEO.GradPerSegm));
+      var radius = shape.fR,
+          innerTube = shape.fRmin,
+          outerTube = shape.fRmax,
+          arc = shape.fDphi - shape.fPhi1,
+          rotation = shape.fPhi1,
+          radialSegments = 30,
+          tubularSegments = Math.max(8, Math.floor(arc/JSROOT.GEO.GradPerSegm)),
+          hasrmin = innerTube > 0, hascut = (arc !== 360);
 
-      var hasrmin = innerTube > 0, hascut = arc !== 360;
+      if (faces_limit < 0) return (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments / faces_limit
 
-      if (faces_limit !== undefined) {
+      if (faces_limit > 0) {
          var fact = (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments / faces_limit;
          if (fact > 1.) {
             radialSegments = Math.round(radialSegments/Math.sqrt(fact));
@@ -1728,7 +1742,6 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPolygonBuffer = function( shape, faces_limit ) {
-
       var thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
           radiusSegments = 60;
@@ -1738,13 +1751,16 @@
       else
          radiusSegments = Math.max(Math.floor(thetaLength/JSROOT.GEO.GradPerSegm), 5);
 
-      // coordinate of point on cut edge (x,z)
-      var pnts = (thetaLength === 360) ? null : [];
-
       var usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
 
       for (var layer=0; layer < shape.fNz; ++layer)
          if (shape.fRmin[layer] > 0) hasrmin = true;
+
+      // return very rought estimation, number of faces may be much less
+      if (faces_limit < 0) return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
+
+      // coordinate of point on cut edge (x,z)
+      var pnts = (thetaLength === 360) ? null : [];
 
       // first analyse levels - if we need to create all of them
       for (var side = 0; side < 2; ++side) {
@@ -1899,13 +1915,14 @@
    }
 
    /** @memberOf JSROOT.GEO */
-   JSROOT.GEO.createXtru = function( shape ) {
+   JSROOT.GEO.createXtru = function( shape, faces_limit ) {
 
-      var geometry = new THREE.Geometry();
+      if (faces_limit < 0) return 2 * shape.fNz * shape.fNvert;
 
-      var fcolor = new THREE.Color();
+      var geometry = new THREE.Geometry(),
+          fcolor = new THREE.Color(),
+          prev = 0, curr = 0;
 
-      var prev = 0, curr = 0;
       for (var layer = 0; layer < shape.fNz; ++layer) {
          var layerz = shape.fZ[layer], scale = shape.fScale[layer];
 
@@ -1947,7 +1964,7 @@
 
       var radiusSegments = Math.round(360/6), heightSegments = 30;
 
-      if (faces_limit !== undefined) {
+      if (faces_limit > 0) {
          var fact = 2 * (radiusSegments+1) * (heightSegments+1) / faces_limit;
          if (fact > 1.) {
             radiusSegments = Math.round(radiusSegments/Math.sqrt(fact));
@@ -2036,20 +2053,12 @@
 
       var radiusSegments = Math.round(360/JSROOT.GEO.GradPerSegm), heightSegments = 30;
 
-      if (faces_limit !== undefined) {
+      if (faces_limit > 0) {
          var fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
          if (fact > 1.) {
             radiusSegments = Math.max(5, Math.floor(radiusSegments/Math.sqrt(fact)));
             heightSegments = Math.max(5, Math.floor(heightSegments/Math.sqrt(fact)));
          }
-      }
-
-      // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments+1),
-          _cos = new Float32Array(radiusSegments+1);
-      for (var seg=0;seg<=radiusSegments;++seg) {
-         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
-         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
       var zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
@@ -2067,8 +2076,17 @@
       if (rmin===0) numfaces -= radiusSegments*2; // complete layer
       if (rmax===0) numfaces -= radiusSegments*2; // complete layer
 
-      var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+      if (faces_limit < 0) return numfaces;
 
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments+1),
+          _cos = new Float32Array(radiusSegments+1);
+      for (var seg=0;seg<=radiusSegments;++seg) {
+         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
+         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
+      }
+
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       var lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
@@ -2129,11 +2147,13 @@
    JSROOT.GEO.createHype = function( shape, faces_limit ) {
 
       if ((shape.fTin===0) && (shape.fTout===0))
-         return JSROOT.GEO.createTubeBuffer(shape);
+         return JSROOT.GEO.createTubeBuffer(shape, faces_limit);
 
       var radiusSegments = Math.round(360/JSROOT.GEO.GradPerSegm), heightSegments = 30;
 
-      if (faces_limit !== undefined) {
+      if (faces_limit < 0) return ((shape.fRmin <= 0) ? 2 : 4) * (radiusSegments+1) * (heightSegments+2);
+
+      if (faces_limit > 0) {
          var fact = ((shape.fRmin <= 0) ? 2 : 4) * (radiusSegments+1) * (heightSegments+2) / faces_limit;
          if (fact > 1.) {
             radiusSegments = Math.round(radiusSegments/Math.sqrt(fact));
@@ -2324,13 +2344,15 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      var return_bsp = false;
+      if (faces_limit < 0)
+         return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1) +
+                JSROOT.GEO.createGeometry(shape.fNode.fRight, -1);
 
-      if (faces_limit === undefined)
+      var return_bsp = false;
+      if (faces_limit === 0)
          faces_limit = 10000;
       else
          return_bsp = true;
-
 
       var bsp1, bsp2;
 
@@ -2423,42 +2445,43 @@
    }
 
 
-   /** @memberOf JSROOT.GEO */
+   /**
+    * Creates geometry model for the provided shape
+    * @memberOf JSROOT.GEO
+    *
+    * If @par limit ===0 (or undefined) returns THREE.Geometry or THREE.BufferGeometry
+    * If @par limit < 0 just returns estimated number of faces
+    * If @par limit > 0 used only for composite shapes, return result may differ for different shapes
+    * */
    JSROOT.GEO.createGeometry = function( shape, limit ) {
-
-      var geom = null;
+      if (limit === undefined) limit = 0;
 
       switch (shape._typename) {
-         case "TGeoBBox": geom = JSROOT.GEO.createCubeBuffer( shape, limit ); break;
-         case "TGeoPara": geom = JSROOT.GEO.createParaBuffer( shape ); break;
+         case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape, limit );
+         case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape, limit );
          case "TGeoTrd1":
-         case "TGeoTrd2": geom = JSROOT.GEO.createTrapezoidBuffer( shape, limit ); break;
+         case "TGeoTrd2": return JSROOT.GEO.createTrapezoidBuffer( shape, limit );
          case "TGeoArb8":
          case "TGeoTrap":
-         case "TGeoGtra": geom = JSROOT.GEO.createArb8Buffer( shape, limit ); break;
-         case "TGeoSphere": geom = JSROOT.GEO.createSphereBuffer( shape , limit ); break;
+         case "TGeoGtra": return JSROOT.GEO.createArb8Buffer( shape, limit );
+         case "TGeoSphere": return JSROOT.GEO.createSphereBuffer( shape , limit );
          case "TGeoCone":
          case "TGeoConeSeg":
          case "TGeoTube":
          case "TGeoTubeSeg":
-         case "TGeoCtub": geom = JSROOT.GEO.createTubeBuffer( shape, limit ); break;
-         case "TGeoEltu": geom = JSROOT.GEO.createEltuBuffer( shape ); break;
-         case "TGeoTorus": geom = JSROOT.GEO.createTorus( shape, limit ); break;
+         case "TGeoCtub": return JSROOT.GEO.createTubeBuffer( shape, limit );
+         case "TGeoEltu": return JSROOT.GEO.createEltuBuffer( shape, limit );
+         case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
          case "TGeoPcon":
-         case "TGeoPgon": geom = JSROOT.GEO.createPolygonBuffer( shape, limit ); break;
-         case "TGeoXtru": geom = JSROOT.GEO.createXtru( shape ); break;
-         case "TGeoParaboloid": geom = JSROOT.GEO.createParaboloidBuffer( shape, limit ); break;
-         case "TGeoHype": geom = JSROOT.GEO.createHype( shape, limit ); break;
-         case "TGeoCompositeShape": geom = JSROOT.GEO.createComposite( shape, limit ); break;
+         case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
+         case "TGeoXtru": return JSROOT.GEO.createXtru( shape, limit );
+         case "TGeoParaboloid": return JSROOT.GEO.createParaboloidBuffer( shape, limit );
+         case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
+         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
          case "TGeoShapeAssembly": break;
       }
 
-      if (geom && (geom instanceof THREE.Geometry)) {
-         // console.log('Still '+ shape._typename + ' as geometry,  faces ' + geom.faces.length);
-         // geom = new THREE.BufferGeometry().fromGeometry(geom);
-      }
-
-      return geom;
+      return limit < 0 ? 0 : null;
    }
 
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
