@@ -758,26 +758,6 @@
       this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
 
-   JSROOT.TGeoPainter.prototype.accountClear = function() {
-      this._num_geom = 0;
-      this._num_vertices = 0;
-      this._num_faces = 0;
-   }
-
-   JSROOT.TGeoPainter.prototype.accountGeom = function(geom, shape_typename) {
-      // used to calculate statistic over created geometries
-
-      if (shape_typename === 'TGeoShapeAssembly') return;
-
-      if (!geom) return JSROOT.GEO.warn('Not supported ' + shape_typename);
-
-      this._num_geom++;
-
-      this._num_faces += JSROOT.GEO.numGeometryFaces(geom);
-
-      this._num_vertices += JSROOT.GEO.numGeometryVertices(geom);
-   }
-
    JSROOT.TGeoPainter.prototype.getMatrixFlip = function(matrix) {
       // create flip vector for matrix that it does not have axis mirroring
       // such kind of mesh does not supported by three.js/webgl
@@ -965,17 +945,16 @@
 
          if (!shape) { entry.done = true; continue; }
 
-         // if not geometry exists, either create it or submit to worker
-         if (shape._geom !== undefined) {
+         // we should wait for reply from worker (if any)
+         if (shape._geom_worker) { waiting++; } // number of waiting geom for worker
+         else if (this._job_done) entry.done = true;
+         else if (shape._geom !== undefined) {
             if (ready.length < 1000) ready.push(n);
-         } else
-         if (shape._geom_worker) {
-            waiting++; // number of waiting geom for worker
          } else
          if (unique.indexOf(shape) < 0) {
             unique.push(shape); // only to avoid duplication
             todo.push({ indx: n, nodeid: entry.nodeid, shape: shape });
-            if (todo.length > 50) break;
+            if (todo.length > 100) break;
          }
       }
 
@@ -995,31 +974,50 @@
 
          // when task cannot be submitted to worker, process it in main context
 
-         var starttm = new Date().getTime();
+         var starttm = new Date().getTime(),
+             currtm = starttm,
+             isanycomposite = false;
 
-         for (var s=0;s<todo.length;++s) {
-            var shape = todo[s].shape;
+         // first create all not-composite shapes
+         // only when no any found, try to create composites
 
-            // do not create composite in main thread, when worker is exists (excluding first drawing)
-            if (this._worker && (shape._typename == 'TGeoCompositeShape') && !this._first_drawing) continue;
+         for (var loop=0;loop<2;++loop) {
+            // if (loop===1) console.log('now create composites');
 
-            shape._geom = JSROOT.GEO.createGeometry(shape);
+            for (var s=0; s < todo.length && (currtm-starttm < 200); ++s) {
+               var shape = todo[s].shape;
+               if (shape._geom !== undefined) continue; // this is due to second loop
 
-            if (shape._geom === null) {
-               var entry = this._draw_nodes[todo[s].indx];
-               if (entry.stack)
-                  console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
+               if (shape._typename == 'TGeoCompositeShape') {
+                  // do not create composite in main thread, when worker is exists (excluding first drawing)
+                  if (this._worker && !this._first_drawing) continue;
+
+                  isanycomposite = true;
+                  if (loop === 0) continue;
+               }
+
+               shape._geom = JSROOT.GEO.createGeometry(shape);
+               isany = true;
+
+               if (shape._geom === null) {
+                  var entry = this._draw_nodes[todo[s].indx];
+                  if (entry.stack)
+                     console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
+               }
+
+               //if (shape._typename == 'TGeoCompositeShape') {
+               //   var entry = this._draw_nodes[todo[s].indx];
+               //   if (entry.stack)
+               //      console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
+               //}
+
+               delete shape._geom_worker; // remove flag
+               ready.push(todo[s].indx); // one could add it to ready list
+
+               currtm = new Date().getTime();
             }
-/*            if (shape._typename == 'TGeoCompositeShape') {
-               var entry = this._draw_nodes[todo[s].indx];
-               if (entry.stack)
-                  console.log('Create composite', this._clones.ResolveStack(entry.stack).name);
-            }
-*/
-            delete shape._geom_worker; // remove flag
-            ready.push(todo[s].indx); // one could add it to ready list
 
-            if ((s>5) && (new Date().getTime() - starttm > 100)) break;
+            if ((ready.length>0) || !isanycomposite) break; // no need to run second loop for the composites
          }
       }
 
@@ -1028,6 +1026,10 @@
          // item to draw, containes indexs of children, first element - node index
 
          var entry = this._draw_nodes[ready[n]];
+
+         entry.done = true; // mark element as processed
+
+         if (this._job_done) continue;
 
          var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
@@ -1039,11 +1041,19 @@
 
          var mesh = null;
 
-         if (JSROOT.GEO.numGeometryFaces(prop.shape._geom) > 0) {
+         var nfaces = JSROOT.GEO.numGeometryFaces(prop.shape._geom);
 
-            this._drawcnt++;
+         if (nfaces > 0) {
 
-            this.accountGeom(prop.shape._geom, prop.shape._typename);
+            this._num_geom++;
+
+            this._num_faces += nfaces;
+
+            // let create up to 50% more before really stop any further creation
+            if (this._num_faces > 1.5*this.options.maxlimit) {
+               console.log('abort creation of meshes - too many faces created');
+               this._job_done = true;
+            }
 
             prop.material.wireframe = this.options.wireframe;
 
@@ -1070,8 +1080,6 @@
             var boxHelper = new THREE.BoxHelper( mesh );
             obj3d.add( boxHelper );
          }
-
-         entry.done = true; // mark element as processed
       }
 
       // doing our job well, can be called next time immediately
@@ -1228,13 +1236,14 @@
          return;
       }
 
-      this.accountClear();
-
       this._startm = new Date().getTime();
       this._last_render_at = this._startm;
       this._last_render_cnt = 0;
-      this._drawcnt = 0; // counter used to build meshes
       this.drawing_stage = 1;
+      this._num_geom = 0;
+      this._num_faces = 0;
+      this._job_done = false; // switched true when amount of faces is achieved
+
       delete this._draw_nodes_again; // forget about such flag
 
       this.continueDraw();
@@ -1510,7 +1519,8 @@
       if (this.options._count)
          return this.drawCount(uniquevis, tm2-tm1);
 
-      this.options.maxlimit = (this._webgl ? 2000 : 1000) * this.options.more;
+      // this is limit for the visible faces, number of volumes does not matter
+      this.options.maxlimit = (this._webgl ? 200000 : 100000) * this.options.more;
 
       this._first_drawing = true;
 
@@ -1544,7 +1554,7 @@
 
          if (!res) break;
 
-         var log = "Creating meshes " + this._drawcnt;
+         var log = "Creating " + this._num_geom + " / " + this._num_faces;
          if (this.drawing_stage < 5) log = "Collecting visibles";
 
          // stop creation after 100 sec, render as is
@@ -1555,12 +1565,12 @@
 
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
             JSROOT.progress(log);
-            if (false && this._webgl && (this._last_render_cnt != this._drawcnt) && (now - this._last_render_at > this.last_render_tm)) {
+            if (false && this._webgl && (this._last_render_cnt != this._num_geom) && (now - this._last_render_at > this.last_render_tm)) {
                if (this._first_drawing)
                   this.adjustCameraPosition();
                this.Render3D(-1);
                this._last_render_at = new Date().getTime();
-               this._last_render_cnt = this._drawcnt;
+               this._last_render_cnt = this._num_geom;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
             return;
@@ -1569,7 +1579,7 @@
 
       var take_time = now - this._startm;
 
-      JSROOT.console('Create tm = ' + take_time + ' geom ' + this._num_geom + ' vertices ' + this._num_vertices + ' faces ' + this._num_faces);
+      JSROOT.console('Create tm = ' + take_time + ' geom ' + this._num_geom + ' faces ' + this._num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');

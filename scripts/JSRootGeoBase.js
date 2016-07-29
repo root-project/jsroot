@@ -1296,8 +1296,14 @@
       var hasrmin = (innerR[0] > 0) || (innerR[1] > 0);
 
       if (hasrmin) {
-         if (innerR[0] <= 0) { innerR[0] = Math.min(outerR[0] * 1e-5, 1e-5); JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported'); }
-         if (innerR[1] <= 0) { innerR[1] = Math.min(outerR[1] * 1e-5, 1e-5); JSROOT.GEO.warn('zero inner radius2 in tube - not yet supported'); }
+         if (innerR[0] <= 0) {
+            innerR[0] = Math.min(outerR[0] * 1e-5, 1e-5);
+            JSROOT.GEO.warn('zero inner radius1 in tube - not yet supported');
+         }
+         if (innerR[1] <= 0) {
+            innerR[1] = Math.min(outerR[1] * 1e-5, 1e-5);
+            JSROOT.GEO.warn('zero inner radius2 in tube - not yet supported');
+         }
       }
 
       var thetaStart = 0, thetaLength = 360;
@@ -1360,7 +1366,8 @@
 
             if (calcZ) creator.RecalcZ(calcZ);
 
-            creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz, nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
+            creator.SetNormal_12_34(nxy*_cos[seg+d1], nxy*_sin[seg+d1], nz,
+                                    nxy*_cos[seg+d2], nxy*_sin[seg+d2], nz);
          }
       }
 
@@ -2456,30 +2463,33 @@
    JSROOT.GEO.createGeometry = function( shape, limit ) {
       if (limit === undefined) limit = 0;
 
-      switch (shape._typename) {
-         case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape, limit );
-         case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape, limit );
-         case "TGeoTrd1":
-         case "TGeoTrd2": return JSROOT.GEO.createTrapezoidBuffer( shape, limit );
-         case "TGeoArb8":
-         case "TGeoTrap":
-         case "TGeoGtra": return JSROOT.GEO.createArb8Buffer( shape, limit );
-         case "TGeoSphere": return JSROOT.GEO.createSphereBuffer( shape , limit );
-         case "TGeoCone":
-         case "TGeoConeSeg":
-         case "TGeoTube":
-         case "TGeoTubeSeg":
-         case "TGeoCtub": return JSROOT.GEO.createTubeBuffer( shape, limit );
-         case "TGeoEltu": return JSROOT.GEO.createEltuBuffer( shape, limit );
-         case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
-         case "TGeoPcon":
-         case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
-         case "TGeoXtru": return JSROOT.GEO.createXtru( shape, limit );
-         case "TGeoParaboloid": return JSROOT.GEO.createParaboloidBuffer( shape, limit );
-         case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
-         case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
-         case "TGeoShapeAssembly": break;
-      }
+      try {
+         switch (shape._typename) {
+            case "TGeoBBox": return JSROOT.GEO.createCubeBuffer( shape, limit );
+            case "TGeoPara": return JSROOT.GEO.createParaBuffer( shape, limit );
+            case "TGeoTrd1":
+            case "TGeoTrd2": return JSROOT.GEO.createTrapezoidBuffer( shape, limit );
+            case "TGeoArb8":
+            case "TGeoTrap":
+            case "TGeoGtra": return JSROOT.GEO.createArb8Buffer( shape, limit );
+            case "TGeoSphere": return JSROOT.GEO.createSphereBuffer( shape , limit );
+            case "TGeoCone":
+            case "TGeoConeSeg":
+            case "TGeoTube":
+            case "TGeoTubeSeg":
+            case "TGeoCtub": return JSROOT.GEO.createTubeBuffer( shape, limit );
+            case "TGeoEltu": return JSROOT.GEO.createEltuBuffer( shape, limit );
+            case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
+            case "TGeoPcon":
+            case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
+            case "TGeoXtru": return JSROOT.GEO.createXtru( shape, limit );
+            case "TGeoParaboloid": return JSROOT.GEO.createParaboloidBuffer( shape, limit );
+            case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
+            case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
+            case "TGeoShapeAssembly": break;
+         }
+      } catch(e) { JSROOT.GEO.warn("Failure when creating " + shape._typename); }
+
 
       return limit < 0 ? 0 : null;
    }
@@ -2677,6 +2687,8 @@
                 shape._nfaces = JSROOT.GEO.createGeometry(shape, -1);
              clone.nfaces = shape._nfaces;
              if (clone.nfaces <= 0) clone.vol = 0;
+
+             // if (clone.nfaces < -10) console.log('Problem  with node ' + obj.fName + ':' + obj.fMother.fName);
           }
 
           if (!chlds) continue;
@@ -2959,7 +2971,7 @@
       return three_prnt;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, limit) {
+   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit) {
       var vismap = [];
 
       for (var id=0;id<viscnt.length;++id)
@@ -2969,24 +2981,29 @@
       // sort in reverse order (big volumes first)
       vismap.sort(function(a,b) { return b.vol - a.vol; })
 
-      var indx = 0, cnt = 0;
-      while ((cnt < limit) && (indx < vismap.length-1))
-         cnt += viscnt[vismap[indx++].id];
+      var indx = 0, cnt = 0, facecnt = 0;
+      while ((facecnt < facelimit) && (indx < vismap.length-1)) {
+         var nodeid = vismap[indx++].id;
+         cnt += viscnt[nodeid];
+         facecnt += this.nodes[nodeid].nfaces;
+      }
 
-      console.log('Volume voundary ' + vismap[indx].vol + '  counter ' + cnt);
+      console.log('Volume boundary ' + vismap[indx].vol + '  cnt ' + cnt + '  faces ' + facecnt);
 
       return vismap[indx].vol;
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnum, frustum) {
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
       // function collects visible nodes, using maxlimit
       // one can use map to define cut based on the volume or serious of cuts
 
       var arg = {
+         facecnt: 0,
          viscnt: new Int32Array(this.nodes.length), // counter for each node
          // nodes: this.nodes,
          func: function(node) {
+            this.facecnt += node.nfaces;
             this.viscnt[node.id]++;
             return true;
          }
@@ -2996,15 +3013,15 @@
 
       var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
 
-      console.log('Total visible nodes ' + total);
+      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
-      if (total > maxnum) {
+      if (arg.facecnt > maxnumfaces) {
 
-         // define minimal volume, which always shown
-         minVol = this.GetVolumeBoundary(arg.viscnt, maxnum);
+         // define minimal volume, which always to shown
+         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces);
 
          // if we have camera and too many volumes, try to select some of them in camera view
-         if (frustum && (total>=maxnum*1.25)) {
+         if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
              arg.domatrix = true;
              arg.frustum = frustum;
              arg.totalcam = 0;
@@ -3012,7 +3029,7 @@
                 if (node.vol <= minVol) // only small volumes are interesting
                    if (this.frustum.CheckShape(this.getmatrix(), node)) {
                       this.viscnt[node.id]++;
-                      this.totalcam++;
+                      this.totalcam += node.nfaces;
                    }
 
                 return true;
@@ -3022,12 +3039,12 @@
 
              this.ScanVisible(arg);
 
-             if (arg.totalcam > maxnum*0.25)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnum*0.25);
+             if (arg.totalcam > maxnumfaces*0.25)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.25);
              else
                 camVol = 0;
 
-             console.log('Limit for camera ' + camVol + '  objects in camera view ' + arg.totalcam);
+             console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
       }
 
