@@ -1886,6 +1886,9 @@
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (obj === null) return this.DrawingReady();
 
+      JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
+
+
       var vol = null, shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {

@@ -62,6 +62,8 @@
       console.warn(msg);
    }
 
+   JSROOT.GEO.GradPerSegm = 6;
+
    JSROOT.GEO.NodeKind = function(obj) {
       // return kind of the geo nodes
       // 0 - TGeoNode
@@ -901,9 +903,6 @@
 
       if (faces_limit !== undefined) {
 
-         console.log('create sphere ' + outerRadius + ' ' + innerRadius + ' nseg ' + widthSegments + ":" +  heightSegments + ' expected ' + (noInside ? 2 : 4) * widthSegments * heightSegments);
-         console.log('phi ' + phiStart + ' : ' + phiLength + '  theta ' + thetaStart + ' : ' + thetaLength);
-
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
          if (fact > 1.) {
@@ -1162,7 +1161,7 @@
          thetaLength = shape.fPhi2 - shape.fPhi1;
       }
 
-      var radiusSegments = Math.floor(thetaLength/6);
+      var radiusSegments = Math.floor(thetaLength/JSROOT.GEO.GradPerSegm);
       if (radiusSegments < 4) radiusSegments = 4;
 
       var extrapnt = (thetaLength < 360) ? 1 : 0;
@@ -1296,7 +1295,7 @@
          thetaLength = shape.fPhi2 - shape.fPhi1;
       }
 
-      var radiusSegments = Math.max(5, Math.floor(thetaLength/6) + 1);
+      var radiusSegments = Math.max(5, Math.floor(thetaLength/JSROOT.GEO.GradPerSegm) + 1);
 
       var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/(radiusSegments-1)*Math.PI/180;
 
@@ -1399,7 +1398,7 @@
    JSROOT.GEO.createEltu = function( shape ) {
       var geometry = new THREE.Geometry();
 
-      var radiusSegments = Math.floor(360/6);
+      var radiusSegments = Math.floor(360/JSROOT.GEO.GradPerSegm);
 
       // calculate all sin/cos tables in advance
       var x = new Float32Array(radiusSegments),
@@ -1443,7 +1442,7 @@
 
 
    JSROOT.GEO.createEltuBuffer = function( shape ) {
-      var radiusSegments = Math.floor(360/6);
+      var radiusSegments = Math.floor(360/JSROOT.GEO.GradPerSegm);
 
       // calculate all sin/cos tables in advance
       var x = new Float32Array(radiusSegments+1),
@@ -1497,8 +1496,7 @@
       var arc = shape.fDphi - shape.fPhi1;
       var rotation = shape.fPhi1;
       var radialSegments = 30;
-      var tubularSegments = Math.floor(arc/6);
-      if (tubularSegments < 8) tubularSegments = 8;
+      var tubularSegments = Math.max(8, Math.floor(arc/JSROOT.GEO.GradPerSegm));
 
       var hasrmin = innerTube > 0, hascut = arc !== 360;
 
@@ -1585,7 +1583,7 @@
       if ( shape._typename == "TGeoPgon" ) {
          radiusSegments = shape.fNedges;
       } else {
-         radiusSegments = Math.floor(thetaLength/6);
+         radiusSegments = Math.floor(thetaLength/JSROOT.GEO.GradPerSegm);
          if (radiusSegments < 4) radiusSegments = 4;
       }
 
@@ -1733,7 +1731,7 @@
       if ( shape._typename == "TGeoPgon" )
          radiusSegments = shape.fNedges;
       else
-         radiusSegments = Math.max(Math.floor(thetaLength/6), 5);
+         radiusSegments = Math.max(Math.floor(thetaLength/JSROOT.GEO.GradPerSegm), 5);
 
       // coordinate of point on cut edge (x,z)
       var pnts = (thetaLength === 360) ? null : [];
@@ -2029,7 +2027,7 @@
 
    JSROOT.GEO.createParaboloidBuffer = function( shape, faces_limit ) {
 
-      var radiusSegments = Math.round(360/6), heightSegments = 30;
+      var radiusSegments = Math.round(360/JSROOT.GEO.GradPerSegm), heightSegments = 30;
 
       if (faces_limit !== undefined) {
          var fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
@@ -2126,7 +2124,7 @@
       if ((shape.fTin===0) && (shape.fTout===0))
          return JSROOT.GEO.createTubeBuffer(shape);
 
-      var radiusSegments = Math.round(360/6), heightSegments = 30;
+      var radiusSegments = Math.round(360/JSROOT.GEO.GradPerSegm), heightSegments = 30;
 
       if (faces_limit !== undefined) {
          var fact = ((shape.fRmin <= 0) ? 2 : 4) * (radiusSegments+1) * (heightSegments+2) / faces_limit;

@@ -204,6 +204,9 @@
       var webgl = JSROOT.GetUrlOption("webgl", url);
       if ((webgl === "0") || (webgl === "false")) JSROOT.gStyle.NoWebGL = true; else
       if (webgl === "ie") JSROOT.gStyle.NoWebGL = !JSROOT.browser.isIE;
+
+      var geosegm = JSROOT.GetUrlOption("geosegm", url);
+      if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
    }
 
    JSROOT.Painter.Coord = {
