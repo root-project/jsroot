@@ -349,26 +349,15 @@
       this.polygons = [];
    }
 
-   JSROOT.GEO.PolygonsCreator.prototype.StartPolygon = function() {
-      return;
+   JSROOT.GEO.PolygonsCreator.prototype.StartPolygon = function(normal) {
       this.multi = 1;
-      this.mleft = [];
-      this.mright = [];
+      this.mnormal = normal;
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.StopPolygon = function() {
       if (!this.multi) return;
-      if (this.mleft.length + this.mright.length > 2) {
-         var polygon = new ThreeBSP.Polygon;
-         for (var n=0;n<this.mleft.length;++n)
-            polygon.vertices.push(this.mleft[n]);
-         for (var n=this.mright.length-1;n>=0;--n)
-            polygon.vertices.push(this.mright[n]);
-         this.polygons.push(polygon);
-      }
-
       this.multi = 0;
-      this.mleft = this.mright = null;
+      console.error('Polygon should be already closed at this moment');
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.AddFace3 = function(x1,y1,z1,
@@ -389,25 +378,6 @@
 
       if (reduce === undefined) reduce = 0;
 
-      if (this.multi===2) {
-         // place where we can repair logic
-         var lv3 = this.mleft[1], lv4 = this.mright[1];
-
-         if ((lv3.x !== x2) || (lv3.y !== y2) || (lv3.z !== z2) ||
-             (lv4.x !== x1) || (lv4.y !== y1) || (lv4.z !== z1)) {
-            // fail to contstruct polygon, try to create as expected
-
-            console.log('try to repair with the polygon');
-
-            this.multi = 0;
-            this.mleft = this.mright = null;
-            var polygon = new ThreeBSP.Polygon;
-            polygon.vertices.push(this.v1, this.v2, this.v3, this.v4);
-            this.polygons.push(polygon);
-         }
-      }
-
-
       this.v1 = new ThreeBSP.Vertex( x1, y1, z1 );
       this.v2 = new ThreeBSP.Vertex( x2, y2, z2 );
       this.v3 = new ThreeBSP.Vertex( x3, y3, z3 );
@@ -416,31 +386,46 @@
       this.reduce = reduce;
 
       if (this.multi) {
+         //console.log('n',this.multi);
          //console.log('v1:' + x1.toFixed(1) + ':' + y1.toFixed(1) + ':'+ z1.toFixed(1));
          //console.log('v2:' + x2.toFixed(1) + ':' + y2.toFixed(1) + ':'+ z2.toFixed(1));
          //console.log('v3:' + x3.toFixed(1) + ':' + y3.toFixed(1) + ':'+ z3.toFixed(1));
          //console.log('v4:' + x4.toFixed(1) + ':' + y4.toFixed(1) + ':'+ z4.toFixed(1));
 
-         if (reduce!==0) console.error('polygon not yet supported for reduced surfaces')
+         if (reduce!==2) console.error('polygon not supported for not-reduced faces');
+
+         var polygon;
 
          if (this.multi++ === 1) {
-            this.mleft.push(this.v2);
-            this.mright.push(this.v1);
+            polygon = new ThreeBSP.Polygon;
+
+            polygon.vertices.push(this.mnormal ? this.v2 : this.v3);
+            this.polygons.push(polygon);
          } else {
-            // just to ensure that everything correct
-            var lv3 = this.mleft[this.mleft.length-1],
-                lv4 = this.mright[this.mright.length-1];
+            polygon = this.polygons[this.polygons.length-1];
+            // check that last vertice equals to v2
+            var last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
+                comp = this.mnormal ? this.v2 : this.v3;
 
-            if ((lv3.x !== x2) || (lv3.y !== y2) || (lv3.z !== z2))
-               console.error('vertex missmatch when building polygon');
-
-            if ((lv4.x !== x1) || (lv4.y !== y1) || (lv4.z !== z1))
+            if (comp.diff(last) > 1e-12)
                console.error('vertex missmatch when building polygon');
          }
 
-         this.mleft.push(this.v3);
-         this.mright.push(this.v4);
+         var first = this.mnormal ? polygon.vertices[0] : polygon.vertices[polygon.vertices.length-1],
+             next = this.mnormal ? this.v3 : this.v2;
+
+         if (next.diff(first) < 1e-12) {
+            //console.log('polygon closed!!!', polygon.vertices.length);
+            this.multi = 0;
+         } else
+         if (this.mnormal) {
+            polygon.vertices.push(this.v3);
+         } else {
+            polygon.vertices.unshift(this.v2);
+         }
+
          return;
+
       }
 
       var polygon = new ThreeBSP.Polygon;
@@ -1137,7 +1122,6 @@
             var ss = _sinp[side], cc = _cosp[side],
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
-            //if (!noInside) creator.StartPolygon();
             for (var k=0;k<heightSegments;++k) {
                creator.AddFace4(
                      radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
@@ -1147,7 +1131,6 @@
                      noInside ? 2 : 0);
                creator.CalcNormal();
             }
-            //if (!noInside) creator.StopPolygon();
          }
       }
 
@@ -1373,6 +1356,7 @@
       // create upper/bottom part
       for (var side = 0; side<2; ++side) {
          var d1 = side, d2 = 1- side, sign = (side == 0) ? 1 : -1;
+         if ((innerR[side] === 0) && (thetaLength === 360) && !calcZ ) creator.StartPolygon(side===0);
          for (var seg=0;seg<radiusSegments-1;++seg) {
             creator.AddFace4(
                   innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -1387,6 +1371,8 @@
                creator.SetNormal(0,0,sign);
             }
          }
+
+         creator.StopPolygon();
       }
 
       // create cut surfaces
@@ -2346,18 +2332,6 @@
       if (matrix2 && (matrix2.determinant() < -0.9))
          JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
 
-      // console.log('Create composite m1 = ', (matrix1!==null), ' m2=', (matrix2!==null));
-
-/*      var supported = ["TGeoCompositeShape", "TGeoBBox", "TGeoCone", "TGeoSphere",
-                       "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
-                       "TGeoArb8", "TGeoTrap", "TGeoGtra", "TGeoPcon", "TGeoPgon"];
-
-      if (supported.indexOf(shape.fNode.fLeft._typename)<0)
-         console.log('Left type ', shape.fNode.fLeft._typename);
-
-      if (supported.indexOf(shape.fNode.fRight._typename)<0)
-         console.log('Right type ', shape.fNode.fRight._typename);
-*/
       var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
 
       if (geom1 instanceof ThreeBSP) {
@@ -2389,6 +2363,22 @@
          bsp2 = new ThreeBSP(geom2, matrix2);
       }
 
+      /*      var supported = ["TGeoCompositeShape", "TGeoSphere", "TGeoBBox",
+                            "TGeoCone", "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
+                             "TGeoArb8", "TGeoTrap", "TGeoGtra", "TGeoPcon", "TGeoPgon"];
+
+      var supported = ["TGeoCone", "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub"], ddd = false;
+
+      ddd = (supported.indexOf(shape.fNode.fLeft._typename)>=0) ||
+            (supported.indexOf(shape.fNode.fRight._typename)>=0);
+      if (ddd) {
+         console.log('Left type ', shape.fNode.fLeft._typename, 'nfaces', JSROOT.GEO.numGeometryFaces(geom1));
+         console.log('Right type ', shape.fNode.fRight._typename, 'nfaces', JSROOT.GEO.numGeometryFaces(geom2));
+      }
+
+      */
+
+
       var bsp = null;
 
       // console.log('comp type ' + shape.fNode._typename);
@@ -2408,6 +2398,8 @@
       }
 
       var res = return_bsp ? bsp : bsp.toBufferGeometry();
+
+      // if (ddd) console.log('comp faces ', JSROOT.GEO.numGeometryFaces(res));
 
       if (JSROOT.GEO.numGeometryFaces(res) === 0) {
          JSROOT.GEO.warn('Zero faces in comp shape'

@@ -484,8 +484,8 @@ function ThreeBSPfactory() {
    };
    ThreeBSP.Vertex.prototype.cross = function( vertex ) {
       var x = this.x,
-         y = this.y,
-         z = this.z;
+          y = this.y,
+          z = this.z;
 
       this.x = y * vertex.z - z * vertex.y;
       this.y = z * vertex.x - x * vertex.z;
@@ -505,6 +505,17 @@ function ThreeBSPfactory() {
    ThreeBSP.Vertex.prototype.dot = function( vertex ) {
       return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
    };
+
+   ThreeBSP.Vertex.prototype.diff = function( vertex ) {
+      var dx = (this.x - vertex.x),
+          dy = (this.y - vertex.y),
+          dz = (this.z - vertex.z),
+          len2 = this.x * this.x + this.y * this.y + this.z * this.z;
+
+      return (dx*dx+dy*dy+dz*dz) / (len2>0 ? len2 : 1e-10);
+   };
+
+
    ThreeBSP.Vertex.prototype.lerp = function( a, t ) {
       this.add(
          a.clone().subtract( this ).multiplyScalar( t )
