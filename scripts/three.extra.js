@@ -2175,7 +2175,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 		var lastPosition = new THREE.Vector3();
 		var lastQuaternion = new THREE.Quaternion();
 
-		return function () {
+		return function update () {
 
 			var position = scope.object.position;
 
@@ -2273,7 +2273,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
 
 		window.removeEventListener( 'keydown', onKeyDown, false );
 
@@ -2376,7 +2375,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		var offset = new THREE.Vector3();
 
-		return function( deltaX, deltaY ) {
+		return function pan ( deltaX, deltaY ) {
 
 			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
@@ -2754,7 +2753,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			document.addEventListener( 'mousemove', onMouseMove, false );
 			document.addEventListener( 'mouseup', onMouseUp, false );
-			document.addEventListener( 'mouseout', onMouseUp, false );
 
 			scope.dispatchEvent( startEvent );
 
@@ -2798,7 +2796,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
 
 		scope.dispatchEvent( endEvent );
 
@@ -3092,7 +3089,6 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 /**
  * @author arodic / https://github.com/arodic
  */
- /*jshint sub:true*/
 
 ( function () {
 
@@ -4192,17 +4188,32 @@ Object.defineProperties( THREE.OrbitControls.prototype, {
 
 		function onPointerUp( event ) {
 
+			event.preventDefault(); // Prevent MouseEvent on mobile
+
 			if ( event.button !== undefined && event.button !== 0 ) return;
 
 			if ( _dragging && ( scope.axis !== null ) ) {
 
 				mouseUpEvent.mode = _mode;
-				scope.dispatchEvent( mouseUpEvent )
+				scope.dispatchEvent( mouseUpEvent );
 
 			}
 
 			_dragging = false;
-			onPointerHover( event );
+
+			if ( event instanceof TouchEvent ) {
+
+				// Force "rollover"
+
+				scope.axis = null;
+				scope.update();
+				scope.dispatchEvent( changeEvent );
+
+			} else {
+
+				onPointerHover( event );
+
+			}
 
 		}
 
@@ -4238,8 +4249,8 @@ THREE.CopyShader = {
 
 	uniforms: {
 
-		"tDiffuse": { type: "t", value: null },
-		"opacity":  { type: "f", value: 1.0 }
+		"tDiffuse": { value: null },
+		"opacity":  { value: 1.0 }
 
 	},
 
@@ -4369,13 +4380,17 @@ Object.assign( THREE.EffectComposer.prototype, {
 
 			}
 
-			if ( pass instanceof THREE.MaskPass ) {
+			if ( THREE.MaskPass !== undefined ) {
 
-				maskActive = true;
+				if ( pass instanceof THREE.MaskPass ) {
 
-			} else if ( pass instanceof THREE.ClearMaskPass ) {
+					maskActive = true;
 
-				maskActive = false;
+				} else if ( pass instanceof THREE.ClearMaskPass ) {
+
+					maskActive = false;
+
+				}
 
 			}
 
@@ -4562,10 +4577,7 @@ THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clear
 	this.overrideMaterial = overrideMaterial;
 
 	this.clearColor = clearColor;
-	this.clearAlpha = ( clearAlpha !== undefined ) ? clearAlpha : 1;
-
-	this.oldClearColor = new THREE.Color();
-	this.oldClearAlpha = 1;
+	this.clearAlpha = ( clearAlpha !== undefined ) ? clearAlpha : 0;
 
 	this.clear = true;
 	this.needsSwap = false;
@@ -4578,27 +4590,32 @@ THREE.RenderPass.prototype = Object.assign( Object.create( THREE.Pass.prototype 
 
 	render: function ( renderer, writeBuffer, readBuffer, delta, maskActive ) {
 
+		var oldAutoClear = renderer.autoClear;
+		renderer.autoClear = false;
+
 		this.scene.overrideMaterial = this.overrideMaterial;
+
+		var oldClearColor, oldClearAlpha;
 
 		if ( this.clearColor ) {
 
-			this.oldClearColor.copy( renderer.getClearColor() );
-			this.oldClearAlpha = renderer.getClearAlpha();
+			oldClearColor = renderer.getClearColor().getHex();
+			oldClearAlpha = renderer.getClearAlpha();
 
 			renderer.setClearColor( this.clearColor, this.clearAlpha );
 
 		}
 
-		renderer.render( this.scene, this.camera, readBuffer, this.clear );
+		renderer.render( this.scene, this.camera, this.renderToScreen ? null : readBuffer, this.clear );
 
 		if ( this.clearColor ) {
 
-			renderer.setClearColor( this.oldClearColor, this.oldClearAlpha );
+			renderer.setClearColor( oldClearColor, oldClearAlpha );
 
 		}
 
 		this.scene.overrideMaterial = null;
-
+		renderer.autoClear = oldAutoClear;
 	}
 
 } );
@@ -4689,14 +4706,14 @@ THREE.SSAOShader = {
 
 	uniforms: {
 
-		"tDiffuse":     { type: "t", value: null },
-		"tDepth":       { type: "t", value: null },
-		"size":         { type: "v2", value: new THREE.Vector2( 512, 512 ) },
-		"cameraNear":   { type: "f", value: 1 },
-		"cameraFar":    { type: "f", value: 100 },
-		"onlyAO":       { type: "i", value: 0 },
-		"aoClamp":      { type: "f", value: 0.5 },
-		"lumInfluence": { type: "f", value: 0.5 }
+		"tDiffuse":     { value: null },
+		"tDepth":       { value: null },
+		"size":         { value: new THREE.Vector2( 512, 512 ) },
+		"cameraNear":   { value: 1 },
+		"cameraFar":    { value: 100 },
+		"onlyAO":       { value: 0 },
+		"aoClamp":      { value: 0.5 },
+		"lumInfluence": { value: 0.5 }
 
 	},
 
