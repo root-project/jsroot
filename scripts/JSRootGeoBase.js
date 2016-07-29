@@ -1,4 +1,4 @@
-/// @file JSRootGeoBase.js
+/** @file JSRootGeoBase.js */
 /// Basic functions for work with TGeo classes
 
 (function( factory ) {
@@ -18,11 +18,11 @@
 } (function( JSROOT ) {
    // === functions to create THREE.Geometry for TGeo shapes ========================
 
-   /// @namespace JSROOT.GEO
+   /** @namespace JSROOT.GEO */
    /// Holder of all TGeo-related functions and classes
-   JSROOT.GEO = {};
+   JSROOT.GEO = { GradPerSegm: 6 };
 
-   /// @memberof JSROOT.GEO
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.BITS = {
          kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
          kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
@@ -38,12 +38,13 @@
          kVisRaytrace     : JSROOT.BIT(15)           // raytracing flag
       };
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.TestBit = function(volume, f) {
       var att = volume.fGeoAtt;
       return att === undefined ? false : ((att & f) !== 0);
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.SetBit = function(volume, f, value) {
       if (volume.fGeoAtt === undefined) return;
       volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
@@ -61,8 +62,6 @@
       JSROOT.GEO._warn_msgs[msg] = true;
       console.warn(msg);
    }
-
-   JSROOT.GEO.GradPerSegm = 6;
 
    JSROOT.GEO.NodeKind = function(obj) {
       // return kind of the geo nodes
@@ -508,6 +507,7 @@
 
    // ================= all functions to create geometry ===================================
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createCube = function( shape ) {
 
       // instead of BoxGeometry create all vertices and faces ourself
@@ -542,7 +542,7 @@
       return geom;
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createCubeBuffer = function( shape, faces_limit) {
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
@@ -566,7 +566,7 @@
       return creator.Create();
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPara = function( shape ) {
 
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
@@ -600,6 +600,7 @@
       return geom;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.create8edgesBuffer = function( v, faces_limit ) {
 
       var indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
@@ -623,7 +624,7 @@
    }
 
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaBuffer = function( shape, faces_limit ) {
 
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
@@ -641,7 +642,7 @@
       return JSROOT.GEO.create8edgesBuffer(v, faces_limit );
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTrapezoid = function( shape ) {
 
       var y1, y2;
@@ -680,7 +681,7 @@
       return geometry;
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTrapezoidBuffer = function( shape, faces_limit ) {
       var y1, y2;
       if (shape._typename == "TGeoTrd1") {
@@ -703,7 +704,7 @@
       return JSROOT.GEO.create8edgesBuffer(v, faces_limit );
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createArb8 = function( shape ) {
 
       var vertices = [
@@ -779,6 +780,7 @@
       return geometry;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createArb8Buffer = function( shape, faces_limit ) {
 
       var vertices = [
@@ -886,7 +888,7 @@
       return creator.Create();
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createSphere = function( shape, faces_limit ) {
       var outerRadius = shape.fRmax,
           innerRadius = shape.fRmin,
@@ -1006,7 +1008,7 @@
       return geometry;
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
       var radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
@@ -1136,6 +1138,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTube = function( shape ) {
       var outerRadius1, innerRadius1, outerRadius2, innerRadius2;
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
@@ -1271,7 +1274,7 @@
       return geometry;
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTubeBuffer = function( shape, faces_limit) {
       var outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
@@ -1394,7 +1397,7 @@
       return creator.Create();
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createEltu = function( shape ) {
       var geometry = new THREE.Geometry();
 
@@ -1488,7 +1491,7 @@
       return creator.Create();
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTorus = function( shape, faces_limit ) {
       var radius = shape.fR;
       var innerTube = shape.fRmin;
@@ -1575,6 +1578,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPolygon = function( shape ) {
 
       var thetaStart = shape.fPhi1, thetaLength = shape.fDphi;
@@ -1722,6 +1726,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPolygonBuffer = function( shape, faces_limit ) {
 
       var thetaStart = shape.fPhi1,
@@ -1893,6 +1898,7 @@
       return creator.Create();
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createXtru = function( shape ) {
 
       var geometry = new THREE.Geometry();
@@ -1936,7 +1942,7 @@
       return geometry;
    }
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaboloid = function( shape, faces_limit ) {
 
       var radiusSegments = Math.round(360/6), heightSegments = 30;
@@ -2025,6 +2031,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaboloidBuffer = function( shape, faces_limit ) {
 
       var radiusSegments = Math.round(360/JSROOT.GEO.GradPerSegm), heightSegments = 30;
@@ -2118,7 +2125,7 @@
    }
 
 
-
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createHype = function( shape, faces_limit ) {
 
       if ((shape.fTin===0) && (shape.fTout===0))
@@ -2206,6 +2213,7 @@
       return geometry;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createMatrix = function(matrix) {
 
       if (matrix === null) return null;
@@ -2243,6 +2251,7 @@
       return res;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.getNodeMatrix = function(kind, node) {
       // returns transformation matrix for the node
       // created after node visibility flag is checked and volume cut is performed
@@ -2312,6 +2321,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
       var return_bsp = false;
@@ -2413,6 +2423,7 @@
    }
 
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createGeometry = function( shape, limit ) {
 
       var geom = null;

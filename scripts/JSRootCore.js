@@ -1,8 +1,8 @@
-/// @file JSRootCore.js
-/// Core methods of JavaScript ROOT
+/** @file JSRootCore.js
+ * Core methods of JavaScript ROOT */
 
-/// @namespace JSROOT
-/// Holder of all JSROOT functions and classes
+/** @namespace JSROOT
+  * Holder of all JSROOT functions and classes */
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
@@ -376,7 +376,6 @@
    }
 
    /** @memberOf JSROOT */
-
    JSROOT.GetUrlOption = function(opt, url, dflt) {
       // analyzes document.URL and extracts options after '?' mark
       // following options supported ?opt1&opt2=3

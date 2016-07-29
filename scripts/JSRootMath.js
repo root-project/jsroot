@@ -1,8 +1,8 @@
-/// @file JSRootMath.js
-/// Special mathematical functions
+/** @file JSRootMath.js
+  * Special mathematical functions */
 
-/// @namespace JSROOT.Math
-/// Holder of mathematical functions, analogue to TMath class of ROOT
+/** @namespace JSROOT.Math
+  * Holder of mathematical functions, analogue to TMath class of ROOT */
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
