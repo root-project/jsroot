@@ -257,48 +257,28 @@ function ThreeBSPfactory() {
 
       var positions_buf = new Float32Array(buf_size),
           normals_buf = new Float32Array(buf_size),
-          iii = 0, polygon, vertex;
+          iii = 0, polygon;
+
+      function CopyVertex(vertex) {
+
+         positions_buf[iii] = vertex.x;
+         positions_buf[iii+1] = vertex.y;
+         positions_buf[iii+2] = vertex.z;
+
+         var norm = /*vertex.normal.lengthSq() > 0 ? vertex.normal :*/ polygon.normal;
+
+         normals_buf[iii] = norm.x;
+         normals_buf[iii+1] = norm.y;
+         normals_buf[iii+2] = norm.z;
+         iii+=3;
+      }
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
-
          for ( j = 2; j < polygon.vertices.length; ++j ) {
-
-            vertex = polygon.vertices[0];
-
-            positions_buf[iii] = vertex.x;
-            positions_buf[iii+1] = vertex.y;
-            positions_buf[iii+2] = vertex.z;
-
-            normals_buf[iii] = vertex.normal.x;
-            normals_buf[iii+1] = vertex.normal.y;
-            normals_buf[iii+2] = vertex.normal.z;
-
-            iii+=3;
-
-            vertex = polygon.vertices[j-1];
-
-            positions_buf[iii] = vertex.x;
-            positions_buf[iii+1] = vertex.y;
-            positions_buf[iii+2] = vertex.z;
-
-            normals_buf[iii] = vertex.normal.x;
-            normals_buf[iii+1] = vertex.normal.y;
-            normals_buf[iii+2] = vertex.normal.z;
-
-            iii+=3;
-
-            vertex = polygon.vertices[j];
-
-            positions_buf[iii] = vertex.x;
-            positions_buf[iii+1] = vertex.y;
-            positions_buf[iii+2] = vertex.z;
-
-            normals_buf[iii] = vertex.normal.x;
-            normals_buf[iii+1] = vertex.normal.y;
-            normals_buf[iii+2] = vertex.normal.z;
-
-            iii+=3;
+            CopyVertex(polygon.vertices[0]);
+            CopyVertex(polygon.vertices[j-1]);
+            CopyVertex(polygon.vertices[j]);
          }
       }
 
