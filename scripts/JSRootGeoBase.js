@@ -2639,7 +2639,7 @@
        // first create nodes objects
        for (var n=0; n<this.origin.length; ++n) {
           var obj = this.origin[n];
-          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, numvischld: 1, idshift: 0 });
+          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 });
        }
 
        // than fill childrens lists
@@ -2673,6 +2673,10 @@
              clone.fDY = shape.fDY;
              clone.fDZ = shape.fDZ;
              clone.vol = shape.fDX*shape.fDY*shape.fDZ;
+             if (shape._nfaces === undefined)
+                shape._nfaces = JSROOT.GEO.createGeometry(shape, -1);
+             clone.nfaces = shape._nfaces;
+             if (clone.nfaces <= 0) clone.vol = 0;
           }
 
           if (!chlds) continue;
@@ -2732,6 +2736,9 @@
          } else {
             clone.vis = obj.fRnrSelf;
          }
+
+         // shape with zero volume or without faces will not be observed
+         if ((clone.vol <= 0) || (clone.nfaces <= 0)) clone.vis = false;
 
          if (clone.vis) res++;
       }
