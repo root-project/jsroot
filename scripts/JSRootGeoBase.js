@@ -581,50 +581,6 @@
    }
 
 
-   JSROOT.GEO.createCubeBufferPrev = function( shape ) {
-      var vertices = [
-        shape.fDX,  shape.fDY,  shape.fDZ,
-        shape.fDX,  shape.fDY, -shape.fDZ,
-        shape.fDX, -shape.fDY,  shape.fDZ,
-        shape.fDX, -shape.fDY, -shape.fDZ,
-       -shape.fDX,  shape.fDY, -shape.fDZ,
-       -shape.fDX,  shape.fDY,  shape.fDZ,
-       -shape.fDX, -shape.fDY, -shape.fDZ,
-       -shape.fDX, -shape.fDY,  shape.fDZ];
-
-      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
-
-      // normals for each  pair of faces
-      var normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1,  0,0,-1 ];
-
-      var buf_pos = new Float32Array(indicies.length*3),
-          buf_norm = new Float32Array(indicies.length*3);
-
-      var indx = 0, indx_norm = 0;
-      for (var n=0; n < indicies.length; ++n) {
-         var v = indicies[n] * 3;
-         buf_pos[indx] = vertices[v];
-         buf_pos[indx+1] = vertices[v+1];
-         buf_pos[indx+2] = vertices[v+2];
-
-         buf_norm[indx] = normals[indx_norm];
-         buf_norm[indx+1] = normals[indx_norm+1];
-         buf_norm[indx+2] = normals[indx_norm+2];
-
-         indx+=3;
-         if (indx % 18 === 0) indx_norm+=3;
-      }
-
-      // console.log('indx', indx, 'len', indicies.length*3, 'indx_normal',indx_norm,'len', normals.length);
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( buf_pos, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( buf_norm, 3 ) );
-
-      return geometry;
-   }
-
-
    JSROOT.GEO.createPara = function( shape ) {
 
       var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
@@ -945,7 +901,6 @@
    }
 
 
-
    JSROOT.GEO.createSphere = function( shape, faces_limit ) {
       var outerRadius = shape.fRmax,
           innerRadius = shape.fRmin,
@@ -1065,20 +1020,6 @@
 
       geometry.computeFaceNormals();
 
-      /*
-      for (var n=0;n<2;n++) {
-         var face = geometry.faces[n],
-             v1 = geometry.vertices[face.a],
-             v2 = geometry.vertices[face.b],
-             v3 = geometry.vertices[face.c];
-         console.log(n,'v1', v1.x.toFixed(2), v1.y.toFixed(2), v1.z.toFixed(2));
-         console.log(n,'v2', v2.x.toFixed(2), v2.y.toFixed(2), v2.z.toFixed(2));
-         console.log(n,'v3', v3.x.toFixed(2), v3.y.toFixed(2), v3.z.toFixed(2));
-      }
-
-      this.createSphereBuffer(shape, undefined);
-      */
-
       return geometry;
    }
 
@@ -1173,15 +1114,6 @@
             }
          }
       }
-      /*
-      var pos = creator.pos;
-      for (var n=0;n<2 && pos;n++) {
-         var k = n*9;
-         console.log(n,'v1', pos[k].toFixed(2),  pos[k+1].toFixed(2),pos[k+2].toFixed(2));
-         console.log(n,'v2', pos[k+3].toFixed(2),pos[k+4].toFixed(2),pos[k+5].toFixed(2));
-         console.log(n,'v3', pos[k+6].toFixed(2),pos[k+7].toFixed(2),pos[k+8].toFixed(2));
-      }
-      */
 
       // top/bottom
       for (var side=0; side<=heightSegments; side+=heightSegments)
@@ -1218,8 +1150,6 @@
             //if (!noInside) creator.StopPolygon();
          }
       }
-
-      // console.log('Sphere numfaces', numfaces);
 
       return creator.Create();
    }
@@ -1395,7 +1325,6 @@
          _cos[seg] = Math.cos(phi0+seg*dphi);
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
-
 
       var numfaces = (radiusSegments-1) * (hasrmin ? 4 : 2) +
                      (radiusSegments-1) * (hasrmin ? 4 : 2) +
@@ -1956,7 +1885,6 @@
                              hasrmin ? 0 : 2);
             creator.SetNormal(0, 0, normalz);
          }
-
       }
 
       if (cut_faces)
