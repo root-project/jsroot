@@ -1133,7 +1133,7 @@
 
    JSROOT.TObjectPainter.prototype.SetItemName = function(name, opt) {
       JSROOT.TBasePainter.prototype.SetItemName.call(this, name, opt);
-      if (name=="") return;
+      if (this.no_default_title || (name=="")) return;
       var can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
                    else this.select_main().attr("title", name);
@@ -8559,12 +8559,12 @@
 
       if ((options.length == 1) &&( options[0] == "iotest")) {
          h.clear();
-         d3.select("#" + h['disp_frameid']).html("<h2>Start I/O test "+ ('IO' in JSROOT ? "Mode=" + JSROOT.IO.Mode : "") +  "</h2>")
+         d3.select("#" + h.disp_frameid).html("<h2>Start I/O test "+ ('IO' in JSROOT ? "Mode=" + JSROOT.IO.Mode : "") +  "</h2>")
 
          var tm0 = new Date();
          return h.get(items[0], function(item, obj) {
             var tm1 = new Date();
-            d3.select("#" + h['disp_frameid']).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
+            d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return JSROOT.CallBack(call_back);
          });
       }
