@@ -673,7 +673,7 @@
                   if (many) menu.add("endsub:");
                }
             }
-
+            painter._tooltip.hide();
             menu.show(mouse_ctxt);
          });
 
@@ -771,7 +771,7 @@
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
          }
 
-         if (names.length > 0) {
+         if ((names.length > 0) && painter.options.highlight) {
             painter._tooltip.show((names[0].length > 0) ? names[0] : painter.GetItemName());
             painter._tooltip.pos(evnt);
          } else {
