@@ -576,7 +576,7 @@
           painter.Render3D(0);
       });
 
-      this._tooltip = new JSROOT.Painter.TooltipFor3D();
+      this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
 
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
@@ -772,8 +772,8 @@
          }
 
          if (names.length > 0) {
-            painter._tooltip.pos(evnt);
             painter._tooltip.show((names[0].length > 0) ? names[0] : painter.GetItemName());
+            painter._tooltip.pos(evnt);
          } else {
             painter._tooltip.hide();
          }

@@ -45,15 +45,28 @@
        return this._Detect_WebGL;
    }
 
-   JSROOT.Painter.TooltipFor3D = function() {
+   JSROOT.Painter.TooltipFor3D = function(prnt) {
       this.tt = null;
       this.cont = null;
       this.lastlbl = '';
+      this.parent = prnt ? prnt : document.body;
+      this.abspos = !prnt;
 
       this.pos = function(e) {
          if (this.tt === null) return;
-         var u = JSROOT.browser.isIE ? (event.clientY + document.documentElement.scrollTop) : e.pageY;
-         var l = JSROOT.browser.isIE ? (event.clientX + document.documentElement.scrollLeft) : e.pageX;
+         var u,l;
+         if (this.abspos) {
+            u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
+            l = JSROOT.browser.isIE ? (e.clientX + document.documentElement.scrollLeft) : e.pageX;
+         } else {
+            l = ('offsetX' in e) ? e.offsetX : e.layerX;
+            u = ('offsetY' in e) ? e.offsetY : e.layerY;
+            if (l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
+               l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
+
+            if (u + this.tt.offsetHeight + 15 >= this.parent.offsetHeight)
+               u = this.parent.offsetHeight - this.tt.offsetHeight - 15;
+         }
 
          this.tt.style.top = (u + 15) + 'px';
          this.tt.style.left = (l + 3) + 'px';
@@ -75,11 +88,12 @@
             this.tt.appendChild(t);
             this.tt.appendChild(this.cont);
             this.tt.appendChild(b);
-            document.body.appendChild(this.tt);
             this.tt.style.opacity = 1;
             this.tt.style.filter = 'alpha(opacity=1)';
             this.tt.style.position = 'absolute';
             this.tt.style.display = 'block';
+            this.tt.style.overflow = 'hidden';
+            this.parent.appendChild(this.tt);
          }
 
          if (this.lastlbl !== v) {
@@ -93,7 +107,8 @@
 
       this.hide  = function() {
          if (this.tt !== null)
-            document.body.removeChild(this.tt);
+            this.parent.removeChild(this.tt);
+
          this.tt = null;
          this.lastlbl = "";
       }
