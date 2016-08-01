@@ -240,8 +240,9 @@
    }
 
    JSROOT.TGeoPainter.prototype.ActiavteInBrowser = function(names, force) {
-      if (typeof names == 'string') names = [ names ];
+      if (this.GetItemName() === null) return;
 
+      if (typeof names == 'string') names = [ names ];
       if (this.GetItemName().length > 0)
          for (var n=0;n<names.length;++n)
             names[n] = this.GetItemName() + ((names[n].length > 0) ? ('/' + names[n]) : "");
@@ -569,7 +570,9 @@
                var obj = intersects[n].object;
                var name = painter._clones.ResolveStack(obj.stack).name;
 
-               var hdr = (name.length===0) ? painter.GetItemName() : name.substr(6);
+               var hdr = "header";
+               if (name.length > 6) hdr = name.substr(6); else
+               if ((name.length===0) && painter.GetItemName()) hdr = painter.GetItemName();
 
                menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
@@ -643,9 +646,16 @@
          var intersects = raycaster.intersectObjects(painter._scene.children, true);
 
          // remove all elements without stack - indicator that this is geometry object
-         for (var n=intersects.length-1; n>=0;--n)
-            if (!intersects[n].object.stack)
+         for (var n=intersects.length-1; n>=0;--n) {
+
+            var remove = !intersects[n].object.stack;
+
+            for (var k=0;(k<n) && !remove;++k)
+               remove = (intersects[k].object === intersects[n].object);
+
+            if (remove)
                intersects.splice(n,1);
+         }
 
          var clippedIntersects = [];
 
@@ -785,12 +795,13 @@
             var obj = intersects[n].object;
             if (!obj.stack) continue;
             var name = painter._clones.ResolveStack(obj.stack).name;
-            names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
          }
 
          if ((names.length > 0) && painter.options.highlight) {
-            painter._tooltip.show((names[0].length > 0) ? names[0] : painter.GetItemName());
+            var name = names[0];
+            if ((name==="") && !painter.GetItemName()) name = painter.GetObject()._typename;
+            painter._tooltip.show(name);
             painter._tooltip.pos(evnt);
          } else {
             painter._tooltip.hide();
