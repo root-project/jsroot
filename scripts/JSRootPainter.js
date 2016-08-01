@@ -6411,17 +6411,21 @@
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
 
-      var xmin, xmax, ymin, ymax, isany = false;
+      var xmin, xmax, ymin, ymax, isany = false,
+          xid = this.swap_xy ? 1 : 0, yid = 1 - xid,
+          changed = [true, true];
+      if (this.zoom_kind === 102) changed[1] = false;
+      if (this.zoom_kind === 103) changed[0] = false;
 
-      if ((this.zoom_kind != 103) && (Math.abs(this.zoom_curr[0] - this.zoom_origin[0]) > 10)) {
-         xmin = Math.min(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
-         xmax = Math.max(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
+      if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
+         xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+         xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
          isany = true;
       }
 
-      if ((this.zoom_kind != 102) && (Math.abs(this.zoom_curr[1] - this.zoom_origin[1]) > 10)) {
-         ymin = Math.min(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
-         ymax = Math.max(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
+      if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
+         ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
          isany = true;
       }
 
