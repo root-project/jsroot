@@ -6232,23 +6232,26 @@
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
 
+      var changed = [true, true];
+
       switch (this.zoom_kind) {
          case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
-         case 2: this.zoom_curr[0] = m[0]; break; // only X
-         case 3: this.zoom_curr[1] = m[1]; break; // only Y
+         case 2: this.zoom_curr[0] = m[0]; changed[1] = false; break; // only X
+         case 3: this.zoom_curr[1] = m[1]; changed[0] = false; break; // only Y
       }
 
-      var xmin, xmax, ymin, ymax, isany = false;
+      var xmin, xmax, ymin, ymax, isany = false,
+          idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
 
-      if ((this.zoom_kind != 3) && (Math.abs(this.zoom_curr[0] - this.zoom_origin[0]) > 10)) {
-         xmin = Math.min(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
-         xmax = Math.max(this.RevertX(this.zoom_origin[0]), this.RevertX(this.zoom_curr[0]));
+      if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
+         xmin = Math.min(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+         xmax = Math.max(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
          isany = true;
       }
 
-      if ((this.zoom_kind != 2) && (Math.abs(this.zoom_curr[1] - this.zoom_origin[1]) > 10)) {
-         ymin = Math.min(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
-         ymax = Math.max(this.RevertY(this.zoom_origin[1]), this.RevertY(this.zoom_curr[1]));
+      if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
+         ymin = Math.min(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
          isany = true;
       }
 
@@ -6450,7 +6453,7 @@
 
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
-      var xmin = this.scale_xmin, xmax = this.scale_xmax, ymin = undefined, ymax = undefined;
+      var xmin = this.scale_xmin, xmax = this.scale_xmax, ymin, ymax;
 
       if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
 
