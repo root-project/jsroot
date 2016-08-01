@@ -405,7 +405,6 @@
          this.TestVisibleObjects();
       });
    }
-
    JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
 
       if (this._datgui) {
@@ -549,8 +548,55 @@
 
          advanced.add(this, 'resetAdvanced').name('Reset');
       }
-
    }
+
+
+   JSROOT.TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
+
+      var painter = this;
+
+      JSROOT.Painter.createMenu(function(menu) {
+         menu.painter = painter; // set as this in callbacks
+
+         if (!intersects || (intersects.length==0)) {
+            painter.FillContextMenu(menu);
+         } else {
+            var many = (intersects.length > 1);
+
+            if (many) menu.add("header: Nodes");
+
+            for (var n=0;n<intersects.length;++n) {
+               var obj = intersects[n].object;
+               var name = painter._clones.ResolveStack(obj.stack).name;
+
+               var hdr = (name.length===0) ? painter.GetItemName() : name.substr(6);
+
+               menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
+
+               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
+
+               var wireframe = painter.accessObjectWireFrame(obj);
+
+               if (wireframe!==undefined)
+                  menu.addchk(wireframe, "Wireframe", n,
+                        function(indx) {
+                     var m = intersects[indx].object.material;
+                     m.wireframe = !m.wireframe;
+                     this.Render3D();
+                  });
+
+               menu.add("Focus", n, function(arg) {
+                  this.focusCamera(intersects[arg].object);
+               });
+
+               if (many) menu.add("endsub:");
+            }
+         }
+         painter._tooltip.hide();
+         menu.show(evnt);
+      });
+   }
+
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
@@ -569,11 +615,12 @@
 
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
-          control_active = false;
+          control_active = false,
+          block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
 
       this._controls.addEventListener( 'change', function() {
-          mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-          painter.Render3D(0);
+         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         painter.Render3D(0);
       });
 
       this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
@@ -594,6 +641,12 @@
 
          raycaster.setFromCamera( pnt, painter._camera );
          var intersects = raycaster.intersectObjects(painter._scene.children, true);
+
+         // remove all elements without stack - indicator that this is geometry object
+         for (var n=intersects.length-1; n>=0;--n)
+            if (!intersects[n].object.stack)
+               intersects.splice(n,1);
+
          var clippedIntersects = [];
 
          if (painter.enableX || painter.enableY || painter.enableZ ) {
@@ -623,66 +676,27 @@
 
       this._controls.addEventListener( 'start', function() {
          control_active = true;
+         block_ctxt = false;
+         mouse_ctxt.on = false;
       });
 
       this._controls.addEventListener( 'end', function() {
          control_active = false;
          if (!mouse_ctxt.on) return;
          mouse_ctxt.on = false;
-         var intersects = GetIntersects(mouse_ctxt);
-
-         JSROOT.Painter.createMenu(function(menu) {
-            menu.painter = painter; // set as this in callbacks
-
-            // first remove all elements without stack
-            for (var n=intersects.length-1; n>=0;--n)
-               if (!intersects[n].object.stack)
-                  intersects.splice(n,1);
-
-            if (!intersects || (intersects.length==0)) {
-               painter.FillContextMenu(menu);
-            } else {
-               var many = (intersects.length > 1);
-
-               if (many) menu.add("header: Nodes");
-
-               for (var n=0;n<intersects.length;++n) {
-                  var obj = intersects[n].object;
-                  var name = painter._clones.ResolveStack(obj.stack).name;
-
-                  var hdr = (name.length===0) ? painter.GetItemName() : name.substr(6);
-
-                  menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
-
-                  menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
-
-                  var wireframe = painter.accessObjectWireFrame(obj);
-
-                  if (wireframe!==undefined)
-                     menu.addchk(wireframe, "Wireframe", n,
-                           function(indx) {
-                              var m = intersects[indx].object.material;
-                              m.wireframe = !m.wireframe;
-                              this.Render3D();
-                            });
-
-                  menu.add("Focus", n, function(arg) {
-                     this.focusCamera(intersects[arg].object);
-                  });
-
-                  if (many) menu.add("endsub:");
-               }
-            }
-            painter._tooltip.hide();
-            menu.show(mouse_ctxt);
-         });
-
+         painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
       });
 
       this._context_menu = function(evnt) {
          evnt.preventDefault();
          GetMousePos(evnt, mouse_ctxt);
-         mouse_ctxt.on = true;
+         if (control_active)
+            mouse_ctxt.on = true;
+         else
+         if (block_ctxt)
+            block_ctxt = false;
+         else
+            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
       }
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
@@ -734,6 +748,10 @@
       }
 
       function mousemove(evnt) {
+         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
+            block_ctxt = true; // if right button in control was active, block next context menu
+         }
+
          if (control_active || !painter.options.update_browser) return;
 
          var mouse = {};
