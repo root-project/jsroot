@@ -841,7 +841,7 @@
                         "###threejs/examples/js/shaders/SSAOShader.js;"
            extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
          } else {
-            mainfiles += "$$$scripts/three" + ext + ".js;" +
+            mainfiles += "$$$scripts/three.js;" +
                          "$$$scripts/three.extra" + ext + ".js;";
          }
          modules.push("threejs_all");
