@@ -1005,11 +1005,11 @@
                      console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
                }
 
-               if (shape._typename == 'TGeoXtru') {
-                  var entry = this._draw_nodes[todo[s].indx];
-                  if (entry.stack)
-                     console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
-               }
+               //if (shape._typename == 'TGeoXtru') {
+               //   var entry = this._draw_nodes[todo[s].indx];
+               //   if (entry.stack)
+               //      console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
+               //}
 
                delete shape._geom_worker; // remove flag
                ready.push(todo[s].indx); // one could add it to ready list
