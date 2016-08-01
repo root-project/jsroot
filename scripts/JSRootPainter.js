@@ -4197,7 +4197,7 @@
       if (painter.has_canvas) {
          // we select current pad, where all drawing is performed
          prev_name = painter.svg_canvas().property('current_pad');
-         painter.svg_canvas().property('current_pad', pad.fName);
+         painter.svg_canvas().property('current_pad', painter.this_pad_name);
       }
 
       painter.DrawPrimitive(0, function() {
