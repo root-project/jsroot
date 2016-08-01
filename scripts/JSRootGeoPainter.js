@@ -574,6 +574,8 @@
           painter.Render3D(0);
       });
 
+      this._tooltip = new JSROOT.Painter.TooltipFor3D();
+
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
@@ -757,6 +759,13 @@
             var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
+         }
+
+         if (painter.options.highlight && (names.length > 0)) {
+            painter._tooltip.pos(evnt);
+            painter._tooltip.show(names[0]);
+         } else {
+            painter._tooltip.hide();
          }
 
          painter.ActiavteInBrowser(names);

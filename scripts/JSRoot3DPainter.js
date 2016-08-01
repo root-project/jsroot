@@ -45,55 +45,63 @@
        return this._Detect_WebGL;
    }
 
+   JSROOT.Painter.TooltipFor3D = function() {
+      this.tt = null;
+      this.cont = null;
+
+      this.pos = function(e) {
+         if (this.tt === null) return;
+         var u = JSROOT.browser.isIE ? (event.clientY + document.documentElement.scrollTop) : e.pageY;
+         var l = JSROOT.browser.isIE ? (event.clientX + document.documentElement.scrollLeft) : e.pageX;
+
+         this.tt.style.top = (u + 15) + 'px';
+         this.tt.style.left = (l + 3) + 'px';
+      };
+
+      this.show  = function(v) {
+         if (JSROOT.gStyle.Tooltip <= 0) return;
+         if (!v || v==="") return this.hide();
+
+         if (this.tt === null) {
+            this.tt = document.createElement('div');
+            this.tt.setAttribute('class', 'jsroot');
+            var t = document.createElement('div');
+            t.setAttribute('class', 'tt3d_border');
+            this.cont = document.createElement('div');
+            this.cont.setAttribute('class', 'tt3d_cont');
+            var b = document.createElement('div');
+            b.setAttribute('class', 'tt3d_border');
+            this.tt.appendChild(t);
+            this.tt.appendChild(this.cont);
+            this.tt.appendChild(b);
+            document.body.appendChild(this.tt);
+            this.tt.style.opacity = 1;
+            this.tt.style.filter = 'alpha(opacity=1)';
+            this.tt.style.position = 'absolute';
+            this.tt.style.display = 'block';
+         }
+         this.cont.innerHTML = v;
+         this.tt.style.width = 'auto'; // let it be automatically resizing...
+         if (JSROOT.browser.isIE)
+            this.tt.style.width = this.tt.offsetWidth;
+      };
+
+      this.hide  = function() {
+         if (this.tt !== null)
+            document.body.removeChild(this.tt);
+         this.tt = null;
+      }
+
+      return this;
+   }
+
    JSROOT.Painter.add3DInteraction = function() {
       // add 3D mouse interactive functions
 
       var painter = this;
       var mouseX, mouseY, distXY = 0, mouseDowned = false;
 
-      var tooltip = {
-         tt: null, cont: null,
-         pos : function(e) {
-            if (this.tt === null) return;
-            var u = JSROOT.browser.isIE ? (event.clientY + document.documentElement.scrollTop) : e.pageY;
-            var l = JSROOT.browser.isIE ? (event.clientX + document.documentElement.scrollLeft) : e.pageX;
-
-            this.tt.style.top = (u + 15) + 'px';
-            this.tt.style.left = (l + 3) + 'px';
-         },
-         show : function(v) {
-            if (JSROOT.gStyle.Tooltip <= 0) return;
-            if (!v || v==="") return this.hide();
-
-            if (this.tt === null) {
-               this.tt = document.createElement('div');
-               this.tt.setAttribute('class', 'jsroot');
-               var t = document.createElement('div');
-               t.setAttribute('class', 'tt3d_border');
-               this.cont = document.createElement('div');
-               this.cont.setAttribute('class', 'tt3d_cont');
-               var b = document.createElement('div');
-               b.setAttribute('class', 'tt3d_border');
-               this.tt.appendChild(t);
-               this.tt.appendChild(this.cont);
-               this.tt.appendChild(b);
-               document.body.appendChild(this.tt);
-               this.tt.style.opacity = 1;
-               this.tt.style.filter = 'alpha(opacity=1)';
-               this.tt.style.position = 'absolute';
-               this.tt.style.display = 'block';
-            }
-            this.cont.innerHTML = v;
-            this.tt.style.width = 'auto'; // let it be automatically resizing...
-            if (JSROOT.browser.isIE)
-               this.tt.style.width = this.tt.offsetWidth;
-         },
-         hide : function() {
-            if (this.tt !== null)
-               document.body.removeChild(this.tt);
-            this.tt = null;
-         }
-      };
+      var tooltip = new JSROOT.Painter.TooltipFor3D();
 
       var raycaster = new THREE.Raycaster();
       var do_bins_highlight = painter.first_render_tm < 2000;
