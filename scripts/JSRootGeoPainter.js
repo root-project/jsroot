@@ -184,6 +184,10 @@
          res.show_controls = true;
          opt = opt.replace("controls", " ");
       }
+      if (opt.indexOf("ctrl")>=0) {
+         res.show_controls = true;
+         opt = opt.replace("ctrl", " ");
+      }
 
       if (opt.indexOf("noworker")>=0) {
          res.use_worker = -1;
@@ -433,6 +437,7 @@
          setSide();
       });
 
+      this.clipX = (bound.min.x+bound.max.x)/2;
       var xclip = clipFolder.add(this, 'clipX', bound.min.x, bound.max.x).name('X Position');
 
       xclip.onChange( function (value) {
@@ -446,6 +451,7 @@
          setSide();
       });
 
+      this.clipY = (bound.min.y + bound.max.y)/2;
       var yclip = clipFolder.add(this, 'clipY', bound.min.y, bound.max.y).name('Y Position');
 
       yclip.onChange( function (value) {
@@ -459,6 +465,7 @@
          setSide();
       });
 
+      this.clipZ = (bound.min.z + bound.max.z) / 2;
       var zclip = clipFolder.add(this, 'clipZ', bound.min.z, bound.max.z).name('Z Position');
 
       zclip.onChange( function (value) {
@@ -1157,8 +1164,8 @@
       this.clipZ = 0.0;
 
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX),
-                           new THREE.Plane(new THREE.Vector3( 0,-1, 0), this.clipY),
-                           new THREE.Plane(new THREE.Vector3( 0, 0, 1), this.clipZ) ];
+                           new THREE.Plane(new THREE.Vector3( 0, 1, 0), this.clipY),
+                           new THREE.Plane(new THREE.Vector3( 0, 0, this.options._yup ? 1 : -1), this.clipZ) ];
 
        // Lights
 
@@ -1188,11 +1195,11 @@
       }
 
       this._defaultAdvanced = { aoClamp: 0.70,
-                        lumInfluence: 0.4,
-                           shininess: 100,
-                           globalTransparency: 1.0,
-                           depthTest: true
-                         };
+                                lumInfluence: 0.4,
+                                shininess: 100,
+                                globalTransparency: 1.0,
+                                depthTest: true
+                              };
 
       // Smooth Lighting Shader (Screen Space Ambient Occulsion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
@@ -1225,7 +1232,6 @@
 
       this._advceOptions = {};
       this.resetAdvanced();
-
    }
 
 
@@ -1278,7 +1284,7 @@
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = this.clipY;
-      this._clipPlanes[2].constant = this.clipZ;
+      this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
       this._renderer.clippingPlanes = [];
       if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
       if (this.enableY) this._renderer.clippingPlanes.push(this._clipPlanes[1]);
