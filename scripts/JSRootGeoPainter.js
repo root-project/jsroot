@@ -42,6 +42,8 @@
 
       JSROOT.TObjectPainter.call(this, geometry);
 
+      this.no_default_title = true; // do not set title to main DIV
+
       this.Cleanup(true);
    }
 
@@ -242,7 +244,7 @@
 
       if (this.GetItemName().length > 0)
          for (var n=0;n<names.length;++n)
-            names[n] = this.GetItemName() + '/' + names[n];
+            names[n] = this.GetItemName() + ((names[n].length > 0) ? ('/' + names[n]) : "");
 
       if (JSROOT.hpainter) {
          // show browser if it not visible
@@ -632,6 +634,11 @@
          JSROOT.Painter.createMenu(function(menu) {
             menu.painter = painter; // set as this in callbacks
 
+            // first remove all elements without stack
+            for (var n=intersects.length-1; n>=0;--n)
+               if (!intersects[n].object.stack)
+                  intersects.splice(n,1);
+
             if (!intersects || (intersects.length==0)) {
                painter.FillContextMenu(menu);
             } else {
@@ -643,7 +650,9 @@
                   var obj = intersects[n].object;
                   var name = painter._clones.ResolveStack(obj.stack).name;
 
-                  menu.add((many ? "sub:" : "header:") + name.substr(6), name, function(arg) { this.ActiavteInBrowser([arg], true); });
+                  var hdr = (name.length===0) ? painter.GetItemName() : name.substr(6);
+
+                  menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                   menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
@@ -756,14 +765,15 @@
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
+            if (!obj.stack) continue;
             var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
          }
 
-         if (painter.options.highlight && (names.length > 0)) {
+         if (names.length > 0) {
             painter._tooltip.pos(evnt);
-            painter._tooltip.show(names[0]);
+            painter._tooltip.show((names[0].length > 0) ? names[0] : painter.GetItemName());
          } else {
             painter._tooltip.hide();
          }

@@ -48,6 +48,7 @@
    JSROOT.Painter.TooltipFor3D = function() {
       this.tt = null;
       this.cont = null;
+      this.lastlbl = '';
 
       this.pos = function(e) {
          if (this.tt === null) return;
@@ -80,16 +81,21 @@
             this.tt.style.position = 'absolute';
             this.tt.style.display = 'block';
          }
-         this.cont.innerHTML = v;
-         this.tt.style.width = 'auto'; // let it be automatically resizing...
-         if (JSROOT.browser.isIE)
-            this.tt.style.width = this.tt.offsetWidth;
+
+         if (this.lastlbl !== v) {
+            this.cont.innerHTML = v;
+            this.lastlbl = v;
+            this.tt.style.width = 'auto'; // let it be automatically resizing...
+            if (JSROOT.browser.isIE)
+               this.tt.style.width = this.tt.offsetWidth;
+         }
       };
 
       this.hide  = function() {
          if (this.tt !== null)
             document.body.removeChild(this.tt);
          this.tt = null;
+         this.lastlbl = "";
       }
 
       return this;

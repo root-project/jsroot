@@ -2946,6 +2946,8 @@
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
 
+      if (this.nodes.length === 1) res.name = "";
+
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();
          if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
