@@ -1164,7 +1164,7 @@
       this.clipZ = 0.0;
 
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX),
-                           new THREE.Plane(new THREE.Vector3( 0, 1, 0), this.clipY),
+                           new THREE.Plane(new THREE.Vector3( 0, this.options._yup ? -1 : 1, 0), this.clipY),
                            new THREE.Plane(new THREE.Vector3( 0, 0, this.options._yup ? 1 : -1), this.clipZ) ];
 
        // Lights
@@ -1283,7 +1283,7 @@
 
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
       this._clipPlanes[0].constant = this.clipX;
-      this._clipPlanes[1].constant = this.clipY;
+      this._clipPlanes[1].constant = -this.clipY;
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
       this._renderer.clippingPlanes = [];
       if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
