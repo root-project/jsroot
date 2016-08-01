@@ -36,11 +36,11 @@
    // ======= Geometry painter================================================
 
 
-   JSROOT.TGeoPainter = function( geometry ) {
-      if ((geometry !== null) && (geometry._typename.indexOf('TGeoVolume') === 0))
-         geometry = { _typename:"TGeoNode", fVolume: geometry, fName:"TopLevel" };
+   JSROOT.TGeoPainter = function( obj ) {
+      if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
+         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, _geoh: obj._geoh };
 
-      JSROOT.TObjectPainter.call(this, geometry);
+      JSROOT.TObjectPainter.call(this, obj);
 
       this.no_default_title = true; // do not set title to main DIV
 
@@ -158,8 +158,7 @@
 
          var name = opt.substring(p1+1, p2);
          opt = opt.substr(0,p1) + opt.substr(p2);
-
-         console.log("Modify visibility", sign,':',name);
+         // console.log("Modify visibility", sign,':',name);
 
          this.ModifyVisisbility(name, sign);
       }
@@ -251,6 +250,7 @@
          // show browser if it not visible
          if (JSROOT.hpainter.nobrowser && force)
             JSROOT.hpainter.ToggleFloatBrowser(true);
+
 
          JSROOT.hpainter.actiavte(names, force);
 
@@ -571,8 +571,9 @@
                var name = painter._clones.ResolveStack(obj.stack).name;
 
                var hdr = "header";
-               if (name.length > 6) hdr = name.substr(6); else
-               if ((name.length===0) && painter.GetItemName()) hdr = painter.GetItemName();
+               if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
+               if (name.length > 0) hdr = name; else
+               if (painter.GetItemName()) hdr = painter.GetItemName();
 
                menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
 
@@ -795,6 +796,7 @@
             var obj = intersects[n].object;
             if (!obj.stack) continue;
             var name = painter._clones.ResolveStack(obj.stack).name;
+            names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
          }
 
@@ -1015,7 +1017,7 @@
          if (unique.indexOf(shape) < 0) {
             unique.push(shape); // only to avoid duplication
             todo.push({ indx: n, nodeid: entry.nodeid, shape: shape });
-            if (todo.length > 100) break;
+            if (todo.length > 300) break;
          }
       }
 
@@ -1045,7 +1047,7 @@
          for (var loop=0;loop<2;++loop) {
             // if (loop===1) console.log('now create composites');
 
-            for (var s=0; s < todo.length && (currtm-starttm < 200); ++s) {
+            for (var s=0; s < todo.length && (currtm-starttm < 300); ++s) {
                var shape = todo[s].shape;
                if (shape._geom !== undefined) continue; // this is due to second loop
 
@@ -1080,6 +1082,8 @@
 
             if ((ready.length>0) || !isanycomposite) break; // no need to run second loop for the composites
          }
+
+         // console.log('todo', todo.length, 'takes', (currtm - starttm));
       }
 
       // create
@@ -1092,11 +1096,16 @@
 
          if (this._job_done) continue;
 
-         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
-
-         // original object, extracted from the map
+         // original object and clone with attributes
          var nodeobj = this._clones.origin[entry.nodeid];
          var clone = this._clones.nodes[entry.nodeid];
+
+         if (!clone.nfaces) {
+            console.error('At this point we get object with zero faces - ignore it');
+            continue;
+         }
+
+         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
          var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
 
@@ -1958,30 +1967,35 @@
 
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
 
-
       var vol = null, shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
-         shape = obj;
+         shape = obj; obj = null;
       } else
       if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          vol = obj;
       } else
       if ((obj._typename === 'TGeoManager')) {
-         vol = obj.fMasterVolume;
+         vol = obj.fMasterVolume; obj = null;
       } else
       if ('fVolume' in obj) {
          vol = obj.fVolume;
+      } else {
+         obj = null;
       }
 
       if (opt && opt.indexOf("comp")==0) {
          var comp = shape ? shape : (vol ? vol.fShape : null);
 
          if (comp && comp.fNode && comp._typename == 'TGeoCompositeShape') {
+            obj = null;
+
             opt = opt.substr(4);
 
             vol = JSROOT.Create("TGeoVolume");
             JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+            vol._geoh = true; // workaround, let know browser that we are in volumes hierarchy
+            vol.fName = "";
 
             vol.fNodes = JSROOT.Create("TList");
 
@@ -2012,7 +2026,7 @@
       }
 
       if (vol && (typeof vol == 'object')) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(vol));
+         JSROOT.extend(this, new JSROOT.TGeoPainter(obj? obj : vol));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt);
       }
@@ -2086,6 +2100,9 @@
 
 
    JSROOT.GEO.getBrowserItem = function(item, itemname, callback) {
+      // mark object as belong to the hierarchy, require to
+      if (item._geoobj) item._geoobj._geoh = true;
+
       JSROOT.CallBack(callback, item, item._geoobj);
    }
 
@@ -2108,11 +2125,13 @@
 
          sub._volume = obj.fVolume;
 
+         var iscomposite = obj.fVolume.fShape && (obj.fVolume.fShape._typename === "TGeoCompositeShape") && obj.fVolume.fShape.fNode;
+
          if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length > 0)) {
             sub._more = true;
             sub._expand = JSROOT.GEO.expandObject;
          } else
-         if (obj.fVolume.fShape && (obj.fVolume.fShape._typename === "TGeoCompositeShape") && obj.fVolume.fShape.fNode) {
+         if (iscomposite) {
             sub._more = true;
             sub._expand = function(node, obj) {
                JSROOT.GEO.createItem(node, obj.fVolume.fShape.fNode.fLeft, 'Left');
@@ -2123,7 +2142,10 @@
 
          if (obj.fVolume.fShape) {
             sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
-            sub._title += " shape:" + obj.fVolume.fShape._typename;
+            if (iscomposite)
+               sub._title += " composite: " + obj.fVolume.fShape.fNode._typename;
+            else
+               sub._title += " shape:" + obj.fVolume.fShape._typename;
          } else {
             sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
          }

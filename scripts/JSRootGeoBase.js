@@ -2508,7 +2508,6 @@
 
       */
 
-
       var bsp = null;
 
       // console.log('comp type ' + shape.fNode._typename);
@@ -2525,20 +2524,17 @@
       if (bsp === null) {
          JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
          bsp = bsp1;
-      }
-
-      var res = return_bsp ? bsp : bsp.toBufferGeometry();
-
-      // if (ddd) console.log('comp faces ', JSROOT.GEO.numGeometryFaces(res));
-
-      if (JSROOT.GEO.numGeometryFaces(res) === 0) {
+      } else
+      if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
          JSROOT.GEO.warn('Zero faces in comp shape'
                           + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
-                          + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces');
-         return null;
+                          + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
+                          + '  use first');
+         bsp = bsp1;
+         // return null;
       }
 
-      return res;
+      return return_bsp ? bsp : bsp.toBufferGeometry();
    }
 
 
@@ -2693,7 +2689,12 @@
    // class for working with cloned nodes
 
    JSROOT.GEO.ClonedNodes = function(obj, clones) {
-      if (obj) this.CreateClones(obj); else
+      this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
+
+      if (obj) {
+         if (obj._geoh) this.toplevel = false;
+         this.CreateClones(obj);
+      } else
       if (clones) this.nodes = clones;
    }
 
@@ -2946,7 +2947,7 @@
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
 
-      if (this.nodes.length === 1) res.name = "";
+      if (!this.toplevel || (this.nodes.length === 1)) res.name = "";
 
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();
@@ -2961,7 +2962,11 @@
             res.node = this.nodes[res.id];
             if (this.origin) {
                res.obj = this.origin[res.id];
-               res.name += "/" + res.obj.fName;
+
+               if (res.obj.fName!=="") {
+                  if (res.name.length>0) res.name += "/";
+                  res.name += res.obj.fName;
+               }
             }
 
             if (withmatrix && res.node.matrix)
