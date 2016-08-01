@@ -6453,59 +6453,52 @@
 
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
-      var xmin = this.scale_xmin, xmax = this.scale_xmax, ymin, ymax;
+      var itemx = { name: "x", ignore: false },
+          itemy = { name: "y", ignore: (this.Dimension() == 1) },
+          cur = d3.mouse(this.svg_frame().node()),
+          painter = this;
 
-      if ((xmin === xmax) && (delta<0)) { xmin = this.xmin; xmax = this.xmax; }
+      function ProcessAxis(item, dmin, ignore) {
+         item.min = item.max = undefined;
+         item.changed = false;
+         if (ignore && item.ignore) return;
 
-      var cur = d3.mouse(this.svg_frame().node()), pad = this.root_pad();
+         item.min = painter["scale_" + item.name+"min"];
+         item.max = painter["scale_" + item.name+"max"];
+         if ((item.min === item.max) && (delta<0)) {
+            item.min = painter[item.name+"min"];
+            item.max = painter[item.name+"max"];
+         }
 
-      if (xmin < xmax) {
-         var dmin = cur[0] / this.frame_width();
+         if (item.min >= item.max) return;
+
          if ((dmin>0) && (dmin<1)) {
-            if (this.logx) {
-               var factor = (xmin>0) ? JSROOT.log10(xmax/xmin) : 2;
+            if (painter['log'+item.name]) {
+               var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
                if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
-               xmin = xmin / Math.pow(factor, delta*dmin);
-               xmax = xmax * Math.pow(factor, delta*(1-dmin));
+               item.min = item.min / Math.pow(factor, delta*dmin);
+               item.max = item.max * Math.pow(factor, delta*(1-dmin));
             } else {
-               var rx = (xmax - xmin);
+               var rx = (item.max - item.min);
                if (delta>0) rx = 1.001 * rx / (1-delta);
-               xmin += -delta*dmin*rx;
-               xmax -= -delta*(1-dmin)*rx;
+               item.min += -delta*dmin*rx;
+               item.max -= -delta*(1-dmin)*rx;
             }
-            if (xmin >= xmax) xmin = xmax = undefined;
+            if (item.min >= item.max) item.min = item.max = undefined;
          } else {
-            xmin = xmax = undefined;
+            item.min = item.max = undefined;
          }
+
+         item.changed = ((item.min !== undefined) && (item.max !== undefined));
       }
 
-      if ((this.Dimension() > 1) || (cur[0] < 0)) {
-         ymin = this.scale_ymin; ymax = this.scale_ymax;
+      ProcessAxis(this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
 
-         if ((ymin === ymax) && (delta<0)) { ymin = this.ymin; ymax = this.ymax; }
+      ProcessAxis(this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
 
-         var dmin = 1 - cur[1] / this.frame_height();
+      this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
-         if ((ymin < ymax) && (dmin>0) && (dmin<1))  {
-            if (this.logy) {
-               var factor = (ymin>0) ? JSROOT.log10(ymax/ymin) : 2;
-               if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
-               ymin = ymin / Math.pow(factor, delta*dmin);
-               ymax = ymax * Math.pow(factor, delta*(1-dmin));
-            } else {
-               var ry = (ymax - ymin);
-               if (delta>0) ry = 1.001 * ry / (1-delta);
-               ymin += -delta*dmin*ry;
-               ymax -= -delta*(1-dmin)*ry;
-            }
-            if (ymin >= ymax) ymin = ymax = undefined;
-         } else {
-            ymin = ymax = undefined;
-         }
-      }
-
-      this.Zoom(xmin,xmax,ymin,ymax);
-      if (xmin || xmax || ymin || ymax) this.zoom_changed_interactive = true;
+      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = true;
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
