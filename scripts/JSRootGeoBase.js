@@ -2441,59 +2441,87 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      if (faces_limit < 0)
-         return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1) +
-                JSROOT.GEO.createGeometry(shape.fNode.fRight, -1);
+      var nleft = JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1),
+          nright = JSROOT.GEO.createGeometry(shape.fNode.fRight, -1),
+          return_bsp = false, ntry = 1;
 
-      var return_bsp = false;
-      if (faces_limit === 0)
-         faces_limit = 10000;
-      else
+      // very primitive estimation, may differ very much
+      if (faces_limit < 0) return nleft + nright;
+
+      if (faces_limit === 0) {
+         ntry = 4; // how many faces_limit will be tested
+      } else {
          return_bsp = true;
-
-      var bsp1, bsp2;
-
-      var matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
-      var matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
-
-      if (matrix1 && (matrix1.determinant() < -0.9))
-         JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
-
-      if (matrix2 && (matrix2.determinant() < -0.9))
-         JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
-
-      var geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit / 2);
-
-      if (geom1 instanceof ThreeBSP) {
-         if (matrix1 === null) {
-            bsp1 = geom1;
-         } else {
-            // convert ourself
-            bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
-            JSROOT.GEO.warn('extra BSP1 convertion because of matrix - fix!!!');
-         }
-      } else {
-         if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-
-         bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
-
-      var geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit / 2);
-
-      if (geom2 instanceof ThreeBSP) {
-         if (matrix2 === null) {
-            bsp2 = geom2;
-         } else {
-            bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
-            JSROOT.GEO.warn('extra BSP2 convertion because of matrix - fix!!!');
+      while (ntry-->0) {
+         switch (ntry) {
+            case 3: faces_limit = 10000; break;
+            case 2: faces_limit = 5000; break;
+            case 1: faces_limit = 200; break;
          }
-      } else {
-         if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-         bsp2 = new ThreeBSP(geom2, matrix2);
-      }
 
-      /*      var supported = ["TGeoCompositeShape", "TGeoSphere", "TGeoBBox",
+         var geom1, geom2, bsp1, bsp2, bsp = null
+             matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
+             matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
+
+         if (matrix1 && (matrix1.determinant() < -0.9))
+            JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+
+         if (matrix2 && (matrix2.determinant() < -0.9))
+            JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
+
+         // console.log('comp type ' + shape.fNode._typename);
+
+         // make creation more intelligent
+         // we have clear limit for the faces and should try distribute faces limit between two geometries
+         // therefore try first create smaller shape and than bigger
+
+         var nreal = faces_limit/2;
+
+         if (nleft > nright) {
+            geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
+            //if (!geom2) continue;
+            //var nreal = JSROOT.GEO.numGeometryFaces(geom2);
+            geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, Math.max(faces_limit/2, faces_limit-nreal));
+            if (!geom1) continue;
+         } else {
+            geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit/2);
+            //if (!geom1) continue;
+            //var nreal = JSROOT.GEO.numGeometryFaces(geom1);
+            geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, Math.max(faces_limit/2, faces_limit-nreal));
+            if (!geom2) continue;
+         }
+
+         try {
+
+            if (geom1 instanceof ThreeBSP) {
+               if (matrix1 === null) {
+                  bsp1 = geom1;
+               } else {
+                  // convert ourself
+                  bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
+                  JSROOT.GEO.warn('extra left BSP convertion because of matrix - fix!!!');
+               }
+            } else {
+               if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
+
+               bsp1 = new ThreeBSP(geom1, matrix1);
+            }
+
+            if (geom2 instanceof ThreeBSP) {
+               if (matrix2 === null) {
+                  bsp2 = geom2;
+               } else {
+                  bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
+                  JSROOT.GEO.warn('extra right BSP convertion because of matrix - fix!!!');
+               }
+            } else {
+               if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
+               bsp2 = new ThreeBSP(geom2, matrix2);
+            }
+
+         /*      var supported = ["TGeoCompositeShape", "TGeoSphere", "TGeoBBox",
                             "TGeoCone", "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
                              "TGeoArb8", "TGeoTrap", "TGeoGtra", "TGeoPcon", "TGeoPgon"];
 
@@ -2506,35 +2534,47 @@
          console.log('Right type ', shape.fNode.fRight._typename, 'nfaces', JSROOT.GEO.numGeometryFaces(geom2));
       }
 
-      */
+          */
 
-      var bsp = null;
 
-      // console.log('comp type ' + shape.fNode._typename);
+            if (shape.fNode._typename === 'TGeoIntersection')
+               bsp = bsp1.intersect(bsp2);  // "*"
+            else
+               if (shape.fNode._typename === 'TGeoUnion')
+                  bsp = bsp1.union(bsp2);   // "+"
+               else
+                  if (shape.fNode._typename === 'TGeoSubtraction')
+                     bsp = bsp1.subtract(bsp2); // "/"
 
-      if (shape.fNode._typename === 'TGeoIntersection')
-         bsp = bsp1.intersect(bsp2);  // "*"
-      else
-      if (shape.fNode._typename === 'TGeoUnion')
-         bsp = bsp1.union(bsp2);   // "+"
-      else
-      if (shape.fNode._typename === 'TGeoSubtraction')
-         bsp = bsp1.subtract(bsp2); // "/"
+            if (bsp === null) {
+               JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+               bsp = bsp1;
+            } else
+               if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
+                  JSROOT.GEO.warn('Zero faces in comp shape'
+                        + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
+                        + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
+                        + '  use first');
+                  bsp = bsp1;
+                  // return null;
+               }
 
-      if (bsp === null) {
-         JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
-         bsp = bsp1;
-      } else
-      if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
-         JSROOT.GEO.warn('Zero faces in comp shape'
-                          + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
-                          + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
-                          + '  use first');
-         bsp = bsp1;
-         // return null;
+            return return_bsp ? bsp : bsp.toBufferGeometry();
+
+         } catch(e) {
+
+            if (ntry>0)
+               JSROOT.GEO.warn('Failure when creating composite'
+                                + ' left: ' + shape.fNode.fLeft._typename
+                                + ' right: ' + shape.fNode.fRight._typename
+                                + '  limit = ' + faces_limit+ ', try less');
+            else
+               return null;
+
+         }
       }
 
-      return return_bsp ? bsp : bsp.toBufferGeometry();
+      return null;
    }
 
 
