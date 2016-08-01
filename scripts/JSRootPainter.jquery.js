@@ -370,6 +370,11 @@
          d3p.append("a").attr("href", '#').text("clear").on("click", function() { h.clear(false); d3.event.preventDefault(); });
       }
 
+      if (this.nobrowser) {
+         d3p.append("text").text(" | ");
+         d3p.append("a").attr("href", '#').text("hide").on("click", function() { h.ToggleFloatBrowser(false); d3.event.preventDefault(); });
+      }
+
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {

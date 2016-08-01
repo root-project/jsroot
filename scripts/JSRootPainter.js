@@ -8014,7 +8014,7 @@
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
-   JSROOT.HierarchyPainter.prototype.ToggleFloatBrowser = function() {
+   JSROOT.HierarchyPainter.prototype.ToggleFloatBrowser = function(force_mode) {
       if (!this.nobrowser || !this.disp) return;
 
       var elem = d3.select("#"+this.disp.frameid);
@@ -8025,17 +8025,20 @@
       var main = container.select('.float_browser');
 
       if (main.empty()) {
+         if (force_mode === false) return;
          var div = container.append("div").attr("class","jsroot");
          main = div.append("div").attr("class","float_browser").style('left', '-320px');
          main.transition().delay(700).style('left', '5px');
          this.SetDivId(main.node());
          this.RefreshHtml();
-
       } else {
-         if (main.style('left') == '5px')
-            main.transition().delay(700).style('left', '-320px');
-         else
-            main.transition().delay(700).style('left', '5px');
+         if (main.style('left') == '5px') {
+            if (force_mode !== true)
+               main.transition().delay(700).style('left', '-320px');
+         } else {
+            if (force_mode !== false)
+               main.transition().delay(700).style('left', '5px');
+         }
       }
    }
 

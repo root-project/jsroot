@@ -103,6 +103,7 @@
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
+
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
       var node = this.GetObject();
 
@@ -244,6 +245,10 @@
             names[n] = this.GetItemName() + '/' + names[n];
 
       if (JSROOT.hpainter) {
+         // show browser if it not visible
+         if (JSROOT.hpainter.nobrowser && force)
+            JSROOT.hpainter.ToggleFloatBrowser(true);
+
          JSROOT.hpainter.actiavte(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
@@ -751,6 +756,7 @@
             var obj = intersects[n].object;
             var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
+            if (painter.options.highlight) break; // if do highlight, also in browser selects one
          }
 
          painter.ActiavteInBrowser(names);
