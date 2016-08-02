@@ -824,16 +824,14 @@
       // when transformation matrix includes one or several invertion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
-      var flip =  new THREE.Vector3(1,1,-1),
-          gname = "_geomZ",
-          geom = shape[gname];
+      var flip =  new THREE.Vector3(1,1,-1);
 
-      if (geom === undefined) {
+      if (shape.geomZ === undefined) {
 
-         if (shape._geom.type == 'BufferGeometry') {
+         if (shape.geom.type == 'BufferGeometry') {
 
-            var pos = shape._geom.getAttribute('position').array,
-                norm = shape._geom.getAttribute('normal').array,
+            var pos = shape.geom.getAttribute('position').array,
+                norm = shape.geom.getAttribute('normal').array,
                 len = pos.length, n, shift = 0,
                 newpos = new Float32Array(len),
                 newnorm = new Float32Array(len);
@@ -851,20 +849,20 @@
                shift+=3; if (shift===6) shift=-3; // values 0,3,-3
             }
 
-            geom = new THREE.BufferGeometry();
-            geom.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
-            geom.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
+            shape.geomZ = new THREE.BufferGeometry();
+            shape.geomZ.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
+            shape.geomZ.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
             // normals are calculated with normal geometry and correctly scaled
             // geom.computeVertexNormals();
 
          } else {
 
-            geom = shape._geom.clone();
+            shape.geomZ = shape.geom.clone();
 
-            geom.scale(flip.x, flip.y, flip.z);
+            shape.geomZ.scale(flip.x, flip.y, flip.z);
 
             var face, d;
-            for (var n=0;n<geom.faces.length;++n) {
+            for (var n=0;n<shape.geomZ.faces.length;++n) {
                face = geom.faces[n];
                d = face.b; face.b = face.c; face.c = d;
             }
@@ -872,11 +870,9 @@
             // normals are calculated with normal geometry and correctly scaled
             // geom.computeFaceNormals();
          }
-
-         shape[gname] = geom;
       }
 
-      var mesh = new THREE.Mesh( geom, material );
+      var mesh = new THREE.Mesh( shape.geomZ, material );
       mesh.scale.copy(flip);
       mesh.updateMatrix();
 
@@ -929,11 +925,15 @@
 
          this.drawing_stage = 2;
 
+         this.drawing_log = "Worker select visibles";
+
          return 2; // we now waiting for the worker reply
       }
 
       if (this.drawing_stage == 2) {
          // do nothing, we are waiting for worker reply
+
+         this.drawing_log = "Worker select visibles";
 
          return 2;
       }
@@ -941,6 +941,8 @@
       if (this.drawing_stage == 3) {
          // here we merge new and old list of nodes for drawing,
          // normally operation is fast and can be implemented with one call
+
+         this.drawing_log = "Analyse visibles";
 
          if (this._draw_nodes) {
             var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes), dcnt = 0;
@@ -958,184 +960,139 @@
 
          this._draw_nodes = this._new_draw_nodes;
          delete this._new_draw_nodes;
+         this.drawing_stage = 4;
+         return true;
+      }
+
+      if (this.drawing_stage === 4) {
+
+         this.drawing_log = "Collect shapes";
+
+         // collect shapes
+         var shapes = this._clones.CollectShapes(this._draw_nodes);
+
+         // merge old and new list with produced shapes
+         this._build_shapes = this._clones.MergeShapesLists(this._build_shapes, shapes);
+
          this.drawing_stage = 5;
          return true;
       }
 
-      // here is last and main stage, create geometries and build full mesh
-      // TODO: make it with few more stages
-      if (!this._draw_nodes) return false;
 
-      // first of all, create geometries (using worker if available)
+      if (this.drawing_stage === 5) {
+         // this is building of geometries,
+         // one can ask worker to build them or do it ourself
 
-      var unique = [], todo = [], ready = [], waiting = 0;
-
-      for (var n=0;n<this._draw_nodes.length;++n) {
-         var entry = this._draw_nodes[n];
-         if (entry.done) continue;
-
-         var shape = this._clones.GetNodeShape(entry.nodeid);
-
-         if (!shape) { entry.done = true; continue; }
-
-         // we should wait for reply from worker (if any)
-         if (shape._geom_worker) { waiting++; } // number of waiting geom for worker
-         else if (this._job_done) entry.done = true;
-         else if (shape._geom !== undefined) {
-            if (ready.length < 1000) ready.push(n);
-         } else
-         if (unique.indexOf(shape) < 0) {
-            unique.push(shape); // only to avoid duplication
-            todo.push({ indx: n, nodeid: entry.nodeid, shape: shape });
-            if (todo.length > 300) break;
-         }
-      }
-
-      // console.log('collected todo', todo.length,'ready', ready.length, 'waiting', waiting);
-
-      if (todo.length > 0) {
          if (this.canSubmitToWorker()) {
-            // if we could submit task to the worker - ok
-            for (var s=0;s<todo.length;++s) {
-               unique[s]._geom_worker = true; // mark shape as processed by worker
-               todo[s].shape = JSROOT.clone(todo[s].shape, null, true);
+            var job = { limit: this.options.maxlimit, shapes: [] };
+            for (var n=0;n<this._build_shapes.length;++n) {
+               var clone = null, item = this._build_shapes[n];
+               // only submit not-done items
+               if (item.ready)
+                  clone = { id: item.id, ready: true, nfaces: item.nfaces, refcnt: item.refcnt };
+               else
+                  clone = JSROOT.clone(item, null, true);
+
+               job.shapes.push(clone);
             }
-            waiting += todo.length;
-            this.submitToWorker({ shapes: todo });
-            return 1;
+            this.submitToWorker(job);
+            this.drawing_log = "Worker build shapes";
+
+            this.drawing_stage = 6;
+            return 2;
          }
 
-         // when task cannot be submitted to worker, process it in main context
-
-         var starttm = new Date().getTime(),
-             currtm = starttm,
-             isanycomposite = false;
-
-         // first create all not-composite shapes
-         // only when no any found, try to create composites
-
-         for (var loop=0;loop<2;++loop) {
-            // if (loop===1) console.log('now create composites');
-
-            for (var s=0; s < todo.length && (currtm-starttm < 300); ++s) {
-               var shape = todo[s].shape;
-               if (shape._geom !== undefined) continue; // this is due to second loop
-
-               if (shape._typename == 'TGeoCompositeShape') {
-                  // do not create composite in main thread, when worker is exists (excluding first drawing)
-                  if (this._worker && !this._first_drawing) continue;
-
-                  isanycomposite = true;
-                  if (loop === 0) continue;
-               }
-
-               shape._geom = JSROOT.GEO.createGeometry(shape);
-               isany = true;
-
-               if (shape._geom === null) {
-                  var entry = this._draw_nodes[todo[s].indx];
-                  if (entry.stack)
-                     console.log('Fail to create', this._clones.ResolveStack(entry.stack).name);
-               }
-
-               //if (shape._typename == 'TGeoXtru') {
-               //   var entry = this._draw_nodes[todo[s].indx];
-               //   if (entry.stack)
-               //      console.log('Create shape', this._clones.ResolveStack(entry.stack).name);
-               //}
-
-               delete shape._geom_worker; // remove flag
-               ready.push(todo[s].indx); // one could add it to ready list
-
-               currtm = new Date().getTime();
-            }
-
-            if ((ready.length>0) || !isanycomposite) break; // no need to run second loop for the composites
-         }
-
-         // console.log('todo', todo.length, 'takes', (currtm - starttm));
+         this.drawing_stage = 7;
       }
 
-      // create
-      for (var n=0;n<ready.length;++n) {
-         // item to draw, containes indexs of children, first element - node index
+      if (this.drawing_stage === 6) {
+         // waiting shapes from the worker, worker should activate our code
+         return 2;
+      }
 
-         var entry = this._draw_nodes[ready[n]];
+      if ((this.drawing_stage === 7) || (this.drawing_stage === 8)) {
 
-         entry.done = true; // mark element as processed
-
-         if (this._job_done) continue;
-
-         // original object and clone with attributes
-         var nodeobj = this._clones.origin[entry.nodeid];
-         var clone = this._clones.nodes[entry.nodeid];
-
-         if (!clone.nfaces) {
-            console.error('At this point we get object with zero faces - ignore it');
-            continue;
+         if (this.drawing_stage === 7) {
+            // building shapes
+            var res = this._clones.BuildShapes(this._build_shapes, this.options.maxlimit, 500);
+            if (res.done) {
+               this.drawing_stage = 8;
+            } else {
+               this.drawing_log = "Shapes " + res.shapes + " / " + res.faces;
+               if (res.newshapes < 50) return true;
+            }
          }
 
-         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
+         // final stage, create all meshes
 
-         var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
+         var tm0 = new Date().getTime(), ready = true;
 
-         var mesh = null;
+         for (var n=0; n<this._draw_nodes.length;++n) {
+            var entry = this._draw_nodes[n];
+            if (entry.done) continue;
 
-         var nfaces = JSROOT.GEO.numGeometryFaces(prop.shape._geom);
+            var shape = this._build_shapes[entry.shapeid];
+            if (!shape.ready) { ready = false; continue; }
 
-         if (nfaces > 0) {
+            entry.done = true;
+            shape.used = true; // indicate that shape was used in building
 
-            this._num_geom++;
+            if (!shape.geom || (shape.nfaces === 0)) continue;
 
-            this._num_faces += nfaces;
+            var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
-            // let create up to 50% more before really stop any further creation
-            if (this._num_faces > 1.5*this.options.maxlimit) {
-               console.log('abort creation of meshes - too many faces created');
-               this._job_done = true;
-            }
+            var nodeobj = this._clones.origin[entry.nodeid];
+            var clone = this._clones.nodes[entry.nodeid];
+            var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
+
+            this._num_meshes++;
+            this._num_faces += shape.nfaces;
 
             prop.material.wireframe = this.options.wireframe;
 
             if (obj3d.matrixWorld.determinant() > -0.9) {
-               mesh = new THREE.Mesh( prop.shape._geom, prop.material );
+               mesh = new THREE.Mesh( shape.geom, prop.material );
             } else {
-               mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
+               mesh = this.createFlippedMesh(obj3d, shape, prop.material);
             }
 
             // keep full stack of nodes
             mesh.stack = entry.stack;
 
             obj3d.add(mesh);
+
+            if (this.options._debug || this.options._full) {
+               var helper = new THREE.WireframeHelper(mesh);
+               helper.material.color.set(prop.fillcolor);
+               helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
+               obj3d.add(helper);
+            }
+
+            if (this.options._bound || this.options._full) {
+               var boxHelper = new THREE.BoxHelper( mesh );
+               obj3d.add( boxHelper );
+            }
+
+            var tm1 = new Date().getTime();
+            if (tm1 - tm0 > 500) { ready = false; break; }
          }
 
-         if (mesh && (this.options._debug || this.options._full)) {
-            var helper = new THREE.WireframeHelper(mesh);
-            helper.material.color.set(prop.fillcolor);
-            helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
-            obj3d.add(helper);
+         if (ready) {
+            this.drawing_log = "Building done";
+            this.drawing_stage = 0;
+            return false;
          }
 
-         if (mesh && (this.options._bound || this.options._full)) {
-            var boxHelper = new THREE.BoxHelper( mesh );
-            obj3d.add( boxHelper );
-         }
+         if (this.drawing_stage > 7)
+            this.drawing_log = "Building meshes " + this._num_meshes + " / " + this._num_faces;
+         return true;
       }
 
-      // doing our job well, can be called next time immediately
-      if (ready.length > 0) return true;
-
-      // if there is geometries to created, repeat with short timeout
-      if (todo.length > 0) return 1;
-
-      // all job by the worker, let him to call out function
-      if (waiting > 0) return 2;
-
-      // here everything is completed, we could cleanup data and finish
-
-      this.drawing_stage = 0;
+      console.log('never come here');
 
       return false;
+
+
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -1255,12 +1212,12 @@
       }
 
       this._startm = new Date().getTime();
-      this._last_render_at = this._startm;
-      this._last_render_cnt = 0;
+      this._last_render_tm = this._startm;
+      this._last_render_meshes = 0;
       this.drawing_stage = 1;
-      this._num_geom = 0;
+      this.drawing_log = "collect visible";
+      this._num_meshes = 0;
       this._num_faces = 0;
-      this._job_done = false; // switched true when amount of faces is achieved
 
       delete this._draw_nodes_again; // forget about such flag
 
@@ -1539,18 +1496,16 @@
       if (this.drawing_stage === 0) return;
 
       var tm0 = new Date().getTime(),
-          interval = 300, now = tm0;
+          interval = this._first_drawing ? 1000 : 200,
+          now = tm0;
 
       while(true) {
 
          var res = this.nextDrawAction();
 
-         now = new Date().getTime();
-
          if (!res) break;
 
-         var log = "Creating " + this._num_geom + " / " + this._num_faces;
-         if (this.drawing_stage < 5) log = "Collecting visibles";
+         now = new Date().getTime();
 
          // stop creation after 100 sec, render as is
          if (now - this._startm > 1e5) {
@@ -1558,14 +1513,18 @@
             break;
          }
 
+         // if we are that fast, do next action
+         if ((res===true) && (now - tm0 < interval)) continue;
+
          if ((now - tm0 > interval) || (res === 1) || (res === 2)) {
-            JSROOT.progress(log);
-            if (false && this._webgl && (this._last_render_cnt != this._num_geom) && (now - this._last_render_at > this.last_render_tm)) {
-               if (this._first_drawing)
-                  this.adjustCameraPosition();
+
+            JSROOT.progress(this.drawing_log);
+
+            if (this._first_drawing && this._webgl && (this._num_meshes - this._last_render_meshes > 100) && (now - this._last_render_tm > 2.5*interval)) {
+               this.adjustCameraPosition();
                this.Render3D(-1);
-               this._last_render_at = new Date().getTime();
-               this._last_render_cnt = this._num_geom;
+               this._last_render_tm = new Date().getTime();
+               this._last_render_meshes = this._num_meshes;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
             return;
@@ -1574,7 +1533,7 @@
 
       var take_time = now - this._startm;
 
-      JSROOT.console('Create tm = ' + take_time + ' geom ' + this._num_geom + ' faces ' + this._num_faces);
+      JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -1687,27 +1646,28 @@
       if ('shapes' in job) {
 
          for (var n=0;n<job.shapes.length;++n) {
-            var item = job.shapes[n];
+            var item = job.shapes[n],
+                origin = this._build_shapes[n];
 
-            var shape = this._clones.GetNodeShape(item.nodeid);
+            // var shape = this._clones.GetNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
-               shape._geom = new THREE.BufferGeometry();
+               origin.geom = new THREE.BufferGeometry();
                if ((item.buf_pos.length === 0) || (item.buf_pos.length !== item.buf_norm.length))
                   console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
+               origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
+               origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
 
-               shape._geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
-               shape._geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
-            } else {
-               shape._geom = null; // mark that geometry should not be created
+               origin.ready = true;
+               origin.nfaces = item.nfaces;
             }
-
-            delete shape._geom_worker;
          }
 
          job.tm4 = new Date().getTime();
 
          console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
+
+         this.drawing_stage = 8;
 
          // invoke methods immediately
          return this.continueDraw();

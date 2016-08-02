@@ -1856,7 +1856,7 @@
 
          } else {
             // let three.js calculate our faces
-            console.log('trinagulate' + shape.fName);
+            console.log('trinagulate ' + shape.fName);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
             console.log('trinagulate done ' + cut_faces.length);
          }
@@ -2562,6 +2562,7 @@
       return limit < 0 ? 0 : null;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
       var cameraProjectionMatrix = new THREE.Matrix4();
 
@@ -2572,6 +2573,7 @@
       return cameraProjectionMatrix;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateFrustum = function(source) {
       if (!source) return null;
 
@@ -2608,6 +2610,7 @@
       return frustum;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.VisibleByCamera = function(camera, matrix, shape) {
       var frustum = new THREE.Frustum();
       var cameraProjectionMatrix = new THREE.Matrix4();
@@ -2634,6 +2637,7 @@
       return false;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryFaces = function(geom) {
       if (!geom) return 0;
 
@@ -2650,6 +2654,7 @@
       return geom.faces.length;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryVertices = function(geom) {
       if (!geom) return 0;
 
@@ -3168,6 +3173,136 @@
          del.push(prev[indx2++]);
 
       return del; //
+   }
+
+
+   JSROOT.GEO.ClonedNodes.prototype.CollectShapes = function(lst) {
+      // based on list of visible nodes, collect all uniques shapes which should be build
+
+      var shapes = [];
+
+      for (var i=0;i<lst.length;++i) {
+         var entry = lst[i];
+         var shape = this.GetNodeShape(entry.nodeid);
+
+         if (!shape) continue; // strange, but avoid missleading
+
+         if (shape._id === undefined) {
+            shape._id = shapes.length;
+
+            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1 });
+
+            // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
+         } else {
+            shapes[shape._id].refcnt++;
+         }
+
+         entry.shape = shapes[shape._id]; // remember shape used
+      }
+
+      // now sort shapes in volume decrease order
+      shapes.sort(function(a,b) { return b.vol - a.vol; })
+
+      // now set new shape ids according to the sorted order and delete temporary field
+      for (var n=0;n<shapes.length;++n) {
+         var item = shapes[n];
+         item.id = n; // set new ID
+         delete item.shape._id; // remove temporary field
+      }
+
+      // as last action set current shape id to each entry
+      for (var i=0;i<lst.length;++i) {
+         var entry = lst[i];
+         entry.shapeid = entry.shape.id; // keep only id for the entry
+         delete entry.shape; //
+      }
+
+      return shapes;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.MergeShapesLists = function(oldlst, newlst) {
+
+      if (!oldlst) return newlst;
+
+      // set geometry to shape object itself
+      for (var n=0;n<oldlst.length;++n) {
+         var item = oldlst[n];
+
+         item.shape._geom = item.geom;
+         delete item.geom;
+
+         if (item.geomZ!==undefined) {
+            item.shape._geomZ = item.geomZ;
+            delete item.geomZ;
+         }
+      }
+
+      // take from shape (if match)
+      for (var n=0;n<newlst.length;++n) {
+         var item = newlst[n];
+
+         if (item.shape._geom !== undefined) {
+            item.geom = item.shape._geom;
+            delete item.shape._geom;
+         }
+
+         if (item.shape._geomZ !== undefined) {
+            item.geomZ = item.shape._geomZ;
+            delete item.shape._geomZ;
+         }
+      }
+
+      // now delete all unused geometries
+      for (var n=0;n<oldlst.length;++n) {
+         var item = oldlst[n];
+         delete item.shape._geom;
+         delete item.shape._geomZ;
+      }
+
+      return newlst;
+   }
+
+
+   JSROOT.GEO.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
+
+      var total = 0, created = 0,
+          tm1 = new Date().getTime(),
+          res = { done: false, shapes: 0, faces: 0, newshapes: 0 };
+
+      for (var n=0;n<lst.length;++n) {
+         var item = lst[n];
+
+         // in any case mark item as processed
+         item.ready = true;
+
+         // if enough faces are produced, nothing else is required
+         if (res.done) continue;
+
+         if (item.geom === undefined) {
+            item.geom = JSROOT.GEO.createGeometry(item.shape);
+            if (item.geom) created++; // indicate that at least one shape was created
+         }
+
+         item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
+
+         res.shapes++;
+         if (!item.used) res.newshapes++;
+         res.faces++;
+
+         total += item.nfaces * item.refcnt;
+
+         if (total >= limit) {
+            res.done = true;
+         } else
+         if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
+            var tm2 = new Date().getTime();
+            if (tm2-tm1 > timelimit) return res;
+         }
+      }
+
+      res.done = true;
+
+      return res;
    }
 
    return JSROOT;

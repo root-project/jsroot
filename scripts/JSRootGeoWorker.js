@@ -37,21 +37,21 @@ onmessage = function(e) {
    if (e.data.shapes) {
       // this is task to create geometries in the worker
 
+
       var shapes = e.data.shapes, transferables = [];
 
       var tm1 = new Date().getTime();
 
-      for (var n=0;n<shapes.length;++n) {
-         var item = shapes[n];
-         item.geom = JSROOT.GEO.createGeometry(item.shape);
-      }
+      // build all shapes up to specified limit, also limit execution time
+      clones.BuildShapes(shapes, e.data.limit, 50000);
 
-      var tm2 = new Date().getTime();
+      var tm2 = new Date().getTime(), ncreate = 0;
 
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
 
          if (item.geom) {
+            ncreate++;
             var bufgeom;
             if (item.geom instanceof THREE.BufferGeometry) {
                bufgeom = item.geom;
@@ -76,7 +76,7 @@ onmessage = function(e) {
 
       var tm3 = new Date().getTime();
 
-      console.log('Worker create ' +  shapes.length + ' geom takes ' + (tm2-tm1) + '  conversion ' + (tm3-tm2));
+      console.log('Worker create ' +  ncreate + ' shapes takes ' + (tm2-tm1) + '  conversion ' + (tm3-tm2));
 
       e.data.tm2 = new Date().getTime();
 
