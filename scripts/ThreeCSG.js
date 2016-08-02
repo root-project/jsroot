@@ -70,7 +70,6 @@ function ThreeBSPfactory() {
          this.tree = new ThreeBSP.Node( polygons );
          return this;
 
-
       } else {
          throw 'ThreeBSP: Given geometry is unsupported';
       }
@@ -135,7 +134,7 @@ function ThreeBSPfactory() {
    };
    ThreeBSP.prototype.subtract = function( other_tree ) {
       var a = this.tree.clone(),
-         b = other_tree.tree.clone();
+          b = other_tree.tree.clone();
 
       a.invert();
       a.clipTo( b );
