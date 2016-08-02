@@ -898,6 +898,7 @@
 
          // extract camera projection matrix for selection
          var matrix = this._first_drawing ? null : JSROOT.GEO.CreateProjectionMatrix(this._camera);
+         matrix = null; // not use camera for the moment
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
