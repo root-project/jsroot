@@ -902,8 +902,9 @@
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
          var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
+         need_worker = false;
 
-         if (need_worker && !this._worker && (this.options.use_worker>=0))
+         if (need_worker && !this._worker && (this.options.use_worker >= 0))
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
@@ -1018,7 +1019,7 @@
             if (res.done) {
                this.drawing_stage = 8;
             } else {
-               this.drawing_log = "Shapes " + res.shapes + " / " + res.faces;
+               this.drawing_log = "Shapes " + res.shapes + " / " + this._build_shapes.length + " ( "  + res.faces + " faces)";
                if (res.newshapes < 50) return true;
             }
          }

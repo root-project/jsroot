@@ -3055,7 +3055,7 @@
       return three_prnt;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit) {
+   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
       var vismap = [];
 
       for (var id=0;id<viscnt.length;++id)
@@ -3066,10 +3066,10 @@
       vismap.sort(function(a,b) { return b.vol - a.vol; })
 
       var indx = 0, cnt = 0, facecnt = 0;
-      while ((facecnt < facelimit) && (indx < vismap.length-1)) {
-         var nodeid = vismap[indx++].id;
-         cnt += viscnt[nodeid];
-         facecnt += this.nodes[nodeid].nfaces;
+      while ((cnt < nodeslimit) && (facecnt < facelimit) && (indx < vismap.length-1)) {
+         var node = vismap[indx++];
+         cnt += viscnt[node.id];
+         facecnt += viscnt[node.id] * node.nfaces;
       }
 
       console.log('Volume boundary ' + vismap[indx].vol + '  cnt ' + cnt + '  faces ' + facecnt);
@@ -3097,12 +3097,12 @@
 
       var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
 
-      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
+      // console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
       if (arg.facecnt > maxnumfaces) {
 
          // define minimal volume, which always to shown
-         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces);
+         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
 
          // if we have camera and too many volumes, try to select some of them in camera view
          if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
@@ -3123,8 +3123,8 @@
 
              this.ScanVisible(arg);
 
-             if (arg.totalcam > maxnumfaces*0.25)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.25);
+             if (arg.totalcam > maxnumfaces/4)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400);
              else
                 camVol = 0;
 
@@ -3265,7 +3265,7 @@
 
    JSROOT.GEO.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
 
-      var total = 0, created = 0,
+      var created = 0,
           tm1 = new Date().getTime(),
           res = { done: false, shapes: 0, faces: 0, newshapes: 0 };
 
@@ -3287,11 +3287,9 @@
 
          res.shapes++;
          if (!item.used) res.newshapes++;
-         res.faces++;
+         res.faces += item.nfaces*item.refcnt;
 
-         total += item.nfaces * item.refcnt;
-
-         if (total >= limit) {
+         if (res.faces >= limit) {
             res.done = true;
          } else
          if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
