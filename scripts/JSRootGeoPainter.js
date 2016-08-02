@@ -946,17 +946,13 @@
          this.drawing_log = "Analyse visibles";
 
          if (this._draw_nodes) {
-            var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes), dcnt = 0;
+            var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes);
             // remove should be fast, do it here
-            for (var n=0;n<del.length;++n) {
-               var mesh = this._clones.CreateObject3D(del[n].stack, this._toplevel, 'mesh');
-               while (mesh && (mesh !== this._toplevel)) {
-                  var prnt = mesh.parent;
-                  prnt.remove(mesh); ++dcnt;
-                  mesh = (prnt.children.length == 0) ? prnt : null; // remove all parents if they are not necessary
-               }
-            }
-            console.log('delete nodes', del.length,'really', dcnt);
+            for (var n=0;n<del.length;++n)
+               this._clones.CreateObject3D(del[n].stack, this._toplevel, 'delete_mesh');
+
+            if (del.length > 0)
+               this.drawing_log = "Delete " + del.length + " nodes";
          }
 
          this._draw_nodes = this._new_draw_nodes;
@@ -1019,8 +1015,8 @@
             if (res.done) {
                this.drawing_stage = 8;
             } else {
-               this.drawing_log = "Shapes " + res.shapes + " / " + this._build_shapes.length + " ( "  + res.faces + " faces)";
-               if (res.newshapes < 50) return true;
+               this.drawing_log = "Creating: " + res.shapes + " / " + this._build_shapes.length + " shapes,  "  + res.faces + " faces";
+               if (res.notusedshapes < 30) return true;
             }
          }
 
@@ -1038,7 +1034,11 @@
             entry.done = true;
             shape.used = true; // indicate that shape was used in building
 
-            if (!shape.geom || (shape.nfaces === 0)) continue;
+            if (!shape.geom || (shape.nfaces === 0)) {
+               // node is visible, but shape does not created
+               this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+               continue;
+            }
 
             var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
