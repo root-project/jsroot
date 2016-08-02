@@ -177,6 +177,45 @@ function ThreeBSPfactory() {
       a.matrix = this.matrix;
       return a;
    };
+   ThreeBSP.prototype.direct_subtract = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.invert();
+      a.clipTo( b );
+      b.clipTo( a );
+      b.invert();
+      b.clipTo( a );
+      b.invert();
+      a.build( b.allPolygons() );
+      a.invert();
+      return this;
+   };
+   ThreeBSP.prototype.direct_union = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.clipTo( b );
+      b.clipTo( a );
+      b.invert();
+      b.clipTo( a );
+      b.invert();
+      a.build( b.allPolygons() );
+      return this;
+   };
+   ThreeBSP.prototype.direct_intersect = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.invert();
+      b.clipTo( a );
+      b.invert();
+      a.clipTo( b );
+      b.clipTo( a );
+      a.build( b.allPolygons() );
+      a.invert();
+      return this;
+   };
    ThreeBSP.prototype.toGeometry = function() {
       var i, j,
          matrix = this.matrix ? new THREE.Matrix4().getInverse( this.matrix ) : null,

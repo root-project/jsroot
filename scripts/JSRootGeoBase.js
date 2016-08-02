@@ -2495,9 +2495,9 @@
       }
 
       switch(shape.fNode._typename) {
-         case 'TGeoIntersection': bsp = bsp1.intersect(bsp2);  break; // "*"
-         case 'TGeoUnion': bsp = bsp1.union(bsp2); break;   // "+"
-         case 'TGeoSubtraction': bsp = bsp1.subtract(bsp2); break; // "/"
+         case 'TGeoIntersection': bsp = bsp1.direct_intersect(bsp2);  break; // "*"
+         case 'TGeoUnion': bsp = bsp1.direct_union(bsp2); break;   // "+"
+         case 'TGeoSubtraction': bsp = bsp1.direct_subtract(bsp2); break; // "/"
          default:
             JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
             bsp = bsp1;
