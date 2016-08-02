@@ -282,7 +282,7 @@
 
                if (m1.equals(m2)) return true
                if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
-                  flip = painter.getMatrixFlip(m2);
+                  flip = THREE.Vector3(1,1,-1);
                   origm2 = m2;
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
@@ -820,75 +820,48 @@
       this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
 
-   JSROOT.TGeoPainter.prototype.getMatrixFlip = function(matrix) {
-      // create flip vector for matrix that it does not have axis mirroring
-      // such kind of mesh does not supported by three.js/webgl
-
-      // always flip Z axis in mesh, same flip will be done for the geometry
-      // Actually, it is not really matter which axis to flip
-      return new THREE.Vector3(1,1,-1);
-
-      var elem = matrix.elements, cnt = 0, flip = new THREE.Vector3(1,1,1);
-
-      if ((elem[0] < -0.5) || (elem[4] < -0.5) || (elem[8] < -0.5)) { flip.x = -1; cnt++; }
-      if ((elem[1] < -0.5) || (elem[5] < -0.5) || (elem[9] < -0.5)) { flip.y = -1; cnt++; }
-      if ((elem[2] < -0.5) || (elem[6] < -0.5) || (elem[10] < -0.5)) { flip.z = -1; cnt++; }
-      if  ((cnt===1) || (cnt===3)) return flip;
-
-      flip.set(1,1,1); cnt = 0;
-
-      if (elem[0]===-1 && elem[1]=== 0 && elem[2] === 0) { flip.x = -1; cnt++; }
-      if (elem[4]=== 0 && elem[5]===-1 && elem[6] === 0) { flip.y = -1; cnt++; }
-      if (elem[8]=== 0 && elem[9]=== 0 && elem[10]===-1) { flip.z = -1; cnt++; }
-
-      if ((cnt===0) || (cnt ===2)) {
-         flip.set(1,1,1); cnt = 0;
-         if (Math.abs(elem[0] + elem[1] + elem[2] + 1) < 4e-8) { flip.x = -1; cnt++; }
-         if (Math.abs(elem[4] + elem[5] + elem[6] + 1) < 4e-8) { flip.y = -1; cnt++; }
-         if (Math.abs(elem[8] + elem[9] + elem[10] + 1) < 4e-8) { flip.z = -1; cnt++; }
-         if ((cnt === 0) || (cnt === 2)) {
-            console.log('determ', matrix.determinant(), 'not found flip', elem);
-            flip.z = -flip.z;
-         }
-      }
-      return flip;
-   }
-
    JSROOT.TGeoPainter.prototype.createFlippedMesh = function(parent, shape, material) {
       // when transformation matrix includes one or several invertion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
-      var flip = this.getMatrixFlip(parent.matrixWorld);
-
-      var gname = "_geom";
-      if (flip.x<0) gname += "X";
-      if (flip.y<0) gname += "Y";
-      if (flip.z<0) gname += "Z";
-
-      var geom = shape[gname];
+      var flip =  new THREE.Vector3(1,1,-1),
+          gname = "_geomZ",
+          geom = shape[gname];
 
       if (geom === undefined) {
 
-         geom = shape._geom.clone();
+         if (shape._geom.type == 'BufferGeometry') {
 
-         geom.scale(flip.x, flip.y, flip.z);
-
-         if (geom.type == 'BufferGeometry') {
-
-            var attr = geom.getAttribute('position'), d;
+            var pos = shape._geom.getAttribute('position').array,
+                norm = shape._geom.getAttribute('normal').array,
+                len = pos.length, n, shift = 0,
+                newpos = new Float32Array(len),
+                newnorm = new Float32Array(len);
 
             // we should swap second and third point in each face
-            for (var n=0;n<attr.array.length;n+=9)
-               for (var k=0;k<3;++k) {
-                  d = attr.array[n+k+3];
-                  attr.array[n+k+3] = attr.array[n+k+6];
-                  attr.array[n+k+6] = d;
-               }
+            for (n=0; n<len; n+=3) {
+               newpos[n]   = pos[n+shift];
+               newpos[n+1] = pos[n+1+shift];
+               newpos[n+2] = -pos[n+2+shift];
 
+               newnorm[n]   = norm[n+shift];
+               newnorm[n+1] = norm[n+1+shift];
+               newnorm[n+2] = -norm[n+2+shift];
+
+               shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+            }
+
+            geom = new THREE.BufferGeometry();
+            geom.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
+            geom.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
             // normals are calculated with normal geometry and correctly scaled
             // geom.computeVertexNormals();
 
          } else {
+
+            geom = shape._geom.clone();
+
+            geom.scale(flip.x, flip.y, flip.z);
 
             var face, d;
             for (var n=0;n<geom.faces.length;++n) {
@@ -904,9 +877,7 @@
       }
 
       var mesh = new THREE.Mesh( geom, material );
-
       mesh.scale.copy(flip);
-
       mesh.updateMatrix();
 
       return mesh;
