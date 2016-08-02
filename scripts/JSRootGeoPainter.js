@@ -915,7 +915,7 @@
             this._new_draw_nodes = this._clones.CollectVisibles(this.options.maxlimit, JSROOT.GEO.CreateFrustum(matrix));
             var tm2 = new Date().getTime();
             console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
-            this.drawing_stage = 4;
+            this.drawing_stage = 3;
             return true;
          }
 
@@ -927,18 +927,18 @@
 
          this.submitToWorker(job);
 
-         this.drawing_stage = 3;
+         this.drawing_stage = 2;
 
          return 2; // we now waiting for the worker reply
       }
 
-      if (this.drawing_stage == 3) {
+      if (this.drawing_stage == 2) {
          // do nothing, we are waiting for worker reply
 
          return 2;
       }
 
-      if (this.drawing_stage == 4) {
+      if (this.drawing_stage == 3) {
          // here we merge new and old list of nodes for drawing,
          // normally operation is fast and can be implemented with one call
 
@@ -1679,7 +1679,7 @@
 
       if ('collect' in job) {
          this._new_draw_nodes = job.new_nodes;
-         this.drawing_stage = 4;
+         this.drawing_stage = 3;
          // invoke methods immediately
          return this.continueDraw();
       }
