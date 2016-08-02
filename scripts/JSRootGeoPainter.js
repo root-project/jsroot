@@ -1129,7 +1129,7 @@
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             } else {
-               mesh = this.createFlippedMesh(obj3d, prop.shape, prop.material);
+               mesh = new THREE.Mesh( prop.shape._geom, prop.material );
             }
 
             // keep full stack of nodes
@@ -1347,8 +1347,9 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._scene.fog.near = this._camera.near = this._overall_size / 500;
-      this._scene.fog.far = this._camera.far = this._overall_size * 25;
+      this._camera.near = this._overall_size / 350;
+      this._scene.fog.far = this._camera.far = this._overall_size * 10;
+      this._scene.fog.near = this._overall_size / 2;
 
       if (this._webgl) {
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
@@ -1433,14 +1434,14 @@
       // Interpolate //
       var painter = this;
       for (var step = 0; step < stepcount; ++step) {
-         setTimeout( function() {
+         requestAnimationFrame( function() {
            painter._camera.position.add(posDifference);
            oldTarget.add(targetDifference);
            painter._lookat = oldTarget;
            painter._controls.target = oldTarget;
            painter._camera.lookAt(painter._lookat);
            painter.Render3D();
-        }, step * 20);
+        });
       }
    //   this._controls.target = target;
       this._controls.update();
