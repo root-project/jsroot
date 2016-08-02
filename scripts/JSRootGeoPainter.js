@@ -138,7 +138,7 @@
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
                    use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false, oldlight: false };
+                   highlight: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -231,7 +231,6 @@
       if (opt.indexOf("w")>=0) res.wireframe = true;
       if (opt.indexOf("f")>=0) res._full = true;
       if (opt.indexOf("a")>=0) { res._axis = true; res._yup = false; }
-      if (opt.indexOf("l")>=0) res.oldlight = true;
       if (opt.indexOf("y")>=0) res._yup = true;
       if (opt.indexOf("z")>=0) res._yup = false;
 
@@ -1232,30 +1231,9 @@
 
        // Lights
 
-      if (this.options.oldlight) {
-         var pointLight = new THREE.PointLight(0xefefef);
-         this._camera.add( pointLight );
-         pointLight.position.set(10, 10, 10);
-
-      } else {
-         this._lights = new THREE.Object3D();
-         var intensity = 0.5;
-         var lightColor = 0xe0e0e0;
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-         this._lights.add( new THREE.PointLight(lightColor, intensity) );
-
-         this._lights.add( new THREE.PointLight(lightColor, 0.5) );
-
-         this._scene.add( this._lights );
-         this.updateLights(8000);
-      }
+      var pointLight = new THREE.PointLight(0xefefef);
+      this._camera.add( pointLight );
+      pointLight.position.set(10, 10, 10);
 
       this._defaultAdvanced = { aoClamp: 0.70,
                                 lumInfluence: 0.4,
@@ -1357,8 +1335,6 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
 
-      this.updateLights();
-
       this.updateBoundingBox();
       var box = this._boundingBox;
 
@@ -1401,25 +1377,6 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
-   }
-
-   JSROOT.TGeoPainter.prototype.updateLights = function( distance ) {
-
-      if (!this._lights) return;
-
-      this.updateBoundingBox();
-      var radius = distance === undefined ? 2 * this._boundingBox.getBoundingSphere().radius : distance;
-      this._lights.children[0].position.set( radius, radius, radius );
-      this._lights.children[1].position.set(-radius, radius, radius );
-      this._lights.children[2].position.set( radius, radius,-radius );
-      this._lights.children[3].position.set(-radius, radius,-radius );
-
-      this._lights.children[4].position.set(      0, radius/4, radius );
-      this._lights.children[5].position.set( radius, radius/4,      0 );
-      this._lights.children[6].position.set(      0, radius/4,-radius );
-      this._lights.children[7].position.set(-radius, radius/4,      0 );
-
-      this._lights.children[8].position.set(      0,  -radius,      0 );
    }
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
@@ -1490,8 +1447,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
-
-      this.updateLights();
 
       if ( this.options._debug || this.options._grid ) {
          if ( this.options._full ) {
