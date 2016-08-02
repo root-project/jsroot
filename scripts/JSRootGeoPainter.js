@@ -762,7 +762,7 @@
             block_ctxt = true; // if right button in control was active, block next context menu
          }
 
-         if (control_active || !painter.options.update_browser) return;
+         if (control_active || (!painter.options.highlight && !painter.options.update_browser)) return;
 
          var mouse = {};
          GetMousePos(evnt, mouse);
@@ -808,7 +808,7 @@
             painter._tooltip.hide();
          }
 
-         painter.ActiavteInBrowser(names);
+         if (painter.options.update_browser) painter.ActiavteInBrowser(names);
       }
 
       this._renderer.domElement.addEventListener('mousemove', mousemove);
