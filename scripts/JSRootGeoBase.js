@@ -2724,10 +2724,14 @@
 
        this.nodes = [];
 
+       var sortarr = [];
+
        // first create nodes objects
        for (var n=0; n<this.origin.length; ++n) {
           var obj = this.origin[n];
-          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 });
+          var node = { id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 };
+          this.nodes.push(node);
+          sortarr.push(node); // array use to produce sortmap
        }
 
        // than fill childrens lists
@@ -2780,6 +2784,14 @@
        // remove _refid identifiers from original objects
        for (var n=0;n<this.origin.length;++n)
           delete this.origin[n]._refid;
+
+       // do sorting once
+       sortarr.sort(function(a,b) { return b.vol - a.vol; });
+
+       // rememember sort map
+       this.sortmap = new Int32Array(this.nodes.length);
+       for (var n=0;n<this.nodes.length;++n)
+          this.sortmap[n] = sortarr[n].id;
    }
 
 
@@ -3066,25 +3078,30 @@
    }
 
    JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
-      var vismap = [];
-
-      for (var id=0;id<viscnt.length;++id)
-         if (viscnt[id] > 0)
-            vismap.push(this.nodes[id]);
-
-      // sort in reverse order (big volumes first)
-      vismap.sort(function(a,b) { return b.vol - a.vol; })
-
-      var indx = 0, cnt = 0, facecnt = 0;
-      while ((cnt < nodeslimit) && (facecnt < facelimit) && (indx < vismap.length-1)) {
-         var node = vismap[indx++];
-         cnt += viscnt[node.id];
-         facecnt += viscnt[node.id] * node.nfaces;
+      if (!this.sortmap) {
+         console.error('sorting map not exisits');
+         return { min: 0, max: 1 };
       }
 
-      console.log('Volume boundary ' + vismap[indx].vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      var maxNode, currNode, cnt=0, facecnt = 0;
 
-      return { min: vismap[indx].vol, max: vismap[0].vol };
+      for (var n=0; (n<this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit);++n) {
+         var id = this.sortmap[n];
+         if (viscnt[id] === 0) continue;
+         currNode = this.nodes[id];
+         if (!maxNode) maxNode = currNode;
+         cnt += viscnt[id];
+         facecnt += viscnt[id] * currNode.nfaces;
+      }
+
+      if (!currNode) {
+         console.error('no volumes selected');
+         return { min: 0, max: 1 };
+      }
+
+      console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+
+      return { min: currNode.vol, max: maxNode.vol };
    }
 
 
