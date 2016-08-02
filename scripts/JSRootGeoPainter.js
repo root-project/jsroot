@@ -1874,7 +1874,7 @@
 
       if (this.ownedByTransformControls(obj)) return;
 
-      if (on !== undefined)
+      if ((on !== undefined) && obj.stack)
          obj.material.wireframe = on;
 
       return obj.material.wireframe;
