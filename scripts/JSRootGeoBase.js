@@ -1046,7 +1046,8 @@
 
       var noInside = (radius[1] <= 0);
 
-      //phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
+      // widthSegments = 20; heightSegments = 10;
+      // phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
       if (faces_limit > 0) {
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
@@ -1060,7 +1061,8 @@
       var numoutside = widthSegments * heightSegments * 2,
           numtop = widthSegments * 2,
           numbottom = widthSegments * 2,
-          numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4);
+          numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4),
+          epsilon = 1e-10;
 
       if (noInside) numbottom = numtop = widthSegments;
 
@@ -1083,8 +1085,8 @@
          _cosp[n] = Math.cos(phi);
       }
 
-      if (_sint[0] === 0) { numoutside -= widthSegments; numtop = 0; }
-      if (_sint[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
+      if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
+      if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
@@ -1105,8 +1107,8 @@
             var k1 = k + d1, k2 = k + d2;
 
             var skip = 0;
-            if (_sint[k1] === 0) skip = 1; else
-            if (_sint[k2] === 0) skip = 2;
+            if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
+            if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
             for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
@@ -1127,7 +1129,7 @@
 
       // top/bottom
       for (var side=0; side<=heightSegments; side+=heightSegments)
-         if (_sint[side] !== 0) {
+         if (Math.abs(_sint[side]) >= epsilon) {
             var ss = _sint[side], cc = _cost[side],
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
             for (var n=0;n<widthSegments;++n) {
