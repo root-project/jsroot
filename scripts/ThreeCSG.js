@@ -302,7 +302,8 @@ function ThreeBSPfactory() {
          positions_buf[iii+1] = vertex.y;
          positions_buf[iii+2] = vertex.z;
 
-         var norm = /*vertex.normal.lengthSq() > 0 ? vertex.normal :*/ polygon.normal;
+         var norm = vertex.normal.normalize();
+         if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
 
          normals_buf[iii] = norm.x;
          normals_buf[iii+1] = norm.y;
@@ -312,6 +313,7 @@ function ThreeBSPfactory() {
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
+         polygon.normal.normalize();
          for ( j = 2; j < polygon.vertices.length; ++j ) {
             CopyVertex(polygon.vertices[0]);
             CopyVertex(polygon.vertices[j-1]);
