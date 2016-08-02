@@ -557,9 +557,7 @@ function ThreeBSPfactory() {
 
       // input: THREE.Matrix4 affine matrix
 
-      var x = this.x, y = this.y, z = this.z;
-
-      var e = m.elements;
+      var x = this.x, y = this.y, z = this.z, e = m.elements;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
@@ -572,8 +570,8 @@ function ThreeBSPfactory() {
 
    ThreeBSP.Node = function( polygons ) {
       var i, polygon_count,
-         front = [],
-         back = [];
+          front = [],
+          back = [];
 
       this.polygons = [];
       this.front = this.back = undefined;
@@ -582,13 +580,9 @@ function ThreeBSPfactory() {
 
       this.divider = polygons[0].clone();
 
-//      console.log('divider length ' + polygons.length);
-
       for ( i = 0, polygon_count = polygons.length; i < polygon_count; i++ ) {
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
-
-//       console.log('divider done ' + front.length + '  ' +  back.length);
 
       if ( front.length > 0 ) {
          this.front = new ThreeBSP.Node( front );
@@ -673,8 +667,7 @@ function ThreeBSPfactory() {
       return this;
    };
    ThreeBSP.Node.prototype.clipPolygons = function( polygons ) {
-      var i, polygon_count,
-         front, back;
+      var i, polygon_count, front, back;
 
       if ( !this.divider ) return polygons.slice();
 
