@@ -2307,3 +2307,4 @@
    return JSROOT.Painter;
 
 }));
+

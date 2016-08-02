@@ -1046,7 +1046,8 @@
 
       var noInside = (radius[1] <= 0);
 
-      //phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
+      // widthSegments = 20; heightSegments = 10;
+      // phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
       if (faces_limit > 0) {
          var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
@@ -1060,7 +1061,8 @@
       var numoutside = widthSegments * heightSegments * 2,
           numtop = widthSegments * 2,
           numbottom = widthSegments * 2,
-          numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4);
+          numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4),
+          epsilon = 1e-10;
 
       if (noInside) numbottom = numtop = widthSegments;
 
@@ -1083,8 +1085,8 @@
          _cosp[n] = Math.cos(phi);
       }
 
-      if (_sint[0] === 0) { numoutside -= widthSegments; numtop = 0; }
-      if (_sint[heightSegments] === 0) { numoutside -= widthSegments; numbottom = 0; }
+      if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
+      if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
 
       var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
@@ -1105,8 +1107,8 @@
             var k1 = k + d1, k2 = k + d2;
 
             var skip = 0;
-            if (_sint[k1] === 0) skip = 1; else
-            if (_sint[k2] === 0) skip = 2;
+            if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
+            if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
             for (var n=0;n<widthSegments;++n) {
                creator.AddFace4(
@@ -1127,7 +1129,7 @@
 
       // top/bottom
       for (var side=0; side<=heightSegments; side+=heightSegments)
-         if (_sint[side] !== 0) {
+         if (Math.abs(_sint[side]) >= epsilon) {
             var ss = _sint[side], cc = _cost[side],
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
             for (var n=0;n<widthSegments;++n) {
@@ -1854,7 +1856,7 @@
 
          } else {
             // let three.js calculate our faces
-            console.log('trinagulate' + shape.fName);
+            console.log('trinagulate ' + shape.fName);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
             console.log('trinagulate done ' + cut_faces.length);
          }
@@ -2441,140 +2443,80 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
-      var nleft = JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1),
-          nright = JSROOT.GEO.createGeometry(shape.fNode.fRight, -1),
-          return_bsp = false, ntry = 1;
+      if (faces_limit < 0)
+         return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1) +
+                JSROOT.GEO.createGeometry(shape.fNode.fRight, -1);
 
-      // very primitive estimation, may differ very much
-      if (faces_limit < 0) return nleft + nright;
+      var geom1, geom2, bsp1, bsp2, bsp = null, return_bsp = false,
+          matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
+          matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
-      if (faces_limit === 0) {
-         ntry = 4; // how many faces_limit will be tested
-      } else {
-         return_bsp = true;
-      }
+      if (faces_limit === 0) faces_limit = 10000;
+                        else return_bsp = true;
 
-      while (ntry-->0) {
-         switch (ntry) {
-            case 3: faces_limit = 10000; break;
-            case 2: faces_limit = 5000; break;
-            case 1: faces_limit = 200; break;
-         }
+      if (matrix1 && (matrix1.determinant() < -0.9))
+         JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
 
-         var geom1, geom2, bsp1, bsp2, bsp = null
-             matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
-             matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
+      if (matrix2 && (matrix2.determinant() < -0.9))
+         JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
 
-         if (matrix1 && (matrix1.determinant() < -0.9))
-            JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+      // console.log('comp type ' + shape.fNode._typename);
 
-         if (matrix2 && (matrix2.determinant() < -0.9))
-            JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
+      // make creation more intelligent
+      // we have clear limit for the faces and should try distribute faces limit between two geometries
+      // therefore try first create smaller shape and than bigger
 
-         // console.log('comp type ' + shape.fNode._typename);
+      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit/2);
 
-         // make creation more intelligent
-         // we have clear limit for the faces and should try distribute faces limit between two geometries
-         // therefore try first create smaller shape and than bigger
+      geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
 
-         var nreal = faces_limit/2;
-
-         if (nleft > nright) {
-            geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
-            //if (!geom2) continue;
-            //var nreal = JSROOT.GEO.numGeometryFaces(geom2);
-            geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, Math.max(faces_limit/2, faces_limit-nreal));
-            if (!geom1) continue;
+      if (geom1 instanceof ThreeBSP) {
+         if (matrix1 === null) {
+            bsp1 = geom1;
          } else {
-            geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit/2);
-            //if (!geom1) continue;
-            //var nreal = JSROOT.GEO.numGeometryFaces(geom1);
-            geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, Math.max(faces_limit/2, faces_limit-nreal));
-            if (!geom2) continue;
+            // convert ourself
+            bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
+            JSROOT.GEO.warn('extra left BSP convertion because of matrix - fix!!!');
          }
+      } else {
+         if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
 
-         try {
-
-            if (geom1 instanceof ThreeBSP) {
-               if (matrix1 === null) {
-                  bsp1 = geom1;
-               } else {
-                  // convert ourself
-                  bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
-                  JSROOT.GEO.warn('extra left BSP convertion because of matrix - fix!!!');
-               }
-            } else {
-               if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-
-               bsp1 = new ThreeBSP(geom1, matrix1);
-            }
-
-            if (geom2 instanceof ThreeBSP) {
-               if (matrix2 === null) {
-                  bsp2 = geom2;
-               } else {
-                  bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
-                  JSROOT.GEO.warn('extra right BSP convertion because of matrix - fix!!!');
-               }
-            } else {
-               if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-               bsp2 = new ThreeBSP(geom2, matrix2);
-            }
-
-         /*      var supported = ["TGeoCompositeShape", "TGeoSphere", "TGeoBBox",
-                            "TGeoCone", "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub", "TGeoTrd1", "TGeoTrd2",
-                             "TGeoArb8", "TGeoTrap", "TGeoGtra", "TGeoPcon", "TGeoPgon"];
-
-      var supported = ["TGeoCone", "TGeoConeSeg","TGeoTube", "TGeoTubeSeg","TGeoCtub"], ddd = false;
-
-      ddd = (supported.indexOf(shape.fNode.fLeft._typename)>=0) ||
-            (supported.indexOf(shape.fNode.fRight._typename)>=0);
-      if (ddd) {
-         console.log('Left type ', shape.fNode.fLeft._typename, 'nfaces', JSROOT.GEO.numGeometryFaces(geom1));
-         console.log('Right type ', shape.fNode.fRight._typename, 'nfaces', JSROOT.GEO.numGeometryFaces(geom2));
+         bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
-          */
-
-
-            if (shape.fNode._typename === 'TGeoIntersection')
-               bsp = bsp1.intersect(bsp2);  // "*"
-            else
-               if (shape.fNode._typename === 'TGeoUnion')
-                  bsp = bsp1.union(bsp2);   // "+"
-               else
-                  if (shape.fNode._typename === 'TGeoSubtraction')
-                     bsp = bsp1.subtract(bsp2); // "/"
-
-            if (bsp === null) {
-               JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
-               bsp = bsp1;
-            } else
-               if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
-                  JSROOT.GEO.warn('Zero faces in comp shape'
-                        + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
-                        + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
-                        + '  use first');
-                  bsp = bsp1;
-                  // return null;
-               }
-
-            return return_bsp ? bsp : bsp.toBufferGeometry();
-
-         } catch(e) {
-
-            if (ntry>0)
-               JSROOT.GEO.warn('Failure when creating composite'
-                                + ' left: ' + shape.fNode.fLeft._typename
-                                + ' right: ' + shape.fNode.fRight._typename
-                                + '  limit = ' + faces_limit+ ', try less');
-            else
-               return null;
-
+      if (geom2 instanceof ThreeBSP) {
+         if (matrix2 === null) {
+            bsp2 = geom2;
+         } else {
+            bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
+            JSROOT.GEO.warn('extra right BSP convertion because of matrix - fix!!!');
          }
+      } else {
+         if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
+         bsp2 = new ThreeBSP(geom2, matrix2);
       }
 
-      return null;
+      switch(shape.fNode._typename) {
+         case 'TGeoIntersection': bsp = bsp1.direct_intersect(bsp2);  break; // "*"
+         case 'TGeoUnion': bsp = bsp1.direct_union(bsp2); break;   // "+"
+         case 'TGeoSubtraction': bsp = bsp1.direct_subtract(bsp2); break; // "/"
+         default:
+            JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
+            bsp = bsp1;
+
+      }
+
+      if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
+         JSROOT.GEO.warn('Zero faces in comp shape'
+               + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
+               + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
+               + '  use first');
+         bsp = bsp1;
+         // return null;
+      }
+
+      return return_bsp ? bsp : bsp.toBufferGeometry();
+
    }
 
 
@@ -2620,6 +2562,7 @@
       return limit < 0 ? 0 : null;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
       var cameraProjectionMatrix = new THREE.Matrix4();
 
@@ -2630,6 +2573,7 @@
       return cameraProjectionMatrix;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateFrustum = function(source) {
       if (!source) return null;
 
@@ -2666,6 +2610,7 @@
       return frustum;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.VisibleByCamera = function(camera, matrix, shape) {
       var frustum = new THREE.Frustum();
       var cameraProjectionMatrix = new THREE.Matrix4();
@@ -2692,6 +2637,7 @@
       return false;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryFaces = function(geom) {
       if (!geom) return 0;
 
@@ -2708,6 +2654,7 @@
       return geom.faces.length;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryVertices = function(geom) {
       if (!geom) return 0;
 
@@ -3108,7 +3055,7 @@
       return three_prnt;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit) {
+   JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
       var vismap = [];
 
       for (var id=0;id<viscnt.length;++id)
@@ -3119,10 +3066,10 @@
       vismap.sort(function(a,b) { return b.vol - a.vol; })
 
       var indx = 0, cnt = 0, facecnt = 0;
-      while ((facecnt < facelimit) && (indx < vismap.length-1)) {
-         var nodeid = vismap[indx++].id;
-         cnt += viscnt[nodeid];
-         facecnt += this.nodes[nodeid].nfaces;
+      while ((cnt < nodeslimit) && (facecnt < facelimit) && (indx < vismap.length-1)) {
+         var node = vismap[indx++];
+         cnt += viscnt[node.id];
+         facecnt += viscnt[node.id] * node.nfaces;
       }
 
       console.log('Volume boundary ' + vismap[indx].vol + '  cnt ' + cnt + '  faces ' + facecnt);
@@ -3150,12 +3097,12 @@
 
       var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
 
-      console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
+      // console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
       if (arg.facecnt > maxnumfaces) {
 
          // define minimal volume, which always to shown
-         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces);
+         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
 
          // if we have camera and too many volumes, try to select some of them in camera view
          if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
@@ -3176,8 +3123,8 @@
 
              this.ScanVisible(arg);
 
-             if (arg.totalcam > maxnumfaces*0.25)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.25);
+             if (arg.totalcam > maxnumfaces/4)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400);
              else
                 camVol = 0;
 
@@ -3226,6 +3173,134 @@
          del.push(prev[indx2++]);
 
       return del; //
+   }
+
+
+   JSROOT.GEO.ClonedNodes.prototype.CollectShapes = function(lst) {
+      // based on list of visible nodes, collect all uniques shapes which should be build
+
+      var shapes = [];
+
+      for (var i=0;i<lst.length;++i) {
+         var entry = lst[i];
+         var shape = this.GetNodeShape(entry.nodeid);
+
+         if (!shape) continue; // strange, but avoid missleading
+
+         if (shape._id === undefined) {
+            shape._id = shapes.length;
+
+            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1 });
+
+            // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
+         } else {
+            shapes[shape._id].refcnt++;
+         }
+
+         entry.shape = shapes[shape._id]; // remember shape used
+      }
+
+      // now sort shapes in volume decrease order
+      shapes.sort(function(a,b) { return b.vol - a.vol; })
+
+      // now set new shape ids according to the sorted order and delete temporary field
+      for (var n=0;n<shapes.length;++n) {
+         var item = shapes[n];
+         item.id = n; // set new ID
+         delete item.shape._id; // remove temporary field
+      }
+
+      // as last action set current shape id to each entry
+      for (var i=0;i<lst.length;++i) {
+         var entry = lst[i];
+         entry.shapeid = entry.shape.id; // keep only id for the entry
+         delete entry.shape; //
+      }
+
+      return shapes;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.MergeShapesLists = function(oldlst, newlst) {
+
+      if (!oldlst) return newlst;
+
+      // set geometry to shape object itself
+      for (var n=0;n<oldlst.length;++n) {
+         var item = oldlst[n];
+
+         item.shape._geom = item.geom;
+         delete item.geom;
+
+         if (item.geomZ!==undefined) {
+            item.shape._geomZ = item.geomZ;
+            delete item.geomZ;
+         }
+      }
+
+      // take from shape (if match)
+      for (var n=0;n<newlst.length;++n) {
+         var item = newlst[n];
+
+         if (item.shape._geom !== undefined) {
+            item.geom = item.shape._geom;
+            delete item.shape._geom;
+         }
+
+         if (item.shape._geomZ !== undefined) {
+            item.geomZ = item.shape._geomZ;
+            delete item.shape._geomZ;
+         }
+      }
+
+      // now delete all unused geometries
+      for (var n=0;n<oldlst.length;++n) {
+         var item = oldlst[n];
+         delete item.shape._geom;
+         delete item.shape._geomZ;
+      }
+
+      return newlst;
+   }
+
+
+   JSROOT.GEO.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
+
+      var created = 0,
+          tm1 = new Date().getTime(),
+          res = { done: false, shapes: 0, faces: 0, newshapes: 0 };
+
+      for (var n=0;n<lst.length;++n) {
+         var item = lst[n];
+
+         // in any case mark item as processed
+         item.ready = true;
+
+         // if enough faces are produced, nothing else is required
+         if (res.done) continue;
+
+         if (item.geom === undefined) {
+            item.geom = JSROOT.GEO.createGeometry(item.shape);
+            if (item.geom) created++; // indicate that at least one shape was created
+         }
+
+         item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
+
+         res.shapes++;
+         if (!item.used) res.newshapes++;
+         res.faces += item.nfaces*item.refcnt;
+
+         if (res.faces >= limit) {
+            res.done = true;
+         } else
+         if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
+            var tm2 = new Date().getTime();
+            if (tm2-tm1 > timelimit) return res;
+         }
+      }
+
+      res.done = true;
+
+      return res;
    }
 
    return JSROOT;

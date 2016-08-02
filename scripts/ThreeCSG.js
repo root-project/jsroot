@@ -70,7 +70,6 @@ function ThreeBSPfactory() {
          this.tree = new ThreeBSP.Node( polygons );
          return this;
 
-
       } else {
          throw 'ThreeBSP: Given geometry is unsupported';
       }
@@ -135,7 +134,7 @@ function ThreeBSPfactory() {
    };
    ThreeBSP.prototype.subtract = function( other_tree ) {
       var a = this.tree.clone(),
-         b = other_tree.tree.clone();
+          b = other_tree.tree.clone();
 
       a.invert();
       a.clipTo( b );
@@ -177,6 +176,45 @@ function ThreeBSPfactory() {
       a = new ThreeBSP( a );
       a.matrix = this.matrix;
       return a;
+   };
+   ThreeBSP.prototype.direct_subtract = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.invert();
+      a.clipTo( b );
+      b.clipTo( a );
+      b.invert();
+      b.clipTo( a );
+      b.invert();
+      a.build( b.allPolygons() );
+      a.invert();
+      return this;
+   };
+   ThreeBSP.prototype.direct_union = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.clipTo( b );
+      b.clipTo( a );
+      b.invert();
+      b.clipTo( a );
+      b.invert();
+      a.build( b.allPolygons() );
+      return this;
+   };
+   ThreeBSP.prototype.direct_intersect = function( other_tree ) {
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.invert();
+      b.clipTo( a );
+      b.invert();
+      a.clipTo( b );
+      b.clipTo( a );
+      a.build( b.allPolygons() );
+      a.invert();
+      return this;
    };
    ThreeBSP.prototype.toGeometry = function() {
       var i, j,
@@ -264,7 +302,8 @@ function ThreeBSPfactory() {
          positions_buf[iii+1] = vertex.y;
          positions_buf[iii+2] = vertex.z;
 
-         var norm = /*vertex.normal.lengthSq() > 0 ? vertex.normal :*/ polygon.normal;
+         var norm = vertex.normal.normalize();
+         if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
 
          normals_buf[iii] = norm.x;
          normals_buf[iii+1] = norm.y;
@@ -274,6 +313,7 @@ function ThreeBSPfactory() {
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
+         polygon.normal.normalize();
          for ( j = 2; j < polygon.vertices.length; ++j ) {
             CopyVertex(polygon.vertices[0]);
             CopyVertex(polygon.vertices[j-1]);
@@ -517,9 +557,7 @@ function ThreeBSPfactory() {
 
       // input: THREE.Matrix4 affine matrix
 
-      var x = this.x, y = this.y, z = this.z;
-
-      var e = m.elements;
+      var x = this.x, y = this.y, z = this.z, e = m.elements;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
@@ -532,8 +570,8 @@ function ThreeBSPfactory() {
 
    ThreeBSP.Node = function( polygons ) {
       var i, polygon_count,
-         front = [],
-         back = [];
+          front = [],
+          back = [];
 
       this.polygons = [];
       this.front = this.back = undefined;
@@ -542,13 +580,9 @@ function ThreeBSPfactory() {
 
       this.divider = polygons[0].clone();
 
-//      console.log('divider length ' + polygons.length);
-
       for ( i = 0, polygon_count = polygons.length; i < polygon_count; i++ ) {
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
-
-//       console.log('divider done ' + front.length + '  ' +  back.length);
 
       if ( front.length > 0 ) {
          this.front = new ThreeBSP.Node( front );
@@ -633,8 +667,7 @@ function ThreeBSPfactory() {
       return this;
    };
    ThreeBSP.Node.prototype.clipPolygons = function( polygons ) {
-      var i, polygon_count,
-         front, back;
+      var i, polygon_count, front, back;
 
       if ( !this.divider ) return polygons.slice();
 
