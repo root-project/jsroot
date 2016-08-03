@@ -1552,7 +1552,8 @@
 
       var take_time = now - this._startm;
 
-      JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
+      if (this._first_drawing)
+         JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -1675,11 +1676,17 @@
             // var shape = this._clones.GetNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
-               origin.geom = new THREE.BufferGeometry();
-               if ((item.buf_pos.length === 0) || (item.buf_pos.length !== item.buf_norm.length))
+               if (item.buf_pos.length === 0) {
+                  origin.geom = null;
+               } else if (item.buf_pos.length !== item.buf_norm.length) {
                   console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
-               origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
-               origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+                  origin.geom = null;
+               } else {
+                  origin.geom = new THREE.BufferGeometry();
+
+                  origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
+                  origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+               }
 
                origin.ready = true;
                origin.nfaces = item.nfaces;

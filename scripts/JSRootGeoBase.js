@@ -3190,7 +3190,7 @@
 
              camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
 
-             console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
+             // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
       }
 
