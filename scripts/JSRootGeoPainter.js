@@ -138,7 +138,7 @@
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
                    use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false };
+                   highlight: false, select_in_view: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -314,70 +314,6 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.TestVisibleObjects = function() {
-      // this.TestMatrixes();
-
-      return this.startDrawGeometry();
-
-
-      var painter = this, cnt = 0, totalcnt = 0;
-
-      var tm1 = new Date().getTime();
-
-      for (var n=0;n<1;++n)
-      this._scene.traverse(function(obj) {
-         if (!obj.stack) return;
-
-         var res = painter._clones.ResolveStack(obj.stack);
-
-         var shape = painter._clones.GetNodeShape(res.id);
-
-         var test = JSROOT.GEO.VisibleByCamera(painter._camera, obj.matrixWorld, shape);
-
-         totalcnt++;
-         if (test) cnt++;
-      });
-
-      var tm2 = new Date().getTime();
-
-      console.log('Test visible total', totalcnt, 'visible', cnt, 'takes', tm2-tm1);
-
-      cnt = totalcnt = 0;
-
-      var arg = {
-            domatrix: true,
-            frustum: JSROOT.GEO.CreateFrustum(painter._camera),
-            func: function(node) {
-
-               totalcnt++;
-
-               // if (node.vol<=0) return false;
-
-               var m = this.getmatrix();
-
-               // var res = JSROOT.GEO.VisibleByCamera(painter._camera, m, node);
-
-               var res = this.frustum.CheckShape(m, node);
-
-               if (res) cnt++;
-
-               return true;
-            }
-         };
-
-
-      this._clones.MarkVisisble();
-
-      tm1 = new Date().getTime();
-
-      for (var n=0;n<1;++n)
-         this._clones.ScanVisible(arg);
-
-      tm2 = new Date().getTime();
-
-      console.log('Test visible total', totalcnt, 'visible', cnt, 'takes', tm2-tm1);
-   }
-
    JSROOT.TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
@@ -404,8 +340,9 @@
          this._controls.autoRotate = !this._controls.autoRotate;
          this.autorotate(1.5);
       });
-      menu.add("Test visisble", function() {
-         this.TestVisibleObjects();
+      menu.addchk(this.options.select_in_view, "Select in view", function() {
+         this.options.select_in_view = !this.options.select_in_view;
+         if (this.options.select_in_view) this.startDrawGeometry();
       });
    }
 
@@ -632,13 +569,8 @@
 
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
-          control_active = false,
+          control_active = false, control_changed = false,
           block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-
-      this._controls.addEventListener( 'change', function() {
-         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         painter.Render3D(0);
-      });
 
       this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
 
@@ -698,17 +630,39 @@
          return intersects;
       }
 
+      this._controls.addEventListener( 'change', function() {
+         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         painter.Render3D(0);
+         control_changed = true;
+      });
+
       this._controls.addEventListener( 'start', function() {
          control_active = true;
          block_ctxt = false;
          mouse_ctxt.on = false;
+         // do not reset here, problem of events sequence in orbitcontrol
+         // it issue change/start/stop event when do zooming
+         // control_changed = false;
       });
 
       this._controls.addEventListener( 'end', function() {
          control_active = false;
-         if (!mouse_ctxt.on) return;
-         mouse_ctxt.on = false;
-         painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         if (mouse_ctxt.on) {
+            mouse_ctxt.on = false;
+            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         } else
+         if (control_changed && painter.options.select_in_view) {
+            var matrix = JSROOT.GEO.CreateProjectionMatrix(painter._camera);
+
+            var frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+            // check if overall bounding box seen
+            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel))) {
+               console.log('Start analyze visisble volumes');
+               painter.startDrawGeometry();
+            }
+         }
+         control_changed = false;
       });
 
       this._context_menu = function(evnt) {
@@ -768,7 +722,7 @@
             }
          });
 
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
+         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
       }
 
       function mousemove(evnt) {
@@ -911,11 +865,25 @@
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         var numvis = this._clones.MarkVisisble();
+         var numvis = this._clones.MarkVisisble(),
+             matrix = null, frustum = null;
 
-         // extract camera projection matrix for selection
-         var matrix = this._first_drawing ? null : JSROOT.GEO.CreateProjectionMatrix(this._camera);
-         matrix = null; // not use camera for the moment
+         if (this.options.select_in_view && !this._first_drawing) {
+            // extract camera projection matrix for selection
+
+            matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+
+            frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+            // check if overall bounding box seen
+            if (frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel))) {
+               matrix = null; // not use camera for the moment
+               frustum = null;
+            }
+         }
+
+         this._current_face_limit = this.options.maxlimit;
+         if (matrix) this._current_face_limit*=1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -927,7 +895,7 @@
 
          if (!need_worker || !this._worker_ready) {
             var tm1 = new Date().getTime();
-            this._new_draw_nodes = this._clones.CollectVisibles(this.options.maxlimit, JSROOT.GEO.CreateFrustum(matrix));
+            this._new_draw_nodes = this._clones.CollectVisibles(this._current_face_limit, frustum);
             var tm2 = new Date().getTime();
             console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.drawing_stage = 3;
@@ -935,7 +903,7 @@
          }
 
          var job = {
-               collect: this.options.maxlimit,   // indicator for the command
+               collect: this._current_face_limit,   // indicator for the command
                visible: this._clones.GetVisibleFlags(),
                matrix: matrix ? matrix.elements : null
          };
@@ -999,7 +967,7 @@
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
-            var job = { limit: this.options.maxlimit, shapes: [] }, cnt = 0;
+            var job = { limit: this._current_face_limit, shapes: [] }, cnt = 0;
             for (var n=0;n<this._build_shapes.length;++n) {
                var clone = null, item = this._build_shapes[n];
                // only submit not-done items
@@ -1035,7 +1003,7 @@
 
          if (this.drawing_stage === 7) {
             // building shapes
-            var res = this._clones.BuildShapes(this._build_shapes, this.options.maxlimit, 500);
+            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.drawing_stage = 8;
             } else {
@@ -1149,8 +1117,6 @@
 
       this._scene_width = w;
       this._scene_height = h;
-
-      this._boundingBox = new THREE.Box3();
 
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
@@ -1277,10 +1243,6 @@
       this.Render3D(0);
    }
 
-   JSROOT.TGeoPainter.prototype.updateBoundingBox = function() {
-      this._boundingBox.setFromObject(this._toplevel);
-   }
-
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
@@ -1294,8 +1256,7 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
 
-      this.updateBoundingBox();
-      var box = this._boundingBox;
+      var box = new THREE.Box3().setFromObject(this._toplevel);
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1361,12 +1322,11 @@
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
 
-      var box;
+      var box = new THREE.Box3();
       if (focus === undefined) {
-         this.updateBoundingBox();
-         box = this._boundingBox;
+         box.setFromObject(this._toplevel);
       } else {
-         box = new THREE.Box3().setFromObject(focus);
+         box.setFromObject(focus);
       }
 
       var sizex = box.max.x - box.min.x,
@@ -1740,9 +1700,12 @@
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
+      var call_ready = false;
+
       if (this._first_drawing) {
          this.adjustCameraPosition();
          this._first_drawing = false;
+         call_ready = true;
       }
 
       this.completeScene();
@@ -1765,10 +1728,10 @@
 
       this.showControlOptions(this.options.show_controls);
 
+      if (call_ready) this.DrawingReady();
+
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
-      else
-         this.DrawingReady();
    }
 
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
@@ -2000,8 +1963,6 @@
          if ((main === null) || (main._toplevel === undefined))
             return console.warn('no geo object found for 3D axis drawing');
 
-         //this.updateBoundingBox();
-         //var box = this._boundingBox;
          var box = new THREE.Box3().setFromObject(main._toplevel);
 
          this.xmin = box.min.x; this.xmax = box.max.x;

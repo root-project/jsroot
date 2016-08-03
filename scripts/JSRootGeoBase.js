@@ -2587,28 +2587,52 @@
       var frustum = new THREE.Frustum();
       frustum.setFromMatrix(source);
 
-      frustum.corners = [
-         new THREE.Vector3(  0.5,  0.5,  0.5 ),
-         new THREE.Vector3(  0.5,  0.5, -0.5 ),
-         new THREE.Vector3(  0.5, -0.5,  0.5 ),
-         new THREE.Vector3(  0.5, -0.5, -0.5 ),
-         new THREE.Vector3( -0.5,  0.5,  0.5 ),
-         new THREE.Vector3( -0.5,  0.5, -0.5 ),
-         new THREE.Vector3( -0.5, -0.5,  0.5 ),
-         new THREE.Vector3( -0.5, -0.5, -0.5 )
-      ];
+      frustum.corners = new Float32Array([
+          1,  1,  1,
+          1,  1, -1,
+          1, -1,  1,
+          1, -1, -1,
+         -1,  1,  1,
+         -1,  1, -1,
+         -1, -1,  1,
+         -1, -1, -1,
+          0,  0,  0 // also check center of the shape
+      ]);
 
       frustum.test = new THREE.Vector3(0,0,0);
 
       frustum.CheckShape = function(matrix, shape) {
-         for (var i = 0; i < this.corners.length; i++) {
-            this.test.x = this.corners[i].x * shape.fDX;
-            this.test.y = this.corners[i].y * shape.fDY;
-            this.test.z = this.corners[i].z * shape.fDZ;
-            if (this.containsPoint(this.test.applyMatrix4(matrix))) return true;
-        }
-        return false;
+         var pnt = this.test, len = this.corners.length, corners = this.corners, i;
 
+         for (i = 0; i < len; i+=3) {
+            pnt.x = corners[i] * shape.fDX;
+            pnt.y = corners[i+1] * shape.fDY;
+            pnt.z = corners[i+2] * shape.fDZ;
+            if (this.containsPoint(pnt.applyMatrix4(matrix))) return true;
+        }
+
+        return false;
+      }
+
+      frustum.CheckBox = function(box) {
+         var pnt = this.test, cnt = 0;
+         pnt.set(box.min.x, box.min.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.min.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.max.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.min.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         return cnt>5; // only if 6 edges and more are seen, we think that box is fully visisble
       }
 
       return frustum;
@@ -3133,14 +3157,15 @@
 
       if (arg.facecnt > maxnumfaces) {
 
+         var bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0);
+
          // define minimal volume, which always to shown
-         var boundary = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
+         var boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumfaces/100);
 
          minVol = boundary.min;
          maxVol = boundary.max;
 
-         // if we have camera and too many volumes, try to select some of them in camera view
-         if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
+         if (frustum) {
              arg.domatrix = true;
              arg.frustum = frustum;
              arg.totalcam = 0;
@@ -3158,8 +3183,8 @@
 
              this.ScanVisible(arg);
 
-             if (arg.totalcam > maxnumfaces/4)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400).min;
+             if (arg.totalcam > maxnumfaces*0.2)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumfaces*0.2/100).min;
              else
                 camVol = 0;
 

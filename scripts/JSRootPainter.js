@@ -1005,11 +1005,10 @@
 
    JSROOT.TBasePainter.prototype.DrawingReady = function() {
       // function should be called by the painter when first drawing is completed
-      this['_ready_called_'] = true;
+      this._ready_called_ = true;
       if ('_ready_callback_' in this) {
-         JSROOT.CallBack(this['_ready_callback_'], this);
-         delete this['_ready_callback_'];
-         this['_ready_callback_'] = null;
+         JSROOT.CallBack(this._ready_callback_, this);
+         delete this._ready_callback_;
       }
       return this;
    }
@@ -1017,7 +1016,7 @@
    JSROOT.TBasePainter.prototype.WhenReady = function(callback) {
       // call back will be called when painter ready with the drawing
       if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
-      this['_ready_callback_'] = callback;
+      this._ready_callback_ = callback;
    }
 
    JSROOT.TBasePainter.prototype.GetObject = function() {
