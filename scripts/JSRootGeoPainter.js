@@ -250,7 +250,6 @@
          if (JSROOT.hpainter.nobrowser && force)
             JSROOT.hpainter.ToggleFloatBrowser(true);
 
-
          JSROOT.hpainter.actiavte(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
@@ -586,8 +585,7 @@
                var wireframe = painter.accessObjectWireFrame(obj);
 
                if (wireframe!==undefined)
-                  menu.addchk(wireframe, "Wireframe", n,
-                        function(indx) {
+                  menu.addchk(wireframe, "Wireframe", n, function(indx) {
                      var m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.Render3D();
@@ -595,6 +593,17 @@
 
                menu.add("Focus", n, function(arg) {
                   this.focusCamera(intersects[arg].object);
+               });
+
+               menu.add("Hide", n, function(arg) {
+                  var resolve = painter._clones.ResolveStack(intersects[arg].object.stack);
+
+                  if (resolve.obj && resolve.obj.fVolume) {
+                     JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
+                     JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, JSROOT.hpainter);
+                  }
+                  intersects[arg].object.visible = false;
+                  this.Render3D();
                });
 
                if (many) menu.add("endsub:");
@@ -1023,8 +1032,6 @@
       }
 
       if ((this.drawing_stage === 7) || (this.drawing_stage === 8)) {
-
-         console.log('Drawing stage ', this.drawing_stage);
 
          if (this.drawing_stage === 7) {
             // building shapes
@@ -1712,7 +1719,7 @@
 
          job.tm4 = new Date().getTime();
 
-         console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
+         // console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
 
          this.drawing_stage = 7; // first check which shapes are used, than build meshes
 
@@ -2237,6 +2244,18 @@
       return null;
    }
 
+   JSROOT.GEO.updateBrowserIcons = function(volume, hpainter) {
+      if (!volume || !hpainter) return;
+
+      hpainter.ForEach(function(m) {
+         // update all items with that volume
+         if (volume === m._volume) {
+            m._icon = m._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(volume);
+            hpainter.UpdateTreeNode(m);
+         }
+      });
+   }
+
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
       if (!hitem._volume) return false;
 
@@ -2245,15 +2264,7 @@
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
 
-      var newname = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
-
-      hpainter.ForEach(function(m) {
-         // update all items with that volume
-         if (hitem._volume === m._volume) {
-            m._icon = newname;
-            hpainter.UpdateTreeNode(m);
-         }
-      });
+      JSROOT.GEO.updateBrowserIcons(hitem._volume, hpainter);
 
       JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       return false; // no need to update icon - we did it ourself

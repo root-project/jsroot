@@ -50,12 +50,14 @@
       volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.ToggleBit = function(volume, f) {
       if (volume.fGeoAtt !== undefined)
          volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
-   // method used to avoid duplication of warnings
+   /** method used to avoid duplication of warnings
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.warn = function(msg) {
       if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
       if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
@@ -63,6 +65,7 @@
       console.warn(msg);
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.NodeKind = function(obj) {
       // return kind of the geo nodes
       // 0 - TGeoNode
@@ -74,6 +77,7 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.getNodeProperties = function(kind, node, visible) {
       // function return different properties for specified node
       // Only if node visible, material will be created
@@ -3100,7 +3104,7 @@
          return { min: 0, max: 1 };
       }
 
-      console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
 
       return { min: currNode.vol, max: maxNode.vol };
    }

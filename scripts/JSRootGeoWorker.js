@@ -4,7 +4,7 @@ JSROOT.BIT = function(n) { return 1 << (n); }
 
 importScripts("three.js", "ThreeCSG.js", "JSRootGeoBase.js");
 
-if (console) console.log('geoworker started ' + THREE.REVISION);
+// if (console) console.log('geoworker started ' + THREE.REVISION);
 
 var clones = null;
 
@@ -20,11 +20,11 @@ onmessage = function(e) {
    e.data.tm1 = new Date().getTime();
 
    if (e.data.init) {
-      console.log('start worker ' +  (e.data.tm1 -  e.data.tm0));
+      // console.log('start worker ' +  (e.data.tm1 -  e.data.tm0));
 
       var nodes = e.data.clones;
       if (nodes) {
-         console.log('get clones ' + nodes.length);
+         // console.log('get clones ' + nodes.length);
          clones = new JSROOT.GEO.ClonedNodes(null, nodes);
          delete e.data.clones;
          clones.sortmap = e.data.sortmap;
@@ -40,8 +40,6 @@ onmessage = function(e) {
 
       var shapes = e.data.shapes, transferables = [];
 
-      var tm1 = new Date().getTime();
-
       // build all shapes up to specified limit, also limit execution time
       for (var n=0;n<100;++n) {
          var res = clones.BuildShapes(shapes, e.data.limit, 1000);
@@ -49,13 +47,10 @@ onmessage = function(e) {
          postMessage({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
       }
 
-      var tm2 = new Date().getTime(), ncreate = 0;
-
       for (var n=0;n<shapes.length;++n) {
          var item = shapes[n];
 
          if (item.geom) {
-            ncreate++;
             var bufgeom;
             if (item.geom instanceof THREE.BufferGeometry) {
                bufgeom = item.geom;
@@ -78,10 +73,6 @@ onmessage = function(e) {
          delete item.shape; // no need to send back shape
       }
 
-      var tm3 = new Date().getTime();
-
-      console.log('Worker create ' +  ncreate + ' shapes takes ' + (tm2-tm1) + '  conversion ' + (tm3-tm2));
-
       e.data.tm2 = new Date().getTime();
 
       return postMessage(e.data, transferables);
@@ -103,7 +94,7 @@ onmessage = function(e) {
 
       e.data.tm2 = new Date().getTime();
 
-      console.log('Collect visibles in worker ' + e.data.new_nodes.length + ' takes ' + (e.data.tm2-e.data.tm1));
+      // console.log('Collect visibles in worker ' + e.data.new_nodes.length + ' takes ' + (e.data.tm2-e.data.tm1));
 
       return postMessage(e.data);
    }
