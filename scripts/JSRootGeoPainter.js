@@ -401,10 +401,15 @@
          this.adjustCameraPosition();
          this.Render3D();
       });
+      menu.addchk(this._controls.autoRotate, "Autorotate", function() {
+         this._controls.autoRotate = !this._controls.autoRotate;
+         this.autorotate(1.5);
+      });
       menu.add("Test visisble", function() {
          this.TestVisibleObjects();
       });
    }
+
    JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
 
       if (this._datgui) {
@@ -1146,6 +1151,8 @@
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
 
+      this._animating = false;
+
       // Clipping Planes
 
       this.enableX = false;
@@ -1354,26 +1361,46 @@
       var dist = this._camera.position.distanceTo(target);
       var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
 
-      var stepcount = 150;
+      var frames = 200;
+      var step = 0;
       // Amount to change camera position at each step
-      var posDifference = position.sub(this._camera.position).divideScalar(stepcount);
+      var posDifference = position.sub(this._camera.position).divideScalar(frames);
       // Amount to change "lookAt" so it will end pointed at target
-      var targetDifference = target.sub(oldTarget).divideScalar(stepcount);
+      var targetDifference = target.sub(oldTarget).divideScalar(frames);
+
+      var painter = this;
+      this._animating = true;
+      this._controls.autoRotate = false;
 
       // Interpolate //
-      var painter = this;
-      for (var step = 0; step < stepcount; ++step) {
-         setTimeout( function() {
-           painter._camera.position.add(posDifference);
-           oldTarget.add(targetDifference);
-           painter._lookat = oldTarget;
-           painter._controls.target = oldTarget;
-           painter._camera.lookAt(painter._lookat);
-           painter.Render3D();
-        }, step * 20);
+
+      function animate() {
+         if (painter._animating) requestAnimationFrame( animate );
+         var smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
+         painter._camera.position.add( posDifference.clone().multiplyScalar( smoothFactor ) );
+         oldTarget.add( targetDifference.clone().multiplyScalar( smoothFactor ) );
+         painter._lookat = oldTarget;
+         painter._controls.target = oldTarget;
+         painter._camera.lookAt( painter._lookat );
+         painter.Render3D();
+         step++;
+         painter._animating = step < frames;
       }
-   //   this._controls.target = target;
+      animate();
+
       this._controls.update();
+   }
+
+   JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
+
+      this._controls.autoRotateSpeed = speed === undefined ? 2.0 : speed;
+      var painter = this;
+      function animate() {
+         if ( painter._controls.autoRotate ) requestAnimationFrame( animate );
+            painter._controls.update();
+            painter.Render3D(0);
+      }
+      animate();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
