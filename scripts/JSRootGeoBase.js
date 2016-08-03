@@ -2724,10 +2724,14 @@
 
        this.nodes = [];
 
+       var sortarr = [];
+
        // first create nodes objects
        for (var n=0; n<this.origin.length; ++n) {
           var obj = this.origin[n];
-          this.nodes.push({ id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 });
+          var node = { id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 };
+          this.nodes.push(node);
+          sortarr.push(node); // array use to produce sortmap
        }
 
        // than fill childrens lists
@@ -2780,6 +2784,14 @@
        // remove _refid identifiers from original objects
        for (var n=0;n<this.origin.length;++n)
           delete this.origin[n]._refid;
+
+       // do sorting once
+       sortarr.sort(function(a,b) { return b.vol - a.vol; });
+
+       // rememember sort map
+       this.sortmap = new Int32Array(this.nodes.length);
+       for (var n=0;n<this.nodes.length;++n)
+          this.sortmap[n] = sortarr[n].id;
    }
 
 
@@ -2860,8 +2872,9 @@
          arg.nodeid = 0;
          arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
-         arg.CopyStack = function() {
+         arg.CopyStack = function(factor) {
             var entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Int32Array(this.last) };
+            if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be build as first
             for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1];
             return entry;
          }
@@ -3042,12 +3055,21 @@
          three_prnt = obj3d;
       }
 
-      if (options === 'mesh') {
+      if ((options === 'mesh') || (options === 'delete_mesh')) {
+         var mesh = null;
          if (three_prnt)
-            for (var n=0;n<three_prnt.children.length;++n) {
+            for (var n=0; (n<three_prnt.children.length) && !mesh;++n) {
                var chld = three_prnt.children[n];
-               if ((chld.type === 'Mesh') && (chld.nchld === undefined)) return chld;
+               if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
             }
+
+         if ((options === 'mesh') || !mesh) return mesh;
+
+         while (mesh && (mesh !== toplevel)) {
+            three_prnt = mesh.parent;
+            three_prnt.remove(mesh);
+            mesh = (three_prnt.children.length == 0) ? three_prnt : null;
+         }
 
          return null;
       }
@@ -3056,25 +3078,30 @@
    }
 
    JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
-      var vismap = [];
-
-      for (var id=0;id<viscnt.length;++id)
-         if (viscnt[id] > 0)
-            vismap.push(this.nodes[id]);
-
-      // sort in reverse order (big volumes first)
-      vismap.sort(function(a,b) { return b.vol - a.vol; })
-
-      var indx = 0, cnt = 0, facecnt = 0;
-      while ((cnt < nodeslimit) && (facecnt < facelimit) && (indx < vismap.length-1)) {
-         var node = vismap[indx++];
-         cnt += viscnt[node.id];
-         facecnt += viscnt[node.id] * node.nfaces;
+      if (!this.sortmap) {
+         console.error('sorting map not exisits');
+         return { min: 0, max: 1 };
       }
 
-      console.log('Volume boundary ' + vismap[indx].vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      var maxNode, currNode, cnt=0, facecnt = 0;
 
-      return vismap[indx].vol;
+      for (var n=0; (n<this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit);++n) {
+         var id = this.sortmap[n];
+         if (viscnt[id] === 0) continue;
+         currNode = this.nodes[id];
+         if (!maxNode) maxNode = currNode;
+         cnt += viscnt[id];
+         facecnt += viscnt[id] * currNode.nfaces;
+      }
+
+      if (!currNode) {
+         console.error('no volumes selected');
+         return { min: 0, max: 1 };
+      }
+
+      console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+
+      return { min: currNode.vol, max: maxNode.vol };
    }
 
 
@@ -3095,14 +3122,17 @@
 
       for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var total = this.ScanVisible(arg), minVol = 0, camVol = -1;
+      var total = this.ScanVisible(arg), minVol = 0, maxVol = 0, camVol = -1, camFact = 10;
 
       // console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
       if (arg.facecnt > maxnumfaces) {
 
          // define minimal volume, which always to shown
-         minVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
+         var boundary = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
+
+         minVol = boundary.min;
+         maxVol = boundary.max;
 
          // if we have camera and too many volumes, try to select some of them in camera view
          if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
@@ -3124,9 +3154,11 @@
              this.ScanVisible(arg);
 
              if (arg.totalcam > maxnumfaces/4)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400);
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400).min;
              else
                 camVol = 0;
+
+             camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
 
              console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
@@ -3140,7 +3172,7 @@
          } else
          if ((camVol >= 0) && (node.vol > camVol))
             if (this.frustum.CheckShape(this.getmatrix(), node)) {
-               this.items.push(this.CopyStack());
+               this.items.push(this.CopyStack(camFact));
             }
          return true;
       }
@@ -3190,7 +3222,7 @@
          if (shape._id === undefined) {
             shape._id = shapes.length;
 
-            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1 });
+            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1 });
 
             // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
          } else {
@@ -3198,10 +3230,14 @@
          }
 
          entry.shape = shapes[shape._id]; // remember shape used
+
+         // use maximal importance factor to push element to the front
+         if (entry.factor && (entry.factor>entry.shape.factor))
+            entry.shape.factor = entry.factor;
       }
 
       // now sort shapes in volume decrease order
-      shapes.sort(function(a,b) { return b.vol - a.vol; })
+      shapes.sort(function(a,b) { return b.vol*b.factor - a.vol*a.factor; })
 
       // now set new shape ids according to the sorted order and delete temporary field
       for (var n=0;n<shapes.length;++n) {
@@ -3267,7 +3303,7 @@
 
       var created = 0,
           tm1 = new Date().getTime(),
-          res = { done: false, shapes: 0, faces: 0, newshapes: 0 };
+          res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
       for (var n=0;n<lst.length;++n) {
          var item = lst[n];
@@ -3286,7 +3322,7 @@
          item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
 
          res.shapes++;
-         if (!item.used) res.newshapes++;
+         if (!item.used) res.notusedshapes++;
          res.faces += item.nfaces*item.refcnt;
 
          if (res.faces >= limit) {
