@@ -2691,7 +2691,7 @@
           tframe = this.GetObject(),
           root_pad = this.root_pad();
 
-      if ((this.fX1NDC === undefined) && !this.modified_NDC) {
+      if (this.fX1NDC === undefined) {
          if (!root_pad) {
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          } else {
