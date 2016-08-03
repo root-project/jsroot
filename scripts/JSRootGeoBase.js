@@ -3225,7 +3225,7 @@
          }
 
          if ((indx2 < prev.length) && (prev[indx2].seqid === current[indx1].seqid)) {
-            if (prev[indx2].done) current[indx1].done = true; // copy ready flag
+            if (prev[indx2].done) current[indx1].done = 0; // set flag, that entry will be checked
             indx2++;
          }
       }

@@ -1018,6 +1018,17 @@
 
          for (var n=0; n<this._draw_nodes.length;++n) {
             var entry = this._draw_nodes[n];
+            if (entry.done === 0) {
+               // recheck entry which should exists
+               var mesh = this._clones.CreateObject3D(entry.stack, this._toplevel, 'mesh');
+               if (mesh) {
+                  entry.done = true;
+                  if (!mesh.visible) mesh.visible = true; // reenable visible flag, may happen due to Hide command
+               } else {
+                  delete entry.done; // remove flag, check again
+               }
+            }
+
             if (entry.done) continue;
 
             var shape = this._build_shapes[entry.shapeid];
@@ -1573,7 +1584,6 @@
          var tm1 = new Date();
 
          // do rendering, most consuming time
-         // do rendering, most consuming time
          if (this._webgl && this._enableSSAO) {
             this._scene.overrideMaterial = this._depthMaterial;
         //    this._renderer.logarithmicDepthBuffer = false;
@@ -1705,7 +1715,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
-      this._draw_nodes_again = true;
       this.startDrawGeometry();
    }
 
