@@ -3209,7 +3209,7 @@
 
       this.ScanVisible(arg);
 
-      return arg.items;
+      return { lst: arg.items, complete: minVol === 0 };
    }
 
    JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {

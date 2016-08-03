@@ -651,16 +651,14 @@
             mouse_ctxt.on = false;
             painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
          } else
-         if (control_changed && painter.options.select_in_view) {
+         if (control_changed && painter.options.select_in_view && !painter._draw_all_nodes) {
             var matrix = JSROOT.GEO.CreateProjectionMatrix(painter._camera);
 
             var frustum = JSROOT.GEO.CreateFrustum(matrix);
 
             // check if overall bounding box seen
-            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel))) {
-               console.log('Start analyze visisble volumes');
+            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel)))
                painter.startDrawGeometry();
-            }
          }
          control_changed = false;
       });
@@ -895,9 +893,11 @@
 
          if (!need_worker || !this._worker_ready) {
             var tm1 = new Date().getTime();
-            this._new_draw_nodes = this._clones.CollectVisibles(this._current_face_limit, frustum);
+            var res = this._clones.CollectVisibles(this._current_face_limit, frustum);
+            this._new_draw_nodes = res.lst;
+            this._draw_all_nodes = res.complete;
             var tm2 = new Date().getTime();
-            console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
+            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.drawing_stage = 3;
             return true;
          }
@@ -1292,7 +1292,6 @@
          //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
       }
 
-
       this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
@@ -1302,6 +1301,10 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+
+      // recheck which elements to draw
+      if (this.options.select_in_view)
+         this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
@@ -1657,6 +1660,7 @@
 
       if ('collect' in job) {
          this._new_draw_nodes = job.new_nodes;
+         this._draw_all_nodes = job.complete;
          this.drawing_stage = 3;
          // invoke methods immediately
          return this.continueDraw();

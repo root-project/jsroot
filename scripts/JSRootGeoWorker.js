@@ -90,7 +90,10 @@ onmessage = function(e) {
          matrix = new THREE.Matrix4().fromArray(e.data.matrix);
       delete e.data.matrix;
 
-      e.data.new_nodes = clones.CollectVisibles(e.data.collect, JSROOT.GEO.CreateFrustum(matrix));
+      var res = clones.CollectVisibles(e.data.collect, JSROOT.GEO.CreateFrustum(matrix));
+
+      e.data.new_nodes = res.lst;
+      e.data.complete = res.complete; // inform if all nodes are selected
 
       e.data.tm2 = new Date().getTime();
 
