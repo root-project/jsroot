@@ -2675,19 +2675,6 @@
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
       this.tooltip_enabled = true;
-
-      var pad = this.root_pad();
-      if (!pad) {
-         JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
-      } else {
-         JSROOT.extend(this, {
-            fX1NDC: pad.fLeftMargin,
-            fX2NDC: 1 - pad.fRightMargin,
-            fY1NDC: pad.fBottomMargin,
-            fY2NDC: 1 - pad.fTopMargin
-         });
-      }
-
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2703,6 +2690,19 @@
           height = this.pad_height(),
           tframe = this.GetObject(),
           root_pad = this.root_pad();
+
+      if ((this.fX1NDC === undefined) && !this.modified_NDC) {
+         if (!root_pad) {
+            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
+         } else {
+            JSROOT.extend(this, {
+               fX1NDC: root_pad.fLeftMargin,
+               fX2NDC: 1 - root_pad.fRightMargin,
+               fY1NDC: root_pad.fBottomMargin,
+               fY2NDC: 1 - root_pad.fTopMargin
+            });
+         }
+      }
 
       if (this.fillatt === undefined) {
          if (tframe)
