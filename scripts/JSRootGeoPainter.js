@@ -891,7 +891,10 @@
       if (this.drawing_stage == 1) {
 
          // wait until worker is really started
-         if ((this.options.use_worker>0) && this._worker && !this._worker_ready) return 1;
+         if (this.options.use_worker>0) {
+            if (!this._worker) { this.startWorker(); return 1; }
+            if (!this._worker_ready) return 1;
+         }
 
          // first copy visibility flags and check how many unique visible nodes exists
          var numvis = this._clones.MarkVisisble();
@@ -1016,6 +1019,8 @@
 
       if ((this.drawing_stage === 7) || (this.drawing_stage === 8)) {
 
+         console.log('Drawing stage ', this.drawing_stage);
+
          if (this.drawing_stage === 7) {
             // building shapes
             var res = this._clones.BuildShapes(this._build_shapes, this.options.maxlimit, 500);
@@ -1036,7 +1041,11 @@
             if (entry.done) continue;
 
             var shape = this._build_shapes[entry.shapeid];
-            if (!shape.ready) { ready = false; continue; }
+            if (!shape.ready) {
+               if (this.drawing_stage === 8) console.warn('shape marked as not ready when should');
+               ready = false;
+               continue;
+            }
 
             entry.done = true;
             shape.used = true; // indicate that shape was used in building
@@ -1611,6 +1620,9 @@
          if ('log' in e.data)
             return JSROOT.console('geo: ' + e.data.log);
 
+         if ('progress' in e.data)
+            return JSROOT.progress(e.data.progress);
+
          e.data.tm3 = new Date().getTime();
 
          if ('init' in e.data) {
@@ -1675,7 +1687,7 @@
 
          console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
 
-         this.drawing_stage = 8;
+         this.drawing_stage = 7; // first check which shapes are used, than build meshes
 
          // invoke methods immediately
          return this.continueDraw();

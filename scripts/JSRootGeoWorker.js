@@ -43,7 +43,11 @@ onmessage = function(e) {
       var tm1 = new Date().getTime();
 
       // build all shapes up to specified limit, also limit execution time
-      clones.BuildShapes(shapes, e.data.limit, 50000);
+      for (var n=0;n<100;++n) {
+         var res = clones.BuildShapes(shapes, e.data.limit, 1000);
+         if (res.done) break;
+         postMessage({ progress: "Worker creating: " + res.shapes + " / " + shapes.length + " shapes,  "  + res.faces + " faces" });
+      }
 
       var tm2 = new Date().getTime(), ncreate = 0;
 
