@@ -903,7 +903,7 @@
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
          var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
-         need_worker = false;
+         // need_worker = false;
 
          if (need_worker && !this._worker && (this.options.use_worker >= 0))
             this.startWorker(); // we starting worker, but it may not be ready so fast
@@ -982,22 +982,28 @@
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
-            var job = { limit: this.options.maxlimit, shapes: [] };
+            var job = { limit: this.options.maxlimit, shapes: [] }, cnt = 0;
             for (var n=0;n<this._build_shapes.length;++n) {
                var clone = null, item = this._build_shapes[n];
                // only submit not-done items
-               if (item.ready)
-                  clone = { id: item.id, ready: true, nfaces: item.nfaces, refcnt: item.refcnt };
-               else
+               if (item.ready || item.geom) {
+                  // this is place holder for existing geometry
+                  clone = { id: item.id, ready: true, nfaces: JSROOT.GEO.numGeometryFaces(item.geom), refcnt: item.refcnt };
+               } else {
                   clone = JSROOT.clone(item, null, true);
+                  cnt++;
+               }
 
                job.shapes.push(clone);
             }
-            this.submitToWorker(job);
-            this.drawing_log = "Worker build shapes";
 
-            this.drawing_stage = 6;
-            return 2;
+            if (cnt > 0) {
+               /// only if some geom missing, submit job to the worker
+               this.submitToWorker(job);
+               this.drawing_log = "Worker build shapes";
+               this.drawing_stage = 6;
+               return 2;
+            }
          }
 
          this.drawing_stage = 7;
@@ -1616,7 +1622,7 @@
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes } );
+      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
    }
 
    JSROOT.TGeoPainter.prototype.canSubmitToWorker = function(force) {

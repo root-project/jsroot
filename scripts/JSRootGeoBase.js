@@ -2649,6 +2649,7 @@
          return attr ? attr.count / 3 : 0;
       }
 
+      // special array of polygons
       if (geom && geom.polygons) return geom.polygons.length;
 
       return geom.faces.length;
@@ -3222,7 +3223,7 @@
          if (shape._id === undefined) {
             shape._id = shapes.length;
 
-            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1 });
+            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1, ready: false });
 
             // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
          } else {
@@ -3250,7 +3251,7 @@
       for (var i=0;i<lst.length;++i) {
          var entry = lst[i];
          entry.shapeid = entry.shape.id; // keep only id for the entry
-         delete entry.shape; //
+         delete entry.shape; // remove direct references
       }
 
       return shapes;
@@ -3308,18 +3309,17 @@
       for (var n=0;n<lst.length;++n) {
          var item = lst[n];
 
-         // in any case mark item as processed
-         item.ready = true;
-
          // if enough faces are produced, nothing else is required
-         if (res.done) continue;
+         if (res.done) { item.ready = true; continue; }
 
-         if (item.geom === undefined) {
-            item.geom = JSROOT.GEO.createGeometry(item.shape);
-            if (item.geom) created++; // indicate that at least one shape was created
+         if (!item.ready) {
+            if (item.geom === undefined) {
+               item.geom = JSROOT.GEO.createGeometry(item.shape);
+               if (item.geom) created++; // indicate that at least one shape was created
+            }
+            item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
+            item.ready = true;
          }
-
-         item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
 
          res.shapes++;
          if (!item.used) res.notusedshapes++;

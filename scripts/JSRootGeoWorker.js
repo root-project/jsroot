@@ -27,6 +27,7 @@ onmessage = function(e) {
          console.log('get clones ' + nodes.length);
          clones = new JSROOT.GEO.ClonedNodes(null, nodes);
          delete e.data.clones;
+         clones.sortmap = e.data.sortmap;
       }
 
       e.data.tm2 = new Date().getTime();
@@ -36,7 +37,6 @@ onmessage = function(e) {
 
    if (e.data.shapes) {
       // this is task to create geometries in the worker
-
 
       var shapes = e.data.shapes, transferables = [];
 
