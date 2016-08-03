@@ -1190,9 +1190,9 @@
 
        // Lights
 
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set(10, 10, 10);
+      this._pointLight = new THREE.PointLight(0xefefef);
+      this._camera.add( this._pointLight );
+      this._pointLight.position.set(10, 10, 10);
 
       this._defaultAdvanced = { aoClamp: 0.70,
                                 lumInfluence: 0.4,
@@ -1323,11 +1323,16 @@
 //      else
 //         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
 
-      if (this.options._yup)
+      if (this.options._yup) {
          this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
-       else
-          this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         //this._pointLight.position.set(midx+3*Math.max(sizex,sizez), midy+3*sizey, midz-3*Math.max(sizex,sizez));
+      } else {
+         this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
+      }
 
+
+      this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
