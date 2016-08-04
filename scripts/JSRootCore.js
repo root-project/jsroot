@@ -278,10 +278,11 @@
          var tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
-         if (typeof src[i] === 'object')
-            tgt.push(JSROOT.clone(src[i], map));
-         else
-            tgt.push(src[i]);
+         for (var i = 0; i < src.length; ++i)
+            if (typeof src[i] === 'object')
+               tgt.push(JSROOT.clone(src[i], map));
+            else
+               tgt.push(src[i]);
          return tgt;
       }
 
