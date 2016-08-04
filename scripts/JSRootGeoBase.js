@@ -50,12 +50,14 @@
       volume.fGeoAtt = value ? (volume.fGeoAtt | f) : (volume.fGeoAtt & ~f);
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.ToggleBit = function(volume, f) {
       if (volume.fGeoAtt !== undefined)
          volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
-   // method used to avoid duplication of warnings
+   /** method used to avoid duplication of warnings
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.warn = function(msg) {
       if (JSROOT.GEO._warn_msgs === undefined) JSROOT.GEO._warn_msgs = {};
       if (JSROOT.GEO._warn_msgs[msg] !== undefined) return;
@@ -63,6 +65,7 @@
       console.warn(msg);
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.NodeKind = function(obj) {
       // return kind of the geo nodes
       // 0 - TGeoNode
@@ -74,6 +77,7 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
+   /** @memberOf JSROOT.GEO */
    JSROOT.GEO.getNodeProperties = function(kind, node, visible) {
       // function return different properties for specified node
       // Only if node visible, material will be created
@@ -2583,28 +2587,52 @@
       var frustum = new THREE.Frustum();
       frustum.setFromMatrix(source);
 
-      frustum.corners = [
-         new THREE.Vector3(  0.5,  0.5,  0.5 ),
-         new THREE.Vector3(  0.5,  0.5, -0.5 ),
-         new THREE.Vector3(  0.5, -0.5,  0.5 ),
-         new THREE.Vector3(  0.5, -0.5, -0.5 ),
-         new THREE.Vector3( -0.5,  0.5,  0.5 ),
-         new THREE.Vector3( -0.5,  0.5, -0.5 ),
-         new THREE.Vector3( -0.5, -0.5,  0.5 ),
-         new THREE.Vector3( -0.5, -0.5, -0.5 )
-      ];
+      frustum.corners = new Float32Array([
+          1,  1,  1,
+          1,  1, -1,
+          1, -1,  1,
+          1, -1, -1,
+         -1,  1,  1,
+         -1,  1, -1,
+         -1, -1,  1,
+         -1, -1, -1,
+          0,  0,  0 // also check center of the shape
+      ]);
 
       frustum.test = new THREE.Vector3(0,0,0);
 
       frustum.CheckShape = function(matrix, shape) {
-         for (var i = 0; i < this.corners.length; i++) {
-            this.test.x = this.corners[i].x * shape.fDX;
-            this.test.y = this.corners[i].y * shape.fDY;
-            this.test.z = this.corners[i].z * shape.fDZ;
-            if (this.containsPoint(this.test.applyMatrix4(matrix))) return true;
-        }
-        return false;
+         var pnt = this.test, len = this.corners.length, corners = this.corners, i;
 
+         for (i = 0; i < len; i+=3) {
+            pnt.x = corners[i] * shape.fDX;
+            pnt.y = corners[i+1] * shape.fDY;
+            pnt.z = corners[i+2] * shape.fDZ;
+            if (this.containsPoint(pnt.applyMatrix4(matrix))) return true;
+        }
+
+        return false;
+      }
+
+      frustum.CheckBox = function(box) {
+         var pnt = this.test, cnt = 0;
+         pnt.set(box.min.x, box.min.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.min.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.max.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.min.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.min.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.min.z);
+         if (this.containsPoint(pnt)) cnt++;
+         pnt.set(box.max.x, box.max.y, box.max.z);
+         if (this.containsPoint(pnt)) cnt++;
+         return cnt>5; // only if 6 edges and more are seen, we think that box is fully visisble
       }
 
       return frustum;
@@ -2649,6 +2677,7 @@
          return attr ? attr.count / 3 : 0;
       }
 
+      // special array of polygons
       if (geom && geom.polygons) return geom.polygons.length;
 
       return geom.faces.length;
@@ -3099,7 +3128,7 @@
          return { min: 0, max: 1 };
       }
 
-      console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
+      // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
 
       return { min: currNode.vol, max: maxNode.vol };
    }
@@ -3128,14 +3157,15 @@
 
       if (arg.facecnt > maxnumfaces) {
 
+         var bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0);
+
          // define minimal volume, which always to shown
-         var boundary = this.GetVolumeBoundary(arg.viscnt, maxnumfaces, maxnumfaces/100);
+         var boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumfaces/100);
 
          minVol = boundary.min;
          maxVol = boundary.max;
 
-         // if we have camera and too many volumes, try to select some of them in camera view
-         if (frustum && (arg.facecnt > 1.25*maxnumfaces)) {
+         if (frustum) {
              arg.domatrix = true;
              arg.frustum = frustum;
              arg.totalcam = 0;
@@ -3153,14 +3183,14 @@
 
              this.ScanVisible(arg);
 
-             if (arg.totalcam > maxnumfaces/4)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces/4, maxnumfaces/400).min;
+             if (arg.totalcam > maxnumfaces*0.2)
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumfaces*0.2/100).min;
              else
                 camVol = 0;
 
              camFact = maxVol / ((camVol>0) ? (camVol>0) : minVol);
 
-             console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
+             // console.log('Limit for camera ' + camVol + '  faces in camera view ' + arg.totalcam);
          }
       }
 
@@ -3179,7 +3209,7 @@
 
       this.ScanVisible(arg);
 
-      return arg.items;
+      return { lst: arg.items, complete: minVol === 0 };
    }
 
    JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {
@@ -3222,7 +3252,7 @@
          if (shape._id === undefined) {
             shape._id = shapes.length;
 
-            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1 });
+            shapes.push({ id: shape._id, shape: shape, vol: this.nodes[entry.nodeid].vol, refcnt: 1, factor: 1, ready: false });
 
             // shapes.push( { obj: shape, vol: this.nodes[entry.nodeid].vol });
          } else {
@@ -3250,7 +3280,7 @@
       for (var i=0;i<lst.length;++i) {
          var entry = lst[i];
          entry.shapeid = entry.shape.id; // keep only id for the entry
-         delete entry.shape; //
+         delete entry.shape; // remove direct references
       }
 
       return shapes;
@@ -3308,18 +3338,17 @@
       for (var n=0;n<lst.length;++n) {
          var item = lst[n];
 
-         // in any case mark item as processed
-         item.ready = true;
-
          // if enough faces are produced, nothing else is required
-         if (res.done) continue;
+         if (res.done) { item.ready = true; continue; }
 
-         if (item.geom === undefined) {
-            item.geom = JSROOT.GEO.createGeometry(item.shape);
-            if (item.geom) created++; // indicate that at least one shape was created
+         if (!item.ready) {
+            if (item.geom === undefined) {
+               item.geom = JSROOT.GEO.createGeometry(item.shape);
+               if (item.geom) created++; // indicate that at least one shape was created
+            }
+            item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
+            item.ready = true;
          }
-
-         item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
 
          res.shapes++;
          if (!item.used) res.notusedshapes++;

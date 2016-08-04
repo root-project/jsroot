@@ -138,7 +138,7 @@
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
                    use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false };
+                   highlight: false, select_in_view: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -250,7 +250,6 @@
          if (JSROOT.hpainter.nobrowser && force)
             JSROOT.hpainter.ToggleFloatBrowser(true);
 
-
          JSROOT.hpainter.actiavte(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
@@ -315,70 +314,6 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.TestVisibleObjects = function() {
-      // this.TestMatrixes();
-
-      return this.startDrawGeometry();
-
-
-      var painter = this, cnt = 0, totalcnt = 0;
-
-      var tm1 = new Date().getTime();
-
-      for (var n=0;n<1;++n)
-      this._scene.traverse(function(obj) {
-         if (!obj.stack) return;
-
-         var res = painter._clones.ResolveStack(obj.stack);
-
-         var shape = painter._clones.GetNodeShape(res.id);
-
-         var test = JSROOT.GEO.VisibleByCamera(painter._camera, obj.matrixWorld, shape);
-
-         totalcnt++;
-         if (test) cnt++;
-      });
-
-      var tm2 = new Date().getTime();
-
-      console.log('Test visible total', totalcnt, 'visible', cnt, 'takes', tm2-tm1);
-
-      cnt = totalcnt = 0;
-
-      var arg = {
-            domatrix: true,
-            frustum: JSROOT.GEO.CreateFrustum(painter._camera),
-            func: function(node) {
-
-               totalcnt++;
-
-               // if (node.vol<=0) return false;
-
-               var m = this.getmatrix();
-
-               // var res = JSROOT.GEO.VisibleByCamera(painter._camera, m, node);
-
-               var res = this.frustum.CheckShape(m, node);
-
-               if (res) cnt++;
-
-               return true;
-            }
-         };
-
-
-      this._clones.MarkVisisble();
-
-      tm1 = new Date().getTime();
-
-      for (var n=0;n<1;++n)
-         this._clones.ScanVisible(arg);
-
-      tm2 = new Date().getTime();
-
-      console.log('Test visible total', totalcnt, 'visible', cnt, 'takes', tm2-tm1);
-   }
-
    JSROOT.TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
@@ -405,8 +340,9 @@
          this._controls.autoRotate = !this._controls.autoRotate;
          this.autorotate(1.5);
       });
-      menu.add("Test visisble", function() {
-         this.TestVisibleObjects();
+      menu.addchk(this.options.select_in_view, "Select in view", function() {
+         this.options.select_in_view = !this.options.select_in_view;
+         if (this.options.select_in_view) this.startDrawGeometry();
       });
    }
 
@@ -586,8 +522,7 @@
                var wireframe = painter.accessObjectWireFrame(obj);
 
                if (wireframe!==undefined)
-                  menu.addchk(wireframe, "Wireframe", n,
-                        function(indx) {
+                  menu.addchk(wireframe, "Wireframe", n, function(indx) {
                      var m = intersects[indx].object.material;
                      m.wireframe = !m.wireframe;
                      this.Render3D();
@@ -595,6 +530,19 @@
 
                menu.add("Focus", n, function(arg) {
                   this.focusCamera(intersects[arg].object);
+               });
+
+               menu.add("Hide", n, function(arg) {
+                  var resolve = painter._clones.ResolveStack(intersects[arg].object.stack);
+
+                  if (resolve.obj && resolve.obj.fVolume) {
+                     JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
+                     JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, JSROOT.hpainter);
+                  }
+                  // intersects[arg].object.visible = false;
+                  // this.Render3D();
+
+                  this.testGeomChanges();// while many volumes may disapper, recheck all of them
                });
 
                if (many) menu.add("endsub:");
@@ -623,13 +571,8 @@
 
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
-          control_active = false,
+          control_active = false, control_changed = false,
           block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-
-      this._controls.addEventListener( 'change', function() {
-         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         painter.Render3D(0);
-      });
 
       this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
 
@@ -689,17 +632,37 @@
          return intersects;
       }
 
+      this._controls.addEventListener( 'change', function() {
+         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         painter.Render3D(0);
+         control_changed = true;
+      });
+
       this._controls.addEventListener( 'start', function() {
          control_active = true;
          block_ctxt = false;
          mouse_ctxt.on = false;
+         // do not reset here, problem of events sequence in orbitcontrol
+         // it issue change/start/stop event when do zooming
+         // control_changed = false;
       });
 
       this._controls.addEventListener( 'end', function() {
          control_active = false;
-         if (!mouse_ctxt.on) return;
-         mouse_ctxt.on = false;
-         painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         if (mouse_ctxt.on) {
+            mouse_ctxt.on = false;
+            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         } else
+         if (control_changed && painter.options.select_in_view && !painter._draw_all_nodes) {
+            var matrix = JSROOT.GEO.CreateProjectionMatrix(painter._camera);
+
+            var frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+            // check if overall bounding box seen
+            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel)))
+               painter.startDrawGeometry();
+         }
+         control_changed = false;
       });
 
       this._context_menu = function(evnt) {
@@ -759,7 +722,7 @@
             }
          });
 
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); } );
+         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
       }
 
       function mousemove(evnt) {
@@ -896,34 +859,53 @@
       if (this.drawing_stage == 1) {
 
          // wait until worker is really started
-         if ((this.options.use_worker>0) && this._worker && !this._worker_ready) return 1;
+         if (this.options.use_worker>0) {
+            if (!this._worker) { this.startWorker(); return 1; }
+            if (!this._worker_ready) return 1;
+         }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         var numvis = this._clones.MarkVisisble();
+         var numvis = this._clones.MarkVisisble(),
+             matrix = null, frustum = null;
 
-         // extract camera projection matrix for selection
-         var matrix = this._first_drawing ? null : JSROOT.GEO.CreateProjectionMatrix(this._camera);
-         matrix = null; // not use camera for the moment
+         if (this.options.select_in_view && !this._first_drawing) {
+            // extract camera projection matrix for selection
+
+            matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+
+            frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+            // check if overall bounding box seen
+            if (frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel))) {
+               matrix = null; // not use camera for the moment
+               frustum = null;
+            }
+         }
+
+         this._current_face_limit = this.options.maxlimit;
+         if (matrix) this._current_face_limit*=1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
          var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
-         need_worker = false;
+         // need_worker = false;
 
          if (need_worker && !this._worker && (this.options.use_worker >= 0))
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
             var tm1 = new Date().getTime();
-            this._new_draw_nodes = this._clones.CollectVisibles(this.options.maxlimit, JSROOT.GEO.CreateFrustum(matrix));
+            var res = this._clones.CollectVisibles(this._current_face_limit, frustum);
+            this._new_draw_nodes = res.lst;
+            this._draw_all_nodes = res.complete;
             var tm2 = new Date().getTime();
-            console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
+            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.drawing_stage = 3;
             return true;
          }
 
          var job = {
-               collect: this.options.maxlimit,   // indicator for the command
+               collect: this._current_face_limit,   // indicator for the command
                visible: this._clones.GetVisibleFlags(),
                matrix: matrix ? matrix.elements : null
          };
@@ -987,22 +969,28 @@
          // one can ask worker to build them or do it ourself
 
          if (this.canSubmitToWorker()) {
-            var job = { limit: this.options.maxlimit, shapes: [] };
+            var job = { limit: this._current_face_limit, shapes: [] }, cnt = 0;
             for (var n=0;n<this._build_shapes.length;++n) {
                var clone = null, item = this._build_shapes[n];
                // only submit not-done items
-               if (item.ready)
-                  clone = { id: item.id, ready: true, nfaces: item.nfaces, refcnt: item.refcnt };
-               else
+               if (item.ready || item.geom) {
+                  // this is place holder for existing geometry
+                  clone = { id: item.id, ready: true, nfaces: JSROOT.GEO.numGeometryFaces(item.geom), refcnt: item.refcnt };
+               } else {
                   clone = JSROOT.clone(item, null, true);
+                  cnt++;
+               }
 
                job.shapes.push(clone);
             }
-            this.submitToWorker(job);
-            this.drawing_log = "Worker build shapes";
 
-            this.drawing_stage = 6;
-            return 2;
+            if (cnt > 0) {
+               /// only if some geom missing, submit job to the worker
+               this.submitToWorker(job);
+               this.drawing_log = "Worker build shapes";
+               this.drawing_stage = 6;
+               return 2;
+            }
          }
 
          this.drawing_stage = 7;
@@ -1017,7 +1005,7 @@
 
          if (this.drawing_stage === 7) {
             // building shapes
-            var res = this._clones.BuildShapes(this._build_shapes, this.options.maxlimit, 500);
+            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.drawing_stage = 8;
             } else {
@@ -1035,7 +1023,11 @@
             if (entry.done) continue;
 
             var shape = this._build_shapes[entry.shapeid];
-            if (!shape.ready) { ready = false; continue; }
+            if (!shape.ready) {
+               if (this.drawing_stage === 8) console.warn('shape marked as not ready when should');
+               ready = false;
+               continue;
+            }
 
             entry.done = true;
             shape.used = true; // indicate that shape was used in building
@@ -1128,8 +1120,6 @@
       this._scene_width = w;
       this._scene_height = h;
 
-      this._boundingBox = new THREE.Box3();
-
       this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
 
       this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
@@ -1168,9 +1158,9 @@
 
        // Lights
 
-      var pointLight = new THREE.PointLight(0xefefef);
-      this._camera.add( pointLight );
-      pointLight.position.set(10, 10, 10);
+      this._pointLight = new THREE.PointLight(0xefefef);
+      this._camera.add( this._pointLight );
+      this._pointLight.position.set(10, 10, 10);
 
       this._defaultAdvanced = { aoClamp: 0.70,
                                 lumInfluence: 0.4,
@@ -1255,10 +1245,6 @@
       this.Render3D(0);
    }
 
-   JSROOT.TGeoPainter.prototype.updateBoundingBox = function() {
-      this._boundingBox.setFromObject(this._toplevel);
-   }
-
    JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
@@ -1272,8 +1258,7 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
 
-      this.updateBoundingBox();
-      var box = this._boundingBox;
+      var box = new THREE.Box3().setFromObject(this._toplevel);
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1303,11 +1288,15 @@
 //      else
 //         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
 
-      if (this.options._yup)
+      if (this.options._yup) {
          this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
-       else
-          this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         //this._pointLight.position.set(midx+3*Math.max(sizex,sizez), midy+3*sizey, midz-3*Math.max(sizex,sizez));
+      } else {
+         this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
+      }
 
+      this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
@@ -1316,6 +1305,10 @@
          this._controls.target.copy(this._lookat);
          this._controls.update();
       }
+
+      // recheck which elements to draw
+      if (this.options.select_in_view)
+         this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
@@ -1336,12 +1329,11 @@
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
 
-      var box;
+      var box = new THREE.Box3();
       if (focus === undefined) {
-         this.updateBoundingBox();
-         box = this._boundingBox;
+         box.setFromObject(this._toplevel);
       } else {
-         box = new THREE.Box3().setFromObject(focus);
+         box.setFromObject(focus);
       }
 
       var sizex = box.max.x - box.min.x,
@@ -1564,7 +1556,8 @@
 
       var take_time = now - this._startm;
 
-      JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
+      if (this._first_drawing)
+         JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -1583,7 +1576,6 @@
 
          var tm1 = new Date();
 
-         // do rendering, most consuming time
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO) {
             this._scene.overrideMaterial = this._depthMaterial;
@@ -1634,6 +1626,9 @@
          if ('log' in e.data)
             return JSROOT.console('geo: ' + e.data.log);
 
+         if ('progress' in e.data)
+            return JSROOT.progress(e.data.progress);
+
          e.data.tm3 = new Date().getTime();
 
          if ('init' in e.data) {
@@ -1645,7 +1640,7 @@
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes } );
+      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
    }
 
    JSROOT.TGeoPainter.prototype.canSubmitToWorker = function(force) {
@@ -1669,6 +1664,7 @@
 
       if ('collect' in job) {
          this._new_draw_nodes = job.new_nodes;
+         this._draw_all_nodes = job.complete;
          this.drawing_stage = 3;
          // invoke methods immediately
          return this.continueDraw();
@@ -1683,11 +1679,17 @@
             // var shape = this._clones.GetNodeShape(item.nodeid);
 
             if (item.buf_pos && item.buf_norm) {
-               origin.geom = new THREE.BufferGeometry();
-               if ((item.buf_pos.length === 0) || (item.buf_pos.length !== item.buf_norm.length))
+               if (item.buf_pos.length === 0) {
+                  origin.geom = null;
+               } else if (item.buf_pos.length !== item.buf_norm.length) {
                   console.error('item.buf_pos',item.buf_pos.length, 'item.buf_norm', item.buf_norm.length);
-               origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
-               origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+                  origin.geom = null;
+               } else {
+                  origin.geom = new THREE.BufferGeometry();
+
+                  origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
+                  origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+               }
 
                origin.ready = true;
                origin.nfaces = item.nfaces;
@@ -1696,9 +1698,9 @@
 
          job.tm4 = new Date().getTime();
 
-         console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
+         // console.log('Get reply from worker', job.tm3-job.tm2, ' decode json in ', job.tm4-job.tm3);
 
-         this.drawing_stage = 8;
+         this.drawing_stage = 7; // first check which shapes are used, than build meshes
 
          // invoke methods immediately
          return this.continueDraw();
@@ -1706,15 +1708,17 @@
    }
 
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
-      this._draw_nodes_again = true;
       this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
+      var call_ready = false;
+
       if (this._first_drawing) {
          this.adjustCameraPosition();
          this._first_drawing = false;
+         call_ready = true;
       }
 
       this.completeScene();
@@ -1737,10 +1741,10 @@
 
       this.showControlOptions(this.options.show_controls);
 
+      if (call_ready) this.DrawingReady();
+
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
-      else
-         this.DrawingReady();
    }
 
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
@@ -1972,8 +1976,6 @@
          if ((main === null) || (main._toplevel === undefined))
             return console.warn('no geo object found for 3D axis drawing');
 
-         //this.updateBoundingBox();
-         //var box = this._boundingBox;
          var box = new THREE.Box3().setFromObject(main._toplevel);
 
          this.xmin = box.min.x; this.xmax = box.max.x;
@@ -2221,6 +2223,18 @@
       return null;
    }
 
+   JSROOT.GEO.updateBrowserIcons = function(volume, hpainter) {
+      if (!volume || !hpainter) return;
+
+      hpainter.ForEach(function(m) {
+         // update all items with that volume
+         if (volume === m._volume) {
+            m._icon = m._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(volume);
+            hpainter.UpdateTreeNode(m);
+         }
+      });
+   }
+
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
       if (!hitem._volume) return false;
 
@@ -2229,15 +2243,7 @@
       else
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
 
-      var newname = hitem._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(hitem._volume);
-
-      hpainter.ForEach(function(m) {
-         // update all items with that volume
-         if (hitem._volume === m._volume) {
-            m._icon = newname;
-            hpainter.UpdateTreeNode(m);
-         }
-      });
+      JSROOT.GEO.updateBrowserIcons(hitem._volume, hpainter);
 
       JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
       return false; // no need to update icon - we did it ourself
