@@ -639,8 +639,8 @@
              i4 = indicies[n+3]*3;
          creator.AddFace4(v[i1], v[i1+1], v[i1+2], v[i2], v[i2+1], v[i2+2],
                           v[i3], v[i3+1], v[i3+2], v[i4], v[i4+1], v[i4+2]);
-         if (n===0) creator.SetNormal(0,0,-1); else
-         if (n===20) creator.SetNormal(0,0,1); else creator.CalcNormal();
+         if (n===0) creator.SetNormal(0,0,1); else
+         if (n===20) creator.SetNormal(0,0,-1); else creator.CalcNormal();
       }
 
       return creator.Create();
@@ -1557,7 +1557,7 @@
           tubularSegments = Math.max(8, Math.round(arc/JSROOT.GEO.GradPerSegm)),
           hasrmin = innerTube > 0, hascut = (arc !== 360);
 
-      if (faces_limit < 0) return (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments / faces_limit
+      if (faces_limit < 0) return (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments;
 
       if (faces_limit > 0) {
          var fact = (hasrmin ? 4 : 2) * (radialSegments + 1) * tubularSegments / faces_limit;
