@@ -74,7 +74,7 @@ function ThreeBSPfactory() {
          throw 'ThreeBSP: Given geometry is unsupported';
       }
 
-      for ( i = 0, _length_i = geometry.faces.length; i < _length_i; i++ ) {
+      for ( i = 0, _length_i = geometry.faces.length; i < _length_i; ++i ) {
          face = geometry.faces[i];
          // faceVertexUvs = geometry.faceVertexUvs[0][i];
          polygon = new ThreeBSP.Polygon;
@@ -187,7 +187,7 @@ function ThreeBSPfactory() {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons([]) );
       a.invert();
       return this;
    };
@@ -200,7 +200,7 @@ function ThreeBSPfactory() {
       b.invert();
       b.clipTo( a );
       b.invert();
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons([]) );
       return this;
    };
    ThreeBSP.prototype.direct_intersect = function( other_tree ) {
@@ -212,7 +212,7 @@ function ThreeBSPfactory() {
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      a.build( b.allPolygons() );
+      a.build( b.collectPolygons([]) );
       a.invert();
       return this;
    };
@@ -220,7 +220,7 @@ function ThreeBSPfactory() {
       var i, j,
          matrix = this.matrix ? new THREE.Matrix4().getInverse( this.matrix ) : null,
          geometry = new THREE.Geometry(),
-         polygons = this.tree.allPolygons(),
+         polygons = this.tree.collectPolygons([]),
          polygon_count = polygons.length,
          polygon, polygon_vertice_count,
          vertice_dict = {},
@@ -228,11 +228,11 @@ function ThreeBSPfactory() {
          vertex, face;
       //   verticeUvs;
 
-      for ( i = 0; i < polygon_count; i++ ) {
+      for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
          polygon_vertice_count = polygon.vertices.length;
 
-         for ( j = 2; j < polygon_vertice_count; j++ ) {
+         for ( j = 2; j < polygon_vertice_count; ++j ) {
             // verticeUvs = [];
 
             vertex = polygon.vertices[0];
@@ -285,7 +285,7 @@ function ThreeBSPfactory() {
    };
    ThreeBSP.prototype.toBufferGeometry = function() {
       var i, j,
-         polygons = this.tree.allPolygons(),
+         polygons = this.tree.collectPolygons([]),
          polygon_count = polygons.length,
          buf_size = 0;
 
@@ -351,6 +351,11 @@ function ThreeBSPfactory() {
          this.normal = this.w = undefined;
       }
    };
+   ThreeBSP.Polygon.prototype.copyProperties = function(parent) {
+      this.normal = parent.normal.clone();
+      this.w = parent.w;
+      return this;
+   };
    ThreeBSP.Polygon.prototype.calculateProperties = function() {
       var a = this.vertices[0],
          b = this.vertices[1],
@@ -368,7 +373,7 @@ function ThreeBSPfactory() {
       var i, vertice_count,
          polygon = new ThreeBSP.Polygon;
 
-      for ( i = 0, vertice_count = this.vertices.length; i < vertice_count; i++ ) {
+      for ( i = 0, vertice_count = this.vertices.length; i < vertice_count; ++i ) {
          polygon.vertices.push( this.vertices[i].clone() );
       };
       polygon.calculateProperties();
@@ -406,13 +411,13 @@ function ThreeBSPfactory() {
          num_negative = 0,
          vertice_count = polygon.vertices.length;
 
-      for ( i = 0; i < vertice_count; i++ ) {
+      for ( i = 0; i < vertice_count; ++i ) {
          vertex = polygon.vertices[i];
          classification = this.classifyVertex( vertex );
          if ( classification === FRONT ) {
-            num_positive++;
+            ++num_positive;
          } else if ( classification === BACK ) {
-            num_negative++;
+            ++num_negative;
          }
       }
 
@@ -449,7 +454,7 @@ function ThreeBSPfactory() {
             f = [],
             b = [];
 
-         for ( i = 0, vertice_count = polygon.vertices.length; i < vertice_count; i++ ) {
+         for ( i = 0, vertice_count = polygon.vertices.length; i < vertice_count; ++i ) {
 
             j = (i + 1) % vertice_count;
             vi = polygon.vertices[i];
@@ -467,9 +472,10 @@ function ThreeBSPfactory() {
             }
          }
 
-
-         if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).calculateProperties() );
-         if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).calculateProperties() );
+         //if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).calculateProperties() );
+         //if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).calculateProperties() );
+         if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).copyProperties(polygon) );
+         if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).copyProperties(polygon) );
       }
    };
 
@@ -580,7 +586,7 @@ function ThreeBSPfactory() {
 
       this.divider = polygons[0].clone();
 
-      for ( i = 0, polygon_count = polygons.length; i < polygon_count; i++ ) {
+      for ( i = 0, polygon_count = polygons.length; i < polygon_count; ++i ) {
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
 
@@ -593,9 +599,9 @@ function ThreeBSPfactory() {
       }
    };
    ThreeBSP.Node.isConvex = function( polygons ) {
-      var i, j;
-      for ( i = 0; i < polygons.length; i++ ) {
-         for ( j = 0; j < polygons.length; j++ ) {
+      var i, j, len = polygons.length;
+      for ( i = 0; i < len; ++i ) {
+         for ( j = 0; j < len; ++j ) {
             if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) {
                return false;
             }
@@ -612,7 +618,7 @@ function ThreeBSPfactory() {
          this.divider = polygons[0].clone();
       }
 
-      for ( i = 0, polygon_count = polygons.length; i < polygon_count; i++ ) {
+      for ( i = 0, polygon_count = polygons.length; i < polygon_count; ++i ) {
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
 
@@ -626,6 +632,15 @@ function ThreeBSPfactory() {
          this.back.build( back );
       }
    };
+
+   ThreeBSP.Node.prototype.collectPolygons = function(arr) {
+      var i, len = this.polygons.length;
+      for (i=0;i<len;++i) arr.push(this.polygons[i]);
+      if ( this.front ) this.front.collectPolygons(arr);
+      if ( this.back ) this.back.collectPolygons(arr);
+      return arr;
+   }
+
    ThreeBSP.Node.prototype.allPolygons = function() {
       var polygons = this.polygons.slice();
       if ( this.front ) polygons = polygons.concat( this.front.allPolygons() );
@@ -652,7 +667,7 @@ function ThreeBSPfactory() {
    ThreeBSP.Node.prototype.invert = function() {
       var i, polygon_count, temp;
 
-      for ( i = 0, polygon_count = this.polygons.length; i < polygon_count; i++ ) {
+      for ( i = 0, polygon_count = this.polygons.length; i < polygon_count; ++i ) {
          this.polygons[i].flip();
       }
 
@@ -673,7 +688,7 @@ function ThreeBSPfactory() {
 
       front = [], back = [];
 
-      for ( i = 0, polygon_count = polygons.length; i < polygon_count; i++ ) {
+      for ( i = 0, polygon_count = polygons.length; i < polygon_count; ++i ) {
          this.divider.splitPolygon( polygons[i], front, back, front, back );
       }
 
