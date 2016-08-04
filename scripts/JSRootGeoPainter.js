@@ -1049,6 +1049,8 @@
 
             prop.material.wireframe = this.options.wireframe;
 
+            var mesh;
+
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( shape.geom, prop.material );
             } else {
@@ -1398,7 +1400,7 @@
          painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
          painter._controls.update();
          last = new Date();
-         painter.Render3D(0);     
+         painter.Render3D(0);
       }
       animate();
    }
