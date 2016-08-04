@@ -1392,10 +1392,9 @@
       var last = new Date();
       function animate() {
          var current = new Date();
-         
+
          if ( painter._controls.autoRotate ) requestAnimationFrame( animate );
 
-         console.log(( current.getTime() - last.getTime() ) / 16.6666);
          painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
          painter._controls.update();
          last = new Date();
