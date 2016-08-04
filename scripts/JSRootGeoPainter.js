@@ -338,7 +338,7 @@
       });
       menu.addchk(this._controls.autoRotate, "Autorotate", function() {
          this._controls.autoRotate = !this._controls.autoRotate;
-         this.autorotate(1.5);
+         this.autorotate(2.5);
       });
       menu.addchk(this.options.select_in_view, "Select in view", function() {
          this.options.select_in_view = !this.options.select_in_view;
@@ -1269,10 +1269,10 @@
 
       this._overall_size = 2 * Math.max( sizex, sizey, sizez);
 
-      this._scene.fog.near = this._overall_size;
+      this._scene.fog.near = this._overall_size * 2;
       this._camera.near = this._overall_size / 350;
-      this._scene.fog.far = this._overall_size * 8;
-      this._camera.far = this._overall_size * 8;
+      this._scene.fog.far = this._overall_size * 12;
+      this._camera.far = this._overall_size * 12;
 
       if (this._webgl) {
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
@@ -1387,12 +1387,19 @@
 
    JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
 
-      this._controls.autoRotateSpeed = speed === undefined ? 2.0 : speed;
+      var rotSpeed = speed === undefined ? 2.0 : speed;
       var painter = this;
+      var last = new Date();
       function animate() {
+         var current = new Date();
+         
          if ( painter._controls.autoRotate ) requestAnimationFrame( animate );
-            painter._controls.update();
-            painter.Render3D(0);
+
+         console.log(( current.getTime() - last.getTime() ) / 16.6666);
+         painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
+         painter._controls.update();
+         last = new Date();
+         painter.Render3D(0);     
       }
       animate();
    }
