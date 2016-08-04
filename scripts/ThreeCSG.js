@@ -177,9 +177,81 @@ function ThreeBSPfactory() {
       a.matrix = this.matrix;
       return a;
    };
+
+   ThreeBSP.prototype.tryToCompress = function(polygons) {
+
+      if (this.maxid === undefined) return;
+
+      //console.log('MAXID ', this.maxid, '  POLYGONS', polygons.length);
+
+      // first collect them together
+
+      var arr = [], nreduce = 0, maxlen = 0;
+      for(var id=0;id<this.maxid;++id)
+         arr[id] = [];
+
+      // sort out polygons
+      for (var n=0;n<polygons.length;++n) {
+         var p = polygons[n];
+         if (p.id === undefined)
+            console.log('something went wrong');
+         else
+            arr[p.id].push(p);
+      }
+
+      for(var id=0;id<this.maxid;++id) {
+         var parts = arr[id];
+         maxlen = Math.max(maxlen, parts.length);
+
+         var foundpair = (parts.length > 1);
+
+         while (foundpair) {
+            foundpair = false;
+
+            for (var i1 = 0; i1<parts.length-1; ++i1) {
+               var p1 = parts[i1];
+               if (!p1 || !p1.parent) continue;
+               for (var i2 = i1+1; i2 < parts.length; ++i2) {
+                  var p2 = parts[i2];
+                  if (p2 && (p1.parent === p2.parent) && (p1.flipcnt === p2.flipcnt)) {
+
+                     if (p1.flipcnt !== p1.parent.flipcnt) {
+                        // console.log('mismatch flipcnt', p1.flipcnt, p1.parent.flipcnt);
+                        p1.parent.flip();
+                     }
+
+                     nreduce++;
+                     if (p1.id !== p2.id) console.log('something went wrong');
+                     parts[i1] = p1.parent;
+                     parts[i2] = null;
+                     if (p1.parent.vertices.length < 3) console.log('something wrong with parent');
+                     foundpair = true;
+                     break;
+                  }
+               }
+            }
+         }
+      }
+
+      if (nreduce>0) {
+         polygons.splice(0,polygons.length);
+
+         for(var id=0;id<this.maxid;++id) {
+            var parts = arr[id];
+            for (var n=0;n<parts.length;++n)
+               if (parts[n]!==null) polygons.push(parts[n]);
+         }
+
+         // console.log('nreduce', nreduce, 'maxlen', maxlen, 'polygons', polygons.length);
+      }
+   }
+
    ThreeBSP.prototype.direct_subtract = function( other_tree ) {
       var a = this.tree,
           b = other_tree.tree;
+
+      //this.maxid = a.numeratePolygons(0);
+      //this.maxid = b.numeratePolygons(this.maxid);
 
       a.invert();
       a.clipTo( b );
@@ -289,6 +361,10 @@ function ThreeBSPfactory() {
          polygon_count = polygons.length,
          buf_size = 0;
 
+      // this.tryToCompress(polygons);
+
+      polygon_count = polygons.length;
+
       for ( i = 0; i < polygon_count; ++i )
          buf_size += (polygons[i].vertices.length - 2) * 9;
 
@@ -329,6 +405,8 @@ function ThreeBSPfactory() {
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
+
+      geometry.computeVertexNormals();
       return geometry;
    };
    ThreeBSP.prototype.toMesh = function( material ) {
@@ -357,16 +435,20 @@ function ThreeBSPfactory() {
          this.normal = this.w = undefined;
       }
    };
-   ThreeBSP.Polygon.prototype.copyProperties = function(parent) {
+   ThreeBSP.Polygon.prototype.copyProperties = function(parent, more) {
       this.normal = parent.normal.clone();
       this.w = parent.w;
       this.flipcnt = parent.flipcnt;
+      if (more && (parent.id !== undefined)) {
+         this.id = parent.id;
+         this.parent = parent;
+      }
       return this;
    };
    ThreeBSP.Polygon.prototype.calculateProperties = function() {
       var a = this.vertices[0],
-         b = this.vertices[1],
-         c = this.vertices[2];
+          b = this.vertices[1],
+          c = this.vertices[2];
 
       this.normal = b.clone().subtract( a ).cross(
          c.clone().subtract( a )
@@ -387,19 +469,28 @@ function ThreeBSPfactory() {
    };
 
    ThreeBSP.Polygon.prototype.flip = function() {
-      var i, vertices = [];
+      // var i, vertices = [];
 
       this.normal.multiplyScalar( -1 );
       this.w *= -1;
       this.flipcnt = (this.flipcnt+1) % 2;
 
-      for ( i = this.vertices.length - 1; i >= 0; i-- ) {
-         vertices.push( this.vertices[i] );
-      };
-      this.vertices = vertices;
+      this.vertices.reverse();
+
+      //for ( i = this.vertices.length - 1; i >= 0; i-- ) {
+      //   vertices.push( this.vertices[i] );
+      //};
+      //this.vertices = vertices;
 
       return this;
    };
+
+   ThreeBSP.Polygon.prototype.numerate = function(id) {
+      // method can be used to repair segmentation of polygons
+      delete this.parent;
+      this.id = id;
+   };
+
    ThreeBSP.Polygon.prototype.classifyVertex = function( vertex ) {
       var side_value = this.normal.dot( vertex ) - this.w;
 
@@ -481,8 +572,8 @@ function ThreeBSPfactory() {
 
          //if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).calculateProperties() );
          //if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).calculateProperties() );
-         if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).copyProperties(polygon) );
-         if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).copyProperties(polygon) );
+         if ( f.length >= 3 ) front.push( new ThreeBSP.Polygon( f ).copyProperties(polygon, true) );
+         if ( b.length >= 3 ) back.push( new ThreeBSP.Polygon( b ).copyProperties(polygon, true) );
       }
    };
 
@@ -668,6 +759,14 @@ function ThreeBSPfactory() {
       if ( this.front ) this.front.collectPolygons(arr);
       if ( this.back ) this.back.collectPolygons(arr);
       return arr;
+   };
+
+   ThreeBSP.Node.prototype.numeratePolygons = function(id) {
+      var i, len = this.polygons.length;
+      for (i=0;i<len;++i) this.polygons[i].numerate(id++);
+      if ( this.front ) id = this.front.numeratePolygons(id);
+      if ( this.back ) id = this.back.numeratePolygons(id);
+      return id;
    }
 
    ThreeBSP.Node.prototype.allPolygons = function() {
