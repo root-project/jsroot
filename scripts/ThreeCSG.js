@@ -294,7 +294,7 @@ function ThreeBSPfactory() {
 
       var positions_buf = new Float32Array(buf_size),
           normals_buf = new Float32Array(buf_size),
-          iii = 0, polygon;
+          iii = 0, polygon, nsign;
 
       function CopyVertex(vertex) {
 
@@ -302,18 +302,24 @@ function ThreeBSPfactory() {
          positions_buf[iii+1] = vertex.y;
          positions_buf[iii+2] = vertex.z;
 
-         var norm = vertex.normal.normalize();
-         if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
+         //var norm = vertex.normal.normalize();
+         //if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
 
-         normals_buf[iii] = norm.x;
-         normals_buf[iii+1] = norm.y;
-         normals_buf[iii+2] = norm.z;
+         var norm = vertex.normal;
+
+//         if (debug) console.log('Vertex ', vertex.x.toFixed(0), vertex.y.toFixed(0), vertex.z.toFixed(0),
+//                                'normal', norm.x.toFixed(0), norm.y.toFixed(0), norm.z.toFixed(0), 'sign', nsign);
+
+         normals_buf[iii] = nsign * norm.x;
+         normals_buf[iii+1] = nsign * norm.y;
+         normals_buf[iii+2] = nsign * norm.z;
          iii+=3;
       }
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
-         polygon.normal.normalize();
+         // polygon.normal.normalize()
+         nsign = (polygon.flipcnt>0) ? -1 : 1;
          for ( j = 2; j < polygon.vertices.length; ++j ) {
             CopyVertex(polygon.vertices[0]);
             CopyVertex(polygon.vertices[j-1]);
@@ -345,6 +351,7 @@ function ThreeBSPfactory() {
       }
 
       this.vertices = vertices;
+      this.flipcnt = 0;
       if ( vertices.length > 0 ) {
          this.calculateProperties();
       } else {
@@ -354,6 +361,7 @@ function ThreeBSPfactory() {
    ThreeBSP.Polygon.prototype.copyProperties = function(parent) {
       this.normal = parent.normal.clone();
       this.w = parent.w;
+      this.flipcnt = parent.flipcnt;
       return this;
    };
    ThreeBSP.Polygon.prototype.calculateProperties = function() {
@@ -376,9 +384,7 @@ function ThreeBSPfactory() {
       for ( i = 0, vertice_count = this.vertices.length; i < vertice_count; ++i ) {
          polygon.vertices.push( this.vertices[i].clone() );
       };
-      polygon.calculateProperties();
-
-      return polygon;
+      return polygon.copyProperties(this);
    };
 
    ThreeBSP.Polygon.prototype.flip = function() {
@@ -386,6 +392,7 @@ function ThreeBSPfactory() {
 
       this.normal.multiplyScalar( -1 );
       this.w *= -1;
+      this.flipcnt = (this.flipcnt+1) % 2;
 
       for ( i = this.vertices.length - 1; i >= 0; i-- ) {
          vertices.push( this.vertices[i] );
@@ -466,7 +473,8 @@ function ThreeBSPfactory() {
             if ( ti != FRONT ) b.push( vi );
             if ( (ti | tj) === SPANNING ) {
                t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
-               v = vi.interpolate( vj, t );
+               // v = vi.interpolate( vj, t );
+               v = vi.clone().lerp( vj, t );
                f.push( v );
                b.push( v );
             }
@@ -556,21 +564,34 @@ function ThreeBSPfactory() {
 
       return this;
    };
-   ThreeBSP.Vertex.prototype.interpolate = function( other, t ) {
-      return this.clone().lerp( other, t );
+   //ThreeBSP.Vertex.prototype.interpolate = function( other, t ) {
+   //   return this.clone().lerp( other, t );
+   //};
+
+   ThreeBSP.Vertex.prototype.interpolate = function( a, t ) {
+
+      var n1 = this.normal, n2 = a.normal, t1 = 1-t;
+
+      return new ThreeBSP.Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
+                new THREE.Vector3(n1.x*t1 + n2.x*t, n1.y*t1 + n2.y*t, n1.z*t1 + n2.z*t));
    };
+
    ThreeBSP.Vertex.prototype.applyMatrix4 = function ( m ) {
 
       // input: THREE.Matrix4 affine matrix
 
-      var x = this.x, y = this.y, z = this.z, e = m.elements;
+      var x = this.x, y = this.y, z = this.z, e = m.elements, n = this.normal;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
       this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
 
-      return this;
+      x = n.x; y = n.y; z = n.z;
+      n.x = e[0] * x + e[4] * y + e[8]  * z;
+      n.y = e[1] * x + e[5] * y + e[9]  * z;
+      n.z = e[2] * x + e[6] * y + e[10] * z;
 
+      return this;
    }
 
 

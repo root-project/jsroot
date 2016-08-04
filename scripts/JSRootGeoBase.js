@@ -504,6 +504,8 @@
       this.ab.subVectors( this.pA, this.pB );
       this.cb.cross( this.ab );
 
+      // if (debug) console.log('NORM  x', this.cb.x.toFixed(1), '  y ',  this.cb.y.toFixed(1), '   z ' , this.cb.z.toFixed(1));
+
       this.SetNormal(this.cb.x, this.cb.y, this.cb.z);
    }
 
@@ -628,7 +630,7 @@
 
       var indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      var creator = (faces_limit > 0) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       // var creator = new JSROOT.GEO.GeometryCreator(12);
 
@@ -875,8 +877,8 @@
 
          if ((i1>=0) && (i4>=0) && faces_limit) {
             // try to identify two faces with same normal - very useful if one can create face4
-            if (n===0) norm = new THREE.Vector3(0,0,-1); else
-            if (n===30) norm = new THREE.Vector3(0,0,1); else {
+            if (n===0) norm = new THREE.Vector3(0,0,1); else
+            if (n===30) norm = new THREE.Vector3(0,0,-1); else {
                var norm1 = JSROOT.GEO.GetNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                                 vertices[i2], vertices[i2+1], vertices[i2+2],
                                                 vertices[i3], vertices[i3+1], vertices[i3+2]);
