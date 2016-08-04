@@ -400,10 +400,10 @@
 
       if (reduce === undefined) reduce = 0;
 
-      this.v1 = new ThreeBSP.Vertex( x1, y1, z1 );
-      this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2 );
-      this.v3 = new ThreeBSP.Vertex( x3, y3, z3 );
-      this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4 );
+      this.v1 = new ThreeBSP.Vertex( x1, y1, z1, 0, 0, 0 );
+      this.v2 = (reduce===1) ? null : new ThreeBSP.Vertex( x2, y2, z2, 0, 0, 0 );
+      this.v3 = new ThreeBSP.Vertex( x3, y3, z3, 0, 0, 0 );
+      this.v4 = (reduce===2) ? null : new ThreeBSP.Vertex( x4, y4, z4, 0, 0, 0 );
 
       this.reduce = reduce;
 
@@ -466,18 +466,18 @@
                                                               nx3,ny3,nz3,
                                                               nx4,ny4,nz4,
                                                               reduce) {
-      this.v1.normal.set(nx1,ny1,nz1);
-      if (this.v2) this.v2.normal.set(nx2,ny2,nz2);
-      this.v3.normal.set(nx3,ny3,nz3);
-      if (this.v4) this.v4.normal.set(nx4,ny4,nz4);
+      this.v1.setnormal(nx1,ny1,nz1);
+      if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
+      this.v3.setnormal(nx3,ny3,nz3);
+      if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
-      this.v1.normal.set(nx12,ny12,nz12);
-      if (this.v2) this.v2.normal.set(nx12,ny12,nz12);
-      this.v3.normal.set(nx34,ny34,nz34);
-      if (this.v4) this.v4.normal.set(nx34,ny34,nz34);
+      this.v1.setnormal(nx12,ny12,nz12);
+      if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
+      this.v3.setnormal(nx34,ny34,nz34);
+      if (this.v4) this.v4.setnormal(nx34,ny34,nz34);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.CalcNormal = function() {
@@ -511,10 +511,10 @@
 
 
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal = function(nx,ny,nz) {
-      this.v1.normal.set(nx,ny,nz);
-      if (this.v2) this.v2.normal.set(nx,ny,nz);
-      this.v3.normal.set(nx,ny,nz);
-      if (this.v4) this.v4.normal.set(nx,ny,nz);
+      this.v1.setnormal(nx,ny,nz);
+      if (this.v2) this.v2.setnormal(nx,ny,nz);
+      this.v3.setnormal(nx,ny,nz);
+      if (this.v4) this.v4.setnormal(nx,ny,nz);
    }
 
    JSROOT.GEO.PolygonsCreator.prototype.RecalcZ = function(func) {

@@ -34,15 +34,15 @@ function ThreeBSPfactory() {
          for (var i=0; i < pos_buf.length; i+=9) {
             polygon = new ThreeBSP.Polygon;
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], new THREE.Vector3(norm_buf[i], norm_buf[i+1], norm_buf[i+2]));
+            vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], new THREE.Vector3(norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]));
+            vertex = new ThreeBSP.Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], new THREE.Vector3(norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]));
+            vertex = new ThreeBSP.Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
@@ -82,43 +82,43 @@ function ThreeBSPfactory() {
          if ( face instanceof THREE.Face3 ) {
             vertex = geometry.vertices[ face.a ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[0] /*face.normal , uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[0].x, face.vertexNormals[0].y, face.vertexNormals[0].z /*face.normal , uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
             vertex = geometry.vertices[ face.b ];
             //uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[1]/*face.normal , uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[1].x, face.vertexNormals[1].y, face.vertexNormals[1].z/*face.normal , uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
             vertex = geometry.vertices[ face.c ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[2] /*face.normal, uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[2].x, face.vertexNormals[2].y, face.vertexNormals[2].z /*face.normal, uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
          } else if ( typeof THREE.Face4 ) {
             vertex = geometry.vertices[ face.a ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[0].x, faceVertexUvs[0].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[0] /*, uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[0].x, face.vertexNormals[0].y, face.vertexNormals[0].z /*, uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
             vertex = geometry.vertices[ face.b ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[1].x, faceVertexUvs[1].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[1] /*, uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[1].x, face.vertexNormals[1].y, face.vertexNormals[1].z /*, uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
             vertex = geometry.vertices[ face.c ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[2].x, faceVertexUvs[2].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[2] /*, uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[2].x, face.vertexNormals[2].y, face.vertexNormals[2].z /*, uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
             vertex = geometry.vertices[ face.d ];
             // uvs = faceVertexUvs ? new THREE.Vector2( faceVertexUvs[3].x, faceVertexUvs[3].y ) : null;
-            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[3] /*, uvs */ );
+            vertex = new ThreeBSP.Vertex( vertex.x, vertex.y, vertex.z, face.vertexNormals[3].x, face.vertexNormals[3].y, face.vertexNormals[3].z /*, uvs */ );
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
          } else {
@@ -305,14 +305,13 @@ function ThreeBSPfactory() {
          //var norm = vertex.normal.normalize();
          //if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
 
-         var norm = vertex.normal;
-
+//         var norm = vertex.normal;
 //         if (debug) console.log('Vertex ', vertex.x.toFixed(0), vertex.y.toFixed(0), vertex.z.toFixed(0),
 //                                'normal', norm.x.toFixed(0), norm.y.toFixed(0), norm.z.toFixed(0), 'sign', nsign);
 
-         normals_buf[iii] = nsign * norm.x;
-         normals_buf[iii+1] = nsign * norm.y;
-         normals_buf[iii+2] = nsign * norm.z;
+         normals_buf[iii] = nsign * vertex.nx;
+         normals_buf[iii+1] = nsign * vertex.ny;
+         normals_buf[iii+2] = nsign * vertex.nz;
          iii+=3;
       }
 
@@ -473,8 +472,8 @@ function ThreeBSPfactory() {
             if ( ti != FRONT ) b.push( vi );
             if ( (ti | tj) === SPANNING ) {
                t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
-               // v = vi.interpolate( vj, t );
-               v = vi.clone().lerp( vj, t );
+               v = vi.interpolate( vj, t );
+               //v = vi.clone().lerp( vj, t );
                f.push( v );
                b.push( v );
             }
@@ -487,15 +486,24 @@ function ThreeBSPfactory() {
       }
    };
 
-   ThreeBSP.Vertex = function( x, y, z, normal /*, uv */ ) {
+   ThreeBSP.Vertex = function( x, y, z, nx,ny, nz /* normal , uv */ ) {
       this.x = x;
       this.y = y;
       this.z = z;
-      this.normal = normal || new THREE.Vector3;
+      this.nx = nx;
+      this.ny = ny;
+      this.nz = nz;
       // this.uv = uv || new THREE.Vector2;
    };
+
+   ThreeBSP.Vertex.prototype.setnormal = function ( nx, ny, nz ) {
+      this.nx = nx;
+      this.ny = ny;
+      this.nz = nz;
+   };
+
    ThreeBSP.Vertex.prototype.clone = function() {
-      return new ThreeBSP.Vertex( this.x, this.y, this.z, this.normal.clone() /*, this.uv.clone() */ );
+      return new ThreeBSP.Vertex( this.x, this.y, this.z, this.nx, this.ny, this.nz);
    };
    ThreeBSP.Vertex.prototype.add = function( vertex ) {
       this.x += vertex.x;
@@ -548,7 +556,7 @@ function ThreeBSPfactory() {
       return (dx*dx+dy*dy+dz*dz) / (len2>0 ? len2 : 1e-10);
    };
 
-
+/*
    ThreeBSP.Vertex.prototype.lerp = function( a, t ) {
       this.add(
          a.clone().subtract( this ).multiplyScalar( t )
@@ -564,32 +572,32 @@ function ThreeBSPfactory() {
 
       return this;
    };
-   //ThreeBSP.Vertex.prototype.interpolate = function( other, t ) {
-   //   return this.clone().lerp( other, t );
-   //};
+   ThreeBSP.Vertex.prototype.interpolate = function( other, t ) {
+      return this.clone().lerp( other, t );
+   };
+*/
 
    ThreeBSP.Vertex.prototype.interpolate = function( a, t ) {
-
-      var n1 = this.normal, n2 = a.normal, t1 = 1-t;
-
+      var t1 = 1-t;
       return new ThreeBSP.Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
-                new THREE.Vector3(n1.x*t1 + n2.x*t, n1.y*t1 + n2.y*t, n1.z*t1 + n2.z*t));
+                                 this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
    };
 
    ThreeBSP.Vertex.prototype.applyMatrix4 = function ( m ) {
 
       // input: THREE.Matrix4 affine matrix
 
-      var x = this.x, y = this.y, z = this.z, e = m.elements, n = this.normal;
+      var x = this.x, y = this.y, z = this.z, e = m.elements;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
       this.z = e[2] * x + e[6] * y + e[10] * z + e[14];
 
-      x = n.x; y = n.y; z = n.z;
-      n.x = e[0] * x + e[4] * y + e[8]  * z;
-      n.y = e[1] * x + e[5] * y + e[9]  * z;
-      n.z = e[2] * x + e[6] * y + e[10] * z;
+      x = this.nx; y = this.ny; z = this.nz;
+
+      this.nx = e[0] * x + e[4] * y + e[8]  * z;
+      this.ny = e[1] * x + e[5] * y + e[9]  * z;
+      this.nz = e[2] * x + e[6] * y + e[10] * z;
 
       return this;
    }
