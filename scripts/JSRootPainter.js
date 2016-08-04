@@ -2684,14 +2684,11 @@
       this.fX2NDC -= shrink_right;
    }
 
-   JSROOT.TFramePainter.prototype.Redraw = function() {
+   JSROOT.TFramePainter.prototype.UpdateAttributes = function(force) {
+      var root_pad = this.root_pad(),
+          tframe = this.GetObject();
 
-      var width = this.pad_width(),
-          height = this.pad_height(),
-          tframe = this.GetObject(),
-          root_pad = this.root_pad();
-
-      if (this.fX1NDC === undefined) {
+      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          if (!root_pad) {
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          } else {
@@ -2719,8 +2716,16 @@
 
       if (this.lineatt === undefined)
          this.lineatt = JSROOT.Painter.createAttLine(tframe ? tframe : 'black');
+   }
 
-      var lm = Math.round(width * this.fX1NDC),
+   JSROOT.TFramePainter.prototype.Redraw = function() {
+
+      // first update all attributes from objects
+      this.UpdateAttributes();
+
+      var width = this.pad_width(),
+          height = this.pad_height(),
+          lm = Math.round(width * this.fX1NDC),
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC));
@@ -3954,6 +3959,9 @@
       this.pad.fLineWidth = obj.fLineWidth;
 
       if (this.iscan) this.CheckColors(obj);
+
+      var fp = this.frame_painter();
+      if (fp) fp.UpdateAttributes(!fp.modified_NDC);
 
       var isany = false, p = 0;
       for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
