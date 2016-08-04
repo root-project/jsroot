@@ -2476,31 +2476,18 @@
 
       geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
 
-      if (geom1 instanceof ThreeBSP) {
-         if (matrix1 === null) {
-            bsp1 = geom1;
-         } else {
-            // convert ourself
-            bsp1 = new ThreeBSP(geom1.toBufferGeometry(), matrix1);
-            JSROOT.GEO.warn('extra left BSP convertion because of matrix - fix!!!');
-         }
-      } else {
-         if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
+      var maxid = 0;
 
-         bsp1 = new ThreeBSP(geom1, matrix1);
-      }
+      if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
+      bsp1 = new ThreeBSP(geom1, matrix1, maxid);
 
-      if (geom2 instanceof ThreeBSP) {
-         if (matrix2 === null) {
-            bsp2 = geom2;
-         } else {
-            bsp2 = new ThreeBSP(geom2.toBufferGeometry(), matrix2);
-            JSROOT.GEO.warn('extra right BSP convertion because of matrix - fix!!!');
-         }
-      } else {
-         if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-         bsp2 = new ThreeBSP(geom2, matrix2);
-      }
+      maxid = bsp1.maxid;
+
+      if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
+      bsp2 = new ThreeBSP(geom2, matrix2, maxid);
+
+      // take over maxid from both geometries
+      maxid = bsp1.maxid = bsp2.maxid;
 
       switch(shape.fNode._typename) {
          case 'TGeoIntersection': bsp = bsp1.direct_intersect(bsp2);  break; // "*"
@@ -2509,7 +2496,6 @@
          default:
             JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
             bsp = bsp1;
-
       }
 
       if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
@@ -2521,7 +2507,7 @@
          // return null;
       }
 
-      return return_bsp ? bsp : bsp.toBufferGeometry();
+      return return_bsp ? { polygons: bsp.toPolygons() } : bsp.toBufferGeometry();
 
    }
 

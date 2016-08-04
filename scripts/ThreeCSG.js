@@ -8,7 +8,7 @@ function ThreeBSPfactory() {
       BACK = 2,
       SPANNING = 3;
 
-   ThreeBSP = function( geometry, transfer_matrix ) {
+   ThreeBSP = function( geometry, transfer_matrix, nodeid ) {
       // Convert THREE.Geometry to ThreeBSP
       var i, _length_i,
          face, vertex, /* faceVertexUvs, uvs, */
@@ -50,7 +50,8 @@ function ThreeBSPfactory() {
             polygons.push( polygon );
          }
 
-         this.tree = new ThreeBSP.Node( polygons );
+         this.tree = new ThreeBSP.Node( polygons, nodeid );
+         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else if (geometry.polygons && (geometry.polygons[0] instanceof ThreeBSP.Polygon)) {
@@ -67,7 +68,8 @@ function ThreeBSPfactory() {
             polygon.calculateProperties();
          }
 
-         this.tree = new ThreeBSP.Node( polygons );
+         this.tree = new ThreeBSP.Node( polygons, nodeid );
+         if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
          return this;
 
       } else {
@@ -129,7 +131,8 @@ function ThreeBSPfactory() {
          polygons.push( polygon );
       };
 
-      this.tree = new ThreeBSP.Node( polygons );
+      this.tree = new ThreeBSP.Node( polygons, nodeid );
+      if (nodeid!==undefined) this.maxid = this.tree.maxnodeid;
 
    };
    ThreeBSP.prototype.subtract = function( other_tree ) {
@@ -182,7 +185,7 @@ function ThreeBSPfactory() {
 
       if (this.maxid === undefined) return;
 
-      //console.log('MAXID ', this.maxid, '  POLYGONS', polygons.length);
+      // console.log('MAXID ', this.maxid, '  POLYGONS', polygons.length);
 
       // first collect them together
 
@@ -249,10 +252,6 @@ function ThreeBSPfactory() {
    ThreeBSP.prototype.direct_subtract = function( other_tree ) {
       var a = this.tree,
           b = other_tree.tree;
-
-      //this.maxid = a.numeratePolygons(0);
-      //this.maxid = b.numeratePolygons(this.maxid);
-
       a.invert();
       a.clipTo( b );
       b.clipTo( a );
@@ -355,15 +354,25 @@ function ThreeBSPfactory() {
       }
       return geometry;
    };
+
+   ThreeBSP.prototype.toPolygons = function() {
+      var polygons = this.tree.collectPolygons([]);
+
+      this.tryToCompress(polygons);
+
+      for (var i = 0; i < polygons.length; ++i ) {
+         delete polygons[i].id;
+         delete polygons[i].parent;
+      }
+
+      return polygons;
+   }
+
    ThreeBSP.prototype.toBufferGeometry = function() {
       var i, j,
-         polygons = this.tree.collectPolygons([]),
+         polygons = this.toPolygons(),
          polygon_count = polygons.length,
          buf_size = 0;
-
-      // this.tryToCompress(polygons);
-
-      polygon_count = polygons.length;
 
       for ( i = 0; i < polygon_count; ++i )
          buf_size += (polygons[i].vertices.length - 2) * 9;
@@ -485,12 +494,6 @@ function ThreeBSPfactory() {
       return this;
    };
 
-   ThreeBSP.Polygon.prototype.numerate = function(id) {
-      // method can be used to repair segmentation of polygons
-      delete this.parent;
-      this.id = id;
-   };
-
    ThreeBSP.Polygon.prototype.classifyVertex = function( vertex ) {
       var side_value = this.normal.dot( vertex ) - this.w;
 
@@ -545,7 +548,7 @@ function ThreeBSPfactory() {
 
       } else {
 
-         var vertice_count,
+         var vertice_count, isany = false,
             i, j, ti, tj, vi, vj,
             t, v,
             f = [],
@@ -567,6 +570,7 @@ function ThreeBSPfactory() {
                //v = vi.clone().lerp( vj, t );
                f.push( v );
                b.push( v );
+               isany = true;
             }
          }
 
@@ -694,7 +698,7 @@ function ThreeBSPfactory() {
    }
 
 
-   ThreeBSP.Node = function( polygons ) {
+   ThreeBSP.Node = function( polygons, nodeid ) {
       var i, polygon_count,
           front = [],
           back = [];
@@ -707,8 +711,15 @@ function ThreeBSPfactory() {
       this.divider = polygons[0].clone();
 
       for ( i = 0, polygon_count = polygons.length; i < polygon_count; ++i ) {
+         if (nodeid!==undefined) {
+            polygons[i].id = nodeid++;
+            delete polygons[i].parent;
+         }
+
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
       }
+
+      if (nodeid !== undefined) this.maxnodeid = nodeid;
 
       if ( front.length > 0 ) {
          this.front = new ThreeBSP.Node( front );
@@ -760,14 +771,6 @@ function ThreeBSPfactory() {
       if ( this.back ) this.back.collectPolygons(arr);
       return arr;
    };
-
-   ThreeBSP.Node.prototype.numeratePolygons = function(id) {
-      var i, len = this.polygons.length;
-      for (i=0;i<len;++i) this.polygons[i].numerate(id++);
-      if ( this.front ) id = this.front.numeratePolygons(id);
-      if ( this.back ) id = this.back.numeratePolygons(id);
-      return id;
-   }
 
    ThreeBSP.Node.prototype.allPolygons = function() {
       var polygons = this.polygons.slice();
