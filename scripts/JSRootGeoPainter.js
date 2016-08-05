@@ -1338,7 +1338,7 @@
          box.setFromObject(focus);
       }
 
-      var autoClip = clip === undefined ? true : clip;
+      var autoClip = clip === undefined ? false : clip;
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1378,6 +1378,7 @@
 
          this.enableX = this.enableY = this.enableZ = true;
 
+                           // These should be center of volume, box may not be doing this correctly
          var incrementX  = ((box.max.x + box.min.x) / 2 - this.clipX) / frames,
              incrementY  = ((box.max.y + box.min.y) / 2 - this.clipY) / frames,
              incrementZ  = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
@@ -2225,11 +2226,12 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-   //   if (/*(item._geoobj._typename.indexOf("TGeoNode")===0) && */JSROOT.GEO.findItemWithPainter(item))
+      //
+      if (/*(item._geoobj._typename.indexOf("TGeoNode")===0) && */JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 
            var drawitem = JSROOT.GEO.findItemWithPainter(item);
-           console.log(drawitem);
+         //  console.log(drawitem);
            if (!drawitem) return;
 
            var fullname = hpainter.itemFullName(item, drawitem);
