@@ -216,15 +216,11 @@ function ThreeBSPfactory() {
                if (!p1 || !p1.parent) continue;
                for (var i2 = i1+1; i2 < parts.length; ++i2) {
                   var p2 = parts[i2];
-                  if (p2 && (p1.parent === p2.parent) && (p1.flipcnt === p2.flipcnt)) {
+                  if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {
 
-                     if (p1.flipcnt !== p1.parent.flipcnt) {
-                        // console.log('mismatch flipcnt', p1.flipcnt, p1.parent.flipcnt);
-                        p1.parent.flip();
-                     }
+                     if (p1.nsign !== p1.parent.nsign) p1.parent.flip();
 
                      nreduce++;
-                     if (p1.id !== p2.id) console.log('something went wrong');
                      parts[i1] = p1.parent;
                      parts[i2] = null;
                      if (p1.parent.vertices.length < 3) console.log('something wrong with parent');
@@ -394,16 +390,14 @@ function ThreeBSPfactory() {
 //         if (debug) console.log('Vertex ', vertex.x.toFixed(0), vertex.y.toFixed(0), vertex.z.toFixed(0),
 //                                'normal', norm.x.toFixed(0), norm.y.toFixed(0), norm.z.toFixed(0), 'sign', nsign);
 
-         normals_buf[iii] = nsign * vertex.nx;
-         normals_buf[iii+1] = nsign * vertex.ny;
-         normals_buf[iii+2] = nsign * vertex.nz;
+         normals_buf[iii] = polygon.nsign * vertex.nx;
+         normals_buf[iii+1] = polygon.nsign * vertex.ny;
+         normals_buf[iii+2] = polygon.nsign * vertex.nz;
          iii+=3;
       }
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
-         // polygon.normal.normalize()
-         nsign = (polygon.flipcnt>0) ? -1 : 1;
          for ( j = 2; j < polygon.vertices.length; ++j ) {
             CopyVertex(polygon.vertices[0]);
             CopyVertex(polygon.vertices[j-1]);
@@ -437,7 +431,7 @@ function ThreeBSPfactory() {
       }
 
       this.vertices = vertices;
-      this.flipcnt = 0;
+      this.nsign = 1;
       if ( vertices.length > 0 ) {
          this.calculateProperties();
       } else {
@@ -447,7 +441,7 @@ function ThreeBSPfactory() {
    ThreeBSP.Polygon.prototype.copyProperties = function(parent, more) {
       this.normal = parent.normal.clone();
       this.w = parent.w;
-      this.flipcnt = parent.flipcnt;
+      this.nsign = parent.nsign;
       if (more && (parent.id !== undefined)) {
          this.id = parent.id;
          this.parent = parent;
@@ -478,14 +472,13 @@ function ThreeBSPfactory() {
    };
 
    ThreeBSP.Polygon.prototype.flip = function() {
-      // var i, vertices = [];
-
       this.normal.multiplyScalar( -1 );
       this.w *= -1;
-      this.flipcnt = (this.flipcnt+1) % 2;
+      this.nsign *= -1;
 
       this.vertices.reverse();
 
+      // var i, vertices = [];
       //for ( i = this.vertices.length - 1; i >= 0; i-- ) {
       //   vertices.push( this.vertices[i] );
       //};
