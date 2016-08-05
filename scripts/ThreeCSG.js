@@ -440,6 +440,8 @@ function ThreeBSPfactory() {
       return this;
    };
    ThreeBSP.Polygon.prototype.calculateProperties = function() {
+      if (this.normal) return;
+
       var a = this.vertices[0],
           b = this.vertices[1],
           c = this.vertices[2];
@@ -464,18 +466,14 @@ function ThreeBSPfactory() {
    };
 
    ThreeBSP.Polygon.prototype.flip = function() {
+
+      /// normal is not changed, only sign variable
       //this.normal.multiplyScalar( -1 );
       //this.w *= -1;
 
       this.nsign *= -1;
 
       this.vertices.reverse();
-
-      // var i, vertices = [];
-      //for ( i = this.vertices.length - 1; i >= 0; i-- ) {
-      //   vertices.push( this.vertices[i] );
-      //};
-      //this.vertices = vertices;
 
       return this;
    };
