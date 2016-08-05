@@ -158,7 +158,8 @@
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,
          EndErrorSize : 2, // size in pixels of end error for E1 draw options
-         GeoGradPerSegm : 6 // amount of grads per segment in TGeo spherical shapes like tube
+         GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
+         GeoCompressComp : true // if one should compress faces after creation of composite shape
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }

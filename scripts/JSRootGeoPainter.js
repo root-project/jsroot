@@ -1895,6 +1895,7 @@
       if (obj === null) return this.DrawingReady();
 
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
+      JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
       var vol = null, shape = null;
 

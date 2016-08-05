@@ -20,7 +20,10 @@
 
    /** @namespace JSROOT.GEO */
    /// Holder of all TGeo-related functions and classes
-   JSROOT.GEO = { GradPerSegm: 6 };
+   JSROOT.GEO = {
+         GradPerSegm: 6,     // grad per segment in cylined/spherical symetry shapes
+         CompressComp: true  // use faces compression in composite shapes
+    };
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.BITS = {
@@ -2471,7 +2474,7 @@
       geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
 
       if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-      bsp1 = new ThreeBSP(geom1, matrix1, 0);
+      bsp1 = new ThreeBSP(geom1, matrix1, JSROOT.GEO.CompressComp ? 0 : undefined);
 
       if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
       bsp2 = new ThreeBSP(geom2, matrix2, bsp1.maxid);

@@ -207,6 +207,8 @@
 
       var geosegm = JSROOT.GetUrlOption("geosegm", url);
       if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+      var geocomp = JSROOT.GetUrlOption("geocomp", url);
+      if (geocomp!==null) JSROOT.gStyle.GeoCompressComp = (geocomp!=='0') && (geocomp!=='false');
    }
 
    JSROOT.Painter.Coord = {
