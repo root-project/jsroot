@@ -432,7 +432,7 @@ function ThreeBSPfactory() {
       }
    };
    ThreeBSP.Polygon.prototype.copyProperties = function(parent, more) {
-      this.normal = parent.normal.clone();
+      this.normal = parent.normal; // .clone();
       this.w = parent.w;
       this.nsign = parent.nsign;
       if (more && (parent.id !== undefined)) {
@@ -446,12 +446,13 @@ function ThreeBSPfactory() {
           b = this.vertices[1],
           c = this.vertices[2];
 
+      this.nsign = 1;
+
       this.normal = b.clone().subtract( a ).cross(
          c.clone().subtract( a )
       ).normalize();
 
       this.w = this.normal.clone().dot( a );
-
       return this;
    };
    ThreeBSP.Polygon.prototype.clone = function() {
@@ -465,8 +466,9 @@ function ThreeBSPfactory() {
    };
 
    ThreeBSP.Polygon.prototype.flip = function() {
-      this.normal.multiplyScalar( -1 );
-      this.w *= -1;
+      //this.normal.multiplyScalar( -1 );
+      //this.w *= -1;
+
       this.nsign *= -1;
 
       this.vertices.reverse();
@@ -481,7 +483,7 @@ function ThreeBSPfactory() {
    };
 
    ThreeBSP.Polygon.prototype.classifyVertex = function( vertex ) {
-      var side_value = this.normal.dot( vertex ) - this.w;
+      var side_value = this.nsign * (this.normal.dot( vertex ) - this.w);
 
       if ( side_value < -EPSILON ) {
          return BACK;
@@ -520,7 +522,7 @@ function ThreeBSPfactory() {
 
       if ( classification === COPLANAR ) {
 
-         ( this.normal.dot( polygon.normal ) > 0 ? coplanar_front : coplanar_back ).push( polygon );
+         ( (this.nsign * polygon.nsign * this.normal.dot( polygon.normal ) > 0) ? coplanar_front : coplanar_back ).push( polygon );
 
       } else if ( classification === FRONT ) {
 
