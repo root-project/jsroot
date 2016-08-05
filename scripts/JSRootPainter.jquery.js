@@ -635,7 +635,7 @@
       $(frame).droppable({
          hoverClass : "ui-state-active",
          accept: function(ui) {
-            var dropname = ui.parent().attr('item');
+            var dropname = ui.parent().parent().attr('item');
             if ((dropname == itemname) || (dropname==null)) return false;
 
             var ditem = h.Find(dropname);
@@ -644,7 +644,7 @@
             return ditem._kind.indexOf("ROOT.")==0;
          },
          drop: function(event, ui) {
-            var dropname = ui.draggable.parent().attr('item');
+            var dropname = ui.draggable.parent().parent().attr('item');
             if (dropname==null) return false;
             return h.dropitem(dropname, $(this).attr("id"));
          }
