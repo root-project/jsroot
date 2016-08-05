@@ -5831,7 +5831,7 @@
          if (draw_title)
             pavetext.AddText(this.histo.fTitle);
       } else
-      if (draw_title && (tpainter === null)) {
+      if (draw_title && !tpainter && (this.histo.fTitle.length > 0)) {
          pavetext = JSROOT.Create("TPaveText");
 
          JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
