@@ -1017,6 +1017,8 @@
 
             prop.material.wireframe = this.options.wireframe;
 
+            prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
+
             var mesh;
 
             if (obj3d.matrixWorld.determinant() > -0.9) {
@@ -2010,8 +2012,6 @@
 
    JSROOT.GEO.buildCompositeVolume = function(comp, side) {
       // function used to build hierarchy of elements of composite shapes
-
-      console.log('Create composite ', comp._typename);
 
       var vol = JSROOT.Create("TGeoVolume");
       if (side && (comp._typename!=='TGeoCompositeShape')) {
