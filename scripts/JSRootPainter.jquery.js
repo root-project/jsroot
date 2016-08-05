@@ -469,7 +469,8 @@
 
             if (can_draw && can_expand) {
                // if default action specified as expand, disable drawing
-               if (handle.dflt === 'expand') can_draw = false;
+               if (handle.dflt === 'expand') can_draw = false; else
+               if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
             }
 
             if (can_draw)

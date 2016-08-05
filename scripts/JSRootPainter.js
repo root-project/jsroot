@@ -8378,6 +8378,14 @@
       return (handle!=null) && ('func' in handle);
    }
 
+   JSROOT.HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
+      var mdi = this.GetDisplay();
+      if (!mdi) return false;
+
+      return mdi.FindFrame(itemname) !== null;
+
+   }
+
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this, painter = null, updating = false;
 
