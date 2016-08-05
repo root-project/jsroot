@@ -208,10 +208,13 @@
       hitem._d3cont = d3cont.node(); // set for direct referencing
       d3cont.attr("item", itemname);
 
+      // line with all html elements for this item (excluding childs)
+      var d3line = d3cont.append("div").attr('class','h_line');
+
       // build indent
       var prnt = isroot ? null : hitem._parent;
-      while ((prnt != null) && (prnt != this.h)) {
-         d3cont.insert("div",":first-child")
+      while (prnt && (prnt !== this.h)) {
+         d3line.insert("div",":first-child")
                .attr("class", this.isLastSibling(prnt) ? "img_empty" : "img_line");
          prnt = prnt._parent;
       }
@@ -236,7 +239,7 @@
 
       if (icon_class.length > 0) {
          if (this.isLastSibling(hitem)) icon_class+="bottom";
-         var d3icon = d3cont.append("div").attr('class', icon_class);
+         var d3icon = d3line.append("div").attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
                               .on("click", function() { h.tree_click(this, "plusminus"); });
       }
@@ -247,27 +250,26 @@
          var icon_name = hitem._isopen ? img2 : img1;
          var title = hitem._kind ? hitem._kind.replace(/</g,'&lt;').replace(/>/g,'&gt;') : "";
 
-         var d3img = null;
+         var d3img;
 
-         if (icon_name.indexOf("img_")==0) {
-            d3img = d3cont.append("div")
+         if (icon_name.indexOf("img_")==0)
+            d3img = d3line.append("div")
                           .attr("class", icon_name)
                           .attr("title", title);
-         } else {
-            d3img = d3cont.append("img")
+         else
+            d3img = d3line.append("img")
                           .attr("src", icon_name)
                           .attr("alt","")
                           .attr("title",title)
                           .style('vertical-align','top')
                           .style('width','18px')
                           .style('height','18px');
-         }
 
          if ('_icon_click' in hitem)
             d3img.on("click", function() { h.tree_click(this, "icon"); });
       }
 
-      var d3a = d3cont.append("a");
+      var d3a = d3line.append("a");
       if (can_click || has_childs)
          d3a.attr("class","h_item")
             .on("click", function() { h.tree_click(this); });
@@ -298,7 +300,7 @@
          .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
-         var d3p = d3cont.append("p");
+         var d3p = d3line.append("p");
          if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
          if (!hitem._isopen) d3p.html(hitem._value);
       }
@@ -335,9 +337,9 @@
          d3elem.append("div")
                .attr("class", "jsroot")
                .style("background-color", this.background ? this.background : "")
-               .style('overflow', 'auto')
-               .style('width', '100%')
-               .style('height', '100%')
+//               .style('overflow', 'auto')
+//               .style('width', '100%')
+//               .style('height', '100%')
                .style('font-size', this.with_icons ? "12px" : "15px");
 
       for (var n=0;n<factcmds.length;++n) {
@@ -419,7 +421,7 @@
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
       if (node===null) return;
-      var d3cont = d3.select(node.parentNode);
+      var d3cont = d3.select(node.parentNode.parentNode);
       var itemname = d3cont.attr('item');
       if (itemname == null) return;
 
@@ -498,7 +500,7 @@
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(elem) {
       d3.event.preventDefault();
 
-      var itemname = d3.select(elem.parentNode).attr('item');
+      var itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
       var hitem = this.Find(itemname);
       if (hitem==null) return;

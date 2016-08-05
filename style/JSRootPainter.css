@@ -47,6 +47,11 @@
     color: blue;
 }
 
+.jsroot .h_line {
+   height: 18px;
+   display: block;
+}
+
 .jsroot .h_item {
     cursor: pointer;
 }
