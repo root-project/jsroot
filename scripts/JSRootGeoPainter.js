@@ -1,5 +1,5 @@
-/// @file JSRootGeoPainter.js
-/// JavaScript ROOT 3D geometry painter
+/** JavaScript ROOT 3D geometry painter
+ * @file JSRootGeoPainter.js */
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
@@ -22,6 +22,7 @@
       factory( d3, JSROOT);
    }
 } (function( d3, JSROOT ) {
+
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
@@ -1949,34 +1950,8 @@
 
          if (comp && comp.fNode && comp._typename == 'TGeoCompositeShape') {
             obj = null;
-
             opt = opt.substr(4);
-
-            vol = JSROOT.Create("TGeoVolume");
-            JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
-            vol._geoh = true; // workaround, let know browser that we are in volumes hierarchy
-            vol.fName = "";
-
-            vol.fNodes = JSROOT.Create("TList");
-
-            var node1 = JSROOT.Create("TGeoNodeMatrix");
-            node1.fName = "Left";
-            node1.fMatrix = comp.fNode.fLeftMat;
-            node1.fVolume = JSROOT.Create("TGeoVolume");
-            node1.fVolume.fShape = comp.fNode.fLeft;
-            node1.fVolume.fLineColor = 2;
-            JSROOT.GEO.SetBit(node1.fVolume, JSROOT.GEO.BITS.kVisThis, true);
-
-            var node2 = JSROOT.Create("TGeoNodeMatrix");
-            node2.fName = "Right";
-            node2.fMatrix = comp.fNode.fRightMat;
-            node2.fVolume = JSROOT.Create("TGeoVolume");
-            node2.fVolume.fShape = comp.fNode.fRight;
-            node2.fVolume.fLineColor = 3;
-            JSROOT.GEO.SetBit(node2.fVolume, JSROOT.GEO.BITS.kVisThis, true);
-
-            vol.fNodes.Add(node1);
-            vol.fNodes.Add(node2);
+            vol = JSROOT.GEO.buildCompositeVolume(comp);
          }
       }
 
@@ -1994,7 +1969,7 @@
       return this.DrawingReady();
    }
 
-   // keep for backwards compatibility
+   /// keep for backwards compatibility
    JSROOT.Painter.drawGeometry = JSROOT.Painter.drawGeoObject;
 
    // ===================================================================================
@@ -2040,6 +2015,41 @@
    }
 
    // ===============================================================================
+
+   JSROOT.GEO.buildCompositeVolume = function(comp, side) {
+      // function used to build hierarchy of elements of composite shapes
+
+      console.log('Create composite ', comp._typename);
+
+      var vol = JSROOT.Create("TGeoVolume");
+      if (side && (comp._typename!=='TGeoCompositeShape')) {
+         vol.fName = side;
+         JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
+         vol.fLineColor = (side=="Left"? 2 : 3);
+         vol.fShape = comp;
+         return vol;
+      }
+
+      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+      vol._geoh = true; // workaround, let know browser that we are in volumes hierarchy
+      vol.fName = "";
+
+      var node1 = JSROOT.Create("TGeoNodeMatrix");
+      node1.fName = "Left";
+      node1.fMatrix = comp.fNode.fLeftMat;
+      node1.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fLeft, "Left");
+
+      var node2 = JSROOT.Create("TGeoNodeMatrix");
+      node2.fName = "Right";
+      node2.fMatrix = comp.fNode.fRightMat;
+      node2.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fRight, "Right");
+
+      vol.fNodes = JSROOT.Create("TList");
+      vol.fNodes.Add(node1);
+      vol.fNodes.Add(node2);
+
+      return vol;
+   }
 
    JSROOT.GEO.provideVisStyle = function(volume) {
       var vis = !JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisNone) &&
