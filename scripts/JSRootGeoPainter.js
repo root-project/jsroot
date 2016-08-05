@@ -183,6 +183,12 @@
          opt = opt.replace("invx", " ");
       }
 
+      if (opt.indexOf("axis")>=0) {
+         res._axis = true;
+         res._yup = false;
+         opt = opt.replace("axis", " ");
+      }
+
       if (opt.indexOf("controls")>=0) {
          res.show_controls = true;
          opt = opt.replace("controls", " ");

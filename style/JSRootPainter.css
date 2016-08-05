@@ -439,6 +439,7 @@
     width: 300px;
     background: #E6E6FA;
     padding: 5px;
+    overflow: auto;
 }
 
 /*--------------------------------------------------
