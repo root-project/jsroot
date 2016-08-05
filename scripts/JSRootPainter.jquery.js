@@ -503,12 +503,11 @@
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
       var hitem = this.Find(itemname);
-      if (hitem==null) return;
+      if (!hitem) return;
 
-      var painter = this;
-
-      var onlineprop = painter.GetOnlineProp(itemname);
-      var fileprop = painter.GetFileProp(itemname);
+      var painter = this,
+          onlineprop = painter.GetOnlineProp(itemname),
+          fileprop = painter.GetFileProp(itemname);
 
       function qualifyURL(url) {
          function escapeHTML(s) {
@@ -521,7 +520,7 @@
 
       JSROOT.Painter.createMenu(function(menu) {
 
-         menu['painter'] = painter;
+         menu.painter = painter;
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
             var addr = "", cnt = 0;
@@ -547,8 +546,8 @@
 
             var items = [];
 
-            if (painter['disp'] != null)
-               painter['disp'].ForEachPainter(function(p) {
+            if (painter.disp)
+               painter.disp.ForEachPainter(function(p) {
                   if (p.GetItemName()!=null)
                      items.push(p.GetItemName());
                });
@@ -567,15 +566,19 @@
          } else {
             var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
 
-            if (opts!=null)
+            if (opts)
                menu.addDrawMenu("Draw", opts, function(arg) { this.display(itemname, arg); });
 
-            if ((fileprop!=null) && (opts!=null)) {
+            if (fileprop && opts) {
                var filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(JSROOT.source_dir) == 0)
                   filepath = filepath.slice(JSROOT.source_dir.length);
-               menu.addDrawMenu("Draw in new window", opts, function(arg) {
-                  window.open(JSROOT.source_dir + "index.htm?nobrowser&file=" + filepath + "&item=" + fileprop.itemname+"&opt="+arg);
+               filepath = fileprop.kind + "=" + filepath;
+               if (fileprop.itemname.length > 0)
+                  filepath+="&item=" + fileprop.itemname;
+
+               menu.addDrawMenu("Draw in new tab", opts, function(arg) {
+                  window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg);
                });
             }
 

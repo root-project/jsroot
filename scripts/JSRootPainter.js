@@ -8897,14 +8897,14 @@
       if (item == null) return null;
 
       var subname = item._name;
-      while (item._parent != null) {
+      while (item._parent) {
          item = item._parent;
-         if ('_file' in item) {
-            return {
-               fileurl : item._file.fURL,
-               itemname : subname
-            };
-         }
+         if ('_file' in item)
+            return { kind: "file", fileurl: item._file.fURL, itemname: subname };
+
+         if ('_jsonfile' in item)
+            return { kind: "json", fileurl: item._jsonfile, itemname: subname };
+
          subname = item._name + "/" + subname;
       }
 
