@@ -1319,7 +1319,7 @@
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
       var stack = this._clones.FindStackByName(itemname.substr(6));
-
+   //   console.log( stack );
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
@@ -1329,7 +1329,7 @@
       console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
    }
 
-   JSROOT.TGeoPainter.prototype.focusCamera = function( focus ) {
+   JSROOT.TGeoPainter.prototype.focusCamera = function( focus, clip ) {
 
       var box = new THREE.Box3();
       if (focus === undefined) {
@@ -1337,6 +1337,8 @@
       } else {
          box.setFromObject(focus);
       }
+
+      var autoClip = clip === undefined ? false : clip;
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1360,9 +1362,29 @@
       var frames = 200;
       var step = 0;
       // Amount to change camera position at each step
-      var posDifference = position.sub(this._camera.position).divideScalar(frames);
+      var posIncrement = position.sub(this._camera.position).divideScalar(frames);
       // Amount to change "lookAt" so it will end pointed at target
-      var targetDifference = target.sub(oldTarget).divideScalar(frames);
+      var targetIncrement = target.sub(oldTarget).divideScalar(frames);
+
+      // Automatic Clipping
+
+      if (autoClip) {
+
+         var topBox = new THREE.Box3().setFromObject(this._toplevel);
+
+         this.clipX = this.enableX ? this.clipX : topBox.min.x;
+         this.clipY = this.enableY ? this.clipY : topBox.min.y;
+         this.clipZ = this.enableZ ? this.clipZ : topBox.min.z;
+
+         this.enableX = this.enableY = this.enableZ = true;
+
+                           // These should be center of volume, box may not be doing this correctly
+         var incrementX  = ((box.max.x + box.min.x) / 2 - this.clipX) / frames,
+             incrementY  = ((box.max.y + box.min.y) / 2 - this.clipY) / frames,
+             incrementZ  = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
+
+             this.updateClipping();
+      }
 
       var painter = this;
       this._animating = true;
@@ -1373,12 +1395,20 @@
       function animate() {
          if (painter._animating) requestAnimationFrame( animate );
          var smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
-         painter._camera.position.add( posDifference.clone().multiplyScalar( smoothFactor ) );
-         oldTarget.add( targetDifference.clone().multiplyScalar( smoothFactor ) );
+         painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
+         oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
          painter._lookat = oldTarget;
          painter._controls.target = oldTarget;
          painter._camera.lookAt( painter._lookat );
-         painter.Render3D();
+
+         if (autoClip) {
+            painter.clipX += incrementX * smoothFactor;
+            painter.clipY += incrementY * smoothFactor;
+            painter.clipZ += incrementZ * smoothFactor;
+            painter.updateClipping();
+         } else {
+            painter.Render3D();
+         }
          step++;
          painter._animating = step < frames;
       }
@@ -2197,10 +2227,12 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-      if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
+      //
+      if (/*(item._geoobj._typename.indexOf("TGeoNode")===0) && */JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 
            var drawitem = JSROOT.GEO.findItemWithPainter(item);
+         //  console.log(drawitem);
            if (!drawitem) return;
 
            var fullname = hpainter.itemFullName(item, drawitem);
