@@ -1,22 +1,23 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Upgrafe three.js to r79, adjust text rendering code 
-2. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
-3. Preliminary support of candle plot (many options to be implemented)
-4. Implement box and hbox draw options for TH1 class
-5. Preliminary support of websocket communication
-6. Update many draw attributes (fill/line/position) when monitor objects  
-7. Floating browser can be activated in non-browser mode (only for TGeo drawings)
-8. Many significant changes in TGeo 3D drawing
+1. Many significant changes in TGeo 3D drawing
    - select and draw only most significant volumes, let work with large geometry models
    - one could activate several clip planes (only with WebGL support)
    - interaction with object browser to change visibility flags or focus on selected volume
+   - support of floating browser for TGeo objects 
    - intensive use of HTML Worker to offload computation tasks and keep interactivity   
    - enable more details when changing camera position/zoom
-9. Support axis labels draw in 3D plots (like lego for th2) 
-10. Support more lego options: lego0, lego2, legofb, legobb
-11. Significant performance improvement of 3D histograms drawings
+   - significant (up to factor 10) performance improvement
+   - upgrafe three.js to r79
+2. Many improvements in histogram 3D drawing:
+   - more lego options: lego0, lego2, legofb, legobb
+   - support axis lebels 
+   - significant performance increase with use of THREE.BufferGeometry
+3. Implement box and hbox draw options for TH1 class
+4. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
+5. Preliminary support of candle plot (many options to be implemented)
+6. Update many draw attributes (fill/line/position) when monitor objects  
 
 
 ## Changes in 4.5.0

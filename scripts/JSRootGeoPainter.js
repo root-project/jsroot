@@ -139,7 +139,8 @@
                   _full: false, _axis:false, _count:false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), more:1,
                    use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false, select_in_view: false };
+                   highlight: false, select_in_view: false,
+                   clipx: false, clipy: false, clipz: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -166,80 +167,47 @@
 
       opt = opt.toLowerCase();
 
-      if (opt.indexOf("more3")>=0) {
-         opt = opt.replace("more3", " ");
-         res.more = 3;
-      }
-      if (opt.indexOf("more")>=0) {
-         opt = opt.replace("more", " ");
-         res.more = 2;
-      }
-      if (opt.indexOf("all")>=0) {
-         opt = opt.replace("all", " ");
-         res.more = 100;
-      }
-      if (opt.indexOf("invx")>=0) {
-         res.scale.x = -1;
-         opt = opt.replace("invx", " ");
+      function check(name) {
+         if (opt.indexOf(name) < 0) return false;
+         opt = opt.replace(name," ");
+         return true;
       }
 
-      if (opt.indexOf("axis")>=0) {
-         res._axis = true;
-         res._yup = false;
-         opt = opt.replace("axis", " ");
-      }
+      if (check("more3")) res.more = 3;
+      if (check("more")) res.more = 2;
+      if (check("all")) res.more = 100;
 
-      if (opt.indexOf("controls")>=0) {
-         res.show_controls = true;
-         opt = opt.replace("controls", " ");
-      }
-      if (opt.indexOf("ctrl")>=0) {
-         res.show_controls = true;
-         opt = opt.replace("ctrl", " ");
-      }
+      if (check("invx") || check("invertx")) res.scale.x = -1;
 
-      if (opt.indexOf("noworker")>=0) {
-         res.use_worker = -1;
-         opt = opt.replace("noworker", " ");
-      }
+      if (check("controls") || check("ctrl")) res.show_controls = true;
 
-      if (opt.indexOf("worker")>=0) {
-         res.use_worker = 1;
-         opt = opt.replace("worker", " ");
-      }
+      if (check("clipxyz")) res.clipx = res.clipy = res.clipz = true;
+      if (check("clipx")) res.clipx = true;
+      if (check("clipy")) res.clipy = true;
+      if (check("clipz")) res.clipz = true;
+      if (check("clip")) res.clipx = res.clipy = res.clipz = true;
 
-      if (opt.indexOf("highlight")>=0) {
-         res.highlight = true;
-         opt = opt.replace("highlight", " ");
-      }
+      if (check("noworker")) res.use_worker = -1;
+      if (check("worker")) res.use_worker = 1;
 
-      if (opt.indexOf("wire")>=0) {
-         res.wireframe = true;
-         opt = opt.replace("wire", " ");
-      }
+      if (check("highlight")) res.highlight = true;
 
-      if (opt.indexOf("invy")>=0) {
-         res.scale.y = -1;
-         opt = opt.replace("invy", " ");
-      }
-      if (opt.indexOf("invz")>=0) {
-         res.scale.z = -1;
-         opt = opt.replace("invz", " ");
-      }
+      if (check("wire")) res.wireframe = true;
 
-      if (opt.indexOf("count")>=0) {
-         res._count = true;
-         opt = opt.replace("count", " ");
-      }
+      if (check("invy")) res.scale.y = -1;
+      if (check("invz")) res.scale.z = -1;
 
-      if (opt.indexOf("d")>=0) res._debug = true;
-      if (opt.indexOf("g")>=0) res._grid = true;
-      if (opt.indexOf("b")>=0) res._bound = true;
-      if (opt.indexOf("w")>=0) res.wireframe = true;
-      if (opt.indexOf("f")>=0) res._full = true;
-      if (opt.indexOf("a")>=0) { res._axis = true; res._yup = false; }
-      if (opt.indexOf("y")>=0) res._yup = true;
-      if (opt.indexOf("z")>=0) res._yup = false;
+      if (check("count")) res._count = true;
+
+      if (check("axis") || check("a")) { res._axis = true; res._yup = false; }
+
+      if (check("d")) res._debug = true;
+      if (check("g")) res._grid = true;
+      if (check("b")) res._bound = true;
+      if (check("w")) res.wireframe = true;
+      if (check("f")) res._full = true;
+      if (check("y")) res._yup = true;
+      if (check("z")) res._yup = false;
 
       return res;
    }
@@ -370,16 +338,6 @@
 
       // Clipping Options
 
-      function setSide() {
-         painter._scene.traverse( function(obj) {
-            if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-               obj.material.side = (painter.enableX || painter.enableY || painter.enableZ) ? THREE.DoubleSide : THREE.FrontSide;
-               obj.material.needsUpdate = true;
-            }
-         });
-         painter.updateClipping();
-      }
-
       var bound = new THREE.Box3().setFromObject(this._toplevel);
       bound.expandByVector(bound.size().multiplyScalar(0.01));
 
@@ -388,10 +346,11 @@
       var toggleX = clipFolder.add(this, 'enableX').name('Enable X');
       toggleX.onChange( function (value) {
          painter.enableX = value;
-         setSide();
+         painter.updateClipping();
       });
 
-      this.clipX = (bound.min.x+bound.max.x)/2;
+      if (this.clipX === 0)
+         this.clipX = (bound.min.x+bound.max.x)/2;
       var xclip = clipFolder.add(this, 'clipX', bound.min.x, bound.max.x).name('X Position');
 
       xclip.onChange( function (value) {
@@ -402,10 +361,11 @@
       var toggleY = clipFolder.add(this, 'enableY').name('Enable Y');
       toggleY.onChange( function (value) {
          painter.enableY = value;
-         setSide();
+         painter.updateClipping();
       });
 
-      this.clipY = (bound.min.y + bound.max.y)/2;
+      if (this.clipY === 0)
+         this.clipY = (bound.min.y + bound.max.y)/2;
       var yclip = clipFolder.add(this, 'clipY', bound.min.y, bound.max.y).name('Y Position');
 
       yclip.onChange( function (value) {
@@ -416,10 +376,11 @@
       var toggleZ = clipFolder.add(this, 'enableZ').name('Enable Z');
       toggleZ.onChange( function (value) {
          painter.enableZ = value;
-         setSide();
+         painter.updateClipping();
       });
 
-      this.clipZ = (bound.min.z + bound.max.z) / 2;
+      if (this.clipZ === 0)
+         this.clipZ = (bound.min.z + bound.max.z) / 2;
       var zclip = clipFolder.add(this, 'clipZ', bound.min.z, bound.max.z).name('Z Position');
 
       zclip.onChange( function (value) {
@@ -1154,12 +1115,9 @@
 
       // Clipping Planes
 
-      this.enableX = false;
-      this.enableY = false;
-      this.enableZ = false;
-      this.clipX = 0.0;
-      this.clipY = 0.0;
-      this.clipZ = 0.0;
+      this.bothSides = false; // which material kind should be used
+      this.enableX = this.enableY = this.enableZ = false;
+      this.clipX = this.clipY = this.clipZ = 0.0;
 
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX),
                            new THREE.Plane(new THREE.Vector3( 0, this.options._yup ? -1 : 1, 0), this.clipY),
@@ -1254,7 +1212,19 @@
       this.Render3D(0);
    }
 
-   JSROOT.TGeoPainter.prototype.updateClipping = function(offset) {
+   JSROOT.TGeoPainter.prototype.updateMaterialSide = function(both_sides, force) {
+      if ((this.bothSides === both_sides) && !force) return;
+
+      this._scene.traverse( function(obj) {
+         if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
+            obj.material.side = both_sides ? THREE.DoubleSide : THREE.FrontSide;
+            obj.material.needsUpdate = true;
+        }
+      });
+      this.bothSides = both_sides;
+   }
+
+   JSROOT.TGeoPainter.prototype.updateClipping = function(without_render) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
@@ -1262,10 +1232,13 @@
       if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
       if (this.enableY) this._renderer.clippingPlanes.push(this._clipPlanes[1]);
       if (this.enableZ) this._renderer.clippingPlanes.push(this._clipPlanes[2]);
-      this.Render3D(0);
+
+      this.updateMaterialSide(this.enableX || this.enableY || this.enableZ);
+
+      if (!without_render) this.Render3D(0);
    }
 
-   JSROOT.TGeoPainter.prototype.adjustCameraPosition = function() {
+   JSROOT.TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
       var box = new THREE.Box3().setFromObject(this._toplevel);
 
@@ -1286,6 +1259,12 @@
       if (this._webgl) {
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
          this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
+      }
+
+      if (first_time) {
+         this.clipX = midx;
+         this.clipY = midy;
+         this.clipZ = midz;
       }
 
       // this._camera.far = 100000000000;
@@ -1385,12 +1364,12 @@
 
          this.enableX = this.enableY = this.enableZ = true;
 
-                           // These should be center of volume, box may not be doing this correctly
+         // These should be center of volume, box may not be doing this correctly
          var incrementX  = ((box.max.x + box.min.x) / 2 - this.clipX) / frames,
              incrementY  = ((box.max.y + box.min.y) / 2 - this.clipY) / frames,
              incrementZ  = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
 
-             this.updateClipping();
+         this.updateClipping();
       }
 
       var painter = this;
@@ -1761,9 +1740,16 @@
       var call_ready = false;
 
       if (this._first_drawing) {
-         this.adjustCameraPosition();
+         this.adjustCameraPosition(true);
          this._first_drawing = false;
          call_ready = true;
+
+         if (this._webgl) {
+            this.enableX = this.options.clipx;
+            this.enableY = this.options.clipy;
+            this.enableZ = this.options.clipz;
+            this.updateClipping(true); // only set clip panels, do not render
+         }
       }
 
       this.completeScene();
