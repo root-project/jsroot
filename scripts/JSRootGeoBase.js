@@ -2453,7 +2453,7 @@
          return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1) +
                 JSROOT.GEO.createGeometry(shape.fNode.fRight, -1);
 
-      var geom1, geom2, bsp1, bsp2, bsp = null, return_bsp = false,
+      var geom1, geom2, bsp1, bsp2, return_bsp = false,
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
@@ -2466,48 +2466,36 @@
       if (matrix2 && (matrix2.determinant() < -0.9))
          JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
 
-      // console.log('comp type ' + shape.fNode._typename);
-
-      // make creation more intelligent
-      // we have clear limit for the faces and should try distribute faces limit between two geometries
-      // therefore try first create smaller shape and than bigger
-
       geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit/2);
 
       geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
 
-      var maxid = 0;
-
       if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
-      bsp1 = new ThreeBSP(geom1, matrix1, maxid);
-
-      maxid = bsp1.maxid;
+      bsp1 = new ThreeBSP(geom1, matrix1, 0);
 
       if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
-      bsp2 = new ThreeBSP(geom2, matrix2, maxid);
+      bsp2 = new ThreeBSP(geom2, matrix2, bsp1.maxid);
 
       // take over maxid from both geometries
-      maxid = bsp1.maxid = bsp2.maxid;
+      bsp1.maxid = bsp2.maxid;
 
       switch(shape.fNode._typename) {
-         case 'TGeoIntersection': bsp = bsp1.direct_intersect(bsp2);  break; // "*"
-         case 'TGeoUnion': bsp = bsp1.direct_union(bsp2); break;   // "+"
-         case 'TGeoSubtraction': bsp = bsp1.direct_subtract(bsp2); break; // "/"
+         case 'TGeoIntersection': bsp1.direct_intersect(bsp2);  break; // "*"
+         case 'TGeoUnion': bsp1.direct_union(bsp2); break;   // "+"
+         case 'TGeoSubtraction': bsp1.direct_subtract(bsp2); break; // "/"
          default:
             JSROOT.GEO.warn('unsupported bool operation ' + shape.fNode._typename + ', use first geom');
-            bsp = bsp1;
       }
 
-      if (JSROOT.GEO.numGeometryFaces(bsp) === 0) {
+      if (JSROOT.GEO.numGeometryFaces(bsp1) === 0) {
          JSROOT.GEO.warn('Zero faces in comp shape'
                + ' left: ' + shape.fNode.fLeft._typename +  ' ' + JSROOT.GEO.numGeometryFaces(geom1) + ' faces'
                + ' right: ' + shape.fNode.fRight._typename + ' ' + JSROOT.GEO.numGeometryFaces(geom2) + ' faces'
                + '  use first');
-         bsp = bsp1;
-         // return null;
+         bsp1 = new ThreeBSP(geom1, matrix1);
       }
 
-      return return_bsp ? { polygons: bsp.toPolygons() } : bsp.toBufferGeometry();
+      return return_bsp ? { polygons: bsp1.toPolygons() } : bsp1.toBufferGeometry();
 
    }
 

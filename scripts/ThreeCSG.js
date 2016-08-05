@@ -185,37 +185,35 @@ function ThreeBSPfactory() {
 
       if (this.maxid === undefined) return;
 
-      // console.log('MAXID ', this.maxid, '  POLYGONS', polygons.length);
-
-      // first collect them together
-
-      var arr = [], nreduce = 0, maxlen = 0;
-      for(var id=0;id<this.maxid;++id)
-         arr[id] = [];
+      var arr = [], parts, foundpair,
+          nreduce = 0, n, len = polygons.length,
+          p, p1, p2, i1, i2;
 
       // sort out polygons
-      for (var n=0;n<polygons.length;++n) {
-         var p = polygons[n];
-         if (p.id === undefined)
-            console.log('something went wrong');
-         else
-            arr[p.id].push(p);
+      for (n=0;n<len;++n) {
+         p = polygons[n];
+         if (p.id === undefined) continue;
+         if (arr[p.id] === undefined) arr[p.id] = [];
+
+         arr[p.id].push(p);
       }
 
-      for(var id=0;id<this.maxid;++id) {
-         var parts = arr[id];
-         maxlen = Math.max(maxlen, parts.length);
+      for(n=0; n<arr.length; ++n) {
+         parts = arr[n];
+         if (parts===undefined) continue;
 
-         var foundpair = (parts.length > 1);
+         len = parts.length;
+
+         foundpair = (len > 1);
 
          while (foundpair) {
             foundpair = false;
 
-            for (var i1 = 0; i1<parts.length-1; ++i1) {
-               var p1 = parts[i1];
+            for (i1 = 0; i1<len-1; ++i1) {
+               p1 = parts[i1];
                if (!p1 || !p1.parent) continue;
-               for (var i2 = i1+1; i2 < parts.length; ++i2) {
-                  var p2 = parts[i2];
+               for (i2 = i1+1; i2 < len; ++i2) {
+                  p2 = parts[i2];
                   if (p2 && (p1.parent === p2.parent) && (p1.nsign === p2.nsign)) {
 
                      if (p1.nsign !== p1.parent.nsign) p1.parent.flip();
@@ -233,15 +231,15 @@ function ThreeBSPfactory() {
       }
 
       if (nreduce>0) {
-         polygons.splice(0,polygons.length);
+         polygons.splice(0, polygons.length);
 
-         for(var id=0;id<this.maxid;++id) {
-            var parts = arr[id];
-            for (var n=0;n<parts.length;++n)
-               if (parts[n]!==null) polygons.push(parts[n]);
+         for(n=0;n<arr.length;++n) {
+            parts = arr[n];
+            if (parts !== undefined)
+               for (i1=0,len=parts.length; i1<len;++i1)
+                  if (parts[i1]) polygons.push(parts[i1]);
          }
 
-         // console.log('nreduce', nreduce, 'maxlen', maxlen, 'polygons', polygons.length);
       }
    }
 
