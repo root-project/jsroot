@@ -475,6 +475,7 @@
             if (many) menu.add("header: Nodes");
 
             for (var n=0;n<intersects.length;++n) {
+               if (!intersects[n].unique) continue; // provide context menu only for unique object
                var obj = intersects[n].object;
                var name = painter._clones.ResolveStack(obj.stack).name;
 
@@ -496,12 +497,36 @@
                      this.Render3D();
                   });
 
-               menu.add("Focus", n, function(arg) {
-                  this.focusCamera(intersects[arg].object);
+               if (n>0)
+                  menu.add("Manifest", n, function(indx) {
+
+                     if (this._last_manifest)
+                        this._last_manifest.wireframe = !this._last_manifest.wireframe;
+
+                     if (this._last_hidden)
+                        this._last_hidden.forEach(function(obj) { obj.visible = true; });
+
+                     this._last_hidden = [];
+
+                     for (var i=0;i<indx;++i)
+                        this._last_hidden.push(intersects[i].object);
+
+                     this._last_hidden.forEach(function(obj) { obj.visible = false; });
+
+                     this._last_manifest = intersects[indx].object.material;
+
+                     this._last_manifest.wireframe = !this._last_manifest.wireframe;
+
+                     this.Render3D();
+                  });
+
+
+               menu.add("Focus", n, function(indx) {
+                  this.focusCamera(intersects[indx].object);
                });
 
-               menu.add("Hide", n, function(arg) {
-                  var resolve = painter._clones.ResolveStack(intersects[arg].object.stack);
+               menu.add("Hide", n, function(indx) {
+                  var resolve = painter._clones.ResolveStack(intersects[indx].object.stack);
 
                   if (resolve.obj && resolve.obj.fVolume) {
                      JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
@@ -564,13 +589,12 @@
          // remove all elements without stack - indicator that this is geometry object
          for (var n=intersects.length-1; n>=0;--n) {
 
-            var remove = !intersects[n].object.stack;
+            var unique = intersects[n].object.stack !== undefined;
 
-            for (var k=0;(k<n) && !remove;++k)
-               remove = (intersects[k].object === intersects[n].object);
+            for (var k=0;(k<n) && unique;++k)
+               if (intersects[k].object === intersects[n].object) unique = false;
 
-            if (remove)
-               intersects.splice(n,1);
+            intersects[n].unique = unique;
          }
 
          var clippedIntersects = [];
@@ -643,9 +667,22 @@
             block_ctxt = false;
          else
             painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
-      }
+      };
+
+      this._double_click = function(evnt) {
+         if (!painter._last_manifest) return;
+         painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
+
+         if (painter._last_hidden)
+            painter._last_hidden.forEach(function(obj) { obj.visible = true; });
+         delete painter._last_hidden;
+         delete painter._last_manifest;
+         painter.Render3D();
+      };
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
+      this._renderer.domElement.addEventListener( 'dblclick', this._double_click, false );
+
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
@@ -729,7 +766,7 @@
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
-            if (!obj.stack) continue;
+            if (!obj.stack || !intersects[n].unique) continue;
             var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
@@ -1186,6 +1223,9 @@
       this.drawing_log = "collect visible";
       this._num_meshes = 0;
       this._num_faces = 0;
+
+      delete this._last_manifest;
+      delete this._last_hidden; // clear list of hidden objects
 
       delete this._draw_nodes_again; // forget about such flag
 
