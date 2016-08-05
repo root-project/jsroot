@@ -375,20 +375,13 @@ function ThreeBSPfactory() {
 
       var positions_buf = new Float32Array(buf_size),
           normals_buf = new Float32Array(buf_size),
-          iii = 0, polygon, nsign;
+          iii = 0, polygon;
 
       function CopyVertex(vertex) {
 
          positions_buf[iii] = vertex.x;
          positions_buf[iii+1] = vertex.y;
          positions_buf[iii+2] = vertex.z;
-
-         //var norm = vertex.normal.normalize();
-         //if (norm.distanceToSquared(polygon.normal) > 0.5) norm = polygon.normal;
-
-//         var norm = vertex.normal;
-//         if (debug) console.log('Vertex ', vertex.x.toFixed(0), vertex.y.toFixed(0), vertex.z.toFixed(0),
-//                                'normal', norm.x.toFixed(0), norm.y.toFixed(0), norm.z.toFixed(0), 'sign', nsign);
 
          normals_buf[iii] = polygon.nsign * vertex.nx;
          normals_buf[iii+1] = polygon.nsign * vertex.ny;
@@ -499,14 +492,12 @@ function ThreeBSPfactory() {
       }
    };
    ThreeBSP.Polygon.prototype.classifySide = function( polygon ) {
-      var i, vertex, classification,
-         num_positive = 0,
-         num_negative = 0,
-         vertice_count = polygon.vertices.length;
+      var i, classification,
+          num_positive = 0, num_negative = 0,
+          vertice_count = polygon.vertices.length;
 
       for ( i = 0; i < vertice_count; ++i ) {
-         vertex = polygon.vertices[i];
-         classification = this.classifyVertex( vertex );
+         classification = this.classifyVertex( polygon.vertices[i] );
          if ( classification === FRONT ) {
             ++num_positive;
          } else if ( classification === BACK ) {
@@ -542,7 +533,9 @@ function ThreeBSPfactory() {
       } else {
 
          var vertice_count = polygon.vertices.length,
-             nn = this.normal,
+             nnx = this.normal.x,
+             nny = this.normal.y,
+             nnz = this.normal.z,
              i, j, ti, tj, vi, vj,
              t, v,
              f = [], b = [];
@@ -559,11 +552,11 @@ function ThreeBSPfactory() {
             if ( ti != FRONT ) b.push( vi );
             if ( (ti | tj) === SPANNING ) {
                // t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
+               //v = vi.clone().lerp( vj, t );
 
-               t = (this.w - (nn.x*vi.x + nn.y*vi.y + nn.z*vi.z)) / (nn.x*(vj.x-vi.x) + nn.y*(vj.y-vi.y) + nn.z*(vj.z-vi.z));
+               t = (this.w - (nnx*vi.x + nny*vi.y + nnz*vi.z)) / (nnx*(vj.x-vi.x) + nny*(vj.y-vi.y) + nnz*(vj.z-vi.z));
 
                v = vi.interpolate( vj, t );
-               //v = vi.clone().lerp( vj, t );
                f.push( v );
                b.push( v );
             }
