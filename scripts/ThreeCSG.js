@@ -415,7 +415,7 @@ function ThreeBSPfactory() {
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
 
-      geometry.computeVertexNormals();
+      // geometry.computeVertexNormals();
       return geometry;
    };
    ThreeBSP.prototype.toMesh = function( material ) {
@@ -548,13 +548,13 @@ function ThreeBSPfactory() {
 
       } else {
 
-         var vertice_count, isany = false,
-            i, j, ti, tj, vi, vj,
-            t, v,
-            f = [],
-            b = [];
+         var vertice_count = polygon.vertices.length,
+             nn = this.normal,
+             i, j, ti, tj, vi, vj,
+             t, v,
+             f = [], b = [];
 
-         for ( i = 0, vertice_count = polygon.vertices.length; i < vertice_count; ++i ) {
+         for ( i = 0; i < vertice_count; ++i ) {
 
             j = (i + 1) % vertice_count;
             vi = polygon.vertices[i];
@@ -565,12 +565,14 @@ function ThreeBSPfactory() {
             if ( ti != BACK ) f.push( vi );
             if ( ti != FRONT ) b.push( vi );
             if ( (ti | tj) === SPANNING ) {
-               t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
+               // t = ( this.w - this.normal.dot( vi ) ) / this.normal.dot( vj.clone().subtract( vi ) );
+
+               t = (this.w - (nn.x*vi.x + nn.y*vi.y + nn.z*vi.z)) / (nn.x*(vj.x-vi.x) + nn.y*(vj.y-vi.y) + nn.z*(vj.z-vi.z));
+
                v = vi.interpolate( vj, t );
                //v = vi.clone().lerp( vj, t );
                f.push( v );
                b.push( v );
-               isany = true;
             }
          }
 
