@@ -859,10 +859,9 @@
 
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
-      if (this.options.Lego == 12) {
+      if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          levels = this.CreateContour(20, axis_zmin, axis_zmax, this.minposbin);
          palette = this.GetPalette();
-         // console.log('levels', levels, 'palette', palette);
       }
 
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
@@ -887,7 +886,7 @@
                if (notop) numvertices -= 6;
             }
 
-         totalvertices+=numvertices;
+         totalvertices += numvertices;
 
          var positions = new Float32Array( numvertices * 3 );
          var normals = new Float32Array( numvertices * 3 );
@@ -981,6 +980,9 @@
 
          this.toplevel.add(mesh);
       }
+
+      // lego3 or lego4 do not draw border lines
+      if (this.options.Lego > 12) return;
 
       // console.log('Total number of vertices ',totalvertices);
 
