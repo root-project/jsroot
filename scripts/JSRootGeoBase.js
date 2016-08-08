@@ -1640,22 +1640,18 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTorusBuffer = function( shape, faces_limit ) {
-      // shape.fRmin = 0; shape.fDphi = 360;
-      // shape.fRmin = 0;
-
       var radius = shape.fR,
           radialSegments = Math.max(6, Math.round(360/JSROOT.GEO.GradPerSegm)),
-          tubularSegments = Math.max(8, Math.round(shape.fDphi/JSROOT.GEO.GradPerSegm)),
-          hasrmin = shape.fRmin > 0, hascut = (shape.fDphi !== 360);
+          tubularSegments = Math.max(8, Math.round(shape.fDphi/JSROOT.GEO.GradPerSegm));
 
-      var numfaces = (hasrmin ? 4 : 2) * radialSegments * (tubularSegments + (hascut ? 1 : 0));
+      var numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
       if (faces_limit < 0) return numfaces;
 
       if ((faces_limit > 0) && (numfaces > faces_limit)) {
          radialSegments = Math.floor(radialSegments/Math.sqrt(numfaces / faces_limit));
          tubularSegments = Math.floor(tubularSegments/Math.sqrt(numfaces / faces_limit));
-         numfaces = (hasrmin ? 4 : 2) * radialSegments * tubularSegments;
+         numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
       }
 
       var _sinr = new Float32Array(radialSegments+1),
@@ -1676,20 +1672,41 @@
 
       var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
+      // use vectors for normals calculation
+      var p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
+          n1 = new THREE.Vector3(), n2 = new THREE.Vector3(), n3 = new THREE.Vector3(), n4 = new THREE.Vector3(),
+          center1 = new THREE.Vector3(), center2 = new THREE.Vector3();
+
       for (var side=0;side<2;++side) {
-         if ((side > 0) && !hasrmin) break;
+         if ((side > 0) && (shape.fRmin <= 0)) break;
          var tube = (side > 0) ? shape.fRmin : shape.fRmax,
-             d1 = 1 - side, d2 = 1 - d1;
+             d1 = 1 - side, d2 = 1 - d1, ns = side>0 ? -1 : 1;
 
          for (var t=0;t<tubularSegments;++t) {
             var t1 = t + d1, t2 = t + d2;
+            center1.x = radius * _cost[t1]; center1.y = radius * _sint[t1];
+            center2.x = radius * _cost[t2]; center2.y = radius * _sint[t2];
 
             for (var n=0;n<radialSegments;++n) {
-               creator.AddFace4((radius + tube * _cosr[n])   * _cost[t1], (radius + tube * _cosr[n])   * _sint[t1], tube*_sinr[n],
-                                (radius + tube * _cosr[n+1]) * _cost[t1], (radius + tube * _cosr[n+1]) * _sint[t1], tube*_sinr[n+1],
-                                (radius + tube * _cosr[n+1]) * _cost[t2], (radius + tube * _cosr[n+1]) * _sint[t2], tube*_sinr[n+1],
-                                (radius + tube * _cosr[n])   * _cost[t2], (radius + tube * _cosr[n])   * _sint[t2], tube*_sinr[n]);
-               creator.CalcNormal();
+               p1.x = (radius + tube * _cosr[n])   * _cost[t1]; p1.y = (radius + tube * _cosr[n])   * _sint[t1]; p1.z = tube*_sinr[n];
+               p2.x = (radius + tube * _cosr[n+1]) * _cost[t1]; p2.y = (radius + tube * _cosr[n+1]) * _sint[t1]; p2.z = tube*_sinr[n+1];
+               p3.x = (radius + tube * _cosr[n+1]) * _cost[t2]; p3.y = (radius + tube * _cosr[n+1]) * _sint[t2]; p3.z = tube*_sinr[n+1];
+               p4.x = (radius + tube * _cosr[n])   * _cost[t2]; p4.y = (radius + tube * _cosr[n])   * _sint[t2]; p4.z = tube*_sinr[n];
+
+               creator.AddFace4(p1.x, p1.y, p1.z,
+                                p2.x, p2.y, p2.z,
+                                p3.x, p3.y, p3.z,
+                                p4.x, p4.y, p4.z);
+
+               n1.subVectors( p1, center1 ).normalize();
+               n2.subVectors( p2, center1 ).normalize();
+               n3.subVectors( p3, center2 ).normalize();
+               n4.subVectors( p4, center2 ).normalize();
+
+               creator.SetNormal4(ns*n1.x, ns*n1.y, ns*n1.z,
+                                  ns*n2.x, ns*n2.y, ns*n2.z,
+                                  ns*n3.x, ns*n3.y, ns*n3.z,
+                                  ns*n4.x, ns*n4.y, ns*n4.z);
             }
          }
       }
@@ -1698,13 +1715,14 @@
          for (var t=0;t<=tubularSegments;t+=tubularSegments) {
             var tube1 = shape.fRmax, tube2 = shape.fRmin,
                 d1 = (t>0) ? 0 : 1, d2 = 1 - d1,
-                skip = (shape.fRmin) > 0 ?  0 : 1;
+                skip = (shape.fRmin) > 0 ?  0 : 1,
+                nsign = t>0 ? 1 : -1;
             for (var n=0;n<radialSegments;++n) {
                creator.AddFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
                                 (radius + tube1 * _cosr[n+d2]) * _cost[t], (radius + tube1 * _cosr[n+d2]) * _sint[t], tube1*_sinr[n+d2], skip);
-               creator.CalcNormal();
+               creator.SetNormal(-nsign* _sint[t], nsign * _cost[t], 0);
             }
          }
 
@@ -2691,11 +2709,13 @@
             case "TGeoShapeAssembly": break;
          }
       } catch(e) {
+         var place = "";
          if (e.stack !== undefined) {
-            stack = e.stack;
-            console.log(typeof stack, stack);
+            place = e.stack.split("\n")[0];
+            if (place.indexOf(e.message) >= 0) place = e.stack.split("\n")[1];
+                                          else place = " at: " + place;
          }
-         JSROOT.GEO.warn(shape._typename + ' failure: ' + e.message);
+         JSROOT.GEO.warn(shape._typename + " err: " + e.message + place);
 
       }
 
