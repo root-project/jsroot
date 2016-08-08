@@ -596,9 +596,8 @@
             if (!unique) intersects.splice(n,1);
          }
 
-         var clippedIntersects = [];
-
          if (painter.enableX || painter.enableY || painter.enableZ ) {
+            var clippedIntersects = [];
 
             for (var i = 0; i < intersects.length; ++i) {
                var clipped = false;
@@ -681,7 +680,6 @@
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
       this._renderer.domElement.addEventListener( 'dblclick', this._double_click, false );
-
 
       if ( this.options._debug || this.options._grid ) {
          this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );

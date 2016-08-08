@@ -332,9 +332,10 @@
 
       this.add_3d_canvas(size, this.renderer.domElement);
 
-      this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
-      this['Render3D'] = JSROOT.Painter.Render3D;
-      this['Resize3D'] = JSROOT.Painter.Resize3D;
+      this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
+      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
+      this.Render3D = JSROOT.Painter.Render3D;
+      this.Resize3D = JSROOT.Painter.Resize3D;
 
       this.first_render_tm = 0;
    }
@@ -879,7 +880,7 @@
                var reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
                var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax);
+               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
@@ -902,7 +903,7 @@
                var reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
                var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax);
+               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                y1 = yy[j];
                y2 = yy[j+1];
