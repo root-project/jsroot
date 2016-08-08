@@ -2642,7 +2642,8 @@
          var main = this.main_painter();
          this.UseContextMenu = (main !== null);
          if ((main !== null) && main.options)
-            this.Enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
+            this.Enabled = (main.options.Zscale > 0) &&
+                           ((main.options.Color > 0) || (main.options.Lego === 12) || (main.options.Lego === 14));
 
          this.DrawPave();
       }
@@ -2704,7 +2705,7 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            if (this.options.Lego == 0 && this.options.Color > 0) this.ToggleColz();
+            if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
             break;
          case "Toggle3D":
             this.options.Lego = this.options.Lego > 0 ? 0 : 1;

@@ -984,8 +984,6 @@
       // lego3 or lego4 do not draw border lines
       if (this.options.Lego > 12) return;
 
-      // console.log('Total number of vertices ',totalvertices);
-
       // DRAW LINE BOXES
 
       var numlinevertices = 0, numsegments = 0;
@@ -1151,6 +1149,8 @@
       this.DrawXYZ();
 
       this.Draw3DBins();
+
+      if (this.options.Zscale > 0) this.DrawNewPalette(true);
 
       this.DrawTitle();
 

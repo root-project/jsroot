@@ -4808,7 +4808,7 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
+         HighRes: 0, Zero: 0, Palette: 0, Optimize: JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
       var chopt = JSROOT.Painter.clearCuts(opt.toUpperCase());
@@ -4914,6 +4914,7 @@
          if (part.indexOf('4') >= 0) option.Lego = 14;
          if (part.indexOf('FB') >= 0) option.FrontBox = 0;
          if (part.indexOf('BB') >= 0) option.BackBox = 0;
+         if (part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
       if (check('SURF', true)) {
