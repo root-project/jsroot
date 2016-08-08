@@ -261,8 +261,8 @@
          var info = control.ProcessMouseMove(intersects);
 
          if (info && (info.length>0)) {
-            tooltip.pos(evnt)
             tooltip.show(info, 200);
+            tooltip.pos(evnt)
          } else {
             tooltip.hide();
          }
@@ -675,8 +675,6 @@
                this.toplevel.add(text);
                lbls.push(text);
             }
-
-
          }
 
          // create grid
