@@ -116,6 +116,106 @@
       return this;
    }
 
+   JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
+
+      var control = new THREE.OrbitControls(camera, renderer.domElement);
+      control.enableDamping = false;
+      control.dampingFactor = 0.25;
+      control.enableZoom = true;
+      if (lookat) control.target.copy(lookat);
+      control.update();
+
+      var mouse_ctxt = { x:0, y: 0, on: false },
+          raycaster = new THREE.Raycaster(),
+          webgl = renderer instanceof THREE.WebGLRenderer,
+          control_active = false, control_changed = false,
+          block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node());
+
+      function GetMousePos(evnt, mouse) {
+         mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
+         mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
+         mouse.clientX = evnt.clientX;
+         mouse.clientY = evnt.clientY;
+      }
+
+      function GetIntersects(mouse) {
+         // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
+         var sz = webgl ? renderer.getSize() : renderer.domElement;
+         var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+
+         raycaster.setFromCamera( pnt, camera );
+         var intersects = raycaster.intersectObjects(scene.children, true);
+
+         // painter may want to filter intersects
+
+         return intersects;
+      }
+
+      control.addEventListener( 'change', function() {
+         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         painter.Render3D(0);
+         control_changed = true;
+      });
+
+      control.addEventListener( 'start', function() {
+         control_active = true;
+         block_ctxt = false;
+         mouse_ctxt.on = false;
+         // do not reset here, problem of events sequence in orbitcontrol
+         // it issue change/start/stop event when do zooming
+         // control_changed = false;
+      });
+
+      control.addEventListener( 'end', function() {
+         control_active = false;
+         if (mouse_ctxt.on) {
+            mouse_ctxt.on = false;
+            console.log('call context menu');
+            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         } else
+         if (control_changed) {
+            // react on camera change when required
+         }
+         control_changed = false;
+      });
+
+      function control_contextmenu(evnt) {
+         evnt.preventDefault();
+         GetMousePos(evnt, mouse_ctxt);
+         if (control_active)
+            mouse_ctxt.on = true;
+         else
+         if (block_ctxt)
+            block_ctxt = false;
+         else
+            console.log('call context menu');
+            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+      };
+
+      function control_mousemove(evnt) {
+         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
+            block_ctxt = true; // if right button in control was active, block next context menu
+         }
+
+         if (control_active) return;
+
+         var mouse = {};
+         GetMousePos(evnt, mouse);
+         evnt.preventDefault();
+
+         var intersects = GetIntersects(mouse);
+
+         console.log('provide tooltip', intersects.length);
+      };
+
+
+      renderer.domElement.addEventListener( 'contextmenu', control_contextmenu, false );
+      renderer.domElement.addEventListener('mousemove', control_mousemove);
+
+      return control;
+   }
+
    JSROOT.Painter.add3DInteraction = function() {
       // add 3D mouse interactive functions
 
@@ -1088,8 +1188,10 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             console.log('First render tm = ' + this.first_render_tm);
-            this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
-            this.Add3DInteraction();
+            // this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
+            // this.Add3DInteraction();
+
+            JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
          }
 
          return;
