@@ -1638,6 +1638,80 @@
       return geometry;
    }
 
+   /** @memberOf JSROOT.GEO */
+   JSROOT.GEO.createTorusBuffer = function( shape, faces_limit ) {
+      // shape.fRmin = 0; shape.fDphi = 360;
+      // shape.fRmin = 0;
+
+      var radius = shape.fR,
+          radialSegments = Math.max(6, Math.round(360/JSROOT.GEO.GradPerSegm)),
+          tubularSegments = Math.max(8, Math.round(shape.fDphi/JSROOT.GEO.GradPerSegm)),
+          hasrmin = shape.fRmin > 0, hascut = (shape.fDphi !== 360);
+
+      var numfaces = (hasrmin ? 4 : 2) * radialSegments * (tubularSegments + (hascut ? 1 : 0));
+
+      if (faces_limit < 0) return numfaces;
+
+      if ((faces_limit > 0) && (numfaces > faces_limit)) {
+         radialSegments = Math.floor(radialSegments/Math.sqrt(numfaces / faces_limit));
+         tubularSegments = Math.floor(tubularSegments/Math.sqrt(numfaces / faces_limit));
+         numfaces = (hasrmin ? 4 : 2) * radialSegments * tubularSegments;
+      }
+
+      var _sinr = new Float32Array(radialSegments+1),
+          _cosr = new Float32Array(radialSegments+1),
+          _sint = new Float32Array(tubularSegments+1),
+          _cost = new Float32Array(tubularSegments+1);
+
+      for (var n=0;n<=radialSegments;++n) {
+         _sinr[n] = Math.sin(n/radialSegments*2*Math.PI);
+         _cosr[n] = Math.cos(n/radialSegments*2*Math.PI);
+      }
+
+      for (var t=0;t<=tubularSegments;++t) {
+         var angle = (shape.fPhi1 + shape.fDphi*t/tubularSegments)/180*Math.PI;
+         _sint[t] = Math.sin(angle);
+         _cost[t] = Math.cos(angle);
+      }
+
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+
+      for (var side=0;side<2;++side) {
+         if ((side > 0) && !hasrmin) break;
+         var tube = (side > 0) ? shape.fRmin : shape.fRmax,
+             d1 = 1 - side, d2 = 1 - d1;
+
+         for (var t=0;t<tubularSegments;++t) {
+            var t1 = t + d1, t2 = t + d2;
+
+            for (var n=0;n<radialSegments;++n) {
+               creator.AddFace4((radius + tube * _cosr[n])   * _cost[t1], (radius + tube * _cosr[n])   * _sint[t1], tube*_sinr[n],
+                                (radius + tube * _cosr[n+1]) * _cost[t1], (radius + tube * _cosr[n+1]) * _sint[t1], tube*_sinr[n+1],
+                                (radius + tube * _cosr[n+1]) * _cost[t2], (radius + tube * _cosr[n+1]) * _sint[t2], tube*_sinr[n+1],
+                                (radius + tube * _cosr[n])   * _cost[t2], (radius + tube * _cosr[n])   * _sint[t2], tube*_sinr[n]);
+               creator.CalcNormal();
+            }
+         }
+      }
+
+      if (shape.fDphi !== 360)
+         for (var t=0;t<=tubularSegments;t+=tubularSegments) {
+            var tube1 = shape.fRmax, tube2 = shape.fRmin,
+                d1 = (t>0) ? 0 : 1, d2 = 1 - d1,
+                skip = (shape.fRmin) > 0 ?  0 : 1;
+            for (var n=0;n<radialSegments;++n) {
+               creator.AddFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
+                                (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
+                                (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
+                                (radius + tube1 * _cosr[n+d2]) * _cost[t], (radius + tube1 * _cosr[n+d2]) * _sint[t], tube1*_sinr[n+d2], skip);
+               creator.CalcNormal();
+            }
+         }
+
+      return creator.Create();
+   }
+
+
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPolygon = function( shape ) {
@@ -2607,7 +2681,7 @@
             case "TGeoTubeSeg":
             case "TGeoCtub": return JSROOT.GEO.createTubeBuffer( shape, limit );
             case "TGeoEltu": return JSROOT.GEO.createEltuBuffer( shape, limit );
-            case "TGeoTorus": return JSROOT.GEO.createTorus( shape, limit );
+            case "TGeoTorus": return JSROOT.GEO.createTorusBuffer( shape, limit );
             case "TGeoPcon":
             case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
             case "TGeoXtru": return JSROOT.GEO.createXtruBuffer( shape, limit );
@@ -2616,7 +2690,14 @@
             case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
          }
-      } catch(e) { JSROOT.GEO.warn(shape._typename + ' failure: ' + e.message); }
+      } catch(e) {
+         if (e.stack !== undefined) {
+            stack = e.stack;
+            console.log(typeof stack, stack);
+         }
+         JSROOT.GEO.warn(shape._typename + ' failure: ' + e.message);
+
+      }
 
 
       return limit < 0 ? 0 : null;
