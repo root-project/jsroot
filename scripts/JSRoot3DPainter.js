@@ -144,7 +144,7 @@
          painter.Render3D();
       }
 
-      control.DoubleClick = control.ResetCamera;
+      control.ProcessMouseDblclick = control.ResetCamera;
 
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
@@ -162,6 +162,8 @@
          var intersects = raycaster.intersectObjects(scene.children, true);
 
          // painter may want to filter intersects
+         if (typeof painter.FilterIntersects == 'function')
+            intersects = painter.FilterIntersects(intersects);
 
          return intersects;
       }
@@ -188,7 +190,7 @@
          control_active = false;
          if (mouse_ctxt.on) {
             mouse_ctxt.on = false;
-            painter.ShowContextMenu("hist", mouse_ctxt);
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
             // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
          } else
          if (control_changed) {
@@ -206,7 +208,7 @@
          if (block_ctxt)
             block_ctxt = false;
          else
-            painter.ShowContextMenu("hist", mouse_ctxt);
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
 
             // console.log('call context menu');
             // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
@@ -234,10 +236,13 @@
          var pos = {};
          GetMousePos(evnt.touches[0], pos);
 
-         if ((Math.abs(pos.x - mouse_ctxt.x) > 10) || (Math.abs(pos.y - mouse_ctxt.y) > 10)) return;
-
-         painter.ShowContextMenu("hist", mouse_ctxt);
+         if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
       };
+
+      control.ContextMenu = function(pos, intersects) {
+         // do nothing, function called when context menu want to be activated
+      }
 
       function control_mousemove(evnt) {
          if (control_active && evnt.buttons && (evnt.buttons & 2)) {
@@ -245,26 +250,19 @@
          }
 
          if (control_active) return;
+         if (!control.ProcessMouseMove) return;
 
          var mouse = {};
          GetMousePos(evnt, mouse);
          evnt.preventDefault();
 
-         var intersects = GetIntersects(mouse), res = "";
+         var intersects = GetIntersects(mouse);
 
-         for (var i = 0; i < intersects.length; ++i) {
-            if (intersects[i].object.tooltip) {
-               res = intersects[i].object.tooltip(intersects[i]);
-               if (res) break;
-            } else
-            if (typeof intersects[i].object.name == 'string') {
-               res = intersects[i].object.name; break;
-            }
-         }
+         var info = control.ProcessMouseMove(intersects);
 
-         if (res) {
+         if (info && (info.length>0)) {
             tooltip.pos(evnt)
-            tooltip.show(res, 200);
+            tooltip.show(info, 200);
          } else {
             tooltip.hide();
          }
@@ -274,10 +272,10 @@
 
       function control_mouseleave() {
          tooltip.hide();
+         if (control.ProcessMouseLeave) control.ProcessMouseLeave();
       };
 
-
-      renderer.domElement.addEventListener( 'dblclick', function() { control.DoubleClick(); });
+      renderer.domElement.addEventListener( 'dblclick', function() { control.ProcessMouseDblclick(); });
 
       renderer.domElement.addEventListener('contextmenu', control_contextmenu);
       renderer.domElement.addEventListener('mousemove', control_mousemove);
@@ -449,7 +447,10 @@
          delete this.toplevel;
          delete this.camera;
          delete this.renderer;
-         delete this.control;
+         if (this.control) {
+            this.control.dispose();
+            delete this.control;
+         }
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
@@ -1267,7 +1268,24 @@
             // this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
             // this.Add3DInteraction();
 
-            this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
+            if (!this.control) {
+               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
+
+               this.control.ProcessMouseMove = function(intersects) {
+                  for (var i = 0; i < intersects.length; ++i) {
+                     if (intersects[i].object.tooltip)
+                        return intersects[i].object.tooltip(intersects[i]);
+
+                     if (typeof intersects[i].object.name == 'string')
+                        return intersects[i].object.name;
+                  }
+
+                  return "";
+               }
+
+               this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
+            }
+
          }
 
          return;

@@ -540,7 +540,7 @@
                if (many) menu.add("endsub:");
             }
          }
-         painter._tooltip.hide();
+         if (painter._tooltip) painter._tooltip.hide();
          menu.show(evnt);
       });
    }
@@ -585,11 +585,99 @@
       return intersects;
    }
 
+   JSROOT.TGeoPainter.prototype.testCameraPositionChange = function() {
+      // function analyzes camera position and start redraw of geometry if
+      // objects in view may be changed
+
+      if (!this.options.select_in_view || this._draw_all_nodes) return;
+
+
+      var matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+
+      var frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+      // check if overall bounding box seen
+      if (!frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel)))
+         this.startDrawGeometry();
+   }
+
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls) return;
 
       var painter = this;
+
+      this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
+
+      this._controls.ContextMenu = this.OrbitContext.bind(this);
+
+      this._controls.ProcessMouseMove = function(intersects) {
+
+         var tooltip = null;
+
+         if (painter.options.highlight) {
+
+            if (painter._selected.mesh !== null) {
+               painter._selected.mesh.material.color = painter._selected.originalColor;
+            }
+
+            if (intersects.length > 0) {
+               painter._selected.mesh = intersects[0].object;
+               painter._selected.originalColor = painter._selected.mesh.material.color;
+               painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
+               painter.Render3D(0);
+
+               if (intersects[0].object.stack)
+                  tooltip = painter._clones.ResolveStack(intersects[0].object.stack).name;
+            }
+         }
+
+         if (intersects.length === 0 && painter._selected.mesh !== null) {
+            painter._selected.mesh.material.color = painter._selected.originalColor;
+            painter.Render3D(0);
+            painter._selected.mesh = null;
+         }
+
+         var names = [];
+
+         if (painter.options.update_browser) {
+            if (painter.options.highlight) {
+               if (tooltip !== null) names.push(tooltip);
+            } else {
+               for (var n=0;n<intersects.length;++n) {
+                  var obj = intersects[n].object;
+                  if (obj.stack)
+                  names.push(painter._clones.ResolveStack(obj.stack).name);
+               }
+            }
+            painter.ActiavteInBrowser(names);
+         }
+
+         return tooltip;
+      }
+
+      this._controls.ProcessMouseLeave = function() {
+         painter.ActiavteInBrowser([]);
+      }
+
+      this._controls.ProcessMouseDblclick = function() {
+         if (painter._last_manifest) {
+            painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
+            if (painter._last_hidden)
+               painter._last_hidden.forEach(function(obj) { obj.visible = true; });
+            delete painter._last_hidden;
+            delete painter._last_manifest;
+            painter.Render3D();
+         } else {
+            painter.adjustCameraPosition();
+         }
+      }
+
+      return;
+
+
+
+
 
       this.select_main().property('flex_block_drag', true);
 
@@ -648,14 +736,8 @@
             mouse_ctxt.on = false;
             painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
          } else
-         if (control_changed && painter.options.select_in_view && !painter._draw_all_nodes) {
-            var matrix = JSROOT.GEO.CreateProjectionMatrix(painter._camera);
-
-            var frustum = JSROOT.GEO.CreateFrustum(matrix);
-
-            // check if overall bounding box seen
-            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel)))
-               painter.startDrawGeometry();
+         if (control_changed) {
+            painter.testCameraPositionChange();
          }
          control_changed = false;
       });
