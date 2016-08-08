@@ -6388,7 +6388,6 @@
             menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          }
 
-
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
    }

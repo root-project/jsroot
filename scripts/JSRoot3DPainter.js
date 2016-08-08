@@ -116,11 +116,11 @@
       return this;
    }
 
-   JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
+   JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
       var control = new THREE.OrbitControls(camera, renderer.domElement);
       control.enableDamping = false;
-      control.dampingFactor = 0.25;
+      control.dampingFactor = 1.0;
       control.enableZoom = true;
       if (lookat) control.target.copy(lookat);
       control.update();
@@ -128,9 +128,23 @@
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
           webgl = renderer instanceof THREE.WebGLRenderer,
-          control_active = false, control_changed = false,
+          control_active = false,
+          control_changed = false,
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node());
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node()),
+          camposition0 = camera.position.clone();
+
+      control.ResetCamera = function() {
+         camera.position.copy(camposition0);
+         if (lookat) {
+            control.target.copy(lookat);
+            camera.lookAt(lookat);
+         }
+         control.update();
+         painter.Render3D();
+      }
+
+      control.DoubleClick = control.ResetCamera;
 
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
@@ -162,6 +176,9 @@
          control_active = true;
          block_ctxt = false;
          mouse_ctxt.on = false;
+
+         tooltip.hide();
+
          // do not reset here, problem of events sequence in orbitcontrol
          // it issue change/start/stop event when do zooming
          // control_changed = false;
@@ -171,7 +188,7 @@
          control_active = false;
          if (mouse_ctxt.on) {
             mouse_ctxt.on = false;
-            console.log('call context menu');
+            painter.ShowContextMenu("hist", mouse_ctxt);
             // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
          } else
          if (control_changed) {
@@ -189,8 +206,37 @@
          if (block_ctxt)
             block_ctxt = false;
          else
-            console.log('call context menu');
+            painter.ShowContextMenu("hist", mouse_ctxt);
+
+            // console.log('call context menu');
             // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+      };
+
+      function control_touchstart(evnt) {
+         if (!evnt.touches) return;
+
+      // disable context menu if any changes where done by orbit control
+         if (!control_changed && !mouse_ctxt.touchtm) {
+            GetMousePos(evnt.touches[0], mouse_ctxt);
+            mouse_ctxt.touchtm = new Date().getTime();
+         }
+      };
+
+      function control_touchend(evnt) {
+         if (!evnt.touches) return;
+
+         if (control_changed || !mouse_ctxt.touchtm) return;
+
+         var diff = new Date().getTime() - mouse_ctxt.touchtm;
+         delete mouse_ctxt.touchtm;
+         if (diff < 200) return;
+
+         var pos = {};
+         GetMousePos(evnt.touches[0], pos);
+
+         if ((Math.abs(pos.x - mouse_ctxt.x) > 10) || (Math.abs(pos.y - mouse_ctxt.y) > 10)) return;
+
+         painter.ShowContextMenu("hist", mouse_ctxt);
       };
 
       function control_mousemove(evnt) {
@@ -204,14 +250,43 @@
          GetMousePos(evnt, mouse);
          evnt.preventDefault();
 
-         var intersects = GetIntersects(mouse);
+         var intersects = GetIntersects(mouse), res = "";
 
-         console.log('provide tooltip', intersects.length);
+         for (var i = 0; i < intersects.length; ++i) {
+            if (intersects[i].object.tooltip) {
+               res = intersects[i].object.tooltip(intersects[i]);
+               if (res) break;
+            } else
+            if (typeof intersects[i].object.name == 'string') {
+               res = intersects[i].object.name; break;
+            }
+         }
+
+         if (res) {
+            tooltip.pos(evnt)
+            tooltip.show(res, 200);
+         } else {
+            tooltip.hide();
+         }
+
+         // console.log('provide tooltip', intersects.length);
+      };
+
+      function control_mouseleave() {
+         tooltip.hide();
       };
 
 
-      renderer.domElement.addEventListener( 'contextmenu', control_contextmenu, false );
+      renderer.domElement.addEventListener( 'dblclick', function() { control.DoubleClick(); });
+
+      renderer.domElement.addEventListener('contextmenu', control_contextmenu);
       renderer.domElement.addEventListener('mousemove', control_mousemove);
+      renderer.domElement.addEventListener('mouseleave', control_mouseleave);
+
+      // do not use touch events, context menu should be activated via button
+      //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
+      //painter.renderer.domElement.addEventListener('touchend', control_touchend);
+
 
       return control;
    }
@@ -374,6 +449,7 @@
          delete this.toplevel;
          delete this.camera;
          delete this.renderer;
+         delete this.control;
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
@@ -1191,7 +1267,7 @@
             // this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
             // this.Add3DInteraction();
 
-            JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
+            this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
          }
 
          return;
@@ -1666,6 +1742,11 @@
          this.options = this.DecodeOptions(arg);
          this.Redraw();
       });
+
+      if (this.control && typeof this.control.ResetCamera === 'function')
+         menu.add('Reset camera', function() {
+            this.control.ResetCamera();
+         });
    }
 
 
