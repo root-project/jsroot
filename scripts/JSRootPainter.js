@@ -4871,7 +4871,7 @@
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
 
-      var l, nch = chopt.length;
+      var nch = chopt.length;
       if (!nch) option.Hist = 1;
 
       if (check('SPEC')) {

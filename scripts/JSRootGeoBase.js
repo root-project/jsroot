@@ -2276,6 +2276,7 @@
          _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
+
       var geometry = new THREE.Geometry();
       var fcolor = new THREE.Color();
 
@@ -2340,6 +2341,82 @@
 
       return geometry;
    }
+
+
+   /** @memberOf JSROOT.GEO */
+   JSROOT.GEO.createHypeBuffer = function( shape, faces_limit ) {
+
+      if ((shape.fTin===0) && (shape.fTout===0))
+         return JSROOT.GEO.createTubeBuffer(shape, faces_limit);
+
+      var radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm)),
+          heightSegments = 30;
+
+      var numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
+
+      if (faces_limit < 0) return numfaces;
+
+      if ((faces_limit > 0) && (faces_limit > numfaces)) {
+         radiusSegments = Math.max(4, Math.floor(radiusSegments/Math.sqrt(numfaces/faces_limit)));
+         heightSegments = Math.max(4, Math.floor(heightSegments/Math.sqrt(numfaces/faces_limit)));
+         numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
+      }
+
+      // calculate all sin/cos tables in advance
+      var _sin = new Float32Array(radiusSegments+1), _cos = new Float32Array(radiusSegments+1);
+      for (var seg=0;seg<=radiusSegments;++seg) {
+         _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
+         _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
+      }
+
+      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+
+      // in-out side
+      for (var side=0;side<2;++side) {
+         if ((side > 0) && (shape.fRmin <= 0)) break;
+
+         var r0 = (side > 0) ? shape.fRmin : shape.fRmax,
+             tsq = (side > 0) ? shape.fTinsq : shape.fToutsq,
+             d1 = 1- side, d2 = 1 - d1;
+
+         // vertical layers
+         for (var layer=0;layer<heightSegments;++layer) {
+            var z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
+                z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
+                r1 = Math.sqrt(r0*r0+tsq*z1*z1),
+                r2 = Math.sqrt(r0*r0+tsq*z2*z2);
+
+            for (var seg=0; seg<radiusSegments; ++seg) {
+               creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
+                                r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
+                                r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
+                                r1 * _cos[seg+d2], r1 * _sin[seg+d2], z1);
+               creator.CalcNormal();
+            }
+         }
+      }
+
+      // add caps
+      for(var layer=0; layer<2; ++layer) {
+         var z = (layer === 0) ? shape.fDz : -shape.fDz,
+             r1 = Math.sqrt(shape.fRmax*shape.fRmax + shape.fToutsq*z*z),
+             r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin*shape.fRmin + shape.fTinsq*z*z) : 0,
+             skip = (shape.fRmin > 0) ? 0 : 1,
+             d1 = 1 - layer, d2 = 1 - d1;
+          for (var seg=0; seg<radiusSegments; ++seg) {
+             creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z,
+                              r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
+                              r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
+                              r1 * _cos[seg+d2], r1 * _sin[seg+d2], z, skip);
+             creator.SetNormal(0,0, (layer===0) ? 1 : -1)
+          }
+
+      }
+
+      return creator.Create();
+   }
+
+
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createMatrix = function(matrix) {
@@ -2535,7 +2612,7 @@
             case "TGeoPgon": return JSROOT.GEO.createPolygonBuffer( shape, limit );
             case "TGeoXtru": return JSROOT.GEO.createXtruBuffer( shape, limit );
             case "TGeoParaboloid": return JSROOT.GEO.createParaboloidBuffer( shape, limit );
-            case "TGeoHype": return JSROOT.GEO.createHype( shape, limit );
+            case "TGeoHype": return JSROOT.GEO.createHypeBuffer( shape, limit );
             case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
          }
