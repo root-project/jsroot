@@ -540,7 +540,6 @@
                if (many) menu.add("endsub:");
             }
          }
-         if (painter._tooltip) painter._tooltip.hide();
          menu.show(evnt);
       });
    }
@@ -605,6 +604,8 @@
 
       if (this._controls) return;
 
+      this.select_main().property('flex_block_drag', true);
+
       var painter = this;
 
       this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
@@ -657,7 +658,8 @@
       }
 
       this._controls.ProcessMouseLeave = function() {
-         painter.ActiavteInBrowser([]);
+         if (painter.options.update_browser)
+            painter.ActiavteInBrowser([]);
       }
 
       this._controls.ProcessMouseDblclick = function() {
@@ -672,163 +674,6 @@
             painter.adjustCameraPosition();
          }
       }
-
-      return;
-
-
-
-
-
-      this.select_main().property('flex_block_drag', true);
-
-      this._controls = new THREE.OrbitControls(this._camera, this._renderer.domElement);
-      this._controls.enableDamping = false;
-      this._controls.dampingFactor = 0.25;
-      this._controls.enableZoom = true;
-      this._controls.target.copy(this._lookat);
-      this._controls.update();
-
-      var mouse_ctxt = { x:0, y: 0, on: false },
-          raycaster = new THREE.Raycaster(),
-          control_active = false, control_changed = false,
-          block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-
-      this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
-
-      function GetMousePos(evnt, mouse) {
-         mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
-         mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
-         mouse.clientX = evnt.clientX;
-         mouse.clientY = evnt.clientY;
-      }
-
-      function GetIntersects(mouse) {
-         var pnt = {
-            // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
-            x: mouse.x / (painter._webgl ? painter._renderer.getSize().width : painter._renderer.domElement.width) * 2 - 1,
-            y: -mouse.y / (painter._webgl ? painter._renderer.getSize().height : painter._renderer.domElement.height) * 2 + 1
-         }
-
-         raycaster.setFromCamera( pnt, painter._camera );
-         var intersects = raycaster.intersectObjects(painter._scene.children, true);
-
-         return painter.FilterIntersects(intersects);
-      }
-
-      this._controls.addEventListener( 'change', function() {
-         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         painter.Render3D(0);
-         control_changed = true;
-      });
-
-      this._controls.addEventListener( 'start', function() {
-         control_active = true;
-         block_ctxt = false;
-         mouse_ctxt.on = false;
-         // do not reset here, problem of events sequence in orbitcontrol
-         // it issue change/start/stop event when do zooming
-         // control_changed = false;
-      });
-
-      this._controls.addEventListener( 'end', function() {
-         control_active = false;
-         if (mouse_ctxt.on) {
-            mouse_ctxt.on = false;
-            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
-         } else
-         if (control_changed) {
-            painter.testCameraPositionChange();
-         }
-         control_changed = false;
-      });
-
-      this._context_menu = function(evnt) {
-         evnt.preventDefault();
-         GetMousePos(evnt, mouse_ctxt);
-         if (control_active)
-            mouse_ctxt.on = true;
-         else
-         if (block_ctxt)
-            block_ctxt = false;
-         else
-            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
-      };
-
-      this._double_click = function(evnt) {
-         if (!painter._last_manifest) return;
-         painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
-
-         if (painter._last_hidden)
-            painter._last_hidden.forEach(function(obj) { obj.visible = true; });
-         delete painter._last_hidden;
-         delete painter._last_manifest;
-         painter.Render3D();
-      };
-
-      this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
-      this._renderer.domElement.addEventListener( 'dblclick', this._double_click, false );
-
-      function mousemove(evnt) {
-         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
-            block_ctxt = true; // if right button in control was active, block next context menu
-         }
-
-         if (control_active || (!painter.options.highlight && !painter.options.update_browser)) return;
-
-         var mouse = {};
-         GetMousePos(evnt, mouse);
-         evnt.preventDefault();
-
-         var intersects = GetIntersects(mouse);
-
-         if (painter.options.highlight) {
-
-            if (painter._selected.mesh !== null) {
-               painter._selected.mesh.material.color = painter._selected.originalColor;
-            }
-
-            if (intersects.length > 0) {
-               painter._selected.mesh = intersects[0].object;
-               painter._selected.originalColor = painter._selected.mesh.material.color;
-               painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
-               painter.Render3D(0);
-            }
-         }
-         if (intersects.length === 0 && painter._selected.mesh !== null) {
-            painter._selected.mesh.material.color = painter._selected.originalColor;
-            painter.Render3D(0);
-            painter._selected.mesh = null;
-         }
-
-         var names = [];
-
-         for (var n=0;n<intersects.length;++n) {
-            var obj = intersects[n].object;
-            if (!obj.stack) continue;
-            var name = painter._clones.ResolveStack(obj.stack).name;
-            names.push(name);
-            if (painter.options.highlight) break; // if do highlight, also in browser selects one
-         }
-
-         if ((names.length > 0) && painter.options.highlight) {
-            var name = names[0];
-            if ((name==="") && !painter.GetItemName()) name = painter.GetObject()._typename;
-            painter._tooltip.show(name);
-            painter._tooltip.pos(evnt);
-         } else {
-            painter._tooltip.hide();
-         }
-
-         if (painter.options.update_browser) painter.ActiavteInBrowser(names);
-      }
-
-      this._renderer.domElement.addEventListener('mousemove', mousemove);
-
-      function mouseleave(evnt) {
-         painter.ActiavteInBrowser([]);
-      }
-
-      this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
 
    JSROOT.TGeoPainter.prototype.addTransformControl = function() {

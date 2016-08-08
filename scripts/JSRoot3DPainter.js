@@ -289,158 +289,9 @@
       return control;
    }
 
-   JSROOT.Painter.add3DInteraction = function() {
-      // add 3D mouse interactive functions
-
-      var painter = this;
-      var mouseX, mouseY, distXY = 0, mouseDowned = false;
-
-      var tooltip = new JSROOT.Painter.TooltipFor3D();
-
-      var raycaster = new THREE.Raycaster();
-      var do_bins_highlight = painter.first_render_tm < 2000;
-
-      function findIntersection(mouse) {
-         // find intersections
-
-         if (JSROOT.gStyle.Tooltip <= 0) return tooltip.hide();
-
-         raycaster.setFromCamera( mouse, painter.camera );
-         var intersects = raycaster.intersectObjects(painter.scene.children, true);
-         for (var i = 0; i < intersects.length; ++i) {
-            if (intersects[i].object.tooltip) {
-               var res = intersects[i].object.tooltip(intersects[i]);
-               if (res) return tooltip.show(res, 200);
-            } else
-            if (typeof intersects[i].object.name == 'string')
-               return tooltip.show(intersects[i].object.name, 200);
-         }
-
-         tooltip.hide();
-      };
-
-      function coordinates(e) {
-         if ('changedTouches' in e) return e.changedTouches;
-         if ('touches' in e) return e.touches;
-         return [e];
-      }
-
-      function mousedown(e) {
-         tooltip.hide();
-         e.preventDefault();
-
-         var arr = coordinates(e);
-         if (arr.length == 2) {
-            distXY = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
-         } else {
-            mouseX = arr[0].pageX;
-            mouseY = arr[0].pageY;
-         }
-         mouseDowned = true;
-
-      }
-
-      painter.renderer.domElement.addEventListener('touchstart', mousedown);
-      painter.renderer.domElement.addEventListener('mousedown', mousedown);
-
-      function mousemove(e) {
-         var arr = coordinates(e);
-
-         if (mouseDowned) {
-            if (arr.length == 2) {
-               var dist = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
-
-               var delta = (dist-distXY)/(dist+distXY);
-               distXY = dist;
-               if (delta === 1.) return;
-
-               painter.camera.position.x += delta * painter.size3d * 10;
-               painter.camera.position.y += delta * painter.size3d * 10;
-               painter.camera.position.z -= delta * painter.size3d * 10;
-            } else {
-               var moveX = arr[0].pageX - mouseX;
-               var moveY = arr[0].pageY - mouseY;
-               var length = painter.camera.position.length();
-               var ddd = length > painter.size3d ? 0.001*length/painter.size3d : 0.01;
-               // limited X rotate in -45 to 135 deg
-               //if ((moveY > 0 && painter.toplevel.rotation.x < Math.PI * 3 / 4)
-               //      || (moveY < 0 && painter.toplevel.rotation.x > -Math.PI / 4))
-               //   painter.toplevel.rotation.x += moveX * 0.02;
-               painter.toplevel.rotation.z += moveX * ddd;
-               painter.toplevel.rotation.x += moveY * ddd;
-               painter.toplevel.rotation.y -= moveY * ddd;
-               mouseX = arr[0].pageX;
-               mouseY = arr[0].pageY;
-            }
-            painter.Render3D(0);
-         } else
-         if (arr.length == 1) {
-            var mouse_x = ('offsetX' in arr[0]) ? arr[0].offsetX : arr[0].layerX;
-            var mouse_y = ('offsetY' in arr[0]) ? arr[0].offsetY : arr[0].layerY;
-            mouse = { x: (mouse_x / painter.renderer.domElement.width) * 2 - 1,
-                      y: -(mouse_y / painter.renderer.domElement.height) * 2 + 1 };
-            findIntersection(mouse);
-            tooltip.pos(arr[0]);
-         } else {
-            tooltip.hide();
-         }
-
-         e.stopPropagation();
-         e.preventDefault();
-      }
-
-      painter.renderer.domElement.addEventListener('touchmove', mousemove);
-      painter.renderer.domElement.addEventListener('mousemove', mousemove);
-
-      function mouseup(e) {
-         mouseDowned = false;
-         tooltip.hide();
-         distXY = 0;
-      }
-
-      painter.renderer.domElement.addEventListener('touchend', mouseup);
-      painter.renderer.domElement.addEventListener('touchcancel', mouseup);
-      painter.renderer.domElement.addEventListener('mouseup', mouseup);
-
-      function mousewheel(event) {
-         event.preventDefault();
-         event.stopPropagation();
-
-         var delta = 0;
-         if ( event.wheelDelta ) {
-            // WebKit / Opera / Explorer 9
-            delta = event.wheelDelta / 400;
-         } else if ( event.detail ) {
-            // Firefox
-            delta = - event.detail / 30;
-         }
-         painter.camera.position.x -= delta * painter.size3d;
-         painter.camera.position.y -= delta * painter.size3d;
-         painter.camera.position.z += delta * painter.size3d;
-         painter.Render3D(0);
-      }
-
-      painter.renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
-      painter.renderer.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
-
-
-      painter.renderer.domElement.addEventListener('mouseleave', function() {
-         tooltip.hide();
-      });
-
-
-      painter.renderer.domElement.addEventListener('contextmenu', function(e) {
-         e.preventDefault();
-         tooltip.hide();
-
-         painter.ShowContextMenu("hist", e);
-      });
-
-   }
-
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
 
-      if ((arg!==null) && (arg<0)) {
+      if ((arg!==undefined) && (arg<0)) {
          this.clear_3d_canvas();
          delete this.size3d;
          delete this.scene;
@@ -1265,8 +1116,6 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             console.log('First render tm = ' + this.first_render_tm);
-            // this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
-            // this.Add3DInteraction();
 
             if (!this.control) {
                this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
