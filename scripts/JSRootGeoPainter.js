@@ -475,7 +475,6 @@
             if (many) menu.add("header: Nodes");
 
             for (var n=0;n<intersects.length;++n) {
-               if (!intersects[n].unique) continue; // provide context menu only for unique object
                var obj = intersects[n].object;
                var name = painter._clones.ResolveStack(obj.stack).name;
 
@@ -594,7 +593,7 @@
             for (var k=0;(k<n) && unique;++k)
                if (intersects[k].object === intersects[n].object) unique = false;
 
-            intersects[n].unique = unique;
+            if (!unique) intersects.splice(n,1);
          }
 
          var clippedIntersects = [];
@@ -766,7 +765,7 @@
 
          for (var n=0;n<intersects.length;++n) {
             var obj = intersects[n].object;
-            if (!obj.stack || !intersects[n].unique) continue;
+            if (!obj.stack) continue;
             var name = painter._clones.ResolveStack(obj.stack).name;
             names.push(name);
             if (painter.options.highlight) break; // if do highlight, also in browser selects one
