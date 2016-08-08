@@ -1956,45 +1956,43 @@
    }
 
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
-      if (obj === null) return this.DrawingReady();
+      if (obj === null) return null;
 
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
-      var vol = null, shape = null;
+      var shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
       } else
       if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-         vol = obj;
+         shape = obj.fShape;
       } else
-      if ((obj._typename === 'TGeoManager')) {
-         vol = obj.fMasterVolume; obj = null;
+      if (obj._typename === "TEveGeoShapeExtract") {
+         shape = obj.fShape;
+      } else
+      if (obj._typename === 'TGeoManager') {
+         obj = obj.fMasterVolume;
+         shape = obj.fShape;
       } else
       if ('fVolume' in obj) {
-         vol = obj.fVolume;
+         if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
          obj = null;
       }
 
-      if (opt && opt.indexOf("comp")==0) {
-         var comp = shape ? shape : (vol ? vol.fShape : null);
-
-         if (comp && comp.fNode && comp._typename == 'TGeoCompositeShape') {
-            obj = null;
-            opt = opt.substr(4);
-            vol = JSROOT.GEO.buildCompositeVolume(comp);
-         }
+      if (opt && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+         opt = opt.substr(4);
+         obj = JSROOT.GEO.buildCompositeVolume(shape);
       }
 
-      if (!vol && shape) {
-         vol = JSROOT.Create("TEveGeoShapeExtract");
-         JSROOT.extend(vol, { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
-      }
+      if (!obj && shape)
+         obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
+                   { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (vol && (typeof vol == 'object')) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(obj? obj : vol));
+      if (obj) {
+         JSROOT.extend(this, new JSROOT.TGeoPainter(obj));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt);
       }
