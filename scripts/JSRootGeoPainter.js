@@ -545,6 +545,45 @@
       });
    }
 
+   JSROOT.TGeoPainter.prototype.FilterIntersects = function(intersects) {
+
+      // remove all elements without stack - indicator that this is geometry object
+      for (var n=intersects.length-1; n>=0;--n) {
+
+         var unique = intersects[n].object.stack !== undefined;
+
+         for (var k=0;(k<n) && unique;++k)
+            if (intersects[k].object === intersects[n].object) unique = false;
+
+         if (!unique) intersects.splice(n,1);
+      }
+
+      if (this.enableX || this.enableY || this.enableZ ) {
+         var clippedIntersects = [];
+
+         for (var i = 0; i < intersects.length; ++i) {
+            var clipped = false;
+            var point = intersects[i].point;
+
+            if (this.enableX && this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant ) {
+               clipped = true;
+            }
+            if (this.enableY && this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant ) {
+               clipped = true;
+            }
+            if (this.enableZ && this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant ) {
+               clipped = true;
+            }
+
+            if (clipped)
+               clippedIntersects.push(intersects[i]);
+         }
+
+         intersects = clippedIntersects;
+      }
+
+      return intersects;
+   }
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
@@ -585,41 +624,7 @@
          raycaster.setFromCamera( pnt, painter._camera );
          var intersects = raycaster.intersectObjects(painter._scene.children, true);
 
-         // remove all elements without stack - indicator that this is geometry object
-         for (var n=intersects.length-1; n>=0;--n) {
-
-            var unique = intersects[n].object.stack !== undefined;
-
-            for (var k=0;(k<n) && unique;++k)
-               if (intersects[k].object === intersects[n].object) unique = false;
-
-            if (!unique) intersects.splice(n,1);
-         }
-
-         if (painter.enableX || painter.enableY || painter.enableZ ) {
-            var clippedIntersects = [];
-
-            for (var i = 0; i < intersects.length; ++i) {
-               var clipped = false;
-               var point = intersects[i].point;
-
-               if (painter.enableX && painter._clipPlanes[0].normal.dot(point) > painter._clipPlanes[0].constant ) {
-                  clipped = true;
-               } else if (painter.enableY && painter._clipPlanes[1].normal.dot(point) > painter._clipPlanes[1].constant ) {
-                  clipped = true;
-               } else if (painter.enableZ && painter._clipPlanes[2].normal.dot(point) > painter._clipPlanes[2].constant ) {
-                  clipped = true;
-               }
-
-               if (clipped === true) {
-                  clippedIntersects.push(intersects[i]);
-               }
-            }
-
-            intersects = clippedIntersects;
-         }
-         //console.log("intersects " + intersects.length);
-         return intersects;
+         return painter.FilterIntersects(intersects);
       }
 
       this._controls.addEventListener( 'change', function() {
@@ -680,52 +685,6 @@
 
       this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
       this._renderer.domElement.addEventListener( 'dblclick', this._double_click, false );
-
-      if ( this.options._debug || this.options._grid ) {
-         this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
-         this._scene.add( this._tcontrols );
-         this._tcontrols.attach( this._toplevel );
-         //this._tcontrols.setSize( 1.1 );
-
-         window.addEventListener( 'keydown', function ( event ) {
-            switch ( event.keyCode ) {
-               case 81: // Q
-                  painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
-                  break;
-               case 17: // Ctrl
-                  painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
-                  painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
-                  break;
-               case 84: // T (Translate)
-                  painter._tcontrols.setMode( "translate" );
-                  break;
-               case 82: // R (Rotate)
-                  painter._tcontrols.setMode( "rotate" );
-                  break;
-               case 83: // S (Scale)
-                  painter._tcontrols.setMode( "scale" );
-                  break;
-               case 187:
-               case 107: // +, =, num+
-                  painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
-                  break;
-               case 189:
-               case 109: // -, _, num-
-                  painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
-                  break;
-            }
-         });
-         window.addEventListener( 'keyup', function ( event ) {
-            switch ( event.keyCode ) {
-               case 17: // Ctrl
-                  painter._tcontrols.setTranslationSnap( null );
-                  painter._tcontrols.setRotationSnap( null );
-                  break;
-            }
-         });
-
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
-      }
 
       function mousemove(evnt) {
          if (control_active && evnt.buttons && (evnt.buttons & 2)) {
@@ -789,6 +748,61 @@
 
       this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
+
+   JSROOT.TGeoPainter.prototype.addTransformControl = function() {
+      if (this._tcontrols) return;
+
+      if (! this.options._debug && !this.options._grid ) return;
+
+      // FIXME: at the moment THREE.TransformControls is bogus in three.js, should be fixed and check again
+
+      return;
+
+      this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
+      this._scene.add( this._tcontrols );
+      this._tcontrols.attach( this._toplevel );
+      //this._tcontrols.setSize( 1.1 );
+
+      window.addEventListener( 'keydown', function ( event ) {
+         switch ( event.keyCode ) {
+         case 81: // Q
+            painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
+            break;
+         case 17: // Ctrl
+            painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
+            painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
+            break;
+         case 84: // T (Translate)
+            painter._tcontrols.setMode( "translate" );
+            break;
+         case 82: // R (Rotate)
+            painter._tcontrols.setMode( "rotate" );
+            break;
+         case 83: // S (Scale)
+            painter._tcontrols.setMode( "scale" );
+            break;
+         case 187:
+         case 107: // +, =, num+
+            painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
+            break;
+         case 189:
+         case 109: // -, _, num-
+            painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
+            break;
+         }
+      });
+      window.addEventListener( 'keyup', function ( event ) {
+         switch ( event.keyCode ) {
+         case 17: // Ctrl
+            painter._tcontrols.setTranslationSnap( null );
+            painter._tcontrols.setRotationSnap( null );
+            break;
+         }
+      });
+
+      this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
+   }
+
 
    JSROOT.TGeoPainter.prototype.createFlippedMesh = function(parent, shape, material) {
       // when transformation matrix includes one or several invertion of axis,
@@ -1808,6 +1822,8 @@
       if (close_progress) JSROOT.progress();
 
       this.addOrbitControls();
+
+      this.addTransformControl();
 
       this.showControlOptions(this.options.show_controls);
 
