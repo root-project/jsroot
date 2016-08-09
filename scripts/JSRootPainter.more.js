@@ -2696,6 +2696,10 @@
             this.options.BackBox = !this.options.BackBox;
             if (this.Render3D) this.Render3D();
          });
+         menu.addchk(this.options.Zero, 'Suppress zeros', function() {
+            this.options.Zero = !this.options.Zero;
+            this.RedrawPad();
+         });
          if (this.control && typeof this.control.ResetCamera === 'function')
             menu.add('Reset camera', function() {
                this.control.ResetCamera();

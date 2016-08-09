@@ -874,7 +874,7 @@
       var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
       // create the bin cubes
-      var showmin = (this.options.Zero === 0);
+      var showmin = !this.options.Zero;
 
       var i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
