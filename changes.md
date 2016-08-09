@@ -13,7 +13,7 @@
 2. Many improvements in histograms 3D drawing:
    - all lego options: lego1..lego4, combined with 'fb', 'bb', '0' or 'z'
    - support axis lebels 
-   - significant performance increase with use of THREE.BufferGeometry
+   - significant performance increase, using of THREE.BufferGeometry
 3. Implement box and hbox draw options for TH1 class
 4. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
 5. Preliminary support of candle plot (many options to be implemented)

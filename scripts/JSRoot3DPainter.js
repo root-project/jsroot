@@ -378,6 +378,9 @@
 
       if (!top) return;
 
+      fb = fb ? true : false;
+      bb = bb ? true : false;
+
       var qudrant = 1, pos = camera.position;
       if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
       if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
@@ -545,7 +548,7 @@
             if (!xticks.last_major()) {
                var space = (xticks.next_major_grpos() - grx);
                if (draw_width > 0)
-                  text_scale = Math.min(text_scale, 0.95*space/draw_width)
+                  text_scale = Math.min(text_scale, 0.9*space/draw_width)
                if (this.x_handle.IsCenterLabels()) text3d.grx += space/2;
             }
          }
@@ -617,7 +620,7 @@
             if (!yticks.last_major()) {
                var space = (yticks.next_major_grpos() - gry);
                if (draw_width > 0)
-                  text_scale = Math.min(text_scale, 0.95*space/draw_width)
+                  text_scale = Math.min(text_scale, 0.9*space/draw_width)
                if (this.y_handle.IsCenterLabels()) text3d.gry += space/2;
             }
          }
@@ -712,7 +715,7 @@
             lbls.push(text3d);
 
             if ((lastmajorz !== null) && (draw_height>0))
-               text_scale = Math.min(text_scale, 0.95*(grz - lastmajorz)/draw_height);
+               text_scale = Math.min(text_scale, 0.9*(grz - lastmajorz)/draw_height);
 
             lastmajorz = grz;
          }
