@@ -361,7 +361,6 @@
       this.add_3d_canvas(size, this.renderer.domElement);
 
       this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
-      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
       this.Render3D = JSROOT.Painter.Render3D;
       this.Resize3D = JSROOT.Painter.Resize3D;
 
@@ -672,25 +671,6 @@
 
       lbls = []; text_scale = 1;
 
-      var zcont = [];
-      for (var n=0;n<4;++n) {
-         zcont.push(new THREE.Object3D());
-         zcont[n].zid = n + 2;
-         top.add(zcont[n]);
-      }
-
-      zcont[0].position.set(grminx,grmaxy,0);
-      zcont[0].rotation.z = 3/4*Math.PI;
-
-      zcont[1].position.set(grmaxx,grmaxy,0);
-      zcont[1].rotation.z = 1/4*Math.PI;
-
-      zcont[2].position.set(grmaxx,grminy,0);
-      zcont[2].rotation.z = -1/4*Math.PI;
-
-      zcont[3].position.set(grminx,grminy,0);
-      zcont[3].rotation.z = -3/4*Math.PI;
-
       var ticks = []; // just array, will be used for the buffer geometry
 
       var zgridx = null, zgridy = null, lastmajorz = null;
@@ -793,11 +773,30 @@
 
       // ticks = new THREE.BufferGeometry().fromGeometry(ticks);
 
+      var zcont = [];
       for (var n=0;n<4;++n) {
+         zcont.push(new THREE.Object3D());
          zcont[n].add(new THREE.Mesh(ggg, textMaterial));
          zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         // zcont[n].visible = zsides[n];
+         zcont[n].zid = n + 2;
+         top.add(zcont[n]);
       }
+
+      zcont[0].position.set(grminx,grmaxy,0);
+      zcont[0].rotation.z = 3/4*Math.PI;
+
+      zcont[1].position.set(grmaxx,grmaxy,0);
+      zcont[1].rotation.z = 1/4*Math.PI;
+
+      zcont[2].position.set(grmaxx,grminy,0);
+      zcont[2].rotation.z = -1/4*Math.PI;
+
+      zcont[3].position.set(grminx,grminy,0);
+      zcont[3].rotation.z = -3/4*Math.PI;
+
+
+
+
 
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
@@ -1198,6 +1197,7 @@
       // function called with this as painter
 
       this.Create3DScene();
+      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
 
       var pad = this.root_pad();
       // if (pad && pad.fGridz === undefined) pad.fGridz = false;
@@ -1237,7 +1237,7 @@
    JSROOT.TH3Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
 
-      this['Create3DScene'] = JSROOT.Painter.HPainter_Create3DScene;
+      this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
    }
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -1575,7 +1575,6 @@
 
       this.toplevel.add(combined_bins);
 
-
       if (helper) {
          var helper_geom = new THREE.BufferGeometry();
          helper_geom.setIndex(  new THREE.BufferAttribute(helper_indexes, 1) );
@@ -1634,6 +1633,15 @@
       menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
          this.options = this.DecodeOptions(arg);
          this.Redraw();
+      });
+
+      menu.addchk(this.options.FrontBox, 'Front box', function() {
+         this.options.FrontBox = !this.options.FrontBox;
+         if (this.Render3D) this.Render3D();
+      });
+      menu.addchk(this.options.BackBox, 'Back box', function() {
+         this.options.BackBox = !this.options.BackBox;
+         if (this.Render3D) this.Render3D();
       });
 
       if (this.control && typeof this.control.ResetCamera === 'function')
