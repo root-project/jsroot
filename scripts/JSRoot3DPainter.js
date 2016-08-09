@@ -707,7 +707,7 @@
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(0, -draw_height/2, 0);
+            text3d.translate(-draw_width, -draw_height/2, 0);
             text3d.grz = grz;
             lbls.push(text3d);
 
@@ -776,7 +776,7 @@
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(text_scale,          0,  0, 2*ticklen,
+         m.set(-text_scale,          0,  0, 2*ticklen,
                         0,          0,  1, 0,
                         0, text_scale,  0, lbl.grz);
 
