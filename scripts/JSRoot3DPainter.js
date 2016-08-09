@@ -368,7 +368,7 @@
       this.first_render_tm = 0;
    }
 
-   JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel) {
+   JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel, fb, bb) {
       var top;
       for (var n=0;n<toplevel.children.length;++n) {
          top = toplevel.children[n];
@@ -390,9 +390,25 @@
 
       for (var n=0;n<top.children.length;++n) {
          var chld = top.children[n];
-         if (chld.grid) chld.visible = testvisible(chld.grid, 3); else
-         if (chld.zid) chld.visible = testvisible(chld.zid+1, 2); else
-         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3);
+         if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
+         if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
+         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3); else
+         if (chld.xyboxid) {
+            var range = 5, shift = 0;
+            if (bb && !fb) { range = 3; shift = -2; } else
+            if (fb && !bb) range = 3; else
+            if (!fb && !bb) range = (chld.bottom ? 3 : 0);
+            chld.visible = testvisible(chld.xyboxid + shift, range);
+            if (!chld.visible && chld.bottom && bb)
+               chld.visible = testvisible(chld.xyboxid, 3);
+         } else
+         if (chld.zboxid) {
+            var range = 2, shift = 0;
+            if (fb && bb) range = 5; else
+            if (bb && !fb) range = 4; else
+            if (!bb && fb) { shift = -2; range = 4; }
+            chld.visible = testvisible(chld.zboxid + shift, range);
+         }
       }
    }
 
@@ -402,7 +418,7 @@
           grminy = -this.size3d, grmaxy = this.size3d,
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.05),
-          zsides = this.scale_z_sides,
+//          zsides = this.scale_z_sides,
           pad = this.root_pad(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
@@ -414,15 +430,14 @@
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
          textsize = (grmaxz - grminz) * 0.05;
-         if (!zsides) zsides = [true, false, false, false];
+//         if (!zsides) zsides = [true, false, false, false];
       }
 
       this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
-      if (!zsides) zsides = [true, true, true, true];
+//      if (!zsides) zsides = [true, true, true, true];
 
-
-      var bothsides = zsides[1] || zsides[2] || zsides[3];
+//      var bothsides = zsides[1] || zsides[2] || zsides[3];
 
       if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
          xmin = this.zoom_xmin; xmax = this.zoom_xmax;
@@ -575,7 +590,6 @@
       xcont.rotation.x = 3/4*Math.PI;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg2, textMaterial));
-      xcont.visible = bothsides;
       xcont.xyid = 4;
       top.add(xcont);
 
@@ -649,7 +663,6 @@
       ycont.rotation.y = -3/4*Math.PI;
       ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       ycont.add(new THREE.Mesh(ggg2, textMaterial));
-      ycont.visible = bothsides;
       ycont.xyid = 1;
       top.add(ycont);
 
@@ -659,6 +672,7 @@
       var zcont = [];
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
+         zcont[n].zid = n + 2;
          top.add(zcont[n]);
       }
 
@@ -677,9 +691,8 @@
       var ticks = []; // just array, will be used for the buffer geometry
 
       var zgridx = null, zgridy = null, lastmajorz = null;
-      if (this.scale_z_grid && zsides[1] && (this.size3d !== 0)) {
-         zgridx = []; // container for grid
-         zgridy = [];
+      if (this.size3d !== 0) {
+         zgridx = []; zgridy = [];
       }
 
       while (zticks.next()) {
@@ -726,7 +739,7 @@
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(0,grmaxy,0);
          lines.grid = 2; // mark as grid
-         lines.visible = true;
+         lines.visible = false;
          top.add(lines);
 
          lines = new THREE.LineSegments(geom, material);
@@ -747,7 +760,7 @@
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(grmaxx,0, 0);
          lines.grid = 3; // mark as grid
-         lines.visible = true;
+         lines.visible = false;
          top.add(lines);
 
          lines = new THREE.LineSegments(geom, material);
@@ -780,8 +793,7 @@
       for (var n=0;n<4;++n) {
          zcont[n].add(new THREE.Mesh(ggg, textMaterial));
          zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         zcont[n].visible = zsides[n];
-         zcont[n].zid = n+1;
+         // zcont[n].visible = zsides[n];
       }
 
       // for TAxis3D do not show final cube
@@ -792,12 +804,12 @@
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(linex, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
-         line.xyid = 2;
+         line.xyboxid = 2; line.bottom = (n == 0);
          top.add(line);
 
          line = new THREE.LineSegments(linex, lineMaterial);
          line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
-         line.xyid = 4;
+         line.xyboxid = 4; line.bottom = (n == 0);
          top.add(line);
       }
 
@@ -806,19 +818,23 @@
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(liney, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
-         line.xyid = 3;
+         line.xyboxid = 3; line.bottom = (n == 0);
          top.add(line);
 
          line = new THREE.LineSegments(liney, lineMaterial);
          line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
-         line.xyid = 1;
+         line.xyboxid = 1; line.bottom = (n == 0);
          top.add(line);
       }
 
       var linez = new THREE.BufferGeometry();
       linez.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, 0, grminz, 0, 0, grmaxz]), 3 ) );
-      for(var n=0;n<4;++n)
-         zcont[n].add(new THREE.LineSegments(linez, lineMaterial));
+      for(var n=0;n<4;++n) {
+         var line = new THREE.LineSegments(linez, lineMaterial);
+         line.zboxid = zcont[n].zid;
+         line.position.copy(zcont[n].position);
+         top.add(line);
+      }
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
@@ -1111,7 +1127,7 @@
          var tm1 = new Date();
 
          if (typeof this.TestAxisVisibility === 'function')
-            this.TestAxisVisibility(this.camera, this.toplevel);
+            this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
@@ -1181,7 +1197,7 @@
       this.Create3DScene();
 
       var pad = this.root_pad();
-      if (pad && pad.fGridz === undefined) pad.fGridz = false;
+      // if (pad && pad.fGridz === undefined) pad.fGridz = false;
 
       this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
       this.zmax = this.gmaxbin;
@@ -1193,11 +1209,11 @@
 
       this.zmax *= 1.1; // as it done in ROOT
 
-      this.scale_z_sides = [true, true, true, true];
-      if (!this.options.BackBox) this.scale_z_sides[1] = false;
-      if (!this.options.FrontBox) this.scale_z_sides[3] = false;
-      if (!this.options.BackBox && !this.options.FrontBox) this.scale_z_sides[2] = false;
-      this.scale_z_grid = pad.fGridz && this.scale_z_sides[1];
+      // this.scale_z_sides = [true, true, true, true];
+      // if (!this.options.BackBox) this.scale_z_sides[1] = false;
+      // if (!this.options.FrontBox) this.scale_z_sides[3] = false;
+      // if (!this.options.BackBox && !this.options.FrontBox) this.scale_z_sides[2] = false;
+      // this.scale_z_grid = pad.fGridz && this.scale_z_sides[1];
 
       this.DrawXYZ();
 

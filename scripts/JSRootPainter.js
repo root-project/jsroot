@@ -3829,8 +3829,6 @@
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
             if (!main) return;
 
-            if (arg === 'fGridz') return main.Redraw();
-
             if ((arg.indexOf('fGrid')==0) && (typeof main.DrawGrids == 'function'))
                return main.DrawGrids();
 
@@ -3840,8 +3838,6 @@
 
          menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleField);
          menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleField);
-         if (this.pad.fGridz !== undefined)
-            menu.addchk(this.pad.fGridz, 'Grid z', 'fGridz', ToggleField);
          menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
          menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
@@ -4867,7 +4863,6 @@
       if (check('LOGZ')) pad.fLogz = 1;
       if (check('GRIDX')) pad.fGridx = 1;
       if (check('GRIDY')) pad.fGridy = 1;
-      if (check('GRIDZ')) pad.fGridz = 1;
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
 

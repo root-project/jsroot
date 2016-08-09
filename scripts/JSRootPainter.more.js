@@ -2688,10 +2688,13 @@
 
       if (this.options.Lego > 0) {
          var pad = this.root_pad();
-         if (pad.fGridz === undefined) pad.fGridz = false;
-         menu.addchk(pad.fGridz, 'Grid z', function() {
-            pad.fGridz = !pad.fGridz;
-            this.RedrawPad();
+         menu.addchk(this.options.FrontBox, 'Front box', function() {
+            this.options.FrontBox = !this.options.FrontBox;
+            if (this.Render3D) this.Render3D();
+         });
+         menu.addchk(this.options.BackBox, 'Back box', function() {
+            this.options.BackBox = !this.options.BackBox;
+            if (this.Render3D) this.Render3D();
          });
          if (this.control && typeof this.control.ResetCamera === 'function')
             menu.add('Reset camera', function() {
