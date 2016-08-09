@@ -493,7 +493,6 @@
          var lbl = this.x_handle.format(xticks.tick, true, true);
          if (xticks.last_major()) lbl = "x"; else
             if (lbl === null) { is_major = false; lbl = ""; }
-         var plen = (is_major ? ticklen : ticklen * 0.6);
 
          if (is_major && lbl && (lbl.length>0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 10 });
@@ -515,7 +514,7 @@
             }
          }
 
-         ticks.push(grx, 0, 0, grx, -plen, 0);
+         ticks.push(grx, 0, 0, grx, (is_major ? -ticklen : -ticklen * 0.6), 0);
       }
 
       var ggg1 = new THREE.Geometry(), ggg2 = new THREE.Geometry();
@@ -572,7 +571,6 @@
          var lbl = this.y_handle.format(yticks.tick, true, true);
          if (yticks.last_major()) lbl = "y"; else
             if (lbl === null) { is_major = false; lbl = ""; }
-         var plen = (is_major ? ticklen : ticklen*0.6);
 
          if (is_major) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 10 });
@@ -593,7 +591,7 @@
                if (this.y_handle.IsCenterLabels()) text3d.gry += space/2;
             }
          }
-         ticks.push(0,gry,0, -plen, gry, 0);
+         ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
       }
 
 
@@ -664,7 +662,6 @@
 
          var lbl = this.z_handle.format(zticks.tick, true, true);
          if (lbl === null) { is_major = false; lbl = ""; }
-         var plen = (is_major ? ticklen : ticklen * 0.6);
 
          if (is_major && lbl && (lbl.length > 0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
@@ -690,8 +687,7 @@
             zgrid.vertices.push(new THREE.Vector3(grmaxx, grminy, grz));
          }
 
-         ticks.push(0, 0, grz);
-         ticks.push(plen, 0, grz);
+         ticks.push(0, 0, grz, (is_major ? ticklen : ticklen * 0.6), 0, grz);
       }
 
       if (zgrid && (zgrid.vertices.length > 0)) {
@@ -729,83 +725,20 @@
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
 
-      if (zsides[0] && zsides[1] && zsides[2] && zsides[3]) {
-         // draw complete box - use BoxGeometry
+      var linex = new THREE.BufferGeometry();
+      linex.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([grminx, 0, 0, grmaxx, 0, 0]), 3 ) );
+      for(var n=0;n<4;++n)
+         xcont[n].add(new THREE.LineSegments(linex, lineMaterial));
 
-         var wireMaterial = new THREE.MeshBasicMaterial({
-            color : 0x000000,
-            wireframe : true,
-            wireframeLinewidth : 0.5,
-            side : THREE.DoubleSide
-         });
+      var liney = new THREE.BufferGeometry();
+      liney.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, grminy,0, 0, grmaxy, 0]), 3 ) );
+      for(var n=0;n<4;++n)
+         ycont[n].add(new THREE.LineSegments(liney, lineMaterial));
 
-         // create a new mesh with cube geometry
-         var cube = new THREE.Mesh(new THREE.BoxGeometry(this.size3d * 2, this.size3d * 2, this.size3d * 2), wireMaterial);
-         //cube.position.y = size;
-
-         var helper = new THREE.BoxHelper(cube);
-         helper.material.color.set(0x000000);
-
-         var box = new THREE.Object3D();
-         box.add(helper);
-         box.position.z = this.size3d;
-
-         // add the cube to the scene
-         top.add(box);
-      } else {
-         var geom = new THREE.Geometry();
-
-         geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
-         geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
-
-         geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
-         geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
-
-         if (bothsides) {
-            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
-
-            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
-         }
-
-         if (zsides[0]) {
-            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grminz));
-            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
-         }
-
-         if (zsides[1]) {
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grminz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
-
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
-            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
-
-            geom.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grmaxz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
-         }
-
-         if (zsides[2]) {
-            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grminz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
-         }
-
-         if (zsides[3]) {
-            geom.vertices.push(new THREE.Vector3(grminx, grminy, grminz));
-            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
-
-            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
-            geom.vertices.push(new THREE.Vector3(grminx, grmaxy, grmaxz));
-
-            geom.vertices.push(new THREE.Vector3(grminx, grminy, grmaxz));
-            geom.vertices.push(new THREE.Vector3(grmaxx, grminy, grmaxz));
-         }
-
-         var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 1 });
-
-         var lines = new THREE.LineSegments(geom, material);
-         top.add(lines);
-      }
+      var linez = new THREE.BufferGeometry();
+      linez.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, 0, grminz, 0, 0, grmaxz]), 3 ) );
+      for(var n=0;n<4;++n)
+         zcont[n].add(new THREE.LineSegments(linez, lineMaterial));
    }
 
    JSROOT.Painter.TH2Painter_Draw3DBins = function() {
