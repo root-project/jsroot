@@ -21,7 +21,7 @@
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'dat.gui'              : dir+'dat.gui.min',
-            'threejs'              : dir+'three'+ext,
+            'threejs'              : dir+'three',
             'threejs_all'          : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
@@ -842,7 +842,7 @@
                         "###threejs/examples/js/shaders/SSAOShader.js;"
            extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
          } else {
-            mainfiles += "$$$scripts/three" + ext + ".js;" +
+            mainfiles += "$$$scripts/three.js;" +
                          "$$$scripts/three.extra" + ext + ".js;";
          }
          modules.push("threejs_all");
