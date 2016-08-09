@@ -10,8 +10,8 @@
    - enable more details when changing camera position/zoom
    - significant (up to factor 10) performance improvement
    - upgrafe three.js to r79
-2. Many improvements in histogram 3D drawing:
-   - more lego options: lego0, lego2, legofb, legobb
+2. Many improvements in histograms 3D drawing:
+   - all lego options: lego1..lego4, combined with 'fb', 'bb', '0' or 'z'
    - support axis lebels 
    - significant performance increase with use of THREE.BufferGeometry
 3. Implement box and hbox draw options for TH1 class

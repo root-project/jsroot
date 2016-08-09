@@ -116,164 +116,192 @@
       return this;
    }
 
-   JSROOT.Painter.add3DInteraction = function() {
-      // add 3D mouse interactive functions
 
-      var painter = this;
-      var mouseX, mouseY, distXY = 0, mouseDowned = false;
+   JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
+      var control = new THREE.OrbitControls(camera, renderer.domElement);
+      control.enableDamping = false;
+      control.dampingFactor = 1.0;
+      control.enableZoom = true;
+      if (lookat) control.target.copy(lookat);
+      control.update();
 
-      var tooltip = new JSROOT.Painter.TooltipFor3D();
+      var mouse_ctxt = { x:0, y: 0, on: false },
+          raycaster = new THREE.Raycaster(),
+          webgl = renderer instanceof THREE.WebGLRenderer,
+          control_active = false,
+          control_changed = false,
+          block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node()),
+          camposition0 = camera.position.clone();
 
-      var raycaster = new THREE.Raycaster();
-      var do_bins_highlight = painter.first_render_tm < 2000;
-
-      function findIntersection(mouse) {
-         // find intersections
-
-         if (JSROOT.gStyle.Tooltip <= 0) return tooltip.hide();
-
-         raycaster.setFromCamera( mouse, painter.camera );
-         var intersects = raycaster.intersectObjects(painter.scene.children, true);
-         for (var i = 0; i < intersects.length; ++i) {
-            if (intersects[i].object.tooltip) {
-               var res = intersects[i].object.tooltip(intersects[i]);
-               if (res) return tooltip.show(res, 200);
-            } else
-            if (typeof intersects[i].object.name == 'string')
-               return tooltip.show(intersects[i].object.name, 200);
+      control.ResetCamera = function() {
+         camera.position.copy(camposition0);
+         if (lookat) {
+            control.target.copy(lookat);
+            camera.lookAt(lookat);
          }
+         control.update();
+         painter.Render3D();
+      }
+
+      control.ProcessMouseDblclick = control.ResetCamera;
+
+      function GetMousePos(evnt, mouse) {
+         mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
+         mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
+         mouse.clientX = evnt.clientX;
+         mouse.clientY = evnt.clientY;
+      }
+
+      function GetIntersects(mouse) {
+         // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
+         var sz = webgl ? renderer.getSize() : renderer.domElement;
+         var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+
+         raycaster.setFromCamera( pnt, camera );
+         var intersects = raycaster.intersectObjects(scene.children, true);
+
+         // painter may want to filter intersects
+         if (typeof painter.FilterIntersects == 'function')
+            intersects = painter.FilterIntersects(intersects);
+
+         return intersects;
+      }
+
+      control.addEventListener( 'change', function() {
+         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         painter.Render3D(0);
+         control_changed = true;
+      });
+
+      control.addEventListener( 'start', function() {
+         control_active = true;
+         block_ctxt = false;
+         mouse_ctxt.on = false;
 
          tooltip.hide();
+
+         // do not reset here, problem of events sequence in orbitcontrol
+         // it issue change/start/stop event when do zooming
+         // control_changed = false;
+      });
+
+      control.addEventListener( 'end', function() {
+         control_active = false;
+         if (mouse_ctxt.on) {
+            mouse_ctxt.on = false;
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
+         } else
+         if (control_changed) {
+            // react on camera change when required
+         }
+         control_changed = false;
+      });
+
+      function control_contextmenu(evnt) {
+         evnt.preventDefault();
+         GetMousePos(evnt, mouse_ctxt);
+         if (control_active)
+            mouse_ctxt.on = true;
+         else
+         if (block_ctxt)
+            block_ctxt = false;
+         else
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+
+            // console.log('call context menu');
+            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
       };
 
-      function coordinates(e) {
-         if ('changedTouches' in e) return e.changedTouches;
-         if ('touches' in e) return e.touches;
-         return [e];
-      }
+      function control_touchstart(evnt) {
+         if (!evnt.touches) return;
 
-      function mousedown(e) {
-         tooltip.hide();
-         e.preventDefault();
-
-         var arr = coordinates(e);
-         if (arr.length == 2) {
-            distXY = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
-         } else {
-            mouseX = arr[0].pageX;
-            mouseY = arr[0].pageY;
+      // disable context menu if any changes where done by orbit control
+         if (!control_changed && !mouse_ctxt.touchtm) {
+            GetMousePos(evnt.touches[0], mouse_ctxt);
+            mouse_ctxt.touchtm = new Date().getTime();
          }
-         mouseDowned = true;
+      };
 
+      function control_touchend(evnt) {
+         if (!evnt.touches) return;
+
+         if (control_changed || !mouse_ctxt.touchtm) return;
+
+         var diff = new Date().getTime() - mouse_ctxt.touchtm;
+         delete mouse_ctxt.touchtm;
+         if (diff < 200) return;
+
+         var pos = {};
+         GetMousePos(evnt.touches[0], pos);
+
+         if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
+            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+      };
+
+      control.ContextMenu = function(pos, intersects) {
+         // do nothing, function called when context menu want to be activated
       }
 
-      painter.renderer.domElement.addEventListener('touchstart', mousedown);
-      painter.renderer.domElement.addEventListener('mousedown', mousedown);
+      function control_mousemove(evnt) {
+         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
+            block_ctxt = true; // if right button in control was active, block next context menu
+         }
 
-      function mousemove(e) {
-         var arr = coordinates(e);
+         if (control_active) return;
+         if (!control.ProcessMouseMove) return;
 
-         if (mouseDowned) {
-            if (arr.length == 2) {
-               var dist = Math.sqrt(Math.pow(arr[0].pageX - arr[1].pageX, 2) + Math.pow(arr[0].pageY - arr[1].pageY, 2));
+         var mouse = {};
+         GetMousePos(evnt, mouse);
+         evnt.preventDefault();
 
-               var delta = (dist-distXY)/(dist+distXY);
-               distXY = dist;
-               if (delta === 1.) return;
+         var intersects = GetIntersects(mouse);
 
-               painter.camera.position.x += delta * painter.size3d * 10;
-               painter.camera.position.y += delta * painter.size3d * 10;
-               painter.camera.position.z -= delta * painter.size3d * 10;
-            } else {
-               var moveX = arr[0].pageX - mouseX;
-               var moveY = arr[0].pageY - mouseY;
-               var length = painter.camera.position.length();
-               var ddd = length > painter.size3d ? 0.001*length/painter.size3d : 0.01;
-               // limited X rotate in -45 to 135 deg
-               //if ((moveY > 0 && painter.toplevel.rotation.x < Math.PI * 3 / 4)
-               //      || (moveY < 0 && painter.toplevel.rotation.x > -Math.PI / 4))
-               //   painter.toplevel.rotation.x += moveX * 0.02;
-               painter.toplevel.rotation.z += moveX * ddd;
-               painter.toplevel.rotation.x += moveY * ddd;
-               painter.toplevel.rotation.y -= moveY * ddd;
-               mouseX = arr[0].pageX;
-               mouseY = arr[0].pageY;
-            }
-            painter.Render3D(0);
-         } else
-         if (arr.length == 1) {
-            var mouse_x = ('offsetX' in arr[0]) ? arr[0].offsetX : arr[0].layerX;
-            var mouse_y = ('offsetY' in arr[0]) ? arr[0].offsetY : arr[0].layerY;
-            mouse = { x: (mouse_x / painter.renderer.domElement.width) * 2 - 1,
-                      y: -(mouse_y / painter.renderer.domElement.height) * 2 + 1 };
-            findIntersection(mouse);
-            tooltip.pos(arr[0]);
+         var info = control.ProcessMouseMove(intersects);
+
+         if (info && (info.length>0)) {
+            tooltip.show(info, 200);
+            tooltip.pos(evnt)
          } else {
             tooltip.hide();
          }
 
-         e.stopPropagation();
-         e.preventDefault();
-      }
+         // console.log('provide tooltip', intersects.length);
+      };
 
-      painter.renderer.domElement.addEventListener('touchmove', mousemove);
-      painter.renderer.domElement.addEventListener('mousemove', mousemove);
-
-      function mouseup(e) {
-         mouseDowned = false;
+      function control_mouseleave() {
          tooltip.hide();
-         distXY = 0;
-      }
+         if (control.ProcessMouseLeave) control.ProcessMouseLeave();
+      };
 
-      painter.renderer.domElement.addEventListener('touchend', mouseup);
-      painter.renderer.domElement.addEventListener('touchcancel', mouseup);
-      painter.renderer.domElement.addEventListener('mouseup', mouseup);
+      renderer.domElement.addEventListener( 'dblclick', function() { control.ProcessMouseDblclick(); });
 
-      function mousewheel(event) {
-         event.preventDefault();
-         event.stopPropagation();
+      renderer.domElement.addEventListener('contextmenu', control_contextmenu);
+      renderer.domElement.addEventListener('mousemove', control_mousemove);
+      renderer.domElement.addEventListener('mouseleave', control_mouseleave);
 
-         var delta = 0;
-         if ( event.wheelDelta ) {
-            // WebKit / Opera / Explorer 9
-            delta = event.wheelDelta / 400;
-         } else if ( event.detail ) {
-            // Firefox
-            delta = - event.detail / 30;
-         }
-         painter.camera.position.x -= delta * painter.size3d;
-         painter.camera.position.y -= delta * painter.size3d;
-         painter.camera.position.z += delta * painter.size3d;
-         painter.Render3D(0);
-      }
-
-      painter.renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
-      painter.renderer.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
+      // do not use touch events, context menu should be activated via button
+      //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
+      //painter.renderer.domElement.addEventListener('touchend', control_touchend);
 
 
-      painter.renderer.domElement.addEventListener('mouseleave', function() {
-         tooltip.hide();
-      });
-
-
-      painter.renderer.domElement.addEventListener('contextmenu', function(e) {
-         e.preventDefault();
-         tooltip.hide();
-
-         painter.ShowContextMenu("hist", e);
-      });
-
+      return control;
    }
 
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
 
-      if ((arg!==null) && (arg<0)) {
+      if ((arg!==undefined) && (arg<0)) {
          this.clear_3d_canvas();
          delete this.size3d;
          delete this.scene;
          delete this.toplevel;
          delete this.camera;
          delete this.renderer;
+         if (this.control) {
+            this.control.dispose();
+            delete this.control;
+         }
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
@@ -332,9 +360,10 @@
 
       this.add_3d_canvas(size, this.renderer.domElement);
 
-      this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
-      this['Render3D'] = JSROOT.Painter.Render3D;
-      this['Resize3D'] = JSROOT.Painter.Resize3D;
+      this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
+      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
+      this.Render3D = JSROOT.Painter.Render3D;
+      this.Resize3D = JSROOT.Painter.Resize3D;
 
       this.first_render_tm = 0;
    }
@@ -646,8 +675,6 @@
                this.toplevel.add(text);
                lbls.push(text);
             }
-
-
          }
 
          // create grid
@@ -859,10 +886,9 @@
 
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
-      if (this.options.Lego == 12) {
+      if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          levels = this.CreateContour(20, axis_zmin, axis_zmax, this.minposbin);
          palette = this.GetPalette();
-         // console.log('levels', levels, 'palette', palette);
       }
 
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
@@ -880,14 +906,14 @@
                var reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
                var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax);
+               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
                if (notop) numvertices -= 6;
             }
 
-         totalvertices+=numvertices;
+         totalvertices += numvertices;
 
          var positions = new Float32Array( numvertices * 3 );
          var normals = new Float32Array( numvertices * 3 );
@@ -903,7 +929,7 @@
                var reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
                var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax);
+               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                y1 = yy[j];
                y2 = yy[j+1];
@@ -982,7 +1008,8 @@
          this.toplevel.add(mesh);
       }
 
-      // console.log('Total number of vertices ',totalvertices);
+      // lego3 or lego4 do not draw border lines
+      if (this.options.Lego > 12) return;
 
       // DRAW LINE BOXES
 
@@ -1087,8 +1114,25 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             console.log('First render tm = ' + this.first_render_tm);
-            this['Add3DInteraction'] = JSROOT.Painter.add3DInteraction;
-            this.Add3DInteraction();
+
+            if (!this.control) {
+               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
+
+               this.control.ProcessMouseMove = function(intersects) {
+                  for (var i = 0; i < intersects.length; ++i) {
+                     if (intersects[i].object.tooltip)
+                        return intersects[i].object.tooltip(intersects[i]);
+
+                     if (typeof intersects[i].object.name == 'string')
+                        return intersects[i].object.name;
+                  }
+
+                  return "";
+               }
+
+               this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
+            }
+
          }
 
          return;
@@ -1149,6 +1193,8 @@
       this.DrawXYZ();
 
       this.Draw3DBins();
+
+      if (this.options.Zscale > 0) this.DrawNewPalette(true);
 
       this.DrawTitle();
 
@@ -1561,6 +1607,11 @@
          this.options = this.DecodeOptions(arg);
          this.Redraw();
       });
+
+      if (this.control && typeof this.control.ResetCamera === 'function')
+         menu.add('Reset camera', function() {
+            this.control.ResetCamera();
+         });
    }
 
 

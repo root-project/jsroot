@@ -2642,7 +2642,8 @@
          var main = this.main_painter();
          this.UseContextMenu = (main !== null);
          if ((main !== null) && main.options)
-            this.Enabled = (main.options.Zscale > 0) && (main.options.Color > 0) && (main.options.Lego === 0);
+            this.Enabled = (main.options.Zscale > 0) &&
+                           ((main.options.Color > 0) || (main.options.Lego === 12) || (main.options.Lego === 14));
 
          this.DrawPave();
       }
@@ -2676,7 +2677,7 @@
       // painter automatically bind to mene callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
          this.options = this.DecodeOptions(arg);
          if (this.options.Zscale > 0)
             // draw new palette, resize frame if required
@@ -2692,7 +2693,10 @@
             pad.fGridz = !pad.fGridz;
             this.RedrawPad();
          });
-
+         if (this.control && typeof this.control.ResetCamera === 'function')
+            menu.add('Reset camera', function() {
+               this.control.ResetCamera();
+            });
       }
    }
 
@@ -2704,7 +2708,7 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            if (this.options.Lego == 0 && this.options.Color > 0) this.ToggleColz();
+            if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
             break;
          case "Toggle3D":
             this.options.Lego = this.options.Lego > 0 ? 0 : 1;
@@ -3807,10 +3811,9 @@
 
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
-         this['Create3DScene'] = JSROOT.Painter.HPainter_Create3DScene;
-         this['Draw3DBins'] = JSROOT.Painter.TH2Painter_Draw3DBins;
-         this['Draw3D'] = JSROOT.Painter.TH2Painter_Draw3D;
-         this['Draw3D'](call_back);
+         this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
+         this.Draw3D = JSROOT.Painter.TH2Painter_Draw3D;
+         this.Draw3D(call_back);
       }.bind(this));
    }
 

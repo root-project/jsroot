@@ -480,7 +480,6 @@
             if (many) menu.add("header: Nodes");
 
             for (var n=0;n<intersects.length;++n) {
-               if (!intersects[n].unique) continue; // provide context menu only for unique object
                var obj = intersects[n].object;
                var name = painter._clones.ResolveStack(obj.stack).name;
 
@@ -546,207 +545,81 @@
                if (many) menu.add("endsub:");
             }
          }
-         painter._tooltip.hide();
          menu.show(evnt);
       });
    }
 
+   JSROOT.TGeoPainter.prototype.FilterIntersects = function(intersects) {
+
+      // remove all elements without stack - indicator that this is geometry object
+      for (var n=intersects.length-1; n>=0;--n) {
+
+         var unique = intersects[n].object.stack !== undefined;
+
+         for (var k=0;(k<n) && unique;++k)
+            if (intersects[k].object === intersects[n].object) unique = false;
+
+         if (!unique) intersects.splice(n,1);
+      }
+
+      if (this.enableX || this.enableY || this.enableZ ) {
+         var clippedIntersects = [];
+
+         for (var i = 0; i < intersects.length; ++i) {
+            var clipped = false;
+            var point = intersects[i].point;
+
+            if (this.enableX && this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant ) {
+               clipped = true;
+            }
+            if (this.enableY && this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant ) {
+               clipped = true;
+            }
+            if (this.enableZ && this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant ) {
+               clipped = true;
+            }
+
+            if (clipped)
+               clippedIntersects.push(intersects[i]);
+         }
+
+         intersects = clippedIntersects;
+      }
+
+      return intersects;
+   }
+
+   JSROOT.TGeoPainter.prototype.testCameraPositionChange = function() {
+      // function analyzes camera position and start redraw of geometry if
+      // objects in view may be changed
+
+      if (!this.options.select_in_view || this._draw_all_nodes) return;
+
+
+      var matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
+
+      var frustum = JSROOT.GEO.CreateFrustum(matrix);
+
+      // check if overall bounding box seen
+      if (!frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel)))
+         this.startDrawGeometry();
+   }
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls) return;
 
-      var painter = this;
-
       this.select_main().property('flex_block_drag', true);
 
-      this._controls = new THREE.OrbitControls(this._camera, this._renderer.domElement);
-      this._controls.enableDamping = false;
-      this._controls.dampingFactor = 0.25;
-      this._controls.enableZoom = true;
-      this._controls.target.copy(this._lookat);
-      this._controls.update();
+      var painter = this;
 
-      var mouse_ctxt = { x:0, y: 0, on: false },
-          raycaster = new THREE.Raycaster(),
-          control_active = false, control_changed = false,
-          block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+      this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
-      this._tooltip = new JSROOT.Painter.TooltipFor3D(this.select_main().node());
+      this._controls.ContextMenu = this.OrbitContext.bind(this);
 
-      function GetMousePos(evnt, mouse) {
-         mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
-         mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
-         mouse.clientX = evnt.clientX;
-         mouse.clientY = evnt.clientY;
-      }
+      this._controls.ProcessMouseMove = function(intersects) {
 
-      function GetIntersects(mouse) {
-         var pnt = {
-            // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
-            x: mouse.x / (painter._webgl ? painter._renderer.getSize().width : painter._renderer.domElement.width) * 2 - 1,
-            y: -mouse.y / (painter._webgl ? painter._renderer.getSize().height : painter._renderer.domElement.height) * 2 + 1
-         }
-
-         raycaster.setFromCamera( pnt, painter._camera );
-         var intersects = raycaster.intersectObjects(painter._scene.children, true);
-
-         // remove all elements without stack - indicator that this is geometry object
-         for (var n=intersects.length-1; n>=0;--n) {
-
-            var unique = intersects[n].object.stack !== undefined;
-
-            for (var k=0;(k<n) && unique;++k)
-               if (intersects[k].object === intersects[n].object) unique = false;
-
-            intersects[n].unique = unique;
-         }
-
-         var clippedIntersects = [];
-
-         if (painter.enableX || painter.enableY || painter.enableZ ) {
-
-            for (var i = 0; i < intersects.length; ++i) {
-               var clipped = false;
-               var point = intersects[i].point;
-
-               if (painter.enableX && painter._clipPlanes[0].normal.dot(point) > painter._clipPlanes[0].constant ) {
-                  clipped = true;
-               } else if (painter.enableY && painter._clipPlanes[1].normal.dot(point) > painter._clipPlanes[1].constant ) {
-                  clipped = true;
-               } else if (painter.enableZ && painter._clipPlanes[2].normal.dot(point) > painter._clipPlanes[2].constant ) {
-                  clipped = true;
-               }
-
-               if (clipped === true) {
-                  clippedIntersects.push(intersects[i]);
-               }
-            }
-
-            intersects = clippedIntersects;
-         }
-         //console.log("intersects " + intersects.length);
-         return intersects;
-      }
-
-      this._controls.addEventListener( 'change', function() {
-         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         painter.Render3D(0);
-         control_changed = true;
-      });
-
-      this._controls.addEventListener( 'start', function() {
-         control_active = true;
-         block_ctxt = false;
-         mouse_ctxt.on = false;
-         // do not reset here, problem of events sequence in orbitcontrol
-         // it issue change/start/stop event when do zooming
-         // control_changed = false;
-      });
-
-      this._controls.addEventListener( 'end', function() {
-         control_active = false;
-         if (mouse_ctxt.on) {
-            mouse_ctxt.on = false;
-            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
-         } else
-         if (control_changed && painter.options.select_in_view && !painter._draw_all_nodes) {
-            var matrix = JSROOT.GEO.CreateProjectionMatrix(painter._camera);
-
-            var frustum = JSROOT.GEO.CreateFrustum(matrix);
-
-            // check if overall bounding box seen
-            if (!frustum.CheckBox(new THREE.Box3().setFromObject(painter._toplevel)))
-               painter.startDrawGeometry();
-         }
-         control_changed = false;
-      });
-
-      this._context_menu = function(evnt) {
-         evnt.preventDefault();
-         GetMousePos(evnt, mouse_ctxt);
-         if (control_active)
-            mouse_ctxt.on = true;
-         else
-         if (block_ctxt)
-            block_ctxt = false;
-         else
-            painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
-      };
-
-      this._double_click = function(evnt) {
-         if (!painter._last_manifest) return;
-         painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
-
-         if (painter._last_hidden)
-            painter._last_hidden.forEach(function(obj) { obj.visible = true; });
-         delete painter._last_hidden;
-         delete painter._last_manifest;
-         painter.Render3D();
-      };
-
-      this._renderer.domElement.addEventListener( 'contextmenu', this._context_menu, false );
-      this._renderer.domElement.addEventListener( 'dblclick', this._double_click, false );
-
-
-      if ( this.options._debug || this.options._grid ) {
-         this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
-         this._scene.add( this._tcontrols );
-         this._tcontrols.attach( this._toplevel );
-         //this._tcontrols.setSize( 1.1 );
-
-         window.addEventListener( 'keydown', function ( event ) {
-            switch ( event.keyCode ) {
-               case 81: // Q
-                  painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
-                  break;
-               case 17: // Ctrl
-                  painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
-                  painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
-                  break;
-               case 84: // T (Translate)
-                  painter._tcontrols.setMode( "translate" );
-                  break;
-               case 82: // R (Rotate)
-                  painter._tcontrols.setMode( "rotate" );
-                  break;
-               case 83: // S (Scale)
-                  painter._tcontrols.setMode( "scale" );
-                  break;
-               case 187:
-               case 107: // +, =, num+
-                  painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
-                  break;
-               case 189:
-               case 109: // -, _, num-
-                  painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
-                  break;
-            }
-         });
-         window.addEventListener( 'keyup', function ( event ) {
-            switch ( event.keyCode ) {
-               case 17: // Ctrl
-                  painter._tcontrols.setTranslationSnap( null );
-                  painter._tcontrols.setRotationSnap( null );
-                  break;
-            }
-         });
-
-         this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
-      }
-
-      function mousemove(evnt) {
-         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
-            block_ctxt = true; // if right button in control was active, block next context menu
-         }
-
-         if (control_active || (!painter.options.highlight && !painter.options.update_browser)) return;
-
-         var mouse = {};
-         GetMousePos(evnt, mouse);
-         evnt.preventDefault();
-
-         var intersects = GetIntersects(mouse);
+         var tooltip = null;
 
          if (painter.options.highlight) {
 
@@ -759,8 +632,12 @@
                painter._selected.originalColor = painter._selected.mesh.material.color;
                painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
                painter.Render3D(0);
+
+               if (intersects[0].object.stack)
+                  tooltip = painter._clones.ResolveStack(intersects[0].object.stack).name;
             }
          }
+
          if (intersects.length === 0 && painter._selected.mesh !== null) {
             painter._selected.mesh.material.color = painter._selected.originalColor;
             painter.Render3D(0);
@@ -769,34 +646,95 @@
 
          var names = [];
 
-         for (var n=0;n<intersects.length;++n) {
-            var obj = intersects[n].object;
-            if (!obj.stack || !intersects[n].unique) continue;
-            var name = painter._clones.ResolveStack(obj.stack).name;
-            names.push(name);
-            if (painter.options.highlight) break; // if do highlight, also in browser selects one
+         if (painter.options.update_browser) {
+            if (painter.options.highlight) {
+               if (tooltip !== null) names.push(tooltip);
+            } else {
+               for (var n=0;n<intersects.length;++n) {
+                  var obj = intersects[n].object;
+                  if (obj.stack)
+                  names.push(painter._clones.ResolveStack(obj.stack).name);
+               }
+            }
+            painter.ActiavteInBrowser(names);
          }
 
-         if ((names.length > 0) && painter.options.highlight) {
-            var name = names[0];
-            if ((name==="") && !painter.GetItemName()) name = painter.GetObject()._typename;
-            painter._tooltip.show(name);
-            painter._tooltip.pos(evnt);
+         return tooltip;
+      }
+
+      this._controls.ProcessMouseLeave = function() {
+         if (painter.options.update_browser)
+            painter.ActiavteInBrowser([]);
+      }
+
+      this._controls.ProcessMouseDblclick = function() {
+         if (painter._last_manifest) {
+            painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
+            if (painter._last_hidden)
+               painter._last_hidden.forEach(function(obj) { obj.visible = true; });
+            delete painter._last_hidden;
+            delete painter._last_manifest;
+            painter.Render3D();
          } else {
-            painter._tooltip.hide();
+            painter.adjustCameraPosition();
          }
-
-         if (painter.options.update_browser) painter.ActiavteInBrowser(names);
       }
-
-      this._renderer.domElement.addEventListener('mousemove', mousemove);
-
-      function mouseleave(evnt) {
-         painter.ActiavteInBrowser([]);
-      }
-
-      this._renderer.domElement.addEventListener('mouseleave', mouseleave);
    }
+
+   JSROOT.TGeoPainter.prototype.addTransformControl = function() {
+      if (this._tcontrols) return;
+
+      if (! this.options._debug && !this.options._grid ) return;
+
+      // FIXME: at the moment THREE.TransformControls is bogus in three.js, should be fixed and check again
+
+      return;
+
+      this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
+      this._scene.add( this._tcontrols );
+      this._tcontrols.attach( this._toplevel );
+      //this._tcontrols.setSize( 1.1 );
+
+      window.addEventListener( 'keydown', function ( event ) {
+         switch ( event.keyCode ) {
+         case 81: // Q
+            painter._tcontrols.setSpace( painter._tcontrols.space === "local" ? "world" : "local" );
+            break;
+         case 17: // Ctrl
+            painter._tcontrols.setTranslationSnap( Math.ceil( painter._overall_size ) / 50 );
+            painter._tcontrols.setRotationSnap( THREE.Math.degToRad( 15 ) );
+            break;
+         case 84: // T (Translate)
+            painter._tcontrols.setMode( "translate" );
+            break;
+         case 82: // R (Rotate)
+            painter._tcontrols.setMode( "rotate" );
+            break;
+         case 83: // S (Scale)
+            painter._tcontrols.setMode( "scale" );
+            break;
+         case 187:
+         case 107: // +, =, num+
+            painter._tcontrols.setSize( painter._tcontrols.size + 0.1 );
+            break;
+         case 189:
+         case 109: // -, _, num-
+            painter._tcontrols.setSize( Math.max( painter._tcontrols.size - 0.1, 0.1 ) );
+            break;
+         }
+      });
+      window.addEventListener( 'keyup', function ( event ) {
+         switch ( event.keyCode ) {
+         case 17: // Ctrl
+            painter._tcontrols.setTranslationSnap( null );
+            painter._tcontrols.setRotationSnap( null );
+            break;
+         }
+      });
+
+      this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
+   }
+
 
    JSROOT.TGeoPainter.prototype.createFlippedMesh = function(parent, shape, material) {
       // when transformation matrix includes one or several invertion of axis,
@@ -1825,6 +1763,8 @@
 
       this.addOrbitControls();
 
+      this.addTransformControl();
+
       this.showControlOptions(this.options.show_controls);
 
       if (call_ready) this.DrawingReady();
@@ -1970,45 +1910,43 @@
    }
 
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
-      if (obj === null) return this.DrawingReady();
+      if (obj === null) return null;
 
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
-      var vol = null, shape = null;
+      var shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
       } else
       if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
-         vol = obj;
+         shape = obj.fShape;
       } else
-      if ((obj._typename === 'TGeoManager')) {
-         vol = obj.fMasterVolume; obj = null;
+      if (obj._typename === "TEveGeoShapeExtract") {
+         shape = obj.fShape;
+      } else
+      if (obj._typename === 'TGeoManager') {
+         obj = obj.fMasterVolume;
+         shape = obj.fShape;
       } else
       if ('fVolume' in obj) {
-         vol = obj.fVolume;
+         if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
          obj = null;
       }
 
-      if (opt && opt.indexOf("comp")==0) {
-         var comp = shape ? shape : (vol ? vol.fShape : null);
-
-         if (comp && comp.fNode && comp._typename == 'TGeoCompositeShape') {
-            obj = null;
-            opt = opt.substr(4);
-            vol = JSROOT.GEO.buildCompositeVolume(comp);
-         }
+      if (opt && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+         opt = opt.substr(4);
+         obj = JSROOT.GEO.buildCompositeVolume(shape);
       }
 
-      if (!vol && shape) {
-         vol = JSROOT.Create("TEveGeoShapeExtract");
-         JSROOT.extend(vol, { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
-      }
+      if (!obj && shape)
+         obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
+                   { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (vol && (typeof vol == 'object')) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(obj? obj : vol));
+      if (obj) {
+         JSROOT.extend(this, new JSROOT.TGeoPainter(obj));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt);
       }

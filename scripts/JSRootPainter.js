@@ -4808,7 +4808,7 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Palette:0, Optimize:JSROOT.gStyle.OptimizeDraw
+         HighRes: 0, Zero: 0, Palette: 0, Optimize: JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
       var chopt = JSROOT.Painter.clearCuts(opt.toUpperCase());
@@ -4871,7 +4871,7 @@
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
 
-      var l, nch = chopt.length;
+      var nch = chopt.length;
       if (!nch) option.Hist = 1;
 
       if (check('SPEC')) {
@@ -4911,8 +4911,10 @@
          if (part.indexOf('1') >= 0) option.Lego = 11;
          if (part.indexOf('2') >= 0) option.Lego = 12;
          if (part.indexOf('3') >= 0) option.Lego = 13;
+         if (part.indexOf('4') >= 0) option.Lego = 14;
          if (part.indexOf('FB') >= 0) option.FrontBox = 0;
          if (part.indexOf('BB') >= 0) option.BackBox = 0;
+         if (part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
       if (check('SURF', true)) {
@@ -6385,7 +6387,6 @@
             this.SwitchTooltip(false);
             menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
          }
-
 
          delete this.ctx_menu_evnt; // delete temporary variable
       }.bind(menu_painter) );  // end menu creation
@@ -9561,7 +9562,7 @@
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;LEGO0;LEGO2;same" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0Z;BOX;SCAT;TEXT;LEGO;LEGO0;LEGO2;LEGO3;LEGO4;same" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D" });
    JSROOT.addDrawFunc({ name: "THStack", prereq: "more2d", func: "JSROOT.Painter.drawHStack" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
