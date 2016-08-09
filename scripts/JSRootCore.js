@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 8/08/2016";
+   JSROOT.version = "dev 9/08/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -842,7 +842,7 @@
                         "###threejs/examples/js/shaders/SSAOShader.js;"
            extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
          } else {
-            mainfiles += "$$$scripts/three.js;" +
+            mainfiles += "$$$scripts/three" + ext + ".js;" +
                          "$$$scripts/three.extra" + ext + ".js;";
          }
          modules.push("threejs_all");
