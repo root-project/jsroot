@@ -472,13 +472,20 @@
 
       this.toplevel.add(top);
 
-      var xcont = new THREE.Object3D();
-      top.add(xcont);
+      var xcont = [];
+      for (var n=0;n<4;++n) {
+         xcont.push(new THREE.Object3D());
+         top.add(xcont[n]);
+      }
 
-      // geometry used for the tick drawing
-      var geometry = new THREE.Geometry();
-      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-      geometry.vertices.push(new THREE.Vector3(0, -1, -1));
+      xcont[0].position.set(0, grminy, grminz);
+      xcont[0].rotation.x = 1/4*Math.PI;
+      xcont[1].position.set(0, grmaxy, grminz);
+      xcont[1].rotation.x = 3/4*Math.PI;
+      xcont[2].position.set(0, grmaxy, grmaxz);
+      xcont[3].position.set(0, grminy, grmaxz);
+
+      var ticks = [], maxtextheight = 0;
 
       while (xticks.next()) {
          var grx = xticks.grpos;
@@ -486,67 +493,78 @@
          var lbl = this.x_handle.format(xticks.tick, true, true);
          if (xticks.last_major()) lbl = "x"; else
             if (lbl === null) { is_major = false; lbl = ""; }
-         var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
+         var plen = (is_major ? ticklen : ticklen * 0.6);
 
          if (is_major && lbl && (lbl.length>0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 10 });
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(-draw_width/2, -draw_height, 0);
-            var text_pos = grx;
+            text3d.translate(-draw_width/2, 0, 0);
+
+            maxtextheight = Math.max(maxtextheight, draw_height);
+
+            text3d.grx = grx;
+            lbls.push(text3d);
 
             if (!xticks.last_major()) {
                var space = (xticks.next_major_grpos() - grx);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.95*space/draw_width)
-               if (this.x_handle.IsCenterLabels()) text_pos += space/2;
+               if (this.x_handle.IsCenterLabels()) text3d.grx += space/2;
             }
-
-            if (bothsides) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               text.position.set(text_pos, grmaxy + 1.5*plen,  grminz - 1.5*plen);
-               text.rotation.x = Math.PI*3/4;
-               text.rotation.y = Math.PI;
-               text.name = "X axis";
-               xcont.add(text);
-               lbls.push(text);
-            }
-
-            text = new THREE.Mesh(text3d, textMaterial);
-            text.position.set(text_pos, grminy - 1.5*plen, grminz - 1.5*plen);
-            text.rotation.x = Math.PI/4;
-            text.name = "X axis";
-            xcont.add(text);
-            lbls.push(text);
          }
 
-         if (bothsides) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grx,grmaxy, grminz);
-            tick.scale.set(1,plen,plen);
-            tick.rotation.z = Math.PI;
-            tick.name = "X axis: " + this.x_handle.format(xticks.tick);
-            xcont.add(tick);
-         }
-
-         tick = new THREE.Line(geometry, lineMaterial);
-         tick.position.set(grx,grminy,grminz);
-         tick.scale.set(1,plen,plen);
-         tick.name = "X axis: " + this.x_handle.format(xticks.tick);
-         xcont.add(tick);
+         ticks.push(grx, 0, 0, grx, -plen, 0);
       }
 
-      if (text_scale < 1)
-         lbls.forEach(function(mesh) { mesh.scale.set(text_scale, text_scale, 1); } );
-      lbls = []; text_scale = 1;
+      var ggg1 = new THREE.Geometry(), ggg2 = new THREE.Geometry();
 
-      var ycont = new THREE.Object3D();
-      top.add(ycont);
+      lbls.forEach(function(lbl) {
+         var m = new THREE.Matrix4();
+         // matrix to swap y and z scales and shift along z to its position
+         m.set(text_scale,          0,  0, lbl.grx,
+                        0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+                        0, 0,  1, 0);
 
-      geometry = new THREE.Geometry();
-      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-      geometry.vertices.push(new THREE.Vector3(-1, 0, -1));
+         ggg1.merge(lbl, m);
+
+         m.set(-text_scale,          0,  0, lbl.grx,
+               0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+               0, 0,  1, 0);
+
+         ggg2.merge(lbl, m);
+      });
+
+      ggg1 = new THREE.BufferGeometry().fromGeometry(ggg1);
+      ggg2 = new THREE.BufferGeometry().fromGeometry(ggg2);
+
+      var ticksgeom = new THREE.BufferGeometry();
+      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+
+      xcont[0].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      xcont[0].add(new THREE.Mesh(ggg1, textMaterial));
+
+      if (bothsides) {
+         xcont[1].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         xcont[1].add(new THREE.Mesh(ggg2, textMaterial));
+      }
+
+
+      lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
+
+      var ycont = [];
+      for (var n=0;n<4;++n) {
+         ycont.push(new THREE.Object3D());
+         top.add(ycont[n]);
+      }
+
+      ycont[0].position.set(grminx, 0, grminz);
+      ycont[0].rotation.y = -1/4*Math.PI;
+      ycont[1].position.set(grmaxx, 0, grminz);
+      ycont[1].rotation.y = -3/4*Math.PI;
+      ycont[2].position.set(grminx, 0, grmaxz);
+      ycont[3].position.set(grmaxx, 0, grmaxz);
 
       while (yticks.next()) {
          var gry = yticks.grpos;
@@ -561,60 +579,62 @@
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(-draw_width/2, -draw_height, 0);
-            var text_pos = gry;
+            text3d.translate(-draw_width/2, 0, 0);
+
+            maxtextheight = Math.max(maxtextheight, draw_height);
+
+            text3d.gry = gry;
+            lbls.push(text3d);
 
             if (!yticks.last_major()) {
                var space = (yticks.next_major_grpos() - gry);
                if (draw_width > 0)
                   text_scale = Math.min(text_scale, 0.95*space/draw_width)
-               if (this.y_handle.IsCenterLabels()) text_pos += space/2;
+               if (this.y_handle.IsCenterLabels()) text3d.gry += space/2;
             }
-
-            text3d.computeBoundingBox();
-            var centerOffset = 0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
-
-            if (bothsides) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               // text.position.set(grmaxx + plen + textsize, text_pos, grminz - plen - textsize);
-               text.position.set(grmaxx + 1.5*plen, text_pos, grminz - 1.5*plen);
-               text.rotation.y = Math.PI / 4;
-               text.rotation.z = Math.PI / 2;
-               text.name = "Y axis";
-               ycont.add(text);
-               lbls.push(text);
-            }
-
-            text = new THREE.Mesh(text3d, textMaterial);
-            // text.position.set(grminx - plen - textsize, text_pos, grminz - plen - textsize);
-            text.position.set(grminx- 1.5*plen, text_pos, grminz - 1.5*plen);
-            text.rotation.y = -Math.PI / 4;
-            text.rotation.z = -Math.PI / 2;
-            text.name = "Y axis";
-            ycont.add(text);
-            lbls.push(text);
          }
-         if (bothsides) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grmaxx,gry,grminz);
-            tick.scale.set(plen,1,plen);
-            tick.rotation.z = Math.PI;
-            tick.name = "Y axis " + this.y_handle.format(yticks.tick);
-            ycont.add(tick);
-         }
-         tick = new THREE.Line(geometry, lineMaterial);
-         tick.position.set(grminx,gry,grminz);
-         tick.scale.set(plen,1, plen);
-         tick.name = "Y axis " + this.y_handle.format(yticks.tick);
-         ycont.add(tick);
+         ticks.push(0,gry,0, -plen, gry, 0);
       }
 
-      if (text_scale < 1)
-         lbls.forEach(function(mesh) { mesh.scale.set(text_scale, text_scale, 1); } );
+
+      var ggg1 = new THREE.Geometry(), ggg2 = new THREE.Geometry();
+
+      lbls.forEach(function(lbl) {
+         var m = new THREE.Matrix4();
+         m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+               -text_scale,  0, 0, lbl.gry,
+               0, 0,  1, 0);
+
+         ggg1.merge(lbl, m);
+
+         m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+               text_scale,  0, 0, lbl.gry,
+               0, 0,  1, 0);
+
+         ggg2.merge(lbl, m);
+
+      });
+
+      ggg1 = new THREE.BufferGeometry().fromGeometry(ggg1);
+      ggg2 = new THREE.BufferGeometry().fromGeometry(ggg2);
+
+
+      var ticksgeom = new THREE.BufferGeometry();
+      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+
+
+      ycont[0].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      ycont[0].add(new THREE.Mesh(ggg1, textMaterial));
+
+      if (bothsides) {
+         ycont[1].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         ycont[1].add(new THREE.Mesh(ggg2, textMaterial));
+      }
+
+
       lbls = []; text_scale = 1;
 
       var zcont = [];
-
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
          top.add(zcont[n]);
@@ -686,7 +706,7 @@
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(text_scale,          0,  0, ticklen*2,
+         m.set(text_scale,          0,  0, 2*ticklen,
                         0,          0,  1, 0,
                         0, text_scale,  0, lbl.grz);
 
