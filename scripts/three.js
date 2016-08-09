@@ -23972,7 +23972,7 @@ THREE.ShaderChunk[ 'bumpmap_pars_fragment' ] = "#ifdef USE_BUMPMAP\n	uniform sam
 
 // File:src/renderers/shaders/ShaderChunk/clipping_planes_fragment.glsl
 
-THREE.ShaderChunk[ 'clipping_planes_fragment' ] = "#if NUM_CLIPPING_PLANES > 0\n	bool clipped = true;\n   for ( int i = 0; i < NUM_CLIPPING_PLANES; ++ i ) {\n		vec4 plane = clippingPlanes[ i ];\n		clipped = ( dot( vViewPosition, plane.xyz ) > plane.w ) && clipped;\n	}\n   if (clipped) discard;\n#endif\n";
+THREE.ShaderChunk[ 'clipping_planes_fragment' ] = "#if NUM_CLIPPING_PLANES > 0\n	#if CLIP_INTERSECTION\n	bool clipped = true;\n   for ( int i = 0; i < NUM_CLIPPING_PLANES; ++ i ) {\n		vec4 plane = clippingPlanes[ i ];\n		clipped = ( dot( vViewPosition, plane.xyz ) > plane.w ) && clipped;\n	}\n   if (clipped) discard;\n#else\n for ( int i = 0; i < NUM_CLIPPING_PLANES; ++ i ) {\n		vec4 plane = clippingPlanes[ i ];\n		if ( dot( vViewPosition, plane.xyz ) > plane.w ) discard;\n	}\n#endif\n #endif\n";
 
 // File:src/renderers/shaders/ShaderChunk/clipping_planes_pars_fragment.glsl
 
@@ -24876,6 +24876,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	this.clippingPlanes = [];
 	this.localClippingEnabled = false;
+	this.clipIntersection = false;
 
 	// physically based shading
 
@@ -24944,6 +24945,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	_clipping = new THREE.WebGLClipping(),
 	_clippingEnabled = false,
 	_localClippingEnabled = false,
+	_clipIntersection = false,
 
 	_sphere = new THREE.Sphere(),
 
@@ -25942,7 +25944,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 		lensFlares.length = 0;
 
 		_localClippingEnabled = this.localClippingEnabled;
-		_clippingEnabled = _clipping.init( this.clippingPlanes, _localClippingEnabled, camera );
+		_clipIntersection = this.clipIntersection;
+		_clippingEnabled = _clipping.init( this.clippingPlanes, _localClippingEnabled, _clipIntersection, camera );
 
 		projectObject( scene, camera );
 
@@ -26161,14 +26164,29 @@ THREE.WebGLRenderer = function ( parameters ) {
 			negRad = - sphere.radius,
 			i = 0;
 
-		do {
+		if ( _clipping.clipIntersection ) {
 
-			// out when deeper than radius in the negative halfspace
-			if ( planes[ i ].distanceToPoint( center ) > negRad ) return true;
+			do {
 
-		} while ( ++ i !== numPlanes );
+				// must be clipped by all planes 
+				if ( planes[ i ].distanceToPoint( center ) > negRad ) return true;
 
-		return false;
+			} while ( ++ i !== numPlanes );
+
+			return false;
+
+		} else {
+
+			do {
+
+				// out when deeper than radius in the negative halfspace
+				if ( planes[ i ].distanceToPoint( center ) < negRad ) return false;
+
+			} while ( ++ i !== numPlanes );
+
+			return true;
+
+		}
 
 	}
 
@@ -26313,7 +26331,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		var materialProperties = properties.get( material );
 
 		var parameters = programCache.getParameters(
-				material, _lights, fog, _clipping.numPlanes, object );
+				material, _lights, fog, _clipping.numPlanes, _clipping.clipIntersection, object );
 
 		var code = programCache.getProgramCode( material, parameters );
 
@@ -26415,6 +26433,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 				! ( material instanceof THREE.RawShaderMaterial ) ||
 				material.clipping === true ) {
 
+			materialProperties.clipIntersection = _clipping.clipIntersection;
 			materialProperties.numClippingPlanes = _clipping.numPlanes;
 			uniforms.clippingPlanes = _clipping.uniform;
 
@@ -26504,7 +26523,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 			if ( materialProperties.numClippingPlanes !== undefined &&
-				materialProperties.numClippingPlanes !== _clipping.numPlanes ) {
+				( materialProperties.numClippingPlanes !== _clipping.numPlanes || 
+				   materialProperties.clipIntersection !== _clipping.clipIntersection ) ) {
 
 				material.needsUpdate = true;
 
@@ -27781,6 +27801,7 @@ THREE.WebGLClipping = function() {
 		globalState = null,
 		numGlobalPlanes = 0,
 		localClippingEnabled = false,
+		clipIntersection = false,
 		renderingShadows = false,
 
 		plane = new THREE.Plane(),
@@ -27788,10 +27809,11 @@ THREE.WebGLClipping = function() {
 
 		uniform = { value: null, needsUpdate: false };
 
+	this.clipIntersection = false;
 	this.uniform = uniform;
 	this.numPlanes = 0;
 
-	this.init = function( planes, enableLocalClipping, camera ) {
+	this.init = function( planes, enableLocalClipping, enableClipIntersection, camera ) {
 
 		var enabled =
 			planes.length !== 0 ||
@@ -27802,6 +27824,8 @@ THREE.WebGLClipping = function() {
 			localClippingEnabled;
 
 		localClippingEnabled = enableLocalClipping;
+		clipIntersection = enableClipIntersection;
+		scope.clipIntersection = enableClipIntersection;
 
 		globalState = projectPlanes( planes, camera, 0 );
 		numGlobalPlanes = planes.length;
@@ -28948,6 +28972,7 @@ THREE.WebGLProgram = ( function () {
 				parameters.flipSided ? '#define FLIP_SIDED' : '',
 
 				'#define NUM_CLIPPING_PLANES ' + parameters.numClippingPlanes,
+				'#define CLIP_INTERSECTION ' + (parameters.clipIntersection ? 1 : 0),
 
 				parameters.shadowMapEnabled ? '#define USE_SHADOWMAP' : '',
 				parameters.shadowMapEnabled ? '#define ' + shadowMapTypeDefine : '',
@@ -29050,6 +29075,7 @@ THREE.WebGLProgram = ( function () {
 				parameters.flipSided ? '#define FLIP_SIDED' : '',
 
 				'#define NUM_CLIPPING_PLANES ' + parameters.numClippingPlanes,
+				'#define CLIP_INTERSECTION ' + (parameters.clipIntersection ? 1: 0),
 
 				parameters.shadowMapEnabled ? '#define USE_SHADOWMAP' : '',
 				parameters.shadowMapEnabled ? '#define ' + shadowMapTypeDefine : '',
@@ -29293,7 +29319,7 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 		"maxMorphTargets", "maxMorphNormals", "premultipliedAlpha",
 		"numDirLights", "numPointLights", "numSpotLights", "numHemiLights",
 		"shadowMapEnabled", "shadowMapType", "toneMapping", 'physicallyCorrectLights',
-		"alphaTest", "doubleSided", "flipSided", "numClippingPlanes", "depthPacking"
+		"alphaTest", "doubleSided", "flipSided", "numClippingPlanes", "clipIntersection", "depthPacking"
 	];
 
 
@@ -29365,7 +29391,7 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 
 	}
 
-	this.getParameters = function ( material, lights, fog, nClipPlanes, object ) {
+	this.getParameters = function ( material, lights, fog, nClipPlanes, clipIntersect, object ) {
 
 		var shaderID = shaderIDs[ material.type ];
 
@@ -29442,6 +29468,8 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 			numHemiLights: lights.hemi.length,
 
 			numClippingPlanes: nClipPlanes,
+			clipIntersection: clipIntersect,
+
 
 			shadowMapEnabled: renderer.shadowMap.enabled && object.receiveShadow && lights.shadows.length > 0,
 			shadowMapType: renderer.shadowMap.type,

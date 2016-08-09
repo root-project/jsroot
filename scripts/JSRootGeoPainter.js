@@ -408,7 +408,7 @@
          }
       });
 
-      appearance.add(this._advceOptions, 'globalTransparency', 0.0, 1.0).listen().onChange( function (value) {
+      appearance.add(this, 'globalTransparency', 0.0, 1.0).listen().onChange( function (value) {
             painter._toplevel.traverse( function (node) {
                if (node instanceof THREE.Mesh) {
                   if (node.material.alwaysTransparent !== undefined) {
@@ -443,6 +443,11 @@
          advanced.add( this._advceOptions, 'lumInfluence', 0.0, 1.0).listen().onChange( function (value) {
             painter._ssaoPass.uniforms[ 'lumInfluence' ].value = value;
             painter._enableSSAO = true;
+            painter.Render3D(0);
+         });
+
+         advanced.add( this._advceOptions, 'clipIntersection').listen().onChange( function (value) {
+            painter._renderer.clipIntersection = value;
             painter.Render3D(0);
          });
 
@@ -1149,6 +1154,7 @@
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
+      this._renderer.clipIntersection = true;
 
       this._animating = false;
 
@@ -1168,10 +1174,14 @@
       this._camera.add( this._pointLight );
       this._pointLight.position.set(10, 10, 10);
 
+      // Default Settings
+
+      this.globalTransparency = 1.0;
+
       this._defaultAdvanced = { aoClamp: 0.70,
                                 lumInfluence: 0.4,
-                                shininess: 100,
-                                globalTransparency: 1.0,
+                              //  shininess: 100,
+                                clipIntersection: true,
                                 depthTest: true
                               };
 
@@ -1241,8 +1251,9 @@
          this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
       }
 
-      this._advceOptions.globalTransparency = this._defaultAdvanced.globalTransparency;
       this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
+      this._advceOptions.clipIntersection = this._defaultAdvanced.clipIntersection;
+      this._renderer.clipIntersection = this._defaultAdvanced.clipIntersection;
 
       var painter = this;
       this._toplevel.traverse( function (node) {
@@ -1346,8 +1357,10 @@
 
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
+      console.log( stack );
+
       var stack = this._clones.FindStackByName(itemname.substr(6));
-   //   console.log( stack );
+  
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
@@ -2269,8 +2282,8 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-      //
-      if (/*(item._geoobj._typename.indexOf("TGeoNode")===0) && */JSROOT.GEO.findItemWithPainter(item))
+      
+      if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 
            var drawitem = JSROOT.GEO.findItemWithPainter(item);
