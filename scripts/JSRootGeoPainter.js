@@ -1298,7 +1298,7 @@
       console.log( stack );
 
       var stack = this._clones.FindStackByName(itemname.substr(6));
-  
+
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
@@ -1592,6 +1592,9 @@
             clearTimeout(this.render_tmout);
 
          var tm1 = new Date();
+
+         if (typeof this.TestAxisVisibility === 'function')
+            this.TestAxisVisibility(this._camera, this._toplevel);
 
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO) {
@@ -1966,7 +1969,7 @@
       if (!('_main' in axis))
          painter.SetDivId(divid);
 
-      painter['Draw3DAxis'] = function() {
+      painter.Draw3DAxis = function() {
          var main = this.main_painter();
 
          if ((main === null) && ('_main' in this.GetObject()))
@@ -1983,13 +1986,15 @@
 
          this.size3d = 0; // use min/max values directly as graphical coordinates
 
-         this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
+         this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
 
          this.toplevel = main._toplevel;
 
          this.DrawXYZ();
 
          main.adjustCameraPosition();
+
+         main.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
          main.Render3D();
       }
@@ -2220,7 +2225,7 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-      
+
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 

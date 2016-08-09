@@ -368,6 +368,34 @@
       this.first_render_tm = 0;
    }
 
+   JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel) {
+      var top;
+      for (var n=0;n<toplevel.children.length;++n) {
+         top = toplevel.children[n];
+         if (top.axis_draw) break;
+         top = undefined;
+      }
+
+      if (!top) return;
+
+      var qudrant = 1, pos = camera.position;
+      if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
+      if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
+      if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
+
+      function testvisible(id, range) {
+         if (id <= qudrant) id+=4;
+         return (id > qudrant) && (id < qudrant+range);
+      }
+
+      for (var n=0;n<top.children.length;++n) {
+         var chld = top.children[n];
+         if (chld.grid) chld.visible = testvisible(chld.grid, 3); else
+         if (chld.zid) chld.visible = testvisible(chld.zid+1, 2); else
+         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3);
+      }
+   }
+
    JSROOT.Painter.HPainter_DrawXYZ = function() {
 
       var grminx = -this.size3d, grmaxx = this.size3d,
@@ -389,7 +417,10 @@
          if (!zsides) zsides = [true, false, false, false];
       }
 
+      this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
+
       if (!zsides) zsides = [true, true, true, true];
+
 
       var bothsides = zsides[1] || zsides[2] || zsides[3];
 
@@ -467,23 +498,13 @@
           ticklen = textsize*0.5, text, tick, lbls = [], text_scale = 1,
           xticks = this.x_handle.CreateTicks(),
           yticks = this.y_handle.CreateTicks(),
-          zticks = this.z_handle.CreateTicks(),
-          top = new THREE.Object3D();
+          zticks = this.z_handle.CreateTicks();
 
+
+      // main element, where all axis elements are placed
+      var top = new THREE.Object3D();
+      top.axis_draw = true; // mark element as axis drawing
       this.toplevel.add(top);
-
-      var xcont = [];
-      for (var n=0;n<4;++n) {
-         xcont.push(new THREE.Object3D());
-         top.add(xcont[n]);
-      }
-
-      xcont[0].position.set(0, grminy, grminz);
-      xcont[0].rotation.x = 1/4*Math.PI;
-      xcont[1].position.set(0, grmaxy, grminz);
-      xcont[1].rotation.x = 3/4*Math.PI;
-      xcont[2].position.set(0, grmaxy, grmaxz);
-      xcont[3].position.set(0, grminy, grmaxz);
 
       var ticks = [], maxtextheight = 0;
 
@@ -541,29 +562,24 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
-      xcont[0].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-      xcont[0].add(new THREE.Mesh(ggg1, textMaterial));
+      var xcont = new THREE.Object3D();
+      xcont.position.set(0, grminy, grminz)
+      xcont.rotation.x = 1/4*Math.PI;
+      xcont.xyid = 2;
+      xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      xcont.add(new THREE.Mesh(ggg1, textMaterial));
+      top.add(xcont);
 
-      if (bothsides) {
-         xcont[1].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         xcont[1].add(new THREE.Mesh(ggg2, textMaterial));
-      }
-
+      xcont = new THREE.Object3D();
+      xcont.position.set(0, grmaxy, grminz);
+      xcont.rotation.x = 3/4*Math.PI;
+      xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      xcont.add(new THREE.Mesh(ggg2, textMaterial));
+      xcont.visible = bothsides;
+      xcont.xyid = 4;
+      top.add(xcont);
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
-
-      var ycont = [];
-      for (var n=0;n<4;++n) {
-         ycont.push(new THREE.Object3D());
-         top.add(ycont[n]);
-      }
-
-      ycont[0].position.set(grminx, 0, grminz);
-      ycont[0].rotation.y = -1/4*Math.PI;
-      ycont[1].position.set(grmaxx, 0, grminz);
-      ycont[1].rotation.y = -3/4*Math.PI;
-      ycont[2].position.set(grminx, 0, grmaxz);
-      ycont[3].position.set(grmaxx, 0, grmaxz);
 
       while (yticks.next()) {
          var gry = yticks.grpos;
@@ -620,14 +636,22 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
+      var ycont = new THREE.Object3D();
+      ycont.position.set(grminx, 0, grminz);
+      ycont.rotation.y = -1/4*Math.PI;
+      ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      ycont.add(new THREE.Mesh(ggg1, textMaterial));
+      ycont.xyid = 3;
+      top.add(ycont);
 
-      ycont[0].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-      ycont[0].add(new THREE.Mesh(ggg1, textMaterial));
-
-      if (bothsides) {
-         ycont[1].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         ycont[1].add(new THREE.Mesh(ggg2, textMaterial));
-      }
+      ycont = new THREE.Object3D();
+      ycont.position.set(grmaxx, 0, grminz);
+      ycont.rotation.y = -3/4*Math.PI;
+      ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      ycont.add(new THREE.Mesh(ggg2, textMaterial));
+      ycont.visible = bothsides;
+      ycont.xyid = 1;
+      top.add(ycont);
 
 
       lbls = []; text_scale = 1;
@@ -652,9 +676,11 @@
 
       var ticks = []; // just array, will be used for the buffer geometry
 
-      var zgrid = null, lastmajorz = null;
-      if (this.scale_z_grid && zsides[1] && (this.size3d !== 0))
-         zgrid = new THREE.Geometry(); // container for grid
+      var zgridx = null, zgridy = null, lastmajorz = null;
+      if (this.scale_z_grid && zsides[1] && (this.size3d !== 0)) {
+         zgridx = []; // container for grid
+         zgridy = [];
+      }
 
       while (zticks.next()) {
          var grz = zticks.grpos;
@@ -679,23 +705,58 @@
          }
 
          // create grid
-         if (zgrid && is_major) {
-            zgrid.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
-            zgrid.vertices.push(new THREE.Vector3(grminx, grmaxy, grz));
+         if (zgridx && is_major)
+            zgridx.push(grminx, 0, grz, grmaxx, 0, grz);
 
-            zgrid.vertices.push(new THREE.Vector3(grmaxx, grmaxy, grz));
-            zgrid.vertices.push(new THREE.Vector3(grmaxx, grminy, grz));
-         }
+         if (zgridy && is_major)
+            zgridy.push(0, grminy, grz, 0, grmaxy, grz);
 
          ticks.push(0, 0, grz, (is_major ? ticklen : ticklen * 0.6), 0, grz);
       }
 
-      if (zgrid && (zgrid.vertices.length > 0)) {
+
+      if (zgridx && (zgridx.length > 0)) {
+
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
-         var lines = new THREE.LineSegments(zgrid, material);
+
+         var geom =  new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridx), 3 ) );
+
+         var lines = new THREE.LineSegments(geom, material);
+         lines.position.set(0,grmaxy,0);
+         lines.grid = 2; // mark as grid
+         lines.visible = true;
+         top.add(lines);
+
+         lines = new THREE.LineSegments(geom, material);
+         lines.position.set(0,grminy,0);
+         lines.grid = 4; // mark as grid
+         lines.visible = false;
          top.add(lines);
       }
+
+      if (zgridy && (zgridy.length > 0)) {
+
+         // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
+
+         var geom =  new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridy), 3 ) );
+
+         var lines = new THREE.LineSegments(geom, material);
+         lines.position.set(grmaxx,0, 0);
+         lines.grid = 3; // mark as grid
+         lines.visible = true;
+         top.add(lines);
+
+         lines = new THREE.LineSegments(geom, material);
+         lines.position.set(grminx, 0, 0);
+         lines.grid = 1; // mark as grid
+         lines.visible = false;
+         top.add(lines);
+      }
+
 
       var ggg = new THREE.Geometry();
 
@@ -716,24 +777,43 @@
 
       // ticks = new THREE.BufferGeometry().fromGeometry(ticks);
 
-      for (var n=0;n<4;++n)
-         if (zsides[n]) {
-            zcont[n].add(new THREE.Mesh(ggg, textMaterial));
-            zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         }
+      for (var n=0;n<4;++n) {
+         zcont[n].add(new THREE.Mesh(ggg, textMaterial));
+         zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         zcont[n].visible = zsides[n];
+         zcont[n].zid = n+1;
+      }
 
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
 
       var linex = new THREE.BufferGeometry();
       linex.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([grminx, 0, 0, grmaxx, 0, 0]), 3 ) );
-      for(var n=0;n<4;++n)
-         xcont[n].add(new THREE.LineSegments(linex, lineMaterial));
+      for(var n=0;n<2;++n) {
+         var line = new THREE.LineSegments(linex, lineMaterial);
+         line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
+         line.xyid = 2;
+         top.add(line);
+
+         line = new THREE.LineSegments(linex, lineMaterial);
+         line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
+         line.xyid = 4;
+         top.add(line);
+      }
 
       var liney = new THREE.BufferGeometry();
       liney.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, grminy,0, 0, grmaxy, 0]), 3 ) );
-      for(var n=0;n<4;++n)
-         ycont[n].add(new THREE.LineSegments(liney, lineMaterial));
+      for(var n=0;n<2;++n) {
+         var line = new THREE.LineSegments(liney, lineMaterial);
+         line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
+         line.xyid = 3;
+         top.add(line);
+
+         line = new THREE.LineSegments(liney, lineMaterial);
+         line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
+         line.xyid = 1;
+         top.add(line);
+      }
 
       var linez = new THREE.BufferGeometry();
       linez.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, 0, grminz, 0, 0, grmaxz]), 3 ) );
@@ -1029,6 +1109,9 @@
          if (this.renderer === undefined) return;
 
          var tm1 = new Date();
+
+         if (typeof this.TestAxisVisibility === 'function')
+            this.TestAxisVisibility(this.camera, this.toplevel);
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
