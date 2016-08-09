@@ -620,10 +620,20 @@
          top.add(zcont[n]);
       }
 
+      zcont[0].position.set(grminx,grmaxy,0);
+      zcont[0].rotation.z = 3/4*Math.PI;
 
-      geometry = new THREE.Geometry();
-      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-      geometry.vertices.push(new THREE.Vector3(-1, 1, 0));
+      zcont[1].position.set(grmaxx,grmaxy,0);
+      zcont[1].rotation.z = 1/4*Math.PI;
+
+      zcont[2].position.set(grmaxx,grminy,0);
+      zcont[2].rotation.z = -1/4*Math.PI;
+
+      zcont[3].position.set(grminx,grminy,0);
+      zcont[3].rotation.z = -3/4*Math.PI;
+
+      var ticks = []; // just array, will be used for the buffer geometry
+
       var zgrid = null, lastmajorz = null;
       if (this.scale_z_grid && zsides[1] && (this.size3d !== 0))
          zgrid = new THREE.Geometry(); // container for grid
@@ -634,63 +644,21 @@
 
          var lbl = this.z_handle.format(zticks.tick, true, true);
          if (lbl === null) { is_major = false; lbl = ""; }
-         var plen = (is_major ? ticklen : ticklen * 0.6) * Math.sin(Math.PI/4);
+         var plen = (is_major ? ticklen : ticklen * 0.6);
 
          if (is_major && lbl && (lbl.length > 0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 10 });
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(-draw_width, -draw_height/2, 0);
+            text3d.translate(0, -draw_height/2, 0);
+            text3d.grz = grz;
+            lbls.push(text3d);
 
             if ((lastmajorz !== null) && (draw_height>0))
                text_scale = Math.min(text_scale, 0.95*(grz - lastmajorz)/draw_height);
 
             lastmajorz = grz;
-
-            if (zsides[0]) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               text.position.set(grminx-2*ticklen, grmaxy+2*ticklen, grz);
-               text.align = 1;
-               text.rotation.x = 0.5*Math.PI;
-               text.rotation.y = -0.25*Math.PI;
-               text.name = "Z axis";
-               zcont[0].add(text);
-               lbls.push(text);
-            }
-
-            if (zsides[1]) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               text.position.set(grmaxx + 2*ticklen, grmaxy + 2*ticklen, grz);
-               text.align = 1;
-               text.rotation.x = 0.5*Math.PI;
-               text.rotation.y = -0.75 * Math.PI;
-               text.name = "Z axis";
-               zcont[1].add(text);
-               lbls.push(text);
-            }
-
-            if (zsides[2]) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               text.align = 1;
-               text.position.set(grmaxx + 2*ticklen, grminy - 2*ticklen, grz);
-               text.rotation.x = 0.5*Math.PI;
-               text.rotation.y = 0.75*Math.PI;
-               text.name = "Z axis";
-               zcont[2].add(text);
-               lbls.push(text);
-            }
-
-            if (zsides[3]) {
-               text = new THREE.Mesh(text3d, textMaterial);
-               text.align = 1;
-               text.position.set(grminx - 2*ticklen, grminy - 2*ticklen, grz);
-               text.rotation.x = 0.5*Math.PI;
-               text.rotation.y = 0.25*Math.PI;
-               text.name = "Z axis";
-               zcont[3].add(text);
-               lbls.push(text);
-            }
          }
 
          // create grid
@@ -702,40 +670,8 @@
             zgrid.vertices.push(new THREE.Vector3(grmaxx, grminy, grz));
          }
 
-         if (zsides[0]) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grminx,grmaxy,grz);
-            tick.scale.set(plen,plen,1);
-            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
-            zcont[0].add(tick);
-         }
-
-         if (zsides[1]) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grmaxx,grmaxy,grz);
-            tick.scale.set(plen,plen,1);
-            tick.rotation.z = -Math.PI/2;
-            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
-            zcont[1].add(tick);
-         }
-
-         if (zsides[2]) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grmaxx,grminy,grz);
-            tick.scale.set(plen,plen,1);
-            tick.rotation.z = Math.PI;
-            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
-            zcont[2].add(tick);
-         }
-
-         if (zsides[3]) {
-            tick = new THREE.Line(geometry, lineMaterial);
-            tick.position.set(grminx,grminy,grz);
-            tick.scale.set(plen,plen,1);
-            tick.rotation.z = Math.PI/2;
-            tick.name = "Z axis " + this.z_handle.format(zticks.tick);
-            zcont[3].add(tick);
-         }
+         ticks.push(0, 0, grz);
+         ticks.push(plen, 0, grz);
       }
 
       if (zgrid && (zgrid.vertices.length > 0)) {
@@ -745,12 +681,33 @@
          top.add(lines);
       }
 
-      if (text_scale < 1)
-         lbls.forEach(function(mesh) { mesh.scale.set(text_scale, text_scale, 1); } );
+      var ggg = new THREE.Geometry();
+
+      lbls.forEach(function(lbl) {
+         var m = new THREE.Matrix4();
+         // matrix to swap y and z scales and shift along z to its position
+         m.set(text_scale,          0,  0, ticklen*2,
+                        0,          0,  1, 0,
+                        0, text_scale,  0, lbl.grz);
+
+         ggg.merge(lbl, m);
+      });
+
+      ggg = new THREE.BufferGeometry().fromGeometry(ggg);
+
+      var ticksgeom = new THREE.BufferGeometry();
+      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+
+      // ticks = new THREE.BufferGeometry().fromGeometry(ticks);
+
+      for (var n=0;n<4;++n)
+         if (zsides[n]) {
+            zcont[n].add(new THREE.Mesh(ggg, textMaterial));
+            zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         }
 
       // for TAxis3D do not show final cube
       if (this.size3d === 0) return;
-
 
       if (zsides[0] && zsides[1] && zsides[2] && zsides[3]) {
          // draw complete box - use BoxGeometry
