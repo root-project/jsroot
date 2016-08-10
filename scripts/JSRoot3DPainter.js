@@ -889,7 +889,8 @@
           j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0),
           j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1),
           i, j, x1, x2, y1, y2, binz,
-          main = this.main_painter();
+          main = this.main_painter(),
+          split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       var xx = new Float32Array(i2+1),
           yy = new Float32Array(j2+1);
@@ -932,7 +933,7 @@
 
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
              z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax),
-             numvertices = 0;
+             numvertices = 0, num2vertices = 0;
 
          // now calculate size of buffer geometry for boxes
 
@@ -948,14 +949,27 @@
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
                if (notop) numvertices -= 6;
+
+               if (split_faces && !reduced) {
+                  numvertices -= 12;
+                  num2vertices += 12;
+               }
             }
 
-         totalvertices += numvertices;
+         totalvertices += numvertices + num2vertices;
 
          var positions = new Float32Array(numvertices*3),
              normals = new Float32Array(numvertices*3),
              bins_index = new Uint32Array(numvertices),
-             v = 0, vert, bin, k, nn;
+             pos2 = null, norm2 = null, indx2 = null,
+             v = 0, v2 = 0, vert, bin, k, nn;
+
+         if (num2vertices > 0) {
+            pos2 = new Float32Array(num2vertices*3);
+            norm2 = new Float32Array(num2vertices*3);
+            indx2 = new Uint32Array(num2vertices);
+         }
+
 
          for (i=i1;i<i2;++i) {
             x1 = xx[i];
@@ -990,17 +1004,30 @@
 
                   vert = vertices[indicies[k]];
 
-                  positions[v]   = x1 + vert.x * (x2 - x1);
-                  positions[v+1] = y1 + vert.y * (y2 - y1);
-                  positions[v+2] = z1 + vert.z * (z2 - z1);
+                  if (split_faces && (k < 12)) {
+                     pos2[v2]   = x1 + vert.x * (x2 - x1);
+                     pos2[v2+1] = y1 + vert.y * (y2 - y1);
+                     pos2[v2+2] = z1 + vert.z * (z2 - z1);
 
-                  normals[v] = vnormals[nn];
-                  normals[v+1] = vnormals[nn+1];
-                  normals[v+2] = vnormals[nn+2];
+                     norm2[v2] = vnormals[nn];
+                     norm2[v2+1] = vnormals[nn+1];
+                     norm2[v2+2] = vnormals[nn+2];
 
-                  bins_index[v/3] = bin_index; // remember which bin corresponds to the vertex
+                     indx2[v2/3] = bin_index; // remember which bin corresponds to the vertex
+                     v2+=3;
+                  } else {
+                     positions[v]   = x1 + vert.x * (x2 - x1);
+                     positions[v+1] = y1 + vert.y * (y2 - y1);
+                     positions[v+2] = z1 + vert.z * (z2 - z1);
 
-                  v+=3; ++k;
+                     normals[v] = vnormals[nn];
+                     normals[v+1] = vnormals[nn+1];
+                     normals[v+2] = vnormals[nn+2];
+                     bins_index[v/3] = bin_index; // remember which bin corresponds to the vertex
+                     v+=3;
+                  }
+
+                  ++k;
 
                   if (k%6 === 0) {
                      nn+=3;
@@ -1028,7 +1055,7 @@
          }
 
          var material = new THREE.MeshLambertMaterial( { transparent: false,
-            opacity: 1, wireframe: false, color: new THREE.Color(fcolor),
+            opacity: 1, wireframe: false, color: fcolor,
             side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.FaceColors*/,
             overdraw: 0. } );
 
@@ -1043,7 +1070,26 @@
          }
 
          this.toplevel.add(mesh);
+
+         if (num2vertices > 0) {
+            var geom2 = new THREE.BufferGeometry();
+            geom2.addAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
+            geom2.addAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
+
+            var material2 = new THREE.MeshLambertMaterial( { transparent: false,
+               opacity: 1, wireframe: false, color: 0xFF0000,
+               side: THREE.FrontSide, vertexColors: THREE.NoColors,
+               overdraw: 0. } );
+
+            var mesh2 = new THREE.Mesh(geom2, material2);
+            mesh2.bins_index = indx2;
+            mesh2.painter = this;
+            mesh2.tooltip = mesh.tooltip;
+            this.toplevel.add(mesh2);
+         }
       }
+
+      // console.log('Total number of lego vertices', totalvertices);
 
       // lego3 or lego4 do not draw border lines
       if (this.options.Lego > 12) return;
@@ -1650,14 +1696,11 @@
    }
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
-
       menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
          this.options = this.DecodeOptions(arg);
          this.Redraw();
       });
-
    }
-
 
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
       // when called, *this* set to painter instance
