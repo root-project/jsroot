@@ -354,7 +354,7 @@
       this.pointLight.position.set( 0, 0, 0 );
 
       // this.pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
-       //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
+      //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
 
 
 
@@ -1050,7 +1050,6 @@
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
-
          //geometry.computeVertexNormals();
 
          var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
@@ -1061,9 +1060,8 @@
             fcolor = palette[indx];
          }
 
-         var material = new THREE.MeshBasicMaterial( {
-                         color: fcolor, blending: THREE.SubtractiveBlending,
-                          side: THREE.FrontSide, shading: THREE.SmoothShading   } );
+         //var material = new THREE.MeshLambertMaterial( { color: fcolor } );
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
 
          var mesh = new THREE.Mesh(geometry, material);
 
@@ -1081,11 +1079,10 @@
             var geom2 = new THREE.BufferGeometry();
             geom2.addAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
             geom2.addAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
-            geom2.computeVertexNormals();
+            //geom2.computeVertexNormals();
 
-            var material2 = new THREE.MeshBasicMaterial( {
-               color: 0xFF0000, blending: THREE.SubtractiveBlending,
-               side: THREE.FrontSide, shading: THREE.SmoothShading   } );
+            //var material2 = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
+            var material2 = new THREE.MeshBasicMaterial( { color: 0xFF0000, shading: THREE.SmoothShading } );
 
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
