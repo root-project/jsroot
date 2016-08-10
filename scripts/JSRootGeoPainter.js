@@ -300,6 +300,9 @@
          this.options.show_controls = !this.options.show_controls;
          this.showControlOptions(this.options.show_controls);
       });
+      menu.addchk(this.TestAxisVisibility, "Show axises", function() {
+         this.toggleAxisDraw();
+      });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
          this.options.wireframe = !this.options.wireframe;
          this.changeWireFrame(this._scene, this.options.wireframe);
@@ -1741,6 +1744,18 @@
       this.startDrawGeometry();
    }
 
+   JSROOT.TGeoPainter.prototype.toggleAxisDraw = function(force_on) {
+      if (this.TestAxisVisibility!==undefined) {
+         if (force_on) return; // we want axis - we have axis
+         this.TestAxisVisibility(null, this._toplevel);
+      } else {
+         var axis = JSROOT.Create("TNamed");
+         axis._typename = "TAxis3D";
+         axis._main = this;
+         JSROOT.draw(this.divid, axis); // it will include drawing of
+      }
+   }
+
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var call_ready = false;
@@ -1761,11 +1776,8 @@
       this.completeScene();
 
       if (this.options._axis) {
-         var axis = JSROOT.Create("TNamed");
-         axis._typename = "TAxis3D";
-         axis._main = this;
-         JSROOT.draw(this.divid, axis); // it will include drawing of
          this.options._axis = false;
+         this.toggleAxisDraw();
       }
 
       this._scene.overrideMaterial = null;
@@ -1998,9 +2010,7 @@
 
          this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
 
-         this.toplevel = main._toplevel;
-
-         this.DrawXYZ();
+         this.DrawXYZ(main._toplevel);
 
          main.adjustCameraPosition();
 

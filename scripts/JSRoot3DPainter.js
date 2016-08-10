@@ -307,6 +307,10 @@
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
 
       if ((arg!==undefined) && (arg<0)) {
+
+         if (typeof this.TestAxisVisibility === 'function')
+            this.TestAxisVisibility(null, this.toplevel);
+
          this.clear_3d_canvas();
          delete this.size3d;
          delete this.scene;
@@ -400,6 +404,13 @@
 
       if (!top) return;
 
+      if (!camera) {
+         // this is case when axis drawing want to be removed
+         toplevel.remove(top);
+         delete this.TestAxisVisibility;
+         return;
+      }
+
       fb = fb ? true : false;
       bb = bb ? true : false;
 
@@ -437,7 +448,7 @@
       }
    }
 
-   JSROOT.Painter.HPainter_DrawXYZ = function(use_y_for_z, zmult) {
+   JSROOT.Painter.HPainter_DrawXYZ = function(toplevel, use_y_for_z, zmult) {
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
@@ -550,7 +561,7 @@
       // main element, where all axis elements are placed
       var top = new THREE.Object3D();
       top.axis_draw = true; // mark element as axis drawing
-      this.toplevel.add(top);
+      toplevel.add(top);
 
       var ticks = [], maxtextheight = 0;
 
@@ -1204,7 +1215,6 @@
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
 
-
          //this.pointLight.position.set( this.camera.position.x + this.size3d, this.camera.position.y - this.size3d, this.camera.position.z);
          ///this.pointLight.updateMatrix();
          //this.pointLight.updateMatrixWorld();
@@ -1277,7 +1287,7 @@
       this.Create3DScene();
       this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
-      this.DrawXYZ(true, 1.1);
+      this.DrawXYZ(this.toplevel, true, 1.1);
 
       this.Draw3DBins();
 
@@ -1308,7 +1318,7 @@
 
       if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
-      this.DrawXYZ(false, 1.1);
+      this.DrawXYZ(this.toplevel, false, 1.1);
 
       this.Draw3DBins();
 
@@ -1693,7 +1703,7 @@
          this.Resize3D();
       } else {
          this.Create3DScene();
-         this.DrawXYZ();
+         this.DrawXYZ(this.toplevel);
          this.Draw3DBins();
          this.Render3D();
       }
