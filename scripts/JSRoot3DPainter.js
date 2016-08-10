@@ -59,8 +59,8 @@
             l = JSROOT.browser.isIE ? (e.clientX + document.documentElement.scrollLeft) : e.pageX;
             u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
          } else {
-            l = e.pageX - this.parent.offsetLeft;
-            u = e.pageY - this.parent.offsetTop;
+            l = e.pageX - this.parent.parentElement.offsetLeft;
+            u = e.pageY - this.parent.parentElement.offsetTop;
 
             //l = ('offsetX' in e) ? e.offsetX : e.layerX;
             //u = ('offsetY' in e) ? e.offsetY : e.layerY;
