@@ -1503,13 +1503,11 @@
       var material = null, geom = null, helper = null;
 
       if (this.options.Box == 11) {
-
-
          // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
 
          // material = new THREE.MeshBasicMaterial( { color: fillcolor, shading: THREE.SmoothShading  } );
 
-         material = new THREE.MeshLambertMaterial({ color : fillcolor /*, wireframe: true */ });
+         material = new THREE.MeshLambertMaterial({ color : fillcolor });
 
          // geom = new THREE.SphereGeometry(0.5, 18, 16);
          geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
@@ -1695,6 +1693,7 @@
          this.Resize3D();
       } else {
          this.Create3DScene();
+         this.pointLight.intensity = 1;
          this.DrawXYZ();
          this.Draw3DBins();
          this.Render3D();
