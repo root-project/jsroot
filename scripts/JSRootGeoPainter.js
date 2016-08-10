@@ -988,6 +988,16 @@
 
             var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
+/*
+            var info = this._clones.ResolveStack(entry.stack, true), ndiff = 0;
+            for (var n=0;n<16;++n) {
+               var v1 = info.matrix.elements[n], v2 = obj3d.matrixWorld.elements[n];
+               mean = Math.abs(v1+v2)/2;
+               if ((mean > 1e-5) && (Math.abs(v2-v1)/mean > 1e-6)) ndiff++;
+            }
+            if (ndiff>0) console.log('Mismatch for ' + info.name, info.matrix.elements, obj3d.matrixWorld.elements);
+*/
+
             var nodeobj = this._clones.origin[entry.nodeid];
             var clone = this._clones.nodes[entry.nodeid];
             var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
