@@ -2660,6 +2660,46 @@
       return this.DrawingReady();
    }
 
+   // ================= some functions for basic histogram painter =======================
+
+   JSROOT.THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+      if (nlevels<1) nlevels = 20;
+      this.fContour = [];
+      this.zmin = zmin;
+      this.zmax = zmax;
+
+      if (this.root_pad().fLogz) {
+         if (this.zmax <= 0) this.zmax = 1.;
+         if (this.zmin <= 0)
+            this.zmin = (zminpositive!==undefined) && (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
+         if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
+
+         var logmin = Math.log(this.zmin)/Math.log(10);
+         var logmax = Math.log(this.zmax)/Math.log(10);
+         var dz = (logmax-logmin)/nlevels;
+         this.fContour.push(this.zmin);
+         for (var level=1; level<nlevels; level++)
+            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
+         this.fContour.push(this.zmax);
+      } else {
+         if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+            this.zmax += 0.01*Math.abs(this.zmax);
+            this.zmin -= 0.01*Math.abs(this.zmin);
+         }
+         var dz = (this.zmax-this.zmin)/nlevels;
+         for (var level=0; level<=nlevels; level++)
+            this.fContour.push(this.zmin + dz*level);
+      }
+
+      return this.fContour;
+   }
+
+   JSROOT.THistPainter.prototype.GetPalette = function() {
+      if (this.fPalette == null)
+         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
+      return this.fPalette;
+   }
+
    // ==================== painter for TH2 histograms ==============================
 
    JSROOT.TH2Painter = function(histo) {
@@ -3069,44 +3109,6 @@
       }
 
       return true;
-   }
-
-   JSROOT.TH2Painter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
-      if (nlevels<1) nlevels = 20;
-      this.fContour = [];
-      this.zmin = zmin;
-      this.zmax = zmax;
-
-      if (this.root_pad().fLogz) {
-         if (this.zmax <= 0) this.zmax = 1.;
-         if (this.zmin <= 0)
-            this.zmin = (zminpositive!==undefined) && (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
-         if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
-
-         var logmin = Math.log(this.zmin)/Math.log(10);
-         var logmax = Math.log(this.zmax)/Math.log(10);
-         var dz = (logmax-logmin)/nlevels;
-         this.fContour.push(this.zmin);
-         for (var level=1; level<nlevels; level++)
-            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.fContour.push(this.zmax);
-      } else {
-         if ((this.zmin == this.zmax) && (this.zmin != 0)) {
-            this.zmax += 0.01*Math.abs(this.zmax);
-            this.zmin -= 0.01*Math.abs(this.zmin);
-         }
-         var dz = (this.zmax-this.zmin)/nlevels;
-         for (var level=0; level<=nlevels; level++)
-            this.fContour.push(this.zmin + dz*level);
-      }
-
-      return this.fContour;
-   }
-
-   JSROOT.TH2Painter.prototype.GetPalette = function() {
-      if (this.fPalette == null)
-         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
-      return this.fPalette;
    }
 
    JSROOT.TH2Painter.prototype.getContourIndex = function(zc) {

@@ -6530,6 +6530,7 @@
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
+
    // ======= TH1 painter================================================
 
    JSROOT.TH1Painter = function(histo) {
@@ -7102,8 +7103,10 @@
 
       if (!asstr) return tips;
 
+      if (asstr === true) asstr = "\n";
+
       var res = "";
-      for (var n=0;n<tips.length;++n) res += (n>0 ? "\n" : "") + tips[n];
+      for (var n=0;n<tips.length;++n) res += (n>0 ? asstr : "") + tips[n];
       return res;
    }
 
@@ -7366,11 +7369,15 @@
    }
 
    JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
-      JSROOT.AssertPrerequisites('3d', function() {
+      JSROOT.AssertPrerequisites('more2d;3d', function() {
          this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
          this.Draw3D = JSROOT.Painter.TH1Painter_Draw3D;
          this.Draw3D(call_back);
       }.bind(this));
+   }
+
+   JSROOT.TH1Painter.prototype.Get3DToolTip = function(indx) {
+      return this.GetBinTips(indx-1, '<br/>');
    }
 
    JSROOT.TH1Painter.prototype.Redraw = function() {
