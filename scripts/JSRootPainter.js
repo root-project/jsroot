@@ -6291,6 +6291,10 @@
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
+      var svg = this.svg_frame();
+
+      if (svg.empty() || svg.property('interactive_set')) return;
+
       this.last_touch = new Date(0);
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
@@ -6299,27 +6303,29 @@
       this.touch_cnt = 0;
 
       if (JSROOT.gStyle.Zooming) {
-         this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
-         this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
-         this.svg_frame().on("wheel", this.mouseWheel.bind(this) );
+         svg.on("mousedown", this.startRectSel.bind(this) );
+         svg.on("dblclick", this.mouseDoubleClick.bind(this) );
+         svg.on("wheel", this.mouseWheel.bind(this) );
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
-         this.svg_frame().on("touchstart", this.startTouchZoom.bind(this) );
+         svg.on("touchstart", this.startTouchZoom.bind(this) );
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
-            this.svg_frame().selectAll(".xaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this,"x") );
-            this.svg_frame().selectAll(".yaxis_container")
+            svg.selectAll(".xaxis_container")
+               .on("touchstart", this.startTouchMenu.bind(this,"x") );
+            svg.selectAll(".yaxis_container")
                 .on("touchstart", this.startTouchMenu.bind(this,"y") );
          }
-         this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
-         this.svg_frame().selectAll(".xaxis_container")
+         svg.on("contextmenu", this.ShowContextMenu.bind(this) );
+         svg.selectAll(".xaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         this.svg_frame().selectAll(".yaxis_container")
+         svg.selectAll(".yaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
+
+      svg.property('interactive_set', true);
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
@@ -7341,7 +7347,7 @@
          // redraw all objects
          this.RedrawPad();
 
-         if (this.options.Lego == 0) this.AddInteractive();
+         // if (this.options.Lego == 0) this.AddInteractive();
       });
    }
 
@@ -7393,6 +7399,7 @@
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
+      this.AddInteractive();
       JSROOT.CallBack(call_back);
    }
 
@@ -7466,7 +7473,7 @@
          painter.DrawNextFunction(0, function() {
 
             if (painter.options.Lego === 0) {
-               painter.AddInteractive();
+               // painter.AddInteractive();
                if (painter.options.AutoZoom) painter.AutoZoom();
             }
 

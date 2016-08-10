@@ -2870,7 +2870,7 @@
             // draw new palette, resize frame if required
             this.DrawNewPalette(true);
          this.RedrawPad();
-         if (this.options.Lego == 0) this.AddInteractive();
+         // if (this.options.Lego == 0) this.AddInteractive();
       });
 
    }
@@ -3776,6 +3776,8 @@
 
       this.DrawTitle();
 
+      this.AddInteractive();
+
       JSROOT.CallBack(call_back);
    }
 
@@ -3836,7 +3838,7 @@
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
             if (this.options.Lego == 0) {
-               this.AddInteractive();
+               // this.AddInteractive();
                if (this.options.AutoZoom) this.AutoZoom();
             }
             this.FillToolbar();
