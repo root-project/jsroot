@@ -450,10 +450,11 @@
          ymin = 0; ymax = 1;
       }
 
+      // z axis range used for lego plot
+      this.lego_zmin = zmin; this.lego_zmax = zmax;
+
       // factor 1.1 used in ROOT for lego plots
       if ((zmult !== undefined) && !z_zoomed) zmax *= zmult;
-
-
 
       this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
@@ -918,7 +919,7 @@
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         levels = this.CreateContour(20, axis_zmin, axis_zmax, this.minposbin);
+         levels = this.CreateContour(20, this.lego_zmin, this.lego_zmax, this.minposbin);
          palette = this.GetPalette();
       }
 
