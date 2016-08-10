@@ -842,8 +842,8 @@
       }
    }
 
-   JSROOT.Painter.TH2Painter_Draw3DBins = function() {
-      // Perform TH2 lego plot with BufferGeometry
+   JSROOT.Painter.HistPainter_DrawLego = function() {
+      // Perform TH1/TH2 lego plot with BufferGeometry
 
       var vertices = [];
       vertices.push( new THREE.Vector3(1, 1, 1) );
@@ -876,18 +876,17 @@
       var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
       // create the bin cubes
-      var showmin = !this.options.Zero;
+      var showmin = !this.options.Zero, hdim = this.Dimension();
 
       var i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", 0),
-          j2 = this.GetSelectIndex("y", "right", 1),
+          j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0),
+          j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1),
           i, j, x1, x2, y1, y2, binz,
           main = this.main_painter();
 
       var xx = new Float32Array(i2+1),
           yy = new Float32Array(j2+1);
-
 
       // first adjust ranges
       for (i=i1;i<=i2;++i) {
@@ -899,12 +898,17 @@
          if (xx[i] > 1.001*this.size3d) i2 = i-1;
       }
 
-      for (j=j1;j<=j2;++j) {
-         y1 = this.GetBinY(j);
-         if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-         yy[j] = this.ty(y1);
-         if (yy[j] < -1.001*this.size3d) j1 = j+1;
-         if (yy[j] > 1.001*this.size3d) j2 = j-1;
+      if (hdim===1) {
+         yy[0] = this.ty(0);
+         yy[1] = this.ty(1);
+      } else {
+         for (j=j1;j<=j2;++j) {
+            y1 = this.GetBinY(j);
+            if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
+            yy[j] = this.ty(y1);
+            if (yy[j] < -1.001*this.size3d) j1 = j+1;
+            if (yy[j] > 1.001*this.size3d) j2 = j-1;
+         }
       }
 
       if ((i1 >= i2) || (j1>=j2)) return;
@@ -942,10 +946,10 @@
 
          totalvertices += numvertices;
 
-         var positions = new Float32Array( numvertices * 3 );
-         var normals = new Float32Array( numvertices * 3 );
-         var bins_index = new Uint32Array(numvertices);
-         var v = 0, vert, bin, k, nn;
+         var positions = new Float32Array(numvertices*3),
+             normals = new Float32Array(numvertices*3),
+             bins_index = new Uint32Array(numvertices),
+             v = 0, vert, bin, k, nn;
 
          for (i=i1;i<i2;++i) {
             x1 = xx[i];
@@ -1199,7 +1203,7 @@
       // function called with this as painter
 
       this.Create3DScene();
-      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
+      this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
       //var pad = this.root_pad();
       // if (pad && pad.fGridz === undefined) pad.fGridz = false;
@@ -1216,7 +1220,7 @@
 
       this.DrawXYZ(true, 1.1);
 
-      // this.Draw3DBins();
+      this.Draw3DBins();
 
       // if (this.options.Zscale > 0) this.DrawNewPalette(true);
 
@@ -1232,7 +1236,7 @@
       // function called with this as painter
 
       this.Create3DScene();
-      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
+      this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
       var pad = this.root_pad();
       // if (pad && pad.fGridz === undefined) pad.fGridz = false;
