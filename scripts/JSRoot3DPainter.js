@@ -56,11 +56,15 @@
          if (this.tt === null) return;
          var u,l;
          if (this.abspos) {
-            u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
             l = JSROOT.browser.isIE ? (e.clientX + document.documentElement.scrollLeft) : e.pageX;
+            u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
          } else {
-            l = ('offsetX' in e) ? e.offsetX : e.layerX;
-            u = ('offsetY' in e) ? e.offsetY : e.layerY;
+            l = e.pageX - this.parent.offsetLeft;
+            u = e.pageY - this.parent.offsetTop;
+
+            //l = ('offsetX' in e) ? e.offsetX : e.layerX;
+            //u = ('offsetY' in e) ? e.offsetY : e.layerY;
+
             if (l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
                l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
 
