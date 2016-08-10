@@ -3080,7 +3080,7 @@
       if (this.root_pad().fLogz) {
          if (this.zmax <= 0) this.zmax = 1.;
          if (this.zmin <= 0)
-            this.zmin = (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
+            this.zmin = (zminpositive!==undefined) && (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
          if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
 
          var logmin = Math.log(this.zmin)/Math.log(10);
@@ -3652,7 +3652,7 @@
       var ix = indx % (this.nbinsx + 2),
           iy = (indx - ix) / (this.nbinsx + 2);
 
-      var tips = this.GetBinTips(ix, iy);
+      var tips = this.GetBinTips(ix-1, iy-1);
       var res = tips[0];
       for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
       return res;

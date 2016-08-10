@@ -919,7 +919,7 @@
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         levels = this.CreateContour(20, this.lego_zmin, this.lego_zmax, this.minposbin);
+         levels = this.CreateContour(20, this.lego_zmin, this.lego_zmax);
          palette = this.GetPalette();
       }
 
@@ -1062,7 +1062,7 @@
 
       var lpositions = new Float32Array( numlinevertices * 3 );
       var lindicies = new Uint32Array( numsegments );
-      bins_index = new Uint32Array( numsegments );
+      var lines_index = new Uint32Array( numsegments );
 
       var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
 
@@ -1090,7 +1090,7 @@
 
             // array of indicies for the lines, to avoid duplication of points
             for (k=0; k < seg.length; ++k) {
-               bins_index[ii] = bin_index;
+               lines_index[ii] = bin_index;
                lindicies[ii++] = ll/3 + seg[k];
             }
 
@@ -1114,12 +1114,12 @@
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
-      line.bins_index = bins_index;
+      line.lines_index = lines_index;
       line.painter = this;
 
       line.tooltip = function(intersect) {
-         if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-         return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
+         //if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
+         //return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
       }
 
       this.toplevel.add(line);
