@@ -301,6 +301,7 @@
          delete this.scene;
          delete this.toplevel;
          delete this.camera;
+         delete this.pointLight;
          delete this.renderer;
          if (this.control) {
             this.control.dispose();
@@ -346,10 +347,17 @@
       this.scene_height = size.height
 
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
-      var pointLight = new THREE.PointLight(0xcfcfcf);
-      this.camera.add( pointLight );
-      pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
       this.camera.position.set(-3*this.size3d, -3*this.size3d, 3*this.size3d);
+
+      this.pointLight = new THREE.PointLight(0xffffff,100);
+      this.camera.add( this.pointLight );
+      this.pointLight.position.set( 0, 0, 0 );
+
+      // this.pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
+       //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
+
+
+
       this.camera.up = new THREE.Vector3(0,0,1);
       this.camera.lookAt(new THREE.Vector3(0,0,this.size3d));
       this.scene.add( this.camera );
@@ -1043,8 +1051,7 @@
          geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
 
-         // color is not handled in CanvasRenderer, keep it away
-         // geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+         //geometry.computeVertexNormals();
 
          var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
 
@@ -1054,10 +1061,9 @@
             fcolor = palette[indx];
          }
 
-         var material = new THREE.MeshLambertMaterial( { transparent: false,
-            opacity: 1, wireframe: false, color: fcolor,
-            side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.FaceColors*/,
-            overdraw: 0. } );
+         var material = new THREE.MeshBasicMaterial( {
+                         color: fcolor, blending: THREE.SubtractiveBlending,
+                          side: THREE.FrontSide, shading: THREE.SmoothShading   } );
 
          var mesh = new THREE.Mesh(geometry, material);
 
@@ -1075,11 +1081,11 @@
             var geom2 = new THREE.BufferGeometry();
             geom2.addAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
             geom2.addAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
+            geom2.computeVertexNormals();
 
-            var material2 = new THREE.MeshLambertMaterial( { transparent: false,
-               opacity: 1, wireframe: false, color: 0xFF0000,
-               side: THREE.FrontSide, vertexColors: THREE.NoColors,
-               overdraw: 0. } );
+            var material2 = new THREE.MeshBasicMaterial( {
+               color: 0xFF0000, blending: THREE.SubtractiveBlending,
+               side: THREE.FrontSide, shading: THREE.SmoothShading   } );
 
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
@@ -1189,6 +1195,12 @@
 
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
+
+
+         //this.pointLight.position.set( this.camera.position.x + this.size3d, this.camera.position.y - this.size3d, this.camera.position.z);
+         ///this.pointLight.updateMatrix();
+         //this.pointLight.updateMatrixWorld();
+         //this.camera.updateProjectionMatrix();
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
