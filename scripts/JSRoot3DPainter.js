@@ -360,7 +360,7 @@
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
       this.camera.position.set(-3*this.size3d, -3*this.size3d, 3*this.size3d);
 
-      this.pointLight = new THREE.PointLight(0xffffff,100);
+      this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );
       this.pointLight.position.set( 0, 0, 0 );
 
@@ -1693,7 +1693,6 @@
          this.Resize3D();
       } else {
          this.Create3DScene();
-         this.pointLight.intensity = 1;
          this.DrawXYZ();
          this.Draw3DBins();
          this.Render3D();
