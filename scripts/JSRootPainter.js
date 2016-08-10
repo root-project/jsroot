@@ -7347,12 +7347,38 @@
       return false;
    }
 
-   JSROOT.TH1Painter.prototype.Redraw = function() {
-      this.CreateXY();
+   JSROOT.TH1Painter.prototype.CheckResize = function(size) {
+      // no painter - no resize
+      var pad_painter = this.pad_painter(),changed = true;
+      if (pad_painter)
+         changed = pad_painter.CheckCanvasResize(size, (this.options.Lego > 0) && !JSROOT.browser.isFirefox);
+      if (changed && (this.options.Lego > 0) && (typeof this.Resize3D == 'function'))
+         this.Resize3D();
+      return changed;
+   }
+
+   JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
+      JSROOT.CallBack(call_back);
+   }
+
+   JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
+      JSROOT.AssertPrerequisites('3d', function() {
+         this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
+         this.Draw3D = JSROOT.Painter.TH1Painter_Draw3D;
+         this.Draw3D(call_back);
+      }.bind(this));
+   }
+
+   JSROOT.TH1Painter.prototype.Redraw = function() {
+      this.CreateXY();
+
+      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+
+      this[func_name]();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -7370,26 +7396,22 @@
 
       painter.CreateXY();
 
-      painter.DrawAxes();
-
-      painter.DrawGrids();
-
-      painter.DrawBins();
-
-      painter.DrawTitle();
-
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
          painter.CreateStat();
 
-      painter.DrawNextFunction(0, function() {
+      var func_name = (painter.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
-         painter.AddInteractive();
+      painter[func_name](function() {
+         painter.DrawNextFunction(0, function() {
 
-         painter.FillToolbar();
+            if (painter.options.Lego === 0) {
+               painter.AddInteractive();
+               if (painter.options.AutoZoom) painter.AutoZoom();
+            }
 
-         if (painter.options.AutoZoom) painter.AutoZoom();
-
-         painter.DrawingReady();
+            painter.FillToolbar();
+            painter.DrawingReady();
+         });
       });
 
       return painter;

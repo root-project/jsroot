@@ -414,44 +414,48 @@
       }
    }
 
-   JSROOT.Painter.HPainter_DrawXYZ = function() {
+   JSROOT.Painter.HPainter_DrawXYZ = function(use_y_for_z, zmult) {
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
           grminz = 0, grmaxz = 2*this.size3d,
           textsize = Math.round(this.size3d * 0.05),
-//          zsides = this.scale_z_sides,
           pad = this.root_pad(),
+          histo = this.histo,
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
-          histo = this.histo;
+          y_zoomed = false, z_zoomed = false;
 
       if (this.size3d === 0) {
          grminx = this.xmin; grmaxx = this.xmax;
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
          textsize = (grmaxz - grminz) * 0.05;
-//         if (!zsides) zsides = [true, false, false, false];
       }
-
-      this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
-
-//      if (!zsides) zsides = [true, true, true, true];
-
-//      var bothsides = zsides[1] || zsides[2] || zsides[3];
 
       if (('zoom_xmin' in this) && ('zoom_xmax' in this) && (this.zoom_xmin !== this.zoom_xmax)) {
          xmin = this.zoom_xmin; xmax = this.zoom_xmax;
       }
-
       if (('zoom_ymin' in this) && ('zoom_ymax' in this) && (this.zoom_ymin !== this.zoom_ymax)) {
-         ymin = this.zoom_ymin; ymax = this.zoom_ymax;
+         ymin = this.zoom_ymin; ymax = this.zoom_ymax; y_zoomed = true;
       }
 
       if (('zoom_zmin' in this) && ('zoom_zmax' in this) && (this.zoom_zmin !== this.zoom_zmax)) {
-         zmin = this.zoom_zmin; zmax = this.zoom_zmax;
+         zmin = this.zoom_zmin; zmax = this.zoom_zmax; z_zoomed = true;
       }
+
+      if (use_y_for_z) {
+         zmin = ymin; zmax = ymax; z_zoomed = y_zoomed;
+         ymin = 0; ymax = 1;
+      }
+
+      // factor 1.1 used in ROOT for lego plots
+      if ((zmult !== undefined) && !z_zoomed) zmax *= zmult;
+
+
+
+      this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
       if (pad && pad.fLogx) {
          if (xmax <= 0) xmax = 1.;
@@ -465,7 +469,7 @@
          this.x_kind = "log";
       } else {
          this.tx = d3.scale.linear();
-         if (histo && histo.fXaxis.fLabels) this.x_kind = 'labels';
+         if (histo && histo.fXaxis.fLabels) this.x_kind = "labels";
                                        else this.x_kind = "lin";
       }
 
@@ -474,7 +478,7 @@
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
 
-      if (pad && pad.fLogy) {
+      if (pad && pad.fLogy && !use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
@@ -487,7 +491,7 @@
          this.y_kind = "log";
       } else {
          this.ty = d3.scale.linear();
-         if (histo && histo.fYaxis.fLabels) this.y_kind = 'labels';
+         if (histo && histo.fYaxis.fLabels) this.y_kind = "labels";
                                        else this.y_kind = "lin";
       }
       this.ty.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
@@ -595,6 +599,7 @@
       xcont.xyid = 4;
       top.add(xcont);
 
+
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
 
       while (yticks.next()) {
@@ -648,25 +653,26 @@
       ggg1 = new THREE.BufferGeometry().fromGeometry(ggg1);
       ggg2 = new THREE.BufferGeometry().fromGeometry(ggg2);
 
-
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
-      var ycont = new THREE.Object3D();
-      ycont.position.set(grminx, 0, grminz);
-      ycont.rotation.y = -1/4*Math.PI;
-      ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
-      ycont.add(new THREE.Mesh(ggg1, textMaterial));
-      ycont.xyid = 3;
-      top.add(ycont);
+      if (!use_y_for_z) {
+         var ycont = new THREE.Object3D();
+         ycont.position.set(grminx, 0, grminz);
+         ycont.rotation.y = -1/4*Math.PI;
+         ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         ycont.add(new THREE.Mesh(ggg1, textMaterial));
+         ycont.xyid = 3;
+         top.add(ycont);
 
-      ycont = new THREE.Object3D();
-      ycont.position.set(grmaxx, 0, grminz);
-      ycont.rotation.y = -3/4*Math.PI;
-      ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
-      ycont.add(new THREE.Mesh(ggg2, textMaterial));
-      ycont.xyid = 1;
-      top.add(ycont);
+         ycont = new THREE.Object3D();
+         ycont.position.set(grmaxx, 0, grminz);
+         ycont.rotation.y = -3/4*Math.PI;
+         ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         ycont.add(new THREE.Mesh(ggg2, textMaterial));
+         ycont.xyid = 1;
+         top.add(ycont);
+      }
 
 
       lbls = []; text_scale = 1;
@@ -793,9 +799,6 @@
 
       zcont[3].position.set(grminx,grminy,0);
       zcont[3].rotation.z = -3/4*Math.PI;
-
-
-
 
 
       // for TAxis3D do not show final cube
@@ -1171,7 +1174,6 @@
       this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
-
    JSROOT.Painter.Resize3D = function() {
 
       var size3d = this.size_for_3d(this.svg_pad().property('can3d'));
@@ -1193,6 +1195,39 @@
       this.Render3D();
    }
 
+   JSROOT.Painter.TH1Painter_Draw3D = function(call_back) {
+      // function called with this as painter
+
+      this.Create3DScene();
+      this.Draw3DBins = JSROOT.Painter.TH2Painter_Draw3DBins;
+
+      //var pad = this.root_pad();
+      // if (pad && pad.fGridz === undefined) pad.fGridz = false;
+
+      //this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
+      //this.zmax = this.gmaxbin;
+
+      //if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
+      //if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
+
+      //if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+      //this.zmax *= 1.1; // as it done in ROOT
+
+      this.DrawXYZ(true, 1.1);
+
+      // this.Draw3DBins();
+
+      // if (this.options.Zscale > 0) this.DrawNewPalette(true);
+
+      this.DrawTitle();
+
+      this.Render3D();
+
+      JSROOT.CallBack(call_back);
+   }
+
+
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
       // function called with this as painter
 
@@ -1210,15 +1245,7 @@
 
       if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
-      this.zmax *= 1.1; // as it done in ROOT
-
-      // this.scale_z_sides = [true, true, true, true];
-      // if (!this.options.BackBox) this.scale_z_sides[1] = false;
-      // if (!this.options.FrontBox) this.scale_z_sides[3] = false;
-      // if (!this.options.BackBox && !this.options.FrontBox) this.scale_z_sides[2] = false;
-      // this.scale_z_grid = pad.fGridz && this.scale_z_sides[1];
-
-      this.DrawXYZ();
+      this.DrawXYZ(false, 1.1);
 
       this.Draw3DBins();
 
@@ -1613,7 +1640,7 @@
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
-         changed = pad_painter.CheckCanvasResize(size, JSROOT.browser.isFirefox ? false : true);
+         changed = pad_painter.CheckCanvasResize(size, !JSROOT.browser.isFirefox);
 
       if (changed) this.Resize3D(size);
    }

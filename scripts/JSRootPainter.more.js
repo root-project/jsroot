@@ -3796,7 +3796,7 @@
 
    JSROOT.TH2Painter.prototype.Draw2D = function(call_back) {
 
-      if (typeof this['Create3DScene'] == 'function')
+      if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
 
       this.DrawAxes();
@@ -3816,11 +3816,10 @@
       var changed = true, force = (this.options.Lego > 0) && !JSROOT.browser.isFirefox;
       if (pad_painter)
          changed = pad_painter.CheckCanvasResize(size, force);
-      if (changed && (this.options.Lego > 0) && (typeof this['Resize3D'] == 'function'))
+      if (changed && (this.options.Lego > 0) && (typeof this.Resize3D == 'function'))
          this.Resize3D();
       return changed;
    }
-
 
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
@@ -3863,7 +3862,7 @@
       if (JSROOT.gStyle.AutoStat && this.create_canvas)
          this.CreateStat();
 
-      var func_name = this.options.Lego > 0 ? "Draw3D" : "Draw2D";
+      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
