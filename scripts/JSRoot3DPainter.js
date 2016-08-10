@@ -45,25 +45,36 @@
        return this._Detect_WebGL;
    }
 
-   JSROOT.Painter.TooltipFor3D = function(prnt) {
+   JSROOT.Painter.TooltipFor3D = function(prnt, canvas) {
       this.tt = null;
       this.cont = null;
       this.lastlbl = '';
       this.parent = prnt ? prnt : document.body;
+      this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
 
       this.pos = function(e) {
+         // method used to define position of next tooltip
+         // event is delivered from canvas,
+         // but position should be calculated relative to the element where tooltip is placed
+
          if (this.tt === null) return;
          var u,l;
          if (this.abspos) {
             l = JSROOT.browser.isIE ? (e.clientX + document.documentElement.scrollLeft) : e.pageX;
             u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
          } else {
-            l = e.pageX - this.parent.parentElement.offsetLeft;
-            u = e.pageY - this.parent.parentElement.offsetTop;
 
-            //l = ('offsetX' in e) ? e.offsetX : e.layerX;
-            //u = ('offsetY' in e) ? e.offsetY : e.layerY;
+            l = e.offsetX;
+            u = e.offsetY;
+
+            var rect1 = this.parent.getBoundingClientRect(),
+                rect2 = this.canvas.getBoundingClientRect();
+
+            if ((rect1.left !== undefined) && (rect2.left!== undefined)) l += (rect2.left-rect1.left);
+
+            if ((rect1.top !== undefined) && (rect2.top!== undefined)) u += rect2.top-rect1.top;
+
 
             if (l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
                l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
@@ -135,7 +146,7 @@
           control_active = false,
           control_changed = false,
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node()),
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement),
           camposition0 = camera.position.clone();
 
       control.ResetCamera = function() {
@@ -1492,12 +1503,20 @@
       var material = null, geom = null, helper = null;
 
       if (this.options.Box == 11) {
-         material = new THREE.MeshPhongMaterial({ color : fillcolor, specular : 0x4f4f4f });
+
+
+         // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
+
+         // material = new THREE.MeshBasicMaterial( { color: fillcolor, shading: THREE.SmoothShading  } );
+
+         material = new THREE.MeshLambertMaterial({ color : fillcolor /*, wireframe: true */ });
+
          // geom = new THREE.SphereGeometry(0.5, 18, 16);
          geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
       } else {
-         material = new THREE.MeshLambertMaterial({ color : fillcolor });
+         // material = new THREE.MeshLambertMaterial({ color : fillcolor });
+         material = new THREE.MeshBasicMaterial( { color: fillcolor  } );
          geom = new THREE.BoxGeometry(1, 1, 1);
          helper = new THREE.BoxHelper(new THREE.Mesh(geom));
       }
