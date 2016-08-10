@@ -2594,14 +2594,13 @@
             zoom_rect = null;
             doing_zoom = false;
 
-            var zmin = Math.min(z.invert(sel1), z.invert(sel2));
-            var zmax = Math.max(z.invert(sel1), z.invert(sel2));
+            var zmin = Math.min(z.invert(sel1), z.invert(sel2)),
+                zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
             pthis.main_painter().Zoom(undefined, undefined, undefined, undefined, zmin, zmax);
          }
 
          function startRectSel() {
-
             // ignore when touch selection is actiavated
             if (doing_zoom) return;
             doing_zoom = true;
@@ -2710,13 +2709,13 @@
          } else {
             var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
             if (histo.fContour != null) nlevels = histo.fContour.length;
-            if (this.zoom_zmin != this.zoom_zmax) {
-               zmin = this.zoom_zmin;
-               zmax = this.zoom_zmax;
-            }
             if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
                zmin = this.histo.fMinimum;
                zmax = this.histo.fMaximum;
+            }
+            if (this.zoom_zmin != this.zoom_zmax) {
+               zmin = this.zoom_zmin;
+               zmax = this.zoom_zmax;
             }
             this.CreateContour(nlevels, zmin, zmax, this.minposbin);
          }
