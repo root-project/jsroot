@@ -6486,10 +6486,37 @@
                menu.add("Z", "Z", this.ChangeUserRange);
             menu.add("endsub:")
          }
-      }
 
-      if ('FillHistContextMenu' in this)
-         this.FillHistContextMenu(menu);
+         if (typeof this.FillHistContextMenu == 'function')
+            this.FillHistContextMenu(menu);
+
+         if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
+            // menu for 3D drawings
+
+            menu.addchk(this.options.FrontBox, 'Front box', function() {
+               this.options.FrontBox = !this.options.FrontBox;
+               if (this.Render3D) this.Render3D();
+            });
+            menu.addchk(this.options.BackBox, 'Back box', function() {
+               this.options.BackBox = !this.options.BackBox;
+               if (this.Render3D) this.Render3D();
+            });
+            menu.addchk(this.options.Zero, 'Suppress zeros', function() {
+               this.options.Zero = !this.options.Zero;
+               this.RedrawPad();
+            });
+
+            if ((this.options.Lego==12) || (this.options.Lego==14))
+               menu.addchk(this.options.Zscale, "Z scale", function() {
+                  this.ToggleColz();
+               });
+
+            if (this.control && typeof this.control.ResetCamera === 'function')
+               menu.add('Reset camera', function() {
+                  this.control.ResetCamera();
+               });
+         }
+      }
 
       this.FillAttContextMenu(menu);
 
@@ -6628,8 +6655,8 @@
       }
 
       // If no any draw options specified, do not try draw histogram
-      if (this.options.Bar == 0 && this.options.Hist == 0
-            && this.options.Error == 0 && this.options.Same == 0) {
+      if (!this.options.Bar && !this.options.Hist &&
+          !this.options.Error && !this.options.Same && !this.options.Lego) {
          this.draw_content = false;
       }
       if (this.options.Axis > 0) { // Paint histogram axis only
@@ -7105,7 +7132,7 @@
    }
 
    JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content) {
+      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0)) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
@@ -7305,12 +7332,16 @@
 
 
    JSROOT.TH1Painter.prototype.FillHistContextMenu = function(menu) {
-      if (!this.draw_content) return;
 
-      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
-      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2"], function(arg) {
+      menu.add("Auto zoom-in", this.AutoZoom);
+
+      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2", "lego"], function(arg) {
          this.options = this.DecodeOptions(arg);
-         this.Redraw();
+
+         // redraw all objects
+         this.RedrawPad();
+
+         if (this.options.Lego == 0) this.AddInteractive();
       });
    }
 
@@ -7355,6 +7386,9 @@
    }
 
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
+      if (typeof this.Create3DScene == 'function')
+         this.Create3DScene(-1);
+
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();

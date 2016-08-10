@@ -2663,6 +2663,7 @@
    // ================= some functions for basic histogram painter =======================
 
    JSROOT.THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+
       if (nlevels<1) nlevels = 20;
       this.fContour = [];
       this.zmin = zmin;
@@ -2694,118 +2695,74 @@
       return this.fContour;
    }
 
+   JSROOT.THistPainter.prototype.getContourIndex = function(zc) {
+      // return contour index, which corresponds to the z content value
+
+      if (this.fContour == null) {
+         // if not initialized, first create contour array
+         // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+         var histo = this.GetObject();
+
+         this.fUserContour = false;
+         if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+            this.fContour = JSROOT.clone(histo.fContour);
+            this.fUserContour = true;
+         } else {
+            var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
+            if (histo.fContour != null) nlevels = histo.fContour.length;
+            if (this.zoom_zmin != this.zoom_zmax) {
+               zmin = this.zoom_zmin;
+               zmax = this.zoom_zmax;
+            }
+            if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
+               zmin = this.histo.fMinimum;
+               zmax = this.histo.fMaximum;
+            }
+            this.CreateContour(nlevels, zmin, zmax, this.minposbin);
+         }
+      }
+
+      if (this.fUserContour || this.root_pad().fLogz) {
+         var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
+         if (zc < cntr[0]) return -1;
+         if (zc >= cntr[r]) return r;
+         while (l < r-1) {
+            mid = Math.round((l+r)/2);
+            if (cntr[mid] > zc) r = mid; else l = mid;
+         }
+         return l;
+      }
+
+      // bins less than zmin not drawn
+      if (zc < this.zmin) return -111;
+
+      // if bin content exactly zmin, draw it when col0 specified or when content is positive
+      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111)) ? 0 : -1;
+
+      return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+   }
+
+
+   JSROOT.THistPainter.prototype.getValueColor = function(zc, asindx) {
+
+      var index = this.getContourIndex(zc);
+
+      if (index < 0) return null;
+
+      var palette = this.GetPalette();
+
+      var theColor = Math.floor((index+0.99)*palette.length/(this.fContour.length-1));
+      if (theColor > palette.length-1) theColor = palette.length-1;
+      return asindx ? theColor : palette[theColor];
+   }
+
    JSROOT.THistPainter.prototype.GetPalette = function() {
       if (this.fPalette == null)
          this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
       return this.fPalette;
    }
 
-   // ==================== painter for TH2 histograms ==============================
-
-   JSROOT.TH2Painter = function(histo) {
-      JSROOT.THistPainter.call(this, histo);
-      this.fContour = null; // contour levels
-      this.fUserContour = false; // are this user-defined levels
-      this.fPalette = null;
-   }
-
-   JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
-
-   JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
-      if (!this.draw_content) return;
-
-      // painter automatically bind to mene callbacks
-      menu.add("Auto zoom-in", this.AutoZoom);
-
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
-         this.options = this.DecodeOptions(arg);
-         if (this.options.Zscale > 0)
-            // draw new palette, resize frame if required
-            this.DrawNewPalette(true);
-         this.RedrawPad();
-         if (this.options.Lego == 0) this.AddInteractive();
-      });
-
-      if (this.options.Lego > 0) {
-         var pad = this.root_pad();
-         menu.addchk(this.options.FrontBox, 'Front box', function() {
-            this.options.FrontBox = !this.options.FrontBox;
-            if (this.Render3D) this.Render3D();
-         });
-         menu.addchk(this.options.BackBox, 'Back box', function() {
-            this.options.BackBox = !this.options.BackBox;
-            if (this.Render3D) this.Render3D();
-         });
-         menu.addchk(this.options.Zero, 'Suppress zeros', function() {
-            this.options.Zero = !this.options.Zero;
-            this.RedrawPad();
-         });
-
-         if ((this.options.Lego==12) || (this.options.Lego==14))
-            menu.addchk(this.options.Zscale, "Z scale", function() {
-               this.ToggleColz();
-            });
-
-         if (this.control && typeof this.control.ResetCamera === 'function')
-            menu.add('Reset camera', function() {
-               this.control.ResetCamera();
-            });
-      }
-   }
-
-   JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
-      if (JSROOT.THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
-
-      if (this !== this.main_painter()) return false;
-
-      switch(funcname) {
-         case "ToggleColor": this.ToggleColor(); break;
-         case "ToggleColorZ":
-            if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
-            break;
-         case "Toggle3D":
-            this.options.Lego = this.options.Lego > 0 ? 0 : 1;
-            this.RedrawPad();
-            break;
-         default: return false;
-      }
-
-      // all methods here should not be processed further
-      return true;
-   }
-
-   JSROOT.TH2Painter.prototype.FillToolbar = function() {
-      JSROOT.THistPainter.prototype.FillToolbar.call(this);
-
-      var pp = this.pad_painter(true);
-      if (pp===null) return;
-
-      pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
-      pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
-      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
-   }
-
-   JSROOT.TH2Painter.prototype.ToggleColor = function() {
-
-      var toggle = true;
-
-      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; }
-
-      if (this.options.Color == 0) {
-         this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
-      } else
-      if (toggle) {
-         this.options.LastColor = this.options.Color;
-         this.options.Color = 0;
-      }
-
-      if ((this.options.Color > 0) && (this.options.Zscale > 0))
-         this.DrawNewPalette(true);
-
-      this.RedrawPad();
-   }
-
-   JSROOT.TH2Painter.prototype.FindPalette = function(remove) {
+   JSROOT.THistPainter.prototype.FindPalette = function(remove) {
 
       var funcs = this.GetObject().fFunctions;
       if (funcs === null) return null;
@@ -2825,7 +2782,7 @@
       return null;
    }
 
-   JSROOT.TH2Painter.prototype.DrawNewPalette = function(force_resize) {
+   JSROOT.THistPainter.prototype.DrawNewPalette = function(force_resize) {
       // only when create new palette, one could change frame size
 
       var pal = this.FindPalette(), histo = this.GetObject();
@@ -2879,13 +2836,93 @@
       }
    }
 
-   JSROOT.TH2Painter.prototype.ToggleColz = function() {
+   JSROOT.THistPainter.prototype.ToggleColz = function() {
       if (this.options.Zscale > 0) {
          this.options.Zscale = 0;
       } else {
          this.options.Zscale = 1;
          this.DrawNewPalette(true);
       }
+
+      this.RedrawPad();
+   }
+
+
+   // ==================== painter for TH2 histograms ==============================
+
+   JSROOT.TH2Painter = function(histo) {
+      JSROOT.THistPainter.call(this, histo);
+      this.fContour = null; // contour levels
+      this.fUserContour = false; // are this user-defined levels
+      this.fPalette = null;
+   }
+
+   JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+
+   JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
+
+      // painter automatically bind to mene callbacks
+      menu.add("Auto zoom-in", this.AutoZoom);
+
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
+         this.options = this.DecodeOptions(arg);
+         if ((this.options.Zscale > 0) && (this.options.Lego == 0))
+            // draw new palette, resize frame if required
+            this.DrawNewPalette(true);
+         this.RedrawPad();
+         if (this.options.Lego == 0) this.AddInteractive();
+      });
+
+   }
+
+   JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
+      if (JSROOT.THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
+
+      if (this !== this.main_painter()) return false;
+
+      switch(funcname) {
+         case "ToggleColor": this.ToggleColor(); break;
+         case "ToggleColorZ":
+            if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
+            break;
+         case "Toggle3D":
+            this.options.Lego = this.options.Lego > 0 ? 0 : 1;
+            this.RedrawPad();
+            break;
+         default: return false;
+      }
+
+      // all methods here should not be processed further
+      return true;
+   }
+
+   JSROOT.TH2Painter.prototype.FillToolbar = function() {
+      JSROOT.THistPainter.prototype.FillToolbar.call(this);
+
+      var pp = this.pad_painter(true);
+      if (pp===null) return;
+
+      pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
+      pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
+      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
+   }
+
+   JSROOT.TH2Painter.prototype.ToggleColor = function() {
+
+      var toggle = true;
+
+      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; }
+
+      if (this.options.Color == 0) {
+         this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
+      } else
+      if (toggle) {
+         this.options.LastColor = this.options.Color;
+         this.options.Color = 0;
+      }
+
+      if ((this.options.Color > 0) && (this.options.Zscale > 0))
+         this.DrawNewPalette(true);
 
       this.RedrawPad();
    }
@@ -3109,66 +3146,6 @@
       }
 
       return true;
-   }
-
-   JSROOT.TH2Painter.prototype.getContourIndex = function(zc) {
-      // return contour index, which corresponds to the z content value
-
-      if (this.fContour == null) {
-         // if not initialized, first create contour array
-         // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-         var histo = this.GetObject();
-
-         this.fUserContour = false;
-         if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-            this.fContour = JSROOT.clone(histo.fContour);
-            this.fUserContour = true;
-         } else {
-            var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
-            if (histo.fContour != null) nlevels = histo.fContour.length;
-            if (this.zoom_zmin != this.zoom_zmax) {
-               zmin = this.zoom_zmin;
-               zmax = this.zoom_zmax;
-            }
-            if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
-               zmin = this.histo.fMinimum;
-               zmax = this.histo.fMaximum;
-            }
-            this.CreateContour(nlevels, zmin, zmax, this.minposbin);
-         }
-      }
-
-      if (this.fUserContour || this.root_pad().fLogz) {
-         var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
-         if (zc < cntr[0]) return -1;
-         if (zc >= cntr[r]) return r;
-         while (l < r-1) {
-            mid = Math.round((l+r)/2);
-            if (cntr[mid] > zc) r = mid; else l = mid;
-         }
-         return l;
-      }
-
-      // bins less than zmin not drawn
-      if (zc < this.zmin) return -111;
-
-      // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111)) ? 0 : -1;
-
-      return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
-   }
-
-   JSROOT.TH2Painter.prototype.getValueColor = function(zc, asindx) {
-
-      var index = this.getContourIndex(zc);
-
-      if (index < 0) return null;
-
-      var palette = this.GetPalette();
-
-      var theColor = Math.floor((index+0.99)*palette.length/(this.fContour.length-1));
-      if (theColor > palette.length-1) theColor = palette.length-1;
-      return asindx ? theColor : palette[theColor];
    }
 
    JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {

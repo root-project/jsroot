@@ -451,6 +451,7 @@
 
       if (use_y_for_z) {
          zmin = ymin; zmax = ymax; z_zoomed = y_zoomed;
+         if (!z_zoomed) { zmin = this.hmin; zmax = this.hmax; }
          ymin = 0; ymax = 1;
       }
 
@@ -1210,24 +1211,11 @@
       this.Create3DScene();
       this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
-      //var pad = this.root_pad();
-      // if (pad && pad.fGridz === undefined) pad.fGridz = false;
-
-      //this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
-      //this.zmax = this.gmaxbin;
-
-      //if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
-      //if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
-
-      //if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
-
-      //this.zmax *= 1.1; // as it done in ROOT
-
       this.DrawXYZ(true, 1.1);
 
       this.Draw3DBins();
 
-      // if (this.options.Zscale > 0) this.DrawNewPalette(true);
+      if (this.options.Zscale > 0) this.DrawNewPalette(true);
 
       this.DrawTitle();
 
@@ -1662,26 +1650,12 @@
    }
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
-      if (!this.draw_content) return;
 
       menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
          this.options = this.DecodeOptions(arg);
          this.Redraw();
       });
 
-      menu.addchk(this.options.FrontBox, 'Front box', function() {
-         this.options.FrontBox = !this.options.FrontBox;
-         if (this.Render3D) this.Render3D();
-      });
-      menu.addchk(this.options.BackBox, 'Back box', function() {
-         this.options.BackBox = !this.options.BackBox;
-         if (this.Render3D) this.Render3D();
-      });
-
-      if (this.control && typeof this.control.ResetCamera === 'function')
-         menu.add('Reset camera', function() {
-            this.control.ResetCamera();
-         });
    }
 
 
