@@ -7069,7 +7069,7 @@
       }
    }
 
-   JSROOT.TH1Painter.prototype.GetBinTips = function(bin,asstr) {
+   JSROOT.TH1Painter.prototype.GetBinTips = function(bin) {
       var tips = [], name = this.GetTipName(), pmain = this.main_painter();
       if (name.length>0) tips.push(name);
 
@@ -7101,13 +7101,7 @@
             tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
       }
 
-      if (!asstr) return tips;
-
-      if (asstr === true) asstr = "\n";
-
-      var res = "";
-      for (var n=0;n<tips.length;++n) res += (n>0 ? asstr : "") + tips[n];
-      return res;
+      return tips;
    }
 
    JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
@@ -7376,9 +7370,35 @@
       }.bind(this));
    }
 
-   JSROOT.TH1Painter.prototype.Get3DToolTip = function(indx) {
-      return this.GetBinTips(indx-1, '<br/>');
+   JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
+      var tips;
+      switch (this.Dimension()) {
+         case 1:
+            tips = this.GetBinTips(indx-1);
+            break;
+         case 2: {
+            var ix = indx % (this.nbinsx + 2),
+                iy = (indx - ix) / (this.nbinsx + 2);
+            tips = this.GetBinTips(ix-1, iy-1);
+            break;
+         }
+         case 3: {
+            var ix = indx % (this.nbinsx+2),
+                iy = ((indx - ix) / (this.nbinsx+2)) % (this.nbinsy+2),
+                iz = (indx - ix - iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+
+            tips = this.GetBinTips(ix-1, iy-1, iz-1);
+
+            break;
+         }
+      }
+
+      if (!tips) return null;
+      var res = tips[0];
+      for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
+      return res;
    }
+
 
    JSROOT.TH1Painter.prototype.Redraw = function() {
       this.CreateXY();

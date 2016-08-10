@@ -1122,8 +1122,8 @@
       line.painter = this;
 
       line.tooltip = function(intersect) {
-         //if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
-         //return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
+         if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
+         return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
       }
 
       this.toplevel.add(line);
@@ -1430,16 +1430,14 @@
       return true;
    }
 
-   JSROOT.TH3Painter.prototype.GetToolTip = function(bin) {
-      var ix = bin % (this.nbinsx+2);
-      var iy = ((bin - ix) / (this.nbinsx+2)) % (this.nbinsy+2);
-      var iz = (bin - ix - iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
-
-      return this.GetTipName("<br/>")
-                + 'x=' + JSROOT.FFormat(this.GetBinX(ix-0.5),"6.4g") + ' bin=' + ix + '<br/>'
-                + 'y=' + JSROOT.FFormat(this.GetBinY(iy-0.5),"6.4g") + ' bin=' + iy + '<br/>'
-                + 'z=' + JSROOT.FFormat(this.GetBinZ(iz-0.5),"6.4g") + ' bin=' + iz + '<br/>'
-                + 'entries=' + JSROOT.FFormat(this.GetObject().getBinContent(ix, iy, iz), "7.0g");
+   JSROOT.TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
+      var lines = [];
+      lines.push(this.GetTipName());
+      lines.push('x=' + JSROOT.FFormat(this.GetBinX(ix+0.5),"6.4g") + ' bin=' + (ix+1));
+      lines.push('y=' + JSROOT.FFormat(this.GetBinY(iy+0.5),"6.4g") + ' bin=' + (iy+1));
+      lines.push('z=' + JSROOT.FFormat(this.GetBinZ(iz+0.5),"6.4g") + ' bin=' + (iz+1));
+      lines.push('entries=' + JSROOT.FFormat(this.GetObject().getBinContent(ix+1, iy+1, iz+1), "7.0g"));
+      return lines;
    }
 
    JSROOT.TH3Painter.prototype.Draw3DBins = function() {
@@ -1606,7 +1604,7 @@
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
-         return this.painter.GetToolTip(this.bins[indx]);
+         return this.painter.Get3DToolTip(this.bins[indx]);
       }
 
       this.toplevel.add(combined_bins);
