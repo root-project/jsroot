@@ -5018,10 +5018,11 @@
       if (check('SINUSOIDAL')) option.Proj = 3;
       if (check('PARABOLIC')) option.Proj = 4;
 
-      if (option.Proj > 0) {
-         option.Scat = 0;
-         option.Contour = 14;
-      }
+      if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
+
+      if ((hdim==3) && check('FB')) option.FrontBox = 0;
+      if ((hdim==3) && check('BB')) option.BackBox = 0;
+
       if (check('A')) option.Axis = -1;
       if (check('B')) { option.Bar = 1; option.Hist = -1; }
       if (check('C')) { option.Curve = 1; option.Hist = -1; }
