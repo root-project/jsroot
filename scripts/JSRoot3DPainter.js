@@ -1073,7 +1073,7 @@
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
-         //geometry.computeVertexNormals();
+         // geometry.computeVertexNormals();
 
          var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
 
@@ -1145,9 +1145,9 @@
       if (!uselineindx) numlinevertices = numsegments*3;
 
       var lpositions = new Float32Array( numlinevertices * 3 ),
-          lindicies = uselineindx ? new Uint16Array( numsegments ) : null,
-          intersect_size = uselineindx ? numsegments : numlinevertices,
-          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
+          lindicies = uselineindx ? new Uint16Array( numsegments ) : null;
+//          intersect_size = uselineindx ? numsegments : numlinevertices,
+//          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
       var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
           z2 = 0, ll = 0, ii = 0;
@@ -1167,14 +1167,14 @@
             z2 = (binz > zmax) ? zzz : this.tz(binz);
 
             var seg = reduced ? rsegments : segments,
-                vvv = reduced ? rvertices : vertices,
-                bin_index = this.histo.getBin(i+1, j+1);
+                vvv = reduced ? rvertices : vertices;
+//                bin_index = this.histo.getBin(i+1, j+1);
 
 
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
                for (k=0; k < seg.length; ++k) {
-                  intersect_index[ii] = bin_index;
+//                  intersect_index[ii] = bin_index;
                   lindicies[ii++] = ll/3 + seg[k];
                }
 
@@ -1192,7 +1192,7 @@
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
                   lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-                  intersect_index[ll/3] = bin_index;
+//                  intersect_index[ll/3] = bin_index;
                   ll+=3;
                }
             }
@@ -1210,14 +1210,15 @@
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
+
+      /*
       line.painter = this;
-
       line.intersect_index = intersect_index;
-
       line.tooltip = function(intersect) {
          if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
          return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
       }
+      */
 
       this.toplevel.add(line);
    }
@@ -1310,6 +1311,8 @@
       this.Create3DScene();
       this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
+      this.DeleteAtt();
+
       this.DrawXYZ(this.toplevel, true, 1.1);
 
       this.Draw3DBins();
@@ -1340,6 +1343,8 @@
       if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
 
       if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+      this.DeleteAtt();
 
       this.DrawXYZ(this.toplevel, false, 1.1);
 

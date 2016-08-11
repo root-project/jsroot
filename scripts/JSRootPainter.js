@@ -2168,6 +2168,13 @@
      setTimeout(this._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
 
+   JSROOT.TObjectPainter.prototype.DeleteAtt = function() {
+      // remove all created draw attributes
+      delete this.lineatt;
+      delete this.fillatt;
+      delete this.markeratt;
+   }
+
 
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
