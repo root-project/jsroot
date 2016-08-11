@@ -918,7 +918,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0),
           j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1),
-          i, j, x1, x2, y1, y2, binz,
+          i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
@@ -955,7 +955,9 @@
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         levels = this.CreateContour(20, this.lego_zmin, this.lego_zmax);
+         var nlevels = 20;
+         if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+         levels = this.CreateContour(nlevels, this.lego_zmin, this.lego_zmax);
          palette = this.GetPalette();
       }
 
@@ -969,12 +971,12 @@
 
          for (i=i1;i<i2;++i)
             for (j=j1;j<j2;++j) {
-               var binz = this.histo.getBinContent(i+1, j+1);
+               binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
-               var reduced = (binz === zmin);
+               reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
-               var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               nobottom = !reduced && (nlevel>0);
+               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
@@ -1000,17 +1002,16 @@
             indx2 = new Uint32Array(num2vertices);
          }
 
-
          for (i=i1;i<i2;++i) {
             x1 = xx[i];
             x2 = xx[i+1];
             for (j=j1;j<j2;++j) {
-               var binz = this.histo.getBinContent(i+1, j+1);
+               binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
-               var reduced = (binz === zmin);
+               reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
-               var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               nobottom = !reduced && (nlevel>0);
+               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                y1 = yy[j];
                y2 = yy[j+1];
@@ -1121,7 +1122,7 @@
 
       // DRAW LINE BOXES
 
-      var numlinevertices = 0, numsegments = 0;
+      var numlinevertices = 0, numsegments = 0, uselineindx = false;
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
@@ -1131,27 +1132,30 @@
             if (reduced && !showmin) continue;
 
             // calculate required buffer size for line segments
-            numlinevertices += (reduced ? rvertices.length : vertices.length);
-            numsegments += (reduced ? rsegments.length : segments.length);
+
+            if (uselineindx) {
+               numlinevertices += (reduced ? rvertices.length : vertices.length);
+               numsegments += (reduced ? rsegments.length : segments.length);
+            } else {
+               numlinevertices += (reduced ? rsegments.length : segments.length)*3;
+            }
          }
 
 
-      var lpositions = new Float32Array( numlinevertices * 3 );
-      var lindicies = new Uint32Array( numsegments );
-      var lines_index = new Uint32Array( numsegments );
+      var lpositions = new Float32Array( numlinevertices * 3 ),
+          lindicies = (numsegments > 0) ? new Uint32Array( numsegments ) : null,
+          lines_index = (numsegments > 0) ? new Uint32Array( numsegments ) : null;
 
-      var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
-
-      var ll = 0, ii = 0;
+      var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
+          z2 = 0, ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
          x1 = xx[i];
          x2 = xx[i+1];
          for (j=j1;j<j2;++j) {
-
-            var binz = this.histo.getBinContent(i+1, j+1);
+            binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
-            var reduced = (binz == axis_zmin);
+            reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
             y1 = yy[j];
@@ -1159,23 +1163,34 @@
 
             z2 = (binz > zmax) ? zzz : this.tz(binz);
 
-            var seg = reduced ? rsegments : segments;
-            var vvv = reduced ? rvertices : vertices;
+            var seg = reduced ? rsegments : segments,
+                vvv = reduced ? rvertices : vertices,
+                bin_index = this.histo.getBin(i+1, j+1);
 
-            var bin_index = this.histo.getBin(i+1, j+1);
 
-            // array of indicies for the lines, to avoid duplication of points
-            for (k=0; k < seg.length; ++k) {
-               lines_index[ii] = bin_index;
-               lindicies[ii++] = ll/3 + seg[k];
-            }
+            if (uselineindx) {
+               // array of indicies for the lines, to avoid duplication of points
+               for (k=0; k < seg.length; ++k) {
+                  lines_index[ii] = bin_index;
+                  lindicies[ii++] = ll/3 + seg[k];
+               }
 
-            for (k=0; k < vvv.length; ++k) {
-               vert = vvv[k];
-               lpositions[ll]   = x1 + vert.x * (x2 - x1);
-               lpositions[ll+1] = y1 + vert.y * (y2 - y1);
-               lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-               ll+=3;
+               for (k=0; k < vvv.length; ++k) {
+                  vert = vvv[k];
+                  lpositions[ll]   = x1 + vert.x * (x2 - x1);
+                  lpositions[ll+1] = y1 + vert.y * (y2 - y1);
+                  lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+                  ll+=3;
+               }
+            } else {
+               // copy only vertex positions
+               for (k=0; k < seg.length; ++k) {
+                  vert = vvv[seg[k]];
+                  lpositions[ll]   = x1 + vert.x * (x2 - x1);
+                  lpositions[ll+1] = y1 + vert.y * (y2 - y1);
+                  lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+                  ll+=3;
+               }
             }
          }
       }
@@ -1183,19 +1198,23 @@
       // create boxes
       geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
-      geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
+      if (uselineindx)
+         geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
 
       var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
 
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
-      line.lines_index = lines_index;
       line.painter = this;
 
-      line.tooltip = function(intersect) {
-         if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
-         return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
+      if (uselineindx) {
+         line.lines_index = lines_index;
+
+         line.tooltip = function(intersect) {
+            if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
+            return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
+         }
       }
 
       this.toplevel.add(line);
