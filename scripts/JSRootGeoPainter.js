@@ -1295,29 +1295,39 @@
 
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
-      console.log( stack );
-
       var stack = this._clones.FindStackByName(itemname.substr(6));
   
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
 
+      console.log( info );
+
       console.log('transfrom matrix', info.matrix.elements);
 
       console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
+      this.focusCamera( info, false );
+
    }
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus, clip ) {
 
+
+      var autoClip = clip === undefined ? false : clip;
+
       var box = new THREE.Box3();
       if (focus === undefined) {
          box.setFromObject(this._toplevel);
-      } else {
+      } else if (focus instanceof THREE.Mesh) {
          box.setFromObject(focus);
+      } else {
+         var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix);
+         console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
+         var node = focus.node;
+         var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
+         box.min.set( center.clone().sub(halfDelta) );
+         box.max.set( center.clone().add(halfDelta) );
       }
-
-      var autoClip = clip === undefined ? false : clip;
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1333,6 +1343,7 @@
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
       var target = new THREE.Vector3(midx, midy, midz);
+      console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
 
       // Find to points to animate "lookAt" between
       var dist = this._camera.position.distanceTo(target);
@@ -1394,6 +1405,8 @@
       animate();
 
       this._controls.update();
+
+      this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
