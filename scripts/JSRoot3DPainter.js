@@ -1091,11 +1091,11 @@
          mesh.bins_index = bins_index;
          mesh.painter = this;
 
-         mesh.tooltip = function(intersect) {
+  /*       mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
          }
-
+*/
          this.toplevel.add(mesh);
 
          if (num2vertices > 0) {
@@ -1122,29 +1122,31 @@
 
       // DRAW LINE BOXES
 
-      var numlinevertices = 0, numsegments = 0, uselineindx = false;
+      var numlinevertices = 0, numsegments = 0, uselineindx = true;
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            var binz = this.histo.getBinContent(i+1, j+1);
+            binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
-            var reduced = (binz == axis_zmin);
+            reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
             // calculate required buffer size for line segments
 
-            if (uselineindx) {
-               numlinevertices += (reduced ? rvertices.length : vertices.length);
-               numsegments += (reduced ? rsegments.length : segments.length);
-            } else {
-               numlinevertices += (reduced ? rsegments.length : segments.length)*3;
-            }
+            numlinevertices += (reduced ? rvertices.length : vertices.length);
+            numsegments += (reduced ? rsegments.length : segments.length);
          }
 
+      // On some platforms vertex index required to be Uint16 array
+      // While we cannot use index for large vertex list
+      // skip index usage at all. It happens for relatively large histograms (100x100 bins)
+      if (numlinevertices > 0xFFF0) uselineindx = false;
+
+      if (!uselineindx) numlinevertices = numsegments*3;
 
       var lpositions = new Float32Array( numlinevertices * 3 ),
-          lindicies = (numsegments > 0) ? new Uint32Array( numsegments ) : null,
-          lines_index = (numsegments > 0) ? new Uint32Array( numsegments ) : null;
+          lindicies = uselineindx ? new Uint16Array( numsegments ) : null,
+          intersect_index = new Uint32Array( uselineindx ? numsegments : numlinevertices );
 
       var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
           z2 = 0, ll = 0, ii = 0;
@@ -1171,7 +1173,7 @@
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
                for (k=0; k < seg.length; ++k) {
-                  lines_index[ii] = bin_index;
+                  intersect_index[ii] = bin_index;
                   lindicies[ii++] = ll/3 + seg[k];
                }
 
@@ -1189,6 +1191,7 @@
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
                   lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+                  intersect_index[ll/3] = bin_index;
                   ll+=3;
                }
             }
@@ -1208,13 +1211,11 @@
       var line = new THREE.LineSegments(geometry, material);
       line.painter = this;
 
-      if (uselineindx) {
-         line.lines_index = lines_index;
+      line.intersect_index = intersect_index;
 
-         line.tooltip = function(intersect) {
-            if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
-            return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
-         }
+      line.tooltip = function(intersect) {
+         if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
+         return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
       }
 
       this.toplevel.add(line);
