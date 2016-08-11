@@ -2693,7 +2693,7 @@
             this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
          this.fContour.push(this.zmax);
       } else {
-         if ((this.zmin == this.zmax) && (this.zmin != 0)) {
+         if ((this.zmin === this.zmax) && (this.zmin !== 0)) {
             this.zmax += 0.01*Math.abs(this.zmax);
             this.zmin -= 0.01*Math.abs(this.zmin);
          }
@@ -3267,12 +3267,10 @@
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz;
 
-         // now start build
+      // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            // if ((binz == 0) || (binz < this.minbin)) continue;
-
             colindx = this.getValueColor(binz, true);
             if (colindx === null) continue;
 
