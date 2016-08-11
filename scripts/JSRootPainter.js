@@ -3107,7 +3107,7 @@
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPavePainter.prototype.DrawPave = function(refill) {
+   JSROOT.TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
       this.UseTextColor = false;
@@ -3186,7 +3186,7 @@
           .call(this.lineatt.func);
 
       if ('PaveDrawFunc' in this)
-         this.PaveDrawFunc(width, height, refill);
+         this.PaveDrawFunc(width, height, arg);
 
       this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 

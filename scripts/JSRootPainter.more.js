@@ -2483,9 +2483,13 @@
       this.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
       this.z_handle.SetDivId(divid, -1);
 
-      this.DrawAxisPalette = function(s_width, s_height) {
+      this.DrawAxisPalette = function(s_width, s_height, arg) {
 
-         var pthis = this, palette = this.GetObject(), axis = palette.fAxis;
+         var pthis = this,
+             palette = this.GetObject(),
+             axis = palette.fAxis,
+             can_move = (typeof arg == 'string') && (arg.indexOf('canmove')>0),
+             postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0);
 
          var nbr1 = axis.fNdiv % 100;
          if (nbr1<=0) nbr1 = 8;
@@ -2511,6 +2515,8 @@
             zmin = main.hmin; zmax = main.hmax;
          }
 
+         console.log('draw palette can move = ', can_move, postpone_draw,'x1',palette.fX1NDC);
+
          var z = null, z_kind = "normal";
 
          if (this.root_pad().fLogz) {
@@ -2521,7 +2527,7 @@
          }
          z.domain([zmin, zmax]).range([s_height,0]);
 
-         if ((contour==null) || this.postpone_draw)
+         if (!contour || postpone_draw)
             // we need such rect to correctly calculate size
             this.draw_g.append("svg:rect")
                        .attr("x", 0)
@@ -2534,8 +2540,6 @@
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
                    col = this.main_painter().getValueColor((contour[i]+contour[i+1])/2);
-
-               // console.log('col',col);
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
@@ -2561,9 +2565,7 @@
 
          this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
-         if (this.can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-            this.can_move = false;
-
+         if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
             var rect = this.draw_g.node().getBoundingClientRect();
 
             var shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
@@ -2574,12 +2576,6 @@
                palette.fX1NDC -= shift/width;
                palette.fX2NDC -= shift/width;
             }
-         }
-
-         if (this.postpone_draw) {
-            // posponed drawing can be done once
-            this.postpone_draw = false;
-            return;
          }
 
          if (!JSROOT.gStyle.Zooming) return;
@@ -2669,10 +2665,9 @@
 
       this.UseContextMenu = true;
 
-      this.postpone_draw = (opt === 'postpone');
-      this.can_move = true;
+      this.DrawPave(opt);
 
-      this.Redraw();
+      this.Redraw = function() {}; // make dummy redraw
 
       return this.DrawingReady();
    }
@@ -2779,22 +2774,26 @@
       return this.fPalette;
    }
 
-   JSROOT.THistPainter.prototype.FindPalette = function(remove) {
+   JSROOT.THistPainter.prototype.AddFunction = function(obj, asfirst) {
+      var histo = this.GetObject();
+      if (!histo || !obj) return;
 
+      if (histo.fFunctions == null)
+         histo.fFunctions = JSROOT.Create("TList");
+
+      if (asfirst)
+         histo.fFunctions.AddFirst(obj);
+      else
+         histo.fFunctions.Add(obj);
+
+   }
+
+   JSROOT.THistPainter.prototype.FindFunction = function(type_name) {
       var funcs = this.GetObject().fFunctions;
       if (funcs === null) return null;
 
-      for (var i = 0; i < funcs.arr.length; ++i) {
-         var func = funcs.arr[i];
-         if (func._typename !== 'TPaletteAxis') continue;
-         if (remove) {
-            funcs.RemoveAt(i);
-            if (this.pad_painter())
-               this.pad_painter().RemovePrimitive(func);
-            return null;
-         }
-         return func;
-      }
+      for (var i = 0; i < funcs.arr.length; ++i)
+         if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
 
       return null;
    }
@@ -2802,19 +2801,24 @@
    JSROOT.THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
-      var pal = this.FindPalette(),
-          histo = this.GetObject(),
+      var pal = this.FindFunction('TPaletteAxis'),
           pal_painter = this.FindPainterFor(pal);
 
       if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
 
-      if (!pal_painter) {
+      if (!pal_painter && !pal) {
          pal_painter = this.FindPainterFor(undefined, undefined, "TPaletteAxis");
          if (pal_painter) {
-            if (pal) console.warn('Palette and palette painter does not match each other');
             pal = pal_painter.GetObject();
+            // add to list of functions
+            this.AddFunction(pal, true);
          }
       }
+
+      console.log('Draw palette', enabled, postpone_draw, can_move);
+      console.log('palette', pal);
+      console.log('painter', pal_painter);
+
 
       if (!enabled) {
          if (pal_painter) {
@@ -2835,38 +2839,42 @@
 
          // set values from base classes
 
-         JSROOT.extend(pal.fAxis, { fTitle: histo.fZaxis.fTitle,
+         JSROOT.extend(pal.fAxis, { fTitle: this.GetObject().fZaxis.fTitle,
                                     fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42 });
 
-         if (histo.fFunctions == null)
-            histo.fFunctions = JSROOT.Create("TList");
-
          // place colz in the beginning, that stat box is always drawn on the top
-         histo.fFunctions.AddFirst(pal);
+         this.AddFunction(pal, true);
+
+         can_move = true;
       }
 
       var frame_painter = this.frame_painter();
 
       // keep palette width
-      pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
-      pal.fX1NDC = frame_painter.fX2NDC + 0.01;
-      pal.fY1NDC = frame_painter.fY1NDC;
-      pal.fY2NDC = frame_painter.fY2NDC;
+      if (can_move) {
+         pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
+         pal.fX1NDC = frame_painter.fX2NDC + 0.01;
+         pal.fY1NDC = frame_painter.fY1NDC;
+         pal.fY2NDC = frame_painter.fY2NDC;
+      }
+
+      var arg = "";
+      if (postpone_draw) arg+=";postpone";
+      if (can_move && !this.do_redraw_palette) arg+= ";canmove"
 
       if (pal_painter === null) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          var prev = this.CurrentPadName(this.pad_name);
-         pal_painter = JSROOT.draw(this.divid, pal, postpone_draw ? "postpone" : "");
+         pal_painter = JSROOT.draw(this.divid, pal, arg);
          this.CurrentPadName(prev);
       } else {
-         pal_painter.postpone_draw = postpone_draw;
-         pal_painter.can_move = (can_move===true) || !this.do_redraw_palette;
          pal_painter.Enabled = true;
-         pal_painter.Redraw();
+         pal_painter.DrawPave(arg);
       }
 
-      if ((pal.fX1NDC < frame_painter.fX2NDC) && !this.do_redraw_palette && (can_move===true)) {
+      if ((pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette && can_move) {
+
          this.do_redraw_palette = true;
 
          frame_painter.fX2NDC = pal.fX1NDC - 0.01;
@@ -2903,8 +2911,7 @@
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
    JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
-
-      // painter automatically bind to mene callbacks
+      // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
       menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
@@ -2914,7 +2921,6 @@
 
          // if (this.options.Lego == 0) this.AddInteractive();
       });
-
    }
 
    JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
@@ -3745,7 +3751,6 @@
 
       }
 
-
       var i, j, find = 0;
 
       // search bin position
@@ -3820,8 +3825,8 @@
 
       this.DrawBins();
 
-
-      if (pp) pp.Redraw(); // redraw palette once again when contours are available
+      // redraw palette once again when contours are available
+      if (pp) pp.DrawPave();
 
       this.DrawTitle();
 
@@ -3865,6 +3870,8 @@
 
       // here we deciding how histogram will look like and how will be shown
       this.options = this.DecodeOptions(opt);
+
+      this._can_move_colz = true;
 
       this.CheckPadRange();
 
