@@ -300,6 +300,9 @@
          this.options.show_controls = !this.options.show_controls;
          this.showControlOptions(this.options.show_controls);
       });
+      menu.addchk(this.TestAxisVisibility, "Show axises", function() {
+         this.toggleAxisDraw();
+      });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
          this.options.wireframe = !this.options.wireframe;
          this.changeWireFrame(this._scene, this.options.wireframe);
@@ -988,6 +991,16 @@
 
             var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 
+/*
+            var info = this._clones.ResolveStack(entry.stack, true), ndiff = 0;
+            for (var n=0;n<16;++n) {
+               var v1 = info.matrix.elements[n], v2 = obj3d.matrixWorld.elements[n];
+               mean = Math.abs(v1+v2)/2;
+               if ((mean > 1e-5) && (Math.abs(v2-v1)/mean > 1e-6)) ndiff++;
+            }
+            if (ndiff>0) console.log('Mismatch for ' + info.name, info.matrix.elements, obj3d.matrixWorld.elements);
+*/
+
             var nodeobj = this._clones.origin[entry.nodeid];
             var clone = this._clones.nodes[entry.nodeid];
             var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
@@ -1296,7 +1309,7 @@
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
       var stack = this._clones.FindStackByName(itemname.substr(6));
-  
+
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
@@ -1606,6 +1619,9 @@
 
          var tm1 = new Date();
 
+         if (typeof this.TestAxisVisibility === 'function')
+            this.TestAxisVisibility(this._camera, this._toplevel);
+
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO) {
             this._scene.overrideMaterial = this._depthMaterial;
@@ -1741,6 +1757,18 @@
       this.startDrawGeometry();
    }
 
+   JSROOT.TGeoPainter.prototype.toggleAxisDraw = function(force_on) {
+      if (this.TestAxisVisibility!==undefined) {
+         if (force_on) return; // we want axis - we have axis
+         this.TestAxisVisibility(null, this._toplevel);
+      } else {
+         var axis = JSROOT.Create("TNamed");
+         axis._typename = "TAxis3D";
+         axis._main = this;
+         JSROOT.draw(this.divid, axis); // it will include drawing of
+      }
+   }
+
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var call_ready = false;
@@ -1761,11 +1789,8 @@
       this.completeScene();
 
       if (this.options._axis) {
-         var axis = JSROOT.Create("TNamed");
-         axis._typename = "TAxis3D";
-         axis._main = this;
-         JSROOT.draw(this.divid, axis); // it will include drawing of
          this.options._axis = false;
+         this.toggleAxisDraw();
       }
 
       this._scene.overrideMaterial = null;
@@ -1979,7 +2004,7 @@
       if (!('_main' in axis))
          painter.SetDivId(divid);
 
-      painter['Draw3DAxis'] = function() {
+      painter.Draw3DAxis = function() {
          var main = this.main_painter();
 
          if ((main === null) && ('_main' in this.GetObject()))
@@ -1996,13 +2021,13 @@
 
          this.size3d = 0; // use min/max values directly as graphical coordinates
 
-         this['DrawXYZ'] = JSROOT.Painter.HPainter_DrawXYZ;
+         this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
 
-         this.toplevel = main._toplevel;
-
-         this.DrawXYZ();
+         this.DrawXYZ(main._toplevel);
 
          main.adjustCameraPosition();
+
+         main.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
          main.Render3D();
       }
@@ -2233,7 +2258,7 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-      
+
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 

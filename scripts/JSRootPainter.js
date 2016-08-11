@@ -3829,8 +3829,6 @@
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
             if (!main) return;
 
-            if (arg === 'fGridz') return main.Redraw();
-
             if ((arg.indexOf('fGrid')==0) && (typeof main.DrawGrids == 'function'))
                return main.DrawGrids();
 
@@ -3840,8 +3838,6 @@
 
          menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleField);
          menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleField);
-         if (this.pad.fGridz !== undefined)
-            menu.addchk(this.pad.fGridz, 'Grid z', 'fGridz', ToggleField);
          menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
          menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
@@ -4867,7 +4863,6 @@
       if (check('LOGZ')) pad.fLogz = 1;
       if (check('GRIDX')) pad.fGridx = 1;
       if (check('GRIDY')) pad.fGridy = 1;
-      if (check('GRIDZ')) pad.fGridz = 1;
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
 
@@ -5023,10 +5018,11 @@
       if (check('SINUSOIDAL')) option.Proj = 3;
       if (check('PARABOLIC')) option.Proj = 4;
 
-      if (option.Proj > 0) {
-         option.Scat = 0;
-         option.Contour = 14;
-      }
+      if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
+
+      if ((hdim==3) && check('FB')) option.FrontBox = 0;
+      if ((hdim==3) && check('BB')) option.BackBox = 0;
+
       if (check('A')) option.Axis = -1;
       if (check('B')) { option.Bar = 1; option.Hist = -1; }
       if (check('C')) { option.Curve = 1; option.Hist = -1; }
@@ -6295,6 +6291,10 @@
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
+      var svg = this.svg_frame();
+
+      if (svg.empty() || svg.property('interactive_set')) return;
+
       this.last_touch = new Date(0);
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
@@ -6303,27 +6303,29 @@
       this.touch_cnt = 0;
 
       if (JSROOT.gStyle.Zooming) {
-         this.svg_frame().on("mousedown", this.startRectSel.bind(this) );
-         this.svg_frame().on("dblclick", this.mouseDoubleClick.bind(this) );
-         this.svg_frame().on("wheel", this.mouseWheel.bind(this) );
+         svg.on("mousedown", this.startRectSel.bind(this) );
+         svg.on("dblclick", this.mouseDoubleClick.bind(this) );
+         svg.on("wheel", this.mouseWheel.bind(this) );
       }
 
       if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
-         this.svg_frame().on("touchstart", this.startTouchZoom.bind(this) );
+         svg.on("touchstart", this.startTouchZoom.bind(this) );
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
-            this.svg_frame().selectAll(".xaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this,"x") );
-            this.svg_frame().selectAll(".yaxis_container")
+            svg.selectAll(".xaxis_container")
+               .on("touchstart", this.startTouchMenu.bind(this,"x") );
+            svg.selectAll(".yaxis_container")
                 .on("touchstart", this.startTouchMenu.bind(this,"y") );
          }
-         this.svg_frame().on("contextmenu", this.ShowContextMenu.bind(this) );
-         this.svg_frame().selectAll(".xaxis_container")
+         svg.on("contextmenu", this.ShowContextMenu.bind(this) );
+         svg.selectAll(".xaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         this.svg_frame().selectAll(".yaxis_container")
+         svg.selectAll(".yaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
+
+      svg.property('interactive_set', true);
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
@@ -6490,10 +6492,37 @@
                menu.add("Z", "Z", this.ChangeUserRange);
             menu.add("endsub:")
          }
-      }
 
-      if ('FillHistContextMenu' in this)
-         this.FillHistContextMenu(menu);
+         if (typeof this.FillHistContextMenu == 'function')
+            this.FillHistContextMenu(menu);
+
+         if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
+            // menu for 3D drawings
+
+            menu.addchk(this.options.FrontBox, 'Front box', function() {
+               this.options.FrontBox = !this.options.FrontBox;
+               if (this.Render3D) this.Render3D();
+            });
+            menu.addchk(this.options.BackBox, 'Back box', function() {
+               this.options.BackBox = !this.options.BackBox;
+               if (this.Render3D) this.Render3D();
+            });
+            menu.addchk(this.options.Zero, 'Suppress zeros', function() {
+               this.options.Zero = !this.options.Zero;
+               this.RedrawPad();
+            });
+
+            if ((this.options.Lego==12) || (this.options.Lego==14))
+               menu.addchk(this.options.Zscale, "Z scale", function() {
+                  this.ToggleColz();
+               });
+
+            if (this.control && typeof this.control.ResetCamera === 'function')
+               menu.add('Reset camera', function() {
+                  this.control.ResetCamera();
+               });
+         }
+      }
 
       this.FillAttContextMenu(menu);
 
@@ -6533,6 +6562,7 @@
       if (this.draw_content)
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
+
 
    // ======= TH1 painter================================================
 
@@ -6631,8 +6661,8 @@
       }
 
       // If no any draw options specified, do not try draw histogram
-      if (this.options.Bar == 0 && this.options.Hist == 0
-            && this.options.Error == 0 && this.options.Same == 0) {
+      if (!this.options.Bar && !this.options.Hist &&
+          !this.options.Error && !this.options.Same && !this.options.Lego) {
          this.draw_content = false;
       }
       if (this.options.Axis > 0) { // Paint histogram axis only
@@ -7072,7 +7102,7 @@
       }
    }
 
-   JSROOT.TH1Painter.prototype.GetBinTips = function(bin,asstr) {
+   JSROOT.TH1Painter.prototype.GetBinTips = function(bin) {
       var tips = [], name = this.GetTipName(), pmain = this.main_painter();
       if (name.length>0) tips.push(name);
 
@@ -7104,15 +7134,11 @@
             tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
       }
 
-      if (!asstr) return tips;
-
-      var res = "";
-      for (var n=0;n<tips.length;++n) res += (n>0 ? "\n" : "") + tips[n];
-      return res;
+      return tips;
    }
 
    JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content) {
+      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0)) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
@@ -7312,12 +7338,16 @@
 
 
    JSROOT.TH1Painter.prototype.FillHistContextMenu = function(menu) {
-      if (!this.draw_content) return;
 
-      menu.add("Auto zoom-in", this.AutoZoom.bind(this));
-      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2"], function(arg) {
+      menu.add("Auto zoom-in", this.AutoZoom);
+
+      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2", "lego"], function(arg) {
          this.options = this.DecodeOptions(arg);
-         this.Redraw();
+
+         // redraw all objects
+         this.RedrawPad();
+
+         // if (this.options.Lego == 0) this.AddInteractive();
       });
    }
 
@@ -7351,12 +7381,72 @@
       return false;
    }
 
-   JSROOT.TH1Painter.prototype.Redraw = function() {
-      this.CreateXY();
+   JSROOT.TH1Painter.prototype.CheckResize = function(size) {
+      // no painter - no resize
+      var pad_painter = this.pad_painter(),changed = true;
+      if (pad_painter)
+         changed = pad_painter.CheckCanvasResize(size, (this.options.Lego > 0) && !JSROOT.browser.isFirefox);
+      if (changed && (this.options.Lego > 0) && (typeof this.Resize3D == 'function'))
+         this.Resize3D();
+      return changed;
+   }
+
+   JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
+      if (typeof this.Create3DScene == 'function')
+         this.Create3DScene(-1);
+
       this.DrawAxes();
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
+      this.AddInteractive();
+      JSROOT.CallBack(call_back);
+   }
+
+   JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
+      JSROOT.AssertPrerequisites('more2d;3d', function() {
+         this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
+         this.Draw3D = JSROOT.Painter.TH1Painter_Draw3D;
+         this.Draw3D(call_back);
+      }.bind(this));
+   }
+
+   JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
+      var tips;
+      switch (this.Dimension()) {
+         case 1:
+            tips = this.GetBinTips(indx-1);
+            break;
+         case 2: {
+            var ix = indx % (this.nbinsx + 2),
+                iy = (indx - ix) / (this.nbinsx + 2);
+            tips = this.GetBinTips(ix-1, iy-1);
+            break;
+         }
+         case 3: {
+            var ix = indx % (this.nbinsx+2),
+                iy = ((indx - ix) / (this.nbinsx+2)) % (this.nbinsy+2),
+                iz = (indx - ix - iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+
+            tips = this.GetBinTips(ix-1, iy-1, iz-1);
+
+            break;
+         }
+      }
+
+      if (!tips) return null;
+      var res = tips[0];
+      for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
+      return res;
+   }
+
+
+   JSROOT.TH1Painter.prototype.Redraw = function() {
+      this.CreateXY();
+
+      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+
+      this[func_name]();
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -7374,26 +7464,22 @@
 
       painter.CreateXY();
 
-      painter.DrawAxes();
-
-      painter.DrawGrids();
-
-      painter.DrawBins();
-
-      painter.DrawTitle();
-
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
          painter.CreateStat();
 
-      painter.DrawNextFunction(0, function() {
+      var func_name = (painter.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
-         painter.AddInteractive();
+      painter[func_name](function() {
+         painter.DrawNextFunction(0, function() {
 
-         painter.FillToolbar();
+            if (painter.options.Lego === 0) {
+               // painter.AddInteractive();
+               if (painter.options.AutoZoom) painter.AutoZoom();
+            }
 
-         if (painter.options.AutoZoom) painter.AutoZoom();
-
-         painter.DrawingReady();
+            painter.FillToolbar();
+            painter.DrawingReady();
+         });
       });
 
       return painter;
