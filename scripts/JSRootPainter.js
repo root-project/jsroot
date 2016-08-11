@@ -1236,6 +1236,14 @@
       return d3.select(null);
    }
 
+   JSROOT.TObjectPainter.prototype.CurrentPadName = function(new_name) {
+      var svg = this.svg_canvas();
+      if (svg.empty()) return "";
+      var curr = svg.property('current_pad');
+      if (new_name !== undefined) svg.property('current_pad', new_name);
+      return curr;
+   }
+
    JSROOT.TObjectPainter.prototype.root_pad = function() {
       var pad_painter = this.pad_painter(true);
       return pad_painter ? pad_painter.pad : null;
@@ -1543,7 +1551,7 @@
       // SVG element where current pad is drawn (can be canvas itself)
       this.pad_name = pad_name;
       if (this.pad_name === undefined)
-         this.pad_name = svg_c.property('current_pad');
+         this.pad_name = this.CurrentPadName();
 
       if (is_main < 0) return;
 
@@ -4200,17 +4208,15 @@
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
 
-      var prev_name = "";
+      var prev_name;
 
-      if (painter.has_canvas) {
+      if (painter.has_canvas)
          // we select current pad, where all drawing is performed
-         prev_name = painter.svg_canvas().property('current_pad');
-         painter.svg_canvas().property('current_pad', painter.this_pad_name);
-      }
+         prev_name = painter.CurrentPadName(painter.this_pad_name);
 
       painter.DrawPrimitive(0, function() {
          // we restore previous pad name
-         painter.svg_canvas().property('current_pad', prev_name);
+         painter.CurrentPadName(prev_name);
          painter.DrawingReady();
       });
 

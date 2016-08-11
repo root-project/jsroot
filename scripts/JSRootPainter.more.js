@@ -2495,12 +2495,20 @@
              width = this.pad_width(),
              height = this.pad_height(),
              axisOffset = axis.fLabelOffset * width,
-             contour = this.main_painter().fContour,
-             zmin = 0, zmax = this.main_painter().gmaxbin;
+             main = this.main_painter(),
+             zmin = 0, zmax = 100,
+             contour = main.fContour;
 
-         if (contour!==null) {
-            zmin = contour[0];
-            zmax = contour[contour.length-1];
+         if (contour) {
+            zmin = contour[0]; zmax = contour[contour.length-1];
+         } else
+         if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
+            // this is case of TH2 (needs only for size adjustment)
+            zmin = main.gminbin; zmax = main.gmaxbin;
+         } else
+         if ((main.hmin!==undefined) && (main.hmax!==undefined)) {
+            // this is case of TH1
+            zmin = main.hmin; zmax = main.hmax;
          }
 
          var z = null, z_kind = "normal";
@@ -2848,9 +2856,9 @@
 
       if (pal_painter === null) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
-         this.svg_canvas().property('current_pad', this.pad_name);
+         var prev = this.CurrentPadName(this.pad_name);
          pal_painter = JSROOT.draw(this.divid, pal, postpone_draw ? "postpone" : "");
-         this.svg_canvas().property('current_pad', '');
+         this.CurrentPadName(prev);
       } else {
          pal_painter.postpone_draw = postpone_draw;
          pal_painter.can_move = (can_move===true) || !this.do_redraw_palette;
