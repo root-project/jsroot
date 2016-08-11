@@ -134,11 +134,15 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
       var control = new THREE.OrbitControls(camera, renderer.domElement);
+
       control.enableDamping = false;
       control.dampingFactor = 1.0;
       control.enableZoom = true;
-      if (lookat) control.target.copy(lookat);
-      control.update();
+      if (lookat) {
+         control.target.copy(lookat);
+         control.target0.copy(lookat);
+         control.update();
+      }
 
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
@@ -146,26 +150,19 @@
           control_active = false,
           control_changed = false,
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement),
-          camposition0 = camera.position.clone();
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
-      control.ResetCamera = function() {
-         camera.position.copy(camposition0);
-         if (lookat) {
-            control.target.copy(lookat);
-            camera.lookAt(lookat);
-         }
-         control.update();
+      control.ProcessMouseDblclick = function() {
+         control.reset();
          painter.Render3D();
       }
-
-      control.ProcessMouseDblclick = control.ResetCamera;
 
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
          mouse.clientX = evnt.clientX;
          mouse.clientY = evnt.clientY;
+         return mouse;
       }
 
       function GetIntersects(mouse) {
@@ -173,6 +170,8 @@
          var sz = webgl ? renderer.getSize() : renderer.domElement;
          var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
+         camera.updateMatrix();
+         camera.updateMatrixWorld();
          raycaster.setFromCamera( pnt, camera );
          var intersects = raycaster.intersectObjects(scene.children, true);
 
@@ -248,8 +247,7 @@
          delete mouse_ctxt.touchtm;
          if (diff < 200) return;
 
-         var pos = {};
-         GetMousePos(evnt.touches[0], pos);
+         var pos = GetMousePos(evnt.touches[0], {});
 
          if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
             control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
@@ -264,11 +262,9 @@
             block_ctxt = true; // if right button in control was active, block next context menu
          }
 
-         if (control_active) return;
-         if (!control.ProcessMouseMove) return;
+         if (control_active || !control.ProcessMouseMove) return;
 
-         var mouse = {};
-         GetMousePos(evnt, mouse);
+         var mouse = GetMousePos(evnt, {});
          evnt.preventDefault();
 
          var intersects = GetIntersects(mouse);
@@ -318,10 +314,7 @@
          delete this.camera;
          delete this.pointLight;
          delete this.renderer;
-         if (this.control) {
-            this.control.dispose();
-            delete this.control;
-         }
+         delete this.control;
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
@@ -362,7 +355,7 @@
       this.scene_height = size.height
 
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
-      this.camera.position.set(-3*this.size3d, -3*this.size3d, 3*this.size3d);
+      this.camera.position.set(-1.6*this.size3d, -3.5*this.size3d, 1.4*this.size3d);
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );
@@ -372,9 +365,10 @@
       //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
 
 
+      var lookat = new THREE.Vector3(0,0,0.8*this.size3d);
 
       this.camera.up = new THREE.Vector3(0,0,1);
-      this.camera.lookAt(new THREE.Vector3(0,0,this.size3d));
+      this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
       var webgl = JSROOT.Painter.TestWebGL();
@@ -390,8 +384,35 @@
       this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
       this.Render3D = JSROOT.Painter.Render3D;
       this.Resize3D = JSROOT.Painter.Resize3D;
+      this.Tooltip3D = JSROOT.Painter.Tooltip3D;
 
       this.first_render_tm = 0;
+
+      this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
+
+      var painter = this;
+
+      this.control.ProcessMouseMove = function(intersects) {
+         var tip = null;
+
+         for (var i = 0; i < intersects.length; ++i) {
+            if (intersects[i].object.tooltip) {
+               tip = intersects[i].object.tooltip(intersects[i]);
+               if (tip) break;
+            }
+         }
+
+         painter.Tooltip3D(tip);
+
+         return tip && tip.info ? tip.info : "";
+      }
+
+      this.control.ProcessMouseLeave = function() {
+         painter.Tooltip3D(null);
+      }
+
+      this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
+
    }
 
    JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel, fb, bb) {
@@ -878,23 +899,74 @@
       }
    }
 
+   JSROOT.Painter.Box_Vertices = [
+       new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
+       new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
+       new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
+       new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)
+   ];
+
+   JSROOT.Painter.Box_Indexes = [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ];
+
+   JSROOT.Painter.Box_Normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
+
+
+   JSROOT.Painter.Tooltip3D = function(tip) {
+
+      if (!tip || (tip.x1===undefined) || (this.first_render_tm > 1500)) {
+         if (this.tooltip_mesh) {
+            this.toplevel.remove(this.tooltip_mesh);
+            delete this.tooltip_mesh;
+            this.Render3D();
+         }
+         return;
+      }
+
+      var indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices,
+          pos, norm;
+
+      if (this.tooltip_mesh === undefined) {
+         pos = new Float32Array(indicies.length*3);
+         norm = new Float32Array(indicies.length*3);
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+         var mater = new THREE.MeshBasicMaterial( { color: 0xFF0000, shading: THREE.SmoothShading  } );
+         this.tooltip_mesh = new THREE.Mesh(geom, mater);
+         this.toplevel.add(this.tooltip_mesh);
+      } else {
+         pos = this.tooltip_mesh.geometry.attributes.position.array;
+         this.tooltip_mesh.geometry.attributes.position.needsUpdate = true;
+      }
+
+      for (var k=0,nn=-3;k<indicies.length;++k) {
+         var vert = vertices[indicies[k]];
+         pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
+         pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
+         pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
+
+         if (norm) {
+            if (k%6===0) nn+=3;
+            norm[k*3] = normals[nn];
+            norm[k*3+1] = normals[nn+1];
+            norm[k*3+2] = normals[nn+2];
+         }
+      }
+
+      this.Render3D();
+   }
+
    JSROOT.Painter.HistPainter_DrawLego = function() {
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      var vertices = [];
-      vertices.push( new THREE.Vector3(1, 1, 1) );
-      vertices.push( new THREE.Vector3(1, 1, 0) );
-      vertices.push( new THREE.Vector3(1, 0, 1) );
-      vertices.push( new THREE.Vector3(1, 0, 0) );
-      vertices.push( new THREE.Vector3(0, 1, 0) );
-      vertices.push( new THREE.Vector3(0, 1, 1) );
-      vertices.push( new THREE.Vector3(0, 0, 0) );
-      vertices.push( new THREE.Vector3(0, 0, 1) );
+      var vertices = JSROOT.Painter.Box_Vertices;
 
-      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
+      var indicies = JSROOT.Painter.Box_Indexes;
 
       // normals for each  pair of faces
-      var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
+      var vnormals = JSROOT.Painter.Box_Normals;
 
       // line segments
       var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
@@ -912,13 +984,13 @@
       var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
 
       // create the bin cubes
-      var showmin = !this.options.Zero, hdim = this.Dimension();
+      var showmin = !this.options.Zero || (axis_zmin>0), hdim = this.Dimension();
 
       var i1 = this.GetSelectIndex("x", "left", 0),
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0),
           j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1),
-          i, j, x1, x2, y1, y2, binz,
+          i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
@@ -950,12 +1022,17 @@
 
       if ((i1 >= i2) || (j1>=j2)) return;
 
+      // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+      var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF);
+
       // DRAW ALL CUBES
 
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         levels = this.CreateContour(20, this.lego_zmin, this.lego_zmax);
+         var nlevels = 20;
+         if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+         levels = this.CreateContour(nlevels, this.lego_zmin, this.lego_zmax);
          palette = this.GetPalette();
       }
 
@@ -969,12 +1046,12 @@
 
          for (i=i1;i<i2;++i)
             for (j=j1;j<j2;++j) {
-               var binz = this.histo.getBinContent(i+1, j+1);
+               binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
-               var reduced = (binz === zmin);
+               reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
-               var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               nobottom = !reduced && (nlevel>0);
+               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
@@ -990,27 +1067,26 @@
 
          var positions = new Float32Array(numvertices*3),
              normals = new Float32Array(numvertices*3),
-             bins_index = new Uint32Array(numvertices),
+             bins_index = use16indx ? new Uint16Array(numvertices) : new Uint32Array(numvertices),
              pos2 = null, norm2 = null, indx2 = null,
              v = 0, v2 = 0, vert, bin, k, nn;
 
          if (num2vertices > 0) {
             pos2 = new Float32Array(num2vertices*3);
             norm2 = new Float32Array(num2vertices*3);
-            indx2 = new Uint32Array(num2vertices);
+            indx2 = use16indx ? new Uint16Array(num2vertices) : new Uint32Array(num2vertices);
          }
-
 
          for (i=i1;i<i2;++i) {
             x1 = xx[i];
             x2 = xx[i+1];
             for (j=j1;j<j2;++j) {
-               var binz = this.histo.getBinContent(i+1, j+1);
+               binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
-               var reduced = (binz === zmin);
+               reduced = (binz === zmin);
                if (reduced && ((nlevel>0) || !showmin)) continue;
-               var nobottom = !reduced && (nlevel>0);
-               var notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               nobottom = !reduced && (nlevel>0);
+               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
                y1 = yy[j];
                y2 = yy[j+1];
@@ -1072,7 +1148,7 @@
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
-         //geometry.computeVertexNormals();
+         // geometry.computeVertexNormals();
 
          var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
 
@@ -1092,7 +1168,22 @@
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
+            var tip = this.painter.Get3DToolTip( this.bins_index[intersect.index] );
+
+            var binz = tip.value;
+
+            tip.z1 = this.painter.tz(axis_zmin);
+            tip.z2 = this.painter.tz(axis_zmax);
+
+            if (binz<axis_zmin) tip.z2 = tip.z1; else
+            if (binz<axis_zmax) tip.z2 = this.painter.tz(binz);
+
+            tip.x1 = xx[tip.ix-1];
+            tip.x2 = xx[tip.ix];
+            tip.y1 = yy[tip.iy-1];
+            tip.y2 = yy[tip.iy];
+
+            return tip;
          }
 
          this.toplevel.add(mesh);
@@ -1121,37 +1212,43 @@
 
       // DRAW LINE BOXES
 
-      var numlinevertices = 0, numsegments = 0;
+      var numlinevertices = 0, numsegments = 0, uselineindx = true;
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            var binz = this.histo.getBinContent(i+1, j+1);
+            binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
-            var reduced = (binz == axis_zmin);
+            reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
             // calculate required buffer size for line segments
+
             numlinevertices += (reduced ? rvertices.length : vertices.length);
             numsegments += (reduced ? rsegments.length : segments.length);
          }
 
+      // On some platforms vertex index required to be Uint16 array
+      // While we cannot use index for large vertex list
+      // skip index usage at all. It happens for relatively large histograms (100x100 bins)
+      if (numlinevertices > 0xFFF0) uselineindx = false;
 
-      var lpositions = new Float32Array( numlinevertices * 3 );
-      var lindicies = new Uint32Array( numsegments );
-      var lines_index = new Uint32Array( numsegments );
+      if (!uselineindx) numlinevertices = numsegments*3;
 
-      var z1 = this.tz(axis_zmin), z2 = 0, zzz = this.tz(axis_zmax);
+      var lpositions = new Float32Array( numlinevertices * 3 ),
+          lindicies = uselineindx ? new Uint16Array( numsegments ) : null;
+//          intersect_size = uselineindx ? numsegments : numlinevertices,
+//          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
-      var ll = 0, ii = 0;
+      var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
+          z2 = 0, ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
          x1 = xx[i];
          x2 = xx[i+1];
          for (j=j1;j<j2;++j) {
-
-            var binz = this.histo.getBinContent(i+1, j+1);
+            binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
-            var reduced = (binz == axis_zmin);
+            reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
             y1 = yy[j];
@@ -1159,23 +1256,35 @@
 
             z2 = (binz > zmax) ? zzz : this.tz(binz);
 
-            var seg = reduced ? rsegments : segments;
-            var vvv = reduced ? rvertices : vertices;
+            var seg = reduced ? rsegments : segments,
+                vvv = reduced ? rvertices : vertices;
+//                bin_index = this.histo.getBin(i+1, j+1);
 
-            var bin_index = this.histo.getBin(i+1, j+1);
 
-            // array of indicies for the lines, to avoid duplication of points
-            for (k=0; k < seg.length; ++k) {
-               lines_index[ii] = bin_index;
-               lindicies[ii++] = ll/3 + seg[k];
-            }
+            if (uselineindx) {
+               // array of indicies for the lines, to avoid duplication of points
+               for (k=0; k < seg.length; ++k) {
+//                  intersect_index[ii] = bin_index;
+                  lindicies[ii++] = ll/3 + seg[k];
+               }
 
-            for (k=0; k < vvv.length; ++k) {
-               vert = vvv[k];
-               lpositions[ll]   = x1 + vert.x * (x2 - x1);
-               lpositions[ll+1] = y1 + vert.y * (y2 - y1);
-               lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-               ll+=3;
+               for (k=0; k < vvv.length; ++k) {
+                  vert = vvv[k];
+                  lpositions[ll]   = x1 + vert.x * (x2 - x1);
+                  lpositions[ll+1] = y1 + vert.y * (y2 - y1);
+                  lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+                  ll+=3;
+               }
+            } else {
+               // copy only vertex positions
+               for (k=0; k < seg.length; ++k) {
+                  vert = vvv[seg[k]];
+                  lpositions[ll]   = x1 + vert.x * (x2 - x1);
+                  lpositions[ll+1] = y1 + vert.y * (y2 - y1);
+                  lpositions[ll+2] = z1 + vert.z * (z2 - z1);
+//                  intersect_index[ll/3] = bin_index;
+                  ll+=3;
+               }
             }
          }
       }
@@ -1183,20 +1292,23 @@
       // create boxes
       geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
-      geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
+      if (uselineindx)
+         geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
 
       var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
 
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
 
       var line = new THREE.LineSegments(geometry, material);
-      line.lines_index = lines_index;
-      line.painter = this;
 
+      /*
+      line.painter = this;
+      line.intersect_index = intersect_index;
       line.tooltip = function(intersect) {
-         if ((intersect.index<0) || (intersect.index >= this.lines_index.length)) return null;
-         return this.painter.Get3DToolTip(this.lines_index[intersect.index]);
+         if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
+         return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
       }
+      */
 
       this.toplevel.add(line);
    }
@@ -1215,6 +1327,8 @@
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
 
+         // console.log('camera', this.camera.position.x, this.camera.position.y, this.camera.position.z);
+
          //this.pointLight.position.set( this.camera.position.x + this.size3d, this.camera.position.y - this.size3d, this.camera.position.z);
          ///this.pointLight.updateMatrix();
          //this.pointLight.updateMatrixWorld();
@@ -1230,25 +1344,6 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             console.log('First render tm = ' + this.first_render_tm);
-
-            if (!this.control) {
-               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
-
-               this.control.ProcessMouseMove = function(intersects) {
-                  for (var i = 0; i < intersects.length; ++i) {
-                     if (intersects[i].object.tooltip)
-                        return intersects[i].object.tooltip(intersects[i]);
-
-                     if (typeof intersects[i].object.name == 'string')
-                        return intersects[i].object.name;
-                  }
-
-                  return "";
-               }
-
-               this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
-            }
-
          }
 
          return;
@@ -1287,11 +1382,13 @@
       this.Create3DScene();
       this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
+      this.DeleteAtt();
+
       this.DrawXYZ(this.toplevel, true, 1.1);
 
       this.Draw3DBins();
 
-      if (this.options.Zscale > 0) this.DrawNewPalette(true);
+      this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
 
@@ -1318,11 +1415,13 @@
 
       if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
+      this.DeleteAtt();
+
       this.DrawXYZ(this.toplevel, false, 1.1);
 
       this.Draw3DBins();
 
-      if (this.options.Zscale > 0) this.DrawNewPalette(true);
+      this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
 
@@ -1674,7 +1773,9 @@
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
-         return this.painter.Get3DToolTip(this.bins[indx]);
+         var tip = this.painter.Get3DToolTip(this.bins[indx]);
+
+         return tip;
       }
 
       this.toplevel.add(combined_bins);

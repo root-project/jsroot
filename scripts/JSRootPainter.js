@@ -1236,6 +1236,14 @@
       return d3.select(null);
    }
 
+   JSROOT.TObjectPainter.prototype.CurrentPadName = function(new_name) {
+      var svg = this.svg_canvas();
+      if (svg.empty()) return "";
+      var curr = svg.property('current_pad');
+      if (new_name !== undefined) svg.property('current_pad', new_name);
+      return curr;
+   }
+
    JSROOT.TObjectPainter.prototype.root_pad = function() {
       var pad_painter = this.pad_painter(true);
       return pad_painter ? pad_painter.pad : null;
@@ -1543,7 +1551,7 @@
       // SVG element where current pad is drawn (can be canvas itself)
       this.pad_name = pad_name;
       if (this.pad_name === undefined)
-         this.pad_name = svg_c.property('current_pad');
+         this.pad_name = this.CurrentPadName();
 
       if (is_main < 0) return;
 
@@ -1754,8 +1762,8 @@
 
       var pthis = this;
 
-      var rect_width = function() { return Number(pthis.draw_g.attr("width")); }
-      var rect_height = function() { return Number(pthis.draw_g.attr("height")); }
+      var rect_width = function() { return Number(pthis.draw_g.attr("width")); };
+      var rect_height = function() { return Number(pthis.draw_g.attr("height")); };
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1, drag_tm = null;
 
@@ -1793,11 +1801,15 @@
          drag_rect.style("cursor", "auto");
 
          var oldx = Number(pthis.draw_g.attr("x")),
-         oldy = Number(pthis.draw_g.attr("y")),
-         newx = Number(drag_rect.attr("x")),
-         newy = Number(drag_rect.attr("y")),
-         newwidth = Number(drag_rect.attr("width")),
-         newheight = Number(drag_rect.attr("height"));
+             oldy = Number(pthis.draw_g.attr("y")),
+             newx = Number(drag_rect.attr("x")),
+             newy = Number(drag_rect.attr("y")),
+             newwidth = Number(drag_rect.attr("width")),
+             newheight = Number(drag_rect.attr("height"));
+
+         if (callback.minwidth && newwidth < callback.minwidth) newwidth = callback.minwidth;
+         if (callback.minheight && newheight < callback.minheight) newheight = callback.minheight;
+
 
          var change_size = (newwidth !== rect_width()) || (newheight !== rect_height());
          var change_pos = (newx !== oldx) || (newy !== oldy);
@@ -2156,6 +2168,13 @@
      setTimeout(this._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
 
+   JSROOT.TObjectPainter.prototype.DeleteAtt = function() {
+      // remove all created draw attributes
+      delete this.lineatt;
+      delete this.fillatt;
+      delete this.markeratt;
+   }
+
 
    JSROOT.TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
@@ -2326,7 +2345,7 @@
       return null;
    }
 
-   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
+   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
       // try to find painter for sepcified object
       // can be used to find painter for some special objects, registered as
       // histogram functions
@@ -2337,11 +2356,13 @@
 
       for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
-         if (pobj===null) continue;
+         if (!pobj) continue;
 
          if (selobj && (pobj === selobj)) return painters[n];
 
-         if (selname && ('fName' in pobj) && (pobj.fName == selname)) return painters[n];
+         if (selname && (pobj.fName === selname)) return painters[n];
+
+         if (seltype && (pobj._typename === seltype)) return painters[n];
       }
 
       return null;
@@ -2782,7 +2803,8 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      this.AddDrag({ obj: this, only_resize: true, redraw: this.RedrawPad.bind(this) });
+      this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                     redraw: this.RedrawPad.bind(this) });
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
@@ -3097,7 +3119,7 @@
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPavePainter.prototype.DrawPave = function(refill) {
+   JSROOT.TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
       this.UseTextColor = false;
@@ -3176,9 +3198,11 @@
           .call(this.lineatt.func);
 
       if ('PaveDrawFunc' in this)
-         this.PaveDrawFunc(width, height, refill);
+         this.PaveDrawFunc(width, height, arg);
 
-      this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+      this.AddDrag({ obj: pt, minwidth: 10, minheight: 20,
+                     redraw: this.DrawPave.bind(this),
+                     ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
@@ -4198,17 +4222,15 @@
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
 
-      var prev_name = "";
+      var prev_name;
 
-      if (painter.has_canvas) {
+      if (painter.has_canvas)
          // we select current pad, where all drawing is performed
-         prev_name = painter.svg_canvas().property('current_pad');
-         painter.svg_canvas().property('current_pad', painter.this_pad_name);
-      }
+         prev_name = painter.CurrentPadName(painter.this_pad_name);
 
       painter.DrawPrimitive(0, function() {
          // we restore previous pad name
-         painter.svg_canvas().property('current_pad', prev_name);
+         painter.CurrentPadName(prev_name);
          painter.DrawingReady();
       });
 
@@ -5759,9 +5781,9 @@
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
             do_draw = true;
-      } else
-      if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
-         func_painter.CompleteDraw();
+      }
+      //if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
+      //   func_painter.CompleteDraw();
 
       if (do_draw) {
          var painter = JSROOT.draw(this.divid, func, opt);
@@ -7394,6 +7416,8 @@
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
+      if (typeof this.DrawColorPalette === 'function')
+         this.DrawColorPalette(false);
 
       this.DrawAxes();
       this.DrawGrids();
@@ -7412,32 +7436,35 @@
    }
 
    JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
-      var tips;
+      var tip = { bin: indx }, arr;
       switch (this.Dimension()) {
          case 1:
-            tips = this.GetBinTips(indx-1);
+            tip.ix = indx; tip.iy = 1;
+            tip.value = this.histo.getBinContent(tip.ix);
+            arr = this.GetBinTips(indx-1);
             break;
          case 2: {
-            var ix = indx % (this.nbinsx + 2),
-                iy = (indx - ix) / (this.nbinsx + 2);
-            tips = this.GetBinTips(ix-1, iy-1);
+            tip.ix = indx % (this.nbinsx + 2);
+            tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
+            tip.value = this.histo.getBinContent(tip.ix, tip.iy);
+            arr = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          }
          case 3: {
-            var ix = indx % (this.nbinsx+2),
-                iy = ((indx - ix) / (this.nbinsx+2)) % (this.nbinsy+2),
-                iz = (indx - ix - iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
-
-            tips = this.GetBinTips(ix-1, iy-1, iz-1);
-
+            tip.ix = indx % (this.nbinsx+2);
+            tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
+            tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+            tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
+            arr = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
          }
       }
 
-      if (!tips) return null;
-      var res = tips[0];
-      for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
-      return res;
+      if (arr) {
+         tip.info = arr[0];
+         for (var n=1;n<arr.length;++n) tip.info +="<br/>"+arr[n];
+      }
+      return tip;
    }
 
 
