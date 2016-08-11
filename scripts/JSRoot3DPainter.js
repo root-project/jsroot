@@ -362,7 +362,7 @@
       this.scene_height = size.height
 
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
-      this.camera.position.set(-3*this.size3d, -3*this.size3d, 3*this.size3d);
+      this.camera.position.set(-1.6*this.size3d, -3.5*this.size3d, 1.4*this.size3d);
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );
@@ -374,7 +374,7 @@
 
 
       this.camera.up = new THREE.Vector3(0,0,1);
-      this.camera.lookAt(new THREE.Vector3(0,0,this.size3d));
+      this.camera.lookAt(new THREE.Vector3(0,0,0.8*this.size3d));
       this.scene.add( this.camera );
 
       var webgl = JSROOT.Painter.TestWebGL();
@@ -950,6 +950,9 @@
 
       if ((i1 >= i2) || (j1>=j2)) return;
 
+      // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
+      var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF);
+
       // DRAW ALL CUBES
 
       var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
@@ -992,14 +995,14 @@
 
          var positions = new Float32Array(numvertices*3),
              normals = new Float32Array(numvertices*3),
-             bins_index = new Uint32Array(numvertices),
+             bins_index = use16indx ? new Uint16Array(numvertices) : new Uint32Array(numvertices),
              pos2 = null, norm2 = null, indx2 = null,
              v = 0, v2 = 0, vert, bin, k, nn;
 
          if (num2vertices > 0) {
             pos2 = new Float32Array(num2vertices*3);
             norm2 = new Float32Array(num2vertices*3);
-            indx2 = new Uint32Array(num2vertices);
+            indx2 = use16indx ? new Uint16Array(num2vertices) : new Uint32Array(num2vertices);
          }
 
          for (i=i1;i<i2;++i) {
@@ -1091,11 +1094,11 @@
          mesh.bins_index = bins_index;
          mesh.painter = this;
 
-  /*       mesh.tooltip = function(intersect) {
+         mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
          }
-*/
+
          this.toplevel.add(mesh);
 
          if (num2vertices > 0) {
@@ -1146,7 +1149,8 @@
 
       var lpositions = new Float32Array( numlinevertices * 3 ),
           lindicies = uselineindx ? new Uint16Array( numsegments ) : null,
-          intersect_index = new Uint32Array( uselineindx ? numsegments : numlinevertices );
+          intersect_size = uselineindx ? numsegments : numlinevertices,
+          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
       var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
           z2 = 0, ll = 0, ii = 0;
@@ -1235,6 +1239,8 @@
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
 
+         // console.log('camera', this.camera.position.x, this.camera.position.y, this.camera.position.z);
+
          //this.pointLight.position.set( this.camera.position.x + this.size3d, this.camera.position.y - this.size3d, this.camera.position.z);
          ///this.pointLight.updateMatrix();
          //this.pointLight.updateMatrixWorld();
@@ -1252,7 +1258,7 @@
             console.log('First render tm = ' + this.first_render_tm);
 
             if (!this.control) {
-               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,this.size3d));
+               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,0.8*this.size3d));
 
                this.control.ProcessMouseMove = function(intersects) {
                   for (var i = 0; i < intersects.length; ++i) {
