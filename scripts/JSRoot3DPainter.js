@@ -134,11 +134,15 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
       var control = new THREE.OrbitControls(camera, renderer.domElement);
+
       control.enableDamping = false;
       control.dampingFactor = 1.0;
       control.enableZoom = true;
-      if (lookat) control.target.copy(lookat);
-      control.update();
+      if (lookat) {
+         control.target.copy(lookat);
+         control.target0.copy(lookat);
+         control.update();
+      }
 
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
@@ -146,26 +150,19 @@
           control_active = false,
           control_changed = false,
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement),
-          camposition0 = camera.position.clone();
+          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
-      control.ResetCamera = function() {
-         camera.position.copy(camposition0);
-         if (lookat) {
-            control.target.copy(lookat);
-            camera.lookAt(lookat);
-         }
-         control.update();
+      control.ProcessMouseDblclick = function() {
+         control.reset();
          painter.Render3D();
       }
-
-      control.ProcessMouseDblclick = control.ResetCamera;
 
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
          mouse.clientX = evnt.clientX;
          mouse.clientY = evnt.clientY;
+         return mouse;
       }
 
       function GetIntersects(mouse) {
@@ -173,6 +170,8 @@
          var sz = webgl ? renderer.getSize() : renderer.domElement;
          var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
+         camera.updateMatrix();
+         camera.updateMatrixWorld();
          raycaster.setFromCamera( pnt, camera );
          var intersects = raycaster.intersectObjects(scene.children, true);
 
@@ -248,8 +247,7 @@
          delete mouse_ctxt.touchtm;
          if (diff < 200) return;
 
-         var pos = {};
-         GetMousePos(evnt.touches[0], pos);
+         var pos = GetMousePos(evnt.touches[0], {});
 
          if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
             control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
@@ -267,8 +265,7 @@
          if (control_active) return;
          if (!control.ProcessMouseMove) return;
 
-         var mouse = {};
-         GetMousePos(evnt, mouse);
+         var mouse = GetMousePos(evnt, {});
          evnt.preventDefault();
 
          var intersects = GetIntersects(mouse);
