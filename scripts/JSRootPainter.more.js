@@ -2667,8 +2667,6 @@
 
       this.DrawPave(opt);
 
-      this.Redraw = function() {}; // make dummy redraw
-
       return this.DrawingReady();
    }
 
@@ -2873,6 +2871,9 @@
          pal_painter.DrawPave(arg);
       }
 
+      // make dummy redraw, palette will be updated only from histogram painter
+      pal_painter.Redraw = function() {};
+
       if ((pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette && can_move) {
 
          this.do_redraw_palette = true;
@@ -2934,7 +2935,13 @@
             if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
             break;
          case "Toggle3D":
-            this.options.Lego = this.options.Lego > 0 ? 0 : 1;
+            if (this.options.Lego > 0) {
+               this.options.Lego = 0;
+            } else {
+               this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+               this.options.Zero = 1;
+            }
+
             this.RedrawPad();
             break;
          default: return false;
