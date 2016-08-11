@@ -2503,6 +2503,8 @@
              zmin = 0, zmax = 100,
              contour = main.fContour;
 
+         axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
+
          if (contour) {
             zmin = contour[0]; zmax = contour[contour.length-1];
          } else
@@ -2514,8 +2516,6 @@
             // this is case of TH1
             zmin = main.hmin; zmax = main.hmax;
          }
-
-         console.log('draw palette can move = ', can_move, postpone_draw,'x1',palette.fX1NDC);
 
          var z = null, z_kind = "normal";
 
@@ -2812,11 +2812,6 @@
             this.AddFunction(pal, true);
          }
       }
-
-      console.log('Draw palette', enabled, postpone_draw, can_move);
-      console.log('palette', pal);
-      console.log('painter', pal_painter);
-
 
       if (!enabled) {
          if (pal_painter) {

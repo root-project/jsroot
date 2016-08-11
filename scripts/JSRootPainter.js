@@ -1762,8 +1762,8 @@
 
       var pthis = this;
 
-      var rect_width = function() { return Number(pthis.draw_g.attr("width")); }
-      var rect_height = function() { return Number(pthis.draw_g.attr("height")); }
+      var rect_width = function() { return Number(pthis.draw_g.attr("width")); };
+      var rect_height = function() { return Number(pthis.draw_g.attr("height")); };
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1, drag_tm = null;
 
@@ -1801,11 +1801,15 @@
          drag_rect.style("cursor", "auto");
 
          var oldx = Number(pthis.draw_g.attr("x")),
-         oldy = Number(pthis.draw_g.attr("y")),
-         newx = Number(drag_rect.attr("x")),
-         newy = Number(drag_rect.attr("y")),
-         newwidth = Number(drag_rect.attr("width")),
-         newheight = Number(drag_rect.attr("height"));
+             oldy = Number(pthis.draw_g.attr("y")),
+             newx = Number(drag_rect.attr("x")),
+             newy = Number(drag_rect.attr("y")),
+             newwidth = Number(drag_rect.attr("width")),
+             newheight = Number(drag_rect.attr("height"));
+
+         if (callback.minwidth && newwidth < callback.minwidth) newwidth = callback.minwidth;
+         if (callback.minheight && newheight < callback.minheight) newheight = callback.minheight;
+
 
          var change_size = (newwidth !== rect_width()) || (newheight !== rect_height());
          var change_pos = (newx !== oldx) || (newy !== oldy);
@@ -2792,7 +2796,8 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      this.AddDrag({ obj: this, only_resize: true, redraw: this.RedrawPad.bind(this) });
+      this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                     redraw: this.RedrawPad.bind(this) });
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
@@ -3188,7 +3193,9 @@
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, arg);
 
-      this.AddDrag({ obj: pt, redraw: this.DrawPave.bind(this), ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
+      this.AddDrag({ obj: pt, minwidth: 10, minheight: 20,
+                     redraw: this.DrawPave.bind(this),
+                     ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
