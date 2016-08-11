@@ -2326,7 +2326,7 @@
       return null;
    }
 
-   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname) {
+   JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
       // try to find painter for sepcified object
       // can be used to find painter for some special objects, registered as
       // histogram functions
@@ -2337,11 +2337,13 @@
 
       for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
-         if (pobj===null) continue;
+         if (!pobj) continue;
 
          if (selobj && (pobj === selobj)) return painters[n];
 
-         if (selname && ('fName' in pobj) && (pobj.fName == selname)) return painters[n];
+         if (selname && (pobj.fName === selname)) return painters[n];
+
+         if (seltype && (pobj._typename === seltype)) return painters[n];
       }
 
       return null;
@@ -5759,9 +5761,9 @@
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
             do_draw = true;
-      } else
-      if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
-         func_painter.CompleteDraw();
+      }
+      //if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
+      //   func_painter.CompleteDraw();
 
       if (do_draw) {
          var painter = JSROOT.draw(this.divid, func, opt);
@@ -7394,6 +7396,8 @@
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
+      if (typeof this.DrawColorPalette === 'function')
+         this.DrawColorPalette(false);
 
       this.DrawAxes();
       this.DrawGrids();

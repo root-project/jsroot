@@ -2513,7 +2513,7 @@
          }
          z.domain([zmin, zmax]).range([s_height,0]);
 
-         if ((contour==null) || this._can_move)
+         if ((contour==null) || this.postpone_draw)
             // we need such rect to correctly calculate size
             this.draw_g.append("svg:rect")
                        .attr("x", 0)
@@ -2526,6 +2526,8 @@
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
                    col = this.main_painter().getValueColor((contour[i]+contour[i+1])/2);
+
+               // console.log('col',col);
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
@@ -2551,8 +2553,8 @@
 
          this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
-         if (this._can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-            this._can_move = false; // do it only once
+         if (this.can_move && ('getBoundingClientRect' in this.draw_g.node())) {
+            this.can_move = false;
 
             var rect = this.draw_g.node().getBoundingClientRect();
 
@@ -2563,8 +2565,13 @@
                           .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
                palette.fX1NDC -= shift/width;
                palette.fX2NDC -= shift/width;
-               return;
             }
+         }
+
+         if (this.postpone_draw) {
+            // posponed drawing can be done once
+            this.postpone_draw = false;
+            return;
          }
 
          if (!JSROOT.gStyle.Zooming) return;
@@ -2636,23 +2643,26 @@
          this.main_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
       }
 
-      this.Redraw = function() {
-         this.Enabled = true;
-         var main = this.main_painter();
-         this.UseContextMenu = (main !== null);
-         if ((main !== null) && main.options)
-            this.Enabled = (main.options.Zscale > 0) &&
-                           ((main.options.Color > 0) || (main.options.Lego === 12) || (main.options.Lego === 14));
-
-         this.DrawPave();
-      }
+//      this.Redraw = function() {
+         //this.Enabled = true;
+//         var main = this.main_painter();
+//         this.UseContextMenu = (main !== null);
+//         if ((main !== null) && main.options)
+//            this.Enabled = (main.options.Zscale > 0) &&
+//                           ((main.options.Color > 0) || (main.options.Lego === 12) || (main.options.Lego === 14));
+//
+//         this.DrawPave();
+//      }
 
       this.PaveDrawFunc = this.DrawAxisPalette;
 
       // workaround to let copmlete pallete draw when actual palette colors already there
-      this.CompleteDraw = this.Redraw;
+      // this.CompleteDraw = this.Redraw;
 
-      this._can_move = (opt === 'canmove');
+      this.UseContextMenu = true;
+
+      this.postpone_draw = (opt === 'postpone');
+      this.can_move = true;
 
       this.Redraw();
 
@@ -2781,12 +2791,31 @@
       return null;
    }
 
-   JSROOT.THistPainter.prototype.DrawNewPalette = function(force_resize) {
+   JSROOT.THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
-      var pal = this.FindPalette(), histo = this.GetObject();
+      var pal = this.FindPalette(),
+          histo = this.GetObject(),
+          pal_painter = this.FindPainterFor(pal);
 
-      if ((pal !== null) && !force_resize) return;
+      if (this._can_move_colz) { can_move = true; delete this._can_move_colz; }
+
+      if (!pal_painter) {
+         pal_painter = this.FindPainterFor(undefined, undefined, "TPaletteAxis");
+         if (pal_painter) {
+            if (pal) console.warn('Palette and palette painter does not match each other');
+            pal = pal_painter.GetObject();
+         }
+      }
+
+      if (!enabled) {
+         if (pal_painter) {
+            pal_painter.Enabled = false;
+            pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
+         }
+
+         return null;
+      }
 
       if (pal === null) {
          pal = JSROOT.Create('TPave');
@@ -2817,22 +2846,30 @@
       pal.fY1NDC = frame_painter.fY1NDC;
       pal.fY2NDC = frame_painter.fY2NDC;
 
-      var pal_painter = this.FindPainterFor(pal);
-
       if (pal_painter === null) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          this.svg_canvas().property('current_pad', this.pad_name);
-         pal_painter = JSROOT.draw(this.divid, pal, "canmove");
+         pal_painter = JSROOT.draw(this.divid, pal, postpone_draw ? "postpone" : "");
          this.svg_canvas().property('current_pad', '');
       } else {
-         pal_painter._can_move = true;
+         pal_painter.postpone_draw = postpone_draw;
+         pal_painter.can_move = (can_move===true) || !this.do_redraw_palette;
+         pal_painter.Enabled = true;
          pal_painter.Redraw();
       }
 
-      if (pal.fX1NDC < frame_painter.fX2NDC) {
+      if ((pal.fX1NDC < frame_painter.fX2NDC) && !this.do_redraw_palette && (can_move===true)) {
+         this.do_redraw_palette = true;
+
          frame_painter.fX2NDC = pal.fX1NDC - 0.01;
          frame_painter.Redraw();
+         // here we should redraw main object
+         if (!postpone_draw) this.Redraw();
+
+         delete this.do_redraw_palette;
       }
+
+      return pal_painter;
    }
 
    JSROOT.THistPainter.prototype.ToggleColz = function() {
@@ -2840,10 +2877,9 @@
          this.options.Zscale = 0;
       } else {
          this.options.Zscale = 1;
-         this.DrawNewPalette(true);
       }
 
-      this.RedrawPad();
+      this.DrawColorPalette(this.options.Zscale > 0, false, true);
    }
 
 
@@ -2865,10 +2901,9 @@
 
       menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
          this.options = this.DecodeOptions(arg);
-         if ((this.options.Zscale > 0) && (this.options.Lego == 0))
-            // draw new palette, resize frame if required
-            this.DrawNewPalette(true);
-         this.RedrawPad();
+
+         this.Redraw();
+
          // if (this.options.Lego == 0) this.AddInteractive();
       });
 
@@ -2920,10 +2955,11 @@
          this.options.Color = 0;
       }
 
-      if ((this.options.Color > 0) && (this.options.Zscale > 0))
-         this.DrawNewPalette(true);
+      this._can_move_colz = true; // indicate that next redraw can move Z scale
 
-      this.RedrawPad();
+      this.Redraw();
+
+      // this.DrawColorPalette((this.options.Color > 0) && (this.options.Zscale > 0));
    }
 
    JSROOT.TH2Painter.prototype.AutoZoom = function() {
@@ -3767,11 +3803,17 @@
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
 
+      // draw new palette, resize frame if required
+      var pp = this.DrawColorPalette((this.options.Zscale > 0) && (this.options.Color > 0), true);
+
       this.DrawAxes();
 
       this.DrawGrids();
 
       this.DrawBins();
+
+
+      if (pp) pp.Redraw(); // redraw palette once again when contours are available
 
       this.DrawTitle();
 
@@ -3819,11 +3861,6 @@
       this.CheckPadRange();
 
       this.ScanContent();
-
-      // check if we need to create palette
-      if (this.create_canvas && (this.options.Zscale > 0))
-         // draw new palette, resize frame if required
-         this.DrawNewPalette(true);
 
       // create X/Y only when frame is adjusted, probably should be done differently
       this.CreateXY();

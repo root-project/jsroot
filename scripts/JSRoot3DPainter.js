@@ -1291,7 +1291,7 @@
 
       this.Draw3DBins();
 
-      if (this.options.Zscale > 0) this.DrawNewPalette(true);
+      this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
 
@@ -1322,7 +1322,7 @@
 
       this.Draw3DBins();
 
-      if (this.options.Zscale > 0) this.DrawNewPalette(true);
+      this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
 
