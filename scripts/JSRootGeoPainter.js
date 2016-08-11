@@ -397,6 +397,7 @@
 
       if (this._webgl) {
          appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
+            painter._renderer.antialias = !painter._renderer.antialias;
             painter.Render3D(0);
          }).listen();
       }
