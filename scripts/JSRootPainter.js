@@ -7436,32 +7436,35 @@
    }
 
    JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
-      var tips;
+      var tip = { bin: indx }, arr;
       switch (this.Dimension()) {
          case 1:
-            tips = this.GetBinTips(indx-1);
+            tip.ix = indx; tips.iy = 1;
+            tip.value = this.histo.getBinContent(tip.ix);
+            arr = this.GetBinTips(indx-1);
             break;
          case 2: {
-            var ix = indx % (this.nbinsx + 2),
-                iy = (indx - ix) / (this.nbinsx + 2);
-            tips = this.GetBinTips(ix-1, iy-1);
+            tip.ix = indx % (this.nbinsx + 2);
+            tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
+            tip.value = this.histo.getBinContent(tip.ix, tip.iy);
+            arr = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          }
          case 3: {
-            var ix = indx % (this.nbinsx+2),
-                iy = ((indx - ix) / (this.nbinsx+2)) % (this.nbinsy+2),
-                iz = (indx - ix - iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
-
-            tips = this.GetBinTips(ix-1, iy-1, iz-1);
-
+            tip.ix = indx % (this.nbinsx+2);
+            tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
+            tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+            tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
+            arr = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
          }
       }
 
-      if (!tips) return null;
-      var res = tips[0];
-      for (var n=1;n<tips.length;++n) res+="<br/>"+tips[n];
-      return res;
+      if (arr) {
+         tip.info = arr[0];
+         for (var n=1;n<arr.length;++n) tip.info +="<br/>"+arr[n];
+      }
+      return tip;
    }
 
 

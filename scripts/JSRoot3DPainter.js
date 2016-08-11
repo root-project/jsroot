@@ -262,8 +262,7 @@
             block_ctxt = true; // if right button in control was active, block next context menu
          }
 
-         if (control_active) return;
-         if (!control.ProcessMouseMove) return;
+         if (control_active || !control.ProcessMouseMove) return;
 
          var mouse = GetMousePos(evnt, {});
          evnt.preventDefault();
@@ -405,7 +404,11 @@
 
          painter.Tooltip3D(tip);
 
-         return tip && tip.bin ? painter.Get3DToolTip(tip.bin) : "";
+         return tip && tip.info ? tip.info : "";
+      }
+
+      this.control.ProcessMouseLeave = function() {
+         painter.Tooltip3D(null);
       }
 
       this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
@@ -910,7 +913,7 @@
 
    JSROOT.Painter.Tooltip3D = function(tip) {
 
-      if (!tip) {
+      if (!tip || (tip.x1===undefined) || (this.first_render_tm > 1500)) {
          if (this.tooltip_mesh) {
             this.toplevel.remove(this.tooltip_mesh);
             delete this.tooltip_mesh;
@@ -1165,15 +1168,9 @@
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            var tip = { bin: this.bins_index[intersect.index] };
+            var tip = this.painter.Get3DToolTip( this.bins_index[intersect.index] );
 
-            var ix = tip.bin-1,  iy = 1;
-            if (this.painter.Dimension() === 2) {
-               ix = tip.bin % (this.painter.nbinsx + 2);
-               iy = (tip.bin - ix) / (this.painter.nbinsx + 2);
-            }
-
-            var binz = this.painter.histo.getBinContent(ix, iy);
+            var binz = tip.value;
 
             tip.z1 = this.painter.tz(axis_zmin);
             tip.z2 = this.painter.tz(axis_zmax);
@@ -1181,10 +1178,10 @@
             if (binz<axis_zmin) tip.z2 = tip.z1; else
             if (binz<axis_zmax) tip.z2 = this.painter.tz(binz);
 
-            tip.x1 = xx[ix-1];
-            tip.x2 = xx[ix];
-            tip.y1 = yy[iy-1];
-            tip.y2 = yy[iy];
+            tip.x1 = xx[tip.ix-1];
+            tip.x2 = xx[tip.ix];
+            tip.y1 = yy[tip.iy-1];
+            tip.y2 = yy[tip.iy];
 
             return tip;
          }
@@ -1776,7 +1773,9 @@
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
-         return { bin: this.bins[indx] };
+         var tip = this.painter.Get3DToolTip(this.bins[indx]);
+
+         return tip;
       }
 
       this.toplevel.add(combined_bins);
