@@ -7439,7 +7439,7 @@
       var tip = { bin: indx }, arr;
       switch (this.Dimension()) {
          case 1:
-            tip.ix = indx; tips.iy = 1;
+            tip.ix = indx; tip.iy = 1;
             tip.value = this.histo.getBinContent(tip.ix);
             arr = this.GetBinTips(indx-1);
             break;
