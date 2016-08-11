@@ -315,10 +315,7 @@
          delete this.camera;
          delete this.pointLight;
          delete this.renderer;
-         if (this.control) {
-            this.control.dispose();
-            delete this.control;
-         }
+         delete this.control;
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
@@ -369,9 +366,10 @@
       //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
 
 
+      var lookat = new THREE.Vector3(0,0,0.8*this.size3d);
 
       this.camera.up = new THREE.Vector3(0,0,1);
-      this.camera.lookAt(new THREE.Vector3(0,0,0.8*this.size3d));
+      this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
       var webgl = JSROOT.Painter.TestWebGL();
@@ -387,8 +385,31 @@
       this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
       this.Render3D = JSROOT.Painter.Render3D;
       this.Resize3D = JSROOT.Painter.Resize3D;
+      this.Tooltip3D = JSROOT.Painter.Tooltip3D;
 
       this.first_render_tm = 0;
+
+      this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
+
+      var painter = this;
+
+      this.control.ProcessMouseMove = function(intersects) {
+         var tip = null;
+
+         for (var i = 0; i < intersects.length; ++i) {
+            if (intersects[i].object.tooltip) {
+               tip = intersects[i].object.tooltip(intersects[i]);
+               if (tip) break;
+            }
+         }
+
+         painter.Tooltip3D(tip);
+
+         return tip && tip.bin ? painter.Get3DToolTip(tip.bin) : "";
+      }
+
+      this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
+
    }
 
    JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel, fb, bb) {
@@ -875,23 +896,74 @@
       }
    }
 
+   JSROOT.Painter.Box_Vertices = [
+       new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 0),
+       new THREE.Vector3(1, 0, 1), new THREE.Vector3(1, 0, 0),
+       new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 1),
+       new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)
+   ];
+
+   JSROOT.Painter.Box_Indexes = [ 0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4 ];
+
+   JSROOT.Painter.Box_Normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
+
+
+   JSROOT.Painter.Tooltip3D = function(tip) {
+
+      if (!tip) {
+         if (this.tooltip_mesh) {
+            this.toplevel.remove(this.tooltip_mesh);
+            delete this.tooltip_mesh;
+            this.Render3D();
+         }
+         return;
+      }
+
+      var indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices,
+          pos, norm;
+
+      if (this.tooltip_mesh === undefined) {
+         pos = new Float32Array(indicies.length*3);
+         norm = new Float32Array(indicies.length*3);
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+         var mater = new THREE.MeshBasicMaterial( { color: 0xFF0000, shading: THREE.SmoothShading  } );
+         this.tooltip_mesh = new THREE.Mesh(geom, mater);
+         this.toplevel.add(this.tooltip_mesh);
+      } else {
+         pos = this.tooltip_mesh.geometry.attributes.position.array;
+         this.tooltip_mesh.geometry.attributes.position.needsUpdate = true;
+      }
+
+      for (var k=0,nn=-3;k<indicies.length;++k) {
+         var vert = vertices[indicies[k]];
+         pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
+         pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
+         pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
+
+         if (norm) {
+            if (k%6===0) nn+=3;
+            norm[k*3] = normals[nn];
+            norm[k*3+1] = normals[nn+1];
+            norm[k*3+2] = normals[nn+2];
+         }
+      }
+
+      this.Render3D();
+   }
+
    JSROOT.Painter.HistPainter_DrawLego = function() {
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      var vertices = [];
-      vertices.push( new THREE.Vector3(1, 1, 1) );
-      vertices.push( new THREE.Vector3(1, 1, 0) );
-      vertices.push( new THREE.Vector3(1, 0, 1) );
-      vertices.push( new THREE.Vector3(1, 0, 0) );
-      vertices.push( new THREE.Vector3(0, 1, 0) );
-      vertices.push( new THREE.Vector3(0, 1, 1) );
-      vertices.push( new THREE.Vector3(0, 0, 0) );
-      vertices.push( new THREE.Vector3(0, 0, 1) );
+      var vertices = JSROOT.Painter.Box_Vertices;
 
-      var indicies = [0,2,1, 2,3,1, 4,6,5, 6,7,5, 4,5,1, 5,0,1, 7,6,2, 6,3,2, 5,7,0, 7,2,0, 1,3,4, 3,6,4];
+      var indicies = JSROOT.Painter.Box_Indexes;
 
       // normals for each  pair of faces
-      var vnormals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
+      var vnormals = JSROOT.Painter.Box_Normals;
 
       // line segments
       var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
@@ -1093,7 +1165,28 @@
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            return this.painter.Get3DToolTip(this.bins_index[intersect.index]);
+            var tip = { bin: this.bins_index[intersect.index] };
+
+            var ix = tip.bin-1,  iy = 1;
+            if (this.painter.Dimension() === 2) {
+               ix = tip.bin % (this.painter.nbinsx + 2);
+               iy = (tip.bin - ix) / (this.painter.nbinsx + 2);
+            }
+
+            var binz = this.painter.histo.getBinContent(ix, iy);
+
+            tip.z1 = this.painter.tz(axis_zmin);
+            tip.z2 = this.painter.tz(axis_zmax);
+
+            if (binz<axis_zmin) tip.z2 = tip.z1; else
+            if (binz<axis_zmax) tip.z2 = this.painter.tz(binz);
+
+            tip.x1 = xx[ix-1];
+            tip.x2 = xx[ix];
+            tip.y1 = yy[iy-1];
+            tip.y2 = yy[iy];
+
+            return tip;
          }
 
          this.toplevel.add(mesh);
@@ -1254,25 +1347,6 @@
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
             console.log('First render tm = ' + this.first_render_tm);
-
-            if (!this.control) {
-               this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, new THREE.Vector3(0,0,0.8*this.size3d));
-
-               this.control.ProcessMouseMove = function(intersects) {
-                  for (var i = 0; i < intersects.length; ++i) {
-                     if (intersects[i].object.tooltip)
-                        return intersects[i].object.tooltip(intersects[i]);
-
-                     if (typeof intersects[i].object.name == 'string')
-                        return intersects[i].object.name;
-                  }
-
-                  return "";
-               }
-
-               this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
-            }
-
          }
 
          return;
@@ -1702,7 +1776,7 @@
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
-         return this.painter.Get3DToolTip(this.bins[indx]);
+         return { bin: this.bins[indx] };
       }
 
       this.toplevel.add(combined_bins);
