@@ -1360,10 +1360,10 @@
          box.setFromObject(focus);
       } else {
          var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix);
-         console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
+      //   console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
          var node = focus.node;
          var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
-         console.log("halfDelta at x: " + halfDelta.x + " y: " + halfDelta.y + " z: " + halfDelta.z );
+      //   console.log("halfDelta at x: " + halfDelta.x + " y: " + halfDelta.y + " z: " + halfDelta.z );
          box.min = center.clone().sub(halfDelta) ;
          box.max = center.clone().add(halfDelta) ;
          console.log(box);
