@@ -1167,7 +1167,8 @@
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
          // geometry.computeVertexNormals();
 
-         var fcolor = JSROOT.Painter.root_colors[this.GetObject().fFillColor];
+         var rootcolor = this.GetObject().fFillColor,
+             fcolor = JSROOT.Painter.root_colors[rootcolor];
 
          if (palette) {
             var indx = Math.floor((nlevel+0.99)*palette.length/(levels.length-1));
@@ -1184,6 +1185,7 @@
          mesh.painter = this;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
+         mesh.tip_color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
@@ -1192,13 +1194,20 @@
 
             tip.x1 = p.tx(p.GetBinX(tip.ix-1));
             tip.x2 = p.tx(p.GetBinX(tip.ix));
-            tip.y1 = p.ty(p.GetBinY(tip.iy-1));
-            tip.y2 = p.ty(p.GetBinY(tip.iy));
+            if (p.Dimension()===1) {
+               tip.y1 = p.ty(0);
+               tip.y2 = p.ty(1);
+            } else {
+               tip.y1 = p.ty(p.GetBinY(tip.iy-1));
+               tip.y2 = p.ty(p.GetBinY(tip.iy));
+            }
             tip.z1 = p.tz(this.zmin);
             tip.z2 = p.tz(this.zmax);
 
             if (tip.value<this.zmin) tip.z2 = tip.z1; else
             if (tip.value<this.zmax) tip.z2 = p.tz(tip.value);
+
+            tip.color = this.tip_color;
 
             return tip;
          }
@@ -1822,6 +1831,7 @@
       combined_bins.scalex = tipscale*scalex;
       combined_bins.scaley = tipscale*scaley;
       combined_bins.scalez = tipscale*scalez;
+      combined_bins.tip_color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
 
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
@@ -1840,7 +1850,7 @@
          tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
          tip.z1 = grz - this.scalez*wei; tip.z2 = grz + this.scalez*wei;
 
-         tip.color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
+         tip.color = this.tip_color;
 
          return tip;
       }
