@@ -2698,6 +2698,7 @@
    JSROOT.TFramePainter = function(tframe) {
       JSROOT.TObjectPainter.call(this, tframe);
       this.tooltip_enabled = true;
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
    }
 
    JSROOT.TFramePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2894,9 +2895,10 @@
          menu.add("separator");
       }
 
-      menu.addchk(this.tooltip_enabled, "Show tooltips", function() {
-         this.tooltip_enabled = !this.tooltip_enabled;
-      }.bind(this));
+      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
+         var fp = this.frame_painter();
+         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
+      });
       this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", function(arg) {
@@ -2905,7 +2907,7 @@
             JSROOT.AssertPrerequisites("savepng", function() {
                saveSvgAsPng(top.node(), "frame.png");
             });
-      }.bind(this));
+      });
 
       return true;
    }
@@ -2921,7 +2923,7 @@
 
       if (enabled !== undefined) this.tooltip_enabled = enabled;
 
-      if ((pnt === undefined) || (JSROOT.gStyle.Tooltip < 1) || !this.tooltip_enabled) pnt = null;
+      if ((pnt === undefined) || !this.tooltip_allowed || !this.tooltip_enabled) pnt = null;
 
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
