@@ -3875,17 +3875,6 @@
       JSROOT.CallBack(call_back);
    }
 
-   JSROOT.TH2Painter.prototype.CheckResize = function(size) {
-      // no painter - no resize
-      var pad_painter = this.pad_painter();
-      var changed = true, force = (this.options.Lego > 0) && !JSROOT.browser.isFirefox;
-      if (pad_painter)
-         changed = pad_painter.CheckCanvasResize(size, force);
-      if (changed && (this.options.Lego > 0) && (typeof this.Resize3D == 'function'))
-         this.Resize3D();
-      return changed;
-   }
-
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('3d', function() {
          this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;

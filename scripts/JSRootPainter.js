@@ -1334,6 +1334,17 @@
       return 1; // default is overlay
    }
 
+   JSROOT.TObjectPainter.prototype.access_3d_kind = function(new_value) {
+
+      var svg = this.svg_pad();
+      if (svg.empty()) return -1;
+
+      // returns kind of currently created 3d canvas
+      var kind = svg.property('can3d');
+      if (new_value !== undefined) svg.property('can3d', new_value);
+      return ((kind===null) || (kind===undefined)) ? -1 : kind;
+   }
+
    JSROOT.TObjectPainter.prototype.size_for_3d = function(can3d) {
       // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
 
@@ -1385,11 +1396,10 @@
       return size;
    }
 
-   JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
-      var can3d = this.svg_pad().property('can3d');
-      if (can3d === null) return;
 
-      this.svg_pad().property('can3d', null);
+   JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
+      var can3d = this.access_3d_kind(null);
+      if (can3d < 0) return;
 
       var size = this.size_for_3d(can3d);
 
@@ -1421,7 +1431,7 @@
          return;
       }
 
-      this.svg_pad().property('can3d', size.can3d);
+      this.access_3d_kind(size.can3d);
 
       if (size.can3d === 0) {
          this.svg_canvas().style('display', 'none'); // hide SVG canvas
@@ -3943,7 +3953,7 @@
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
       if (!this.iscan) return false;
 
-      if ((size !== null) && (typeof size === 'object') && size.force) force = true;
+      if (size && (typeof size === 'object') && size.force) force = true;
 
       var changed = this.CreateCanvasSvg(force ? 2 : 1, size);
 
@@ -5112,6 +5122,19 @@
       // one should find min,max,nbins, maxcontent values
 
       alert("HistPainter.prototype.ScanContent not implemented");
+   }
+
+   JSROOT.THistPainter.prototype.CheckResize = function(size) {
+      // normal SVG canvas scaled smoothely,
+      // but special handling required for three.js canvas overlayed over SVG
+
+      var pad_painter = this.pad_painter(),
+          kind = this.access_3d_kind(),
+          changed = false;
+      if (pad_painter)
+         changed = pad_painter.CheckCanvasResize(size, (kind === 1));
+      if (changed && (kind >= 0) && (typeof this.Resize3D === 'function')) this.Resize3D();
+      return changed;
    }
 
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
@@ -7419,18 +7442,8 @@
       return false;
    }
 
-   JSROOT.TH1Painter.prototype.CheckResize = function(size) {
-      // no painter - no resize
-      var pad_painter = this.pad_painter(),changed = true;
-      if (pad_painter)
-         changed = pad_painter.CheckCanvasResize(size, (this.options.Lego > 0) && !JSROOT.browser.isFirefox);
-      if (changed && (this.options.Lego > 0) && (typeof this.Resize3D == 'function'))
-         this.Resize3D();
-      return changed;
-   }
-
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
-      if (typeof this.Create3DScene == 'function')
+      if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
@@ -9985,11 +9998,10 @@
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
-
       var dummy = new JSROOT.TObjectPainter(), done = false;
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
-         if (!done && typeof painter['CheckResize'] == 'function')
+         if (!done && typeof painter.CheckResize == 'function')
             done = painter.CheckResize(arg);
       });
    }

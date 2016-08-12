@@ -1129,7 +1129,7 @@
       var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
       directionalLight.position.set( 0, 1, 0 );
       this._scene.add( directionalLight );
-      
+
       this._lights = new THREE.Object3D();
       var a = new THREE.PointLight(0xefefef, 0.2);
       var b = new THREE.PointLight(0xefefef, 0.2);
@@ -1891,14 +1891,14 @@
       JSROOT.progress(msg);
    }
 
-   JSROOT.TGeoPainter.prototype.CheckResize = function() {
+   JSROOT.TGeoPainter.prototype.CheckResize = function(size) {
 
       var pad_painter = this.pad_painter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
-         if (!pad_painter.CheckCanvasResize(size, JSROOT.browser.isFirefox ? false : true)) return false;
+         if (!pad_painter.CheckCanvasResize(size, this.access_3d_kind() === 1)) return false;
 
       var size3d = this.size_for_3d();
 

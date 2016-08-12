@@ -1394,7 +1394,7 @@
 
    JSROOT.Painter.Resize3D = function() {
 
-      var size3d = this.size_for_3d(this.svg_pad().property('can3d'));
+      var size3d = this.size_for_3d(this.access_3d_kind());
 
       this.apply_3d_size(size3d);
 
@@ -1901,19 +1901,6 @@
          this.Draw3DBins();
          this.Render3D();
       }
-   }
-
-   JSROOT.TH3Painter.prototype.CheckResize = function(size) {
-      var pad_painter = this.pad_painter();
-
-      var changed = true;
-
-      // firefox is the only browser which correctly supports resize of embedded canvas,
-      // for others we should force canvas redrawing at every step
-      if (pad_painter)
-         changed = pad_painter.CheckCanvasResize(size, !JSROOT.browser.isFirefox);
-
-      if (changed) this.Resize3D(size);
    }
 
    JSROOT.TH3Painter.prototype.FillToolbar = function() {

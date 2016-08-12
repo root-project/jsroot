@@ -1184,7 +1184,7 @@
 
       if (typeof this.separ.handle == 'function') this.separ.handle(); else
       if ((typeof this.separ.handle == 'object') &&
-          (typeof this.separ.handle['CheckResize'] == 'function')) this.separ.handle.CheckResize();
+          (typeof this.separ.handle.CheckResize === 'function')) this.separ.handle.CheckResize();
    }
 
    JSROOT.Painter.ConfigureVSeparator = function(handle) {
