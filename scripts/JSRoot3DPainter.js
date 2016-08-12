@@ -927,18 +927,21 @@
           vertices = JSROOT.Painter.Box_Vertices,
           pos, norm;
 
+      var color = new THREE.Color(tip.color ? tip.color : 0xFF0000);
+
       if (this.tooltip_mesh === undefined) {
          pos = new Float32Array(indicies.length*3);
          norm = new Float32Array(indicies.length*3);
          var geom = new THREE.BufferGeometry();
          geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
          geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-         var mater = new THREE.MeshBasicMaterial( { color: 0xFF0000, shading: THREE.SmoothShading  } );
+         var mater = new THREE.MeshBasicMaterial( { color: color, shading: THREE.SmoothShading  } );
          this.tooltip_mesh = new THREE.Mesh(geom, mater);
          this.toplevel.add(this.tooltip_mesh);
       } else {
          pos = this.tooltip_mesh.geometry.attributes.position.array;
          this.tooltip_mesh.geometry.attributes.position.needsUpdate = true;
+         this.tooltip_mesh.material.color = color;
       }
 
       for (var k=0,nn=-3;k<indicies.length;++k) {
@@ -1607,9 +1610,9 @@
 
       if (!this.draw_content) return;
 
-      var fillcolor = new THREE.Color(JSROOT.Painter.root_colors[this.GetObject().fFillColor]);
-
-      var material = null, geom = null, helper = null;
+      var rootcolor = this.GetObject().fFillColor,
+          fillcolor = JSROOT.Painter.root_colors[rootcolor],
+          material = null, geom = null, helper = null;
 
       if (this.options.Box == 11) {
          // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
@@ -1642,10 +1645,9 @@
           scalez = (this.tz(this.GetBinZ(k2+0.5)) - this.tz(this.GetBinZ(k1+0.5))) / (k2-k1);
 
       // Single Object3Ds that contain all bins and helpers
-      var buffer_size = geom.faces.length*9;
-
-      var single_bin_verts = new Float32Array(buffer_size);
-      var single_bin_norms = new Float32Array(buffer_size);
+      var buffer_size = geom.faces.length*9,
+          single_bin_verts = new Float32Array(buffer_size),
+          single_bin_norms = new Float32Array(buffer_size);
 
       // Fill a typed array with cube geometry that will be shared by all
       // (This technically could be put into an InstancedBufferGeometry but
@@ -1689,17 +1691,16 @@
 
       // console.log("Create buffer for", nbins, 'bins fullsize', nbins * buffer_size);
 
-      var bin_verts = new Float32Array(nbins * buffer_size);
-      var bin_norms = new Float32Array(nbins * buffer_size);
-      var bins = new Int32Array(nbins);
+      var bin_verts = new Float32Array(nbins * buffer_size),
+          bin_norms = new Float32Array(nbins * buffer_size),
+          bins = new Int32Array(nbins);
 
-
-      var helper_indexes, helper_positions, helper_single_indexes, helper_single_position, helper_bins;
+      var helper_indexes, helper_positions, helper_single_indexes, helper_single_position;
 
       if (helper) {
          helper_single_indexes = helper.geometry.index.array;
          helper_single_position = helper.geometry.getAttribute('position').array;
-         helper_indexes = new Uint32Array(nbins * helper_single_indexes.length);
+         helper_indexes = new Uint16Array(nbins * helper_single_indexes.length);
          helper_positions = new Float32Array(nbins * helper_single_position.length);
       }
 
@@ -1715,7 +1716,7 @@
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
 
-               wei = (this.options.Color > 0) ? 1. : bin_content / this.gmaxbin;
+               wei = /*(this.options.Color > 0) ? 1. :*/  bin_content / this.gmaxbin;
                if (wei < 1e-5) continue; // do not show empty bins
 
                binz = this.GetBinZ(k+0.5); grz = this.tz(binz);
@@ -1736,7 +1737,6 @@
                   bin_norms[vvv+2] = single_bin_norms[vi+2];
                }
 
-
                if (helper) {
                   var iii = nbins * helper_single_indexes.length,
                       vvv = nbins * helper_single_position.length;
@@ -1756,7 +1756,6 @@
          }
       }
 
-
       // BufferGeometries that store geometry of all bins
       var all_bins_buffgeom = new THREE.BufferGeometry();
 
@@ -1773,7 +1772,22 @@
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
-         var tip = this.painter.Get3DToolTip(this.bins[indx]);
+
+         var p = this.painter;
+
+         var tip = p.Get3DToolTip(this.bins[indx]);
+
+         grx = p.tx(p.GetBinX(tip.ix-0.5));
+         gry = p.ty(p.GetBinX(tip.iy-0.5));
+         grz = p.tz(p.GetBinX(tip.iz-0.5));
+
+         wei = tip.value / p.gmaxbin;
+
+         tip.x1 = grx - 0.5*scalex*wei; tip.x2 = grx + 0.5*scalex*wei;
+         tip.y1 = gry - 0.5*scaley*wei; tip.y2 = gry + 0.5*scaley*wei;
+         tip.z1 = grz - 0.5*scalez*wei; tip.z2 = grz + 0.5*scalez*wei;
+
+         tip.color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
 
          return tip;
       }
