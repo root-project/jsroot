@@ -3963,7 +3963,7 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
-      if (!this.iscan) return false;
+      if (!this.iscan && this.has_canvas) return false;
 
       if (size && (typeof size === 'object') && size.force) force = true;
 
