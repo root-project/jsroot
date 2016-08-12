@@ -154,7 +154,7 @@
 
       control.ProcessMouseDblclick = function() {
          control.reset();
-         painter.Render3D();
+         // painter.Render3D();
       }
 
       function GetMousePos(evnt, mouse) {
@@ -1981,17 +1981,13 @@
          if (step <= 6) step = 6;
       }
 
-      var size = Math.floor(poly.fP.length/step);
-
-
-      var indicies = JSROOT.Painter.Box_Indexes,
+      var size = Math.floor(poly.fP.length/step),
+          indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
           vertices = JSROOT.Painter.Box_Vertices,
           pos = new Float32Array(indicies.length*3*size),
-          norm = new Float32Array(indicies.length*3*size);
-
-
-      var lll = 0, scale = main.size3d/100;
+          norm = new Float32Array(indicies.length*3*size),
+          lll = 0, scale = main.size3d/100;
 
       for (var i=0; i < size*step; i+=step) {
          var x = main.tx(poly.fP[i]),
@@ -2016,7 +2012,6 @@
       var geom = new THREE.BufferGeometry();
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
       geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-
 
       var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
 

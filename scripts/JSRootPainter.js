@@ -6543,30 +6543,35 @@
 
          if (typeof this.FillHistContextMenu == 'function')
             this.FillHistContextMenu(menu);
+      }
 
-         if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
-            // menu for 3D drawings
+      if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
+         // menu for 3D drawings
 
+         if (menu.size() > 0)
             menu.add("separator");
 
-            menu.addchk(this.enable_tooltip, 'Show tooltips', function() {
-               this.enable_tooltip = !this.enable_tooltip;
+         menu.addchk(this.enable_tooltip, 'Show tooltips', function() {
+            this.enable_tooltip = !this.enable_tooltip;
+         });
+
+         if (this.enable_tooltip)
+            menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
+               this.enable_hightlight = !this.enable_hightlight;
+               if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
             });
 
-            if (this.enable_tooltip)
-               menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
-                  this.enable_hightlight = !this.enable_hightlight;
-                  if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
-               });
+         menu.addchk(this.options.FrontBox, 'Front box', function() {
+            this.options.FrontBox = !this.options.FrontBox;
+            if (this.Render3D) this.Render3D();
+         });
+         menu.addchk(this.options.BackBox, 'Back box', function() {
+            this.options.BackBox = !this.options.BackBox;
+            if (this.Render3D) this.Render3D();
+         });
 
-            menu.addchk(this.options.FrontBox, 'Front box', function() {
-               this.options.FrontBox = !this.options.FrontBox;
-               if (this.Render3D) this.Render3D();
-            });
-            menu.addchk(this.options.BackBox, 'Back box', function() {
-               this.options.BackBox = !this.options.BackBox;
-               if (this.Render3D) this.Render3D();
-            });
+
+         if (this.draw_content) {
             menu.addchk(this.options.Zero, 'Suppress zeros', function() {
                this.options.Zero = !this.options.Zero;
                this.RedrawPad();
@@ -6578,12 +6583,12 @@
                });
                if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
             }
-
-            if (this.control && typeof this.control.ResetCamera === 'function')
-               menu.add('Reset camera', function() {
-                  this.control.ResetCamera();
-               });
          }
+
+         if (this.control && typeof this.control.reset === 'function')
+            menu.add('Reset camera', function() {
+               this.control.reset();
+            });
       }
 
       this.FillAttContextMenu(menu);
