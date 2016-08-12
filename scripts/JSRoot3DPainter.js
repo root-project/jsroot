@@ -960,6 +960,10 @@
          this.tooltip_mesh.material.color = color;
       }
 
+      if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
+      if (tip.y1 === tip.y2) console.warn('same tip Y', tip.y1, tip.y2);
+      if (tip.z1 === tip.z2) { tip.z2 = tip.z1 + 0.0001; } // avoid zero faces
+
       for (var k=0,nn=-3;k<indicies.length;++k) {
          var vert = vertices[indicies[k]];
          pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
@@ -1229,6 +1233,10 @@
             mesh2.bins_index = indx2;
             mesh2.painter = this;
             mesh2.tooltip = mesh.tooltip;
+            mesh2.zmin = mesh.zmin;
+            mesh2.zmax = mesh.zmax;
+            mesh2.tip_color = mesh.tip_color;
+
             this.toplevel.add(mesh2);
          }
       }
