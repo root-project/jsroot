@@ -6548,10 +6548,12 @@
                this.RedrawPad();
             });
 
-            if ((this.options.Lego==12) || (this.options.Lego==14))
+            if ((this.options.Lego==12) || (this.options.Lego==14)) {
                menu.addchk(this.options.Zscale, "Z scale", function() {
                   this.ToggleColz();
                });
+               if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
+            }
 
             if (this.control && typeof this.control.ResetCamera === 'function')
                menu.add('Reset camera', function() {

@@ -98,11 +98,10 @@
    }
 
    JSROOT.Painter.GetColorPalette = function(col,alfa) {
-      if ((col == null) || (col==0)) col = JSROOT.gStyle.Palette;
+      if ((col===null) || (col===0)) col = JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
       if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
       if (col > 112) col = 57;
-
       var red, green, blue,
           stops = [ 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 ];
       switch(col) {
@@ -2766,10 +2765,48 @@
       return asindx ? theColor : palette[theColor];
    }
 
-   JSROOT.THistPainter.prototype.GetPalette = function() {
-      if (this.fPalette == null)
+   JSROOT.THistPainter.prototype.GetPalette = function(force) {
+      if (!this.fPalette || force)
          this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
       return this.fPalette;
+   }
+
+   JSROOT.THistPainter.prototype.FillPaletteMenu = function(menu) {
+
+      var curr = this.options.Palette;
+      if ((curr===null) || (curr===0)) curr = JSROOT.gStyle.Palette;
+
+      function change(arg) {
+         this.options.Palette = parseInt(arg);
+         this.GetPalette(true);
+         this.Redraw(); // redraw histogram
+      };
+
+      function add(id, name, more) {
+         menu.addchk((id===curr) || more, '<nobr>' + name + '</nobr>', id, change);
+      };
+
+      menu.add("sub:Palette");
+
+      add(50, "ROOT 5", (curr>=10) && (curr<51));
+      add(51, "Deep Sea");
+      add(52, "Grayscale", (curr>0) && (curr<10));
+      add(53, "Dark body radiator");
+      add(54, "Two-color hue");
+      add(55, "Rainbow");
+      add(56, "Inverted dark body radiator");
+      add(57, "Bird", (curr>112));
+      add(58, "Cubehelix");
+      add(59, "Green Red Violet");
+      add(60, "Blue Red Yellow");
+      add(61, "Ocean");
+      add(62, "Color Printable On Grey");
+      add(63, "Alpine");
+      add(64, "Aquamarine");
+      add(65, "Army");
+      add(66, "Atlantic");
+
+      menu.add("endsub:");
    }
 
    JSROOT.THistPainter.prototype.AddFunction = function(obj, asfirst) {
@@ -2917,6 +2954,9 @@
 
          // if (this.options.Lego == 0) this.AddInteractive();
       });
+
+      if (this.options.Color > 0)
+        this.FillPaletteMenu(menu);
    }
 
    JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
