@@ -9213,8 +9213,6 @@
 
       if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
 
-      //JSROOT.RegisterForResize(this);
-
       this.SetMonitoring(monitor);
 
       function OpenAllFiles() {

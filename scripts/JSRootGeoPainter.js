@@ -102,7 +102,6 @@
          }
       });
 
-
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
@@ -1329,7 +1328,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
-      console.log('Focus on the element', itemname);
 
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
@@ -1339,17 +1337,16 @@
 
       var info = this._clones.ResolveStack(stack, true);
 
-      console.log( info );
+      //console.log( info );
 
-      console.log('transfrom matrix', info.matrix.elements);
+      //console.log('transfrom matrix', info.matrix.elements);
 
-      console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
+      //console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
+
       this.focusCamera( info, false );
-
    }
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus, clip ) {
-
 
       var autoClip = clip === undefined ? false : clip;
 
@@ -1892,7 +1889,6 @@
    }
 
    JSROOT.TGeoPainter.prototype.CheckResize = function(size) {
-
       var pad_painter = this.pad_painter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
