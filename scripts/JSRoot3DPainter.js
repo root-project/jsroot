@@ -1182,6 +1182,8 @@
 
          mesh.bins_index = bins_index;
          mesh.painter = this;
+         mesh.zmin = axis_zmin;
+         mesh.zmax = axis_zmax;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
@@ -1192,11 +1194,11 @@
             tip.x2 = p.tx(p.GetBinX(tip.ix));
             tip.y1 = p.ty(p.GetBinY(tip.iy-1));
             tip.y2 = p.ty(p.GetBinY(tip.iy));
-            tip.z1 = p.tz(axis_zmin);
-            tip.z2 = p.tz(axis_zmax);
+            tip.z1 = p.tz(this.zmin);
+            tip.z2 = p.tz(this.zmax);
 
-            if (tip.value<axis_zmin) tip.z2 = tip.z1; else
-            if (tip.value<axis_zmax) tip.z2 = p.tz(tip.value);
+            if (tip.value<this.zmin) tip.z2 = tip.z1; else
+            if (tip.value<this.zmax) tip.z2 = p.tz(tip.value);
 
             return tip;
          }
@@ -1628,7 +1630,7 @@
           single_bin_verts, single_bin_norms;
 
 
-      if (this.options.Box == 11) {
+      if (this.options.Box === 11) {
          // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
          // material = new THREE.MeshBasicMaterial( { color: fillcolor, shading: THREE.SmoothShading  } );
          material = new THREE.MeshLambertMaterial({ color : fillcolor });
@@ -1815,6 +1817,12 @@
       combined_bins.bins_faces = buffer_size/3;
       combined_bins.painter = this;
 
+      var tipscale = (this.options.Box === 11) ? 0.4 : 0.5;
+
+      combined_bins.scalex = tipscale*scalex;
+      combined_bins.scaley = tipscale*scaley;
+      combined_bins.scalez = tipscale*scalez;
+
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
@@ -1823,14 +1831,14 @@
              tip = p.Get3DToolTip(this.bins[indx]);
 
          grx = p.tx(p.GetBinX(tip.ix-0.5));
-         gry = p.ty(p.GetBinX(tip.iy-0.5));
-         grz = p.tz(p.GetBinX(tip.iz-0.5));
+         gry = p.ty(p.GetBinY(tip.iy-0.5));
+         grz = p.tz(p.GetBinZ(tip.iz-0.5));
 
          wei = tip.value / p.gmaxbin;
 
-         tip.x1 = grx - 0.5*scalex*wei; tip.x2 = grx + 0.5*scalex*wei;
-         tip.y1 = gry - 0.5*scaley*wei; tip.y2 = gry + 0.5*scaley*wei;
-         tip.z1 = grz - 0.5*scalez*wei; tip.z2 = grz + 0.5*scalez*wei;
+         tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
+         tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
+         tip.z1 = grz - this.scalez*wei; tip.z2 = grz + this.scalez*wei;
 
          tip.color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
 
