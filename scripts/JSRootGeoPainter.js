@@ -1320,7 +1320,7 @@
       console.log('transfrom matrix', info.matrix.elements);
 
       console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
-      this.focusCamera( info, false );
+      this.focusCamera( info, true );
 
    }
 
@@ -1339,8 +1339,10 @@
          console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
          var node = focus.node;
          var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
-         box.min.set( center.clone().sub(halfDelta) );
-         box.max.set( center.clone().add(halfDelta) );
+         console.log("halfDelta at x: " + halfDelta.x + " y: " + halfDelta.y + " z: " + halfDelta.z );
+         box.min = center.clone().sub(halfDelta) ;
+         box.max = center.clone().add(halfDelta) ;
+         console.log(box);
       }
 
       var sizex = box.max.x - box.min.x,
@@ -1418,7 +1420,7 @@
       }
       animate();
 
-      this._controls.update();
+   //   this._controls.update();
 
       this.startDrawGeometry();
    }
