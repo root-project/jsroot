@@ -6529,10 +6529,11 @@
                this.enable_tooltip = !this.enable_tooltip;
             });
 
-            menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
-               this.enable_hightlight = !this.enable_hightlight;
-               if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
-            });
+            if (this.enable_tooltip)
+               menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
+                  this.enable_hightlight = !this.enable_hightlight;
+                  if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
+               });
 
             menu.addchk(this.options.FrontBox, 'Front box', function() {
                this.options.FrontBox = !this.options.FrontBox;

@@ -929,7 +929,7 @@
 
    JSROOT.Painter.BinHighlight3D = function(tip) {
 
-      if (!tip || (tip.x1===undefined) || !this.enable_hightlight) {
+      if (!tip || (tip.x1===undefined) || !this.enable_hightlight || !this.enable_tooltip) {
          if (this.tooltip_mesh) {
             this.toplevel.remove(this.tooltip_mesh);
             delete this.tooltip_mesh;
@@ -1187,7 +1187,7 @@
          mesh.painter = this;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
-         mesh.tip_color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
+         mesh.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
@@ -1834,7 +1834,7 @@
       combined_bins.scalex = tipscale*scalex;
       combined_bins.scaley = tipscale*scaley;
       combined_bins.scalez = tipscale*scalez;
-      combined_bins.tip_color = (rootcolor===2) ? 0x00FF00 : 0xFF0000;
+      combined_bins.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
 
       combined_bins.tooltip = function(intersect) {
          var indx = Math.floor(intersect.index / this.bins_faces);
