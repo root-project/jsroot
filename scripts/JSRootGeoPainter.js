@@ -397,6 +397,7 @@
 
       if (this._webgl) {
          appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
+            painter._renderer.antialias = !painter._renderer.antialias;
             painter.Render3D(0);
          }).listen();
       }
@@ -1121,9 +1122,33 @@
 
        // Lights
 
-      this._pointLight = new THREE.PointLight(0xefefef);
+      var light = new THREE.HemisphereLight( 0xffffff, 0x999999, 0.5 );
+      this._scene.add(light);
+
+      /*
+      var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
+      directionalLight.position.set( 0, 1, 0 );
+      this._scene.add( directionalLight );
+      
+      this._lights = new THREE.Object3D();
+      var a = new THREE.PointLight(0xefefef, 0.2);
+      var b = new THREE.PointLight(0xefefef, 0.2);
+      var c = new THREE.PointLight(0xefefef, 0.2);
+      var d = new THREE.PointLight(0xefefef, 0.2);
+      this._lights.add(a);
+      this._lights.add(b);
+      this._lights.add(c);
+      this._lights.add(d);
+      this._camera.add( this._lights );
+      a.position.set( 20000, 20000, 20000 );
+      b.position.set( -20000, 20000, 20000 );
+      c.position.set( 20000, -20000, 20000 );
+      d.position.set( -20000, -20000, 20000 );
+      */
+      this._pointLight = new THREE.PointLight(0xefefef, 0.4);
       this._camera.add( this._pointLight );
       this._pointLight.position.set(10, 10, 10);
+      //*/
 
       // Default Settings
 
@@ -1288,7 +1313,7 @@
          //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
       }
 
-      this._pointLight.position.set(midx, midy, midz);
+   //   this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
@@ -1308,29 +1333,41 @@
 
       if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
 
-      console.log( stack );
-
       var stack = this._clones.FindStackByName(itemname.substr(6));
 
       if (!stack) return;
 
       var info = this._clones.ResolveStack(stack, true);
 
+      console.log( info );
+
       console.log('transfrom matrix', info.matrix.elements);
 
       console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
+      this.focusCamera( info, false );
+
    }
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus, clip ) {
 
+
+      var autoClip = clip === undefined ? false : clip;
+
       var box = new THREE.Box3();
       if (focus === undefined) {
          box.setFromObject(this._toplevel);
-      } else {
+      } else if (focus instanceof THREE.Mesh) {
          box.setFromObject(focus);
+      } else {
+         var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix);
+      //   console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
+         var node = focus.node;
+         var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
+      //   console.log("halfDelta at x: " + halfDelta.x + " y: " + halfDelta.y + " z: " + halfDelta.z );
+         box.min = center.clone().sub(halfDelta) ;
+         box.max = center.clone().add(halfDelta) ;
+         console.log(box);
       }
-
-      var autoClip = clip === undefined ? false : clip;
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1346,6 +1383,7 @@
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
       var target = new THREE.Vector3(midx, midy, midz);
+      console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
 
       // Find to points to animate "lookAt" between
       var dist = this._camera.position.distanceTo(target);
@@ -1385,7 +1423,11 @@
       // Interpolate //
 
       function animate() {
-         if (painter._animating) requestAnimationFrame( animate );
+         if (painter._animating) {
+            requestAnimationFrame( animate );
+         } else {
+            painter.startDrawGeometry();
+         }
          var smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
          painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
          oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
@@ -1406,7 +1448,8 @@
       }
       animate();
 
-      this._controls.update();
+   //   this._controls.update();
+
    }
 
    JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
