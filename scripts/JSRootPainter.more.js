@@ -3851,7 +3851,7 @@
       return false;
    }
 
-   JSROOT.TH2Painter.prototype.Draw2D = function(call_back) {
+   JSROOT.TH2Painter.prototype.Draw2D = function(call_back, resize) {
 
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
@@ -3883,12 +3883,12 @@
       }.bind(this));
    }
 
-   JSROOT.TH2Painter.prototype.Redraw = function() {
+   JSROOT.TH2Painter.prototype.Redraw = function(resize) {
       this.CreateXY();
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
-      this[func_name]();
+      this[func_name](null, resize);
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {

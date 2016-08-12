@@ -1413,56 +1413,72 @@
       this.Render3D();
    }
 
-   JSROOT.Painter.TH1Painter_Draw3D = function(call_back) {
+   JSROOT.Painter.TH1Painter_Draw3D = function(call_back, resize) {
       // function called with this as painter
 
-      this.Create3DScene();
-      this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
+      if (resize)  {
 
-      this.DeleteAtt();
+         this.Resize3D();
 
-      this.DrawXYZ(this.toplevel, true, 1.1);
+      } else {
 
-      this.Draw3DBins();
+         this.Create3DScene();
+         this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
+         this.DeleteAtt();
+
+         this.DrawXYZ(this.toplevel, true, 1.1);
+
+         this.Draw3DBins();
+
+         this.Render3D();
+      }
+
+      // (re)draw palette by resize while canvas may change dimension
       this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
-
-      this.Render3D();
 
       JSROOT.CallBack(call_back);
    }
 
 
-   JSROOT.Painter.TH2Painter_Draw3D = function(call_back) {
+   JSROOT.Painter.TH2Painter_Draw3D = function(call_back, resize) {
       // function called with this as painter
 
-      this.Create3DScene();
-      this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
+      if (resize) {
 
-      var pad = this.root_pad();
-      // if (pad && pad.fGridz === undefined) pad.fGridz = false;
+         this.Resize3D();
 
-      this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
-      this.zmax = this.gmaxbin;
+      } else {
 
-      if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
-      if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
+         this.Create3DScene();
+         this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
-      if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         var pad = this.root_pad();
+         // if (pad && pad.fGridz === undefined) pad.fGridz = false;
 
-      this.DeleteAtt();
+         this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
+         this.zmax = this.gmaxbin;
 
-      this.DrawXYZ(this.toplevel, false, 1.1);
+         if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
+         if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
 
-      this.Draw3DBins();
+         if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
+         this.DeleteAtt();
+
+         this.DrawXYZ(this.toplevel, false, 1.1);
+
+         this.Draw3DBins();
+
+         this.Render3D();
+      }
+
+      // (re)draw palette by resize while canvas may change dimension
       this.DrawColorPalette(this.options.Zscale > 0);
 
       this.DrawTitle();
-
-      this.Render3D();
 
       JSROOT.CallBack(call_back);
    }

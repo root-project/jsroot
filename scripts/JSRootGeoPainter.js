@@ -1894,7 +1894,7 @@
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
-         if (!pad_painter.CheckCanvasResize(size, this.access_3d_kind() === 1)) return false;
+         if (!pad_painter.CheckCanvasResize(size)) return false;
 
       var size3d = this.size_for_3d();
 

@@ -1166,9 +1166,11 @@
    JSROOT.TObjectPainter.prototype.CheckResize = function(arg) {
       // no painter - no resize
       var pad_painter = this.pad_painter();
-      if (pad_painter)
-         return pad_painter.CheckCanvasResize(arg, false);
-      return false;
+      if (!pad_painter) return false;
+
+      // only canvas should be checked
+      pad_painter.CheckCanvasResize(arg);
+      return true;
    }
 
    JSROOT.TObjectPainter.prototype.RemoveDrawG = function() {
@@ -3950,10 +3952,22 @@
       return num;
    }
 
+   JSROOT.TPadPainter.prototype.RedrawByResize = function() {
+      if (this.access_3d_kind() === 1) return true;
+
+      for (var i = 0; i < this.painters.length; ++i)
+         if (typeof this.painters[i].RedrawByResize === 'function')
+            if (this.painters[i].RedrawByResize()) return true;
+
+      return false;
+   }
+
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
       if (!this.iscan) return false;
 
       if (size && (typeof size === 'object') && size.force) force = true;
+
+      if (!force) force = this.RedrawByResize();
 
       var changed = this.CreateCanvasSvg(force ? 2 : 1, size);
 
@@ -5122,19 +5136,6 @@
       // one should find min,max,nbins, maxcontent values
 
       alert("HistPainter.prototype.ScanContent not implemented");
-   }
-
-   JSROOT.THistPainter.prototype.CheckResize = function(size) {
-      // normal SVG canvas scaled smoothely,
-      // but special handling required for three.js canvas overlayed over SVG
-
-      var pad_painter = this.pad_painter(),
-          kind = this.access_3d_kind(),
-          changed = false;
-      if (pad_painter)
-         changed = pad_painter.CheckCanvasResize(size, (kind === 1));
-      if (changed && (kind >= 0) && (typeof this.Resize3D === 'function')) this.Resize3D();
-      return changed;
    }
 
    JSROOT.THistPainter.prototype.CheckPadRange = function() {
@@ -7497,12 +7498,12 @@
    }
 
 
-   JSROOT.TH1Painter.prototype.Redraw = function() {
+   JSROOT.TH1Painter.prototype.Redraw = function(resize) {
       this.CreateXY();
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
-      this[func_name]();
+      this[func_name](null, resize);
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -9994,6 +9995,7 @@
    // Or one just supply object with exact sizes like { width:300, height:200, force:true };
 
    JSROOT.resize = function(divid, arg) {
+
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
       var dummy = new JSROOT.TObjectPainter(), done = false;
