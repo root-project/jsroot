@@ -387,6 +387,8 @@
       this.BinHighlight3D = JSROOT.Painter.BinHighlight3D;
 
       this.first_render_tm = 0;
+      this.enable_hightlight = false;
+      this.enable_tooltip = true;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
@@ -404,7 +406,7 @@
 
          painter.BinHighlight3D(tip);
 
-         return tip && tip.info ? tip.info : "";
+         return (painter.enable_tooltip && tip && tip.info) ? tip.info : "";
       }
 
       this.control.ProcessMouseLeave = function() {
@@ -927,7 +929,7 @@
 
    JSROOT.Painter.BinHighlight3D = function(tip) {
 
-      if (!tip || (tip.x1===undefined) || (this.first_render_tm > 1500)) {
+      if (!tip || (tip.x1===undefined) || !this.enable_hightlight) {
          if (this.tooltip_mesh) {
             this.toplevel.remove(this.tooltip_mesh);
             delete this.tooltip_mesh;
@@ -1369,6 +1371,7 @@
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
+            this.enable_hightlight = this.first_render_tm < 1200;
             console.log('First render tm = ' + this.first_render_tm);
          }
 

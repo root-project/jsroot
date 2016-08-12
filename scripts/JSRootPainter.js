@@ -6523,6 +6523,17 @@
          if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
             // menu for 3D drawings
 
+            menu.add("separator");
+
+            menu.addchk(this.enable_tooltip, 'Show tooltips', function() {
+               this.enable_tooltip = !this.enable_tooltip;
+            });
+
+            menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
+               this.enable_hightlight = !this.enable_hightlight;
+               if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
+            });
+
             menu.addchk(this.options.FrontBox, 'Front box', function() {
                this.options.FrontBox = !this.options.FrontBox;
                if (this.Render3D) this.Render3D();
