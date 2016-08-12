@@ -371,10 +371,10 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
-      var webgl = JSROOT.Painter.TestWebGL();
+      this.webgl = JSROOT.Painter.TestWebGL();
 
-      this.renderer = webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                              new THREE.CanvasRenderer({ antialias : true, alpha: true  });
+      this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                                   new THREE.CanvasRenderer({ antialias : true, alpha: true  });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
@@ -1972,21 +1972,59 @@
 
       var main = this.main_painter();
 
-      if ((main == null) || !('renderer' in main)) return this.DrawingReady();
+      if (!main  || !('renderer' in main)) return this.DrawingReady();
 
-      var cnt = poly.fP.length;
-      var step = 3;
+      var step = 3, sizelimit = main.webgl ? 50000 : 10000;
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && (cnt > 1000*3)) {
-         step = Math.floor(cnt / 1000 / 3) * 3;
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && (poly.fP.length > 3 * sizelimit)) {
+         step = Math.floor(poly.fP.length / sizelimit / 3 ) * 3;
          if (step <= 6) step = 6;
       }
 
-      var fcolor = d3.rgb(JSROOT.Painter.root_colors[poly.fMarkerColor]);
-      var fillcolor = new THREE.Color(0xDDDDDD);
-      fillcolor.setRGB(fcolor.r / 255, fcolor.g / 255,  fcolor.b / 255);
+      var size = Math.floor(poly.fP.length/step);
 
-      var material = new THREE.MeshPhongMaterial({ color : fillcolor.getHex(), specular : 0x4f4f4f});
+      var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
+
+      // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+
+      var indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices,
+          pos = new Float32Array(indicies.length*3*size),
+          norm = new Float32Array(indicies.length*3*size);
+
+
+      var lll = 0, scale = main.size3d/100;
+
+      for (var i=0; i < size*step; i+=step) {
+         var x = main.tx(poly.fP[i]),
+             y = main.ty(poly.fP[i+1]),
+             z = main.tz(poly.fP[i+2]);
+
+         for (var k=0,nn=-3;k<indicies.length;++k) {
+            var vert = vertices[indicies[k]];
+            pos[lll]   = x + (vert.x - 0.5)*scale;
+            pos[lll+1] = y + (vert.y - 0.5)*scale;
+            pos[lll+2] = z + (vert.z - 0.5)*scale;
+
+            if (k%6===0) nn+=3;
+            norm[lll] = normals[nn];
+            norm[lll+1] = normals[nn+1];
+            norm[lll+2] = normals[nn+2];
+
+            lll+=3;
+         }
+      }
+
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+      var mesh = new THREE.Mesh(geom, material);
+
+      main.toplevel.add(mesh);
+
+/*
 
       // var geom = new THREE.SphereBufferGeometry(1);
       var geom = new THREE.BoxGeometry(1, 1, 1);
@@ -1998,8 +2036,8 @@
          bin.name += main.x_handle.format(poly.fP[n]) + "," + main.y_handle.format(poly.fP[n+1]) + "," + main.z_handle.format(poly.fP[n+2]);
          main.toplevel.add(bin);
       }
-
-      main.Render3D();
+*/
+      main.Render3D(100); // set large timeout to be able draw other points
 
       return this.DrawingReady();
    }
