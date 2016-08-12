@@ -1122,9 +1122,33 @@
 
        // Lights
 
-      this._pointLight = new THREE.PointLight(0xefefef);
+      var light = new THREE.HemisphereLight( 0xffffff, 0x999999, 0.5 );
+      this._scene.add(light);
+
+      /*
+      var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
+      directionalLight.position.set( 0, 1, 0 );
+      this._scene.add( directionalLight );
+      
+      this._lights = new THREE.Object3D();
+      var a = new THREE.PointLight(0xefefef, 0.2);
+      var b = new THREE.PointLight(0xefefef, 0.2);
+      var c = new THREE.PointLight(0xefefef, 0.2);
+      var d = new THREE.PointLight(0xefefef, 0.2);
+      this._lights.add(a);
+      this._lights.add(b);
+      this._lights.add(c);
+      this._lights.add(d);
+      this._camera.add( this._lights );
+      a.position.set( 20000, 20000, 20000 );
+      b.position.set( -20000, 20000, 20000 );
+      c.position.set( 20000, -20000, 20000 );
+      d.position.set( -20000, -20000, 20000 );
+      */
+      this._pointLight = new THREE.PointLight(0xefefef, 0.4);
       this._camera.add( this._pointLight );
       this._pointLight.position.set(10, 10, 10);
+      //*/
 
       // Default Settings
 
@@ -1289,7 +1313,7 @@
          //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
       }
 
-      this._pointLight.position.set(midx, midy, midz);
+   //   this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
@@ -1320,7 +1344,7 @@
       console.log('transfrom matrix', info.matrix.elements);
 
       console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
-      this.focusCamera( info, true );
+      this.focusCamera( info, false );
 
    }
 
@@ -1399,7 +1423,11 @@
       // Interpolate //
 
       function animate() {
-         if (painter._animating) requestAnimationFrame( animate );
+         if (painter._animating) {
+            requestAnimationFrame( animate );
+         } else {
+            painter.startDrawGeometry();
+         }
          var smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
          painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
          oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
@@ -1422,7 +1450,6 @@
 
    //   this._controls.update();
 
-      this.startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
