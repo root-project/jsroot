@@ -1974,7 +1974,7 @@
 
       if (!main  || !('renderer' in main)) return this.DrawingReady();
 
-      var step = 3, sizelimit = main.webgl ? 50000 : 10000;
+      var step = 3, sizelimit = main.webgl ? 50000 : 5000;
 
       if ((JSROOT.gStyle.OptimizeDraw > 0) && (poly.fP.length > 3 * sizelimit)) {
          step = Math.floor(poly.fP.length / sizelimit / 3 ) * 3;
@@ -1983,10 +1983,6 @@
 
       var size = Math.floor(poly.fP.length/step);
 
-      var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
-
-      // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
 
       var indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
@@ -2020,23 +2016,47 @@
       var geom = new THREE.BufferGeometry();
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
       geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+
+      var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
+
+      // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+
       var mesh = new THREE.Mesh(geom, material);
 
       main.toplevel.add(mesh);
 
-/*
+      mesh.step = step;
+      mesh.nvertex = indicies.length;
+      mesh.poly = poly;
+      mesh.painter = main;
+      mesh.scale0 = 0.7*scale; // double size
+      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
 
-      // var geom = new THREE.SphereBufferGeometry(1);
-      var geom = new THREE.BoxGeometry(1, 1, 1);
+      mesh.tooltip = function(intersect) {
+         var indx = Math.floor(intersect.index / this.nvertex) * this.step;
+         if ((indx<0) || (indx >= this.poly.fP.length)) return null;
+         var p = this.painter;
 
-      for (var n=0; n<cnt; n+=step) {
-         var bin = new THREE.Mesh(geom, material.clone());
-         bin.position.set( main.tx(poly.fP[n]), main.ty(poly.fP[n+1]), main.tz(poly.fP[n+2]) );
-         bin.name = (poly.fName !== "TPolyMarker3D") ? (poly.fName + ": ") : ("bin " + n/3 + ": ");
-         bin.name += main.x_handle.format(poly.fP[n]) + "," + main.y_handle.format(poly.fP[n+1]) + "," + main.z_handle.format(poly.fP[n+2]);
-         main.toplevel.add(bin);
+         var tip = { info: "bin: " + indx/3 + "<br/>" +
+                           "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                           "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                           "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+         var grx = p.tx(this.poly.fP[indx]),
+             gry = p.ty(this.poly.fP[indx+1]),
+             grz = p.tz(this.poly.fP[indx+2]);
+
+         tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+         tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+         tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+         tip.color = this.tip_color;
+
+         return tip;
       }
-*/
+
       main.Render3D(100); // set large timeout to be able draw other points
 
       return this.DrawingReady();
