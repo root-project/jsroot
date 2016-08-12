@@ -384,7 +384,7 @@
       this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
       this.Render3D = JSROOT.Painter.Render3D;
       this.Resize3D = JSROOT.Painter.Resize3D;
-      this.Tooltip3D = JSROOT.Painter.Tooltip3D;
+      this.BinHighlight3D = JSROOT.Painter.BinHighlight3D;
 
       this.first_render_tm = 0;
 
@@ -402,13 +402,13 @@
             }
          }
 
-         painter.Tooltip3D(tip);
+         painter.BinHighlight3D(tip);
 
          return tip && tip.info ? tip.info : "";
       }
 
       this.control.ProcessMouseLeave = function() {
-         painter.Tooltip3D(null);
+         painter.BinHighlight3D(null);
       }
 
       this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
@@ -910,8 +910,22 @@
 
    JSROOT.Painter.Box_Normals = [ 1,0,0, -1,0,0, 0,1,0, 0,-1,0, 0,0,1, 0,0,-1 ];
 
+   // segments addresses Box_Vertices
+   JSROOT.Painter.Box_Segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
 
-   JSROOT.Painter.Tooltip3D = function(tip) {
+   // these segments address vertices from the mesh, we can use positions from box mesh
+   JSROOT.Painter.Box_MeshSegments = (function() {
+      var arr = new Int32Array(JSROOT.Painter.Box_Segments.length);
+      for (var n=0;n<arr.length;++n) {
+         for (var k=0;k<JSROOT.Painter.Box_Indexes.length;++k)
+            if (JSROOT.Painter.Box_Segments[n] === JSROOT.Painter.Box_Indexes[k]) {
+               arr[n] = k; break;
+            }
+      }
+      return arr;
+   })();
+
+   JSROOT.Painter.BinHighlight3D = function(tip) {
 
       if (!tip || (tip.x1===undefined) || (this.first_render_tm > 1500)) {
          if (this.tooltip_mesh) {
@@ -972,7 +986,7 @@
       var vnormals = JSROOT.Painter.Box_Normals;
 
       // line segments
-      var segments = [0, 2, 2, 7, 7, 5, 5, 0, 1, 3, 3, 6, 6, 4, 4, 1, 1, 0, 3, 2, 6, 7, 4, 5];
+      var segments = JSROOT.Painter.Box_Segments;
 
       // reduced line segments
       var rsegments = [0, 1, 1, 2, 2, 3, 3, 0];
@@ -1171,20 +1185,18 @@
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
-            var tip = this.painter.Get3DToolTip( this.bins_index[intersect.index] );
+            var p = this.painter,
+                tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            var binz = tip.value;
+            tip.x1 = p.tx(p.GetBinX(tip.ix-1));
+            tip.x2 = p.tx(p.GetBinX(tip.ix));
+            tip.y1 = p.ty(p.GetBinY(tip.iy-1));
+            tip.y2 = p.ty(p.GetBinY(tip.iy));
+            tip.z1 = p.tz(axis_zmin);
+            tip.z2 = p.tz(axis_zmax);
 
-            tip.z1 = this.painter.tz(axis_zmin);
-            tip.z2 = this.painter.tz(axis_zmax);
-
-            if (binz<axis_zmin) tip.z2 = tip.z1; else
-            if (binz<axis_zmax) tip.z2 = this.painter.tz(binz);
-
-            tip.x1 = xx[tip.ix-1];
-            tip.x2 = xx[tip.ix];
-            tip.y1 = yy[tip.iy-1];
-            tip.y2 = yy[tip.iy];
+            if (tip.value<axis_zmin) tip.z2 = tip.z1; else
+            if (tip.value<axis_zmax) tip.z2 = p.tz(tip.value);
 
             return tip;
          }
@@ -1612,23 +1624,76 @@
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = JSROOT.Painter.root_colors[rootcolor],
-          material = null, geom = null, helper = null;
+          material = null, buffer_size = 0, helper = null, helper_kind = 0,
+          single_bin_verts, single_bin_norms;
+
 
       if (this.options.Box == 11) {
          // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
-
          // material = new THREE.MeshBasicMaterial( { color: fillcolor, shading: THREE.SmoothShading  } );
-
          material = new THREE.MeshLambertMaterial({ color : fillcolor });
 
-         // geom = new THREE.SphereGeometry(0.5, 18, 16);
-         geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
+         var geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+
+         buffer_size = geom.faces.length*9;
+         single_bin_verts = new Float32Array(buffer_size);
+         single_bin_norms = new Float32Array(buffer_size);
+
+         // Fill a typed array with cube geometry that will be shared by all
+         // (This technically could be put into an InstancedBufferGeometry but
+         // performance gain is likely not huge )
+         for (var face = 0; face < geom.faces.length; ++face) {
+            single_bin_verts[9*face  ] = geom.vertices[geom.faces[face].a].x;
+            single_bin_verts[9*face+1] = geom.vertices[geom.faces[face].a].y;
+            single_bin_verts[9*face+2] = geom.vertices[geom.faces[face].a].z;
+            single_bin_verts[9*face+3] = geom.vertices[geom.faces[face].b].x;
+            single_bin_verts[9*face+4] = geom.vertices[geom.faces[face].b].y;
+            single_bin_verts[9*face+5] = geom.vertices[geom.faces[face].b].z;
+            single_bin_verts[9*face+6] = geom.vertices[geom.faces[face].c].x;
+            single_bin_verts[9*face+7] = geom.vertices[geom.faces[face].c].y;
+            single_bin_verts[9*face+8] = geom.vertices[geom.faces[face].c].z;
+
+            single_bin_norms[9*face  ] = geom.faces[face].vertexNormals[0].x;
+            single_bin_norms[9*face+1] = geom.faces[face].vertexNormals[0].y;
+            single_bin_norms[9*face+2] = geom.faces[face].vertexNormals[0].z;
+            single_bin_norms[9*face+3] = geom.faces[face].vertexNormals[1].x;
+            single_bin_norms[9*face+4] = geom.faces[face].vertexNormals[1].y;
+            single_bin_norms[9*face+5] = geom.faces[face].vertexNormals[1].z;
+            single_bin_norms[9*face+6] = geom.faces[face].vertexNormals[2].x;
+            single_bin_norms[9*face+7] = geom.faces[face].vertexNormals[2].y;
+            single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;
+         }
+
       } else {
          // material = new THREE.MeshLambertMaterial({ color : fillcolor });
+
          material = new THREE.MeshBasicMaterial( { color: fillcolor  } );
-         geom = new THREE.BoxGeometry(1, 1, 1);
-         helper = new THREE.BoxHelper(new THREE.Mesh(geom));
+
+         var indicies = JSROOT.Painter.Box_Indexes,
+             normals = JSROOT.Painter.Box_Normals,
+             vertices = JSROOT.Painter.Box_Vertices;
+
+         buffer_size = indicies.length*3;
+         single_bin_verts = new Float32Array(buffer_size);
+         single_bin_norms = new Float32Array(buffer_size);
+
+         for (var k=0,nn=-3;k<indicies.length;++k) {
+            var vert = vertices[indicies[k]];
+            single_bin_verts[k*3]   = vert.x-0.5;
+            single_bin_verts[k*3+1] = vert.y-0.5;
+            single_bin_verts[k*3+2] = vert.z-0.5;
+
+            if (k%6===0) nn+=3;
+            single_bin_norms[k*3]   = normals[nn];
+            single_bin_norms[k*3+1] = normals[nn+1];
+            single_bin_norms[k*3+2] = normals[nn+2];
+         }
+
+         helper_kind = 1; // use same vertices to create helper, one can use maximal 64K vertices
+
+         // geom = new THREE.BoxGeometry(1, 1, 1);
+         // helper = new THREE.BoxHelper(new THREE.Mesh(geom));
       }
 
       var histo = this.GetObject(),
@@ -1643,36 +1708,6 @@
       var scalex = (this.tx(this.GetBinX(i2+0.5)) - this.tx(this.GetBinX(i1+0.5))) / (i2-i1),
           scaley = (this.ty(this.GetBinY(j2+0.5)) - this.ty(this.GetBinY(j1+0.5))) / (j2-j1),
           scalez = (this.tz(this.GetBinZ(k2+0.5)) - this.tz(this.GetBinZ(k1+0.5))) / (k2-k1);
-
-      // Single Object3Ds that contain all bins and helpers
-      var buffer_size = geom.faces.length*9,
-          single_bin_verts = new Float32Array(buffer_size),
-          single_bin_norms = new Float32Array(buffer_size);
-
-      // Fill a typed array with cube geometry that will be shared by all
-      // (This technically could be put into an InstancedBufferGeometry but
-      // performance gain is likely not huge )
-      for (var face = 0; face < geom.faces.length; ++face) {
-         single_bin_verts[9*face  ] = geom.vertices[geom.faces[face].a].x;
-         single_bin_verts[9*face+1] = geom.vertices[geom.faces[face].a].y;
-         single_bin_verts[9*face+2] = geom.vertices[geom.faces[face].a].z;
-         single_bin_verts[9*face+3] = geom.vertices[geom.faces[face].b].x;
-         single_bin_verts[9*face+4] = geom.vertices[geom.faces[face].b].y;
-         single_bin_verts[9*face+5] = geom.vertices[geom.faces[face].b].z;
-         single_bin_verts[9*face+6] = geom.vertices[geom.faces[face].c].x;
-         single_bin_verts[9*face+7] = geom.vertices[geom.faces[face].c].y;
-         single_bin_verts[9*face+8] = geom.vertices[geom.faces[face].c].z;
-
-         single_bin_norms[9*face  ] = geom.faces[face].vertexNormals[0].x;
-         single_bin_norms[9*face+1] = geom.faces[face].vertexNormals[0].y;
-         single_bin_norms[9*face+2] = geom.faces[face].vertexNormals[0].z;
-         single_bin_norms[9*face+3] = geom.faces[face].vertexNormals[1].x;
-         single_bin_norms[9*face+4] = geom.faces[face].vertexNormals[1].y;
-         single_bin_norms[9*face+5] = geom.faces[face].vertexNormals[1].z;
-         single_bin_norms[9*face+6] = geom.faces[face].vertexNormals[2].x;
-         single_bin_norms[9*face+7] = geom.faces[face].vertexNormals[2].y;
-         single_bin_norms[9*face+8] = geom.faces[face].vertexNormals[2].z;
-      }
 
       var nbins = 0, i, j, k, wei, bin_content;
 
@@ -1691,17 +1726,23 @@
 
       // console.log("Create buffer for", nbins, 'bins fullsize', nbins * buffer_size);
 
+      if ((helper_kind === 1) && (nbins * buffer_size / 3 > 0xFFF0)) helper_kind = 2;
+
       var bin_verts = new Float32Array(nbins * buffer_size),
           bin_norms = new Float32Array(nbins * buffer_size),
-          bins = new Int32Array(nbins);
+          bin_tooltips = new Int32Array(nbins),
+          helper_segments,
+          helper_indexes,    // helper_kind == 1, use original vertices
+          helper_positions;  // helper_kind == 2, all vertices copied into separate buffer
 
-      var helper_indexes, helper_positions, helper_single_indexes, helper_single_position;
+      if (helper_kind===1) {
+         helper_segments = JSROOT.Painter.Box_MeshSegments;
+         helper_indexes = new Uint16Array(nbins * helper_segments.length);
+      }
 
-      if (helper) {
-         helper_single_indexes = helper.geometry.index.array;
-         helper_single_position = helper.geometry.getAttribute('position').array;
-         helper_indexes = new Uint16Array(nbins * helper_single_indexes.length);
-         helper_positions = new Float32Array(nbins * helper_single_position.length);
+      if (helper_kind===2) {
+         helper_segments = JSROOT.Painter.Box_Segments;
+         helper_positions = new Float32Array(nbins * helper_segments.length * 3);
       }
 
       var binx, grx, biny, gry, binz, grz;
@@ -1722,7 +1763,7 @@
                binz = this.GetBinZ(k+0.5); grz = this.tz(binz);
 
                // remeber bin index for tooltip
-               bins[nbins] = histo.getBin(i+1, j+1, k+1);
+               bin_tooltips[nbins] = histo.getBin(i+1, j+1, k+1);
 
                var vvv = nbins * buffer_size;
 
@@ -1737,17 +1778,22 @@
                   bin_norms[vvv+2] = single_bin_norms[vi+2];
                }
 
-               if (helper) {
-                  var iii = nbins * helper_single_indexes.length,
-                      vvv = nbins * helper_single_position.length;
 
-                  for (var n=0;n<helper_single_indexes.length;++n)
-                     helper_indexes[iii+n] = vvv/3 + helper_single_indexes[n];
+               if (helper_kind===1) {
+                  // reuse vertices created for the mesh
+                  vvv = nbins * helper_segments.length;
+                  var shift = Math.round(nbins * buffer_size/3);
+                  for (var n=0;n<helper_segments.length;++n)
+                     helper_indexes[vvv+n] = shift + helper_segments[n];
+               }
 
-                  for (var vi=0;vi < helper_single_position.length; vi+=3, vvv+=3) {
-                     helper_positions[vvv]   = grx + helper_single_position[vi]*scalex*wei;
-                     helper_positions[vvv+1] = gry + helper_single_position[vi+1]*scaley*wei;
-                     helper_positions[vvv+2] = grz + helper_single_position[vi+2]*scalez*wei;
+               if (helper_kind===2) {
+                  vvv = nbins * helper_segments.length * 3;
+                  for (var n=0;n<helper_segments.length;++n, vvv+=3) {
+                     var vert = JSROOT.Painter.Box_Vertices[helper_segments[n]];
+                     helper_positions[vvv]   = grx + (vert.x-0.5)*scalex*wei;
+                     helper_positions[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
+                     helper_positions[vvv+2] = grz + (vert.z-0.5)*scalez*wei;
                   }
                }
 
@@ -1765,7 +1811,7 @@
 
       var combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
-      combined_bins.bins = bins;
+      combined_bins.bins = bin_tooltips;
       combined_bins.bins_faces = buffer_size/3;
       combined_bins.painter = this;
 
@@ -1773,9 +1819,8 @@
          var indx = Math.floor(intersect.index / this.bins_faces);
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
-         var p = this.painter;
-
-         var tip = p.Get3DToolTip(this.bins[indx]);
+         var p = this.painter,
+             tip = p.Get3DToolTip(this.bins[indx]);
 
          grx = p.tx(p.GetBinX(tip.ix-0.5));
          gry = p.ty(p.GetBinX(tip.iy-0.5));
@@ -1794,22 +1839,27 @@
 
       this.toplevel.add(combined_bins);
 
-      if (helper) {
+      if (helper_kind > 0) {
          var helper_geom = new THREE.BufferGeometry();
-         helper_geom.setIndex(  new THREE.BufferAttribute(helper_indexes, 1) );
-         helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions, 3 ) );
+
+         if (helper_kind === 1) {
+            // reuse positions from the mesh - only special index was created
+            helper_geom.setIndex(  new THREE.BufferAttribute(helper_indexes, 1) );
+            helper_geom.addAttribute( 'position', new THREE.BufferAttribute( bin_verts, 3 ) );
+         } else {
+            helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions, 3 ) );
+         }
 
          var helper_material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 1.0 } );
 
          var lines = new THREE.LineSegments(helper_geom, helper_material );
 
-         lines.bins = bins;
-         lines.bins_faces = helper_single_indexes.length;
-         lines.painter = this;
-
-         lines.tooltip = combined_bins.tooltip;
-
          this.toplevel.add(lines);
+
+         //lines.bins = bins;
+         //lines.bins_faces = helper_single_indexes.length;
+         //lines.painter = this;
+         //lines.tooltip = combined_bins.tooltip;
       }
    }
 
