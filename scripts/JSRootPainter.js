@@ -2941,15 +2941,20 @@
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           height = this.frame_height(),
           width = this.frame_width(),
-          pp = this.pad_painter(true);
+          pp = this.pad_painter(true),
+          gapminx = -1111, gapmaxx = -1111,
+          gapminy = height, gapmaxy = 0,
+          maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
+          font = JSROOT.Painter.getFontDetails(160, textheight);
 
       // collect tooltips from pad painter - it has list of all drawn objects
       if (pp!==null) hints = pp.GetTooltips(pnt);
 
       if (pnt && pnt.touch) textheight = 15;
 
-      hints.forEach(function(hint) {
-         if (hint === null) return;
+      for (var n=0; n < hints.length; ++n) {
+         var hint = hints[n];
+         if (!hint) continue;
 
          nhints++;
 
@@ -2958,11 +2963,18 @@
 
          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
+         if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
+
+         gapminx = Math.min(gapminx, hint.x);
+         gapmaxx = Math.min(gapmaxx, hint.x);
+         gapminy = Math.min(gapminy, hint.y);
+         gapmaxy = Math.max(gapmaxy, hint.y);
+
          if ((hint.color1!==undefined) && (hint.color1!=='none')) {
             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
             lastcolor1 = hint.color1;
          }
-      });
+      }
 
       var layer = this.svg_layer("stat_layer"),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
@@ -3018,11 +3030,8 @@
          hintsg.selectAll("*").remove();
       }
 
-      var font = JSROOT.Painter.getFontDetails(160, textheight),
-          curry = 10,
-          maxhinty = height;
-
-      if (this.draw_g) maxhinty = this.pad_height() - this.draw_g.property('draw_y');
+      var curry = 10, // normal y coordiante
+          gapy = 10;  // y coordiante, including y gap
 
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
@@ -3043,11 +3052,16 @@
 
          if (viewmode == "single")
             curry = pnt.touch ? pnt.y - hint.height - 5 : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
+         else
+         if ((gapminy < gapmaxy) && (gapy < gapmaxy) && (gapy + hint.height + 15 > gapminy))
+            gapy = gapmaxy + 15; // jump over the gap
 
          group.attr("x", posx)
-              .attr("y", curry);
+              .attr("y", curry)
+              .property("gapy", gapy);
 
-         curry += hints[n].height + 5;
+         curry += hint.height + 5;
+         gapy += hint.height + 5;
 
          if (!was_empty)
             group.selectAll("*").remove();
@@ -3108,6 +3122,13 @@
          posx = width - actualw - 20;
          hintsg.selectAll("svg").attr("x", posx);
       }
+
+      // if gap not very big, apply gapy coordinate to open viw on the histogram
+      if ((viewmode !== "single") && (gapy < height))
+         if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
+            hintsg.selectAll("svg").each(function() {
+               d3.select(this).attr("y", d3.select(this).property('gapy'));
+            });
 
       if (actualw > 10)
          hintsg.selectAll("svg").attr("width", actualw)
