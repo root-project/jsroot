@@ -2942,8 +2942,6 @@
           height = this.frame_height(),
           width = this.frame_width(),
           pp = this.pad_painter(true),
-          gapminx = -1111, gapmaxx = -1111,
-          gapminy = height, gapmaxy = 0,
           maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
           font = JSROOT.Painter.getFontDetails(160, textheight);
 
@@ -2961,14 +2959,7 @@
          for (var l=0;l<hint.lines.length;++l)
             maxlen = Math.max(maxlen, hint.lines[l].length);
 
-         hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
-
-         if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
-
-         gapminx = Math.min(gapminx, hint.x);
-         gapmaxx = Math.min(gapmaxx, hint.x);
-         gapminy = Math.min(gapminy, hint.y);
-         gapmaxy = Math.max(gapmaxy, hint.y);
+         hint.height = Math.round(hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1));
 
          if ((hint.color1!==undefined) && (hint.color1!=='none')) {
             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
@@ -3031,7 +3022,20 @@
       }
 
       var curry = 10, // normal y coordiante
-          gapy = 10;  // y coordiante, including y gap
+          gapy = 10, // y coordiante, taking into account all gaps
+          gapminx = -1111, gapmaxx = -1111;
+
+      function FindPosInGap(y) {
+         for (var n=0;(n<hints.length) && (y < maxhinty); ++n) {
+            var hint = hints[n];
+            if (!hint) continue;
+            if ((hint.y>=y-5) && (hint.y <= y+hint.height+5)) {
+               y = hint.y+10;
+               n = -1;
+            }
+         }
+         return y;
+      }
 
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
@@ -3050,11 +3054,14 @@
                           .attr("opacity","0")
                           .style("pointer-events","none");
 
-         if (viewmode == "single")
-            curry = pnt.touch ? pnt.y - hint.height - 5 : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
-         else
-         if ((gapminy < gapmaxy) && (gapy < gapmaxy) && (gapy + hint.height + 15 > gapminy))
-            gapy = gapmaxy + 15; // jump over the gap
+         if (viewmode == "single") {
+            curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
+         } else {
+            gapy = FindPosInGap(gapy);
+            if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
+            gapminx = Math.min(gapminx, hint.x);
+            gapmaxx = Math.min(gapmaxx, hint.x);
+         }
 
          group.attr("x", posx)
               .attr("y", curry)
@@ -3125,8 +3132,8 @@
          svgs.attr("x", posx);
       }
 
-      // if gap not very big, apply gapy coordinate to open viw on the histogram
-      if ((viewmode !== "single") && (gapy < height))
+      // if gap not very big, apply gapy coordinate to open view on the histogram
+      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry))
          if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
             svgs.attr("y", function() { return d3.select(this).property('gapy'); });
 
