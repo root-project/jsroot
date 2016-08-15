@@ -1036,9 +1036,9 @@
          $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
       });
 
-      this.CheckResize();
-
       this.SetDivId(divid);
+
+      this.CheckResize();
    }
 
    JSROOT.TTreePlayer.prototype.PerformDraw = function() {
@@ -1095,17 +1095,16 @@
       } else SubmitDrawRequest();
    }
 
-   JSROOT.TTreePlayer.prototype.CheckResize = function(force) {
+   JSROOT.TTreePlayer.prototype.CheckResize = function(arg) {
       var main = $(this.select_main().node());
 
       $("#" + this.drawid).width(main.width());
       var h = main.height();
       var h0 = main.find(".treedraw_buttons").height();
-      if (h>h0+30) $("#" + this.drawid).height(h - 1 - h0);
+      $("#" + this.drawid).height(h - 1 - h0);
 
-      if (this.hist_painter) {
-         this.hist_painter.CheckResize(force);
-      }
+      if (this.hist_painter)
+         this.hist_painter.CheckResize(arg);
    }
 
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey) {
