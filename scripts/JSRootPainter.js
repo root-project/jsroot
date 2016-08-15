@@ -3008,7 +3008,7 @@
          } else
          if (pnt.x >= bright*width) {
             viewmode = "right";
-            posx = width - 100;
+            posx = width - 60;
          } else {
             posx = hintsg.property('startx');
          }
@@ -3073,13 +3073,13 @@
          if (!was_empty)
             group.selectAll("*").remove();
 
-         group.attr("width", 100)
+         group.attr("width", 60)
               .attr("height", hint.height);
 
          var r = group.append("rect")
                       .attr("x",0)
                       .attr("y",0)
-                      .attr("width", 100)
+                      .attr("width", 60)
                       .attr("height", hint.height)
                       .attr("fill","lightgrey")
                       .style("pointer-events","none");
@@ -3127,7 +3127,7 @@
 
       var svgs = hintsg.selectAll("svg");
 
-      if ((viewmode == "right") && (posx + actualw > width)) {
+      if ((viewmode == "right") && (posx + actualw > width - 20)) {
          posx = width - actualw - 20;
          svgs.attr("x", posx);
       }
