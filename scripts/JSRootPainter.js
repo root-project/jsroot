@@ -9384,6 +9384,7 @@
          if (item._childs.length == 0) delete item._childs;
       }
 
+      painter.select_main().style('overflow','auto');
 
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
