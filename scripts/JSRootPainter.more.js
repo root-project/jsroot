@@ -2538,7 +2538,7 @@
             for (var i=0;i<contour.length-1;++i) {
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
-                   col = this.main_painter().getValueColor((contour[i]+contour[i+1])/2);
+                   col = main.getValueColor((contour[i]+contour[i+1])/2);
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
@@ -2712,10 +2712,10 @@
          // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
          var histo = this.GetObject();
 
-         this.fUserContour = false;
+         this.fCustomContour = false;
          if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
             this.fContour = JSROOT.clone(histo.fContour);
-            this.fUserContour = true;
+            this.fCustomContour = true;
          } else {
             var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
             if (histo.fContour != null) nlevels = histo.fContour.length;
@@ -2728,10 +2728,11 @@
                zmax = this.zoom_zmax;
             }
             this.CreateContour(nlevels, zmin, zmax, this.minposbin);
+            if (this.root_pad().fLogz) this.fCustomContour = true;
          }
       }
 
-      if (this.fUserContour || this.root_pad().fLogz) {
+      if (this.fCustomContour) {
          var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
          if (zc < cntr[0]) return -1;
          if (zc >= cntr[r]) return r;
@@ -2937,7 +2938,7 @@
    JSROOT.TH2Painter = function(histo) {
       JSROOT.THistPainter.call(this, histo);
       this.fContour = null; // contour levels
-      this.fUserContour = false; // are this user-defined levels
+      this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
    }
 
@@ -3249,8 +3250,10 @@
              i2: this.GetSelectIndex("x", "right", 1),
              j1: this.GetSelectIndex("y", "left", 0),
              j2: this.GetSelectIndex("y", "right", 1),
-             grx: [], gry: [], min: 0, max: 0
+             min: 0, max: 0
           };
+      res.grx = new Float32Array(res.i2+1);
+      res.gry = new Float32Array(res.j2+1);
 
       if (pixel_density) dorounding = true;
 
@@ -3295,8 +3298,9 @@
          }
       }
 
-      this.fContour = null; // z-scale ranges when drawing with color
-      this.fUserContour = false;
+      // force recalculation of z levels
+      this.fContour = null;
+      this.fCustomContour = false;
 
       return res;
    }
@@ -3331,7 +3335,7 @@
          }
       }
 
-     for (colindx=0;colindx<colPaths.length;++colindx)
+      for (colindx=0;colindx<colPaths.length;++colindx)
         if (colPaths[colindx] !== undefined)
            this.draw_g
                .append("svg:path")
@@ -3357,8 +3361,6 @@
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            // if ((binz == 0) || (binz < this.minbin)) continue;
-
             colindx = this.getValueColor(binz, true);
             if (colindx === null) continue;
 
@@ -3663,9 +3665,9 @@
 
       this.RecreateDrawG(false, "main_layer");
 
-      var w = this.frame_width(), h = this.frame_height();
-
-      var handle = null;
+      var w = this.frame_width(),
+          h = this.frame_height(),
+          handle = null;
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
