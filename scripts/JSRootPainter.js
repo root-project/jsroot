@@ -3660,7 +3660,8 @@
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
          svg.append("svg:title").text("ROOT canvas");
-         svg.append("svg:rect").attr("class","canvas_fillrect").attr("x",0).attr("y",0);
+         svg.append("svg:rect").attr("class","canvas_fillrect")
+                               .attr("x",0).attr("y",0).style("pointer-events", "visibleFill");
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
          svg.append("svg:g").attr("class","special_layer");
