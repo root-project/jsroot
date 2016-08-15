@@ -425,6 +425,7 @@
     overflow: hidden;
     width: 100%;
     height: calc(100% - 26px);
+    background: white;
 }
 
 .jsroot-flex-resizable-helper {

@@ -5800,13 +5800,13 @@
       // no need to do something if painter for object was already done
       // object will be redraw automatically
       if (func_painter === null) {
-         if (func._typename == 'TPaveText' || func._typename == 'TPaveStats') {
+         if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
             do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && (this.options.NoStat!=1);
          } else
-         if (func._typename == 'TF1') {
+         if (func._typename === 'TF1') {
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
-            do_draw = true;
+            do_draw = (func._typename !== "TPaletteAxis");
       }
       //if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
       //   func_painter.CompleteDraw();
