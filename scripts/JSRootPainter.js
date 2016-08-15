@@ -9365,6 +9365,8 @@
       if ((typeof obj.fName === 'string') && (obj.fName.length>0))
          painter.h._name = obj.fName;
 
+      painter.select_main().style('overflow','auto');
+
       JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
