@@ -2691,6 +2691,7 @@
          for (var level=1; level<nlevels; level++)
             this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
          this.fContour.push(this.zmax);
+         this.fCustomContour = true;
       } else {
          if ((this.zmin === this.zmax) && (this.zmin !== 0)) {
             this.zmax += 0.01*Math.abs(this.zmax);
@@ -2728,7 +2729,6 @@
                zmax = this.zoom_zmax;
             }
             this.CreateContour(nlevels, zmin, zmax, this.minposbin);
-            if (this.root_pad().fLogz) this.fCustomContour = true;
          }
       }
 
@@ -2974,7 +2974,11 @@
             if (this.options.Lego > 0) {
                this.options.Lego = 0;
             } else {
-               this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+               if ((this.nbinsx>=50) || (this.nbinsy>=50))
+                  this.options.Lego = (this.options.Color > 0) ? 14 : 13;
+               else
+                  this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+
                this.options.Zero = 1;
             }
 
