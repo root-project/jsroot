@@ -2812,30 +2812,6 @@
       menu.add("endsub:");
    }
 
-   JSROOT.THistPainter.prototype.AddFunction = function(obj, asfirst) {
-      var histo = this.GetObject();
-      if (!histo || !obj) return;
-
-      if (histo.fFunctions == null)
-         histo.fFunctions = JSROOT.Create("TList");
-
-      if (asfirst)
-         histo.fFunctions.AddFirst(obj);
-      else
-         histo.fFunctions.Add(obj);
-
-   }
-
-   JSROOT.THistPainter.prototype.FindFunction = function(type_name) {
-      var funcs = this.GetObject().fFunctions;
-      if (funcs === null) return null;
-
-      for (var i = 0; i < funcs.arr.length; ++i)
-         if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
-
-      return null;
-   }
-
    JSROOT.THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 

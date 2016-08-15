@@ -5800,13 +5800,27 @@
       return stats;
    }
 
-   JSROOT.THistPainter.prototype.FindF1 = function() {
-      // search for TF1 object in list of functions, it is fitted function
-      if (this.histo.fFunctions == null) return null;
-      for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
-         var func = this.histo.fFunctions.arr[i];
-         if (func._typename == 'TF1') return func;
-      }
+   JSROOT.THistPainter.prototype.AddFunction = function(obj, asfirst) {
+      var histo = this.GetObject();
+      if (!histo || !obj) return;
+
+      if (histo.fFunctions == null)
+         histo.fFunctions = JSROOT.Create("TList");
+
+      if (asfirst)
+         histo.fFunctions.AddFirst(obj);
+      else
+         histo.fFunctions.Add(obj);
+
+   }
+
+   JSROOT.THistPainter.prototype.FindFunction = function(type_name) {
+      var funcs = this.GetObject().fFunctions;
+      if (funcs === null) return null;
+
+      for (var i = 0; i < funcs.arr.length; ++i)
+         if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
+
       return null;
    }
 
@@ -6883,7 +6897,7 @@
       }
 
       if (dofit!=0) {
-         var f1 = this.FindF1();
+         var f1 = this.FindFunction('TF1');
          if (f1!=null) {
             var print_fval    = dofit%10;
             var print_ferrors = Math.floor(dofit/10) % 10;
