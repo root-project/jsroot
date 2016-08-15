@@ -3018,9 +3018,11 @@
          hintsg.selectAll("*").remove();
       }
 
-      var font = JSROOT.Painter.getFontDetails(160, textheight);
+      var font = JSROOT.Painter.getFontDetails(160, textheight),
+          curry = 10,
+          maxhinty = height;
 
-      var curry = 10;
+      if (this.draw_g) maxhinty = this.pad_height() - this.draw_g.property('draw_y');
 
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
@@ -3040,7 +3042,7 @@
                           .style("pointer-events","none");
 
          if (viewmode == "single")
-            curry = pnt.touch ? pnt.y - hints[n].height - 5 : pnt.y + 15;
+            curry = pnt.touch ? pnt.y - hint.height - 5 : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
 
          group.attr("x", posx)
               .attr("y", curry);
