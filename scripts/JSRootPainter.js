@@ -8614,6 +8614,10 @@
          });
    }
 
+   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function() {
+      // dummy function, will be redefined when jquery part loaded
+   }
+
    JSROOT.HierarchyPainter.prototype.actiavte = function(items, force) {
       // activate (select) specified item
       // if force specified, all required sub-levels will be opened
@@ -8697,11 +8701,15 @@
          if (!_name) _name = hpainter.itemFullName(_item);
 
          // try to use expand function
-         if (_obj && _item && typeof _item._expand == 'function') {
+         if (_obj && _item && (typeof _item._expand === 'function')) {
             if (_item._expand(_item, _obj)) {
                _item._isopen = true;
-               if (typeof hpainter.UpdateTreeNode == 'function')
+               if (_item._parent && !_item._parent._isopen) {
+                  _item._parent._isopen = true; // also show parent
+                  hpainter.UpdateTreeNode(_item._parent);
+               } else {
                   hpainter.UpdateTreeNode(_item, d3cont);
+               }
                JSROOT.CallBack(call_back, _item);
                return true;
             }
@@ -8723,8 +8731,12 @@
 
          if (_obj && JSROOT.Painter.ObjectHierarchy(_item, _obj)) {
             _item._isopen = true;
-            if (typeof hpainter.UpdateTreeNode == 'function')
+            if (_item._parent && !_item._parent._isopen) {
+               _item._parent._isopen = true; // also show parent
+               hpainter.UpdateTreeNode(_item._parent);
+            } else {
                hpainter.UpdateTreeNode(_item, d3cont);
+            }
             JSROOT.CallBack(call_back, _item);
             return true;
          }
