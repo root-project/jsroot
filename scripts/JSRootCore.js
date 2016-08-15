@@ -1231,14 +1231,19 @@
    JSROOT.getMethods = function(typename, obj) {
       var m = JSROOT.methodsCache[typename];
 
-      if (m !== undefined) return m;
+      var has_methods = (m!==undefined);
 
-      m = {};
+      if (!has_methods) m = {};
 
-      if ((typename=="TObject") || (typename=="TNamed") || ((obj!==undefined) && ('fBits' in obj))) {
-         m.TestBit = function (f) { return (this.fBits & f) != 0; };
-         m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
-      }
+      // Due to binary I/O such TObject methods may not be set for derived classes
+      // Therefore when methods requested for given object, check also that basic methods are there
+      if ((typename=="TObject") || (typename=="TNamed") || (obj && (obj.fBits!==undefined)))
+         if (m.TestBit === undefined) {
+            m.TestBit = function (f) { return (this.fBits & f) != 0; };
+            m.InvertBit = function (f) { this.fBits = this.fBits ^ (f & 0xffffff); };
+         }
+
+      if (has_methods) return m;
 
       if ((typename === 'TList') || (typename === 'THashList')) {
          m.Clear = function() {
