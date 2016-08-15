@@ -75,12 +75,27 @@
 
             if ((rect1.top !== undefined) && (rect2.top!== undefined)) u += rect2.top-rect1.top;
 
-
             if (l + this.tt.offsetWidth + 3 >= this.parent.offsetWidth)
                l = this.parent.offsetWidth - this.tt.offsetWidth - 3;
 
             if (u + this.tt.offsetHeight + 15 >= this.parent.offsetHeight)
                u = this.parent.offsetHeight - this.tt.offsetHeight - 15;
+
+            // one should find parent with non-static position,
+            // all absolute coordinates calculated relative to such node
+            var abs_parent = this.parent;
+            while (abs_parent) {
+               var style = getComputedStyle(abs_parent);
+               if (!style || (style.position !== 'static')) break;
+               abs_parent = abs_parent.parentNode;
+            }
+
+            if (abs_parent && (abs_parent !== this.parent)) {
+               var rect0 = abs_parent.getBoundingClientRect();
+               l+=(rect1.left - rect0.left);
+               u+=(rect1.top - rect0.top);
+            }
+
          }
 
          this.tt.style.top = (u + 15) + 'px';
