@@ -6527,6 +6527,10 @@
                function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+
+         if ((kind === "z") && (this.options.Zscale > 0))
+            if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
+
          if (faxis != null) {
             menu.add("sub:Labels");
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
