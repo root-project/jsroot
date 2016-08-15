@@ -3118,21 +3118,21 @@
 
       actualw += 2*wmargin;
 
+      var svgs = hintsg.selectAll("svg");
+
       if ((viewmode == "right") && (posx + actualw > width)) {
          posx = width - actualw - 20;
-         hintsg.selectAll("svg").attr("x", posx);
+         svgs.attr("x", posx);
       }
 
       // if gap not very big, apply gapy coordinate to open viw on the histogram
       if ((viewmode !== "single") && (gapy < height))
          if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
-            hintsg.selectAll("svg").each(function() {
-               d3.select(this).attr("y", d3.select(this).property('gapy'));
-            });
+            svgs.attr("y", function() { return d3.select(this).property('gapy'); });
 
       if (actualw > 10)
-         hintsg.selectAll("svg").attr("width", actualw)
-               .select('rect').attr("width", actualw);
+         svgs.attr("width", actualw)
+             .select('rect').attr("width", actualw);
 
       hintsg.property('startx', posx);
    }
