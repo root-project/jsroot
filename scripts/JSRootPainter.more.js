@@ -3732,14 +3732,12 @@
    }
 
    JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
-      if (pnt==null) {
+      if ((pnt==null) || !this.draw_content || !this.draw_g) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
          return null;
       }
-
-      if (!this.draw_g) return null;
 
       var histo = this.GetObject(),
           h = this.tt_handle, i,
