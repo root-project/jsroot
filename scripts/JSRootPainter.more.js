@@ -2546,13 +2546,15 @@
                           .attr("width", s_width)
                           .attr("height", (z0-z1).toFixed(1))
                           .style("fill", col)
-                          .style("stroke", col);
+                          .style("stroke", col)
+                          .property("fill0", col)
+                          .property("fill1", d3.rgb(col).darker(0.5).toString())
 
                if (JSROOT.gStyle.Tooltip > 0)
                   r.on('mouseover', function() {
-                     d3.select(this).transition().duration(100).style("stroke", "black").style("stroke-width", "2");
+                     d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                   }).on('mouseout', function() {
-                     d3.select(this).transition().duration(100).style("stroke", d3.select(this).style('fill')).style("stroke-width", "");
+                     d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
                   }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
                if (JSROOT.gStyle.Zooming)

@@ -2958,7 +2958,7 @@
 
          hint.height = hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1);
 
-         if ((hint.color1!== undefined) && (hint.color1!=='none')) {
+         if ((hint.color1!==undefined) && (hint.color1!=='none')) {
             if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
             lastcolor1 = hint.color1;
          }
