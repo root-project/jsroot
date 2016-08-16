@@ -2926,7 +2926,7 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego2", "lego3", "lego4"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
          this.options = this.DecodeOptions(arg);
 
          this.Redraw();
