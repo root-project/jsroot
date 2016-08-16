@@ -374,11 +374,7 @@
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );
-      this.pointLight.position.set( 0, 0, 0 );
-
-      // this.pointLight.position.set( this.size3d / 10, this.size3d / 10, this.size3d / 10 );
-      //this.pointLight.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
-
+      this.pointLight.position.set( this.size3d/2, this.size3d/2, this.size3d/2 );
 
       var lookat = new THREE.Vector3(0,0,0.8*this.size3d);
 
@@ -1377,13 +1373,6 @@
 
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
-
-         // console.log('camera', this.camera.position.x, this.camera.position.y, this.camera.position.z);
-
-         //this.pointLight.position.set( this.camera.position.x + this.size3d, this.camera.position.y - this.size3d, this.camera.position.z);
-         ///this.pointLight.updateMatrix();
-         //this.pointLight.updateMatrixWorld();
-         //this.camera.updateProjectionMatrix();
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
