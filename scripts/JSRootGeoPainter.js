@@ -299,7 +299,7 @@
          this.options.show_controls = !this.options.show_controls;
          this.showControlOptions(this.options.show_controls);
       });
-      menu.addchk(this.TestAxisVisibility, "Show axises", function() {
+      menu.addchk(this.TestAxisVisibility, "Show axes", function() {
          this.toggleAxisDraw();
       });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
