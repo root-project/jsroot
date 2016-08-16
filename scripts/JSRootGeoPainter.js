@@ -1121,8 +1121,8 @@
 
        // Lights
 
-      var light = new THREE.HemisphereLight( 0xffffff, 0x999999, 0.5 );
-      this._scene.add(light);
+      //var light = new THREE.HemisphereLight( 0xffffff, 0x999999, 0.5 );
+      //this._scene.add(light);
 
       /*
       var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
@@ -1144,7 +1144,7 @@
       c.position.set( 20000, -20000, 20000 );
       d.position.set( -20000, -20000, 20000 );
       */
-      this._pointLight = new THREE.PointLight(0xefefef, 0.4);
+      this._pointLight = new THREE.PointLight(0xefefef, 1);
       this._camera.add( this._pointLight );
       this._pointLight.position.set(10, 10, 10);
       //*/
@@ -1312,7 +1312,7 @@
          //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
       }
 
-   //   this._pointLight.position.set(midx, midy, midz);
+      this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
