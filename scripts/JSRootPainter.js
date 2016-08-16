@@ -8119,6 +8119,7 @@
       //   name:  item to search
       //   force: specified elements will be created when not exists
       //   last_exists: when specified last parent element will be returned
+      //   check_keys: check TFile keys with cycle suffix
       //   top:   element to start search from
 
       function find_in_hierarchy(top, fullname) {
@@ -8141,21 +8142,36 @@
 
             var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
 
-            // first try to find direct matched item
-            if (top._childs)
+            if (top._childs) {
+               // first try to find direct matched item
                for (var i = 0; i < top._childs.length; ++i)
                   if (top._childs[i]._name == localname)
                      return process_child(top._childs[i]);
 
-            // if allowed, try to found item with key
-            if (arg.check_keys && top._childs)
-               for (var i = 0; i < top._childs.length; ++i) {
-                  if ((typeof top._childs[i]._keyname === 'string') &&
-                      (top._childs[i]._keyname === localname))
-                        return process_child(top._childs[i]);
+               // if allowed, try to found item with key
+               if (arg.check_keys)
+                  for (var i = 0; i < top._childs.length; ++i) {
+                    if ((typeof top._childs[i]._keyname === 'string') &&
+                         (top._childs[i]._keyname === localname))
+                           return process_child(top._childs[i]);
+                  }
+
+               var allow_index = arg.allow_index;
+               if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
+                   !isNaN(parseInt(localname.substr(1,localname.length-2)))) {
+                  allow_index = true;
+                  localname = localname.substr(1,localname.length-2);
                }
 
-            if ('force' in arg) {
+               // when search for the elements it could be allowed to check index
+               if (allow_index) {
+                  var indx = parseInt(localname);
+                  if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
+                     return process_child(top._childs[indx]);
+               }
+            }
+
+            if (arg.force) {
                // if didnot found element with given name we just generate it
                if (top._childs === undefined) top._childs = [];
                var child = { _name: localname };
@@ -8163,16 +8179,9 @@
                return process_child(child);
             }
 
-            // when search for the elements it could be allowed to check index
-            if (arg.allow_index && (typeof top._childs != 'undefined')) {
-               var indx = parseInt(localname);
-               if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
-                  return process_child(top._childs[indx]);
-            }
-
          } while (pos > 0);
 
-         return ('last_exists' in arg) && (top!=null) ? { last: top, rest: fullname } : null;
+         return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
 
       var top = this.h;
