@@ -1834,8 +1834,6 @@
 
       if (call_ready) this.DrawingReady();
 
-      // this.ActiavteInBrowser(["Nodes/TRD+TOF/B076_1"], true);
-
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
    }
@@ -2184,7 +2182,7 @@
 
             sub._icon = JSROOT.GEO.getShapeIcon(shape);
          } else {
-            sub._icon = sub._more ? "img_geoassembly" : "img_geobbox";
+            sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
          }
 
          if (volume)

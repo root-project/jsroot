@@ -8560,15 +8560,22 @@
 
       var dropitems = new Array(items.length);
 
-      // First of all check that items are exists, look for cycle extension
+      // First of all check that items are exists, look for cycle extension and plus sign
       for (var i = 0; i < items.length; ++i) {
          dropitems[i] = null;
-         if (h.Find(items[i])) continue;
-         if (h.Find(items[i] + ";1")) { items[i] += ";1"; continue; }
 
-         var pos = items[i].indexOf("+");
-         if (pos>0) {
-            dropitems[i] = items[i].split("+");
+         var item = items[i], can_split = true;
+
+         if ((item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
+            items[i] = item = item.substr(1, item.length-2);
+            can_split = false;
+         }
+
+         if (h.Find(item)) continue;
+         if (h.Find(item + ";1")) { items[i] = item + ";1"; continue; }
+
+         if (can_split && (item.indexOf("+") > 0)) {
+            dropitems[i] = item.split("+");
             items[i] = dropitems[i].shift();
             // allow to specify _same_ item in different file
             for (var j = 0; j < dropitems[i].length; ++j) {
@@ -8585,7 +8592,7 @@
       }
 
       // now check that items can be displayed
-      for (var n = items.length-1; n>=0; n--) {
+      for (var n = items.length-1; n>=0; --n) {
          var hitem = h.Find(items[n]);
          if ((hitem==null) || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
