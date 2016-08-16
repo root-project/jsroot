@@ -5646,13 +5646,13 @@
 
       if (shrink_forbidden) return;
 
-      var shrink = 0., ypos = this.y_handle.position;
+      var shrink = 0., ypos = draw_vertical.position;
 
-      if (ypos < 0) {
+      if ((-0.2*w < ypos) && (ypos < 0)) {
          shrink = -ypos/w + 0.001;
          this.shrink_frame_left += shrink;
       } else
-      if ((this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+      if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
          shrink = -this.shrink_frame_left;
          this.shrink_frame_left = 0.;
       }
