@@ -8368,7 +8368,17 @@
    }
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
-      var h = this, painter = null, updating = false;
+      var h = this,
+          painter = null,
+          updating = false,
+          frame_name = itemname,
+          marker = "::_display_on_frame_::",
+          p = drawopt ? drawopt.indexOf(marker) : -1;
+
+      if (p>=0) {
+         frame_name = drawopt.substr(p + marker.length);
+         drawopt = drawopt.substr(0, p);
+      }
 
       function display_callback() {
          if (painter) painter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
@@ -8431,7 +8441,7 @@
                if (updating) {
                   JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
                } else {
-                  var frame = mdi.FindFrame(itemname, true);
+                  var frame = mdi.FindFrame(frame_name, true);
                   d3.select(frame).html("");
                   mdi.ActivateFrame(frame);
                   painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
@@ -8552,11 +8562,11 @@
 
       var h = this;
 
-      if (options == null) options = [];
+      if (!options) options = [];
       while (options.length < items.length)
          options.push("");
 
-      if ((options.length == 1) &&( options[0] == "iotest")) {
+      if ((options.length == 1) && (options[0] == "iotest")) {
          h.clear();
          d3.select("#" + h.disp_frameid).html("<h2>Start I/O test "+ ('IO' in JSROOT ? "Mode=" + JSROOT.IO.Mode : "") +  "</h2>")
 
@@ -8609,42 +8619,50 @@
          h.expand(items[n]);
          items.splice(n, 1);
          options.splice(n, 1);
-         dropitems.splice(n,1);
+         dropitems.splice(n, 1);
       }
 
       if (items.length == 0) return JSROOT.CallBack(call_back);
+
+      var frame_names = [];
+      for (var n=0; n<items.length;++n) {
+         var fname = items[n], k = 0;
+         while (frame_names.indexOf(fname)>=0)
+            fname = items[n] + "_" + k++;
+         frame_names.push(fname);
+      }
 
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back);
 
          // Than create empty frames for each item
          for (var i = 0; i < items.length; ++i)
-            if (options[i].indexOf('update:')!=0)
-               mdi.CreateFrame(items[i]);
+            if (options[i].indexOf('update:')!==0) {
+               mdi.CreateFrame(frame_names[i]);
+               options[i] += "::_display_on_frame_::"+frame_names[i];
+            }
 
          // We start display of all items parallel
          for (var i = 0; i < items.length; ++i)
-            h.display(items[i], options[i], function(painter, itemname) {
-               // one cannot use index i in callback - it is asynchron
-               var indx = items.indexOf(itemname);
-               if (indx<0) return JSROOT.console('did not found item ' + itemname);
+            h.display(items[i], options[i], DisplayCallback.bind(this,i));
 
-               items[indx] = "---"; // mark item as ready
+         function DisplayCallback(indx, painter, itemname) {
+            items[indx] = null; // mark item as ready
+            DropNextItem(indx, painter);
+         }
 
-               function DropNextItem() {
-                  if ((painter!=null) && (dropitems[indx]!=null) && (dropitems[indx].length>0))
-                     return h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem);
+         function DropNextItem(indx, painter) {
+            if (painter && dropitems[indx] && (dropitems[indx].length>0))
+               return h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem.bind(this, indx, painter));
 
-                  var isany = false;
-                  for (var cnt = 0; cnt < items.length; ++cnt)
-                     if (items[cnt]!='---') isany = true;
+            var isany = false;
+            for (var cnt = 0; cnt < items.length; ++cnt)
+               if (items[cnt]!==null) isany = true;
 
-                  // only when items drawn and all sub-items dropped, one could perform call-back
-                  if (!isany) JSROOT.CallBack(call_back);
-               }
+            // only when items drawn and all sub-items dropped, one could perform call-back
+            if (!isany) JSROOT.CallBack(call_back);
+         }
 
-               DropNextItem();
-            });
       });
    }
 
