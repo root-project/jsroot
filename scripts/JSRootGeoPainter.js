@@ -845,12 +845,12 @@
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
-            var tm1 = new Date().getTime();
+            //var tm1 = new Date().getTime();
             var res = this._clones.CollectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
-            var tm2 = new Date().getTime();
-            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
+            //var tm2 = new Date().getTime();
+            //console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.drawing_stage = 3;
             return true;
          }

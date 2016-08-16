@@ -2676,9 +2676,9 @@
     * Creates geometry model for the provided shape
     * @memberOf JSROOT.GEO
     *
-    * If @par limit ===0 (or undefined) returns THREE.Geometry or THREE.BufferGeometry
+    * If @par limit === 0 (or undefined) returns THREE.BufferGeometry
     * If @par limit < 0 just returns estimated number of faces
-    * If @par limit > 0 used only for composite shapes, return result may differ for different shapes
+    * If @par limit > 0 return list of ThreeBSP polygons (used only for composite shapes)
     * */
    JSROOT.GEO.createGeometry = function( shape, limit ) {
       if (limit === undefined) limit = 0;
@@ -3023,6 +3023,9 @@
             }
          } else {
             clone.vis = obj.fRnrSelf;
+
+            // when the only node is selected, draw it
+            if ((n===0) && (this.nodes.length===1)) clone.vis = true;
          }
 
          // shape with zero volume or without faces will not be observed

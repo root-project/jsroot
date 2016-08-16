@@ -575,8 +575,12 @@
                if (filepath.indexOf(JSROOT.source_dir) == 0)
                   filepath = filepath.slice(JSROOT.source_dir.length);
                filepath = fileprop.kind + "=" + filepath;
-               if (fileprop.itemname.length > 0)
-                  filepath+="&item=" + fileprop.itemname;
+               if (fileprop.itemname.length > 0) {
+                  var name = fileprop.itemname;
+                  if (name.search('/+| |,/')>=0) name = "\'" + name + "\'";
+                  filepath += "&item=" + name;
+               }
+
 
                menu.addDrawMenu("Draw in new tab", opts, function(arg) {
                   window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg);
