@@ -1834,6 +1834,8 @@
 
       if (call_ready) this.DrawingReady();
 
+      // this.ActiavteInBrowser(["Nodes/TRD+TOF/B076_1"], true);
+
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
    }
@@ -2131,88 +2133,66 @@
          _get: JSROOT.GEO.getBrowserItem
       };
 
+      var volume, shape, subnodes;
+
       if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
       if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
       if (obj._typename == "TGeoMixture") sub._icon = "img_geomixture"; else
       if ((obj._typename.indexOf("TGeoNode")===0) && obj.fVolume) {
          sub._title = "node:"  + obj._typename;
-         if (obj.fTitle.length > 0) sub._title + " " + obj.fTitle;
-
-         sub._volume = obj.fVolume;
-
-         var iscomposite = obj.fVolume.fShape && (obj.fVolume.fShape._typename === "TGeoCompositeShape") && obj.fVolume.fShape.fNode;
-
-         if ((obj.fVolume.fNodes && obj.fVolume.fNodes.arr.length > 0)) {
-            sub._more = true;
-            sub._expand = JSROOT.GEO.expandObject;
-         } else
-         if (iscomposite) {
-            sub._more = true;
-            sub._expand = function(node, obj) {
-               JSROOT.GEO.createItem(node, obj.fVolume.fShape.fNode.fLeft, 'Left');
-               JSROOT.GEO.createItem(node, obj.fVolume.fShape.fNode.fRight, 'Right');
-               return true;
-            }
-         }
-
-         if (obj.fVolume.fShape) {
-            sub._icon = JSROOT.GEO.getShapeIcon(obj.fVolume.fShape);
-            if (iscomposite)
-               sub._title += " composite: " + obj.fVolume.fShape.fNode._typename;
-            else
-               sub._title += " shape:" + obj.fVolume.fShape._typename;
-         } else {
-            sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
-         }
-
-         sub._icon += JSROOT.GEO.provideVisStyle(obj.fVolume);
-
-         sub._menu = JSROOT.GEO.provideMenu;
-         sub._icon_click  = JSROOT.GEO.browserIconClick;
+         if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
+         volume = obj.fVolume;
       } else
       if (obj._typename.indexOf("TGeoVolume")===0) {
-         sub._volume = obj;
-         if ((obj.fNodes && obj.fNodes.arr.length>0)) {
+         volume = obj;
+      } else
+      if (obj._typename == "TEveGeoShapeExtract") {
+         shape = obj.fShape;
+         subnodes = obj.fElements ? obj.fElements.arr : null;
+      } else
+      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
+         shape = obj;
+      }
+
+      if (volume) {
+         shape = volume.fShape;
+         subnodes = volume.fNodes ? volume.fNodes.arr : null;
+      }
+
+      if (volume || shape || subnodes) {
+         if (volume) sub._volume = volume;
+
+         if (subnodes) {
             sub._more = true;
             sub._expand = JSROOT.GEO.expandObject;
          } else
-         if ((obj.fShape !== null) && (obj.fShape._typename === "TGeoCompositeShape") && (obj.fShape.fNode !== null)) {
+         if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
             sub._more = true;
+            sub._shape = shape;
             sub._expand = function(node, obj) {
-               JSROOT.GEO.createItem(node, obj.fShape.fNode.fLeft, 'Left');
-               JSROOT.GEO.createItem(node, obj.fShape.fNode.fRight, 'Right');
+               JSROOT.GEO.createItem(node, node._shape.fNode.fLeft, 'Left');
+               JSROOT.GEO.createItem(node, node._shape.fNode.fRight, 'Right');
                return true;
             }
          }
 
-         if (sub._title == "")
-            if (obj._typename != "TGeoVolume") sub._title = obj._typename;
+         if (!sub._title && (obj._typename != "TGeoVolume")) sub._title = obj._typename;
 
-         if (obj.fShape) {
+         if (shape) {
             if (sub._title == "")
-               sub._title = obj.fShape._typename;
+               sub._title = shape._typename;
 
-            sub._icon = JSROOT.GEO.getShapeIcon(obj.fShape);
+            sub._icon = JSROOT.GEO.getShapeIcon(shape);
          } else {
-            sub._icon = sub._more ? "img_geocombi" : "img_geobbox";
+            sub._icon = sub._more ? "img_geoassembly" : "img_geobbox";
          }
 
-         sub._icon += JSROOT.GEO.provideVisStyle(obj);
+         if (volume)
+            sub._icon += JSROOT.GEO.provideVisStyle(volume);
 
          sub._menu = JSROOT.GEO.provideMenu;
          sub._icon_click  = JSROOT.GEO.browserIconClick;
-      } else
-      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
-         sub._title = obj._typename;
-         sub._icon = JSROOT.GEO.getShapeIcon(obj);
-         if ((obj._typename === "TGeoCompositeShape") && obj.fNode) {
-            sub._more = true;
-            sub._expand = function(node, obj) {
-               JSROOT.GEO.createItem(node, obj.fNode.fLeft, 'Left');
-               JSROOT.GEO.createItem(node, obj.fNode.fRight, 'Right');
-               return true;
-            }
-         }
+
       }
 
       if (!node._childs) node._childs = [];
@@ -2379,15 +2359,27 @@
 
       var isnode = (obj._typename.indexOf('TGeoNode') === 0),
           isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
-          ismanager = (obj._typename === 'TGeoManager');
+          ismanager = (obj._typename === 'TGeoManager'),
+          iseve = (obj._typename === 'TEveGeoShapeExtract');
 
-      if (!isnode && !isvolume && !ismanager) return false;
+      if (!isnode && !isvolume && !ismanager && !iseve) return false;
+
+      if (parent._childs) return true;
 
       // if (!parent._childs) parent._childs = [];
-      var volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
-      var subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
+      var volume, subnodes, shape;
 
-      if (ismanager || (!parent._geoobj && subnodes && subnodes.length)) {
+      if (iseve) {
+         // volume = obj;
+         subnodes = obj.fElements ? obj.fElements.arr : null;
+         shape = obj.fShape;
+      } else {
+         volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
+         subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
+         shape = volume ? volume.fShape : null;
+      }
+
+      if (ismanager || (!parent._geoobj && subnodes && subnodes.length && !iseve)) {
          if (ismanager) {
             JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
             JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
@@ -2402,13 +2394,10 @@
          return true;
       }
 
-      if (!volume) return false;
-
-      if (!subnodes && volume.fShape &&
-           (volume.fShape._typename === "TGeoCompositeShape") && volume.fShape.fNode) {
+      if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
          if (!parent._childs) {
-            JSROOT.GEO.createItem(parent, volume.fShape.fNode.fLeft, 'Left');
-            JSROOT.GEO.createItem(parent, volume.fShape.fNode.fRight, 'Right');
+            JSROOT.GEO.createItem(parent, shape.fNode.fLeft, 'Left');
+            JSROOT.GEO.createItem(parent, shape.fNode.fRight, 'Right');
          }
 
          return true;
@@ -2419,7 +2408,7 @@
       var map = [];
 
       for (var i=0;i<subnodes.length;++i) {
-         if (isnode)
+         if (isnode || iseve)
             JSROOT.GEO.createItem(parent, subnodes[i]);
          else
          if (isvolume) {
@@ -2433,7 +2422,6 @@
 
       return true;
    }
-
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });

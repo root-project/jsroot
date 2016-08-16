@@ -8664,7 +8664,7 @@
             painter.UpdateBackground(active[n], force);
       }
 
-      function find_next(itemname) {
+      function find_next(itemname, prev_found) {
          if (itemname === undefined) {
             // extract next element
             if (items.length == 0) return mark_active();
@@ -8676,12 +8676,18 @@
          if (!hitem) {
             var d = painter.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
             if (!d || !d.last) return find_next();
+            d.now_found = painter.itemFullName(d.last);
+
             if (force) {
-               return painter.expand(painter.itemFullName(d.last), function(res) {
+
+               // if after last expand no better solution found - skip it
+               if ((prev_found!==undefined) && (d.now_found === prev_found)) return find_next();
+
+               return painter.expand(d.now_found, function(res) {
                   if (!res) return find_next();
                   var newname = painter.itemFullName(d.last);
                   if (newname.length>0) newname+="/";
-                  find_next(newname + d.rest);
+                  find_next(newname + d.rest, d.now_found);
                });
             }
             hitem = d.last;
@@ -8716,9 +8722,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont) {
-      var hpainter = this;
-
-      var hitem = this.Find(itemname);
+      var hpainter = this, hitem = this.Find(itemname);
 
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
 
@@ -9795,7 +9799,7 @@
    JSROOT.addDrawFunc({ name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
    JSROOT.addDrawFunc({ name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt:";more;all;count" });
-   JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;count"  });
+   JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count"  });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;count", dflt: "expand" });
    JSROOT.addDrawFunc({ name: /^TGeo/, icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;axis;compa;count" });
    // these are not draw functions, but provide extra info about correspondent classes
