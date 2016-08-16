@@ -1,24 +1,26 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Many significant changes in TGeo 3D drawing
-   - select and draw only most significant volumes, let work with large geometry models
-   - one could activate several clip planes (only with WebGL support)
+1. Improvements in TGeo drawings
+   - support of large (~10M volumes) models, only most significant volumes are shown
+   - one could activate several clip planes (only with WebGL)
    - interaction with object browser to change visibility flags or focus on selected volume
    - support of floating browser for TGeo objects 
    - intensive use of HTML Worker to offload computation tasks and keep interactivity   
    - enable more details when changing camera position/zoom
-   - significant (up to factor 10) performance improvement
-   - upgrafe three.js to r79
-2. Many improvements in histograms 3D drawing:
+   - better and faster build of composite shapes
+2. Improvements in histograms 3D drawing
    - all lego options: lego1..lego4, combined with 'fb', 'bb', '0' or 'z'
    - support axis lebels on lego plots
    - support lego plots for TH1 
-   - significant (up to x5) performance increase, using of THREE.BufferGeometry
-3. Implement box and hbox draw options for TH1 class
-4. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
-5. Preliminary support of candle plot (many options to be implemented)
-6. Update many draw attributes (fill/line/position) when monitor objects  
+3. Improvements in all 3D graphics
+   - upgrafe three.js to r79
+   - use of THREE.BufferGeometry for all components
+   - significant (up to factor 10) performance improvement
+4. Implement box and hbox draw options for TH1 class
+5. Implement drawing of axes ticks on opposite side (when fTickx/y specified)  
+6. Preliminary support of candle plot (many options to be implemented)
+7. Update many draw attributes (fill/line/position) when monitor objects  
 
 
 ## Changes in 4.5.0
