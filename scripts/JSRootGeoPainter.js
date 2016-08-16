@@ -1299,23 +1299,16 @@
 
       this._camera.updateProjectionMatrix();
 
-//      if (this.options._yup)
-//         this._camera.position.set(midx-this._overall_size, midy+this._overall_size, midz-this._overall_size);
-//      else
-//         this._camera.position.set(midx-this._overall_size, midy-this._overall_size, midz+this._overall_size);
-
       if (this.options._yup) {
          this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
-         //this._pointLight.position.set(midx+3*Math.max(sizex,sizez), midy+3*sizey, midz-3*Math.max(sizex,sizez));
       } else {
          this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
-         //this._pointLight.position.set(midx+3*Math.max(sizex,sizey), midy-3*Math.max(sizex,sizey), midz+3*sizez);
       }
-
-      this._pointLight.position.set(midx, midy, midz);
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
       this._camera.lookAt(this._lookat);
+
+      this._pointLight.position.set(sizex/5, sizey/5, sizez/5);
 
       if (this._controls) {
          this._controls.target.copy(this._lookat);
