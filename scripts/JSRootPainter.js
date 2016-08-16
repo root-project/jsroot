@@ -8142,21 +8142,22 @@
             var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
 
             // first try to find direct matched item
-            if (typeof top._childs != 'undefined')
+            if (top._childs)
                for (var i = 0; i < top._childs.length; ++i)
                   if (top._childs[i]._name == localname)
                      return process_child(top._childs[i]);
 
             // if allowed, try to found item with key
-            if (('check_keys' in arg) && (typeof top._childs != 'undefined'))
+            if (arg.check_keys && top._childs)
                for (var i = 0; i < top._childs.length; ++i) {
-                  if (top._childs[i]._name.indexOf(localname + ";")==0)
-                     return process_child(top._childs[i]);
+                  if ((typeof top._childs[i]._keyname === 'string') &&
+                      (top._childs[i]._keyname === localname))
+                        return process_child(top._childs[i]);
                }
 
             if ('force' in arg) {
                // if didnot found element with given name we just generate it
-               if (! ('_childs' in top)) top._childs = [];
+               if (top._childs === undefined) top._childs = [];
                var child = { _name: localname };
                top._childs.push(child);
                return process_child(child);
@@ -8567,15 +8568,15 @@
          var item = items[i], can_split = true;
 
          if ((item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
-            items[i] = item = item.substr(1, item.length-2);
+            items[i] = item.substr(1, item.length-2);
             can_split = false;
          }
 
-         if (h.Find(item)) continue;
-         if (h.Find(item + ";1")) { items[i] = item + ";1"; continue; }
+         var elem = h.Find({ name: items[i], check_keys: true });
+         if (elem) { items[i] = h.itemFullName(elem); continue; }
 
-         if (can_split && (item.indexOf("+") > 0)) {
-            dropitems[i] = item.split("+");
+         if (can_split && (items[i].indexOf("+") > 0)) {
+            dropitems[i] = items[i].split("+");
             items[i] = dropitems[i].shift();
             // allow to specify _same_ item in different file
             for (var j = 0; j < dropitems[i].length; ++j) {
