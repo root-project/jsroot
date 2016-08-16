@@ -4604,7 +4604,7 @@
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       var last = vertical ? h : 0,
-          labelsize = (axis.fLabelSize > 5) ? Math.round(axis.fLabelSize) : Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h)),
+          labelsize = (axis.fLabelSize >= 1) ? axis.fLabelSize : Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h)),
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
           label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
           labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size),
@@ -4713,7 +4713,7 @@
 
      if (axis.fTitle.length > 0) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             title_fontsize = Math.round(axis.fTitleSize * text_scaling_size),
+             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
