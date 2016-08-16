@@ -3133,7 +3133,7 @@
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
 
-      if (!this.toplevel || (this.nodes.length === 1)) res.name = "";
+      if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
 
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();
