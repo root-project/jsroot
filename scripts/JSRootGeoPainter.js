@@ -1375,9 +1375,10 @@
       var target = new THREE.Vector3(midx, midy, midz);
       console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
 
+
       // Find to points to animate "lookAt" between
       var dist = this._camera.position.distanceTo(target);
-      var oldTarget = this._camera.getWorldDirection().multiplyScalar(dist);
+      var oldTarget = this._controls.target;
 
       var frames = 200;
       var step = 0;
@@ -1385,6 +1386,7 @@
       var posIncrement = position.sub(this._camera.position).divideScalar(frames);
       // Amount to change "lookAt" so it will end pointed at target
       var targetIncrement = target.sub(oldTarget).divideScalar(frames);
+      console.log( targetIncrement );
 
       // Automatic Clipping
 
@@ -1422,9 +1424,8 @@
          painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
          oldTarget.add( targetIncrement.clone().multiplyScalar( smoothFactor ) );
          painter._lookat = oldTarget;
-         painter._controls.target = oldTarget;
          painter._camera.lookAt( painter._lookat );
-
+         painter._camera.updateProjectionMatrix();
          if (autoClip) {
             painter.clipX += incrementX * smoothFactor;
             painter.clipY += incrementY * smoothFactor;
