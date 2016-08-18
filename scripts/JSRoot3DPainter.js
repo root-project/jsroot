@@ -415,6 +415,14 @@
             }
          }
 
+         if (tip !== null) {
+            var delta = 1e-8*painter.size3d;
+            if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
+            tip.x1 -= delta; tip.x2 += delta;
+            tip.y1 -= delta; tip.y2 += delta;
+            tip.z1 -= delta; tip.z2 += delta;
+         }
+
          painter.BinHighlight3D(tip);
 
          return (painter.enable_tooltip && tip && tip.info) ? tip.info : "";
