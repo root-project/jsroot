@@ -248,19 +248,18 @@
 
       if (this.with_icons) {
          var icon_name = hitem._isopen ? img2 : img1;
-         var title = hitem._kind ? hitem._kind.replace(/</g,'&lt;').replace(/>/g,'&gt;') : "";
 
          var d3img;
 
          if (icon_name.indexOf("img_")==0)
             d3img = d3line.append("div")
                           .attr("class", icon_name)
-                          .attr("title", title);
+                          .attr("title", hitem._kind);
          else
             d3img = d3line.append("img")
                           .attr("src", icon_name)
                           .attr("alt","")
-                          .attr("title",title)
+                          .attr("title", hitem._kind)
                           .style('vertical-align','top')
                           .style('width','18px')
                           .style('height','18px');
@@ -577,10 +576,9 @@
                filepath = fileprop.kind + "=" + filepath;
                if (fileprop.itemname.length > 0) {
                   var name = fileprop.itemname;
-                  if (name.search('/+| |,/')>=0) name = "\'" + name + "\'";
+                  if (name.search(/\+| |\,/)>=0) name = "\'" + name + "\'";
                   filepath += "&item=" + name;
                }
-
 
                menu.addDrawMenu("Draw in new tab", opts, function(arg) {
                   window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg);
@@ -591,8 +589,8 @@
                menu.add("Expand", function() { painter.expand(itemname); });
          }
 
-         if (('_menu' in hitem) && (typeof hitem['_menu'] == 'function'))
-            hitem['_menu'](menu, hitem, painter);
+         if (typeof hitem._menu == 'function')
+            hitem._menu(menu, hitem, painter);
 
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
