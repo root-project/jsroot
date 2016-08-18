@@ -317,6 +317,28 @@
       return control;
    }
 
+   JSROOT.Painter.DisposeThreejsObject = function(obj) {
+      if (!obj) return;
+
+      if (obj.children) {
+         for (var i = 0; i < obj.children.length; i++)
+            JSROOT.Painter.DisposeThreejsObject(obj.children[i]);
+      }
+      if (obj.geometry) {
+         obj.geometry.dispose();
+         obj.geometry = undefined;
+      }
+      if (obj.material) {
+         if (obj.material.map) {
+            obj.material.map.dispose();
+            obj.material.map = undefined;
+         }
+         obj.material.dispose();
+         obj.material = undefined;
+      }
+      obj = undefined;
+   }
+
    JSROOT.Painter.HPainter_Create3DScene = function(arg) {
 
       if ((arg!==undefined) && (arg<0)) {
@@ -325,9 +347,13 @@
             this.TestAxisVisibility(null, this.toplevel);
 
          this.clear_3d_canvas();
+
+         JSROOT.Painter.DisposeThreejsObject(this.scene);
+
          delete this.size3d;
          delete this.scene;
          delete this.toplevel;
+         delete this.tooltip_mesh;
          delete this.camera;
          delete this.pointLight;
          delete this.renderer;
@@ -342,12 +368,13 @@
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty
 
-         var newtop = new THREE.Object3D();
-
          this.scene.remove(this.toplevel);
+         JSROOT.Painter.DisposeThreejsObject(this.toplevel);
+         delete this.toplevel;
+         delete this.tooltip_mesh;
 
+         var newtop = new THREE.Object3D();
          this.scene.add(newtop);
-
          this.toplevel = newtop;
 
          return;
@@ -382,7 +409,7 @@
       this.webgl = JSROOT.Painter.TestWebGL();
 
       this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                   new THREE.CanvasRenderer({ antialias : true, alpha: true  });
+                                   new THREE.CanvasRenderer({ antialias : true, alpha: true });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
