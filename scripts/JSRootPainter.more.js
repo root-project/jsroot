@@ -3848,7 +3848,8 @@
       this.DrawBins();
 
       // redraw palette once again when contours are available
-      if (pp) pp.WhenReady(function() { pp.DrawPave(); });
+      //if (pp) pp.WhenReady( function() { pp.DrawPave(); });
+      if (pp) pp.DrawPave();
 
       this.DrawTitle();
 

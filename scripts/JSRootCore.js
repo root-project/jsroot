@@ -745,24 +745,27 @@
    JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
       // 'io' for I/O functionality (default)
-      // '2d' for 2d graphic
+      // '2d' for basic 2d graphic (TCanvas, TH1)
+      // 'more2d' for extra 2d graphic (TH2, TGraph)
       // 'jq' jQuery and jQuery-ui
       // 'jq2d' jQuery-dependend part of 2d graphic
-      // '3d' for 3d graphic
+      // '3d' for histograms 3d graphic
+      // 'geom' for geometry drawing support
       // 'simple' for basic user interface
       // 'load:' list of user-specific scripts at the end of kind string
 
       var jsroot = JSROOT;
 
-      if (!('doing_assert' in jsroot)) jsroot.doing_assert = [];
+      if (jsroot.doing_assert === undefined) jsroot.doing_assert = [];
+      if (jsroot.ready_modules === undefined) jsroot.ready_modules = [];
 
       if ((typeof kind !== 'string') || (kind == ''))
          return jsroot.CallBack(callback);
 
-      if (kind=='__next__') {
+      if (kind === '__next__') {
          if (jsroot.doing_assert.length==0) return;
          var req = jsroot.doing_assert[0];
-         if ('running' in req) return;
+         if (req.running) return;
          kind = req._kind;
          callback = req._callback;
          debugout = req._debug;
@@ -771,17 +774,16 @@
          if (jsroot.doing_assert.length > 1) return;
       }
 
-      jsroot.doing_assert[0]['running'] = true;
+      jsroot.doing_assert[0].running = true;
 
       if (kind.charAt(kind.length-1)!=";") kind+=";";
 
-      var ext = jsroot.source_min ? ".min" : "";
-
-      var need_jquery = false, use_bower = (JSROOT.bower_dir.length>0);
-
-      // file names should be separated with ';'
-      var mainfiles = "", extrafiles = ""; // scripts for direct loadin
-      var modules = [];  // modules used for require.js
+      var ext = jsroot.source_min ? ".min" : "",
+          need_jquery = false,
+          use_bower = (jsroot.bower_dir.length > 0),
+          mainfiles = "",
+          extrafiles = "", // scripts for direct loadin
+          modules = [];  // modules used for require.js
 
       if (kind.indexOf('io;')>=0) {
          mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
@@ -790,13 +792,13 @@
       }
 
       if (kind.indexOf('2d;')>=0) {
-         if (!('_test_d3_' in jsroot)) {
+         if (jsroot._test_d3_ === undefined) {
             if (typeof d3 != 'undefined') {
-               jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.4.10", debugout);
-               jsroot['_test_d3_'] = 1;
+               jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.5.9", debugout);
+               jsroot._test_d3_ = 1;
             } else {
                mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.v3.min.js;';
-               jsroot['_test_d3_'] = 2;
+               jsroot._test_d3_ = 2;
             }
          }
          modules.push('JSRootPainter');
@@ -864,7 +866,7 @@
             mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://cdn.mathjax.org/mathjax/latest/MathJax.js") +
                          "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
          }
-         if (JSROOT.gStyle.MathJax == 0) JSROOT.gStyle.MathJax = 1;
+         if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
          modules.push('MathJax');
       }
 
@@ -875,7 +877,7 @@
          modules.push('JSRootInterface');
       }
 
-      if (need_jquery && (JSROOT.load_jquery==null)) {
+      if (need_jquery && !jsroot.load_jquery) {
          var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
 
          if (has_jq)
@@ -889,7 +891,7 @@
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
          }
 
-         if (JSROOT.touches) {
+         if (jsroot.touches) {
             lst_jq += use_bower ? '###jqueryui-touch-punch/jquery.ui.touch-punch.min.js;' : '$$$scripts/touch-punch.min.js;';
             modules.push('jqueryui-touch-punch');
          }
@@ -904,13 +906,26 @@
       if (pos<0) pos = kind.indexOf("load:");
       if (pos>=0) extrafiles += kind.slice(pos+5);
 
+
       function load_callback() {
          var req = jsroot.doing_assert.shift();
+         for (var n=0;n<req.modules.length;++n)
+            jsroot.ready_modules.push(req.modules[n]);
          jsroot.CallBack(req._callback);
          jsroot.AssertPrerequisites('__next__');
       }
 
-      if ((typeof define === "function") && define.amd && (modules.length>0)) {
+      // check if modules already loaded
+      for (var n=modules.length-1;n>=0;--n)
+         if (jsroot.ready_modules.indexOf(modules[n])>=0)
+            modules.splice(n,1);
+
+      // no modules means no main files
+      if (modules.length===0) mainfiles = "";
+
+      jsroot.doing_assert[0].modules = modules;
+
+      if ((modules.length>0) && (typeof define === "function") && define.amd) {
          jsroot.console("loading " + JSON.stringify(modules) + " with require.js", debugout);
          require(modules, function() {
             jsroot.loadScript(extrafiles, load_callback, debugout);

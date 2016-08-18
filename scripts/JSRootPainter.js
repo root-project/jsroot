@@ -10026,39 +10026,40 @@
          if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
       }
 
-      if (funcname.length==0) return null;
+      if (funcname.length === 0) return null;
 
-      if (prereq.length > 0) {
+      if (prereq.length >  0) {
+
          // special handling for painters, which should be loaded via extra scripts
          // such painter get extra last argument - pointer on dummy painter object
-
-         if (!('painter_kind' in handle))
+         if (handle.painter_kind === undefined)
             handle.painter_kind = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
 
          painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
          JSROOT.AssertPrerequisites(prereq, function() {
             var func = JSROOT.findFunction(funcname);
-            if (func==null) {
+            if (!func) {
                alert('Fail to find function ' + funcname + ' after loading ' + prereq);
-               return null;
+            } else {
+               handle.func = func; // remember function once it found
+
+               if (performDraw() !== painter)
+                  alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
             }
-
-            handle.func = func; // remember function once it found
-            var ppp = performDraw();
-
-            if (ppp !== painter)
-               alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
          });
 
          return painter;
       }
 
+      // try to find function without prerequisisties
       var func = JSROOT.findFunction(funcname);
-      if (func == null) return null;
+      if (func) {
+          handle.func = func; // remember function once it is found
+          return performDraw();
+      }
 
-      handle.func = func; // remember function once it found
-      return performDraw();
+      return null;
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
