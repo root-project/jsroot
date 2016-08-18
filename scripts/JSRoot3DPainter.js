@@ -795,7 +795,7 @@
       if (zgridx && (zgridx.length > 0)) {
 
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2 } );
 
          var geom =  new THREE.BufferGeometry();
          geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridx), 3 ) );
@@ -816,7 +816,7 @@
       if (zgridy && (zgridy.length > 0)) {
 
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2, linewidth: 0.5 } );
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2  } );
 
          var geom =  new THREE.BufferGeometry();
          geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridy), 3 ) );
@@ -1357,8 +1357,8 @@
 
       var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
 
-      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor), linewidth: this.GetObject().fLineWidth });
-
+      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+      if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
       var line = new THREE.LineSegments(geometry, material);
 
       /*
@@ -1912,7 +1912,7 @@
             helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions, 3 ) );
          }
 
-         var helper_material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 1.0 } );
+         var helper_material = new THREE.LineBasicMaterial( { color: 0x000000 } );
 
          var lines = new THREE.LineSegments(helper_geom, helper_material );
 
