@@ -438,6 +438,8 @@
          JSROOT.addMethods(obj);
       } else {
          // just skip bytes belonging to not-recognized object
+         // console.warn('skip object ', classname);
+
          var ver = this.ReadVersion();
          this.CheckBytecount(ver);
          JSROOT.addMethods(obj);
@@ -1334,6 +1336,14 @@
       var streamer = this.fStreamers[clname];
       if (streamer !== undefined) return streamer;
 
+      // check element in streamer infos, one can have special cases
+      var s_i = null;
+      if (this.fStreamerInfos)
+         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
+            if (this.fStreamerInfos.arr[i].fName == clname)  {
+               s_i = this.fStreamerInfos.arr[i]; break;
+            }
+
       if (clname == 'TQObject' || clname == "TBasket") {
          // these are special cases, which are handled separately
          this.fStreamers[clname] = null;
@@ -1389,7 +1399,7 @@
             list.arr = new Array();
             var ver = buf.last_read_version;
             if (ver > 2)
-               buf.buf.ClassStreamer(list, "TObject");
+               buf.ClassStreamer(list, "TObject");
             if (ver > 1)
                list.name = buf.ReadTString();
             var s = buf.ReadTString();
@@ -1450,7 +1460,7 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TObjArray') {
+      if (clname == 'TObjArray')  {
          streamer.push({ func : function(buf, list) {
             list._typename = "TObjArray";
             list.name = "";
@@ -1486,6 +1496,17 @@
                marker.fName = buf.ReadTString();
             else
                marker.fName = "TPolyMarker3D";
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+
+      if ((clname == 'TObjString') && !s_i) {
+         // special case when TObjString was stored inside streamer infos,
+         // than streamer cannot be normally generated
+         streamer.push({ func : function(buf, obj) {
+            obj._typename = "TObjString";
+            buf.ClassStreamer(obj, "TObject");
+            obj.fString = buf.ReadTString();
          }});
          return this.AddMethods(clname, streamer);
       }
@@ -1593,15 +1614,9 @@
          return this.AddMethods(clname, streamer);
       }
 
-      var s_i = null;
-      if (this.fStreamerInfos)
-         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
-            if (this.fStreamerInfos.arr[i].fName == clname)  {
-               s_i = this.fStreamerInfos.arr[i]; break;
-            }
       if (s_i == null) {
          delete this.fStreamers[clname];
-         console.log('did not find streamer for ', clname);
+         // console.warn('did not find streamer for ', clname);
          return null;
       }
 
