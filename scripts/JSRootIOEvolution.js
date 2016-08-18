@@ -39,10 +39,10 @@
          NativeArray : true // when true, native arrays like Int32Array or Float64Array are used
    };
 
-   JSROOT.fUserStreamers = null; // map of user-streamer function like func(buf,obj,prop,streamerinfo)
+// map of user-streamer function like func(buf,obj)
+   JSROOT.fUserStreamers = {};
 
    JSROOT.addUserStreamer = function(type, user_streamer) {
-      if (JSROOT.fUserStreamers == null) JSROOT.fUserStreamers = {};
       JSROOT.fUserStreamers[type] = user_streamer;
    }
 
@@ -270,8 +270,11 @@
    }
 
    JSROOT.IO.GetArrayKind = function(type_name) {
-      if (type_name.length < 7) return -1;
-      if (type_name.indexOf("TArray")!=0) return -1;
+      // returns type of array
+      // 0 - if TString (or equivalent)
+      // -1 - if any other kind
+      if ((type_name === "TString") || (JSROOT.fUserStreamers[type_name] === 'TString')) return 0;
+      if ((type_name.length < 7) || (type_name.indexOf("TArray")!==0)) return -1;
       if (type_name.length == 7)
          switch (type_name.charAt(6)) {
             case 'I': return JSROOT.IO.kInt;
@@ -417,6 +420,7 @@
       var streamer = this.fFile.GetStreamer(classname);
 
       if (streamer !== null) {
+
          var ver = this.ReadVersion();
 
          for (var n = 0; n < streamer.length; ++n)
@@ -424,6 +428,7 @@
 
          this.CheckBytecount(ver, classname);
          // methods will be assigned by last entry in the streamer
+
       }
       else if (classname == 'TQObject') {
          // skip TQObject
@@ -1596,6 +1601,7 @@
             }
       if (s_i == null) {
          delete this.fStreamers[clname];
+         console.log('did not find streamer for ', clname);
          return null;
       }
 
@@ -1717,6 +1723,9 @@
                   member.func = function(buf, obj) {
                      obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
                   };
+               } else
+               if (arrkind === 0) {
+                  member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
                } else {
                   member.classname = classname;
                   member.func = function(buf, obj) {
@@ -1742,6 +1751,13 @@
                      for (var k=0;k<this.arrlength;++k)
                         obj[this.name].push(buf.ReadFastArray(buf.ntou4(), this.arrkind));
                   };
+               } else
+               if (arrkind === 0) {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = [];
+                     for (var k=0;k<this.arrlength;++k)
+                        obj[this.name].push(buf.ReadTString());
+                  }
                } else {
                   member.classname = classname;
                   member.func = function(buf, obj) {
@@ -1823,8 +1839,10 @@
                   member.func = JSROOT.fUserStreamers[element.fTypeName];
 
                if (typeof member.func !== 'function') {
-                  alert('failed to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+                  JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
                   member.func = function(buf,obj) {};  // do nothing, fix in the future
+               } else {
+                  member.element = element; // one can use element in the custom function
                }
          }
 
