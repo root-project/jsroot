@@ -85,8 +85,10 @@
             // all absolute coordinates calculated relative to such node
             var abs_parent = this.parent;
             while (abs_parent) {
+               // console.log(abs_parent.nodeType, abs_parent.id);
                var style = getComputedStyle(abs_parent);
                if (!style || (style.position !== 'static')) break;
+               if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType != 1)) break;
                abs_parent = abs_parent.parentNode;
             }
 
@@ -416,7 +418,7 @@
          }
 
          if (tip !== null) {
-            var delta = 1e-8*painter.size3d;
+            var delta = 1e-5*painter.size3d;
             if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
             tip.x1 -= delta; tip.x2 += delta;
             tip.y1 -= delta; tip.y2 += delta;
@@ -954,6 +956,7 @@
             delete this.tooltip_mesh;
             this.Render3D();
          }
+         this.ProvideUserTooltip(null);
          return;
       }
 
@@ -998,6 +1001,13 @@
       }
 
       this.Render3D();
+
+      if (this.IsUserTooltipCallback() && this.GetObject()) {
+         this.ProvideUserTooltip({ obj: this.GetObject(),  name: this.GetObject().fName,
+                                   bin: tip.bin, cont: tip.value,
+                                   binx: tip.ix, biny: tip.iy, binz: tip.iz,
+                                   grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
+      }
    }
 
    JSROOT.Painter.HistPainter_DrawLego = function() {
