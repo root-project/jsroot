@@ -310,7 +310,7 @@
          this.options.highlight = !this.options.highlight;
       });
       menu.addchk(this.options.wireframe, "Reset camera position", function() {
-         this.adjustCameraPosition();
+         this.focusCamera();
          this.Render3D();
       });
       menu.addchk(this._controls.autoRotate, "Autorotate", function() {
