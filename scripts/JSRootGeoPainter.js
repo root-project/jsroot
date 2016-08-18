@@ -345,9 +345,10 @@
 
       var clipFolder = this._datgui.addFolder('Clipping');
 
-      var toggleX = clipFolder.add(this, 'enableX').name('Enable X');
+      var toggleX = clipFolder.add(this, 'enableX').name('Enable X').listen();
       toggleX.onChange( function (value) {
          painter.enableX = value;
+         painter._enableSSAO = value ? false : painter._enableSSAO;
          painter.updateClipping();
       });
 
@@ -360,9 +361,10 @@
          if (painter.enableX) painter.updateClipping();
       });
 
-      var toggleY = clipFolder.add(this, 'enableY').name('Enable Y');
+      var toggleY = clipFolder.add(this, 'enableY').name('Enable Y').listen();
       toggleY.onChange( function (value) {
          painter.enableY = value;
+         painter._enableSSAO = value ? false : painter._enableSSAO;
          painter.updateClipping();
       });
 
@@ -375,9 +377,10 @@
          if (painter.enableY) painter.updateClipping();
       });
 
-      var toggleZ = clipFolder.add(this, 'enableZ').name('Enable Z');
+      var toggleZ = clipFolder.add(this, 'enableZ').name('Enable Z').listen();
       toggleZ.onChange( function (value) {
          painter.enableZ = value;
+         painter._enableSSAO = value ? false : painter._enableSSAO;
          painter.updateClipping();
       });
 
@@ -397,7 +400,10 @@
       if (this._webgl) {
          appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
             painter._renderer.antialias = !painter._renderer.antialias;
-            painter.Render3D(0);
+            painter.enableX = value ? false : painter.enableX;
+            painter.enableY = value ? false : painter.enableY;
+            painter.enableZ = value ? false : painter.enableZ;
+            painter.updateClipping();
          }).listen();
       }
 
@@ -1350,13 +1356,10 @@
          box.setFromObject(focus);
       } else {
          var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix);
-      //   console.log("center at x: " + center.x + " y: " + center.y + " z: " + center.z );
          var node = focus.node;
          var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
-      //   console.log("halfDelta at x: " + halfDelta.x + " y: " + halfDelta.y + " z: " + halfDelta.z );
          box.min = center.clone().sub(halfDelta) ;
          box.max = center.clone().add(halfDelta) ;
-         console.log(box);
       }
 
       var sizex = box.max.x - box.min.x,
@@ -1373,7 +1376,7 @@
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
       var target = new THREE.Vector3(midx, midy, midz);
-      console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
+      //console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
 
 
       // Find to points to animate "lookAt" between
