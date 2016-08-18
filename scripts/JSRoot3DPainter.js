@@ -344,9 +344,6 @@
 
          var newtop = new THREE.Object3D();
 
-         newtop.rotation.x = this.toplevel.rotation.x;
-         newtop.rotation.y = this.toplevel.rotation.y;
-
          this.scene.remove(this.toplevel);
 
          this.scene.add(newtop);
@@ -365,8 +362,6 @@
       //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
 
       this.toplevel = new THREE.Object3D();
-      //this.toplevel.rotation.x = 30 * Math.PI / 180;
-      //this.toplevel.rotation.y = 30 * Math.PI / 180;
       this.scene.add(this.toplevel);
       this.scene_width = size.width;
       this.scene_height = size.height
@@ -418,7 +413,7 @@
          }
 
          if (tip !== null) {
-            var delta = 1e-5*painter.size3d;
+            var delta = 1e-4*painter.size3d;
             if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
             tip.x1 -= delta; tip.x2 += delta;
             tip.y1 -= delta; tip.y2 += delta;
