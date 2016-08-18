@@ -323,6 +323,7 @@
       if (obj.children) {
          for (var i = 0; i < obj.children.length; i++)
             JSROOT.Painter.DisposeThreejsObject(obj.children[i]);
+         obj.children = undefined;
       }
       if (obj.geometry) {
          obj.geometry.dispose();
@@ -349,6 +350,7 @@
          this.clear_3d_canvas();
 
          JSROOT.Painter.DisposeThreejsObject(this.scene);
+         if (this.control) this.control.dispose();
 
          delete this.size3d;
          delete this.scene;

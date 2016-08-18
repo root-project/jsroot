@@ -1839,8 +1839,10 @@
 
       if (!first_time) {
          this.helpText();
-         if (this._scene)
-            this.deleteChildren(this._scene);
+
+
+         JSROOT.Painter.DisposeThreejsObject(this._scene);
+
          if (this._tcontrols)
             this._tcontrols.dispose();
 
@@ -1940,34 +1942,6 @@
       obj.traverse(function(obj2) { painter.accessObjectWireFrame(obj2, on); });
 
       this.Render3D();
-   }
-
-   JSROOT.TGeoPainter.prototype.deleteChildren = function(obj) {
-      if ((typeof obj['children'] != 'undefined') && (obj['children'] instanceof Array)) {
-         for ( var i=obj.children.length-1; i>=0; i-- ) {
-            var ob = obj.children[i];
-            this.deleteChildren(ob);
-            try {
-               obj.remove(obj.children[i]);
-            } catch(e) {}
-            try {
-               ob.geometry.dispose();
-               ob.geometry = null;
-            } catch(e) {}
-            try {
-               ob.material.dispose();
-               ob.material = null;
-            } catch(e) {}
-            try {
-               ob.texture.dispose();
-               ob.texture = null;
-            } catch(e) {}
-            ob = null;
-            obj.children[i] = null;
-         }
-         obj.children = null;
-      }
-      obj = null;
    }
 
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
