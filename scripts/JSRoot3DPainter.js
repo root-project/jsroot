@@ -174,6 +174,10 @@
          // painter.Render3D();
       }
 
+      control.HideTooltip = function() {
+         tooltip.hide();
+      }
+
       function GetMousePos(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
@@ -374,6 +378,7 @@
          JSROOT.Painter.DisposeThreejsObject(this.toplevel);
          delete this.toplevel;
          delete this.tooltip_mesh;
+         if (this.control) this.control.HideTooltip();
 
          var newtop = new THREE.Object3D();
          this.scene.add(newtop);
