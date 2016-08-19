@@ -1654,6 +1654,7 @@
             case JSROOT.IO.kAnyP:
             case JSROOT.IO.kObjectP:
                member.func = function(buf,obj) { obj[this.name] = buf.ReadObjectAny(); }; break;
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kBool:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
@@ -1702,6 +1703,7 @@
                   };
                }
                break;
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kBool:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
