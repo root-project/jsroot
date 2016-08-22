@@ -250,6 +250,7 @@
             for (var i = 0; i < n; ++i)
                array[i] = this.ntoi1();
             break;
+         case JSROOT.IO.kBool:
          case JSROOT.IO.kUChar:
             array = JSROOT.IO.NativeArray ? new Uint8Array(n) : new Array(n);
             for (var i = 0; i < n; ++i)
@@ -1825,6 +1826,12 @@
                      res = new Array(cnt);
                      for (var i = 0; i < cnt; ++i )
                         res[i] = buf.ReadTString();
+                  } else
+                  if (this.typename == "TList*") {
+                     var cnt = obj[this.cntname];
+                     res = new Array(cnt);
+                     for (var i = 0; i < cnt; ++i)
+                        res[i] = buf.ClassStreamer({}, "TList");
                   } else
                   if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kDouble); else
                   if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kInt); else
