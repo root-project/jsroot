@@ -7802,15 +7802,41 @@
       node._childs = [];
 
       for ( var i = 0; i < obj.fBranches.arr.length; ++i) {
-         var branch = obj.fBranches.arr[i];
-         var nb_leaves = branch.fLeaves.arr.length;
+         var branch = obj.fBranches.arr[i],
+             nb_leaves = branch.fLeaves.arr.length,
+             special = false;
 
          // display branch with only leaf as leaf
-         if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) nb_leaves = 0;
+         if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) {
+            // if (node._parent._file) special = true;
+            nb_leaves = 0;
+         }
 
          var subitem = {
             _name : branch.fName,
             _kind : nb_leaves > 0 ? "ROOT.TBranch" : "ROOT.TLeafF"
+         }
+
+         if (special) {
+            console.log('HAS file for branch', branch.fName);
+
+            // subitem._obj = branch;
+
+            subitem._branch = branch;
+
+            subitem._get = function(item, itemname, callback, option) {
+
+               var b = item._branch,
+                   f = item._parent._parent._file;
+
+               f.ReadBasket(b.fBasketSeek[0], b.fBasketBytes[0], function(basket) {
+
+                  if (basket && basket.raw) console.log('raw basket data', basket.raw.totalLength());
+
+                  JSROOT.CallBack(callback, item, null);
+               });
+
+            }
          }
 
          node._childs.push(subitem);

@@ -46,12 +46,14 @@
       JSROOT.fUserStreamers[type] = user_streamer;
    }
 
-   JSROOT.R__unzip = function(str, tgtsize, noalert) {
+   JSROOT.R__unzip = function(str, tgtsize, noalert, src_shift) {
       // Reads header envelope, determines zipped size and unzip content
 
       var isarr = (typeof str != 'string') && ('byteLength' in str),
           totallen = isarr ? str.byteLength : str.length,
           curr = 0, fullres = 0, tgtbuf = null;
+
+      if (src_shift!==undefined) curr = src_shift;
 
       function getChar(o) {
          return isarr ? String.fromCharCode(str.getUint8(o)) : str.charAt(o);
@@ -326,7 +328,7 @@
       return true;
    }
 
-   JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
+   JSROOT.TBuffer.prototype.ReadTBasket = function(obj,real_read) {
       this.ReadTKey(obj);
       var ver = this.ReadVersion();
       obj.fBufferSize = this.ntoi4();
@@ -335,16 +337,29 @@
       obj.fLast = this.ntoi4();
       var flag = this.ntoi1();
       // here we implement only data skipping, no real I/O for TBasket is performed
-      if ((flag % 10) != 2) {
-         var sz = this.ntoi4(); this.shift(sz*4); // fEntryOffset
-         if (flag>40) { sz = this.ntoi4(); this.shift(sz*4); } // fDisplacement
+
+      if ((flag!==0) && ((flag % 10) != 2)) {
+         var sz = this.ntoi4();
+         if (real_read && (sz>0))
+            obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
+         else
+            this.shift(sz*4);
+
+         if (flag>40) {
+            sz = this.ntoi4();
+            if (real_read && (sz>0))
+               obj.fDisplacement = this.ReadFastArray(sz, JSROOT.IO.kInt);
+            else
+               this.shift(sz*4);
+         }
       }
 
-      if (flag == 1 || flag > 10) {
+      if ((flag === 1) || (flag > 10)) {
          var sz = obj.fLast;
          if (ver.val <= 1) sz = this.ntoi4();
          this.o += sz; // fBufferRef
       }
+
       return this.CheckBytecount(ver,"ReadTBasket");
    }
 
@@ -1000,6 +1015,40 @@
       buf.ReadTKey(key);
       return key;
    }
+
+   JSROOT.TFile.prototype.ReadBasket = function(off,size, call_back) {
+      // read basket with tree data
+
+      var f = this;
+
+      this.Seek(off, this.ERelativeTo.kBeg);
+
+      this.ReadBuffer(size, function(blob) {
+
+         if (!blob) JSROOT.CallBack(call_back, null);
+
+         var buf = JSROOT.CreateTBuffer(blob, 0, f);
+
+         var basket = {};
+
+         buf.ReadTBasket(basket, false);
+
+         if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
+
+            // use data from original blob
+            basket.raw = JSROOT.CreateTBuffer(blob, basket.fKeylen, f);
+         } else {
+
+            // unpack data and create new blob
+            var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, basket.fKeylen);
+
+            if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, f);
+         }
+
+         JSROOT.CallBack(call_back, basket);
+      });
+   }
+
 
    JSROOT.TFile.prototype.GetDir = function(dirname, cycle) {
       // check first that directory with such name exists
