@@ -1042,35 +1042,25 @@
    JSROOT.Painter.HistPainter_DrawLego = function() {
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      var vertices = JSROOT.Painter.Box_Vertices;
-
-      var indicies = JSROOT.Painter.Box_Indexes;
-
-      // normals for each  pair of faces
-      var vnormals = JSROOT.Painter.Box_Normals;
-
-      // line segments
-      var segments = JSROOT.Painter.Box_Segments;
-
-      // reduced line segments
-      var rsegments = [0, 1, 1, 2, 2, 3, 3, 0];
-
-      // reduced vertices
-      var rvertices = [];
-      rvertices.push( new THREE.Vector3(0, 0, 0) );
-      rvertices.push( new THREE.Vector3(0, 1, 0) );
-      rvertices.push( new THREE.Vector3(1, 1, 0) );
-      rvertices.push( new THREE.Vector3(1, 0, 0) );
-
-      var axis_zmin = this.tz.domain()[0], axis_zmax = this.tz.domain()[1];
+      var vertices = JSROOT.Painter.Box_Vertices,
+          indicies = JSROOT.Painter.Box_Indexes,
+          vnormals = JSROOT.Painter.Box_Normals,
+          segments = JSROOT.Painter.Box_Segments,
+          // reduced line segments
+          rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
+          // reduced vertices
+          rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
+          axis_zmin = this.tz.domain()[0],
+          axis_zmax = this.tz.domain()[1],
+          hdim = this.Dimension();
 
       // create the bin cubes
-      var showmin = !this.options.Zero || (axis_zmin>0), hdim = this.Dimension();
+      var showmin = !this.options.Zero || (axis_zmin>0);
 
-      var i1 = this.GetSelectIndex("x", "left", 0),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0),
-          j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1),
+      var i1 = this.GetSelectIndex("x", "left", -1),
+          i2 = this.GetSelectIndex("x", "right", 2),
+          j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", -1),
+          j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 2),
           i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
@@ -1084,8 +1074,8 @@
          if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
          xx[i] = this.tx(x1);
 
-         if (xx[i] < -1.001*this.size3d) i1 = i+1;
-         if (xx[i] > 1.001*this.size3d) i2 = i-1;
+         if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
+         if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
       }
 
       if (hdim===1) {
@@ -1096,8 +1086,8 @@
             y1 = this.GetBinY(j);
             if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
             yy[j] = this.ty(y1);
-            if (yy[j] < -1.001*this.size3d) j1 = j+1;
-            if (yy[j] > 1.001*this.size3d) j2 = j-1;
+            if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
+            if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
          }
       }
 
@@ -1256,14 +1246,14 @@
             var p = this.painter,
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = p.tx(p.GetBinX(tip.ix-1));
-            tip.x2 = p.tx(p.GetBinX(tip.ix));
+            tip.x1 = Math.max(-p.size3d, p.tx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(p.size3d, p.tx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
                tip.y1 = p.ty(0);
                tip.y2 = p.ty(1);
             } else {
-               tip.y1 = p.ty(p.GetBinY(tip.iy-1));
-               tip.y2 = p.ty(p.GetBinY(tip.iy));
+               tip.y1 = Math.max(-p.size3d, p.ty(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(p.size3d, p.ty(p.GetBinY(tip.iy)));
             }
             tip.z1 = p.tz(this.zmin);
             tip.z2 = p.tz(this.zmax);
