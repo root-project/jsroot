@@ -11,10 +11,10 @@
    - better and faster build of composite shapes
 2. Improvements in histograms 3D drawing
    - all lego options: lego1..lego4, combined with 'fb', 'bb', '0' or 'z'
-   - support axis lebels on lego plots
+   - support axis labels on lego plots
    - support lego plots for TH1 
 3. Improvements in all 3D graphics
-   - upgrafe three.js to r79
+   - upgrade three.js to r79
    - use of THREE.BufferGeometry for all components
    - significant (up to factor 10) performance improvement
 4. Implement box and hbox draw options for TH1 class
