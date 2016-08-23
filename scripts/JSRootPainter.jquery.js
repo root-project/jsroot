@@ -464,7 +464,7 @@
                return this.ExecuteCommand(itemname, node.parentNode);
 
             var can_draw = ('func' in handle) || (hitem._can_draw === true),
-                can_expand = !hitem._childs && (hitem._more !== false) && (('expand' in handle) || (hitem._more === true));
+                can_expand = !hitem._childs && (hitem._more !== false) && (handle.noexpand === undefined) && (('expand' in handle) || (hitem._more === true));
 
             if (can_draw && can_expand) {
                // if default action specified as expand, disable drawing
@@ -564,12 +564,15 @@
          if (onlineprop != null) {
             painter.FillOnlineMenu(menu, onlineprop, itemname);
          } else {
-            var opts = JSROOT.getDrawOptions(hitem._kind, 'nosame');
+            var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
 
-            if (opts)
-               menu.addDrawMenu("Draw", opts, function(arg) { this.display(itemname, arg); });
+            // allow to draw item even if draw function is not defined
+            if (!sett.opts && hitem._can_draw) sett.opts = [""];
 
-            if (fileprop && opts) {
+            if (sett.opts)
+               menu.addDrawMenu("Draw", sett.opts, function(arg) { this.display(itemname, arg); });
+
+            if (fileprop && sett.opts) {
                var filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(JSROOT.source_dir) == 0)
                   filepath = filepath.slice(JSROOT.source_dir.length);
@@ -580,12 +583,12 @@
                   filepath += "&item=" + name;
                }
 
-               menu.addDrawMenu("Draw in new tab", opts, function(arg) {
+               menu.addDrawMenu("Draw in new tab", sett.opts, function(arg) {
                   window.open(JSROOT.source_dir + "index.htm?nobrowser&"+filepath +"&opt="+arg);
                });
             }
 
-            if (!('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
+            if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add("Expand", function() { painter.expand(itemname); });
          }
 

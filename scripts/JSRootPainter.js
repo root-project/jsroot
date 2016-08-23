@@ -9207,17 +9207,16 @@
 
    JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
 
-      var painter = this;
+      var painter = this,
+          node = this.Find(itemname),
+          sett = JSROOT.getDrawSettings(node._kind, 'nosame'),
+          handle = JSROOT.getDrawHandle(node._kind),
+          root_type = ('_kind' in node) ? node._kind.indexOf("ROOT.") == 0 : false;
 
-      var node = this.Find(itemname);
-      var opts = JSROOT.getDrawOptions(node._kind, 'nosame');
-      var handle = JSROOT.getDrawHandle(node._kind);
-      var root_type = ('_kind' in node) ? node._kind.indexOf("ROOT.") == 0 : false;
+      if (sett.opts)
+         menu.addDrawMenu("Draw", sett.opts, function(arg) { painter.display(itemname, arg); });
 
-      if (opts != null)
-         menu.addDrawMenu("Draw", opts, function(arg) { painter.display(itemname, arg); });
-
-      if ((node['_childs'] == null) && (node['_more'] || root_type))
+      if (sett.expand && !node._childs && (node._more || root_type))
          menu.add("Expand", function() { painter.expand(itemname); });
 
       if (handle && ('execute' in handle))
@@ -9230,11 +9229,11 @@
          separ = "&";
       }
 
-      if (opts != null)
-         menu.addDrawMenu("Draw in new window", opts, function(arg) { window.open(drawurl+separ+"opt=" +arg); });
+      if (sett.opts)
+         menu.addDrawMenu("Draw in new window", sett.opts, function(arg) { window.open(drawurl+separ+"opt=" +arg); });
 
-      if ((opts!=null) && (opts.length > 0) && root_type)
-         menu.addDrawMenu("Draw as png", opts, function(arg) {
+      if (sett.opts && (sett.opts.length > 0) && root_type)
+         menu.addDrawMenu("Draw as png", sett.opts, function(arg) {
             window.open(onlineprop.server + onlineprop.itemname + "/root.png?w=400&h=300&opt=" + arg);
          });
 
@@ -9916,8 +9915,8 @@
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true });
-   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true });
+   JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true, noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
@@ -10025,14 +10024,15 @@
       }
    }
 
-   // returns array with supported draw options for the specified class
-   JSROOT.getDrawOptions = function(kind, selector) {
-      if (typeof kind != 'string') return null;
-      var allopts = null, isany = false, noinspect = false;
+   JSROOT.getDrawSettings = function(kind, selector) {
+      var res = { opts: null, inspect: false, expand: false };
+      if (typeof kind != 'string') return res;
+      var allopts = null, isany = false, noinspect = false, noexpand = false;
       for (var cnt=0;cnt<1000;++cnt) {
          var h = JSROOT.getDrawHandle(kind, cnt);
          if (h==null) break;
          if (h.noinspect) noinspect = true;
+         if (h.noexpand) noexpand = true;
          if (!('func' in h)) break;
          isany = true;
          if (! ('opt' in h)) continue;
@@ -10041,24 +10041,32 @@
             opts[i] = opts[i].toLowerCase();
             if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
 
-            if (allopts===null) allopts = [];
-            if (allopts.indexOf(opts[i])<0) allopts.push(opts[i]);
+            if (res.opts===null) res.opts = [];
+            if (res.opts.indexOf(opts[i])<0) res.opts.push(opts[i]);
          }
       }
 
-      if (isany && (allopts===null)) allopts = [""];
+      if (isany && (res.opts===null)) res.opts = [""];
 
       // if no any handle found, let inspect ROOT-based objects
-      if (!isany && kind.indexOf("ROOT.")==0) allopts = [];
+      if (!isany && (kind.indexOf("ROOT.")==0) && !noinspect) res.opts = [];
 
-      if (!noinspect && allopts)
-         allopts.push("inspect");
+      if (!noinspect && res.opts)
+         res.opts.push("inspect");
 
-      return allopts;
+      res.inspect = !noinspect;
+      res.expand = !noexpand;
+
+      return res;
+   }
+
+   // returns array with supported draw options for the specified class
+   JSROOT.getDrawOptions = function(kind, selector) {
+      return JSROOT.getDrawSettings(kind).opts;
    }
 
    JSROOT.canDraw = function(classname) {
-      return JSROOT.getDrawOptions("ROOT." + classname) !== null;
+      return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
 
    /** @fn JSROOT.draw(divid, obj, opt)
