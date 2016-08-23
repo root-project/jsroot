@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Implement simple TTree::Draw over single leaf (#80)
+
+
 ## Changes in 4.6.0
 1. Improvements in TGeo drawings
    - support of large (~10M volumes) models, only most significant volumes are shown

@@ -7804,25 +7804,37 @@
       for ( var i = 0; i < obj.fBranches.arr.length; ++i) {
          var branch = obj.fBranches.arr[i],
              nb_leaves = branch.fLeaves.arr.length,
-             special = false;
+             leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
+             datasize = 0, datakind = 0;
 
          // display branch with only leaf as leaf
-         if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) {
-            if (node._parent._file && (branch.fLeaves.arr[0]._typename == 'TLeafF')) special = true;
-            nb_leaves = 0;
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName)) {
+            if (node._parent._file)
+               switch (leaf._typename) {
+                  case 'TLeafF' : datasize = 4; datakind = JSROOT.IO.kFloat; break;
+                  case 'TLeafD' : datasize = 8; datakind = JSROOT.IO.kDouble; break;
+                  case 'TLeafB' : datasize = 1; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+                  case 'TLeafS' : datasize = 2; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
+                  case 'TLeafI' : datasize = 4; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
+                  case 'TLeafL' : datasize = 8; datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+               };
          }
 
          var subitem = {
             _name : branch.fName,
-            _kind : nb_leaves > 0 ? "ROOT.TBranch" : "ROOT.TLeafF"
+            _kind : (datasize>0) ? "ROOT." + leaf._typename : "ROOT.TBranch",
+            _title : branch.fTitle
          }
 
-         if (special) {
+         if (datasize > 0) {
             // console.log('HAS file for branch', branch.fName);
 
             // subitem._obj = branch;
 
+            subitem._can_draw = true;
             subitem._branch = branch;
+            subitem._datakind = datakind;
+            subitem._datasize = datasize;
 
             subitem._get = function(item, itemname, callback, option) {
 
@@ -7848,7 +7860,7 @@
 
                      if (!basket || !basket.raw) return ReadNextBasket(-1);
 
-                     var arr = basket.raw.ReadFastArray(basket.raw.totalLength()/4, JSROOT.IO.kFloat);
+                     var arr = basket.raw.ReadFastArray(basket.raw.totalLength()/item._datasize, item._datakind);
 
                      if (histo === null) {
                         var xmin = Math.min.apply(null, arr),
@@ -7857,6 +7869,8 @@
                         histo = JSROOT.CreateTH1(100);
                         histo.fXaxis.fXmin = xmin;
                         histo.fXaxis.fXmax = xmax;
+                        histo.fName = "draw_" + item._name;
+                        histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
                      }
                      for (var n=0;n<arr.length;++n)
                         JSROOT.FillH1(histo, arr[n]);
@@ -7871,12 +7885,12 @@
 
          node._childs.push(subitem);
 
-         if (nb_leaves > 0) {
+         if ((nb_leaves > 0) && (datasize === 0)) {
             subitem._childs = [];
             for (var j = 0; j < nb_leaves; ++j) {
                var leafitem = {
                   _name : branch.fLeaves.arr[j].fName,
-                  _kind : "ROOT.TLeafF"
+                  _kind : "ROOT." + branch.fLeaves.arr[j]._typename
                }
                subitem._childs.push(leafitem);
             }
@@ -8409,8 +8423,9 @@
    }
 
    JSROOT.HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
-      if (item == null) return false;
+      if (!item) return false;
       if ('_player' in item) return true;
+      if (item._can_draw === true) return true;
       if (drawopt == 'inspect') return true;
       var handle = JSROOT.getDrawHandle(item._kind, drawopt);
       return (handle!=null) && ('func' in handle);

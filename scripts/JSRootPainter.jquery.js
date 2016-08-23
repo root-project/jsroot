@@ -463,8 +463,8 @@
             if ('execute' in handle)
                return this.ExecuteCommand(itemname, node.parentNode);
 
-            var can_draw = 'func' in handle,
-                can_expand = ('expand' in handle) && (hitem._childs == null);
+            var can_draw = ('func' in handle) || (hitem._can_draw === true),
+                can_expand = !hitem._childs && (hitem._more !== false) && (('expand' in handle) || (hitem._more === true));
 
             if (can_draw && can_expand) {
                // if default action specified as expand, disable drawing
