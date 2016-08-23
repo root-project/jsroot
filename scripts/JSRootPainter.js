@@ -7808,7 +7808,7 @@
 
          // display branch with only leaf as leaf
          if (nb_leaves == 1 && branch.fLeaves.arr[0].fName == branch.fName) {
-            // if (node._parent._file) special = true;
+            if (node._parent._file && (branch.fLeaves.arr[0]._typename == 'TLeafF')) special = true;
             nb_leaves = 0;
          }
 
@@ -7818,7 +7818,7 @@
          }
 
          if (special) {
-            console.log('HAS file for branch', branch.fName);
+            // console.log('HAS file for branch', branch.fName);
 
             // subitem._obj = branch;
 
@@ -7827,15 +7827,45 @@
             subitem._get = function(item, itemname, callback, option) {
 
                var b = item._branch,
-                   f = item._parent._parent._file;
+                   f = item._parent._parent._file,
+                   histo = null;
 
-               f.ReadBasket(b.fBasketSeek[0], b.fBasketBytes[0], function(basket) {
+               if (option==='inspect')
+                  return JSROOT.CallBack(callback, item, b);
 
-                  if (basket && basket.raw) console.log('raw basket data', basket.raw.totalLength());
+               function ReadNextBasket(indx) {
+                  if ((indx<0) || (indx >= b.fMaxBaskets) || (b.fBasketBytes[indx] === 0)) {
+                     JSROOT.progress();
+                     return JSROOT.CallBack(callback, item, histo);
+                  }
 
-                  JSROOT.CallBack(callback, item, null);
-               });
+                  var maxindx = b.fWriteBasket || b.fMaxBaskets;
+                  if (maxindx<=0) maxindx = 1;
 
+                  JSROOT.progress("TTree draw " + Math.round((indx/maxindx*100)) + " %");
+
+                  f.ReadBasket(b.fBasketSeek[indx], b.fBasketBytes[indx], function(basket) {
+
+                     if (!basket || !basket.raw) return ReadNextBasket(-1);
+
+                     var arr = basket.raw.ReadFastArray(basket.raw.totalLength()/4, JSROOT.IO.kFloat);
+
+                     if (histo === null) {
+                        var xmin = Math.min.apply(null, arr),
+                        xmax = Math.max.apply(null, arr);
+
+                        histo = JSROOT.CreateTH1(100);
+                        histo.fXaxis.fXmin = xmin;
+                        histo.fXaxis.fXmax = xmax;
+                     }
+                     for (var n=0;n<arr.length;++n)
+                        JSROOT.FillH1(histo, arr[n]);
+
+                     ReadNextBasket(indx+1);
+                  });
+               }
+
+               ReadNextBasket(0);
             }
          }
 

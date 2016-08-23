@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 22/08/2016";
+   JSROOT.version = "dev 23/08/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1196,9 +1196,18 @@
       if (nbinsx!==undefined) {
          histo.fNcells = nbinsx+2;
          for (var i=0;i<histo.fNcells;++i) histo.fArray.push(0);
-         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0,  fXmax: nbinsx });
+         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
       }
       return histo;
+   }
+
+   JSROOT.FillH1 = function(histo, x, weight) {
+      var bin = Math.floor((x - histo.fXaxis.fXmin) / (histo.fXaxis.fXmax - histo.fXaxis.fXmin) * (histo.fNcells-2));
+
+      if (bin < 0) bin = -1; else
+      if (bin > histo.fNcells-2) bin = histo.fNcells-2;
+
+      histo.fArray[bin+1] += ((weight===undefined) ? 1 : weight);
    }
 
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
