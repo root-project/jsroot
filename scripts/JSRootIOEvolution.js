@@ -272,6 +272,11 @@
       return array;
    }
 
+   JSROOT.TBuffer.prototype.can_extract = function(off,len) {
+      return off+len <= this.totalLength();
+   }
+
+
    JSROOT.IO.GetArrayKind = function(type_name) {
       // returns type of array
       // 0 - if TString (or equivalent)
@@ -896,12 +901,12 @@
             return JSROOT.CallBack(readkeys_callback, null);
 
          file.ReadBuffer(thisdir.fSeekKeys, thisdir.fNbytesKeys, function(blob2) {
-            if (blob2 == null) return JSROOT.CallBack(readkeys_callback, null);
+            if (!blob2) return JSROOT.CallBack(readkeys_callback, null);
             var buf = JSROOT.CreateTBuffer(blob2, 0, file);
 
             var key = file.ReadKey(buf);
-
             var nkeys = buf.ntoi4();
+
             for (var i = 0; i < nkeys; ++i) {
                key = file.ReadKey(buf);
                thisdir.fKeys.push(key);
@@ -993,19 +998,17 @@
       } else {
          var file = this;
 
-         var xhr = JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
+         JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
             if (res==null)
                return JSROOT.CallBack(newfile_callback, null);
 
             var accept_ranges = res.getResponseHeader("Accept-Ranges");
-            if (accept_ranges==null) file.fAcceptRanges = false;
+            if (!accept_ranges) file.fAcceptRanges = false;
             var len = res.getResponseHeader("Content-Length");
-            if (len!=null) file.fEND = parseInt(len);
-            else file.fAcceptRanges = false;
+            if (len) file.fEND = parseInt(len);
+                else file.fAcceptRanges = false;
             file.ReadKeys(newfile_callback);
-         });
-
-         xhr.send(null);
+         }).send(null);
       }
 
       return this;
@@ -1013,7 +1016,7 @@
 
    JSROOT.TFile.prototype.ReadBuffer = function(off, len, callback) {
 
-      if ((this.fFileContent!=null) && (!this.fAcceptRanges || (off+len <= this.fFileContent.totalLength())))
+      if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(off,len)))
          return callback(this.fFileContent.extract(off, len));
 
       var file = this, url = this.fURL;
@@ -1026,7 +1029,7 @@
 
       function read_callback(res) {
 
-         if ((res==null) && file.fUseStampPar && (off==0)) {
+         if (!res && file.fUseStampPar && (off===0)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
             var xhr2 = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
@@ -1035,7 +1038,7 @@
             xhr2.send(null);
             return;
          } else
-         if ((res!=null) && (off==0) && (file.fFileContent == null)) {
+         if (res && (off===0) && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
             file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
