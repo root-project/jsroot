@@ -1321,25 +1321,6 @@
    }
 
 
-   JSROOT.TFile.prototype.ReadStreamerInfos = function(si_callback) {
-      if (this.fSeekInfo == 0 || this.fNbytesInfo == 0) return si_callback(null);
-
-      var file = this;
-
-      this.ReadBuffer([this.fSeekInfo, file.fNbytesInfo], function(blob5) {
-         var buf5 = JSROOT.CreateTBuffer(blob5, 0, file);
-
-         var key = buf5.ReadTKey();
-         if (!key) return si_callback(null);
-         file.fKeys.push(key);
-
-         file.ReadObjBuffer(key, function(blob6) {
-            if (blob6) file.ExtractStreamerInfos(blob6);
-            si_callback(file);
-         });
-      });
-   }
-
    JSROOT.TFile.prototype.ReadKeys = function(readkeys_callback) {
       // read keys only in the root file
 
@@ -1430,7 +1411,24 @@
                var nkeys = buf4.ntoi4();
                for (var i = 0; i < nkeys; ++i)
                   file.fKeys.push(buf4.ReadTKey());
-               file.ReadStreamerInfos(readkeys_callback);
+
+               if (file.fSeekInfo == 0 || file.fNbytesInfo == 0) return readkeys_callback(file);
+
+               file.ReadBuffer([file.fSeekInfo, file.fNbytesInfo], function(blob5) {
+                  var buf5 = JSROOT.CreateTBuffer(blob5, 0, file);
+
+                  var key = buf5.ReadTKey();
+                  if (!key) return readkeys_callback(file);
+
+                  file.fKeys.push(key);
+
+                  file.ReadObjBuffer(key, function(blob6) {
+                     if (blob6) file.ExtractStreamerInfos(blob6);
+                     readkeys_callback(file);
+                  });
+                  delete buf5;
+               });
+
                delete buf4;
             });
             delete buf3;
