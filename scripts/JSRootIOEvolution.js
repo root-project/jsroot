@@ -273,9 +273,10 @@
    }
 
    JSROOT.TBuffer.prototype.can_extract = function(place) {
-      return place[0] + place[1] <= this.totalLength();
+      for (var n=0;n<place.length;n+=2)
+        if (place[n] + place[n+1] > this.totalLength()) return false;
+      return true;
    }
-
 
    JSROOT.IO.GetArrayKind = function(type_name) {
       // returns type of array
@@ -484,7 +485,10 @@
    }
 
    JSROOT.TStrBuffer.prototype.extract = function(place) {
-      return this.b.substr(place[0], place[1]);
+      var res = this.b.substr(place[0], place[1]);
+      for (var n=2;n<place.length;n+=2)
+         res += this.b.substr(place[n], place[n+1]);
+      return res;
    }
 
    JSROOT.TStrBuffer.prototype.ntou1 = function() {
@@ -714,8 +718,26 @@
    }
 
    JSROOT.TArrBuffer.prototype.extract = function(place) {
-      if (!this.arr || !this.arr.buffer || (this.arr.buffer.byteLength < place[0] + place[1])) return null;
-      return new DataView(this.arr.buffer, place[0], place[1]);
+      if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
+      if (place.length===2) return new DataView(this.arr.buffer, place[0], place[1]);
+      var totallen = 0;
+      for (var n=0;n<place.length;n+=2)
+         totallen += place[n+1];
+
+      // to collect segments together, we create new buffer and copy content
+      // not very efficient, but should work
+      var buffer = new ArrayBuffer(totallen);
+      for (var n=0;n<place.length;n+=2) {
+
+         var tgt = new Uint8Array(buffer, totallen, place[n+1]),
+             src = new Uint8Array(this.arr.buffer, place[n], place[n+1]);
+
+         for (var k=0;k<place[n+1];++k) tgt[k] = src[k];
+
+         totallen += place[n+1];
+      }
+
+      return new DataView(buffer);
    }
 
    JSROOT.TArrBuffer.prototype.codeAt = function(pos) {
@@ -1019,7 +1041,11 @@
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
 
-      var file = this, url = this.fURL;
+      var file = this, url = this.fURL, ranges = "bytes=";
+      for (var n=0;n<place.length;n+=2) {
+         if (n>0) ranges+=","
+         ranges += place[n] + "-" + (place[n] + place[n+1] - 1);
+      }
 
       if (this.fUseStampPar) {
          // try to avoid browser caching by adding stamp parameter to URL
@@ -1033,8 +1059,7 @@
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
             var xhr2 = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
-            if (file.fAcceptRanges)
-               xhr2.setRequestHeader("Range", "bytes=" + off + "-" + (off + len - 1));
+            if (file.fAcceptRanges) xhr2.setRequestHeader("Range", ranges);
             xhr2.send(null);
             return;
          } else
@@ -1057,8 +1082,7 @@
       }
 
       var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
-      if (this.fAcceptRanges)
-         xhr.setRequestHeader("Range", "bytes=" + place[0] + "-" + (place[0] + place[1] - 1));
+      if (this.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
       xhr.send(null);
    }
 
