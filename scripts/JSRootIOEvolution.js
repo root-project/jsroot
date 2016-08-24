@@ -272,8 +272,8 @@
       return array;
    }
 
-   JSROOT.TBuffer.prototype.can_extract = function(off,len) {
-      return off+len <= this.totalLength();
+   JSROOT.TBuffer.prototype.can_extract = function(place) {
+      return place[0] + place[1] <= this.totalLength();
    }
 
 
@@ -483,8 +483,8 @@
       return this.b ? this.b.length : 0;
    }
 
-   JSROOT.TStrBuffer.prototype.extract = function(off,len) {
-      return this.b.substr(off, len);
+   JSROOT.TStrBuffer.prototype.extract = function(place) {
+      return this.b.substr(place[0], place[1]);
    }
 
    JSROOT.TStrBuffer.prototype.ntou1 = function() {
@@ -713,9 +713,9 @@
       return this.arr && this.arr.buffer ? this.arr.buffer.byteLength : 0;
    }
 
-   JSROOT.TArrBuffer.prototype.extract = function(off,len) {
-      if (!this.arr || !this.arr.buffer || (this.arr.buffer.byteLength < off+len)) return null;
-      return new DataView(this.arr.buffer, off,  len);
+   JSROOT.TArrBuffer.prototype.extract = function(place) {
+      if (!this.arr || !this.arr.buffer || (this.arr.buffer.byteLength < place[0] + place[1])) return null;
+      return new DataView(this.arr.buffer, place[0], place[1]);
    }
 
    JSROOT.TArrBuffer.prototype.codeAt = function(pos) {
@@ -876,7 +876,7 @@
       // assume that the file may be above 2 Gbytes if file version is > 4
       if (file.fVersion >= 40000) nbytes += 12;
 
-      file.ReadBuffer(this.fSeekDir, nbytes, function(blob1) {
+      file.ReadBuffer([this.fSeekDir, nbytes], function(blob1) {
          if (blob1==null) return JSROOT.CallBack(readkeys_callback,null);
          var buf = JSROOT.CreateTBuffer(blob1, thisdir.fNbytesName, file);
 
@@ -900,7 +900,7 @@
          if (thisdir.fSeekKeys <=0)
             return JSROOT.CallBack(readkeys_callback, null);
 
-         file.ReadBuffer(thisdir.fSeekKeys, thisdir.fNbytesKeys, function(blob2) {
+         file.ReadBuffer([thisdir.fSeekKeys, thisdir.fNbytesKeys], function(blob2) {
             if (!blob2) return JSROOT.CallBack(readkeys_callback, null);
             var buf = JSROOT.CreateTBuffer(blob2, 0, file);
 
@@ -1014,10 +1014,10 @@
       return this;
    }
 
-   JSROOT.TFile.prototype.ReadBuffer = function(off, len, callback) {
+   JSROOT.TFile.prototype.ReadBuffer = function(place, callback) {
 
-      if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(off,len)))
-         return callback(this.fFileContent.extract(off, len));
+      if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
+         return callback(this.fFileContent.extract(place));
 
       var file = this, url = this.fURL;
 
@@ -1029,7 +1029,7 @@
 
       function read_callback(res) {
 
-         if (!res && file.fUseStampPar && (off===0)) {
+         if (!res && file.fUseStampPar && (place[0]===0) && (place.length===2)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
             var xhr2 = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
@@ -1038,7 +1038,7 @@
             xhr2.send(null);
             return;
          } else
-         if (res && (off===0) && !file.fFileContent) {
+         if (res && (place[0]===0) && (place.length===2) && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
             file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
@@ -1046,7 +1046,7 @@
             if (!file.fAcceptRanges)
                file.fEND = file.fFileContent.totalLength();
 
-            return callback(file.fFileContent.extract(off, len));
+            return callback(file.fFileContent.extract(place));
          }
 
          if ((res==null) || (res === undefined) || (typeof res == 'string'))
@@ -1058,7 +1058,7 @@
 
       var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
       if (this.fAcceptRanges)
-         xhr.setRequestHeader("Range", "bytes=" + off + "-" + (off + len - 1));
+         xhr.setRequestHeader("Range", "bytes=" + place[0] + "-" + (place[0] + place[1] - 1));
       xhr.send(null);
    }
 
@@ -1074,7 +1074,7 @@
 
       var file = this;
 
-      this.ReadBuffer(off, size, function(blob) {
+      this.ReadBuffer([off, size], function(blob) {
 
          if (!blob) JSROOT.CallBack(call_back, null);
 
@@ -1158,7 +1158,7 @@
 
       var file = this;
 
-      this.ReadBuffer(key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen, function(blob1) {
+      this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen], function(blob1) {
 
          if (blob1==null) callback(null);
 
@@ -1282,7 +1282,7 @@
 
       var file = this;
 
-      this.ReadBuffer(this.fSeekInfo, file.fNbytesInfo, function(blob1) {
+      this.ReadBuffer([this.fSeekInfo, file.fNbytesInfo], function(blob1) {
          var buf = JSROOT.CreateTBuffer(blob1, 0, file);
          var key = file.ReadKey(buf);
          if (key == null) return si_callback(null);
@@ -1302,7 +1302,7 @@
       var file = this;
 
       // with the first readbuffer we read bigger amount to create header cache
-      this.ReadBuffer(0, 1024, function(blob) {
+      this.ReadBuffer([0, 1024], function(blob) {
          if (blob==null) return JSROOT.CallBack(readkeys_callback, null);
 
          var buf = JSROOT.CreateTBuffer(blob, 0, file);
@@ -1349,7 +1349,7 @@
          // assume that the file may be above 2 Gbytes if file version is > 4
          if (file.fVersion >= 40000) nbytes += 12;
 
-         file.ReadBuffer(file.fBEGIN, Math.max(300, nbytes), function(blob3) {
+         file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)], function(blob3) {
             if (blob3==null) return JSROOT.CallBack(readkeys_callback, null);
 
             var buf3 = JSROOT.CreateTBuffer(blob3, file.fNbytesName, file);
@@ -1377,7 +1377,7 @@
                return JSROOT.CallBack(readkeys_callback, null);
             }
 
-            file.ReadBuffer(file.fSeekKeys, file.fNbytesKeys, function(blob4) {
+            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys], function(blob4) {
 
                if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
 
