@@ -7860,7 +7860,7 @@
 
                      if (!basket || !basket.raw) return ReadNextBasket(-1);
 
-                     var arr = basket.raw.ReadFastArray(basket.raw.totalLength()/item._datasize, item._datakind);
+                     var arr = basket.raw.ReadFastArray(basket.fObjlen/item._datasize, item._datakind);
 
                      if (histo === null) {
                         var xmin = Math.min.apply(null, arr),
