@@ -631,76 +631,76 @@
    JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
       // read array of n values from the I/O buffer
 
-      if (!JSROOT.IO.NativeArray)
-         return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
-
-      var array, i;
+      var array, i = 0, o = this.o, view = this.arr;
       switch (array_type) {
          case JSROOT.IO.kDouble:
             array = new Float64Array(n);
-            for (i = 0; i < n; ++i, this.o+=8)
-               array[i] = this.arr.getFloat64(this.o);
+            for (; i < n; ++i, o+=8)
+               array[i] = view.getFloat64(o);
             break;
          case JSROOT.IO.kFloat:
          case JSROOT.IO.kDouble32:
             array = new Float32Array(n);
-            for (i = 0; i < n; ++i, this.o+=4)
-               array[i] = this.arr.getFloat32(this.o);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getFloat32(o);
             break;
          case JSROOT.IO.kLong:
          case JSROOT.IO.kLong64:
             array = new Float64Array(n);
-            for (i = 0; i < n; ++i)
+            for (; i < n; ++i)
                array[i] = this.ntoi8();
-            break;
+            return array; // exit here to avoid conflicts
          case JSROOT.IO.kULong:
          case JSROOT.IO.kULong64:
             array = new Float64Array(n);
-            for (i = 0; i < n; ++i)
+            for (; i < n; ++i)
                array[i] = this.ntou8();
-            break;
+            return array; // exit here to avoid conflicts
          case JSROOT.IO.kInt:
             array = new Int32Array(n);
-            for (i = 0; i < n; ++i, this.o+=4)
-               array[i] = this.arr.getInt32(this.o);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getInt32(o);
             break;
          case JSROOT.IO.kUInt:
             array = new Uint32Array(n);
-            for (i = 0; i < n; ++i, this.o+=4)
-               array[i] = this.arr.getUint32(this.o);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getUint32(o);
             break;
          case JSROOT.IO.kShort:
             array = new Int16Array(n);
-            for (i = 0; i < n; ++i, this.o+=2)
-               array[i] = this.arr.getInt16(this.o);
+            for (; i < n; ++i, o+=2)
+               array[i] = view.getInt16(o);
             break;
          case JSROOT.IO.kUShort:
             array = new Uint16Array(n);
-            for (i = 0; i < n; ++i, this.o+=2)
-               array[i] = this.arr.getUint16(this.o);
+            for (; i < n; ++i, o+=2)
+               array[i] = view.getUint16(o);
             break;
          case JSROOT.IO.kChar:
             array = new Int8Array(n);
-            for (i = 0; i < n; ++i)
-               array[i] = this.arr.getInt8(this.o++);
+            for (; i < n; ++i)
+               array[i] = view.getInt8(o++);
             break;
          case JSROOT.IO.kBool:
          case JSROOT.IO.kUChar:
             array = new Uint8Array(n);
-            for (i = 0; i < n; ++i)
-               array[i] = this.arr.getUint8(this.o++);
+            for (; i < n; ++i)
+               array[i] = view.getUint8(o++);
             break;
          case JSROOT.IO.kTString:
             array = new Array(n);
-            for (i = 0; i < n; ++i)
+            for (; i < n; ++i)
                array[i] = this.ReadTString();
-            break;
+            return array; // exit here to avoid conflicts
          default:
             array = new Uint32Array(n);
-            for (i = 0; i < n; ++i, this.o+=4)
-               array[i] = this.arr.getUint32(this.o);
-         break;
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getUint32(o);
+            break;
       }
+
+      this.o = o;
+
       return array;
    }
 
