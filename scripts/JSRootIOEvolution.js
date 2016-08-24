@@ -335,27 +335,6 @@
       return true;
    }
 
-   JSROOT.TBuffer.prototype.SkipMultipartTerminator = function() {
-      // method skips different headers due to multipart message
-
-      var o = this.o, nline = 0, line = "";
-
-      while((o < this.length-1) && (nline<5)) {
-         var code1 = this.codeAt(o), code2 = this.codeAt(o+1);
-
-         if ((code1==13) && (code2==10)) {
-            nline++; o++;
-            // console.log('saw line', line);
-            line = "";
-         } else {
-            line += String.fromCharCode(code1);
-         }
-         o++;
-      }
-
-      this.o = o;
-   }
-
    JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
       this.ReadTKey(obj);
       var ver = this.ReadVersion();
@@ -501,9 +480,11 @@
 
    JSROOT.TStrBuffer.prototype.extract = function(place) {
       var res = this.b.substr(place[0], place[1]);
+      if (places.length===2) return res;
+      res = [res];
       for (var n=2;n<place.length;n+=2)
-         res += this.b.substr(place[n], place[n+1]);
-      return res;
+         res.push(this.b.substr(place[n], place[n+1]));
+      return res; // return array of strings for each part of the request
    }
 
    JSROOT.TStrBuffer.prototype.ntou1 = function() {
@@ -733,24 +714,13 @@
    JSROOT.TArrBuffer.prototype.extract = function(place) {
       if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
       if (place.length===2) return new DataView(this.arr.buffer, place[0], place[1]);
-      var totallen = 0;
+
+      var res = [];
+
       for (var n=0;n<place.length;n+=2)
-         totallen += place[n+1];
+         res.push(new DataView(this.arr.buffer, place[n], place[n+1]));
 
-      // to collect segments together, we create new buffer and copy content
-      // not very efficient, but should work
-      var buffer = new ArrayBuffer(totallen);
-      for (var n=0;n<place.length;n+=2) {
-
-         var tgt = new Uint8Array(buffer, totallen, place[n+1]),
-             src = new Uint8Array(this.arr.buffer, place[n], place[n+1]);
-
-         for (var k=0;k<place[n+1];++k) tgt[k] = src[k];
-
-         totallen += place[n+1];
-      }
-
-      return new DataView(buffer);
+      return res; // return array of buffers
    }
 
    JSROOT.TArrBuffer.prototype.codeAt = function(pos) {
@@ -1087,11 +1057,44 @@
             return callback(file.fFileContent.extract(place));
          }
 
-         if ((res==null) || (res === undefined) || (typeof res == 'string'))
-            return callback(res);
+         if ((res === null) || (res === undefined)) return callback(res);
+
+         if (typeof res == 'string') {
+            // obsolete string format, can be skipped soon
+            if (place.length===2) return callback(res);
+            var buf = JSROOT.CreateTBuffer(res);
+            return callback(buf.extract(place));
+         }
 
          // return data view with binary data
-         callback(new DataView(res));
+         if (place.length===2) return callback(new DataView(res));
+
+         // multipart messages requires special handling
+
+         var arr = [], view = new DataView(res), o = 0, nline = 0, line = "";
+
+         for (var n=0;n<place.length;n+=2) {
+
+            while((o < view.byteLength-1) && (nline<5)) {
+               var code1 = view.getUint8(o), code2 = view.getUint8(o+1);
+
+               if ((code1==13) && (code2==10)) {
+                  // console.log('saw line', line);
+                  nline++; o++; line = "";
+               } else {
+                  line += String.fromCharCode(code1);
+               }
+               o++;
+            }
+
+            nline = 0;
+
+            arr.push(new DataView(res, o, place[n+1]));
+
+            o+= place[n+1];
+         }
+
+         callback(arr);
       }
 
       var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
@@ -1111,19 +1114,17 @@
 
       var file = this;
 
-      this.ReadBuffer(places, function(blob) {
+      this.ReadBuffer(places, function(blobs) {
 
-         if (!blob) JSROOT.CallBack(call_back, null);
-
-         var buf = JSROOT.CreateTBuffer(blob, 0, file);
+         if (!blobs) JSROOT.CallBack(call_back, null);
 
          var baskets = [];
 
          for (var n=0;n<places.length;n+=2) {
 
-            var basket = {};
+            var basket = {}, blob = (places.length > 2) ? blobs[n/2] : blobs;
 
-            if (places.length > 2) buf.SkipMultipartTerminator();
+            var buf = JSROOT.CreateTBuffer(blob);
 
             buf.ReadTBasket(basket);
 
@@ -1133,17 +1134,13 @@
 
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                // use data from original blob
-               basket.raw = JSROOT.CreateTBuffer(blob, buf.o, file, buf.o + basket.fObjlen);
+               basket.raw = buf;
             } else {
                // unpack data and create new blob
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
                if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, file);
             }
-
-            buf.shift(basket.fNbytes - basket.fKeylen);
-
-//            console.log('buf.o', buf.o, 'nbytes', basket.fNbytes);
 
             baskets.push(basket);
          }

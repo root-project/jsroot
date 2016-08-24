@@ -7861,8 +7861,6 @@
                      return JSROOT.CallBack(callback, item, histo);
                   }
 
-                  console.log(totalsz, 'places', places);
-
                   var maxindx = b.fWriteBasket || b.fMaxBaskets;
                   if (maxindx<=0) maxindx = 1;
 
