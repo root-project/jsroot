@@ -345,7 +345,7 @@
 
          if ((code1==13) && (code2==10)) {
             nline++; o++;
-            console.log('saw line', line)
+            // console.log('saw line', line);
             line = "";
          } else {
             line += String.fromCharCode(code1);
@@ -1127,7 +1127,7 @@
 
             buf.ReadTBasket(basket);
 
-            console.log('buf.o', buf.o,'keylen', basket.fKeylen);
+//            console.log('buf.o', buf.o,'keylen', basket.fKeylen);
 
             if (basket.fNbytes !== places[n+1]) console.log('mismatch in basket sizes', basket.fNbytes, places[n+1]);
 
@@ -1143,7 +1143,7 @@
 
             buf.shift(basket.fNbytes - basket.fKeylen);
 
-            console.log('buf.o', buf.o, 'nbytes', basket.fNbytes);
+//            console.log('buf.o', buf.o, 'nbytes', basket.fNbytes);
 
             baskets.push(basket);
          }

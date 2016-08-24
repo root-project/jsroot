@@ -591,8 +591,6 @@
                return callback(filecontent);
             }
 
-            console.log('RETURN', xhr.response.byteLength, ' typeof ', typeof xhr.response);
-
             callback(xhr.response);
          }
 
