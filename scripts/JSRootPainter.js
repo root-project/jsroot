@@ -7813,6 +7813,7 @@
                switch (leaf._typename) {
                   case 'TLeafF' : datasize = 4; datakind = JSROOT.IO.kFloat; break;
                   case 'TLeafD' : datasize = 8; datakind = JSROOT.IO.kDouble; break;
+                  case 'TLeafO' : datasize = 1; datakind = JSROOT.IO.kBool; break;
                   case 'TLeafB' : datasize = 1; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
                   case 'TLeafS' : datasize = 2; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
                   case 'TLeafI' : datasize = 4; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
@@ -7867,6 +7868,8 @@
                      if (histo === null) {
                         var xmin = Math.min.apply(null, arr),
                             xmax = Math.max.apply(null, arr);
+
+                        if (xmin>=xmax) xmax = xmin + 1;
 
                         histo = JSROOT.CreateTH1(100);
                         histo.fXaxis.fXmin = xmin;
