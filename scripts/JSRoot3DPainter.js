@@ -829,10 +829,15 @@
       if (zgridx && (zgridx.length > 0)) {
 
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2 } );
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
 
-         var geom =  new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridx), 3 ) );
+         //var geom =  new THREE.BufferGeometry();
+         //geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridx), 3 ) );
+         var geom =  new THREE.Geometry();
+         for(i = 0; i < zgridx.length; i += 3 ){
+            geom.vertices.push( new THREE.Vector3( zgridx[i], zgridx[i+1], zgridx[i+2]) );
+         }
+         geom.computeLineDistances();
 
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(0,grmaxy,0);
@@ -850,10 +855,15 @@
       if (zgridy && (zgridy.length > 0)) {
 
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 10, gapSize: 2  } );
+         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
 
-         var geom =  new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridy), 3 ) );
+         //var geom =  new THREE.BufferGeometry();
+         //geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridy), 3 ) );
+         var geom =  new THREE.Geometry();
+         for(i = 0; i < zgridy.length; i += 3 ){
+            geom.vertices.push( new THREE.Vector3( zgridy[i], zgridy[i+1], zgridy[i+2]) );
+         }
+         geom.computeLineDistances();
 
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(grmaxx,0, 0);
