@@ -113,7 +113,8 @@
 
    JSROOT.TBuffer = function(_o, _file) {
       this._typename = "TBuffer";
-      this.o = (_o==null) ? 0 : _o;
+      this.o = (_o !== undefined) ? _o : 0;
+      this.length = 0;
       this.fFile = _file;
       this.ClearObjectMap();
       this.fTagOffset = 0;
@@ -179,8 +180,8 @@
 
    JSROOT.TBuffer.prototype.ReadString = function() {
       // read a null-terminated string from buffer
-      var pos0 = this.o, len = this.totalLength();
-      while (this.o < len) {
+      var pos0 = this.o;
+      while (this.o < this.length) {
          if (this.codeAt(this.o++) == 0) break;
       }
       return (this.o > pos0) ? this.substring(pos0, this.o-1) : "";
@@ -274,7 +275,7 @@
 
    JSROOT.TBuffer.prototype.can_extract = function(place) {
       for (var n=0;n<place.length;n+=2)
-        if (place[n] + place[n+1] > this.totalLength()) return false;
+        if (place[n] + place[n+1] > this.length) return false;
       return true;
    }
 
@@ -334,7 +335,28 @@
       return true;
    }
 
-   JSROOT.TBuffer.prototype.ReadTBasket = function(obj,real_read) {
+   JSROOT.TBuffer.prototype.SkipMultipartTerminator = function() {
+      // method skips different headers due to multipart message
+
+      var o = this.o, nline = 0, line = "";
+
+      while((o < this.length-1) && (nline<5)) {
+         var code1 = this.codeAt(o), code2 = this.codeAt(o+1);
+
+         if ((code1==13) && (code2==10)) {
+            nline++; o++;
+            console.log('saw line', line)
+            line = "";
+         } else {
+            line += String.fromCharCode(code1);
+         }
+         o++;
+      }
+
+      this.o = o;
+   }
+
+   JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
       this.ReadTKey(obj);
       var ver = this.ReadVersion();
       obj.fBufferSize = this.ntoi4();
@@ -346,17 +368,13 @@
 
       if ((flag!==0) && ((flag % 10) != 2)) {
          var sz = this.ntoi4();
-         if (real_read && (sz>0))
-            obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
-         else
-            this.shift(sz*4);
+         // obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
+         this.shift(sz*4);
 
          if (flag>40) {
             sz = this.ntoi4();
-            if (real_read && (sz>0))
-               obj.fDisplacement = this.ReadFastArray(sz, JSROOT.IO.kInt);
-            else
-               this.shift(sz*4);
+            //   obj.fDisplacement = this.ReadFastArray(sz, JSROOT.IO.kInt);
+            this.shift(sz*4);
          }
       }
 
@@ -467,22 +485,19 @@
          JSROOT.addMethods(obj);
       }
 
-
       return obj;
    }
 
    // =================================================================================
 
-   JSROOT.TStrBuffer = function(str, pos, file) {
+   JSROOT.TStrBuffer = function(str, pos, file, length) {
       JSROOT.TBuffer.call(this, pos, file);
       this.b = str;
+      if (length!==undefined) this.length = length; else
+      if (str) this.length = str.length;
    }
 
    JSROOT.TStrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
-
-   JSROOT.TStrBuffer.prototype.totalLength = function() {
-      return this.b ? this.b.length : 0;
-   }
 
    JSROOT.TStrBuffer.prototype.extract = function(place) {
       var res = this.b.substr(place[0], place[1]);
@@ -629,10 +644,12 @@
 
    // =======================================================================
 
-   JSROOT.TArrBuffer = function(arr, pos, file) {
+   JSROOT.TArrBuffer = function(arr, pos, file, length) {
       // buffer should work with DataView as first argument
-      JSROOT.TBuffer.call(this, pos, file);
+      JSROOT.TBuffer.call(this, pos, file, length);
       this.arr = arr;
+      if (length!==undefined) this.length = length; else
+      if (arr && arr.buffer) this.length = arr.buffer.byteLength;
    }
 
    JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
@@ -711,10 +728,6 @@
       this.o = o;
 
       return array;
-   }
-
-   JSROOT.TArrBuffer.prototype.totalLength = function() {
-      return this.arr && this.arr.buffer ? this.arr.buffer.byteLength : 0;
    }
 
    JSROOT.TArrBuffer.prototype.extract = function(place) {
@@ -804,11 +817,11 @@
 
    // =======================================================================
 
-   JSROOT.CreateTBuffer = function(blob, pos, file) {
+   JSROOT.CreateTBuffer = function(blob, pos, file, length) {
       if ((blob==null) || (typeof(blob) == 'string'))
-         return new JSROOT.TStrBuffer(blob, pos, file);
+         return new JSROOT.TStrBuffer(blob, pos, file, length);
 
-      return new JSROOT.TArrBuffer(blob, pos, file);
+      return new JSROOT.TArrBuffer(blob, pos, file, length);
    }
 
    JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
@@ -1044,7 +1057,7 @@
       var file = this, url = this.fURL, ranges = "bytes=";
       for (var n=0;n<place.length;n+=2) {
          if (n>0) ranges+=","
-         ranges += place[n] + "-" + (place[n] + place[n+1] - 1);
+         ranges += (place[n] + "-" + (place[n] + place[n+1] - 1));
       }
 
       if (this.fUseStampPar) {
@@ -1069,7 +1082,7 @@
             file.fFileContent = JSROOT.CreateTBuffer((typeof res == 'string') ? res : new DataView(res));
 
             if (!file.fAcceptRanges)
-               file.fEND = file.fFileContent.totalLength();
+               file.fEND = file.fFileContent.length;
 
             return callback(file.fFileContent.extract(place));
          }
@@ -1093,32 +1106,49 @@
       return key;
    }
 
-   JSROOT.TFile.prototype.ReadBasket = function(off, size, call_back) {
+   JSROOT.TFile.prototype.ReadBaskets = function(places, call_back) {
       // read basket with tree data
 
       var file = this;
 
-      this.ReadBuffer([off, size], function(blob) {
+      this.ReadBuffer(places, function(blob) {
 
          if (!blob) JSROOT.CallBack(call_back, null);
 
          var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
-         var basket = {};
+         var baskets = [];
 
-         buf.ReadTBasket(basket, false);
+         for (var n=0;n<places.length;n+=2) {
 
-         if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
-            // use data from original blob
-            basket.raw = JSROOT.CreateTBuffer(blob, basket.fKeylen, file);
-         } else {
-            // unpack data and create new blob
-            var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, basket.fKeylen);
+            var basket = {};
 
-            if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, file);
+            if (places.length > 2) buf.SkipMultipartTerminator();
+
+            buf.ReadTBasket(basket);
+
+            console.log('buf.o', buf.o,'keylen', basket.fKeylen);
+
+            if (basket.fNbytes !== places[n+1]) console.log('mismatch in basket sizes', basket.fNbytes, places[n+1]);
+
+            if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
+               // use data from original blob
+               basket.raw = JSROOT.CreateTBuffer(blob, buf.o, file, buf.o + basket.fObjlen);
+            } else {
+               // unpack data and create new blob
+               var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
+
+               if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, file);
+            }
+
+            buf.shift(basket.fNbytes - basket.fKeylen);
+
+            console.log('buf.o', buf.o, 'nbytes', basket.fNbytes);
+
+            baskets.push(basket);
          }
 
-         JSROOT.CallBack(call_back, basket);
+         JSROOT.CallBack(call_back, baskets);
       });
    }
 

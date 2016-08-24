@@ -7846,28 +7846,47 @@
                if (option==='inspect')
                   return JSROOT.CallBack(callback, item, b);
 
-               function ReadNextBasket(indx) {
-                  if ((indx<0) || (indx >= b.fMaxBaskets) || (b.fBasketBytes[indx] === 0)) {
+               function ReadNextBaskets(indx) {
+                  var places = [], totalsz = 0;
+                  while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1000000) && (places.length<200)) {
+                     if (b.fBasketBytes[indx] === 0) break;
+                     places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
+                     totalsz += b.fBasketBytes[indx];
+                     indx++;
+                     //break; // only single basket
+                  }
+
+                  if (places.length === 0) {
                      JSROOT.progress();
                      return JSROOT.CallBack(callback, item, histo);
                   }
+
+                  console.log(totalsz, 'places', places);
 
                   var maxindx = b.fWriteBasket || b.fMaxBaskets;
                   if (maxindx<=0) maxindx = 1;
 
                   JSROOT.progress("TTree draw " + Math.round((indx/maxindx*100)) + " %");
 
-                  f.ReadBasket(b.fBasketSeek[indx], b.fBasketBytes[indx], function(basket) {
+                  f.ReadBaskets(places, function(baskets) {
 
-                     if (!basket || !basket.raw) return ReadNextBasket(-1);
+                     if (!baskets) return ReadNextBaskets(-1);
 
-                     var arr = basket.raw.ReadFastArray(basket.fObjlen/item._datasize, item._datakind);
+                     // first convert raw data
+                     for (var n=0;n<baskets.length;++n)
+                        baskets[n].arr = baskets[n].raw.ReadFastArray(baskets[n].fObjlen/item._datasize, item._datakind);
 
                      // console.log('array', arr.length);
 
                      if (histo === null) {
-                        var xmin = Math.min.apply(null, arr),
-                            xmax = Math.max.apply(null, arr);
+                        var xmin, xmax;
+
+                        for (var n=0;n<baskets.length;++n) {
+                           var lmin = Math.min.apply(null, baskets[n].arr);
+                           var lmax = Math.max.apply(null, baskets[n].arr);
+                           if ((n===0) || (lmin < xmin)) xmin = lmin;
+                           if ((n===0) || (lmax > xmax)) xmax = lmax;
+                        }
 
                         if (xmin>=xmax) xmax = xmin + 1;
 
@@ -7877,14 +7896,18 @@
                         histo.fName = "draw_" + item._name;
                         histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
                      }
-                     for (var n=0;n<arr.length;++n)
-                        JSROOT.FillH1(histo, arr[n]);
 
-                     ReadNextBasket(indx+1);
+                     for (var n=0;n<baskets.length;++n) {
+                        var arr = baskets[n].arr;
+                        for (var k=0;k<arr.length;++k)
+                           JSROOT.FillH1(histo, arr[k]);
+                     }
+
+                     ReadNextBaskets(indx);
                   });
                }
 
-               ReadNextBasket(0);
+               ReadNextBaskets(0);
             }
          }
 
