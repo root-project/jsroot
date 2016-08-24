@@ -1075,14 +1075,19 @@
 
          for (var n=0;n<place.length;n+=2) {
 
-            while((o < view.byteLength-1) && (nline<5)) {
-               var code1 = view.getUint8(o), code2 = view.getUint8(o+1);
+            var code1, code2 = view.getUint8(o);
 
+            while((o < view.byteLength-1) && (nline<5)) {
+               code1 = code2;
+               code2 = view.getUint8(o+1);
+
+               // TODO- verify that return content exactly how we it expected
                if ((code1==13) && (code2==10)) {
                   // console.log('saw line', line);
                   nline++; o++; line = "";
+                  code2 = view.getUint8(o);
                } else {
-                  line += String.fromCharCode(code1);
+                  // line += String.fromCharCode(code1);
                }
                o++;
             }
@@ -1091,7 +1096,7 @@
 
             arr.push(new DataView(res, o, place[n+1]));
 
-            o+= place[n+1];
+            o += place[n+1];
          }
 
          callback(arr);
