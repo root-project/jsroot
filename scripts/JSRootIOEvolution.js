@@ -1328,7 +1328,7 @@
 
       // with the first readbuffer we read bigger amount to create header cache
       this.ReadBuffer([0, 1024], function(blob) {
-         if (blob==null) return JSROOT.CallBack(readkeys_callback, null);
+         if (!blob) return JSROOT.CallBack(readkeys_callback, null);
 
          var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
@@ -1374,8 +1374,9 @@
          // assume that the file may be above 2 Gbytes if file version is > 4
          if (file.fVersion >= 40000) nbytes += 12;
 
+         // this part typically read from the header, no need to optimize
          file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)], function(blob3) {
-            if (blob3==null) return JSROOT.CallBack(readkeys_callback, null);
+            if (!blob3) return JSROOT.CallBack(readkeys_callback, null);
 
             var buf3 = JSROOT.CreateTBuffer(blob3, file.fNbytesName, file);
 
@@ -1395,39 +1396,38 @@
                JSROOT.console("Init : cannot read directory info of file " + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
             }
-            //*-* -------------Read keys of the top directory
-
             if (file.fSeekKeys <= 0) {
-               JSROOT.console("Empty keys list - not supported" + file.fURL);
+               JSROOT.console("Empty keys list in " + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
             }
 
-            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys], function(blob4) {
+            if (file.fSeekInfo == 0 || file.fNbytesInfo == 0) {
+               JSROOT.console("No streamer infos in " + file.fURL);
+               return JSROOT.CallBack(readkeys_callback, null);
+            }
 
-               if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
+            // read with same request keys and streamer infos
+            file.ReadBuffer([file.fSeekKeys, file.fNbytesKeys, file.fSeekInfo, file.fNbytesInfo], function(blobs) {
 
-               var buf4 = JSROOT.CreateTBuffer(blob4, 0, file);
+               if (!blobs) return JSROOT.CallBack(readkeys_callback, null);
+
+               var buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
                buf4.ReadTKey(); // should disppaer
                var nkeys = buf4.ntoi4();
                for (var i = 0; i < nkeys; ++i)
                   file.fKeys.push(buf4.ReadTKey());
 
-               if (file.fSeekInfo == 0 || file.fNbytesInfo == 0) return readkeys_callback(file);
+               var buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file);
+               var key = buf5.ReadTKey();
+               if (!key) return JSROOT.CallBack(readkeys_callback, null);
 
-               file.ReadBuffer([file.fSeekInfo, file.fNbytesInfo], function(blob5) {
-                  var buf5 = JSROOT.CreateTBuffer(blob5, 0, file);
+               file.fKeys.push(key);
 
-                  var key = buf5.ReadTKey();
-                  if (!key) return readkeys_callback(file);
-
-                  file.fKeys.push(key);
-
-                  file.ReadObjBuffer(key, function(blob6) {
-                     if (blob6) file.ExtractStreamerInfos(blob6);
-                     readkeys_callback(file);
-                  });
-                  delete buf5;
+               file.ReadObjBuffer(key, function(blob6) {
+                  if (blob6) file.ExtractStreamerInfos(blob6);
+                  return JSROOT.CallBack(readkeys_callback, file);
                });
+               delete buf5;
 
                delete buf4;
             });

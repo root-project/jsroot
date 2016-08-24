@@ -7847,7 +7847,7 @@
                   return JSROOT.CallBack(callback, item, b);
 
                function ReadNextBaskets(indx) {
-                  var places = [], totalsz = 0;
+                  var places = [], totalsz = 0, indx0 = indx;
                   while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1000000) && (places.length<200)) {
                      if (b.fBasketBytes[indx] === 0) break;
                      places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
@@ -7863,8 +7863,7 @@
 
                   var maxindx = b.fWriteBasket || b.fMaxBaskets;
                   if (maxindx<=0) maxindx = 1;
-
-                  JSROOT.progress("TTree draw " + Math.round((indx/maxindx*100)) + " %");
+                  JSROOT.progress("TTree draw " + Math.round((indx0/maxindx*100)) + " %");
 
                   f.ReadBaskets(places, function(baskets) {
 
