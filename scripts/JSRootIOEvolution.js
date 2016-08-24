@@ -628,6 +628,82 @@
 
    JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
 
+   JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
+      // read array of n values from the I/O buffer
+
+      if (!JSROOT.IO.NativeArray)
+         return JSROOT.TBuffer.prototype.ReadFastArray.call(this, n, array_type);
+
+      var array, i;
+      switch (array_type) {
+         case JSROOT.IO.kDouble:
+            array = new Float64Array(n);
+            for (i = 0; i < n; ++i, this.o+=8)
+               array[i] = this.arr.getFloat64(this.o);
+            break;
+         case JSROOT.IO.kFloat:
+         case JSROOT.IO.kDouble32:
+            array = new Float32Array(n);
+            for (i = 0; i < n; ++i, this.o+=4)
+               array[i] = this.arr.getFloat32(this.o);
+            break;
+         case JSROOT.IO.kLong:
+         case JSROOT.IO.kLong64:
+            array = new Float64Array(n);
+            for (i = 0; i < n; ++i)
+               array[i] = this.ntoi8();
+            break;
+         case JSROOT.IO.kULong:
+         case JSROOT.IO.kULong64:
+            array = new Float64Array(n);
+            for (i = 0; i < n; ++i)
+               array[i] = this.ntou8();
+            break;
+         case JSROOT.IO.kInt:
+            array = new Int32Array(n);
+            for (i = 0; i < n; ++i, this.o+=4)
+               array[i] = this.arr.getInt32(this.o);
+            break;
+         case JSROOT.IO.kUInt:
+            array = new Uint32Array(n);
+            for (i = 0; i < n; ++i, this.o+=4)
+               array[i] = this.arr.getUint32(this.o);
+            break;
+         case JSROOT.IO.kShort:
+            array = new Int16Array(n);
+            for (i = 0; i < n; ++i, this.o+=2)
+               array[i] = this.arr.getInt16(this.o);
+            break;
+         case JSROOT.IO.kUShort:
+            array = new Uint16Array(n);
+            for (i = 0; i < n; ++i, this.o+=2)
+               array[i] = this.arr.getUint16(this.o);
+            break;
+         case JSROOT.IO.kChar:
+            array = new Int8Array(n);
+            for (i = 0; i < n; ++i)
+               array[i] = this.arr.getInt8(this.o++);
+            break;
+         case JSROOT.IO.kBool:
+         case JSROOT.IO.kUChar:
+            array = new Uint8Array(n);
+            for (i = 0; i < n; ++i)
+               array[i] = this.arr.getUint8(this.o++);
+            break;
+         case JSROOT.IO.kTString:
+            array = new Array(n);
+            for (i = 0; i < n; ++i)
+               array[i] = this.ReadTString();
+            break;
+         default:
+            array = new Uint32Array(n);
+            for (i = 0; i < n; ++i, this.o+=4)
+               array[i] = this.arr.getUint32(this.o);
+         break;
+      }
+      return array;
+   }
+
    JSROOT.TArrBuffer.prototype.totalLength = function() {
       return this.arr && this.arr.buffer ? this.arr.buffer.byteLength : 0;
    }
@@ -1016,7 +1092,7 @@
       return key;
    }
 
-   JSROOT.TFile.prototype.ReadBasket = function(off,size, call_back) {
+   JSROOT.TFile.prototype.ReadBasket = function(off, size, call_back) {
       // read basket with tree data
 
       var f = this;
@@ -1034,11 +1110,9 @@
          buf.ReadTBasket(basket, false);
 
          if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
-
             // use data from original blob
             basket.raw = JSROOT.CreateTBuffer(blob, basket.fKeylen, f);
          } else {
-
             // unpack data and create new blob
             var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, basket.fKeylen);
 
@@ -1934,8 +2008,6 @@
       this.fNbytesInfo = 0;
       this.fTagOffset = 0;
    };
-
-   // following functions are custom streamers for appropriate classes
 
    (function() {
       var iomode = JSROOT.GetUrlOption("iomode");
