@@ -1091,7 +1091,7 @@
 
             arr.push(new DataView(res, o, place[n+1]));
 
-            o+= place[n+1];
+            o += place[n+1];
          }
 
          callback(arr);
