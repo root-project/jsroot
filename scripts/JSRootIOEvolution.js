@@ -300,6 +300,7 @@
    }
 
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
+      if (!key) key = {};
       key.fNbytes = this.ntoi4();
       key.fVersion = this.ntoi2();
       key.fObjlen = this.ntou4();
@@ -332,7 +333,7 @@
          key.fName = name;
       }
 
-      return true;
+      return key;
    }
 
    JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
@@ -909,12 +910,11 @@
             if (!blob2) return JSROOT.CallBack(readkeys_callback, null);
             var buf = JSROOT.CreateTBuffer(blob2, 0, file);
 
-            var key = file.ReadKey(buf);
+            buf.ReadTKey(); // should disappear
             var nkeys = buf.ntoi4();
 
             for (var i = 0; i < nkeys; ++i) {
-               key = file.ReadKey(buf);
-               thisdir.fKeys.push(key);
+               thisdir.fKeys.push(buf.ReadTKey());
             }
             file.fDirectories.push(thisdir);
             delete buf;
@@ -1100,13 +1100,6 @@
       var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
       if (this.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
       xhr.send(null);
-   }
-
-   JSROOT.TFile.prototype.ReadKey = function(buf) {
-      // read key from buffer
-      var key = {};
-      buf.ReadTKey(key);
-      return key;
    }
 
    JSROOT.TFile.prototype.ReadBaskets = function(places, call_back) {
@@ -1333,15 +1326,15 @@
 
       var file = this;
 
-      this.ReadBuffer([this.fSeekInfo, file.fNbytesInfo], function(blob1) {
-         var buf = JSROOT.CreateTBuffer(blob1, 0, file);
-         var key = file.ReadKey(buf);
-         if (key == null) return si_callback(null);
+      this.ReadBuffer([this.fSeekInfo, file.fNbytesInfo], function(blob5) {
+         var buf5 = JSROOT.CreateTBuffer(blob5, 0, file);
+
+         var key = buf5.ReadTKey();
+         if (!key) return si_callback(null);
          file.fKeys.push(key);
 
-         file.ReadObjBuffer(key, function(blob2) {
-            if (blob2==null) return si_callback(null);
-            file.ExtractStreamerInfos(blob2);
+         file.ReadObjBuffer(key, function(blob6) {
+            if (blob6) file.ExtractStreamerInfos(blob6);
             si_callback(file);
          });
       });
@@ -1433,12 +1426,10 @@
                if (blob4==null) return JSROOT.CallBack(readkeys_callback, null);
 
                var buf4 = JSROOT.CreateTBuffer(blob4, 0, file);
-               var key = file.ReadKey(buf4);
+               buf4.ReadTKey(); // should disppaer
                var nkeys = buf4.ntoi4();
-               for (var i = 0; i < nkeys; ++i) {
-                  key = file.ReadKey(buf4);
-                  file.fKeys.push(key);
-               }
+               for (var i = 0; i < nkeys; ++i)
+                  file.fKeys.push(buf4.ReadTKey());
                file.ReadStreamerInfos(readkeys_callback);
                delete buf4;
             });
