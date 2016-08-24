@@ -7862,9 +7862,11 @@
 
                      var arr = basket.raw.ReadFastArray(basket.fObjlen/item._datasize, item._datakind);
 
+                     // console.log('array', arr.length);
+
                      if (histo === null) {
                         var xmin = Math.min.apply(null, arr),
-                        xmax = Math.max.apply(null, arr);
+                            xmax = Math.max.apply(null, arr);
 
                         histo = JSROOT.CreateTH1(100);
                         histo.fXaxis.fXmin = xmin;
