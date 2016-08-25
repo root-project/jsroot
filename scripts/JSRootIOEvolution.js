@@ -303,20 +303,26 @@
       return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
+   JSROOT.TBuffer.prototype.ReadTDate = function() {
+      var datime = this.ntou4();
+      var res = new Date();
+      res.setFullYear((datime >>> 26) + 1995);
+      res.setMonth((datime << 6) >>> 28);
+      res.setDate((datime << 10) >>> 27);
+      res.setHours((datime << 15) >>> 27);
+      res.setMinutes((datime << 20) >>> 26);
+      res.setSeconds((datime << 26) >>> 26);
+      res.setMilliseconds(0);
+      return res;
+   }
+
+
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       if (!key) key = {};
       key.fNbytes = this.ntoi4();
       key.fVersion = this.ntoi2();
       key.fObjlen = this.ntou4();
-      var datime = this.ntou4();
-      key.fDatime = new Date();
-      key.fDatime.setFullYear((datime >>> 26) + 1995);
-      key.fDatime.setMonth((datime << 6) >>> 28);
-      key.fDatime.setDate((datime << 10) >>> 27);
-      key.fDatime.setHours((datime << 15) >>> 27);
-      key.fDatime.setMinutes((datime << 20) >>> 26);
-      key.fDatime.setSeconds((datime << 26) >>> 26);
-      key.fDatime.setMilliseconds(0);
+      key.fDatime = this.ReadTDate();
       key.fKeylen = this.ntou2();
       key.fCycle = this.ntou2();
       if (key.fVersion > 1000) {
@@ -891,19 +897,10 @@
 
       file.ReadBuffer([this.fSeekDir, nbytes, this.fSeekKeys, this.fNbytesKeys], function(blobs) {
          if (!blobs) return JSROOT.CallBack(readkeys_callback,null);
-         var buf = JSROOT.CreateTBuffer(blobs[0], thisdir.fNbytesName, file);
+         var buf = JSROOT.CreateTBuffer(blobs[0], 0, file);
 
-         thisdir.StreamHeader(buf);
+         thisdir.StreamHeader(buf, true);
 
-         //*-*---------read TKey::FillBuffer info
-         buf.locate(4); // Skip NBytes;
-         var keyversion = buf.ntoi2();
-         // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
-         if (keyversion > 1000) buf.shift(28); // Large files
-                           else buf.shift(20);
-         buf.ReadTString();
-         buf.ReadTString();
-         thisdir.fTitle = buf.ReadTString();
          if (thisdir.fNbytesName < 10 || thisdir.fNbytesName > 10000) {
             JSROOT.console("Cannot read directory info of file " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
@@ -928,18 +925,33 @@
       });
    }
 
-   JSROOT.TDirectory.prototype.StreamHeader = function(buf) {
+   JSROOT.TDirectory.prototype.StreamHeader = function(buf, with_title) {
+
+      if (with_title) {
+         //*-*---------read TKey::FillBuffer info
+         buf.locate(4); // Skip NBytes;
+         var keyversion = buf.ntoi2();
+         // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
+         if (keyversion > 1000) buf.shift(28); // Large files
+                           else buf.shift(20);
+         buf.ReadTString();
+         buf.ReadTString();
+         this.fTitle = buf.ReadTString();
+         buf.locate(this.fNbytesName);
+      }
+
       var version = buf.ntou2();
-      var versiondir = version % 1000;
-      buf.shift(8); // skip fDatimeC and fDatimeM
+      //this.fDatimeC = buf.ReadTDate();
+      //this.fDatimeM = buf.ReadTDate();
+      buf.shift(8);
       this.fNbytesKeys = buf.ntou4();
       this.fNbytesName = buf.ntou4();
       this.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
       this.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
       this.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
-      if (versiondir > 2) buf.shift(18); // skip fUUID
-   }
 
+      // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
+   }
 
    // ==============================================================================
    // A class that reads ROOT files.
@@ -1404,20 +1416,11 @@
          file.ReadBuffer([file.fBEGIN, Math.max(300, nbytes)], function(blob3) {
             if (!blob3) return JSROOT.CallBack(readkeys_callback, null);
 
-            var buf3 = JSROOT.CreateTBuffer(blob3, file.fNbytesName, file);
+            var buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
 
             // we call TDirectory method while TFile is just derived class
-            JSROOT.TDirectory.prototype.StreamHeader.call(file, buf3);
+            JSROOT.TDirectory.prototype.StreamHeader.call(file, buf3, true);
 
-            //*-*---------read TKey::FillBuffer info
-            buf3.o = 4; // Skip NBytes;
-            var keyversion = buf3.ntoi2();
-            // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
-            if (keyversion > 1000) buf3.shift(28); // Large files
-                              else buf3.shift(20);
-            buf3.ReadTString();
-            buf3.ReadTString();
-            file.fTitle = buf3.ReadTString();
             if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
                JSROOT.console("Init : cannot read directory info of file " + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
