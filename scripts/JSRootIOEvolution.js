@@ -884,9 +884,14 @@
       // assume that the file may be above 2 Gbytes if file version is > 4
       if (file.fVersion >= 40000) nbytes += 12;
 
-      file.ReadBuffer([this.fSeekDir, nbytes], function(blob1) {
-         if (blob1==null) return JSROOT.CallBack(readkeys_callback,null);
-         var buf = JSROOT.CreateTBuffer(blob1, thisdir.fNbytesName, file);
+      if (this.fSeekKeys <=0)
+         return JSROOT.CallBack(readkeys_callback, null);
+
+      // read directory and keys with one request
+
+      file.ReadBuffer([this.fSeekDir, nbytes, this.fSeekKeys, this.fNbytesKeys], function(blobs) {
+         if (!blobs) return JSROOT.CallBack(readkeys_callback,null);
+         var buf = JSROOT.CreateTBuffer(blobs[0], thisdir.fNbytesName, file);
 
          thisdir.StreamHeader(buf);
 
@@ -903,28 +908,23 @@
             JSROOT.console("Cannot read directory info of file " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
          }
+
          //*-* -------------Read keys of the top directory
 
-         if (thisdir.fSeekKeys <=0)
-            return JSROOT.CallBack(readkeys_callback, null);
+         var buf2 = JSROOT.CreateTBuffer(blobs[1], 0, file);
 
-         file.ReadBuffer([thisdir.fSeekKeys, thisdir.fNbytesKeys], function(blob2) {
-            if (!blob2) return JSROOT.CallBack(readkeys_callback, null);
-            var buf = JSROOT.CreateTBuffer(blob2, 0, file);
+         buf2.ReadTKey();
+         var nkeys = buf2.ntoi4();
 
-            buf.ReadTKey(); // should disappear
-            var nkeys = buf.ntoi4();
+         for (var i = 0; i < nkeys; ++i)
+            thisdir.fKeys.push(buf2.ReadTKey());
 
-            for (var i = 0; i < nkeys; ++i) {
-               thisdir.fKeys.push(buf.ReadTKey());
-            }
-            file.fDirectories.push(thisdir);
-            delete buf;
+         file.fDirectories.push(thisdir);
 
-            JSROOT.CallBack(readkeys_callback, thisdir);
-         });
-
+         delete buf2;
          delete buf;
+
+         JSROOT.CallBack(readkeys_callback, thisdir);
       });
    }
 
