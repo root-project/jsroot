@@ -8428,7 +8428,7 @@
             var newparentname = hpainter.itemFullName(d.last);
             if (newparentname.length>0) newparentname+="/";
             hpainter.get( { arg: newparentname + d.rest, rest: d.rest }, call_back, options);
-         });
+         }, null, true);
       }
 
       if ((item !== null) && (typeof item._obj == 'object'))
@@ -8743,7 +8743,7 @@
          var hitem = h.Find(items[n]);
          if ((hitem==null) || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
-         h.expand(items[n]);
+         h.expand(items[n], null, null, true);
          items.splice(n, 1);
          options.splice(n, 1);
          dropitems.splice(n, 1);
@@ -8883,7 +8883,7 @@
       find_next();
    }
 
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont) {
+   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
       var hpainter = this, hitem = this.Find(itemname);
 
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
@@ -8897,9 +8897,9 @@
                _item._isopen = true;
                if (_item._parent && !_item._parent._isopen) {
                   _item._parent._isopen = true; // also show parent
-                  hpainter.UpdateTreeNode(_item._parent);
+                  if (!silent) hpainter.UpdateTreeNode(_item._parent);
                } else {
-                  hpainter.UpdateTreeNode(_item, d3cont);
+                  if (!silent) hpainter.UpdateTreeNode(_item, d3cont);
                }
                JSROOT.CallBack(call_back, _item);
                return true;
@@ -8914,7 +8914,7 @@
                   if (!_item._expand)
                      delete _item._expand;
                   else
-                     hpainter.expand(_name, call_back, d3cont);
+                     hpainter.expand(_name, call_back, d3cont, silent);
                });
                return true;
             }
@@ -8924,9 +8924,9 @@
             _item._isopen = true;
             if (_item._parent && !_item._parent._isopen) {
                _item._parent._isopen = true; // also show parent
-               hpainter.UpdateTreeNode(_item._parent);
+               if (!silent) hpainter.UpdateTreeNode(_item._parent);
             } else {
-               hpainter.UpdateTreeNode(_item, d3cont);
+               if (!silent) hpainter.UpdateTreeNode(_item, d3cont);
             }
             JSROOT.CallBack(call_back, _item);
             return true;

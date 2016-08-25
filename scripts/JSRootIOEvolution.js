@@ -888,7 +888,6 @@
          pos = keyname.lastIndexOf("/", pos-1);
       }
 
-
       JSROOT.CallBack(call_back, null);
       return null;
    }
@@ -1264,8 +1263,7 @@
          if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
             isdir = true;
             var dir = file.GetDir(obj_name, cycle);
-            if (dir!=null)
-               return JSROOT.CallBack(user_call_back, dir);
+            if (dir) return JSROOT.CallBack(user_call_back, dir);
          }
 
          file.ReadObjBuffer(key, function(buf) {
@@ -1395,8 +1393,6 @@
 
             // we call TDirectory method while TFile is just derived class
             buf3.ReadTDirectory(file);
-
-            console.log('File title', file.fTitle);
 
             if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
                JSROOT.console("Init : cannot read directory info of file " + file.fURL);
