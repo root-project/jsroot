@@ -1096,12 +1096,7 @@
                if ((code1==13) && (code2==10)) {
                   // console.log(nline, 'saw line', line);
 
-                  if ((nline===0) && (line.length!==0)) {
-                     console.error('Expect empty line at the multipart begin');
-                     return callback(null);
-                  }
-
-                  if ((nline===1) && (line !== boundary)) {
+                  if ((line.length>2) && (line.substr(0,2)=='--') && (line !== boundary)) {
                      console.error('Expact boundary ' + boundary + ' as second line, got ' + line);
                   }
 
