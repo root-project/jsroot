@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Implement simple TTree::Draw over single leaf (#80)
+2. Support basic types and several vector types in TTree::Draw 
 
 
 ## Changes in 4.6.0

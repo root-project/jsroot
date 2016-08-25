@@ -130,6 +130,10 @@
       this.o += cnt;
    }
 
+   JSROOT.TBuffer.prototype.remain = function() {
+      return this.length - this.o;
+   }
+
    JSROOT.TBuffer.prototype.GetMappedObject = function(tag) {
       return this.fObjectMap[tag];
    }
@@ -390,8 +394,7 @@
 
          if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset) === -1)
             this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
-      }
-      else {
+      }  else {
          // got a tag to an already seen class
          var clTag = (tag & ~JSROOT.IO.kClassMask);
          classInfo.name = this.GetMappedClass(clTag);
@@ -399,7 +402,6 @@
          if (classInfo.name === -1) {
             alert("Did not found class with tag " + clTag);
          }
-
       }
 
       return classInfo;
@@ -1994,9 +1996,9 @@
                      for (var i = 0; i < cnt; ++i)
                         res[i] = buf.ClassStreamer({}, "TList");
                   } else
-                  if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kDouble); else
-                  if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kInt); else
-                  if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(),JSROOT.IO.kFloat); else
+                  if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); else
+                  if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt); else
+                  if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kFloat); else
                   if (this.typename == "vector<TObject*>") {
                      var n = buf.ntoi4();
                      res = [];

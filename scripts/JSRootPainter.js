@@ -7805,7 +7805,7 @@
          var branch = obj.fBranches.arr[i],
              nb_leaves = branch.fLeaves.arr.length,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datasize = 0, datakind = 0;
+             datasize = 0, datakind = 0, isvector = false, info = "";
 
          // display branch with only leaf as leaf
          if ((nb_leaves === 1) && (leaf.fName === branch.fName)) {
@@ -7818,16 +7818,33 @@
                   case 'TLeafS' : datasize = 2; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
                   case 'TLeafI' : datasize = 4; datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
                   case 'TLeafL' : datasize = 8; datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+                  case 'TLeafElement' :
+                     if (branch._typename==='TBranchElement') {
+                       switch (branch.fClassName) {
+                         case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
+                         case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
+                         case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
+                         case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
+                       }
+                       if (isvector) info = " " + branch.fClassName;
+                     }
+                     break;
                };
          }
 
          var subitem = {
             _name : branch.fName,
-            _kind : (datasize>0) ? "ROOT." + leaf._typename : "ROOT.TBranch",
-            _title : branch.fTitle
+            _kind : (datakind>0) ? "ROOT." + leaf._typename : "ROOT." + branch._typename,
+            _title : branch.fTitle + info
+         };
+
+         // if (branch._typename==='TBranchElement') console.log(datasize, branch);
+
+         if ((datakind===0) && (branch._typename==='TBranchElement')) {
+            subitem._title += " " + branch.fClassName + ";" + branch.fClassVersion;
          }
 
-         if (datasize > 0) {
+         if (datakind > 0) {
             // console.log('HAS file for branch', branch.fName);
 
             // subitem._obj = branch;
@@ -7836,6 +7853,7 @@
             subitem._branch = branch;
             subitem._datakind = datakind;
             subitem._datasize = datasize;
+            subitem._isvector = isvector;
 
             subitem._get = function(item, itemname, callback, option) {
 
@@ -7869,18 +7887,29 @@
 
                      if (!baskets) return ReadNextBaskets(-1);
 
+                     var arrays = []; // all data from baskets
+
                      // first convert raw data
                      for (var n=0;n<baskets.length;++n)
-                        baskets[n].arr = baskets[n].raw.ReadFastArray(baskets[n].fObjlen/item._datasize, item._datakind);
+                        if (item._isvector) {
+                           var buf = baskets[n].raw, nread = 0;
+                           while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
+                              var ver = buf.ReadVersion();
+                              arrays.push(buf.ReadFastArray(buf.ntoi4(), item._datakind));
+                              buf.CheckBytecount(ver, 'branch_vector_read');
+                           }
+                        } else {
+                           arrays.push(baskets[n].raw.ReadFastArray(baskets[n].fNevBuf, item._datakind));
+                        }
 
                      // console.log('array', arr.length);
 
                      if (histo === null) {
                         var xmin, xmax;
 
-                        for (var n=0;n<baskets.length;++n) {
-                           var lmin = Math.min.apply(null, baskets[n].arr);
-                           var lmax = Math.max.apply(null, baskets[n].arr);
+                        for (var n=0;n<arrays.length;++n) {
+                           var lmin = Math.min.apply(null, arrays[n]);
+                           var lmax = Math.max.apply(null, arrays[n]);
                            if ((n===0) || (lmin < xmin)) xmin = lmin;
                            if ((n===0) || (lmax > xmax)) xmax = lmax;
                         }
@@ -7894,8 +7923,8 @@
                         histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
                      }
 
-                     for (var n=0;n<baskets.length;++n) {
-                        var arr = baskets[n].arr;
+                     for (var n=0;n<arrays.length;++n) {
+                        var arr = arrays[n];
                         for (var k=0;k<arr.length;++k)
                            histo.Fill(arr[k]);
                      }
@@ -7910,7 +7939,7 @@
 
          node._childs.push(subitem);
 
-         if ((nb_leaves > 0) && (datasize === 0)) {
+         if ((nb_leaves > 0) && (datakind === 0)) {
             subitem._childs = [];
             for (var j = 0; j < nb_leaves; ++j) {
                var leafitem = {
@@ -9940,7 +9969,7 @@
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: "TBranch", icon: "img_branch", noinspect:true, noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
