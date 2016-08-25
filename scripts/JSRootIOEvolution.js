@@ -481,7 +481,7 @@
 
    JSROOT.TStrBuffer.prototype.extract = function(place) {
       var res = this.b.substr(place[0], place[1]);
-      if (places.length===2) return res;
+      if (place.length===2) return res;
       res = [res];
       for (var n=2;n<place.length;n+=2)
          res.push(this.b.substr(place[n], place[n+1]));
@@ -1059,15 +1059,10 @@
 
          if ((res === null) || (res === undefined)) return callback(res);
 
-         if (typeof res == 'string') {
-            // obsolete string format, can be skipped soon
-            if (place.length===2) return callback(res);
-            var buf = JSROOT.CreateTBuffer(res);
-            return callback(buf.extract(place));
-         }
+         var isstr = (typeof res == 'string');
 
-         // return data view with binary data
-         if (place.length===2) return callback(new DataView(res));
+         // if only single segment requested, return result as is
+         if (place.length===2) return callback(isstr ? res : new DataView(res));
 
          // multipart messages requires special handling
 
@@ -1082,7 +1077,11 @@
                   else console.error('Did not found boundary id in the response header');
 
 
-         var arr = [], view = new DataView(res), o = 0;
+         var arr = [], o = 0,
+             view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
+                          : new DataView(res);
+
+         // console.log(place, res);
 
          for (var n=0;n<place.length;n+=2) {
 
@@ -1115,11 +1114,11 @@
             }
 
             if (!finish_header) {
-               console.error('Cannot decode header in multipart message');
+               console.error('Cannot decode header in multipart message ');
                return callback(null);
             }
 
-            arr.push(new DataView(res, o, place[n+1]));
+            arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
 
             o += place[n+1];
          }

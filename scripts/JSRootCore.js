@@ -582,8 +582,7 @@
             if ((kind=="bin") && ('Uint8Array' in window) && ('byteLength' in xhr.response)) {
                // if string representation in requested - provide it
 
-               var filecontent = "";
-               var u8Arr = new Uint8Array(xhr.response, 0, xhr.response.byteLength);
+               var filecontent = "", u8Arr = new Uint8Array(xhr.response);
                for (var i = 0; i < u8Arr.length; ++i)
                   filecontent += String.fromCharCode(u8Arr[i]);
                delete u8Arr;
