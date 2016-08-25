@@ -1024,7 +1024,7 @@
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
 
-      var file = this, url = this.fURL, ranges = "bytes=", xhr;
+      var file = this, url = this.fURL, ranges = "bytes=";
       for (var n=0;n<place.length;n+=2) {
          if (n>0) ranges+=","
          ranges += (place[n] + "-" + (place[n] + place[n+1] - 1));
@@ -1041,7 +1041,7 @@
          if (!res && file.fUseStampPar && (place[0]===0) && (place.length===2)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
-            xhr = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+            var xhr = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
             if (file.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
             return xhr.send(null);
          }
@@ -1071,24 +1071,52 @@
 
          // multipart messages requires special handling
 
+         var hdr = this.getResponseHeader('Content-Type');
+         if (hdr.indexOf('multipart')<0) {
+            console.error('Server returns normal response when multipart was requested');
+            return callback(null);
+         }
+
+         var indx = hdr.indexOf("boundary="), boundary = "";
+         if (indx > 0) boundary = "--" + hdr.substr(indx+9);
+                  else console.error('Did not found boundary id in the response header');
+
+
          var arr = [], view = new DataView(res), o = 0;
 
          for (var n=0;n<place.length;n+=2) {
 
-            var code1, code2 = view.getUint8(o), nline = 0, line = "";
+            var code1, code2 = view.getUint8(o), nline = 0, line = "", finish_header = false;
 
-            while((o < view.byteLength-1) && (nline<5)) {
+            while((o < view.byteLength-1) && !finish_header && (nline<5)) {
                code1 = code2;
                code2 = view.getUint8(o+1);
 
                if ((code1==13) && (code2==10)) {
-                  // console.log('saw line', line);
-                  nline++; o++; line = "";
+                  // console.log(nline, 'saw line', line);
+
+                  if ((nline===0) && (line.length!==0)) {
+                     console.error('Expect empty line at the multipart begin');
+                     return callback(null);
+                  }
+
+                  if ((nline===1) && (line !== boundary)) {
+                     console.error('Expact boundary ' + boundary + ' as second line, got ' + line);
+                  }
+
+                  if ((nline > 1) && (line.length===0)) finish_header = true;
+
+                  o++; nline++; line = "";
                   code2 = view.getUint8(o+1);
                } else {
                   line += String.fromCharCode(code1);
                }
                o++;
+            }
+
+            if (!finish_header) {
+               console.error('Cannot decode header in multipart message');
+               return callback(null);
             }
 
             arr.push(new DataView(res, o, place[n+1]));
@@ -1099,7 +1127,7 @@
          callback(arr);
       }
 
-      xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+      var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
       if (this.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
       xhr.send(null);
    }
