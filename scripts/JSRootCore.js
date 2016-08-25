@@ -1201,15 +1201,6 @@
       return histo;
    }
 
-   JSROOT.FillH1 = function(histo, x, weight) {
-      var bin = Math.floor((x - histo.fXaxis.fXmin) / (histo.fXaxis.fXmax - histo.fXaxis.fXmin) * (histo.fNcells-2));
-
-      if (bin < 0) bin = -1; else
-      if (bin > histo.fNcells-2) bin = histo.fNcells-2;
-
-      histo.fArray[bin+1] += ((weight===undefined) ? 1 : weight);
-   }
-
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
 
       var histo = JSROOT.extend(JSROOT.Create("TH2I"),
@@ -1402,6 +1393,14 @@
       if (typename.indexOf("TH1") == 0) {
          m.getBin = function(x) { return x; }
          m.getBinContent = function(bin) { return this.fArray[bin]; }
+         m.Fill = function(x, weight) {
+            var bin = Math.floor((x - this.fXaxis.fXmin) / (this.fXaxis.fXmax - this.fXaxis.fXmin) * (this.fNcells-2));
+
+            if (bin < 0) bin = -1; else
+            if (bin > this.fNcells-2) bin = this.fNcells-2;
+
+            this.fArray[bin+1] += ((weight===undefined) ? 1 : weight);
+         }
       }
 
       if (typename.indexOf("TH2") == 0) {

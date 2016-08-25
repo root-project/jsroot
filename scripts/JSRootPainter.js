@@ -7897,7 +7897,7 @@
                      for (var n=0;n<baskets.length;++n) {
                         var arr = baskets[n].arr;
                         for (var k=0;k<arr.length;++k)
-                           JSROOT.FillH1(histo, arr[k]);
+                           histo.Fill(arr[k]);
                      }
 
                      ReadNextBaskets(indx);
