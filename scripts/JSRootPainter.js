@@ -5779,7 +5779,7 @@
       return null;
    }
 
-   JSROOT.THistPainter.prototype.CreateStat = function() {
+   JSROOT.THistPainter.prototype.CreateStat = function(opt_stat) {
 
       if (!this.draw_content) return null;
 
@@ -5788,7 +5788,7 @@
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: JSROOT.gStyle.OptStat,
+                             fOptStat: opt_stat || JSROOT.gStyle.OptStat,
                              fOptFit: JSROOT.gStyle.OptFit,
                              fBorderSize : 1} );
       JSROOT.extend(stats, JSROOT.gStyle.StatNDC);
@@ -6889,12 +6889,12 @@
 
          if (print_under > 0) {
             var res = (this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0;
-            pave.AddText("Underflow = " + stat.Format(res));
+            pave.AddText("Underflow = " + stat.Format(res,"entries"));
          }
 
          if (print_over > 0) {
             var res = (this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0;
-            pave.AddText("Overflow = " + stat.Format(res));
+            pave.AddText("Overflow = " + stat.Format(res,"entries"));
          }
 
          if (print_integral > 0) {
@@ -7577,7 +7577,7 @@
       painter.CreateXY();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
-         painter.CreateStat();
+         painter.CreateStat(histo.fCustomStat);
 
       var func_name = (painter.options.Lego > 0) ? "Draw3D" : "Draw2D";
 
@@ -7918,9 +7918,10 @@
 
                         histo = JSROOT.CreateTH1(100);
                         histo.fXaxis.fXmin = xmin;
-                        histo.fXaxis.fXmax = xmax;
+                        histo.fXaxis.fXmax = xmin + (xmax-xmin)*1.001;
                         histo.fName = "draw_" + item._name;
                         histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
+                        histo.fCustomStat = 111110;
                      }
 
                      for (var n=0;n<arrays.length;++n) {
