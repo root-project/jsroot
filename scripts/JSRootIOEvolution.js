@@ -1024,7 +1024,7 @@
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
 
-      var file = this, url = this.fURL, ranges = "bytes=";
+      var file = this, url = this.fURL, ranges = "bytes=", xhr;
       for (var n=0;n<place.length;n+=2) {
          if (n>0) ranges+=","
          ranges += (place[n] + "-" + (place[n] + place[n+1] - 1));
@@ -1041,11 +1041,11 @@
          if (!res && file.fUseStampPar && (place[0]===0) && (place.length===2)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
-            var xhr2 = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
-            if (file.fAcceptRanges) xhr2.setRequestHeader("Range", ranges);
-            xhr2.send(null);
-            return;
-         } else
+            xhr = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+            if (file.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
+            return xhr.send(null);
+         }
+
          if (res && (place[0]===0) && (place.length===2) && !file.fFileContent) {
             // special case - keep content of first request (could be complete file) in memory
 
@@ -1071,23 +1071,25 @@
 
          // multipart messages requires special handling
 
-         var arr = [], view = new DataView(res), o = 0, nline = 0, line = "";
+         var arr = [], view = new DataView(res), o = 0;
 
          for (var n=0;n<place.length;n+=2) {
 
+            var code1, code2 = view.getUint8(o), nline = 0, line = "";
+
             while((o < view.byteLength-1) && (nline<5)) {
-               var code1 = view.getUint8(o), code2 = view.getUint8(o+1);
+               code1 = code2;
+               code2 = view.getUint8(o+1);
 
                if ((code1==13) && (code2==10)) {
                   // console.log('saw line', line);
                   nline++; o++; line = "";
+                  code2 = view.getUint8(o+1);
                } else {
                   line += String.fromCharCode(code1);
                }
                o++;
             }
-
-            nline = 0;
 
             arr.push(new DataView(res, o, place[n+1]));
 
@@ -1097,7 +1099,7 @@
          callback(arr);
       }
 
-      var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+      xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
       if (this.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
       xhr.send(null);
    }
@@ -1412,23 +1414,23 @@
                if (!blobs) return JSROOT.CallBack(readkeys_callback, null);
 
                var buf4 = JSROOT.CreateTBuffer(blobs[0], 0, file);
-               buf4.ReadTKey(); // should disppaer
+
+               buf4.ReadTKey(); //
                var nkeys = buf4.ntoi4();
                for (var i = 0; i < nkeys; ++i)
                   file.fKeys.push(buf4.ReadTKey());
 
                var buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file);
-               var key = buf5.ReadTKey();
-               if (!key) return JSROOT.CallBack(readkeys_callback, null);
+               var si_key = buf5.ReadTKey();
+               if (!si_key) return JSROOT.CallBack(readkeys_callback, null);
 
-               file.fKeys.push(key);
-
-               file.ReadObjBuffer(key, function(blob6) {
+               file.fKeys.push(si_key);
+               file.ReadObjBuffer(si_key, function(blob6) {
                   if (blob6) file.ExtractStreamerInfos(blob6);
                   return JSROOT.CallBack(readkeys_callback, file);
                });
-               delete buf5;
 
+               delete buf5;
                delete buf4;
             });
             delete buf3;
