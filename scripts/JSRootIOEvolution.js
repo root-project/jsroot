@@ -1363,8 +1363,14 @@
          }
 
          // empty file
-         if (!file.fSeekInfo && !file.fNbytesInfo)
+         if (!file.fSeekInfo || !file.fNbytesInfo)
             return JSROOT.CallBack(readkeys_callback, null);
+
+         // extra check to prevent reading of corrupted data
+         if (!file.fNbytesName || this.fNbytesName > 100000) {
+            JSROOT.console("Init : cannot read directory info of file " + file.fURL);
+            return JSROOT.CallBack(readkeys_callback, null);
+         }
 
          //*-*-------------Read directory info
          var nbytes = file.fNbytesName + 22;
@@ -1380,31 +1386,16 @@
 
             var buf3 = JSROOT.CreateTBuffer(blob3, 0, file);
 
-            buf3.shift(4); // Skip NBytes;
-            var keyversion = buf3.ntoi2();
-            // Skip ObjLen, DateTime, KeyLen, Cycle, SeekKey, SeekPdir
-            if (keyversion > 1000) buf3.shift(28); // Large files
-                              else buf3.shift(20);
-            buf3.ReadTString();
-            buf3.ReadTString();
-            file.fTitle = buf3.ReadTString();
+            // keep only title from TKey data
+            file.fTitle = buf3.ReadTKey().fTitle;
 
             buf3.locate(file.fNbytesName);
 
-            // we call TDirectory method while TFile is just derived class
+            // we read TDirectory part of TFile
             buf3.ReadTDirectory(file);
 
-            if (file.fNbytesName < 10 || this.fNbytesName > 10000) {
-               JSROOT.console("Init : cannot read directory info of file " + file.fURL);
-               return JSROOT.CallBack(readkeys_callback, null);
-            }
-            if (file.fSeekKeys <= 0) {
+            if (!file.fSeekKeys) {
                JSROOT.console("Empty keys list in " + file.fURL);
-               return JSROOT.CallBack(readkeys_callback, null);
-            }
-
-            if (file.fSeekInfo == 0 || file.fNbytesInfo == 0) {
-               JSROOT.console("No streamer infos in " + file.fURL);
                return JSROOT.CallBack(readkeys_callback, null);
             }
 
