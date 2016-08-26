@@ -1508,19 +1508,31 @@
 
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
-   JSROOT.TObjectPainter.prototype.main_painter = function() {
-      if (this.main === null) {
+   JSROOT.TObjectPainter.prototype.main_painter = function(not_store) {
+      var res = this.main;
+      if (!res) {
          var svg_p = this.svg_pad();
-         if (!svg_p.empty()) {
-            this.main = svg_p.property('mainpainter');
-            if (this.main === undefined) this.main = null;
+         if (svg_p.empty()) {
+            var mnode = this.select_main();
+            if (mnode.node() && mnode.node().firstChild)
+               res = mnode.node().firstChild.painter;
+         } else {
+            res = svg_p.property('mainpainter');
          }
+         if (!res) res = null;
+         if (!not_store) this.main = res;
       }
-      return this.main;
+      return res;
    }
 
    JSROOT.TObjectPainter.prototype.is_main_painter = function() {
       return this === this.main_painter();
+   }
+
+   JSROOT.TObjectPainter.prototype.set_as_main_painter = function() {
+      var main = this.select_main();
+      if (main.node() && main.node().firstChild)
+         main.node().firstChild.painter = this;
    }
 
    JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
@@ -1554,9 +1566,7 @@
 
       if (svg_c.empty()) {
          if ((is_main < 0) || (is_main===5) || this.iscan) return;
-         var main = this.select_main();
-         if (main.node() && main.node().firstChild)
-            main.node().firstChild.painter = this;
+         this.set_as_main_painter();
          return;
       }
 
@@ -10133,11 +10143,24 @@
       if (opt == 'inspect')
          return JSROOT.Painter.drawInspector(divid, obj);
 
+      function checkDrop() {
+         if (opt !== "same") return null;
+         // special handling of drop option - probably main painter will accept
+         var dummy = new JSROOT.TObjectPainter();
+         dummy.SetDivId(divid, -1);
+         var main_painter = dummy.main_painter(true);
+
+         if (main_painter && (typeof main_painter.PerformDrop === 'function'))
+            return main_painter.PerformDrop(obj);
+
+         return null;
+      }
+
       var handle = null, painter = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
       else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
 
-      if ((handle==null) || !('func' in handle)) return null;
+      if ((handle==null) || !('func' in handle)) return checkDrop();
 
       function performDraw() {
          if ((painter===null) && ('painter_kind' in handle))
@@ -10161,7 +10184,7 @@
          if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
       }
 
-      if (funcname.length === 0) return null;
+      if (funcname.length === 0) return checkDrop();
 
       if (prereq.length >  0) {
 

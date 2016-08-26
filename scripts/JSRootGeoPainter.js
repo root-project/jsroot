@@ -1533,7 +1533,56 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt) {
+   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj) {
+      if (!obj) return null;
+
+      var tracks = [];
+
+      if (obj._typename === 'TEveTrack') tracks.push(obj); else
+      if (obj._typename === "TList" && obj.arr) {
+         for (var n=0;n<obj.arr.length;++n)
+            if (obj.arr[n] && obj.arr[n]._typename === 'TEveTrack')
+               tracks.push(obj.arr[n]);
+      }
+
+      if (tracks.length>0) {
+         console.log('Try to drop ', tracks.length, ' tracks');
+         this.drawTracks(tracks);
+
+      }
+
+      return null;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawTracks = function(tracks) {
+      if (!tracks) return;
+      for (var n=0;n<tracks.length;++n) {
+         var track = tracks[n];
+
+         var buf = new Float32Array((track.fN-1)*6), pos = 0;
+
+         for (var k=0;k<track.fN-1;++k) {
+            buf[pos]   = track.fP[k*3];
+            buf[pos+1] = track.fP[k*3+1];
+            buf[pos+2] = track.fP[k*3+2];
+            buf[pos+3] = track.fP[k*3+3];
+            buf[pos+4] = track.fP[k*3+4];
+            buf[pos+5] = track.fP[k*3+5];
+            pos+=6;
+         }
+
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+         var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+         var line = new THREE.LineSegments(geom, lineMaterial);
+         this._toplevel.add(line);
+      }
+
+      this.Render3D();
+   }
+
+
+   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
       if (typeof opt !== 'string') opt = "";
 
       var size = this.size_for_3d();
@@ -1572,6 +1621,10 @@
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
+
+      this.set_as_main_painter();
+
+      // set DIVID when first child exists - we use it for painter
 
       this.CreateToolbar();
 
@@ -1983,7 +2036,7 @@
       if (obj) {
          JSROOT.extend(this, new JSROOT.TGeoPainter(obj));
          this.SetDivId(divid, 5);
-         return this.DrawGeometry(opt);
+         return this.DrawGeometry(opt, divid);
       }
 
       return this.DrawingReady();
