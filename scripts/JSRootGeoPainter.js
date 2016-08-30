@@ -1537,18 +1537,26 @@
       if (!obj) return null;
 
       var tracks = [];
+      var hits = [];
 
+      if (obj._typename === 'TEvePointSet') hits.push(obj); else
       if (obj._typename === 'TEveTrack') tracks.push(obj); else
       if (obj._typename === "TList" && obj.arr) {
          for (var n=0;n<obj.arr.length;++n)
             if (obj.arr[n] && obj.arr[n]._typename === 'TEveTrack')
                tracks.push(obj.arr[n]);
+            else if (obj.arr[n] && obj.arr[n]._typename === 'TEvePointSet')
+               hits.push(obj.arr[n]);
       }
 
       if (tracks.length>0) {
          console.log('Try to drop ', tracks.length, ' tracks');
          this.drawTracks(tracks);
+      }
 
+      if (hits.length>0) {
+         console.log('Try to drop ', hits.length, ' hits');
+         this.drawHits(hits);
       }
 
       return null;
@@ -1558,6 +1566,8 @@
       if (!tracks) return;
       for (var n=0;n<tracks.length;++n) {
          var track = tracks[n];
+         var track_width = track.fLinewidth;
+         var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
          var buf = new Float32Array((track.fN-1)*6), pos = 0;
 
@@ -1573,7 +1583,7 @@
 
          var geom = new THREE.BufferGeometry();
          geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-         var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+         var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
          var line = new THREE.LineSegments(geom, lineMaterial);
          this._toplevel.add(line);
       }
@@ -1581,6 +1591,31 @@
       this.Render3D();
    }
 
+   JSROOT.TGeoPainter.prototype.drawHits = function(hits) {
+      if (!hits) return;
+      for (var n=0;n<hits.length;++n) {
+         var hit = hits[n];
+         var hit_size = 25.0 * hit.fMarkerSize;
+         var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
+
+         var buf = new Float32Array((hit.fN-1)*3), pos = 0;
+
+         for (var k=0;k<hit.fN-1;++k) {
+            buf[pos]   = hit.fP[k*3];
+            buf[pos+1] = hit.fP[k*3+1];
+            buf[pos+2] = hit.fP[k*3+2];
+            pos+=3;
+         }
+
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+         var hitMaterial = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
+         var points = new THREE.Points(geom, hitMaterial);
+         this._toplevel.add(points);
+      }
+
+      this.Render3D();
+   }
 
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
       if (typeof opt !== 'string') opt = "";
