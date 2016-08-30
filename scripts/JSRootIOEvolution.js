@@ -960,7 +960,7 @@
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
-
+      this.fMultiRanges = true; // true when server supports multirange requests
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
@@ -1007,7 +1007,24 @@
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
 
-      var file = this, url = this.fURL, ranges = "bytes=";
+
+      var file = this;
+      if ((place.length > 2) && !file.fMultiRanges) {
+         var arg = { file: file, place: place, arr: [], callback: callback };
+
+         function workaround_callback(res) {
+            if (res!==undefined) this.arr.push(res);
+
+            if (this.place.length===0)
+               return JSROOT.CallBack(this.callback, this.arr);
+
+            this.file.ReadBuffer([this.place.shift(), this.place.shift()], workaround_callback.bind(this));
+         }
+
+         return workaround_callback.bind(arg)();
+      }
+
+      var url = this.fURL, ranges = "bytes=";
       for (var n=0;n<place.length;n+=2) {
          if (n>0) ranges+=","
          ranges += (place[n] + "-" + (place[n] + place[n+1] - 1));
@@ -1050,9 +1067,10 @@
          // multipart messages requires special handling
 
          var hdr = this.getResponseHeader('Content-Type');
-         if (hdr.indexOf('multipart')<0) {
-            console.error('Server returns normal response when multipart was requested');
-            return callback(null);
+         if (!hdr || hdr.indexOf('multipart')<0) {
+            console.error('Server returns normal response when multipart was requested, disable multirange support');
+            file.fMultiRanges = false;
+            return file.ReadBuffer(place, callback);
          }
 
          var indx = hdr.indexOf("boundary="), boundary = "";
