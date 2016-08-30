@@ -454,7 +454,9 @@
          if ('_player' in hitem)
             return this.player(itemname);
 
-         var handle = JSROOT.getDrawHandle(hitem._kind);
+         var handle = JSROOT.getDrawHandle(hitem._kind),
+             can_draw = hitem._can_draw,
+             can_expand = !hitem._childs && (hitem._more !== false);
 
          if (handle != null) {
             if ('aslink' in handle)
@@ -463,8 +465,10 @@
             if ('execute' in handle)
                return this.ExecuteCommand(itemname, node.parentNode);
 
-            var can_draw = ('func' in handle) || (hitem._can_draw === true),
-                can_expand = !hitem._childs && (hitem._more !== false) && (handle.noexpand === undefined) && (('expand' in handle) || (hitem._more === true));
+            if (can_draw === undefined) can_draw = ('func' in handle);
+
+            if (handle.noexpand) can_expand = false; else
+            if ('expand' in handle) can_expand = true;
 
             if (can_draw && can_expand) {
                // if default action specified as expand, disable drawing
@@ -479,11 +483,11 @@
                return this.expand(itemname, null, d3cont);
          }
 
-         if (!hitem._childs && (this.default_by_click === "expand"))
+         if (can_expand && (this.default_by_click === "expand"))
             return this.expand(itemname, null, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0))
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && (can_draw!==false))
             return this.display(itemname, "inspect");
 
          if (!hitem._childs || (hitem === this.h)) return;
