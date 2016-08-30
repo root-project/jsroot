@@ -1566,7 +1566,7 @@
       if (!tracks) return;
       for (var n=0;n<tracks.length;++n) {
          var track = tracks[n];
-         var track_width = track.fLinewidth;
+         var track_width = track.fLineWidth;
          var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
          var buf = new Float32Array((track.fN-1)*6), pos = 0;
