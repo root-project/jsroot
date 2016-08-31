@@ -1064,41 +1064,50 @@
          if (place.length===2) return callback(isstr ? res : new DataView(res));
 
          // object to access response data
-         var view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
+         var arr = [], o = 0,
+             hdr = this.getResponseHeader('Content-Type'),
+             ismulti = hdr && (hdr.indexOf('multipart')>=0),
+             view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
                        : new DataView(res);
-         var arr = [], o = 0;
 
-         // check if server may answer with single segment, if all peaces are behind each other
-         var canbe_single_segment = true, single_len = 0;
-         for(var n=0;n<place.length-2;n+=2) {
-            single_len += place[n+1];
-            if (place[n] + place[n+1] !== place[n+2]) canbe_single_segment = false;
-         }
 
-         if (canbe_single_segment && (view.byteLength === (single_len + place[place.length-1]))) {
-            for (var n=0;n<place.length;n+=2) {
-               arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
-               o+=place[n+1];
+         if (!ismulti) {
+            // server may returns simple buffer
+
+            var hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
+
+            if (hdr_range && hdr_range.indexOf("bytes")>=0) {
+               var parts = hdr_range.substr(hdr_range.indexOf("bytes") + 6).split(/[\s-\/]+/);
+               if (parts.length===3) {
+                  segm_start = parseInt(parts[0]);
+                  segm_last = parseInt(parts[1]);
+                  if (isNaN(segm_start) || isNaN(segm_last) || (segm_start > segm_last)) {
+                     segm_start = 0; segm_last = -1;
+                  }
+               }
             }
-            return callback(arr);
-         }
 
+            var canbe_single_segment = segm_start<=segm_last;
+            for(var n=0;n<place.length;n+=2)
+               if ((place[n]<segm_start) || (place[n] + place[n+1] -1 > segm_last))
+                  canbe_single_segment = false;
 
-         // multipart messages requires special handling
+            if (canbe_single_segment) {
+               for (var n=0;n<place.length;n+=2)
+                  arr.push(isstr ? res.substr(place[n]-segm_start, place[n+1]) : new DataView(res, place[n]-segm_start, place[n+1]));
+               return callback(arr);
+            }
 
-         var hdr = this.getResponseHeader('Content-Type');
-         if (!hdr || hdr.indexOf('multipart')<0) {
             console.error('Server returns normal response when multipart was requested, disable multirange support');
             file.fMultiRanges = false;
             return file.ReadBuffer(place, callback);
          }
 
+         // multipart messages requires special handling
+
          var indx = hdr.indexOf("boundary="), boundary = "";
          if (indx > 0) boundary = "--" + hdr.substr(indx+9);
                   else console.error('Did not found boundary id in the response header');
-
-
-         // console.log(place, res);
 
          var n = 0;
 
