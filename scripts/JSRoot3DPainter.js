@@ -2025,9 +2025,10 @@
 
       if (!main  || !('renderer' in main)) return this.DrawingReady();
 
-      var step = 3, sizelimit = main.webgl ? 50000 : 5000;
+      var step = 3, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
+          sizelimit = main.webgl ? 50000 : 5000;
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && (poly.fP.length > 3 * sizelimit)) {
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points && (poly.fP.length > 3*sizelimit)) {
          step = Math.floor(poly.fP.length / sizelimit / 3 ) * 3;
          if (step <= 6) step = 6;
       }
@@ -2036,14 +2037,28 @@
           indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
           vertices = JSROOT.Painter.Box_Vertices,
-          pos = new Float32Array(indicies.length*3*size),
-          norm = new Float32Array(indicies.length*3*size),
-          lll = 0, scale = main.size3d/100;
+          lll = 0, scale = main.size3d/100, pos, norm;
+
+      if (use_points) {
+         pos = new Float32Array(size*3);
+         norm = null;
+      } else {
+         pos = new Float32Array(indicies.length*3*size);
+         norm = new Float32Array(indicies.length*3*size);
+      }
 
       for (var i=0; i < size*step; i+=step) {
          var x = main.tx(poly.fP[i]),
              y = main.ty(poly.fP[i+1]),
              z = main.tz(poly.fP[i+2]);
+
+         if (use_points) {
+            pos[lll]   = x;
+            pos[lll+1] = y;
+            pos[lll+2] = z;
+            lll+=3;
+            continue;
+         }
 
          for (var k=0,nn=-3;k<indicies.length;++k) {
             var vert = vertices[indicies[k]];
@@ -2062,45 +2077,83 @@
 
       var geom = new THREE.BufferGeometry();
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+      if (norm)  geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
       var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
 
-      // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+      if (use_points) {
+         var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
+         var points = new THREE.Points(geom, material);
 
-      var mesh = new THREE.Mesh(geom, material);
+         main.toplevel.add(points);
 
-      main.toplevel.add(mesh);
+         points.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         points.poly = poly;
+         points.painter = main;
+         points.scale0 = 0.7*scale;
 
-      mesh.step = step;
-      mesh.nvertex = indicies.length;
-      mesh.poly = poly;
-      mesh.painter = main;
-      mesh.scale0 = 0.7*scale; // double size
-      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         points.tooltip = function(intersect) {
 
-      mesh.tooltip = function(intersect) {
-         var indx = Math.floor(intersect.index / this.nvertex) * this.step;
-         if ((indx<0) || (indx >= this.poly.fP.length)) return null;
-         var p = this.painter;
+            var indx = intersect.index*3;
+            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
+            var p = this.painter;
 
-         var tip = { info: "bin: " + indx/3 + "<br/>" +
-                           "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
-                           "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
-                           "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
 
-         var grx = p.tx(this.poly.fP[indx]),
-             gry = p.ty(this.poly.fP[indx+1]),
-             grz = p.tz(this.poly.fP[indx+2]);
+            var grx = p.tx(this.poly.fP[indx]),
+                gry = p.ty(this.poly.fP[indx+1]),
+                grz = p.tz(this.poly.fP[indx+2]);
 
-         tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-         tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-         tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
 
-         tip.color = this.tip_color;
+            tip.color = this.tip_color;
 
-         return tip;
+            return tip;
+         }
+
+      } else {
+
+         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+
+         var mesh = new THREE.Mesh(geom, material);
+
+         main.toplevel.add(mesh);
+
+         mesh.step = step;
+         mesh.nvertex = indicies.length;
+         mesh.poly = poly;
+         mesh.painter = main;
+         mesh.scale0 = 0.7*scale; // double size
+         mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+
+         mesh.tooltip = function(intersect) {
+            var indx = Math.floor(intersect.index / this.nvertex) * this.step;
+            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
+            var p = this.painter;
+
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+            var grx = p.tx(this.poly.fP[indx]),
+            gry = p.ty(this.poly.fP[indx+1]),
+            grz = p.tz(this.poly.fP[indx+2]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
+         }
       }
 
       main.Render3D(100); // set large timeout to be able draw other points

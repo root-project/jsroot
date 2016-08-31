@@ -1569,6 +1569,8 @@
          var track_width = track.fLineWidth;
          var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
+         if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+
          var buf = new Float32Array((track.fN-1)*6), pos = 0;
 
          for (var k=0;k<track.fN-1;++k) {

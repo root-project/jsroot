@@ -102,7 +102,7 @@
    JSROOT.id_counter = 0;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false };
+   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false, isWin:false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       var scripts = document.getElementsByTagName('script');
@@ -129,6 +129,7 @@
       JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
       JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
       JSROOT.browser.isIE = false || !!document.documentMode;
+      JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
    }
 
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
