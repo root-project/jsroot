@@ -1387,11 +1387,6 @@
 
       var file = this;
 
-      //file.ReadBuffer([10000,10,10010,10, 10120,10,10130,10,10140,10], function(dblobs) {
-      //   console.log("Read", dblobs.length, " BLOBS");
-      //});
-
-
       // with the first readbuffer we read bigger amount to create header cache
       this.ReadBuffer([0, 1024], function(blob) {
          if (!blob) return JSROOT.CallBack(readkeys_callback, null);
