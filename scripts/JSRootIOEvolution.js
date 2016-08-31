@@ -1007,7 +1007,6 @@
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
 
-
       var file = this;
       if ((place.length > 2) && !file.fMultiRanges) {
          var arg = { file: file, place: place, arr: [], callback: callback };
@@ -1064,6 +1063,27 @@
          // if only single segment requested, return result as is
          if (place.length===2) return callback(isstr ? res : new DataView(res));
 
+         // object to access response data
+         var view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
+                       : new DataView(res);
+         var arr = [], o = 0;
+
+         // check if server may answer with single segment, if all peaces are behind each other
+         var canbe_single_segment = true, single_len = 0;
+         for(var n=0;n<place.length-2;n+=2) {
+            single_len += place[n+1];
+            if (place[n] + place[n+1] !== place[n+2]) canbe_single_segment = false;
+         }
+
+         if (canbe_single_segment && (view.byteLength === (single_len + place[place.length-1]))) {
+            for (var n=0;n<place.length;n+=2) {
+               arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
+               o+=place[n+1];
+            }
+            return callback(arr);
+         }
+
+
          // multipart messages requires special handling
 
          var hdr = this.getResponseHeader('Content-Type');
@@ -1078,10 +1098,6 @@
                   else console.error('Did not found boundary id in the response header');
 
 
-         var arr = [], o = 0,
-             view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
-                          : new DataView(res);
-
          // console.log(place, res);
 
          for (var n=0;n<place.length;n+=2) {
@@ -1093,7 +1109,7 @@
                code2 = view.getUint8(o+1);
 
                if ((code1==13) && (code2==10)) {
-                  // console.log(nline, 'saw line', line);
+                  console.log(nline, 'saw line', line);
 
                   if ((line.length>2) && (line.substr(0,2)=='--') && (line !== boundary)) {
                      console.error('Expact boundary ' + boundary + ' as second line, got ' + line);
@@ -1344,6 +1360,11 @@
 
       var file = this;
 
+      //file.ReadBuffer([10000,10,10010,10, 10120,10,10130,10,10140,10], function(dblobs) {
+      //   console.log("Read", dblobs.length, " BLOBS");
+      //});
+
+
       // with the first readbuffer we read bigger amount to create header cache
       this.ReadBuffer([0, 1024], function(blob) {
          if (!blob) return JSROOT.CallBack(readkeys_callback, null);
@@ -1436,6 +1457,7 @@
                file.fKeys.push(si_key);
                file.ReadObjBuffer(si_key, function(blob6) {
                   if (blob6) file.ExtractStreamerInfos(blob6);
+
                   return JSROOT.CallBack(readkeys_callback, file);
                });
 
