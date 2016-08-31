@@ -1100,19 +1100,35 @@
 
          // console.log(place, res);
 
-         for (var n=0;n<place.length;n+=2) {
+         var n = 0;
 
-            var code1, code2 = view.getUint8(o), nline = 0, line = "", finish_header = false;
+         while (n<place.length) {
+
+            var code1, code2 = view.getUint8(o), nline = 0, line = "",
+                finish_header = false, segm_start = 0, segm_last = -1;
 
             while((o < view.byteLength-1) && !finish_header && (nline<5)) {
                code1 = code2;
                code2 = view.getUint8(o+1);
 
                if ((code1==13) && (code2==10)) {
-                  console.log(nline, 'saw line', line);
-
                   if ((line.length>2) && (line.substr(0,2)=='--') && (line !== boundary)) {
-                     console.error('Expact boundary ' + boundary + ' as second line, got ' + line);
+                     console.error('Expact boundary ' + boundary + '  got ' + line);
+                  }
+
+                  line = line.toLowerCase();
+
+                  if ((line.indexOf("content-range")>=0) && (line.indexOf("bytes") > 0)) {
+                     var parts = line.substr(line.indexOf("bytes") + 6).split(/[\s-\/]+/);
+                     if (parts.length===3) {
+                        segm_start = parseInt(parts[0]);
+                        segm_last = parseInt(parts[1]);
+                        if (isNaN(segm_start) || isNaN(segm_last) || (segm_start > segm_last)) {
+                           segm_start = 0; segm_last = -1;
+                        }
+                     } else {
+                        console.error('Fail to decode content-range', line, parts);
+                     }
                   }
 
                   if ((nline > 1) && (line.length===0)) finish_header = true;
@@ -1130,9 +1146,20 @@
                return callback(null);
             }
 
-            arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
-
-            o += place[n+1];
+            if (segm_start > segm_last) {
+               // fall-back solution, believe that segments same as requested
+               arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
+               o += place[n+1];
+               n += 2;
+            } else {
+               // segments may be merged by server
+               while ((n<place.length) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
+                  arr.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
+                                   new DataView(res, o + place[n] - segm_start, place[n+1]));
+                  n += 2;
+               }
+               o += (segm_last-segm_start+1);
+            }
          }
 
          callback(arr);
