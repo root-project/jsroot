@@ -39,7 +39,7 @@
 
    JSROOT.TGeoPainter = function( obj ) {
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, _geoh: obj._geoh };
+         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, _geoh: obj._geoh, _proxy: true };
 
       JSROOT.TObjectPainter.call(this, obj);
 
@@ -1545,25 +1545,9 @@
 
 
    JSROOT.TGeoPainter.prototype.PerformDrop = function(obj) {
-      if (!obj) return null;
 
-      var tracks = [], hits = [];
-
-      if (obj._typename === 'TEvePointSet') hits.push(obj); else
-      if (obj._typename === 'TEveTrack') tracks.push(obj); else
-      if (obj._typename === "TList" && obj.arr) {
-         for (var n=0;n<obj.arr.length;++n)
-            if (obj.arr[n] && obj.arr[n]._typename === 'TEveTrack')
-               tracks.push(obj.arr[n]);
-            else if (obj.arr[n] && obj.arr[n]._typename === 'TEvePointSet')
-               hits.push(obj.arr[n]);
-      }
-
-      if (tracks.length>0)
-         this.drawTracks(tracks, true);
-
-      if (hits.length>0)
-         this.drawHits(hits, true);
+      if (this.drawExtras(obj,true))
+         this.Render3D(100);
 
       return null;
    }
@@ -1573,143 +1557,153 @@
       // register extra objects like tracks or hits
       // Check if object already exists to prevent duplication
 
-      var tgt = this,
-          name = "_extra" + folder_name,
-          arr = tgt[name];
+      var tgt = this.GetObject(), name = "_extra" + folder_name;
+      if (tgt && tgt._proxy) tgt = tgt.fVolume;
+      var lst = tgt[name];
+      if (obj === undefined) return lst;
 
-      if (arr === undefined) arr = tgt[name] = [];
+      if (lst === undefined) lst = tgt[name] = JSROOT.Create("TList");
 
-      if (arr.indexOf(obj)>=0) return false;
+      if (lst.arr.indexOf(obj)>=0) return false;
 
-      arr.push(obj);
+      lst.Add(obj,"");
 
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.drawTracks = function(tracks, direct_draw) {
-      if (!tracks) return;
-      for (var n=0;n<tracks.length;++n) {
-         var track = tracks[n];
-         if (direct_draw && !this.addExtra("Tracks", track)) continue;
 
-         var track_width = track.fLineWidth;
-         var track_color = JSROOT.Painter.root_colors[track.fLineColor];
+   JSROOT.TGeoPainter.prototype.drawExtras = function(obj, direct_draw) {
+      if (!obj || obj._typename===undefined) return false;
 
-         if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
+      var isany = false;
 
-         var buf = new Float32Array((track.fN-1)*6), pos = 0;
-
-         for (var k=0;k<track.fN-1;++k) {
-            buf[pos]   = track.fP[k*3];
-            buf[pos+1] = track.fP[k*3+1];
-            buf[pos+2] = track.fP[k*3+2];
-            buf[pos+3] = track.fP[k*3+3];
-            buf[pos+4] = track.fP[k*3+4];
-            buf[pos+5] = track.fP[k*3+5];
-            pos+=6;
-         }
-
-         var geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-         var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
-         var line = new THREE.LineSegments(geom, lineMaterial);
-
-         line.geo_name = "Tracks/" + track.fName;
-
-         this._toplevel.add(line);
+      if (obj._typename === "TList") {
+         if (obj.arr)
+            for (var n=0;n<obj.arr.length;++n)
+               if (this.drawExtras(obj.arr[n], direct_draw)) isany = true;
+      } else
+      if (obj._typename === 'TEveTrack') {
+         if (direct_draw && !this.addExtra("Tracks", obj)) return false;
+         isany = this.drawTrack(obj);
+      } else
+      if (obj._typename === 'TEvePointSet') {
+         if (direct_draw && !this.addExtra("Hits", obj)) return false;
+         isany = this.drawHit(obj);
       }
 
-      if (direct_draw) this.Render3D(100); // let add more tracks before real render happens
+      return isany;
    }
 
-   JSROOT.TGeoPainter.prototype.drawHits = function(hits, direct_draw) {
-      if (!hits) return;
-      for (var n=0;n<hits.length;++n) {
-         var hit = hits[n];
-         if (direct_draw && !this.addExtra("Hits", hit)) continue;
 
-         var hit_size = 25.0 * hit.fMarkerSize;
-         var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
+   JSROOT.TGeoPainter.prototype.drawTrack = function(track) {
+      if (!track) return false;
 
-         var use_points = this._webgl,
-             size = hit.fN-1, step = 1, scale = hit_size*0.3,
-             indicies = JSROOT.Painter.Box_Indexes,
-             normals = JSROOT.Painter.Box_Normals,
-             vertices = JSROOT.Painter.Box_Vertices,
-             lll = 0, pos, norm;
+      var track_width = track.fLineWidth;
+      var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
-         if (use_points) {
-            pos = new Float32Array(size*3);
-            norm = null;
-         } else {
-            // TODO: provide support of POINTS directly in the CanvasRenderer
+      if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-            if (size > 1000) { step = Math.floor(size/500); if (step<2) step = 2; }
+      var buf = new Float32Array((track.fN-1)*6), pos = 0;
 
-            pos = new Float32Array(indicies.length*3*Math.floor(size/step));
-            norm = new Float32Array(indicies.length*3*Math.floor(size/step));
-         }
-
-         // console.log('use points', use_points, 'size', size, 'step', step);
-
-         for (var i=0;i<size;i+=step) {
-
-            var x = hit.fP[i*3],
-                y = hit.fP[i*3+1],
-                z = hit.fP[i*3+2];
-
-            if (use_points) {
-               pos[lll]   = x;
-               pos[lll+1] = y;
-               pos[lll+2] = z;
-               lll+=3;
-               continue;
-            }
-
-            for (var k=0,nn=-3;k<indicies.length;++k) {
-               var vert = vertices[indicies[k]];
-               pos[lll]   = x + (vert.x-0.5)*scale;
-               pos[lll+1] = y + (vert.y-0.5)*scale;
-               pos[lll+2] = z + (vert.z-0.5)*scale;
-
-               if (k%6===0) nn+=3;
-               norm[lll] = normals[nn];
-               norm[lll+1] = normals[nn+1];
-               norm[lll+2] = normals[nn+2];
-
-               lll+=3;
-            }
-         }
-
-         var geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-         if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-
-
-         if (use_points) {
-            var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-            var points = new THREE.Points(geom, material);
-
-            points.geo_name = "Hits/" + hit.fName;
-
-            this._toplevel.add(points);
-         } else {
-            // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-            var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
-            var mesh = new THREE.Mesh(geom, material);
-            mesh.geo_name = "Hits/" + hit.fName;
-
-            this._toplevel.add(mesh);
-         }
-
-         //var geom = new THREE.BufferGeometry();
-         //geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-         //var hitMaterial = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-         //var points = new THREE.Points(geom, hitMaterial);
-         //this._toplevel.add(points);
+      for (var k=0;k<track.fN-1;++k) {
+         buf[pos]   = track.fP[k*3];
+         buf[pos+1] = track.fP[k*3+1];
+         buf[pos+2] = track.fP[k*3+2];
+         buf[pos+3] = track.fP[k*3+3];
+         buf[pos+4] = track.fP[k*3+4];
+         buf[pos+5] = track.fP[k*3+5];
+         pos+=6;
       }
 
-      if (direct_draw) this.Render3D(100); // let add more hits before real render happens
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+      var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
+      var line = new THREE.LineSegments(geom, lineMaterial);
+
+      line.geo_name = "Tracks/" + track.fName;
+
+      this._toplevel.add(line);
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawHit = function(hit) {
+      if (!hit) return false;
+
+      var hit_size = 25.0 * hit.fMarkerSize;
+      var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
+
+      var use_points = this._webgl,
+      size = hit.fN-1, step = 1, scale = hit_size*0.3,
+      indicies = JSROOT.Painter.Box_Indexes,
+      normals = JSROOT.Painter.Box_Normals,
+      vertices = JSROOT.Painter.Box_Vertices,
+      lll = 0, pos, norm;
+
+      if (use_points) {
+         pos = new Float32Array(size*3);
+         norm = null;
+      } else {
+         // TODO: provide support of POINTS directly in the CanvasRenderer
+
+         if (size > 1000) { step = Math.floor(size/500); if (step<2) step = 2; }
+
+         pos = new Float32Array(indicies.length*3*Math.floor(size/step));
+         norm = new Float32Array(indicies.length*3*Math.floor(size/step));
+      }
+
+      // console.log('use points', use_points, 'size', size, 'step', step);
+
+      for (var i=0;i<size;i+=step) {
+
+         var x = hit.fP[i*3],
+         y = hit.fP[i*3+1],
+         z = hit.fP[i*3+2];
+
+         if (use_points) {
+            pos[lll]   = x;
+            pos[lll+1] = y;
+            pos[lll+2] = z;
+            lll+=3;
+            continue;
+         }
+
+         for (var k=0,nn=-3;k<indicies.length;++k) {
+            var vert = vertices[indicies[k]];
+            pos[lll]   = x + (vert.x-0.5)*scale;
+            pos[lll+1] = y + (vert.y-0.5)*scale;
+            pos[lll+2] = z + (vert.z-0.5)*scale;
+
+            if (k%6===0) nn+=3;
+            norm[lll] = normals[nn];
+            norm[lll+1] = normals[nn+1];
+            norm[lll+2] = normals[nn+2];
+
+            lll+=3;
+         }
+      }
+
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+
+      if (use_points) {
+         var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
+         var points = new THREE.Points(geom, material);
+
+         points.geo_name = "Hits/" + hit.fName;
+
+         this._toplevel.add(points);
+      } else {
+         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+         var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
+         var mesh = new THREE.Mesh(geom, material);
+         mesh.geo_name = "Hits/" + hit.fName;
+
+         this._toplevel.add(mesh);
+      }
+
+      return true;
    }
 
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
@@ -2003,8 +1997,8 @@
       this._scene.overrideMaterial = null;
 
       // if extra object where append, redraw them at the end
-      this.drawTracks(this._extraTracks);
-      this.drawHits(this._extraHits);
+      this.drawExtras(this.addExtra("Tracks"));
+      this.drawExtras(this.addExtra("Hits"));
 
       this.Render3D(0, true);
 
@@ -2513,6 +2507,9 @@
    JSROOT.GEO.expandObject = function(parent, obj) {
       if (!parent || !obj) return false;
 
+      console.log('Expand ', obj._typename, " tracks", obj._extraTracks);
+
+
       var isnode = (obj._typename.indexOf('TGeoNode') === 0),
           isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
           ismanager = (obj._typename === 'TGeoManager'),
@@ -2535,11 +2532,17 @@
          shape = volume ? volume.fShape : null;
       }
 
+      if (obj._extraTracks)
+         JSROOT.GEO.createList(parent, obj._extraTracks, "Tracks", "list of tracks");
+
+      if (obj._extraHits)
+         JSROOT.GEO.createList(parent, obj._extraHits, "Hits", "list of hits");
+
       if (ismanager || (!parent._geoobj && subnodes && subnodes.length && !iseve)) {
          if (ismanager) {
             JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
             JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
-            JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
+            JSROOT.GEO.createList(parent, obj.fTracks, "fTracks", "list of tracks");
          }
 
          if (volume) {
