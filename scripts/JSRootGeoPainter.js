@@ -673,7 +673,8 @@
             } else {
                for (var n=0;n<intersects.length;++n) {
                   var obj = intersects[n].object;
-                  if (obj.stack) names.push(painter._clones.ResolveStack(obj.stack).name);
+                  if (obj.stack) names.push(painter._clones.ResolveStack(obj.stack).name); else
+                  if (obj.geo_name) names.push(obj.geo_name);
                }
             }
             painter.ActiavteInBrowser(names);
@@ -2357,7 +2358,7 @@
 
       var item = {
           _name: name,
-          _kind: "Folder",
+          _kind: "ROOT.TList",
           _title: title,
           _more: true,
           _geoobj: lst,
@@ -2507,9 +2508,6 @@
    JSROOT.GEO.expandObject = function(parent, obj) {
       if (!parent || !obj) return false;
 
-      console.log('Expand ', obj._typename, " tracks", obj._extraTracks);
-
-
       var isnode = (obj._typename.indexOf('TGeoNode') === 0),
           isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
           ismanager = (obj._typename === 'TGeoManager'),
@@ -2532,10 +2530,10 @@
          shape = volume ? volume.fShape : null;
       }
 
-      if (obj._extraTracks)
+      if (obj._extraTracks && !parent._geoobj)
          JSROOT.GEO.createList(parent, obj._extraTracks, "Tracks", "list of tracks");
 
-      if (obj._extraHits)
+      if (obj._extraHits && !parent._geoobj)
          JSROOT.GEO.createList(parent, obj._extraHits, "Hits", "list of hits");
 
       if (ismanager || (!parent._geoobj && subnodes && subnodes.length && !iseve)) {
