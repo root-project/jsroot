@@ -1590,7 +1590,7 @@
          this._toplevel.add(line);
       }
 
-      this.Render3D();
+      this.Render3D(100); // let add more tracks before real render happens
    }
 
    JSROOT.TGeoPainter.prototype.drawHits = function(hits) {
@@ -1600,23 +1600,81 @@
          var hit_size = 25.0 * hit.fMarkerSize;
          var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
 
-         var buf = new Float32Array((hit.fN-1)*3), pos = 0;
+         var use_points = this._webgl,
+             size = hit.fN-1, step = 1, scale = hit_size*0.3,
+             indicies = JSROOT.Painter.Box_Indexes,
+             normals = JSROOT.Painter.Box_Normals,
+             vertices = JSROOT.Painter.Box_Vertices,
+             lll = 0, pos, norm;
 
-         for (var k=0;k<hit.fN-1;++k) {
-            buf[pos]   = hit.fP[k*3];
-            buf[pos+1] = hit.fP[k*3+1];
-            buf[pos+2] = hit.fP[k*3+2];
-            pos+=3;
+         if (use_points) {
+            pos = new Float32Array(size*3);
+            norm = null;
+         } else {
+            // TODO: provide support of POINTS directly in the CanvasRenderer
+
+            if (size > 1000) { step = Math.floor(size/500); if (step<2) step = 2; }
+
+            pos = new Float32Array(indicies.length*3*Math.floor(size/step));
+            norm = new Float32Array(indicies.length*3*Math.floor(size/step));
+         }
+
+         // console.log('use points', use_points, 'size', size, 'step', step);
+
+         for (var i=0;i<size;i+=step) {
+
+            var x = hit.fP[i*3],
+                y = hit.fP[i*3+1],
+                z = hit.fP[i*3+2];
+
+            if (use_points) {
+               pos[lll]   = x;
+               pos[lll+1] = y;
+               pos[lll+2] = z;
+               lll+=3;
+               continue;
+            }
+
+            for (var k=0,nn=-3;k<indicies.length;++k) {
+               var vert = vertices[indicies[k]];
+               pos[lll]   = x + (vert.x-0.5)*scale;
+               pos[lll+1] = y + (vert.y-0.5)*scale;
+               pos[lll+2] = z + (vert.z-0.5)*scale;
+
+               if (k%6===0) nn+=3;
+               norm[lll] = normals[nn];
+               norm[lll+1] = normals[nn+1];
+               norm[lll+2] = normals[nn+2];
+
+               lll+=3;
+            }
          }
 
          var geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-         var hitMaterial = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-         var points = new THREE.Points(geom, hitMaterial);
-         this._toplevel.add(points);
+         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+
+         if (use_points) {
+            var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
+            var points = new THREE.Points(geom, material);
+
+            this._toplevel.add(points);
+         } else {
+            // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+            var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
+            var mesh = new THREE.Mesh(geom, material);
+            this._toplevel.add(mesh);
+         }
+
+         //var geom = new THREE.BufferGeometry();
+         //geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+         //var hitMaterial = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
+         //var points = new THREE.Points(geom, hitMaterial);
+         //this._toplevel.add(points);
       }
 
-      this.Render3D();
+      this.Render3D(100); // let add more hits before real render happens
    }
 
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {

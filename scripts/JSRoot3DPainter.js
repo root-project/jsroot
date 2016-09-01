@@ -2077,7 +2077,7 @@
 
       var geom = new THREE.BufferGeometry();
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      if (norm)  geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
       var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
 
