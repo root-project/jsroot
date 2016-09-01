@@ -481,15 +481,23 @@
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = painter; // set as this in callbacks
 
-         if (!intersects || (intersects.length==0)) {
+         var numnodes = 0;
+         if (intersects)
+            for (var n=0;n<intersects.length;++n)
+               if (intersects[n].object.stack) numnodes++;
+
+
+         if (numnodes === 0) {
             painter.FillContextMenu(menu);
          } else {
-            var many = (intersects.length > 1);
+            var many = (numnodes > 1);
 
             if (many) menu.add("header: Nodes");
 
             for (var n=0;n<intersects.length;++n) {
                var obj = intersects[n].object;
+               if (!obj.stack) continue;
+
                var name = painter._clones.ResolveStack(obj.stack).name;
 
                var hdr = "header";
@@ -561,12 +569,14 @@
    JSROOT.TGeoPainter.prototype.FilterIntersects = function(intersects) {
 
       // remove all elements without stack - indicator that this is geometry object
-      for (var n=intersects.length-1; n>=0;--n) {
+      for (var n=intersects.length-1; n>=0; --n) {
 
-         var unique = intersects[n].object.stack !== undefined;
+         var obj = intersects[n].object;
+
+         var unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
 
          for (var k=0;(k<n) && unique;++k)
-            if (intersects[k].object === intersects[n].object) unique = false;
+            if (intersects[k].object === obj) unique = false;
 
          if (!unique) intersects.splice(n,1);
       }
@@ -644,6 +654,8 @@
 
                if (intersects[0].object.stack)
                   tooltip = painter._clones.ResolveStack(intersects[0].object.stack).name;
+               else if (intersects[0].object.geo_name)
+                  tooltip = intersects[0].object.geo_name;
             }
          }
 
@@ -661,8 +673,7 @@
             } else {
                for (var n=0;n<intersects.length;++n) {
                   var obj = intersects[n].object;
-                  if (obj.stack)
-                  names.push(painter._clones.ResolveStack(obj.stack).name);
+                  if (obj.stack) names.push(painter._clones.ResolveStack(obj.stack).name);
                }
             }
             painter.ActiavteInBrowser(names);
@@ -1536,8 +1547,7 @@
    JSROOT.TGeoPainter.prototype.PerformDrop = function(obj) {
       if (!obj) return null;
 
-      var tracks = [];
-      var hits = [];
+      var tracks = [], hits = [];
 
       if (obj._typename === 'TEvePointSet') hits.push(obj); else
       if (obj._typename === 'TEveTrack') tracks.push(obj); else
@@ -1549,23 +1559,39 @@
                hits.push(obj.arr[n]);
       }
 
-      if (tracks.length>0) {
-         console.log('Try to drop ', tracks.length, ' tracks');
-         this.drawTracks(tracks);
-      }
+      if (tracks.length>0)
+         this.drawTracks(tracks, true);
 
-      if (hits.length>0) {
-         console.log('Try to drop ', hits.length, ' hits');
-         this.drawHits(hits);
-      }
+      if (hits.length>0)
+         this.drawHits(hits, true);
 
       return null;
    }
 
-   JSROOT.TGeoPainter.prototype.drawTracks = function(tracks) {
+   JSROOT.TGeoPainter.prototype.addExtra = function(folder_name, obj) {
+
+      // register extra objects like tracks or hits
+      // Check if object already exists to prevent duplication
+
+      var tgt = this,
+          name = "_extra" + folder_name,
+          arr = tgt[name];
+
+      if (arr === undefined) arr = tgt[name] = [];
+
+      if (arr.indexOf(obj)>=0) return false;
+
+      arr.push(obj);
+
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawTracks = function(tracks, direct_draw) {
       if (!tracks) return;
       for (var n=0;n<tracks.length;++n) {
          var track = tracks[n];
+         if (direct_draw && !this.addExtra("Tracks", track)) continue;
+
          var track_width = track.fLineWidth;
          var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
@@ -1587,16 +1613,21 @@
          geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
          var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
          var line = new THREE.LineSegments(geom, lineMaterial);
+
+         line.geo_name = "Tracks/" + track.fName;
+
          this._toplevel.add(line);
       }
 
-      this.Render3D(100); // let add more tracks before real render happens
+      if (direct_draw) this.Render3D(100); // let add more tracks before real render happens
    }
 
-   JSROOT.TGeoPainter.prototype.drawHits = function(hits) {
+   JSROOT.TGeoPainter.prototype.drawHits = function(hits, direct_draw) {
       if (!hits) return;
       for (var n=0;n<hits.length;++n) {
          var hit = hits[n];
+         if (direct_draw && !this.addExtra("Hits", hit)) continue;
+
          var hit_size = 25.0 * hit.fMarkerSize;
          var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
 
@@ -1659,11 +1690,15 @@
             var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
             var points = new THREE.Points(geom, material);
 
+            points.geo_name = "Hits/" + hit.fName;
+
             this._toplevel.add(points);
          } else {
             // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
             var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
             var mesh = new THREE.Mesh(geom, material);
+            mesh.geo_name = "Hits/" + hit.fName;
+
             this._toplevel.add(mesh);
          }
 
@@ -1674,7 +1709,7 @@
          //this._toplevel.add(points);
       }
 
-      this.Render3D(100); // let add more hits before real render happens
+      if (direct_draw) this.Render3D(100); // let add more hits before real render happens
    }
 
    JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
@@ -1966,6 +2001,10 @@
       }
 
       this._scene.overrideMaterial = null;
+
+      // if extra object where append, redraw them at the end
+      this.drawTracks(this._extraTracks);
+      this.drawHits(this._extraHits);
 
       this.Render3D(0, true);
 
