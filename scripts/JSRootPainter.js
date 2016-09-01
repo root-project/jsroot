@@ -7865,14 +7865,35 @@
             subitem._datasize = datasize;
             subitem._isvector = isvector;
 
-            subitem._get = function(item, itemname, callback, option) {
+            subitem._get = function(item, itemname, get_callback, option) {
 
                var b = item._branch,
                    f = item._parent._parent._file,
-                   histo = null;
+                   histo = null, break_execution = 0;
 
                if (option==='inspect')
-                  return JSROOT.CallBack(callback, item, b);
+                  return JSROOT.CallBack(get_callback, item, b);
+
+               function ShowProgress(value) {
+                  var main_box = document.createElement("p");
+                  //var para = document.createElement("p");
+                  var text_node = document.createTextNode(value);
+                  //para.appendChild(text_node);
+                  // main_box.appendChild(para);
+                  main_box.appendChild(text_node);
+                  var btn = document.createElement("button");       // Create a <button> element
+                  btn.appendChild(document.createTextNode("cancel"));  // Append the text to <button>
+                  btn.onclick = function() {
+                     if (++break_execution<3)
+                        return text_node.nodeValue = "Breaking ... ";
+                     break_execution = -1111;
+                     JSROOT.progress();
+                     JSROOT.CallBack(get_callback, item, histo);
+                  }
+                  main_box.appendChild(btn);
+
+                  JSROOT.progress(main_box);
+               }
 
                function ReadNextBaskets(indx) {
                   var places = [], totalsz = 0, indx0 = indx;
@@ -7881,19 +7902,25 @@
                      places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
                      totalsz += b.fBasketBytes[indx];
                      indx++;
-                     //break; // only single basket
+                     // break; // only single basket
                   }
 
-                  if (places.length === 0) {
+                  if ((places.length === 0) || (break_execution>0)) {
                      JSROOT.progress();
-                     return JSROOT.CallBack(callback, item, histo);
+                     return JSROOT.CallBack(get_callback, item, histo);
                   }
 
                   var maxindx = b.fWriteBasket || b.fMaxBaskets;
                   if (maxindx<=0) maxindx = 1;
-                  JSROOT.progress("TTree draw " + Math.round((indx0/maxindx*100)) + " %");
+
+                  ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
+
+                  //setTimeout(ContinueRead, 1000);
+                  //function ContinueRead() {
 
                   f.ReadBaskets(places, function(baskets) {
+
+                     if (break_execution<0) return; // hard break
 
                      if (!baskets) return ReadNextBaskets(-1);
 
@@ -7942,6 +7969,8 @@
 
                      ReadNextBaskets(indx);
                   });
+
+                  //}
                }
 
                ReadNextBaskets(0);
@@ -10307,7 +10336,12 @@
          box.append("p");
       }
 
-      box.select("p").html(msg);
+      if (typeof msg === "string")
+         box.select("p").html(msg);
+      else {
+         box.html("");
+         box.node().appendChild(msg);
+      }
    }
 
    return JSROOT;
