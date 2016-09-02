@@ -165,7 +165,7 @@
       if ('_hidden' in hitem) return;
 
       var handle = JSROOT.getDrawHandle(hitem._kind),
-         img1 = "", img2 = "", can_click = false;
+          img1 = "", img2 = "", can_click = false;
 
       if (handle !== null) {
          if ('icon' in handle) img1 = handle.icon;
@@ -264,7 +264,7 @@
                           .style('width','18px')
                           .style('height','18px');
 
-         if ('_icon_click' in hitem)
+         if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
             d3img.on("click", function() { h.tree_click(this, "icon"); });
       }
 
@@ -435,10 +435,14 @@
 
       if (!place || (place=="")) place = "item";
 
+      var handle = JSROOT.getDrawHandle(hitem._kind);
+
       if (place == "icon") {
-         if (('_icon_click' in hitem) && (typeof hitem._icon_click == 'function'))
-            if (hitem._icon_click(hitem, this))
-               this.UpdateTreeNode(hitem, d3cont);
+         var func = null;
+         if (typeof hitem._icon_click == 'function') func = hitem._icon_click; else
+         if (handle && typeof handle.icon_click == 'function') func = handle.icon_click;
+         if (func && func(hitem,this))
+            this.UpdateTreeNode(hitem, d3cont);
          return;
       }
 
@@ -454,8 +458,7 @@
          if ('_player' in hitem)
             return this.player(itemname);
 
-         var handle = JSROOT.getDrawHandle(hitem._kind),
-             can_draw = hitem._can_draw,
+         var can_draw = hitem._can_draw,
              can_expand = !hitem._childs && (hitem._more !== false);
 
          if (handle != null) {

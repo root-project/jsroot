@@ -8443,9 +8443,20 @@
       // get object item with specified name
       // depending from provided option, same item can generate different object types
 
-      var itemname = (typeof arg == 'object') ? arg.arg : arg;
+      var itemname, item, hpainter = this;
 
-      var item = this.Find( { name: itemname, allow_index: true } );
+      if (typeof arg === 'string') {
+         itemname = arg;
+      } else
+      if (typeof arg === 'object') {
+         if ((arg._parent!==undefined) && (arg._name!==undefined) && (arg._kind!==undefined)) item = arg; else
+         if (arg.name!==undefined) itemname = arg.name; else
+         if (arg.arg!==undefined) itemname = arg.arg; else
+         if (arg.item!==undefined) item = arg.item;
+      }
+
+      if (item) itemname = this.itemFullName(item);
+           else item = this.Find( { name: itemname, allow_index: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
       var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
@@ -8454,7 +8465,6 @@
       // implements not process get in central method of hierarchy item (if exists)
       // if last_parent found, try to expand it
       if ((d !== null) && ('last' in d) && (d.last !== null)) {
-         var hpainter = this;
          var parentname = this.itemFullName(d.last);
 
          // this is indication that expand does not give us better path to searched item
@@ -8466,7 +8476,7 @@
             if (!res) JSROOT.CallBack(call_back);
             var newparentname = hpainter.itemFullName(d.last);
             if (newparentname.length>0) newparentname+="/";
-            hpainter.get( { arg: newparentname + d.rest, rest: d.rest }, call_back, options);
+            hpainter.get( { name: newparentname + d.rest, rest: d.rest }, call_back, options);
          }, null, true);
       }
 
@@ -8645,7 +8655,7 @@
             var main_painter = dummy.main_painter(true);
 
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-               main_painter.PerformDrop(obj, itemname);
+               main_painter.PerformDrop(obj, itemname, item);
             else {
               var painter = this.draw(divid, obj, "same");
               if (painter)

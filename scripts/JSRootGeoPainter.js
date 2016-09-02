@@ -1575,10 +1575,12 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname) {
+   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem) {
 
-      if (this.drawExtras(obj, itemname, true))
+      if (this.drawExtras(obj, itemname, true)) {
+         if (hitem) hitem._painter = this; // set for the browser item back pointer
          this.Render3D(100);
+      }
 
       return null;
    }
@@ -1634,6 +1636,7 @@
       if (!track) return false;
 
       var track_width = track.fLineWidth;
+
       var track_color = JSROOT.Painter.root_colors[track.fLineColor];
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
@@ -2456,7 +2459,6 @@
          menu.add("Focus", function() {
 
            var drawitem = JSROOT.GEO.findItemWithPainter(item);
-         //  console.log(drawitem);
            if (!drawitem) return;
 
            var fullname = hpainter.itemFullName(item, drawitem);
@@ -2501,7 +2503,19 @@
    }
 
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
-      if (!hitem._volume) return false;
+      if (!hitem._volume) {
+
+         var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
+         if (!drawitem) return false;
+
+         // we want to access object which are already in the cached list
+         var item_obj = null;
+         hpainter.get(hitem, function(item,obj) { item_obj = obj; } );
+         if (!item_obj) return;
+
+         console.log('CLICK ITEM ' + hitem._name + '  type  ' + item_obj._typename);
+         return false;
+      }
 
       if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
          JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
@@ -2612,8 +2626,8 @@
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
-   JSROOT.addDrawFunc({ name: "TEvePointSet", icon: 'img_evepoints' });
-   JSROOT.addDrawFunc({ name: "TEveTrack", icon: 'img_evetrack' });
+   JSROOT.addDrawFunc({ name: "TEvePointSet", icon: 'img_evepoints', icon_click: JSROOT.GEO.browserIconClick });
+   JSROOT.addDrawFunc({ name: "TEveTrack", icon: 'img_evetrack', icon_click: JSROOT.GEO.browserIconClick });
 
    return JSROOT.Painter;
 
