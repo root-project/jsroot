@@ -8289,9 +8289,10 @@
 
       function find_in_hierarchy(top, fullname) {
 
-         if (!fullname || (fullname.length == 0) || (top==null)) return top;
+         if (!fullname || (fullname.length == 0) || !top) return top;
 
-         var pos = -1;
+         var pos = -1, once_again = false,
+             check_top = !top._parent && (top._kind !== 'TopFolder');
 
          function process_child(child) {
             // set parent pointer when searching child
@@ -8304,8 +8305,19 @@
          do {
             // we try to find element with slashes inside
             pos = fullname.indexOf("/", pos + 1);
+            once_again = false;
 
             var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
+
+            if (check_top && (localname === top._name)) {
+               // it is allowed to provide item name, which includes top-parent like file.root/folder/item
+               // but one could skip top-item name, if there are no other items
+               check_top = false;
+               if (localname===fullname) return top;
+               fullname = fullname.substr(pos+1);
+               pos = -1; once_again = true;
+               continue;
+            }
 
             if (top._childs) {
                // first try to find direct matched item
@@ -8344,13 +8356,12 @@
                return process_child(child);
             }
 
-         } while (pos > 0);
+         } while ((pos > 0) || once_again);
 
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
 
-      var top = this.h;
-      var itemname = "";
+      var top = this.h, itemname = "";
 
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
       if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
@@ -8359,14 +8370,16 @@
       return find_in_hierarchy(top, itemname);
    }
 
-   JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent) {
+   JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
       var res = "";
 
-      while (node && ('_parent' in node)) {
+      while (node) {
+         if (uptoparent && (node === uptoparent)) break;
+         if (node._kind==='TopFolder') break; // name of top folder never included
+         if (compact && !node._parent) break; // in compact form top-parent is not included
          if (res.length > 0) res = "/" + res;
          res = node._name + res;
          node = node._parent;
-         if (uptoparent && (node === uptoparent)) break;
       }
 
       return res;
@@ -8657,7 +8670,7 @@
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
                main_painter.PerformDrop(obj, itemname, item);
             else {
-              var painter = this.draw(divid, obj, "same");
+              var painter = h.draw(divid, obj, "same");
               if (painter)
                   return painter.WhenReady(function() { painter.SetItemName(itemname); JSROOT.CallBack(call_back); });
             }
