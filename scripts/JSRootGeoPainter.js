@@ -2499,10 +2499,21 @@
 
    JSROOT.GEO.provideMenu = function(menu, item, hpainter) {
 
-      if (!item._volume || !item._geoobj) return false;
+      if (!item._geoobj) return false;
+
+      var obj = item._geoobj, vol = item._volume,
+          iseve = (obj._typename === 'TEveGeoShapeExtract');
+
+      if (!vol && !iseve) return false;
 
       menu.add("separator");
-      var vol = item._volume;
+
+      function ToggleEveVisibility() {
+         obj.fRnrSelf = !obj.fRnrSelf;
+         item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
+         hpainter.UpdateTreeNode(item);
+         JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
+      }
 
       function ToggleMenuBit(arg) {
          JSROOT.GEO.ToggleBit(vol, arg);
@@ -2519,7 +2530,6 @@
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
-
       if ((item._geoobj._typename.indexOf("TGeoNode")===0) && JSROOT.GEO.findItemWithPainter(item))
          menu.add("Focus", function() {
 
@@ -2531,14 +2541,19 @@
               drawitem._painter.focusOnItem(fullname);
          });
 
-      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
-            JSROOT.GEO.BITS.kVisNone, ToggleMenuBit);
-      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisThis), "Visible",
-            JSROOT.GEO.BITS.kVisThis, ToggleMenuBit);
-      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisDaughters), "Daughters",
-            JSROOT.GEO.BITS.kVisDaughters, ToggleMenuBit);
-      menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisOneLevel), "1lvl daughters",
-            JSROOT.GEO.BITS.kVisOneLevel, ToggleMenuBit);
+      if (iseve) {
+         menu.addchk(obj.fRnrSelf, "Visible", 1, ToggleEveVisibility);
+
+      } else {
+         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
+               JSROOT.GEO.BITS.kVisNone, ToggleMenuBit);
+         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisThis), "Visible",
+               JSROOT.GEO.BITS.kVisThis, ToggleMenuBit);
+         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisDaughters), "Daughters",
+               JSROOT.GEO.BITS.kVisDaughters, ToggleMenuBit);
+         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisOneLevel), "1lvl daughters",
+               JSROOT.GEO.BITS.kVisOneLevel, ToggleMenuBit);
+      }
 
       return true;
    }
