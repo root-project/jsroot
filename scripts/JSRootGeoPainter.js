@@ -571,9 +571,13 @@
                menu.add("Hide", n, function(indx) {
                   var resolve = painter._clones.ResolveStack(intersects[indx].object.stack);
 
-                  if (resolve.obj && resolve.obj.fVolume) {
+                  if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
                      JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
                      JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, JSROOT.hpainter);
+                  } else
+                  if (resolve.obj && (resolve.node.kind === 1)) {
+                     resolve.obj.fRnrSelf = false;
+                     JSROOT.GEO.updateBrowserIcons(resolve.obj, JSROOT.hpainter);
                   }
                   // intersects[arg].object.visible = false;
                   // this.Render3D();
@@ -2327,14 +2331,17 @@
       return vol;
    }
 
-   JSROOT.GEO.provideVisStyle = function(volume) {
-      var vis = !JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisNone) &&
-                JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisThis);
+   JSROOT.GEO.provideVisStyle = function(obj) {
+      if (obj._typename === 'TEveGeoShapeExtract')
+         return obj.fRnrSelf ? " geovis_this" : "";
 
-      var chld = JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisDaughters) ||
-                 JSROOT.GEO.TestBit(volume, JSROOT.GEO.BITS.kVisOneLevel);
+      var vis = !JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisNone) &&
+                JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisThis);
 
-      if (chld && (!volume.fNodes || (volume.fNodes.arr.length === 0))) chld = false;
+      var chld = JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisDaughters) ||
+                 JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisOneLevel);
+
+      if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
       if (vis && chld) return " geovis_all";
       if (vis) return " geovis_this";
@@ -2350,6 +2357,7 @@
       JSROOT.CallBack(callback, item, item._geoobj);
    }
 
+
    JSROOT.GEO.createItem = function(node, obj, name) {
       var sub = {
          _kind: "ROOT." + obj._typename,
@@ -2360,7 +2368,7 @@
          _get: JSROOT.GEO.getBrowserItem
       };
 
-      var volume, shape, subnodes;
+      var volume, shape, subnodes, iseve = false;
 
       if (obj._typename == "TGeoMaterial") sub._icon = "img_geomaterial"; else
       if (obj._typename == "TGeoMedium") sub._icon = "img_geomedium"; else
@@ -2374,6 +2382,7 @@
          volume = obj;
       } else
       if (obj._typename == "TEveGeoShapeExtract") {
+         iseve = true;
          shape = obj.fShape;
          subnodes = obj.fElements ? obj.fElements.arr : null;
       } else
@@ -2416,10 +2425,11 @@
 
          if (volume)
             sub._icon += JSROOT.GEO.provideVisStyle(volume);
+         else if (iseve)
+            sub._icon += JSROOT.GEO.provideVisStyle(obj);
 
          sub._menu = JSROOT.GEO.provideMenu;
          sub._icon_click  = JSROOT.GEO.browserIconClick;
-
       }
 
       if (!node._childs) node._childs = [];
@@ -2527,39 +2537,48 @@
       return null;
    }
 
-   JSROOT.GEO.updateBrowserIcons = function(volume, hpainter) {
-      if (!volume || !hpainter) return;
+   JSROOT.GEO.updateBrowserIcons = function(obj, hpainter) {
+      if (!obj || !hpainter) return;
 
       hpainter.ForEach(function(m) {
          // update all items with that volume
-         if (volume === m._volume) {
-            m._icon = m._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(volume);
+         if ((obj === m._volume) || (obj === m._geoobj)) {
+            m._icon = m._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
             hpainter.UpdateTreeNode(m);
          }
       });
    }
 
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
-      if (!hitem._volume) {
-         // first check that geo painter assigned with the item
-         var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
-         if (!drawitem) return false;
+      if (hitem._volume) {
+         if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
+            JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
+         else
+            JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
 
-         var newstate = drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem), true);
+         JSROOT.GEO.updateBrowserIcons(hitem._volume, hpainter);
 
-         // return true means browser should update icon for the item
-         return (newstate!==undefined) ? true : false;
+         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
+         return false; // no need to update icon - we did it ourself
       }
 
-      if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
-         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisDaughters);
-      else
-         JSROOT.GEO.ToggleBit(hitem._volume, JSROOT.GEO.BITS.kVisThis);
+      if (hitem._geoobj && hitem._geoobj._typename == "TEveGeoShapeExtract") {
+         hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
-      JSROOT.GEO.updateBrowserIcons(hitem._volume, hpainter);
+         JSROOT.GEO.updateBrowserIcons(hitem._geoobj, hpainter);
+         JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
+         return false; // no need to update icon - we did it ourself
+      }
 
-      JSROOT.GEO.findItemWithPainter(hitem, 'testGeomChanges');
-      return false; // no need to update icon - we did it ourself
+
+      // first check that geo painter assigned with the item
+      var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
+      if (!drawitem) return false;
+
+      var newstate = drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem), true);
+
+      // return true means browser should update icon for the item
+      return (newstate!==undefined) ? true : false;
    }
 
    JSROOT.GEO.getShapeIcon = function(shape) {
