@@ -635,6 +635,9 @@
       else
          this.disp = new JSROOT.CollapsibleDisplay(this.disp_frameid);
 
+      if (this.disp)
+         this.disp.CleanupFrame = this.CleanupFrame.bind(this);
+
       JSROOT.CallBack(callback, this.disp);
    }
 
@@ -704,15 +707,16 @@
       if (document.getElementById(topid) == null)
          $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
-      var hid = topid + "_sub" + this.cnt++;
-      var uid = hid + "h";
-
-      var entryInfo = "<h5 id=\"" + uid + "\">" +
+      var mdi = this,
+          hid = topid + "_sub" + this.cnt++,
+          uid = hid + "h",
+          entryInfo = "<h5 id=\"" + uid + "\">" +
                         "<span class='ui-icon ui-icon-triangle-1-e'></span>" +
                         "<a> " + title + "</a>&nbsp; " +
                         "<button type='button' class='jsroot_collaps_closebtn' style='float:right; width:1.4em' title='close canvas'/>" +
-                        " </h5>\n";
-      entryInfo += "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+                        " </h5>\n" +
+                        "<div class='collapsible_draw' id='" + hid + "'></div>\n";
+
       $("#" + topid).append(entryInfo);
 
       $('#' + uid)
@@ -732,7 +736,7 @@
       $('#' + uid).find(" .jsroot_collaps_closebtn")
            .button({ icons: { primary: "ui-icon-close" }, text: false })
            .click(function(){
-              JSROOT.cleanup($(this).parent().next().attr('id'));
+              mdi.CleanupFrame($(this).parent().next().attr('id'));
               $(this).parent().next().andSelf().remove();
            });
 
@@ -780,13 +784,12 @@
    }
 
    JSROOT.TabsDisplay.prototype.CreateFrame = function(title) {
-      var topid = this.frameid + '_tabs';
-
-      var hid = topid + "_sub" + this.cnt++;
-
-      var li = '<li><a href="#' + hid + '">' + title
-            + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>';
-      var cont = '<div class="tabs_draw" id="' + hid + '"></div>';
+      var mdi = this,
+          topid = this.frameid + '_tabs',
+          hid = topid + "_sub" + this.cnt++,
+          li = '<li><a href="#' + hid + '">' + title
+                 + '</a><span class="ui-icon ui-icon-close" style="float: left; margin: 0.4em 0.2em 0 0; cursor: pointer;" role="presentation">Remove Tab</span></li>',
+         cont = '<div class="tabs_draw" id="' + hid + '"></div>';
 
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
@@ -803,7 +806,7 @@
 
          tabs.delegate("span.ui-icon-close", "click", function() {
             var panelId = $(this).closest("li").remove().attr("aria-controls");
-            JSROOT.cleanup(panelId);
+            mdi.CleanupFrame(panelId);
             $("#" + panelId).remove();
             tabs.tabs("refresh");
             if ($('#' + topid + '> .tabs_draw').length == 0)
@@ -856,11 +859,11 @@
       if (document.getElementById(topid) == null)
          $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
 
-      var top = $("#" + topid);
-
-      var w = top.width(), h = top.height();
-
-      var subid = topid + "_frame" + this.cnt;
+      var mdi = this,
+          top = $("#" + topid),
+          w = top.width(),
+          h = top.height(),
+          subid = topid + "_frame" + this.cnt;
 
       var entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
                   '<div class="ui-widget-header flex_header">'+
@@ -964,7 +967,7 @@
            .button({ icons: { primary: "ui-icon-close" }, text: false })
            .click(function() {
               var main = $(this).parent().parent();
-              JSROOT.cleanup(main.find(".flex_draw").get(0));
+              mdi.CleanupFrame(main.find(".flex_draw").get(0));
               main.remove();
            })
            .next()

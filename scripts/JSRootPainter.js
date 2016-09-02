@@ -9434,29 +9434,42 @@
       return ('disp' in this) ? this.disp : null;
    }
 
+   JSROOT.HierarchyPainter.prototype.CleanupFrame = function(divid) {
+      // hook to perform extra actions when frame is cleaned
+
+      var lst = JSROOT.cleanup(divid);
+
+      // we remove all painters references from items
+      if (lst && (lst.length>0))
+         this.ForEach(function(item) {
+            if (item._painter && lst.indexOf(item._painter)>0) delete item._painter;
+         });
+   }
+
    JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
-      var h = this;
-
       if ('disp' in this) {
-         if ((h.disp.NumDraw() > 0) || (h.disp_kind == "custom")) return JSROOT.CallBack(callback, h.disp);
-         h.disp.Reset();
-         delete h.disp;
+         if ((this.disp.NumDraw() > 0) || (this.disp_kind == "custom")) return JSROOT.CallBack(callback, this.disp);
+         this.disp.Reset();
+         delete this.disp;
       }
 
       // check that we can found frame where drawing should be done
       if (document.getElementById(this.disp_frameid) == null)
          return JSROOT.CallBack(callback, null);
 
-      if (h.disp_kind == "simple")
-         h.disp = new JSROOT.SimpleDisplay(h.disp_frameid);
+      if (this.disp_kind == "simple")
+         this.disp = new JSROOT.SimpleDisplay(this.disp_frameid);
       else
-      if (h.disp_kind.search("grid") == 0)
-         h.disp = new JSROOT.GridDisplay(h.disp_frameid, h.disp_kind);
+      if (this.disp_kind.search("grid") == 0)
+         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
       else
-         return JSROOT.AssertPrerequisites('jq2d', function() { h.CreateDisplay(callback); });
+         return JSROOT.AssertPrerequisites('jq2d', this.CreateDisplay.bind(this,callback));
 
-      JSROOT.CallBack(callback, h.disp);
+      if (this.disp)
+         this.disp.CleanupFrame = this.CleanupFrame.bind(this);
+
+      JSROOT.CallBack(callback, this.disp);
    }
 
    JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
@@ -9681,6 +9694,7 @@
    JSROOT.MDIDisplay = function(frameid) {
       this.frameid = frameid;
       d3.select("#"+this.frameid).property('mdi', this);
+      this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
@@ -9744,9 +9758,7 @@
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
 
-      this.ForEachFrame(function(frame) {
-         JSROOT.cleanup(frame);
-      });
+      this.ForEachFrame(this.CleanupFrame);
 
       d3.select("#"+this.frameid).html("").property('mdi', null);
    }
@@ -9822,7 +9834,7 @@
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
 
-      JSROOT.cleanup(this.frameid+"_simple_display");
+      this.CleanupFrame(this.frameid+"_simple_display");
 
       return d3.select("#"+this.frameid)
                .html("")
@@ -9928,7 +9940,7 @@
          if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
       }
 
-      JSROOT.cleanup(drawid);
+      this.CleanupFrame(drawid);
 
       return d3.select("#" + drawid).html("").attr('frame_title', title).node();
    }
@@ -10327,13 +10339,16 @@
 
    // safely remove all JSROOT objects from specified element
    JSROOT.cleanup = function(divid) {
-      var dummy = new JSROOT.TObjectPainter();
+      var dummy = new JSROOT.TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
+         if (lst.indexOf(painter) >= 0) return;
+         lst.push(painter)
          if (typeof painter.Cleanup === 'function')
             painter.Cleanup();
       });
       dummy.select_main().html("");
+      return lst;
    }
 
    // function to display progress message in the left bottom corner
