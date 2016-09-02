@@ -8639,11 +8639,19 @@
       var h = this;
 
       h.get(itemname, function(item, obj) {
-         if (obj!=null) {
-            var painter = h.draw(divid, obj, "same");
-            if (painter) painter.WhenReady(function() { painter.SetItemName(itemname); });
-         }
+         if (obj) {
+            var dummy = new JSROOT.TObjectPainter();
+            dummy.SetDivId(divid, -1);
+            var main_painter = dummy.main_painter(true);
 
+            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
+               main_painter.PerformDrop(obj, itemname);
+            else {
+              var painter = this.draw(divid, obj, "same");
+              if (painter)
+                  return painter.WhenReady(function() { painter.SetItemName(itemname); JSROOT.CallBack(call_back); });
+            }
+         }
          JSROOT.CallBack(call_back);
       });
 
@@ -10172,24 +10180,11 @@
       if (opt == 'inspect')
          return JSROOT.Painter.drawInspector(divid, obj);
 
-      function checkDrop() {
-         if (opt !== "same") return null;
-         // special handling of drop option - probably main painter will accept
-         var dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(divid, -1);
-         var main_painter = dummy.main_painter(true);
-
-         if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-            return main_painter.PerformDrop(obj);
-
-         return null;
-      }
-
       var handle = null, painter = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
       else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
 
-      if ((handle==null) || !('func' in handle)) return checkDrop();
+      if ((handle==null) || !('func' in handle)) return null;
 
       function performDraw() {
          if ((painter===null) && ('painter_kind' in handle))
@@ -10213,7 +10208,7 @@
          if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
       }
 
-      if (funcname.length === 0) return checkDrop();
+      if (funcname.length === 0) return null;
 
       if (prereq.length >  0) {
 

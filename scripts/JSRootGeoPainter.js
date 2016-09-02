@@ -215,9 +215,6 @@
       if (this.GetItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
-      if (this.GetItemName().length > 0)
-         for (var n=0;n<names.length;++n)
-            names[n] = this.GetItemName() + ((names[n].length > 0) ? ('/' + names[n]) : "");
 
       if (JSROOT.hpainter) {
          // show browser if it not visible
@@ -498,16 +495,18 @@
                var obj = intersects[n].object;
                if (!obj.stack) continue;
 
-               var name = painter._clones.ResolveStack(obj.stack).name;
+               var name = painter._clones.ResolveStack(obj.stack).name,
+                   itemname = name, hdr = painter.GetItemName();
 
-               var hdr = "header";
+               if (hdr) itemname = hdr + (name ? "/" + name : "");
+
                if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
                if (name.length > 0) hdr = name; else
-               if (painter.GetItemName()) hdr = painter.GetItemName();
+               if (!hdr) hdr = "header";
 
-               menu.add((many ? "sub:" : "header:") + hdr, name, function(arg) { this.ActiavteInBrowser([arg], true); });
+               menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
 
-               menu.add("Browse", name, function(arg) { this.ActiavteInBrowser([arg], true); });
+               menu.add("Browse", itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                var wireframe = painter.accessObjectWireFrame(obj);
 
@@ -671,12 +670,23 @@
             if (painter.options.highlight) {
                if (tooltip !== null) names.push(tooltip);
             } else {
+
+               var mainitemname = painter.GetItemName();
+
                for (var n=0;n<intersects.length;++n) {
                   var obj = intersects[n].object;
-                  if (obj.stack) names.push(painter._clones.ResolveStack(obj.stack).name); else
-                  if (obj.geo_name) names.push(obj.geo_name);
+                  if (obj.geo_name) names.push(obj.geo_name); else
+                  if (obj.stack) {
+                     var sub = painter._clones.ResolveStack(obj.stack).name;
+                     if (mainitemname) sub = mainitemname + (sub ? ("/" + sub) : "");
+                     names.push(sub);
+                  }
                }
             }
+
+            //if (names.length > 0)
+            //   console.log('Activate', names);
+
             painter.ActiavteInBrowser(names);
          }
 
@@ -1545,58 +1555,57 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj) {
+   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname) {
 
-      if (this.drawExtras(obj,true))
+      if (this.drawExtras(obj, itemname, true))
          this.Render3D(100);
 
       return null;
    }
 
-   JSROOT.TGeoPainter.prototype.addExtra = function(folder_name, obj) {
+   JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
 
       // register extra objects like tracks or hits
       // Check if object already exists to prevent duplication
 
-      var tgt = this.GetObject(), name = "_extra" + folder_name;
-      if (tgt && tgt._proxy) tgt = tgt.fVolume;
-      var lst = tgt[name];
-      if (obj === undefined) return lst;
+      if (this._extraObjects === undefined)
+         this._extraObjects = JSROOT.Create("TList");
 
-      if (lst === undefined) lst = tgt[name] = JSROOT.Create("TList");
+      if (this._extraObjects.arr.indexOf(obj)>=0) return false;
 
-      if (lst.arr.indexOf(obj)>=0) return false;
-
-      lst.Add(obj,"");
+      this._extraObjects.Add(obj, itemname);
 
       return true;
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawExtras = function(obj, direct_draw) {
+   JSROOT.TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || obj._typename===undefined) return false;
 
       var isany = false;
 
       if (obj._typename === "TList") {
-         if (obj.arr)
-            for (var n=0;n<obj.arr.length;++n)
-               if (this.drawExtras(obj.arr[n], direct_draw)) isany = true;
+         if (!obj.arr) return false;
+         for (var n=0;n<obj.arr.length;++n) {
+            var sobj = obj.arr[n];
+            var sname = itemname === undefined ? obj.opt[n] : (itemname + "/" + sobj.fName);
+            if (this.drawExtras(sobj, sname, add_objects)) isany = true;
+         }
       } else
       if (obj._typename === 'TEveTrack') {
-         if (direct_draw && !this.addExtra("Tracks", obj)) return false;
-         isany = this.drawTrack(obj);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         isany = this.drawTrack(obj, itemname);
       } else
       if (obj._typename === 'TEvePointSet') {
-         if (direct_draw && !this.addExtra("Hits", obj)) return false;
-         isany = this.drawHit(obj);
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         isany = this.drawHit(obj, itemname);
       }
 
       return isany;
    }
 
 
-   JSROOT.TGeoPainter.prototype.drawTrack = function(track) {
+   JSROOT.TGeoPainter.prototype.drawTrack = function(track, itemname) {
       if (!track) return false;
 
       var track_width = track.fLineWidth;
@@ -1621,13 +1630,13 @@
       var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
       var line = new THREE.LineSegments(geom, lineMaterial);
 
-      line.geo_name = "Tracks/" + track.fName;
+      line.geo_name = itemname;
 
       this._toplevel.add(line);
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.drawHit = function(hit) {
+   JSROOT.TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit) return false;
 
       var hit_size = 25.0 * hit.fMarkerSize;
@@ -1692,14 +1701,14 @@
          var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
          var points = new THREE.Points(geom, material);
 
-         points.geo_name = "Hits/" + hit.fName;
+         points.geo_name = itemname;
 
          this._toplevel.add(points);
       } else {
          // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
          var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
          var mesh = new THREE.Mesh(geom, material);
-         mesh.geo_name = "Hits/" + hit.fName;
+         mesh.geo_name = itemname;
 
          this._toplevel.add(mesh);
       }
@@ -1998,8 +2007,7 @@
       this._scene.overrideMaterial = null;
 
       // if extra object where append, redraw them at the end
-      this.drawExtras(this.addExtra("Tracks"));
-      this.drawExtras(this.addExtra("Hits"));
+      this.drawExtras(this._extraObjects);
 
       this.Render3D(0, true);
 
@@ -2529,12 +2537,6 @@
          subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
          shape = volume ? volume.fShape : null;
       }
-
-      if (obj._extraTracks && !parent._geoobj)
-         JSROOT.GEO.createList(parent, obj._extraTracks, "Tracks", "list of tracks");
-
-      if (obj._extraHits && !parent._geoobj)
-         JSROOT.GEO.createList(parent, obj._extraHits, "Hits", "list of hits");
 
       if (ismanager || (!parent._geoobj && subnodes && subnodes.length && !iseve)) {
          if (ismanager) {
