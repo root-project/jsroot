@@ -478,7 +478,7 @@
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = painter; // set as this in callbacks
 
-         var numitems = 0, numnodes = 0;
+         var numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (var n=0;n<intersects.length;++n) {
                if (intersects[n].object.stack) numnodes++;
@@ -493,30 +493,43 @@
             if (many) menu.add("header:" + ((numitems > 0) ? "Items" : "Nodes"));
 
             for (var n=0;n<intersects.length;++n) {
-               var obj = intersects[n].object;
+               var obj = intersects[n].object,
+                   name, itemname, hdr;
 
                if (obj.geo_name) {
-                  var name = obj.geo_name.substr(obj.geo_name.lastIndexOf("/")+1);
-                  if (!name) name = obj.geo_name;
-                  if (!many) menu.add("header:" + name);
-                  menu.add(many ? name : "Browse", obj.geo_name, function(arg) { this.ActiavteInBrowser([arg], true); });
+
+                  itemname = obj.geo_name;
+                  name = itemname.substr(itemname.lastIndexOf("/")+1);
+                  if (!name) name = itemname;
+                  hdr = name;
+               } else
+               if (obj.stack) {
+                  name = painter._clones.ResolveStack(obj.stack).name;
+                  itemname = name;
+                  hdr = painter.GetItemName();
+                  if (hdr) itemname = hdr + (name ? "/" + name : "");
+                  if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
+                  if (name.length > 0) hdr = name; else
+                  if (!hdr) hdr = "header";
+
+               } else
                   continue;
-               }
 
-               if (!obj.stack) continue;
-
-               var name = painter._clones.ResolveStack(obj.stack).name,
-                   itemname = name, hdr = painter.GetItemName();
-
-               if (hdr) itemname = hdr + (name ? "/" + name : "");
-
-               if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
-               if (name.length > 0) hdr = name; else
-               if (!hdr) hdr = "header";
 
                menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
 
                menu.add("Browse", itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
+
+               if (obj.geo_name) {
+                  menu.add("Hide", n, function(indx) {
+                     var mesh = intersects[indx].object;
+                     mesh.visible = false; // just disable mesh
+                     if (mesh.geo_object) mesh.geo_object._hidden_via_menu = true; // and hide object for further redraw
+                     painter.Render3D();
+                  });
+
+                  continue;
+               }
 
                var wireframe = painter.accessObjectWireFrame(obj);
 
@@ -527,7 +540,7 @@
                      this.Render3D();
                   });
 
-               if (n>0)
+               if (++cnt>1)
                   menu.add("Manifest", n, function(indx) {
 
                      if (this._last_manifest)
@@ -1582,12 +1595,17 @@
 
       this._extraObjects.Add(obj, itemname);
 
+      delete obj._hidden_via_menu; // remove previous hidden property
+
       return true;
    }
 
 
    JSROOT.TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || obj._typename===undefined) return false;
+
+      // if object was hidden via menu, do not redraw it with next draw call
+      if (!add_objects && obj._hidden_via_menu) return false;
 
       var isany = false;
 
@@ -1638,6 +1656,7 @@
       var line = new THREE.LineSegments(geom, lineMaterial);
 
       line.geo_name = itemname;
+      line.geo_object = track;
 
       this._toplevel.add(line);
       return true;
@@ -1709,6 +1728,7 @@
          var points = new THREE.Points(geom, material);
 
          points.geo_name = itemname;
+         points.geo_object = hit;
 
          this._toplevel.add(points);
       } else {
@@ -1716,6 +1736,7 @@
          var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
          var mesh = new THREE.Mesh(geom, material);
          mesh.geo_name = itemname;
+         mesh.geo_object = hit;
 
          this._toplevel.add(mesh);
       }
