@@ -212,7 +212,7 @@
    }
 
    JSROOT.TGeoPainter.prototype.ActiavteInBrowser = function(names, force) {
-      if (this.GetItemName() === null) return;
+      // if (this.GetItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
@@ -478,21 +478,31 @@
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = painter; // set as this in callbacks
 
-         var numnodes = 0;
+         var numitems = 0, numnodes = 0;
          if (intersects)
-            for (var n=0;n<intersects.length;++n)
+            for (var n=0;n<intersects.length;++n) {
                if (intersects[n].object.stack) numnodes++;
+               if (intersects[n].object.geo_name) numitems++;
+            }
 
-
-         if (numnodes === 0) {
+         if (numnodes + numitems === 0) {
             painter.FillContextMenu(menu);
          } else {
-            var many = (numnodes > 1);
+            var many = (numnodes + numitems) > 1;
 
-            if (many) menu.add("header: Nodes");
+            if (many) menu.add("header:" + ((numitems > 0) ? "Items" : "Nodes"));
 
             for (var n=0;n<intersects.length;++n) {
                var obj = intersects[n].object;
+
+               if (obj.geo_name) {
+                  var name = obj.geo_name.substr(obj.geo_name.lastIndexOf("/")+1);
+                  if (!name) name = obj.geo_name;
+                  if (!many) menu.add("header:" + name);
+                  menu.add(many ? name : "Browse", obj.geo_name, function(arg) { this.ActiavteInBrowser([arg], true); });
+                  continue;
+               }
+
                if (!obj.stack) continue;
 
                var name = painter._clones.ResolveStack(obj.stack).name,
@@ -683,9 +693,6 @@
                   }
                }
             }
-
-            //if (names.length > 0)
-            //   console.log('Activate', names);
 
             painter.ActiavteInBrowser(names);
          }

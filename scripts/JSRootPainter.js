@@ -8918,7 +8918,6 @@
                prnt = prnt._parent;
             }
 
-
             hitem._background = 'grey';
             if (active.indexOf(hitem)<0) active.push(hitem);
          }
@@ -9086,10 +9085,12 @@
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) pthis.h = h1; else
-            if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
+            if (pthis.h._kind == 'TopFolder') {
+               pthis.h._childs.push(h1);
+            }  else {
                var h0 = pthis.h;
                var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-               pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
+               pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
             }
 
          pthis.RefreshHtml(call_back);
