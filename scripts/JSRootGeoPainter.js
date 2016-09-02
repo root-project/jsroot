@@ -666,12 +666,20 @@
 
             if (painter._selected.mesh !== null) {
                painter._selected.mesh.material.color = painter._selected.originalColor;
+               if (painter._selected.mesh.hightlightLineWidth)
+                  painter._selected.mesh.material.linewidth = painter._selected.mesh.hightlightLineWidth/3;
+               if (painter._selected.mesh.highlightMarkerSize)
+                  painter._selected.mesh.material.size = painter._selected.mesh.highlightMarkerSize/3;
             }
 
             if (intersects.length > 0) {
                painter._selected.mesh = intersects[0].object;
                painter._selected.originalColor = painter._selected.mesh.material.color;
                painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
+               if (painter._selected.mesh.hightlightLineWidth)
+                  painter._selected.mesh.material.linewidth = painter._selected.mesh.hightlightLineWidth;
+               if (painter._selected.mesh.highlightMarkerSize)
+                  painter._selected.mesh.material.size = painter._selected.mesh.highlightMarkerSize;
                painter.Render3D(0);
 
                if (intersects[0].object.stack)
@@ -1687,6 +1695,7 @@
 
       line.geo_name = itemname;
       line.geo_object = track;
+      if (!JSROOT.browser.isWin) line.hightlightLineWidth = track_width*3;
 
       this._toplevel.add(line);
       return true;
@@ -1759,6 +1768,7 @@
 
          points.geo_name = itemname;
          points.geo_object = hit;
+         points.highlightMarkerSize = hit_size*3;
 
          this._toplevel.add(points);
       } else {
