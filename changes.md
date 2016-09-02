@@ -3,6 +3,8 @@
 ## Changes in dev
 1. Implement simple TTree::Draw over single leaf (#80)
 2. Support basic types and several vector types in TTree::Draw 
+3. Display of TEveTrack(s) and TEvePointSet(s) over drawn geometry (drag and drop)
+4. Browsing, toggling, highlight of tracks and hits. 
 
 
 ## Changes in 4.6.0
