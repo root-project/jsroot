@@ -2508,10 +2508,37 @@
 
       menu.add("separator");
 
-      function ToggleEveVisibility() {
-         obj.fRnrSelf = !obj.fRnrSelf;
-         item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
-         hpainter.UpdateTreeNode(item);
+      function ScanEveVisible(obj, arg, skip_this) {
+         if (!arg) arg = { visible: 0, hidden: 0 };
+
+         if (!skip_this) {
+            if (arg.assign!==undefined) obj.fRnrSelf = arg.assign; else
+            if (obj.fRnrSelf) arg.vis++; else arg.hidden++;
+         }
+
+         if (obj.fElements)
+            for (var n=0;n<obj.fElements.arr.length;++n)
+               ScanEveVisible(obj.fElements.arr[n], arg, false);
+
+         return arg;
+      }
+
+      function ToggleEveVisibility(arg) {
+         if (arg === 'self') {
+            obj.fRnrSelf = !obj.fRnrSelf;
+            item._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(obj);
+            hpainter.UpdateTreeNode(item);
+         } else {
+            ScanEveVisible(obj, { assign: (arg === "true") }, true);
+            hpainter.ForEach(function(m) {
+               // update all child items
+               if (m._geoobj && m._icon) {
+                  m._icon = item._icon.split(" ")[0] + JSROOT.GEO.provideVisStyle(m._geoobj);
+                  hpainter.UpdateTreeNode(m);
+               }
+            }, item);
+         }
+
          JSROOT.GEO.findItemWithPainter(item, 'testGeomChanges');
       }
 
@@ -2542,7 +2569,11 @@
          });
 
       if (iseve) {
-         menu.addchk(obj.fRnrSelf, "Visible", 1, ToggleEveVisibility);
+         menu.addchk(obj.fRnrSelf, "Visible", "self", ToggleEveVisibility);
+         var res = ScanEveVisible(obj, undefined, true);
+
+         if (res.hidden + res.visible > 0)
+            menu.addchk((res.hidden==0), "Daughters", (res.hidden!=0) ? "true" : "false", ToggleEveVisibility);
 
       } else {
          menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisNone), "Invisible",
