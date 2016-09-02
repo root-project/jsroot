@@ -528,6 +528,8 @@
                      painter.Render3D();
                   });
 
+                  if (many) menu.add("endsub:");
+
                   continue;
                }
 
@@ -1390,12 +1392,6 @@
 
       var info = this._clones.ResolveStack(stack, true);
 
-      //console.log( info );
-
-      //console.log('transfrom matrix', info.matrix.elements);
-
-      //console.log('shape dimensions', info.node.fDX, info.node.fDY, info.node.fDZ);
-
       this.focusCamera( info, false );
    }
 
@@ -1670,6 +1666,29 @@
       return isany;
    }
 
+   JSROOT.TGeoPainter.prototype.getExtrasContainer = function(action) {
+      if (!this._toplevel) return null;
+
+      var extras = null;
+      for (var n=0;n<this._toplevel.children.length;++n) {
+         var chld = this._toplevel.children[n];
+         if (chld._extras) { extras = chld; break; }
+      }
+
+      if (action==="delete") {
+         if (extras) this._toplevel.remove(extras);
+         return null;
+      }
+
+      if ((action!=="get") && !extras) {
+         extras = new THREE.Object3D();
+         extras._extras = true;
+         this._toplevel.add(extras);
+      }
+
+      return extras;
+   }
+
 
    JSROOT.TGeoPainter.prototype.drawTrack = function(track, itemname) {
       if (!track) return false;
@@ -1701,12 +1720,15 @@
       line.geo_object = track;
       if (!JSROOT.browser.isWin) line.hightlightLineWidth = track_width*3;
 
-      this._toplevel.add(line);
+      this.getExtrasContainer().add(line);
+
       return true;
    }
 
    JSROOT.TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit) return false;
+
+      console.log('Draw hit ', hit.fName, itemname);
 
       var hit_size = 25.0 * hit.fMarkerSize;
       var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
@@ -1761,29 +1783,24 @@
          }
       }
 
-      var geom = new THREE.BufferGeometry();
+      var geom = new THREE.BufferGeometry(), mesh;
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
       if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
-
       if (use_points) {
          var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-         var points = new THREE.Points(geom, material);
-
-         points.geo_name = itemname;
-         points.geo_object = hit;
-         points.highlightMarkerSize = hit_size*3;
-
-         this._toplevel.add(points);
+         mesh = new THREE.Points(geom, material);
+         mesh.highlightMarkerSize = hit_size*3;
       } else {
          // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
          var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
-         var mesh = new THREE.Mesh(geom, material);
-         mesh.geo_name = itemname;
-         mesh.geo_object = hit;
+         mesh = new THREE.Mesh(geom, material);
 
-         this._toplevel.add(mesh);
       }
+      mesh.geo_name = itemname;
+      mesh.geo_object = hit;
+
+      this.getExtrasContainer().add(mesh);
 
       return true;
    }
@@ -2079,6 +2096,7 @@
       this._scene.overrideMaterial = null;
 
       // if extra object where append, redraw them at the end
+      this.getExtrasContainer("delete"); // delete old container
       this.drawExtras(this._extraObjects);
 
       this.Render3D(0, true);
