@@ -1728,8 +1728,6 @@
    JSROOT.TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit) return false;
 
-      console.log('Draw hit ', hit.fName, itemname);
-
       var hit_size = 25.0 * hit.fMarkerSize;
       var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
 
@@ -1751,8 +1749,6 @@
          pos = new Float32Array(indicies.length*3*Math.floor(size/step));
          norm = new Float32Array(indicies.length*3*Math.floor(size/step));
       }
-
-      // console.log('use points', use_points, 'size', size, 'step', step);
 
       for (var i=0;i<size;i+=step) {
 
