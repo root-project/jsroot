@@ -150,8 +150,7 @@
 
    JSROOT.HierarchyPainter.prototype.isLastSibling = function(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
-      var chlds = hitem._parent._childs;
-      var indx = chlds.indexOf(hitem);
+      var chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
       if (indx<0) return false;
       while (++indx < chlds.length)
          if (!('_hidden' in chlds[indx])) return false;
@@ -159,17 +158,20 @@
    }
 
    JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, doupdate) {
-      var isroot = !('_parent' in hitem);
-      var has_childs = '_childs' in hitem;
 
-      if ('_hidden' in hitem) return;
+      if (!hitem || ('_hidden' in hitem)) return;
 
-      var handle = JSROOT.getDrawHandle(hitem._kind),
-          img1 = "", img2 = "", can_click = false;
+      var isroot = hitem === this.h,
+          has_childs = '_childs' in hitem,
+          handle = JSROOT.getDrawHandle(hitem._kind),
+          img1 = "", img2 = "", can_click = false,
+          d3cont, itemname = this.itemFullName(hitem);
 
       if (handle !== null) {
          if ('icon' in handle) img1 = handle.icon;
          if ('icon2' in handle) img2 = handle.icon2;
+         if ((img1.length==0) && (typeof handle.icon_get == 'function'))
+            img1 = handle.icon_get(hitem, this);
          if (('func' in handle) || ('execute' in handle) || ('aslink' in handle) ||
              (('expand' in handle) && (hitem._more !== false))) can_click = true;
       }
@@ -185,18 +187,12 @@
          can_click = true;
 
       var can_menu = can_click;
-      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0)) {
-         can_menu = true;
-         can_click = true;
-      }
+      if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0))
+         can_menu = can_click = true;
 
       if (img2.length==0) img2 = img1;
       if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
       if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
-
-      var itemname = this.itemFullName(hitem);
-
-      var d3cont;
 
       if (doupdate) {
          d3prnt.selectAll("*").remove();

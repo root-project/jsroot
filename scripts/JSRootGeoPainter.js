@@ -1602,6 +1602,33 @@
       return true;
    }
 
+   JSROOT.TGeoPainter.prototype.ExtraObjectVisible = function(itemname, toggle) {
+      if (!this._extraObjects) return;
+
+      var indx = this._extraObjects.opt.indexOf(itemname);
+
+      if (indx < 0) return;
+
+      var obj = this._extraObjects.arr[indx];
+
+      var res = obj._hidden_via_menu ? false : true;
+
+      if (toggle) {
+         obj._hidden_via_menu = res; res = !res;
+
+         var mesh = null;
+         // either found painted object or just draw once again
+         this._toplevel.traverse(function(node) { if (node.geo_object === obj) mesh = node; });
+
+         if (mesh) mesh.visible = res; else
+         if (res) this.drawExtras(obj);
+
+         if (mesh || res) this.Render3D();
+      }
+
+      return res;
+   }
+
 
    JSROOT.TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || obj._typename===undefined) return false;
@@ -2504,17 +2531,14 @@
 
    JSROOT.GEO.browserIconClick = function(hitem, hpainter) {
       if (!hitem._volume) {
-
+         // first check that geo painter assigned with the item
          var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
          if (!drawitem) return false;
 
-         // we want to access object which are already in the cached list
-         var item_obj = null;
-         hpainter.get(hitem, function(item,obj) { item_obj = obj; } );
-         if (!item_obj) return;
+         var newstate = drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem), true);
 
-         console.log('CLICK ITEM ' + hitem._name + '  type  ' + item_obj._typename);
-         return false;
+         // return true means browser should update icon for the item
+         return (newstate!==undefined) ? true : false;
       }
 
       if (hitem._more && hitem._volume.fNodes && (hitem._volume.fNodes.arr.length>0))
@@ -2553,6 +2577,19 @@
          case "TGeoCtub" : return "img_geoctub"; break;
       }
       return "img_geotube";
+   }
+
+   JSROOT.GEO.getBrowserIcon = function(hitem, hpainter) {
+      var icon = "";
+      if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
+      if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints';
+      if (icon.length>0) {
+         var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
+         if (drawitem)
+            if (drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem)))
+               icon += " geovis_this";
+      }
+      return icon;
    }
 
    JSROOT.GEO.expandObject = function(parent, obj) {
@@ -2626,8 +2663,8 @@
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
-   JSROOT.addDrawFunc({ name: "TEvePointSet", icon: 'img_evepoints', icon_click: JSROOT.GEO.browserIconClick });
-   JSROOT.addDrawFunc({ name: "TEveTrack", icon: 'img_evetrack', icon_click: JSROOT.GEO.browserIconClick });
+   JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
+   JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
 
    return JSROOT.Painter;
 
