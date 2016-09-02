@@ -2612,6 +2612,8 @@
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
    JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
+   JSROOT.addDrawFunc({ name: "TEvePointSet", icon: 'img_evepoints' });
+   JSROOT.addDrawFunc({ name: "TEveTrack", icon: 'img_evetrack' });
 
    return JSROOT.Painter;
 
