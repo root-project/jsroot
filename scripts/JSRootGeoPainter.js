@@ -1835,8 +1835,8 @@
 
       var painter = this, dummyvol, currnode, draw_obj = this.GetObject();
 
-      if (!script_name || (JSROOT.GEO.NodeKind(draw_obj)!==0))
-         JSROOT.CallBack(call_back, draw_obj);
+      if (!script_name || (script_name.length<3) || (JSROOT.GEO.NodeKind(draw_obj)!==0))
+         return JSROOT.CallBack(call_back, draw_obj);
 
       var mgr = {
             GetVolume: function (name) {
