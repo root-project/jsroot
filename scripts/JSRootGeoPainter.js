@@ -2105,7 +2105,14 @@
 
       this.showControlOptions(this.options.show_controls);
 
-      if (call_ready) this.DrawingReady();
+      if (call_ready) {
+
+         // after first draw check if highlight can be enabled
+         if (this.options.highlight === false)
+            this.options.highlight = (this.first_render_tm < 1000);
+
+         this.DrawingReady();
+      }
 
       if (this._draw_nodes_again)
          this.startDrawGeometry(); // relaunch drawing
