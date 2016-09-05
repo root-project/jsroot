@@ -497,7 +497,6 @@
                    name, itemname, hdr;
 
                if (obj.geo_name) {
-
                   itemname = obj.geo_name;
                   name = itemname.substr(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
@@ -505,9 +504,8 @@
                } else
                if (obj.stack) {
                   name = painter._clones.ResolveStack(obj.stack).name;
-                  itemname = name;
+                  itemname = painter.GetStackFullName(obj.stack);
                   hdr = painter.GetItemName();
-                  if (hdr) itemname = hdr + (name ? "/" + name : "");
                   if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
                   if (name.length > 0) hdr = name; else
                   if (!hdr) hdr = "header";
@@ -652,6 +650,14 @@
          this.startDrawGeometry();
    }
 
+   JSROOT.TGeoPainter.prototype.GetStackFullName = function(stack) {
+      var mainitemname = this.GetItemName();
+      if (!stack || !this._clones) return mainitemname;
+      var sub = this._clones.ResolveStack(stack).name;
+      if (mainitemname) sub = mainitemname + (sub ? ("/" + sub) : "");
+      return sub;
+   }
+
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls) return;
@@ -689,7 +695,7 @@
                painter.Render3D(0);
 
                if (intersects[0].object.stack)
-                  tooltip = painter._clones.ResolveStack(intersects[0].object.stack).name;
+                  tooltip = painter.GetStackFullName(intersects[0].object.stack);
                else if (intersects[0].object.geo_name)
                   tooltip = intersects[0].object.geo_name;
             }
@@ -707,17 +713,10 @@
             if (painter.options.highlight) {
                if (tooltip !== null) names.push(tooltip);
             } else {
-
-               var mainitemname = painter.GetItemName();
-
                for (var n=0;n<intersects.length;++n) {
                   var obj = intersects[n].object;
                   if (obj.geo_name) names.push(obj.geo_name); else
-                  if (obj.stack) {
-                     var sub = painter._clones.ResolveStack(obj.stack).name;
-                     if (mainitemname) sub = mainitemname + (sub ? ("/" + sub) : "");
-                     names.push(sub);
-                  }
+                  if (obj.stack) names.push(painter.GetStackFullName(obj.stack));
                }
             }
 
@@ -2721,7 +2720,7 @@
          }
 
          if (volume) {
-            JSROOT.GEO.createItem(parent, volume, "Volumes");
+            // JSROOT.GEO.createItem(parent, volume, "Volumes");
             JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", "Hierarchy of TGeoNodes");
          }
 
@@ -2742,9 +2741,9 @@
       var map = [];
 
       for (var i=0;i<subnodes.length;++i) {
-         if (isnode || iseve)
+//         if (isnode || iseve)
             JSROOT.GEO.createItem(parent, subnodes[i]);
-         else
+/*         else
          if (isvolume) {
             var vol = subnodes[i].fVolume;
             if (map.indexOf(vol) < 0) {
@@ -2752,6 +2751,7 @@
                JSROOT.GEO.createItem(parent, vol);
             }
          }
+*/
       }
 
       return true;
