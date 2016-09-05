@@ -139,7 +139,8 @@
                    scale: new THREE.Vector3(1,1,1), more:1,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
-                   clipx: false, clipy: false, clipz: false };
+                   clipx: false, clipy: false, clipz: false,
+                   script_name: "" };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -147,6 +148,15 @@
       if (_opt !== null && _opt == "true") { res._debug = true; res._grid = true; }
       if (_opt !== null && _opt == "bound") { res._debug = true; res._grid = true; res._bound = true; }
       if (_opt !== null && _opt == "full") { res._debug = true; res._grid = true; res._full = true; res._bound = true; }
+
+      var macro = opt.indexOf("macro:");
+      if (macro>=0) {
+         var separ = opt.indexOf(";", macro+6);
+         if (separ<0) separ = opt.length;
+         res.script_name = opt.substr(macro+6,separ-macro-6);
+         opt = opt.substr(0, macro) + opt.substr(separ+1);
+         console.log('script', res.script_name, 'rest', opt);
+      }
 
       while (true) {
          var pp = opt.indexOf("+"), pm = opt.indexOf("-");
@@ -1800,21 +1810,94 @@
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
-      if (typeof opt !== 'string') opt = "";
+   JSROOT.TGeoPainter.prototype.FindNodeWithVolume = function(name, prnt) {
+      if (!prnt) {
+         prnt = this.GetObject();
+         if (!prnt && (JSROOT.GEO.NodeKind(prnt)!==0)) return null;
+      }
 
-      var size = this.size_for_3d();
+      if (!prnt.fVolume) return null;
 
-      this._webgl = JSROOT.Painter.TestWebGL();
+      if (prnt.fVolume.fName === name) return prnt;
 
-      this.options = this.decodeOptions(opt);
+      if (!prnt.fVolume.fNodes) return null;
 
-      if (!('_yup' in this.options))
-         this.options._yup = this.svg_canvas().empty();
+      for (var n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
+         var sub = this.FindNodeWithVolume(name, prnt.fVolume.fNodes.arr[n]);
+         if (sub) return sub;
+      }
 
+      return null;
+   }
+
+
+   JSROOT.TGeoPainter.prototype.checkScript = function(script_name, call_back) {
+
+      var painter = this, dummyvol, currnode, draw_obj = this.GetObject();
+
+      if (!script_name || (JSROOT.GEO.NodeKind(draw_obj)!==0))
+         JSROOT.CallBack(call_back, draw_obj);
+
+      var mgr = {
+            GetVolume: function (name) {
+               var vol;
+               currnode = painter.FindNodeWithVolume(name);
+               if (!currnode) {
+                  if (!dummyvol) dummyvol = JSROOT.Create('TGeoVolume');
+                  vol = dummyvol;
+                  // console.log('provide dummy volume', name);
+               } else {
+                  vol = currnode.fVolume;
+                  //console.log('found requested volume', name);
+               }
+               vol.InvisibleAll = JSROOT.GEO.InvisibleAll;
+               vol.Draw = function() {
+                  if (currnode) {
+                     draw_obj = currnode;
+                     console.log('Select volume for drawing', this.fName);
+                  }
+               };
+
+               return vol;
+            }
+          };
+
+      JSROOT.progress('Script ' + script_name);
+
+      var xhr = JSROOT.NewHttpRequest(script_name, "text", function(res) {
+         if (!res || (res.length==0))
+            return JSROOT.CallBack(call_back, draw_obj);
+
+         var lines = res.split('\n');
+
+         for (var n=0;n<lines.length;++n) {
+            var line = lines[n];
+
+            if (line.indexOf('gGeoManager')<0) continue;
+            line = line.replace('->GetVolume','.GetVolume');
+            line = line.replace('->InvisibleAll','.InvisibleAll');
+            line = line.replace('->Draw','.Draw');
+            if (line.indexOf('->')>=0) continue;
+
+            // console.log(line);
+
+            var func = new Function('gGeoManager',line);
+
+            func(mgr);
+         }
+
+         JSROOT.CallBack(call_back, draw_obj);
+
+      });
+
+      xhr.send(null);
+   }
+
+   JSROOT.TGeoPainter.prototype.prepareObjectDraw = function(draw_obj) {
       var tm1 = new Date().getTime();
 
-      this._clones = new JSROOT.GEO.ClonedNodes(this.GetObject());
+      this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+
       var uniquevis = this._clones.MarkVisisble(true);
       if (uniquevis <= 0)
          uniquevis = this._clones.MarkVisisble(false);
@@ -1836,6 +1919,8 @@
       // activate worker
       if (this.options.use_worker > 0) this.startWorker();
 
+      var size = this.size_for_3d();
+
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
@@ -1847,6 +1932,21 @@
       this.CreateToolbar();
 
       this.startDrawGeometry(true);
+   }
+
+   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
+      if (typeof opt !== 'string') opt = "";
+
+      this._webgl = JSROOT.Painter.TestWebGL();
+
+      this.options = this.decodeOptions(opt);
+
+      if (!('_yup' in this.options))
+         this.options._yup = this.svg_canvas().empty();
+
+      // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
+
+      this.checkScript(this.options.script_name, this.prepareObjectDraw.bind(this));
 
       return this;
    }
@@ -2245,6 +2345,7 @@
       } else
       if (obj._typename === 'TGeoManager') {
          obj = obj.fMasterVolume;
+         JSROOT.GEO.SetBit(obj, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fShape;
       } else
       if ('fVolume' in obj) {
@@ -2708,6 +2809,7 @@
          shape = obj.fShape;
       } else {
          volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
+         if (ismanager) JSROOT.GEO.SetBit(volume, JSROOT.GEO.BITS.kVisThis, false);
          subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
          shape = volume ? volume.fShape : null;
       }
@@ -2721,7 +2823,7 @@
 
          if (volume) {
             // JSROOT.GEO.createItem(parent, volume, "Volumes");
-            JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", "Hierarchy of TGeoNodes");
+            JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", ismanager ? ("Nodes of master volume " + volume.fName) : "Hierarchy of TGeoNodes");
          }
 
          return true;

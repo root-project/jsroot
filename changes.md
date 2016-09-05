@@ -5,6 +5,9 @@
 2. Support basic types and several vector types in TTree::Draw 
 3. Display of TEveTrack(s) and TEvePointSet(s) over drawn geometry (drag and drop)
 4. Browsing, toggling, highlight of tracks and hits. 
+5. Let use original ROOT macros to configure visibility of geometry volumes. Like:
+     &file=files/alice2.root&item=Geometry;1&opt=macro:macros/geomAlice.C   
+   
 
 
 ## Changes in 4.6.0

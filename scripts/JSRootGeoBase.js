@@ -59,6 +59,26 @@
          volume.fGeoAtt = volume.fGeoAtt ^ (f & 0xffffff);
    }
 
+   /** @memberOf JSROOT.GEO
+    * implementation of TGeoVolume::InvisibleAll */
+   JSROOT.GEO.InvisibleAll = function(flag) {
+      if (flag===undefined) flag = true;
+
+      // console.log('call InvisibleAll');
+
+      JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisThis, !flag);
+      JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
+      JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisOneLevel, false);
+
+      if (this.fNodes)
+         for (var n=0;n<this.fNodes.arr.length;++n) {
+            var sub = this.fNodes.arr[n].fVolume;
+            JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisThis, !flag);
+            // JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisDaughters, !flag);
+            //JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisOneLevel, false);
+         }
+   }
+
    /** method used to avoid duplication of warnings
     * @memberOf JSROOT.GEO */
    JSROOT.GEO.warn = function(msg) {
