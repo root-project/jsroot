@@ -1977,9 +1977,9 @@
 
          } else {
             // let three.js calculate our faces
-            console.log('trinagulate ' + shape.fName);
+            //console.log('trinagulate ' + shape.fName);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
-            console.log('trinagulate done ' + cut_faces.length);
+            //console.log('trinagulate done ' + cut_faces.length);
          }
          numfaces += cut_faces.length*2;
       }
@@ -2883,6 +2883,7 @@
 
    JSROOT.GEO.ClonedNodes = function(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
+      this.name_prefix = ""; // name prefix used for nodes names
 
       if (obj) {
          if (obj._geoh) this.toplevel = false;
@@ -3154,9 +3155,9 @@
 
    JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
-      var res = { id: 0, obj: null, node: this.nodes[0], name: "Nodes" };
+      var res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
 
-      if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
+      // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
 
       if (withmatrix) {
          res.matrix = new THREE.Matrix4();

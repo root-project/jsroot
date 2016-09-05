@@ -37,13 +37,15 @@
    // ======= Geometry painter================================================
 
 
-   JSROOT.TGeoPainter = function( obj ) {
+   JSROOT.TGeoPainter = function( obj, is_manager ) {
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, _geoh: obj._geoh, _proxy: true };
 
       JSROOT.TObjectPainter.call(this, obj);
 
       this.no_default_title = true; // do not set title to main DIV
+
+      this.is_geo_manager = is_manager; // only in manager name of top volume used in the item name
 
       this.Cleanup(true);
    }
@@ -115,6 +117,8 @@
       if (name == "")
          return JSROOT.GEO.SetBit(prop.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
 
+      console.log('Modify',name);
+
       var regexp;
 
       if (name.indexOf("*") < 0)
@@ -125,6 +129,8 @@
       if (prop.chlds!==null)
          for (var n=0;n<prop.chlds.length;++n) {
             var chld = JSROOT.GEO.getNodeProperties(kind, prop.chlds[n]);
+
+            console.log('Test',chld.name);
 
             if (regexp.test(chld.name) && chld.volume) {
                JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
@@ -1810,20 +1816,25 @@
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.FindNodeWithVolume = function(name, prnt) {
+   JSROOT.TGeoPainter.prototype.FindNodeWithVolume = function(name, prnt, itemname) {
+
       if (!prnt) {
          prnt = this.GetObject();
          if (!prnt && (JSROOT.GEO.NodeKind(prnt)!==0)) return null;
+         itemname = this.is_geo_manager ? prnt.fName : "";
+      } else {
+         if (itemname.length>0) itemname += "/";
+         itemname += prnt.fName;
       }
 
       if (!prnt.fVolume) return null;
 
-      if (prnt.fVolume.fName === name) return prnt;
+      if (prnt.fVolume.fName === name) return { node: prnt, item: itemname };
 
       if (!prnt.fVolume.fNodes) return null;
 
       for (var n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
-         var sub = this.FindNodeWithVolume(name, prnt.fVolume.fNodes.arr[n]);
+         var sub = this.FindNodeWithVolume(name, prnt.fVolume.fNodes.arr[n], itemname);
          if (sub) return sub;
       }
 
@@ -1833,10 +1844,13 @@
 
    JSROOT.TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
-      var painter = this, dummyvol, currnode, draw_obj = this.GetObject();
+      var painter = this, dummyvol, currnode, draw_obj = this.GetObject(),
+          name_prefix = "";
+
+      if (this.is_geo_manager) name_prefix = draw_obj.fName;
 
       if (!script_name || (script_name.length<3) || (JSROOT.GEO.NodeKind(draw_obj)!==0))
-         return JSROOT.CallBack(call_back, draw_obj);
+         return JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
       var mgr = {
             GetVolume: function (name) {
@@ -1853,8 +1867,9 @@
                vol.InvisibleAll = JSROOT.GEO.InvisibleAll;
                vol.Draw = function() {
                   if (currnode) {
-                     draw_obj = currnode;
-                     console.log('Select volume for drawing', this.fName);
+                     draw_obj = currnode.node;
+                     name_prefix = currnode.item;
+                     console.log('Select volume for drawing', this.fName, name_prefix);
                   }
                };
 
@@ -1866,7 +1881,7 @@
 
       var xhr = JSROOT.NewHttpRequest(script_name, "text", function(res) {
          if (!res || (res.length==0))
-            return JSROOT.CallBack(call_back, draw_obj);
+            return JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
          var lines = res.split('\n');
 
@@ -1886,17 +1901,19 @@
             func(mgr);
          }
 
-         JSROOT.CallBack(call_back, draw_obj);
+         JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
       });
 
       xhr.send(null);
    }
 
-   JSROOT.TGeoPainter.prototype.prepareObjectDraw = function(draw_obj) {
+   JSROOT.TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
       var tm1 = new Date().getTime();
 
       this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+
+      this._clones.name_prefix = name_prefix;
 
       var uniquevis = this._clones.MarkVisisble(true);
       if (uniquevis <= 0)
@@ -2332,7 +2349,7 @@
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
-      var shape = null;
+      var shape = null, is_manager = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
@@ -2347,6 +2364,7 @@
          obj = obj.fMasterVolume;
          JSROOT.GEO.SetBit(obj, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fShape;
+         is_manager = true;
       } else
       if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
@@ -2364,7 +2382,7 @@
                    { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (obj) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(obj));
+         JSROOT.extend(this, new JSROOT.TGeoPainter(obj,is_manager));
          this.SetDivId(divid, 5);
          return this.DrawGeometry(opt, divid);
       }
@@ -2814,16 +2832,16 @@
          shape = volume ? volume.fShape : null;
       }
 
-      if (ismanager || (!parent._geoobj && subnodes && subnodes.length && !iseve)) {
-         if (ismanager) {
+      if (ismanager /*|| (!parent._geoobj && subnodes && subnodes.length && !iseve) */) {
+//         if (ismanager) {
             JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
             JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
             JSROOT.GEO.createList(parent, obj.fTracks, "fTracks", "list of tracks");
-         }
+//         }
 
          if (volume) {
-            // JSROOT.GEO.createItem(parent, volume, "Volumes");
-            JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", ismanager ? ("Nodes of master volume " + volume.fName) : "Hierarchy of TGeoNodes");
+            JSROOT.GEO.createItem(parent, volume);
+            //JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", ismanager ? ("Nodes of master volume " + volume.fName) : "Hierarchy of TGeoNodes");
          }
 
          return true;
@@ -2840,7 +2858,7 @@
 
       if (!subnodes) return false;
 
-      var map = [];
+//      var map = [];
 
       for (var i=0;i<subnodes.length;++i) {
 //         if (isnode || iseve)
