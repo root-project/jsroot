@@ -1345,7 +1345,12 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
+      var extras = this.getExtrasContainer('get');
+      if (extras) this._toplevel.remove(extras);
+
       var box = new THREE.Box3().setFromObject(this._toplevel);
+
+      if (extras) this._toplevel.add(extras);
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -1692,6 +1697,7 @@
 
       if (action==="delete") {
          if (extras) this._toplevel.remove(extras);
+         JSROOT.Painter.DisposeThreejsObject(extras);
          return null;
       }
 
@@ -2238,7 +2244,6 @@
 
       if (!first_time) {
          this.helpText();
-
 
          JSROOT.Painter.DisposeThreejsObject(this._scene);
 
