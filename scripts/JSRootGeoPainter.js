@@ -114,8 +114,6 @@
       if (name == "")
          return JSROOT.GEO.SetBit(this.GetObject().fVolume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
 
-      console.log('Modify',name, sign);
-
       var regexp, exact = false;
 
       //arg.node.fVolume

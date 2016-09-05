@@ -64,8 +64,6 @@
    JSROOT.GEO.InvisibleAll = function(flag) {
       if (flag===undefined) flag = true;
 
-      console.log('call InvisibleAll ',this.fName, 'flag', flag);
-
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisThis, !flag);
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisOneLevel, false);
