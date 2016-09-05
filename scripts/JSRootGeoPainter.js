@@ -109,34 +109,28 @@
 
 
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
-      var node = this.GetObject();
-
-      var kind = JSROOT.GEO.NodeKind(node);
-      var prop = JSROOT.GEO.getNodeProperties(kind, node);
+      if (JSROOT.GEO.NodeKind(this.GetObject()) !== 0) return;
 
       if (name == "")
-         return JSROOT.GEO.SetBit(prop.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
+         return JSROOT.GEO.SetBit(this.GetObject().fVolume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
 
-      console.log('Modify',name);
+      console.log('Modify',name, sign);
 
-      var regexp;
+      var regexp, exact = false;
 
-      if (name.indexOf("*") < 0)
-         regexp = new RegExp(name);
-      else
+      //arg.node.fVolume
+      if (name.indexOf("*") < 0) {
+         regexp = new RegExp("^"+name+"$");
+         exact = true;
+      } else {
          regexp = new RegExp("^" + name.split("*").join(".*") + "$");
+         exact = false;
+      }
 
-      if (prop.chlds!==null)
-         for (var n=0;n<prop.chlds.length;++n) {
-            var chld = JSROOT.GEO.getNodeProperties(kind, prop.chlds[n]);
-
-            console.log('Test',chld.name);
-
-            if (regexp.test(chld.name) && chld.volume) {
-               JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
-               JSROOT.GEO.SetBit(chld.volume, JSROOT.GEO.BITS.kVisDaughters, (sign === "+"));
-            }
-         }
+      this.FindNodeWithVolume(regexp, function(arg) {
+         JSROOT.GEO.InvisibleAll.call(arg.node.fVolume, (sign !== "+"));
+         return exact ? arg : null; // continue search if not exact expression provided
+      });
    }
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
@@ -1822,29 +1816,44 @@
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.FindNodeWithVolume = function(name, prnt, itemname) {
+   JSROOT.TGeoPainter.prototype.FindNodeWithVolume = function(name, action, prnt, itemname, volumes) {
+
+      var first_level = false, res = null;
 
       if (!prnt) {
          prnt = this.GetObject();
          if (!prnt && (JSROOT.GEO.NodeKind(prnt)!==0)) return null;
          itemname = this.is_geo_manager ? prnt.fName : "";
+         first_level = true;
+         volumes = [];
       } else {
          if (itemname.length>0) itemname += "/";
          itemname += prnt.fName;
       }
 
-      if (!prnt.fVolume) return null;
+      if (!prnt.fVolume || prnt.fVolume._searched) return null;
 
-      if (prnt.fVolume.fName === name) return { node: prnt, item: itemname };
 
-      if (!prnt.fVolume.fNodes) return null;
 
-      for (var n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
-         var sub = this.FindNodeWithVolume(name, prnt.fVolume.fNodes.arr[n], itemname);
-         if (sub) return sub;
+      if (name.test(prnt.fVolume.fName)) {
+         res = action({ node: prnt, item: itemname });
+         if (res) return res;
       }
 
-      return null;
+      prnt.fVolume._searched = true;
+      volumes.push(prnt.fVolume);
+
+      if (prnt.fVolume.fNodes)
+         for (var n=0;n<prnt.fVolume.fNodes.arr.length;++n) {
+            res = this.FindNodeWithVolume(name, action, prnt.fVolume.fNodes.arr[n], itemname, volumes);
+            if (res) break;
+         }
+
+      if (first_level)
+         for (var n=0, len=volumes.length; n<len; ++n)
+            delete volumes[n]._searched;
+
+      return res;
    }
 
 
@@ -1860,14 +1869,14 @@
 
       var mgr = {
             GetVolume: function (name) {
-               var vol;
-               currnode = painter.FindNodeWithVolume(name);
+               var vol, regexp = new RegExp("^"+name+"$");
+               currnode = painter.FindNodeWithVolume(regexp, function(arg) { return arg; } );
                if (!currnode) {
                   if (!dummyvol) dummyvol = JSROOT.Create('TGeoVolume');
                   vol = dummyvol;
                   // console.log('provide dummy volume', name);
                } else {
-                  vol = currnode.fVolume;
+                  vol = currnode.node.fVolume;
                   //console.log('found requested volume', name);
                }
                vol.InvisibleAll = JSROOT.GEO.InvisibleAll;
@@ -1883,7 +1892,7 @@
             }
           };
 
-      JSROOT.progress('Script ' + script_name);
+      JSROOT.progress('Loading macro ' + script_name);
 
       var xhr = JSROOT.NewHttpRequest(script_name, "text", function(res) {
          if (!res || (res.length==0))
@@ -1891,23 +1900,34 @@
 
          var lines = res.split('\n');
 
-         for (var n=0;n<lines.length;++n) {
-            var line = lines[n];
+         ProcessNextLine(0);
 
-            if (line.indexOf('gGeoManager')<0) continue;
-            line = line.replace('->GetVolume','.GetVolume');
-            line = line.replace('->InvisibleAll','.InvisibleAll');
-            line = line.replace('->Draw','.Draw');
-            if (line.indexOf('->')>=0) continue;
+         function ProcessNextLine(indx) {
 
-            // console.log(line);
+            var first_tm = new Date().getTime();
+            while (indx < lines.length) {
+               var line = lines[indx++];
 
-            var func = new Function('gGeoManager',line);
+               if (line.indexOf('gGeoManager')<0) continue;
+               line = line.replace('->GetVolume','.GetVolume');
+               line = line.replace('->InvisibleAll','.InvisibleAll');
+               line = line.replace('->Draw','.Draw');
+               if (line.indexOf('->')>=0) continue;
 
-            func(mgr);
+               // console.log(line);
+
+               JSROOT.progress('exec ' + line);
+               var func = new Function('gGeoManager',line);
+               func(mgr);
+
+               var now = new Date().getTime();
+               if (now - first_tm > 300)
+                  return setTimeout(ProcessNextLine.bind(this,indx),1);
+            }
+
+            JSROOT.CallBack(call_back, draw_obj, name_prefix);
          }
 
-         JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
       });
 

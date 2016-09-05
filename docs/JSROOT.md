@@ -15,11 +15,14 @@ One could use JSROOT directly from local file system. If source code was unpacke
 
 
 
-## Reading ROOT files in JSROOT
+## Drawing objects in JSROOT
 
-[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas.
+[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas. Many examples of supported
+classes can be found on:
 
-The following parameters can be specified in the URL string:
+<https://root.cern.ch/js/latest/examples.htm> 
+
+One can provide number of URL parameters in address string like:
 
 - file, files - name of the file(s), which will be automatically open with page loading
 - json - name of JSON file with stored ROOT object like histogram or canvas 
@@ -34,21 +37,23 @@ The following parameters can be specified in the URL string:
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 
-When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`.
-
-Examples:
+Like:
 
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
+When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`. 
+
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern.ch/js/latest/api.htm) page.   
 
 
-One can very easy integrate JSROOT graphic into other HTML pages using a __iframe__ tag:
+One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
-<iframe width="600" height="500" src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
-</iframe>
+    <iframe width="700" height="400" 
+            src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
+    </iframe>
+
 
 
 ## Reading ROOT files from other servers
@@ -282,6 +287,75 @@ For example, reading an object from a file and displaying it will look like:
     });
 
 
-## More API examples
+### More API examples
 
 Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page
+
+
+## Geometry viewer
+
+JSROOT implements display of TGeo objects like:
+
+- <https://root.cern.ch/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1>
+- <https://root.cern.ch/js/latest/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z>  
+
+Following classes are supported by geometry viewer:
+  - TGeoVolume
+  - TGeoNode
+  - TGeoManager (master volume will be displayed)
+  - TEveGeoShapeExtract (used in EVE)
+
+Following draw options could be specified (separated by semicolon or ';'):
+   - axis  - draw axis coordinates
+   - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
+   - clipx/clipy/clipz - enable correspondent clipping panel
+   - clip or clipxyz - enable all three clipping pannels
+   - wire - instead of filled surfaces only wireframe will be drawn
+   - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
+   - more - show 3 times more volumes as usual
+   - all - try to display all geometry volumes (may lead to browser hanging)
+   - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
+   - macro:name.C - invoke ROOT configuration macro
+   
+
+It is typical, that not all geometry volumes should be displayed. 
+In simple case one just display only subvolume (with all its daughters) like:
+
+  <https://root.cern.ch/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
+
+Or one can use simple selection syntax (work only with first-level volumes):
+ 
+  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
+  
+Syntax uses '+' sign to show specified volume and '-' sign to hide specified volume.
+One could use wildcard sign like '+TUBE1*'.  
+
+Or one could reuse ROOT macro, which normally invoked when display geometry in ROOT itself.
+Example of such macro can be found in root tutorials. Normally it looks like:
+
+
+     {
+      TGeoManager::Import("http://root.cern.ch/files/alice2.root");
+      gGeoManager->DefaultColors();
+      //   gGeoManager->SetVisLevel(4);
+      gGeoManager->GetVolume("HALL")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCC")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCA")->InvisibleAll();
+      ...
+      gGeoManager->GetVolume("ALIC")->Draw("ogl");
+      new TBrowser;
+    }
+    
+  
+For such macro only calls `InvisibleAll` and `Draw` are processed. Macro can be specified:
+
+  <http://jsroot.gsi.de/dev/?file=../files/geom/alice2.root&item=Geometry;1&opt=macro:../files/geom/geomAlice.C>
+  
+    
+Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
+Either one do it interactively by drag and drop, or superimpose drawing with + sign like:
+
+<http://jsroot.gsi.de/dev/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
+
+
+ 

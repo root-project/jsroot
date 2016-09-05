@@ -64,7 +64,7 @@
    JSROOT.GEO.InvisibleAll = function(flag) {
       if (flag===undefined) flag = true;
 
-      // console.log('call InvisibleAll');
+      console.log('call InvisibleAll ',this.fName, 'flag', flag);
 
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisThis, !flag);
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
@@ -2904,28 +2904,27 @@
       return null;
    }
 
-   JSROOT.GEO.ClonedNodes.prototype.CreateClones = function(obj, sublevel) {
+   JSROOT.GEO.ClonedNodes.prototype.CreateClones = function(obj, sublevel, kind) {
        if (!sublevel) {
           this.origin = [];
           sublevel = 1;
+          kind = JSROOT.GEO.NodeKind(obj);
        }
 
-       var kind = JSROOT.GEO.NodeKind(obj);
-       if ((kind < 0) || ('_refid' in obj)) return;
+       if ((kind < 0) || !obj || ('_refid' in obj)) return;
 
        obj._refid = this.origin.length;
        this.origin.push(obj);
 
        var chlds = null;
-       if (kind === 0) {
+       if (kind===0)
           chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
-       } else {
+       else
           chlds = obj.fElements ? obj.fElements.arr : null;
-       }
 
        if (chlds !== null)
           for (var i = 0; i < chlds.length; ++i)
-            this.CreateClones(chlds[i], sublevel+1);
+             this.CreateClones(chlds[i], sublevel+1, kind);
 
        if (sublevel > 1) return;
 
@@ -2936,7 +2935,7 @@
        // first create nodes objects
        for (var n=0; n<this.origin.length; ++n) {
           var obj = this.origin[n];
-          var node = { id: n, kind: JSROOT.GEO.NodeKind(obj), vol: 0, nfaces: 0, numvischld: 1, idshift: 0 };
+          var node = { id: n, kind: kind, vol: 0, nfaces: 0, numvischld: 1, idshift: 0 };
           this.nodes.push(node);
           sortarr.push(node); // array use to produce sortmap
        }
@@ -2947,17 +2946,16 @@
 
           var chlds = null, shape = null;
 
-          if (clone.kind === 0) {
-             if (obj.fVolume) {
-                shape = obj.fVolume.fShape;
-                if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
-             }
-          } else {
+          if (kind===1) {
              shape = obj.fShape;
              if (obj.fElements) chlds = obj.fElements.arr;
+          } else
+          if (obj.fVolume) {
+             shape = obj.fVolume.fShape;
+             if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
           }
 
-          var matrix = JSROOT.GEO.getNodeMatrix(clone.kind, obj);
+          var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
           if (matrix) {
              clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
              if (clone.matrix[0] === 1) {
