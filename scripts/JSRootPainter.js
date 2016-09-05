@@ -7876,21 +7876,19 @@
 
                function ShowProgress(value) {
                   var main_box = document.createElement("p");
-                  //var para = document.createElement("p");
                   var text_node = document.createTextNode(value);
-                  //para.appendChild(text_node);
-                  // main_box.appendChild(para);
                   main_box.appendChild(text_node);
-                  var btn = document.createElement("button");       // Create a <button> element
-                  btn.appendChild(document.createTextNode("cancel"));  // Append the text to <button>
-                  btn.onclick = function() {
-                     if (++break_execution<3)
+                  main_box.title = "Click on element to break drawing";
+
+                  main_box.onclick = function() {
+                     if (++break_execution<3) {
+                        main_box.title = "Tree draw will break after next I/O operation";
                         return text_node.nodeValue = "Breaking ... ";
+                     }
                      break_execution = -1111;
                      JSROOT.progress();
                      JSROOT.CallBack(get_callback, item, histo);
                   }
-                  main_box.appendChild(btn);
 
                   JSROOT.progress(main_box);
                }
@@ -7902,7 +7900,7 @@
                      places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
                      totalsz += b.fBasketBytes[indx];
                      indx++;
-                     // break; // only single basket
+                     //break; // only single basket
                   }
 
                   if ((places.length === 0) || (break_execution>0)) {
@@ -7915,8 +7913,8 @@
 
                   ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
 
-                  //setTimeout(ContinueRead, 1000);
-                  //function ContinueRead() {
+                  // setTimeout(ContinueRead, 1000);
+                  // function ContinueRead() {
 
                   f.ReadBaskets(places, function(baskets) {
 
@@ -7970,7 +7968,7 @@
                      ReadNextBaskets(indx);
                   });
 
-                  //}
+                  //} // for debugging with timeout
                }
 
                ReadNextBaskets(0);
