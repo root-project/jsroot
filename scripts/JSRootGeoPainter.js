@@ -194,6 +194,8 @@
       if (check("clipz")) res.clipz = true;
       if (check("clip")) res.clipx = res.clipy = res.clipz = true;
 
+      if (check("dflt_colors")) this.SetRootDefaultColors();
+
       if (check("noworker")) res.use_worker = -1;
       if (check("worker")) res.use_worker = 1;
 
@@ -1831,8 +1833,6 @@
 
       if (!prnt.fVolume || prnt.fVolume._searched) return null;
 
-
-
       if (name.test(prnt.fVolume.fName)) {
          res = action({ node: prnt, item: itemname });
          if (res) return res;
@@ -1852,6 +1852,49 @@
             delete volumes[n]._searched;
 
       return res;
+   }
+
+   JSROOT.TGeoPainter.prototype.SetRootDefaultColors = function() {
+      // set default colors like TGeoManager::DefaultColors() does
+
+      console.log('SetRootDefaultColors');
+
+      var dflt = { kWhite:0,   kBlack:1,   kGray:920,
+                     kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
+                     kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+
+      var nmax = 110;
+      var  col = [];
+      for (var i=0;i<nmax;i++) col.push(dflt.kGray);
+
+      //here we should create a new TColor with the same rgb as in the default
+      //ROOT colors used below
+      col[ 3] = dflt.kYellow-10;
+      col[ 4] = col[ 5] = dflt.kGreen-10;
+      col[ 6] = col[ 7] = dflt.kBlue-7;
+      col[ 8] = col[ 9] = dflt.kMagenta-3;
+      col[10] = col[11] = dflt.kRed-10;
+      col[12] = dflt.kGray+1;
+      col[13] = dflt.kBlue-10;
+      col[14] = dflt.kOrange+7;
+      col[16] = dflt.kYellow+1;
+      col[20] = dflt.kYellow-10;
+      col[24] = col[25] = col[26] = dflt.kBlue-8;
+      col[29] = dflt.kOrange+9;
+      col[79] = dflt.kOrange-2;
+
+
+      var name = { test:function() { return true; }}
+
+      this.FindNodeWithVolume(name, function(arg) {
+         var vol = arg.node.fVolume;
+         var med = vol.fMedium;
+         if (!med) return null;
+         var mat = med.fMaterial;
+         var matZ = Math.round(mat.fZ);
+         vol.fLineColor = col[matZ];
+         if (mat.fDensity<0.1) mat.fFillStyle = 3000+60; // vol.SetTransparency(60)
+      });
    }
 
 
@@ -1887,6 +1930,14 @@
                };
 
                return vol;
+            },
+
+            DefaultColors: function() {
+               painter.SetRootDefaultColors();
+            },
+
+            SetMaxVisNodes: function(limit) {
+               console.log('Automatic visible depth for ' + limit + ' nodes');
             }
           };
 
@@ -1904,23 +1955,32 @@
 
             var first_tm = new Date().getTime();
             while (indx < lines.length) {
-               var line = lines[indx++];
+               var line = lines[indx++].trim();
+
+               if (line.indexOf('//')==0) continue;
 
                if (line.indexOf('gGeoManager')<0) continue;
                line = line.replace('->GetVolume','.GetVolume');
                line = line.replace('->InvisibleAll','.InvisibleAll');
+               line = line.replace('->SetMaxVisNodes','.SetMaxVisNodes');
+               line = line.replace('->DefaultColors','.DefaultColors');
                line = line.replace('->Draw','.Draw');
                if (line.indexOf('->')>=0) continue;
 
                // console.log(line);
 
-               JSROOT.progress('exec ' + line);
-               var func = new Function('gGeoManager',line);
-               func(mgr);
+               try {
+                  var func = new Function('gGeoManager',line);
+                  func(mgr);
+               } catch(err) {
+                  console.error('Problem by processing ' + line);
+               }
 
                var now = new Date().getTime();
-               if (now - first_tm > 300)
+               if (now - first_tm > 300) {
+                  JSROOT.progress('exec ' + line);
                   return setTimeout(ProcessNextLine.bind(this,indx),1);
+               }
             }
 
             JSROOT.CallBack(call_back, draw_obj, name_prefix);

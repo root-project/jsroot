@@ -72,8 +72,80 @@ List of supported classes and draw options:
 - TLegend :  [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/legends.root&item=legends;1&mathjax)
 - TTree : [single-branch draw](http://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=ntuple;1/px)
 
-
 More examples of supported classes can be found on: <https://root.cern.ch/js/latest/examples.htm>
+
+
+## Geometry viewer
+
+JSROOT implements display of TGeo objects like:
+
+- <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1>
+- <http://jsroot.gsi.de/dev/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z>  
+
+Following classes are supported by geometry viewer:
+  - TGeoVolume
+  - TGeoNode
+  - TGeoManager (master volume will be displayed)
+  - TEveGeoShapeExtract (used in EVE)
+
+Following draw options could be specified (separated by semicolon or ';'):
+   - axis  - draw axis coordinates
+   - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
+   - clipx/clipy/clipz - enable correspondent clipping panel
+   - clip or clipxyz - enable all three clipping pannels
+   - wire - instead of filled surfaces only wireframe will be drawn
+   - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
+   - more - show 3 times more volumes as usual
+   - all - try to display all geometry volumes (may lead to browser hanging)
+   - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
+   - macro:name.C - invoke ROOT configuration macro
+   - dflt_colors - set default volumes colors as TGeoManager::DefaultColors() does 
+   
+
+It is typical, that not all geometry volumes should be displayed. 
+In simple case one just display only subvolume (with all its daughters) like:
+
+  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
+
+Or one can use simple selection syntax (work only with first-level volumes):
+ 
+  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
+  
+Syntax uses '+' sign to show specified volume and '-' sign to hide specified volume.
+One could use wildcard sign like '+TUBE1*'.  
+
+Or one could reuse ROOT macro, which normally invoked when display geometry in ROOT itself.
+Example of such macro can be found in root tutorials. Normally it looks like:
+
+
+     {
+      TGeoManager::Import("http://root.cern.ch/files/alice2.root");
+      gGeoManager->DefaultColors();
+      //   gGeoManager->SetVisLevel(4);
+      gGeoManager->GetVolume("HALL")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCC")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCA")->InvisibleAll();
+      ...
+      gGeoManager->GetVolume("ALIC")->Draw("ogl");
+      new TBrowser;
+    }
+    
+  
+For such macro only calls `InvisibleAll` and `Draw` are processed. Macro can be specified:
+
+  <http://jsroot.gsi.de/dev/?file=../files/geom/alice2.root&item=Geometry;1&opt=macro:../files/geom/geomAlice.C>
+  
+Major LHC detectors:
+   ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C)
+   ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors)
+   CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C)
+   LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcb_mag.root&item=Geometry;1&opt=all)
+  
+    
+Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
+Either one do it interactively by drag and drop, or superimpose drawing with + sign like:
+
+<http://jsroot.gsi.de/dev/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
 
 
 
@@ -306,73 +378,6 @@ For example, reading an object from a file and displaying it will look like:
        });
     });
 
-
-
-
-## Geometry viewer
-
-JSROOT implements display of TGeo objects like:
-
-- <https://root.cern.ch/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1>
-- <https://root.cern.ch/js/latest/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z>  
-
-Following classes are supported by geometry viewer:
-  - TGeoVolume
-  - TGeoNode
-  - TGeoManager (master volume will be displayed)
-  - TEveGeoShapeExtract (used in EVE)
-
-Following draw options could be specified (separated by semicolon or ';'):
-   - axis  - draw axis coordinates
-   - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
-   - clipx/clipy/clipz - enable correspondent clipping panel
-   - clip or clipxyz - enable all three clipping pannels
-   - wire - instead of filled surfaces only wireframe will be drawn
-   - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
-   - more - show 3 times more volumes as usual
-   - all - try to display all geometry volumes (may lead to browser hanging)
-   - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
-   - macro:name.C - invoke ROOT configuration macro
-   
-
-It is typical, that not all geometry volumes should be displayed. 
-In simple case one just display only subvolume (with all its daughters) like:
-
-  <https://root.cern.ch/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
-
-Or one can use simple selection syntax (work only with first-level volumes):
- 
-  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
-  
-Syntax uses '+' sign to show specified volume and '-' sign to hide specified volume.
-One could use wildcard sign like '+TUBE1*'.  
-
-Or one could reuse ROOT macro, which normally invoked when display geometry in ROOT itself.
-Example of such macro can be found in root tutorials. Normally it looks like:
-
-
-     {
-      TGeoManager::Import("http://root.cern.ch/files/alice2.root");
-      gGeoManager->DefaultColors();
-      //   gGeoManager->SetVisLevel(4);
-      gGeoManager->GetVolume("HALL")->InvisibleAll();
-      gGeoManager->GetVolume("ZDCC")->InvisibleAll();
-      gGeoManager->GetVolume("ZDCA")->InvisibleAll();
-      ...
-      gGeoManager->GetVolume("ALIC")->Draw("ogl");
-      new TBrowser;
-    }
-    
-  
-For such macro only calls `InvisibleAll` and `Draw` are processed. Macro can be specified:
-
-  <http://jsroot.gsi.de/dev/?file=../files/geom/alice2.root&item=Geometry;1&opt=macro:../files/geom/geomAlice.C>
-  
-    
-Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
-Either one do it interactively by drag and drop, or superimpose drawing with + sign like:
-
-<http://jsroot.gsi.de/dev/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
 
 
  
