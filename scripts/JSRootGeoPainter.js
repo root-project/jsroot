@@ -134,7 +134,8 @@
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis:false, _count:false, wireframe: false,
-                   scale: new THREE.Vector3(1,1,1), more:1,
+                   scale: new THREE.Vector3(1,1,1),
+                   more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
                    clipx: false, clipy: false, clipz: false,
@@ -905,7 +906,11 @@
          }
 
          this._current_face_limit = this.options.maxlimit;
-         if (matrix) this._current_face_limit*=1.25;
+         this._current_nodes_limit = this.options.maxnodeslimit;
+         if (matrix) {
+            this._current_face_limit*=1.25;
+            this._current_nodes_limit*=1.25;
+         }
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -917,7 +922,7 @@
 
          if (!need_worker || !this._worker_ready) {
             //var tm1 = new Date().getTime();
-            var res = this._clones.CollectVisibles(this._current_face_limit, frustum);
+            var res = this._clones.CollectVisibles(this._current_face_limit, frustum, this._current_nodes_limit);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             //var tm2 = new Date().getTime();
@@ -928,6 +933,7 @@
 
          var job = {
                collect: this._current_face_limit,   // indicator for the command
+               collect_nodes: this._current_nodes_limit,
                visible: this._clones.GetVisibleFlags(),
                matrix: matrix ? matrix.elements : null
          };
@@ -1939,8 +1945,7 @@
 
             SetMaxVisNodes: function(limit) {
                console.log('Automatic visible depth for ' + limit + ' nodes');
-               var more = limit/5000; // this is factor for predefined number of faces
-               if (more > painter.options.more) painter.options.more = more;
+               if (limit>0) painter.options.maxnodeslimit = limit;
             }
           };
 

@@ -3326,9 +3326,11 @@
    }
 
 
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum, maxnumnodes) {
       // function collects visible nodes, using maxlimit
       // one can use map to define cut based on the volume or serious of cuts
+
+      if (!maxnumnodes) maxnumnodes = maxnumfaces/100;
 
       var arg = {
          facecnt: 0,
@@ -3349,10 +3351,11 @@
 
       if (arg.facecnt > maxnumfaces) {
 
-         var bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0);
+         var bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
+             bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0);
 
          // define minimal volume, which always to shown
-         var boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumfaces/100);
+         var boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
 
          minVol = boundary.min;
          maxVol = boundary.max;
@@ -3376,7 +3379,7 @@
              this.ScanVisible(arg);
 
              if (arg.totalcam > maxnumfaces*0.2)
-                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumfaces*0.2/100).min;
+                camVol = this.GetVolumeBoundary(arg.viscnt, maxnumfaces*0.2, maxnumnodes*0.2).min;
              else
                 camVol = 0;
 
