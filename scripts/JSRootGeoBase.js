@@ -2597,38 +2597,50 @@
          // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
          // if (node.fFinder._typename === 'TGeoPatternSphPhi') { }
          // if (node.fFinder._typename === 'TGeoPatternHoneycomb') { }
-         if ((node.fFinder._typename === 'TGeoPatternX') ||
-             (node.fFinder._typename === 'TGeoPatternY') ||
-             (node.fFinder._typename === 'TGeoPatternZ') ||
-             (node.fFinder._typename === 'TGeoPatternParaX') ||
-             (node.fFinder._typename === 'TGeoPatternParaY') ||
-             (node.fFinder._typename === 'TGeoPatternParaZ')) {
-            var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
+         switch(node.fFinder._typename) {
+           case 'TGeoPatternX':
+           case 'TGeoPatternY':
+           case 'TGeoPatternZ':
+           case 'TGeoPatternParaX':
+           case 'TGeoPatternParaY':
+           case 'TGeoPatternParaZ':
+              var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
-            matrix = new THREE.Matrix4();
+              matrix = new THREE.Matrix4();
 
-            switch (node.fFinder._typename.charAt(node.fFinder._typename.length - 1)) {
-               case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
-               case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
-               case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
-            }
-         } else
-         if (node.fFinder._typename === 'TGeoPatternCylPhi') {
-            var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep);
-            var _cos = Math.cos(phi), _sin = Math.sin(phi);
+              switch (node.fFinder._typename.charAt(node.fFinder._typename.length - 1)) {
+                 case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
+                 case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
+                 case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
+              }
+              break;
 
-            matrix = new THREE.Matrix4();
+           case 'TGeoPatternCylPhi':
+              var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep);
+              var _cos = Math.cos(phi), _sin = Math.sin(phi);
 
-            matrix.set(_cos, -_sin, 0,  0,
-                      _sin,  _cos, 0,  0,
-                         0,     0, 1,  0,
-                         0,     0, 0,  1);
-         } else
-         if (node.fFinder._typename === 'TGeoPatternCylR') {
-            // seems to be, require no transformation
-            matrix = new THREE.Matrix4();
-         } else {
-           JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
+              matrix = new THREE.Matrix4();
+
+              matrix.set(_cos, -_sin, 0,  0,
+                         _sin,  _cos, 0,  0,
+                            0,     0, 1,  0,
+                            0,     0, 0,  1);
+              break;
+
+           case 'TGeoPatternCylR':
+               // seems to be, require no transformation
+               matrix = new THREE.Matrix4();
+               break;
+
+           case 'TGeoPatternTrapZ':
+              var dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
+              matrix = new THREE.Matrix4();
+              matrix.setPosition(new THREE.Vector3(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz)); break;
+              break;
+
+           default:
+              JSROOT.GEO.warn('Unsupported pattern type ' + node.fFinder._typename);
+              break;
          }
       }
 
