@@ -2591,7 +2591,10 @@
          matrix = JSROOT.GEO.createMatrix(node.fMatrix);
       else
       if ((node._typename == "TGeoNodeOffset") && (node.fFinder !== null)) {
-         // if (node.fFinder._typename === 'TGeoPatternTrapZ') { }
+         var kPatternReflected = JSROOT.BIT(14);
+         if ((node.fFinder.fBits & kPatternReflected) !== 0)
+            JSROOT.GEO.warn('Unsupported reflected pattern ' + node.fFinder._typename);
+
          // if (node.fFinder._typename === 'TGeoPatternCylR') { }
          // if (node.fFinder._typename === 'TGeoPatternSphR') { }
          // if (node.fFinder._typename === 'TGeoPatternSphTheta') { }
