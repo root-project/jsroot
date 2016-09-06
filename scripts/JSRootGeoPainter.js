@@ -1939,6 +1939,8 @@
 
             SetMaxVisNodes: function(limit) {
                console.log('Automatic visible depth for ' + limit + ' nodes');
+               var more = limit/5000; // this is factor for predefined number of faces
+               if (more > painter.options.more) painter.options.more = more;
             }
           };
 
@@ -1988,7 +1990,6 @@
 
             JSROOT.CallBack(call_back, draw_obj, name_prefix);
          }
-
 
       });
 

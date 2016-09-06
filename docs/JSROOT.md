@@ -115,8 +115,7 @@ Syntax uses '+' sign to show specified volume and '-' sign to hide specified vol
 One could use wildcard sign like '+TUBE1*'.  
 
 Or one could reuse ROOT macro, which normally invoked when display geometry in ROOT itself.
-Example of such macro can be found in root tutorials. Normally it looks like:
-
+Example of such macro can be found in root tutorials. Typically it looks like:
 
      {
       TGeoManager::Import("http://root.cern.ch/files/alice2.root");
@@ -129,26 +128,35 @@ Example of such macro can be found in root tutorials. Normally it looks like:
       gGeoManager->GetVolume("ALIC")->Draw("ogl");
       new TBrowser;
     }
-    
   
-For such macro only calls `InvisibleAll` and `Draw` are processed. Macro can be specified:
+For such macro following calls are supported:
 
-  <http://jsroot.gsi.de/dev/?file=../files/geom/alice2.root&item=Geometry;1&opt=macro:../files/geom/geomAlice.C>
+   * `gGeoManager->DefaultColors()`
+   * `gGeoManager->GetVolume("HALL")->InvisibleAll()` 
+   * `gGeoManager->GetVolume("HALL")->SetTransparency(30)` 
+   * `gGeoManager->GetVolume("HALL")->SetLineColor(5)` 
+   * `gGeoManager->GetVolume("ALIC")->Draw("ogl")`
+    
+All other commands should be ignored.
+
   
-Major LHC detectors:
+Example of major LHC detectors:
  * ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C) 
  * ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors), [cryo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C)
- * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C)
+ * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C;clipxyz)
  * LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors)
   
-Other detector examples:
+Other detectors examples:
  * HADES: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/hades2.root&item=CBMGeom;1&opt=all;dflt_colors), [preselected](http://jsroot.gsi.de/dev/?json=../files/geom/hades.json.gz)  
  * BABAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_all.C), [emca](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
- * STAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_all.C), [svtt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_svtt.C) 
-
+ * STAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_all.C;clipxyz), [svtt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_svtt.C) 
+ * D0: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/d0.root&item=d0;1&opt=clipxyz)
+ * NA47: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/na47.root&item=na47;1&opt=dflt_colors)
+ * BRAHMS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/brahms.root&item=brahms;1&opt=dflt_colors)
+ * SLD: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/sld.root&item=sld;1&opt=dflt_colors;clipxyz)
     
 Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
-Either one do it interactively by drag and drop, or superimpose drawing with + sign like:
+Either one do it interactively by drag and drop, or superimpose drawing with `+` sign like:
 
 <http://jsroot.gsi.de/dev/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
 
