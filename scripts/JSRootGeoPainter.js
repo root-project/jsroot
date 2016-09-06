@@ -1857,14 +1857,11 @@
    JSROOT.TGeoPainter.prototype.SetRootDefaultColors = function() {
       // set default colors like TGeoManager::DefaultColors() does
 
-      console.log('SetRootDefaultColors');
-
       var dflt = { kWhite:0,   kBlack:1,   kGray:920,
                      kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
                      kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
 
-      var nmax = 110;
-      var  col = [];
+      var nmax = 110, col = [];
       for (var i=0;i<nmax;i++) col.push(dflt.kGray);
 
       //here we should create a new TColor with the same rgb as in the default
@@ -1883,8 +1880,7 @@
       col[29] = dflt.kOrange+9;
       col[79] = dflt.kOrange-2;
 
-
-      var name = { test:function() { return true; }}
+      var name = { test:function() { return true; }} // select all volumes
 
       this.FindNodeWithVolume(name, function(arg) {
          var vol = arg.node.fVolume;
@@ -1900,8 +1896,7 @@
 
    JSROOT.TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
-      var painter = this, dummyvol, currnode, draw_obj = this.GetObject(),
-          name_prefix = "";
+      var painter = this, draw_obj = this.GetObject(), name_prefix = "";
 
       if (this.is_geo_manager) name_prefix = draw_obj.fName;
 
@@ -1910,26 +1905,32 @@
 
       var mgr = {
             GetVolume: function (name) {
-               var vol, regexp = new RegExp("^"+name+"$");
-               currnode = painter.FindNodeWithVolume(regexp, function(arg) { return arg; } );
-               if (!currnode) {
-                  if (!dummyvol) dummyvol = JSROOT.Create('TGeoVolume');
-                  vol = dummyvol;
-                  // console.log('provide dummy volume', name);
-               } else {
-                  vol = currnode.node.fVolume;
-                  //console.log('found requested volume', name);
-               }
-               vol.InvisibleAll = JSROOT.GEO.InvisibleAll;
-               vol.Draw = function() {
-                  if (currnode) {
-                     draw_obj = currnode.node;
-                     name_prefix = currnode.item;
-                     console.log('Select volume for drawing', this.fName, name_prefix);
-                  }
-               };
+               var regexp = new RegExp("^"+name+"$");
+               var currnode = painter.FindNodeWithVolume(regexp, function(arg) { return arg; } );
 
-               return vol;
+               if (!currnode) console.log('Did not found '+name + ' volume');
+
+               // return proxy object with several methods, typically used in ROOT geom scripts
+               return {
+                   found: currnode,
+                   fVolume: currnode ? currnode.node.fVolume : null,
+                   InvisibleAll: function(flag) {
+                      JSROOT.GEO.InvisibleAll.call(this.fVolume, flag);
+                   },
+                   Draw: function() {
+                      if (!this.found || !this.fVolume) return;
+                      draw_obj = this.found.node;
+                      name_prefix = this.found.item;
+                      console.log('Select volume for drawing', this.fVolume.fName, name_prefix);
+                   },
+                   SetTransparency: function(lvl) {
+                     if (this.fVolume && this.fVolume.fMedium && this.fVolume.fMedium.fMaterial)
+                        this.fVolume.fMedium.fMaterial.fFillStyle = 3000+lvl;
+                   },
+                   SetLineColor: function(col) {
+                      if (this.fVolume) this.fVolume.fLineColor = col;
+                   }
+                };
             },
 
             DefaultColors: function() {
@@ -1965,6 +1966,8 @@
                line = line.replace('->SetMaxVisNodes','.SetMaxVisNodes');
                line = line.replace('->DefaultColors','.DefaultColors');
                line = line.replace('->Draw','.Draw');
+               line = line.replace('->SetTransparency','.SetTransparency');
+               line = line.replace('->SetLineColor','.SetLineColor');
                if (line.indexOf('->')>=0) continue;
 
                // console.log(line);

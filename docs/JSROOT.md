@@ -136,11 +136,16 @@ For such macro only calls `InvisibleAll` and `Draw` are processed. Macro can be 
   <http://jsroot.gsi.de/dev/?file=../files/geom/alice2.root&item=Geometry;1&opt=macro:../files/geom/geomAlice.C>
   
 Major LHC detectors:
-   ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C)
-   ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors)
-   CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C)
-   LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcb_mag.root&item=Geometry;1&opt=all)
+ * ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C) 
+ * ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors), [cryo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C)
+ * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C)
+ * LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors)
   
+Other detector examples:
+ * HADES: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/hades2.root&item=CBMGeom;1&opt=all;dflt_colors), [preselected](http://jsroot.gsi.de/dev/?json=../files/geom/hades.json.gz)  
+ * BABAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_all.C), [emca](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
+ * STAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_all.C), [svtt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_svtt.C) 
+
     
 Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
 Either one do it interactively by drag and drop, or superimpose drawing with + sign like:
