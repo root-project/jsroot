@@ -7842,8 +7842,14 @@
                };
          }
 
+         function ClearName(arg) {
+            if ((arg.length>0) && (arg.charAt(0)=='/')) arg = arg.substr(1);
+            return arg.replace(/\//g,'_');
+
+         }
+
          var subitem = {
-            _name : branch.fName,
+            _name : ClearName(branch.fName),
             _kind : (datakind>0) ? "ROOT." + leaf._typename : "ROOT." + branch._typename,
             _title : branch.fTitle + info
          };
@@ -7978,10 +7984,12 @@
          node._childs.push(subitem);
 
          if ((nb_leaves > 0) && (datakind === 0)) {
+            // console.log('Not recognized leaves for branch', branch.fName, 'total', nb_leaves, 'first', branch.fLeaves.arr[0]._typename, branch.fLeaves.arr[0].fName);
+
             subitem._childs = [];
             for (var j = 0; j < nb_leaves; ++j) {
                var leafitem = {
-                  _name : branch.fLeaves.arr[j].fName,
+                  _name : ClearName(branch.fLeaves.arr[j].fName),
                   _kind : "ROOT." + branch.fLeaves.arr[j]._typename
                }
                subitem._childs.push(leafitem);
@@ -8354,7 +8362,7 @@
                return process_child(child);
             }
 
-         } while ((pos > 0) || once_again);
+         } while ((pos >= 0) || once_again);
 
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
