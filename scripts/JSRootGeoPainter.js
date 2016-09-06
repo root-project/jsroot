@@ -2910,33 +2910,25 @@
 
       if (parent._childs) return true;
 
-      // if (!parent._childs) parent._childs = [];
+      if (ismanager) {
+         JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
+         JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
+         JSROOT.GEO.createList(parent, obj.fTracks, "fTracks", "list of tracks");
+
+         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
+         JSROOT.GEO.createItem(parent, obj.fMasterVolume);
+         return true;
+      }
+
       var volume, subnodes, shape;
 
       if (iseve) {
-         // volume = obj;
          subnodes = obj.fElements ? obj.fElements.arr : null;
          shape = obj.fShape;
       } else {
-         volume = ismanager ? obj.fMasterVolume : (isnode ? obj.fVolume : obj);
-         if (ismanager) JSROOT.GEO.SetBit(volume, JSROOT.GEO.BITS.kVisThis, false);
+         volume = (isnode ? obj.fVolume : obj);
          subnodes = volume && volume.fNodes ? volume.fNodes.arr : null;
          shape = volume ? volume.fShape : null;
-      }
-
-      if (ismanager /*|| (!parent._geoobj && subnodes && subnodes.length && !iseve) */) {
-//         if (ismanager) {
-            JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
-            JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
-            JSROOT.GEO.createList(parent, obj.fTracks, "fTracks", "list of tracks");
-//         }
-
-         if (volume) {
-            JSROOT.GEO.createItem(parent, volume);
-            //JSROOT.GEO.createList(parent, volume.fNodes, "Nodes", ismanager ? ("Nodes of master volume " + volume.fName) : "Hierarchy of TGeoNodes");
-         }
-
-         return true;
       }
 
       if (!subnodes && shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
@@ -2950,21 +2942,8 @@
 
       if (!subnodes) return false;
 
-//      var map = [];
-
-      for (var i=0;i<subnodes.length;++i) {
-//         if (isnode || iseve)
-            JSROOT.GEO.createItem(parent, subnodes[i]);
-/*         else
-         if (isvolume) {
-            var vol = subnodes[i].fVolume;
-            if (map.indexOf(vol) < 0) {
-               map.push(vol); // avoid duplication of similar volume
-               JSROOT.GEO.createItem(parent, vol);
-            }
-         }
-*/
-      }
+      for (var i=0;i<subnodes.length;++i)
+         JSROOT.GEO.createItem(parent, subnodes[i]);
 
       return true;
    }
