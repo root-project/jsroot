@@ -93,13 +93,16 @@ Following draw options could be specified (separated by semicolon or ';'):
    - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
    - clipx/clipy/clipz - enable correspondent clipping panel
    - clip or clipxyz - enable all three clipping pannels
+   - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occulsion)
    - wire - instead of filled surfaces only wireframe will be drawn
    - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
-   - more - show 3 times more volumes as usual
+   - more3 - show 3 times more volumes as usual
    - all - try to display all geometry volumes (may lead to browser hanging)
    - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
    - macro:name.C - invoke ROOT configuration macro
-   - dflt_colors - set default volumes colors as TGeoManager::DefaultColors() does 
+   - dflt_colors - set default volumes colors as TGeoManager::DefaultColors() does
+   - transpXY - set global transperancy value (XY is number between 1 and 99)
+   - rotate - enable automatic rotation of the geometry 
    
 
 It is typical, that not all geometry volumes should be displayed. 

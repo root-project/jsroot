@@ -138,8 +138,8 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
-                   clipx: false, clipy: false, clipz: false,
-                   script_name: "" };
+                   clipx: false, clipy: false, clipz: false, ssao: false,
+                   script_name: "", transparancy: 1, autoRotate: false };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -176,9 +176,21 @@
       opt = opt.toLowerCase();
 
       function check(name) {
-         if (opt.indexOf(name) < 0) return false;
-         opt = opt.replace(name," ");
+         var indx = opt.indexOf(name);
+         if (indx<0) return false;
+         opt = opt.substr(0, indx) + opt.substr(indx+name.length);
          return true;
+      }
+
+      function checkval(name, dflt) {
+         var indx = opt.indexOf(name);
+         if (indx<0) return dflt;
+         opt = opt.substr(0, indx) + opt.substr(indx+name.length);
+         var indx2 = indx;
+         while ((indx2<opt.length) && (opt.charAt(indx2).match(/[0-9]/))) indx2++;
+         if (indx2>indx) dflt = parseInt(opt.substr(indx, indx2-indx));
+         opt = opt.substr(0,indx) + opt.substr(indx2);
+         return dflt;
       }
 
       if (check("more3")) res.more = 3;
@@ -196,6 +208,7 @@
       if (check("clip")) res.clipx = res.clipy = res.clipz = true;
 
       if (check("dflt_colors")) this.SetRootDefaultColors();
+      if (check("ssao")) res.ssao = true;
 
       if (check("noworker")) res.use_worker = -1;
       if (check("worker")) res.use_worker = 1;
@@ -203,11 +216,14 @@
       if (check("highlight")) res.highlight = true;
 
       if (check("wire")) res.wireframe = true;
+      if (check("rotate")) res.autoRotate = true;
 
       if (check("invy")) res.scale.y = -1;
       if (check("invz")) res.scale.z = -1;
 
       if (check("count")) res._count = true;
+
+      res.transparancy = checkval('transp', 100)/100;
 
       if (check("axis") || check("a")) { res._axis = true; res._yup = false; }
 
@@ -321,9 +337,10 @@
          this.focusCamera();
          this.Render3D();
       });
-      menu.addchk(this._controls.autoRotate, "Autorotate", function() {
-         this._controls.autoRotate = !this._controls.autoRotate;
-         this.autorotate(2.5);
+      menu.addchk(this.options.autoRotate, "Autorotate", function() {
+         this.options.autoRotate = !this.options.autoRotate;
+         if (this.options.autoRotate)
+            this.autorotate(2.5);
       });
       menu.addchk(this.options.select_in_view, "Select in view", function() {
          this.options.select_in_view = !this.options.select_in_view;
@@ -331,11 +348,25 @@
       });
    }
 
+   JSROOT.TGeoPainter.prototype.changeGlobalTransparancy = function(value, skip_render) {
+      this._toplevel.traverse( function (node) {
+         if (node instanceof THREE.Mesh) {
+            if (node.material.alwaysTransparent !== undefined) {
+               if (!node.material.alwaysTransparent) {
+                  node.material.transparent = value !== 1.0;
+               }
+               node.material.opacity = Math.min(value * value, node.material.inherentOpacity);
+            }
+
+         }
+      });
+      if (!skip_render) this.Render3D(0);
+   }
+
    JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
 
       if (this._datgui) {
          if (on) return;
-
          this._datgui.destroy();
          delete this._datgui;
          return;
@@ -425,20 +456,8 @@
          }
       });
 
-      appearance.add(this, 'globalTransparency', 0.0, 1.0).listen().onChange( function (value) {
-            painter._toplevel.traverse( function (node) {
-               if (node instanceof THREE.Mesh) {
-                  if (node.material.alwaysTransparent !== undefined) {
-                     if (!node.material.alwaysTransparent) {
-                        node.material.transparent = value !== 1.0;
-                     }
-                     node.material.opacity = Math.min(value * value, node.material.inherentOpacity);
-                  }
-
-               }
-            });
-            painter.Render3D(0);
-         });
+      appearance.add(this.options, 'transparancy', 0.0, 1.0)
+                     .listen().onChange(this.changeGlobalTransparancy.bind(this));
 
       appearance.add(this.options, 'wireframe').name('Wireframe').onChange( function (value) {
          painter.changeWireFrame(painter._scene, painter.options.wireframe);
@@ -1228,8 +1247,6 @@
 
       // Default Settings
 
-      this.globalTransparency = 1.0;
-
       this._defaultAdvanced = { aoClamp: 0.70,
                                 lumInfluence: 0.4,
                               //  shininess: 100,
@@ -1240,7 +1257,7 @@
       // Smooth Lighting Shader (Screen Space Ambient Occulsion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
-      this._enableSSAO = false;
+      this._enableSSAO = this.options.ssao;
 
       if (webgl) {
          var renderPass = new THREE.RenderPass( this._scene, this._camera );
@@ -1483,7 +1500,6 @@
 
       var painter = this;
       this._animating = true;
-      this._controls.autoRotate = false;
 
       // Interpolate //
 
@@ -1518,16 +1534,19 @@
 
    JSROOT.TGeoPainter.prototype.autorotate = function(speed) {
 
-      var rotSpeed = speed === undefined ? 2.0 : speed;
-      var painter = this;
-      var last = new Date();
+      var rotSpeed = (speed === undefined) ? 2.0 : speed,
+          painter = this, last = new Date();
+
       function animate() {
          var current = new Date();
 
-         if ( painter._controls.autoRotate ) requestAnimationFrame( animate );
+         if ( painter.options.autoRotate ) requestAnimationFrame( animate );
 
-         painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
-         painter._controls.update();
+         if (painter._controls) {
+            painter._controls.autoRotate = true;
+            painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
+            painter._controls.update();
+         }
          last = new Date();
          painter.Render3D(0);
       }
@@ -2289,7 +2308,11 @@
             this.enableZ = this.options.clipz;
             this.updateClipping(true); // only set clip panels, do not render
          }
+
       }
+
+      if (this.options.transparancy!==1)
+         this.changeGlobalTransparancy(this.options.transparancy, true);
 
       this.completeScene();
 
@@ -2319,6 +2342,9 @@
          // after first draw check if highlight can be enabled
          if (this.options.highlight === false)
             this.options.highlight = (this.first_render_tm < 1000);
+
+         // if rotation was enabled, do it
+         if (this.options.autoRotate) this.autorotate(2.5);
 
          this.DrawingReady();
       }
