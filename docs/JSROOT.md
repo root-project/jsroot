@@ -17,12 +17,10 @@ One could use JSROOT directly from local file system. If source code was unpacke
 
 ## Drawing objects in JSROOT
 
-[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas. Many examples of supported
-classes can be found on:
+[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas. 
 
-<https://root.cern.ch/js/latest/examples.htm> 
-
-One can provide number of URL parameters in address string like:
+To automate files loading and objects drawing, 
+one can provide number of URL parameters in address string like:
 
 - file, files - name of the file(s), which will be automatically open with page loading
 - json - name of JSON file with stored ROOT object like histogram or canvas 
@@ -37,7 +35,7 @@ One can provide number of URL parameters in address string like:
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 
-Like:
+For instance:
 
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
@@ -47,12 +45,35 @@ When specifying `file`, `item` or `opt` parameters, one could provide array like
 
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern.ch/js/latest/api.htm) page.   
 
-
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
     <iframe width="700" height="400" 
             src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
     </iframe>
+
+
+## Supported ROOT classes by JSROOT
+
+List of supported classes and draw options:
+
+- TH1 : [hist](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=hist), [p](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=p), [p0](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=p0), [e](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=e), [e1](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpx;1&opt=e1), lego
+- TH2 : [scat](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=scat), [col](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=col), [colz](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz), [box](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=box), [text](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=text), [lego](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego), [lego0](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego0), [lego1](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego1), [lego2](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego2), [lego3](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego3), [lego4](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=lego4)
+- TH3 :  [box](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box), [box1](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box1)
+- TProfile : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1), [e](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e), [E1](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e1), [pE2](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=pe2), [hist](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=hist)
+- THStack : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/stacks.root&item=stacks;1)   
+- TF1 : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/danilo5.root&item=canvas;1)
+- TGraph : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1), [L](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=L), [P](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=P), [*](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=*), [B](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=B)
+- TGraphErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1), [0](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=0), [3](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=3), [4](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=4)
+- TGraphAsymmErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1), [2](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1&opt=2)
+- TMultiGraph : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/multigraph.root&item=c3;1)
+- TLatex : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]&mathjax)
+- TMathText : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&item=math;1)
+- TCanvas : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/rf107.root&item=rf107_plotstyles;1)
+- TLegend :  [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/legends.root&item=legends;1&mathjax)
+- TTree : [single-branch draw](http://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=ntuple;1/px)
+
+
+More examples of supported classes can be found on: <https://root.cern.ch/js/latest/examples.htm>
 
 
 
@@ -132,13 +153,8 @@ implemented in JSON format. There is the TBufferJSON class, which is capable to 
 convert any ROOT object (beside TTree) into JSON. Any ROOT application can use such class to
 create JSON files for selected objects and write such files in a directory,
 which can be accessed via web server. Then one can use JSROOT to read such files and display objects in a web browser.
-There is a demonstration page showing such functionality:
 
-<https://root.cern.ch/js/latest/demo/demo.htm>
-
-<iframe width="500" height="300" src="https://root.cern.ch/js/latest/demo/demo.htm">
-</iframe>
-
+There is a demonstration page showing such functionality: <https://root.cern.ch/js/latest/demo/demo.htm>.
 This demo page reads in cycle 20 json files and displays them.
 
 If one has a web server which already provides such JSON file, one could specify the URL to this file like:
@@ -183,7 +199,11 @@ Details about the JSROOT API can be found in the next chapters.
 
 JSROOT consists of several libraries (.js files). They are all provided in the ROOT
 repository and are available in the 'etc/http/scripts/' subfolder.
+
 Only the central classes and functions will be documented here.
+
+Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page
+
 
 ### Scripts loading
 
@@ -287,9 +307,6 @@ For example, reading an object from a file and displaying it will look like:
     });
 
 
-### More API examples
-
-Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page
 
 
 ## Geometry viewer
