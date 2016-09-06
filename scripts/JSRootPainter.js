@@ -7916,6 +7916,61 @@
       ReadNextBaskets(0);
    }
 
+   JSROOT.Painter.CreateBranchLeaves = function(s_i, hitem) {
+      // either counts supported leavs or also create appropriate entries in hierarchy
+
+      if (!s_i || !s_i.fElements) return 0;
+
+      var cnt = 0;
+
+      for (var j=0; j<s_i.fElements.arr.length; ++j) {
+         // extract streamer info for each class member
+         var element = s_i.fElements.arr[j];
+
+         // first ignore base types
+         if (element.fTypeName === 'BASE') continue;
+
+         var type = element.fType;
+
+         switch(type) {
+            case JSROOT.IO.kChar:
+            case JSROOT.IO.kShort:
+            case JSROOT.IO.kInt:
+            case JSROOT.IO.kCounter:
+            case JSROOT.IO.kLong:
+            case JSROOT.IO.kLong64:
+            case JSROOT.IO.kDouble:
+            case JSROOT.IO.kFloat:
+            case JSROOT.IO.kDouble32:
+            case JSROOT.IO.kLegacyChar:
+            case JSROOT.IO.kUChar:
+            case JSROOT.IO.kUShort:
+            case JSROOT.IO.kUInt:
+            case JSROOT.IO.kULong64:
+            case JSROOT.IO.kULong:
+            case JSROOT.IO.kBool:
+               cnt++;
+
+               if (hitem && hitem._childs) {
+                  var leafitem = {
+                     _name : element.fName,
+                     _kind : "ROOT.TLeaf",
+                     _title : element.fTypeName
+                  };
+                  if (element.fTitle != '') leafitem._title += " // " + element.fTitle;
+                  hitem._childs.push(leafitem);
+               }
+
+               break;
+            default:
+               // not yet supported types in tree-draw
+               break;
+         }
+      }
+
+      return cnt;
+   }
+
    JSROOT.Painter.TreeHierarchy = function(node, obj) {
       if (obj._typename != 'TTree' && obj._typename != 'TNtuple') return false;
 
@@ -7925,7 +7980,7 @@
          var branch = obj.fBranches.arr[i],
              nb_leaves = branch.fLeaves.arr.length,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datasize = 0, datakind = 0, isvector = false, info = "";
+             datasize = 0, datakind = 0, isvector = false, sinfo = null, info = "";
 
          // display branch with only leaf as leaf
          if ((nb_leaves === 1) && (leaf.fName === branch.fName)) {
@@ -7941,12 +7996,14 @@
                   case 'TLeafElement' :
                      if (branch._typename==='TBranchElement') {
                        switch (branch.fClassName) {
-                         case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
-                         case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
-                         case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
-                         case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
+                          case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
+                          case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
+                          case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
+                          case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
                        }
                        if (isvector) info = " " + branch.fClassName;
+
+                       if (!isvector) sinfo = node._parent._file.FindStreamerInfo(branch.fClassName, branch.fClassVersion);
                      }
                      break;
                };
@@ -7982,11 +8039,19 @@
             subitem._datasize = datasize;
             subitem._isvector = isvector;
             subitem._get = JSROOT.Painter.TreeDrawGet;
+         } else
+         if (sinfo) {
+            subitem._childs = [];
+            if (JSROOT.Painter.CreateBranchLeaves(sinfo, subitem)>0) {
+              subitem._branch = branch; // branch is required for leaf get operation
+            } else {
+              delete subitem._childs;
+            }
          }
 
          node._childs.push(subitem);
 
-         if ((nb_leaves > 1) && (datakind === 0)) {
+         if ((nb_leaves > 1) && (datakind === 0) && !sinfo) {
             // console.log('Not recognized leaves for branch', branch.fName, 'total', nb_leaves, 'first', branch.fLeaves.arr[0]._typename, branch.fLeaves.arr[0].fName);
 
             subitem._childs = [];

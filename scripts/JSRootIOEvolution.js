@@ -1526,6 +1526,16 @@
       return streamer;
    }
 
+   JSROOT.TFile.prototype.FindStreamerInfo = function(clname, clversion) {
+      if (this.fStreamerInfos)
+         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
+            if (this.fStreamerInfos.arr[i].fName === clname)
+               if ((clversion===undefined) || (this.fStreamerInfos.arr[i].fClassVersion===clversion))
+                  return this.fStreamerInfos.arr[i];
+
+      return null;
+   }
+
    JSROOT.TFile.prototype.GetStreamer = function(clname) {
       // return the streamer for the class 'clname', from the list of streamers
       // or generate it from the streamer infos and add it to the list
@@ -1534,12 +1544,7 @@
       if (streamer !== undefined) return streamer;
 
       // check element in streamer infos, one can have special cases
-      var s_i = null;
-      if (this.fStreamerInfos)
-         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
-            if (this.fStreamerInfos.arr[i].fName == clname)  {
-               s_i = this.fStreamerInfos.arr[i]; break;
-            }
+      var s_i = this.FindStreamerInfo(clname);
 
       if (clname == 'TQObject' || clname == "TBasket") {
          // these are special cases, which are handled separately
@@ -1820,7 +1825,6 @@
       if (s_i.fElements === null)
          return this.AddMethods(clname, streamer);
 
-
       for (var j=0; j<s_i.fElements.arr.length; ++j) {
          // extract streamer info for each class member
          var element = s_i.fElements.arr[j];
@@ -2006,7 +2010,6 @@
             case JSROOT.IO.kULong64:
             case JSROOT.IO.kULong:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
-
             case JSROOT.IO.kBool:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
             case JSROOT.IO.kStreamLoop:
