@@ -7806,6 +7806,116 @@
       return true;
    }
 
+
+   JSROOT.Painter.TreeDrawGet = function(item, itemname, get_callback, option) {
+      // function used to handle get request for branch/subbranch
+      var b = item._branch,
+          f = item._parent._parent._file,
+          histo = null, break_execution = 0;
+
+      if (option==='inspect')
+        return JSROOT.CallBack(get_callback, item, b);
+
+      function ShowProgress(value) {
+         var main_box = document.createElement("p");
+         var text_node = document.createTextNode(value);
+         main_box.appendChild(text_node);
+         main_box.title = "Click on element to break drawing";
+
+         main_box.onclick = function() {
+            if (++break_execution<3) {
+               main_box.title = "Tree draw will break after next I/O operation";
+               return text_node.nodeValue = "Breaking ... ";
+            }
+            break_execution = -1111;
+            JSROOT.progress();
+            JSROOT.CallBack(get_callback, item, histo);
+         }
+
+         JSROOT.progress(main_box);
+      }
+
+      function ReadNextBaskets(indx) {
+         var places = [], totalsz = 0, indx0 = indx;
+         while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1000000) && (places.length<200)) {
+            if (b.fBasketBytes[indx] === 0) break;
+            places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
+            totalsz += b.fBasketBytes[indx];
+            indx++;
+            //break; // only single basket
+         }
+
+         if ((places.length === 0) || (break_execution>0)) {
+            JSROOT.progress();
+            return JSROOT.CallBack(get_callback, item, histo);
+         }
+
+         var maxindx = b.fWriteBasket || b.fMaxBaskets;
+         if (maxindx<=0) maxindx = 1;
+
+         ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
+
+         // setTimeout(ContinueRead, 1000);
+         // function ContinueRead() {
+
+         f.ReadBaskets(places, function(baskets) {
+
+            if (break_execution<0) return; // hard break
+
+            if (!baskets) return ReadNextBaskets(-1);
+
+            var arrays = []; // all data from baskets
+
+            // first convert raw data
+            for (var n=0;n<baskets.length;++n)
+               if (item._isvector) {
+                  var buf = baskets[n].raw, nread = 0;
+                  while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
+                     var ver = buf.ReadVersion();
+                     arrays.push(buf.ReadFastArray(buf.ntoi4(), item._datakind));
+                     buf.CheckBytecount(ver, 'branch_vector_read');
+                  }
+               } else {
+                  arrays.push(baskets[n].raw.ReadFastArray(baskets[n].fNevBuf, item._datakind));
+               }
+
+            // console.log('array', arr.length);
+
+            if (histo === null) {
+               var xmin, xmax;
+
+               for (var n=0;n<arrays.length;++n) {
+                  var lmin = Math.min.apply(null, arrays[n]);
+                  var lmax = Math.max.apply(null, arrays[n]);
+                  if ((n===0) || (lmin < xmin)) xmin = lmin;
+                  if ((n===0) || (lmax > xmax)) xmax = lmax;
+               }
+
+               if (xmin>=xmax) xmax = xmin + 1;
+
+               histo = JSROOT.CreateTH1(100);
+               histo.fXaxis.fXmin = xmin;
+               histo.fXaxis.fXmax = xmin + (xmax-xmin)*1.001;
+               histo.fName = "draw_" + item._name;
+               histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
+               histo.fCustomStat = 111110;
+            }
+
+            for (var n=0;n<arrays.length;++n) {
+               var arr = arrays[n];
+               for (var k=0;k<arr.length;++k)
+                  histo.Fill(arr[k]);
+            }
+
+            ReadNextBaskets(indx);
+         });
+
+         //} // for debugging with timeout
+      }
+
+      ReadNextBaskets(0);
+   }
+
    JSROOT.Painter.TreeHierarchy = function(node, obj) {
       if (obj._typename != 'TTree' && obj._typename != 'TNtuple') return false;
 
@@ -7852,6 +7962,7 @@
             _name : ClearName(branch.fName),
             _kind : (datakind>0) ? "ROOT." + leaf._typename : "ROOT." + branch._typename,
             _title : branch.fTitle + info
+            // _obj: branch
          };
 
          // if (branch._typename==='TBranchElement') console.log(datasize, branch);
@@ -7870,120 +7981,12 @@
             subitem._datakind = datakind;
             subitem._datasize = datasize;
             subitem._isvector = isvector;
-
-            subitem._get = function(item, itemname, get_callback, option) {
-
-               var b = item._branch,
-                   f = item._parent._parent._file,
-                   histo = null, break_execution = 0;
-
-               if (option==='inspect')
-                  return JSROOT.CallBack(get_callback, item, b);
-
-               function ShowProgress(value) {
-                  var main_box = document.createElement("p");
-                  var text_node = document.createTextNode(value);
-                  main_box.appendChild(text_node);
-                  main_box.title = "Click on element to break drawing";
-
-                  main_box.onclick = function() {
-                     if (++break_execution<3) {
-                        main_box.title = "Tree draw will break after next I/O operation";
-                        return text_node.nodeValue = "Breaking ... ";
-                     }
-                     break_execution = -1111;
-                     JSROOT.progress();
-                     JSROOT.CallBack(get_callback, item, histo);
-                  }
-
-                  JSROOT.progress(main_box);
-               }
-
-               function ReadNextBaskets(indx) {
-                  var places = [], totalsz = 0, indx0 = indx;
-                  while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1000000) && (places.length<200)) {
-                     if (b.fBasketBytes[indx] === 0) break;
-                     places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
-                     totalsz += b.fBasketBytes[indx];
-                     indx++;
-                     //break; // only single basket
-                  }
-
-                  if ((places.length === 0) || (break_execution>0)) {
-                     JSROOT.progress();
-                     return JSROOT.CallBack(get_callback, item, histo);
-                  }
-
-                  var maxindx = b.fWriteBasket || b.fMaxBaskets;
-                  if (maxindx<=0) maxindx = 1;
-
-                  ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
-
-                  // setTimeout(ContinueRead, 1000);
-                  // function ContinueRead() {
-
-                  f.ReadBaskets(places, function(baskets) {
-
-                     if (break_execution<0) return; // hard break
-
-                     if (!baskets) return ReadNextBaskets(-1);
-
-                     var arrays = []; // all data from baskets
-
-                     // first convert raw data
-                     for (var n=0;n<baskets.length;++n)
-                        if (item._isvector) {
-                           var buf = baskets[n].raw, nread = 0;
-                           while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
-                              var ver = buf.ReadVersion();
-                              arrays.push(buf.ReadFastArray(buf.ntoi4(), item._datakind));
-                              buf.CheckBytecount(ver, 'branch_vector_read');
-                           }
-                        } else {
-                           arrays.push(baskets[n].raw.ReadFastArray(baskets[n].fNevBuf, item._datakind));
-                        }
-
-                     // console.log('array', arr.length);
-
-                     if (histo === null) {
-                        var xmin, xmax;
-
-                        for (var n=0;n<arrays.length;++n) {
-                           var lmin = Math.min.apply(null, arrays[n]);
-                           var lmax = Math.max.apply(null, arrays[n]);
-                           if ((n===0) || (lmin < xmin)) xmin = lmin;
-                           if ((n===0) || (lmax > xmax)) xmax = lmax;
-                        }
-
-                        if (xmin>=xmax) xmax = xmin + 1;
-
-                        histo = JSROOT.CreateTH1(100);
-                        histo.fXaxis.fXmin = xmin;
-                        histo.fXaxis.fXmax = xmin + (xmax-xmin)*1.001;
-                        histo.fName = "draw_" + item._name;
-                        histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
-                        histo.fCustomStat = 111110;
-                     }
-
-                     for (var n=0;n<arrays.length;++n) {
-                        var arr = arrays[n];
-                        for (var k=0;k<arr.length;++k)
-                           histo.Fill(arr[k]);
-                     }
-
-                     ReadNextBaskets(indx);
-                  });
-
-                  //} // for debugging with timeout
-               }
-
-               ReadNextBaskets(0);
-            }
+            subitem._get = JSROOT.Painter.TreeDrawGet;
          }
 
          node._childs.push(subitem);
 
-         if ((nb_leaves > 0) && (datakind === 0)) {
+         if ((nb_leaves > 1) && (datakind === 0)) {
             // console.log('Not recognized leaves for branch', branch.fName, 'total', nb_leaves, 'first', branch.fLeaves.arr[0]._typename, branch.fLeaves.arr[0].fName);
 
             subitem._childs = [];
@@ -7991,6 +7994,7 @@
                var leafitem = {
                   _name : ClearName(branch.fLeaves.arr[j].fName),
                   _kind : "ROOT." + branch.fLeaves.arr[j]._typename
+                  // _obj: branch.fLeaves.arr[j]
                }
                subitem._childs.push(leafitem);
             }
@@ -10037,7 +10041,7 @@
    JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt:";L;P" });
    JSROOT.addDrawFunc({ name: /^RooCurve/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt:";L;P" });
    JSROOT.addDrawFunc({ name: "TMultiGraph", icon:"img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph" });
-   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func: JSROOT.Painter.drawStreamerInfo });
+   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func: JSROOT.Painter.drawStreamerInfo, noexpand:true });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
@@ -10059,8 +10063,8 @@
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", noinspect:true, noexpand:true });
-   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", /*noinspect:true,*/ noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", /*noinspect:true,*/ noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
