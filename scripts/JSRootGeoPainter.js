@@ -339,8 +339,7 @@
       });
       menu.addchk(this.options.autoRotate, "Autorotate", function() {
          this.options.autoRotate = !this.options.autoRotate;
-         if (this.options.autoRotate)
-            this.autorotate(2.5);
+         this.autorotate(2.5);
       });
       menu.addchk(this.options.select_in_view, "Select in view", function() {
          this.options.select_in_view = !this.options.select_in_view;
@@ -1543,7 +1542,7 @@
          if ( painter.options.autoRotate ) requestAnimationFrame( animate );
 
          if (painter._controls) {
-            painter._controls.autoRotate = true;
+            painter._controls.autoRotate = painter.options.autoRotate;
             painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
             painter._controls.update();
          }
