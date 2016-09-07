@@ -132,7 +132,7 @@ Example of such macro can be found in root tutorials. Typically it looks like:
       new TBrowser;
     }
   
-For such macro following calls are supported:
+From provided macro only following calls will be executed in JSROOT:
 
    * `gGeoManager->DefaultColors()`
    * `gGeoManager->GetVolume("HALL")->InvisibleAll()` 
@@ -140,13 +140,13 @@ For such macro following calls are supported:
    * `gGeoManager->GetVolume("HALL")->SetLineColor(5)` 
    * `gGeoManager->GetVolume("ALIC")->Draw("ogl")`
     
-All other commands should be ignored.
+All other will be ignored.
 
   
 Example of major LHC detectors:
  * ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C) 
- * ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors), [cryo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C)
- * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C;clipxyz)
+ * ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=clipxyz), [cryo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C), [sctt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_sctt.C)
+ * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C;clipxyz), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C;clipxyz)
  * LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors)
   
 Other detectors examples:
