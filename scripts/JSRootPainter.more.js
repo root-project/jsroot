@@ -3121,21 +3121,39 @@
 
       if (this.th2poly) {
 
-         var len = histo.fBins.arr.length, i, bin;
+         var len = histo.fBins.arr.length, i, bin, n, np,
+             pmain = this.main_painter();
 
          for (i=0;i<len;++i) {
             bin = histo.fBins.arr[i];
+
             xside = 1; yside = 1;
 
-            xx = bin.fPoly.fX[0];
-            yy = bin.fPoly.fY[0];
+            if (bin.fXmin > pmain.scale_xmax) xside = 2; else
+            if (bin.fXmax < pmain.scale_xmin) xside = 0;
+            if (bin.fYmin > pmain.scale_ymax) yside = 2; else
+            if (bin.fYmax < pmain.scale_ymin) yside = 0;
+
+            xx = yy = 0;
+            np = bin.fPoly.fNpoints;
+
+            for (n=0;n<np;++n) {
+               xx += bin.fPoly.fX[n];
+               yy += bin.fPoly.fY[n];
+            }
+
+            if (np > 0) {
+               xx = xx / np;
+               yy = yy / np;
+            }
+
             zz = bin.fContent;
 
             res.entries += zz;
 
             res.matrix[yside * 3 + xside] += zz;
 
-            // if ((xside != 1) || (yside != 1)) continue;
+            if ((xside != 1) || (yside != 1)) continue;
 
             if ((cond!=null) && !cond(xx,yy)) continue;
 
@@ -3394,8 +3412,11 @@
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
          colindx = this.getValueColor(bin.fContent, true);
-
          if (colindx === null) continue;
+
+         // check if bin outside visible range
+         if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
+             (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
          pnts = bin.fPoly; npnts = pnts.fNpoints;
 
