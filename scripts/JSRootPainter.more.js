@@ -3396,11 +3396,31 @@
       return handle;
    }
 
+   JSROOT.TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
+      var pnts = bin.fPoly,
+          npnts = pnts.fNpoints, n,
+          grx = Math.round(pmain.grx(pnts.fX[0])),
+          gry = Math.round(pmain.gry(pnts.fY[0])),
+          nextx, nexty,
+          cmd = "M"+grx+","+gry;
+
+      for (n=1;n<npnts;++n) {
+         nextx = Math.round(pmain.grx(pnts.fX[n]));
+         nexty = Math.round(pmain.gry(pnts.fY[n]));
+         if (grx===nextx) cmd += "v" + (nexty - gry); else
+         if (gry===nexty) cmd += "h" + (nextx - grx); else
+                          cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+         grx = nextx; gry = nexty;
+      }
+
+      return cmd + "z";
+   }
+
    JSROOT.TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
       var histo = this.GetObject(),
           pmain = this.main_painter(),
-          colPaths = [], currx = [], curry = [],
-          colindx, cmd1, cmd2, bin, pnts, npnts, n, grx, gry, nextx, nexty,
+          colPaths = [],
+          colindx, cmd, bin,
           i, len = histo.fBins.arr.length;
 
       // now start build
@@ -3418,34 +3438,12 @@
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
              (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
-         pnts = bin.fPoly; npnts = pnts.fNpoints;
+         cmd = this.CreatePolyBin(pmain, bin);
 
-         grx = Math.round(pmain.grx(pnts.fX[0]));
-         gry = Math.round(pmain.gry(pnts.fY[0]));
-
-         cmd1 = "M"+grx+","+gry;
-         if (colPaths[colindx] === undefined) {
-            colPaths[colindx] = cmd1;
-         } else{
-            cmd2 = "m" + (grx-currx[colindx]) + "," + (gry-curry[colindx]);
-            colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
-         }
-
-         currx[colindx] = grx;
-         curry[colindx] = gry;
-
-         cmd2 = "";
-
-         for (n=1;n<npnts;++n) {
-            nextx = Math.round(pmain.grx(pnts.fX[n]));
-            nexty = Math.round(pmain.gry(pnts.fY[n]));
-            if (grx===nextx) cmd2 += "v" + (nexty - gry); else
-            if (gry===nexty) cmd2 += "h" + (nextx - grx); else
-                             cmd2 += "l" + (nextx - grx) + "," + (nexty - gry);
-            grx = nextx; gry = nexty;
-         }
-
-         colPaths[colindx] += cmd2 + "z";
+         if (colPaths[colindx] === undefined)
+            colPaths[colindx] = cmd;
+         else
+            colPaths[colindx] += cmd;
       }
 
       for (colindx=0;colindx<colPaths.length;++colindx)
@@ -3456,7 +3454,7 @@
             .attr("fill", this.fPalette[colindx])
             .attr("d", colPaths[colindx]);
 
-      return null;
+      return { poly: histo };
    }
 
    JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
@@ -3860,6 +3858,66 @@
       var histo = this.GetObject(),
           h = this.tt_handle, i,
           ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (h.poly) {
+         // process toolltips from TH2Poly
+
+         var pmain = this.main_painter(),
+             realx, realy, found = null;
+
+         if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
+         if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
+
+         if ((realx!==undefined) && (realy!==undefined)) {
+            var i, len = h.poly.fBins.arr.length, bin;
+
+            for (i = 0; i < len; ++ i) {
+               bin = h.poly.fBins.arr[i];
+
+               // found potential bins candidate
+               if ((realx < bin.fXmin) || (realx > bin.fXmax) || (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
+
+               if (bin.fPoly.IsInside(realx,realy)) {
+                  found = bin;
+                  break;
+               }
+            }
+         }
+
+         if (!found) {
+            ttrect.remove();
+            this.ProvideUserTooltip(null);
+            return null;
+         }
+
+         var name = this.GetItemName();
+         if (!name) name = h.poly.fName;
+
+         var res = { x: pnt.x, y: pnt.y,
+                     color1: this.lineatt.color, color2: this.fillatt.color,
+                    lines: [ name,"x: " + realx.toFixed(2), "y: " + realy.toFixed(2), "bin  " + found.fNumber], exact: true, menu: true };
+
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:path")
+                                .attr("class","tooltip_bin h1bin")
+                                .style("pointer-events","none");
+
+         res.changed = ttrect.property("current_bin") !== found.fNumber;
+
+         if (res.changed)
+            ttrect.attr("d", this.CreatePolyBin(pmain, found))
+                  .style("opacity", "0.7")
+                  .property("current_bin", found.fNumber);
+
+         if (this.IsUserTooltipCallback() && res.changed)
+            this.ProvideUserTooltip({ obj: h.poly,  name: h.poly.fName,
+                                      bin: found.fNumber,
+                                      cont: found.fContent,
+                                      grx: pnt.x, gry: pnt.y });
+
+         return res;
+
+      } else
 
       if (h.candle) {
          // process tooltips for candle
