@@ -3895,7 +3895,12 @@
 
          var res = { x: pnt.x, y: pnt.y,
                      color1: this.lineatt.color, color2: this.fillatt.color,
-                    lines: [ name,"x: " + realx.toFixed(2), "y: " + realy.toFixed(2), "bin  " + found.fNumber], exact: true, menu: true };
+                     exact: true, menu: true,
+                     lines: [ name,
+                             "x = " + pmain.AxisAsText("x", realx),
+                             "y = " + pmain.AxisAsText("y", realy),
+                             "bin = " + found.fNumber,
+                             "content = " + JSROOT.FFormat(found.fContent, JSROOT.gStyle.StatFormat)] };
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:path")
