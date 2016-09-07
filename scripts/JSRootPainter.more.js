@@ -2918,6 +2918,7 @@
       this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
+      this.th2poly = this.MatchObjectType("TH2Poly");
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -3057,16 +3058,32 @@
 
       this.CreateAxisFuncs(true);
 
-      // global min/max, used at the moment in 3D drawing
-      this.gminbin = this.gmaxbin = histo.getBinContent(1, 1);
-      this.gmin0bin = null;
-      for (i = 0; i < this.nbinsx; ++i) {
-         for (j = 0; j < this.nbinsy; ++j) {
-            var bin_content = histo.getBinContent(i+1, j+1);
+      if (this.th2poly) {
+         this.gmin0bin = null;
+         this.gminbin = this.gmaxbin = 0;
+
+         for (var n=0, len=histo.fBins.arr.length; n<len; ++n) {
+            var bin_content = histo.fBins.arr[n].fContent;
+            if (n===0) this.gminbin = this.gmaxbin = bin_content;
+
             if (bin_content < this.gminbin) this.gminbin = bin_content; else
-            if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+               if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+
             if (bin_content > 0)
                if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
+         }
+      } else {
+         // global min/max, used at the moment in 3D drawing
+         this.gminbin = this.gmaxbin = histo.getBinContent(1, 1);
+         this.gmin0bin = null;
+         for (i = 0; i < this.nbinsx; ++i) {
+            for (j = 0; j < this.nbinsy; ++j) {
+               var bin_content = histo.getBinContent(i+1, j+1);
+               if (bin_content < this.gminbin) this.gminbin = bin_content; else
+                  if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
+               if (bin_content > 0)
+                  if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
+            }
          }
       }
 
@@ -3099,28 +3116,26 @@
       var histo = this.GetObject(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
-          xleft = this.GetSelectIndex("x", "left"),
-          xright = this.GetSelectIndex("x", "right"),
-          yleft = this.GetSelectIndex("y", "left"),
-          yright = this.GetSelectIndex("y", "right"),
-          xi, xside, xx, yi, yside, yy, zz,
+          xside, yside, xx, yy, zz,
           res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
-      for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
-         xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
-         xx = this.GetBinX(xi - 0.5);
+      if (this.th2poly) {
 
-         for (yi = 0; yi <= this.nbinsy + 1; ++yi) {
-            yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
-            yy = this.GetBinY(yi - 0.5);
+         var len = histo.fBins.arr.length, i, bin;
 
-            zz = histo.getBinContent(xi, yi);
+         for (i=0;i<len;++i) {
+            bin = histo.fBins.arr[i];
+            xside = 1; yside = 1;
+
+            xx = bin.fPoly.fX[0];
+            yy = bin.fPoly.fY[0];
+            zz = bin.fContent;
 
             res.entries += zz;
 
             res.matrix[yside * 3 + xside] += zz;
 
-            if ((xside != 1) || (yside != 1)) continue;
+            // if ((xside != 1) || (yside != 1)) continue;
 
             if ((cond!=null) && !cond(xx,yy)) continue;
 
@@ -3132,6 +3147,41 @@
             stat_sumx2 += xx * xx * zz;
             stat_sumy2 += yy * yy * zz;
             stat_sumxy += xx * yy * zz;
+         }
+      } else {
+         var xleft = this.GetSelectIndex("x", "left"),
+             xright = this.GetSelectIndex("x", "right"),
+             yleft = this.GetSelectIndex("y", "left"),
+             yright = this.GetSelectIndex("y", "right"),
+             xi, yi;
+
+         for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
+            xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
+            xx = this.GetBinX(xi - 0.5);
+
+            for (yi = 0; yi <= this.nbinsy + 1; ++yi) {
+               yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
+               yy = this.GetBinY(yi - 0.5);
+
+               zz = histo.getBinContent(xi, yi);
+
+               res.entries += zz;
+
+               res.matrix[yside * 3 + xside] += zz;
+
+               if ((xside != 1) || (yside != 1)) continue;
+
+               if ((cond!=null) && !cond(xx,yy)) continue;
+
+               if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+
+               stat_sum0 += zz;
+               stat_sumx1 += xx * zz;
+               stat_sumy1 += yy * zz;
+               stat_sumx2 += xx * xx * zz;
+               stat_sumy2 += yy * yy * zz;
+               stat_sumxy += xx * yy * zz;
+            }
          }
       }
 
@@ -3326,6 +3376,66 @@
                .attr("d", colPaths[colindx]);
 
       return handle;
+   }
+
+   JSROOT.TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
+      var histo = this.GetObject(),
+          pmain = this.main_painter(),
+          colPaths = [], currx = [], curry = [],
+          colindx, cmd1, cmd2, bin, pnts, npnts, n, grx, gry, nextx, nexty,
+          i, len = histo.fBins.arr.length;
+
+      // now start build
+
+      // use global coordinates
+      this.maxbin = this.gmaxbin;
+      this.minbin = this.gminbin;
+
+      for (i = 0; i < len; ++ i) {
+         bin = histo.fBins.arr[i];
+         colindx = this.getValueColor(bin.fContent, true);
+
+         if (colindx === null) continue;
+
+         pnts = bin.fPoly; npnts = pnts.fNpoints;
+
+         grx = Math.round(pmain.grx(pnts.fX[0]));
+         gry = Math.round(pmain.gry(pnts.fY[0]));
+
+         cmd1 = "M"+grx+","+gry;
+         if (colPaths[colindx] === undefined) {
+            colPaths[colindx] = cmd1;
+         } else{
+            cmd2 = "m" + (grx-currx[colindx]) + "," + (gry-curry[colindx]);
+            colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
+         }
+
+         currx[colindx] = grx;
+         curry[colindx] = gry;
+
+         cmd2 = "";
+
+         for (n=1;n<npnts;++n) {
+            nextx = Math.round(pmain.grx(pnts.fX[n]));
+            nexty = Math.round(pmain.gry(pnts.fY[n]));
+            if (grx===nextx) cmd2 += "v" + (nexty - gry); else
+            if (gry===nexty) cmd2 += "h" + (nextx - grx); else
+                             cmd2 += "l" + (nextx - grx) + "," + (nexty - gry);
+            grx = nextx; gry = nexty;
+         }
+
+         colPaths[colindx] += cmd2 + "z";
+      }
+
+      for (colindx=0;colindx<colPaths.length;++colindx)
+         if (colPaths[colindx] !== undefined)
+            this.draw_g
+            .append("svg:path")
+            .attr("palette-index", colindx)
+            .attr("fill", this.fPalette[colindx])
+            .attr("d", colPaths[colindx]);
+
+      return null;
    }
 
    JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
@@ -3656,6 +3766,9 @@
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
+      if (this.th2poly)
+         handle = this.DrawPolyBinsColor(w, h);
+      else
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);
       else
@@ -3716,7 +3829,7 @@
    }
 
    JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt==null) || !this.draw_content || !this.draw_g) {
+      if ((pnt==null) || !this.draw_content || !this.draw_g || !this.tt_handle) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
