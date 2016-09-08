@@ -10,7 +10,7 @@
      &file=files/alice2.root&item=Geometry;1&opt=macro:macros/geomAlice.C   
    One can set default colors or colors/transperency for selected volumes.
    Also volume, selected for drawing in the macro, will be used in the JSROOT
-6. Preliminary support of TH2Poly class
+6. Support TH2Poly class with 'col' and 'lego' draw options
 
 
 ## Changes in 4.6.0

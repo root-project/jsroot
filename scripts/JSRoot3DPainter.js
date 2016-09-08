@@ -1453,7 +1453,7 @@
          z1 = this.tz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
 
          var nfaces = faces.length * 2;
-         // if (z1>z0) nfaces += npnts*2;
+         if (z1>z0) nfaces += npnts*2;
 
          var pos = new Float32Array(nfaces*9), indx = 0;
 
@@ -1480,6 +1480,43 @@
                indx+=3;
             }
          }
+
+         if (z1>z0) {
+            for (var n=0;n<npnts;++n) {
+               var pnt1 = pnts[n],
+                   pnt2 = pnts[(n>0) ? n-1 : npnts-1];
+               pos[indx] = pnt1.x;
+               pos[indx+1] = pnt1.y;
+               pos[indx+2] = z0;
+               indx+=3;
+
+               pos[indx] = pnt2.x;
+               pos[indx+1] = pnt2.y;
+               pos[indx+2] = z0;
+               indx+=3;
+
+               pos[indx] = pnt2.x;
+               pos[indx+1] = pnt2.y;
+               pos[indx+2] = z1;
+               indx+=3;
+
+               pos[indx] = pnt1.x;
+               pos[indx+1] = pnt1.y;
+               pos[indx+2] = z0;
+               indx+=3;
+
+               pos[indx] = pnt2.x;
+               pos[indx+1] = pnt2.y;
+               pos[indx+2] = z1;
+               indx+=3;
+
+               pos[indx] = pnt1.x;
+               pos[indx+1] = pnt1.y;
+               pos[indx+2] = z1;
+               indx+=3;
+            }
+         }
+
 
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
