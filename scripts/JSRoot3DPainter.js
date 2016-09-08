@@ -1532,7 +1532,7 @@
          cnt++;
       }
 
-      console.log('draw poly as lego plot', cnt, nfaces);
+      console.log('draw poly as lego plot', cnt, totalnfaces);
    }
 
    JSROOT.Painter.Render3D = function(tmout) {

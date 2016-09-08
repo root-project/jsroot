@@ -2979,8 +2979,7 @@
       if (!this.th2poly)
          pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
       pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
-      if (!this.th2poly)
-         pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
+      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
    }
 
    JSROOT.TH2Painter.prototype.ToggleColor = function() {
