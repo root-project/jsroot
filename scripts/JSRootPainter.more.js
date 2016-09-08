@@ -3425,7 +3425,9 @@
           colindx, cmd, bin,
           i, len = histo.fBins.arr.length;
 
-      // now start build
+      // force recalculations of contours
+      this.fContour = null;
+      this.fCustomContour = false;
 
       // use global coordinates
       this.maxbin = this.gmaxbin;
@@ -3787,10 +3789,9 @@
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
-      if (this.th2poly) {
+      if (this.th2poly)
          handle = this.DrawPolyBinsColor(w, h);
-         this.options.Color = 1;
-      } else
+      else
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);
       else
@@ -4085,6 +4086,9 @@
 
       // here we deciding how histogram will look like and how will be shown
       this.options = this.DecodeOptions(opt);
+
+      // for the moment only color draw is supported
+      if (this.th2poly) this.options.Color = 1;
 
       this._can_move_colz = true;
 
