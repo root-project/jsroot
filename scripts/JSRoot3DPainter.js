@@ -1050,6 +1050,9 @@
    }
 
    JSROOT.Painter.HistPainter_DrawLego = function() {
+
+      if (this.th2poly) return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
+
       // Perform TH1/TH2 lego plot with BufferGeometry
 
       var vertices = JSROOT.Painter.Box_Vertices,
@@ -1405,6 +1408,94 @@
       */
 
       this.toplevel.add(line);
+   }
+
+
+   JSROOT.Painter.HistPainter_DrawPolyLego = function() {
+
+      var histo = this.GetObject(),
+          pmain = this.main_painter(),
+          axis_zmin = this.tz.domain()[0],
+          axis_zmax = this.tz.domain()[1],
+          colindx, bin, i, len = histo.fBins.arr.length, cnt = 0, totalnfaces = 0,
+          z0 = this.tz(axis_zmin), z1 = z0;
+
+      // force recalculations of contours
+      this.fContour = null;
+      this.fCustomContour = false;
+
+      // use global coordinates
+      this.maxbin = this.gmaxbin;
+      this.minbin = this.gminbin;
+
+      for (i = 0; i < len; ++ i) {
+         bin = histo.fBins.arr[i];
+         if (bin.fContent < axis_zmin) continue;
+
+         colindx = this.getValueColor(bin.fContent, true);
+         if (colindx === null) continue;
+
+         // check if bin outside visible range
+         //if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
+         //    (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
+
+         var npnts = bin.fPoly.fNpoints, x = bin.fPoly.fX, y = bin.fPoly.fY;
+
+         // first try to create top-bottom face
+         var pnts = [];
+         for (var vert = 0; vert < npnts; ++vert)
+            pnts.push(new THREE.Vector2(this.tx(x[vert]), this.tx(y[vert])));
+
+         var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+
+         if (!faces || (faces.length<npnts-2)) continue;
+
+         z1 = this.tz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
+
+         var nfaces = faces.length * 2;
+         // if (z1>z0) nfaces += npnts*2;
+
+         var pos = new Float32Array(nfaces*9), indx = 0;
+
+         for (var layer=0;layer<2;++layer) {
+            for (var n=0;n<faces.length;++n) {
+               var face = faces[n],
+                   pnt1 = pnts[face[0]],
+                   pnt2 = pnts[face[(layer===0) ? 2 : 1]],
+                   pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+
+               pos[indx] = pnt1.x;
+               pos[indx+1] = pnt1.y;
+               pos[indx+2] = layer ? z1 : z0;
+               indx+=3;
+
+               pos[indx] = pnt2.x;
+               pos[indx+1] = pnt2.y;
+               pos[indx+2] = layer ? z1 : z0;
+               indx+=3;
+
+               pos[indx] = pnt3.x;
+               pos[indx+1] = pnt3.y;
+               pos[indx+2] = layer ? z1 : z0;
+               indx+=3;
+            }
+         }
+
+         var geometry = new THREE.BufferGeometry();
+         geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         geometry.computeVertexNormals();
+
+         var fcolor = this.fPalette[colindx];
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+         var mesh = new THREE.Mesh(geometry, material);
+
+         this.toplevel.add(mesh);
+
+         totalnfaces += nfaces;
+         cnt++;
+      }
+
+      console.log('draw poly as lego plot', cnt, nfaces);
    }
 
    JSROOT.Painter.Render3D = function(tmout) {
