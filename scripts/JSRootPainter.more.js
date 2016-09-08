@@ -4086,7 +4086,10 @@
       // here we deciding how histogram will look like and how will be shown
       this.options = this.DecodeOptions(opt);
 
-      if (this.th2poly && (this.options.Color + this.options.Lego === 0)) this.options.Color = 1;
+      if (this.th2poly) {
+         if (this.options.Lego) this.options.Lego = 12; else
+         if (this.options.Color + this.options.Lego === 0) this.options.Color = 1;
+      }
 
       this._can_move_colz = true;
 
