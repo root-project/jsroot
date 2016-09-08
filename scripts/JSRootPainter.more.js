@@ -2976,9 +2976,11 @@
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
+      if (!this.th2poly)
+         pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
       pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
-      pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
+      if (!this.th2poly)
+         pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
    }
 
    JSROOT.TH2Painter.prototype.ToggleColor = function() {
@@ -3785,9 +3787,10 @@
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
-      if (this.th2poly)
+      if (this.th2poly) {
          handle = this.DrawPolyBinsColor(w, h);
-      else
+         this.options.Color = 1;
+      } else
       if (this.options.Color > 0)
          handle = this.DrawBinsColor(w, h);
       else
