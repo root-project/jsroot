@@ -3454,7 +3454,7 @@
             .attr("fill", this.fPalette[colindx])
             .attr("d", colPaths[colindx]);
 
-      return { poly: histo };
+      return { poly: true };
    }
 
    JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
@@ -3869,10 +3869,10 @@
          if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
 
          if ((realx!==undefined) && (realy!==undefined)) {
-            var i, len = h.poly.fBins.arr.length, bin;
+            var i, len = histo.fBins.arr.length, bin;
 
             for (i = 0; i < len; ++ i) {
-               bin = h.poly.fBins.arr[i];
+               bin = histo.fBins.arr[i];
 
                // found potential bins candidate
                if ((realx < bin.fXmin) || (realx > bin.fXmax) || (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
@@ -3891,7 +3891,10 @@
          }
 
          var name = this.GetItemName();
-         if (!name) name = h.poly.fName;
+         if (!name) name = histo.fName;
+         var binname = found.fPoly.fName;
+         if (binname === "Graph") binname = "";
+         if (binname.length === 0) binname = found.fNumber;
 
          var res = { x: pnt.x, y: pnt.y,
                      color1: this.lineatt.color, color2: this.fillatt.color,
@@ -3899,7 +3902,7 @@
                      lines: [ name,
                              "x = " + pmain.AxisAsText("x", realx),
                              "y = " + pmain.AxisAsText("y", realy),
-                             "bin = " + found.fNumber,
+                             "bin = " + binname,
                              "content = " + JSROOT.FFormat(found.fContent, JSROOT.gStyle.StatFormat)] };
 
          if (ttrect.empty())
@@ -3915,7 +3918,7 @@
                   .property("current_bin", found.fNumber);
 
          if (this.IsUserTooltipCallback() && res.changed)
-            this.ProvideUserTooltip({ obj: h.poly,  name: h.poly.fName,
+            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
                                       bin: found.fNumber,
                                       cont: found.fContent,
                                       grx: pnt.x, gry: pnt.y });

@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 7/09/2016";
+   JSROOT.version = "dev 8/09/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1352,10 +1352,9 @@
       if ((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) {
          // check if point inside figure specified by the TGrpah
          m.IsInside = function(xp,yp) {
-            var j = this.fNpoints - 1, x = this.fX, y = this.fY;
-            var oddNodes = false;
+            var i, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
 
-            for (var i=0; i<this.fNpoints; ++i) {
+            for (i=0; i<this.fNpoints; ++i) {
                if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
                   if (x[i]+(yp-y[i])/(y[j]-y[i])*(x[j]-x[i])<xp) {
                      oddNodes = !oddNodes;
