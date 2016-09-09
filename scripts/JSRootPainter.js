@@ -2981,7 +2981,7 @@
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
-      if ((pnt === null) || (hints.length===0) || (maxlen===0)) {
+      if ((pnt === null) || (hints.length===0) || (maxlen===0) || (hints.length>20)) {
          hintsg.remove();
          return;
       }
