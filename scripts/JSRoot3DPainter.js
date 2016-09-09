@@ -1486,49 +1486,42 @@
             if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
             var npnts = gr.fNpoints, x = gr.fX, y = gr.fY;
-            while ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) --npnts;
+            while ((npnts>2) && (x[0]===x[npnts-1]) && (y[0]===y[npnts-1])) --npnts;
 
-            var pnts = [], faces = null,
-                lastx, lasty, currx, curry,
-                dist2 = this.size3d*this.size3d,
-                dist2limit = dist2/1e6;
+            var pnts, faces;
 
-            for (var vert = 0; vert < npnts; ++vert) {
-               currx = this.tx(x[vert]);
-               curry = this.ty(y[vert]);
-               if (vert>0) dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
-               if (dist2 > dist2limit) {
-                  pnts.push(new THREE.Vector2(currx, curry));
-                  lastx = currx;
-                  lasty = curry;
-               }
-            }
+            for (var ntry=0;ntry<2;++ntry) {
+               // run two loops - on the first try to compress data, on second - run as is (removing duplication)
 
-            try {
-               if (pnts.length > 2) {
-                /*  if ((i==8) && (ngr==20)) {
-                     console.log('Probably fails');
-                     for(var k=0;k<pnts.length;++k) {
-                        console.log(pnts[k].x,pnts[k].y);
-                     }
-                     console.log('Original data', npnts, gr.fNpoints);
-                     console.log('last-first', (x[0]==x[gr.fNpoints-1]), (y[0]==y[gr.fNpoints-1]));
-                     for(var k=0;k<gr.fNpoints;++k) {
-                        console.log(x[k],y[k]);
-                     }
+               var lastx, lasty, currx, curry,
+                   dist2 = this.size3d*this.size3d,
+                   dist2limit = (ntry>0) ? 0 : dist2/1e6;
+
+               pnts = []; faces = null;
+
+               for (var vert = 0; vert < npnts; ++vert) {
+                  currx = this.tx(x[vert]);
+                  curry = this.ty(y[vert]);
+                  if (vert>0)
+                     dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
+                  if (dist2 > dist2limit) {
+                     pnts.push(new THREE.Vector2(currx, curry));
+                     lastx = currx;
+                     lasty = curry;
                   }
-                  npnts = pnts.length;
-                  */
-                  faces = THREE.ShapeUtils.triangulateShape(pnts , []);
                }
-            } catch(e) {
-               faces = null;
-               //console.log('Failure with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, npnts, x, y);
-            }
 
-            //if (faces && (faces.length<pnts.length-2)) {
-            //   console.log('Triangulation problem with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, npnts, 'faces', faces.length);
-            //}
+               try {
+                  if (pnts.length > 2)
+                     faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+               } catch(e) {
+                  faces = null;
+               }
+
+               if (faces && (faces.length>pnts.length-3)) break;
+
+               // console.log('Triangulation problem with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, 'orig', gr.fNpoints);
+            }
 
             if (faces && faces.length && pnts) {
                all_pnts.push(pnts);
