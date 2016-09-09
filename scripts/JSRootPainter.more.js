@@ -3881,7 +3881,7 @@
       var bin = this.histo.fBins.arr[binindx],
           pmain = this.main_painter(),
           binname = bin.fPoly.fName,
-          lines = [], npoints = 0;
+          lines = [], numpoints = 0;
 
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
@@ -3910,7 +3910,7 @@
       lines.push(this.GetTipName());
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
-      if (npoints > 0) lines.push("npnts = " + npoints);
+      if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
       lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.StatFormat));
       return lines;

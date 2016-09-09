@@ -1472,85 +1472,122 @@
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
              (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
-         var npnts = bin.fPoly.fNpoints, x = bin.fPoly.fX, y = bin.fPoly.fY;
-
-         if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
-
-         // first try to create top-bottom face
-         var pnts = [];
-         for (var vert = 0; vert < npnts; ++vert)
-            pnts.push(new THREE.Vector2(this.tx(x[vert]), this.ty(y[vert])));
-
-         var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
-
-         if (!faces || (faces.length<npnts-2)) continue;
-
          z1 = this.tz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
 
-         var nfaces = faces.length * 2;
-         if (z1>z0) nfaces += npnts*2;
+         var all_pnts = [], all_faces = [],
+             ngraphs = 1, gr = bin.fPoly, nfaces = 0;
+
+         if (gr._typename=='TMultiGraph') {
+            ngraphs = bin.fPoly.fGraphs.arr.length;
+            gr = null;
+         }
+
+         for (var ngr = 0; ngr < ngraphs; ++ngr) {
+            if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+
+            var npnts = gr.fNpoints, x = gr.fX, y = gr.fY;
+            if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
+
+            var pnts = [], faces = null,
+                lastx, lasty, currx, curry,
+                dist2 = this.size3d*this.size3d,
+                dist2limit = dist2/1e6;
+
+            for (var vert = 0; vert < npnts; ++vert) {
+               currx = this.tx(x[vert]);
+               curry = this.ty(y[vert]);
+               if (vert>0) dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
+               if (dist2 > dist2limit) {
+                  pnts.push(new THREE.Vector2(currx, curry));
+                  lastx = currx;
+                  lasty = curry;
+               }
+            }
+
+            try {
+               if (pnts.length > 2)
+                  faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+            } catch(e) {
+               faces = null;
+            }
+
+            if (faces && faces.length && pnts) {
+               all_pnts.push(pnts);
+               all_faces.push(faces);
+
+               nfaces += faces.length * 2;
+               if (z1>z0) nfaces += pnts.length*2;
+            }
+         }
 
          var pos = new Float32Array(nfaces*9), indx = 0;
 
-         for (var layer=0;layer<2;++layer) {
-            for (var n=0;n<faces.length;++n) {
-               var face = faces[n],
-                   pnt1 = pnts[face[0]],
-                   pnt2 = pnts[face[(layer===0) ? 2 : 1]],
-                   pnt3 = pnts[face[(layer===0) ? 1 : 2]];
+         for (var ngr=0;ngr<all_pnts.length;++ngr) {
+            var pnts = all_pnts[ngr], faces = all_faces[ngr];
 
-               pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+            for (var layer=0;layer<2;++layer) {
+               for (var n=0;n<faces.length;++n) {
+                  var face = faces[n],
+                      pnt1 = pnts[face[0]],
+                      pnt2 = pnts[face[(layer===0) ? 2 : 1]],
+                      pnt3 = pnts[face[(layer===0) ? 1 : 2]];
 
-               pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+                  pos[indx] = pnt1.x;
+                  pos[indx+1] = pnt1.y;
+                  pos[indx+2] = layer ? z1 : z0;
+                  indx+=3;
 
-               pos[indx] = pnt3.x;
-               pos[indx+1] = pnt3.y;
-               pos[indx+2] = layer ? z1 : z0;
-               indx+=3;
+                  pos[indx] = pnt2.x;
+                  pos[indx+1] = pnt2.y;
+                  pos[indx+2] = layer ? z1 : z0;
+                  indx+=3;
+
+                  pos[indx] = pnt3.x;
+                  pos[indx+1] = pnt3.y;
+                  pos[indx+2] = layer ? z1 : z0;
+                  indx+=3;
+               }
+            }
+
+            if (z1>z0) {
+               for (var n=0;n<pnts.length;++n) {
+                  var pnt1 = pnts[n],
+                      pnt2 = pnts[(n>0) ? n-1 : pnts.length-1];
+
+                  pos[indx] = pnt1.x;
+                  pos[indx+1] = pnt1.y;
+                  pos[indx+2] = z0;
+                  indx+=3;
+
+                  pos[indx] = pnt2.x;
+                  pos[indx+1] = pnt2.y;
+                  pos[indx+2] = z0;
+                  indx+=3;
+
+                  pos[indx] = pnt2.x;
+                  pos[indx+1] = pnt2.y;
+                  pos[indx+2] = z1;
+                  indx+=3;
+
+                  pos[indx] = pnt1.x;
+                  pos[indx+1] = pnt1.y;
+                  pos[indx+2] = z0;
+                  indx+=3;
+
+                  pos[indx] = pnt2.x;
+                  pos[indx+1] = pnt2.y;
+                  pos[indx+2] = z1;
+                  indx+=3;
+
+                  pos[indx] = pnt1.x;
+                  pos[indx+1] = pnt1.y;
+                  pos[indx+2] = z1;
+                  indx+=3;
+               }
             }
          }
 
-         if (z1>z0) {
-            for (var n=0;n<npnts;++n) {
-               var pnt1 = pnts[n],
-                   pnt2 = pnts[(n>0) ? n-1 : npnts-1];
-               pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z0;
-               indx+=3;
-
-               pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z0;
-               indx+=3;
-
-               pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z1;
-               indx+=3;
-
-               pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z0;
-               indx+=3;
-
-               pos[indx] = pnt2.x;
-               pos[indx+1] = pnt2.y;
-               pos[indx+2] = z1;
-               indx+=3;
-
-               pos[indx] = pnt1.x;
-               pos[indx+1] = pnt1.y;
-               pos[indx+2] = z1;
-               indx+=3;
-            }
-         }
+         // console.log('creating bin', i,'nfaces', nfaces, 'indx', indx);
 
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
