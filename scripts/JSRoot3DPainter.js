@@ -448,16 +448,16 @@
       var painter = this;
 
       this.control.ProcessMouseMove = function(intersects) {
-         var tip = null;
+         var tip = null, mesh = null;
 
          for (var i = 0; i < intersects.length; ++i) {
             if (intersects[i].object.tooltip) {
                tip = intersects[i].object.tooltip(intersects[i]);
-               if (tip) break;
+               if (tip) { mesh = intersects[i].object; break; }
             }
          }
 
-         if (tip !== null) {
+         if (tip && !tip.use_itself) {
             var delta = 1e-4*painter.size3d;
             if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
             tip.x1 -= delta; tip.x2 += delta;
@@ -465,7 +465,7 @@
             tip.z1 -= delta; tip.z2 += delta;
          }
 
-         painter.BinHighlight3D(tip);
+         painter.BinHighlight3D(tip, mesh);
 
          return (painter.enable_tooltip && tip && tip.info) ? tip.info : "";
       }
@@ -998,59 +998,81 @@
       return arr;
    })();
 
-   JSROOT.Painter.BinHighlight3D = function(tip) {
+   JSROOT.Painter.BinHighlight3D = function(tip, selfmesh) {
 
-      if (!tip || (tip.x1===undefined) || !this.enable_hightlight || !this.enable_tooltip) {
-         if (this.tooltip_mesh) {
-            this.toplevel.remove(this.tooltip_mesh);
-            delete this.tooltip_mesh;
-            this.Render3D();
-         }
+      var changed = false, tooltip_mesh = null, changed_self = true,
+          want_remove = !tip || (tip.x1===undefined) || !this.enable_hightlight || !this.enable_tooltip;
+
+      if (this.tooltip_selfmesh) {
+         changed_self = (this.tooltip_selfmesh !== selfmesh)
+         this.tooltip_selfmesh.material.color = this.tooltip_selfmesh.save_color;
+         delete this.tooltip_selfmesh;
+         changed = true;
+      }
+
+      if (this.tooltip_mesh) {
+         tooltip_mesh = this.tooltip_mesh;
+         this.toplevel.remove(this.tooltip_mesh);
+         delete this.tooltip_mesh;
+         changed = true;
+      }
+
+      if (want_remove) {
+         if (changed) this.Render3D();
          this.ProvideUserTooltip(null);
          return;
       }
 
-      var indicies = JSROOT.Painter.Box_Indexes,
-          normals = JSROOT.Painter.Box_Normals,
-          vertices = JSROOT.Painter.Box_Vertices,
-          pos, norm;
-
-      var color = new THREE.Color(tip.color ? tip.color : 0xFF0000);
-
-      if (this.tooltip_mesh === undefined) {
-         pos = new Float32Array(indicies.length*3);
-         norm = new Float32Array(indicies.length*3);
-         var geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-         geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-         var mater = new THREE.MeshBasicMaterial( { color: color, shading: THREE.SmoothShading  } );
-         this.tooltip_mesh = new THREE.Mesh(geom, mater);
-         this.toplevel.add(this.tooltip_mesh);
+      if (tip.use_itself) {
+         selfmesh.save_color = selfmesh.material.color;
+         selfmesh.material.color = new THREE.Color(tip.color);
+         this.tooltip_selfmesh = selfmesh;
+         changed = changed_self;
       } else {
-         pos = this.tooltip_mesh.geometry.attributes.position.array;
-         this.tooltip_mesh.geometry.attributes.position.needsUpdate = true;
-         this.tooltip_mesh.material.color = color;
-      }
+         changed = true;
 
-      if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
-      if (tip.y1 === tip.y2) console.warn('same tip Y', tip.y1, tip.y2);
-      if (tip.z1 === tip.z2) { tip.z2 = tip.z1 + 0.0001; } // avoid zero faces
+         var indicies = JSROOT.Painter.Box_Indexes,
+             normals = JSROOT.Painter.Box_Normals,
+             vertices = JSROOT.Painter.Box_Vertices,
+             pos, norm,
+             color = new THREE.Color(tip.color ? tip.color : 0xFF0000);
 
-      for (var k=0,nn=-3;k<indicies.length;++k) {
-         var vert = vertices[indicies[k]];
-         pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
-         pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
-         pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
-
-         if (norm) {
-            if (k%6===0) nn+=3;
-            norm[k*3] = normals[nn];
-            norm[k*3+1] = normals[nn+1];
-            norm[k*3+2] = normals[nn+2];
+         if (!tooltip_mesh) {
+            pos = new Float32Array(indicies.length*3);
+            norm = new Float32Array(indicies.length*3);
+            var geom = new THREE.BufferGeometry();
+            geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+            geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+            var mater = new THREE.MeshBasicMaterial( { color: color, shading: THREE.SmoothShading  } );
+            tooltip_mesh = new THREE.Mesh(geom, mater);
+         } else {
+            pos = tooltip_mesh.geometry.attributes.position.array;
+            tooltip_mesh.geometry.attributes.position.needsUpdate = true;
+            tooltip_mesh.material.color = color;
          }
+
+         if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
+         if (tip.y1 === tip.y2) console.warn('same tip Y', tip.y1, tip.y2);
+         if (tip.z1 === tip.z2) { tip.z2 = tip.z1 + 0.0001; } // avoid zero faces
+
+         for (var k=0,nn=-3;k<indicies.length;++k) {
+            var vert = vertices[indicies[k]];
+            pos[k*3]   = tip.x1 + vert.x * (tip.x2 - tip.x1);
+            pos[k*3+1] = tip.y1 + vert.y * (tip.y2 - tip.y1);
+            pos[k*3+2] = tip.z1 + vert.z * (tip.z2 - tip.z1);
+
+            if (norm) {
+               if (k%6===0) nn+=3;
+               norm[k*3] = normals[nn];
+               norm[k*3+1] = normals[nn+1];
+               norm[k*3+2] = normals[nn+2];
+            }
+         }
+         this.tooltip_mesh = tooltip_mesh;
+         this.toplevel.add(tooltip_mesh);
       }
 
-      this.Render3D();
+      if (changed) this.Render3D();
 
       if (this.IsUserTooltipCallback() && this.GetObject()) {
          this.ProvideUserTooltip({ obj: this.GetObject(),  name: this.GetObject().fName,
@@ -1550,14 +1572,17 @@
                 bin = p.GetObject().fBins.arr[this.bins_index];
 
             var tip = {
+              use_itself: true, // indicate that use mesh itself for highlighting
               x1: p.tx(bin.fXmin),
               x2: p.tx(bin.fXmax),
               y1: p.ty(bin.fYmin),
               y2: p.ty(bin.fYmax),
               z1: this.draw_z0,
               z2: this.draw_z1,
+              bin: this.bins_index,
+              value: bin.fContent,
               color: this.tip_color,
-              info: p.ProvidePolyBinHints(this.bins_index, 0, 0)
+              info: p.ProvidePolyBinHints(this.bins_index)
             };
 
             return tip;

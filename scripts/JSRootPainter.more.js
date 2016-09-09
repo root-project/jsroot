@@ -3862,9 +3862,22 @@
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
+      if ((realx===undefined) && (realy===undefined)) {
+         realx = realy = 0;
+         for (var n=0;n<bin.fPoly.fNpoints;++n) {
+            realx += bin.fPoly.fX[n];
+            realy += bin.fPoly.fY[n];
+         }
+         if (bin.fPoly.fNpoints > 1) {
+            realx = realx / bin.fPoly.fNpoints;
+            realy = realy / bin.fPoly.fNpoints;
+         }
+      }
+
       lines.push(this.GetTipName());
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
+      lines.push("npnts = " + bin.fPoly.fNpoints);
       lines.push("bin = " + binname);
       lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.StatFormat));
       return lines;
