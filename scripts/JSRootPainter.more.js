@@ -3408,7 +3408,7 @@
       for (n=1;n<npnts;++n) {
          nextx = Math.round(pmain.grx(pnts.fX[n]));
          nexty = Math.round(pmain.gry(pnts.fY[n]));
-         if ((grx!==nextx) && (gry!==nexty)) {
+         if ((grx!==nextx) || (gry!==nexty)) {
             if (grx===nextx) cmd += "v" + (nexty - gry); else
             if (gry===nexty) cmd += "h" + (nextx - grx); else
                              cmd += "l" + (nextx - grx) + "," + (nexty - gry);
@@ -3937,17 +3937,17 @@
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         res.changed = ttrect.property("current_bin") !== found.fNumber;
+         res.changed = ttrect.property("current_bin") !== foundindx;
 
          if (res.changed)
-            ttrect.attr("d", this.CreatePolyBin(pmain, found))
+            ttrect.attr("d", this.CreatePolyBin(pmain, bin))
                   .style("opacity", "0.7")
-                  .property("current_bin", found.fNumber);
+                  .property("current_bin", foundindx);
 
          if (this.IsUserTooltipCallback() && res.changed)
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
-                                      bin: found.fNumber,
-                                      cont: found.fContent,
+                                      bin: foundindx,
+                                      cont: bin.fContent,
                                       grx: pnt.x, gry: pnt.y });
 
          return res;
