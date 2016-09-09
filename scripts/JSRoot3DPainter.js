@@ -341,6 +341,12 @@
          obj.material.dispose();
          obj.material = undefined;
       }
+
+      // cleanup jsroot fields to simplify browser cleanup job
+      delete obj.painter;
+      delete obj.bins_index;
+      delete obj.tooltip;
+
       obj = undefined;
    }
 
@@ -1517,7 +1523,6 @@
             }
          }
 
-
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
          geometry.computeVertexNormals();
@@ -1527,6 +1532,33 @@
          var mesh = new THREE.Mesh(geometry, material);
 
          this.toplevel.add(mesh);
+
+         mesh.painter = this;
+         mesh.bins_index = i;
+         mesh.draw_z0 = z0;
+         mesh.draw_z1 = z1;
+         mesh.tip_color = 0x00FF00;
+
+         mesh.tooltip = function(intersects) {
+
+            var p = this. painter,
+                bin = p.GetObject().fBins.arr[this.bins_index],
+                hint = p.ProvidePolyBinHints(this.bins_index, 0, 0);
+
+            var tip = {
+              x1: p.tx(bin.fXmin),
+              x2: p.tx(bin.fXmax),
+              y1: p.ty(bin.fYmin),
+              y2: p.ty(bin.fYmax),
+              z1: this.draw_z0,
+              z2: this.draw_z1,
+              color: this.tip_color,
+              info: hint[0]
+            };
+            for (var n=1;n<hint.length;++n) tip.info += "<br/>" + hint[n];
+
+            return tip;
+         };
 
          totalnfaces += nfaces;
          cnt++;

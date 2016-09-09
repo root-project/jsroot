@@ -3408,9 +3408,11 @@
       for (n=1;n<npnts;++n) {
          nextx = Math.round(pmain.grx(pnts.fX[n]));
          nexty = Math.round(pmain.gry(pnts.fY[n]));
-         if (grx===nextx) cmd += "v" + (nexty - gry); else
-         if (gry===nexty) cmd += "h" + (nextx - grx); else
-                          cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+         if ((grx!==nextx) && (gry!==nexty)) {
+            if (grx===nextx) cmd += "v" + (nexty - gry); else
+            if (gry===nexty) cmd += "h" + (nextx - grx); else
+                             cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+         }
          grx = nextx; gry = nexty;
       }
 
@@ -3850,6 +3852,24 @@
       return lines;
    }
 
+   JSROOT.TH2Painter.prototype.ProvidePolyBinHints = function(binindx, realx, realy) {
+
+      var bin = this.histo.fBins.arr[binindx],
+          pmain = this.main_painter(),
+          binname = bin.fPoly.fName,
+          lines = [];
+
+      if (binname === "Graph") binname = "";
+      if (binname.length === 0) binname = bin.fNumber;
+
+      lines.push(this.GetTipName());
+      lines.push("x = " + pmain.AxisAsText("x", realx));
+      lines.push("y = " + pmain.AxisAsText("y", realy));
+      lines.push("bin = " + binname);
+      lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.StatFormat));
+      return lines;
+   }
+
    JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
       if ((pnt==null) || !this.draw_content || !this.draw_g || !this.tt_handle) {
          if (this.draw_g !== null)
@@ -3866,7 +3886,7 @@
          // process toolltips from TH2Poly
 
          var pmain = this.main_painter(),
-             realx, realy, found = null;
+             realx, realy, foundindx = -1;
 
          if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
          if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
@@ -3881,32 +3901,23 @@
                if ((realx < bin.fXmin) || (realx > bin.fXmax) || (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
                if (bin.fPoly.IsInside(realx,realy)) {
-                  found = bin;
+                  foundindx = i;
                   break;
                }
             }
          }
 
-         if (!found) {
+         if (foundindx < 0) {
             ttrect.remove();
             this.ProvideUserTooltip(null);
             return null;
          }
 
-         var name = this.GetItemName();
-         if (!name) name = histo.fName;
-         var binname = found.fPoly.fName;
-         if (binname === "Graph") binname = "";
-         if (binname.length === 0) binname = found.fNumber;
 
          var res = { x: pnt.x, y: pnt.y,
                      color1: this.lineatt.color, color2: this.fillatt.color,
                      exact: true, menu: true,
-                     lines: [ name,
-                             "x = " + pmain.AxisAsText("x", realx),
-                             "y = " + pmain.AxisAsText("y", realy),
-                             "bin = " + binname,
-                             "content = " + JSROOT.FFormat(found.fContent, JSROOT.gStyle.StatFormat)] };
+                     lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:path")
