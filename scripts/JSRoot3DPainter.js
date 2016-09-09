@@ -1444,7 +1444,7 @@
          // first try to create top-bottom face
          var pnts = [];
          for (var vert = 0; vert < npnts; ++vert)
-            pnts.push(new THREE.Vector2(this.tx(x[vert]), this.tx(y[vert])));
+            pnts.push(new THREE.Vector2(this.tx(x[vert]), this.ty(y[vert])));
 
          var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
 
