@@ -106,7 +106,12 @@
 
       this.show  = function(v) {
          if (JSROOT.gStyle.Tooltip <= 0) return;
-         if (!v || v==="") return this.hide();
+         if (!v || (v==="")) return this.hide();
+         if (typeof v !='string' && v.length) {
+            var res = v[0];
+            for (var n=1;n<v.length;++n) res+= "<br/>" + v[n];
+            v = res;
+         }
 
          if (this.tt === null) {
             this.tt = document.createElement('div');
@@ -1542,8 +1547,7 @@
          mesh.tooltip = function(intersects) {
 
             var p = this. painter,
-                bin = p.GetObject().fBins.arr[this.bins_index],
-                hint = p.ProvidePolyBinHints(this.bins_index, 0, 0);
+                bin = p.GetObject().fBins.arr[this.bins_index];
 
             var tip = {
               x1: p.tx(bin.fXmin),
@@ -1553,9 +1557,8 @@
               z1: this.draw_z0,
               z2: this.draw_z1,
               color: this.tip_color,
-              info: hint[0]
+              info: p.ProvidePolyBinHints(this.bins_index, 0, 0)
             };
-            for (var n=1;n<hint.length;++n) tip.info += "<br/>" + hint[n];
 
             return tip;
          };
