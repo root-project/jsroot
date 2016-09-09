@@ -2981,7 +2981,7 @@
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       // end of closing tooltips
-      if ((pnt === null) || (hints.length===0) || (maxlen===0) || (hints.length>20)) {
+      if ((pnt === null) || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
          hintsg.remove();
          return;
       }
@@ -6325,6 +6325,25 @@
       d3.event.stopPropagation();
    }
 
+   JSROOT.THistPainter.prototype.AllowDefaultYZooming = function() {
+      // return true if default Y zooming should be enabled
+      // it is typically for 2-Dim histograms or
+      // when histogram not draw, defined by other painters
+
+      if (this.Dimension()>1) return true;
+      if (this.draw_content) return false;
+
+      var pad_painter = this.pad_painter(true);
+      if (pad_painter &&  pad_painter.painters)
+         for (var k = 0; k < pad_painter.painters.length; ++k) {
+            var subpainter = pad_painter.painters[k];
+            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
+               return subpainter.wheel_zoomy;
+         }
+
+      return false;
+   }
+
    JSROOT.THistPainter.prototype.mouseWheel = function() {
       d3.event.stopPropagation();
 
@@ -6343,7 +6362,7 @@
       if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
       var itemx = { name: "x", ignore: false },
-          itemy = { name: "y", ignore: (this.Dimension() == 1) },
+          itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
           cur = d3.mouse(this.svg_frame().node()),
           painter = this;
 

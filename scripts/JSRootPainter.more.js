@@ -1345,6 +1345,7 @@
       this.ownhisto = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
+      this.wheel_zoomy = true;
    }
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1617,7 +1618,7 @@
             bins2.push(bin);
          }
 
-         // build upper part (in reverse direction
+         // build upper part (in reverse direction)
          var path2 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
@@ -1950,23 +1951,18 @@
          bin = this.bins[n];
 
          grx = pmain.grx(bin.x);
-         dist = pnt.x-grx;
+         gry = pmain.gry(bin.y);
 
-         if (islines) {
-            if ((n==0) && (dist < -10)) { bestbin = null; break; } // check first point
-         } else {
-            gry = pmain.gry(bin.y);
-            dist = dist*dist + (pnt.y-gry)*(pnt.y-gry);
-         }
+         dist = (pnt.x-grx)*(pnt.x-grx) + (pnt.y-gry)*(pnt.y-gry);
 
-         if (Math.abs(dist) < bestdist) {
+         if (dist < bestdist) {
             bestdist = dist;
             bestbin = bin;
          }
       }
 
       // check last point
-      if ((dist > 10) && islines) bestbin = null;
+      if ((bestdist > 100) && islines) bestbin = null;
 
       var radius = Math.max(this.lineatt.width + 3, 4);
 
