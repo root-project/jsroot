@@ -3004,6 +3004,8 @@
    }
 
    JSROOT.TH2Painter.prototype.AutoZoom = function() {
+      if (this.th2poly) return; // not implemented
+
       var i1 = this.GetSelectIndex("x", "left", -1),
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
@@ -4114,8 +4116,8 @@
       this.options = this.DecodeOptions(opt);
 
       if (this.th2poly) {
-         if (this.options.Lego) this.options.Lego = 12; else
-         if (this.options.Color + this.options.Lego === 0) this.options.Color = 1;
+         this.options.Color = 1; // default color
+         if (this.options.Lego) this.options.Lego = 12; // and lego always 12
       }
 
       this._can_move_colz = true;
