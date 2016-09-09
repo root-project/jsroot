@@ -4160,7 +4160,7 @@
       this.CreateXY();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas)
+      if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.th2poly)
          this.CreateStat();
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
