@@ -1469,10 +1469,12 @@
          if (colindx === null) continue;
 
          // check if bin outside visible range
-         //if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
-         //    (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
+         if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
+             (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
          var npnts = bin.fPoly.fNpoints, x = bin.fPoly.fX, y = bin.fPoly.fY;
+
+         if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
 
          // first try to create top-bottom face
          var pnts = [];

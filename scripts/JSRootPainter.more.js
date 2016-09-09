@@ -3400,10 +3400,13 @@
    JSROOT.TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
       var pnts = bin.fPoly,
           npnts = pnts.fNpoints, n,
-          grx = Math.round(pmain.grx(pnts.fX[0])),
-          gry = Math.round(pmain.gry(pnts.fY[0])),
+          x = pnts.fX, y = pnts.fY,
+          grx = Math.round(pmain.grx(x[0])),
+          gry = Math.round(pmain.gry(y[0])),
           nextx, nexty,
           cmd = "M"+grx+","+gry;
+
+      if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
 
       for (n=1;n<npnts;++n) {
          nextx = Math.round(pmain.grx(pnts.fX[n]));
