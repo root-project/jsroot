@@ -3124,7 +3124,7 @@
 
       if (this.th2poly) {
 
-         var len = histo.fBins.arr.length, i, bin, n, np,
+         var len = histo.fBins.arr.length, i, bin, n, gr, ngr, numgraphs, numpoints,
              pmain = this.main_painter();
 
          for (i=0;i<len;++i) {
@@ -3137,17 +3137,23 @@
             if (bin.fYmin > pmain.scale_ymax) yside = 2; else
             if (bin.fYmax < pmain.scale_ymin) yside = 0;
 
-            xx = yy = 0;
-            np = bin.fPoly.fNpoints;
+            xx = yy = numpoints = 0;
+            gr = bin.fPoly; numgraphs = 1;
+            if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
 
-            for (n=0;n<np;++n) {
-               xx += bin.fPoly.fX[n];
-               yy += bin.fPoly.fY[n];
+            for (ngr=0;ngr<numgraphs;++ngr) {
+               if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+
+               for (n=0;n<gr.fNpoints;++n) {
+                  ++numpoints;
+                  xx += gr.fX[n];
+                  yy += gr.fY[n];
+               }
             }
 
-            if (np > 0) {
-               xx = xx / np;
-               yy = yy / np;
+            if (numpoints > 1) {
+               xx = xx / numpoints;
+               yy = yy / numpoints;
             }
 
             zz = bin.fContent;
@@ -3400,28 +3406,41 @@
    }
 
    JSROOT.TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
-      var pnts = bin.fPoly,
-          npnts = pnts.fNpoints, n,
-          x = pnts.fX, y = pnts.fY,
-          grx = Math.round(pmain.grx(x[0])),
-          gry = Math.round(pmain.gry(y[0])),
-          nextx, nexty,
-          cmd = "M"+grx+","+gry;
+      var cmd = "", ngr, ngraphs = 1, gr = null;
 
-      if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
+      if (bin.fPoly._typename=='TMultiGraph')
+         ngraphs = bin.fPoly.fGraphs.arr.length;
+      else
+         gr = bin.fPoly;
 
-      for (n=1;n<npnts;++n) {
-         nextx = Math.round(pmain.grx(pnts.fX[n]));
-         nexty = Math.round(pmain.gry(pnts.fY[n]));
-         if ((grx!==nextx) || (gry!==nexty)) {
-            if (grx===nextx) cmd += "v" + (nexty - gry); else
-            if (gry===nexty) cmd += "h" + (nextx - grx); else
-                             cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+      for (ngr = 0; ngr < ngraphs; ++ ngr) {
+         if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+
+         var npnts = gr.fNpoints, n,
+             x = gr.fX, y = gr.fY,
+             grx = Math.round(pmain.grx(x[0])),
+             gry = Math.round(pmain.gry(y[0])),
+             nextx, nexty;
+
+         if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
+
+         cmd += "M"+grx+","+gry;
+
+         for (n=1;n<npnts;++n) {
+            nextx = Math.round(pmain.grx(x[n]));
+            nexty = Math.round(pmain.gry(y[n]));
+            if ((grx!==nextx) || (gry!==nexty)) {
+               if (grx===nextx) cmd += "v" + (nexty - gry); else
+                  if (gry===nexty) cmd += "h" + (nextx - grx); else
+                     cmd += "l" + (nextx - grx) + "," + (nexty - gry);
+            }
+            grx = nextx; gry = nexty;
          }
-         grx = nextx; gry = nexty;
+
+         cmd += "z";
       }
 
-      return cmd + "z";
+      return cmd;
    }
 
    JSROOT.TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
@@ -3862,27 +3881,36 @@
       var bin = this.histo.fBins.arr[binindx],
           pmain = this.main_painter(),
           binname = bin.fPoly.fName,
-          lines = [];
+          lines = [], npoints = 0;
 
       if (binname === "Graph") binname = "";
       if (binname.length === 0) binname = bin.fNumber;
 
       if ((realx===undefined) && (realy===undefined)) {
          realx = realy = 0;
-         for (var n=0;n<bin.fPoly.fNpoints;++n) {
-            realx += bin.fPoly.fX[n];
-            realy += bin.fPoly.fY[n];
+         var gr = bin.fPoly, numgraphs = 1;
+         if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+
+         for (var ngr=0;ngr<numgraphs;++ngr) {
+            if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+
+            for (n=0;n<gr.fNpoints;++n) {
+               ++numpoints;
+               realx += gr.fX[n];
+               realy += gr.fY[n];
+            }
          }
-         if (bin.fPoly.fNpoints > 1) {
-            realx = realx / bin.fPoly.fNpoints;
-            realy = realy / bin.fPoly.fNpoints;
+
+         if (numpoints > 1) {
+            realx = realx / numpoints;
+            realy = realy / numpoints;
          }
       }
 
       lines.push(this.GetTipName());
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
-      lines.push("npnts = " + bin.fPoly.fNpoints);
+      if (npoints > 0) lines.push("npnts = " + npoints);
       lines.push("bin = " + binname);
       lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.StatFormat));
       return lines;
@@ -3912,15 +3940,22 @@
          if ((realx!==undefined) && (realy!==undefined)) {
             var i, len = histo.fBins.arr.length, bin;
 
-            for (i = 0; i < len; ++ i) {
+            for (i = 0; (i < len) && (foundindx < 0); ++ i) {
                bin = histo.fBins.arr[i];
 
                // found potential bins candidate
-               if ((realx < bin.fXmin) || (realx > bin.fXmax) || (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
+               if ((realx < bin.fXmin) || (realx > bin.fXmax) ||
+                    (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
-               if (bin.fPoly.IsInside(realx,realy)) {
-                  foundindx = i;
-                  break;
+               var gr = bin.fPoly, numgraphs = 1;
+               if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
+
+               for (var ngr=0;ngr<numgraphs;++ngr) {
+                  if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
+                  if (gr.IsInside(realx,realy)) {
+                     foundindx = i;
+                     break;
+                  }
                }
             }
          }
@@ -3930,7 +3965,6 @@
             this.ProvideUserTooltip(null);
             return null;
          }
-
 
          var res = { x: pnt.x, y: pnt.y,
                      color1: this.lineatt.color, color2: this.fillatt.color,
