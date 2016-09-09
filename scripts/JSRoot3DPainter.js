@@ -1486,7 +1486,7 @@
             if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
             var npnts = gr.fNpoints, x = gr.fX, y = gr.fY;
-            if ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) npnts--;
+            while ((npnts>2) && (x[0]==x[npnts-1]) && (y[0]==y[npnts-1])) --npnts;
 
             var pnts = [], faces = null,
                 lastx, lasty, currx, curry,
@@ -1505,11 +1505,30 @@
             }
 
             try {
-               if (pnts.length > 2)
+               if (pnts.length > 2) {
+                /*  if ((i==8) && (ngr==20)) {
+                     console.log('Probably fails');
+                     for(var k=0;k<pnts.length;++k) {
+                        console.log(pnts[k].x,pnts[k].y);
+                     }
+                     console.log('Original data', npnts, gr.fNpoints);
+                     console.log('last-first', (x[0]==x[gr.fNpoints-1]), (y[0]==y[gr.fNpoints-1]));
+                     for(var k=0;k<gr.fNpoints;++k) {
+                        console.log(x[k],y[k]);
+                     }
+                  }
+                  npnts = pnts.length;
+                  */
                   faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+               }
             } catch(e) {
                faces = null;
+               //console.log('Failure with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, npnts, x, y);
             }
+
+            //if (faces && (faces.length<pnts.length-2)) {
+            //   console.log('Triangulation problem with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, npnts, 'faces', faces.length);
+            //}
 
             if (faces && faces.length && pnts) {
                all_pnts.push(pnts);
