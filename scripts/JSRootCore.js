@@ -1221,12 +1221,17 @@
    }
 
 
-   JSROOT.CreateTPolyLine = function(npoints) {
+   JSROOT.CreateTPolyLine = function(npoints, use_int32) {
       var poly = JSROOT.Create("TPolyLine");
       if (npoints) {
          poly.fN = npoints;
-         poly.fX = new Float32Array(npoints);
-         poly.fY = new Float32Array(npoints);
+         if (use_int32) {
+            poly.fX = new Int32Array(npoints);
+            poly.fY = new Int32Array(npoints);
+         } else {
+            poly.fX = new Float32Array(npoints);
+            poly.fY = new Float32Array(npoints);
+         }
       }
 
       return poly;

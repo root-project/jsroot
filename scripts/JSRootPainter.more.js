@@ -3412,7 +3412,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsContour = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(false, false, 1),
+          handle = this.PrepareColorDraw(false, false, 10000),
           kMAXCONTOUR = 104,
           // arguemnts used in he PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
@@ -3563,14 +3563,14 @@
                   if (ipoly >=0 && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
-                        poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4);
+                        poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4, true);
 
-                     var np = poly.fLastPoint;
+                     np = poly.fLastPoint;
                      if (np < poly.fN-2) {
-                        poly.fX[np+1] = xarr[ix-1]; poly.fY[np+1] = yarr[ix-1];
-                        poly.fX[np+2] = xarr[ix]; poly.fY[np+2] = yarr[ix];
+                        poly.fX[np+1] = Math.round(xarr[ix-1]); poly.fY[np+1] = Math.round(yarr[ix-1]);
+                        poly.fX[np+2] = Math.round(xarr[ix]); poly.fY[np+2] = Math.round(yarr[ix]);
                         poly.fLastPoint = np+2;
-                        npmax = Math.max(npmax, np);
+                        npmax = Math.max(npmax, poly.fLastPoint+1);
                      } else {
                         console.log('reject point??', poly.fLastPoint);
                      }
@@ -3616,7 +3616,10 @@
       //store negative contours from 0 to minimum, then all positive contours
       k = 0;
       for (ipoly=first-1;ipoly>=0;ipoly--) {polysort[k] = ipoly; k++;}
-      for (ipoly=first;ipoly<levels.length;ipoly++) {polysort[k] = ipoly; k++;}
+      for (ipoly=first;ipoly<levels.length;ipoly++) { polysort[k] = ipoly; k++;}
+
+      var xp = new Int32Array(2*npmax),
+          yp = new Int32Array(2*npmax);
 
       for (k=0;k<levels.length;++k) {
 
@@ -3628,8 +3631,8 @@
          var cmd = "";
 
          for (ix=0;ix<poly.fLastPoint;ix+=2) {
-            cmd+="M" + Math.round(poly.fX[ix])+","+Math.round(poly.fY[ix]) +
-                 "L" + Math.round(poly.fX[ix+1])+","+Math.round(poly.fY[ix+1]);
+            cmd+="M" + poly.fX[ix]+","+poly.fY[ix] +
+                 "L" + poly.fX[ix+1]+","+poly.fY[ix+1];
          }
 
          this.draw_g
@@ -3643,18 +3646,66 @@
          if (colindx > palette.length-1) colindx = palette.length-1;
          var icol = palette[colindx];
 
+         var xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
+             istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
-         var xx = poly.fX,
-             yy = poly.fY,
-             istart = 0, iminus, iplus;
+         while (true) {
+            iminus = npmax;
+            iplus  = iminus+1;
+            xp[iminus]= xx[istart];   yp[iminus] = yy[istart];
+            xp[iplus] = xx[istart+1]; yp[iplus]  = yy[istart+1];
+            xx[istart]   = xmin; yy[istart]   = ymin;
+            xx[istart+1] = xmin; yy[istart+1] = ymin;
+            while (true) {
+               nadd = 0;
+               for (i=2;i<np;i+=2) {
+                  if (xx[i] === xp[iplus] && yy[i] === yp[iplus]) {
+                     iplus++;
+                     xp[iplus] = xx[i+1]; yp[iplus]  = yy[i+1];
+                     xx[i]   = xmin; yy[i]   = ymin;
+                     xx[i+1] = xmin; yy[i+1] = ymin;
+                     nadd++;
+                  }
+                  if (xx[i+1] === xp[iminus] && yy[i+1] === yp[iminus]) {
+                     iminus--;
+                     xp[iminus] = xx[i];   yp[iminus]  = yy[i];
+                     xx[i]   = xmin; yy[i]   = ymin;
+                     xx[i+1] = xmin; yy[i+1] = ymin;
+                     nadd++;
+                  }
+               }
+               if (nadd == 0) break;
+            }
 
+            // console.log('color', ipoly, icol, 'Draw area points', iplus-iminus+1, 'starts', iminus);
 
+            cmd = "";
+            for (i = iminus;i<=iplus;++i)
+               cmd += ((i>iminus) ? "L" : "M") + xp[i] + "," + yp[i];
+            cmd+="Z";
 
+            this.draw_g
+                .append("svg:path")
+                .attr("class","th2_contour")
+                .attr("d", cmd)
+                .style("fill", icol);
 
-
+            //theColor = Int_t((ipoly+0.99)*Float_t(ncolors)/Float_t(ndivz));
+            //icol = gStyle->GetColorPalette(theColor);
+            //if (ndivz > 1) fH->SetFillColor(icol);
+            //fH->TAttFill::Modify();
+            //gPad->PaintFillArea(iplus-iminus+1,&xp[iminus],&yp[iminus]);
+            //check if more points are left
+            istart = 0;
+            for (i=2;i<np;i+=2) {
+               if (xx[i] !== xmin && yy[i] !== ymin) {
+                  istart = i;
+                  break;
+               }
+            }
+            if (istart === 0) break;
+         }
       }
-
-
 
       return handle;
    }
