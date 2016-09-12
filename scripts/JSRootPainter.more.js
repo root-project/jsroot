@@ -2987,7 +2987,8 @@
 
       var toggle = true;
 
-      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; }
+      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; } else
+      if (this.options.Surf > 0) { this.options.Surf = -this.options.Surf; toggle = false; }
 
       if (this.options.Color == 0) {
          this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
@@ -3527,6 +3528,63 @@
       return handle;
    }
 
+   JSROOT.TH2Painter.prototype.DrawBinsArrow = function(w, h) {
+      var histo = this.GetObject(),
+          i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
+          x1,x2,y1,y2;
+
+      var handle = this.PrepareColorDraw(false);
+
+      var scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
+          scale_y  = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
+
+      var cmd = "";
+
+      for (var loop=0;loop<2;++loop)
+         for (i = handle.i1; i < handle.i2; ++i)
+            for (j = handle.j1; j < handle.j2; ++j) {
+
+               if (i === handle.i1) {
+                  dx = histo.getBinContent(i+2, j+1) - histo.getBinContent(i+1, j+1);
+               } else if (i === handle.i2-1) {
+                  dx = histo.getBinContent(i+1, j+1) - histo.getBinContent(i, j+1);
+               } else {
+                  dx = 0.5*(histo.getBinContent(i+2, j+1) - histo.getBinContent(i, j+1));
+               }
+               if (j === handle.j1) {
+                  dy = histo.getBinContent(i+1, j+2) - histo.getBinContent(i+1, j+1);
+               } else if (j === handle.j2-1) {
+                  dy = histo.getBinContent(i+1, j+1) - histo.getBinContent(i+1, j);
+               } else {
+                  dy = 0.5*(histo.getBinContent(i+1, j+2) - histo.getBinContent(i+1, j));
+               }
+
+               if (loop===0) {
+                  dn = Math.max(dn, Math.abs(dx), Math.abs(dy));
+               } else {
+                  xc = (handle.grx[i] + handle.grx[i+1])/2;
+                  yc = (handle.gry[j] + handle.gry[j+1])/2;
+                  x1  = xc - scale_x*dx/dn;
+                  x2  = xc + scale_x*dx/dn;
+                  y1  = yc - scale_y*dy/dn;
+                  y2  = yc + scale_y*dy/dn;
+
+                  cmd+= "M"+Math.round(x1)+","+Math.round(y1)+
+                        "l"+Math.round(x2-x1)+","+Math.round(y2-y1);
+               }
+
+            }
+
+      this.draw_g
+         .append("svg:path")
+         .attr("class","th2_arrows")
+         .attr("d", cmd)
+         .call(this.lineatt.func);
+
+      return handle;
+   }
+
+
    JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(false),
@@ -3815,7 +3873,7 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
+      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Arrow + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
       if (this.IsTH2Poly())
@@ -3829,6 +3887,9 @@
       else
       if (this.options.Box > 0)
          handle = this.DrawBinsBox(w, h);
+      else
+      if (this.options.Arrow > 0)
+         handle = this.DrawBinsArrow(w,h);
       else
       if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
