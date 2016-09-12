@@ -2922,7 +2922,7 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "surf", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "arr", "surf", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
          this.options = this.DecodeOptions(arg);
 
          this.Redraw();
@@ -3531,7 +3531,7 @@
    JSROOT.TH2Painter.prototype.DrawBinsArrow = function(w, h) {
       var histo = this.GetObject(),
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
-          x1,x2,y1,y2;
+          dxn,dyn,x1,x2,y1,y2, anr,si,co;
 
       var handle = this.PrepareColorDraw(false);
 
@@ -3564,21 +3564,34 @@
                } else {
                   xc = (handle.grx[i] + handle.grx[i+1])/2;
                   yc = (handle.gry[j] + handle.gry[j+1])/2;
-                  x1  = xc - scale_x*dx/dn;
-                  x2  = xc + scale_x*dx/dn;
-                  y1  = yc - scale_y*dy/dn;
-                  y2  = yc + scale_y*dy/dn;
+                  dxn = scale_x*dx/dn;
+                  dyn = scale_y*dy/dn;
+                  x1  = xc - dxn;
+                  x2  = xc + dxn;
+                  y1  = yc - dyn;
+                  y2  = yc + dyn;
+                  dx = Math.round(x2-x1);
+                  dy = Math.round(y2-y1);
 
-                  cmd+= "M"+Math.round(x1)+","+Math.round(y1)+
-                        "l"+Math.round(x2-x1)+","+Math.round(y2-y1);
+                  if ((dx!==0) || (dy!==0)) {
+                     cmd += "M"+Math.round(x1)+","+Math.round(y1)+"l"+dx+","+dy;
+
+                     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                        anr = Math.sqrt(2/(dx*dx + dy*dy));
+                        si  = Math.round(anr*(dx + dy));
+                        co  = Math.round(anr*(dx - dy));
+                        if ((si!==0) && (co!==0))
+                           cmd+="l"+(-si)+","+co + "m"+si+","+(-co) + "l"+(-co)+","+(-si);
+                     }
+                  }
                }
-
             }
 
       this.draw_g
          .append("svg:path")
          .attr("class","th2_arrows")
          .attr("d", cmd)
+         .style("fill", "none")
          .call(this.lineatt.func);
 
       return handle;
