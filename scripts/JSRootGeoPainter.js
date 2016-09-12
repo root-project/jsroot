@@ -2209,7 +2209,7 @@
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, tm0: new Date().getTime(), clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
+      this._worker.postMessage( { init: true, browser: JSROOT.browser, tm0: new Date().getTime(), clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
    }
 
    JSROOT.TGeoPainter.prototype.canSubmitToWorker = function(force) {

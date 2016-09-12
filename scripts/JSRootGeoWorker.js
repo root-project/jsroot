@@ -30,6 +30,9 @@ onmessage = function(e) {
          clones.sortmap = e.data.sortmap;
       }
 
+      // used in composite shape
+      JSROOT.browser = e.data.browser;
+
       e.data.tm2 = new Date().getTime();
 
       return postMessage(e.data);

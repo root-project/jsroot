@@ -2582,7 +2582,7 @@
             matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
                        node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
                        node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                    0,               0,                0, 1);
+                                    0,               0,               0, 1);
             // second - set position with proper sign
             matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
          }
@@ -2662,7 +2662,8 @@
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
-      if (faces_limit === 0) faces_limit = 10000;
+      // seems to be, IE has smaller stack for functions calls and ThreeCSG fails with large shapes
+      if (faces_limit === 0) faces_limit = (JSROOT.browser && JSROOT.browser.isIE) ? 7000 : 10000;
                         else return_bsp = true;
 
       if (matrix1 && (matrix1.determinant() < -0.9))
