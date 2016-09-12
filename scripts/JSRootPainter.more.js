@@ -3470,8 +3470,6 @@
             colPaths[colindx] += cmd;
       }
 
-      console.log('options line ', this.options.Line);
-
       for (colindx=0;colindx<colPaths.length;++colindx)
          if (colPaths[colindx] !== undefined) {
             item = this.draw_g
