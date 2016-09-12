@@ -3465,16 +3465,14 @@
       // get levels
       levels = this.fContour;
 
-      var ncontour = levels.length,
-          palette = this.GetPalette();
-
-      var x = new Float32Array(4),
+      var palette = this.GetPalette(),
+          ipoly, poly, polys = [], np, npmax = 0,
+          x = new Float32Array(4),
           y = new Float32Array(4),
           zc = new Float32Array(4),
           ir = new Int32Array(4),
           i, j, k, n, m, ix, ljfill, count,
-          xsave, ysave, itars, colindx, icol,
-          cmd = "";
+          xsave, ysave, itars;
 
       for (j = handle.j1; j < handle.j2-1; ++j) {
 
@@ -3556,12 +3554,30 @@
                   // theColor = Int_t((itarr[ix-1]+0.99)*Float_t(ncolors)/Float_t(ndivz));
                   // icol = gStyle->GetColorPalette(theColor);
 
-                  colindx = Math.floor((itarr[ix-1]+0.99)*palette.length/(levels.length-1));
-                  if (colindx > palette.length-1) colindx = palette.length-1;
-                  icol = palette[colindx];
+                  //colindx = Math.floor((itarr[ix-1]+0.99)*palette.length/(levels.length-1));
+                  //if (colindx > palette.length-1) colindx = palette.length-1;
+                  //icol = palette[colindx];
 
-                  cmd+="M" + Math.round(xarr[ix-1]) + "," + Math.round(yarr[ix-1]) +
-                       "L" + Math.round(xarr[ix]) + "," + Math.round(yarr[ix]);
+                  ipoly = itarr[ix-1];
+
+                  if (ipoly >=0 && (ipoly < levels.length)) {
+                     poly = polys[ipoly];
+                     if (!poly)
+                        poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4);
+
+                     var np = poly.fLastPoint;
+                     if (np < poly.fN-2) {
+                        poly.fX[np+1] = xarr[ix-1]; poly.fY[np+1] = yarr[ix-1];
+                        poly.fX[np+2] = xarr[ix]; poly.fY[np+2] = yarr[ix];
+                        poly.fLastPoint = np+2;
+                        npmax = Math.max(npmax, np);
+                     } else {
+                        console.log('reject point??', poly.fLastPoint);
+                     }
+                  }
+
+                  // cmd+="M" + Math.round(xarr[ix-1]) + "," + Math.round(yarr[ix-1]) +
+                  //     "L" + Math.round(xarr[ix]) + "," + Math.round(yarr[ix]);
 
                   //if (Hoption.Contour == 11) {
                   //   fH->SetLineColor(icol);
@@ -3592,13 +3608,53 @@
       } // end of i
 
 
+      var polysort = new Int32Array(levels.length), first = 0;
+      //find first positive contour
+      for (ipoly=0;ipoly<levels.length;ipoly++) {
+         if (levels[ipoly] >= 0) {first = ipoly; break;}
+      }
+      //store negative contours from 0 to minimum, then all positive contours
+      k = 0;
+      for (ipoly=first-1;ipoly>=0;ipoly--) {polysort[k] = ipoly; k++;}
+      for (ipoly=first;ipoly<levels.length;ipoly++) {polysort[k] = ipoly; k++;}
 
-      this.draw_g
-          .append("svg:path")
-          .attr("class","th2_contour")
-          .attr("d", cmd)
-          .style("fill", "none")
-          .call(this.lineatt.func);
+      for (k=0;k<levels.length;++k) {
+
+         ipoly = polysort[k];
+         poly = polys[ipoly];
+         if (!poly) continue;
+
+         // first draw line (when required)
+         var cmd = "";
+
+         for (ix=0;ix<poly.fLastPoint;ix+=2) {
+            cmd+="M" + Math.round(poly.fX[ix])+","+Math.round(poly.fY[ix]) +
+                 "L" + Math.round(poly.fX[ix+1])+","+Math.round(poly.fY[ix+1]);
+         }
+
+         this.draw_g
+             .append("svg:path")
+             .attr("class","th2_contour")
+             .attr("d", cmd)
+             .style("fill", "none")
+              .call(this.lineatt.func);
+
+         var colindx = Math.floor((ipoly+0.99)*palette.length/(levels.length-1));
+         if (colindx > palette.length-1) colindx = palette.length-1;
+         var icol = palette[colindx];
+
+
+         var xx = poly.fX,
+             yy = poly.fY,
+             istart = 0, iminus, iplus;
+
+
+
+
+
+      }
+
+
 
       return handle;
    }

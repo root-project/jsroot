@@ -1115,6 +1115,12 @@
             JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
                                  fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
             break;
+         case 'TPolyLine':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.extend(obj, { fLastPoint: -1, fN: 0, fOption: "", fX: null, fY: null });
+            break;
          case 'TGaxis':
             JSROOT.Create("TLine", obj);
             JSROOT.Create("TAttText", obj);
@@ -1190,7 +1196,6 @@
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
    JSROOT.CreateTH1 = function(nbinsx) {
-
       var histo = JSROOT.extend(JSROOT.Create("TH1I"),
                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
@@ -1203,7 +1208,6 @@
    }
 
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
-
       var histo = JSROOT.extend(JSROOT.Create("TH2I"),
                     { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
@@ -1214,6 +1218,18 @@
          JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
       }
       return histo;
+   }
+
+
+   JSROOT.CreateTPolyLine = function(npoints) {
+      var poly = JSROOT.Create("TPolyLine");
+      if (npoints) {
+         poly.fN = npoints;
+         poly.fX = new Float32Array(npoints);
+         poly.fY = new Float32Array(npoints);
+      }
+
+      return poly;
    }
 
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
