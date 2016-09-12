@@ -3301,16 +3301,18 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density) {
+   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density, extra_points) {
+      if (extra_points === undefined) extra_points = 0;
+
       var histo = this.GetObject(),
           pad = this.root_pad(),
           pmain = this.main_painter(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.GetSelectIndex("x", "left", 0),
-             i2: this.GetSelectIndex("x", "right", 1),
-             j1: this.GetSelectIndex("y", "left", 0),
-             j2: this.GetSelectIndex("y", "right", 1),
+             i1: this.GetSelectIndex("x", "left", 0 - extra_points),
+             i2: this.GetSelectIndex("x", "right", 1 + extra_points),
+             j1: this.GetSelectIndex("y", "left", 0 - extra_points),
+             j2: this.GetSelectIndex("y", "right", 1 + extra_points),
              min: 0, max: 0
           };
       res.grx = new Float32Array(res.i2+1);
@@ -3410,8 +3412,8 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsContour = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(false),
-          kMAXCONTOUR  = 104,
+          handle = this.PrepareColorDraw(false, false, 1),
+          kMAXCONTOUR = 104,
           // arguemnts used in he PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
@@ -3427,21 +3429,16 @@
       function PaintContourLine(elev1, icont1, x1, y1,
                                 elev2, icont2, x2, y2) {
             /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
-         var vert, tlen, tdif, elev, diff, pdif, xlen, n, ii, icount;
+         var vert = (x1 === x2),
+             tlen = vert ? (y2 - y1) : (x2 - x1),
+             n = icont1 +1,
+             tdif = elev2 - elev1,
+             ii = lj-1,
+             maxii = kMAXCONTOUR/2 -3 + lj,
+             icount = 0,
+             xlen, pdif, diff, elev;
 
-         if (x1 == x2) {
-            vert = true;
-            tlen = y2 - y1;
-         } else {
-            vert = false;
-            tlen = x2 - x1;
-         }
-
-         n = icont1 +1;
-         tdif = elev2 - elev1;
-         ii = lj-1;
-         icount = 0;
-         while (n <= icont2 && ii <= (kMAXCONTOUR/2 -3 + lj)) {
+         while (n <= icont2 && ii <= maxii) {
 //          elev = fH->GetContourLevel(n);
             elev = levels[n];
             diff = elev - elev1;
@@ -3476,10 +3473,8 @@
           zc = new Float32Array(4),
           ir = new Int32Array(4),
           i, j, k, n, m, ix, ljfill, count,
-          xsave, ysave, itars,
+          xsave, ysave, itars, colindx, icol,
           cmd = "";
-
-      console.log('max i,j', handle.i2, handle.j2);
 
       for (j = handle.j1; j < handle.j2-1; ++j) {
 
@@ -3553,12 +3548,8 @@
                }
 
                if (count > 100) {
-                  console.log('break here');
                   continue;
                }
-
-               if (lj<3) console.log('TOO FEW');
-
 
                for (ix=1; ix<=lj-2; ix +=2) {
 
