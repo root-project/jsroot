@@ -2914,7 +2914,6 @@
       this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
-      this.th2poly = this.MatchObjectType("TH2Poly");
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
@@ -2972,7 +2971,7 @@
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
-      if (!this.th2poly)
+      if (!this.IsTH2Poly())
          pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
       pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
       pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
@@ -3000,7 +2999,7 @@
    }
 
    JSROOT.TH2Painter.prototype.AutoZoom = function() {
-      if (this.th2poly) return; // not implemented
+      if (this.IsTH2Poly()) return; // not implemented
 
       var i1 = this.GetSelectIndex("x", "left", -1),
           i2 = this.GetSelectIndex("x", "right", 1),
@@ -3057,7 +3056,7 @@
 
       this.CreateAxisFuncs(true);
 
-      if (this.th2poly) {
+      if (this.IsTH2Poly()) {
          this.gmin0bin = null;
          this.gminbin = this.gmaxbin = 0;
 
@@ -3118,7 +3117,7 @@
           xside, yside, xx, yy, zz,
           res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
-      if (this.th2poly) {
+      if (this.IsTH2Poly()) {
 
          var len = histo.fBins.arr.length, i, bin, n, gr, ngr, numgraphs, numpoints,
              pmain = this.main_painter();
@@ -3810,7 +3809,7 @@
       if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
-      if (this.th2poly)
+      if (this.IsTH2Poly())
          handle = this.DrawPolyBinsColor(w, h);
       else
       if (this.options.Color > 0)
@@ -4145,7 +4144,7 @@
       // here we deciding how histogram will look like and how will be shown
       this.options = this.DecodeOptions(opt);
 
-      if (this.th2poly) {
+      if (this.IsTH2Poly()) {
          this.options.Color = 1; // default color
          if (this.options.Lego) this.options.Lego = 12; // and lego always 12
       }
@@ -4160,7 +4159,7 @@
       this.CreateXY();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.th2poly)
+      if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.IsTH2Poly())
          this.CreateStat();
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";

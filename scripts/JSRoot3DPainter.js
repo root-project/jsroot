@@ -1084,7 +1084,7 @@
 
    JSROOT.Painter.HistPainter_DrawLego = function() {
 
-      if (this.th2poly) return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
+      if (this.IsTH2Poly()) return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
