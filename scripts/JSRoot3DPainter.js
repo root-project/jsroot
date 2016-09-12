@@ -1086,6 +1086,9 @@
 
       if (this.IsTH2Poly()) return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
 
+      if (this.options.Surf && (this.Dimension()==2))
+         return JSROOT.Painter.HistPainter_DrawTH2Surf.call(this);
+
       // Perform TH1/TH2 lego plot with BufferGeometry
 
       var vertices = JSROOT.Painter.Box_Vertices,
@@ -1443,6 +1446,122 @@
       this.toplevel.add(line);
    }
 
+   JSROOT.Painter.HistPainter_DrawTH2Surf = function() {
+      var histo = this.GetObject(),
+          pmain = this.main_painter(),
+          i1 = this.GetSelectIndex("x", "left", -1),
+          i2 = this.GetSelectIndex("x", "right", 1),
+          j1 = this.GetSelectIndex("y", "left", -1),
+          j2 = this.GetSelectIndex("y", "right", 1),
+          i,j, x1, y1, x2, y2,
+          main = this.main_painter(),
+          axis_zmin = this.tz.domain()[0],
+          axis_zmax = this.tz.domain()[1],
+          xx = new Float32Array(i2+1),
+          yy = new Float32Array(j2+1);
+
+      // first adjust ranges
+      for (i=i1;i<=i2;++i) {
+         x1 = this.GetBinX(i+0.5);
+         if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
+         xx[i] = this.tx(x1);
+
+         if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
+         if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
+      }
+
+      for (j=j1;j<=j2;++j) {
+         y1 = this.GetBinY(j+0.5);
+         if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
+         yy[j] = this.ty(y1);
+         if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
+         if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
+      }
+
+      if ((i2 - i1 < 2) || (j2-j1 < 2)) return;
+
+      // force recalculations of contours
+      this.fContour = null;
+      this.fCustomContour = false;
+
+/*
+
+      var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
+
+      if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
+         var nlevels = 20;
+         if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
+         levels = this.CreateContour(nlevels, this.lego_zmin, this.lego_zmax);
+         palette = this.GetPalette();
+      }
+
+      for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
+         var zmin = levels[nlevel], zmax = levels[nlevel+1],
+             z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax);
+
+      }
+
+*/
+
+      var pos = new Float32Array((i2-i1-1) * (j2-j1-1) * 2 * 9), indx = 0,
+          lpos = new Float32Array((i2-i1-0.5) * (j2-j1-0.5) * 4 * 3 - 3), lindx = 0;
+
+      for (i=i1;i<i2-1;++i) {
+         x1 = xx[i];
+         x2 = xx[i+1];
+         for (j=j1;j<j2-1;++j) {
+            y1 = yy[j];
+            y2 = yy[j+1];
+
+            var z11 = this.tz(this.histo.getBinContent(i+1, j+1)),
+                z12 = this.tz(this.histo.getBinContent(i+1, j+2)),
+                z21 = this.tz(this.histo.getBinContent(i+2, j+1)),
+                z22 = this.tz(this.histo.getBinContent(i+2, j+2));
+
+            pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z11; indx+=3;
+            pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z22; indx+=3;
+            pos[indx] = x1; pos[indx+1] = y2; pos[indx+2] = z12; indx+=3;
+
+            pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z11; indx+=3;
+            pos[indx] = x2; pos[indx+1] = y1; pos[indx+2] = z21; indx+=3;
+            pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z22; indx+=3;
+
+            lpos[lindx] = x1; lpos[lindx+1] = y2; lpos[lindx+2] = z12; lindx+=3;
+            lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z11; lindx+=3;
+            lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z11; lindx+=3;
+            lpos[lindx] = x2; lpos[lindx+1] = y1; lpos[lindx+2] = z21; lindx+=3;
+
+            if (i===i2-2) {
+               lpos[lindx] = x2; lpos[lindx+1] = y1; lpos[lindx+2] = z21; lindx+=3;
+               lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z22; lindx+=3;
+            }
+            if (j===j2-2) {
+               lpos[lindx] = x1; lpos[lindx+1] = y2; lpos[lindx+2] = z12; lindx+=3;
+               lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z22; lindx+=3;
+            }
+         }
+      }
+
+      // console.log('lpos', lpos.length, 'lindx', lindx);
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      geometry.computeVertexNormals();
+      var material = new THREE.MeshBasicMaterial( { color: 'white', shading: THREE.SmoothShading  } );
+
+      var mesh = new THREE.Mesh(geometry, material);
+      this.toplevel.add(mesh);
+
+
+      geometry = new THREE.BufferGeometry();
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
+      var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
+
+      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+      if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+      var line = new THREE.LineSegments(geometry, material);
+      this.toplevel.add(line);
+   }
 
    JSROOT.Painter.HistPainter_DrawPolyLego = function() {
 
@@ -1643,7 +1762,7 @@
          cnt++;
       }
 
-      console.log('draw poly as lego plot', cnt, totalnfaces);
+      // console.log('draw poly as lego plot', cnt, totalnfaces);
    }
 
    JSROOT.Painter.Render3D = function(tmout) {

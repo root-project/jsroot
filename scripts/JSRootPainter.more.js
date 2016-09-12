@@ -4133,7 +4133,7 @@
    JSROOT.TH2Painter.prototype.Redraw = function(resize) {
       this.CreateXY();
 
-      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+      var func_name = (this.options.Lego > 0) || (this.options.Surf > 0) ? "Draw3D" : "Draw2D";
 
       this[func_name](null, resize);
    }
@@ -4165,7 +4165,7 @@
       if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.IsTH2Poly())
          this.CreateStat();
 
-      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+      var func_name = (this.options.Lego > 0) || (this.options.Surf > 0) ? "Draw3D" : "Draw2D";
 
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
