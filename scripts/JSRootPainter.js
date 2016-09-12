@@ -5119,7 +5119,6 @@
       if (check('][')) { option.Off = 1; option.Hist = 1; }
       if (check('F2')) option.Fill = 2;
 
-      console.log('check ', chopt);
       if (check('L')) { option.Line = 1; option.Hist = -1; }
 
       if (check('P0')) { option.Mark = 10; option.Hist = -1; }
@@ -9100,6 +9099,24 @@
       function DoExpandItem(_item, _obj, _name) {
          if (!_name) _name = hpainter.itemFullName(_item);
 
+         var handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
+         if (_obj && handle && handle.expand_item) {
+            _obj = _obj[handle.expand_item]; // just take specified field from the object
+            if (_obj && _obj._typename)
+               handle = JSROOT.getDrawHandle("ROOT."+_obj._typename, "::expand");
+         }
+
+         if (handle && handle.expand) {
+            JSROOT.AssertPrerequisites(handle.prereq, function() {
+               _item._expand = JSROOT.findFunction(handle.expand);
+               if (_item._expand)
+                  DoExpandItem(_item, _obj, _name);
+               else
+                  delete _item._expand;
+            });
+            return true;
+         }
+
          // try to use expand function
          if (_obj && _item && (typeof _item._expand === 'function')) {
             if (_item._expand(_item, _obj)) {
@@ -9111,20 +9128,6 @@
                   if (!silent) hpainter.UpdateTreeNode(_item, d3cont);
                }
                JSROOT.CallBack(call_back, _item);
-               return true;
-            }
-         }
-
-         if (!('_expand' in _item)) {
-            var handle = JSROOT.getDrawHandle(_item._kind, "::expand");
-            if (handle && ('expand' in handle)) {
-               JSROOT.AssertPrerequisites(handle.prereq, function() {
-                  _item._expand = JSROOT.findFunction(handle.expand);
-                  if (!_item._expand)
-                     delete _item._expand;
-                  else
-                     hpainter.expand(_name, call_back, d3cont, silent);
-               });
                return true;
             }
          }
@@ -10148,8 +10151,8 @@
       window.addEventListener('resize', ProcessResize);
    }
 
-   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas });
-   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad });
+   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas, expand_item: "fPrimitives" });
+   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad, expand_item: "fPrimitives" });
    JSROOT.addDrawFunc({ name: "TSlider", icon: "img_canvas", func: JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", icon: "img_frame", func: JSROOT.Painter.drawFrame });
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
@@ -10242,7 +10245,7 @@
             // if drawoption specified, check it present in the list
 
             if (selector == "::expand") {
-               if ('expand' in h) return h;
+               if (('expand' in h) || ('expand_item' in h)) return h;
             } else
             if ('opt' in h) {
                var opts = h.opt.split(';');
