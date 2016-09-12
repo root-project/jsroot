@@ -3407,6 +3407,211 @@
       return handle;
    }
 
+
+   JSROOT.TH2Painter.prototype.DrawBinsContour = function(w,h) {
+      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw(false),
+          kMAXCONTOUR  = 104,
+          // arguemnts used in he PaintContourLine
+          xarr = new Float32Array(2*kMAXCONTOUR),
+          yarr = new Float32Array(2*kMAXCONTOUR),
+          itarr = new Int32Array(2*kMAXCONTOUR),
+          levels, lj = 0;
+
+      function BinarySearch(zc) {
+         for (var kk=1;kk<levels.length;++kk)
+            if (zc<levels[kk]) return kk-1;
+         return levels.length-1;
+      }
+
+      function PaintContourLine(elev1, icont1, x1, y1,
+                                elev2, icont2, x2, y2) {
+            /* Double_t *xarr, Double_t *yarr, Int_t *itarr, Double_t *levels */
+         var vert, tlen, tdif, elev, diff, pdif, xlen, n, ii, icount;
+
+         if (x1 == x2) {
+            vert = true;
+            tlen = y2 - y1;
+         } else {
+            vert = false;
+            tlen = x2 - x1;
+         }
+
+         n = icont1 +1;
+         tdif = elev2 - elev1;
+         ii = lj-1;
+         icount = 0;
+         while (n <= icont2 && ii <= (kMAXCONTOUR/2 -3 + lj)) {
+//          elev = fH->GetContourLevel(n);
+            elev = levels[n];
+            diff = elev - elev1;
+            pdif = diff/tdif;
+            xlen = tlen*pdif;
+            if (vert) {
+               xarr[ii] = x1;
+               yarr[ii] = y1 + xlen;
+            } else {
+               xarr[ii] = x1 + xlen;
+               yarr[ii] = y1;
+            }
+            itarr[ii] = n;
+            icount++;
+            ii +=2;
+            n++;
+         }
+         return icount;
+      }
+
+      // initialize contour
+      this.getContourIndex(0);
+
+      // get levels
+      levels = this.fContour;
+
+      var ncontour = levels.length,
+          palette = this.GetPalette();
+
+      var x = new Float32Array(4),
+          y = new Float32Array(4),
+          zc = new Float32Array(4),
+          ir = new Int32Array(4),
+          i, j, k, n, m, ix, ljfill, count,
+          xsave, ysave, itars,
+          cmd = "";
+
+      console.log('max i,j', handle.i2, handle.j2);
+
+      for (j = handle.j1; j < handle.j2-1; ++j) {
+
+         y[0] = (handle.gry[j] + handle.gry[j+1])/2;
+         y[1] = y[0];
+         y[2] = (handle.gry[j+1] + handle.gry[j+2])/2;
+         y[3] = y[2];
+
+         for (i = handle.i1; i < handle.i2-1; ++i) {
+
+            zc[0] = histo.getBinContent(i+1, j+1);
+            zc[1] = histo.getBinContent(i+2, j+1);
+            zc[2] = histo.getBinContent(i+2, j+2);
+            zc[3] = histo.getBinContent(i+1, j+2);
+
+            for (k=0;k<4;k++)
+               ir[k] = BinarySearch(zc[k]);
+
+            if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
+               x[0] = (handle.grx[i] + handle.grx[i+1])/2;
+               x[3] = x[0];
+               x[1] = (handle.grx[i+1] + handle.grx[i+2])/2;
+               x[2] = x[1];
+
+               if (zc[0] <= zc[1]) n = 0; else n = 1;
+               if (zc[2] <= zc[3]) m = 2; else m = 3;
+               if (zc[n] > zc[m]) n = m;
+               n++;
+               lj=1;
+               for (ix=1;ix<=4;ix++) {
+                  m = n%4 + 1;
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
+                                            zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  lj += 2*ljfill;
+                  n = m;
+               }
+
+               if (zc[0] <= zc[1]) n = 0; else n = 1;
+               if (zc[2] <= zc[3]) m = 2; else m = 3;
+               if (zc[n] > zc[m]) n = m;
+               n++;
+               lj=2;
+               for (ix=1;ix<=4;ix++) {
+                  if (n == 1) m = 4;
+                  else        m = n-1;
+                  ljfill = PaintContourLine(zc[n-1],ir[n-1],x[n-1],y[n-1],
+                                            zc[m-1],ir[m-1],x[m-1],y[m-1]);
+                  lj += 2*ljfill;
+                  n = m;
+               }
+      //     Re-order endpoints
+
+               count = 0;
+               for (ix=1; ix<=lj-5; ix +=2) {
+                  //count = 0;
+                  while (itarr[ix-1] != itarr[ix]) {
+                     xsave = xarr[ix];
+                     ysave = yarr[ix];
+                     itars = itarr[ix];
+                     for (jx=ix; jx<=lj-5; jx +=2) {
+                        xarr[jx]  = xarr[jx+2];
+                        yarr[jx]  = yarr[jx+2];
+                        itarr[jx] = itarr[jx+2];
+                     }
+                     xarr[lj-3]  = xsave;
+                     yarr[lj-3]  = ysave;
+                     itarr[lj-3] = itars;
+                     if (count > 100) break;
+                     count++;
+                  }
+               }
+
+               if (count > 100) {
+                  console.log('break here');
+                  continue;
+               }
+
+               if (lj<3) console.log('TOO FEW');
+
+
+               for (ix=1; ix<=lj-2; ix +=2) {
+
+                  // theColor = Int_t((itarr[ix-1]+0.99)*Float_t(ncolors)/Float_t(ndivz));
+                  // icol = gStyle->GetColorPalette(theColor);
+
+                  colindx = Math.floor((itarr[ix-1]+0.99)*palette.length/(levels.length-1));
+                  if (colindx > palette.length-1) colindx = palette.length-1;
+                  icol = palette[colindx];
+
+                  cmd+="M" + Math.round(xarr[ix-1]) + "," + Math.round(yarr[ix-1]) +
+                       "L" + Math.round(xarr[ix]) + "," + Math.round(yarr[ix]);
+
+                  //if (Hoption.Contour == 11) {
+                  //   fH->SetLineColor(icol);
+                  //}
+                  //if (Hoption.Contour == 12) {
+                  //   mode = icol%5;
+                  //   if (mode == 0) mode = 5;
+                  //   fH->SetLineStyle(mode);
+                  //}
+                  //if (Hoption.Contour != 1) {
+                  //   fH->TAttLine::Modify();
+                  //   gPad->PaintPolyLine(2,&xarr[ix-1],&yarr[ix-1]);
+                  //   continue;
+                  // }
+/*
+                  ipoly = itarr[ix-1];
+                  if (ipoly >=0 && ipoly <ncontour) {
+                     poly = polys[ipoly];
+                     poly->SetPoint(np[ipoly]  ,xarr[ix-1],yarr[ix-1]);
+                     poly->SetPoint(np[ipoly]+1,xarr[ix],  yarr[ix]);
+                     np[ipoly] += 2;
+                     if (npmax < np[ipoly]) npmax = np[ipoly];
+                  }
+ */
+               }
+            } // end of if (ir[0]
+         } // end of j
+      } // end of i
+
+
+
+      this.draw_g
+          .append("svg:path")
+          .attr("class","th2_contour")
+          .attr("d", cmd)
+          .style("fill", "none")
+          .call(this.lineatt.func);
+
+      return handle;
+   }
+
    JSROOT.TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
       var cmd = "", ngr, ngraphs = 1, gr = null;
 
@@ -3886,7 +4091,8 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text + this.options.Arrow + this.options.Candle.length == 0)
+      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text +
+          this.options.Contour + this.options.Arrow + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
       if (this.IsTH2Poly())
@@ -3903,6 +4109,9 @@
       else
       if (this.options.Arrow > 0)
          handle = this.DrawBinsArrow(w,h);
+      else
+      if (this.options.Contour > 0)
+         handle = this.DrawBinsContour(w,h);
       else
       if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
