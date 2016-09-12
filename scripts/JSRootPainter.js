@@ -4988,7 +4988,7 @@
 
       if (check('CANDLE', true)) option.Candle = part;
 
-      if (check('LEGO', true)) {
+      if (check('GLLEGO', true) || check('LEGO', true)) {
          option.Scat = 0;
          option.Lego = 1;
          if (part.indexOf('0') >= 0) option.Zero = 1;
@@ -5001,7 +5001,7 @@
          if (part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
-      if (check('SURF', true)) {
+      if (check('GLSURF', true) || check('SURF', true)) {
          option.Scat = 0;
          option.Surf = 1;
          if (part.indexOf('FB') >= 0) { option.FrontBox = 0; part = part.replace('FB',''); }
@@ -6624,7 +6624,7 @@
             this.FillHistContextMenu(menu);
       }
 
-      if ((this.options.Lego > 0) || (this.Dimension() === 3)) {
+      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.Dimension() === 3)) {
          // menu for 3D drawings
 
          if (menu.size() > 0)
@@ -7284,7 +7284,7 @@
    }
 
    JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0)) {
+      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0) || (this.options.Surf > 0)) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);

@@ -2922,7 +2922,7 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "surf", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
          this.options = this.DecodeOptions(arg);
 
          this.Redraw();
@@ -2945,8 +2945,14 @@
             if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
             break;
          case "Toggle3D":
+            if (this.options.Surf > 0) {
+               this.options.Surf = -this.options.Surf;
+            } else
             if (this.options.Lego > 0) {
                this.options.Lego = 0;
+            } else
+            if (this.options.Surf < 0) {
+               this.options.Surf = -this.options.Surf;
             } else {
                if ((this.nbinsx>=50) || (this.nbinsy>=50))
                   this.options.Lego = (this.options.Color > 0) ? 14 : 13;
@@ -4169,7 +4175,7 @@
 
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
-            if (this.options.Lego == 0) {
+            if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
                // this.AddInteractive();
                if (this.options.AutoZoom) this.AutoZoom();
             }
