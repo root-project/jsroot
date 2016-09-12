@@ -1547,7 +1547,9 @@
       var geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
       geometry.computeVertexNormals();
-      var material = new THREE.MeshBasicMaterial( { color: 'white', shading: THREE.SmoothShading  } );
+      var fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
+
+      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
 
       var mesh = new THREE.Mesh(geometry, material);
       this.toplevel.add(mesh);
