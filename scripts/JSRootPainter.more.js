@@ -3442,7 +3442,7 @@
       var histo = this.GetObject(),
           pmain = this.main_painter(),
           colPaths = [],
-          colindx, cmd, bin,
+          colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
 
       // force recalculations of contours
@@ -3470,13 +3470,18 @@
             colPaths[colindx] += cmd;
       }
 
+      console.log('options line ', this.options.Line);
+
       for (colindx=0;colindx<colPaths.length;++colindx)
-         if (colPaths[colindx] !== undefined)
-            this.draw_g
-            .append("svg:path")
-            .attr("palette-index", colindx)
-            .attr("fill", this.fPalette[colindx])
-            .attr("d", colPaths[colindx]);
+         if (colPaths[colindx] !== undefined) {
+            item = this.draw_g
+                     .append("svg:path")
+                     .attr("palette-index", colindx)
+                     .attr("fill", this.fPalette[colindx])
+                     .attr("d", colPaths[colindx])
+            if (this.options.Line)
+               item.call(this.lineatt.func);
+         }
 
       return { poly: true };
    }

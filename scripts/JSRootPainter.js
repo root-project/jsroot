@@ -3782,7 +3782,7 @@
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
          if (!this.lineatt || !this.lineatt.changed)
-            this.lineatt = JSROOT.Painter.createAttLine(this.pad)
+            this.lineatt = JSROOT.Painter.createAttLine(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
@@ -4920,7 +4920,6 @@
          }
       }
 
-
       var part = ""; // used to return part of string
 
       function check(name,postpart) {
@@ -5119,6 +5118,8 @@
       if (check('F')) option.Fill = 1;
       if (check('][')) { option.Off = 1; option.Hist = 1; }
       if (check('F2')) option.Fill = 2;
+
+      console.log('check ', chopt);
       if (check('L')) { option.Line = 1; option.Hist = -1; }
 
       if (check('P0')) { option.Mark = 10; option.Hist = -1; }
