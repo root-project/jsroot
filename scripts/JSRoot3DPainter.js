@@ -1112,7 +1112,7 @@
           j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 2),
           i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
-          split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
+          split_faces = ((this.options.Lego === 11) || (this.options.Lego === 13)) && (this.GetObject().fFillColor<2); // split each layer on two parts
 
       var xx = new Float32Array(i2+1),
           yy = new Float32Array(j2+1);
@@ -1277,6 +1277,11 @@
             var indx = Math.floor((nlevel+0.99)*palette.length/(levels.length-1));
             if (indx > palette.length-1) indx = palette.length-1;
             fcolor = palette[indx];
+         } else {
+            if ((this.options.Lego === 1) || (rootcolor < 2)) {
+               rootcolor = 1;
+               fcolor = 'white';
+            }
          }
 
          //var material = new THREE.MeshLambertMaterial( { color: fcolor } );
