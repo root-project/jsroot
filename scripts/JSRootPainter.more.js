@@ -2922,7 +2922,7 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "arr", "surf", "lego", "lego0", "lego1", "lego2", "lego3", "lego4"], function(arg) {
+      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "cont", "arr", "surf", "lego"], function(arg) {
          this.options = this.DecodeOptions(arg);
 
          this.Redraw();
@@ -3474,14 +3474,12 @@
           zc = new Float32Array(4),
           ir = new Int32Array(4),
           i, j, k, n, m, ix, ljfill, count,
-          xsave, ysave, itars;
+          xsave, ysave, itars, ix, jx;
 
       for (j = handle.j1; j < handle.j2-1; ++j) {
 
-         y[0] = (handle.gry[j] + handle.gry[j+1])/2;
-         y[1] = y[0];
-         y[2] = (handle.gry[j+1] + handle.gry[j+2])/2;
-         y[3] = y[2];
+         y[1] = y[0] = (handle.gry[j] + handle.gry[j+1])/2;
+         y[3] = y[2] = (handle.gry[j+1] + handle.gry[j+2])/2;
 
          for (i = handle.i1; i < handle.i2-1; ++i) {
 
@@ -3494,10 +3492,8 @@
                ir[k] = BinarySearch(zc[k]);
 
             if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
-               x[0] = (handle.grx[i] + handle.grx[i+1])/2;
-               x[3] = x[0];
-               x[1] = (handle.grx[i+1] + handle.grx[i+2])/2;
-               x[2] = x[1];
+               x[3] = x[0] = (handle.grx[i] + handle.grx[i+1])/2;
+               x[2] = x[1] = (handle.grx[i+1] + handle.grx[i+2])/2;
 
                if (zc[0] <= zc[1]) n = 0; else n = 1;
                if (zc[2] <= zc[3]) m = 2; else m = 3;
@@ -3547,18 +3543,9 @@
                   }
                }
 
-               if (count > kMAXCOUNT) {
-                  continue;
-               }
+               if (count > kMAXCOUNT) continue;
 
                for (ix=1; ix<=lj-2; ix +=2) {
-
-                  // theColor = Int_t((itarr[ix-1]+0.99)*Float_t(ncolors)/Float_t(ndivz));
-                  // icol = gStyle->GetColorPalette(theColor);
-
-                  //colindx = Math.floor((itarr[ix-1]+0.99)*palette.length/(levels.length-1));
-                  //if (colindx > palette.length-1) colindx = palette.length-1;
-                  //icol = palette[colindx];
 
                   ipoly = itarr[ix-1];
 
@@ -3577,33 +3564,6 @@
                         console.log('reject point??', poly.fLastPoint);
                      }
                   }
-
-                  // cmd+="M" + Math.round(xarr[ix-1]) + "," + Math.round(yarr[ix-1]) +
-                  //     "L" + Math.round(xarr[ix]) + "," + Math.round(yarr[ix]);
-
-                  //if (Hoption.Contour == 11) {
-                  //   fH->SetLineColor(icol);
-                  //}
-                  //if (Hoption.Contour == 12) {
-                  //   mode = icol%5;
-                  //   if (mode == 0) mode = 5;
-                  //   fH->SetLineStyle(mode);
-                  //}
-                  //if (Hoption.Contour != 1) {
-                  //   fH->TAttLine::Modify();
-                  //   gPad->PaintPolyLine(2,&xarr[ix-1],&yarr[ix-1]);
-                  //   continue;
-                  // }
-/*
-                  ipoly = itarr[ix-1];
-                  if (ipoly >=0 && ipoly <ncontour) {
-                     poly = polys[ipoly];
-                     poly->SetPoint(np[ipoly]  ,xarr[ix-1],yarr[ix-1]);
-                     poly->SetPoint(np[ipoly]+1,xarr[ix],  yarr[ix]);
-                     np[ipoly] += 2;
-                     if (npmax < np[ipoly]) npmax = np[ipoly];
-                  }
- */
                }
             } // end of if (ir[0]
          } // end of j
@@ -3650,8 +3610,6 @@
             case 14: break;
          }
 
-         // console.log('icol', icol, 'lineatt', lineatt);
-
          var xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
              istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
@@ -3660,23 +3618,23 @@
             iplus  = iminus+1;
             xp[iminus]= xx[istart];   yp[iminus] = yy[istart];
             xp[iplus] = xx[istart+1]; yp[iplus]  = yy[istart+1];
-            xx[istart]   = xmin; yy[istart]   = ymin;
-            xx[istart+1] = xmin; yy[istart+1] = ymin;
+            xx[istart] = xx[istart+1] = xmin;
+            yy[istart] = yy[istart+1] = ymin;
             while (true) {
                nadd = 0;
                for (i=2;i<np;i+=2) {
                   if (xx[i] === xp[iplus] && yy[i] === yp[iplus]) {
                      iplus++;
                      xp[iplus] = xx[i+1]; yp[iplus]  = yy[i+1];
-                     xx[i]   = xmin; yy[i]   = ymin;
-                     xx[i+1] = xmin; yy[i+1] = ymin;
+                     xx[i] = xx[i+1] = xmin;
+                     yy[i] = yy[i+1] = ymin;
                      nadd++;
                   }
                   if (xx[i+1] === xp[iminus] && yy[i+1] === yp[iminus]) {
                      iminus--;
                      xp[iminus] = xx[i];   yp[iminus]  = yy[i];
-                     xx[i]   = xmin; yy[i]   = ymin;
-                     xx[i+1] = xmin; yy[i+1] = ymin;
+                     xx[i] = xx[i+1] = xmin;
+                     yy[i] = yy[i+1] = ymin;
                      nadd++;
                   }
                }
@@ -3685,9 +3643,9 @@
 
             // console.log('color', ipoly, icol, 'Draw area points', iplus-iminus+1, 'starts', iminus);
 
-            var cmd = "";
-            for (i = iminus;i<=iplus;++i)
-               cmd += ((i>iminus) ? "L" : "M") + xp[i] + "," + yp[i];
+            var cmd = "M" + xp[iminus] + "," + yp[iminus];
+            for (i = iminus+1;i<=iplus;++i)
+               cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
 
             if (fillcolor !== 'none') cmd += "Z";
 
@@ -3702,14 +3660,6 @@
             else
                elem.style('stroke','none');
 
-
-
-            //theColor = Int_t((ipoly+0.99)*Float_t(ncolors)/Float_t(ndivz));
-            //icol = gStyle->GetColorPalette(theColor);
-            //if (ndivz > 1) fH->SetFillColor(icol);
-            //fH->TAttFill::Modify();
-            //gPad->PaintFillArea(iplus-iminus+1,&xp[iminus],&yp[iminus]);
-            //check if more points are left
             istart = 0;
             for (i=2;i<np;i+=2) {
                if (xx[i] !== xmin && yy[i] !== ymin) {
