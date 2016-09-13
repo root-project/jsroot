@@ -1109,46 +1109,18 @@
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
           axis_zmin = this.grz.domain()[0],
           axis_zmax = this.grz.domain()[1],
-          hdim = this.Dimension();
+          handle = this.PrepareColorDraw({ rounding: false, size3d: this.size3d, extra: 1 });
 
       // create the bin cubes
       var showmin = !this.options.Zero || (axis_zmin>0);
 
-      var i1 = this.GetSelectIndex("x", "left", -1),
-          i2 = this.GetSelectIndex("x", "right", 2),
-          j1 = (hdim===1) ? 0 : this.GetSelectIndex("y", "left", -1),
-          j2 = (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 2),
+      var i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
           split_faces = ((this.options.Lego === 11) || (this.options.Lego === 13)) && (this.GetObject().fFillColor<2); // split each layer on two parts
 
-      var xx = new Float32Array(i2+1),
-          yy = new Float32Array(j2+1);
 
-      // first adjust ranges
-      for (i=i1;i<=i2;++i) {
-         x1 = this.GetBinX(i);
-         if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
-         xx[i] = main.grx(x1);
-
-         if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
-         if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
-      }
-
-      if (hdim===1) {
-         yy[0] = this.gry(0);
-         yy[1] = this.gry(1);
-      } else {
-         for (j=j1;j<=j2;++j) {
-            y1 = this.GetBinY(j);
-            if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-            yy[j] = this.gry(y1);
-            if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
-            if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
-         }
-      }
-
-      if ((i1 >= i2) || (j1>=j2)) return;
+      if ((i1 >= i2) || (j1 >= j2)) return;
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
       var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF);
@@ -1206,8 +1178,8 @@
          }
 
          for (i=i1;i<i2;++i) {
-            x1 = xx[i];
-            x2 = xx[i+1];
+            x1 = handle.grx[i];
+            x2 = handle.grx[i+1];
             for (j=j1;j<j2;++j) {
                binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
@@ -1216,8 +1188,8 @@
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
-               y1 = yy[j];
-               y2 = yy[j+1];
+               y1 = handle.gry[j];
+               y2 = handle.gry[j+1];
 
                z2 = (binz > zmax) ? zzz : this.grz(binz);
 
@@ -1389,16 +1361,16 @@
           z2 = 0, ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
-         x1 = xx[i];
-         x2 = xx[i+1];
+         x1 = handle.grx[i];
+         x2 = handle.grx[i+1];
          for (j=j1;j<j2;++j) {
             binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
             reduced = (binz == axis_zmin);
             if (reduced && !showmin) continue;
 
-            y1 = yy[j];
-            y2 = yy[j+1];
+            y1 = handle.gry[j];
+            y2 = handle.gry[j+1];
 
             z2 = (binz > zmax) ? zzz : this.grz(binz);
 
@@ -1462,41 +1434,18 @@
    JSROOT.Painter.HistPainter_DrawTH2Surf = function() {
       var histo = this.GetObject(),
           pmain = this.main_painter(),
-          i1 = this.GetSelectIndex("x", "left", -1),
-          i2 = this.GetSelectIndex("x", "right", 1),
-          j1 = this.GetSelectIndex("y", "left", -1),
-          j2 = this.GetSelectIndex("y", "right", 1),
+          handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           main = this.main_painter(),
           axis_zmin = this.grz.domain()[0],
-          axis_zmax = this.grz.domain()[1],
-          xx = new Float32Array(i2+1),
-          yy = new Float32Array(j2+1);
+          axis_zmax = this.grz.domain()[1];
 
       // first adjust ranges
-      for (i=i1;i<=i2;++i) {
-         x1 = this.GetBinX(i+0.5);
-         if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
-         xx[i] = this.grx(x1);
 
-         if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
-         if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
-      }
+      if ((handle.i2 - handle.i1 < 2) || (handle.j2-handle.j1 < 2)) return;
 
-      for (j=j1;j<=j2;++j) {
-         y1 = this.GetBinY(j+0.5);
-         if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-         yy[j] = this.gry(y1);
-         if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
-         if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
-      }
 
-      if ((i2 - i1 < 2) || (j2-j1 < 2)) return;
-
-      // force recalculations of contours
-      this.fContour = null;
-      this.fCustomContour = false;
-
+      /*
       // initialize contour
       this.getContourIndex(0);
 
@@ -1505,29 +1454,11 @@
 
       console.log('levels', levels);
 
-/*
-
-      var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
-
-      if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         var nlevels = 20;
-         if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
-         levels = this.CreateContour(nlevels, this.lego_zmin, this.lego_zmax);
-         palette = this.GetPalette();
-      }
-
-      for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
-         var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = this.grz(zmin), z2 = 0, zzz = this.grz(zmax);
-
-      }
-
 */
 
       var loop, nfaces = 0, nsegments = 0,
           pos = null, indx = 0,
           lpos = null, lindx = 0;
-
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
          if (!loop) return ++nsegments;
@@ -1542,18 +1473,17 @@
          pos[indx] = x3; pos[indx+1] = y3; pos[indx+2] = z3; indx+=3;
       }
 
-
       for (loop=0;loop<2;++loop) {
          if (loop) {
             pos = new Float32Array(nfaces * 9);
             lpos = new Float32Array(nsegments * 6);
          }
-         for (i=i1;i<i2-1;++i) {
-            x1 = xx[i];
-            x2 = xx[i+1];
-            for (j=j1;j<j2-1;++j) {
-               y1 = yy[j];
-               y2 = yy[j+1];
+         for (i=handle.i1;i<handle.i2-1;++i) {
+            x1 = handle.grx[i];
+            x2 = handle.grx[i+1];
+            for (j=handle.j1;j<handle.j2-1;++j) {
+               y1 = handle.gry[j];
+               y2 = handle.gry[j+1];
                z11 = this.grz(this.histo.getBinContent(i+1, j+1));
                z12 = this.grz(this.histo.getBinContent(i+1, j+2));
                z21 = this.grz(this.histo.getBinContent(i+2, j+1));
@@ -1566,8 +1496,8 @@
                AddLineSegment(x1,y2,z12, x1,y1,z11);
                AddLineSegment(x1,y1,z11, x2,y1,z21);
 
-               if (i===i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
-               if (j===j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
+               if (i===handle.i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
+               if (j===handle.j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
             }
          }
       }

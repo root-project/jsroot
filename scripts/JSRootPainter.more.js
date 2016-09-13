@@ -3340,19 +3340,21 @@
 
    JSROOT.TH2Painter.prototype.PrepareColorDraw = function(args) {
 
-      if (!args) args = { rounding: true, extra: 0 };
+      if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
       if (args.extra === undefined) args.extra = 0;
+      if (args.middle === undefined) args.middle = 0;
 
       var histo = this.GetObject(),
           pad = this.root_pad(),
           pmain = this.main_painter(),
+          hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
           res = {
              i1: this.GetSelectIndex("x", "left", 0 - args.extra),
              i2: this.GetSelectIndex("x", "right", 1 + args.extra),
-             j1: this.GetSelectIndex("y", "left", 0 - args.extra),
-             j2: this.GetSelectIndex("y", "right", 1 + args.extra),
+             j1: (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
+             j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0
           };
       res.grx = new Float32Array(res.i2+1);
@@ -3362,7 +3364,7 @@
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
-         x = this.GetBinX(i);
+         x = this.GetBinX(i + args.middle);
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = pmain.grx(x);
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
@@ -3373,8 +3375,12 @@
          }
       }
 
+      if (hdim===1) {
+         res.gry[0] = pmain.gry(0);
+         res.gry[1] = pmain.gry(1);
+      } else
       for (j = res.j1; j <= res.j2; ++j) {
-         y = this.GetBinY(j);
+         y = this.GetBinY(j + args.middle);
          if (pmain.logy && (y <= 0)) { res.j1 = j+1; continue; }
          res.gry[j] = pmain.gry(y);
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
