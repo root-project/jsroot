@@ -1458,7 +1458,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
           j2 = this.GetSelectIndex("y", "right", 1),
-          i,j, x1, y1, x2, y2,
+          i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           main = this.main_painter(),
           axis_zmin = this.tz.domain()[0],
           axis_zmax = this.tz.domain()[1],
@@ -1508,41 +1508,50 @@
 
 */
 
-      var pos = new Float32Array((i2-i1-1) * (j2-j1-1) * 2 * 9), indx = 0,
-          lpos = new Float32Array((i2-i1-0.5) * (j2-j1-0.5) * 4 * 3 - 3), lindx = 0;
+      var loop, nfaces = 0, nsegments = 0,
+          pos = null, indx = 0,
+          lpos = null, lindx = 0;
 
-      for (i=i1;i<i2-1;++i) {
-         x1 = xx[i];
-         x2 = xx[i+1];
-         for (j=j1;j<j2-1;++j) {
-            y1 = yy[j];
-            y2 = yy[j+1];
 
-            var z11 = this.tz(this.histo.getBinContent(i+1, j+1)),
-                z12 = this.tz(this.histo.getBinContent(i+1, j+2)),
-                z21 = this.tz(this.histo.getBinContent(i+2, j+1)),
-                z22 = this.tz(this.histo.getBinContent(i+2, j+2));
+      function AddLineSegment(x1,y1,z1, x2,y2,z2) {
+         if (!loop) return ++nsegments;
+         lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
+         lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
+      }
 
-            pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z11; indx+=3;
-            pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z22; indx+=3;
-            pos[indx] = x1; pos[indx+1] = y2; pos[indx+2] = z12; indx+=3;
+      function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+         if (!loop) return ++nfaces;
+         pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z1; indx+=3;
+         pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z2; indx+=3;
+         pos[indx] = x3; pos[indx+1] = y3; pos[indx+2] = z3; indx+=3;
+      }
 
-            pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z11; indx+=3;
-            pos[indx] = x2; pos[indx+1] = y1; pos[indx+2] = z21; indx+=3;
-            pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z22; indx+=3;
 
-            lpos[lindx] = x1; lpos[lindx+1] = y2; lpos[lindx+2] = z12; lindx+=3;
-            lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z11; lindx+=3;
-            lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z11; lindx+=3;
-            lpos[lindx] = x2; lpos[lindx+1] = y1; lpos[lindx+2] = z21; lindx+=3;
+      for (loop=0;loop<2;++loop) {
+         if (loop) {
+            pos = new Float32Array(nfaces * 9);
+            lpos = new Float32Array(nsegments * 6);
+         }
+         for (i=i1;i<i2-1;++i) {
+            x1 = xx[i];
+            x2 = xx[i+1];
+            for (j=j1;j<j2-1;++j) {
+               y1 = yy[j];
+               y2 = yy[j+1];
+               z11 = this.tz(this.histo.getBinContent(i+1, j+1));
+               z12 = this.tz(this.histo.getBinContent(i+1, j+2));
+               z21 = this.tz(this.histo.getBinContent(i+2, j+1));
+               z22 = this.tz(this.histo.getBinContent(i+2, j+2));
 
-            if (i===i2-2) {
-               lpos[lindx] = x2; lpos[lindx+1] = y1; lpos[lindx+2] = z21; lindx+=3;
-               lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z22; lindx+=3;
-            }
-            if (j===j2-2) {
-               lpos[lindx] = x1; lpos[lindx+1] = y2; lpos[lindx+2] = z12; lindx+=3;
-               lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z22; lindx+=3;
+               AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
+
+               AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
+
+               AddLineSegment(x1,y2,z12, x1,y1,z11);
+               AddLineSegment(x1,y1,z11, x2,y1,z21);
+
+               if (i===i2-2) AddLineSegment(x2,y1,z21, x2,y2,z22);
+               if (j===j2-2) AddLineSegment(x1,y2,z12, x2,y2,z22);
             }
          }
       }
