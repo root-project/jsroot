@@ -9153,9 +9153,9 @@
 
       if (hitem) {
          // item marked as it cannot be expanded
-         if (('_more' in hitem) && !hitem._more) return JSROOT.CallBack(call_back);
+         if (hitem._more === false) return JSROOT.CallBack(call_back);
 
-         if (DoExpandItem(hitem, hitem._obj, itemname)) return;
+         if (hitem._obj && DoExpandItem(hitem, hitem._obj, itemname)) return;
       }
 
       JSROOT.progress("Loading " + itemname);
