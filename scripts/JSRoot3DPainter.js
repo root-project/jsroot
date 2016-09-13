@@ -585,17 +585,19 @@
                if (xmin>0) break;
             }
          if (xmin <= 0) xmin = 1e-4*xmax;
-         this.tx = d3.scale.log();
+         this.grx = d3.scale.log();
          this.x_kind = "log";
       } else {
-         this.tx = d3.scale.linear();
+         this.grx = d3.scale.linear();
          if (histo && histo.fXaxis.fLabels) this.x_kind = "labels";
                                        else this.x_kind = "lin";
       }
 
-      this.tx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
+      this.logx = (this.x_kind === "log");
+
+      this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
       this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
-      this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.tx, this.xmin, this.xmax, xmin, xmax);
+      this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
 
       if (pad && pad.fLogy && !use_y_for_z) {
@@ -607,31 +609,37 @@
             }
 
          if (ymin <= 0) ymin = 1e-4*ymax;
-         this.ty = d3.scale.log();
+         this.gry = d3.scale.log();
          this.y_kind = "log";
       } else {
-         this.ty = d3.scale.linear();
+         this.gry = d3.scale.linear();
          if (histo && histo.fYaxis.fLabels) this.y_kind = "labels";
                                        else this.y_kind = "lin";
       }
-      this.ty.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
+
+      this.logy = (this.y_kind === "log");
+
+      this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
       this.y_handle = new JSROOT.TAxisPainter(histo ? histo.fYaxis : null);
-      this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.ty, this.ymin, this.ymax, ymin, ymax);
+      this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.CreateFormatFuncs();
 
       if (pad && pad.fLogz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
-         this.tz = d3.scale.log();
+         this.grz = d3.scale.log();
          this.z_kind = "log";
       } else {
-         this.tz = d3.scale.linear();
+         this.grz = d3.scale.linear();
          this.z_kind = "lin";
       }
-      this.tz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
+
+      this.logz = (this.z_kind === "log");
+
+      this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 
       this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
-      this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.tz, this.zmin, this.zmax, zmin, zmax);
+      this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.CreateFormatFuncs();
 
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
@@ -1099,8 +1107,8 @@
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
-          axis_zmin = this.tz.domain()[0],
-          axis_zmax = this.tz.domain()[1],
+          axis_zmin = this.grz.domain()[0],
+          axis_zmax = this.grz.domain()[1],
           hdim = this.Dimension();
 
       // create the bin cubes
@@ -1121,20 +1129,20 @@
       for (i=i1;i<=i2;++i) {
          x1 = this.GetBinX(i);
          if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
-         xx[i] = this.tx(x1);
+         xx[i] = main.grx(x1);
 
          if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
          if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
       }
 
       if (hdim===1) {
-         yy[0] = this.ty(0);
-         yy[1] = this.ty(1);
+         yy[0] = this.gry(0);
+         yy[1] = this.gry(1);
       } else {
          for (j=j1;j<=j2;++j) {
             y1 = this.GetBinY(j);
             if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-            yy[j] = this.ty(y1);
+            yy[j] = this.gry(y1);
             if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
             if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
          }
@@ -1159,7 +1167,7 @@
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
 
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax),
+             z1 = this.grz(zmin), z2 = 0, zzz = this.grz(zmax),
              numvertices = 0, num2vertices = 0;
 
          // now calculate size of buffer geometry for boxes
@@ -1211,7 +1219,7 @@
                y1 = yy[j];
                y2 = yy[j+1];
 
-               z2 = (binz > zmax) ? zzz : this.tz(binz);
+               z2 = (binz > zmax) ? zzz : this.grz(binz);
 
                nn = 0; // counter over the normals, each normals correspond to 6 vertices
                k = 0; // counter over vertices
@@ -1300,20 +1308,20 @@
             var p = this.painter,
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-p.size3d, p.tx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(p.size3d, p.tx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-p.size3d, p.grx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(p.size3d, p.grx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
-               tip.y1 = p.ty(0);
-               tip.y2 = p.ty(1);
+               tip.y1 = p.gry(0);
+               tip.y2 = p.gry(1);
             } else {
-               tip.y1 = Math.max(-p.size3d, p.ty(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(p.size3d, p.ty(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-p.size3d, p.gry(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(p.size3d, p.gry(p.GetBinY(tip.iy)));
             }
-            tip.z1 = p.tz(this.zmin);
-            tip.z2 = p.tz(this.zmax);
+            tip.z1 = p.grz(this.zmin);
+            tip.z2 = p.grz(this.zmax);
 
             if (tip.value<this.zmin) tip.z2 = tip.z1; else
-            if (tip.value<this.zmax) tip.z2 = p.tz(tip.value);
+            if (tip.value<this.zmax) tip.z2 = p.grz(tip.value);
 
             tip.color = this.tip_color;
 
@@ -1377,7 +1385,7 @@
 //          intersect_size = uselineindx ? numsegments : numlinevertices,
 //          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
-      var z1 = this.tz(axis_zmin), zzz = this.tz(axis_zmax),
+      var z1 = this.grz(axis_zmin), zzz = this.grz(axis_zmax),
           z2 = 0, ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
@@ -1392,7 +1400,7 @@
             y1 = yy[j];
             y2 = yy[j+1];
 
-            z2 = (binz > zmax) ? zzz : this.tz(binz);
+            z2 = (binz > zmax) ? zzz : this.grz(binz);
 
             var seg = reduced ? rsegments : segments,
                 vvv = reduced ? rvertices : vertices;
@@ -1460,8 +1468,8 @@
           j2 = this.GetSelectIndex("y", "right", 1),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           main = this.main_painter(),
-          axis_zmin = this.tz.domain()[0],
-          axis_zmax = this.tz.domain()[1],
+          axis_zmin = this.grz.domain()[0],
+          axis_zmax = this.grz.domain()[1],
           xx = new Float32Array(i2+1),
           yy = new Float32Array(j2+1);
 
@@ -1469,7 +1477,7 @@
       for (i=i1;i<=i2;++i) {
          x1 = this.GetBinX(i+0.5);
          if (main.logx && (x1 <= 0)) { i1 = i+1; continue; }
-         xx[i] = this.tx(x1);
+         xx[i] = this.grx(x1);
 
          if (xx[i] < -this.size3d) { i1 = i; xx[i] = -this.size3d; }
          if (xx[i] > this.size3d) { i2 = i; xx[i] = this.size3d; }
@@ -1478,7 +1486,7 @@
       for (j=j1;j<=j2;++j) {
          y1 = this.GetBinY(j+0.5);
          if (main.logy && (y1 <= 0)) { j1 = j+1; continue; }
-         yy[j] = this.ty(y1);
+         yy[j] = this.gry(y1);
          if (yy[j] < -this.size3d) { j1 = j; yy[j] = -this.size3d; }
          if (yy[j] > this.size3d) { j2 = j; yy[j] = this.size3d; }
       }
@@ -1488,6 +1496,14 @@
       // force recalculations of contours
       this.fContour = null;
       this.fCustomContour = false;
+
+      // initialize contour
+      this.getContourIndex(0);
+
+      // get levels
+      var levels = this.fContour;
+
+      console.log('levels', levels);
 
 /*
 
@@ -1502,7 +1518,7 @@
 
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = this.tz(zmin), z2 = 0, zzz = this.tz(zmax);
+             z1 = this.grz(zmin), z2 = 0, zzz = this.grz(zmax);
 
       }
 
@@ -1538,10 +1554,10 @@
             for (j=j1;j<j2-1;++j) {
                y1 = yy[j];
                y2 = yy[j+1];
-               z11 = this.tz(this.histo.getBinContent(i+1, j+1));
-               z12 = this.tz(this.histo.getBinContent(i+1, j+2));
-               z21 = this.tz(this.histo.getBinContent(i+2, j+1));
-               z22 = this.tz(this.histo.getBinContent(i+2, j+2));
+               z11 = this.grz(this.histo.getBinContent(i+1, j+1));
+               z12 = this.grz(this.histo.getBinContent(i+1, j+2));
+               z21 = this.grz(this.histo.getBinContent(i+2, j+1));
+               z22 = this.grz(this.histo.getBinContent(i+2, j+2));
 
                AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
 
@@ -1583,10 +1599,10 @@
 
       var histo = this.GetObject(),
           pmain = this.main_painter(),
-          axis_zmin = this.tz.domain()[0],
-          axis_zmax = this.tz.domain()[1],
+          axis_zmin = this.grz.domain()[0],
+          axis_zmax = this.grz.domain()[1],
           colindx, bin, i, len = histo.fBins.arr.length, cnt = 0, totalnfaces = 0,
-          z0 = this.tz(axis_zmin), z1 = z0;
+          z0 = this.grz(axis_zmin), z1 = z0;
 
       // force recalculations of contours
       this.fContour = null;
@@ -1607,7 +1623,7 @@
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
              (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
-         z1 = this.tz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
+         z1 = this.grz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
 
          var all_pnts = [], all_faces = [],
              ngraphs = 1, gr = bin.fPoly, nfaces = 0;
@@ -1635,8 +1651,8 @@
                pnts = []; faces = null;
 
                for (var vert = 0; vert < npnts; ++vert) {
-                  currx = this.tx(x[vert]);
-                  curry = this.ty(y[vert]);
+                  currx = this.grx(x[vert]);
+                  curry = this.gry(y[vert]);
                   if (vert>0)
                      dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                   if (dist2 > dist2limit) {
@@ -1759,10 +1775,10 @@
 
             var tip = {
               use_itself: true, // indicate that use mesh itself for highlighting
-              x1: p.tx(bin.fXmin),
-              x2: p.tx(bin.fXmax),
-              y1: p.ty(bin.fYmin),
-              y2: p.ty(bin.fYmax),
+              x1: p.grx(bin.fXmin),
+              x2: p.grx(bin.fXmax),
+              y1: p.gry(bin.fYmin),
+              y2: p.gry(bin.fYmax),
               z1: this.draw_z0,
               z2: this.draw_z1,
               bin: this.bins_index,
@@ -2168,9 +2184,9 @@
           k2 = this.GetSelectIndex("z", "right", 0),
           name = this.GetTipName("<br/>");
 
-      var scalex = (this.tx(this.GetBinX(i2+0.5)) - this.tx(this.GetBinX(i1+0.5))) / (i2-i1),
-          scaley = (this.ty(this.GetBinY(j2+0.5)) - this.ty(this.GetBinY(j1+0.5))) / (j2-j1),
-          scalez = (this.tz(this.GetBinZ(k2+0.5)) - this.tz(this.GetBinZ(k1+0.5))) / (k2-k1);
+      var scalex = (this.grx(this.GetBinX(i2+0.5)) - this.grx(this.GetBinX(i1+0.5))) / (i2-i1),
+          scaley = (this.gry(this.GetBinY(j2+0.5)) - this.gry(this.GetBinY(j1+0.5))) / (j2-j1),
+          scalez = (this.grz(this.GetBinZ(k2+0.5)) - this.grz(this.GetBinZ(k1+0.5))) / (k2-k1);
 
       var nbins = 0, i, j, k, wei, bin_content;
 
@@ -2213,9 +2229,9 @@
       nbins = 0;
 
       for (i = i1; i < i2; ++i) {
-         binx = this.GetBinX(i+0.5); grx = this.tx(binx);
+         binx = this.GetBinX(i+0.5); grx = this.grx(binx);
          for (j = j1; j < j2; ++j) {
-            biny = this.GetBinY(j+0.5); gry = this.ty(biny);
+            biny = this.GetBinY(j+0.5); gry = this.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
@@ -2223,7 +2239,7 @@
                wei = /*(this.options.Color > 0) ? 1. :*/  bin_content / this.gmaxbin;
                if (wei < 1e-5) continue; // do not show empty bins
 
-               binz = this.GetBinZ(k+0.5); grz = this.tz(binz);
+               binz = this.GetBinZ(k+0.5); grz = this.grz(binz);
 
                // remeber bin index for tooltip
                bin_tooltips[nbins] = histo.getBin(i+1, j+1, k+1);
@@ -2292,9 +2308,9 @@
          var p = this.painter,
              tip = p.Get3DToolTip(this.bins[indx]);
 
-         grx = p.tx(p.GetBinX(tip.ix-0.5));
-         gry = p.ty(p.GetBinY(tip.iy-0.5));
-         grz = p.tz(p.GetBinZ(tip.iz-0.5));
+         grx = p.grx(p.GetBinX(tip.ix-0.5));
+         gry = p.gry(p.GetBinY(tip.iy-0.5));
+         grz = p.grz(p.GetBinZ(tip.iz-0.5));
 
          wei = tip.value / p.gmaxbin;
 
@@ -2422,9 +2438,9 @@
       }
 
       for (var i=0; i < size*step; i+=step) {
-         var x = main.tx(poly.fP[i]),
-             y = main.ty(poly.fP[i+1]),
-             z = main.tz(poly.fP[i+2]);
+         var x = main.grx(poly.fP[i]),
+             y = main.gry(poly.fP[i+1]),
+             z = main.grz(poly.fP[i+2]);
 
          if (use_points) {
             pos[lll]   = x;
@@ -2477,9 +2493,9 @@
                   "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
                   "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
 
-            var grx = p.tx(this.poly.fP[indx]),
-                gry = p.ty(this.poly.fP[indx+1]),
-                grz = p.tz(this.poly.fP[indx+2]);
+            var grx = p.grx(this.poly.fP[indx]),
+                gry = p.gry(this.poly.fP[indx+1]),
+                grz = p.grz(this.poly.fP[indx+2]);
 
             tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
             tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
@@ -2516,9 +2532,9 @@
                   "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
                   "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
 
-            var grx = p.tx(this.poly.fP[indx]),
-            gry = p.ty(this.poly.fP[indx+1]),
-            grz = p.tz(this.poly.fP[indx+2]);
+            var grx = p.grx(this.poly.fP[indx]),
+                gry = p.gry(this.poly.fP[indx+1]),
+                grz = p.grz(this.poly.fP[indx+2]);
 
             tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
             tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;

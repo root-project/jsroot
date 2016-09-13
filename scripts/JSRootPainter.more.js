@@ -3338,38 +3338,51 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(dorounding, pixel_density, extra_points) {
-      if (extra_points === undefined) extra_points = 0;
+   JSROOT.TH2Painter.prototype.PrepareColorDraw = function(args) {
+
+      if (!args) args = { rounding: true, extra: 0 };
+
+      if (args.extra === undefined) args.extra = 0;
 
       var histo = this.GetObject(),
           pad = this.root_pad(),
           pmain = this.main_painter(),
           i, j, x, y, binz, binarea,
           res = {
-             i1: this.GetSelectIndex("x", "left", 0 - extra_points),
-             i2: this.GetSelectIndex("x", "right", 1 + extra_points),
-             j1: this.GetSelectIndex("y", "left", 0 - extra_points),
-             j2: this.GetSelectIndex("y", "right", 1 + extra_points),
+             i1: this.GetSelectIndex("x", "left", 0 - args.extra),
+             i2: this.GetSelectIndex("x", "right", 1 + args.extra),
+             j1: this.GetSelectIndex("y", "left", 0 - args.extra),
+             j2: this.GetSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0
           };
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
 
-      if (pixel_density) dorounding = true;
+      if (args.pixel_density) args.rounding = true;
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
          x = this.GetBinX(i);
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = pmain.grx(x);
-         if (dorounding) res.grx[i] = Math.round(res.grx[i]);
+         if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
+
+         if (args.size3d) {
+            if (res.grx[i] < -args.size3d) { res.i1 = i; res.grx[i] = -args.size3d; }
+            if (res.grx[i] > args.size3d) { res.i2 = i; res.grx[i] = args.size3d; }
+         }
       }
 
       for (j = res.j1; j <= res.j2; ++j) {
          y = this.GetBinY(j);
          if (pmain.logy && (y <= 0)) { res.j1 = j+1; continue; }
          res.gry[j] = pmain.gry(y);
-         if (dorounding) res.gry[j] = Math.round(res.gry[j]);
+         if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
+
+         if (args.size3d) {
+            if (res.gry[j] < -args.size3d) { res.j1 = j; res.gry[j] = -args.size3d; }
+            if (res.gry[j] > args.size3d) { res.j2 = j; res.gry[j] = args.size3d; }
+         }
       }
 
       //  find min/max values in selected range
@@ -3380,7 +3393,7 @@
       for (i = res.i1; i < res.i2; ++i) {
          for (j = res.j1; j < res.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if (pixel_density) {
+            if (args.pixel_density) {
                binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
                if (binarea <= 0) continue;
                res.max = Math.max(res.max, binz);
@@ -3407,7 +3420,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(true),
+          handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz;
 
@@ -3449,7 +3462,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(false, false, 100),
+          handle = this.PrepareColorDraw({ rounding: false, extra: 100 }),
           kMAXCONTOUR = 104,
           kMAXCOUNT = 100,
           // arguemnts used in he PaintContourLine
@@ -3798,7 +3811,7 @@
       var histo = this.GetObject(),
           i,j,binz,colindx,binw,binh,lbl;
 
-      if (handle===null) handle = this.PrepareColorDraw(false);
+      if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       var text_g = this.draw_g
                        .append("svg:g")
@@ -3836,7 +3849,7 @@
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co;
 
-      var handle = this.PrepareColorDraw(false);
+      var handle = this.PrepareColorDraw({ rounding: false });
 
       var scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y  = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
@@ -3903,7 +3916,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(false),
+          handle = this.PrepareColorDraw({ rounding: false }),
           i, j, binz, colPaths = [], currx = [], curry = [],
           colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
 
@@ -3956,7 +3969,7 @@
 
    JSROOT.TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(true),
+          handle = this.PrepareColorDraw(),
           pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt;
@@ -4076,7 +4089,7 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(true, true),
+          handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.;
 
