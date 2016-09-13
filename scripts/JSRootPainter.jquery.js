@@ -432,7 +432,8 @@
 
       if (!place || (place=="")) place = "item";
 
-      var handle = JSROOT.getDrawHandle(hitem._kind);
+      var sett = JSROOT.getDrawSettings(hitem._kind),
+          handle = sett.handle;
 
       if (place == "icon") {
          var func = null;
@@ -455,39 +456,33 @@
          if ('_player' in hitem)
             return this.player(itemname);
 
-         var can_draw = hitem._can_draw,
-             can_expand = !hitem._childs && (hitem._more !== false);
+         var can_draw = hitem._can_draw, can_expand = hitem._more;
 
-         if (handle != null) {
-            if ('aslink' in handle)
-               return window.open(itemname + "/");
+         if (hitem._childs) can_expand = false;
 
-            if ('execute' in handle)
-               return this.ExecuteCommand(itemname, node.parentNode);
+         if (can_draw === undefined) can_draw = sett.draw;
+         if (can_expand !== false) can_expand = sett.expand;
 
-            if (can_draw === undefined) can_draw = ('func' in handle);
+         if (handle && handle.aslink)
+             return window.open(itemname + "/");
 
-            if (handle.noexpand) can_expand = false; else
-            if ('expand' in handle) can_expand = true;
+         if (handle && handle.execute)
+             return this.ExecuteCommand(itemname, node.parentNode);
 
-            if (can_draw && can_expand) {
-               // if default action specified as expand, disable drawing
-               if (handle.dflt === 'expand') can_draw = false; else
-               if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
-            }
-
-            if (can_draw)
-               return this.display(itemname);
-
-            if (can_expand)
-               return this.expand(itemname, null, d3cont);
+         if (can_draw && can_expand) {
+            // if default action specified as expand, disable drawing
+            if (handle && (handle.dflt === 'expand')) can_draw = false; else
+            if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
          }
 
-         if (can_expand && (this.default_by_click === "expand"))
+         if (can_draw)
+            return this.display(itemname);
+
+         if (can_expand || (this.default_by_click === "expand"))
             return this.expand(itemname, null, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && (can_draw!==false))
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect)
             return this.display(itemname, "inspect");
 
          if (!hitem._childs || (hitem === this.h)) return;
@@ -571,7 +566,10 @@
             var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
 
             // allow to draw item even if draw function is not defined
-            if (!sett.opts && hitem._can_draw) sett.opts = [""];
+            if (hitem._can_draw) {
+               if (!sett.opts) sett.opts = [""];
+               if (sett.opts.indexOf("")<0) sett.opts.unshift("");
+            }
 
             if (sett.opts)
                menu.addDrawMenu("Draw", sett.opts, function(arg) { this.display(itemname, arg); });

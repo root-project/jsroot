@@ -10179,7 +10179,7 @@
    JSROOT.addDrawFunc({ name: /^RooHist/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt:";L;P" });
    JSROOT.addDrawFunc({ name: /^RooCurve/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt:";L;P" });
    JSROOT.addDrawFunc({ name: "TMultiGraph", icon:"img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
-   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func: JSROOT.Painter.drawStreamerInfo, noexpand:true });
+   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func: JSROOT.Painter.drawStreamerInfo });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_graph", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
@@ -10201,8 +10201,8 @@
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", /*noinspect:true,*/ noexpand:true });
-   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", /*noinspect:true,*/ noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", noinspect:true });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
@@ -10311,14 +10311,15 @@
    }
 
    JSROOT.getDrawSettings = function(kind, selector) {
-      var res = { opts: null, inspect: false, expand: false };
+      var res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
-      var allopts = null, isany = false, noinspect = false, noexpand = false;
+      var allopts = null, isany = false, noinspect = false, canexpand = false;
       for (var cnt=0;cnt<1000;++cnt) {
          var h = JSROOT.getDrawHandle(kind, cnt);
-         if (h==null) break;
+         if (!h) break;
+         if (!res.handle) res.handle = h;
          if (h.noinspect) noinspect = true;
-         if (h.noexpand) noexpand = true;
+         if (h.expand || h.expand_item || h.can_expand) canexpand = true;
          if (!('func' in h)) break;
          isany = true;
          if (! ('opt' in h)) continue;
@@ -10341,7 +10342,8 @@
          res.opts.push("inspect");
 
       res.inspect = !noinspect;
-      res.expand = !noexpand;
+      res.expand = canexpand;
+      res.draw = res.opts && (res.opts.length>0);
 
       return res;
    }
