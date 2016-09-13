@@ -1445,10 +1445,13 @@
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
       // get levels
-      var levels = null;
+      var levels = null, dolines = true;
 
-      levels = this.GetContour();
-      console.log('levels', levels);
+      switch(this.options.Surf) {
+         case 11: levels = this.GetContour(); break;
+         case 12: levels = this.GetContour(); dolines = false; break;
+         default: break; // draw only lines
+      }
 
       var loop, nfaces = 0, nsegments = 0,
           pos = null, indx = 0,
@@ -1461,6 +1464,7 @@
       }
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
+         if (!dolines) return;
          if (!loop) return ++nsegments;
          lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
@@ -1475,10 +1479,10 @@
 
       var pntbuf = new Float32Array(6*3), k = 0, lastpart = 0; // maximal 6 points
 
-      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz) {
+      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, lindx) {
          if (k>=pntbuf.length) console.log('more than 6 points???');
 
-         var part = (crossz - zz1) / (zz2 - zz1), shift = 3;
+         var part = (levels[lindx] - zz1) / (zz2 - zz1), shift = 3;
          if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
             // while second crossing point closer than first to original, move it in memory
             pntbuf[k] = pntbuf[k-3];
@@ -1489,7 +1493,7 @@
 
          pntbuf[k] = xx1 + part*(xx2-xx1);
          pntbuf[k+1] = yy1 + part*(yy2-yy1);
-         pntbuf[k+2] = crossz;
+         pntbuf[k+2] = levels[lindx];
          k += shift;
          lastpart = part;
 
@@ -1523,8 +1527,8 @@
             if (side1!==side2) {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
-               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
-               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl]);
+               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl-1);
+               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl);
             }
 
             if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
@@ -1532,8 +1536,8 @@
             if (side2!==side3) {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
-               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
-               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl]);
+               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl-1);
+               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl);
             }
 
             if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
@@ -1541,8 +1545,8 @@
             if (side3!==side1) {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
-               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl]);
+               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl-1);
+               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl);
             }
 
             if (k===0) continue;
@@ -1576,8 +1580,8 @@
                   }
 
             }
-
-            lpos = new Float32Array(nsegments * 6);
+            if (nsegments > 0)
+               lpos = new Float32Array(nsegments * 6);
          }
          for (i=handle.i1;i<handle.i2-1;++i) {
             x1 = handle.grx[i];
@@ -1608,7 +1612,7 @@
       if (levels) {
          for (var lvl=1;lvl<levels.length;++lvl)
             if (pos[lvl]) {
-               console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+               // console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
                var geometry = new THREE.BufferGeometry();
                geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
                geometry.computeVertexNormals();
@@ -1628,14 +1632,16 @@
       }
 
 
-      geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
-      var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
+      if (lpos) {
+         var geometry = new THREE.BufferGeometry();
+         geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
+         var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
 
-      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
-      var line = new THREE.LineSegments(geometry, material);
-      this.toplevel.add(line);
+         var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+         if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+         var line = new THREE.LineSegments(geometry, material);
+         this.toplevel.add(line);
+      }
    }
 
    JSROOT.Painter.HistPainter_DrawPolyLego = function() {
