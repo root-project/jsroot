@@ -2942,7 +2942,8 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            if (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Color > 0) this.ToggleColz();
+            if (this.options.Lego === 12 || this.options.Lego === 14 ||
+                this.options.Color > 0 || this.options.Contour > 0) this.ToggleColz();
             break;
          case "Toggle3D":
             if (this.options.Surf > 0) {
@@ -3410,10 +3411,11 @@
    }
 
 
-   JSROOT.TH2Painter.prototype.DrawBinsContour = function(w,h) {
+   JSROOT.TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw(false, false, 10000),
+          handle = this.PrepareColorDraw(false, false, 100),
           kMAXCONTOUR = 104,
+          kMAXCOUNT = 100,
           // arguemnts used in he PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
@@ -3540,12 +3542,12 @@
                      xarr[lj-3]  = xsave;
                      yarr[lj-3]  = ysave;
                      itarr[lj-3] = itars;
-                     if (count > 100) break;
+                     if (count > kMAXCOUNT) break;
                      count++;
                   }
                }
 
-               if (count > 100) {
+               if (count > kMAXCOUNT) {
                   continue;
                }
 
@@ -3607,6 +3609,13 @@
          } // end of j
       } // end of i
 
+      if (this.options.Contour===14)
+         this.draw_g
+             .append("svg:rect")
+             .attr("x", 0).attr("y", 0)
+             .attr("width", frame_w).attr("height", frame_h)
+             .style("fill", palette[Math.floor(0.99*palette.length/(levels.length-1))]);
+
 
       var polysort = new Int32Array(levels.length), first = 0;
       //find first positive contour
@@ -3627,24 +3636,21 @@
          poly = polys[ipoly];
          if (!poly) continue;
 
-         // first draw line (when required)
-         var cmd = "";
-
-         for (ix=0;ix<poly.fLastPoint;ix+=2) {
-            cmd+="M" + poly.fX[ix]+","+poly.fY[ix] +
-                 "L" + poly.fX[ix+1]+","+poly.fY[ix+1];
-         }
-
-         this.draw_g
-             .append("svg:path")
-             .attr("class","th2_contour")
-             .attr("d", cmd)
-             .style("fill", "none")
-              .call(this.lineatt.func);
-
          var colindx = Math.floor((ipoly+0.99)*palette.length/(levels.length-1));
          if (colindx > palette.length-1) colindx = palette.length-1;
          var icol = palette[colindx];
+
+         var fillcolor = icol, lineatt = null;
+
+         switch(this.options.Contour) {
+            case 1: break;
+            case 11: fillcolor = 'none'; lineatt = JSROOT.Painter.createAttLine(icol); break;
+            case 12: fillcolor = 'none'; lineatt = JSROOT.Painter.createAttLine({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
+            case 13: fillcolor = 'none'; lineatt = this.lineatt; break;
+            case 14: break;
+         }
+
+         // console.log('icol', icol, 'lineatt', lineatt);
 
          var xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
              istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
@@ -3679,16 +3685,24 @@
 
             // console.log('color', ipoly, icol, 'Draw area points', iplus-iminus+1, 'starts', iminus);
 
-            cmd = "";
+            var cmd = "";
             for (i = iminus;i<=iplus;++i)
                cmd += ((i>iminus) ? "L" : "M") + xp[i] + "," + yp[i];
-            cmd+="Z";
 
-            this.draw_g
-                .append("svg:path")
-                .attr("class","th2_contour")
-                .attr("d", cmd)
-                .style("fill", icol);
+            if (fillcolor !== 'none') cmd += "Z";
+
+            var elem = this.draw_g
+                         .append("svg:path")
+                         .attr("class","th2_contour")
+                         .attr("d", cmd)
+                         .style("fill", fillcolor);
+
+            if (lineatt!==null)
+               elem.call(lineatt.func);
+            else
+               elem.style('stroke','none');
+
+
 
             //theColor = Int_t((ipoly+0.99)*Float_t(ncolors)/Float_t(ndivz));
             //icol = gStyle->GetColorPalette(theColor);
@@ -4490,7 +4504,7 @@
          this.Create3DScene(-1);
 
       // draw new palette, resize frame if required
-      var pp = this.DrawColorPalette((this.options.Zscale > 0) && (this.options.Color > 0), true);
+      var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
 
       this.DrawAxes();
 

@@ -11,7 +11,7 @@
    One can set default colors or colors/transperency for selected volumes.
    Also volume, selected for drawing in the macro, will be used in the JSROOT
 6. Support drawing of TH2Poly class with 'col' and 'lego' options
-7. Implement 'SURF' and 'ARR' draw options for TH2 class 
+7. Implement 'CONT', 'ARR' and 'SURF' draw options for TH2 class 
 
 
 ## Changes in 4.6.0

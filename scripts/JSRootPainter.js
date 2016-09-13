@@ -432,30 +432,30 @@
 
    JSROOT.Painter.createAttLine = function(attline, borderw, can_excl) {
 
-      var color = 0, _width = 0, style = 0;
+      var color = 'black', _width = 0, style = 0;
       if (typeof attline == 'string') {
-         if (attline=='black') { color = 1; _width = 1; } else
-         if (attline=='none') { _width = 0; }
+         color = attline;
+         if (color!=='none') _width = 1;
       } else
       if (typeof attline == 'object') {
-         if ('fLineColor' in attline) color = attline.fLineColor;
+         if ('fLineColor' in attline) color = JSROOT.Painter.root_colors[attline.fLineColor];
          if ('fLineWidth' in attline) _width = attline.fLineWidth;
          if ('fLineStyle' in attline) style = attline.fLineStyle;
       } else
       if ((attline!==undefined) && !isNaN(attline)) {
-         color = attline;
+         color = JSROOT.Painter.root_colors[attline];
       }
 
       if (borderw!==undefined) _width = borderw;
 
       var line = {
           used: true, // can mark object if it used or not,
-          color: JSROOT.Painter.root_colors[color],
+          color: color,
           width: _width,
           dash: JSROOT.Painter.root_line_styles[style]
       };
 
-      if ((_width==0) || (color==0)) line.color = 'none';
+      if (_width==0) line.color = 'none';
 
       if (can_excl) {
          line.excl_side = 0;
@@ -478,7 +478,7 @@
       }
 
       // if custom color number used, use lightgrey color to show lines
-      if ((line.color === undefined) && (color>0))
+      if ((line.color === undefined) && (line.width>0))
          line.color = 'lightgrey';
 
       line.Apply = function(selection) {
@@ -5025,7 +5025,11 @@
          if (hdim > 1) {
             option.Scat = 0;
             option.Contour = 1;
-            if (!isNaN(parseInt(part))) option.Contour = 10 + parseInt(part);
+            if (part.indexOf('Z')>=0) option.Zscale = 1;
+            if (part.indexOf('1') >= 0) option.Contour = 11;
+            if (part.indexOf('2') >= 0) option.Contour = 12;
+            if (part.indexOf('3') >= 0) option.Contour = 13;
+            if (part.indexOf('4') >= 0) option.Contour = 14;
          } else {
             option.Hist = 1;
          }
