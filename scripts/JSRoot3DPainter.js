@@ -1473,14 +1473,26 @@
          pos[indx] = x3; pos[indx+1] = y3; pos[indx+2] = z3; indx+=3;
       }
 
-      var pntbuf = new Float32Array(6*3), k = 0; // maximal 6 points
+      var pntbuf = new Float32Array(6*3), k = 0, lastpart = 0; // maximal 6 points
 
       function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz) {
-         var part = (crossz - zz1) / (zz2 - zz1);
+         if (k>=pntbuf.length) console.log('more than 6 points???');
+
+         var part = (crossz - zz1) / (zz2 - zz1), shift = 3;
+         if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
+            // while second crossing point closer than first to original, move it in memory
+            pntbuf[k] = pntbuf[k-3];
+            pntbuf[k+1] = pntbuf[k-2];
+            pntbuf[k+2] = pntbuf[k-1];
+            k-=3; shift = 6;
+         }
+
          pntbuf[k] = xx1 + part*(xx2-xx1);
          pntbuf[k+1] = yy1 + part*(yy2-yy1);
          pntbuf[k+2] = crossz;
-         k+=3;
+         k += shift;
+         lastpart = part;
+
       }
 
       function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
@@ -1509,6 +1521,8 @@
             if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
 
             if (side1!==side2) {
+               // order is important, should move from 1->2 point, checked via lastpart
+               lastpart = 0;
                if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
                if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl]);
             }
@@ -1516,6 +1530,8 @@
             if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
 
             if (side2!==side3) {
+               // order is important, should move from 2->3 point, checked via lastpart
+               lastpart = 0;
                if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
                if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl]);
             }
@@ -1523,8 +1539,10 @@
             if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
 
             if (side3!==side1) {
-               if ((side1<0) || (side3<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
-               if ((side1>0) || (side3>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl]);
+               // order is important, should move from 3->1 point, checked via lastpart
+               lastpart = 0;
+               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl]);
             }
 
             if (k===0) continue;
@@ -1590,6 +1608,7 @@
       if (levels) {
          for (var lvl=1;lvl<levels.length;++lvl)
             if (pos[lvl]) {
+               console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
                var geometry = new THREE.BufferGeometry();
                geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
                geometry.computeVertexNormals();
