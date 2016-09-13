@@ -552,7 +552,7 @@
 
    JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 2);
 
       this.Redraw = function() {
          var ellipse = this.GetObject();
@@ -611,7 +611,7 @@
 
    JSROOT.Painter.drawLine = function(divid, obj, opt) {
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 2);
 
       this.Redraw = function() {
          var line = this.GetObject(),
@@ -636,9 +636,43 @@
 
    // =============================================================================
 
+   JSROOT.Painter.drawPolyLine = function(divid, obj, opt) {
+
+      this.SetDivId(divid, 2);
+
+      this.Redraw = function() {
+         var polyline = this.GetObject(),
+             lineatt = JSROOT.Painter.createAttLine(polyline),
+             fillatt = this.createAttFill(polyline);
+
+         // create svg:g container for line drawing
+         this.RecreateDrawG(this.main_painter() == null);
+
+         var cmd = "M";
+         for (var n=0;n<=polyline.fLastPoint;++n) {
+            if (n>0) cmd += "L";
+            cmd += this.AxisToSvg("x", polyline.fX[n]).toFixed(1) + "," +
+                   this.AxisToSvg("y", polyline.fY[n]).toFixed(1);
+         }
+         if (fillatt.color!=='none') cmd+="Z";
+
+         this.draw_g
+             .append("svg:path")
+             .attr("d", cmd)
+             .call(lineatt.func)
+             .call(fillatt.func);
+      }
+
+      this.Redraw(); // actual drawing
+
+      return this.DrawingReady();
+   }
+
+   // =============================================================================
+
    JSROOT.Painter.drawBox = function(divid, obj, opt) {
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 2);
 
       this.Redraw = function() {
          var box = this.GetObject(),
@@ -672,7 +706,7 @@
 
    JSROOT.Painter.drawArrow = function(divid, obj, opt) {
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 2);
 
       this.Redraw = function() {
          var arrow = this.GetObject();

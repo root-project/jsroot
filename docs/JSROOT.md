@@ -73,8 +73,12 @@ List of supported classes and draw options:
 - TCanvas : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/rf107.root&item=rf107_plotstyles;1)
 - TLegend :  [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/legends.root&item=legends;1&mathjax)
 - TTree : [single-branch draw](http://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=ntuple;1/px)
+- TPolyLine : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_polyline)
+- TEllipse : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_ellipse)
+- TArrow : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_arrow)
+- TPolyMarker3D: [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_3dmark)
 
-More examples of supported classes can be found on: <https://root.cern.ch/js/latest/examples.htm>
+More examples of supported classes can be found on: <http://jsroot.gsi.de/dev/examples.htm>
 
 
 ## Geometry viewer
