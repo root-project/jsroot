@@ -2737,32 +2737,36 @@
       return this.fContour;
    }
 
+   JSROOT.THistPainter.prototype.GetContour = function() {
+      if (this.fContour) return this.fContour;
+
+      // if not initialized, first create contour array
+      // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
+      var histo = this.GetObject();
+
+      if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+         this.fContour = JSROOT.clone(histo.fContour);
+         this.fCustomContour = true;
+         return this.fContour;
+      }
+
+      this.fCustomContour = false;
+
+      var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
+      if (histo.fContour != null) nlevels = histo.fContour.length;
+      if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
+         zmin = this.histo.fMinimum;
+         zmax = this.histo.fMaximum;
+      }
+      if (this.zoom_zmin != this.zoom_zmax) {
+         zmin = this.zoom_zmin;
+         zmax = this.zoom_zmax;
+      }
+      return this.CreateContour(nlevels, zmin, zmax, this.minposbin);
+   }
+
    JSROOT.THistPainter.prototype.getContourIndex = function(zc) {
       // return contour index, which corresponds to the z content value
-
-      if (this.fContour == null) {
-         // if not initialized, first create contour array
-         // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-         var histo = this.GetObject();
-
-         this.fCustomContour = false;
-         if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-            this.fContour = JSROOT.clone(histo.fContour);
-            this.fCustomContour = true;
-         } else {
-            var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
-            if (histo.fContour != null) nlevels = histo.fContour.length;
-            if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
-               zmin = this.histo.fMinimum;
-               zmax = this.histo.fMaximum;
-            }
-            if (this.zoom_zmin != this.zoom_zmax) {
-               zmin = this.zoom_zmin;
-               zmax = this.zoom_zmax;
-            }
-            this.CreateContour(nlevels, zmin, zmax, this.minposbin);
-         }
-      }
 
       if (this.fCustomContour) {
          var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
@@ -2782,6 +2786,15 @@
       if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111)) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+   }
+
+   JSROOT.THistPainter.prototype.getIndexColor = function(index, asindx) {
+      if (index < 0) return null;
+
+      var palette = this.GetPalette();
+      var theColor = Math.floor((index+0.99)*palette.length/(this.fContour.length-1));
+      if (theColor > palette.length-1) theColor = palette.length-1;
+      return asindx ? theColor : palette[theColor];
    }
 
 

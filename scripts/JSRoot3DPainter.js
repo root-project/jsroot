@@ -1442,23 +1442,23 @@
 
       // first adjust ranges
 
-      if ((handle.i2 - handle.i1 < 2) || (handle.j2-handle.j1 < 2)) return;
-
-
-      /*
-      // initialize contour
-      this.getContourIndex(0);
+      if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
       // get levels
-      var levels = this.fContour;
+      var levels = null;
 
+      levels = this.GetContour();
       console.log('levels', levels);
-
-*/
 
       var loop, nfaces = 0, nsegments = 0,
           pos = null, indx = 0,
           lpos = null, lindx = 0;
+
+      function CheckSide(z,level1, level2) {
+         if (z<level1) return -1;
+         if (z>level2) return 1;
+         return 0;
+      }
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
          if (!loop) return ++nsegments;
@@ -1466,16 +1466,99 @@
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
       }
 
-      function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+      function AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
          if (!loop) return ++nfaces;
          pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z1; indx+=3;
          pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z2; indx+=3;
          pos[indx] = x3; pos[indx+1] = y3; pos[indx+2] = z3; indx+=3;
       }
 
+      var pntbuf = new Float32Array(6*3), k = 0; // maximal 6 points
+
+      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz) {
+         var part = (crossz - zz1) / (zz2 - zz1);
+         pntbuf[k] = xx1 + part*(xx2-xx1);
+         pntbuf[k+1] = yy1 + part*(yy2-yy1);
+         pntbuf[k+2] = crossz;
+         k+=3;
+      }
+
+      function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+         for (var lvl=1;lvl<levels.length;++lvl) {
+
+            var side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
+                side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
+                side3 = CheckSide(z3, levels[lvl-1], levels[lvl]);
+
+            if (!loop) {
+               var npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
+               if (side1===0) ++npnts;
+               if (side2===0) ++npnts;
+               if (side3===0) ++npnts;
+
+               if ((npnts===1) || (npnts===2)) console.log('FOND npnts', npnts);
+
+               if (npnts>2) {
+                  if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+                  nfaces[lvl] += npnts-2;
+               }
+               continue;
+            }
+
+            k = 0;
+            if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
+
+            if (side1!==side2) {
+               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl]);
+            }
+
+            if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
+
+            if (side2!==side3) {
+               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl]);
+            }
+
+            if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
+
+            if (side3!==side1) {
+               if ((side1<0) || (side3<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+               if ((side1>0) || (side3>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl]);
+            }
+
+            if (k===0) continue;
+            if (k<9) { console.log('FOND less than 3 points', k/3); continue; }
+
+            var buf = pos[lvl], s = indx[lvl];
+            for (var k1=3;k1<k-3;k1+=3) {
+               buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
+               buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
+               buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
+            }
+            indx[lvl] = s;
+         }
+      }
+
+      var add_triangle = levels ? AddMainTriangle : AddSimpleTriangle;
+      if (levels) nfaces = [];
+
       for (loop=0;loop<2;++loop) {
          if (loop) {
-            pos = new Float32Array(nfaces * 9);
+            console.log('NFACES', nfaces);
+            if (!levels) {
+               pos = new Float32Array(nfaces * 9);
+               indx = 0;
+            } else {
+               pos = []; indx = [];
+               for (var lvl=1;lvl<levels.length;++lvl)
+                  if (nfaces[lvl]) {
+                     pos[lvl] = new Float32Array(nfaces[lvl] * 9);
+                     indx[lvl] = 0;
+                  }
+
+            }
+
             lpos = new Float32Array(nsegments * 6);
          }
          for (i=handle.i1;i<handle.i2-1;++i) {
@@ -1489,9 +1572,9 @@
                z21 = this.grz(this.histo.getBinContent(i+2, j+1));
                z22 = this.grz(this.histo.getBinContent(i+2, j+2));
 
-               AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
+               add_triangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
 
-               AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
+               add_triangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
 
                AddLineSegment(x1,y2,z12, x1,y1,z11);
                AddLineSegment(x1,y1,z11, x2,y1,z21);
@@ -1504,15 +1587,26 @@
 
       // console.log('lpos', lpos.length, 'lindx', lindx);
 
-      var geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      geometry.computeVertexNormals();
-      var fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
-
-      var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
-
-      var mesh = new THREE.Mesh(geometry, material);
-      this.toplevel.add(mesh);
+      if (levels) {
+         for (var lvl=1;lvl<levels.length;++lvl)
+            if (pos[lvl]) {
+               var geometry = new THREE.BufferGeometry();
+               geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
+               geometry.computeVertexNormals();
+               var fcolor = this.getIndexColor(lvl);
+               var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
+               var mesh = new THREE.Mesh(geometry, material);
+               this.toplevel.add(mesh);
+            }
+      } else {
+         var geometry = new THREE.BufferGeometry();
+         geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         geometry.computeVertexNormals();
+         var fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
+         var mesh = new THREE.Mesh(geometry, material);
+         this.toplevel.add(mesh);
+      }
 
 
       geometry = new THREE.BufferGeometry();
