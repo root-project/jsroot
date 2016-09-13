@@ -1445,11 +1445,14 @@
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
       // get levels
-      var levels = null, dolines = true;
+      var levels = null, dolines = true, docolorfaces = false;
+
+      // var zticks = main.z_handle.CreateTicks(true);
+      // console.log('zticks', zticks);
 
       switch(this.options.Surf) {
-         case 11: levels = this.GetContour(); break;
-         case 12: levels = this.GetContour(); dolines = false; break;
+         case 11: levels = this.GetContour(); docolorfaces = true; break;
+         case 12: levels = this.GetContour(); docolorfaces = true; dolines = false; break;
          default: break; // draw only lines
       }
 
@@ -1496,10 +1499,12 @@
          pntbuf[k+2] = levels[lindx];
          k += shift;
          lastpart = part;
-
       }
 
       function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+
+         if (!levels) return AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3);
+
          for (var lvl=1;lvl<levels.length;++lvl) {
 
             var side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
@@ -1512,11 +1517,15 @@
                if (side2===0) ++npnts;
                if (side3===0) ++npnts;
 
-               if ((npnts===1) || (npnts===2)) console.log('FOND npnts', npnts);
+               if ((npnts===1) || (npnts===2)) console.error('FOND npnts', npnts);
 
-               if (npnts>2) {
-                  if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
-                  nfaces[lvl] += npnts-2;
+               if (docolorfaces) {
+                  if (npnts>2) {
+                    if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+                     nfaces[lvl] += npnts-2;
+                  }
+               } else {
+                  nfaces++;
                }
                continue;
             }
@@ -1552,23 +1561,25 @@
             if (k===0) continue;
             if (k<9) { console.log('FOND less than 3 points', k/3); continue; }
 
-            var buf = pos[lvl], s = indx[lvl];
-            for (var k1=3;k1<k-3;k1+=3) {
-               buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
-               buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
-               buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
+            if (docolorfaces) {
+               var buf = pos[lvl], s = indx[lvl];
+               for (var k1=3;k1<k-3;k1+=3) {
+                  buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
+                  buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
+                  buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
+               }
+               indx[lvl] = s;
+            } else {
+               AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3);
             }
-            indx[lvl] = s;
          }
       }
 
-      var add_triangle = levels ? AddMainTriangle : AddSimpleTriangle;
       if (levels) nfaces = [];
 
       for (loop=0;loop<2;++loop) {
          if (loop) {
-            console.log('NFACES', nfaces);
-            if (!levels) {
+            if (!levels || !docolorfaces) {
                pos = new Float32Array(nfaces * 9);
                indx = 0;
             } else {
@@ -1594,9 +1605,9 @@
                z21 = this.grz(this.histo.getBinContent(i+2, j+1));
                z22 = this.grz(this.histo.getBinContent(i+2, j+2));
 
-               add_triangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
+               AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
 
-               add_triangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
+               AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
 
                AddLineSegment(x1,y2,z12, x1,y1,z11);
                AddLineSegment(x1,y1,z11, x2,y1,z21);

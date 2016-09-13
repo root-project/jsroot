@@ -4453,12 +4453,14 @@
       }
    }
 
-   JSROOT.TAxisPainter.prototype.CreateTicks = function() {
+   JSROOT.TAxisPainter.prototype.CreateTicks = function(only_major_as_array) {
       // function used to create array with minor/middle/major ticks
 
       var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
       handle.minor = handle.middle = handle.major = this.func.ticks(this.nticks);
+
+      if (only_major_as_array) return handle.major;
 
       if (this.nticks2 > 1) {
          handle.minor = handle.middle = this.func.ticks(handle.major.length * this.nticks2);

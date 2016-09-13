@@ -2768,8 +2768,10 @@
    JSROOT.THistPainter.prototype.getContourIndex = function(zc) {
       // return contour index, which corresponds to the z content value
 
+      var cntr = this.GetContour();
+
       if (this.fCustomContour) {
-         var cntr = this.fContour, l = 0, r = this.fContour.length-1, mid;
+         var l = 0, r = cntr.length-1, mid;
          if (zc < cntr[0]) return -1;
          if (zc >= cntr[r]) return r;
          while (l < r-1) {
@@ -2785,14 +2787,16 @@
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
       if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111)) ? 0 : -1;
 
-      return Math.floor(0.01+(zc-this.zmin)*(this.fContour.length-1)/(this.zmax-this.zmin));
+      return Math.floor(0.01+(zc-this.zmin)*(cntr.length-1)/(this.zmax-this.zmin));
    }
 
    JSROOT.THistPainter.prototype.getIndexColor = function(index, asindx) {
       if (index < 0) return null;
 
+      var cntr = this.GetContour();
+
       var palette = this.GetPalette();
-      var theColor = Math.floor((index+0.99)*palette.length/(this.fContour.length-1));
+      var theColor = Math.floor((index+0.99)*palette.length/(cntr.length-1));
       if (theColor > palette.length-1) theColor = palette.length-1;
       return asindx ? theColor : palette[theColor];
    }
