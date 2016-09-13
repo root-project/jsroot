@@ -80,7 +80,22 @@
          for (var i=0;i<opts.length;++i) {
             var name = opts[i];
             if (name=="") name = '&lt;dflt&gt;';
-            this.add(name, opts[i], call_back);
+
+            var group = i+1;
+            if ((opts.length>5) && (name.length>1)) {
+               // check if there are similar options, which can be grouped once again
+               while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
+            }
+
+            if (group < i+3) {
+               this.add(name, opts[i], call_back);
+            } else {
+               this.add("sub:" + name, opts[i], call_back);
+               for (var k=i+1;k<group;++k)
+                  this.add(opts[k], opts[k], call_back);
+               this.add("endsub:");
+               i = group-1;
+            }
          }
          this.add("endsub:");
       }

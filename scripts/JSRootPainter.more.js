@@ -2922,7 +2922,9 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["col", "colz", "scat", "box", "text", "cont", "arr", "surf", "lego"], function(arg) {
+      var sett = JSROOT.getDrawSettings("ROOT.TH2");
+
+      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          this.options = this.DecodeOptions(arg);
 
          this.Redraw();
@@ -2931,7 +2933,7 @@
       });
 
       if (this.options.Color > 0)
-        this.FillPaletteMenu(menu);
+         this.FillPaletteMenu(menu);
    }
 
    JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
