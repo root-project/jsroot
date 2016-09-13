@@ -7491,7 +7491,10 @@
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      menu.addDrawMenu("Draw with", ["hist", "p", "e", "e1", "pe2", "lego"], function(arg) {
+      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame,noinspect');
+
+      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+
          this.options = this.DecodeOptions(arg);
 
          // redraw all objects
@@ -10314,6 +10317,8 @@
       var res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
       var allopts = null, isany = false, noinspect = false, canexpand = false;
+      if (typeof selector !== 'string') selector = "";
+
       for (var cnt=0;cnt<1000;++cnt) {
          var h = JSROOT.getDrawHandle(kind, cnt);
          if (!h) break;
@@ -10326,12 +10331,14 @@
          var opts = h.opt.split(';');
          for (var i = 0; i < opts.length; ++i) {
             opts[i] = opts[i].toLowerCase();
-            if ((selector=='nosame') && (opts[i].indexOf('same')==0)) continue;
+            if ((selector.indexOf('nosame')>=0) && (opts[i].indexOf('same')==0)) continue;
 
             if (res.opts===null) res.opts = [];
             if (res.opts.indexOf(opts[i])<0) res.opts.push(opts[i]);
          }
       }
+
+      if (selector.indexOf('noinspect')>=0) noinspect = true;
 
       if (isany && (res.opts===null)) res.opts = [""];
 

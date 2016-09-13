@@ -2922,7 +2922,7 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      var sett = JSROOT.getDrawSettings("ROOT.TH2");
+      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame,noinspect');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          this.options = this.DecodeOptions(arg);
