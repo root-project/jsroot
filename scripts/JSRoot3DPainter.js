@@ -1453,6 +1453,7 @@
       switch(this.options.Surf) {
          case 11: levels = this.GetContour(); docolorfaces = true; break;
          case 12: levels = this.GetContour(); docolorfaces = true; dolines = false; break;
+         case 16: levels = this.GetContour(); dogrid = true; dolines = false; break;
          default: levels = main.z_handle.CreateTicks(true); dogrid = true; break; // draw only lines
       }
 
@@ -1689,7 +1690,9 @@
       if (grid) {
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( grid, 3 ) );
-         var material = new THREE.LineBasicMaterial({ color: new THREE.Color('black') });
+         var lcolor = 'black';
+         if (this.options.Surf>1) lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
+         var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
          var line = new THREE.LineSegments(geometry, material);
          this.toplevel.add(line);
       }
@@ -2017,7 +2020,8 @@
       }
 
       // (re)draw palette by resize while canvas may change dimension
-      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) || (this.options.Surf > 1)));
+      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                             (this.options.Surf===11) || (this.options.Surf===12)));
 
       this.DrawTitle();
 
