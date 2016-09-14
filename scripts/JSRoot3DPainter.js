@@ -1570,10 +1570,24 @@
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
          if (!dolines) return;
-         if ((z1 < 0) || (z2 < 0)) return;
-         if ((z1 > 2*main.size3d) || (z2 > 2*main.size3d)) return;
-
+         var side1 = CheckSide(z1,0,2*main.size3d),
+             side2 = CheckSide(z2,0,2*main.size3d);
+         if ((side1===side2) && (side1!==0)) return;
          if (!loop) return ++nsegments;
+
+         if (side1!==0) {
+            var diff = z2-z1;
+            z1 = (side1<0) ? 0 : 2*main.size3d;
+            x1 = x2 - (x2-x1)/diff*(z2-z1);
+            y1 = y2 - (y2-y1)/diff*(z2-z1);
+         }
+         if (side2!==0) {
+            var diff = z1-z2;
+            z2 = (side2<0) ? 0 : 2*main.size3d;
+            x2 = x1 - (x1-x2)/diff*(z1-z2);
+            y2 = y1 - (y1-y2)/diff*(z1-z2);
+         }
+
          lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
       }
