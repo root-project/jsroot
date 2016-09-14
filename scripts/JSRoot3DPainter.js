@@ -1433,28 +1433,30 @@
 
    JSROOT.Painter.HistPainter_DrawTH2Surf = function() {
       var histo = this.GetObject(),
-          pmain = this.main_painter(),
           handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           main = this.main_painter(),
-          axis_zmin = this.grz.domain()[0],
-          axis_zmax = this.grz.domain()[1];
+          axis_zmin = main.grz.domain()[0],
+          axis_zmax = main.grz.domain()[1];
 
       // first adjust ranges
 
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
-      // get levels
-      var levels = null, dolines = true, docolorfaces = false, dogrid = false;
-
-      // var zticks = main.z_handle.CreateTicks(true);
-      // console.log('zticks', zticks);
+      var ilevels = null, levels = null, dolines = true, docolorfaces = false, dogrid = false;
 
       switch(this.options.Surf) {
-         case 11: levels = this.GetContour(); docolorfaces = true; break;
-         case 12: levels = this.GetContour(); docolorfaces = true; dolines = false; break;
-         case 16: levels = this.GetContour(); dogrid = true; dolines = false; break;
-         default: levels = main.z_handle.CreateTicks(true); dogrid = true; break; // draw only lines
+         case 11: ilevels = this.GetContour(); docolorfaces = true; break;
+         case 12: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
+         case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
+         default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break; // draw only lines
+      }
+
+      if (ilevels) {
+         // recalculate levels into graphical coordinates
+         levels = new Float32Array(ilevels.length);
+         for (var ll=0;ll<ilevels.length;++ll)
+            levels[ll] = main.grz(ilevels[ll]);
       }
 
       var loop, nfaces = 0, nsegments = 0, ngridsegments = 0,
@@ -1633,10 +1635,10 @@
             for (j=handle.j1;j<handle.j2-1;++j) {
                y1 = handle.gry[j];
                y2 = handle.gry[j+1];
-               z11 = this.grz(this.histo.getBinContent(i+1, j+1));
-               z12 = this.grz(this.histo.getBinContent(i+1, j+2));
-               z21 = this.grz(this.histo.getBinContent(i+2, j+1));
-               z22 = this.grz(this.histo.getBinContent(i+2, j+2));
+               z11 = main.grz(this.histo.getBinContent(i+1, j+1));
+               z12 = main.grz(this.histo.getBinContent(i+1, j+2));
+               z21 = main.grz(this.histo.getBinContent(i+2, j+1));
+               z22 = main.grz(this.histo.getBinContent(i+2, j+2));
 
                AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
 
