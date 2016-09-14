@@ -1537,6 +1537,8 @@
 
       // first adjust ranges
 
+      var main_grz = !main.logz ? main.grz : function(value) { return value < axis_zmin ? -0.1 : main.grz(value); }
+
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
       var ilevels = null, levels = null, dolines = true, docolorfaces = false, dogrid = false;
@@ -1552,7 +1554,7 @@
          // recalculate levels into graphical coordinates
          levels = new Float32Array(ilevels.length);
          for (var ll=0;ll<ilevels.length;++ll)
-            levels[ll] = main.grz(ilevels[ll]);
+            levels[ll] = main_grz(ilevels[ll]);
       }
 
       var loop, nfaces = 0, nsegments = 0, ngridsegments = 0,
@@ -1568,6 +1570,9 @@
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
          if (!dolines) return;
+         if ((z1 < 0) || (z2 < 0)) return;
+         if ((z1 > 2*main.size3d) || (z2 > 2*main.size3d)) return;
+
          if (!loop) return ++nsegments;
          lpos[lindx] = x1; lpos[lindx+1] = y1; lpos[lindx+2] = z1; lindx+=3;
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
@@ -1731,10 +1736,10 @@
             for (j=handle.j1;j<handle.j2-1;++j) {
                y1 = handle.gry[j];
                y2 = handle.gry[j+1];
-               z11 = main.grz(this.histo.getBinContent(i+1, j+1));
-               z12 = main.grz(this.histo.getBinContent(i+1, j+2));
-               z21 = main.grz(this.histo.getBinContent(i+2, j+1));
-               z22 = main.grz(this.histo.getBinContent(i+2, j+2));
+               z11 = main_grz(histo.getBinContent(i+1, j+1));
+               z12 = main_grz(histo.getBinContent(i+1, j+2));
+               z21 = main_grz(histo.getBinContent(i+2, j+1));
+               z22 = main_grz(histo.getBinContent(i+2, j+2));
 
                AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
 
