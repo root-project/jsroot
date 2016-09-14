@@ -1622,9 +1622,8 @@
                      indx[lvl] = 0;
                   }
             }
-            if (nsegments > 0)
+            if (dolines && (nsegments > 0))
                lpos = new Float32Array(nsegments * 6);
-            console.log('numgrids', ngridsegments);
             if (dogrid && (ngridsegments>0))
                grid = new Float32Array(ngridsegments * 6);
          }
@@ -1690,9 +1689,14 @@
       if (grid) {
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( grid, 3 ) );
-         var lcolor = 'black';
-         if (this.options.Surf>1) lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
-         var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+
+         var material;
+
+         if (this.options.Surf === 1)
+            material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
+         else
+            material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
+
          var line = new THREE.LineSegments(geometry, material);
          this.toplevel.add(line);
       }
