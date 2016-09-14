@@ -585,7 +585,8 @@
       }
    }
 
-   JSROOT.Painter.HPainter_DrawXYZ = function(toplevel, use_y_for_z, zmult) {
+   JSROOT.Painter.HPainter_DrawXYZ = function(toplevel, opts) {
+      if (!opts) opts = {};
 
       var grminx = -this.size3d, grmaxx = this.size3d,
           grminy = -this.size3d, grmaxy = this.size3d,
@@ -616,7 +617,7 @@
          zmin = this.zoom_zmin; zmax = this.zoom_zmax; z_zoomed = true;
       }
 
-      if (use_y_for_z) {
+      if (opts.use_y_for_z) {
          zmin = ymin; zmax = ymax; z_zoomed = y_zoomed;
          if (!z_zoomed) { zmin = this.hmin; zmax = this.hmax; }
          ymin = 0; ymax = 1;
@@ -626,7 +627,7 @@
       this.lego_zmin = zmin; this.lego_zmax = zmax;
 
       // factor 1.1 used in ROOT for lego plots
-      if ((zmult !== undefined) && !z_zoomed) zmax *= zmult;
+      if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
       this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
 
@@ -654,7 +655,7 @@
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
 
-      if (pad && pad.fLogy && !use_y_for_z) {
+      if (pad && pad.fLogy && !opts.use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
@@ -799,7 +800,7 @@
       xcont.xyid = 2;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg1, textMaterial));
-      xcont.add(CreateZoomMesh("x", this.size3d));
+      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size3d));
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -808,9 +809,8 @@
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
-      xcont.add(CreateZoomMesh("x", this.size3d));
+      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size3d));
       top.add(xcont);
-
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
 
@@ -868,16 +868,15 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
-      if (!use_y_for_z) {
+      if (!opts.use_y_for_z) {
          var ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
          ycont.rotation.y = -1/4*Math.PI;
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg1, textMaterial));
          ycont.xyid = 3;
-         ycont.add(CreateZoomMesh("y", this.size3d));
+         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size3d));
          top.add(ycont);
-
 
          ycont = new THREE.Object3D();
          ycont.position.set(grmaxx, 0, grminz);
@@ -885,7 +884,7 @@
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg2, textMaterial));
          ycont.xyid = 1;
-         ycont.add(CreateZoomMesh("y", this.size3d));
+         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size3d));
          top.add(ycont);
       }
 
@@ -2070,7 +2069,7 @@
 
          this.DeleteAtt();
 
-         this.DrawXYZ(this.toplevel, true, 1.1);
+         this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
 
          this.Draw3DBins();
 
@@ -2111,7 +2110,7 @@
 
          this.DeleteAtt();
 
-         this.DrawXYZ(this.toplevel, false, 1.1);
+         this.DrawXYZ(this.toplevel, { use_y_for_z: false, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
 
          this.Draw3DBins();
 
@@ -2557,7 +2556,7 @@
          this.Resize3D();
       } else {
          this.Create3DScene();
-         this.DrawXYZ(this.toplevel);
+         this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
          this.Render3D();
       }
