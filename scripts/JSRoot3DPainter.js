@@ -1541,12 +1541,13 @@
 
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
-      var ilevels = null, levels = null, dolines = true, docolorfaces = false, dogrid = false;
+      var ilevels = null, levels = null, dolines = true, docolorfaces = false, dogrid = false,
+          donormals = false;
 
       switch(this.options.Surf) {
          case 11: ilevels = this.GetContour(); docolorfaces = true; break;
          case 12: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
-         case 14: dolines = false; break;
+         case 14: dolines = false; donormals = true; break;
          case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
       }
@@ -1560,9 +1561,10 @@
          levels = [0, 2*main.size3d]; // just cut top/bottom parts
       }
 
-      var loop, nfaces = [], pos = [], indx = [],
-          nsegments = 0, lpos = null, lindx = 0,
-          ngridsegments = 0, grid = null, gindx = 0; // buffer for grid lines segments
+      var loop, nfaces = [], pos = [], indx = [],    // buffers for faces
+          nsegments = 0, lpos = null, lindx = 0,     // buffer for lines
+          ngridsegments = 0, grid = null, gindx = 0, // buffer for grid lines segments
+          normindx = null;                           // buffer to remember place of vertex for each bin
 
       function CheckSide(z,level1, level2) {
          if (z<level1) return -1;
@@ -1624,7 +1626,48 @@
          lastpart = part;
       }
 
-      function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
+      function RememberVertex(indx, ii,jj) {
+         var bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1))*8;
+
+         if (normindx[bin]>=0)
+            return console.error('More than 8 vertexes for the bin');
+
+         var pos = bin+8+normindx[bin]; // position where write index
+         normindx[bin]--;
+         normindx[pos] = indx; // at this moment index can be overwritten, means all 8 position are there
+      }
+
+      function RecalculateNormals(arr) {
+         for (var ii=handle.i1;ii<handle.i2;++ii) {
+            for (var jj=handle.j1;jj<handle.j2;++jj) {
+               var bin = ((ii-handle.i1) * (handle.j2-handle.j1) + (jj-handle.j1)) * 8;
+
+               if (normindx[bin] === -1) continue; // nothing there
+
+               var beg = (normindx[bin] >=0) ? bin : bin+9+normindx[bin],
+                   end = bin+8, sumx=0, sumy = 0, sumz = 0;
+
+               for (var kk=beg;kk<end;++kk) {
+                  var indx = normindx[kk];
+                  if (indx<0) return console.error('FAILURE in NORMALS RECALCULATIONS');
+                  sumx+=arr[indx];
+                  sumy+=arr[indx+1];
+                  sumz+=arr[indx+2];
+               }
+
+               sumx = sumx/(end-beg); sumy = sumy/(end-beg); sumz = sumz/(end-beg);
+
+               for (var kk=beg;kk<end;++kk) {
+                  var indx = normindx[kk];
+                  arr[indx] = sumx;
+                  arr[indx+1] = sumy;
+                  arr[indx+2] = sumz;
+               }
+            }
+         }
+      }
+
+      function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3, is_first) {
 
          for (var lvl=1;lvl<levels.length;++lvl) {
 
@@ -1691,14 +1734,30 @@
                gindx+=6;
             }
 
+
+            // if three points and surf==14, remember vertex for each point
+
             var buf = pos[lvl], s = indx[lvl];
+            if (donormals && (k===9)) {
+               RememberVertex(s, i, j);
+               RememberVertex(s+3, i+1, is_first ? j+1 : j);
+               RememberVertex(s+6, is_first ? i : i+1, j+1);
+            }
+
             for (var k1=3;k1<k-3;k1+=3) {
                buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
                buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
                buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
             }
             indx[lvl] = s;
+
          }
+      }
+
+      if (donormals) {
+         // for each bin maximal 8 points reserved
+         normindx = new Int32Array((handle.i2-handle.i1)*(handle.j2-handle.j1)*8);
+         for (var n=0;n<normindx.length;++n) normindx[n] = -1;
       }
 
       for (loop=0;loop<2;++loop) {
@@ -1724,9 +1783,9 @@
                z21 = main_grz(histo.getBinContent(i+2, j+1));
                z22 = main_grz(histo.getBinContent(i+2, j+2));
 
-               AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12);
+               AddMainTriangle(x1,y1,z11, x2,y2,z22, x1,y2,z12, true);
 
-               AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22);
+               AddMainTriangle(x1,y1,z11, x2,y1,z21, x2,y2,z22, false);
 
                AddLineSegment(x1,y2,z12, x1,y1,z11);
                AddLineSegment(x1,y1,z11, x2,y1,z21);
@@ -1746,6 +1805,9 @@
             var geometry = new THREE.BufferGeometry();
             geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
             geometry.computeVertexNormals();
+            if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
+
+
             var fcolor, material;
             if (docolorfaces) {
                fcolor = this.getIndexColor(lvl);
