@@ -1546,6 +1546,7 @@
       switch(this.options.Surf) {
          case 11: ilevels = this.GetContour(); docolorfaces = true; break;
          case 12: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
+         case 14: dolines = false; break;
          case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
       }
@@ -1787,7 +1788,15 @@
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
          geometry.computeVertexNormals();
          var fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
-         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
+         if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = JSROOT.Painter.root_colors[48];
+
+         var material;
+
+         if (this.options.Surf === 14)
+            material = new THREE.MeshLambertMaterial( { color: fcolor, side: THREE.DoubleSide  } );
+         else
+            material = new THREE.MeshBasicMaterial( { color: fcolor, side: THREE.DoubleSide  } );
+
          var mesh = new THREE.Mesh(geometry, material);
          this.toplevel.add(mesh);
       }
