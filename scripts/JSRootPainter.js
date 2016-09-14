@@ -5916,7 +5916,11 @@
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
-      // if both ranges for axis 0 (like xmin==xmax==0), axis will be unzoomed
+      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+
+      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
       var main = this.main_painter(),
           zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),

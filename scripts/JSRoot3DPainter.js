@@ -356,10 +356,7 @@
 
             painter.AnalyzeMouseWheelEvent(evnt, item, (position + painter.size3d) / 2 /painter.size3d, false );
 
-            if (kind=="x")
-               painter.Zoom(item.min, item.max);
-            else
-               painter.Zoom(undefined, undefined, item.min, item.max);
+            painter.Zoom(kind, item.min, item.max);
          }
       }
 
