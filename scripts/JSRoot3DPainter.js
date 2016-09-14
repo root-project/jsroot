@@ -1645,17 +1645,9 @@
                   nfaces[lvl] += npnts-2;
                }
 
-               var flag1 = 0; // if there crossing with correspondent level
-               if (side1!==side2) {
-                  if ((side1>0) || (side2>0)) flag1 = 1;
-               }
-               if (side2!==side3) {
-                  if ((side2>0) || (side3>0)) flag1 = 1;
-               }
-               if (side3!==side1) {
-                  if ((side3>0) || (side1>0)) flag1 = 1;
-               }
-               ngridsegments += flag1;
+               // check if any(contours for given level exists
+               if (((side1>0) || (side2>0) || (side3>0)) &&
+                   ((side1!==side2) || (side2!==side3) || (side3!==side1))) ++ngridsegments;
 
                continue;
             }
@@ -1749,7 +1741,8 @@
 
       for (var lvl=1;lvl<levels.length;++lvl)
          if (pos[lvl]) {
-            // console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+            if (indx[lvl] !== nfaces[lvl]*9)
+                 console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
             var geometry = new THREE.BufferGeometry();
             geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
             geometry.computeVertexNormals();
@@ -1770,6 +1763,9 @@
 
 
       if (lpos) {
+         if (nsegments*6 !== lindx)
+            console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
+
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
          var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
@@ -1781,6 +1777,9 @@
       }
 
       if (grid) {
+         if (ngridsegments*6 !== gindx)
+            console.error('SURF grid draw mismatch ngridsegm', ngridsegments, 'gindx', gindx, 'diff', ngridsegments*6 - gindx);
+
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( grid, 3 ) );
 
