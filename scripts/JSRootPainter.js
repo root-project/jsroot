@@ -6351,6 +6351,57 @@
       return false;
    }
 
+   JSROOT.THistPainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
+
+      item.min = item.max = undefined;
+      item.changed = false;
+      if (ignore && item.ignore) return;
+      var delta = 0;
+      if ( event.wheelDelta !== undefined ) {
+         // WebKit / Opera / Explorer 9
+         delta = -event.wheelDelta;
+      } else if ( event.deltaY !== undefined ) {
+         // Firefox
+         delta = event.deltaY;
+      } else if (event.detail !== undefined) {
+         delta = event.detail;
+      }
+
+      if (delta===0) return;
+
+      if (delta<0) delta = -0.15; else
+      if (delta>0) delta = 0.15;
+
+      item.min = this["scale_" + item.name+"min"];
+      item.max = this["scale_" + item.name+"max"];
+
+      if ((item.min === item.max) && (delta<0)) {
+         item.min = this[item.name+"min"];
+         item.max = this[item.name+"max"];
+      }
+
+      if (item.min >= item.max) return;
+
+      if ((dmin>0) && (dmin<1)) {
+         if (this['log'+item.name]) {
+            var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
+            item.min = item.min / Math.pow(factor, delta*dmin);
+            item.max = item.max * Math.pow(factor, delta*(1-dmin));
+         } else {
+            var rx = (item.max - item.min);
+            if (delta>0) rx = 1.001 * rx / (1-delta);
+            item.min += -delta*dmin*rx;
+            item.max -= -delta*(1-dmin)*rx;
+         }
+         if (item.min >= item.max) item.min = item.max = undefined;
+      } else {
+         item.min = item.max = undefined;
+      }
+
+      item.changed = ((item.min !== undefined) && (item.max !== undefined));
+   }
+
    JSROOT.THistPainter.prototype.mouseWheel = function() {
       d3.event.stopPropagation();
 
@@ -6407,9 +6458,13 @@
          item.changed = ((item.min !== undefined) && (item.max !== undefined));
       }
 
-      ProcessAxis(this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
 
-      ProcessAxis(this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
+
+      // ProcessAxis(this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
+
+      // ProcessAxis(this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
 
       this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 

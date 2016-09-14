@@ -155,6 +155,10 @@
 
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
+
+      renderer.domElement.addEventListener( 'mousewheel', control_mousewheel);
+      renderer.domElement.addEventListener( 'MozMousePixelScroll', control_mousewheel);
+
       var control = new THREE.OrbitControls(camera, renderer.domElement);
 
       control.enableDamping = false;
@@ -312,11 +316,47 @@
          if (control.ProcessMouseLeave) control.ProcessMouseLeave();
       };
 
+      function control_mousewheel(evnt) {
+         // try to handle zoom extra
+
+         if (JSROOT.Painter.IsRender3DFired(painter)) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+            evnt.stopImmediatePropagation();
+            return; // already fired redraw, do not react on the mouse wheel
+         }
+
+         var mouse = GetMousePos(evnt, {});
+
+         var intersects = GetIntersects(mouse);
+
+         if (intersects) {
+            for (var n=0;n<intersects.length;++n)
+               if (intersects[n].object.zoom) {
+                  evnt.preventDefault();
+                  evnt.stopPropagation();
+                  evnt.stopImmediatePropagation();
+
+                  if (painter && (painter.AnalyzeMouseWheelEvent!==undefined)) {
+                     var item = { name: intersects[n].object.zoom, ignore: false };
+
+                     painter.AnalyzeMouseWheelEvent(evnt, item, (intersects[n].point.x + painter.size3d) / 2 /painter.size3d, false );
+
+                     painter.Zoom(item.min, item.max);
+                  }
+                  return;
+               }
+         }
+
+      }
+
       renderer.domElement.addEventListener( 'dblclick', function() { control.ProcessMouseDblclick(); });
 
       renderer.domElement.addEventListener('contextmenu', control_contextmenu);
       renderer.domElement.addEventListener('mousemove', control_mousemove);
       renderer.domElement.addEventListener('mouseleave', control_mouseleave);
+
+
 
       // do not use touch events, context menu should be activated via button
       //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
@@ -599,6 +639,7 @@
       this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
+      this.scale_xmin = xmin; this.scale_xmax = xmax;
 
       if (pad && pad.fLogy && !use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
@@ -623,6 +664,7 @@
       this.y_handle = new JSROOT.TAxisPainter(histo ? histo.fYaxis : null);
       this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.CreateFormatFuncs();
+      this.scale_ymin = ymin; this.scale_ymax = ymax;
 
       if (pad && pad.fLogz) {
          if (zmax <= 0) zmax = 1;
@@ -641,6 +683,7 @@
       this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.CreateFormatFuncs();
+      this.scale_zmin = zmin; this.scale_zmax = zmax;
 
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
@@ -692,15 +735,15 @@
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(text_scale,          0,  0, lbl.grx,
-                        0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-                        0, 0,  1, 0);
+         m.set(text_scale, 0,           0,  lbl.grx,
+               0,          text_scale,  0,  -maxtextheight*text_scale - 1.5*ticklen,
+               0,          0,           1,  0);
 
          ggg1.merge(lbl, m);
 
-         m.set(-text_scale,          0,  0, lbl.grx,
-               0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-               0, 0,  1, 0);
+         m.set(-text_scale, 0,           0, lbl.grx,
+               0,           text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+               0,           0,           1, 0);
 
          ggg2.merge(lbl, m);
       });
@@ -711,12 +754,34 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
+      var xzoom = new THREE.Geometry();
+      xzoom.vertices.push(new THREE.Vector3(-this.size3d,0,0));
+      xzoom.vertices.push(new THREE.Vector3(this.size3d,0,0));
+      xzoom.vertices.push(new THREE.Vector3(this.size3d,-ticklen*4,0));
+      xzoom.vertices.push(new THREE.Vector3(-this.size3d,-ticklen*4,0));
+      var face = new THREE.Face3(0, 2, 1);
+      face.color.setHex(0xFF00);
+      xzoom.faces.push(face);
+      face = new THREE.Face3(0, 3, 2);
+      face.color.setHex(0xFF00);
+      xzoom.faces.push(face);
+      xzoom.computeFaceNormals();
+
+      var xzoomMaterial = new THREE.MeshBasicMaterial({ transparent: true,
+                                                        vertexColors: THREE.FaceColors,
+                                                        side: THREE.DoubleSide,
+                                                        opacity: 0 });
+
       var xcont = new THREE.Object3D();
       xcont.position.set(0, grminy, grminz)
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg1, textMaterial));
+      var zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
+      zoommesh.zoom = "x";
+      xcont.add(zoommesh);
+
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -725,6 +790,9 @@
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
+      zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
+      zoommesh.zoom = "x";
+      xcont.add(zoommesh);
       top.add(xcont);
 
 
@@ -1449,7 +1517,7 @@
          case 11: ilevels = this.GetContour(); docolorfaces = true; break;
          case 12: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
          case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
-         default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break; // draw only lines
+         default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
       }
 
       if (ilevels) {
@@ -1904,6 +1972,12 @@
       }
 
       // console.log('draw poly as lego plot', cnt, totalnfaces);
+   }
+
+   JSROOT.Painter.IsRender3DFired = function(painter) {
+      if (!painter || painter.renderer === undefined) return false;
+
+      return painter.render_tmout !== undefined; // when timeout configured, object is prepared for rendering
    }
 
    JSROOT.Painter.Render3D = function(tmout) {
