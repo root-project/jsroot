@@ -5009,6 +5009,7 @@
          if (part.indexOf('FB') >= 0) { option.FrontBox = 0; part = part.replace('FB',''); }
          if (part.indexOf('BB') >= 0) { option.BackBox = 0; part = part.replace('BB',''); }
          if ((part.length>0) && !isNaN(parseInt(part))) option.Surf = 10 + parseInt(part);
+         if (part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
       if (check('TF3', true)) {

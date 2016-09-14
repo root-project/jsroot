@@ -1977,7 +1977,7 @@
       }
 
       // (re)draw palette by resize while canvas may change dimension
-      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14)));
+      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) || (this.options.Surf > 1)));
 
       this.DrawTitle();
 

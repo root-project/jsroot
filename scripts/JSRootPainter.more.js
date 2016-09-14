@@ -2996,7 +2996,7 @@
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
             if (this.options.Lego === 12 || this.options.Lego === 14 ||
-                this.options.Color > 0 || this.options.Contour > 0) this.ToggleColz();
+                this.options.Color > 0 || this.options.Contour > 0 || this.options.Surf > 1) this.ToggleColz();
             break;
          case "Toggle3D":
             if (this.options.Surf > 0) {
