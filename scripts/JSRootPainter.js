@@ -6405,66 +6405,16 @@
    JSROOT.THistPainter.prototype.mouseWheel = function() {
       d3.event.stopPropagation();
 
-      var delta = 0;
-      switch (d3.event.deltaMode) {
-         case 0: delta = d3.event.deltaY / this.pad_height() * 2; break; // DOM_DELTA_PIXEL
-         case 1: delta = d3.event.deltaY / this.pad_height() * 40; break; // DOM_DELTA_LINE
-         case 2: delta = d3.event.deltaY / this.pad_height() * 200; break; // DOM_DELTA_PAGE
-      }
-      if (delta===0) return;
-
       d3.event.preventDefault();
-
       this.clearInteractiveElements();
-
-      if (delta < -0.2) delta = -0.2; else if (delta>0.2) delta = 0.2;
 
       var itemx = { name: "x", ignore: false },
           itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
-          cur = d3.mouse(this.svg_frame().node()),
-          painter = this;
-
-      function ProcessAxis(item, dmin, ignore) {
-         item.min = item.max = undefined;
-         item.changed = false;
-         if (ignore && item.ignore) return;
-
-         item.min = painter["scale_" + item.name+"min"];
-         item.max = painter["scale_" + item.name+"max"];
-         if ((item.min === item.max) && (delta<0)) {
-            item.min = painter[item.name+"min"];
-            item.max = painter[item.name+"max"];
-         }
-
-         if (item.min >= item.max) return;
-
-         if ((dmin>0) && (dmin<1)) {
-            if (painter['log'+item.name]) {
-               var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
-               if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
-               item.min = item.min / Math.pow(factor, delta*dmin);
-               item.max = item.max * Math.pow(factor, delta*(1-dmin));
-            } else {
-               var rx = (item.max - item.min);
-               if (delta>0) rx = 1.001 * rx / (1-delta);
-               item.min += -delta*dmin*rx;
-               item.max -= -delta*(1-dmin)*rx;
-            }
-            if (item.min >= item.max) item.min = item.max = undefined;
-         } else {
-            item.min = item.max = undefined;
-         }
-
-         item.changed = ((item.min !== undefined) && (item.max !== undefined));
-      }
+          cur = d3.mouse(this.svg_frame().node());
 
       this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
 
       this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
-
-      // ProcessAxis(this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
-
-      // ProcessAxis(this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
 
       this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 

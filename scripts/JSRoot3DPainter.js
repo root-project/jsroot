@@ -338,11 +338,17 @@
                   evnt.stopImmediatePropagation();
 
                   if (painter && (painter.AnalyzeMouseWheelEvent!==undefined)) {
-                     var item = { name: intersects[n].object.zoom, ignore: false };
+                     var kind = intersects[n].object.zoom,
+                         position = intersects[n].point[kind],
+                         item = { name: kind, ignore: false };
 
-                     painter.AnalyzeMouseWheelEvent(evnt, item, (intersects[n].point.x + painter.size3d) / 2 /painter.size3d, false );
+                     painter.AnalyzeMouseWheelEvent(evnt, item, (position + painter.size3d) / 2 /painter.size3d, false );
 
-                     painter.Zoom(item.min, item.max);
+                     if (kind=="x")
+                        painter.Zoom(item.min, item.max);
+                     else
+                        painter.Zoom(undefined, undefined, item.min, item.max);
+
                   }
                   return;
                }
@@ -754,23 +760,31 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
-      var xzoom = new THREE.Geometry();
-      xzoom.vertices.push(new THREE.Vector3(-this.size3d,0,0));
-      xzoom.vertices.push(new THREE.Vector3(this.size3d,0,0));
-      xzoom.vertices.push(new THREE.Vector3(this.size3d,-ticklen*4,0));
-      xzoom.vertices.push(new THREE.Vector3(-this.size3d,-ticklen*4,0));
-      var face = new THREE.Face3(0, 2, 1);
-      face.color.setHex(0xFF00);
-      xzoom.faces.push(face);
-      face = new THREE.Face3(0, 3, 2);
-      face.color.setHex(0xFF00);
-      xzoom.faces.push(face);
-      xzoom.computeFaceNormals();
+      function CreateZoomMesh(kind, size3d) {
+         var xzoom = new THREE.Geometry();
+         xzoom.vertices.push(new THREE.Vector3(-size3d,0,0));
+         xzoom.vertices.push(new THREE.Vector3(size3d,0,0));
+         xzoom.vertices.push(new THREE.Vector3(size3d,-ticklen*4,0));
+         xzoom.vertices.push(new THREE.Vector3(-size3d,-ticklen*4,0));
+         var face = new THREE.Face3(0, 2, 1);
+         face.color.setHex(0xFF00);
+         xzoom.faces.push(face);
+         face = new THREE.Face3(0, 3, 2);
+         face.color.setHex(0xFF00);
+         xzoom.faces.push(face);
+         xzoom.computeFaceNormals();
 
-      var xzoomMaterial = new THREE.MeshBasicMaterial({ transparent: true,
-                                                        vertexColors: THREE.FaceColors,
-                                                        side: THREE.DoubleSide,
-                                                        opacity: 0 });
+         var xzoomMaterial = new THREE.MeshBasicMaterial({ transparent: true,
+                                   vertexColors: THREE.FaceColors,
+                                   side: THREE.DoubleSide,
+                                   opacity: 0 });
+
+         var zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
+         zoommesh.zoom = kind;
+         if (kind=="y") { zoommesh.rotateZ(Math.PI/2); zoommesh.rotateX(Math.PI); }
+
+         return zoommesh;
+      }
 
       var xcont = new THREE.Object3D();
       xcont.position.set(0, grminy, grminz)
@@ -778,10 +792,7 @@
       xcont.xyid = 2;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg1, textMaterial));
-      var zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
-      zoommesh.zoom = "x";
-      xcont.add(zoommesh);
-
+      xcont.add(CreateZoomMesh("x", this.size3d));
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -790,9 +801,7 @@
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
-      zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
-      zoommesh.zoom = "x";
-      xcont.add(zoommesh);
+      xcont.add(CreateZoomMesh("x", this.size3d));
       top.add(xcont);
 
 
@@ -859,7 +868,9 @@
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg1, textMaterial));
          ycont.xyid = 3;
+         ycont.add(CreateZoomMesh("y", this.size3d));
          top.add(ycont);
+
 
          ycont = new THREE.Object3D();
          ycont.position.set(grmaxx, 0, grminz);
@@ -867,6 +878,7 @@
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg2, textMaterial));
          ycont.xyid = 1;
+         ycont.add(CreateZoomMesh("y", this.size3d));
          top.add(ycont);
       }
 
