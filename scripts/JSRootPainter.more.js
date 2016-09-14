@@ -2639,7 +2639,7 @@
             var zmin = Math.min(z.invert(sel1), z.invert(sel2)),
                 zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-            pthis.main_painter().Zoom(undefined, undefined, undefined, undefined, zmin, zmax);
+            pthis.main_painter().Zoom("z", zmin, zmax);
          }
 
          function startRectSel() {

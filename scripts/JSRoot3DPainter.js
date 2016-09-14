@@ -354,7 +354,10 @@
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
 
-            painter.AnalyzeMouseWheelEvent(evnt, item, (position + painter.size3d) / 2 /painter.size3d, false );
+            // z changes from 0..2*size3d, others -size3d..+size3d
+            if (kind!=="z") position += painter.size3d;
+
+            painter.AnalyzeMouseWheelEvent(evnt, item, position/2/painter.size3d, false);
 
             painter.Zoom(kind, item.min, item.max);
          }
@@ -766,29 +769,37 @@
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
       function CreateZoomMesh(kind, size3d) {
-         var xzoom = new THREE.Geometry();
-         xzoom.vertices.push(new THREE.Vector3(-size3d,0,0));
-         xzoom.vertices.push(new THREE.Vector3(size3d,0,0));
-         xzoom.vertices.push(new THREE.Vector3(size3d,-ticklen*4,0));
-         xzoom.vertices.push(new THREE.Vector3(-size3d,-ticklen*4,0));
+         var geom = new THREE.Geometry();
+
+         if (kind==="z")
+            geom.vertices.push(new THREE.Vector3(0,0,0),
+                                new THREE.Vector3(ticklen*4, 0, 0),
+                                new THREE.Vector3(ticklen*4, 0, 2*size3d),
+                                new THREE.Vector3(0, 0, 2*size3d));
+         else
+            geom.vertices.push(new THREE.Vector3(-size3d,0,0),
+                  new THREE.Vector3(size3d,0,0),
+                  new THREE.Vector3(size3d,-ticklen*4,0),
+                  new THREE.Vector3(-size3d,-ticklen*4,0));
+
          var face = new THREE.Face3(0, 2, 1);
          face.color.setHex(0xFF00);
-         xzoom.faces.push(face);
+         geom.faces.push(face);
          face = new THREE.Face3(0, 3, 2);
          face.color.setHex(0xFF00);
-         xzoom.faces.push(face);
-         xzoom.computeFaceNormals();
+         geom.faces.push(face);
+         geom.computeFaceNormals();
 
-         var xzoomMaterial = new THREE.MeshBasicMaterial({ transparent: true,
+         var material = new THREE.MeshBasicMaterial({ transparent: true,
                                    vertexColors: THREE.FaceColors,
                                    side: THREE.DoubleSide,
                                    opacity: 0 });
 
-         var zoommesh = new THREE.Mesh(xzoom, xzoomMaterial);
-         zoommesh.zoom = kind;
-         if (kind=="y") { zoommesh.rotateZ(Math.PI/2); zoommesh.rotateX(Math.PI); }
+         var mesh = new THREE.Mesh(geom, material);
+         mesh.zoom = kind;
+         if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
-         return zoommesh;
+         return mesh;
       }
 
       var xcont = new THREE.Object3D();
@@ -1005,6 +1016,8 @@
          zcont.push(new THREE.Object3D());
          zcont[n].add(new THREE.Mesh(ggg, textMaterial));
          zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size3d));
+
          zcont[n].zid = n + 2;
          top.add(zcont[n]);
       }
