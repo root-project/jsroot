@@ -4460,7 +4460,13 @@
 
       handle.minor = handle.middle = handle.major = this.func.ticks(this.nticks);
 
-      if (only_major_as_array) return handle.major;
+      if (only_major_as_array) {
+         var res = handle.major;
+         var delta = (this.scale_max - this.scale_min)*1e-5;
+         if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
+         if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
+         return res;
+      }
 
       if (this.nticks2 > 1) {
          handle.minor = handle.middle = this.func.ticks(handle.major.length * this.nticks2);

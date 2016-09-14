@@ -1556,12 +1556,13 @@
          levels = new Float32Array(ilevels.length);
          for (var ll=0;ll<ilevels.length;++ll)
             levels[ll] = main_grz(ilevels[ll]);
+      } else {
+         levels = [0, 2*main.size3d]; // just cut top/bottom parts
       }
 
-      var loop, nfaces = 0, nsegments = 0, ngridsegments = 0,
-          pos = null, indx = 0,
-          lpos = null, lindx = 0,
-          grid = null, gindx = 0; // buffer for grid lines segments
+      var loop, nfaces = [], pos = [], indx = [],
+          nsegments = 0, lpos = null, lindx = 0,
+          ngridsegments = 0, grid = null, gindx = 0; // buffer for grid lines segments
 
       function CheckSide(z,level1, level2) {
          if (z<level1) return -1;
@@ -1593,20 +1594,13 @@
          lpos[lindx] = x2; lpos[lindx+1] = y2; lpos[lindx+2] = z2; lindx+=3;
       }
 
-      function AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-         if (!loop) return ++nfaces;
-         pos[indx] = x1; pos[indx+1] = y1; pos[indx+2] = z1; indx+=3;
-         pos[indx] = x2; pos[indx+1] = y2; pos[indx+2] = z2; indx+=3;
-         pos[indx] = x3; pos[indx+1] = y3; pos[indx+2] = z3; indx+=3;
-      }
-
       var pntbuf = new Float32Array(6*3), k = 0, lastpart = 0; // maximal 6 points
       var gridpnts = new Float32Array(2*3), gridcnt = 0;
 
-      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, lindx, with_grid) {
+      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, crossz, with_grid) {
          if (k>=pntbuf.length) console.log('more than 6 points???');
 
-         var part = (levels[lindx] - zz1) / (zz2 - zz1), shift = 3;
+         var part = (crossz - zz1) / (zz2 - zz1), shift = 3;
          if ((lastpart!==0) && (Math.abs(part) < Math.abs(lastpart))) {
             // while second crossing point closer than first to original, move it in memory
             pntbuf[k] = pntbuf[k-3];
@@ -1617,7 +1611,7 @@
 
          pntbuf[k] = xx1 + part*(xx2-xx1);
          pntbuf[k+1] = yy1 + part*(yy2-yy1);
-         pntbuf[k+2] = levels[lindx];
+         pntbuf[k+2] = crossz;
 
          if (with_grid && grid) {
             gridpnts[gridcnt] = pntbuf[k];
@@ -1631,8 +1625,6 @@
       }
 
       function AddMainTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3) {
-
-         if (!levels) return AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3);
 
          for (var lvl=1;lvl<levels.length;++lvl) {
 
@@ -1648,13 +1640,9 @@
 
                if ((npnts===1) || (npnts===2)) console.error('FOND npnts', npnts);
 
-               if (docolorfaces) {
-                  if (npnts>2) {
-                    if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
-                     nfaces[lvl] += npnts-2;
-                  }
-               } else {
-                  nfaces++;
+               if (npnts>2) {
+                  if (nfaces[lvl]===undefined) nfaces[lvl] = 0;
+                  nfaces[lvl] += npnts-2;
                }
 
                var flag1 = 0; // if there crossing with correspondent level
@@ -1680,8 +1668,8 @@
             if (side1!==side2) {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
-               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl-1);
-               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl, true);
+               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl-1]);
+               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, levels[lvl], true);
             }
 
             if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
@@ -1689,8 +1677,8 @@
             if (side2!==side3) {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
-               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl-1);
-               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl, true);
+               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl-1]);
+               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, levels[lvl], true);
             }
 
             if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
@@ -1698,8 +1686,8 @@
             if (side3!==side1) {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
-               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl-1);
-               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl, true);
+               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl-1]);
+               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, levels[lvl], true);
             }
 
             if (k===0) continue;
@@ -1711,35 +1699,23 @@
                gindx+=6;
             }
 
-            if (docolorfaces) {
-               var buf = pos[lvl], s = indx[lvl];
-               for (var k1=3;k1<k-3;k1+=3) {
-                  buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
-                  buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
-                  buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
-               }
-               indx[lvl] = s;
-            } else {
-               AddSimpleTriangle(x1,y1,z1, x2,y2,z2, x3,y3,z3);
+            var buf = pos[lvl], s = indx[lvl];
+            for (var k1=3;k1<k-3;k1+=3) {
+               buf[s] = pntbuf[0]; buf[s+1] = pntbuf[1]; buf[s+2] = pntbuf[2]; s+=3;
+               buf[s] = pntbuf[k1]; buf[s+1] = pntbuf[k1+1]; buf[s+2] = pntbuf[k1+2]; s+=3;
+               buf[s] = pntbuf[k1+3]; buf[s+1] = pntbuf[k1+4]; buf[s+2] = pntbuf[k1+5]; s+=3;
             }
+            indx[lvl] = s;
          }
       }
 
-      if (levels) nfaces = [];
-
       for (loop=0;loop<2;++loop) {
          if (loop) {
-            if (!levels || !docolorfaces) {
-               pos = new Float32Array(nfaces * 9);
-               indx = 0;
-            } else {
-               pos = []; indx = [];
-               for (var lvl=1;lvl<levels.length;++lvl)
-                  if (nfaces[lvl]) {
-                     pos[lvl] = new Float32Array(nfaces[lvl] * 9);
-                     indx[lvl] = 0;
-                  }
-            }
+            for (var lvl=1;lvl<levels.length;++lvl)
+               if (nfaces[lvl]) {
+                  pos[lvl] = new Float32Array(nfaces[lvl] * 9);
+                  indx[lvl] = 0;
+               }
             if (dolines && (nsegments > 0))
                lpos = new Float32Array(nsegments * 6);
             if (dogrid && (ngridsegments>0))
@@ -1771,35 +1747,27 @@
 
       // console.log('lpos', lpos.length, 'lindx', lindx);
 
-      if (docolorfaces) {
-         for (var lvl=1;lvl<levels.length;++lvl)
-            if (pos[lvl]) {
-               // console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
-               var geometry = new THREE.BufferGeometry();
-               geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
-               geometry.computeVertexNormals();
-               var fcolor = this.getIndexColor(lvl);
-               var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide  } );
-               var mesh = new THREE.Mesh(geometry, material);
-               this.toplevel.add(mesh);
+      for (var lvl=1;lvl<levels.length;++lvl)
+         if (pos[lvl]) {
+            // console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
+            var geometry = new THREE.BufferGeometry();
+            geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
+            geometry.computeVertexNormals();
+            var fcolor, material;
+            if (docolorfaces) {
+               fcolor = this.getIndexColor(lvl);
+            } else {
+               fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
+               if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = JSROOT.Painter.root_colors[48];
             }
-      } else {
-         var geometry = new THREE.BufferGeometry();
-         geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-         geometry.computeVertexNormals();
-         var fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
-         if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = JSROOT.Painter.root_colors[48];
+            if (this.options.Surf === 14)
+               material = new THREE.MeshLambertMaterial( { color: fcolor, side: THREE.DoubleSide  } );
+            else
+               material = new THREE.MeshBasicMaterial( { color: fcolor, side: THREE.DoubleSide  } );
 
-         var material;
+            this.toplevel.add(new THREE.Mesh(geometry, material));
+         }
 
-         if (this.options.Surf === 14)
-            material = new THREE.MeshLambertMaterial( { color: fcolor, side: THREE.DoubleSide  } );
-         else
-            material = new THREE.MeshBasicMaterial( { color: fcolor, side: THREE.DoubleSide  } );
-
-         var mesh = new THREE.Mesh(geometry, material);
-         this.toplevel.add(mesh);
-      }
 
       if (lpos) {
          var geometry = new THREE.BufferGeometry();
