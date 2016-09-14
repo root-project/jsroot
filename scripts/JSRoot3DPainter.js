@@ -178,8 +178,13 @@
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
           tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
-      control.ProcessMouseDblclick = function() {
-         control.reset();
+      control.ProcessMouseDblclick = function(evnt) {
+         var intersect = DetectZoomMesh(evnt);
+         if (intersect && painter) {
+            painter.Unzoom(intersect.object.zoom);
+         } else {
+            control.reset();
+         }
          // painter.Render3D();
       }
 
@@ -316,6 +321,17 @@
          if (control.ProcessMouseLeave) control.ProcessMouseLeave();
       };
 
+      function DetectZoomMesh(evnt) {
+         var mouse = GetMousePos(evnt, {});
+         var intersects = GetIntersects(mouse);
+         if (intersects)
+            for (var n=0;n<intersects.length;++n)
+               if (intersects[n].object.zoom)
+                  return intersects[n];
+
+         return null;
+      }
+
       function control_mousewheel(evnt) {
          // try to handle zoom extra
 
@@ -326,37 +342,28 @@
             return; // already fired redraw, do not react on the mouse wheel
          }
 
-         var mouse = GetMousePos(evnt, {});
+         var intersect = DetectZoomMesh(evnt);
+         if (!intersect) return;
 
-         var intersects = GetIntersects(mouse);
+         evnt.preventDefault();
+         evnt.stopPropagation();
+         evnt.stopImmediatePropagation();
 
-         if (intersects) {
-            for (var n=0;n<intersects.length;++n)
-               if (intersects[n].object.zoom) {
-                  evnt.preventDefault();
-                  evnt.stopPropagation();
-                  evnt.stopImmediatePropagation();
+         if (painter && (painter.AnalyzeMouseWheelEvent!==undefined)) {
+            var kind = intersect.object.zoom,
+                position = intersect.point[kind],
+                item = { name: kind, ignore: false };
 
-                  if (painter && (painter.AnalyzeMouseWheelEvent!==undefined)) {
-                     var kind = intersects[n].object.zoom,
-                         position = intersects[n].point[kind],
-                         item = { name: kind, ignore: false };
+            painter.AnalyzeMouseWheelEvent(evnt, item, (position + painter.size3d) / 2 /painter.size3d, false );
 
-                     painter.AnalyzeMouseWheelEvent(evnt, item, (position + painter.size3d) / 2 /painter.size3d, false );
-
-                     if (kind=="x")
-                        painter.Zoom(item.min, item.max);
-                     else
-                        painter.Zoom(undefined, undefined, item.min, item.max);
-
-                  }
-                  return;
-               }
+            if (kind=="x")
+               painter.Zoom(item.min, item.max);
+            else
+               painter.Zoom(undefined, undefined, item.min, item.max);
          }
-
       }
 
-      renderer.domElement.addEventListener( 'dblclick', function() { control.ProcessMouseDblclick(); });
+      renderer.domElement.addEventListener( 'dblclick', function(evnt) { control.ProcessMouseDblclick(evnt); });
 
       renderer.domElement.addEventListener('contextmenu', control_contextmenu);
       renderer.domElement.addEventListener('mousemove', control_mousemove);

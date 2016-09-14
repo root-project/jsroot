@@ -13,6 +13,7 @@
 6. Support drawing of TH2Poly class with 'col' and 'lego' options
 7. Implement 'CONT', 'ARR' and 'SURF' draw options for TH2 class 
 8. Support basic drawing of TPolyLine class 
+9. Interactive axis zooming in 3D mode
 
 
 ## Changes in 4.6.0
