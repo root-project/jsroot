@@ -1453,12 +1453,13 @@
       switch(this.options.Surf) {
          case 11: levels = this.GetContour(); docolorfaces = true; break;
          case 12: levels = this.GetContour(); docolorfaces = true; dolines = false; break;
-         default: break; // draw only lines
+         default: levels = main.z_handle.CreateTicks(true);  break; // draw only lines
       }
 
-      var loop, nfaces = 0, nsegments = 0,
+      var loop, nfaces = 0, nsegments = 0, ngridsegments = 0,
           pos = null, indx = 0,
-          lpos = null, lindx = 0;
+          lpos = null, lindx = 0,
+          grid = null, gindx = 0; // buffer for grid lines segments
 
       function CheckSide(z,level1, level2) {
          if (z<level1) return -1;
@@ -1481,8 +1482,10 @@
       }
 
       var pntbuf = new Float32Array(6*3), k = 0, lastpart = 0; // maximal 6 points
+      var gridpnts = [ new Float32Array(2*3), new Float32Array(2*3) ];
+      var gridcnt = [0, 0];
 
-      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, lindx) {
+      function AddCrossingPoint(xx1,yy1,zz1, xx2,yy2,zz2, lindx, gridi) {
          if (k>=pntbuf.length) console.log('more than 6 points???');
 
          var part = (levels[lindx] - zz1) / (zz2 - zz1), shift = 3;
@@ -1497,6 +1500,13 @@
          pntbuf[k] = xx1 + part*(xx2-xx1);
          pntbuf[k+1] = yy1 + part*(yy2-yy1);
          pntbuf[k+2] = levels[lindx];
+
+         var g = gridcnt[gridi];
+         gridpnts[gridi][g] = pntbuf[k];
+         gridpnts[gridi][g+1] = pntbuf[k+1];
+         gridpnts[gridi][g+2] = pntbuf[k+2];
+         gridcnt[gridi] = g+3;
+
          k += shift;
          lastpart = part;
       }
@@ -1527,8 +1537,26 @@
                } else {
                   nfaces++;
                }
+
+               var flag0 = 0, flag1 = 0; // if there crossing with correspondent level
+               if (side1!==side2) {
+                  if ((side1<0) || (side2<0)) flag0 = 1;
+                  if ((side1>0) || (side2>0)) flag1 = 1;
+               }
+               if (side2!==side3) {
+                  if ((side2<0) || (side3<0)) flag0 = 1;
+                  if ((side2>0) || (side3>0)) flag1 = 1;
+               }
+               if (side3!==side1) {
+                  if ((side3<0) || (side1<0)) flag0 = 1;
+                  if ((side3>0) || (side1>0)) flag1 = 1;
+               }
+               ngridsegments += flag0 + flag1;
+
                continue;
             }
+
+            gridcnt[0] = gridcnt[1] = 0;
 
             k = 0;
             if (side1 === 0) { pntbuf[k] = x1; pntbuf[k+1] = y1; pntbuf[k+2] = z1; k+=3; }
@@ -1536,8 +1564,8 @@
             if (side1!==side2) {
                // order is important, should move from 1->2 point, checked via lastpart
                lastpart = 0;
-               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl-1);
-               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl);
+               if ((side1<0) || (side2<0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl-1, 0);
+               if ((side1>0) || (side2>0)) AddCrossingPoint(x1,y1,z1, x2,y2,z2, lvl, 1);
             }
 
             if (side2 === 0) { pntbuf[k] = x2; pntbuf[k+1] = y2; pntbuf[k+2] = z2; k+=3; }
@@ -1545,8 +1573,8 @@
             if (side2!==side3) {
                // order is important, should move from 2->3 point, checked via lastpart
                lastpart = 0;
-               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl-1);
-               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl);
+               if ((side2<0) || (side3<0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl-1, 0);
+               if ((side2>0) || (side3>0)) AddCrossingPoint(x2,y2,z2, x3,y3,z3, lvl, 1);
             }
 
             if (side3 === 0) { pntbuf[k] = x3; pntbuf[k+1] = y3; pntbuf[k+2] = z3; k+=3; }
@@ -1554,12 +1582,21 @@
             if (side3!==side1) {
                // order is important, should move from 3->1 point, checked via lastpart
                lastpart = 0;
-               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl-1);
-               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl);
+               if ((side3<0) || (side1<0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl-1, 0);
+               if ((side3>0) || (side1>0)) AddCrossingPoint(x3,y3,z3, x1,y1,z1, lvl, 1);
             }
 
             if (k===0) continue;
             if (k<9) { console.log('FOND less than 3 points', k/3); continue; }
+
+            if (grid) {
+               for (var kk=0;kk<2;++kk)
+                  if (gridcnt[kk] === 6) {
+                    for (var jj=0;jj < 6; ++jj)
+                        grid[gindx+jj] = gridpnts[kk][jj];
+                    gindx+=6;
+                  }
+            }
 
             if (docolorfaces) {
                var buf = pos[lvl], s = indx[lvl];
@@ -1589,10 +1626,11 @@
                      pos[lvl] = new Float32Array(nfaces[lvl] * 9);
                      indx[lvl] = 0;
                   }
-
             }
             if (nsegments > 0)
                lpos = new Float32Array(nsegments * 6);
+            console.log('numgrids', ngridsegments);
+            grid = new Float32Array(ngridsegments * 6); gindx = 0;
          }
          for (i=handle.i1;i<handle.i2-1;++i) {
             x1 = handle.grx[i];
@@ -1620,7 +1658,7 @@
 
       // console.log('lpos', lpos.length, 'lindx', lindx);
 
-      if (levels) {
+      if (docolorfaces) {
          for (var lvl=1;lvl<levels.length;++lvl)
             if (pos[lvl]) {
                // console.log('level', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
@@ -1642,7 +1680,6 @@
          this.toplevel.add(mesh);
       }
 
-
       if (lpos) {
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
@@ -1650,6 +1687,14 @@
 
          var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
          if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+         var line = new THREE.LineSegments(geometry, material);
+         this.toplevel.add(line);
+      }
+
+      if (grid) {
+         var geometry = new THREE.BufferGeometry();
+         geometry.addAttribute( 'position', new THREE.BufferAttribute( grid, 3 ) );
+         var material = new THREE.LineBasicMaterial({ color: new THREE.Color('black') });
          var line = new THREE.LineSegments(geometry, material);
          this.toplevel.add(line);
       }
