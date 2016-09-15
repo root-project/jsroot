@@ -1673,7 +1673,11 @@
 
             var side1 = CheckSide(z1, levels[lvl-1], levels[lvl]),
                 side2 = CheckSide(z2, levels[lvl-1], levels[lvl]),
-                side3 = CheckSide(z3, levels[lvl-1], levels[lvl]);
+                side3 = CheckSide(z3, levels[lvl-1], levels[lvl]),
+                side_sum = side1 + side2 + side3;
+
+            if (side_sum === 3) continue;
+            if (side_sum === -3) return;
 
             if (!loop) {
                var npnts = Math.abs(side2-side1) + Math.abs(side3-side2) + Math.abs(side1-side3);
