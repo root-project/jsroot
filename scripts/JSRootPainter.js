@@ -6376,26 +6376,39 @@
       item.min = item.max = undefined;
       item.changed = false;
       if (ignore && item.ignore) return;
-      var delta = 0;
-      if ( event.wheelDelta !== undefined ) {
+
+      var delta = 0, delta_left = 1, delta_right = 1;
+
+      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+      if ('dright' in item) { delta_right = item.dright; delta = 1; }
+
+      if ('delta' in item)
+         delta = item.delta;
+      else
+      if (event && event.wheelDelta !== undefined ) {
          // WebKit / Opera / Explorer 9
          delta = -event.wheelDelta;
-      } else if ( event.deltaY !== undefined ) {
+      } else if (event && event.deltaY !== undefined ) {
          // Firefox
          delta = event.deltaY;
-      } else if (event.detail !== undefined) {
+      } else if (event && event.detail !== undefined) {
          delta = event.detail;
       }
 
       if (delta===0) return;
       delta = (delta<0) ? -0.2 : 0.2;
 
-      item.min = this["scale_"+item.name+"min"];
-      item.max = this["scale_"+item.name+"max"];
+      delta_left *= delta
+      delta_right *= delta;
+
+      var lmin = item.min = this["scale_"+item.name+"min"],
+          lmax = item.max = this["scale_"+item.name+"max"],
+          gmin = this[item.name+"min"],
+          gmax = this[item.name+"max"];
 
       if ((item.min === item.max) && (delta<0)) {
-         item.min = this[item.name+"min"];
-         item.max = this[item.name+"max"];
+         item.min = gmin;
+         item.max = gmax;
       }
 
       if (item.min >= item.max) return;
@@ -6404,15 +6417,28 @@
          if (this['log'+item.name]) {
             var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
             if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
-            item.min = item.min / Math.pow(factor, delta*dmin);
-            item.max = item.max * Math.pow(factor, delta*(1-dmin));
+            item.min = item.min / Math.pow(factor, delta_left*dmin);
+            item.max = item.max * Math.pow(factor, delta_right*(1-dmin));
          } else {
-            var rx = (item.max - item.min);
-            if (delta>0) rx = 1.001 * rx / (1-delta);
-            item.min += -delta*dmin*rx;
-            item.max -= -delta*(1-dmin)*rx;
+            var rx_left = (item.max - item.min),
+                rx_right = rx_left;
+            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
+            item.min += -delta_left*dmin*rx_left;
+
+            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
+
+            item.max -= -delta_right*(1-dmin)*rx_right;
          }
-         if (item.min >= item.max) item.min = item.max = undefined;
+         if (item.min >= item.max)
+            item.min = item.max = undefined;
+         else
+         if (delta_left !== delta_right) {
+            // extra check case when moving left or right
+            if (((item.min < gmin) && (lmin===gmin)) ||
+                ((item.max > gmax) && (lmax==gmax)))
+                   item.min = item.max = undefined;
+         }
+
       } else {
          item.min = item.max = undefined;
       }
@@ -6479,6 +6505,29 @@
       }
 
       svg.property('interactive_set', true);
+   }
+
+   JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
+
+      if (this.mode3d) return false; // no keypress in 3D mode
+
+      if (!JSROOT.gStyle.Zooming) return false;
+
+      var itemx = { name: "x", dleft: 0, dright: 0 };
+
+      if (evnt.key === "ArrowUp") itemx.dleft = itemx.dright = -1; else
+      if (evnt.key === "ArrowDown") itemx.dleft = itemx.dright = 1; else
+      if (evnt.key === "ArrowLeft") { itemx.dleft = -1; itemx.dright = 1; } else
+      if (evnt.key === "ArrowRight") { itemx.dleft = 1; itemx.dright = -1;  }
+
+      if (itemx.dleft || itemx.dright) {
+
+         this.AnalyzeMouseWheelEvent(null, itemx, 0.5);
+         this.Zoom(itemx.min, itemx.max);
+         if (itemx.changed) this.zoom_changed_interactive = true;
+      }
+
+      return true; // just process any key press
    }
 
    JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
@@ -9873,6 +9922,8 @@
       this.frameid = frameid;
       d3.select("#"+this.frameid).property('mdi', this);
       this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
+      this.keydown_handler = this.HandleKeyPress.bind(this);
+      document.body.addEventListener("keydown", this.keydown_handler);
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
@@ -9917,6 +9968,24 @@
       // do nothing by default
    }
 
+   JSROOT.MDIDisplay.prototype.GetActiveFrame = function() {
+      return null;
+   }
+
+   JSROOT.MDIDisplay.prototype.HandleKeyPress = function(evnt) {
+      // this method used to deliver key events to active frame
+
+      var frame = this.GetActiveFrame();
+      if (!frame) return;
+
+      var dummy = new JSROOT.TObjectPainter(), done = false;
+      dummy.SetDivId(frame, -1);
+      dummy.ForEachPainter(function(painter) {
+         if (!done && painter && typeof painter.ProcessKeyPress === 'function')
+            if (painter.ProcessKeyPress(evnt)) done = true;
+      });
+   }
+
    JSROOT.MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
       var resized_frame = null;
@@ -9935,6 +10004,8 @@
    }
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
+
+      document.body.removeEventListener("keydown", this.keydown_handler);
 
       this.ForEachFrame(this.CleanupFrame);
 
@@ -10008,6 +10079,11 @@
       var node = d3.select("#"+this.frameid + "_simple_display");
       if (!node.empty())
          JSROOT.CallBack(userfunc, node.node());
+   }
+
+   JSROOT.SimpleDisplay.prototype.GetActiveFrame = function() {
+      var node = d3.select("#"+this.frameid + "_simple_display");
+      return node.empty() ? null : node.node();
    }
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {

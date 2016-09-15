@@ -4521,6 +4521,8 @@
 
    JSROOT.TH2Painter.prototype.Draw2D = function(call_back, resize) {
 
+      this.mode3d = false;
+
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
 
@@ -4545,6 +4547,7 @@
    }
 
    JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
+      this.mode3d = true;
       JSROOT.AssertPrerequisites('3d', function() {
          this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
          this.Draw3D = JSROOT.Painter.TH2Painter_Draw3D;

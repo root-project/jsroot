@@ -2368,6 +2368,8 @@
       JSROOT.THistPainter.call(this, histo);
 
       this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
+
+      this.mode3d = true;
    }
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
