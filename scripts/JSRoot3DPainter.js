@@ -158,6 +158,8 @@
 
       renderer.domElement.addEventListener( 'mousewheel', control_mousewheel);
       renderer.domElement.addEventListener( 'MozMousePixelScroll', control_mousewheel);
+      renderer.domElement.addEventListener( 'mousedown', control_mousedown);
+      renderer.domElement.addEventListener( 'mouseup', control_mouseup);
 
       var control = new THREE.OrbitControls(camera, renderer.domElement);
 
@@ -173,9 +175,8 @@
       var mouse_ctxt = { x:0, y: 0, on: false },
           raycaster = new THREE.Raycaster(),
           webgl = renderer instanceof THREE.WebGLRenderer,
-          control_active = false,
-          control_changed = false,
-          cursor_changed = false,
+          control_active = false, control_changed = false, cursor_changed = false,
+          mouse_zoom_mesh = null, // zoom mesh, currently used in the zooming
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
           tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
@@ -293,12 +294,25 @@
          // do nothing, function called when context menu want to be activated
       }
 
+
       function control_mousemove(evnt) {
          if (control_active && evnt.buttons && (evnt.buttons & 2)) {
             block_ctxt = true; // if right button in control was active, block next context menu
          }
 
          if (control_active || !control.ProcessMouseMove) return;
+
+         if (mouse_zoom_mesh) {
+            // when working with zoom mesh, need special handling
+
+            var zoom2 = DetectZoomMesh(evnt);
+
+            if (zoom2 && (zoom2.object === mouse_zoom_mesh.object))
+               mouse_zoom_mesh.point2 = zoom2.point;
+
+            tooltip.hide();
+            return;
+         }
 
          var mouse = GetMousePos(evnt, {});
          evnt.preventDefault();
@@ -344,7 +358,7 @@
       function control_mousewheel(evnt) {
          // try to handle zoom extra
 
-         if (JSROOT.Painter.IsRender3DFired(painter)) {
+         if (JSROOT.Painter.IsRender3DFired(painter) || mouse_zoom_mesh) {
             evnt.preventDefault();
             evnt.stopPropagation();
             evnt.stopImmediatePropagation();
@@ -372,7 +386,64 @@
          }
       }
 
-      renderer.domElement.addEventListener( 'dblclick', function(evnt) { control.ProcessMouseDblclick(evnt); });
+      function control_mousedown(evnt) {
+         // function used to hide some events from orbit control and redirect them to zooming rect
+
+         if (mouse_zoom_mesh) {
+            evnt.stopImmediatePropagation();
+            evnt.stopPropagation();
+            return;
+         }
+
+         mouse_zoom_mesh = DetectZoomMesh(evnt);
+         if (!mouse_zoom_mesh) return;
+
+
+         // just block orbit control
+         evnt.stopImmediatePropagation();
+         evnt.stopPropagation();
+      }
+
+      function control_mouseup(evnt) {
+         if (mouse_zoom_mesh && mouse_zoom_mesh.point2) {
+
+            var kind = mouse_zoom_mesh.object.zoom,
+                pos1 = mouse_zoom_mesh.point[kind],
+                pos2 = mouse_zoom_mesh.point2[kind];
+
+            if (kind!=="z") { pos1+=painter.size3d; pos2+=painter.size3d; }
+
+            // we recalculate positions ourself,
+            // in the future one should use CreateXY in 3D painters
+
+            pos1 = pos1/2/painter.size3d; pos2 = pos2/2/painter.size3d;
+
+            if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
+
+            var min = painter['scale_'+kind+"min"], max = painter['scale_'+kind+"max"];
+
+            if (painter["log"+kind]) {
+               pos1 = Math.exp(Math.log(min) + pos1*(Math.log(max)-Math.log(min)));
+               pos2 = Math.exp(Math.log(min) + pos2*(Math.log(max)-Math.log(min)));
+            } else {
+               pos1 = min + pos1*(max-min);
+               pos2 = min + pos2*(max-min);
+            }
+
+            // try to zoom
+            if (pos1 < pos2) painter.Zoom(kind, pos1, pos2);
+         }
+
+
+         mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
+      }
+
+
+      function control_mousedblclick(evnt) {
+         control.ProcessMouseDblclick(evnt);
+      }
+
+      renderer.domElement.addEventListener( 'dblclick', control_mousedblclick);
 
       renderer.domElement.addEventListener('contextmenu', control_contextmenu);
       renderer.domElement.addEventListener('mousemove', control_mousemove);
