@@ -6521,10 +6521,11 @@
       if (evnt.key === "ArrowRight") { itemx.dleft = 1; itemx.dright = -1;  }
 
       if (itemx.dleft || itemx.dright) {
-
          this.AnalyzeMouseWheelEvent(null, itemx, 0.5);
          this.Zoom(itemx.min, itemx.max);
          if (itemx.changed) this.zoom_changed_interactive = true;
+         evnt.stopPropagation();
+         evnt.preventDefault();
       }
 
       return true; // just process any key press
@@ -9922,6 +9923,15 @@
       this.frameid = frameid;
       d3.select("#"+this.frameid).property('mdi', this);
       this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
+      this.keydown_handler = null;
+      this.active_frame_title = ""; // keep title of active frame
+   }
+
+   JSROOT.MDIDisplay.prototype.BeforeCreateFrame = function(title) {
+
+      this.active_frame_title = title;
+
+      if (this.keydown_handler) return;
       this.keydown_handler = this.HandleKeyPress.bind(this);
       document.body.addEventListener("keydown", this.keydown_handler);
    }
@@ -9939,7 +9949,7 @@
 
       this.ForEachFrame(function(frame) {
          var dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(d3.select(frame).attr('id'), -1);
+         dummy.SetDivId(frame, -1);
          dummy.ForEachPainter(function(painter) { userfunc(painter, frame); });
       }, only_visible);
    }
@@ -9965,11 +9975,11 @@
    }
 
    JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
-      // do nothing by default
+      this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
    JSROOT.MDIDisplay.prototype.GetActiveFrame = function() {
-      return null;
+      return this.FindFrame(this.active_frame_title);
    }
 
    JSROOT.MDIDisplay.prototype.HandleKeyPress = function(evnt) {
@@ -10005,7 +10015,12 @@
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
 
-      document.body.removeEventListener("keydown", this.keydown_handler);
+      if (this.keydown_handler) {
+         document.body.removeEventListener("keydown", this.keydown_handler);
+         this.keydown_handler = null;
+      }
+
+      this.active_frame_title = "";
 
       this.ForEachFrame(this.CleanupFrame);
 
@@ -10051,6 +10066,9 @@
    }
 
    JSROOT.CustomDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
+
       var ks = Object.keys(this.frames);
       for (var k = 0; k < ks.length; ++k) {
          var items = this.frames[ks[k]];
@@ -10087,6 +10105,8 @@
    }
 
    JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
 
       this.CleanupFrame(this.frameid+"_simple_display");
 
@@ -10162,6 +10182,8 @@
    }
 
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
 
       var main = d3.select("#" + this.frameid);
       if (main.empty()) return null;

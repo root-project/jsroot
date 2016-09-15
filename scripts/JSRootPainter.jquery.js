@@ -705,6 +705,18 @@
       });
    }
 
+   JSROOT.CollapsibleDisplay.prototype.GetActiveFrame = function() {
+      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      if (found && !$(found).is(":hidden")) return found;
+
+      found = null;
+      this.ForEachFrame(function(frame) {
+         if (!found) found = frame;
+      }, true);
+
+      return found;
+   }
+
    JSROOT.CollapsibleDisplay.prototype.ActivateFrame = function(frame) {
       if ($(frame).is(":hidden")) {
          $(frame).prev().toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
@@ -712,9 +724,13 @@
                  .next().toggleClass("ui-accordion-content-active").slideDown(0);
       }
       $(frame).prev()[0].scrollIntoView();
+      // remember title
+      this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
    JSROOT.CollapsibleDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
 
       var topid = this.frameid + '_collapsible';
 
@@ -788,6 +804,15 @@
       });
    }
 
+   JSROOT.TabsDisplay.prototype.GetActiveFrame = function() {
+      var found = null;
+      this.ForEachFrame(function(frame) {
+         if (!found) found = frame;
+      }, true);
+
+      return found;
+   }
+
    JSROOT.TabsDisplay.prototype.ActivateFrame = function(frame) {
       var cnt = 0, id = -1;
       this.ForEachFrame(function(fr) {
@@ -795,9 +820,14 @@
          cnt++;
       });
       $('#' + this.frameid + "_tabs").tabs("option", "active", id);
+
+      this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
    JSROOT.TabsDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
+
       var mdi = this,
           topid = this.frameid + '_tabs',
           hid = topid + "_sub" + this.cnt++,
@@ -858,16 +888,34 @@
 
       $('#' + topid + ' .flex_draw').each(function() {
          // check if only visible specified
-         //if (only_visible && $(this).is(":hidden")) return;
+         if (only_visible && $(this).is(":hidden")) return;
 
          userfunc($(this).get(0));
       });
    }
 
+   JSROOT.FlexibleDisplay.prototype.GetActiveFrame = function() {
+      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      if (found && !$(found).is(":hidden")) return found;
+
+      found = null;
+      this.ForEachFrame(function(frame) {
+         if (!found) found = frame;
+      }, true);
+
+      return found;
+   }
+
+
    JSROOT.FlexibleDisplay.prototype.ActivateFrame = function(frame) {
+
+      this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
    JSROOT.FlexibleDisplay.prototype.CreateFrame = function(title) {
+
+      this.BeforeCreateFrame(title);
+
       var topid = this.frameid + '_flex';
 
       if (document.getElementById(topid) == null)
