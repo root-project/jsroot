@@ -912,7 +912,7 @@
             plane.applyMatrix4(this.matrixWorld);
 
             var v1 = raycaster.ray.origin.clone(),
-                v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1000);
+                v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1e10);
 
             var pnt = plane.intersectLine(new THREE.Line3(v1,v2));
 
@@ -2883,7 +2883,10 @@
 
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
-      menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
+      menu.addDrawMenu("Draw with", ["box", "box1", "inspect"], function(arg) {
+         if (arg==='inspect')
+            return JSROOT.draw(this.divid, this.GetObject(),arg);
+
          this.options = this.DecodeOptions(arg);
          this.Redraw();
       });

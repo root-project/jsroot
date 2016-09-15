@@ -7517,16 +7517,16 @@
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame,noinspect');
+      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+         if (arg==='inspect')
+            return JSROOT.draw(this.divid, this.GetObject(), arg);
 
          this.options = this.DecodeOptions(arg);
 
          // redraw all objects
          this.RedrawPad();
-
-         // if (this.options.Lego == 0) this.AddInteractive();
       });
    }
 
@@ -9844,6 +9844,9 @@
    }
 
    JSROOT.Painter.drawInspector = function(divid, obj) {
+
+      JSROOT.cleanup(divid);
+
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.default_by_click = "expand"; // that painter tries to do by default
       painter.with_icons = false;

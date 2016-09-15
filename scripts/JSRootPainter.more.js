@@ -2973,14 +2973,13 @@
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
-      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame,noinspect');
+      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
+         if (arg==='inspect')
+            return JSROOT.draw(this.divid, this.GetObject(), arg);
          this.options = this.DecodeOptions(arg);
-
          this.Redraw();
-
-         // if (this.options.Lego == 0) this.AddInteractive();
       });
 
       if (this.options.Color > 0)
