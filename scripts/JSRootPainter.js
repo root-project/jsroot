@@ -4076,9 +4076,15 @@
        var selp = null, selkind;
 
        switch(name) {
-          case "xaxis": selp = this.main_painter(); selkind = "x"; break;
-          case "yaxis": selp = this.main_painter(); selkind = "y"; break;
-          case "frame": selp = this.frame_painter(); break;
+          case "xaxis":
+          case "yaxis":
+          case "zaxis":
+             selp = this.main_painter();
+             selkind = name.charAt(0);
+             break;
+          case "frame":
+             selp = this.frame_painter();
+             break;
           default: {
              var indx = parseInt(name);
              if (!isNaN(indx)) selp = this.painters[indx];
@@ -4150,9 +4156,13 @@
             if (pthis.frame_painter())
                menu.add("Frame", "frame", pthis.ItemContextMenu);
 
-            if (pthis.main_painter()) {
+            var main = pthis.main_painter();
+
+            if (main) {
                menu.add("X axis", "xaxis", pthis.ItemContextMenu);
                menu.add("Y axis", "yaxis", pthis.ItemContextMenu);
+               if ((typeof main.Dimension === 'function') && (main.Dimension() > 1))
+                  menu.add("Z axis", "zaxis", pthis.ItemContextMenu);
             }
 
             if (pthis.painters && (pthis.painters.length>0)) {
