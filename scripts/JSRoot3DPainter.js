@@ -175,6 +175,7 @@
           webgl = renderer instanceof THREE.WebGLRenderer,
           control_active = false,
           control_changed = false,
+          cursor_changed = false,
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
           tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
@@ -306,19 +307,27 @@
 
          var info = control.ProcessMouseMove(intersects);
 
+         cursor_changed = false;
          if (info && (info.length>0)) {
             tooltip.show(info, 200);
             tooltip.pos(evnt)
          } else {
             tooltip.hide();
+            if (intersects)
+               for (var n=0;n<intersects.length;++n)
+                  if (intersects[n].object.zoom) cursor_changed = true;
          }
 
-         // console.log('provide tooltip', intersects.length);
+         document.body.style.cursor = cursor_changed ? 'pointer' : 'auto';
       };
 
       function control_mouseleave() {
          tooltip.hide();
          if (control.ProcessMouseLeave) control.ProcessMouseLeave();
+         if (cursor_changed) {
+            document.body.style.cursor = 'auto';
+            cursor_changed = false;
+         }
       };
 
       function DetectZoomMesh(evnt) {
