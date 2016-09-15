@@ -307,8 +307,12 @@
 
             var zoom2 = DetectZoomMesh(evnt);
 
-            if (zoom2 && (zoom2.object === mouse_zoom_mesh.object))
+            if (zoom2 && (zoom2.object === mouse_zoom_mesh.object)) {
                mouse_zoom_mesh.point2 = zoom2.point;
+
+               if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, zoom2.point))
+                  painter.Render3D(0);
+            }
 
             tooltip.hide();
             return;
@@ -395,6 +399,10 @@
             return;
          }
 
+         // only left-button is considered
+         if ((evnt.button!==undefined) && (evnt.button !==0)) return;
+         if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
+
          mouse_zoom_mesh = DetectZoomMesh(evnt);
          if (!mouse_zoom_mesh) return;
 
@@ -431,9 +439,14 @@
             }
 
             // try to zoom
-            if (pos1 < pos2) painter.Zoom(kind, pos1, pos2);
+            if (pos1 < pos2)
+              if (painter.Zoom(kind, pos1, pos2))
+                 mouse_zoom_mesh = null;
          }
 
+         // if selection was drawn, it should be removed and picture rendered again
+         if (mouse_zoom_mesh && mouse_zoom_mesh.object.ShowSelection())
+            painter.Render3D();
 
          mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
@@ -852,32 +865,68 @@
          var geom = new THREE.Geometry();
 
          if (kind==="z")
-            geom.vertices.push(new THREE.Vector3(0,0,0),
-                                new THREE.Vector3(ticklen*4, 0, 0),
-                                new THREE.Vector3(ticklen*4, 0, 2*size3d),
-                                new THREE.Vector3(0, 0, 2*size3d));
+            geom.vertices.push(
+                  new THREE.Vector3(0,0,0),
+                  new THREE.Vector3(ticklen*4, 0, 0),
+                  new THREE.Vector3(ticklen*4, 0, 2*size3d),
+                  new THREE.Vector3(0, 0, 2*size3d));
          else
-            geom.vertices.push(new THREE.Vector3(-size3d,0,0),
+            geom.vertices.push(
+                  new THREE.Vector3(-size3d,0,0),
                   new THREE.Vector3(size3d,0,0),
                   new THREE.Vector3(size3d,-ticklen*4,0),
                   new THREE.Vector3(-size3d,-ticklen*4,0));
 
-         var face = new THREE.Face3(0, 2, 1);
-         face.color.setHex(0xFF00);
-         geom.faces.push(face);
-         face = new THREE.Face3(0, 3, 2);
-         face.color.setHex(0xFF00);
-         geom.faces.push(face);
+         geom.faces.push(new THREE.Face3(0, 2, 1));
+         geom.faces.push(new THREE.Face3(0, 3, 2));
          geom.computeFaceNormals();
 
          var material = new THREE.MeshBasicMaterial({ transparent: true,
-                                   vertexColors: THREE.FaceColors,
+                                   vertexColors: THREE.NoColors, //   THREE.FaceColors,
                                    side: THREE.DoubleSide,
                                    opacity: 0 });
 
          var mesh = new THREE.Mesh(geom, material);
          mesh.zoom = kind;
          if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+
+         mesh.ShowSelection = function(pnt1,pnt2) {
+            // used to show selection
+
+            var tgtmesh = this.children[0], gg, kind = this.zoom;
+            if (!pnt1 || !pnt2 || (kind==="z")) {
+               if (tgtmesh) {
+                  this.remove(tgtmesh)
+                  JSROOT.Painter.DisposeThreejsObject(tgtmesh);
+               }
+               return tgtmesh;
+            }
+
+            if (!tgtmesh) {
+               gg = new THREE.Geometry();
+               gg.vertices.push(new THREE.Vector3(0,0,0),
+                                new THREE.Vector3(5,0,0),
+                                new THREE.Vector3(5,-ticklen,0),
+                                new THREE.Vector3(0,-ticklen, 0));
+               gg.faces.push(new THREE.Face3(0, 2, 1));
+               gg.faces.push(new THREE.Face3(0, 3, 2));
+
+               var mm = new THREE.MeshBasicMaterial({ color: 0xFF00, side: THREE.DoubleSide });
+               tgtmesh = new THREE.Mesh(gg, mm);
+               this.add(tgtmesh);
+            } else {
+               gg = tgtmesh.geometry;
+            }
+
+            var pos1 = pnt1[kind], pos2 = pnt2[kind];
+
+            gg.vertices[0].x = gg.vertices[3].x = pos1;
+            gg.vertices[1].x = gg.vertices[2].x = pos2;
+
+            gg.computeFaceNormals();
+
+            return true;
+         }
 
          return mesh;
       }
