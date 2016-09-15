@@ -6530,29 +6530,43 @@
 
       if (!JSROOT.gStyle.Zooming) return false;
 
-      var itemx = { name: "x", dleft: 0, dright: 0 };
+      var key = "";
+      switch (evnt.keyCode) {
+         case 37: key = "ArrowLeft"; break;
+         case 38: key = "ArrowUp"; break;
+         case 39: key = "ArrowRight"; break;
+         case 40: key = "ArrowDown"; break;
+         case 106: key = "*"; break;
+         default: return false;
+      }
 
-      var key = evnt.key;
-      if (evnt.shiftKey && evnt.key!=="Shift") key = "Shift " + key;
-      if (evnt.altKey && evnt.key!=="Alt") key = "Alt " + key;
-      if (evnt.ctrlKey && evnt.key!=="Control") key = "Ctrl " + key;
+      if (evnt.shiftKey) key = "Shift " + key;
+      if (evnt.altKey) key = "Alt " + key;
+      if (evnt.ctrlKey) key = "Ctrl " + key;
 
-      if (evnt.key === "ArrowUp") itemx.dleft = itemx.dright = -1; else
-      if (evnt.key === "ArrowDown") itemx.dleft = itemx.dright = 1; else
-      if (evnt.key === "ArrowLeft") { itemx.dleft = -1; itemx.dright = 1; } else
-      if (evnt.key === "ArrowRight") { itemx.dleft = 1; itemx.dright = -1;  }
+      var zoom = { name: "x", dleft: 0, dright: 0 };
 
-      if (itemx.dleft || itemx.dright) {
-         this.AnalyzeMouseWheelEvent(null, itemx, 0.5);
-         this.Zoom(itemx.min, itemx.max);
-         if (itemx.changed) this.zoom_changed_interactive = true;
+      switch (key) {
+         case "ArrowLeft":  zoom.dleft = -1; zoom.dright = 1; break;
+         case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
+         case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
+         case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
+         case "Shift ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
+         case "Shift ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
+         case "ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
+         case "ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
+      }
+
+      if (zoom.dleft || zoom.dright) {
+         this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
+         this.Zoom(zoom.name, zoom.min, zoom.max);
+         if (zoom.changed) this.zoom_changed_interactive = true;
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
          var pp = this.pad_painter(true),
              func = pp ? pp.FindButton(key) : "";
          if (func) {
-            console.log('found func', func);
             pp.PadButtonClick(func);
             evnt.stopPropagation();
             evnt.preventDefault();
