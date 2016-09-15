@@ -310,8 +310,9 @@
             if (zoom2 && (zoom2.object === mouse_zoom_mesh.object)) {
                mouse_zoom_mesh.point2 = zoom2.point;
 
-               if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, zoom2.point))
-                  painter.Render3D(0);
+               if (painter.enable_hightlight)
+                  if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, zoom2.point))
+                     painter.Render3D(0);
             }
 
             tooltip.hide();
@@ -620,8 +621,16 @@
          painter.BinHighlight3D(null);
       }
 
-      this.control.ContextMenu = this.ShowContextMenu.bind(this, "hist");
-
+      this.control.ContextMenu = function(pos, intersects) {
+         var kind = "hist";
+         if (intersects)
+            for (var n=0;n<intersects.length;++n)
+               if (intersects[n].object.zoom) {
+                  kind = intersects[n].object.zoom;
+                  break;
+               }
+         painter.ShowContextMenu(kind, pos);
+      }
    }
 
    JSROOT.Painter.HPainter_TestAxisVisibility = function(camera, toplevel, fb, bb) {
