@@ -3075,9 +3075,8 @@
       var min = histo.getBinContent(i1 + 1, j1 + 1);
       for (i = i1; i < i2; ++i)
          for (j = j1; j < j2; ++j)
-            if (histo.getBinContent(i + 1, j + 1) < min)
-               min = histo.getBinContent(i + 1, j + 1);
-      if (min>0) return; // if all points positive, no chance for autoscale
+            min = Math.min(min, histo.getBinContent(i+1, j+1));
+      if (min > 0) return; // if all points positive, no chance for autoscale
 
       var ileft = i2, iright = i1, jleft = j2, jright = j1;
 

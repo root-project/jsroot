@@ -6703,7 +6703,7 @@
                this.Unzoom();
                return true;
             }
-            if (this.draw_content && ('AutoZoom' in this) && (this.Dimension() < 3)) {
+            if (this.draw_content && (typeof this.AutoZoom === 'function')) {
                this.AutoZoom();
                return true;
             }
@@ -7530,11 +7530,10 @@
       // first find minimum
       var min = this.histo.getBinContent(left + 1);
       for (var indx = left; indx < right; ++indx)
-         if (this.histo.getBinContent(indx + 1) < min)
-            min = this.histo.getBinContent(indx + 1);
-      if (min>0) return; // if all points positive, no chance for autoscale
+         min = Math.min(min, this.histo.getBinContent(indx+1));
+      if (min > 0) return; // if all points positive, no chance for autoscale
 
-      while ((left < right) && (this.histo.getBinContent(left + 1) <= min)) ++left;
+      while ((left < right) && (this.histo.getBinContent(left+1) <= min)) ++left;
       while ((left < right) && (this.histo.getBinContent(right) <= min)) --right;
 
       if ((right - left < dist) && (left < right))

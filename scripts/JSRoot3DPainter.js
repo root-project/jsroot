@@ -2635,22 +2635,86 @@
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.undo, 'Unzoom all axes', 'UnzoomAllAxis');
+      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Unzoom all axes', 'ToggleZoom');
       if (this.draw_content)
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
    JSROOT.TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
+
       if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
 
       if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
 
       if ((axis=="z") && (this.GetIndexZ(max,0.5) - this.GetIndexZ(min,0) > 1)) return true;
 
-
       return false;
    }
+
+   JSROOT.TH3Painter.prototype.AutoZoom = function() {
+      var i1 = this.GetSelectIndex("x", "left"),
+          i2 = this.GetSelectIndex("x", "right"),
+          j1 = this.GetSelectIndex("y", "left"),
+          j2 = this.GetSelectIndex("y", "right"),
+          k1 = this.GetSelectIndex("z", "left"),
+          k2 = this.GetSelectIndex("z", "right"),
+          i,j,k, histo = this.GetObject();
+
+      if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
+
+      // first find minimum
+      var min = histo.getBinContent(i1 + 1, j1 + 1, k1+1);
+      for (i = i1; i < i2; ++i)
+         for (j = j1; j < j2; ++j)
+            for (k = k1; k < k2; ++k)
+               min = Math.min(min, histo.getBinContent(i+1, j+1, k+1));
+
+      if (min>0) return; // if all points positive, no chance for autoscale
+
+      var ileft = i2, iright = i1, jleft = j2, jright = j1, kleft = k2, kright = k1;
+
+      for (i = i1; i < i2; ++i)
+         for (j = j1; j < j2; ++j)
+            for (k = k1; k < k2; ++k)
+               if (histo.getBinContent(i+1, j+1, k+1) > min) {
+                  if (i < ileft) ileft = i;
+                  if (i >= iright) iright = i + 1;
+                  if (j < jleft) jleft = j;
+                  if (j >= jright) jright = j + 1;
+                  if (k < kleft) kleft = k;
+                  if (k >= kright) kright = k + 1;
+               }
+
+      var xmin, xmax, ymin, ymax, zmin, zmax, isany = false;
+
+      if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
+         xmin = this.GetBinX(ileft);
+         xmax = this.GetBinX(iright);
+         isany = true;
+      }
+
+      if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
+         ymin = this.GetBinY(jleft);
+         ymax = this.GetBinY(jright);
+         isany = true;
+      }
+
+      if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
+         xmin = this.GetBinX(ileft);
+         xmax = this.GetBinX(iright);
+         isany = true;
+      }
+
+      if ((kleft > k1 || kright < k2) && (kleft < kright - 1)) {
+         zmin = this.GetBinZ(kleft);
+         zmax = this.GetBinZ(kright);
+         isany = true;
+      }
+
+      if (isany) this.Zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+   }
+
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
       menu.addDrawMenu("Draw with", ["box", "box1"], function(arg) {
