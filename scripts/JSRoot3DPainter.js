@@ -305,15 +305,19 @@
          if (mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
 
-            var zoom2 = DetectZoomMesh(evnt);
+            var zoom2 = DetectZoomMesh(evnt), pnt2 = null;
 
             if (zoom2 && (zoom2.object === mouse_zoom_mesh.object)) {
-               mouse_zoom_mesh.point2 = zoom2.point;
-
-               if (painter.enable_hightlight)
-                  if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, zoom2.point))
-                     painter.Render3D(0);
+               pnt2 = zoom2.point;
+            } else {
+               pnt2 = mouse_zoom_mesh.object.GlobalIntersect(raycaster);
             }
+
+            if (pnt2) mouse_zoom_mesh.point2 = pnt2;
+
+            if (pnt2 && painter.enable_hightlight)
+               if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, pnt2))
+                  painter.Render3D(0);
 
             tooltip.hide();
             return;
@@ -897,7 +901,31 @@
 
          var mesh = new THREE.Mesh(geom, material);
          mesh.zoom = kind;
+         mesh.size3d = size3d;
          if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
+
+         mesh.GlobalIntersect = function(raycaster) {
+            var plane = new THREE.Plane(),
+                geom = this.geometry;
+
+            plane.setFromCoplanarPoints(geom.vertices[0], geom.vertices[1], geom.vertices[2]);
+            plane.applyMatrix4(this.matrixWorld);
+
+            var v1 = raycaster.ray.origin.clone(),
+                v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1000);
+
+            var pnt = plane.intersectLine(new THREE.Line3(v1,v2));
+
+            if (!pnt) return undefined;
+
+            var min = -this.size3d, max = this.size3d;
+            if (this.kind==="z") { min = 0; max = 2*this.size3d; }
+
+            if (pnt[this.kind] < min) pnt[this.kind] = min; else
+            if (pnt[this.kind] > max) pnt[this.kind] = max;
+
+            return pnt;
+         }
 
          mesh.ShowSelection = function(pnt1,pnt2) {
             // used to show selection
