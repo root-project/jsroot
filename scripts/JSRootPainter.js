@@ -7659,6 +7659,7 @@
 
 
    JSROOT.TH1Painter.prototype.Redraw = function(resize) {
+
       this.CreateXY();
 
       var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";

@@ -871,6 +871,11 @@
       return $('#' + hid).get(0);
    }
 
+   JSROOT.TabsDisplay.prototype.CheckMDIResize = function(frame_id, size) {
+      $("#" + this.frameid + '_tabs').tabs("refresh");
+      JSROOT.MDIDisplay.prototype.CheckMDIResize.call(this, frame_id, size);
+   }
+
    // ==================================================
 
    JSROOT.FlexibleDisplay = function(frameid) {
