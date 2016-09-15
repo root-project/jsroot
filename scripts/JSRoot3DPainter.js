@@ -2447,11 +2447,11 @@
       }
 
       var histo = this.GetObject(),
-          i1 = this.GetSelectIndex("x", "left", 0),
+          i1 = this.GetSelectIndex("x", "left", 0.5),
           i2 = this.GetSelectIndex("x", "right", 0),
-          j1 = this.GetSelectIndex("y", "left", 0),
+          j1 = this.GetSelectIndex("y", "left", 0.5),
           j2 = this.GetSelectIndex("y", "right", 0),
-          k1 = this.GetSelectIndex("z", "left", 0),
+          k1 = this.GetSelectIndex("z", "left", 0.5),
           k2 = this.GetSelectIndex("z", "right", 0),
           name = this.GetTipName("<br/>");
 
@@ -2638,6 +2638,18 @@
       pp.AddButton(JSROOT.ToolbarIcons.undo, 'Unzoom all axes', 'UnzoomAllAxis');
       if (this.draw_content)
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+   }
+
+   JSROOT.TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
+      // check if it makes sense to zoom inside specified axis range
+      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+
+      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
+
+      if ((axis=="z") && (this.GetIndexZ(max,0.5) - this.GetIndexZ(min,0) > 1)) return true;
+
+
+      return false;
    }
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {

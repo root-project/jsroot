@@ -5753,7 +5753,7 @@
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexs starts from 0
       var indx = 0, obj = this.main_painter();
-      if (obj == null) obj = this;
+      if (!obj) obj = this;
       var nbin = this['nbins'+axis];
       if (!nbin) nbin = 0;
       if (!add) add = 0;
@@ -6378,12 +6378,10 @@
       }
 
       if (delta===0) return;
+      delta = (delta<0) ? -0.2 : 0.2;
 
-      if (delta<0) delta = -0.15; else
-      if (delta>0) delta = 0.15;
-
-      item.min = this["scale_" + item.name+"min"];
-      item.max = this["scale_" + item.name+"max"];
+      item.min = this["scale_"+item.name+"min"];
+      item.max = this["scale_"+item.name+"max"];
 
       if ((item.min === item.max) && (delta<0)) {
          item.min = this[item.name+"min"];
