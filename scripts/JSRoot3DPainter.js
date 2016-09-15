@@ -894,7 +894,7 @@
             // used to show selection
 
             var tgtmesh = this.children[0], gg, kind = this.zoom;
-            if (!pnt1 || !pnt2 || (kind==="z")) {
+            if (!pnt1 || !pnt2) {
                if (tgtmesh) {
                   this.remove(tgtmesh)
                   JSROOT.Painter.DisposeThreejsObject(tgtmesh);
@@ -903,27 +903,27 @@
             }
 
             if (!tgtmesh) {
-               gg = new THREE.Geometry();
-               gg.vertices.push(new THREE.Vector3(0,0,0),
-                                new THREE.Vector3(5,0,0),
-                                new THREE.Vector3(5,-ticklen,0),
-                                new THREE.Vector3(0,-ticklen, 0));
-               gg.faces.push(new THREE.Face3(0, 2, 1));
-               gg.faces.push(new THREE.Face3(0, 3, 2));
-
-               var mm = new THREE.MeshBasicMaterial({ color: 0xFF00, side: THREE.DoubleSide });
-               tgtmesh = new THREE.Mesh(gg, mm);
+               gg = this.geometry.clone();
+               if (kind==="z") gg.vertices[1].x = gg.vertices[2].x = ticklen;
+                          else gg.vertices[2].y = gg.vertices[3].y = -ticklen;
+               tgtmesh = new THREE.Mesh(gg, new THREE.MeshBasicMaterial({ color: 0xFF00, side: THREE.DoubleSide }));
                this.add(tgtmesh);
             } else {
                gg = tgtmesh.geometry;
             }
 
-            var pos1 = pnt1[kind], pos2 = pnt2[kind];
-
-            gg.vertices[0].x = gg.vertices[3].x = pos1;
-            gg.vertices[1].x = gg.vertices[2].x = pos2;
+            if (kind=="z") {
+               gg.vertices[0].z = gg.vertices[1].z = pnt1[kind];
+               gg.vertices[2].z = gg.vertices[3].z = pnt2[kind];
+            } else {
+               gg.vertices[0].x = gg.vertices[3].x = pnt1[kind];
+               gg.vertices[1].x = gg.vertices[2].x = pnt2[kind];
+            }
 
             gg.computeFaceNormals();
+
+            gg.verticesNeedUpdate = true;
+            gg.normalsNeedUpdate = true;
 
             return true;
          }
