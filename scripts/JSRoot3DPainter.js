@@ -2059,8 +2059,6 @@
          totalnfaces += nfaces;
          cnt++;
       }
-
-      // console.log('draw poly as lego plot', cnt, totalnfaces);
    }
 
    JSROOT.Painter.IsRender3DFired = function(painter) {
