@@ -919,10 +919,10 @@
             if (!pnt) return undefined;
 
             var min = -this.size3d, max = this.size3d;
-            if (this.kind==="z") { min = 0; max = 2*this.size3d; }
+            if (this.zoom==="z") { min = 0; max = 2*this.size3d; }
 
-            if (pnt[this.kind] < min) pnt[this.kind] = min; else
-            if (pnt[this.kind] > max) pnt[this.kind] = max;
+            if (pnt[this.zoom] < min) pnt[this.zoom] = min; else
+            if (pnt[this.zoom] > max) pnt[this.zoom] = max;
 
             return pnt;
          }
