@@ -4201,7 +4201,22 @@
       }
    }
 
-   JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname) {
+   JSROOT.TPadPainter.prototype.FindButton = function(keyname) {
+      var group = this.svg_layer("btns_layer", this.this_pad_name);
+      if (group.empty()) return;
+
+      var found_func = "";
+
+      group.selectAll("svg").each(function() {
+         if (d3.select(this).attr("key") === keyname)
+            found_func = d3.select(this).attr("name");
+      });
+
+      return found_func;
+
+   }
+
+   JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
 
       // do not add buttons when not allowed
       if (!JSROOT.gStyle.ToolBar) return;
@@ -4226,6 +4241,8 @@
                      .attr("height",this.ButtonSize()+"px")
                      .attr("viewBox", "0 0 512 512")
                      .style("overflow","hidden");
+
+      if (keyname) svg.attr("key", keyname);
 
       svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)));
 
@@ -6515,6 +6532,11 @@
 
       var itemx = { name: "x", dleft: 0, dright: 0 };
 
+      var key = evnt.key;
+      if (evnt.shiftKey && evnt.key!=="Shift") key = "Shift " + key;
+      if (evnt.altKey && evnt.key!=="Alt") key = "Alt " + key;
+      if (evnt.ctrlKey && evnt.key!=="Control") key = "Ctrl " + key;
+
       if (evnt.key === "ArrowUp") itemx.dleft = itemx.dright = -1; else
       if (evnt.key === "ArrowDown") itemx.dleft = itemx.dright = 1; else
       if (evnt.key === "ArrowLeft") { itemx.dleft = -1; itemx.dright = 1; } else
@@ -6526,6 +6548,15 @@
          if (itemx.changed) this.zoom_changed_interactive = true;
          evnt.stopPropagation();
          evnt.preventDefault();
+      } else {
+         var pp = this.pad_painter(true),
+             func = pp ? pp.FindButton(key) : "";
+         if (func) {
+            console.log('found func', func);
+            pp.PadButtonClick(func);
+            evnt.stopPropagation();
+            evnt.preventDefault();
+         }
       }
 
       return true; // just process any key press
@@ -6780,7 +6811,7 @@
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
-      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom');
+      pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY");
       if (this.Dimension() > 1)
