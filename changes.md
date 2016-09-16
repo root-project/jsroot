@@ -14,7 +14,7 @@
 7. Implement 'CONT', 'ARR' and 'SURF' draw options for TH2 class 
 8. Support basic drawing of TPolyLine class 
 9. Interactive axis zooming in 3D with mouse, very much like to 2D
-10. Interactive axis zooming in 2D with keys press
+10. Zooming and tool buttons via keyboards  
 
 
 ## Changes in 4.6.0

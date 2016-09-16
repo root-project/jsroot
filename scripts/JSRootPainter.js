@@ -4244,7 +4244,8 @@
 
       if (keyname) svg.attr("key", keyname);
 
-      svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)));
+      svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) +
+            (keyname ? " (keyshortcut " + keyname + ")" : ""));
 
       if ('recs' in btn) {
          var rec = {};
@@ -4285,7 +4286,7 @@
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
-      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot");
+      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
          painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
@@ -6526,16 +6527,17 @@
 
    JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
 
-      if (this.mode3d) return false; // no keypress in 3D mode
-
-      if (!JSROOT.gStyle.Zooming) return false;
+      // console.log('keycode',evnt.keyCode);
 
       var key = "";
       switch (evnt.keyCode) {
+         case 33: key = "PageUp"; break;
+         case 34: key = "PageDown"; break;
          case 37: key = "ArrowLeft"; break;
          case 38: key = "ArrowUp"; break;
          case 39: key = "ArrowRight"; break;
          case 40: key = "ArrowDown"; break;
+         case 42: key = "PrintScreen"; break;
          case 106: key = "*"; break;
          default: return false;
       }
@@ -6551,13 +6553,16 @@
          case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
          case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
          case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
-         case "Shift ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
-         case "Shift ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
-         case "ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
-         case "ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
+         case "ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
+         case "ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
+         case "Ctrl ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
+         case "Ctrl ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
       }
 
       if (zoom.dleft || zoom.dright) {
+         if (!JSROOT.gStyle.Zooming) return false;
+         // in 3dmode with orbit control ignore simple arrows
+         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
          this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
          this.Zoom(zoom.name, zoom.min, zoom.max);
          if (zoom.changed) this.zoom_changed_interactive = true;
@@ -6826,8 +6831,8 @@
       if (pp===null) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
-      pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX");
-      pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY");
+      pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");
+      pp.AddButton(JSROOT.ToolbarIcons.arrow_up, "Toggle log y", "ToggleLogY", "PageUp");
       if (this.Dimension() > 1)
          pp.AddButton(JSROOT.ToolbarIcons.arrow_diag, "Toggle log z", "ToggleLogZ");
       if (this.draw_content)
