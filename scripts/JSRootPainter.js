@@ -7676,6 +7676,7 @@
    JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
       JSROOT.AssertPrerequisites('more2d;3d', function() {
          this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
+         this.PrepareColorDraw = JSROOT.TH2Painter.prototype.PrepareColorDraw;
          this.Draw3D = JSROOT.Painter.TH1Painter_Draw3D;
          this.Draw3D(call_back);
       }.bind(this));
@@ -9984,7 +9985,7 @@
 
       if (this.keydown_handler) return;
       this.keydown_handler = this.HandleKeyPress.bind(this);
-      document.body.addEventListener("keydown", this.keydown_handler);
+      window.addEventListener("keydown", this.keydown_handler);
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
@@ -10067,7 +10068,7 @@
    JSROOT.MDIDisplay.prototype.Reset = function() {
 
       if (this.keydown_handler) {
-         document.body.removeEventListener("keydown", this.keydown_handler);
+         window.removeEventListener("keydown", this.keydown_handler);
          this.keydown_handler = null;
       }
 
