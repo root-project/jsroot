@@ -1020,13 +1020,11 @@
                $(this).appendTo($(this).parent());
                var ddd = $(this).find(".flex_draw");
 
-               if (ddd.prop('flex_block_drag') === true) {
-                  // block dragging when mouse below header
-                  var elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
-                  var isparent = false;
-                  $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
-                  if (isparent) return false;
-               }
+               // block dragging when mouse below header
+               var elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
+               var isparent = false;
+               $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
+               if (isparent) return false;
             }
          })
        .find('.flex_header')

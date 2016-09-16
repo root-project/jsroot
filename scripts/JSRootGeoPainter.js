@@ -691,8 +691,6 @@
 
       if (this._controls) return;
 
-      this.select_main().property('flex_block_drag', true);
-
       var painter = this;
 
       this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
