@@ -4526,6 +4526,8 @@
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
 
+      this.CreateXY();
+
       // draw new palette, resize frame if required
       var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
 
@@ -4556,7 +4558,6 @@
    }
 
    JSROOT.TH2Painter.prototype.Redraw = function(resize) {
-      this.CreateXY();
 
       var func_name = (this.options.Lego > 0) || (this.options.Surf > 0) ? "Draw3D" : "Draw2D";
 
@@ -4582,9 +4583,6 @@
       this.CheckPadRange();
 
       this.ScanContent();
-
-      // create X/Y only when frame is adjusted, probably should be done differently
-      this.CreateXY();
 
       // check if we need to create statbox
       if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.IsTH2Poly())
