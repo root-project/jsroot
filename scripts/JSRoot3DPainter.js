@@ -535,7 +535,6 @@
 
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty
-
          this.scene.remove(this.toplevel);
          JSROOT.Painter.DisposeThreejsObject(this.toplevel);
          delete this.toplevel;
@@ -545,6 +544,8 @@
          var newtop = new THREE.Object3D();
          this.scene.add(newtop);
          this.toplevel = newtop;
+
+         this.Resize3D(); // set actual sizes
 
          return;
       }
@@ -2275,9 +2276,9 @@
 
       this.apply_3d_size(size3d);
 
-      if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return;
+      if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return false;
 
-      if ((size3d.width<10) || (size3d.height<10)) return;
+      if ((size3d.width<10) || (size3d.height<10)) return false;
 
       this.scene_width = size3d.width;
       this.scene_height = size3d.height;
@@ -2287,7 +2288,7 @@
 
       this.renderer.setSize( this.scene_width, this.scene_height );
 
-      this.Render3D();
+      return true;
    }
 
    JSROOT.Painter.TH1Painter_Draw3D = function(call_back, resize) {
@@ -2295,7 +2296,7 @@
 
       if (resize)  {
 
-         this.Resize3D();
+         if (this.Resize3D()) this.Render3D();
 
       } else {
 
@@ -2327,7 +2328,7 @@
 
       if (resize) {
 
-         this.Resize3D();
+         if (this.Resize3D()) this.Render3D();
 
       } else {
 
@@ -2794,14 +2795,19 @@
 
    JSROOT.TH3Painter.prototype.Redraw = function(resize) {
       if (resize) {
-         this.Resize3D();
+
+         if (this.Resize3D()) this.Render3D();
+
       } else {
+
          this.Create3DScene();
          this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
          this.Render3D();
          this.AddKeysHandler();
+
       }
+      this.DrawTitle();
    }
 
    JSROOT.TH3Painter.prototype.FillToolbar = function() {
@@ -2914,8 +2920,6 @@
       this.ScanContent();
 
       this.Redraw();
-
-      this.DrawTitle();
 
       if (JSROOT.gStyle.AutoStat && this.create_canvas) {
          var stats = this.CreateStat();

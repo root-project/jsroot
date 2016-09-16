@@ -3994,7 +3994,7 @@
    }
 
    JSROOT.TPadPainter.prototype.RedrawByResize = function() {
-      if (this.access_3d_kind() > 0) return true;
+      if (this.access_3d_kind() === 1) return true;
 
       for (var i = 0; i < this.painters.length; ++i)
          if (typeof this.painters[i].RedrawByResize === 'function')
@@ -4016,7 +4016,7 @@
       // If redrawing was forced for canvas, same applied for sub-elements
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw(true /*force ? false : true*/);
+            this.painters[i].Redraw(force ? false : true);
 
       return changed;
    }
