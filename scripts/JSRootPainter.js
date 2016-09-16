@@ -9995,17 +9995,12 @@
       this.frameid = frameid;
       d3.select("#"+this.frameid).property('mdi', this);
       this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
-      this.keydown_handler = null;
       this.active_frame_title = ""; // keep title of active frame
    }
 
    JSROOT.MDIDisplay.prototype.BeforeCreateFrame = function(title) {
 
       this.active_frame_title = title;
-
-      //if (this.keydown_handler) return;
-      //this.keydown_handler = this.HandleKeyPress.bind(this);
-      //window.addEventListener("keydown", this.keydown_handler, false);
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
@@ -10054,20 +10049,6 @@
       return this.FindFrame(this.active_frame_title);
    }
 
-   JSROOT.MDIDisplay.prototype.HandleKeyPress = function(evnt) {
-      // this method used to deliver key events to active frame
-
-      var frame = this.GetActiveFrame();
-      if (!frame) return;
-
-      var dummy = new JSROOT.TObjectPainter(), done = false;
-      dummy.SetDivId(frame, -1);
-      dummy.ForEachPainter(function(painter) {
-         if (!done && painter && typeof painter.ProcessKeyPress === 'function')
-            if (painter.ProcessKeyPress(evnt)) done = true;
-      });
-   }
-
    JSROOT.MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
       var resized_frame = null;
@@ -10086,11 +10067,6 @@
    }
 
    JSROOT.MDIDisplay.prototype.Reset = function() {
-
-      if (this.keydown_handler) {
-         window.removeEventListener("keydown", this.keydown_handler);
-         this.keydown_handler = null;
-      }
 
       this.active_frame_title = "";
 
