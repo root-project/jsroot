@@ -60,6 +60,7 @@
          title: 'Save as PNG',
          icon: JSROOT.ToolbarIcons.camera,
          click: function() {
+            painter.Render3D(0);
             var dataUrl = painter._renderer.domElement.toDataURL("image/png");
             dataUrl.replace("image/png", "image/octet-stream");
             var link = document.createElement('a');

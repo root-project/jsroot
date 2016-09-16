@@ -3925,20 +3925,11 @@
 
       menu.add("separator");
 
-      var file_name = "canvas.png";
-      if (!this.iscan) file_name = this.this_pad_name + ".png";
+      var fname = this.this_pad_name;
+      if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
+      fname += ".png";
 
-      menu.add("Save as "+file_name, file_name, function(arg) {
-         // todo - use jqury dialog here
-         var top = this.svg_pad(this.this_pad_name);
-         if (!top.empty())
-            JSROOT.AssertPrerequisites("savepng", function() {
-               console.log('create', arg);
-               top.selectAll(".btns_layer").style("display","none");
-               saveSvgAsPng(top.node(), arg);
-               top.selectAll(".btns_layer").style("display","");
-            });
-      });
+      menu.add("Save as "+fname, fname, this.SaveAsPng.bind(this, false));
 
       return true;
    }
@@ -4102,41 +4093,47 @@
 
    }
 
+   JSROOT.TPadPainter.prototype.SaveAsPng = function(full_canvas, filename) {
+      if (!filename) {
+         filename = this.this_pad_name;
+         if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
+         filename += ".png";
+      }
+
+      var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
+
+      if (elem.empty()) return;
+
+      var main = this.main_painter(),
+          can3d = this.access_3d_kind();
+
+      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
+         var canvas = main.renderer.domElement;
+         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immedaitely
+         var dataUrl = canvas.toDataURL("image/png");
+         dataUrl.replace("image/png", "image/octet-stream");
+         var link = document.createElement('a');
+         if (typeof link.download === 'string') {
+            document.body.appendChild(link); //Firefox requires the link to be in the body
+            link.download = filename;
+            link.href = dataUrl;
+            link.click();
+            document.body.removeChild(link); //remove the link when done
+         }
+      } else {
+         JSROOT.AssertPrerequisites("savepng", function() {
+            elem.selectAll(".btns_layer").style("display","none");
+            saveSvgAsPng(elem.node(), filename);
+            elem.selectAll(".btns_layer").style("display","");
+         });
+      }
+   }
+
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
 
-      var elem = null, filename = "";
+      if (funcname == "CanvasSnapShot") return this.SaveAsPng(true);
 
-      if (funcname == "CanvasSnapShot") {
-         elem = this.svg_canvas();
-         filename = (this.pad ? this.pad.fName : "jsroot_canvas") + ".png";
-      } else
-      if (funcname == "PadSnapShot") {
-         elem = this.svg_pad(this.this_pad_name);
-         filename = this.this_pad_name + ".png";
-      }
-      if ((elem!==null) && !elem.empty()) {
-         var main = elem.property('mainpainter');
-
-         if ((elem.property('can3d') === 1) && (main!==undefined) && (main.renderer!==undefined)) {
-            var dataUrl = main.renderer.domElement.toDataURL("image/png");
-            dataUrl.replace("image/png", "image/octet-stream");
-            var link = document.createElement('a');
-            if (typeof link.download === 'string') {
-               document.body.appendChild(link); //Firefox requires the link to be in the body
-               link.download = filename;
-               link.href = dataUrl;
-               link.click();
-               document.body.removeChild(link); //remove the link when done
-            }
-         } else {
-            JSROOT.AssertPrerequisites("savepng", function() {
-               elem.selectAll(".btns_layer").style("display","none");
-               saveSvgAsPng(elem.node(), filename);
-               elem.selectAll(".btns_layer").style("display","");
-            });
-         }
-         return;
-      }
+      if (funcname == "PadSnapShot") return this.SaveAsPng(false);
 
       if (funcname == "PadContextMenus") {
 
@@ -10342,7 +10339,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;same"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;LEGO;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;LCOL;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
