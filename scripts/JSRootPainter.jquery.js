@@ -756,7 +756,9 @@
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     JSROOT.resize($(this).next().attr('id'));
+                     var sub = $(this).next();
+                     sub.attr('frame_active', sub.is(":hidden") ? "false" : "true");
+                     JSROOT.resize(sub.attr('id'));
                      return false;
                   })
             .next()
@@ -843,7 +845,9 @@
                        .tabs({
                           heightStyle : "fill",
                           activate : function (event,ui) {
-                             $(ui.newPanel).css('overflow', 'hidden');
+                             console.log('tabs activate');
+                             $(ui.oldPanel).attr('frame_active', 'false');
+                             $(ui.newPanel).css('overflow', 'hidden').attr('frame_active', 'true');
                              JSROOT.resize($(ui.newPanel).attr('id'));
                            }
                           });
@@ -866,6 +870,7 @@
       $('#' + hid)
          .empty()
          .css('overflow', 'hidden')
+         .attr('frame_active', 'true')
          .attr('frame_title', title);
 
       return $('#' + hid).get(0);
@@ -985,6 +990,8 @@
                   main.css('left', main.prop('original_left'))
                       .css('top', main.prop('original_top'));
          }
+
+         main.find(".flex_draw").attr('frame_active', state !== "minimal" ? "true" : "false");
 
          if (state !== "minimal")
             JSROOT.resize(main.find(".flex_draw").get(0));

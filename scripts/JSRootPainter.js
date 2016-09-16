@@ -6547,7 +6547,8 @@
 
    JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
 
-      console.log('keycode',evnt.keyCode);
+      var isactive = this.select_main().attr('frame_active');
+      if (isactive && isactive!=='true') return;
 
       var key = "";
       switch (evnt.keyCode) {
