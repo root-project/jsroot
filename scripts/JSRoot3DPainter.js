@@ -2309,6 +2309,8 @@
          this.Draw3DBins();
 
          this.Render3D();
+
+         this.AddKeysHandler();
       }
 
       // (re)draw palette by resize while canvas may change dimension
@@ -2350,6 +2352,8 @@
          this.Draw3DBins();
 
          this.Render3D();
+
+         this.AddKeysHandler();
       }
 
       // (re)draw palette by resize while canvas may change dimension
@@ -2796,6 +2800,7 @@
          this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
          this.Render3D();
+         this.AddKeysHandler();
       }
    }
 

@@ -4893,6 +4893,7 @@
       this.nbinsy = 0;
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.keys_handler = null;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -4907,6 +4908,15 @@
 
    JSROOT.THistPainter.prototype.IsTH2Poly = function() {
       return this.histo && this.histo._typename.match(/^TH2Poly/);
+   }
+
+   JSROOT.THistPainter.prototype.Cleanup = function() {
+      if (this.keys_handler) {
+         window.removeEventListener( 'keydown', this.keys_handler, false );
+         this.keys_handler = null;
+      }
+
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
    JSROOT.THistPainter.prototype.Dimension = function() {
@@ -6492,6 +6502,8 @@
 
       if (svg.empty() || svg.property('interactive_set')) return;
 
+      this.AddKeysHandler();
+
       this.last_touch = new Date(0);
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
@@ -6525,9 +6537,17 @@
       svg.property('interactive_set', true);
    }
 
+   JSROOT.THistPainter.prototype.AddKeysHandler = function() {
+      if (this.keys_handler) return;
+
+      this.keys_handler = this.ProcessKeyPress.bind(this);
+
+      window.addEventListener( 'keydown', this.keys_handler, false );
+   }
+
    JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
 
-      // console.log('keycode',evnt.keyCode);
+      console.log('keycode',evnt.keyCode);
 
       var key = "";
       switch (evnt.keyCode) {
@@ -7742,7 +7762,6 @@
          painter.DrawNextFunction(0, function() {
 
             if (painter.options.Lego === 0) {
-               // painter.AddInteractive();
                if (painter.options.AutoZoom) painter.AutoZoom();
             }
 
@@ -9983,9 +10002,9 @@
 
       this.active_frame_title = title;
 
-      if (this.keydown_handler) return;
-      this.keydown_handler = this.HandleKeyPress.bind(this);
-      window.addEventListener("keydown", this.keydown_handler);
+      //if (this.keydown_handler) return;
+      //this.keydown_handler = this.HandleKeyPress.bind(this);
+      //window.addEventListener("keydown", this.keydown_handler, false);
    }
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {

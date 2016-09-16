@@ -4595,7 +4595,6 @@
       this[func_name](function() {
          this.DrawNextFunction(0, function() {
             if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
-               // this.AddInteractive();
                if (this.options.AutoZoom) this.AutoZoom();
             }
             this.FillToolbar();
