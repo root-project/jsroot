@@ -7658,7 +7658,8 @@
       }
 
       var res = { x: midx, y: midy,
-                  color1: this.lineatt.color, color2: this.fillatt.color,
+                  color1: this.lineatt ? this.lineatt.color : 'green',
+                  color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(findbin) };
 
       if (show_rect) {
@@ -9106,6 +9107,8 @@
 
       if (this.disp == null) return;
 
+      if (only_auto_items === "monitoring") only_auto_items = !this._monitoring_on;
+
       var allitems = [], options = [], hpainter = this;
 
       // first collect items
@@ -9776,16 +9779,28 @@
       this.RefreshHtml();
    }
 
-   JSROOT.HierarchyPainter.prototype.SetMonitoring = function(val) {
-      this._monitoring_on = false;
-      this._monitoring_interval = 3000;
+   JSROOT.HierarchyPainter.prototype.SetMonitoring = function(interval, flag) {
 
-      val = (val === undefined) ? 0 : parseInt(val);
+      if (interval!==undefined) {
+         this._monitoring_on = false;
+         this._monitoring_interval = 3000;
 
-      if (!isNaN(val) && (val>0)) {
-         this._monitoring_on = true;
-         this._monitoring_interval = Math.max(100,val);
+         interval = !interval ? 0 : parseInt(interval);
+
+         if (!isNaN(interval) && (interval>0)) {
+            this._monitoring_on = true;
+            this._monitoring_interval = Math.max(100,interval);
+         }
       }
+
+      if (flag !== undefined)
+         this._monitoring_on = flag;
+
+      // first clear old handle
+      if (this._monitoring_handle) clearInterval(this._monitoring_handle);
+
+      // now set new interval (if necessary)
+      this._monitoring_handle = setInterval(this.updateAll.bind(this, "monitoring"),  this._monitoring_interval);
    }
 
    JSROOT.HierarchyPainter.prototype.MonitoringInterval = function(val) {
@@ -9832,6 +9847,12 @@
       });
 
       if (withbrowser) {
+
+         if (this._monitoring_handle) {
+            clearInterval(this._monitoring_handle);
+            delete this._monitoring_handle;
+         }
+
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
          plainarr.forEach(function(iii) { delete iii._parent; delete iii._childs; delete iii._obj; });
@@ -9943,8 +9964,6 @@
 
       if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
 
-      this.SetMonitoring(monitor);
-
       function OpenAllFiles() {
          if (jsonarr.length>0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
@@ -9958,9 +9977,7 @@
 
                JSROOT.RegisterForResize(hpainter);
 
-               // assign regular update only when monitoring specified (or when work with online application)
-               if (h0 || hpainter.GetTopOnlineItem() || hpainter.IsMonitoring())
-                  setInterval(function() { hpainter.updateAll(!hpainter.IsMonitoring()); }, hpainter.MonitoringInterval());
+               hpainter.SetMonitoring(monitor);
 
                JSROOT.CallBack(call_back);
            });
@@ -9968,21 +9985,18 @@
 
       function AfterOnlineOpened() {
          // check if server enables monitoring
-         if (('_monitoring' in hpainter.h) && (monitor==null)) {
-            hpainter.SetMonitoring(hpainter.h._monitoring);
-         }
+         if (('_monitoring' in hpainter.h) && !monitor)
+            monitor = hpainter.h._monitoring;
 
-         if (('_layout' in hpainter.h) && (layout==null)) {
+         if (('_layout' in hpainter.h) && (layout==null))
             hpainter.disp_kind = hpainter.h._layout;
-         }
 
-         if (('_loadfile' in hpainter.h) && (filesarr.length==0)) {
+         if (('_loadfile' in hpainter.h) && (filesarr.length==0))
             filesarr = JSROOT.ParseAsArray(hpainter.h._loadfile);
-         }
 
          if (('_drawitem' in hpainter.h) && (itemsarr.length==0)) {
             itemsarr = JSROOT.ParseAsArray(hpainter.h._drawitem);
-            optionsarr = JSROOT.ParseAsArray(hpainter.h['_drawopt']);
+            optionsarr = JSROOT.ParseAsArray(hpainter.h._drawopt);
          }
 
          OpenAllFiles();

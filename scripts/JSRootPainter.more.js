@@ -4413,7 +4413,8 @@
          }
 
          var res = { x: pnt.x, y: pnt.y,
-                     color1: this.lineatt.color, color2: this.fillatt.color,
+                     color1: this.lineatt ? this.lineatt.color : 'green',
+                     color2: this.fillatt ? this.fillatt.color : 'blue',
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
@@ -4456,7 +4457,8 @@
          }
 
          var res = { x: pnt.x, y: pnt.y,
-                     color1: this.lineatt.color, color2: this.fillatt.color,
+                     color1: this.lineatt ? this.lineatt.color : 'green',
+                     color2: this.fillatt ? this.fillatt.color : 'blue',
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
          if (ttrect.empty())
@@ -4505,8 +4507,9 @@
       }
 
       var res = { x: pnt.x, y: pnt.y,
-                 color1: this.lineatt.color, color2: this.fillatt.color,
-                 lines: this.GetBinTips(i, j), exact: true, menu: true };
+                  color1: this.lineatt ? this.lineatt.color : 'green',
+                  color2: this.fillatt ? this.fillatt.color : 'blue',
+                  lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
 
