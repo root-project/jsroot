@@ -1124,7 +1124,7 @@
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
-      console.log('Cleanup ', this.GetObject() ? this.GetObject()._typename : "---");
+//      console.log('Cleanup ', this.GetObject() ? this.GetObject()._typename : "---");
 
       this.RemoveDrawG();
 
@@ -9387,6 +9387,12 @@
          // item marked as it cannot be expanded
          if (hitem._more === false) return JSROOT.CallBack(call_back);
 
+         if (hitem._childs && hitem._isopen) {
+            hitem._isopen = false;
+            if (!silent) hpainter.UpdateTreeNode(hitem, d3cont);
+            return;
+         }
+
          if (hitem._obj && DoExpandItem(hitem, hitem._obj, itemname)) return;
       }
 
@@ -9797,14 +9803,19 @@
          delete this.disp;
       }
 
+      var plainarr = [];
+
       this.ForEach(function(item) {
          delete item._painter; // remove reference on the painter
          // when only display cleared, try to clear all browser items
          if (!withbrowser && (typeof item.clear=='function')) item.clear();
+         if (withbrowser) plainarr.push(item);
       });
 
       if (withbrowser) {
+         // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
+         plainarr.forEach(function(iii) { delete iii._parent; delete iii._childs; delete iii._obj; });
          delete this.h;
       }
    }

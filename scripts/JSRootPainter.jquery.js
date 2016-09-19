@@ -464,14 +464,17 @@
 
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
-          ((place == "item") && (dflt === "expand")))
+          ((place == "item") && (dflt === "expand"))) {
          return this.expand(itemname, null, d3cont);
+      }
 
       if (place == "item") {
          if ('_player' in hitem)
             return this.player(itemname);
 
-         var can_draw = hitem._can_draw, can_expand = hitem._more;
+         var can_draw = hitem._can_draw,
+             can_expand = hitem._more,
+             dflt_expand = (this.default_by_click === "expand");
 
          if (hitem._childs) can_expand = false;
 
@@ -486,14 +489,14 @@
 
          if (can_draw && can_expand) {
             // if default action specified as expand, disable drawing
-            if (handle && (handle.dflt === 'expand')) can_draw = false; else
+            if (dflt_expand || (handle && (handle.dflt === 'expand'))) can_draw = false; else
             if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
          }
 
          if (can_draw)
             return this.display(itemname);
 
-         if (can_expand || (this.default_by_click === "expand"))
+         if (can_expand || dflt_expand)
             return this.expand(itemname, null, d3cont);
 
          // cannot draw, but can inspect ROOT objects
