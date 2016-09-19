@@ -2447,11 +2447,11 @@
 
       draw_g.call(font.func);
 
-      draw_g.property('text_font', font);
-      draw_g.property('mathjax_use', false);
-      draw_g.property('text_factor', 0.);
-      draw_g.property('max_text_width', 0); // keep maximal text width, use it later
-      draw_g.property('max_font_size', max_font_size);
+      draw_g.property('text_font', font)
+            .property('mathjax_use', false)
+            .property('text_factor', 0.)
+            .property('max_text_width', 0) // keep maximal text width, use it later
+            .property('max_font_size', max_font_size);
    }
 
    JSROOT.TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
@@ -4603,7 +4603,8 @@
       this.CreateFormatFuncs();
 
       var center_lbls = this.IsCenterLabels(),
-          res = "", res2 = "", lastpos = 0, lasth = 0, textscale = 1;
+          res = "", res2 = "", lastpos = 0, lasth = 0,
+          textscale = 1, maxtextlen = 0;
 
       // first draw ticks
 
@@ -4677,6 +4678,8 @@
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
+         maxtextlen = Math.max(maxtextlen, lbl.length);
+
          if (vertical)
             t.attr("x", -labeloffset*side)
              .attr("y", pos)
@@ -4740,7 +4743,7 @@
 
      if ((textscale>0) && (textscale<1.)) {
         // rotate X lables if they are too big
-        if ((textscale < 0.7) && !vertical && (side>0)) {
+        if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
            label_g.selectAll("text").each(function() {
               var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
 
