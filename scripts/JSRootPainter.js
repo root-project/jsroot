@@ -1003,6 +1003,7 @@
 
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
+      this.divid = null;
    }
 
    JSROOT.TBasePainter.prototype.DrawingReady = function() {
@@ -1121,6 +1122,27 @@
    }
 
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+
+   JSROOT.TObjectPainter.prototype.Cleanup = function() {
+      console.log('Cleanup ', this.GetObject() ? this.GetObject()._typename : "---");
+
+      this.RemoveDrawG();
+
+      // generic method to cleanup painters
+      //if (this.is_main_painter())
+      //   this.select_main().html("");
+
+      // cleanup all existing references
+      this.pad_name = "";
+      this.main = null;
+      this.draw_object = null;
+      this.divid = null;
+
+      // remove attributes objects (if any)
+      delete this.fillatt;
+      delete this.lineatt;
+      delete this.bins;
+   }
 
    JSROOT.TObjectPainter.prototype.GetObject = function() {
       return this.draw_object;
@@ -1290,8 +1312,9 @@
    }
 
    JSROOT.TObjectPainter.prototype.frame_painter = function() {
-      var res = this.svg_frame().property('frame_painter');
-      return (res===undefined) ? null : res;
+      var elem = this.svg_frame();
+      var res = elem.empty() ? null : elem.property('frame_painter');
+      return res ? res : null;
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function(pad_name) {
@@ -1749,22 +1772,15 @@
    JSROOT.TObjectPainter.prototype.ForEachPainter = function(userfunc) {
       // Iterate over all known painters
 
+      // special case of the painter set as pointer of first child of main element
       var main = this.select_main();
       var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null;
-      if (painter!=null) return userfunc(painter);
+      if (painter) return userfunc(painter);
 
+      // iterate over all painters from pad list
       var pad_painter = this.pad_painter(true);
-      if (pad_painter == null) return;
-
-      userfunc(pad_painter);
-      if ('painters' in pad_painter)
-         for (var k = 0; k < pad_painter.painters.length; ++k)
-            userfunc(pad_painter.painters[k]);
-   }
-
-   JSROOT.TObjectPainter.prototype.Cleanup = function() {
-      // generic method to cleanup painters
-      this.select_main().html("");
+      if (pad_painter)
+         pad_painter.ForEachPainterInPad(userfunc);
    }
 
    JSROOT.TObjectPainter.prototype.RedrawPad = function() {
@@ -1832,9 +1848,8 @@
          if (callback.minwidth && newwidth < callback.minwidth) newwidth = callback.minwidth;
          if (callback.minheight && newheight < callback.minheight) newheight = callback.minheight;
 
-
-         var change_size = (newwidth !== rect_width()) || (newheight !== rect_height());
-         var change_pos = (newx !== oldx) || (newy !== oldy);
+         var change_size = (newwidth !== rect_width()) || (newheight !== rect_height()),
+             change_pos = (newx !== oldx) || (newy !== oldy);
 
          pthis.draw_g.attr('x', newx).attr('y', newy)
                      .attr("transform", "translate(" + newx + "," + newy + ")")
@@ -3612,11 +3627,37 @@
       this.this_pad_name = "";
       if (!this.iscan && (pad !== null) && ('fName' in pad))
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
-      this.painters = new Array; // complete list of all painters in the pad
+      this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
    }
 
    JSROOT.TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+
+   JSROOT.TPadPainter.prototype.Cleanup = function() {
+      // cleanup only pad itself, all child elements will be collected and cleanup separately
+
+      this.painters = [];
+      this.pad = null;
+      this.this_pad_name = "";
+      this.has_canvas = false;
+
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
+   JSROOT.TPadPainter.prototype.ForEachPainterInPad = function(userfunc) {
+
+      userfunc(this);
+
+      for (var k = 0; k < this.painters.length; ++k) {
+         var sub =  this.painters[k];
+
+         if (typeof sub.ForEachPainterInPad === 'function')
+            sub.ForEachPainterInPad(userfunc);
+         else
+            userfunc(sub);
+      }
+   }
 
    JSROOT.TPadPainter.prototype.ButtonSize = function(fact) {
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
@@ -4351,6 +4392,16 @@
 
    JSROOT.TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
+   JSROOT.TAxisPainter.prototype.Cleanup = function() {
+
+      this.ticks = [];
+      this.func = null;
+      delete this.format;
+      delete this.range;
+
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
    JSROOT.TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
       this.name = name;
       this.kind = kind;
@@ -4916,6 +4967,36 @@
          window.removeEventListener( 'keydown', this.keys_handler, false );
          this.keys_handler = null;
       }
+
+      // clear all 3D buffers
+      if (typeof this.Create3DScene === 'function')
+         this.Create3DScene(-1);
+
+      this.histo = null; // cleanup histogram reference
+      delete this.x; delete this.grx;
+      delete this.ConvertX; delete this.RevertX;
+      delete this.y; delete this.gry;
+      delete this.ConvertY; delete this.RevertY;
+      delete this.z; delete this.grz;
+
+      if (this.x_handle) {
+         this.x_handle.Cleanup();
+         delete this.x_handle;
+      }
+
+      if (this.y_handle) {
+         this.y_handle.Cleanup();
+         delete this.y_handle;
+      }
+
+      if (this.z_handle) {
+         this.z_handle.Cleanup();
+         delete this.z_handle;
+      }
+
+      delete this.fPalette;
+      delete this.fContour;
+      delete this.options;
 
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
@@ -10680,11 +10761,13 @@
       var dummy = new JSROOT.TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
-         if (lst.indexOf(painter) >= 0) return;
-         lst.push(painter)
-         if (typeof painter.Cleanup === 'function')
-            painter.Cleanup();
+         if (lst.indexOf(painter) < 0) lst.push(painter);
       });
+
+      console.log('Cleanup ', lst.length);
+
+      for (var n=0;n<lst.length;++n) lst[n].Cleanup();
+
       dummy.select_main().html("");
       return lst;
    }

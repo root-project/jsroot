@@ -952,10 +952,10 @@
             xmax = Math.log(xmax);
          }
 
-         var np = Math.max(tf1.fNpx, 101);
-         var dx = (xmax - xmin) / (np - 1);
+         var np = Math.max(tf1.fNpx, 101),
+            dx = (xmax - xmin) / (np - 1),
+            res = [];
 
-         var res = [];
          for (var n=0; n < np; n++) {
             var xx = xmin + n*dx;
             if (logx) xx = Math.exp(xx);
@@ -967,9 +967,8 @@
 
       this.CreateDummyHisto = function() {
 
-         var xmin = 0, xmax = 1, ymin = 0, ymax = 1;
-
-         var bins = this.CreateBins(true);
+         var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
+             bins = this.CreateBins(true);
 
          if (bins!==null) {
 
@@ -1027,8 +1026,8 @@
 
          bin = this.bins[best];
 
-         var gbin = this.draw_g.select(".tooltip_bin");
-         var radius = this.lineatt.width + 3;
+         var gbin = this.draw_g.select(".tooltip_bin"),
+             radius = this.lineatt.width + 3;
 
          if (gbin.empty())
             gbin = this.draw_g.append("svg:circle")
@@ -1166,13 +1165,19 @@
       // 'this' pointer set to created painter instance
       this.nostack = false;
       this.firstpainter = null;
-      this.painters = new Array; // keep painters to be able update objects
+      this.painters = []; // keep painters to be able update objects
 
       this.SetDivId(divid);
 
       if (!('fHists' in stack) || (stack.fHists.arr.length == 0)) return this.DrawingReady();
 
-      this['BuildStack'] = function() {
+      this.Cleanup = function() {
+         delete this.firstpainter;
+         delete this.painters;
+         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      }
+
+      this.BuildStack = function() {
          //  build sum of all histograms
          //  Build a separate list fStack containing the running sum of all histograms
 
@@ -1206,7 +1211,7 @@
          return true;
       }
 
-      this['GetHistMinMax'] = function(hist, witherr) {
+      this.GetHistMinMax = function(hist, witherr) {
          var res = { min : 0, max : 0 };
          var domin = false, domax = false;
          if (hist.fMinimum != -1111)
@@ -1236,7 +1241,7 @@
          return res;
       }
 
-      this['GetMinMax'] = function(opt) {
+      this.GetMinMax = function(opt) {
          var res = { min : 0, max : 0 },
              iserr = (opt.indexOf('e')>=0),
              stack = this.GetObject();
@@ -1269,7 +1274,7 @@
          return res;
       }
 
-      this['DrawNextHisto'] = function(indx, opt) {
+      this.DrawNextHisto = function(indx, opt) {
          var hist = null,
              stack = this.GetObject(),
              nhists = stack.fHists.arr.length;
@@ -1289,7 +1294,7 @@
          subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
       }
 
-      this['drawStack'] = function(opt) {
+      this.drawStack = function(opt) {
          var pad = this.root_pad(),
              stack = this.GetObject(),
              histos = stack.fHists,
@@ -1353,7 +1358,7 @@
          return this;
       }
 
-      this['UpdateObject'] = function(obj) {
+      this.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
 
          var isany = false;
