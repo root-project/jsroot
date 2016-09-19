@@ -8026,7 +8026,7 @@
 
          var item;
 
-         if (obj===null) {
+         if (!obj || !obj._typename) {
             item = {
                _name: i.toString(),
                _kind: "ROOT.NULL",
@@ -8040,11 +8040,17 @@
              _title : obj.fTitle,
              _obj : obj
            };
+
+           switch(obj._typename) {
+              case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(obj); break;
+              case 'TLatex': item._value = obj.fTitle; break;
+           }
+
            // if name is integer value, it should match array index
-           if ((item._name === undefined) ||
-               (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
-               || (lst.arr.indexOf(obj)<i))
-                 item._name = i.toString();
+           if ((item._name === undefined) || (item._name === "") ||
+                 (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
+                 || (lst.arr.indexOf(obj)<i))
+                   item._name = i.toString();
 
            if (item._title === undefined)
               item._title = obj._typename ? item._kind : item._name;
