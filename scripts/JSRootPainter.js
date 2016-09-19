@@ -8763,8 +8763,9 @@
 
       while (node) {
          if (node._online!==undefined) {
-            if (uptoparent === 'online') return res;
             if (uptoparent === 'onlineurl') return node._online!=="" ? node._online + res : res;
+            // all online items does not include top-folder names
+            return res;
          }
 
          if (uptoparent && (node === uptoparent)) break;
@@ -9750,14 +9751,16 @@
 
       var painter = this,
           node = this.Find(itemname),
-          sett = JSROOT.getDrawSettings(node._kind, 'nosame'),
+          sett = JSROOT.getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = JSROOT.getDrawHandle(node._kind),
           root_type = ('_kind' in node) ? node._kind.indexOf("ROOT.") == 0 : false;
 
-      if (sett.opts)
+      if (sett.opts) {
+         sett.opts.push('inspect');
          menu.addDrawMenu("Draw", sett.opts, function(arg) { painter.display(itemname, arg); });
+      }
 
-      if (sett.expand && !node._childs && (node._more || root_type))
+      if (!node._childs && (node._more || root_type || sett.expand))
          menu.add("Expand", function() { painter.expand(itemname); });
 
       if (handle && ('execute' in handle))

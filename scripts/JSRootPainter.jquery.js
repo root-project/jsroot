@@ -473,6 +473,12 @@
          if ('_player' in hitem)
             return this.player(itemname);
 
+         if (handle && handle.aslink)
+            return window.open(itemname + "/");
+
+        if (handle && handle.execute)
+            return this.ExecuteCommand(itemname, node.parentNode);
+
          var can_draw = hitem._can_draw,
              can_expand = hitem._more,
              dflt_expand = (this.default_by_click === "expand");
@@ -480,13 +486,7 @@
          if (hitem._childs) can_expand = false;
 
          if (can_draw === undefined) can_draw = sett.draw;
-         if (can_expand !== false) can_expand = sett.expand;
-
-         if (handle && handle.aslink)
-             return window.open(itemname + "/");
-
-         if (handle && handle.execute)
-             return this.ExecuteCommand(itemname, node.parentNode);
+         if (can_expand === undefined) can_expand = sett.expand;
 
          if (can_draw && can_expand) {
             // if default action specified as expand, disable drawing
