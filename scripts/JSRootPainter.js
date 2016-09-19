@@ -6445,9 +6445,9 @@
       if ((dmin>0) && (dmin<1)) {
          if (this['log'+item.name]) {
             var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<1.5) factor = 1.5;
-            item.min = item.min / Math.pow(factor, delta_left*dmin);
-            item.max = item.max * Math.pow(factor, delta_right*(1-dmin));
+            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else {
             var rx_left = (item.max - item.min),
                 rx_right = rx_left;
