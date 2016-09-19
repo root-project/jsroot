@@ -327,7 +327,8 @@
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
 
-      if (this.divid == null) return JSROOT.CallBack(callback);
+      if (!this.divid) return JSROOT.CallBack(callback);
+
       var d3elem = this.select_main();
 
       d3elem.html(""); // clear html - most simple way
@@ -357,7 +358,7 @@
              maindiv.append("button")
                     .text("")
                     .attr("class",'fast_command')
-                    .attr("item", this.itemFullName(factcmds[n]))
+                    .attr("item", this.itemFullName(factcmds[n], 'online'))
                     .attr("title", factcmds[n]._title)
                     .on("click", function() { h.ExecuteCommand(d3.select(this).attr("item"), this); } );
 
@@ -390,10 +391,15 @@
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
+
+         console.log('full status name', this.itemFullName(status_item, 'online'));
+
+         console.log('top element _online', this.h._online);
+
          var func = JSROOT.findFunction(status_item._status);
          var hdiv = (typeof func == 'function') ? JSROOT.Painter.ConfigureHSeparator(30) : null;
          if (hdiv != null)
-            func(hdiv, this.itemFullName(status_item));
+            func(hdiv, this.itemFullName(status_item, 'online'));
       }
 
       JSROOT.CallBack(callback);
@@ -1196,10 +1202,10 @@
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey) {
 
       var url = hpainter.GetOnlineItemUrl(itemname);
-      if (url == null) return null;
+      if (!url) return null;
 
       var top = hpainter.GetTopOnlineItem(hpainter.Find(itemname));
-      if (top == null) return null;
+      if (!top) return null;
       var root_version = ('_root_version' in top) ? top._root_version : 336417; // by default use version number 5-34-32
 
       var mdi = hpainter.GetDisplay();

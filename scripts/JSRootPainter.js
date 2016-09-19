@@ -8757,6 +8757,11 @@
       var res = "";
 
       while (node) {
+         if (node._online!==undefined) {
+            if (uptoparent === 'online') return res;
+            if (uptoparent === 'onlineurl') return node._online!=="" ? node._online + res : res;
+         }
+
          if (uptoparent && (node === uptoparent)) break;
          if (node._kind==='TopFolder') break; // name of top folder never included
          if (compact && !node._parent) break; // in compact form top-parent is not included
@@ -8764,6 +8769,8 @@
          res = node._name + res;
          node = node._parent;
       }
+
+      if (uptoparent === 'onlineurl') return null;
 
       return res;
    }
@@ -9555,13 +9562,9 @@
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
-      if ((item!=null) && (typeof item == "string")) item = this.Find(item);
-      var top = this.GetTopOnlineItem(item);
-      if (item==null) return null;
+      if (typeof item == "string") item = this.Find(item);
 
-      var urlpath = this.itemFullName(item, top);
-      if (top && ('_online' in top) && (top._online!="")) urlpath = top._online + urlpath;
-      return urlpath;
+      return item ? this.itemFullName(item, 'onlineurl') : null;
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
@@ -10007,8 +10010,8 @@
    }
 
    JSROOT.BuildNobrowserGUI = function() {
-      var myDiv = d3.select('#simpleGUI');
-      var online = false, drawing = false;
+      var myDiv = d3.select('#simpleGUI'),
+          online = false, drawing = false;
 
       if (myDiv.empty()) {
          online = true;
