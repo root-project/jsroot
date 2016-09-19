@@ -2865,6 +2865,10 @@
 
       var xmin, xmax, ymin, ymax, zmin, zmax, isany = false;
 
+      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) { ileft--; iright++; }
+      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) { jleft--; jright++; }
+      if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
+
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
          xmin = this.GetBinX(ileft);
          xmax = this.GetBinX(iright);
@@ -2874,12 +2878,6 @@
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
          ymin = this.GetBinY(jleft);
          ymax = this.GetBinY(jright);
-         isany = true;
-      }
-
-      if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = this.GetBinX(ileft);
-         xmax = this.GetBinX(iright);
          isany = true;
       }
 
