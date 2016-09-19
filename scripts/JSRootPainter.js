@@ -4947,6 +4947,7 @@
       this.x_kind = 'normal'; // 'normal', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
       this.keys_handler = null;
+      this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -9045,16 +9046,22 @@
       h.get(itemname, function(item, obj) {
          if (obj) {
             var dummy = new JSROOT.TObjectPainter();
+
             dummy.SetDivId(divid, -1);
-            var main_painter = dummy.main_painter(true);
+            var main_painter = dummy.main_painter(true), drop_painter;
 
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
                main_painter.PerformDrop(obj, itemname, item);
-            else {
-              var painter = h.draw(divid, obj, "same");
-              if (painter)
-                  return painter.WhenReady(function() { painter.SetItemName(itemname); JSROOT.CallBack(call_back); });
+            else
+            if (main_painter && main_painter.accept_drops) {
+               drop_painter = h.draw(divid, obj, "same");
+            } else {
+               h.CleanupFrame(divid);
+               drop_painter = h.draw(divid, obj);
             }
+
+            if (drop_painter)
+               return drop_painter.WhenReady(function() { drop_painter.SetItemName(itemname); JSROOT.CallBack(call_back); });
          }
          JSROOT.CallBack(call_back);
       });
@@ -10781,11 +10788,7 @@
       dummy.ForEachPainter(function(painter) {
          if (lst.indexOf(painter) < 0) lst.push(painter);
       });
-
-      console.log('Cleanup ', lst.length);
-
       for (var n=0;n<lst.length;++n) lst[n].Cleanup();
-
       dummy.select_main().html("");
       return lst;
    }
