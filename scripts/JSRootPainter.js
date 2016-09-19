@@ -6082,8 +6082,8 @@
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
       var kind = "xyz";
-      if (m[0] < 0) kind = "y"; else
-      if (m[1] > this.frame_height()) kind = "x";
+      if (m[0] < 0) kind = this.swap_xy ? "x" : "y"; else
+      if (m[1] > this.frame_height()) kind = this.swap_xy ? "y" : "x";
       this.Unzoom(kind);
    }
 
