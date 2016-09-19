@@ -391,11 +391,6 @@
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
       if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
-
-         console.log('full status name', this.itemFullName(status_item, 'online'));
-
-         console.log('top element _online', this.h._online);
-
          var func = JSROOT.findFunction(status_item._status);
          var hdiv = (typeof func == 'function') ? JSROOT.Painter.ConfigureHSeparator(30) : null;
          if (hdiv != null)

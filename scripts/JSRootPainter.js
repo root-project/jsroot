@@ -8781,7 +8781,7 @@
       // Or they will be requested interactive
 
       var hitem = this.Find(itemname);
-      var url = itemname + "/cmd.json";
+      var url = this.GetOnlineItemUrl(hitem) + "/cmd.json";
       var pthis = this;
       var d3node = d3.select((typeof callback == 'function') ? null : callback);
 
@@ -9988,6 +9988,7 @@
 
       function AfterOnlineOpened() {
          // check if server enables monitoring
+
          if (('_monitoring' in hpainter.h) && !monitor)
             monitor = hpainter.h._monitoring;
 
