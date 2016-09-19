@@ -8927,7 +8927,7 @@
       if (item._can_draw === true) return true;
       if (drawopt == 'inspect') return true;
       var handle = JSROOT.getDrawHandle(item._kind, drawopt);
-      return (handle!=null) && ('func' in handle);
+      return handle && (('func' in handle) || ('draw_field' in handle));
    }
 
    JSROOT.HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
@@ -9004,6 +9004,12 @@
                   if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                   painter = p;
                   mdi.ActivateFrame(frame);
+
+                  var handle = null;
+                  if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+                  if (handle && handle.draw_field && obj[handle.draw_field])
+                     obj = obj[handle.draw_field];
+
                   painter.RedrawObject(obj);
                });
             }
@@ -9880,6 +9886,11 @@
       var mdi = this.disp;
       if (mdi==null) return false;
 
+      var handle = null;
+      if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+      if (handle && handle.draw_field && obj[handle.draw_field])
+         obj = obj[handle.draw_field];
+
       var isany = false;
       mdi.ForEachPainter(function(p, frame) {
          if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
@@ -10730,13 +10741,18 @@
     * If drawing was already done, that content will be updated */
 
    JSROOT.redraw = function(divid, obj, opt) {
-      if (obj==null) return;
+      if (!obj) return;
 
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);
       var can_painter = dummy.pad_painter();
 
-      if (can_painter !== null) {
+      var handle = null;
+      if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+      if (handle && handle.draw_field && obj[handle.draw_field])
+         obj = obj[handle.draw_field];
+
+      if (can_painter) {
          if (obj._typename === "TCanvas") {
             can_painter.RedrawObject(obj);
             return can_painter;
