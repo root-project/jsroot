@@ -467,8 +467,6 @@
       renderer.domElement.addEventListener('mousemove', control_mousemove);
       renderer.domElement.addEventListener('mouseleave', control_mouseleave);
 
-
-
       // do not use touch events, context menu should be activated via button
       //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
       //painter.renderer.domElement.addEventListener('touchend', control_touchend);

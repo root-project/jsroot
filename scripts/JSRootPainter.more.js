@@ -2140,7 +2140,6 @@
       return true;
    }
 
-
    JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
@@ -2192,6 +2191,11 @@
 
       this.SetDivId(divid, -1); // it may be no element to set divid
 
+      this.Cleanup = function() {
+         this.painters = [];
+         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      }
+
       this.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
 
@@ -2233,7 +2237,7 @@
          return res;
       }
 
-      this['padtoX'] = function(pad, x) {
+      this.padtoX = function(pad, x) {
          // Convert x from pad to X.
          if (pad.fLogx && (x < 50))
             return Math.exp(2.302585092994 * x);
@@ -2350,8 +2354,8 @@
          if ((mgraph.fFunctions == null) || (indx >= mgraph.fFunctions.arr.length))
             return JSROOT.CallBack(callback);
 
-         var func = mgraph.fFunctions.arr[indx];
-         var opt = mgraph.fFunctions.opt[indx];
+         var func = mgraph.fFunctions.arr[indx],
+             opt = mgraph.fFunctions.opt[indx];
 
          var painter = JSROOT.draw(this.divid, func, opt);
          if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
@@ -2516,6 +2520,16 @@
 
       this.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
       this.z_handle.SetDivId(divid, -1);
+
+      this.Cleanup = function() {
+         if (this.z_handle) {
+            this.z_handle.Cleanup();
+            delete this.z_handle;
+         }
+
+         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+      }
+
 
       this.DrawAxisPalette = function(s_width, s_height, arg) {
 
@@ -2973,6 +2987,13 @@
    }
 
    JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+
+   JSROOT.TH2Painter.prototype.Cleanup = function() {
+      delete this.fCustomContour;
+      delete this.tt_handle;
+
+      JSROOT.THistPainter.prototype.Cleanup.call(this);
+   }
 
    JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks

@@ -1141,6 +1141,7 @@
       // remove attributes objects (if any)
       delete this.fillatt;
       delete this.lineatt;
+      delete this.markeratt;
       delete this.bins;
    }
 
