@@ -3116,6 +3116,9 @@
 
       var xmin, xmax, ymin, ymax, isany = false;
 
+      if ((ileft === iright-1) && (ileft > i1+1) && (iright < i2-1)) { ileft--; iright++; }
+      if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) { jleft--; jright++; }
+
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
          xmin = this.GetBinX(ileft);
          xmax = this.GetBinX(iright);

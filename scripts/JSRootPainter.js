@@ -7752,6 +7752,11 @@
       while ((left < right) && (this.histo.getBinContent(left+1) <= min)) ++left;
       while ((left < right) && (this.histo.getBinContent(right) <= min)) --right;
 
+      // if singular bin
+      if ((left === right-1) && (left > 2) && (right < this.nbinsx-2)) {
+         --left; ++right;
+      }
+
       if ((right - left < dist) && (left < right))
          this.Zoom(this.GetBinX(left), this.GetBinX(right));
    }
