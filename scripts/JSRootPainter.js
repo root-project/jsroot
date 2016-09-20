@@ -8113,7 +8113,7 @@
 
       function ReadNextBaskets(indx) {
          var places = [], totalsz = 0, indx0 = indx;
-         while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1000000) && (places.length<200)) {
+         while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1e7) && (places.length<200)) {
             if (b.fBasketBytes[indx] === 0) break;
             places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
             totalsz += b.fBasketBytes[indx];

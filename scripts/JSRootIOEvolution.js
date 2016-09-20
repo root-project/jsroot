@@ -1160,12 +1160,16 @@
                o += place[n+1];
                n += 2;
             } else {
+               //var mycnt = 0;
                // segments may be merged by server
                while ((n<place.length) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
                   arr.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
                                    new DataView(res, o + place[n] - segm_start, place[n+1]));
                   n += 2;
+                  //mycnt++;
                }
+               //if (mycnt>1) console.log('MERGE segments', mycnt);
+
                o += (segm_last-segm_start+1);
             }
          }
