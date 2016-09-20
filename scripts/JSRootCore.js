@@ -1303,7 +1303,7 @@
 
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
-            this.fLines.Add({ fTitle: txt, fTextColor: 1 });
+            this.fLines.Add({ _typename: 'TText', fTitle: txt, fTextColor: 1 });
          }
          m.Clear = function() {
             this.fLines.Clear();

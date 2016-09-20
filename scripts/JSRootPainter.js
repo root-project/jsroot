@@ -8050,6 +8050,7 @@
 
            switch(obj._typename) {
               case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(obj); break;
+              case 'TText': item._value = obj.fTitle; break;
               case 'TLatex': item._value = obj.fTitle; break;
            }
 
