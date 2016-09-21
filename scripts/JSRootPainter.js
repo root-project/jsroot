@@ -10819,6 +10819,7 @@
          if (!done && typeof painter.CheckResize == 'function')
             done = painter.CheckResize(arg);
       });
+      return done;
    }
 
    // for compatibility, keep old name
