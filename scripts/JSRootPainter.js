@@ -4514,7 +4514,7 @@
                if (this.order===0) {
                   if (val === rnd) return rnd.toString();
                   if (Math.abs(val) < 1e-10 * this.range) return 0;
-                  val = val.toFixed(this.ndig > 0 ? this.ndig : 0);
+                  val = (this.ndig>10) ? val.toExponential(4) : val.toFixed(this.ndig > 0 ? this.ndig : 0);
                   if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
                   return val;
                }
@@ -4526,7 +4526,8 @@
 
             if (val === rnd)
                return (Math.abs(rnd)<1e9) ? rnd.toString() : val.toExponential(4);
-            return val.toFixed(this.ndig+2 > 0 ? this.ndig+2 : 0);
+
+            return this.ndig>10 ? val.toExponential(4) : val.toFixed(this.ndig+2 > 0 ? this.ndig+2 : 0);
          }
       }
    }
