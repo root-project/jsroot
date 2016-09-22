@@ -8190,9 +8190,9 @@
                               { xmin*=1.1; xmax*=0.9; }
                } else
                if (JSROOT.IO.IsInteger(item._datakind) && (xmax-xmin >=1) && (xmax-xmin<5000)) {
-                  xmin = Math.floor(xmin) - 1;
-                  xmax = Math.floor(xmax) + ((xmax === Math.round(xmax)) ? 1 : 2);
-                  nbins = xmax - xmin + 1;
+                  xmin -= 1;
+                  xmax += 2;
+                  nbins = xmax - xmin;
                } else    {
                   xmax += (xmax-xmin)/nbins;
                }

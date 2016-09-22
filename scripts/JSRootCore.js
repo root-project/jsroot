@@ -1415,12 +1415,11 @@
          m.getBin = function(x) { return x; }
          m.getBinContent = function(bin) { return this.fArray[bin]; }
          m.Fill = function(x, weight) {
-            var bin = Math.floor((x - this.fXaxis.fXmin) / (this.fXaxis.fXmax - this.fXaxis.fXmin) * (this.fNcells-2));
-
-            if (bin < 0) bin = -1; else
-            if (bin > this.fNcells-2) bin = this.fNcells-2;
-
-            this.fArray[bin+1] += ((weight===undefined) ? 1 : weight);
+            var axis = this.fXaxis,
+                bin = 1 + Math.round((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
+            if (bin < 0) bin = 0; else
+            if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
+            this.fArray[bin] += ((weight===undefined) ? 1 : weight);
          }
       }
 
