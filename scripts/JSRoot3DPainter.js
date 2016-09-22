@@ -2453,7 +2453,7 @@
          }
       }
 
-      if (histo.fTsumw > 0) {
+      if ((histo.fTsumw > 0) && !this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && !this.IsAxisZoomed("z")) {
          stat_sum0  = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
