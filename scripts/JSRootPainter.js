@@ -7094,8 +7094,8 @@
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
-         res.rmsx = Math.sqrt(stat_sumwx2 / stat_sumw - res.meanx * res.meanx);
-         res.rmsy = Math.sqrt(stat_sumwy2 / stat_sumw - res.meany * res.meany);
+         res.rmsx = Math.sqrt(Math.max(0, stat_sumwx2 / stat_sumw - res.meanx * res.meanx));
+         res.rmsy = Math.sqrt(Math.max(0, stat_sumwy2 / stat_sumw - res.meany * res.meany));
       }
 
       if (xmax!=null) {
@@ -7144,27 +7144,20 @@
          if (print_entries > 0)
             pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
-         if (print_mean > 0) {
+         if (print_mean > 0)
             pave.AddText("Mean = " + stat.Format(data.meanx));
-         }
 
-         if (print_rms > 0) {
+         if (print_rms > 0)
             pave.AddText("Std Dev = " + stat.Format(data.rmsx));
-         }
 
-         if (print_under > 0) {
-            var res = (this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0;
-            pave.AddText("Underflow = " + stat.Format(res,"entries"));
-         }
+         if (print_under > 0)
+            pave.AddText("Underflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0,"entries"));
 
-         if (print_over > 0) {
-            var res = (this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0;
-            pave.AddText("Overflow = " + stat.Format(res,"entries"));
-         }
+         if (print_over > 0)
+            pave.AddText("Overflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0,"entries"));
 
-         if (print_integral > 0) {
+         if (print_integral > 0)
             pave.AddText("Integral = " + stat.Format(data.integral,"entries"));
-         }
 
          if (print_skew > 0)
             pave.AddText("Skew = <not avail>");

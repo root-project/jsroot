@@ -2467,9 +2467,9 @@
          res.meanx = stat_sumx1 / stat_sum0;
          res.meany = stat_sumy1 / stat_sum0;
          res.meanz = stat_sumz1 / stat_sum0;
-         res.rmsx = Math.sqrt(stat_sumx2 / stat_sum0 - res.meanx * res.meanx);
-         res.rmsy = Math.sqrt(stat_sumy2 / stat_sum0 - res.meany * res.meany);
-         res.rmsz = Math.sqrt(stat_sumz2 / stat_sum0 - res.meanz * res.meanz);
+         res.rmsx = Math.sqrt(Math.max(0, stat_sumx2 / stat_sum0 - res.meanx * res.meanx));
+         res.rmsy = Math.sqrt(Math.max(0, stat_sumy2 / stat_sum0 - res.meany * res.meany));
+         res.rmsz = Math.sqrt(Math.max(0, stat_sumz2 / stat_sum0 - res.meanz * res.meanz));
       }
 
       res.integral = stat_sum0;
