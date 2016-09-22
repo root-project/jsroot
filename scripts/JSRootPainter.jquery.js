@@ -79,6 +79,8 @@
             return this.add(menu_name, opts[0], call_back);
          }
 
+         this.add("sub:" + menu_name, opts[0], call_back);
+
          for (var i=0;i<opts.length;++i) {
             var name = opts[i];
             if (name=="") name = '&lt;dflt&gt;';
