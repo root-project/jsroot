@@ -2,19 +2,19 @@
 
 ## Changes in dev
 1. Implement simple TTree::Draw over single leaf (#80)
-2. Support basic types and several vector types in TTree::Draw 
-3. Display of TEveTrack(s) and TEvePointSet(s) over drawn geometry (drag and drop)
+   Support basic types, fixed-size arrays and several vector types in TTree::Draw 
+2. Display of TEveTrack(s) and TEvePointSet(s) over drawn geometry (drag and drop)
    Also browsing, toggling, highlight of tracks and hits are done.
-4. Let set default geo colors as TGeoManager::DefaultColors() does  
-5. Let use original ROOT macros to configure visibility of geometry volumes. Like:
+3. Let set default geo colors as TGeoManager::DefaultColors() does  
+4. Let use original ROOT macros to configure visibility of geometry volumes. Like:
      &file=files/alice2.root&item=Geometry;1&opt=macro:macros/geomAlice.C   
    One can set default colors or colors/transperency for selected volumes.
    Also volume, selected for drawing in the macro, will be used in the JSROOT
-6. Support drawing of TH2Poly class with 'col' and 'lego' options
-7. Implement 'CONT', 'ARR' and 'SURF' draw options for TH2 class 
-8. Support basic drawing of TPolyLine class 
-9. Interactive axis zooming in 3D with mouse, very much like to 2D
-10. Zooming and tool buttons via keyboards  
+5. Support drawing of TH2Poly class with 'col' and 'lego' options
+6. Implement 'CONT', 'ARR' and 'SURF' draw options for TH2 class 
+7. Support basic drawing of TPolyLine class 
+8. Interactive axis zooming in 3D with mouse, very much like to 2D
+9. Zooming and tool buttons via keyboards  
 
 
 ## Changes in 4.6.0

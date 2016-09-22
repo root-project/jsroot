@@ -8068,7 +8068,7 @@
       // function used to handle get request for branch/subbranch
 
       var bitem = item;
-      if (item._usestreamer) bitem = item._parent;
+//      if (item._usestreamer) bitem = item._parent;
 
       if (option==='inspect')
          return JSROOT.CallBack(get_callback, item, bitem._branch);
@@ -8079,13 +8079,14 @@
 
       var b = bitem._branch,
           f = fprnt._file,
-          histo = null, break_execution = 0, streamer = null;
+          histo = null, break_execution = 0;
+      // var streamer = null;
 
-      if (item._usestreamer) {
-         streamer = f.GetStreamer(b.fClassName, b.fClassVersion);
-         console.log('Request streamer for', b.fClassName, streamer.length, b.fMaxBaskets);
-         if (!streamer) return JSROOT.CallBack(get_callback, item, null);
-      }
+//      if (item._usestreamer) {
+//         streamer = f.GetStreamer(b.fClassName, b.fClassVersion);
+//         console.log('Request streamer for', b.fClassName, streamer.length, b.fMaxBaskets);
+//         if (!streamer) return JSROOT.CallBack(get_callback, item, null);
+//      }
 
       function ShowProgress(value) {
          var main_box = document.createElement("p");
@@ -8141,7 +8142,7 @@
 
             // first convert raw data
             for (var n=0;n<baskets.length;++n)
-               if (streamer) {
+/*               if (streamer) {
                   var buf = baskets[n].raw, nread = 0, arr = [];
                   while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
                      var obj = {};
@@ -8158,6 +8159,7 @@
                   }
                   arrays.push(arr);
                } else
+*/
                if (item._isvector) {
                   var buf = baskets[n].raw, nread = 0;
                   while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
