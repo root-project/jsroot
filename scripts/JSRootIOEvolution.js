@@ -35,8 +35,14 @@
          Z_DEFLATED : 8,
          Z_HDRSIZE : 9,
          Mode : "array", // could be string or array, enable usage of ArrayBuffer in http requests
-         NativeArray : true // when true, native arrays like Int32Array or Float64Array are used
+         NativeArray : true, // when true, native arrays like Int32Array or Float64Array are used
+         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kCounter)) ||
+                                            ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
+         IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); }
+
    };
+
+
 
 // map of user-streamer function like func(buf,obj)
    JSROOT.fUserStreamers = {};
@@ -236,6 +242,7 @@
             for (var i = 0; i < n; ++i)
                array[i] = this.ntoi4();
             break;
+         case JSROOT.IO.kBits:
          case JSROOT.IO.kUInt:
             array = JSROOT.IO.NativeArray ? new Uint32Array(n) : new Array(n);
             for (var i = 0; i < n; ++i)
@@ -691,6 +698,7 @@
             for (; i < n; ++i, o+=4)
                array[i] = view.getInt32(o);
             break;
+         case JSROOT.IO.kBits:
          case JSROOT.IO.kUInt:
             array = new Uint32Array(n);
             for (; i < n; ++i, o+=4)
@@ -1863,6 +1871,7 @@
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kUShort:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kBits:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kUInt:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kULong:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kULong64:
@@ -1914,6 +1923,7 @@
             case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kBits:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kUInt:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kULong:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kULong64:
@@ -2008,6 +2018,7 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1(); }; break;
             case JSROOT.IO.kUShort:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou2(); }; break;
+            case JSROOT.IO.kBits:
             case JSROOT.IO.kUInt:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou4(); }; break;
             case JSROOT.IO.kULong64:
