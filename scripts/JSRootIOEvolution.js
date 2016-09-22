@@ -36,7 +36,8 @@
          Z_HDRSIZE : 9,
          Mode : "array", // could be string or array, enable usage of ArrayBuffer in http requests
          NativeArray : true, // when true, native arrays like Int32Array or Float64Array are used
-         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kCounter)) ||
+         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
+                                             (typ===this.kCounter) ||
                                             ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
          IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); }
 
