@@ -71,11 +71,13 @@
       menu.size = function() { return this.cnt-1; }
 
       menu.addDrawMenu = function(menu_name, opts, call_back) {
-         if (opts==null) opts = new Array;
+         if (!opts) opts = [];
          if (opts.length==0) opts.push("");
 
-         this.add((opts.length > 1) ? ("sub:" + menu_name) : menu_name, opts[0], call_back);
-         if (opts.length<2) return;
+         if (opts.length === 1) {
+            if (opts[0]==='inspect') menu_name = menu_name.replace("Draw", "Inspect");
+            return this.add(menu_name, opts[0], call_back);
+         }
 
          for (var i=0;i<opts.length;++i) {
             var name = opts[i];
