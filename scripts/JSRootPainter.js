@@ -2660,7 +2660,7 @@
          if (h>0) {
             if (align[1] == 'bottom') pos_y = (y + h).toFixed(1); else
             if (align[1] == 'top') pos_dy = ".8em"; else {
-               pos_y = (y + h/2).toFixed(1);
+               pos_y = (y + h/2 + 1).toFixed(1);
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
          } else {
