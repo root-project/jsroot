@@ -1419,9 +1419,9 @@
 
    JSROOT.TGeoPainter.prototype.focusOnItem = function(itemname) {
 
-      if (!itemname || (itemname.indexOf('Nodes/')!==0) || !this._clones) return;
+      if (!itemname || !this._clones) return;
 
-      var stack = this._clones.FindStackByName(itemname.substr(6));
+      var stack = this._clones.FindStackByName(itemname);
 
       if (!stack) return;
 
@@ -1474,7 +1474,7 @@
       var posIncrement = position.sub(this._camera.position).divideScalar(frames);
       // Amount to change "lookAt" so it will end pointed at target
       var targetIncrement = target.sub(oldTarget).divideScalar(frames);
-      console.log( targetIncrement );
+      // console.log( targetIncrement );
 
       // Automatic Clipping
 
@@ -2798,9 +2798,11 @@
          menu.add("Focus", function() {
 
            var drawitem = JSROOT.GEO.findItemWithPainter(item);
+
            if (!drawitem) return;
 
            var fullname = hpainter.itemFullName(item, drawitem);
+
            if (drawitem._painter && typeof drawitem._painter.focusOnItem == 'function')
               drawitem._painter.focusOnItem(fullname);
          });

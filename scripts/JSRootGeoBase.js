@@ -3201,11 +3201,13 @@
    JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
       if (!this.origin) return null;
 
-      var names = fullname.split('/');
+      var names = fullname.split('/'),
+          currid = 0, stack = [],
+          top = this.origin[0];
 
-      var currid = 0, stack = [];
+      if (!top || (top.fName!==names[0])) return null;
 
-      for (var n=0;n<names.length;++n) {
+      for (var n=1;n<names.length;++n) {
          var node = this.nodes[currid];
          if (!node.chlds) return null;
 
@@ -3216,7 +3218,7 @@
          }
 
          // no new entry - not found stack
-         if (stack.length == n) return null;
+         if (stack.length === n - 1) return null;
       }
 
       return stack;
