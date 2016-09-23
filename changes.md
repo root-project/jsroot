@@ -1,8 +1,8 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 4.7.0
 1. Implement simple TTree::Draw over single leaf (#80)
-   Support basic types, fixed-size arrays and several vector types in TTree::Draw 
+   Support basic types, fixed-size arrays and several vector types 
 2. Display of TEveTrack(s) and TEvePointSet(s) over drawn geometry (drag and drop)
    Also browsing, toggling, highlight of tracks and hits are done.
 3. Let set default geo colors as TGeoManager::DefaultColors() does  
