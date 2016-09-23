@@ -15,11 +15,12 @@ One could use JSROOT directly from local file system. If source code was unpacke
 
 
 
-## Reading ROOT files in JSROOT
+## Drawing objects in JSROOT
 
-[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas.
+[The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas. 
 
-The following parameters can be specified in the URL string:
+To automate files loading and objects drawing, 
+one can provide number of URL parameters in address string like:
 
 - file, files - name of the file(s), which will be automatically open with page loading
 - json - name of JSON file with stored ROOT object like histogram or canvas 
@@ -34,21 +35,139 @@ The following parameters can be specified in the URL string:
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 
-When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`.
-
-Examples:
+For instance:
 
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
+When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`. 
+
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern.ch/js/latest/api.htm) page.   
 
+One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
-One can very easy integrate JSROOT graphic into other HTML pages using a __iframe__ tag:
+    <iframe width="700" height="400" 
+            src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
+    </iframe>
 
-<iframe width="600" height="500" src="https://root.cern.ch/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
-</iframe>
+
+## Supported ROOT classes by JSROOT
+
+List of supported classes and draw options:
+
+- TH1 : [hist](https://root.cern.ch/js/latest/examples.htm#th1), [p](https://root.cern.ch/js/latest/examples.htm#th1_p), [p0](https://root.cern.ch/js/latest/examples.htm#th1_p0), [e](https://root.cern.ch/js/latest/examples.htm#th1_e), [e1](https://root.cern.ch/js/latest/examples.htm#th1_e1), [lego](https://root.cern.ch/js/latest/examples.htm#th1_lego)
+- TH2 : [scat](https://root.cern.ch/js/latest/examples.htm#th2), [col](https://root.cern.ch/js/latest/examples.htm#th2_col), [colz](https://root.cern.ch/js/latest/examples.htm#th2_colz), [box](https://root.cern.ch/js/latest/examples.htm#th2_box), [text](https://root.cern.ch/js/latest/examples.htm#th2_text), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego), [arr](http://jsroot.gsi.de/dev/examples.htm#th2_arr), [cont](http://jsroot.gsi.de/dev/examples.htm#th2_cont), [cont1](http://jsroot.gsi.de/dev/examples.htm#th2_cont1), [cont2](http://jsroot.gsi.de/dev/examples.htm#th2_cont2), [cont3](http://jsroot.gsi.de/dev/examples.htm#th2_cont3), [cont4](http://jsroot.gsi.de/dev/examples.htm#th2_cont4), [surf](http://jsroot.gsi.de/dev/examples.htm#th2_surf), [surf1](http://jsroot.gsi.de/dev/examples.htm#th2_surf1), [surf2](http://jsroot.gsi.de/dev/examples.htm#th2_surf2), [surf4](http://jsroot.gsi.de/dev/examples.htm#th2_surf4), [surf6](http://jsroot.gsi.de/dev/examples.htm#th2_surf6), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern.ch/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern.ch/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern.ch/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern.ch/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern.ch/js/latest/examples.htm#th2_lego4)
+- TH2Poly : [col](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=honeycomb;1&opt=col),
+[lego](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=boxes;1&opt=lego), [europe](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=europe;1), [usa](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=usa;1)
+- TH3 :  [box](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box), [box1](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box1)
+- TProfile : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1), [e](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e), [E1](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e1), [pE2](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=pe2), [hist](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=hist)
+- THStack : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/stacks.root&item=stacks;1)   
+- TF1 : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/danilo5.root&item=canvas;1)
+- TGraph : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1), [L](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=L), [P](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=P), [*](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=*), [B](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=B)
+- TGraphErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1), [0](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=0), [3](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=3), [4](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=4)
+- TGraphAsymmErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1), [2](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1&opt=2)
+- TMultiGraph : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/multigraph.root&item=c3;1)
+- TLatex : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]&mathjax)
+- TMathText : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&item=math;1)
+- TCanvas : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/rf107.root&item=rf107_plotstyles;1)
+- TLegend :  [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/legends.root&item=legends;1&mathjax)
+- TTree : [single-branch draw](http://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=ntuple;1/px)
+- TPolyLine : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_polyline)
+- TEllipse : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_ellipse)
+- TArrow : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_arrow)
+- TPolyMarker3D: [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_3dmark)
+
+More examples of supported classes can be found on: <http://jsroot.gsi.de/dev/examples.htm>
+
+
+## Geometry viewer
+
+JSROOT implements display of TGeo objects like:
+
+- <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1>
+- <http://jsroot.gsi.de/dev/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z>  
+
+Following classes are supported by geometry viewer:
+  - TGeoVolume
+  - TGeoNode
+  - TGeoManager (master volume will be displayed)
+  - TEveGeoShapeExtract (used in EVE)
+
+Following draw options could be specified (separated by semicolon or ';'):
+   - axis  - draw axis coordinates
+   - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
+   - clipx/clipy/clipz - enable correspondent clipping panel
+   - clip or clipxyz - enable all three clipping pannels
+   - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occulsion)
+   - wire - instead of filled surfaces only wireframe will be drawn
+   - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
+   - more3 - show 3 times more volumes as usual
+   - all - try to display all geometry volumes (may lead to browser hanging)
+   - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
+   - macro:name.C - invoke ROOT configuration macro
+   - dflt_colors - set default volumes colors as TGeoManager::DefaultColors() does
+   - transpXY - set global transperancy value (XY is number between 1 and 99)
+   - rotate - enable automatic rotation of the geometry 
+   
+
+It is possible to dispplay only part of geometry model. For instance, one could select sub-item like:  
+
+  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
+
+Or one can use simple selection syntax (work only with first-level volumes):
+ 
+  <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
+  
+Syntax uses '+' sign to enable visibility flag of specified volume and '-' sign to disable visibility.
+One could use wildcard symbol like '+TUBE1*'.  
+
+Another way to configure visibility flags is usage of ROOT macros, used to display geometry in ROOT itself.
+Example of such macro can be found in root tutorials. Typically it looks like:
+
+     {
+      TGeoManager::Import("http://root.cern.ch/files/alice2.root");
+      gGeoManager->DefaultColors();
+      //   gGeoManager->SetVisLevel(4);
+      gGeoManager->GetVolume("HALL")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCC")->InvisibleAll();
+      gGeoManager->GetVolume("ZDCA")->InvisibleAll();
+      ...
+      gGeoManager->GetVolume("ALIC")->Draw("ogl");
+      new TBrowser;
+    }
+  
+From provided macro only following calls will be executed in JSROOT:
+
+   * `gGeoManager->DefaultColors()`
+   * `gGeoManager->GetVolume("HALL")->InvisibleAll()` 
+   * `gGeoManager->GetVolume("HALL")->SetTransparency(30)` 
+   * `gGeoManager->GetVolume("HALL")->SetLineColor(5)` 
+   * `gGeoManager->GetVolume("ALIC")->Draw("ogl")`
+    
+All other will be ignored.
+
+  
+Example of major LHC detectors:
+ * ALICE: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C) 
+ * ATLAS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=clipxyz), [cryo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C), [sctt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_sctt.C)
+ * CMS: [cmse](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C;clipxyz), [calo](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C;clipxyz)
+ * LHCb: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors)
+  
+Other detectors examples:
+ * HADES: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/hades2.root&item=CBMGeom;1&opt=all;dflt_colors), [preselected](http://jsroot.gsi.de/dev/?json=../files/geom/hades.json.gz)  
+ * BABAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_all.C), [emca](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
+ * STAR: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_all.C;clipxyz), [svtt](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_svtt.C) 
+ * D0: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/d0.root&item=d0;1&opt=clipxyz)
+ * NA47: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/na47.root&item=na47;1&opt=dflt_colors)
+ * BRAHMS: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/brahms.root&item=brahms;1&opt=dflt_colors)
+ * SLD: [full](http://jsroot.gsi.de/dev/?file=https://root.cern.ch/files/sld.root&item=sld;1&opt=dflt_colors;clipxyz)
+    
+Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
+Either one do it interactively by drag and drop, or superimpose drawing with `+` sign like:
+
+<http://jsroot.gsi.de/dev/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
+
 
 
 ## Reading ROOT files from other servers
@@ -127,21 +246,15 @@ implemented in JSON format. There is the TBufferJSON class, which is capable to 
 convert any ROOT object (beside TTree) into JSON. Any ROOT application can use such class to
 create JSON files for selected objects and write such files in a directory,
 which can be accessed via web server. Then one can use JSROOT to read such files and display objects in a web browser.
-There is a demonstration page showing such functionality:
 
-<https://root.cern.ch/js/latest/demo/demo.htm>
-
-<iframe width="500" height="300" src="https://root.cern.ch/js/latest/demo/demo.htm">
-</iframe>
-
+There is a demonstration page showing such functionality: <https://root.cern.ch/js/latest/demo/demo.htm>.
 This demo page reads in cycle 20 json files and displays them.
 
 If one has a web server which already provides such JSON file, one could specify the URL to this file like:
 
 <https://root.cern.ch/js/latest/demo/demo.htm?addr=../httpserver.C/Canvases/c1/root.json.gz>
 
-Here the same problem with [Cross-Origin Request](https://developer.mozilla.org/en/http_access_control) can appear.
-If the web server configuration cannot be changed, just copy JSROOT to the web server itself.
+Here the same problem with [Cross-Origin Request](https://developer.mozilla.org/en/http_access_control) can appear. If the web server configuration cannot be changed, just copy JSROOT to the web server itself.
 
 
 ### Binary file-based monitoring (not recommended)
@@ -176,14 +289,16 @@ Details about the JSROOT API can be found in the next chapters.
 
 ## JSROOT API
 
-JSROOT consists of several libraries (.js files). They are all provided in the ROOT
-repository and are available in the 'etc/http/scripts/' subfolder.
-Only the central classes and functions will be documented here.
+JSROOT can be downloaded from <https://github.com/linev/jsroot>. 
+It also provided with each ROOT distribution in `etc/http/scripts/` subfolder. 
+
+Many different examples of JSROOT API usage can be found on [JSROOT API examples](https://root.cern.ch/js/latest/api.htm) page.
+
 
 ### Scripts loading
 
 Before JSROOT can be used, all appropriate scripts should be loaded.
-Any HTML pages where JSROOT is used should include the JSRootCore.js script.
+HTML pages where JSROOT is used should include the JSRootCore.js script.
 The `<head>` section of the HTML page should have the following line:
 
     <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.js?2d"></script>
@@ -192,7 +307,7 @@ Here, the default location of JSROOT is specified. One could have a local copy o
 
     <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRootCore.js?2d"></script>
 
-In URL string with JSRootCore.js script one should specify which JSROOT functionality will be loaded:
+In URL string with JSRootCore.js script one can specify which JSROOT functionality should be loaded:
 
     + '2d' normal drawing for objects like TH1/TCanvas/TGraph
     + 'more2d' more classes for 2D drawing like TH2/TF1/TEllipse
@@ -215,11 +330,15 @@ One could use minified version of all scripts (as shown in example) - this reduc
 ### Use of JSON
 
 It is strongly recommended to use JSON when communicating with ROOT application.
-THttpServer  provides a JSON representation for every registered object with an url address like:
+THttpServer provides a JSON representation for every registered object with an url address like:
 
     http://your_root_server:8080/Canvases/c1/root.json
 
-Such JSON representation generated using the [TBufferJSON](http://root.cern.ch/root/html/TBufferJSON.html) class.
+Such JSON representation generated using the [TBufferJSON](http://root.cern.ch/root/html/TBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
+
+    ...
+    obj->SaveAs("file.json");
+    ...
 
 To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class.
 JSROOT provides a special method to create such class and properly handle it in different browsers.
@@ -228,12 +347,12 @@ For receiving JSON from a server one could use following code:
     var req = JSROOT.NewHttpRequest("http://your_root_server:8080/Canvases/c1/root.json", 'object', userCallback);
     req.send(null);
 
-In the callback function, one gets JavaScript object (or null in case of failure)
+In the callback function one gets JavaScript object (or null in case of failure)
 
 
 ### Objects drawing
 
-After an object has been created, one can directly draw it. If somewhere in a HTML page there is a `<div>` element:
+After an object has been created, one can directly draw it. If HTML page has `<div>` element:
 
     ...
     <div id="drawing"></div>
@@ -264,8 +383,6 @@ To correctly cleanup JSROOT drawings from HTML element, one should call:
 
     JSROOT.cleanup("drawing");
 
-Many examples of supported ROOT classes and draw options can be found on [JSROOT examples](https://root.cern.ch/js/latest/examples.htm) page. 
-
 
 ### File API
 
@@ -280,8 +397,12 @@ For example, reading an object from a file and displaying it will look like:
           JSROOT.draw("drawing", obj, "colz");
        });
     });
+    
+Similar example with JSON file:
 
+    var filename = "http://jsroot.gsi.de/files/th2ul.json.gz";
+    JSROOT.NewHttpRequest(filename, 'object', function(obj) {
+       JSROOT.draw("drawing", obj, "lego");
+    }).send(null);
 
-## More API examples
-
-Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page
+ 
