@@ -111,8 +111,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotate - enable automatic rotation of the geometry 
    
 
-It is typical, that not all geometry volumes should be displayed. 
-In simple case one just display only subvolume (with all its daughters) like:
+It is possible to dispplay only part of geometry model. For instance, one could select sub-item like:  
 
   <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
 
@@ -120,10 +119,10 @@ Or one can use simple selection syntax (work only with first-level volumes):
  
   <http://jsroot.gsi.de/dev/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
   
-Syntax uses '+' sign to show specified volume and '-' sign to hide specified volume.
-One could use wildcard sign like '+TUBE1*'.  
+Syntax uses '+' sign to enable visibility flag of specified volume and '-' sign to disable visibility.
+One could use wildcard symbol like '+TUBE1*'.  
 
-Or one could reuse ROOT macro, which normally invoked when display geometry in ROOT itself.
+Another way to configure visibility flags is usage of ROOT macros, used to display geometry in ROOT itself.
 Example of such macro can be found in root tutorials. Typically it looks like:
 
      {
@@ -255,8 +254,7 @@ If one has a web server which already provides such JSON file, one could specify
 
 <https://root.cern.ch/js/latest/demo/demo.htm?addr=../httpserver.C/Canvases/c1/root.json.gz>
 
-Here the same problem with [Cross-Origin Request](https://developer.mozilla.org/en/http_access_control) can appear.
-If the web server configuration cannot be changed, just copy JSROOT to the web server itself.
+Here the same problem with [Cross-Origin Request](https://developer.mozilla.org/en/http_access_control) can appear. If the web server configuration cannot be changed, just copy JSROOT to the web server itself.
 
 
 ### Binary file-based monitoring (not recommended)
@@ -291,18 +289,16 @@ Details about the JSROOT API can be found in the next chapters.
 
 ## JSROOT API
 
-JSROOT consists of several libraries (.js files). They are all provided in the ROOT
-repository and are available in the 'etc/http/scripts/' subfolder.
+JSROOT can be downloaded from <https://github.com/linev/jsroot>. 
+It also provided with each ROOT distribution in `etc/http/scripts/` subfolder. 
 
-Only the central classes and functions will be documented here.
-
-Many different examples of JSROOT API usage can be found on [JSROOT API](https://root.cern.ch/js/latest/api.htm) page
+Many different examples of JSROOT API usage can be found on [JSROOT API examples](https://root.cern.ch/js/latest/api.htm) page.
 
 
 ### Scripts loading
 
 Before JSROOT can be used, all appropriate scripts should be loaded.
-Any HTML pages where JSROOT is used should include the JSRootCore.js script.
+HTML pages where JSROOT is used should include the JSRootCore.js script.
 The `<head>` section of the HTML page should have the following line:
 
     <script type="text/javascript" src="https://root.cern.ch/js/latest/scripts/JSRootCore.js?2d"></script>
@@ -311,7 +307,7 @@ Here, the default location of JSROOT is specified. One could have a local copy o
 
     <script type="text/javascript" src="http://your_root_server:8080/jsrootsys/scripts/JSRootCore.js?2d"></script>
 
-In URL string with JSRootCore.js script one should specify which JSROOT functionality will be loaded:
+In URL string with JSRootCore.js script one can specify which JSROOT functionality should be loaded:
 
     + '2d' normal drawing for objects like TH1/TCanvas/TGraph
     + 'more2d' more classes for 2D drawing like TH2/TF1/TEllipse
@@ -334,11 +330,15 @@ One could use minified version of all scripts (as shown in example) - this reduc
 ### Use of JSON
 
 It is strongly recommended to use JSON when communicating with ROOT application.
-THttpServer  provides a JSON representation for every registered object with an url address like:
+THttpServer provides a JSON representation for every registered object with an url address like:
 
     http://your_root_server:8080/Canvases/c1/root.json
 
-Such JSON representation generated using the [TBufferJSON](http://root.cern.ch/root/html/TBufferJSON.html) class.
+Such JSON representation generated using the [TBufferJSON](http://root.cern.ch/root/html/TBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
+
+    ...
+    obj->SaveAs("file.json");
+    ...
 
 To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class.
 JSROOT provides a special method to create such class and properly handle it in different browsers.
@@ -347,12 +347,12 @@ For receiving JSON from a server one could use following code:
     var req = JSROOT.NewHttpRequest("http://your_root_server:8080/Canvases/c1/root.json", 'object', userCallback);
     req.send(null);
 
-In the callback function, one gets JavaScript object (or null in case of failure)
+In the callback function one gets JavaScript object (or null in case of failure)
 
 
 ### Objects drawing
 
-After an object has been created, one can directly draw it. If somewhere in a HTML page there is a `<div>` element:
+After an object has been created, one can directly draw it. If HTML page has `<div>` element:
 
     ...
     <div id="drawing"></div>
@@ -383,8 +383,6 @@ To correctly cleanup JSROOT drawings from HTML element, one should call:
 
     JSROOT.cleanup("drawing");
 
-Many examples of supported ROOT classes and draw options can be found on [JSROOT examples](https://root.cern.ch/js/latest/examples.htm) page. 
-
 
 ### File API
 
@@ -399,7 +397,12 @@ For example, reading an object from a file and displaying it will look like:
           JSROOT.draw("drawing", obj, "colz");
        });
     });
+    
+Similar example with JSON file:
 
-
+    var filename = "http://jsroot.gsi.de/files/th2ul.json.gz";
+    JSROOT.NewHttpRequest(filename, 'object', function(obj) {
+       JSROOT.draw("drawing", obj, "lego");
+    }).send(null);
 
  
