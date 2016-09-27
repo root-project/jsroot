@@ -1447,9 +1447,11 @@
       if (this.opt.indexOf('1') != -1) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
-      if (this.opt.indexOf('2') != -1)
+      if (this.opt.indexOf('2') != -1) {
          this.optionRect = 1;
-
+         this.optionLine = 0;
+         this.draw_errors = false;
+      }
       if (this.opt.indexOf('3') != -1) {
          this.optionEF = 1;
          this.optionLine = 0;
@@ -1474,9 +1476,7 @@
       }
 
       if (graph._typename == 'TGraphErrors') {
-         var maxEX = d3.max(graph.fEX);
-         var maxEY = d3.max(graph.fEY);
-         if (maxEX < 1.0e-300 && maxEY < 1.0e-300)
+         if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
             this.draw_errors = false;
       }
    }
