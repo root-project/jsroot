@@ -8067,6 +8067,7 @@
               case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(obj); break;
               case 'TText': item._value = obj.fTitle; break;
               case 'TLatex': item._value = obj.fTitle; break;
+              default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
            }
 
            // if name is integer value, it should match array index
