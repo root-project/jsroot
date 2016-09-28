@@ -305,7 +305,7 @@
 
       var marker_color = JSROOT.Painter.root_colors[attmarker.fMarkerColor];
 
-      if ((style===null) || (style===undefined)) style = attmarker.fMarkerStyle;
+      if (!style || (style<0)) style = attmarker.fMarkerStyle;
 
       var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0, used: true, changed: false };
 
@@ -5284,7 +5284,7 @@
       if (check('P0')) { option.Mark = 10; option.Hist = -1; }
       if (check('P')) { option.Mark = 1; option.Hist = -1; }
       if (check('Z')) option.Zscale = 1;
-      if (check('*')) option.Star = 1;
+      if (check('*')) { option.Mark = 23; option.Hist = -1; }
       if (check('H')) option.Hist = 2;
 
       if (this.IsTH2Poly()) {
@@ -7337,7 +7337,7 @@
           exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
-          path_fill = null, path_err = null, path_marker = null,
+          path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
@@ -7352,7 +7352,7 @@
       if (show_markers) {
          // draw markers also when e2 option was specified
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(this.histo);
+            this.markeratt = JSROOT.Painter.createAttMarker(this.histo, this.options.Mark - 20);
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
@@ -7411,7 +7411,6 @@
                if (draw_markers) {
                   bincont = this.histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
-
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
                      mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
                      my = Math.round(pmain.gry(bincont));
@@ -7491,6 +7490,11 @@
          if ((path_err !== null) && (path_err.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", path_err)
+                   .call(this.lineatt.func)
+
+         if ((path_line !== null) && (path_line.length > 0))
+               this.draw_g.append("svg:path")
+                   .attr("d", path_line)
                    .call(this.lineatt.func)
 
          if ((path_marker !== null) && (path_marker.length > 0))

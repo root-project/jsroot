@@ -1911,7 +1911,7 @@
          if (this.optionMark==3) marker_kind = 1;
 
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(graph,marker_kind);
+            this.markeratt = JSROOT.Painter.createAttMarker(graph, marker_kind);
          else
             this.markeratt.Change(undefined, marker_kind);
 
