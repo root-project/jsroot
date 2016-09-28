@@ -1853,12 +1853,22 @@
              hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh,
              mm = this.draw_mainerr ? "M0,0L" : "M"; // command to draw main errors
+
          if (this.draw_ends === 2) { // option []
-            var bb = Math.max(3, Math.round(lw*0.66));
+            var bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
             vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
             vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
             htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
             hbottom = "m-"+lw+",-"+bb + "v"+bb + "h"+2*lw + "v-"+bb;
+         } else
+         if (this.draw_ends === 3) { // option |>
+            lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
+            var bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+
+            vleft = "l"+bb+","+lw + "v-"+2*lw + "l-"+bb+","+lw;
+            vright = "l-"+bb+","+lw + "v-"+2*lw + "l"+bb+","+lw;
+            htop = "l-"+lw+","+bb + "h"+2*lw + "l-"+lw+",-"+bb;
+            hbottom = "l-"+lw+",-"+bb + "h"+2*lw + "l-"+lw+","+bb;
          }
 
          this.error_size = lw;
