@@ -2732,11 +2732,12 @@
                        .property('_rotate', rotate)
                        .property('_align', align);
 
-      var element = document.createElement("div");
+      var element = document.createElement("p");
       d3.select(element).style("visibility", "hidden")
                         .style("overflow", "hidden")
                         .style("position", "absolute")
                         .style("font-size", font.size+'px')
+                        .style("font-family", font.name)
                         .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 

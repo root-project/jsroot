@@ -864,7 +864,7 @@
 
       if (kind.indexOf("mathjax;")>=0) {
          if (typeof MathJax == 'undefined') {
-            mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://cdn.mathjax.org/mathjax/latest/MathJax.js") +
+            mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://cdn.mathjax.org/mathjax/2.7-latest/MathJax.js") +
                          "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
          }
          if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
