@@ -2524,9 +2524,9 @@
       var painter = this, svg_factor = 0.;
 
       // adjust font size (if there are normal text)
-      var f = draw_g.property('text_factor');
+      var f = draw_g.property('text_factor'),
+          font = draw_g.property('text_font');
       if ((f>0) && ((f<0.9) || (f>1.))) {
-         var font = draw_g.property('text_font');
          font.size = Math.floor(font.size/f);
          if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
             font.size = draw_g.property('max_font_size');
@@ -2553,10 +2553,15 @@
 
          fo_g.append(function() { return vvv.node(); });
 
+         var box = painter.GetBoundarySizes(fo_g.node());
+
          if (fo_g.property('_scale')) {
-            var box = painter.GetBoundarySizes(fo_g.node());
             svg_factor = Math.max(svg_factor, 1.05*box.width / fo_g.property('_width'),
                                               1.05*box.height / fo_g.property('_height'));
+         } else
+         if ((box.height > 3) && (font.size > 1.2*box.height)) {
+            // workaround for Firefox, where SVG output does not correspond to font size
+            svg_factor = Math.max(svg_factor, 1.2*box.height / font.size);
          }
       });
 
