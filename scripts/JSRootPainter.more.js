@@ -1397,10 +1397,10 @@
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
-                            optionFill:0, optionZ:0, optionBrackets:0,
+                            optionFill:0, optionZ:0, optionErrors: 0,
                             opt:"LP", out_of_range: false,
                             has_errors: false,
-                            draw_errors: false, draw_mainerr: true, draw_ends: true, is_bent:false });
+                            draw_mainerr: true, draw_ends: 1, is_bent:false });
 
       var graph = this.GetObject();
 
@@ -1408,7 +1408,7 @@
       this.has_errors = (graph._typename == 'TGraphErrors' ||
                          graph._typename == 'TGraphAsymmErrors' ||
                          this.is_bent || graph._typename.match(/^RooHist/));
-      this.draw_errors = this.has_errors;
+      if (this.has_errors) this.optionErrors = 1;
 
       if (opt && (typeof opt ==='string')) {
          this.opt = opt.toUpperCase();
@@ -1430,24 +1430,28 @@
          this.optionMark = 1;
       if (this.opt.indexOf('B') != -1) {
          this.optionBar = 1;
-         this.draw_errors = false;
+         this.optionErrors = 0;
       }
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
 
       if (this.opt.indexOf('||') != -1) {
-         this.draw_errors = true;
          this.draw_mainerr = false;
+         this.draw_ends = 1;
       }
 
       if (this.opt.indexOf('[]') != -1) {
-         this.optionBrackets = 1;
-         this.draw_errors = false;
+         this.draw_mainerr = false;
+         this.draw_ends = 2;
+      }
+
+      if (this.opt.indexOf('|>') != -1) {
+         this.draw_ends = 3;
       }
 
       if (this.opt.indexOf('0') != -1) {
          this.optionMark = 1;
-         this.draw_errors = true;
+         this.optionErrors = 1;
          this.out_of_range = true;
       }
 
@@ -1457,21 +1461,21 @@
       if (this.opt.indexOf('2') != -1) {
          this.optionRect = 1;
          this.optionLine = 0;
-         this.draw_errors = false;
+         this.optionErrors = 0;
       }
       if (this.opt.indexOf('3') != -1) {
          this.optionEF = 1;
          this.optionLine = 0;
-         this.draw_errors = false;
+         this.optionErrors = 0;
       }
       if (this.opt.indexOf('4') != -1) {
          this.optionEF = 2;
          this.optionLine = 0;
-         this.draw_errors = false;
+         this.optionErrors = 0;
       }
 
-      if (this.opt.indexOf('Z') != -1) this.draw_ends = false;
-      if (this.opt.indexOf('X') != -1) this.draw_errors = false;
+      if (this.opt.indexOf('Z') != -1) this.draw_ends = 0;
+      if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
 
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
@@ -1480,14 +1484,14 @@
 
       // if no drawing option is selected and if opt=='' nothing is done.
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
-          this.optionEF + this.optionRect + this.optionBrackets == 0) {
+          this.optionEF + this.optionRect + this.optionErrors == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
       }
 
       if (graph._typename == 'TGraphErrors') {
          if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
-            this.draw_errors = false;
+            this.optionErrors = 0;
       }
    }
 
@@ -1604,11 +1608,11 @@
       lines.push("x = " + pmain.AxisAsText("x", d.x));
       lines.push("y = " + pmain.AxisAsText("y", d.y));
 
-      if (this.draw_errors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+      if (this.optionErrors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
          lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
                               "/+" + pmain.AxisAsText("x", d.exhigh));
 
-      if ((this.draw_errors || (this.optionEF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+      if ((this.optionErrors || (this.optionEF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
          lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
                            "/+" + pmain.AxisAsText("y", d.eyhigh));
 
@@ -1740,7 +1744,7 @@
 
       var nodes = null;
 
-      if (this.draw_errors || this.optionRect || this.optionBrackets || this.optionBar) {
+      if (this.optionErrors || this.optionRect || this.optionBar) {
 
          drawbins = this.OptimizeBins(function(pnt,i) {
 
@@ -1827,7 +1831,7 @@
            .attr("height", function(d) { return d.gry0 - d.gry2; })
            .call(this.fillatt.func);
 
-      if (this.optionBrackets) {
+/*      if (this.optionBrackets) {
          nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
@@ -1838,13 +1842,27 @@
                         ((d.eyhigh > 0) ? "M-5,"+(d.gry2+3)+"v-3h10v3" : "");
               });
       }
+*/
 
-      if (this.draw_errors) {
+      this.error_size = 0;
+
+      if (this.optionErrors) {
          // to show end of error markers, use line width attribute
          var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize,
              vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
              hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
+             vleft = vv, vright = vv, htop = hh, hbottom = hh,
              mm = this.draw_mainerr ? "M0,0L" : "M"; // command to draw main errors
+         if (this.draw_ends === 2) { // option []
+            var bb = Math.max(3, Math.round(lw*0.66));
+            vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
+            vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
+            htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
+            hbottom = "m-"+lw+",-"+bb + "v"+bb + "h"+2*lw + "v-"+bb;
+         }
+
+         this.error_size = lw;
+
          lw = Math.floor((this.lineatt.width-1)/2); // one shoud take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
@@ -1852,10 +1870,10 @@
              .style('fill', "none")
              .attr("d", function(d) {
                 d.error = true;
-                return ((d.exlow > 0)  ? mm + (d.grx0+lw) + "," + d.grdx0 + vv : "") +
-                       ((d.exhigh > 0) ? mm + (d.grx2-lw) + "," + d.grdx2 + vv : "") +
-                       ((d.eylow > 0)  ? mm + d.grdy0 + "," + (d.gry0-lw) + hh : "") +
-                       ((d.eyhigh > 0) ? mm + d.grdy2 + "," + (d.gry2+lw) + hh : "");
+                return ((d.exlow > 0)  ? mm + (d.grx0+lw) + "," + d.grdx0 + vleft : "") +
+                       ((d.exhigh > 0) ? mm + (d.grx2-lw) + "," + d.grdx2 + vright : "") +
+                       ((d.eylow > 0)  ? mm + d.grdy0 + "," + (d.gry0-lw) + hbottom : "") +
+                       ((d.eyhigh > 0) ? mm + d.grdy2 + "," + (d.gry2+lw) + htop : "");
               });
       }
 
@@ -1924,9 +1942,11 @@
 
          var rect = null;
 
-         if (d.error || d.rect || d.marker || d.bracket) {
-            rect = { x1: Math.min(-3, d.grx0),  x2: Math.max(3, d.grx2), y1: Math.min(-3, d.gry2), y2: Math.max(3, d.gry0) };
-            if (d.bracket) { rect.x1 = -5; rect.x2 = 5; }
+         if (d.error || d.rect || d.marker) {
+            rect = { x1: Math.min(-painter.error_size, d.grx0),
+                     x2: Math.max(painter.error_size, d.grx2),
+                     y1: Math.min(-painter.error_size, d.gry2),
+                     y2: Math.max(painter.error_size, d.gry0) };
          } else
          if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
