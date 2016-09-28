@@ -1465,13 +1465,14 @@
       }
 
       if (this.opt.indexOf('Z') != -1) this.draw_ends = false;
+      if (this.opt.indexOf('X') != -1) this.draw_errors = false;
 
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // special case - one could use scg:path to draw many pixels (
       if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 3;
 
-      // if no drawing option is selected and if opt<>' ' nothing is done.
+      // if no drawing option is selected and if opt=='' nothing is done.
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
           this.optionEF + this.optionRect + this.optionBrackets == 0) {
          if (this.opt.length == 0)

@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Support 'z' draw option for TGraph
+1. Support 'z', 'x' draw option for TGraph
 
 
 ## Changes in 4.7.0
