@@ -2482,8 +2482,8 @@
       // are there good solution?
 
       if (elem===null) { console.warn('empty node in GetBoundarySizes'); return { width:0, height:0 }; }
-      var box = elem.getBoundingClientRect(); // works always, but returns sometimes wrong results
-      if (parseInt(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
+      var box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
+      if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
       var res = { width : parseInt(box.width), height : parseInt(box.height) };
       if ('left' in box) { res.x = parseInt(box.left); res.y = parseInt(box.right); } else
       if ('x' in box) { res.x = parseInt(box.x); res.y = parseInt(box.y); }
