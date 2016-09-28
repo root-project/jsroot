@@ -1399,7 +1399,8 @@
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
                             optionFill:0, optionZ:0, optionBrackets:0,
                             opt:"LP", out_of_range: false,
-                            has_errors: false, draw_errors: false, draw_ends: true, is_bent:false });
+                            has_errors: false,
+                            draw_errors: false, draw_mainerr: true, draw_ends: true, is_bent:false });
 
       var graph = this.GetObject();
 
@@ -1433,6 +1434,11 @@
       }
       if (this.opt.indexOf('R') != -1)
          this.optionR = 1;
+
+      if (this.opt.indexOf('||') != -1) {
+         this.draw_errors = true;
+         this.draw_mainerr = false;
+      }
 
       if (this.opt.indexOf('[]') != -1) {
          this.optionBrackets = 1;
@@ -1837,7 +1843,8 @@
          // to show end of error markers, use line width attribute
          var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize,
              vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
-             hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "";
+             hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
+             mm = this.draw_mainerr ? "M0,0L" : "M"; // command to draw main errors
          lw = Math.floor((this.lineatt.width-1)/2); // one shoud take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
@@ -1845,10 +1852,10 @@
              .style('fill', "none")
              .attr("d", function(d) {
                 d.error = true;
-                return ((d.exlow > 0)  ? "M0,0L"+(d.grx0+lw)+","+d.grdx0+vv : "") +
-                       ((d.exhigh > 0) ? "M0,0L"+(d.grx2-lw)+","+d.grdx2+vv : "") +
-                       ((d.eylow > 0)  ? "M0,0L"+d.grdy0+","+(d.gry0-lw)+hh : "") +
-                       ((d.eyhigh > 0) ? "M0,0L"+d.grdy2+","+(d.gry2+lw)+hh : "");
+                return ((d.exlow > 0)  ? mm + (d.grx0+lw) + "," + d.grdx0 + vv : "") +
+                       ((d.exhigh > 0) ? mm + (d.grx2-lw) + "," + d.grdx2 + vv : "") +
+                       ((d.eylow > 0)  ? mm + d.grdy0 + "," + (d.gry0-lw) + hh : "") +
+                       ((d.eyhigh > 0) ? mm + d.grdy2 + "," + (d.gry2+lw) + hh : "");
               });
       }
 
