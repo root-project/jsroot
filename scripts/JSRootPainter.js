@@ -2465,6 +2465,7 @@
 
       draw_g.property('text_font', font)
             .property('mathjax_use', false)
+            .property('normaltext_use', false)
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
             .property('max_font_size', max_font_size);
@@ -2521,17 +2522,26 @@
 
       if (svgs==null) svgs = draw_g.selectAll(".math_svg");
 
-      var painter = this, svg_factor = 0.;
-
       // adjust font size (if there are normal text)
-      var f = draw_g.property('text_factor'),
-          font = draw_g.property('text_font');
+      var painter = this,
+          svg_factor = 0,
+          f = draw_g.property('text_factor'),
+          font = draw_g.property('text_font'),
+          font_size = font.size;
       if ((f>0) && ((f<0.9) || (f>1.))) {
          font.size = Math.floor(font.size/f);
          if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
             font.size = draw_g.property('max_font_size');
          draw_g.call(font.func);
+         font_size = font.size;
+      } else {
+         if (!draw_g.property('normaltext_use') && JSROOT.browser.isFirefox && (font.size<20)) {
+            // workaround for firefox, where mathjax has problem when font size too small
+            font.size = 20;
+            draw_g.call(font.func);
+         }
       }
+
 
       // first remove dummy divs and check scaling coefficient
       svgs.each(function() {
@@ -2559,9 +2569,9 @@
             svg_factor = Math.max(svg_factor, 1.05*box.width / fo_g.property('_width'),
                                               1.05*box.height / fo_g.property('_height'));
          } else
-         if ((box.height > 3) && (font.size > 1.2*box.height)) {
+         if ((box.height > 3) && (font_size > 1.2*box.height)) {
             // workaround for Firefox, where SVG output does not correspond to font size
-            svg_factor = Math.max(svg_factor, 1.2*box.height / font.size);
+            svg_factor = Math.max(svg_factor, 1.2*box.height / font_size);
          }
       });
 
@@ -2689,6 +2699,8 @@
          if (pos_dy!=null) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
 
+         draw_g.property('normaltext_use', true);
+
          var box = this.GetBoundarySizes(txt.node());
 
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
@@ -2707,6 +2719,8 @@
 
       if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
 
+      var font = draw_g.property('text_font');
+
       var fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
@@ -2722,7 +2736,8 @@
       d3.select(element).style("visibility", "hidden")
                         .style("overflow", "hidden")
                         .style("position", "absolute")
-                        .html(JSROOT.Painter.translateMath(label, latex_kind, tcolor));
+                        .style("font-size", font.size+'px')
+                        .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used

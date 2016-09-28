@@ -57,7 +57,7 @@
          'MathJax': {
              exports: 'MathJax',
              init: function () {
-                MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
+                MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }, SVG: { mtextFontInherit: true } });
                 MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
                    var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
                    VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
