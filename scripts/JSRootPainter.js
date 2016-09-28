@@ -4878,12 +4878,12 @@
                        .style("cursor", "crosshair");
 
         if (vertical)
-           r.attr("x", (side >0) ? (-2*labelfont.size - 3) : 3)
+           r.attr("x", (side>0) ? (-2*labelfont.size - 3) : 3)
             .attr("y", 0)
             .attr("width", 2*labelfont.size + 3)
             .attr("height", h)
         else
-           r.attr("x", 0).attr("y", 0)
+           r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
             .attr("width", w).attr("height", labelfont.size + 3);
       }
 
@@ -6193,8 +6193,8 @@
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
       var kind = "xyz";
-      if (m[0] < 0) kind = this.swap_xy ? "x" : "y"; else
-      if (m[1] > this.frame_height()) kind = this.swap_xy ? "y" : "x";
+      if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
+      if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
       this.Unzoom(kind);
    }
 
@@ -6371,19 +6371,19 @@
       this.svg_frame().on("touchcancel", null)
                       .on("touchend", null);
 
-      var pnt1 = arr[0], pnt2 = arr[1];
+      var pnt1 = arr[0], pnt2 = arr[1], w = this.frame_width(), h = this.frame_height();
 
       this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
       this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
 
-      if (this.zoom_curr[0] < 0) {
+      if ((this.zoom_curr[0] < 0) || (this.zoom_curr[0] > w)) {
          this.zoom_kind = 103; // only y
          this.zoom_curr[0] = 0;
-         this.zoom_origin[0] = this.frame_width();
-      } else if (this.zoom_origin[1] > this.frame_height()) {
+         this.zoom_origin[0] = w;
+      } else if ((this.zoom_origin[1] > h) || (this.zoom_origin[1] < 0)) {
          this.zoom_kind = 102; // only x
          this.zoom_curr[1] = 0;
-         this.zoom_origin[1] = this.frame_height();
+         this.zoom_origin[1] = h;
       } else {
          this.zoom_kind = 101; // x and y
       }
@@ -6596,11 +6596,12 @@
 
       var itemx = { name: "x", ignore: false },
           itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
-          cur = d3.mouse(this.svg_frame().node());
+          cur = d3.mouse(this.svg_frame().node()),
+          w = this.frame_width(), h = this.frame_height();
 
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / this.frame_width(), (cur[1] <= this.frame_height()));
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
 
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / this.frame_height(), (cur[0] >= 0));
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
 
       this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
