@@ -1395,12 +1395,13 @@
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
-      JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
+      JSROOT.extend(this, { optionLine:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionEF:0,
                             optionFill:0, optionZ:0, optionErrors: 0,
                             opt:"LP", out_of_range: false,
                             has_errors: false,
-                            draw_mainerr: true, draw_ends: 1, is_bent:false });
+                            draw_mainerr: true, draw_ends: 1, is_bent:false,
+                            optionAxis: "AXIS" });
 
       var graph = this.GetObject();
 
@@ -1419,7 +1420,12 @@
       if (this.opt.indexOf('F') != -1)
          this.optionFill = 1;
       if (this.opt.indexOf('A') != -1)
-         this.optionAxis = 1;
+         this.optionAxis = "AXIS";
+      if (this.opt.indexOf('X+') != -1)
+         this.optionAxis += "X+";
+      if (this.opt.indexOf('Y+') != -1)
+         this.optionAxis += "Y+";
+
       if (this.opt.indexOf('C') != -1) {
          this.optionCurve = 1;
          if (this.optionFill==0) this.optionLine = 1;
@@ -2212,17 +2218,18 @@
 
       this.CreateBins();
 
+      this.DecodeOptions(opt);
+
       this.SetDivId(divid, -1); // just to get access to existing elements
 
       if (this.main_painter() == null) {
          if (graph.fHistogram == null)
             graph.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, "AXIS");
+         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, this.optionAxis);
          this.ownhisto = true;
       }
 
       this.SetDivId(divid);
-      this.DecodeOptions(opt);
       this.DrawBins();
 
       this.DrawNextFunction(0, this.DrawingReady.bind(this));

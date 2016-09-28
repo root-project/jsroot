@@ -2,7 +2,7 @@
 
 ## Changes in dev
 1. Support 'z', 'x', '||', '[]', '>', '|>', '5' draw option for TGraph
-2. Support of 'X+' and 'Y+' draw options for histograms
+2. Support of 'X+' and 'Y+' draw options for histograms and graphs
 
 
 ## Changes in 4.7.0
