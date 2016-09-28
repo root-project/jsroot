@@ -1396,7 +1396,7 @@
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
       this.draw_all = true;
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
-                            optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
+                            optionMark:0, optionBar:0, optionEF:0,
                             optionFill:0, optionZ:0, optionErrors: 0,
                             opt:"LP", out_of_range: false,
                             has_errors: false,
@@ -1432,21 +1432,32 @@
          this.optionBar = 1;
          this.optionErrors = 0;
       }
-      if (this.opt.indexOf('R') != -1)
-         this.optionR = 1;
+
+      if (this.opt.indexOf('Z') != -1) {
+         this.optionErrors = 1;
+         this.draw_ends = 0;
+      }
 
       if (this.opt.indexOf('||') != -1) {
+         this.optionErrors = 1;
          this.draw_mainerr = false;
          this.draw_ends = 1;
       }
 
       if (this.opt.indexOf('[]') != -1) {
+         this.optionErrors = 1;
          this.draw_mainerr = false;
          this.draw_ends = 2;
       }
 
-      if (this.opt.indexOf('|>') != -1) this.draw_ends = 3; else
-      if (this.opt.indexOf('>') != -1) this.draw_ends = 4;
+      if (this.opt.indexOf('|>') != -1) {
+         this.optionErrors = 1;
+         this.draw_ends = 3;
+      } else
+      if (this.opt.indexOf('>') != -1) {
+         this.optionErrors = 1;
+         this.draw_ends = 4;
+      }
 
       if (this.opt.indexOf('0') != -1) {
          this.optionMark = 1;
@@ -1478,16 +1489,13 @@
          this.optionErrors = 0;
       }
 
-      if (this.opt.indexOf('Z') != -1) this.draw_ends = 0;
       if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
-
-      if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
       // special case - one could use scg:path to draw many pixels (
       if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 3;
 
       // if no drawing option is selected and if opt=='' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar + this.optionE +
+      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar +
           this.optionEF + this.optionRect + this.optionErrors == 0) {
          if (this.opt.length == 0)
             this.optionLine = 1;
