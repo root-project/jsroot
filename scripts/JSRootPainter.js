@@ -4410,6 +4410,7 @@
       this.scale_min = 0;
       this.scale_max = 1;
       this.ticks = []; // list of major ticks
+      this.invert_side = false;
    }
 
    JSROOT.TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -4658,6 +4659,7 @@
             axis_g = layer.append("svg:g").attr("class",this.name+"_container");
          else
             axis_g.selectAll("*").remove();
+         if (this.invert_side) side = -side;
       } else {
 
          if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
@@ -5797,6 +5799,7 @@
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
+      this.x_handle.invert_side = (this.options.AxisPos>=10);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -5804,12 +5807,15 @@
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
+      this.y_handle.invert_side = (this.options.AxisPos % 10) === 1;
 
-      var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle;
-      var draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+      var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
-      draw_horiz.DrawAxis(false, layer, w, h, "translate(0," + h + ")", false, pad.fTickx ? -h : 0);
-      draw_vertical.DrawAxis(true, layer, w, h, undefined, false, pad.fTicky ? w : 0);
+      draw_horiz.DrawAxis(false, layer, w, h, draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                          false, pad.fTickx ? -h : 0);
+      draw_vertical.DrawAxis(true, layer, w, h, draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                             false, pad.fTicky ? w : 0);
 
       if (shrink_forbidden) return;
 
@@ -6205,21 +6211,23 @@
       this.clearInteractiveElements();
       this.zoom_origin = d3.mouse(this.svg_frame().node());
 
-      this.zoom_curr = [ Math.max(0, Math.min(this.frame_width(), this.zoom_origin[0])),
-                         Math.max(0, Math.min(this.frame_height(), this.zoom_origin[1])) ];
+      var w = this.frame_width(), h = this.frame_height();
 
-      if (this.zoom_origin[0] < 0) {
+      this.zoom_curr = [ Math.max(0, Math.min(w, this.zoom_origin[0])),
+                         Math.max(0, Math.min(h, this.zoom_origin[1])) ];
+
+      if ((this.zoom_origin[0] < 0) || (this.zoom_origin[0] > w)) {
          this.zoom_kind = 3; // only y
          this.zoom_origin[0] = 0;
          this.zoom_origin[1] = this.zoom_curr[1];
-         this.zoom_curr[0] = this.frame_width();
+         this.zoom_curr[0] = w;
          this.zoom_curr[1] += 1;
-      } else if (this.zoom_origin[1] > this.frame_height()) {
+      } else if ((this.zoom_origin[1] < 0) || (this.zoom_origin[1] > h)) {
          this.zoom_kind = 2; // only x
          this.zoom_origin[0] = this.zoom_curr[0];
          this.zoom_origin[1] = 0;
          this.zoom_curr[0] += 1;
-         this.zoom_curr[1] = this.frame_height();
+         this.zoom_curr[1] = h;
       } else {
          this.zoom_kind = 1; // x and y
          this.zoom_origin[0] = this.zoom_curr[0];
