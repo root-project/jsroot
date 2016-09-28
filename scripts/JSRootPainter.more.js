@@ -1398,7 +1398,8 @@
       JSROOT.extend(this, { optionLine:0, optionAxis:0, optionCurve:0, optionRect:0,
                             optionMark:0, optionBar:0, optionR:0, optionE:0, optionEF:0,
                             optionFill:0, optionZ:0, optionBrackets:0,
-                            opt:"LP", out_of_range: false, has_errors: false, draw_errors: false, is_bent:false });
+                            opt:"LP", out_of_range: false,
+                            has_errors: false, draw_errors: false, draw_ends: true, is_bent:false });
 
       var graph = this.GetObject();
 
@@ -1408,7 +1409,7 @@
                          this.is_bent || graph._typename.match(/^RooHist/));
       this.draw_errors = this.has_errors;
 
-      if ((opt != null) && (opt != "")) {
+      if (opt && (typeof opt ==='string')) {
          this.opt = opt.toUpperCase();
          this.opt.replace('SAME', '');
       }
@@ -1462,6 +1463,8 @@
          this.optionLine = 0;
          this.draw_errors = false;
       }
+
+      if (this.opt.indexOf('Z') != -1) this.draw_ends = false;
 
       if (this.opt.indexOf('2') != -1 || this.opt.indexOf('5') != -1) this.optionE = 1;
 
@@ -1832,8 +1835,8 @@
       if (this.draw_errors) {
          // to show end of error markers, use line width attribute
          var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize,
-             vv = "m0," + lw + "v-" + 2*lw,
-             hh = "m" + lw + ",0h-" + 2*lw;
+             vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
+             hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "";
          lw = Math.floor((this.lineatt.width-1)/2); // one shoud take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
