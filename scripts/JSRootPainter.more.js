@@ -1472,6 +1472,11 @@
          this.optionLine = 0;
          this.optionErrors = 0;
       }
+      if (this.opt.indexOf('5') != -1) {
+         this.optionRect = 2;
+         this.optionLine = 0;
+         this.optionErrors = 0;
+      }
 
       if (this.opt.indexOf('Z') != -1) this.draw_ends = 0;
       if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
@@ -1828,20 +1833,8 @@
            .attr("y", function(d) { return d.gry2; })
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
-           .call(this.fillatt.func);
-
-/*      if (this.optionBrackets) {
-         nodes.filter(function(d) { return (d.eylow > 0) || (d.eyhigh > 0); })
-             .append("svg:path")
-             .call(this.lineatt.func)
-             .style('fill', "none")
-             .attr("d", function(d) {
-                d.bracket = true;
-                return ((d.eylow > 0)  ? "M-5,"+(d.gry0-3)+"v3h10v-3" : "") +
-                        ((d.eyhigh > 0) ? "M-5,"+(d.gry2+3)+"v-3h10v3" : "");
-              });
-      }
-*/
+           .call(this.fillatt.func)
+           .call(this.optionRect === 2 ? this.lineatt.func : function() {});
 
       this.error_size = 0;
 
