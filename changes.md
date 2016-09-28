@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Support 'z' draw option for TGraph
+
+
 ## Changes in 4.7.0
 1. Implement simple TTree::Draw over single leaf (#80)
    Support basic types, fixed-size arrays and several vector types 
