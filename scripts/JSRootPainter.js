@@ -4639,7 +4639,8 @@
       this.vertical = vertical;
 
       // shift for second ticks set (if any)
-      if (!second_shift) second_shift = 0;
+      if (!second_shift) second_shift = 0; else
+      if (this.invert_side) second_shift = -second_shift;
 
       if (is_gaxis) {
          if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis);
