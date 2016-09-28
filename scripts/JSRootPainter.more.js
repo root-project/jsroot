@@ -1445,9 +1445,8 @@
          this.draw_ends = 2;
       }
 
-      if (this.opt.indexOf('|>') != -1) {
-         this.draw_ends = 3;
-      }
+      if (this.opt.indexOf('|>') != -1) this.draw_ends = 3; else
+      if (this.opt.indexOf('>') != -1) this.draw_ends = 4;
 
       if (this.opt.indexOf('0') != -1) {
          this.optionMark = 1;
@@ -1848,27 +1847,36 @@
 
       if (this.optionErrors) {
          // to show end of error markers, use line width attribute
-         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize,
+         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize, bb = 0,
              vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
              hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh,
              mm = this.draw_mainerr ? "M0,0L" : "M"; // command to draw main errors
 
-         if (this.draw_ends === 2) { // option []
-            var bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
-            vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
-            vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
-            htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
-            hbottom = "m-"+lw+",-"+bb + "v"+bb + "h"+2*lw + "v-"+bb;
-         } else
-         if (this.draw_ends === 3) { // option |>
-            lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
-            var bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
-
-            vleft = "l"+bb+","+lw + "v-"+2*lw + "l-"+bb+","+lw;
-            vright = "l-"+bb+","+lw + "v-"+2*lw + "l"+bb+","+lw;
-            htop = "l-"+lw+","+bb + "h"+2*lw + "l-"+lw+",-"+bb;
-            hbottom = "l-"+lw+",-"+bb + "h"+2*lw + "l-"+lw+","+bb;
+         switch(this.draw_ends) {
+            case 2:  // option []
+               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
+               vright = "m-"+bb+","+lw + "h"+bb + "v-"+2*lw + "h-"+bb;
+               htop = "m-"+lw+","+bb + "v-"+bb + "h"+2*lw + "v"+bb;
+               hbottom = "m-"+lw+",-"+bb + "v"+bb + "h"+2*lw + "v-"+bb;
+               break;
+            case 3: // option |>
+               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
+               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               vleft = "l"+bb+","+lw + "v-"+2*lw + "l-"+bb+","+lw;
+               vright = "l-"+bb+","+lw + "v-"+2*lw + "l"+bb+","+lw;
+               htop = "l-"+lw+","+bb + "h"+2*lw + "l-"+lw+",-"+bb;
+               hbottom = "l-"+lw+",-"+bb + "h"+2*lw + "l-"+lw+","+bb;
+               break;
+            case 4: // option >
+               lw = Math.max(lw, Math.round(graph.fMarkerSize*8*0.66));
+               bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
+               vleft = "l"+bb+","+lw + "m0,-"+2*lw + "l-"+bb+","+lw;
+               vright = "l-"+bb+","+lw + "m0,-"+2*lw + "l"+bb+","+lw;
+               htop = "l-"+lw+","+bb + "m"+2*lw + ",0l-"+lw+",-"+bb;
+               hbottom = "l-"+lw+",-"+bb + "m"+2*lw + ",0l-"+lw+","+bb;
+               break;
          }
 
          this.error_size = lw;
