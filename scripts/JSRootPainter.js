@@ -7349,6 +7349,8 @@
       } else
       if (this.options.Error > 0) path_err = "";
 
+      if (this.options.Line > 0) { path_line = ""; show_markers = true; }
+
       if (show_markers) {
          // draw markers also when e2 option was specified
          if (!this.markeratt)
@@ -7431,6 +7433,11 @@
                         if (path_marker !== null)
                            path_marker += this.markeratt.create((mx1+mx2)/2, my);
                      }
+
+                     if (path_line !== null) {
+                        path_line += (path_line.length===0) ? "M" : "L";
+                        path_line += Math.round((mx1+mx2)/2) + "," + my;
+                     }
                   }
                }
 
@@ -7495,6 +7502,7 @@
          if ((path_line !== null) && (path_line.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", path_line)
+                   .attr("fill", "none")
                    .call(this.lineatt.func)
 
          if ((path_marker !== null) && (path_marker.length > 0))
@@ -7624,7 +7632,7 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-      if ((this.options.Error > 0) || (this.options.Mark > 0))  {
+      if ((this.options.Error > 0) || (this.options.Mark > 0) || (this.options.Line > 0))  {
 
          show_rect = true;
 
