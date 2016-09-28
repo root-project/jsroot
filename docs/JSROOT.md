@@ -56,23 +56,23 @@ One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __i
 
 List of supported classes and draw options:
 
-- TH1 : [hist](https://root.cern.ch/js/latest/examples.htm#th1), [p](https://root.cern.ch/js/latest/examples.htm#th1_p), [p0](https://root.cern.ch/js/latest/examples.htm#th1_p0), [e](https://root.cern.ch/js/latest/examples.htm#th1_e), [e1](https://root.cern.ch/js/latest/examples.htm#th1_e1), [lego](https://root.cern.ch/js/latest/examples.htm#th1_lego)
+- TH1 : [hist](https://root.cern.ch/js/latest/examples.htm#th1), [p](https://root.cern.ch/js/latest/examples.htm#th1_p), [p0](https://root.cern.ch/js/latest/examples.htm#th1_p0), [*](http://jsroot.gsi.de/dev/examples.htm#th1_star), [L](http://jsroot.gsi.de/dev/examples.htm#th1_l), [e](https://root.cern.ch/js/latest/examples.htm#th1_e), [e1](https://root.cern.ch/js/latest/examples.htm#th1_e1), [lego](https://root.cern.ch/js/latest/examples.htm#th1_lego), [X+Y+](http://jsroot.gsi.de/dev/examples.htm#th1_x+y+)
 - TH2 : [scat](https://root.cern.ch/js/latest/examples.htm#th2), [col](https://root.cern.ch/js/latest/examples.htm#th2_col), [colz](https://root.cern.ch/js/latest/examples.htm#th2_colz), [box](https://root.cern.ch/js/latest/examples.htm#th2_box), [text](https://root.cern.ch/js/latest/examples.htm#th2_text), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego), [arr](http://jsroot.gsi.de/dev/examples.htm#th2_arr), [cont](http://jsroot.gsi.de/dev/examples.htm#th2_cont), [cont1](http://jsroot.gsi.de/dev/examples.htm#th2_cont1), [cont2](http://jsroot.gsi.de/dev/examples.htm#th2_cont2), [cont3](http://jsroot.gsi.de/dev/examples.htm#th2_cont3), [cont4](http://jsroot.gsi.de/dev/examples.htm#th2_cont4), [surf](http://jsroot.gsi.de/dev/examples.htm#th2_surf), [surf1](http://jsroot.gsi.de/dev/examples.htm#th2_surf1), [surf2](http://jsroot.gsi.de/dev/examples.htm#th2_surf2), [surf4](http://jsroot.gsi.de/dev/examples.htm#th2_surf4), [surf6](http://jsroot.gsi.de/dev/examples.htm#th2_surf6), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern.ch/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern.ch/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern.ch/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern.ch/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern.ch/js/latest/examples.htm#th2_lego4)
-- TH2Poly : [col](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=honeycomb;1&opt=col),
-[lego](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=boxes;1&opt=lego), [europe](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=europe;1), [usa](http://jsroot.gsi.de/dev/?nobrowser&file=../files/th2poly.root&item=usa;1)
-- TH3 :  [box](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box), [box1](https://root.cern.ch/js/latest/?nobrowser&file=../files/glbox.root&item=h31;1&opt=box1)
-- TProfile : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1), [e](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e), [E1](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=e1), [pE2](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=pe2), [hist](https://root.cern.ch/js/latest/?nobrowser&file=../files/hsimple.root&item=hprof;1&opt=hist)
-- THStack : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/stacks.root&item=stacks;1)   
-- TF1 : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/danilo5.root&item=canvas;1)
-- TGraph : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1), [L](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=L), [P](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=P), [*](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=*), [B](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=Graph;1&opt=B)
-- TGraphErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1), [0](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=0), [3](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=3), [4](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphErrors;1&opt=4)
-- TGraphAsymmErrors : [dflt](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1), [2](https://root.cern.ch/js/latest/?nobrowser&file=../files/graph.root&item=GraphAsymmErrors;1&opt=2)
-- TMultiGraph : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/multigraph.root&item=c3;1)
-- TLatex : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]&mathjax)
-- TMathText : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/latex.root&item=math;1)
-- TCanvas : [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/rf107.root&item=rf107_plotstyles;1)
-- TLegend :  [example](https://root.cern.ch/js/latest/?nobrowser&file=../files/legends.root&item=legends;1&mathjax)
-- TTree : [single-branch draw](http://jsroot.gsi.de/dev/?nobrowser&file=../files/hsimple.root&item=ntuple;1/px)
+- TH2Poly : [col](http://jsroot.gsi.de/dev/examples.htm#th2poly_honeycomb),
+[lego](http://jsroot.gsi.de/dev/examples.htm#th2poly_lego), [europe](http://jsroot.gsi.de/dev/examples.htm#th2poly_europe), [usa](http://jsroot.gsi.de/dev/examples.htm#th2poly_usa)
+- TH3 : [box](http://jsroot.gsi.de/dev/examples.htm#th3), [box1](http://jsroot.gsi.de/dev/examples.htm#th3_box1)
+- TProfile : [dflt](http://jsroot.gsi.de/dev/examples.htm#tprofile), [e](http://jsroot.gsi.de/dev/examples.htm#tprofile_e), [E1](http://jsroot.gsi.de/dev/examples.htm#tprofile_e1), [pE2](http://jsroot.gsi.de/dev/examples.htm#tprofile_pe2), [hist](http://jsroot.gsi.de/dev/examples.htm#tprofile_hist)
+- THStack : [example](http://jsroot.gsi.de/dev/examples.htm#thstack)   
+- TF1 : [example](http://jsroot.gsi.de/dev/examples.htm#tf1_canv)
+- TGraph : [dflt](https://root.cern.ch/js/latest/examples.htm#tgraph), [L](https://root.cern.ch/js/latest/examples.htm#tgraph_l), [P](https://root.cern.ch/js/latest/examples.htm#tgraph_p), [*](https://root.cern.ch/js/latest/examples.htm#tgraph_star), [B](https://root.cern.ch/js/latest/examples.htm#tgraph_b)
+- TGraphErrors : [dflt](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors), [l](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_l), [lx](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_lx), [z](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_z), [>](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_>), [|>](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_|>), [||](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_||), [[]](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_[]), [0](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_0), [2](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_2), [3](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_3), [4](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_4), [5](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_5),
+- TGraphAsymmErrors : [dflt](http://jsroot.gsi.de/dev/examples.htm#tgraphasymmerrors), [z](http://jsroot.gsi.de/dev/examples.htm#tgraphasymmerrors_z) and other from TGraphErrors 
+- TMultiGraph : [example](http://jsroot.gsi.de/dev/examples.htm#tmultigraph_c3), [exclusion] (http://jsroot.gsi.de/dev/examples.htm#tmultigraph_exclusion)
+- TLatex : [example](http://jsroot.gsi.de/dev/examples.htm#tlatex_latex)
+- TMathText : [example](http://jsroot.gsi.de/dev/examples.htm#tlatex_math)
+- TCanvas : [example](http://jsroot.gsi.de/dev/examples.htm#tcanvas_roofit)
+- TLegend : [example](http://jsroot.gsi.de/dev/examples.htm#tcanvas_legend)
+- TTree : [single-branch draw](http://jsroot.gsi.de/dev/examples.htm#ttree_draw)
 - TPolyLine : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_polyline)
 - TEllipse : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_ellipse)
 - TArrow : [dflt](http://jsroot.gsi.de/dev/examples.htm#misc_arrow)
@@ -190,7 +190,7 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
 
 More details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
-Other solution - copy all JSROOT files to the same location than where the data files are located.
+Other solution - copy all JSROOT files to the location where the data files are located.
 In such case one could use the server with its default settings.
 
 A simple case is to copy only the top index.htm file on the server and specify the full path to JSRootCore.js script like:
