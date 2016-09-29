@@ -1060,6 +1060,19 @@
             JSROOT.Create("TPaveText", obj);
             JSROOT.extend(obj, { fOptFit: 0, fOptStat: 0, fFitFormat: "", fStatFormat: "", fParent: null });
             break;
+         case 'TLegend':
+            JSROOT.Create("TPave", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: 1, fPrimitives: JSROOT.Create("TList") });
+            break;
+         case 'TLegendEntry':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttFill", obj);
+            JSROOT.Create("TAttMarker", obj);
+            JSROOT.extend(obj, { fLabel: "", fObject: null, fOption: "" });
+            break;
          case 'TObjString':
             JSROOT.Create("TObject", obj);
             JSROOT.extend(obj, { fString: "" });
