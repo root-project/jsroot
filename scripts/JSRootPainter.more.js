@@ -1431,7 +1431,7 @@
          if (this.optionFill==0) this.optionLine = 1;
       }
       if (this.opt.indexOf('*') != -1)
-         this.optionMark = 2;
+         this.optionMark = 103;
       if (this.opt.indexOf('P') != -1)
          this.optionMark = 1;
       if (this.opt.indexOf('B') != -1) {
@@ -1498,7 +1498,7 @@
       if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
 
       // special case - one could use scg:path to draw many pixels (
-      if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 3;
+      if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 101;
 
       // if no drawing option is selected and if opt=='' nothing is done.
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar +
@@ -1905,15 +1905,12 @@
       if (this.optionMark > 0) {
          // for tooltips use markers only if nodes where not created
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
-             path = "", n, pnt, grx, gry, marker_kind;
-
-         if (this.optionMark==2) marker_kind = 3; else
-         if (this.optionMark==3) marker_kind = 1;
+             path = "", n, pnt, grx, gry;
 
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(graph, marker_kind);
+            this.markeratt = JSROOT.Painter.createAttMarker(graph, this.optionMark - 100);
          else
-            this.markeratt.Change(undefined, marker_kind);
+            this.markeratt.Change(undefined, this.optionMark - 100);
 
          this.marker_size = this.markeratt.size;
 
