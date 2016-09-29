@@ -8057,7 +8057,8 @@
 
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
-      if (lst._typename != 'TList' && lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
+      if (lst._typename != 'TList' && lst._typename != 'THashList' &&
+          lst._typename != 'TObjArray'  && lst._typename != 'TClonesArray') return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
@@ -8089,6 +8090,7 @@
               case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(obj); break;
               case 'TText': item._value = obj.fTitle; break;
               case 'TLatex': item._value = obj.fTitle; break;
+              case 'TObjString': item._value = obj.fString; break;
               default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
            }
 
@@ -8564,7 +8566,13 @@
             } else {
                item._obj = fld;
                item._value = "{ }";
-               if (fld._typename == 'TColor') item._value = JSROOT.Painter.MakeColorRGB(fld);
+
+               switch(fld._typename) {
+                  case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(fld); break;
+                  case 'TText': item._value = fld.fTitle; break;
+                  case 'TLatex': item._value = fld.fTitle; break;
+                  case 'TObjString': item._value = fld.fString; break;
+               }
             }
          } else
          if ((typeof fld == 'number') || (typeof fld == 'boolean')) {
@@ -10588,6 +10596,7 @@
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TColor", icon: "img_color" });
