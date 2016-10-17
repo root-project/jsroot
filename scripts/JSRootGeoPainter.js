@@ -1730,6 +1730,7 @@
 
    JSROOT.TGeoPainter.prototype.drawTrack = function(track, itemname) {
       if (!track) return false;
+      if (track.fN <= 0) return false;
 
       var track_width = track.fLineWidth;
 
@@ -1765,6 +1766,7 @@
 
    JSROOT.TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit) return false;
+      if (hit.fN <= 0) return false;
 
       var hit_size = 25.0 * hit.fMarkerSize;
       var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
