@@ -4021,42 +4021,44 @@
    JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
-          i, j, binz, colPaths = [], currx = [], curry = [],
-          colindx, zdiff, dgrx, dgry, ww, hh, cmd1, cmd2;
+          i, j, binz, colPaths = [],
+          colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
+          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
+          absmax = Math.max(Math.abs(this.maxbin), Math.abs(this.minbin)),
+          absmin = Math.max(0, this.minbin);
 
-      var xfactor = 1, yfactor = 1, uselogz = false, logmin = 0, logmax = 1;
-      if (this.root_pad().fLogz && (this.maxbin>0)) {
+      if (this.root_pad().fLogz && (absmax>0)) {
          uselogz = true;
-         logmax = Math.log(this.maxbin);
-         logmin = (this.minbin > 0) ? Math.log(this.minbin) : logmax - 10;
+         logmax = Math.log(absmax);
+         logmin = (absmin > 0) ? Math.log(absmin) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
-         xfactor = 0.5 / (logmax - logmin);
-         yfactor = 0.5 / (logmax - logmin);
+         xyfactor = 0.5 / (logmax - logmin);
       } else {
-         xfactor = 0.5 / (this.maxbin - this.minbin);
-         yfactor = 0.5 / (this.maxbin - this.minbin);
+         xyfactor = 0.5 / (absmax - absmin);
       }
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
+            binz = Math.abs(histo.getBinContent(i + 1, j + 1));
+            if ((binz == 0) || (binz < absmin)) continue;
 
-            zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : this.maxbin - binz;
+            zdiff = uselogz ? (logmax - ((binz>0) ? Math.log(binz) : logmin)) : (absmax - binz);
 
             ww = handle.grx[i+1] - handle.grx[i];
             hh = handle.gry[j] - handle.gry[j+1];
 
-            dgrx = zdiff * xfactor * ww;
-            dgry = zdiff * yfactor * hh;
+            dgrx = zdiff * xyfactor * ww;
+            dgry = zdiff * xyfactor * hh;
+
+            xx = Math.round(handle.grx[i] + dgrx);
+            yy = Math.round(handle.gry[j+1] + dgry);
 
             ww = Math.max(Math.round(ww - 2*dgrx), 1);
             hh = Math.max(Math.round(hh - 2*dgry), 1);
 
             if (colPaths[i]===undefined) colPaths[i] = "";
-            colPaths[i] += "M" + Math.round(handle.grx[i] + dgrx) + "," + Math.round(handle.gry[j+1] + dgry) +
-                           "v" + hh + "h" + ww + "v-" + hh + "z";
+            colPaths[i] += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
          }
       }
 

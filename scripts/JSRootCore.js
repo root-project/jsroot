@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 29/09/2016";
+   JSROOT.version = "dev 17/10/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
