@@ -4019,9 +4019,10 @@
 
 
    JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
+
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
-          i, j, binz, absz, res = "", cross = "",
+          i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
           xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
           absmax = Math.max(Math.abs(this.maxbin), Math.abs(this.minbin)),
@@ -4060,7 +4061,19 @@
 
             res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
 
-            if (binz<0) cross += "M"+xx+","+yy + "l"+ww+","+hh + "v-"+hh + "l-"+ww+","+hh;
+            if ((binz<0) && (this.options.Box === 1))
+               cross += "M"+xx+","+yy + "l"+ww+","+hh + "v-"+hh + "l-"+ww+","+hh;
+
+            if ((this.options.Box === 11) && (ww>5) && (hh>5) && (this.fillatt.color !== 'none')) {
+               var pww = Math.round(ww*0.1),
+                   phh = Math.round(hh*0.1),
+                   side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
+                           "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
+                   side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
+                           "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
+               if (binz<0) { btn2+=side1; btn1+=side2; }
+                      else { btn1+=side1; btn2+=side2; }
+            }
          }
       }
 
@@ -4069,6 +4082,20 @@
                     .attr("d", res)
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
+
+      if (btn1.length>0)
+         this.draw_g.append("svg:path")
+                    .attr("d", btn1)
+                    .style("stroke","none")
+                    .call(this.fillatt.func)
+                    .style("fill", d3.rgb(this.fillatt.color).brighter(0.5).toString());
+
+      if (btn2.length>0)
+         this.draw_g.append("svg:path")
+                    .attr("d", btn2)
+                    .style("stroke","none")
+                    .call(this.fillatt.func)
+                    .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
 
       if (cross.length > 0) {
          var elem = this.draw_g.append("svg:path")
