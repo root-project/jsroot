@@ -1447,13 +1447,29 @@
       }
 
       if (typename.indexOf("TProfile") == 0) {
-         m.getBin = function(x) { return x; }
-         m.getBinContent = function(bin) {
-            if (bin < 0 || bin >= this.fNcells) return 0;
-            if (this.fBinEntries[bin] < 1e-300) return 0;
-            if (!this.fArray) return 0;
-            return this.fArray[bin]/this.fBinEntries[bin];
-         };
+         if (typename.indexOf("TProfile2D") == 0) {
+            m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
+            m.getBinContent = function(x, y) {
+               var bin = this.getBin(x, y);
+               if (bin < 0 || bin >= this.fNcells) return 0;
+               if (this.fBinEntries[bin] < 1e-300) return 0;
+               if (!this.fArray) return 0;
+               return this.fArray[bin]/this.fBinEntries[bin];
+            }
+            m.getBinEntries = function(bin) {
+               if (bin < 0 || bin >= this.fNcells) return 0;
+               return this.fBinEntries[bin];
+            }
+         }
+         else {
+            m.getBin = function(x) { return x; }
+            m.getBinContent = function(bin) {
+               if (bin < 0 || bin >= this.fNcells) return 0;
+               if (this.fBinEntries[bin] < 1e-300) return 0;
+               if (!this.fArray) return 0;
+               return this.fArray[bin]/this.fBinEntries[bin];
+            };
+         }
          m.getBinEffectiveEntries = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
             var sumOfWeights = this.fBinEntries[bin];
