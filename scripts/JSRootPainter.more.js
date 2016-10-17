@@ -4033,9 +4033,9 @@
          logmax = Math.log(absmax);
          logmin = (absmin > 0) ? Math.log(absmin) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
-         xyfactor = 0.5 / (logmax - logmin);
+         xyfactor = 1. / (logmax - logmin);
       } else {
-         xyfactor = 0.5 / (absmax - absmin);
+         xyfactor = 1. / (absmax - absmin);
       }
 
       // now start build
@@ -4045,13 +4045,15 @@
             absz = Math.abs(binz);
             if ((absz === 0) || (absz < absmin)) continue;
 
-            zdiff = uselogz ? (logmax - ((absz>0) ? Math.log(absz) : logmin)) : (absmax - absz);
+            zdiff = uselogz ? ((absz>0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
+            // area of the box should be propotional to absolute bin content
+            zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 -  Math.sqrt(zdiff * xyfactor)));
 
             ww = handle.grx[i+1] - handle.grx[i];
             hh = handle.gry[j] - handle.gry[j+1];
 
-            dgrx = zdiff * xyfactor * ww;
-            dgry = zdiff * xyfactor * hh;
+            dgrx = zdiff * ww;
+            dgry = zdiff * hh;
 
             xx = Math.round(handle.grx[i] + dgrx);
             yy = Math.round(handle.gry[j+1] + dgry);
