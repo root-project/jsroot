@@ -2858,7 +2858,8 @@
       if (zc < this.zmin) return -111;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111) || this.IsTH2Poly()) ? 0 : -1;
+      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111) || this.IsTH2Poly() ||
+                                  ((this.options.Box>0) && (this.zmin!==0))) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.zmin)*(cntr.length-1)/(this.zmax-this.zmin));
    }
@@ -4066,7 +4067,7 @@
             if ((binz<0) && (this.options.Box === 1))
                cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
 
-            if ((this.options.Box === 11) && (ww>5) && (hh>5) && (this.fillatt.color !== 'none')) {
+            if ((this.options.Box === 11) && (ww>5) && (hh>5)) {
                var pww = Math.round(ww*0.1),
                    phh = Math.round(hh*0.1),
                    side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
@@ -4089,7 +4090,7 @@
            elem.call(this.lineatt.func);
       }
 
-      if (btn1.length>0)
+      if ((btn1.length>0) && (this.fillatt.color !== 'none'))
          this.draw_g.append("svg:path")
                     .attr("d", btn1)
                     .style("stroke","none")
@@ -4101,7 +4102,7 @@
                     .attr("d", btn2)
                     .style("stroke","none")
                     .call(this.fillatt.func)
-                    .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
+                    .style("fill", this.fillatt.color === 'none' ? 'red' : d3.rgb(this.fillatt.color).darker(0.5).toString());
 
       if (cross.length > 0) {
          var elem = this.draw_g.append("svg:path")
