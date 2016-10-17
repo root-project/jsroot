@@ -4,6 +4,7 @@
 1. Support 'z', 'x', '||', '[]', '>', '|>', '5' draw option for TGraph
 2. Support of 'X+' and 'Y+' draw options for histograms and graphs
 3. Support '*' and 'L' draw options for TH1
+4. Draw crosses for negative TH2 bins with 'box' draw option
 
 
 ## Changes in 4.7.0
