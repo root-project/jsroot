@@ -2637,8 +2637,8 @@
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
-               wei = (this.options.Color > 0) ? 1. : bin_content / this.gmaxbin;
-               if (wei < 1e-5) continue; // do not empty or very small bins
+               wei = Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333);
+               if (wei < 1e-3) continue; // do not empty or very small bins
 
                nbins++;
             }
@@ -2678,8 +2678,8 @@
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
 
-               wei = /*(this.options.Color > 0) ? 1. :*/  bin_content / this.gmaxbin;
-               if (wei < 1e-5) continue; // do not show empty bins
+               wei = /*(this.options.Color > 0) ? 1. :*/  Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333);
+               if (wei < 1e-3) continue; // do not show empty bins
 
                binz = this.GetBinZ(k+0.5); grz = this.grz(binz);
 
@@ -2754,7 +2754,7 @@
          gry = p.gry(p.GetBinY(tip.iy-0.5));
          grz = p.grz(p.GetBinZ(tip.iz-0.5));
 
-         wei = tip.value / p.gmaxbin;
+         wei = Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333)
 
          tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
          tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
