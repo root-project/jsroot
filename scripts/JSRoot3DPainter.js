@@ -2748,13 +2748,11 @@
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
          var p = this.painter,
-             tip = p.Get3DToolTip(this.bins[indx]);
-
-         grx = p.grx(p.GetBinX(tip.ix-0.5));
-         gry = p.gry(p.GetBinY(tip.iy-0.5));
-         grz = p.grz(p.GetBinZ(tip.iz-0.5));
-
-         wei = Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333)
+             tip = p.Get3DToolTip(this.bins[indx]),
+             grx = p.grx(p.GetBinX(tip.ix-0.5)),
+             gry = p.gry(p.GetBinY(tip.iy-0.5)),
+             grz = p.grz(p.GetBinZ(tip.iz-0.5)),
+             wei = Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333)
 
          tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
          tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
