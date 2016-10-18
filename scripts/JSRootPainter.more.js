@@ -4023,12 +4023,22 @@
 
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
+          main = this.main_painter();
+
+      if (main===this) {
+         if (main.maxbin === main.minbin) {
+            main.maxbin = main.gmaxbin;
+            main.minbin = main.gminbin;
+         }
+         if (main.maxbin === main.minbin)
+            main.minbin = Math.min(0, main.maxbin-1);
+      }
+
+      var absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
+          absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
-          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
-          main = this.main_painter(),
-          absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
-          absmin = Math.max(0, main.minbin);
+          xyfactor = 1, uselogz = false, logmin = 0, logmax = 1;
 
       if (this.root_pad().fLogz && (absmax>0)) {
          uselogz = true;
@@ -4049,7 +4059,9 @@
 
             zdiff = uselogz ? ((absz>0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
             // area of the box should be propotional to absolute bin content
-            zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 -  Math.sqrt(zdiff * xyfactor)));
+            zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 - Math.sqrt(zdiff * xyfactor)));
+            // avoid oversized bins
+            if (zdiff < 0) zdiff = 0;
 
             ww = handle.grx[i+1] - handle.grx[i];
             hh = handle.gry[j] - handle.gry[j+1];
