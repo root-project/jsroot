@@ -5956,7 +5956,7 @@
 
    JSROOT.THistPainter.prototype.CreateStat = function(opt_stat) {
 
-      if (!this.draw_content) return null;
+      if (!this.draw_content || !this.is_main_painter()) return null;
 
       var stats = this.FindStat();
       if (stats != null) return stats;

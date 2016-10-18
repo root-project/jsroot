@@ -2936,6 +2936,8 @@
    JSROOT.THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
+      if (!this.is_main_painter()) return null;
+
       var pal = this.FindFunction('TPaletteAxis'),
           pal_painter = this.FindPainterFor(pal);
 
