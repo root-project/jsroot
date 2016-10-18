@@ -156,12 +156,14 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
-      if (JSROOT.gStyle.Zoomimg && JSROOT.gStyle.ZoomWheel) {
+      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel) {
          renderer.domElement.addEventListener( 'mousewheel', control_mousewheel);
          renderer.domElement.addEventListener( 'MozMousePixelScroll', control_mousewheel);
       }
-      renderer.domElement.addEventListener( 'mousedown', control_mousedown);
-      renderer.domElement.addEventListener( 'mouseup', control_mouseup);
+      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
+         renderer.domElement.addEventListener( 'mousedown', control_mousedown);
+         renderer.domElement.addEventListener( 'mouseup', control_mouseup);
+      }
 
       var control = new THREE.OrbitControls(camera, renderer.domElement);
 

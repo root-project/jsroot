@@ -139,7 +139,7 @@
          Tooltip : 1, // 0 - off, 1 - on
          ContextMenu : true,
          Zooming : true,  // global zooming flag, enable/disable any kind of interactive zooming
-         ZoomMouse : true,  // Zooming with the mouse events
+         ZoomMouse : false,  // Zooming with the mouse events
          ZoomWheel : true,  // Zooming with mouse wheel
          ZoomTouch : true,  // Zooming with the touch devices
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
