@@ -6363,7 +6363,7 @@
          }
       }
 
-      if (arr.length != 2) return;
+      if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
 
       d3.event.preventDefault();
       d3.event.stopPropagation();
@@ -6629,12 +6629,15 @@
       this.touch_cnt = 0;
 
       if (JSROOT.gStyle.Zooming) {
-         svg.on("mousedown", this.startRectSel.bind(this) );
-         svg.on("dblclick", this.mouseDoubleClick.bind(this) );
-         svg.on("wheel", this.mouseWheel.bind(this) );
+         if (JSROOT.gStyle.ZoomMouse) {
+            svg.on("mousedown", this.startRectSel.bind(this) );
+            svg.on("dblclick", this.mouseDoubleClick.bind(this) );
+         }
+         if (JSROOT.gStyle.ZoomWheel)
+            svg.on("wheel", this.mouseWheel.bind(this) );
       }
 
-      if (JSROOT.touches && (JSROOT.gStyle.Zooming || JSROOT.gStyle.ContextMenu))
+      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch) || JSROOT.gStyle.ContextMenu))
          svg.on("touchstart", this.startTouchZoom.bind(this) );
 
       if (JSROOT.gStyle.ContextMenu) {

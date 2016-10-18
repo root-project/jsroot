@@ -156,8 +156,10 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
-      renderer.domElement.addEventListener( 'mousewheel', control_mousewheel);
-      renderer.domElement.addEventListener( 'MozMousePixelScroll', control_mousewheel);
+      if (JSROOT.gStyle.Zoomimg && JSROOT.gStyle.ZoomWheel) {
+         renderer.domElement.addEventListener( 'mousewheel', control_mousewheel);
+         renderer.domElement.addEventListener( 'MozMousePixelScroll', control_mousewheel);
+      }
       renderer.domElement.addEventListener( 'mousedown', control_mousedown);
       renderer.domElement.addEventListener( 'mouseup', control_mouseup);
 
