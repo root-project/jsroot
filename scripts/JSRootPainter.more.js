@@ -2584,7 +2584,6 @@
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
       }
 
-
       this.DrawAxisPalette = function(s_width, s_height, arg) {
 
          var pthis = this,
@@ -2813,6 +2812,15 @@
    JSROOT.THistPainter.prototype.GetContour = function() {
       if (this.fContour) return this.fContour;
 
+      var main = this.main_painter();
+      if ((main !== this) && main.fContour) {
+         this.fContour = main.fContour;
+         this.fCustomContour = main.fCustomContour;
+         this.zmin = main.zmin;
+         this.zmax = main.zmax;
+         return this.fContour;
+      }
+
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       var histo = this.GetObject();
@@ -2826,6 +2834,7 @@
       this.fCustomContour = false;
 
       var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
+      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; }
       if (histo.fContour != null) nlevels = histo.fContour.length;
       if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
          zmin = this.histo.fMinimum;
