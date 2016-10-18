@@ -4026,8 +4026,9 @@
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
           colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
           xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
-          absmax = Math.max(Math.abs(this.maxbin), Math.abs(this.minbin)),
-          absmin = Math.max(0, this.minbin);
+          main = this.main_painter(),
+          absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
+          absmin = Math.max(0, main.minbin);
 
       if (this.root_pad().fLogz && (absmax>0)) {
          uselogz = true;
