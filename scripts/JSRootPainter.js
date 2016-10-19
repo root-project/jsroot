@@ -3866,9 +3866,7 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
-      if (can==null) return;
-
-
+      if (!can) return;
 
       for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
          var obj = can.fPrimitives.arr[i];
@@ -4335,12 +4333,35 @@
          this.pad_painter().AddButton(btn, tooltip, funcname);
    }
 
+   JSROOT.TPadPainter.prototype.DecodeOptions = function(opt) {
+      var pad = this.GetObject();
+      if (!pad || (typeof opt !== 'string')) return;
+      var chopt = opt.toUpperCase();
+
+      function check(name) {
+         var pos = chopt.indexOf(name);
+         if (pos < 0) return false;
+         chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
+         return true;
+      }
+
+      if (check('WHITE')) pad.fFillColor = 0;
+      if (check('LOGX')) pad.fLogx = 1;
+      if (check('LOGY')) pad.fLogy = 1;
+      if (check('LOGZ')) pad.fLogz = 1;
+      if (check('GRIDX')) pad.fGridx = 1;
+      if (check('GRIDY')) pad.fGridy = 1;
+      if (check('TICKX')) pad.fTickx = 1;
+      if (check('TICKY')) pad.fTicky = 1;
+   }
+
+
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
       var nocanvas = (can===null);
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
       var painter = new JSROOT.TPadPainter(can, true);
-      if (opt && (opt.indexOf("white")>=0)) can.fFillColor = 0;
+      painter.DecodeOptions(opt);
 
       painter.SetDivId(divid, -1); // just assign id
       painter.CheckColors(can);
@@ -4360,8 +4381,7 @@
 
    JSROOT.Painter.drawPad = function(divid, pad, opt) {
       var painter = new JSROOT.TPadPainter(pad, false);
-
-      if (pad && opt && (opt.indexOf("white")>=0)) pad.fFillColor = 0;
+      painter.DecodeOptions(opt);
 
       painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
 
