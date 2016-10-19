@@ -2785,7 +2785,10 @@
       if (this.root_pad().fLogz) {
          if (this.zmax <= 0) this.zmax = 1.;
          if (this.zmin <= 0)
-            this.zmin = (zminpositive!==undefined) && (zminpositive > 0) ? 0.3*zminpositive : 0.0001*this.zmax;
+            if ((zminpositive===undefined) || (zminpositive <= 0))
+               this.zmin = 0.0001*this.zmax;
+            else
+               this.zmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
          if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
 
          var logmin = Math.log(this.zmin)/Math.log(10);
@@ -2833,8 +2836,8 @@
 
       this.fCustomContour = false;
 
-      var nlevels = 20, zmin = this.minbin, zmax = this.maxbin;
-      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; }
+      var nlevels = 20, zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
+      if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
       if (histo.fContour != null) nlevels = histo.fContour.length;
       if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
          zmin = this.histo.fMinimum;
@@ -2844,7 +2847,7 @@
          zmin = this.zoom_zmin;
          zmax = this.zoom_zmax;
       }
-      return this.CreateContour(nlevels, zmin, zmax, this.minposbin);
+      return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
 
    JSROOT.THistPainter.prototype.getContourIndex = function(zc) {
@@ -3211,7 +3214,7 @@
       this.CreateAxisFuncs(true);
 
       if (this.IsTH2Poly()) {
-         this.gmin0bin = null;
+         this.gminposbin = null;
          this.gminbin = this.gmaxbin = 0;
 
          for (var n=0, len=histo.fBins.arr.length; n<len; ++n) {
@@ -3222,25 +3225,25 @@
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
 
             if (bin_content > 0)
-               if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
+               if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
          }
       } else {
          // global min/max, used at the moment in 3D drawing
          this.gminbin = this.gmaxbin = histo.getBinContent(1, 1);
-         this.gmin0bin = null;
+         this.gminposbin = null;
          for (i = 0; i < this.nbinsx; ++i) {
             for (j = 0; j < this.nbinsy; ++j) {
                var bin_content = histo.getBinContent(i+1, j+1);
                if (bin_content < this.gminbin) this.gminbin = bin_content; else
                   if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
                if (bin_content > 0)
-                  if ((this.gmin0bin===null) || (this.gmin0bin > bin_content)) this.gmin0bin = bin_content;
+                  if ((this.gminposbin===null) || (this.gminposbin > bin_content)) this.gminposbin = bin_content;
             }
          }
       }
 
       // this value used for logz scale drawing
-      if (this.gmin0bin === null) this.gmin0bin = this.gmaxbin*1e-4;
+      if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
       // used to enable/disable stat box
       this.draw_content = this.gmaxbin > 0;
@@ -3897,6 +3900,7 @@
       // use global coordinates
       this.maxbin = this.gmaxbin;
       this.minbin = this.gminbin;
+      this.minposbin = this.gminposbin;
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -4047,6 +4051,7 @@
          if (main.maxbin === main.minbin) {
             main.maxbin = main.gmaxbin;
             main.minbin = main.gminbin;
+            main.minposbin = main.gminposbin;
          }
          if (main.maxbin === main.minbin)
             main.minbin = Math.min(0, main.maxbin-1);

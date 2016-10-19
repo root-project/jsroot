@@ -2047,6 +2047,7 @@
       // use global coordinates
       this.maxbin = this.gmaxbin;
       this.minbin = this.gminbin;
+      this.minposbin = this.gminposbin;
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -2341,7 +2342,7 @@
          var pad = this.root_pad();
          // if (pad && pad.fGridz === undefined) pad.fGridz = false;
 
-         this.zmin = pad.fLogz ? this.gmin0bin * 0.3 : this.gminbin;
+         this.zmin = pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
 
          if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
