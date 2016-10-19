@@ -1374,30 +1374,31 @@
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
           axis_zmin = this.grz.domain()[0],
           axis_zmax = this.grz.domain()[1],
-          handle = this.PrepareColorDraw({ rounding: false, size3d: this.size3d, extra: 1 });
-
-      // create the bin cubes
-      var showmin = !this.options.Zero || (axis_zmin>0);
-
-      var i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
+          handle = this.PrepareColorDraw({ rounding: false, size3d: this.size3d, extra: 1 }),
+          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
+          pthis = this,
           main = this.main_painter(),
           split_faces = ((this.options.Lego === 11) || (this.options.Lego === 13)) && (this.GetObject().fFillColor<2); // split each layer on two parts
 
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
+      function check_skip_min(level, ii, jj) {
+         // return true if minimal histogram value should be skipped
+         if (level>0) return true;
+         if (!pthis.options.Zero || (axis_zmin>0)) return false;
+         return !pthis.ShowEmptyBin(ii,jj);
+      }
+
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
-      var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF);
+      var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF),
+          levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       // DRAW ALL CUBES
 
-      var levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
-
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
-         var nlevels = 20;
-         if (this.histo.fContour != null) nlevels = this.histo.fContour.length;
-         levels = this.CreateContour(nlevels, this.lego_zmin, this.lego_zmax);
+         levels = this.CreateContour(this.histo.fContour ? this.histo.fContour.length : 20, this.lego_zmin, this.lego_zmax);
          palette = this.GetPalette();
       }
 
@@ -1414,7 +1415,7 @@
                binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
                reduced = (binz === zmin);
-               if (reduced && ((nlevel>0) || !showmin)) continue;
+               if (reduced && check_skip_min(nlevel,i,j)) continue;
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
@@ -1449,7 +1450,7 @@
                binz = this.histo.getBinContent(i+1, j+1);
                if (binz < zmin) continue;
                reduced = (binz === zmin);
-               if (reduced && ((nlevel>0) || !showmin)) continue;
+               if (reduced && check_skip_min(nlevel,i,j)) continue;
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
 
@@ -1602,7 +1603,7 @@
             binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
             reduced = (binz == axis_zmin);
-            if (reduced && !showmin) continue;
+            if (reduced && check_skip_min(0,i,j)) continue;
 
             // calculate required buffer size for line segments
 
@@ -1632,7 +1633,7 @@
             binz = this.histo.getBinContent(i+1, j+1);
             if (binz < axis_zmin) continue;
             reduced = (binz == axis_zmin);
-            if (reduced && !showmin) continue;
+            if (reduced && check_skip_min(0,i,j)) continue;
 
             y1 = handle.gry[j];
             y2 = handle.gry[j+1];

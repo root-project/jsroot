@@ -1459,7 +1459,8 @@
                if (!this.fArray) return 0;
                return this.fArray[bin]/this.fBinEntries[bin];
             }
-            m.getBinEntries = function(bin) {
+            m.getBinEntries = function(x, y) {
+               var bin = this.getBin(x, y);
                if (bin < 0 || bin >= this.fNcells) return 0;
                return this.fBinEntries[bin];
             }

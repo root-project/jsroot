@@ -2884,7 +2884,6 @@
       return asindx ? theColor : palette[theColor];
    }
 
-
    JSROOT.THistPainter.prototype.getValueColor = function(zc, asindx) {
 
       var index = this.getContourIndex(zc);
@@ -3534,6 +3533,12 @@
       return res;
    }
 
+   JSROOT.TH2Painter.prototype.ShowEmptyBin = function(i,j) {
+      // return true if specified empty bin should be shown
+      if (this.histo._typename !== 'TProfile2D') return false;
+      return this.histo.getBinEntries(i+1, j+1)!==0;
+   }
+
    JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
@@ -3545,6 +3550,7 @@
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getValueColor(binz, true);
+            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
             if (colindx === null) continue;
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
@@ -3939,6 +3945,7 @@
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getValueColor(binz, true);
+            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
             if (colindx === null) continue;
 
             binw = handle.grx[i+1] - handle.grx[i];
@@ -4613,7 +4620,7 @@
 
       }
 
-      var i, j, find = 0;
+      var i, j, find = 0, binz = 0, colindx = null;
 
       // search bin position
       for (i = h.i1; i < h.i2; ++i)
@@ -4622,11 +4629,13 @@
       for (j = h.j1; j <= h.j2; ++j)
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
 
-      var binz = (find === 2) ? histo.getBinContent(i+1,j+1) : 0;
+      if (find === 2) {
+         binz = histo.getBinContent(i+1,j+1);
+         colindx = this.getValueColor(binz, true);
+         if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
+      }
 
-      var colindx = (find === 2) ? this.getValueColor(binz, true) : null;
-
-      if ((find !== 2) || (colindx === null)) {
+      if (colindx === null) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
          return null;
@@ -4637,7 +4646,7 @@
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
-      if (this.options.Color > 0) res.color2 = this.getValueColor(binz);
+      if (this.options.Color > 0) res.color2 = this.GetPalette()[colindx];
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
