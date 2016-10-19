@@ -4066,7 +4066,9 @@
       if (this.root_pad().fLogz && (absmax>0)) {
          uselogz = true;
          logmax = Math.log(absmax);
-         logmin = (absmin > 0) ? Math.log(absmin) : logmax - 10;
+         if (absmin>0) logmin = Math.log(absmin); else
+         if ((main.minposbin>=1) && (main.minposbin<100)) logmin = Math.log(0.7); else
+            logmin = (main.minposbin > 0) ? Math.log(0.7*main.minposbin) : logmax - 10;
          if (logmin >= logmax) logmin = logmax - 10;
          xyfactor = 1. / (logmax - logmin);
       } else {
