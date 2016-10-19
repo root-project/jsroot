@@ -91,7 +91,7 @@
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
             }
 
-            if (group < i+3) {
+            if (group < i+2) {
                this.add(name, opts[i], call_back);
             } else {
                this.add("sub:" + name, opts[i], call_back);
