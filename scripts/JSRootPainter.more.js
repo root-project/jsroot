@@ -3513,8 +3513,8 @@
    JSROOT.TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false, extra: 100 }),
-          kMAXCONTOUR = 104,
-          kMAXCOUNT = 100,
+          kMAXCONTOUR = 404,
+          kMAXCOUNT = 400,
           // arguemnts used in he PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
@@ -3679,7 +3679,7 @@
       var polysort = new Int32Array(levels.length), first = 0;
       //find first positive contour
       for (ipoly=0;ipoly<levels.length;ipoly++) {
-         if (levels[ipoly] >= 0) {first = ipoly; break;}
+         if (levels[ipoly] >= 0) { first = ipoly; break; }
       }
       //store negative contours from 0 to minimum, then all positive contours
       k = 0;
