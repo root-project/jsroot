@@ -4349,10 +4349,13 @@
       if (check('LOGX')) pad.fLogx = 1;
       if (check('LOGY')) pad.fLogy = 1;
       if (check('LOGZ')) pad.fLogz = 1;
+      if (check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
       if (check('GRIDX')) pad.fGridx = 1;
       if (check('GRIDY')) pad.fGridy = 1;
+      if (check('GRID')) pad.fGridx = pad.fGridy = 1;
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
+      if (check('TICK')) pad.fTickx = pad.fTicky = 1;
    }
 
 
@@ -10570,8 +10573,8 @@
       window.addEventListener('resize', ProcessResize);
    }
 
-   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas, expand_item: "fPrimitives" });
-   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad, expand_item: "fPrimitives" });
+   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas, opt:";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
+   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad, opt:";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
    JSROOT.addDrawFunc({ name: "TSlider", icon: "img_canvas", func: JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", icon: "img_frame", func: JSROOT.Painter.drawFrame });
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
