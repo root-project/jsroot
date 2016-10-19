@@ -6,6 +6,7 @@
 3. Support '*' and 'L' draw options for TH1
 4. Support for TH2 'box' with negative values (crosses) and 'box1' (buttons) 
 5. Support 'same' for 'box' and 'col' draw options 
+6. Implement drawing of TProfile2D
 
 
 ## Changes in 4.7.0
