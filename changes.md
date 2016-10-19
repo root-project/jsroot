@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in 4.7.x
+1. Workaround for MathJax output - scaling not always works in Firefox
+2. Fix - bin scaling for box draw option for TH2 and TH3 histograms 
+3. Fix - increase points limits for contour plots
+
+
 ## Changes in 4.7.0
 1. Implement simple TTree::Draw over single leaf (#80)
    Support basic types, fixed-size arrays and several vector types 
