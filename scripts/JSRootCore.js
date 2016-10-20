@@ -243,10 +243,11 @@
 
          var ks = Object.keys(value), len = ks.length;
 
-         if ((newfmt!==false) && (len===1) && (ks[0]==='ref') && !isNaN(value.ref)
-               && (value.ref>=0) && (value.ref<map.length)) {
+         if ((newfmt!==false) && (len===1) && (ks[0]==='$ref')) {
+            var ref = parseInt(value['$ref']);
+            if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = true;
-            return map[value.ref];
+            return map[ref];
          }
 
          // debug code, can be commented out later
