@@ -209,10 +209,21 @@
 
    // extract reference, coded inside string
    // check already should be done, that string starts from "$ref:"
-   JSROOT.JSONR_unref_str = function(value, dy) {
+   JSROOT.JSONR_unref_str = function(value, refs) {
       // if ((value.length > 5) && (value.indexOf("$ref:") === 0))
       var i = parseInt(value.substr(5));
-      return (!isNaN(i) && (i >= 0) && (i < dy.length)) ? dy[i] : value;
+      if (isNaN(i) || (i < 0) || (i >= refs.map.length)) return value;
+      refs.newfmt = false;
+      return refs.map[i];
+   }
+
+   // ne method of coding reference with object { ref:12 }
+   // such object is not counted in the refs ids
+   // it should already checked that ref field exists and it is number
+   JSROOT.JSONR_unref_ref = function(value, refs) {
+      if ((value.ref < 0) || (value.ref >= refs.map.length)) return value;
+      refs.newfmt = true;
+      return refs.map[value.ref];
    }
 
    // replace all references inside object
@@ -220,42 +231,53 @@
    // This is part of the JSON-R code, found on
    // https://github.com/graniteds/jsonr
    // Only unref part was used, arrays are not accounted as objects
-   JSROOT.JSONR_unref_obj = function(value, dy) {
-      var i, fld, proto = Object.prototype.toString.apply(value);
+   JSROOT.JSONR_unref_obj = function(value, refs) {
+      var i, k, fld, proto = Object.prototype.toString.apply(value);
 
       if (proto === '[object Array]') {
           for (i = 0; i < value.length; ++i) {
              fld = value[i];
              if (typeof fld === 'string') {
-                if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
-                   value[i] = this.JSONR_unref_str(fld, dy);
+                if (!refs.newfmt && (fld.length > 5) && (fld.indexOf("$ref:") === 0))
+                   value[i] = this.JSONR_unref_str(fld, refs);
              } else
-             if ((typeof fld === 'object') && (fld !== null))
-                this.JSONR_unref_obj(fld, dy);
+             if ((typeof fld === 'object') && (fld !== null)) {
+                if ((refs.newfmt!==false) && (fld.ref!==undefined) && !isNaN(fld.ref))
+                   value[i] = this.JSONR_unref_ref(fld, refs);
+                else
+                   this.JSONR_unref_obj(fld, refs);
+             }
           }
           return;
       }
 
-      // if object in the table, return it
-      if (dy.indexOf(value) >= 0) return;
+      // debug code, can be commented out later
+      if (refs.map.indexOf(value) >= 0) {
+         JSROOT.console('should never happen - object already in the map');
+         return;
+      }
 
       // add object to object map
-      dy.push(value);
+      refs.map.push(value);
 
       // add methods to all objects, where _typename is specified
       if ('_typename' in value) this.addMethods(value);
 
-      var ks = Object.keys(value);
-      for (var k = 0; k < ks.length; ++k) {
+      var ks = Object.keys(value), len = ks.length;
+      for (k = 0; k < len; ++k) {
          i = ks[k];
          fld = value[i];
 
          if (typeof fld === 'string') {
-            if ((fld.length > 5) && (fld.indexOf("$ref:") === 0))
-               value[i] = this.JSONR_unref_str(fld, dy);
+            if (!refs.newfmt && (fld.length > 5) && (fld.indexOf("$ref:") === 0))
+               value[i] = this.JSONR_unref_str(fld, refs);
          } else
-         if ((typeof fld === 'object') && (fld !== null))
-            this.JSONR_unref_obj(fld, dy);
+         if ((typeof fld === 'object') && (fld !== null)) {
+            if ((refs.newfmt!==false) && (fld.ref!==undefined) && !isNaN(fld.ref))
+               value[i] = this.JSONR_unref_ref(fld, refs);
+            else
+               this.JSONR_unref_obj(fld, refs);
+         }
       }
 
       return value;
@@ -264,7 +286,7 @@
    /// Should be used to reintroduce objects references, produced by TBufferJSON
    JSROOT.JSONR_unref = function(value) {
       if ((typeof value === 'object') && (value !== null))
-         this.JSONR_unref_obj(value, []);
+         this.JSONR_unref_obj(value, { map: [], newfmt: undefined });
       return value;
    }
 
