@@ -7111,19 +7111,17 @@
    }
 
    JSROOT.TH1Painter.prototype.CountStat = function(cond) {
-      var profile = this.IsTProfile();
+      var profile = this.IsTProfile(),
+          left = this.GetSelectIndex("x", "left"),
+          right = this.GetSelectIndex("x", "right"),
+          stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
+          i, xx = 0, w = 0, xmax = null, wmax = null,
+          res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
 
-      var stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0;
-
-      var left = this.GetSelectIndex("x", "left");
-      var right = this.GetSelectIndex("x", "right");
-
-      var xx = 0, w = 0, xmax = null, wmax = null;
-
-      for (var i = left; i < right; ++i) {
+      for (i = left; i < right; ++i) {
          xx = this.GetBinX(i+0.5);
 
-         if ((cond!=null) && !cond(xx)) continue;
+         if (cond && !cond(xx)) continue;
 
          if (profile) {
             w = this.histo.fBinEntries[i + 1];
@@ -7133,7 +7131,7 @@
             w = this.histo.getBinContent(i + 1);
          }
 
-         if ((xmax==null) || (w>wmax)) { xmax = xx; wmax = w; }
+         if ((xmax===null) || (w>wmax)) { xmax = xx; wmax = w; }
 
          stat_sumw += w;
          stat_sumwx += w * xx;
@@ -7147,8 +7145,6 @@
          stat_sumwx2 = this.histo.fTsumwx2;
       }
 
-      var res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: stat_sumw, entries: this.stat_entries, xmax:0, wmax:0 };
-
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
@@ -7156,7 +7152,7 @@
          res.rmsy = Math.sqrt(Math.abs(stat_sumwy2 / stat_sumw - res.meany * res.meany));
       }
 
-      if (xmax!=null) {
+      if (xmax!==null) {
          res.xmax = xmax;
          res.wmax = wmax;
       }

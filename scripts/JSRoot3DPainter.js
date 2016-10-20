@@ -2426,24 +2426,25 @@
           j2 = this.GetSelectIndex("y", "right"),
           k1 = this.GetSelectIndex("z", "left"),
           k2 = this.GetSelectIndex("z", "right"),
-          res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 };
+          res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+          xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
 
-      for (var xi = 0; xi < this.nbinsx+2; ++xi) {
+      for (xi = 0; xi < this.nbinsx+2; ++xi) {
 
-         var xx = this.GetBinX(xi - 0.5);
-         var xside = (xi < i1) ? 0 : (xi > i2 ? 2 : 1);
+         xx = this.GetBinX(xi - 0.5);
+         xside = (xi < i1) ? 0 : (xi > i2 ? 2 : 1);
 
-         for (var yi = 0; yi < this.nbinsy+2; ++yi) {
+         for (yi = 0; yi < this.nbinsy+2; ++yi) {
 
-            var yy = this.GetBinY(yi - 0.5);
-            var yside = (yi < j1) ? 0 : (yi > j2 ? 2 : 1);
+            yy = this.GetBinY(yi - 0.5);
+            yside = (yi < j1) ? 0 : (yi > j2 ? 2 : 1);
 
-            for (var zi = 0; zi < this.nbinsz+2; ++zi) {
+            for (zi = 0; zi < this.nbinsz+2; ++zi) {
 
-               var zz = this.GetBinZ(zi - 0.5);
-               var zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
+               zz = this.GetBinZ(zi - 0.5);
+               zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
-               var cont = histo.getBinContent(xi, yi, zi);
+               cont = histo.getBinContent(xi, yi, zi);
                res.entries += cont;
 
                if ((xside==1) && (yside==1) && (zside==1)) {
