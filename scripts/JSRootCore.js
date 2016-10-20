@@ -207,87 +207,70 @@
          console.log(value);
    }
 
-   // extract reference, coded inside string
-   // check already should be done, that string starts from "$ref:"
-   JSROOT.JSONR_unref_str = function(value, refs) {
-      // if ((value.length > 5) && (value.indexOf("$ref:") === 0))
-      var i = parseInt(value.substr(5));
-      if (isNaN(i) || (i < 0) || (i >= refs.map.length)) return value;
-      refs.newfmt = false;
-      return refs.map[i];
-   }
-
-   // ne method of coding reference with object { ref:12 }
-   // such object is not counted in the refs ids
-   // it should already checked that ref field exists and it is number
-   JSROOT.JSONR_unref_ref = function(value, refs) {
-      if ((value.ref < 0) || (value.ref >= refs.map.length)) return value;
-      refs.newfmt = true;
-      return refs.map[value.ref];
-   }
-
-   // replace all references inside object
-   // object should not be null
-   // This is part of the JSON-R code, found on
+   /// Should be used to reintroduce objects references, produced by TBufferJSON
+   // Replace all references inside object, object should not be null
+   // Idea of the code taken from JSON-R code, found on
    // https://github.com/graniteds/jsonr
    // Only unref part was used, arrays are not accounted as objects
-   JSROOT.JSONR_unref_obj = function(value, refs) {
-      var i, k, fld, proto = Object.prototype.toString.apply(value);
+   JSROOT.JSONR_unref = function(obj) {
 
-      if (proto === '[object Array]') {
-          for (i = 0; i < value.length; ++i) {
-             fld = value[i];
-             if (typeof fld === 'string') {
-                if (!refs.newfmt && (fld.length > 5) && (fld.indexOf("$ref:") === 0))
-                   value[i] = this.JSONR_unref_str(fld, refs);
-             } else
-             if ((typeof fld === 'object') && (fld !== null)) {
-                if ((refs.newfmt!==false) && (fld.ref!==undefined) && !isNaN(fld.ref))
-                   value[i] = this.JSONR_unref_ref(fld, refs);
-                else
-                   this.JSONR_unref_obj(fld, refs);
+      var map = [], newfmt = undefined;
+
+      function unref_value(value) {
+         if (value===null) return;
+
+         if (typeof value === 'string') {
+            if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
+            var ref = parseInt(value.substr(5));
+            if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
+            newfmt = false;
+            return map[ref];
+         }
+
+         if (typeof value !== 'object') return;
+
+         var i, k, res, proto = Object.prototype.toString.apply(value);
+
+         // TODO: should we process here typed arrays???
+         //       are there special JSON syntax for typed arrays
+         if ((proto.indexOf('[object')==0) && (proto.indexOf('Array]')>0)) {
+             for (i = 0; i < value.length; ++i) {
+                res = unref_value(value[i]);
+                if (res) value[i] = res;
              }
-          }
-          return;
-      }
+             return;
+         }
 
-      // debug code, can be commented out later
-      if (refs.map.indexOf(value) >= 0) {
-         JSROOT.console('should never happen - object already in the map');
-         return;
-      }
+         var ks = Object.keys(value), len = ks.length;
 
-      // add object to object map
-      refs.map.push(value);
+         if ((newfmt!==false) && (len===1) && (ks[0]==='ref') && !isNaN(value.ref)
+               && (value.ref>=0) && (value.ref<map.length)) {
+            newfmt = true;
+            return map[value.ref];
+         }
 
-      // add methods to all objects, where _typename is specified
-      if ('_typename' in value) this.addMethods(value);
+         // debug code, can be commented out later
+         if (map.indexOf(value) >= 0) {
+            JSROOT.console('should never happen - object already in the map');
+            return;
+         }
 
-      var ks = Object.keys(value), len = ks.length;
-      for (k = 0; k < len; ++k) {
-         i = ks[k];
-         fld = value[i];
+         // add object to object map
+         map.push(value);
 
-         if (typeof fld === 'string') {
-            if (!refs.newfmt && (fld.length > 5) && (fld.indexOf("$ref:") === 0))
-               value[i] = this.JSONR_unref_str(fld, refs);
-         } else
-         if ((typeof fld === 'object') && (fld !== null)) {
-            if ((refs.newfmt!==false) && (fld.ref!==undefined) && !isNaN(fld.ref))
-               value[i] = this.JSONR_unref_ref(fld, refs);
-            else
-               this.JSONR_unref_obj(fld, refs);
+         // add methods to all objects, where _typename is specified
+         if ('_typename' in value) JSROOT.addMethods(value);
+
+         for (k = 0; k < len; ++k) {
+            i = ks[k];
+            res = unref_value(value[i]);
+            if (res) value[i] = res;
          }
       }
 
-      return value;
-   }
+      unref_value(obj);
 
-   /// Should be used to reintroduce objects references, produced by TBufferJSON
-   JSROOT.JSONR_unref = function(value) {
-      if ((typeof value === 'object') && (value !== null))
-         this.JSONR_unref_obj(value, { map: [], newfmt: undefined });
-      return value;
+      return obj;
    }
 
    JSROOT.debug = 0;
