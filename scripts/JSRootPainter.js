@@ -5220,18 +5220,14 @@
       if (check('TICKY')) pad.fTicky = 1;
 
       if (check('FILL_', true)) {
-         if (part==='BLACK') this.histo.fFillColor = 1; else
-         if (part==='RED') this.histo.fFillColor = 2; else
-         if (part==='GREEN') this.histo.fFillColor = 3; else
-         if (part==='BLUE') this.histo.fFillColor = 4; else
-         if (!isNaN(parseInt(part))) this.histo.fFillColor = parseInt(part);
+         if (!isNaN(parseInt(part))) this.histo.fFillColor = parseInt(part); else
+            for (var col=0;col<8;++col)
+               if (JSROOT.Painter.root_colors[col].toUpperCase() === part) this.histo.fFillColor = col;
       }
       if (check('LINE_', true)) {
-         if (part==='BLACK') this.histo.fLineColor = 1; else
-         if (part==='RED') this.histo.fLineColor = 2; else
-         if (part==='GREEN') this.histo.fLineColor = 3; else
-         if (part==='BLUE') this.histo.fLineColor = 4; else
-         if (!isNaN(parseInt(part))) this.histo.fLineColor = parseInt(part);
+         if (!isNaN(parseInt(part))) this.histo.fLineColor = parseInt(part); else
+         for (var col=0;col<8;++col)
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === part) this.histo.fLineColor = col;
       }
 
       var nch = chopt.length;
