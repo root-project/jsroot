@@ -1355,12 +1355,97 @@
       }
    }
 
+   JSROOT.Painter.HistPainter_DrawTH2Error = function() {
+      var pthis = this,
+          main = this.main_painter(),
+          handle = main.PrepareColorDraw({ rounding: false, size3d: main.size3d, extra: 1 }),
+          zmin = main.grz.domain()[0],
+          zmax = main.grz.domain()[1],
+          i, j, binz, binerr, x1, y1, x2, y2, z1, z2,
+          nsegments = 0, lpos = null, lindx = 0;
+
+       function check_skip_min(ii, jj) {
+          // return true if minimal histogram value should be skipped
+          if (pthis.options.Zero || (zmin>0)) return false;
+          return !pthis.ShowEmptyBin(ii,jj);
+       }
+
+       for (var loop=0;loop<2;++loop) {
+
+          for (i=handle.i1;i<handle.i2;++i) {
+             x1 = handle.grx[i];
+             x2 = handle.grx[i+1];
+             for (j=handle.j1;j<handle.j2;++j) {
+                binz = this.histo.getBinContent(i+1, j+1);
+                if ((binz < zmin) || (binz > zmax)) continue;
+                if ((binz===zmin) && check_skip_min(i,j)) continue;
+
+                // just count number of segments
+                if (loop===0) { nsegments+=3; continue; }
+
+                binerr = this.histo.getBinError(this.histo.getBin(i+1,j+1));
+                y1 = handle.gry[j];
+                y2 = handle.gry[j+1];
+
+                z1 = (binz - binerr < zmin) ? this.grz(zmin) : this.grz(binz-binerr);
+                z2 = (binz + binerr > zmax) ? this.grz(zmax) : this.grz(binz+binerr);
+
+                lpos[lindx] = x1; lpos[lindx+3] = x2;
+                lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
+                lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
+                lindx+=6;
+
+                lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
+                lpos[lindx+1] = y1; lpos[lindx+4] = y2;
+                lpos[lindx+2] = lpos[lindx+5] = (z1+z2)/2;
+                lindx+=6;
+
+                lpos[lindx] = lpos[lindx+3] = (x1+x2)/2;
+                lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
+                lpos[lindx+2] = z1; lpos[lindx+5] = z2;
+                lindx+=6;
+             }
+          }
+
+          if (loop===0) {
+             if (nsegments===0) return;
+             lpos = new Float32Array(nsegments*6);
+          }
+       }
+
+       // create boxes
+       var geometry = new THREE.BufferGeometry();
+       geometry.addAttribute( 'position', new THREE.BufferAttribute( lpos, 3 ) );
+
+       var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
+
+       var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+       if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+       var line = new THREE.LineSegments(geometry, material);
+
+       /*
+       line.painter = this;
+       line.intersect_index = intersect_index;
+       line.tooltip = function(intersect) {
+          if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
+          return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
+       }
+       */
+
+       this.toplevel.add(line);
+   }
+
+
    JSROOT.Painter.HistPainter_DrawLego = function() {
 
-      if (this.IsTH2Poly()) return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
+      if (this.IsTH2Poly())
+         return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
 
       if (this.options.Surf && (this.Dimension()==2))
          return JSROOT.Painter.HistPainter_DrawTH2Surf.call(this);
+
+      if (this.options.Error && (this.Dimension()==2))
+         return JSROOT.Painter.HistPainter_DrawTH2Error.call(this);
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
@@ -1387,7 +1472,7 @@
       function check_skip_min(level, ii, jj) {
          // return true if minimal histogram value should be skipped
          if (level>0) return true;
-         if (!pthis.options.Zero || (axis_zmin>0)) return false;
+         if (pthis.options.Zero || (axis_zmin>0)) return false;
          return !pthis.ShowEmptyBin(ii,jj);
       }
 
