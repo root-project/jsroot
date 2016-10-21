@@ -8,6 +8,7 @@
 5. Support 'same' for 'box' and 'col' draw options 
 6. Implement drawing of TProfile2D
 7. Support logx/y/z, gridx/y, tickx/y draw options for TPad/TCanvas
+8. Fix - correctly place TGAxis relative to frame (when exists) 
 
 
 ## Changes in 4.7.0
