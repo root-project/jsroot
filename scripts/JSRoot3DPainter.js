@@ -437,7 +437,7 @@
 
             if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
 
-            var min = painter['scale_'+kind+"min"], max = painter['scale_'+kind+"max"];
+            var min = painter['scale_'+kind+'min'], max = painter['scale_'+kind+'max'];
 
             if (painter["log"+kind]) {
                pos1 = Math.exp(Math.log(min) + pos1*(Math.log(max)-Math.log(min)));
@@ -1416,8 +1416,6 @@
              binindx = new Int32Array(nsegments/3);
           }
        }
-
-       console.log('NSegments', nsegments, 'binindx', binindx.length, 'last', binindx[binindx.length-1]);
 
        // create boxes
        var geometry = new THREE.BufferGeometry();
