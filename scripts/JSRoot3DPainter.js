@@ -1361,8 +1361,8 @@
           handle = main.PrepareColorDraw({ rounding: false, size3d: main.size3d, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
-          i, j, binz, binerr, x1, y1, x2, y2, z1, z2,
-          nsegments = 0, lpos = null, lindx = 0;
+          i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
+          nsegments = 0, lpos = null, binindx = null, lindx = 0;
 
        function check_skip_min(ii, jj) {
           // return true if minimal histogram value should be skipped
@@ -1383,12 +1383,15 @@
                 // just count number of segments
                 if (loop===0) { nsegments+=3; continue; }
 
-                binerr = this.histo.getBinError(this.histo.getBin(i+1,j+1));
+                bin = this.histo.getBin(i+1,j+1);
+                binerr = this.histo.getBinError(bin);
+                binindx[lindx/18] = bin;
+
                 y1 = handle.gry[j];
                 y2 = handle.gry[j+1];
 
-                z1 = (binz - binerr < zmin) ? this.grz(zmin) : this.grz(binz-binerr);
-                z2 = (binz + binerr > zmax) ? this.grz(zmax) : this.grz(binz+binerr);
+                z1 = main.grz((binz - binerr < zmin) ? zmin : binz-binerr);
+                z2 = main.grz((binz + binerr > zmax) ? zmax : binz+binerr);
 
                 lpos[lindx] = x1; lpos[lindx+3] = x2;
                 lpos[lindx+1] = lpos[lindx+4] = (y1+y2)/2;
@@ -1410,8 +1413,11 @@
           if (loop===0) {
              if (nsegments===0) return;
              lpos = new Float32Array(nsegments*6);
+             binindx = new Int32Array(nsegments/3);
           }
        }
+
+       console.log('NSegments', nsegments, 'binindx', binindx.length, 'last', binindx[binindx.length-1]);
 
        // create boxes
        var geometry = new THREE.BufferGeometry();
@@ -1423,14 +1429,31 @@
        if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
        var line = new THREE.LineSegments(geometry, material);
 
-       /*
        line.painter = this;
-       line.intersect_index = intersect_index;
+       line.intersect_index = binindx;
+       line.zmin = zmin;
+       line.zmax = zmax;
+       line.tip_color = (this.GetObject().fLineColor===3) ? 0xFF0000 : 0x00FF00;
+
        line.tooltip = function(intersect) {
-          if ((intersect.index<0) || (intersect.index >= this.intersect_index.length)) return null;
-          return this.painter.Get3DToolTip(this.intersect_index[intersect.index]);
+          var pos = Math.floor(intersect.index / 6);
+          if ((pos<0) || (pos >= this.intersect_index.length)) return null;
+          var p = this.painter,
+              main = p.main_painter(),
+              tip = p.Get3DToolTip(this.intersect_index[pos]);
+
+          tip.x1 = Math.max(-main.size3d, main.grx(p.GetBinX(tip.ix-1)));
+          tip.x2 = Math.min(main.size3d, main.grx(p.GetBinX(tip.ix)));
+          tip.y1 = Math.max(-main.size3d, main.gry(p.GetBinY(tip.iy-1)));
+          tip.y2 = Math.min(main.size3d, main.gry(p.GetBinY(tip.iy)));
+
+          tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
+          tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
+
+          tip.color = this.tip_color;
+
+          return tip;
        }
-       */
 
        this.toplevel.add(line);
    }

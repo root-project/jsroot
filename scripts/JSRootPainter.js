@@ -7999,12 +7999,14 @@
          case 1:
             tip.ix = indx; tip.iy = 1;
             tip.value = this.histo.getBinContent(tip.ix);
+            tip.error = this.histo.getBinError(indx);
             tip.info = this.GetBinTips(indx-1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
             tip.value = this.histo.getBinContent(tip.ix, tip.iy);
+            tip.error = this.histo.getBinError(indx);
             tip.info = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          case 3:
@@ -8012,6 +8014,7 @@
             tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
             tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
             tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
+            tip.error = this.histo.getBinError(indx);
             tip.info = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
       }
