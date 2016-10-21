@@ -1511,12 +1511,15 @@
             elem = d3.select(prnt).append('div').attr("class", size.clname);
 
          // our position inside canvas, but to set 'absolute' position we should use
-         // canvas element offset relative to first parent with position
+         // canvas element offset relative to first parent with absolute position
+         // workaround - TR is not handled correctly, wherefore ignored
          var offx = 0, offy = 0;
-         while (prnt && !offx && !offy) {
+         while (prnt /*&& !offx && !offy*/) {
             if (getComputedStyle(prnt).position !== 'static') break;
-            offx += prnt.offsetLeft;
-            offy += prnt.offsetTop;
+            if (prnt.nodeName!=='TR') {
+               offx += prnt.offsetLeft;
+               offy += prnt.offsetTop;
+            }
             prnt = prnt.parentNode;
          }
 
