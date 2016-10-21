@@ -6189,7 +6189,12 @@
       if (!obj) obj = this;
       var curr = pad["fLog" + axis];
       // do not allow log scale for labels
-      if (!curr && (this[axis+"_kind"] == "labels")) return;
+      if (!curr) {
+         var kind = this[axis+"_kind"];
+         if (this.swap_xy && axis==="x") kind = this["y_kind"]; else
+         if (this.swap_xy && axis==="y") kind = this["x_kind"];
+         if (kind === "labels") return;
+      }
       pad["fLog" + axis] = curr ? 0 : 1;
       obj.RedrawPad();
    }
