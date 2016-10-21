@@ -3,7 +3,7 @@
 ## Changes in dev
 1. Support 'z', 'x', '||', '[]', '>', '|>', '5' draw option for TGraph
 2. Support of 'X+' and 'Y+' draw options for histograms and graphs
-3. Support '*' and 'L' draw options for TH1
+3. Support '*', 'L', 'E3' and 'E4' draw options for TH1
 4. Support for TH2 'box' with negative values (crosses) and 'box1' (buttons) 
 5. Support 'same' for 'box' and 'col' draw options 
 6. Implement drawing of TProfile2D

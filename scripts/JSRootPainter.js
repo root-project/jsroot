@@ -995,6 +995,89 @@
       return "\\(\\color{" + color + '}' + str + "\\)";
    }
 
+   JSROOT.Painter.BuildSvgPath = function(kind, bins, height, ndig) {
+      // function used to provide svg:path for the smoothed curves
+      // reuse code from d3.js. Used in TH1, TF1 and TGraph painters
+      // kind should contain "bezier" or "line".
+      // If first symbol "L", than it used to continue drawing
+
+      var smooth = kind.indexOf("bezier") >= 0;
+
+      if (ndig===undefined) ndig = smooth ? 2 : 0;
+      if (height===undefined) height = 0;
+
+      function jsroot_d3_svg_lineSlope(p0, p1) {
+         return (p1.gry - p0.gry) / (p1.grx - p0.grx);
+      }
+      function jsroot_d3_svg_lineFiniteDifferences(points) {
+         var i = 0, j = points.length - 1, m = [], p0 = points[0], p1 = points[1], d = m[0] = jsroot_d3_svg_lineSlope(p0, p1);
+         while (++i < j) {
+            m[i] = (d + (d = jsroot_d3_svg_lineSlope(p0 = p1, p1 = points[i + 1]))) / 2;
+         }
+         m[i] = d;
+         return m;
+      }
+      function jsroot_d3_svg_lineMonotoneTangents(points) {
+         var d, a, b, s, m = jsroot_d3_svg_lineFiniteDifferences(points), i = -1, j = points.length - 1;
+         while (++i < j) {
+            d = jsroot_d3_svg_lineSlope(points[i], points[i + 1]);
+            if (Math.abs(d) < 1e-6) {
+               m[i] = m[i + 1] = 0;
+            } else {
+               a = m[i] / d;
+               b = m[i + 1] / d;
+               s = a * a + b * b;
+               if (s > 9) {
+                  s = d * 3 / Math.sqrt(s);
+                  m[i] = s * a;
+                  m[i + 1] = s * b;
+               }
+            }
+         }
+         i = -1;
+         while (++i <= j) {
+            s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
+            points[i].dgrx = s || 0;
+            points[i].dgry = m[i]*s || 0;
+         }
+      }
+
+      var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
+          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy;
+
+      res.path = ((kind.charAt(0) == "L") ? "L" : "M") +
+                  bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
+
+      // just calculate all deltas, can be used to build exclusion
+      if (smooth || kind.indexOf('calc')>=0)
+         jsroot_d3_svg_lineMonotoneTangents(bins);
+
+      if (smooth)
+         res.path +=  "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+
+      for(var n=1; n<bins.length; ++n) {
+          prev = bin;
+          bin = bins[n];
+          if (smooth) {
+             if (n > 1) res.path += "s";
+             res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+             maxy = Math.max(maxy, prev.gry);
+          } else {
+             dx = Math.round(bin.grx - currx);
+             dy = Math.round(bin.gry - curry);
+             res.path += "l" + dx + "," + dy;
+             currx+=dx; curry+=dy;
+             maxy = Math.max(maxy, curry);
+          }
+      }
+
+      if (height>0)
+         res.close = "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
+                     "L" + bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z";
+
+      return res;
+   }
+
    // ==============================================================================
 
    JSROOT.TBasePainter = function() {
@@ -7267,8 +7350,7 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.DrawBars = function() {
-      var width = this.frame_width(), height = this.frame_height();
+   JSROOT.TH1Painter.prototype.DrawBars = function(width, height) {
 
       this.RecreateDrawG(false, "main_layer");
 
@@ -7277,9 +7359,9 @@
           pmain = this.main_painter(),
           pad = this.root_pad(),
           pthis = this,
-          i, x1, x2, grx1, grx2, y, gry, w;
-
-      var bars = "", barsl = "", barsr = "", side = this.options.Bar % 10;
+          i, x1, x2, grx1, grx2, y, gry, w,
+          bars = "", barsl = "", barsr = "",
+          side = this.options.Bar % 10;
 
       if (side>4) side = 4;
 
@@ -7336,19 +7418,61 @@
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
    }
 
+   JSROOT.TH1Painter.prototype.DrawFilledErrors = function(width, height) {
+      this.RecreateDrawG(false, "main_layer");
+
+      var left = this.GetSelectIndex("x", "left", -1),
+          right = this.GetSelectIndex("x", "right", 1),
+          pmain = this.main_painter(),
+          pad = this.root_pad(),
+          pthis = this,
+          i, x, grx, y, yerr, gry1, gry2,
+          bins1 = [], bins2 = [];
+
+
+      for (i = left; i < right; ++i) {
+         x = this.GetBinX(i+0.5);
+         if (pmain.logx && (x <= 0)) continue;
+         grx = Math.round(pmain.grx(x));
+
+         y = this.histo.getBinContent(i+1);
+         yerr = this.histo.getBinError(i+1);
+         if (pmain.logy && (y-yerr < pmain.scale_ymin)) continue;
+
+         gry1 = Math.round(pmain.gry(y + yerr));
+         gry2 = Math.round(pmain.gry(y - yerr));
+
+         bins1.push({grx:grx, gry: gry1});
+         bins2.unshift({grx:grx, gry: gry2});
+      }
+
+      var kind = (this.options.Error == 14) ? "bezier" : "line";
+
+      var path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
+          path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
+
+      this.draw_g.append("svg:path")
+                 .attr("d", path1.path + path2.path + "Z")
+                 .style("stroke", "none")
+                 .call(this.fillatt.func);
+   }
+
    JSROOT.TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
       this.CheckHistDrawAttributes();
 
-      if (this.options.Bar > 0)
-         return this.DrawBars();
-
       var width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
+
+      if (this.options.Bar > 0)
+         return this.DrawBars(width, height);
+
+      if ((this.options.Error == 13) || (this.options.Error == 14))
+         return this.DrawFilledErrors(width, height);
 
       this.RecreateDrawG(false, "main_layer");
 
