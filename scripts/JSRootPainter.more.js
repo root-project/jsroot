@@ -2663,21 +2663,7 @@
          this.main_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
       }
 
-//      this.Redraw = function() {
-         //this.Enabled = true;
-//         var main = this.main_painter();
-//         this.UseContextMenu = (main !== null);
-//         if ((main !== null) && main.options)
-//            this.Enabled = (main.options.Zscale > 0) &&
-//                           ((main.options.Color > 0) || (main.options.Lego === 12) || (main.options.Lego === 14));
-//
-//         this.DrawPave();
-//      }
-
       this.PaveDrawFunc = this.DrawAxisPalette;
-
-      // workaround to let copmlete pallete draw when actual palette colors already there
-      // this.CompleteDraw = this.Redraw;
 
       this.UseContextMenu = true;
 
@@ -2916,7 +2902,7 @@
 
       var arg = "";
       if (postpone_draw) arg+=";postpone";
-      if (can_move && !this.do_redraw_palette) arg+= ";canmove"
+      if (can_move && !this.do_redraw_palette) arg+=";canmove"
 
       if (pal_painter === null) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
@@ -4659,8 +4645,8 @@
 
       this.DrawBins();
 
-      // redraw palette once again when contours are available
-      //if (pp) pp.WhenReady( function() { pp.DrawPave(); });
+      // redraw palette till the end when contours are available
+      // if (pp) pp.WhenReady( function() { pp.DrawPave(); });
       if (pp) pp.DrawPave();
 
       this.DrawTitle();

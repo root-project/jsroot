@@ -916,7 +916,6 @@
       if (pos<0) pos = kind.indexOf("load:");
       if (pos>=0) extrafiles += kind.slice(pos+5);
 
-
       function load_callback() {
          var req = jsroot.doing_assert.shift();
          for (var n=0;n<req.modules.length;++n)

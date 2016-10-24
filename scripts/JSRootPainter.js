@@ -6158,8 +6158,6 @@
          } else
             do_draw = (func._typename !== "TPaletteAxis");
       }
-      //if (('CompleteDraw' in func_painter) && (typeof func_painter.CompleteDraw == 'function'))
-      //   func_painter.CompleteDraw();
 
       if (do_draw) {
          var painter = JSROOT.draw(this.divid, func, opt);
@@ -10980,29 +10978,10 @@
 
       if (funcname.length === 0) return null;
 
-      if (prereq.length >  0) {
-
-         // special handling for painters, which should be loaded via extra scripts
-         // such painter get extra last argument - pointer on dummy painter object
-         if (handle.painter_kind === undefined)
-            handle.painter_kind = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
-
-         painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
-
-         JSROOT.AssertPrerequisites(prereq, function() {
-            var func = JSROOT.findFunction(funcname);
-            if (!func) {
-               alert('Fail to find function ' + funcname + ' after loading ' + prereq);
-            } else {
-               handle.func = func; // remember function once it found
-
-               if (performDraw() !== painter)
-                  alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
-            }
-         });
-
-         return painter;
-      }
+      // special handling for painters, which should be loaded via extra scripts
+      // such painter get extra last argument - pointer on dummy painter object
+      if ((handle.painter_kind === undefined) && (prereq.length > 0))
+         handle.painter_kind = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
 
       // try to find function without prerequisisties
       var func = JSROOT.findFunction(funcname);
@@ -11011,7 +10990,23 @@
           return performDraw();
       }
 
-      return null;
+      if (prereq.length === 0) return null;
+
+      painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
+
+      JSROOT.AssertPrerequisites(prereq, function() {
+         var func = JSROOT.findFunction(funcname);
+         if (!func) {
+            alert('Fail to find function ' + funcname + ' after loading ' + prereq);
+         } else {
+            handle.func = func; // remember function once it found
+
+            if (performDraw() !== painter)
+               alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
+         }
+      });
+
+      return painter;
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
