@@ -1411,7 +1411,7 @@
 
       if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
 
-      // special case - one could use scg:path to draw many pixels (
+      // special case - one could use svg:path to draw many pixels (
       if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 101;
 
       // if no drawing option is selected and if opt=='' nothing is done.
@@ -1846,7 +1846,8 @@
                        .attr("d", path)
                        .call(this.markeratt.func);
             if ((nodes===null) && (this.draw_kind=="none"))
-               this.draw_kind = (this.optionMark==3) ? "path" : "mark";
+               this.draw_kind = (this.optionMark==101) ? "path" : "mark";
+
          }
       }
    }
@@ -1976,8 +1977,6 @@
 
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
-
-      // console.log('draw kind', this.draw_kind, 'best dist', bestdist,'best bin', bestbin);
 
       if (!islines && !ismark && (bestdist>radius)) bestbin = null;
 
