@@ -7378,11 +7378,13 @@
           pmain = this.main_painter(),
           pad = this.root_pad(),
           pthis = this,
-          i, x1, x2, grx1, grx2, y, gry, w,
+          i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
           side = this.options.Bar % 10;
 
       if (side>4) side = 4;
+      gry2 = pmain.swap_xy ? 0 : height;
+      if (!pmain.logy && (pmain.scale_ymin<=0)) gry2 = Math.round(pmain.gry(0));
 
       for (i = left; i < right; ++i) {
          x1 = this.GetBinX(i);
@@ -7395,26 +7397,26 @@
 
          y = this.histo.getBinContent(i+1);
          if (pmain.logy && (y < pmain.scale_ymin)) continue;
-         gry = Math.round(pmain.gry(y));
+         gry1 = Math.round(pmain.gry(y));
 
          w = grx2 - grx1;
          grx1 += Math.round(this.histo.fBarOffset/1000*w);
          w = Math.round(this.histo.fBarWidth/1000*w);
 
          if (pmain.swap_xy)
-            bars += "M0,"+ grx1 + "h" + gry + "v" + w + "h" + (-gry)+ "z";
+            bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + "z";
          else
-            bars += "M"+grx1+"," + gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
+            bars += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
 
          if (side > 0) {
             grx2 = grx1 + w;
             w = Math.round(w * side / 10);
             if (pmain.swap_xy) {
-               barsl += "M0,"+ grx1 + "h" + gry + "v" + w + "h" + (-gry)+ "z";
-               barsr += "M0,"+ grx2 + "h" + gry + "v" + (-w) + "h" + (-gry)+ "z";
+               barsl += "M"+gry2+","+grx1 + "h"+(gry2-gry1) + "v" + w + "h"+(gry2-gry1) + "z";
+               barsr += "M"+gry2+","+grx2 + "h"+(gry2-gry1) + "v" + (-w) + "h"+(gry2-gry1) + "z";
             } else {
-               barsl += "M"+grx1+","+gry + "h" + w + "v" + (height - gry) + "h" + (-w)+ "z";
-               barsr += "M"+grx2+","+gry + "h" + (-w) + "v" + (height - gry) + "h" + w + "z";
+               barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
+               barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + "z";
             }
          }
       }
