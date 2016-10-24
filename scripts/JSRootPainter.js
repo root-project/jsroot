@@ -5155,7 +5155,7 @@
       var hdim = this.Dimension();
       var option = {
          Axis: 0, Bar: 0, Curve: 0, Error: 0, Hist: 0, Line: 0,
-         Mark: 0, Fill: 0, Same: 0, Scat: 0, Func: 0, Star: 0,
+         Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 0, Star: 0,
          Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
@@ -5369,6 +5369,12 @@
          }
          if (part.indexOf('N')>=0 && this.IsTH2Poly())
             option.Text += 3000;
+      }
+
+      if (check('SCAT=', true)) {
+         option.Scat = 1;
+         option.ScatCoef = parseFloat(part);
+         if (isNaN(option.ScatCoef) || (option.ScatCoef<=0)) option.ScatCoef = 1.;
       }
 
       if (check('SCAT')) option.Scat = 1;
