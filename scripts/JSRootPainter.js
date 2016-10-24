@@ -5341,7 +5341,7 @@
       if (check('COL', true)) {
          option.Color = 1;
 
-         if (part.indexOf('0')>=0) option.Color = 111;
+         if (part.indexOf('0')>=0) option.Color = 11;
          if (part.indexOf('1')>=0) option.Color = 11;
          if (part.indexOf('2')>=0) option.Color = 12;
          if (part.indexOf('3')>=0) option.Color = 13;

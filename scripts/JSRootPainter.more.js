@@ -2780,10 +2780,10 @@
       }
 
       // bins less than zmin not drawn
-      if (zc < this.zmin) return -111;
+      if (zc < this.zmin) return (this.options.Color === 11) ? 0 : -1;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.zmin) return ((this.zmin != 0) || (this.options.Color === 111) || this.IsTH2Poly()) ? 0 : -1;
+      if (zc===this.zmin) return ((this.zmin != 0) || (this.options.Color === 11) || this.IsTH2Poly()) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.zmin)*(cntr.length-1)/(this.zmax-this.zmin));
    }
