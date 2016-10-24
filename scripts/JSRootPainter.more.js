@@ -3380,7 +3380,7 @@
              i2: this.GetSelectIndex("x", "right", 1 + args.extra),
              j1: (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
              j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
-             min: 0, max: 0
+             min: 0, max: 0, sumz: 0
           };
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
@@ -3424,6 +3424,7 @@
       for (i = res.i1; i < res.i2; ++i) {
          for (j = res.j1; j < res.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
+            res.sumz += binz;
             if (args.pixel_density) {
                binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
                if (binarea <= 0) continue;
@@ -4192,7 +4193,45 @@
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
-          colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.;
+          colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
+          scale = (this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1. ;
+
+      if (scale*handle.sumz < 1e5) {
+         // one can use direct drawing of scatter plot without any patterns
+
+         var res = "", lastx = 0, lasty = 0, currx, curry, k, cnt;
+         for (i = handle.i1; i < handle.i2; ++i) {
+            for (j = handle.j1; j < handle.j2; ++j) {
+               binz = histo.getBinContent(i + 1, j + 1);
+
+               cnt = Math.round(scale*binz);
+               if (cnt<=0) continue;
+
+               for (k=0;k<cnt;++k) {
+                  currx = Math.round(handle.grx[i] + (handle.grx[i+1] - handle.grx[i]) * Math.random());
+                  curry = Math.round(handle.gry[j+1] + (handle.gry[j] - handle.gry[j+1]) * Math.random());
+                  if (res.length==0)
+                     res = "M" + currx + "," + curry;
+                  else
+                     res += "m" + (currx-lastx) + "," + (curry-lasty);
+
+                  res+="h1";
+                  lastx = currx+1; lasty = curry;
+               }
+            }
+         }
+
+         if (!this.markeratt)
+            this.markeratt = JSROOT.Painter.createAttMarker(histo);
+
+         this.draw_g
+              .append("svg:path")
+              .attr("d", res)
+              .style("fill","none")
+              .style("stroke", this.markeratt.color);
+
+         return handle;
+      }
 
       // limit filling factor, do not try to produce as many points as filled area;
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
