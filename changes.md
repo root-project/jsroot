@@ -4,7 +4,7 @@
 1. Support 'z', 'x', '||', '[]', '>', '|>', '5' draw option for TGraph
 2. Support of 'X+' and 'Y+' draw options for histograms and graphs
 3. Support '*', 'L', 'B', 'B1', 'E3' and 'E4' draw options for TH1
-4. Support 'E', 'box' and 'box1' draw options for TH2
+4. Support 'E', 'col1', 'box' and 'box1' draw options for TH2
 5. Support 'same' for 'box' and 'col' draw options 
 6. Implement drawing of TProfile2D
 7. Support logx/y/z, gridx/y, tickx/y draw options for TPad/TCanvas

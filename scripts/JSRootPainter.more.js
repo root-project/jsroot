@@ -2783,8 +2783,7 @@
       if (zc < this.zmin) return -111;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.zmin) return ((this.zmin > 0) || (this.options.Color === 111) || this.IsTH2Poly() ||
-                                  ((this.options.Box>0) && (this.zmin!==0))) ? 0 : -1;
+      if (zc===this.zmin) return ((this.zmin != 0) || (this.options.Color === 111) || this.IsTH2Poly()) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.zmin)*(cntr.length-1)/(this.zmax-this.zmin));
    }
@@ -3467,7 +3466,10 @@
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getValueColor(binz, true);
-            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
+            if (binz===0) {
+               if (this.options.Color===11) continue;
+               if ((colindx === null) && this.ShowEmptyBin(i,j)) colindx = 0;
+            }
             if (colindx === null) continue;
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];

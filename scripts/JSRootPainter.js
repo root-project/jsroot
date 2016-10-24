@@ -5341,10 +5341,10 @@
       if (check('COL', true)) {
          option.Color = 1;
 
-         if (part[0]=='0') option.Color = 111;
-         if (part[0]=='1') option.Color = 1;
-         if (part[0]=='2') option.Color = 2;
-         if (part[0]=='3') option.Color = 3;
+         if (part.indexOf('0')>=0) option.Color = 111;
+         if (part.indexOf('1')>=0) option.Color = 11;
+         if (part.indexOf('2')>=0) option.Color = 12;
+         if (part.indexOf('3')>=0) option.Color = 13;
 
          if (part.indexOf('Z')>=0) option.Zscale = 1;
          if (hdim == 1) option.Hist = 1;
