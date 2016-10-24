@@ -4199,36 +4199,33 @@
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
 
-         var res = "", lastx = 0, lasty = 0, currx, curry, k, cnt;
-         for (i = handle.i1; i < handle.i2; ++i) {
-            for (j = handle.j1; j < handle.j2; ++j) {
-               binz = histo.getBinContent(i + 1, j + 1);
-
-               cnt = Math.round(scale*binz);
-               if (cnt<=0) continue;
-
-               for (k=0;k<cnt;++k) {
-                  currx = Math.round(handle.grx[i] + (handle.grx[i+1] - handle.grx[i]) * Math.random());
-                  curry = Math.round(handle.gry[j+1] + (handle.gry[j] - handle.gry[j+1]) * Math.random());
-                  if (res.length==0)
-                     res = "M" + currx + "," + curry;
-                  else
-                     res += "m" + (currx-lastx) + "," + (curry-lasty);
-
-                  res+="h1";
-                  lastx = currx+1; lasty = curry;
-               }
-            }
-         }
-
          if (!this.markeratt)
             this.markeratt = JSROOT.Painter.createAttMarker(histo);
 
+         this.markeratt.reset_pos();
+
+         var path = "", k, npix;
+         for (i = handle.i1; i < handle.i2; ++i) {
+            cw = handle.grx[i+1] - handle.grx[i];
+            for (j = handle.j1; j < handle.j2; ++j) {
+               ch = handle.gry[j] - handle.gry[j+1];
+               binz = histo.getBinContent(i + 1, j + 1);
+
+               npix = Math.round(scale*binz);
+               if (npix<=0) continue;
+
+               for (k=0;k<npix;++k)
+                  path += this.markeratt.create(
+                            Math.round(handle.grx[i] + cw * Math.random()),
+                            Math.round(handle.gry[j+1] + ch * Math.random()));
+            }
+         }
+
          this.draw_g
               .append("svg:path")
-              .attr("d", res)
-              .style("fill","none")
-              .style("stroke", this.markeratt.color);
+              .attr("d", path)
+//              .style("fill","none")
+              .call(this.markeratt.func);
 
          return handle;
       }
