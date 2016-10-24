@@ -5396,6 +5396,7 @@
       if ((hdim==3) && check('BB')) option.BackBox = 0;
 
       if (check('A')) option.Axis = -1;
+      if (check('B1')) { option.Bar = 2; option.Hist = -1; }
       if (check('B')) { option.Bar = 1; option.Hist = -1; }
       if (check('C')) { option.Curve = 1; option.Hist = -1; }
       if (check('F')) option.Fill = 1;
@@ -7380,11 +7381,11 @@
           pthis = this,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
-          side = this.options.Bar % 10;
+          side = (this.options.Bar > 10) ? this.options.Bar % 10 : 0;
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
-      if (!pmain.logy && (pmain.scale_ymin<=0)) gry2 = Math.round(pmain.gry(0));
+      if (!pmain.logy && (pmain.scale_ymin<=0) && (this.options.Bar!==2)) gry2 = Math.round(pmain.gry(0));
 
       for (i = left; i < right; ++i) {
          x1 = this.GetBinX(i);
