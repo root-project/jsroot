@@ -7419,8 +7419,8 @@
             grx2 = grx1 + w;
             w = Math.round(w * side / 10);
             if (pmain.swap_xy) {
-               barsl += "M"+gry2+","+grx1 + "h"+(gry2-gry1) + "v" + w + "h"+(gry2-gry1) + "z";
-               barsr += "M"+gry2+","+grx2 + "h"+(gry2-gry1) + "v" + (-w) + "h"+(gry2-gry1) + "z";
+               barsl += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v" + w + "h"+(gry2-gry1) + "z";
+               barsr += "M"+gry2+","+grx2 + "h"+(gry1-gry2) + "v" + (-w) + "h"+(gry2-gry1) + "z";
             } else {
                barsl += "M"+grx1+","+gry1 + "h"+w + "v"+(gry2-gry1) + "h"+(-w)+ "z";
                barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + "z";
