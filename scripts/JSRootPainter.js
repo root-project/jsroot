@@ -5371,7 +5371,10 @@
             option.Text = 1000 + angle;
          }
          if (part.indexOf('N')>=0 && this.IsTH2Poly())
-            option.Text += 3000;
+            option.Text = 3000 + angle;
+
+         if (part.indexOf('E')>=0)
+            option.Text = 2000 + angle;
       }
 
       if (check('SCAT=', true)) {
@@ -7543,7 +7546,7 @@
 
       if (show_text) {
          text_col = JSROOT.Painter.root_colors[this.histo.fMarkerColor];
-         text_angle = (this.options.Text > 1000) && (this.options.Text <= 1090) ? this.options.Text - 1000 : 0;
+         text_angle = (this.options.Text>1000) ? this.options.Text % 1000 : 0;
          text_size = 20;
 
          if ((this.histo.fMarkerSize!==1) && (text_angle!==0))
@@ -7612,11 +7615,16 @@
                      }
 
                      if (show_text) {
-                        var lbl = Math.round(bincont);
-                        if (lbl === bincont)
-                           lbl = bincont.toString();
+                        var cont = bincont;
+                        if ((this.options.Text>=2000) && (this.options.Text < 3000) &&
+                             this.IsTProfile() && this.histo.fBinEntries)
+                           cont = this.histo.fBinEntries[besti+1];
+
+                        var lbl = Math.round(cont);
+                        if (lbl === cont)
+                           lbl = cont.toString();
                         else
-                           lbl = JSROOT.FFormat(bincont, JSROOT.gStyle.StatFormat);
+                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat);
 
                         var posx = Math.round(mx1 + (mx2-mx1)*0.1), posy = my-2-text_size,
                             sizex = Math.round((mx2-mx1)*0.8), sizey = text_size;
