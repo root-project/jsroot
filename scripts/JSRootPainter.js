@@ -3076,6 +3076,8 @@
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           height = this.frame_height(),
           width = this.frame_width(),
+          pad_width = this.pad_width(),
+          frame_x = this.frame_x();
           pp = this.pad_painter(true),
           maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
           font = JSROOT.Painter.getFontDetails(160, textheight);
@@ -3264,6 +3266,11 @@
 
       if ((viewmode == "right") && (posx + actualw > width - 20)) {
          posx = width - actualw - 20;
+         svgs.attr("x", posx);
+      }
+
+      if ((viewmode == "single") && (posx + actualw > pad_width - frame_x) && (posx > actualw+20)) {
+         posx -= (actualw + 20);
          svgs.attr("x", posx);
       }
 
