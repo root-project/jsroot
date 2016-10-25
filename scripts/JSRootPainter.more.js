@@ -2503,12 +2503,9 @@
              palette = this.GetObject(),
              axis = palette.fAxis,
              can_move = (typeof arg == 'string') && (arg.indexOf('canmove')>0),
-             postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0);
-
-         var nbr1 = axis.fNdiv % 100;
-         if (nbr1<=0) nbr1 = 8;
-
-         var pos_x = parseInt(this.draw_g.attr("x")), // pave position
+             postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0),
+             nbr1 = axis.fNdiv % 100,
+             pos_x = parseInt(this.draw_g.attr("x")), // pave position
              pos_y = parseInt(this.draw_g.attr("y")),
              width = this.pad_width(),
              height = this.pad_height(),
@@ -2517,10 +2514,12 @@
              zmin = 0, zmax = 100,
              contour = main.fContour;
 
+         if (nbr1<=0) nbr1 = 8;
          axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
          if (contour) {
-            zmin = contour[0]; zmax = contour[contour.length-1];
+            zmin = Math.min(contour[0], main.zmin);
+            zmax = Math.max(contour[contour.length-1], main.zmax);
          } else
          if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
             // this is case of TH2 (needs only for size adjustment)
@@ -2541,6 +2540,8 @@
          }
          z.domain([zmin, zmax]).range([s_height,0]);
 
+         this.draw_g.selectAll("rect").style("fill", 'white');
+
          if (!contour || postpone_draw)
             // we need such rect to correctly calculate size
             this.draw_g.append("svg:rect")
@@ -2548,7 +2549,7 @@
                        .attr("y",  0)
                        .attr("width", s_width)
                        .attr("height", s_height)
-                       .attr("fill", 'white');
+                       .style("fill", 'white');
          else
             for (var i=0;i<contour.length-1;++i) {
                var z0 = z(contour[i]),
@@ -2725,19 +2726,10 @@
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      var histo = this.GetObject();
-
-      if ((histo.fContour!=null) && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-         this.fContour = JSROOT.clone(histo.fContour);
-         this.fCustomContour = true;
-         return this.fContour;
-      }
-
-      this.fCustomContour = false;
-
-      var nlevels = 20, zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
+      var histo = this.GetObject(), nlevels = 20,
+          zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
-      if (histo.fContour != null) nlevels = histo.fContour.length;
+      if (histo.fContour) nlevels = histo.fContour.length;
       if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
          zmin = this.histo.fMinimum;
          zmax = this.histo.fMaximum;
@@ -2746,6 +2738,18 @@
          zmin = this.zoom_zmin;
          zmax = this.zoom_zmax;
       }
+
+      if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+         this.fContour = JSROOT.clone(histo.fContour);
+         this.fCustomContour = true;
+         this.zmin = zmin;
+         this.zmax = zmax;
+         if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
+         return this.fContour;
+      }
+
+      this.fCustomContour = false;
+
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
 
@@ -3499,7 +3503,7 @@
           levels, lj = 0;
 
       function BinarySearch(zc) {
-         for (var kk=1;kk<levels.length;++kk)
+         for (var kk=0;kk<levels.length;++kk)
             if (zc<levels[kk]) return kk-1;
          return levels.length-1;
       }
@@ -3625,7 +3629,7 @@
 
                   ipoly = itarr[ix-1];
 
-                  if (ipoly >=0 && (ipoly < levels.length)) {
+                  if ((ipoly >= 0) && (ipoly < levels.length)) {
                      poly = polys[ipoly];
                      if (!poly)
                         poly = polys[ipoly] = JSROOT.CreateTPolyLine(kMAXCONTOUR*4, true);
@@ -3717,24 +3721,25 @@
                if (nadd == 0) break;
             }
 
-            // console.log('color', ipoly, icol, 'Draw area points', iplus-iminus+1, 'starts', iminus);
+            // console.log('color', ipoly, colindx, icol, 'Draw area points', iplus-(iminus+1), 'starts', iminus);
 
-            var cmd = "M" + xp[iminus] + "," + yp[iminus];
-            for (i = iminus+1;i<=iplus;++i)
-               cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
+            if (iminus+1 < iplus) {
+               var cmd = "M" + xp[iminus] + "," + yp[iminus];
+               for (i = iminus+1;i<=iplus;++i)
+                  cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
+               if (fillcolor !== 'none') cmd += "Z";
 
-            if (fillcolor !== 'none') cmd += "Z";
+               var elem = this.draw_g
+                             .append("svg:path")
+                             .attr("class","th2_contour")
+                             .attr("d", cmd)
+                             .style("fill", fillcolor);
 
-            var elem = this.draw_g
-                         .append("svg:path")
-                         .attr("class","th2_contour")
-                         .attr("d", cmd)
-                         .style("fill", fillcolor);
-
-            if (lineatt!==null)
-               elem.call(lineatt.func);
-            else
-               elem.style('stroke','none');
+               if (lineatt!==null)
+                  elem.call(lineatt.func);
+               else
+                  elem.style('stroke','none');
+            }
 
             istart = 0;
             for (i=2;i<np;i+=2) {
@@ -3746,6 +3751,8 @@
             if (istart === 0) break;
          }
       }
+
+      handle.hide_only_zeros = true; // text drawing suppress only zeros
 
       return handle;
    }
@@ -3856,9 +3863,7 @@
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i+1, j+1);
-            colindx = this.getValueColor(binz, true);
-            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
-            if (colindx === null) continue;
+            if ((binz === 0) && !this.ShowEmptyBin(i,j)) continue;
 
             binw = handle.grx[i+1] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+1];
@@ -3889,6 +3894,8 @@
          }
 
       this.FinishTextDrawing(text_g, null);
+
+      handle.hide_only_zeros = true; // text drawing suppress only zeros
 
       return handle;
    }
@@ -4595,8 +4602,12 @@
 
       if (find === 2) {
          binz = histo.getBinContent(i+1,j+1);
-         colindx = this.getValueColor(binz, true);
-         if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
+         if (h.hide_only_zeros) {
+            colindx = (binz === 0) && !this.ShowEmptyBin(i,j) ? null : 0;
+         } else {
+            colindx = this.getValueColor(binz, true);
+            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
+         }
       }
 
       if (colindx === null) {
