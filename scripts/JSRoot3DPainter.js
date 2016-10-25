@@ -1378,8 +1378,8 @@
       var i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
           main = this.main_painter(),
-          split_faces = ((this.options.Lego === 11) || (this.options.Lego === 13)) && (this.GetObject().fFillColor<2); // split each layer on two parts
-
+          histo = this.GetObject(),
+          split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
@@ -1511,7 +1511,7 @@
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
          // geometry.computeVertexNormals();
 
-         var rootcolor = this.GetObject().fFillColor,
+         var rootcolor = histo.fFillColor,
              fcolor = JSROOT.Painter.root_colors[rootcolor];
 
          if (palette) {
@@ -1570,7 +1570,11 @@
             //geom2.computeVertexNormals();
 
             //var material2 = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
-            var material2 = new THREE.MeshBasicMaterial( { color: 0xFF0000, shading: THREE.SmoothShading } );
+
+            var color2 = (rootcolor<2) ? new THREE.Color(0xFF0000) :
+                            new THREE.Color(d3.rgb(fcolor).darker(0.5).toString());
+
+            var material2 = new THREE.MeshBasicMaterial( { color: color2, shading: THREE.SmoothShading } );
 
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
@@ -1674,10 +1678,10 @@
       if (uselineindx)
          geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
 
-      var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
+      var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
 
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+      if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
       var line = new THREE.LineSegments(geometry, material);
 
       /*
@@ -1975,7 +1979,6 @@
             geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
             geometry.computeVertexNormals();
             if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
-
 
             var fcolor, material;
             if (docolorfaces) {
