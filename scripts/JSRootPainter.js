@@ -3173,8 +3173,8 @@
       }
 
       for (var n=0; n < hints.length; ++n) {
-         var hint = hints[n];
-         var group = hintsg.select(".painter_hint_"+n);
+         var hint = hints[n],
+             group = hintsg.select(".painter_hint_"+n);
          if (hint===null) {
             group.remove();
             continue;
