@@ -5217,8 +5217,10 @@
       if (check('LOGX')) pad.fLogx = 1;
       if (check('LOGY')) pad.fLogy = 1;
       if (check('LOGZ')) pad.fLogz = 1;
+      if (check('GRIDXY')) pad.fGridx = pad.fGridy = 1;
       if (check('GRIDX')) pad.fGridx = 1;
       if (check('GRIDY')) pad.fGridy = 1;
+      if (check('TICKXY')) pad.fTickx = pad.fTicky = 1;
       if (check('TICKX')) pad.fTickx = 1;
       if (check('TICKY')) pad.fTicky = 1;
 
@@ -5361,7 +5363,8 @@
          option.Text = 1;
          option.Scat = 0;
 
-         var angle = parseInt(part);
+         var angle = parseInt(part.substr(0,2));
+         if (isNaN(angle)) angle = parseInt(part.substr(0,1));
          if (!isNaN(angle)) {
             if (angle < 0) angle = 0;
             if (angle > 90) angle = 90;

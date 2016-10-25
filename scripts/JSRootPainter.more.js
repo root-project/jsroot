@@ -3837,15 +3837,19 @@
 
    JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
-          i,j,binz,colindx,binw,binh,lbl;
+          i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
-      var text_g = this.draw_g
-                       .append("svg:g")
-                       .attr("class","th2_text");
+      var text_col = JSROOT.Painter.root_colors[histo.fMarkerColor],
+          text_angle = (this.options.Text > 1000) && (this.options.Text <= 1090) ? this.options.Text - 1000 : 0,
+          text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
+          text_size = 20;
 
-      this.StartTextDrawing(42, 20, text_g, 20);
+      if ((histo.fMarkerSize!==1) && (text_angle!==0))
+         text_size = 0.02*h*histo.fMarkerSize;
+
+      this.StartTextDrawing(42, text_size, text_g, text_size);
 
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
@@ -3863,9 +3867,19 @@
             else
                lbl = JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
 
-            this.DrawText(22, Math.round(handle.grx[i] + binw*0.1), Math.round(handle.gry[j+1] + binh*0.1),
-                              Math.round(binw*0.8), Math.round(binh*0.8),
-                              lbl, "black", 0, text_g);
+            if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
+               posx = Math.round(handle.grx[i] + binw*0.5);
+               posy = Math.round(handle.gry[j+1] + binh*0.5);
+               sizex = 0;
+               sizey = text_angle-360;
+            } else {
+               posx = Math.round(handle.grx[i] + binw*0.1);
+               posy = Math.round(handle.gry[j+1] + binh*0.1);
+               sizex = Math.round(binw*0.8);
+               sizey = Math.round(binh*0.8);
+            }
+
+            this.DrawText(22, posx, posy, sizex, sizey, lbl, text_col, 0, text_g);
          }
 
       this.FinishTextDrawing(text_g, null);
