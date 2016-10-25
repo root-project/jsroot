@@ -4,6 +4,8 @@
 1. Workaround for MathJax output - scaling not always works in Firefox
 2. Fix - bin scaling for box draw option for TH2 and TH3 histograms 
 3. Fix - increase points limits for contour plots
+4. Fix - position of 3D canvas in webkit browsers
+5. Fix - use abs bin content in RMS calculations
 
 
 ## Changes in 4.7.0
