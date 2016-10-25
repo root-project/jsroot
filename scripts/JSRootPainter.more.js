@@ -3844,10 +3844,12 @@
       var text_col = JSROOT.Painter.root_colors[histo.fMarkerColor],
           text_angle = (this.options.Text > 1000) && (this.options.Text <= 1090) ? this.options.Text - 1000 : 0,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
-          text_size = 20;
+          text_size = 20, text_offset = 0;
 
       if ((histo.fMarkerSize!==1) && (text_angle!==0))
          text_size = Math.round(0.02*h*histo.fMarkerSize);
+
+      if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
 
       this.StartTextDrawing(42, text_size, text_g, text_size);
 
@@ -3869,12 +3871,12 @@
 
             if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);
-               posy = Math.round(handle.gry[j+1] + binh*0.5);
+               posy = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                sizex = 0;
                sizey = text_angle-360;
             } else {
                posx = Math.round(handle.grx[i] + binw*0.1);
-               posy = Math.round(handle.gry[j+1] + binh*0.1);
+               posy = Math.round(handle.gry[j+1] + binh*(0.1 + text_offset));
                sizex = Math.round(binw*0.8);
                sizey = Math.round(binh*0.8);
             }
