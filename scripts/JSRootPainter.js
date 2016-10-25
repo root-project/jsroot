@@ -5290,7 +5290,8 @@
       if (check('GLLEGO', true) || check('LEGO', true)) {
          option.Scat = 0;
          option.Lego = 1;
-         if (part.indexOf('0') >= 0) option.Zero = 1;
+         option.Zero = 1;
+         if (part.indexOf('0') >= 0) option.Zero = 0;
          if (part.indexOf('1') >= 0) option.Lego = 11;
          if (part.indexOf('2') >= 0) option.Lego = 12;
          if (part.indexOf('3') >= 0) option.Lego = 13;
@@ -5444,6 +5445,7 @@
       if (check('Z')) option.Zscale = 1;
       if (check('*')) { option.Mark = 23; option.Hist = -1; }
       if (check('H')) option.Hist = 2;
+      if (check('0')) option.Zero = 0;
 
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
