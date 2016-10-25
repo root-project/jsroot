@@ -5307,6 +5307,8 @@
          }
       }
       if (check('9')) option.HighRes = 1;
+      if (check('0')) option.Zero = 1;
+
 
       //if (option.Surf == 15)
       //   if (option.System == JSROOT.Painter.Coord.kPOLAR || option.System == JSROOT.Painter.Coord.kCARTESIAN)
