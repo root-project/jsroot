@@ -3842,7 +3842,7 @@
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       var text_col = JSROOT.Painter.root_colors[histo.fMarkerColor],
-          text_angle = (this.options.Text > 1000) && (this.options.Text <= 1090) ? this.options.Text - 1000 : 0,
+          text_angle = (this.options.Text > 1000) ? this.options.Text % 1000 : 0,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0;
 
@@ -3855,15 +3855,19 @@
 
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
-            binz = histo.getBinContent(i + 1, j + 1);
+            binz = histo.getBinContent(i+1, j+1);
             colindx = this.getValueColor(binz, true);
             if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
             if (colindx === null) continue;
 
             binw = handle.grx[i+1] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+1];
-            lbl = Math.round(binz);
 
+            if ((this.options.Text >= 2000) && (this.options.Text < 3000) &&
+                 this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'))
+                   binz = histo.getBinEntries(i+1, j+1);
+
+            lbl = Math.round(binz);
             if (lbl === binz)
                lbl = binz.toString();
             else
