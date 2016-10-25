@@ -3847,7 +3847,7 @@
           text_size = 20;
 
       if ((histo.fMarkerSize!==1) && (text_angle!==0))
-         text_size = 0.02*h*histo.fMarkerSize;
+         text_size = Math.round(0.02*h*histo.fMarkerSize);
 
       this.StartTextDrawing(42, text_size, text_g, text_size);
 

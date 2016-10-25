@@ -7453,11 +7453,8 @@
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
           pmain = this.main_painter(),
-          pad = this.root_pad(),
-          pthis = this,
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
-
 
       for (i = left; i < right; ++i) {
          x = this.GetBinX(i+0.5);
@@ -7515,8 +7512,10 @@
           exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
+          show_text = (this.options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "";
+          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "",
+          text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
          show_markers = true;
@@ -7542,6 +7541,17 @@
          }
       }
 
+      if (show_text) {
+         text_col = JSROOT.Painter.root_colors[this.histo.fMarkerColor];
+         text_angle = (this.options.Text > 1000) && (this.options.Text <= 1090) ? this.options.Text - 1000 : 0;
+         text_size = 20;
+
+         if ((this.histo.fMarkerSize!==1) && (text_angle!==0))
+            text_size = 0.02*height*this.histo.fMarkerSize;
+
+         this.StartTextDrawing(42, text_size, this.draw_g, text_size);
+      }
+
       // if there are too many points, exclude many vertical drawings at the same X position
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width);
@@ -7555,7 +7565,7 @@
 
       var draw_markers = show_errors || show_markers;
 
-      if (draw_markers) use_minmax = true;
+      if (draw_markers || show_text) use_minmax = true;
 
       for (i = left; i <= right; ++i) {
 
@@ -7588,7 +7598,7 @@
                curry = gry;
             } else {
 
-               if (draw_markers) {
+               if (draw_markers || show_text) {
                   bincont = this.histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
@@ -7601,20 +7611,42 @@
                         yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
                      }
 
-                     if ((my >= -yerr1) && (my <= height + yerr2)) {
-                        if (path_fill !== null)
-                           path_fill +="M" + mx1 +","+(my-yerr1) +
-                                       "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                        if (path_err !== null)
-                           path_err +="M" + (mx1+dend) +","+ my + endx + "h" + (mx2-mx1-2*dend) + endx +
-                                      "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
-                        if (path_marker !== null)
-                           path_marker += this.markeratt.create((mx1+mx2)/2, my);
+                     if (show_text) {
+                        var lbl = Math.round(bincont);
+                        if (lbl === bincont)
+                           lbl = bincont.toString();
+                        else
+                           lbl = JSROOT.FFormat(bincont, JSROOT.gStyle.StatFormat);
+
+                        var posx = Math.round(mx1 + (mx2-mx1)*0.1), posy = my-2-text_size,
+                            sizex = Math.round((mx2-mx1)*0.8), sizey = text_size;
+
+                        if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
+                           posx = Math.round((mx1+mx2)/2);
+                           posy = Math.round(my - 2- text_size/2);
+                           sizex = 0;
+                           sizey = text_angle-360;
+                        }
+
+                        this.DrawText(22, posx, posy, sizex, sizey, lbl, text_col, 0);
                      }
 
-                     if (path_line !== null) {
-                        path_line += (path_line.length===0) ? "M" : "L";
-                        path_line += Math.round((mx1+mx2)/2) + "," + my;
+                     if (draw_markers) {
+                        if ((my >= -yerr1) && (my <= height + yerr2)) {
+                           if (path_fill !== null)
+                              path_fill +="M" + mx1 +","+(my-yerr1) +
+                              "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
+                           if (path_err !== null)
+                              path_err +="M" + (mx1+dend) +","+ my + endx + "h" + (mx2-mx1-2*dend) + endx +
+                              "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+                           if (path_marker !== null)
+                              path_marker += this.markeratt.create((mx1+mx2)/2, my);
+                        }
+
+                        if (path_line !== null) {
+                           path_line += (path_line.length===0) ? "M" : "L";
+                           path_line += Math.round((mx1+mx2)/2) + "," + my;
+                        }
                      }
                   }
                }
@@ -7666,7 +7698,6 @@
       }
 
       if (draw_markers) {
-
          if ((path_fill !== null) && (path_fill.length > 0))
             this.draw_g.append("svg:path")
                        .attr("d", path_fill)
@@ -7696,6 +7727,10 @@
                     .call(this.lineatt.func)
                     .call(this.fillatt.func);
       }
+
+      if (show_text)
+         this.FinishTextDrawing(this.draw_g);
+
    }
 
    JSROOT.TH1Painter.prototype.GetBinTips = function(bin) {
