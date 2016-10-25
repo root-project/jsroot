@@ -5369,7 +5369,10 @@
             if (angle < 0) angle = 0;
             if (angle > 90) angle = 90;
             option.Text = 1000 + angle;
+         } else {
+            angle = 0;
          }
+
          if (part.indexOf('N')>=0 && this.IsTH2Poly())
             option.Text = 3000 + angle;
 
@@ -5436,18 +5439,10 @@
                if (option.Error == 1) option.Error += 20;
                option.Error += 10;
             }
-            if (option.Text && this.IsTProfile()) {
-               option.Text += 2000;
-               option.Error = 0;
-            }
          } else {
             if (option.Error == 0) {
                option.Error = 100;
                option.Scat = 0;
-            }
-            if (option.Text) {
-               option.Text += 2000;
-               option.Error = 0;
             }
          }
       }
