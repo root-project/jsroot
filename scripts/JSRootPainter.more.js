@@ -4626,8 +4626,9 @@
 
       this._can_move_colz = true;
 
-      // special case for cont4 draw option - drawing done with 3D canvas and user range is wired
-      if (this.options.Contour !==14) this.CheckPadRange();
+      // special case for root 3D drawings - user range is wired
+      if ((this.options.Contour !==14) && !this.options.Lego)
+         this.CheckPadRange();
 
       this.ScanContent();
 
