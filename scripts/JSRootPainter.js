@@ -5314,9 +5314,9 @@
             option.Scat = 0;
             option.Contour = 1;
             if (part.indexOf('Z')>=0) option.Zscale = 1;
-            if (part.indexOf('1') >= 0) option.Contour = 11;
-            if (part.indexOf('2') >= 0) option.Contour = 12;
-            if (part.indexOf('3') >= 0) option.Contour = 13;
+            if (part.indexOf('1') >= 0) option.Contour = 11; else
+            if (part.indexOf('2') >= 0) option.Contour = 12; else
+            if (part.indexOf('3') >= 0) option.Contour = 13; else
             if (part.indexOf('4') >= 0) option.Contour = 14;
          } else {
             option.Hist = 1;
