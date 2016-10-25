@@ -3431,6 +3431,17 @@
             num_cols = parts.length;
       }
 
+      if ((nlines===1) && !this.IsStats() &&
+          (lines[0].indexOf("#splitline{")===0) && (lines[0].charAt(lines[0].length-1)=="}")) {
+            var pos = lines[0].indexOf("}{");
+            if ((pos>0) && (pos == lines[0].lastIndexOf("}{"))) {
+               lines[1] = lines[0].substr(pos+2, lines[0].length - pos - 3);
+               lines[0] = lines[0].substr(11, pos - 11);
+               nlines = 2;
+               this.UseTextColor = true;
+            }
+         }
+
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
@@ -3441,9 +3452,10 @@
          this.UseTextColor = true;
       } else {
          for (var j = 0; j < nlines; ++j) {
-            var posy = j*stepy,
+            var posy = j*stepy, jcolor = tcolor;
+            if (!this.UseTextColor && (j<pt.fLines.arr.length) && (pt.fLines.arr[j].fTextColor!==0))
                jcolor = JSROOT.Painter.root_colors[pt.fLines.arr[j].fTextColor];
-            if ((pt.fLines.arr[j].fTextColor == 0) || (jcolor===undefined)) {
+            if (jcolor===undefined) {
                jcolor = tcolor;
                this.UseTextColor = true;
             }
