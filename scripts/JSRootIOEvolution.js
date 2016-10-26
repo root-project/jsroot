@@ -1960,9 +1960,19 @@
                   member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
                } else {
                   member.classname = classname;
-                  member.func = function(buf, obj) {
-                     obj[this.name] = buf.ClassStreamer({}, this.classname);
-                  };
+
+                  if (element.fArrayLength>1) {
+                     member.arrlen = element.fArrayLength;
+                     member.func = function(buf, obj) {
+                        obj[this.name] = [];
+                        for (var k=0;k<this.arrlen;++k)
+                           obj[this.name].push(buf.ClassStreamer({}, this.classname));
+                     };
+                  } else {
+                     member.func = function(buf, obj) {
+                        obj[this.name] = buf.ClassStreamer({}, this.classname);
+                     };
+                  }
                }
                break;
             case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
