@@ -349,6 +349,11 @@ For receiving JSON from a server one could use following code:
 
 In the callback function one gets JavaScript object (or null in case of failure)
 
+If JSON string was obtained by different method, it should be parsed with:
+
+    var obj = JSROOT.parse(json_string);
+    
+
 
 ### Objects drawing
 
