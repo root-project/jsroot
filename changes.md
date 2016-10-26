@@ -6,6 +6,7 @@
 3. Fix - increase points limits for contour plots
 4. Fix - position of 3D canvas in webkit browsers
 5. Fix - use abs bin content in RMS calculations
+6. Fix - support char star* and object arrays in I/O
 
 
 ## Changes in 4.7.0
