@@ -2014,10 +2014,9 @@
             case JSROOT.IO.kCharStar:
                member.func = function(buf,obj) {
                   obj[this.name] = "";
-                  var n = buf.ntoi4();
-                  for (var i=0;i<n;++i) {
-                     obj[this.name] += String.fromCharCode(buf.ntou1());
-                  }
+                  var len = buf.ntoi4(), pos = buf.o;
+                  obj[this.name] = buf.substring(pos, pos + len);
+                  buf.o += len;
                };
                break;
             case JSROOT.IO.kShort:
