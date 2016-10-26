@@ -2001,6 +2001,15 @@
                break;
             case JSROOT.IO.kChar:
                member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
+            case JSROOT.IO.kCharStar:
+               member.func = function(buf,obj) {
+                  obj[this.name] = "";
+                  var n = buf.ntoi4();
+                  for (var i=0;i<n;++i) {
+                     obj[this.name] += String.fromCharCode(buf.ntou1());
+                  }
+               };
+               break;
             case JSROOT.IO.kShort:
                member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
             case JSROOT.IO.kInt:
