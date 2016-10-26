@@ -10402,7 +10402,13 @@
          for ( var l = 0; l < entry.fElements.arr.length; ++l) {
             var elem = entry.fElements.arr[l];
             if ((elem == null) || (typeof (elem.fName) == 'undefined')) continue;
-            var info = elem.fTypeName + " " + elem.fName + ";";
+            var info = elem.fTypeName + " " + elem.fName;
+            if (elem.fArrayDim===1)
+               info += "[" + elem.fArrayLength + "]";
+            else
+               for (var dim=0;dim<elem.fArrayDim;++dim)
+                  info+="[" + element.fMaxIndex[dim] + "]";
+            info += ";";
             if (elem.fTitle != '') info += " // " + elem.fTitle;
             item._childs.push({ _name : info, _title: elem.fTypeName, _kind:elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
