@@ -8706,6 +8706,8 @@
             _parent : folder
          };
 
+         if (key.fObjlen > 1e5) item._title += ' (size: ' + (key.fObjlen/1e6).toFixed(1) + 'MB)';
+
          if ('fRealName' in key)
             item._realname = key.fRealName + ";" + key.fCycle;
 
