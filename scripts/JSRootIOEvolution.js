@@ -479,18 +479,32 @@
       return obj;
    }
 
+   JSROOT.gdebug = false;
+
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
       if (! ('_typename' in obj)) obj._typename = classname;
 
       var streamer = this.fFile.GetStreamer(classname);
 
+      if (classname == "TXmlEx6") JSROOT.gdebug = true;
+
       if (streamer !== null) {
 
          var ver = this.ReadVersion();
 
-         for (var n = 0; n < streamer.length; ++n)
+         if (JSROOT.gdebug)
+            console.log('Read class', classname, 'pos', this.o, 'ver', ver);
+
+         for (var n = 0; n < streamer.length; ++n) {
+            if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o);
             streamer[n].func(this, obj);
+            if (JSROOT.gdebug && streamer[n].name)
+               console.log('Read member', streamer[n].name, 'res', obj[streamer[n].name]);
+         }
+
+         if (JSROOT.gdebug)
+            console.log('Done class', classname, 'pos', this.o);
 
          this.CheckBytecount(ver, classname);
 
@@ -1862,9 +1876,10 @@
 
       for (var j=0; j<s_i.fElements.arr.length; ++j) {
          // extract streamer info for each class member
-         var element = s_i.fElements.arr[j];
+         var element = s_i.fElements.arr[j],
+             member = { name: element.fName, type: element.fType };
 
-         var member = { name: element.fName, type: element.fType };
+         if (clname == "TXmlEx6") console.log('element', element);
 
          if (element.fTypeName === 'BASE') {
             if (JSROOT.IO.GetArrayKind(member.name) > 0) {
@@ -1887,9 +1902,6 @@
                break;
             case JSROOT.IO.kTString:
                member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }; break;
-            case JSROOT.IO.kAnyP:
-            case JSROOT.IO.kObjectP:
-               member.func = function(buf,obj) { obj[this.name] = buf.ReadObjectAny(); }; break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kBool:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
@@ -2006,6 +2018,10 @@
                };
                break;
 
+            case JSROOT.IO.kAnyP:
+            case JSROOT.IO.kObjectP:
+               member.userreadobj = true;
+
             case JSROOT.IO.kAny:
             case JSROOT.IO.kAnyp:
             case JSROOT.IO.kObjectp:
@@ -2032,11 +2048,11 @@
                      member.func = function(buf, obj) {
                         obj[this.name] = [];
                         for (var k=0;k<this.arrlen;++k)
-                           obj[this.name].push(buf.ClassStreamer({}, this.classname));
+                           obj[this.name].push(this.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, this.classname));
                      };
                   } else {
                      member.func = function(buf, obj) {
-                        obj[this.name] = buf.ClassStreamer({}, this.classname);
+                        obj[this.name] = this.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, this.classname);
                      };
                   }
                }
