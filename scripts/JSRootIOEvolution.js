@@ -332,6 +332,8 @@
 
       if ((ndim<1) && (elem.fArrayLength>0)) { ndim = 1; maxindx = [elem.fArrayLength]; }
 
+      if (handle && handle.minus1) --ndim;
+
       if (ndim<1) return func(this, handle);
 
       var res = [];
@@ -1994,36 +1996,20 @@
                }
                break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kChar:
-               if (element.fArrayDim === 1) {
+               if (element.fArrayDim < 2) {
                   member.arrlength = element.fArrayLength;
                   member.func = function(buf, obj) {
                      obj[this.name] = buf.ReadFastString(this.arrlength);
                   };
-               } else
-               if (element.fArrayDim === 2) {
-                  member.arrlength = element.fMaxIndex[1];
-                  member.maxindx = element.fMaxIndex[0];
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var n=0;n<this.maxindx;++n)
-                        obj[this.name].push(buf.ReadFastString(this.arrlength));
-                  };
-               } else
-               if (element.fArrayDim === 3) {
-                  member.arrlength = element.fMaxIndex[2];
-                  member.maxindx2 = element.fMaxIndex[1];
-                  member.maxindx1 = element.fMaxIndex[0];
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var n1=0;n1<this.maxindx1;++n1) {
-                        obj[this.name][n1] = [];
-                        for (var n2=0;n2<this.maxindx2;++n2)
-                           obj[this.name][n1].push(buf.ReadFastString(this.arrlength));
-                     }
-                  };
                } else {
-                  JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType + ' dim = ' + element.fArrayDim);
-                  member.func = function(buf,obj) {};  // do nothing, fix in the future
+                  member.element = element;
+                  member.minus1 = true; // one dimension used for char*
+                  member.arrlength = element.fMaxIndex[element.fArrayDim-1];
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf,handle) {
+                        return buf.ReadFastString(handle.arrlength);
+                     });
+                  };
                }
                break;
             case JSROOT.IO.kOffsetP+JSROOT.IO.kBool:
@@ -2084,11 +2070,11 @@
                   member.classname = classname;
 
                   if (element.fArrayLength>1) {
-                     member.arrlen = element.fArrayLength;
+                     member.element = element;
                      member.func = function(buf, obj) {
-                        obj[this.name] = [];
-                        for (var k=0;k<this.arrlen;++k)
-                           obj[this.name].push(this.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, this.classname));
+                        obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf, handle) {
+                            return handle.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, handle.classname);
+                        });
                      };
                   } else {
                      member.func = function(buf, obj) {
