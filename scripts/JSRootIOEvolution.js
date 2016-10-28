@@ -175,6 +175,7 @@
 
       this.last_read_version = ver.val = this.ntou2();
       ver.off = this.o;
+      if (ver.val === 0) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
       return ver;
    }
 
@@ -471,10 +472,23 @@
 
       if (streamer !== null) {
 
+         var debug = (classname == "TXmlEx1");
+
+         if (debug) {
+            console.log('Before read version', classname, 'pos', this.o, this.length);
+            for (var i=0;i<36;++i) console.log(i, 'code', this.codeAt(i));
+         }
          var ver = this.ReadVersion();
 
-         for (var n = 0; n < streamer.length; ++n)
+         if (debug)
+            console.log('Read version', classname, ver, 'pos', this.o, this.length);
+
+         for (var n = 0; n < streamer.length; ++n) {
+            if (debug) console.log('Read member', streamer[n].name, 'pos', this.o);
             streamer[n].func(this, obj);
+         }
+
+         if (debug) console.log('Check bytecount pos', this.o);
 
          this.CheckBytecount(ver, classname);
          // methods will be assigned by last entry in the streamer
