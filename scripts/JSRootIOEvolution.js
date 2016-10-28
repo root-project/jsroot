@@ -1970,7 +1970,6 @@
             case JSROOT.IO.kOffsetP+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kUChar:
-            case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kShort:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kUShort:
             case JSROOT.IO.kOffsetP+JSROOT.IO.kBits:
@@ -1989,6 +1988,16 @@
                      obj[this.name] = new Array();
                };
                break;
+            case JSROOT.IO.kOffsetP+JSROOT.IO.kChar:
+               member.cntname = element.fCountName;
+               member.func = function(buf, obj) {
+                  if (buf.ntou1() === 1)
+                     obj[this.name] = buf.ReadFastString(obj[this.cntname]);
+                  else
+                     obj[this.name] = null;
+               };
+               break;
+
             case JSROOT.IO.kAny:
             case JSROOT.IO.kAnyp:
             case JSROOT.IO.kObjectp:
