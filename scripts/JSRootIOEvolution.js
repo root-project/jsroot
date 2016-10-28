@@ -327,6 +327,41 @@
       return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
+   JSROOT.TBuffer.prototype.ReadNdimArray = function(ndim, maxindx, funcname) {
+      if (ndim<=0) return this[funcname]();
+
+      var res = [];
+
+      if (ndim===1) {
+         for (var n=0;n<maxindx[0];++n)
+            res.push(this[funcname]());
+      } else
+      if (ndim===2) {
+         for (var n=0;n<maxindx[0];++n) {
+            var res2 = [];
+            for (var k=0;k<maxindx[1];++k)
+              res2.push(this[funcname]());
+            res.push(res2);
+         }
+      } else {
+         var indx = [], arr = [], k;
+         for (k=0; k<ndim; ++k) { indx[k] = 0; arr[k] = (k==0) ? res : []; }
+         while (indx[0] < maxindx[0]) {
+            k = ndim-1;
+            arr[k].push(this[funcname]());
+            ++indx[k];
+            while ((indx[k] === maxindx[k]) && (k>0)) {
+               indx[k] = 0;
+               arr[k-1].push(arr[k]);
+               arr[k] = [];
+               ++indx[--k];
+            }
+         }
+      }
+
+      return res;
+   }
+
    JSROOT.TBuffer.prototype.ReadTDate = function() {
       var datime = this.ntou4();
       var res = new Date();
@@ -2164,13 +2199,8 @@
                      }
                   } else
                   if (this.typename == "string")  {
-                     if ((this.element.fArrayDim>0) && (this.element.fArrayLength>0)) {
-                        res = [];
-                        for (var n=0;n<this.element.fArrayLength;++n)
-                           res.push(buf.ReadTString());
-                     } else {
-                        res = buf.ReadTString();
-                     }
+                     console.log('try to read array of std string', this.element.fArrayDim, this.element.fMaxIndex);
+                     res = buf.ReadNdimArray(this.element.fArrayDim, this.element.fMaxIndex, 'ReadTString');
                   } else {
                      JSROOT.console('failed to stream element of type ' + this.typename);
                   }
