@@ -200,6 +200,7 @@
 
    JSROOT.TBuffer.prototype.ReadTString = function() {
       // stream a TString object from buffer
+      // std::string uses similar binary format
       var len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
@@ -2128,20 +2129,19 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
             case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kStreamer:
-               member.cntname = element.fCountName;
                member.typename = element.fTypeName;
+               member.element = element;
                member.func = function(buf,obj) {
-                  var ver = buf.ReadVersion();
-                  var res = null;
+                  var res = null, ver = buf.ReadVersion();
 
                   if (this.typename == "TString*") {
-                     var cnt = obj[this.cntname];
+                     var cnt = obj[this.element.fCountName];
                      res = new Array(cnt);
                      for (var i = 0; i < cnt; ++i )
                         res[i] = buf.ReadTString();
                   } else
                   if (this.typename == "TList*") {
-                     var cnt = obj[this.cntname];
+                     var cnt = obj[this.element.fCountName];
                      res = new Array(cnt);
                      for (var i = 0; i < cnt; ++i)
                         res[i] = buf.ClassStreamer({}, "TList");
@@ -2161,6 +2161,15 @@
                         var str = buf.ReadTString();
                         var val = buf.ntoi4();
                         res.push({ first: str, second: val});
+                     }
+                  } else
+                  if (this.typename == "string")  {
+                     if ((this.element.fArrayDim>0) && (this.element.fArrayLength>0)) {
+                        res = [];
+                        for (var n=0;n<this.element.fArrayLength;++n)
+                           res.push(buf.ReadTString());
+                     } else {
+                        res = buf.ReadTString();
                      }
                   } else {
                      JSROOT.console('failed to stream element of type ' + this.typename);
