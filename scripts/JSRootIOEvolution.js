@@ -2071,9 +2071,8 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
             case JSROOT.IO.kCharStar:
                member.func = function(buf,obj) {
-                  obj[this.name] = "";
-                  var len = buf.ntoi4(), pos = buf.o;
-                  obj[this.name] = buf.substring(pos, pos + len);
+                  var len = buf.ntoi4();
+                  obj[this.name] = buf.substring(buf.o, buf.o + len);
                   buf.o += len;
                };
                break;
