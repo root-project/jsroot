@@ -1958,40 +1958,19 @@
             case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
-               if (element.fArrayDim === 1) {
+               if (element.fArrayDim < 2) {
                   member.arrlength = element.fArrayLength;
                   member.func = function(buf, obj) {
                      obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
                   };
-               } else
-               if (element.fArrayDim === 2) {
-                  member.arrlength = element.fMaxIndex[1];
-                  member.maxindx = element.fMaxIndex[0];
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var n=0;n<this.maxindx;++n)
-                        obj[this.name].push(buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL));
-                  };
                } else {
-                  member.maxdim = element.fArrayDim - 1;
-                  member.maxindx = element.fMaxIndex;
-                  member.arrlength = element.fArrayLength;
+                  member.element = element;
+                  member.arrlength = element.fMaxIndex[element.fArrayDim-1];
+                  member.minus1 = true;
                   member.func = function(buf, obj) {
-                     var tmp = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL),
-                         indx = [], arr = [], i, k;
-                     for (i=0; i<=this.maxdim; ++i) { indx[i] = 0; arr[i] = []; }
-                     for (i=0;i<tmp.length;++i) {
-                        arr[this.maxdim].push(tmp[i]);
-                        ++indx[this.maxdim];
-                        k = this.maxdim;
-                        while ((indx[k] === this.maxindx[k]) && (k>0)) {
-                           indx[k] = 0;
-                           arr[k-1].push(arr[k]);
-                           arr[k] = [];
-                           ++indx[--k];
-                        }
-                     }
-                     obj[this.name] = arr[0];
+                     obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf,handle) {
+                        return buf.ReadFastArray(handle.arrlength, handle.type - JSROOT.IO.kOffsetL);
+                     });
                   };
                }
                break;
@@ -2087,34 +2066,19 @@
             case JSROOT.IO.kOffsetL + JSROOT.IO.kAny:
             case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
             case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
-               member.arrlength = element.fArrayLength;
                var classname = element.fTypeName;
                if (classname.charAt(classname.length-1) == "*")
                   classname = classname.substr(0, classname.length - 1);
 
-               var arrkind = JSROOT.IO.GetArrayKind(classname);
-
-               if (arrkind > 0) {
-                  member.arrkind = arrkind;
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var k=0;k<this.arrlength;++k)
-                        obj[this.name].push(buf.ReadFastArray(buf.ntou4(), this.arrkind));
-                  };
-               } else
-               if (arrkind === 0) {
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var k=0;k<this.arrlength;++k)
-                        obj[this.name].push(buf.ReadTString());
-                  }
-               } else {
-                  member.classname = classname;
-                  member.func = function(buf, obj) {
-                     obj[this.name] = [];
-                     for (var k=0;k<this.arrlength;++k)
-                        obj[this.name].push(buf.ClassStreamer({}, this.classname));
-                  };
+               member.arrkind = JSROOT.IO.GetArrayKind(classname);
+               if (member.arrkind < 0) member.classname = classname;
+               member.element = element;
+               member.func = function(buf, obj) {
+                  obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf, handle) {
+                     if (handle.arrkind>0) return buf.ReadFastArray(buf.ntou4(), handle.arrkind);
+                     if (handle.arrkind===0) return buf.ReadTString();
+                     return buf.ClassStreamer({}, handle.classname);
+                 });
                }
                break;
             case JSROOT.IO.kChar:
