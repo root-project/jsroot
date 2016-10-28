@@ -327,20 +327,24 @@
       return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
-   JSROOT.TBuffer.prototype.ReadNdimArray = function(ndim, maxindx, funcname) {
-      if (ndim<=0) return this[funcname]();
+   JSROOT.TBuffer.prototype.ReadNdimArray = function(elem, handle, func) {
+      var ndim = elem.fArrayDim, maxindx = elem.fMaxIndex;
+
+      if ((ndim<1) && (elem.fArrayLength>0)) { ndim = 1; maxindx = [elem.fArrayLength]; }
+
+      if (ndim<1) return func(this, handle);
 
       var res = [];
 
       if (ndim===1) {
          for (var n=0;n<maxindx[0];++n)
-            res.push(this[funcname]());
+            res.push(func(this, handle));
       } else
       if (ndim===2) {
          for (var n=0;n<maxindx[0];++n) {
             var res2 = [];
             for (var k=0;k<maxindx[1];++k)
-              res2.push(this[funcname]());
+              res2.push(func(this, handle));
             res.push(res2);
          }
       } else {
@@ -348,7 +352,7 @@
          for (k=0; k<ndim; ++k) { indx[k] = 0; arr[k] = (k==0) ? res : []; }
          while (indx[0] < maxindx[0]) {
             k = ndim-1;
-            arr[k].push(this[funcname]());
+            arr[k].push(func(this, handle));
             ++indx[k];
             while ((indx[k] === maxindx[k]) && (k>0)) {
                indx[k] = 0;
@@ -2200,7 +2204,7 @@
                   } else
                   if (this.typename == "string")  {
                      console.log('try to read array of std string', this.element.fArrayDim, this.element.fMaxIndex);
-                     res = buf.ReadNdimArray(this.element.fArrayDim, this.element.fMaxIndex, 'ReadTString');
+                     res = buf.ReadNdimArray(this.element, this, function(buf) { return buf.ReadTString(); });
                   } else {
                      JSROOT.console('failed to stream element of type ' + this.typename);
                   }
