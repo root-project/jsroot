@@ -1822,7 +1822,15 @@
                elem.fCtype = buf.ntou4();
             }
          }});
-         return streamer;
+         return this.AddMethods(clname, streamer);
+      }
+
+      if (clname == "TStreamerSTLstring") {
+         streamer.push({ func : function(buf, elem) {
+            if (buf.last_read_version > 0)
+               buf.ClassStreamer(elem, "TStreamerSTL");
+         }});
+         return this.AddMethods(clname, streamer);
       }
 
       if (clname == "TStreamerObject" || clname == "TStreamerBasicType" ||
@@ -2152,7 +2160,9 @@
                   member.func = JSROOT.fUserStreamers[element.fTypeName];
 
                if (typeof member.func !== 'function') {
+                  console.log('element', element);
                   JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+
                   member.func = function(buf,obj) {};  // do nothing, fix in the future
                } else {
                   member.element = element; // one can use element in the custom function
