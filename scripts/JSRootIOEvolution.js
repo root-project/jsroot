@@ -327,12 +327,10 @@
       return  type_name == "TArrayL64" ? JSROOT.IO.kLong64 : -1;
    }
 
-   JSROOT.TBuffer.prototype.ReadNdimArray = function(elem, handle, func) {
-      var ndim = elem.fArrayDim, maxindx = elem.fMaxIndex;
-
-      if ((ndim<1) && (elem.fArrayLength>0)) { ndim = 1; maxindx = [elem.fArrayLength]; }
-
-      if (handle && handle.minus1) --ndim;
+   JSROOT.TBuffer.prototype.ReadNdimArray = function(handle, func) {
+      var ndim = handle.fArrayDim, maxindx = handle.fMaxIndex;
+      if ((ndim<1) && (handle.fArrayLength>0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
+      if (handle.minus1) --ndim;
 
       if (ndim<1) return func(this, handle);
 
@@ -529,7 +527,7 @@
 
       var streamer = this.fFile.GetStreamer(classname);
 
-      if (classname == "TXmlEx6") JSROOT.gdebug = true;
+      // if (classname == "TXmlEx2") JSROOT.gdebug = true;
 
       if (streamer !== null) {
 
@@ -539,7 +537,7 @@
             console.log('Read class', classname, 'pos', this.o, 'ver', ver);
 
          for (var n = 0; n < streamer.length; ++n) {
-            if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o);
+            if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o, streamer[n]);
             streamer[n].func(this, obj);
             if (JSROOT.gdebug && streamer[n].name)
                console.log('Read member', streamer[n].name, 'res', obj[streamer[n].name]);
@@ -1919,9 +1917,10 @@
       for (var j=0; j<s_i.fElements.arr.length; ++j) {
          // extract streamer info for each class member
          var element = s_i.fElements.arr[j],
-             member = { name: element.fName, type: element.fType };
-
-         if (clname == "TXmlEx6") console.log('element', element);
+             member = { name: element.fName, type: element.fType,
+                        fArrayLength: element.fArrayLength,
+                        fArrayDim: element.fArrayDim,
+                        fMaxIndex: element.fMaxIndex };
 
          if (element.fTypeName === 'BASE') {
             if (JSROOT.IO.GetArrayKind(member.name) > 0) {
@@ -1964,11 +1963,10 @@
                      obj[this.name] = buf.ReadFastArray(this.arrlength, this.type - JSROOT.IO.kOffsetL);
                   };
                } else {
-                  member.element = element;
                   member.arrlength = element.fMaxIndex[element.fArrayDim-1];
                   member.minus1 = true;
                   member.func = function(buf, obj) {
-                     obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf,handle) {
+                     obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) {
                         return buf.ReadFastArray(handle.arrlength, handle.type - JSROOT.IO.kOffsetL);
                      });
                   };
@@ -1981,11 +1979,10 @@
                      obj[this.name] = buf.ReadFastString(this.arrlength);
                   };
                } else {
-                  member.element = element;
                   member.minus1 = true; // one dimension used for char*
                   member.arrlength = element.fMaxIndex[element.fArrayDim-1];
                   member.func = function(buf, obj) {
-                     obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf,handle) {
+                     obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) {
                         return buf.ReadFastString(handle.arrlength);
                      });
                   };
@@ -2049,9 +2046,8 @@
                   member.classname = classname;
 
                   if (element.fArrayLength>1) {
-                     member.element = element;
                      member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf, handle) {
+                        obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
                             return handle.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, handle.classname);
                         });
                      };
@@ -2072,9 +2068,8 @@
 
                member.arrkind = JSROOT.IO.GetArrayKind(classname);
                if (member.arrkind < 0) member.classname = classname;
-               member.element = element;
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadNdimArray(this.element, this, function(buf, handle) {
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
                      if (handle.arrkind>0) return buf.ReadFastArray(buf.ntou4(), handle.arrkind);
                      if (handle.arrkind===0) return buf.ReadTString();
                      return buf.ClassStreamer({}, handle.classname);
@@ -2119,18 +2114,19 @@
             case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
-               member.element = element;
+               member.cntname = element.fCountName;
+
                member.func = function(buf,obj) {
                   var res = null, ver = buf.ReadVersion();
-
                   if (this.typename == "TString*") {
-                     var cnt = obj[this.element.fCountName];
+                     var cnt = obj[this.cntname];
                      res = new Array(cnt);
                      for (var i = 0; i < cnt; ++i )
                         res[i] = buf.ReadTString();
                   } else
                   if (this.typename == "TList*") {
-                     var cnt = obj[this.element.fCountName];
+                     member.cntname = element.fCountName;
+                     var cnt = obj[this.cntname];
                      res = new Array(cnt);
                      for (var i = 0; i < cnt; ++i)
                         res[i] = buf.ClassStreamer({}, "TList");
@@ -2153,8 +2149,7 @@
                      }
                   } else
                   if (this.typename == "string")  {
-                     console.log('try to read array of std string', this.element.fArrayDim, this.element.fMaxIndex);
-                     res = buf.ReadNdimArray(this.element, this, function(buf) { return buf.ReadTString(); });
+                     res = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
                   } else {
                      JSROOT.console('failed to stream element of type ' + this.typename);
                   }
