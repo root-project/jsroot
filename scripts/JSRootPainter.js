@@ -10262,12 +10262,58 @@
          this.disp.CheckMDIResize(null, size);
    }
 
-   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back) {
+   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back, gui_div) {
       var hpainter = this,
+          prereq = "",
+          filesdir = JSROOT.GetUrlOption("path"),
           filesarr = JSROOT.GetUrlOptionAsArray("file;files"),
           jsonarr = JSROOT.GetUrlOptionAsArray("json"),
-          filesdir = JSROOT.GetUrlOption("path"),
-          expanditems = JSROOT.GetUrlOptionAsArray("expand");
+          expanditems = JSROOT.GetUrlOptionAsArray("expand"),
+          itemsarr = JSROOT.GetUrlOptionAsArray("item;items"),
+          optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts"),
+          monitor = JSROOT.GetUrlOption("monitoring"),
+          layout = JSROOT.GetUrlOption("layout");
+
+      if (gui_div && !gui_div.empty()) {
+
+         function GetDivOptionAsArray(opt) {
+            var res = [];
+            while (opt.length>0) {
+               var separ = opt.indexOf(";");
+               var part = separ>0 ? opt.substr(0, separ) : opt;
+               if (separ>0) opt = opt.substr(separ+1); else opt = "";
+               var val = gui_div.attr(part);
+               res = res.concat(JSROOT.ParseAsArray(val));
+            }
+            return res;
+         }
+
+         if (filesarr.length === 0) {
+            filesarr = GetDivOptionAsArray("file"); // 'files' used in normal UI to give selection list
+            if ((filesarr.length>0) && !filesdir) filesdir = gui_div.attr("path");
+         }
+
+         if (expanditems.length === 0)
+            expanditems = GetDivOptionAsArray("expand");
+
+         if (itemsarr.length === 0) {
+            itemsarr = GetDivOptionAsArray("item;items");
+            optionsarr = GetDivOptionAsArray("opt;opts");
+         }
+
+         if (jsonarr.length === 0)
+            jsonarr = GetDivOptionAsArray("json");
+
+         if (monitor === null) monitor = gui_div.attr("monitor");
+
+         prereq = gui_div.attr("prereq");
+         if (!prereq) prereq = "";
+
+         var user = gui_div.attr("load");
+         if ((typeof user=='string') && (user.length>0)) prereq += "load:" + user;
+
+         if (!layout) layout = gui_div.attr("layout");
+      }
 
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand")=="")) expanditems.push("");
 
@@ -10276,16 +10322,11 @@
          for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      var itemsarr = JSROOT.GetUrlOptionAsArray("item;items");
       if ((itemsarr.length==0) && JSROOT.GetUrlOption("item")=="") itemsarr.push("");
-
-      var optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts"),
-          monitor = JSROOT.GetUrlOption("monitoring");
 
       if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
       if (!this.disp_kind) {
-         var layout = JSROOT.GetUrlOption("layout");
          if ((typeof layout == "string") && (layout.length>0))
             this.disp_kind = layout;
          else
@@ -10293,6 +10334,8 @@
            case 0:
            case 1: this.disp_kind = 'simple'; break;
            case 2: this.disp_kind = 'grid 1x2'; break;
+           case 3:
+           case 4: this.disp_kind = 'grid 1x2'; break;
            default: this.disp_kind = 'flex';
          }
       }
@@ -10339,7 +10382,8 @@
       }
 
       if (h0) hpainter.OpenOnline(h0, AfterOnlineOpened);
-          else OpenAllFiles();
+      else if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, OpenAllFiles);
+      else OpenAllFiles();
    }
 
    JSROOT.BuildNobrowserGUI = function() {

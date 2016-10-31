@@ -158,6 +158,7 @@
 
       // JSROOT.Painter.ConfigureHSeparator(28, true);
 
+
       hpainter.StartGUI(h0, function() {
 
          setGuiLayout(hpainter.GetLayout());
@@ -182,7 +183,7 @@
             hpainter.ForEachRootFile(function(item) { if (fname=="") fname = item._fullurl; });
             $("#urlToLoad").val(fname);
          }
-      });
+      }, d3.select('#simpleGUI'));
    }
 
    return JSROOT;
