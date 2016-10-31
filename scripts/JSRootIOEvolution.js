@@ -1065,6 +1065,11 @@
          this.fAcceptRanges = false;
       }
 
+      if (this.fURL.indexOf("file://")==0) {
+         this.fUseStampPar = false;
+         this.fAcceptRanges = false;
+      }
+
       var pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
       this.fFileName = pos>=0 ? this.fURL.substr(pos+1) : this.fURL;
 
