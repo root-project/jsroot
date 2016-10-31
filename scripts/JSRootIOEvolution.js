@@ -2041,7 +2041,12 @@
 
             case JSROOT.IO.kAnyP:
             case JSROOT.IO.kObjectP:
-               member.userreadobj = true;
+               member.func = function(buf, obj) {
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf) {
+                      return buf.ReadObjectAny();
+                  });
+               };
+               break;
 
             case JSROOT.IO.kAny:
             case JSROOT.IO.kAnyp:
@@ -2051,7 +2056,7 @@
                if (classname.charAt(classname.length-1) == "*")
                   classname = classname.substr(0, classname.length - 1);
 
-               var arrkind = member.userreadobj ? -1 : JSROOT.IO.GetArrayKind(classname);
+               var arrkind = JSROOT.IO.GetArrayKind(classname);
 
                if (arrkind > 0) {
                   member.arrkind = arrkind;
@@ -2067,12 +2072,12 @@
                   if (element.fArrayLength>1) {
                      member.func = function(buf, obj) {
                         obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
-                            return handle.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, handle.classname);
+                            return buf.ClassStreamer({}, handle.classname);
                         });
                      };
                   } else {
                      member.func = function(buf, obj) {
-                        obj[this.name] = this.userreadobj ? buf.ReadObjectAny() : buf.ClassStreamer({}, this.classname);
+                        obj[this.name] = buf.ClassStreamer({}, this.classname);
                      };
                   }
                }
