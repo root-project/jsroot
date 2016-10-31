@@ -175,12 +175,22 @@
 
       this.last_read_version = ver.val = this.ntou2();
 
-      //if (ver.val===0) console.log('zero version', bytecnt, ver.bytecnt, JSROOT.IO.kByteCountMask);
-
       ver.off = this.o;
 
-      //if (ver.val === 0) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
+      // if ((ver.val === 0) && ver.bytecnt && (ver.bytecnt>5)) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
       return ver;
+   }
+
+   JSROOT.TBuffer.prototype.ReadChecksum = function(ver, classname) {
+      // for the foreign classes checksum is written to the buffer
+      // But we have no idea if class if foreign or not
+      // Therefore try to read checksum and verify that such info exists in the file
+
+     if (!ver.bytecnt || (ver.bytecnt<6)) return;
+
+     ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
+
+     if (!this.fFile.FindSinfoCheckum(ver.checksum)) this.o-=4; // not found checksum in the list
    }
 
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
@@ -531,11 +541,13 @@
 
       var streamer = this.fFile.GetStreamer(classname);
 
-      // if (classname == "TXmlEx2") JSROOT.gdebug = true;
+      // if (classname == "TXmlEx6") JSROOT.gdebug = true;
 
       if (streamer !== null) {
 
          var ver = this.ReadVersion();
+
+         if (ver.val === 0) this.ReadChecksum(ver, classname); // this is foreign class, extra stored checksum
 
          if (JSROOT.gdebug)
             console.log('Read class', classname, 'pos', this.o, 'ver', ver);
@@ -1617,6 +1629,15 @@
             if (this.fStreamerInfos.arr[i].fName === clname)
                if ((clversion===undefined) || (this.fStreamerInfos.arr[i].fClassVersion===clversion))
                   return this.fStreamerInfos.arr[i];
+
+      return null;
+   }
+
+   JSROOT.TFile.prototype.FindSinfoCheckum = function(checksum) {
+      if (this.fStreamerInfos)
+         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
+            if (this.fStreamerInfos.arr[i].fCheckSum === checksum)
+               return this.fStreamerInfos.arr[i];
 
       return null;
    }
