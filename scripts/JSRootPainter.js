@@ -598,19 +598,30 @@
       var idF = axis.fTimeFormat.indexOf('%F');
       if (idF < 0) return JSROOT.gStyle.TimeOffset;
       var sof = axis.fTimeFormat.substr(idF + 2);
-      if (sof == '1995-01-01 00:00:00s0') return 788918400000;
+      // default string in axis offset
+      if (sof.indexOf('1995-01-01 00:00:00s0')==0) return 788918400000;
       // special case, used from DABC painters
       if ((sof == "0") || (sof == "")) return 0;
 
       // decode time from ROOT string
-      var dt = new Date(0);
-      var pos = sof.indexOf("-"); dt.setFullYear(sof.substr(0,pos)); sof = sof.substr(pos+1);
-      pos = sof.indexOf("-"); dt.setMonth(parseInt(sof.substr(0,pos))-1); sof = sof.substr(pos+1);
-      pos = sof.indexOf(" "); dt.setDate(sof.substr(0,pos)); sof = sof.substr(pos+1);
-      pos = sof.indexOf(":"); dt.setHours(sof.substr(0,pos)); sof = sof.substr(pos+1);
-      pos = sof.indexOf(":"); dt.setMinutes(sof.substr(0,pos)); sof = sof.substr(pos+1);
-      pos = sof.indexOf("s"); dt.setSeconds(sof.substr(0,pos));
-      if (pos>0) { sof = sof.substr(pos+1); dt.setMilliseconds(sof); }
+      function next(separ, min, max) {
+         var pos = sof.indexOf(separ);
+         if (pos < 0) { pos = ""; return min; }
+         var val = parseInt(sof.substr(0,pos));
+         sof = sof.substr(pos+1);
+         if (isNaN(val) || (val<min) || (val>max)) { pos = ""; return min; }
+         return val;
+      }
+
+      var year = next("-", 1970, 2300),
+          month = next("-", 1, 12) - 1,
+          day = next(" ", 1, 31),
+          hour = next(":", 0, 23),
+          min = next(":", 0, 59),
+          sec = next("s", 0, 59),
+          msec = next(" ", 0, 999);
+
+      var dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
       return dt.getTime();
    }
 
