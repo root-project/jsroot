@@ -2057,7 +2057,7 @@
                if (classname.charAt(classname.length-1) == "*")
                   classname = classname.substr(0, classname.length - 1);
 
-               var arrkind = JSROOT.IO.GetArrayKind(classname);
+               var arrkind = member.userreadobj ? -1 : JSROOT.IO.GetArrayKind(classname);
 
                if (arrkind > 0) {
                   member.arrkind = arrkind;
