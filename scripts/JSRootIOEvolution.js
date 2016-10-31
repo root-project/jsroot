@@ -527,22 +527,27 @@
       return obj;
    }
 
-   JSROOT.gdebug = false;
+   // JSROOT.gdebug = false;
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
       if (! ('_typename' in obj)) obj._typename = classname;
 
-      var streamer = this.fFile.GetStreamer(classname);
+      if (classname === 'TQObject') return obj;
 
-      // if (classname == "TXmlEx6") JSROOT.gdebug = true;
+      if (classname === "TBasket") {
+         this.ReadTBasket(obj);
+         JSROOT.addMethods(obj);
+         return obj;
+      }
+
+      // TODO: version should be read before search for stremer
+
+      var ver = this.ReadVersion();
+
+      var streamer = this.fFile.GetStreamer(classname, ver);
 
       if (streamer !== null) {
-
-         // TODO: version should be read before search for stremer
-         // Could happen that two objects with different version are saved in the file
-         var ver = this.ReadVersion();
-
          //if (JSROOT.gdebug)
          //   console.log('Read class', classname, 'pos', this.o, 'ver', ver);
 
@@ -555,24 +560,14 @@
 
          //if (JSROOT.gdebug)
          //   console.log('Done class', classname, 'pos', this.o);
-
-         this.CheckBytecount(ver, classname);
-
-      }
-      else if (classname == 'TQObject') {
-         // skip TQObject
-      }
-      else if (classname == "TBasket") {
-         this.ReadTBasket(obj);
-         JSROOT.addMethods(obj);
       } else {
          // just skip bytes belonging to not-recognized object
          // console.warn('skip object ', classname);
 
-         var ver = this.ReadVersion();
-         this.CheckBytecount(ver);
          JSROOT.addMethods(obj);
       }
+
+      this.CheckBytecount(ver, classname);
 
       return obj;
    }
@@ -1294,8 +1289,6 @@
 
             buf.ReadTBasket(basket);
 
-//            console.log('buf.o', buf.o,'keylen', basket.fKeylen);
-
             if (basket.fNbytes !== places[n+1]) console.log('mismatch in basket sizes', basket.fNbytes, places[n+1]);
 
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
@@ -1622,12 +1615,19 @@
       return streamer;
    }
 
-   JSROOT.TFile.prototype.FindStreamerInfo = function(clname, clversion) {
+   JSROOT.TFile.prototype.FindStreamerInfo = function(clname, clversion, clchecksum) {
       if (this.fStreamerInfos)
-         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
-            if (this.fStreamerInfos.arr[i].fName === clname)
-               if ((clversion===undefined) || (this.fStreamerInfos.arr[i].fClassVersion===clversion))
-                  return this.fStreamerInfos.arr[i];
+         for (var i=0; i < this.fStreamerInfos.arr.length; ++i) {
+            var si = this.fStreamerInfos.arr[i];
+            if (si.fName !== clname) continue;
+            if (clchecksum !== undefined) {
+               if (si.fCheckSum === clchecksum) return si; else continue;
+            }
+            if (clversion !== undefined) {
+               if (si.fClassVersion===clversion) return si; else continue;
+            }
+            return si;
+         }
 
       return null;
    }
@@ -1641,23 +1641,21 @@
       return null;
    }
 
-   JSROOT.TFile.prototype.GetStreamer = function(clname) {
+   JSROOT.TFile.prototype.GetStreamer = function(clname, ver) {
       // return the streamer for the class 'clname', from the list of streamers
       // or generate it from the streamer infos and add it to the list
 
-      var streamer = this.fStreamers[clname];
+      // these are special cases, which are handled separately
+      if (clname == 'TQObject' || clname == "TBasket") return null;
+
+      var fullname = clname + (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+
+      // console.log('Full name ', fullname);
+
+      var streamer = this.fStreamers[fullname];
       if (streamer !== undefined) return streamer;
 
-      // check element in streamer infos, one can have special cases
-      var s_i = this.FindStreamerInfo(clname);
-
-      if (clname == 'TQObject' || clname == "TBasket") {
-         // these are special cases, which are handled separately
-         this.fStreamers[clname] = null;
-         return null;
-      }
-
-      this.fStreamers[clname] = streamer = new Array;
+      this.fStreamers[fullname] = streamer = new Array;
 
       if (clname == 'TObject'|| clname == 'TMethodCall') {
          streamer.push({ func: function(buf,obj) {
@@ -1807,17 +1805,6 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if ((clname == 'TObjString') && !s_i) {
-         // special case when TObjString was stored inside streamer infos,
-         // than streamer cannot be normally generated
-         streamer.push({ func : function(buf, obj) {
-            obj._typename = "TObjString";
-            buf.ClassStreamer(obj, "TObject");
-            obj.fString = buf.ReadTString();
-         }});
-         return this.AddMethods(clname, streamer);
-      }
-
       if (clname == "TStreamerInfo") {
          streamer.push({ func : function(buf, streamerinfo) {
             // stream an object of class TStreamerInfo from the I/O buffer
@@ -1929,8 +1916,22 @@
          return this.AddMethods(clname, streamer);
       }
 
+      // check element in streamer infos, one can have special cases
+      var s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
+
+      if ((clname == 'TObjString') && !s_i) {
+         // special case when TObjString was stored inside streamer infos,
+         // than streamer cannot be normally generated
+         streamer.push({ func : function(buf, obj) {
+            obj._typename = "TObjString";
+            buf.ClassStreamer(obj, "TObject");
+            obj.fString = buf.ReadTString();
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+
       if (s_i == null) {
-         delete this.fStreamers[clname];
+         delete this.fStreamers[fullname];
          // console.warn('did not find streamer for ', clname);
          return null;
       }
@@ -1955,7 +1956,7 @@
             } else {
                // create streamer for base class
                member.type = JSROOT.IO.kBase;
-               this.GetStreamer(element.fName);
+               // this.GetStreamer(element.fName);
             }
          }
 

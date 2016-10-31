@@ -9,6 +9,7 @@
 6. Implement drawing of TProfile2D
 7. Support logx/y/z, gridx/y, tickx/y draw options for TPad/TCanvas
 8. Fix - correctly place TGAxis relative to frame (when exists) 
+9. Fix - I/O supports now reading of same class with different versions 
 
 
 ## Changes in 4.7.0
