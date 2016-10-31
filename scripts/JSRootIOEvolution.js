@@ -174,8 +174,12 @@
          this.o -= 4; // rollback read bytes, this is old buffer without bytecount
 
       this.last_read_version = ver.val = this.ntou2();
+
+      //if (ver.val===0) console.log('zero version', bytecnt, ver.bytecnt, JSROOT.IO.kByteCountMask);
+
       ver.off = this.o;
-      if (ver.val === 0) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
+
+      //if (ver.val === 0) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
       return ver;
    }
 
