@@ -166,31 +166,25 @@
 
    JSROOT.TBuffer.prototype.ReadVersion = function() {
       // read class version from I/O buffer
-      var ver = {};
-      var bytecnt = this.ntou4(); // byte count
+      var ver = {},
+          bytecnt = this.ntou4(); // byte count
       if (bytecnt & JSROOT.IO.kByteCountMask)
          ver.bytecnt = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
       else
          this.o -= 4; // rollback read bytes, this is old buffer without bytecount
 
-      this.last_read_version = ver.val = this.ntou2();
+      this.last_read_version = ver.val = this.ntoi2();
 
       ver.off = this.o;
 
-      // if ((ver.val === 0) && ver.bytecnt && (ver.bytecnt>5)) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
+      if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=6)) {
+         ver.checksum = this.ntou4();
+         if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
+            JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum);
+            this.o-=4; // not found checksum in the list
+         }
+      }
       return ver;
-   }
-
-   JSROOT.TBuffer.prototype.ReadChecksum = function(ver, classname) {
-      // for the foreign classes checksum is written to the buffer
-      // But we have no idea if class if foreign or not
-      // Therefore try to read checksum and verify that such info exists in the file
-
-     if (!ver.bytecnt || (ver.bytecnt<6)) return;
-
-     ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
-
-     if (!this.fFile.FindSinfoCheckum(ver.checksum)) this.o-=4; // not found checksum in the list
    }
 
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
@@ -545,22 +539,22 @@
 
       if (streamer !== null) {
 
+         // TODO: version should be read before search for stremer
+         // Could happen that two objects with different version are saved in the file
          var ver = this.ReadVersion();
 
-         if (ver.val === 0) this.ReadChecksum(ver, classname); // this is foreign class, extra stored checksum
-
-         if (JSROOT.gdebug)
-            console.log('Read class', classname, 'pos', this.o, 'ver', ver);
+         //if (JSROOT.gdebug)
+         //   console.log('Read class', classname, 'pos', this.o, 'ver', ver);
 
          for (var n = 0; n < streamer.length; ++n) {
-            if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o, streamer[n]);
+         //   if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o, streamer[n]);
             streamer[n].func(this, obj);
-            if (JSROOT.gdebug && streamer[n].name)
-               console.log('Read member', streamer[n].name, 'res', obj[streamer[n].name]);
+         //   if (JSROOT.gdebug && streamer[n].name)
+         //      console.log('Read member', streamer[n].name, 'res', obj[streamer[n].name]);
          }
 
-         if (JSROOT.gdebug)
-            console.log('Done class', classname, 'pos', this.o);
+         //if (JSROOT.gdebug)
+         //   console.log('Done class', classname, 'pos', this.o);
 
          this.CheckBytecount(ver, classname);
 
