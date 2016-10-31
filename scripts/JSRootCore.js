@@ -576,7 +576,8 @@
          xhr.onreadystatechange = function() {
             if (xhr.readyState != 4) return;
 
-            if (xhr.status != 200 && xhr.status != 206) {
+            if ((xhr.status != 200) && (xhr.status != 206) &&
+                ((xhr.status !== 0) || (url.indexOf("file://")!==0))) {
                return callback(null);
             }
 
