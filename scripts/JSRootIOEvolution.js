@@ -199,12 +199,9 @@
    }
 
    JSROOT.TBuffer.prototype.ReadString = function() {
-      // read a null-terminated string from buffer
-      var pos0 = this.o;
-      while (this.o < this.length) {
-         if (this.codeAt(this.o++) == 0) break;
-      }
-      return (this.o > pos0) ? this.substring(pos0, this.o-1) : "";
+      // TODO: delete after next major release
+
+      return this.ReadFastString(-1);
    }
 
    JSROOT.TBuffer.prototype.ReadTString = function() {
@@ -226,15 +223,14 @@
       // string either contains all symbols or until 0 symbol
 
       var res = "", code, closed = false;
-      for (var i = 0; i < n; ++i) {
+      for (var i = 0; (n < 0) || (i < n); ++i) {
          code = this.ntou1();
-         if (code==0) closed = true;
+         if (code==0) { closed = true; if (n<0) break; }
          if (!closed) res += String.fromCharCode(code);
       }
 
       return res;
    }
-
 
    JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
       // read array of n values from the I/O buffer
@@ -483,7 +479,7 @@
       }
       if (tag == JSROOT.IO.kNewClassTag) {
          // got a new class description followed by a new object
-         classInfo.name = this.ReadString();
+         classInfo.name = this.ReadFastString(-1);
 
          if (this.GetMappedClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset) === -1)
             this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
