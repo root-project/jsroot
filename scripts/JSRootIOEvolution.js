@@ -166,8 +166,8 @@
 
    JSROOT.TBuffer.prototype.ReadVersion = function() {
       // read class version from I/O buffer
-      var ver = {},
-          bytecnt = this.ntou4(); // byte count
+      var ver = {}, bytecnt = this.ntou4(); // byte count
+
       if (bytecnt & JSROOT.IO.kByteCountMask)
          ver.bytecnt = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
       else
@@ -189,9 +189,9 @@
    }
 
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
-      if (('bytecnt' in ver) && (ver.off + ver.bytecnt !== this.o)) {
+      if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where!=null)
-            alert("Missmatch in " + where + " bytecount expected = " + ver['bytecnt'] + "  got = " + (this.o-ver['off']));
+            alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
          this.o = ver.off + ver.bytecnt;
          return false;
       }
@@ -235,73 +235,61 @@
    JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
       // read array of n values from the I/O buffer
 
-      var array = null;
+      var array = null, i = 0;
       switch (array_type) {
          case JSROOT.IO.kDouble:
             array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntod();
+            while (i < n) array[i++] = this.ntod();
             break;
          case JSROOT.IO.kFloat:
          case JSROOT.IO.kDouble32:
             array = JSROOT.IO.NativeArray ? new Float32Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntof();
+            while (i < n) array[i++] = this.ntof();
             break;
          case JSROOT.IO.kLong:
          case JSROOT.IO.kLong64:
             array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi8();
+            while (i < n) array[i++] = this.ntoi8();
             break;
          case JSROOT.IO.kULong:
          case JSROOT.IO.kULong64:
             array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou8();
+            while (i < n) array[i++] = this.ntou8();
             break;
          case JSROOT.IO.kInt:
             array = JSROOT.IO.NativeArray ? new Int32Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi4();
+            while (i < n) array[i++] = this.ntoi4();
             break;
          case JSROOT.IO.kBits:
          case JSROOT.IO.kUInt:
             array = JSROOT.IO.NativeArray ? new Uint32Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
+            while (i < n) array[i++] = this.ntou4();
             break;
          case JSROOT.IO.kShort:
             array = JSROOT.IO.NativeArray ? new Int16Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi2();
+            while (i < n) array[i++] = this.ntoi2();
             break;
          case JSROOT.IO.kUShort:
             array = JSROOT.IO.NativeArray ? new Uint16Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou2();
+            while (i < n) array[i++] = this.ntou2();
             break;
          case JSROOT.IO.kChar:
             array = JSROOT.IO.NativeArray ? new Int8Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntoi1();
+            while (i < n) array[i++] = this.ntoi1();
             break;
          case JSROOT.IO.kBool:
          case JSROOT.IO.kUChar:
             array = JSROOT.IO.NativeArray ? new Uint8Array(n) : new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou1();
+            while (i < n) array[i++] = this.ntou1();
             break;
          case JSROOT.IO.kTString:
             array = new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ReadTString();
+            while (i < n) array[i++] = this.ReadTString();
             break;
          default:
             array = new Array(n);
-            for (var i = 0; i < n; ++i)
-               array[i] = this.ntou4();
-         break;
+            while (i < n) array[i++] = this.ntou4();
+            break;
       }
       return array;
    }
@@ -462,11 +450,11 @@
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
       // read class definition from I/O buffer
-      var classInfo = { name: -1 };
-      var tag = 0;
-      var bcnt = this.ntou4();
+      var classInfo = { name: -1 },
+          tag = 0,
+          bcnt = this.ntou4(),
+          startpos = this.o;
 
-      var startpos = this.o;
       if (!(bcnt & JSROOT.IO.kByteCountMask) || (bcnt == JSROOT.IO.kNewClassTag)) {
          tag = bcnt;
          bcnt = 0;
@@ -497,9 +485,8 @@
    }
 
    JSROOT.TBuffer.prototype.ReadObjectAny = function() {
-      var objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset;
-
-      var clRef = this.ReadClass();
+      var objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
+          clRef = this.ReadClass();
 
       // class identified as object and should be handled so
       if ('objtag' in clRef)
@@ -507,9 +494,7 @@
 
       if (clRef.name === -1) return null;
 
-      var arrkind = JSROOT.IO.GetArrayKind(clRef.name);
-
-      var obj = {};
+      var arrkind = JSROOT.IO.GetArrayKind(clRef.name), obj = {};
 
       if (arrkind > 0) {
          // reading array, can map array only afterwards
