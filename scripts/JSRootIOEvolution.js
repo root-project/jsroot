@@ -180,8 +180,9 @@
       if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=6)) {
          ver.checksum = this.ntou4();
          if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
-            JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum);
+            // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' val ' + ver.val);
             this.o-=4; // not found checksum in the list
+            delete ver.checksum; // remove checksum
          }
       }
       return ver;
