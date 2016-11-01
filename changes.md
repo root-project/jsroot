@@ -7,6 +7,8 @@
 4. Fix - position of 3D canvas in webkit browsers
 5. Fix - use abs bin content in RMS calculations
 6. Fix - support char star* and object arrays in I/O
+7. Fix - correct decoding of TAxis time offset
+8. Fix - checksum reading for foreign classes
 
 
 ## Changes in 4.7.0

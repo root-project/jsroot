@@ -173,9 +173,14 @@
       else
          this.o -= 4; // rollback read bytes, this is old buffer without bytecount
 
-      this.last_read_version = ver.val = this.ntou2();
+      this.last_read_version = ver.val = this.ntoi2();
       ver.off = this.o;
-      if (ver.val === 0) ver.checksum = this.ntou4(); // this is foreign class, extra stored checksum
+
+      if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=6)) {
+         // this is foreign class, extra stored checksum
+         ver.checksum = this.ntou4();
+      }
+
       return ver;
    }
 
