@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 4.7.x
+## Changes in 4.7.1
 1. Workaround for MathJax output - scaling not always works in Firefox
 2. Fix - bin scaling for box draw option for TH2 and TH3 histograms 
 3. Fix - increase points limits for contour plots
