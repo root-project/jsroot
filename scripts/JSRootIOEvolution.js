@@ -496,6 +496,9 @@
 
       var arrkind = JSROOT.IO.GetArrayKind(clRef.name), obj = {};
 
+      if (arrkind === 0) {
+         obj = this.ReadTString();
+      } else
       if (arrkind > 0) {
          // reading array, can map array only afterwards
          obj = this.ReadFastArray(this.ntou4(), arrkind);
@@ -2161,25 +2164,34 @@
                member.typename = element.fTypeName;
                member.cntname = element.fCountName;
 
-               if (member.typename === "TString*")
-                  member.readitem = function(buf) {
-                     return buf.ReadTString();
-                  }
-               if (member.typename === "TList*")
-                  member.readitem = function(buf) {
-                     return buf.ClassStreamer({}, "TList");
-                  }
+               if (member.typename.lastIndexOf("**")>0) {
+                  member.typename = member.typename.substr(0, member.typename.lastIndexOf("**"));
+                  member.isptrptr = true;
+               } else {
+                  member.typename = member.typename.substr(0, member.typename.lastIndexOf("*"));
+                  member.isptrptr = false;
+               }
+
+               if (member.isptrptr) {
+                  member.readitem = function(buf) { return buf.ReadObjectAny(true); }
+               } else {
+                  if (member.typename === "TString")
+                     member.readitem = function(buf) { return buf.ReadTString(); }
+                  if (member.typename === "TList")
+                     member.readitem = function(buf) { return buf.ClassStreamer({}, "TList"); }
+               }
 
                if (member.readitem !== undefined) {
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion(),
                          cnt = obj[this.cntname];
+                     // console.log(this.name, 'typename', this.typename, 'ver', ver, 'cnt', cnt);
 
                      var res = buf.ReadNdimArray(this, function(buf2,member2) {
-                        var item = new Array(cnt);
+                        var itemarr = new Array(cnt);
                         for (var i = 0; i < cnt; ++i )
-                           item[i] = member2.readitem(buf2);
-                        return item;
+                           itemarr[i] = member2.readitem(buf2);
+                        return itemarr;
                      });
 
                      if (!buf.CheckBytecount(ver, this.typename)) res = null;
