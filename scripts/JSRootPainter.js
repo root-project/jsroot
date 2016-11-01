@@ -314,7 +314,7 @@
          this.changed = true;
 
          if (color!==undefined) this.color = color;
-         if (style!==undefined) this.style = style;
+         if ((style!==undefined) && (style>=0)) this.style = style;
          if (size!==undefined) this.size = size; else size = this.size;
 
          this.x0 = this.y0 = 0;
