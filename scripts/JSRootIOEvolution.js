@@ -2123,26 +2123,11 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
             case JSROOT.IO.kBool:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
-            case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
-               member.cntname = element.fCountName;
 
                member.func = function(buf,obj) {
                   var res = null, ver = buf.ReadVersion();
-                  if (this.typename == "TString*") {
-                     var cnt = obj[this.cntname];
-                     res = new Array(cnt);
-                     for (var i = 0; i < cnt; ++i )
-                        res[i] = buf.ReadTString();
-                  } else
-                  if (this.typename == "TList*") {
-                     member.cntname = element.fCountName;
-                     var cnt = obj[this.cntname];
-                     res = new Array(cnt);
-                     for (var i = 0; i < cnt; ++i)
-                        res[i] = buf.ClassStreamer({}, "TList");
-                  } else
                   if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); else
                   if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt); else
                   if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kFloat); else
@@ -2171,12 +2156,42 @@
                   obj[this.name] = res;
                };
                break;
+            case JSROOT.IO.kStreamLoop:
+               member.typename = element.fTypeName;
+               member.cntname = element.fCountName;
+
+               if (member.typename === "TString*")
+                  member.readitem = function(buf) {
+                     return buf.ReadTString();
+                  }
+               if (member.typename === "TList*")
+                  member.readitem = function(buf) {
+                     return buf.ClassStreamer({}, "TList");
+                  }
+
+               if (member.readitem !== undefined) {
+                  member.func = function(buf,obj) {
+                     var ver = buf.ReadVersion(),
+                         cnt = obj[this.cntname],
+                         res = new Array(cnt);
+                     for (var i = 0; i < cnt; ++i )
+                        res[i] = this.readitem(buf);
+                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                     obj[this.name] = res;
+                  }
+                } else {
+                   JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+                   member.func = function(buf,obj) {};  // do nothing, fix in the future
+                }
+
+               break;
+
+
             default:
                if (JSROOT.fUserStreamers !== null)
                   member.func = JSROOT.fUserStreamers[element.fTypeName];
 
                if (typeof member.func !== 'function') {
-                  console.log('element', element);
                   JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
 
                   member.func = function(buf,obj) {};  // do nothing, fix in the future
