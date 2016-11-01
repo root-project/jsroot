@@ -2157,6 +2157,7 @@
                };
                break;
             case JSROOT.IO.kStreamLoop:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop:
                member.typename = element.fTypeName;
                member.cntname = element.fCountName;
 
@@ -2172,10 +2173,15 @@
                if (member.readitem !== undefined) {
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion(),
-                         cnt = obj[this.cntname],
-                         res = new Array(cnt);
-                     for (var i = 0; i < cnt; ++i )
-                        res[i] = this.readitem(buf);
+                         cnt = obj[this.cntname];
+
+                     var res = buf.ReadNdimArray(this, function(buf2,member2) {
+                        var item = new Array(cnt);
+                        for (var i = 0; i < cnt; ++i )
+                           item[i] = member2.readitem(buf2);
+                        return item;
+                     });
+
                      if (!buf.CheckBytecount(ver, this.typename)) res = null;
                      obj[this.name] = res;
                   }
