@@ -39,11 +39,8 @@
    }
 
    guiLayout = function() {
-      var res = 'collapsible';
       var selects = document.getElementById("layout");
-      if (selects)
-         res = selects.options[selects.selectedIndex].text;
-      return res;
+      return selects ? selects.options[selects.selectedIndex].text : 'collapsible';
    }
 
    setGuiLayout = function(value) {
@@ -78,8 +75,7 @@
       if (JSROOT.GetUrlOption("nobrowser")!=null)
          return JSROOT.BuildNobrowserGUI();
 
-      var myDiv = $('#simpleGUI');
-      var online = false;
+      var myDiv = $('#simpleGUI'), online = false;
 
       if (myDiv.length==0) {
          myDiv = $('#onlineGUI');
