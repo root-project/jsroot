@@ -2190,7 +2190,7 @@
                }
 
                if (member.isptrptr) {
-                  member.readitem = function(buf) { return buf.ReadObjectAny(true); }
+                  member.readitem = function(buf) { return buf.ReadObjectAny(); }
                } else {
                   member.arrkind = JSROOT.IO.GetArrayKind(member.typename);
                   if (member.arrkind > 0) {
@@ -2199,25 +2199,23 @@
                   if (member.arrkind === 0) {
                      member.readitem = function(buf) { return buf.ReadTString(); }
                   } else {
-                     member.readitem = function(buf) { return buf.ClassStreamer({}, member.typename); }
+                     member.readitem = function(buf) { return buf.ClassStreamer({}, this.typename); }
                   }
                }
 
                if (member.readitem !== undefined) {
                   member.func = function(buf,obj) {
-                     var ver = buf.ReadVersion(),
-                         cnt = obj[this.cntname];
-                     // console.log(this.name, 'typename', this.typename, 'ver', ver, 'cnt', cnt);
+                     var ver = buf.ReadVersion(), cnt = obj[this.cntname];
 
                      var res = buf.ReadNdimArray(this, function(buf2,member2) {
-                        var itemarr = new Array(cnt);
-                        for (var i = 0; i < cnt; ++i )
-                           itemarr[i] = member2.readitem(buf2);
-                        return itemarr;
-                     });
+                         var itemarr = new Array(cnt);
+                         for (var i = 0; i < cnt; ++i )
+                            itemarr[i] = member2.readitem(buf2);
+                         return itemarr;
+                      });
 
-                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
-                     obj[this.name] = res;
+                      if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                      obj[this.name] = res;
                   }
                 } else {
                    JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
