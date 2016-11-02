@@ -2893,7 +2893,7 @@
             this.fillatt = this.createAttFill(null, 1001, 0);
 
          // force white color for the frame
-         if (this.fillatt.color == 'none') this.fillatt.color = 'white';
+         // if (this.fillatt.color == 'none') this.fillatt.color = 'white';
       }
 
       if (this.lineatt === undefined)
