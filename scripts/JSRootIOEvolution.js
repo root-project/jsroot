@@ -2192,10 +2192,15 @@
                if (member.isptrptr) {
                   member.readitem = function(buf) { return buf.ReadObjectAny(true); }
                } else {
-                  if (member.typename === "TString")
+                  member.arrkind = JSROOT.IO.GetArrayKind(member.typename);
+                  if (member.arrkind > 0) {
+                     member.readitem = function(buf) { return buf.ReadFastArray(buf.ntou4(), this.arrkind); };
+                  } else
+                  if (member.arrkind === 0) {
                      member.readitem = function(buf) { return buf.ReadTString(); }
-                  else
+                  } else {
                      member.readitem = function(buf) { return buf.ClassStreamer({}, member.typename); }
+                  }
                }
 
                if (member.readitem !== undefined) {
