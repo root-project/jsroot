@@ -163,7 +163,8 @@
          NoWebGL : false, // if true, WebGL will be disabled,
          EndErrorSize : 2, // size in pixels of end error for E1 draw options
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
-         GeoCompressComp : true // if one should compress faces after creation of composite shape
+         GeoCompressComp : true, // if one should compress faces after creation of composite shape,
+         IgnoreUrlOptions : false // if true, ignore all kind of URL options in the browser URL
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -393,11 +394,11 @@
       // In case of opt1 empty string will be returned, in case of opt2 '3'
       // If option not found, null is returned (or provided default value)
 
-      if (arguments.length < 3) dflt = null;
-      if ((opt==null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
+      if (dflt === undefined) dflt = null;
+      if ((opt===null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
 
       if (!url) {
-         if (typeof document === 'undefined') return dflt;
+         if (JSROOT.gStyle.IgnoreUrlOptions || (typeof document === 'undefined')) return dflt;
          url = document.URL;
       }
 

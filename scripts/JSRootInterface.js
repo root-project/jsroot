@@ -72,9 +72,6 @@
 
    BuildSimpleGUI = function() {
 
-      if (JSROOT.GetUrlOption("nobrowser")!=null)
-         return JSROOT.BuildNobrowserGUI();
-
       var myDiv = $('#simpleGUI'), online = false;
 
       if (myDiv.length==0) {
@@ -82,6 +79,12 @@
          if (myDiv.length==0) return alert('no div for simple gui found');
          online = true;
       }
+
+      if (myDiv.attr("ignoreurl") === "true")
+         JSROOT.gStyle.IgnoreUrlOptions = true;
+
+      if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser")!==undefined))
+         return JSROOT.BuildNobrowserGUI();
 
       JSROOT.Painter.readStyleFromURL();
 
