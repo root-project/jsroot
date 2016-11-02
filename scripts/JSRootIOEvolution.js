@@ -1716,6 +1716,23 @@
          return this.AddMethods(clname, streamer);
       }
 
+      if (clname == 'TRefArray') {
+         streamer.push({ func : function(buf, obj) {
+            obj._typename = "TRefArray";
+            buf.ClassStreamer(obj, "TObject");
+            obj.name = buf.ReadTString();
+
+            var nobj = buf.ntoi4();
+            obj.fLowerBound = buf.ntoi4();
+            var pidf = buf.ntou2();
+
+            obj.fUIDs = buf.ReadFastArray(nobj, JSROOT.IO.kUInt);
+
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+
+
       if (clname == 'TCanvas') {
          streamer.push({ func : function(buf, obj) {
 
