@@ -158,6 +158,8 @@
 
       hpainter.SetDisplay(null, drawDivId);
 
+      hpainter._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
+
       JSROOT.Painter.ConfigureVSeparator(hpainter);
 
       // JSROOT.Painter.ConfigureHSeparator(28, true);

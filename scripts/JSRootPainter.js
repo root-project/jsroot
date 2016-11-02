@@ -8910,6 +8910,7 @@
 
       var folder = {
          _name : file.fFileName,
+         _title : (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
          _kind : "ROOT.TFile",
          _file : file,
          _fullurl : file.fFullURL,
@@ -9848,17 +9849,20 @@
       var pthis = this;
 
       JSROOT.OpenFile(filepath, function(file) {
-         if (file == null) return JSROOT.CallBack(call_back);
+         if (!file) return JSROOT.CallBack(call_back);
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
-         if (pthis.h == null) pthis.h = h1; else
-            if (pthis.h._kind == 'TopFolder') {
-               pthis.h._childs.push(h1);
-            }  else {
-               var h0 = pthis.h;
-               var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
-               pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
-            }
+         if (pthis.h == null) {
+            pthis.h = h1;
+            if (pthis._topname) h1._name = pthis._topname;
+         } else
+         if (pthis.h._kind == 'TopFolder') {
+            pthis.h._childs.push(h1);
+         }  else {
+            var h0 = pthis.h;
+            var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
+         }
 
          pthis.RefreshHtml(call_back);
       });
