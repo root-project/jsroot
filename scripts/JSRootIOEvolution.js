@@ -2194,8 +2194,8 @@
                } else {
                   if (member.typename === "TString")
                      member.readitem = function(buf) { return buf.ReadTString(); }
-                  if (member.typename === "TList")
-                     member.readitem = function(buf) { return buf.ClassStreamer({}, "TList"); }
+                  else
+                     member.readitem = function(buf) { return buf.ClassStreamer({}, member.typename); }
                }
 
                if (member.readitem !== undefined) {
