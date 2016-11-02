@@ -9848,7 +9848,9 @@
 
       var pthis = this;
 
+      JSROOT.progress("Opening " + filepath + " ...");
       JSROOT.OpenFile(filepath, function(file) {
+         JSROOT.progress();
          if (!file) return JSROOT.CallBack(call_back);
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
