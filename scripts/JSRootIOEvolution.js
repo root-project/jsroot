@@ -2403,7 +2403,14 @@
             continue;
          }
 
-         var parent = this.GetStreamer(elem.name, { val: elem.base });
+         var ver = { val: elem.base };
+
+         if (ver.val === 4294967295) {
+            // this is -1 and indicates foreign class, need more workarounds
+            ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
+         }
+
+         var parent = this.GetStreamer(elem.name, ver);
          if (parent) this.GetSplittedStreamer(parent, tgt);
       }
 
