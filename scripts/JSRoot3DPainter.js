@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['d3', 'JSRootPainter', 'threejs_all'], factory );
+      define( ['d3', 'JSRootPainter', 'threejs', 'threejs_all'], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -19,9 +19,9 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
-      factory(d3, JSROOT);
+      factory(d3, JSROOT, THREE);
    }
-} (function(d3, JSROOT) {
+} (function(d3, JSROOT, THREE) {
 
    JSROOT.Painter.TestWebGL = function() {
       // return true if WebGL should be used

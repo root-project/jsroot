@@ -15,7 +15,7 @@
 
       factory(JSROOT);
    }
-} (function( JSROOT ) {
+} (function( JSROOT, THREE ) {
    // === functions to create THREE.Geometry for TGeo shapes ========================
 
    /** @namespace JSROOT.GEO */

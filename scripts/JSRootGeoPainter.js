@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( [ 'd3', 'JSRootPainter', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
+      define( [ 'd3', 'JSRootPainter', 'threejs', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -19,9 +19,9 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
 
-      factory( d3, JSROOT);
+      factory( d3, JSROOT, THREE );
    }
-} (function( d3, JSROOT ) {
+} (function( d3, JSROOT, THREE ) {
 
 
    if ( typeof define === "function" && define.amd )
