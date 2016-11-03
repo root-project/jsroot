@@ -380,7 +380,7 @@
       // Clipping Options
 
       var bound = new THREE.Box3().setFromObject(this._toplevel);
-      bound.expandByVector(bound.size().multiplyScalar(0.01));
+      bound.expandByVector(bound.getSize().multiplyScalar(0.01));
 
       var clipFolder = this._datgui.addFolder('Clipping');
 
@@ -483,8 +483,8 @@
          });
 
          advanced.add( this._advceOptions, 'clipIntersection').listen().onChange( function (value) {
-            painter._renderer.clipIntersection = value;
-            painter.Render3D(0);
+            painter.clipIntersection = value;
+            painter.updateClipping();
          });
 
          advanced.add(this._advceOptions, 'depthTest').onChange( function (value) {
@@ -1199,12 +1199,13 @@
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(0xffffff, 1);
       this._renderer.setSize(w, h);
-      this._renderer.clipIntersection = true;
+      this._renderer.localClippingEnabled = true;
 
       this._animating = false;
 
       // Clipping Planes
 
+      this.clipIntersection = true;
       this.bothSides = false; // which material kind should be used
       this.enableX = this.enableY = this.enableZ = false;
       this.clipX = this.clipY = this.clipZ = 0.0;
@@ -1320,7 +1321,7 @@
 
       this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
       this._advceOptions.clipIntersection = this._defaultAdvanced.clipIntersection;
-      this._renderer.clipIntersection = this._defaultAdvanced.clipIntersection;
+      this.clipIntersection = this._defaultAdvanced.clipIntersection;
 
       var painter = this;
       this._toplevel.traverse( function (node) {
@@ -1348,10 +1349,17 @@
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
-      this._renderer.clippingPlanes = [];
-      if (this.enableX) this._renderer.clippingPlanes.push(this._clipPlanes[0]);
-      if (this.enableY) this._renderer.clippingPlanes.push(this._clipPlanes[1]);
-      if (this.enableZ) this._renderer.clippingPlanes.push(this._clipPlanes[2]);
+
+      var painter = this;
+      this._scene.traverse( function (node) {
+         if (node instanceof THREE.Mesh) {
+            node.material.clipIntersection = painter.clipIntersection;
+            node.material.clippingPlanes = [];
+            if (painter.enableX) node.material.clippingPlanes.push(painter._clipPlanes[0]);
+            if (painter.enableY) node.material.clippingPlanes.push(painter._clipPlanes[1]);
+            if (painter.enableZ) node.material.clippingPlanes.push(painter._clipPlanes[2]);
+         }
+      });
 
       this.updateMaterialSide(this.enableX || this.enableY || this.enableZ);
 
