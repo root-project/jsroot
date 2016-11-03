@@ -2156,39 +2156,6 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
             case JSROOT.IO.kBool:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
-            case JSROOT.IO.kStreamer:
-               member.typename = element.fTypeName;
-
-               member.func = function(buf,obj) {
-                  var res = null, ver = buf.ReadVersion();
-                  if (this.typename == "vector<double>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); else
-                  if (this.typename == "vector<int>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt); else
-                  if (this.typename == "vector<float>") res = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kFloat); else
-                  if (this.typename == "vector<TObject*>") {
-                     var n = buf.ntoi4();
-                     res = [];
-                     for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
-                  }  else
-                  if (this.typename.indexOf("map<TString,int")==0) {
-                     var n = buf.ntoi4();
-                     res = [];
-                     for (var i=0;i<n;++i) {
-                        var str = buf.ReadTString();
-                        var val = buf.ntoi4();
-                        res.push({ first: str, second: val});
-                     }
-                  } else
-                  if (this.typename == "string")  {
-                     res = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
-                  } else {
-                     JSROOT.console('failed to stream element of type ' + this.typename);
-                  }
-
-                  if (!buf.CheckBytecount(ver, this.typename)) res = null;
-
-                  obj[this.name] = res;
-               };
-               break;
             case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop:
                member.typename = element.fTypeName;
@@ -2235,6 +2202,57 @@
                    member.func = function(buf,obj) {};  // do nothing, fix in the future
                 }
 
+               break;
+
+            case JSROOT.IO.kStreamer:
+               member.typename = element.fTypeName;
+
+               if ((element._typename === 'TStreamerSTLstring') ||
+                   (member.typename == "string") || (member.typename == "string*"))
+                      member.readelem = function(buf) { return buf.ReadTString(); };
+               else
+               if (member.typename == "vector<double>")
+                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); };
+               else
+               if (member.typename == "vector<int>")
+                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt); };
+               else
+               if (member.typename == "vector<float>")
+                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kFloat); };
+               else
+               if (member.typename == "vector<TObject*>")
+                  member.readelem = function(buf) {
+                     var n = buf.ntoi4(), res = [];
+                     for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
+                     return res;
+                  };
+               else
+               if (member.indexOf("map<TString,int")==0)
+                  member.readelem = function(buf) {
+                     var n = buf.ntoi4(), res = [];
+                     for (var i=0;i<n;++i) {
+                        var str = buf.ReadTString(),
+                            val = buf.ntoi4();
+                        res.push({ first: str, second: val});
+                     }
+                     return res;
+                  };
+
+               if (member.readelem!==undefined) {
+                  member.func = function(buf,obj) {
+                     var ver = buf.ReadVersion();
+                     var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
+                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                     obj[this.name] = res;
+                  }
+               } else {
+                  JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name);
+                  member.func = function(buf,obj) {
+                     var ver = buf.ReadVersion();
+                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                     obj[this.name] = null;
+                  }
+               }
                break;
 
 
