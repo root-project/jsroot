@@ -21,7 +21,7 @@
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'dat.gui'              : dir+'dat.gui.min',
-            'threejs'              : dir+'three',
+            'threejs'              : dir+'three.min',
             'threejs_all'          : dir+'three.extra'+ext,
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 2/11/2016";
+   JSROOT.version = "dev 3/11/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
