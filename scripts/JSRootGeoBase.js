@@ -13,7 +13,7 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoBase.js');
 
-      factory(JSROOT);
+      factory(JSROOT, THREE);
    }
 } (function( JSROOT, THREE ) {
    // === functions to create THREE.Geometry for TGeo shapes ========================

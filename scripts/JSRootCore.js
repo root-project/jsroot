@@ -859,7 +859,7 @@
             mainfiles += "$$$scripts/three.min.js;" +
                          "$$$scripts/three.extra.min.js;";
          }
-         modules.push("threejs_all");
+         modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
