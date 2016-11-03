@@ -2199,13 +2199,20 @@
                   }
                 } else {
                    JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
-                   member.func = function(buf,obj) {};  // do nothing, fix in the future
+                   member.func = function(buf,obj) {
+                      var ver = buf.ReadVersion();
+                      buf.CheckBytecount(ver);
+                      obj[this.name] = ull;
+                   };
                 }
 
                break;
 
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
+
+               if (element._typename === 'TStreamerSTL')
+                  console.log('member', member.name, member.typename, element.fCtype);
 
                if ((element._typename === 'TStreamerSTLstring') ||
                    (member.typename == "string") || (member.typename == "string*"))
@@ -2227,7 +2234,7 @@
                      return res;
                   };
                else
-               if (member.indexOf("map<TString,int")==0)
+               if (member.typename.indexOf("map<TString,int")==0)
                   member.readelem = function(buf) {
                      var n = buf.ntoi4(), res = [];
                      for (var i=0;i<n;++i) {
@@ -2249,7 +2256,7 @@
                   JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name);
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion();
-                     if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                     buf.CheckBytecount(ver);
                      obj[this.name] = null;
                   }
                }
