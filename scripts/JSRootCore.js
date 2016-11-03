@@ -22,7 +22,7 @@
             'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
-            'threejs_all'          : dir+'three.extra'+ext,
+            'threejs_all'          : dir+'three.extra.min',
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
@@ -856,8 +856,8 @@
                         "###threejs/examples/js/shaders/SSAOShader.js;"
            extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
          } else {
-            mainfiles += "$$$scripts/three.js;" +
-                         "$$$scripts/three.extra" + ext + ".js;";
+            mainfiles += "$$$scripts/three.min.js;" +
+                         "$$$scripts/three.extra.min.js;";
          }
          modules.push("threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
