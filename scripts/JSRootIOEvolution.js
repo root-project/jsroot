@@ -36,10 +36,37 @@
          Z_HDRSIZE : 9,
          Mode : "array", // could be string or array, enable usage of ArrayBuffer in http requests
          NativeArray : true, // when true, native arrays like Int32Array or Float64Array are used
+
+         // constants used for coding type of STL container
+         kNotSTL :  0, kSTLvector : 1, kSTLlist : 2, kSTLdeque : 3, kSTLmap : 4, kSTLmultimap : 5,
+         kSTLset : 6, kSTLmultiset : 7, kSTLbitset : 8, kSTLforwardlist : 9,
+         kSTLunorderedset : 10, kSTLunorderedmultiset : 11, kSTLunorderedmap : 12,
+         kSTLunorderedmultimap : 13, kSTLend : 14,
+
          IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
-                                             (typ===this.kCounter) ||
-                                            ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
-         IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); }
+                                     (typ===this.kCounter) ||
+                                    ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
+
+         IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); },
+
+         GetTypeId : function(typname) {
+            switch (typname) {
+               case "bool": return JSROOT.IO.kBool;
+               case "char": return JSROOT.IO.kChar;
+               case "short": return JSROOT.IO.kShort;
+               case "int": return JSROOT.IO.kInt;
+               case "long": return JSROOT.IO.kLong;
+               case "float": return JSROOT.IO.kFloat;
+               case "double": return JSROOT.IO.kDouble;
+               case "unsigned char": return JSROOT.IO.kUChar;
+               case "unsigned short": return JSROOT.IO.kUShort;
+               case "unsigned": return JSROOT.IO.kUInt;
+               case "unsigned long": return JSROOT.IO.kULong;
+               case "int64_t": return JSROOT.IO.kLong64;
+               case "uint64_t": return JSROOT.IO.kULong64;
+            }
+            return -1;
+         }
 
    };
 
@@ -2211,13 +2238,82 @@
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
 
-               if (element._typename === 'TStreamerSTL')
-                  console.log('member', member.name, member.typename, element.fCtype);
+               // if (element._typename === 'TStreamerSTL')
+               //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
 
                if ((element._typename === 'TStreamerSTLstring') ||
                    (member.typename == "string") || (member.typename == "string*"))
                       member.readelem = function(buf) { return buf.ReadTString(); };
                else
+               if ((element.fSTLtype === JSROOT.IO.kSTLvector)  || ( element.fSTLtype === JSROOT.IO.kSTLvector + 40)) {
+                  var p1 = member.typename.indexOf("<"),
+                      p2 = member.typename.lastIndexOf(">");
+
+                  member.conttype = member.typename.substr(p1+1,p2-p1-1);
+
+                  // console.log('vector', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
+
+                  member.typeid = JSROOT.IO.GetTypeId(member.conttype);
+
+                  if (member.typeid > 0) {
+                     member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), this.typeid); };
+                  } else {
+                      member.isptr = false;
+
+                      if (member.conttype.lastIndexOf("*") === member.conttype.length-1) {
+                         member.isptr = true;
+                         member.conttype = member.conttype.substr(0,member.conttype.length-1);
+                      }
+
+                      if (element.fCtype === JSROOT.IO.kObjectp) member.isptr = true;
+
+                      if (element.fCtype === JSROOT.IO.kObject) {
+                         member.readelem = function(buf) {
+                             var ver =  { val: buf.ntoi2() };
+                             if (ver.val <=0) ver.checksum = buf.ntou4();
+
+                             var streamer = buf.fFile.GetStreamer(this.conttype, ver);
+
+                             if (!streamer) {
+                                console.log('Fail to find streamer for the ', this.conttype, 'version', ver.val);
+                                return null;
+                             }
+
+                             var n = buf.ntoi4(), res = [];
+
+                             // console.log('reading splitted vector', this.typename, 'length', n);
+
+                             for (var i=0;i<n;++i)
+                                res[i] = { _typename: this.conttype }; // create objects
+
+                             for (var k=0;k<streamer.length;++k)
+                                for (var i=0;i<n;++i)
+                                   streamer[k].func(buf, res[i]);
+
+                             // console.log('reading splitted vector done', this.typename);
+                             return res;
+
+                          };
+                       } else {
+                          member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
+                          member.readelem = function(buf) {
+
+                             var n = buf.ntoi4(), res = [];
+
+                             for (var i=0;i<n;++i) {
+                                if (this.arrkind > 0) res.push(buf.ReadFastArray(buf.ntou4(), this.arrkind)); else
+                                if (this.arrkind===0) res.push(buf.ReadTString()); else
+                                if (this.isptr) res.push(buf.ReadObjectAny()); else
+                                   res.push(buf.ClassStreamer({}, this.conttype));
+                             }
+
+                             return res;
+                          };
+                      }
+                  }
+
+               } else
+
                if (member.typename == "vector<double>")
                   member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); };
                else
@@ -2253,7 +2349,7 @@
                      obj[this.name] = res;
                   }
                } else {
-                  JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name);
+                  JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' type ' + element.fSTLtype);
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion();
                      buf.CheckBytecount(ver);
