@@ -1618,11 +1618,24 @@
    }
 
    JSROOT.TFile.prototype.FindSinfoCheckum = function(checksum) {
-      if (this.fStreamerInfos)
-         for (var i=0; i < this.fStreamerInfos.arr.length; ++i)
-            if (this.fStreamerInfos.arr[i].fCheckSum === checksum)
-               return this.fStreamerInfos.arr[i];
+      if (!this.fStreamerInfos) return null;
 
+      var cache = this.fStreamerInfos.cache,
+          arr = this.fStreamerInfos.arr;
+      if (!cache) cache = this.fStreamerInfos.cache = {};
+
+      var si = cache[checksum];
+      if (si !== undefined) return si;
+
+      for (var i=0; i < arr.length; ++i) {
+         si = arr[i];
+         if (si.fCheckSum === checksum) {
+            cache[checksum] = si;
+            return si;
+         }
+      }
+
+      cache[checksum] = null; // checksum didnot found, not try again
       return null;
    }
 

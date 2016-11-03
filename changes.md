@@ -1,16 +1,21 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Support 'z', 'x', '||', '[]', '>', '|>', '5' draw option for TGraph
-2. Support of 'X+' and 'Y+' draw options for histograms and graphs
-3. Support '*', 'L', 'B', 'B1', 'TEXT', 'E3' and 'E4' draw options for TH1
-4. Support 'E', 'col1', 'box' and 'box1' draw options for TH2
-5. Support 'same' for 'box' and 'col' draw options 
-6. Implement drawing of TProfile2D
-7. Support logx/y/z, gridx/y, tickx/y draw options for TPad/TCanvas
-8. Fix - correctly place TGAxis relative to frame (when exists) 
-9. Fix - I/O supports now reading of same class with different versions 
-
+1. Many improvements in the binary I/O 
+   - supports different versions of class in the same file
+   - correct tratement of foreign classes
+   - all kind of multidimensional arrays 
+   - support memebers like ClassName* fField; //[fCnt]
+   - support const char*
+2. Many new draw options for different classes are supported:
+    - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
+    - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'
+    - TH2     - 'E', 'col1', 'box' and 'box1'
+    - TH2     - 'same' with 'box' and 'col'
+    - TCanvas - logx/y/z, gridx/y, tickx/y 
+3. Implement drawing of TProfile2D
+4. Fix - correctly place TGAxis relative to frame (when exists) 
+     
 
 ## Changes in 4.7.0
 1. Implement simple TTree::Draw over single leaf (#80)
