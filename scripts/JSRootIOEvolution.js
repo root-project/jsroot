@@ -2348,6 +2348,12 @@
 
                   if (member.readversion || member.streamer)
                      member.readelem = JSROOT.IO.ReadMapElement;
+               } else
+               if ((element.fSTLtype === JSROOT.IO.kSTLbitset) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLbitset + 40)) {
+                  member.readelem = function(buf,obj) {
+                     return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
+                  }
                }
 
                if (member.readelem!==undefined) {
