@@ -1755,21 +1755,15 @@
             if (!streamer) {
                console.log('Cannot get member-wise streamer for', classv, clv);
             } else {
+               // create objects
                for (var n=0;n<nobjects;++n)
                   list.arr.push({ _typename: classv });
 
+               // call streamer for all objects member-wise
                for (var k=0;k<streamer.length;++k)
                   for (var n=0;n<nobjects;++n)
                      streamer[k].func(buf, list.arr[n]);
             }
-
-
-            // TO BE DONE - READING OF CLONES ARRAY!!!
-
-            //for (var i = 0; i < nobjects; ++i) {
-            //   var obj = buf.ClassStreamer({}, classv);
-            //   list['arr'].push(obj);
-            //}
          }});
          return this.AddMethods(clname, streamer);
       }
