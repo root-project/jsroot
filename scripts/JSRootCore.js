@@ -15,11 +15,11 @@
             'd3'                   : dir+'d3.v3.min',
             'jquery'               : dir+'jquery.min',
             'jquery-ui'            : dir+'jquery-ui.min',
-            'jqueryui-mousewheel'  : dir+'jquery.mousewheel'+ext,
+            'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
-            'rawinflate'           : dir+'rawinflate'+ext,
+            'rawinflate'           : dir+'rawinflate.min',
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-            'saveSvgAsPng'         : dir+'saveSvgAsPng'+ext,
+            'saveSvgAsPng'         : dir+'saveSvgAsPng.min',
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
             'threejs_all'          : dir+'three.extra.min',
@@ -798,7 +798,7 @@
           modules = [];  // modules used for require.js
 
       if (kind.indexOf('io;')>=0) {
-         mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
+         mainfiles += "$$$scripts/rawinflate.min.js;" +
                       "$$$scripts/JSRootIOEvolution" + ext + ".js;";
          modules.push('JSRootIOEvolution');
       }
@@ -820,7 +820,7 @@
 
       if (kind.indexOf('savepng;')>=0) {
          modules.push('saveSvgAsPng');
-         mainfiles += '$$$scripts/saveSvgAsPng' + ext + ".js;";
+         mainfiles += '$$$scripts/saveSvgAsPng.min.js;';
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
