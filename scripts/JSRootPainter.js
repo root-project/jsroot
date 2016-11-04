@@ -8305,7 +8305,7 @@
 
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
-      if (lst._typename != 'TList' && lst._typename != 'THashList' &&
+      if (lst._typename != 'TList' && lst._typename != 'THashList' && lst._typename != 'TMap' &&
           lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
@@ -8316,6 +8316,8 @@
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
+
+         if (lst._typename == 'TMap') obj = obj.first;
 
          var item;
 
@@ -10903,10 +10905,11 @@
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
-   JSROOT.addDrawFunc({ name: "TList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
-   JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
-   JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
-   JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", noinspect:true, expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", expand: JSROOT.Painter.ListHierarchy });
+   JSROOT.addDrawFunc({ name: "TMap", icon: "img_list", expand: JSROOT.Painter.ListHierarchy });
    JSROOT.addDrawFunc({ name: "TColor", icon: "img_color" });
    JSROOT.addDrawFunc({ name: "TFile", icon: "img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "TMemFile", icon: "img_file", noinspect:true });

@@ -1783,7 +1783,7 @@
 
             // create objects
             for (var n=0;n<nobjects;++n) {
-               var obj = { _typname: "TMap_pair" };
+               var obj = { _typename: "TPair" };
                obj.first = buf.ReadObjectAny();
                obj.second = buf.ReadObjectAny();
                if (obj.first) map.arr.push(obj);
