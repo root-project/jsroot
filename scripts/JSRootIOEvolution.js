@@ -2293,7 +2293,9 @@
 
                } else
                if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
-                   (element.fSTLtype === JSROOT.IO.kSTLmap + 40)) {
+                   (element.fSTLtype === JSROOT.IO.kSTLmap + 40) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLmultimap) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLmultimap + 40)) {
 
                   // console.log('map', member.name, member.typename, element.fCtype, element.fSTLtype);
 

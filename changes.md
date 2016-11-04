@@ -7,6 +7,7 @@
    - all kind of multidimensional arrays 
    - support memebers like ClassName* fField; //[fCnt]
    - support const char*
+   - support most of STL containers
 2. Many new draw options for different classes are supported:
     - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
     - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'
