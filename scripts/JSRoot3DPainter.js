@@ -2629,9 +2629,11 @@
           k2 = this.GetSelectIndex("z", "right", 0),
           name = this.GetTipName("<br/>");
 
-      var scalex = (this.grx(this.GetBinX(i2+0.5)) - this.grx(this.GetBinX(i1+0.5))) / (i2-i1),
-          scaley = (this.gry(this.GetBinY(j2+0.5)) - this.gry(this.GetBinY(j1+0.5))) / (j2-j1),
-          scalez = (this.grz(this.GetBinZ(k2+0.5)) - this.grz(this.GetBinZ(k1+0.5))) / (k2-k1);
+      if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
+
+      var scalex = (this.grx(this.GetBinX(i2)) - this.grx(this.GetBinX(i1))) / (i2-i1),
+          scaley = (this.gry(this.GetBinY(j2)) - this.gry(this.GetBinY(j1))) / (j2-j1),
+          scalez = (this.grz(this.GetBinZ(k2)) - this.grz(this.GetBinZ(k1))) / (k2-k1);
 
       var nbins = 0, i, j, k, wei, bin_content;
 
