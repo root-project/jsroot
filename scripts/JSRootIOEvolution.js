@@ -2240,14 +2240,19 @@
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
 
-               // if (element._typename === 'TStreamerSTL')
-               //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
+               if (element._typename === 'TStreamerSTL')
+                  console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
 
                if ((element._typename === 'TStreamerSTLstring') ||
                    (member.typename == "string") || (member.typename == "string*"))
                       member.readelem = function(buf) { return buf.ReadTString(); };
                else
-               if ((element.fSTLtype === JSROOT.IO.kSTLvector)  || ( element.fSTLtype === JSROOT.IO.kSTLvector + 40)) {
+               if ((element.fSTLtype === JSROOT.IO.kSTLvector) ||
+                    ( element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
+                    (element.fSTLtype === JSROOT.IO.kSTLlist) ||
+                    (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
+                    (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
+                    (element.fSTLtype === JSROOT.IO.kSTLdeque + 40)) {
                   var p1 = member.typename.indexOf("<"),
                       p2 = member.typename.lastIndexOf(">");
 
@@ -2255,7 +2260,7 @@
 
                   member.typeid = JSROOT.IO.GetTypeId(member.conttype);
 
-                  console.log('vector', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
+                  console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
 
                   if (member.typeid > 0) {
                      member.readelem = function(buf) {
@@ -2280,23 +2285,6 @@
                   }
 
                } else
-
-               if (member.typename == "vector<double>")
-                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kDouble); };
-               else
-               if (member.typename == "vector<int>")
-                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt); };
-               else
-               if (member.typename == "vector<float>")
-                  member.readelem = function(buf) { return buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kFloat); };
-               else
-               if (member.typename == "vector<TObject*>")
-                  member.readelem = function(buf) {
-                     var n = buf.ntoi4(), res = [];
-                     for (var i=0;i<n;++i) res.push(buf.ReadObjectAny());
-                     return res;
-                  };
-               else
                if (member.typename.indexOf("map<TString,int")==0)
                   member.readelem = function(buf) {
                      var n = buf.ntoi4(), res = [];
@@ -2378,10 +2366,10 @@
             */
 
             for (var k=0;k<streamer.length;++k) {
-               var pos = buf.o;
+               //var pos = buf.o;
                for (var i=0;i<n;++i)
                   streamer[k].func(buf, res[i]);
-               console.log('Read element', streamer[k].name, 'totallen', buf.o - pos);
+               //console.log('Read element', streamer[k].name, 'totallen', buf.o - pos);
             }
 
             console.log('reading splitted vector done', this.typename);
