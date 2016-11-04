@@ -1735,19 +1735,34 @@
                buf.ClassStreamer(list, "TObject");
             if (ver > 1)
                list.name = buf.ReadTString();
-            var s = buf.ReadTString();
-            var classv = s;
-            var clv = 0;
-            var pos = s.indexOf(";");
-            if (pos != -1) {
-               classv = s.slice(0, pos);
-               s = s.slice(pos+1, s.length-pos-1);
-               clv = parseInt(s);
+            var classv = buf.ReadTString(), clv = 0,
+                pos = classv.lastIndexOf(";");
+
+            if (pos > 0) {
+               clv = parseInt(classv.substr(pos+1));
+               classv = classv.substr(0, pos);
             }
 
             var nobjects = buf.ntou4();
             if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
-            var lowerbound = buf.ntou4();
+
+            list.fLast = nobjects-1;
+            list.fLowerBound = buf.ntou4();
+
+            var streamer = buf.fFile.GetStreamer(classv, { val: clv });
+            streamer = buf.fFile.GetSplittedStreamer(streamer);
+
+            if (!streamer) {
+               console.log('Cannot get member-wise streamer for', classv, clv);
+            } else {
+               for (var n=0;n<nobjects;++n)
+                  list.arr.push({ _typename: classv });
+
+               for (var k=0;k<streamer.length;++k)
+                  for (var n=0;n<nobjects;++n)
+                     streamer[k].func(buf, list.arr[n]);
+            }
+
 
             // TO BE DONE - READING OF CLONES ARRAY!!!
 
@@ -1766,6 +1781,7 @@
             obj.name = buf.ReadTString();
 
             var nobj = buf.ntoi4();
+            obj.fLast = nobj-1;
             obj.fLowerBound = buf.ntoi4();
             var pidf = buf.ntou2();
 
@@ -1819,7 +1835,8 @@
             if (ver > 1)
                list.name = buf.ReadTString();
             var nobjects = buf.ntou4();
-            var lowerbound = buf.ntou4();
+            list.fLast = nobjects-1;
+            list.fLowerBound = buf.ntou4();
             for (var i = 0; i < nobjects; ++i)
                list.arr.push(buf.ReadObjectAny());
          }});
@@ -2389,8 +2406,6 @@
 
          streamer.push(member);
       }
-
-      if (clname=="TNamed") console.log('TNamed streamer has ', streamer.length);
 
       return this.AddMethods(clname, streamer);
    };
