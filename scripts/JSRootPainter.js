@@ -5498,7 +5498,7 @@
          this.GetBinX = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.xmin;
-            if (indx > this.nbinsx) this.xmax;
+            if (indx > this.nbinsx) return this.xmax;
             if (indx==bin) return this.histo.fXaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
             return this.histo.fXaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fXbins[indx2] * Math.abs(bin-indx);
@@ -5528,7 +5528,7 @@
          this.GetBinY = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
-            if (indx > this.nbinsy) this.ymax;
+            if (indx > this.nbinsy) return this.ymax;
             if (indx==bin) return this.histo.fYaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
             return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fYaxis.fXbins[indx2] * Math.abs(bin-indx);
@@ -5555,7 +5555,7 @@
          this.GetBinZ = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.zmin;
-            if (indx > this.nbinsz) this.zmax;
+            if (indx > this.nbinsz) return this.zmax;
             if (indx==bin) return this.histo.fZaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
             return this.histo.fZaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fZaxis.fXbins[indx2] * Math.abs(bin-indx);
