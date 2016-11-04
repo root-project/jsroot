@@ -331,7 +331,8 @@
       // returns type of array
       // 0 - if TString (or equivalent)
       // -1 - if any other kind
-      if ((type_name === "TString") || (JSROOT.fUserStreamers[type_name] === 'TString')) return 0;
+      if ((type_name === "TString") || (type_name === "string") ||
+          (JSROOT.fUserStreamers[type_name] === 'TString')) return 0;
       if ((type_name.length < 7) || (type_name.indexOf("TArray")!==0)) return -1;
       if (type_name.length == 7)
          switch (type_name.charAt(6)) {
