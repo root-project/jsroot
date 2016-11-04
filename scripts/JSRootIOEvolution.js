@@ -1667,19 +1667,22 @@
       return null;
    }
 
-   JSROOT.TFile.prototype.GetStreamer = function(clname, ver) {
+   JSROOT.TFile.prototype.GetStreamer = function(clname, ver, s_i) {
       // return the streamer for the class 'clname', from the list of streamers
       // or generate it from the streamer infos and add it to the list
 
       // these are special cases, which are handled separately
       if (clname == 'TQObject' || clname == "TBasket") return null;
 
-      var fullname = clname + (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+      var streamer = [], fullname = clname;
 
-      var streamer = this.fStreamers[fullname];
-      if (streamer !== undefined) return streamer;
+      if (ver) {
+         fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+         streamer = this.fStreamers[fullname];
+         if (streamer !== undefined) return streamer;
+         this.fStreamers[fullname] = streamer = new Array;
+      }
 
-      this.fStreamers[fullname] = streamer = new Array;
 
       if (clname == 'TObject'|| clname == 'TMethodCall') {
          streamer.push({ func: function(buf,obj) {
@@ -1957,7 +1960,7 @@
       }
 
       // check element in streamer infos, one can have special cases
-      var s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
+      if (!s_i) s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
 
       if ((clname == 'TObjString') && !s_i) {
          // special case when TObjString was stored inside streamer infos,
@@ -1973,7 +1976,7 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (s_i == null) {
+      if (!s_i) {
          delete this.fStreamers[fullname];
          console.warn('did not find streamer for ', clname, ver.val, ver.checksum);
          return null;
@@ -2240,19 +2243,23 @@
             case JSROOT.IO.kStreamer:
                member.typename = element.fTypeName;
 
-               if (element._typename === 'TStreamerSTL')
-                  console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
+               // if (element._typename === 'TStreamerSTL')
+               //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
 
                if ((element._typename === 'TStreamerSTLstring') ||
                    (member.typename == "string") || (member.typename == "string*"))
                       member.readelem = function(buf) { return buf.ReadTString(); };
                else
                if ((element.fSTLtype === JSROOT.IO.kSTLvector) ||
-                    ( element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
-                    (element.fSTLtype === JSROOT.IO.kSTLlist) ||
-                    (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
-                    (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
-                    (element.fSTLtype === JSROOT.IO.kSTLdeque + 40)) {
+                   (element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLlist) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLdeque + 40) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLset) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLset + 40) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLmultiset) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLmultiset + 40)) {
                   var p1 = member.typename.indexOf("<"),
                       p2 = member.typename.lastIndexOf(">");
 
@@ -2260,7 +2267,7 @@
 
                   member.typeid = JSROOT.IO.GetTypeId(member.conttype);
 
-                  console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
+                  // console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
 
                   if (member.typeid > 0) {
                      member.readelem = function(buf) {
@@ -2285,16 +2292,42 @@
                   }
 
                } else
-               if (member.typename.indexOf("map<TString,int")==0)
-                  member.readelem = function(buf) {
-                     var n = buf.ntoi4(), res = [];
-                     for (var i=0;i<n;++i) {
-                        var str = buf.ReadTString(),
-                            val = buf.ntoi4();
-                        res.push({ first: str, second: val});
+               if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
+                   (element.fSTLtype === JSROOT.IO.kSTLmap + 40)) {
+
+                  // console.log('map', member.name, member.typename, element.fCtype, element.fSTLtype);
+
+                  var p1 = member.typename.indexOf("<"),
+                      p0 = member.typename.indexOf(','),
+                      p2 = member.typename.lastIndexOf(">");
+
+                  member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
+
+                  if (this.FindStreamerInfo(member.pairtype)) {
+                     member.readversion = true;
+                     // console.log('There is streamer info for ',member.pairtype, 'one should read version');
+                  } else {
+                     var elem1 = JSROOT.IO.CreateStreamerElement("first", member.typename.substr(p1+1,p0-p1-1)),
+                         elem2 = JSROOT.IO.CreateStreamerElement("second", member.typename.substr(p0+1,p2-p0-1));
+
+                     var si = { _typename: 'TStreamerInfo',
+                                fName: member.pairtype,
+                                fElements: JSROOT.Create("TList"),
+                                fVersion: 1 };
+                     si.fElements.Add(elem1);
+                     si.fElements.Add(elem2);
+
+                     member.streamer = this.GetStreamer(member.pairtype, null, si);
+
+                     if (!member.streamer || member.streamer.length!=2) {
+                        JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
+                        delete member.streamer;
                      }
-                     return res;
-                  };
+                  }
+
+                  if (member.readversion || member.streamer)
+                     member.readelem = JSROOT.IO.ReadMapElement;
+               }
 
                if (member.readelem!==undefined) {
                   member.func = function(buf,obj) {
@@ -2304,7 +2337,7 @@
                      obj[this.name] = res;
                   }
                } else {
-                  JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' type ' + element.fSTLtype);
+                  JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion();
                      buf.CheckBytecount(ver);
@@ -2335,12 +2368,38 @@
       return this.AddMethods(clname, streamer);
    };
 
+   JSROOT.IO.CreateStreamerElement = function(name, typename) {
+      // return function, which could be used for element of the map
+
+      var elem = { _typename: 'TStreamerElement', fName: name, fTypeName: typename,
+                   fType: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0,0,0,0,0] };
+
+      elem.fType = JSROOT.IO.GetTypeId(typename);
+      if (elem.fType > 0) return elem; // basic type
+
+      var isptr = false;
+
+      if (typename.lastIndexOf("*") === typename.length-1) {
+         isptr = true;
+         elem.fTypeName = typename = typename.substr(0,typename.length-1);
+      }
+
+      var arrkind = JSROOT.IO.GetArrayKind(typename);
+
+      if (arrkind == 0) {
+         elem.fType = JSROOT.IO.kTString;
+         return elem;
+      }
+
+      elem.fType = isptr ? JSROOT.IO.kAnyP : JSROOT.IO.kAny;
+
+      return elem;
+   }
+
    JSROOT.IO.ReadVectorElement = function(buf) {
       if (this.testsplit) {
          var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
-
-         console.log(this.name, 'ver', ver);
 
          var streamer = buf.fFile.GetStreamer(this.conttype, ver);
 
@@ -2349,21 +2408,10 @@
          if (streamer) {
             var n = buf.ntoi4(), res = [];
 
-            console.log('reading splitted vector', this.typename, 'length', n, 'split length', streamer.length)
+            // console.log('reading splitted vector', this.typename, 'length', n, 'split length', streamer.length)
 
             for (var i=0;i<n;++i)
                res[i] = { _typename: this.conttype }; // create objects
-
-            /*
-            if (this.conttype === 'TNamed') {
-               var dump = "";
-               for (var k=0;k<40;++k) {
-                  dump += buf.ntou4().toString(16) + " ";
-               }
-               buf.o-=40*4;
-               console.log(dump);
-            }
-            */
 
             for (var k=0;k<streamer.length;++k) {
                //var pos = buf.o;
@@ -2372,12 +2420,12 @@
                //console.log('Read element', streamer[k].name, 'totallen', buf.o - pos);
             }
 
-            console.log('reading splitted vector done', this.typename);
+            // console.log('reading splitted vector done', this.typename);
             return res;
          }
 
          buf.o -= (ver.val<=0) ? 6 : 2; // rallback position of the
-         console.log('RALLBACK reading for type', this.conttype);
+         // console.log('RALLBACK reading for type', this.conttype);
       }
 
       var n = buf.ntoi4(), res = [];
@@ -2388,6 +2436,40 @@
          if (this.isptr) res.push(buf.ReadObjectAny()); else
             res.push(buf.ClassStreamer({}, this.conttype));
       }
+
+      return res;
+   }
+
+   JSROOT.IO.ReadMapElement = function(buf) {
+      var streamer = this.streamer;
+
+      if (this.readversion) {
+         // when version written into buffer, it is indication of member splitting
+         // not very logical in my mind SL
+         var ver = { val: buf.ntoi2() };
+         if (ver.val<=0) ver.checksum = buf.ntou4();
+         streamer = buf.fFile.GetStreamer(this.pairtype, ver);
+         if (!streamer || streamer.length!=2) {
+            console.log('Fail to get streamer for ', this.pairtype);
+            return null;
+         }
+      }
+
+      var n = buf.ntoi4(), res = [];
+
+      // console.log('Reading map', n, this.pairtype, this.typename);
+      for (var i=0;i<n;++i) {
+         var obj = { _typename: this.pairtype };
+         streamer[0].func(buf, obj);
+         if (!this.readversion)
+            streamer[1].func(buf, obj);
+         res.push(obj);
+      }
+
+      // due-to member-wise streaming second element read after first is completed
+      if (this.readversion)
+         for (var i=0;i<n;++i)
+            streamer[1].func(buf, res[i]);
 
       return res;
    }
