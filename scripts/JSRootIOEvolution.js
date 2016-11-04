@@ -2366,9 +2366,23 @@
             for (var i=0;i<n;++i)
                res[i] = { _typename: this.conttype }; // create objects
 
-            for (var k=0;k<streamer.length;++k)
+            /*
+            if (this.conttype === 'TNamed') {
+               var dump = "";
+               for (var k=0;k<40;++k) {
+                  dump += buf.ntou4().toString(16) + " ";
+               }
+               buf.o-=40*4;
+               console.log(dump);
+            }
+            */
+
+            for (var k=0;k<streamer.length;++k) {
+               var pos = buf.o;
                for (var i=0;i<n;++i)
                   streamer[k].func(buf, res[i]);
+               console.log('Read element', streamer[k].name, 'totallen', buf.o - pos);
+            }
 
             console.log('reading splitted vector done', this.typename);
             return res;
@@ -2401,6 +2415,15 @@
          var elem = streamer[n];
          if (elem.base === undefined) {
             tgt.push(elem);
+            continue;
+         }
+
+         if (elem.name=='TObject') {
+            tgt.push({ func: function(buf,obj) {
+               buf.ntoi2(); // read version, why it here??
+               obj.fUniqueID = buf.ntou4();
+               obj.fBits = buf.ntou4();
+            } });
             continue;
          }
 
