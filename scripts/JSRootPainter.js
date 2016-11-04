@@ -8306,7 +8306,7 @@
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (lst._typename != 'TList' && lst._typename != 'THashList' &&
-          lst._typename != 'TObjArray'  && lst._typename != 'TClonesArray') return false;
+          lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;

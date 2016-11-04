@@ -1,14 +1,14 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Many improvements in the binary I/O 
-   - supports different versions of class in the same file
-   - correct tratement of foreign classes
+1. Many improvements in the I/O part 
+   - support most of STL containers
+   - support TMap and TClonesArray containers
    - all kind of multidimensional arrays 
+   - correct tratement of foreign classes
+   - supports different versions of class in the same file
    - support memebers like ClassName* fField; //[fCnt]
    - support const char*
-   - support most of STL containers
-   - support TClonesArray
 2. Many new draw options for different classes are supported:
     - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
     - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'

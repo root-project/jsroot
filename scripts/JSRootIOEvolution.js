@@ -1708,7 +1708,7 @@
          streamer.push({ classname: clname,
                          func : function(buf, obj) {
             // stream all objects in the list from the I/O buffer
-            obj._typename = this.classname;
+            if (!obj._typename) obj._typename = this.classname;
             obj.name = "";
             obj.arr = new Array;
             obj.opt = new Array;
@@ -1727,7 +1727,7 @@
 
       if (clname == 'TClonesArray') {
          streamer.push({ func : function(buf, list) {
-            list._typename = "TClonesArray";
+            if (!list._typename) list._typename = "TClonesArray";
             list.name = "";
             list.arr = new Array();
             var ver = buf.last_read_version;
@@ -1767,6 +1767,31 @@
          }});
          return this.AddMethods(clname, streamer);
       }
+
+      if (clname == 'TMap') {
+         streamer.push({ func : function(buf, map) {
+            if (!map._typename) map._typename = "TMap";
+            map.name = "";
+            map.arr = new Array();
+            var ver = buf.last_read_version;
+            if (ver > 2)
+               buf.ClassStreamer(map, "TObject");
+            if (ver > 1)
+               map.name = buf.ReadTString();
+
+            var nobjects = buf.ntou4();
+
+            // create objects
+            for (var n=0;n<nobjects;++n) {
+               var obj = { _typname: "TMap_pair" };
+               obj.first = buf.ReadObjectAny();
+               obj.second = buf.ReadObjectAny();
+               if (obj.first) map.arr.push(obj);
+            }
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+
 
       if (clname == 'TRefArray') {
          streamer.push({ func : function(buf, obj) {
