@@ -2298,7 +2298,6 @@
                   // console.log('map', member.name, member.typename, element.fCtype, element.fSTLtype);
 
                   var p1 = member.typename.indexOf("<"),
-                      p0 = member.typename.indexOf(','),
                       p2 = member.typename.lastIndexOf(">");
 
                   member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
@@ -2307,8 +2306,28 @@
                      member.readversion = true;
                      // console.log('There is streamer info for ',member.pairtype, 'one should read version');
                   } else {
-                     var elem1 = JSROOT.IO.CreateStreamerElement("first", member.typename.substr(p1+1,p0-p1-1)),
-                         elem2 = JSROOT.IO.CreateStreamerElement("second", member.typename.substr(p0+1,p2-p0-1));
+
+                     function GetNextName() {
+                        var res = "", p = p1+1, cnt = 0;
+                        while ((p<p2) && (cnt>=0)) {
+                          switch (member.typename.charAt(p)) {
+                             case "<": cnt++; break;
+                             case ",": if (cnt===0) cnt--; break;
+                             case ">": cnt--; break;
+                          }
+                          if (cnt>=0) res+=member.typename.charAt(p);
+                          p++;
+                        }
+                        p1 = p-1;
+                        return res;
+                     }
+
+                     var name1 = GetNextName(), name2 = GetNextName();
+
+                     // console.log(member.typename, member.pairtype, name1, name2);
+
+                     var elem1 = JSROOT.IO.CreateStreamerElement("first", name1),
+                         elem2 = JSROOT.IO.CreateStreamerElement("second", name2);
 
                      var si = { _typename: 'TStreamerInfo',
                                 fName: member.pairtype,
@@ -2448,6 +2467,7 @@
          // not very logical in my mind SL
          var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
+
          streamer = buf.fFile.GetStreamer(this.pairtype, ver);
          if (!streamer || streamer.length!=2) {
             console.log('Fail to get streamer for ', this.pairtype);
