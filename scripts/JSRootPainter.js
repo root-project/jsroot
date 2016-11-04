@@ -4876,7 +4876,7 @@
                          .call(labelfont.func);
 
       this.order = 0;
-      if ((this.kind=="normal") && vertical && !axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
+      if ((this.kind=="normal") && /*vertical && */ !axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
          var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
          for(var order=18;order>-18;order-=3) {
             if (order===0) continue;
@@ -4945,18 +4945,15 @@
          last = pos;
      }
 
-     if (this.order!==0) {
-        var val = Math.pow(10,this.order).toExponential(0);
-
-        var t = label_g.append("svg:text").attr("fill", label_color).text('\xD7' + JSROOT.Painter.formatExp(val));
-
-        if (vertical)
-           t.attr("x", labeloffset)
-            .attr("y", 0)
-            .style("text-anchor", "start")
-            .style("dominant-baseline", "middle")
-            .attr("dy", "-.5em");
-     }
+     if (this.order!==0)
+        label_g.append("svg:text")
+               .attr("fill", label_color)
+               .attr("x", vertical ? labeloffset : w+5)
+               .attr("y", 0)
+               .style("text-anchor", "start")
+               .style("dominant-baseline", "middle")
+               .attr("dy", "-.5em")
+               .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
 
 
      if ((textscale>0) && (textscale<1.)) {
