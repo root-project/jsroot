@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 4/11/2016";
+   JSROOT.version = "dev 7/11/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -974,15 +974,17 @@
          user_scripts = null;
       }
 
-      var debugout = null;
-      var nobrowser = JSROOT.GetUrlOption('nobrowser')!=null;
-      var requirements = "io;2d;";
+      var debugout = null,
+          nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
+          requirements = "io;2d;",
+          simplegui = document.getElementById('simpleGUI');
 
-      if (document.getElementById('simpleGUI')) {
+      if (simplegui) {
          debugout = 'simpleGUI';
          if ((JSROOT.GetUrlOption('json')!=null) &&
              (JSROOT.GetUrlOption('file')==null) &&
              (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
+         if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
       } else
       if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
       if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }

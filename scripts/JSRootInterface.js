@@ -83,7 +83,7 @@
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.gStyle.IgnoreUrlOptions = true;
 
-      if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser")!==undefined))
+      if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
          return JSROOT.BuildNobrowserGUI();
 
       JSROOT.Painter.readStyleFromURL();

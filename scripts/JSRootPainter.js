@@ -10402,6 +10402,12 @@
          if (myDiv.empty()) return alert('no div for simple nobrowser gui found');
       }
 
+      if (myDiv.attr("ignoreurl") === "true")
+         JSROOT.gStyle.IgnoreUrlOptions = true;
+
+      var layout = myDiv.attr("layout");
+      if (!layout) layout = JSROOT.GetUrlOption("layout", null, "simple");
+
       JSROOT.Painter.readStyleFromURL();
 
       d3.select('html').style('height','100%');
@@ -10410,7 +10416,9 @@
       myDiv.style({"position":"absolute", "left":"1px", "top" :"1px", "bottom" :"1px", "right": "1px"});
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
-      hpainter.SetDisplay(JSROOT.GetUrlOption("layout", null, "simple"), myDiv.attr('id'));
+      hpainter.SetDisplay(layout, myDiv.attr('id'));
+
+      hpainter._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
 
       var h0 = null;
       if (online) {
@@ -10430,7 +10438,7 @@
             if (JSROOT.GetUrlOption("websocket")!==null)
                obj_painter.OpenWebsocket();
          });
-      });
+      }, myDiv);
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, lst) {
