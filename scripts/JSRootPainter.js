@@ -8912,7 +8912,7 @@
       }
 
       if (item) itemname = this.itemFullName(item);
-           else item = this.Find( { name: itemname, allow_index: true } );
+           else item = this.Find( { name: itemname, allow_index: true, check_keys: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
       var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
