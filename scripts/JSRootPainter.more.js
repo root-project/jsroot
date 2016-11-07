@@ -4720,7 +4720,7 @@
       this._can_move_colz = true;
 
       // special case for root 3D drawings - user range is wired
-      if ((this.options.Contour !==14) && !this.options.Lego)
+      if ((this.options.Contour !==14) && !this.options.Lego && !this.options.Surf)
          this.CheckPadRange();
 
       this.ScanContent();
