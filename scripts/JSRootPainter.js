@@ -9536,9 +9536,16 @@
          var elem = h.Find({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
+         if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
+            dropitems[i] = JSROOT.ParseAsArray(items[i]);
+            items[i] = dropitems[i].shift();
+         } else
          if (can_split && (items[i].indexOf("+") > 0)) {
             dropitems[i] = items[i].split("+");
             items[i] = dropitems[i].shift();
+         }
+
+         if (dropitems[i] && dropitems[i].length > 0) {
             // allow to specify _same_ item in different file
             for (var j = 0; j < dropitems[i].length; ++j) {
                var pos = dropitems[i][j].indexOf("_same_");
@@ -9546,7 +9553,7 @@
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
             }
 
-            if ((options[i].indexOf("[") == 0) && (options[i].indexOf("]") == options[i].length-1)) {
+            if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
                dropopts[i] = JSROOT.ParseAsArray(options[i]);
                options[i] = dropopts[i].shift();
             } else

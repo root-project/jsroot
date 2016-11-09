@@ -19,6 +19,7 @@
 4. Fix - correctly place TGAxis relative to frame (when exists) 
 5. When superimpose items, one can specify individual options
      ...&item=histo1+histo2&opt=hist+e1
+     ...&item=[histo1,histo2]&opt=[hist,e1]
      
 
 ## Changes in 4.7.0
