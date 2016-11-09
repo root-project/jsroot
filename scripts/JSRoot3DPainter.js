@@ -2138,6 +2138,82 @@
          var line = new THREE.LineSegments(geometry, material);
          this.toplevel.add(line);
       }
+
+
+      if (this.options.Surf === 13) {
+
+         // for contour plots one requires handle with full range
+         if ((main.zoom_xmin !== main.zoom_xmax) || (main.zoom_ymin !== main.zoom_ymax))
+            handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.5 });
+
+         this.getContourIndex(0);
+
+         // get levels
+         var levels = this.fContour,
+             palette = this.GetPalette(),
+             painter = this, lastcolindx = -1, layerz = 2*this.size3d;
+
+         this.BuildContour(handle, levels, palette,
+            function(colindx,xp,yp,iminus,iplus) {
+                // ignore less than three points
+                if (iplus - iminus < 3) return;
+
+                var pnts = [];
+
+                for (var i = iminus; i<=iplus; ++i)
+                   if ((i === iminus) || (xp[i] !== xp[i-1]) || (yp[i] !== yp[i-1]))
+                      pnts.push(new THREE.Vector2(xp[i], yp[i]));
+
+
+                if (pnts.length < 3) return;
+
+                // console.log('colindx', colindx);
+
+
+                var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+
+                if (!faces || (faces.length === 0)) return;
+
+                if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
+                   lastcolindx = colindx;
+                   layerz+=0.0001*painter.size3d; // change layers Z
+                }
+
+
+                var pos = new Float32Array(faces.length*9),
+                    norm = new Float32Array(faces.length*9),
+                    indx = 0;
+
+                for (var n=0;n<faces.length;++n) {
+                   var face = faces[n];
+                   for (var v=0;v<3;++v) {
+                      var pnt = pnts[face[v]];
+                      pos[indx] = pnt.x;
+                      pos[indx+1] = pnt.y;
+                      pos[indx+2] = layerz;
+                      norm[indx] = 0;
+                      norm[indx+1] = 0;
+                      norm[indx+2] = 1;
+
+                      indx+=3;
+                   }
+                }
+
+                var geometry = new THREE.BufferGeometry();
+                geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+                geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+                var fcolor = palette[colindx];
+
+                // console.log('fcolor', colindx, fcolor);
+
+                var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide, opacity: 0.5  } );
+                var mesh = new THREE.Mesh(geometry, material);
+
+                painter.toplevel.add(mesh);
+            }
+         );
+      }
    }
 
    JSROOT.Painter.HistPainter_DrawPolyLego = function() {
