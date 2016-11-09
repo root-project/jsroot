@@ -10318,14 +10318,20 @@
                var separ = opt.indexOf(";");
                var part = separ>0 ? opt.substr(0, separ) : opt;
                if (separ>0) opt = opt.substr(separ+1); else opt = "";
+
+               var canarray = true;
+               if (part[0]=='#') { part = part.substr(1); canarray = false; }
+
                var val = gui_div.attr(part);
-               res = res.concat(JSROOT.ParseAsArray(val));
+
+               if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
+               else if (val!==null) res.push(val);
             }
             return res;
          }
 
          if (filesarr.length === 0) {
-            filesarr = GetDivOptionAsArray("file"); // 'files' used in normal UI to give selection list
+            filesarr = GetDivOptionAsArray("#file;files"); // 'files' used in normal UI to give selection list
             if ((filesarr.length>0) && !filesdir) filesdir = gui_div.attr("path");
          }
 
@@ -10333,12 +10339,12 @@
             expanditems = GetDivOptionAsArray("expand");
 
          if (itemsarr.length === 0) {
-            itemsarr = GetDivOptionAsArray("item;items");
-            optionsarr = GetDivOptionAsArray("opt;opts");
+            itemsarr = GetDivOptionAsArray("#item;items");
+            optionsarr = GetDivOptionAsArray("#opt;opts");
          }
 
          if (jsonarr.length === 0)
-            jsonarr = GetDivOptionAsArray("json");
+            jsonarr = GetDivOptionAsArray("#json;jsons");
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 

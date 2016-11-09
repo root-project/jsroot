@@ -499,10 +499,8 @@
 
          var val = this.GetUrlOption(part, url, null);
 
-         if (canarray)
-            res = res.concat(JSROOT.ParseAsArray(val));
-         else
-            if (val!==null) res.push(val);
+         if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
+                  else if (val!==null) res.push(val);
       }
       return res;
    }
