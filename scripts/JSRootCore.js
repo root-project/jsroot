@@ -443,15 +443,38 @@
          res.push(val); return res;
       }
 
-      // try to parse ourself
-      var arr = val.substr(1, val.length-2).split(","); // remove brackets
+      // try to split ourself, checking quotes and brackes
+      var nbr = 0, nquotes = 0, ndouble = 0, last = 1;
 
-      for (var i = 0; i < arr.length; ++i) {
-         var sub = arr[i].trim();
-         if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
-            sub = sub.substr(1, sub.length-2);
-         res.push(sub);
+      for (var indx = 1; indx < val.length; ++indx) {
+         if (nquotes > 0) {
+            if (val[indx]==="'") nquotes--;
+            continue;
+         }
+         if (ndouble > 0) {
+            if (val[indx]==='"') ndouble--;
+            continue;
+         }
+         switch (val[indx]) {
+            case "'" : nquotes++; break;
+            case '"' : ndouble++; break;
+            case "[" : nbr++; break;
+            case "]" :  if (indx < val.length - 1) { nbr--; break; }
+            case "," :
+               if (nbr === 0) {
+                  var sub =  val.substring(last, indx).trim();
+                  if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
+                     sub = sub.substr(1, sub.length-2);
+                  res.push(sub);
+                  last = indx+1;
+               }
+               break;
+         }
       }
+
+      if (res.length === 0)
+         res.push(val.substr(1, val.length-2).trim());
+
       return res;
    }
 
