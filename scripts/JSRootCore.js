@@ -481,8 +481,8 @@
    JSROOT.GetUrlOptionAsArray = function(opt, url) {
       // special handling of URL options to produce array
       // if normal option is specified ...?opt=abc, than array with single element will be created
-      // one could specify normal JSON array ...?opt=['item1','item2']
-      // but also one could skip quotes ...?opt=[item1,item2]
+      // one could specify normal JSON array ...?opts=['item1','item2']
+      // but also one could skip quotes ...?opts=[item1,item2]
       // one could collect values from several options, specifying
       // options names via semicolon like opt='item;items'
 
@@ -490,11 +490,19 @@
 
       while (opt.length>0) {
          var separ = opt.indexOf(";");
-         var part = separ>0 ? opt.substr(0, separ) : opt;
+         var part = (separ>0) ? opt.substr(0, separ) : opt;
+
          if (separ>0) opt = opt.substr(separ+1); else opt = "";
 
+         var canarray = true;
+         if (part[0]=='#') { part = part.substr(1); canarray = false; }
+
          var val = this.GetUrlOption(part, url, null);
-         res = res.concat(JSROOT.ParseAsArray(val));
+
+         if (canarray)
+            res = res.concat(JSROOT.ParseAsArray(val));
+         else
+            if (val!==null) res.push(val);
       }
       return res;
    }

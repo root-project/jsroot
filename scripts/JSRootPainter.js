@@ -10295,11 +10295,11 @@
       var hpainter = this,
           prereq = "",
           filesdir = JSROOT.GetUrlOption("path"),
-          filesarr = JSROOT.GetUrlOptionAsArray("file;files"),
-          jsonarr = JSROOT.GetUrlOptionAsArray("json"),
+          filesarr = JSROOT.GetUrlOptionAsArray("#file;files"),
+          jsonarr = JSROOT.GetUrlOptionAsArray("#json;jsons"),
           expanditems = JSROOT.GetUrlOptionAsArray("expand"),
-          itemsarr = JSROOT.GetUrlOptionAsArray("item;items"),
-          optionsarr = JSROOT.GetUrlOptionAsArray("opt;opts"),
+          itemsarr = JSROOT.GetUrlOptionAsArray("#item;items"),
+          optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts"),
           monitor = JSROOT.GetUrlOption("monitoring"),
           layout = JSROOT.GetUrlOption("layout");
 
