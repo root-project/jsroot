@@ -5127,6 +5127,10 @@
       return this.histo && this.histo._typename.match(/^TH2Poly/);
    }
 
+   JSROOT.THistPainter.prototype.DrawFuncName = function() {
+      return "Draw2D";
+   }
+
    JSROOT.THistPainter.prototype.Cleanup = function() {
       if (this.keys_handler) {
          window.removeEventListener( 'keydown', this.keys_handler, false );
@@ -6820,7 +6824,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler) return;
+      if (this.keys_handler || !this.is_main_painter()) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
@@ -8052,6 +8056,10 @@
       return false;
    }
 
+   JSROOT.TH1Painter.prototype.DrawFuncName = function() {
+      return (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+   }
+
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
@@ -8110,7 +8118,7 @@
 
    JSROOT.TH1Painter.prototype.Redraw = function(resize) {
 
-      var func_name = (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+      var func_name = this.DrawFuncName();
 
       this[func_name](null, resize);
    }
@@ -8131,7 +8139,7 @@
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
          painter.CreateStat(histo.fCustomStat);
 
-      var func_name = (painter.options.Lego > 0) ? "Draw3D" : "Draw2D";
+      var func_name = painter.DrawFuncName();
 
       painter[func_name](function() {
          painter.DrawNextFunction(0, function() {

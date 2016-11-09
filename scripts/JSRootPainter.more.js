@@ -3661,7 +3661,7 @@
          if (colindx > palette.length-1) colindx = palette.length-1;
 
          var xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
-         istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
+             istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
          while (true) {
             iminus = npmax;
@@ -3692,7 +3692,7 @@
             }
 
             if (iminus+1 < iplus)
-               call_back(colindx, xp, yp, iminus, iplus);
+               call_back(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
             for (i=2;i<np;i+=2) {
@@ -4699,9 +4699,17 @@
       }.bind(this));
    }
 
+   JSROOT.TH2Painter.prototype.DrawFuncName = function() {
+      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) return "Draw3D";
+
+      if ((this.options.Contour > 0) || !this.is_main_painter()) return this.main_painter().DrawFuncName();
+
+      return "Draw2D";
+   }
+
    JSROOT.TH2Painter.prototype.Redraw = function(resize) {
 
-      var func_name = (this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0) ? "Draw3D" : "Draw2D";
+      var func_name = this.DrawFuncName();
 
       this[func_name](null, resize);
    }
@@ -4732,7 +4740,7 @@
       if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.IsTH2Poly())
          this.CreateStat();
 
-      var func_name = (this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0) ? "Draw3D" : "Draw2D";
+      var func_name = this.DrawFuncName();
 
       this[func_name](function() {
          this.DrawNextFunction(0, function() {

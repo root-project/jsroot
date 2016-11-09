@@ -1462,6 +1462,9 @@
       if (this.IsTH2Poly())
          return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
 
+      if (this.options.Contour && (this.Dimension()==2))
+         return JSROOT.Painter.HistPainter_DrawContour3D.call(this, true);
+
       if (this.options.Surf && (this.Dimension()==2))
          return JSROOT.Painter.HistPainter_DrawTH2Surf.call(this);
 
@@ -1807,6 +1810,47 @@
       this.toplevel.add(line);
    }
 
+   JSROOT.Painter.HistPainter_DrawContour3D = function(realz) {
+      // for contour plots one requires handle with full range
+      var handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.0 });
+
+      this.getContourIndex(0);
+
+      // get levels
+      var histo = this.GetObject(),
+          levels = this.fContour,
+          palette = this.GetPalette(),
+          painter = this,
+          main = this.main_painter(),
+          layerz = 2*main.size3d;
+
+      this.BuildContour(handle, levels, palette,
+         function(colindx,xp,yp,iminus,iplus,ilevel) {
+             // ignore less than three points
+             if (iplus - iminus < 3) return;
+
+             if (realz) layerz = main.grz(levels[ilevel]);
+
+             var linepos = new Float32Array((iplus-iminus+1)*3), indx = 0;
+             for (var i=iminus;i<=iplus;++i) {
+                linepos[indx] = xp[i];
+                linepos[indx+1] = yp[i];
+                linepos[indx+2] = layerz;
+                indx+=3;
+             }
+
+             var geometry = new THREE.BufferGeometry();
+             geometry.addAttribute( 'position', new THREE.BufferAttribute( linepos, 3 ) );
+
+             var material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
+
+             var line = new THREE.Line(geometry, material);
+             main.toplevel.add(line);
+         }
+      );
+
+   }
+
    JSROOT.Painter.HistPainter_DrawTH2Surf = function() {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 1, middle: 0.5 }),
@@ -2141,12 +2185,12 @@
          this.toplevel.add(line);
       }
 
+      if (this.options.Surf === 17)
+         JSROOT.Painter.HistPainter_DrawContour3D.call(this);
 
-      if ((this.options.Surf === 13) || (this.options.Surf === 17)) {
+      if (this.options.Surf === 13) {
 
-         // for contour plots one requires handle with full range
-         if ((main.zoom_xmin !== main.zoom_xmax) || (main.zoom_ymin !== main.zoom_ymax))
-            handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.5 });
+         handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.0 });
 
          this.getContourIndex(0);
 
@@ -2159,27 +2203,6 @@
             function(colindx,xp,yp,iminus,iplus) {
                 // ignore less than three points
                 if (iplus - iminus < 3) return;
-
-                if (painter.options.Surf === 17) {
-
-                   var linepos = new Float32Array((iplus-iminus+1)*3), indx = 0;
-                   for (var i=iminus;i<=iplus;++i) {
-                      linepos[indx] = xp[i];
-                      linepos[indx+1] = yp[i];
-                      linepos[indx+2] = layerz;
-                      indx+=3;
-                   }
-
-                   var geometry = new THREE.BufferGeometry();
-                   geometry.addAttribute( 'position', new THREE.BufferAttribute( linepos, 3 ) );
-
-                   var material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
-
-                   var line = new THREE.Line(geometry, material);
-                   painter.toplevel.add(line);
-                   return;
-                }
-
 
                 var pnts = [];
 
@@ -2506,30 +2529,36 @@
    JSROOT.Painter.TH1Painter_Draw3D = function(call_back, resize) {
       // function called with this as painter
 
+      var main = this.main_painter();
+
       if (resize)  {
 
          if (this.Resize3D()) this.Render3D();
 
       } else {
 
-         this.Create3DScene();
          this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
          this.DeleteAtt();
 
-         this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+         if (main === this) {
+            this.Create3DScene();
+            this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+         }
 
          this.Draw3DBins();
 
-         this.Render3D();
+         main.Render3D();
 
          this.AddKeysHandler();
       }
 
-      // (re)draw palette by resize while canvas may change dimension
-      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14)));
+      if (main === this) {
+         // (re)draw palette by resize while canvas may change dimension
+         this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14)));
 
-      this.DrawTitle();
+         this.DrawTitle();
+      }
 
       JSROOT.CallBack(call_back);
    }
@@ -2538,13 +2567,14 @@
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back, resize) {
       // function called with this as painter
 
+      var main = this.main_painter();
+
       if (resize) {
 
          if (this.Resize3D()) this.Render3D();
 
       } else {
 
-         this.Create3DScene();
          this.Draw3DBins = JSROOT.Painter.HistPainter_DrawLego;
 
          var pad = this.root_pad();
@@ -2560,20 +2590,26 @@
 
          this.DeleteAtt();
 
-         this.DrawXYZ(this.toplevel, { use_y_for_z: false, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+         if (main === this) {
+            this.Create3DScene();
+            this.DrawXYZ(this.toplevel, { use_y_for_z: false, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+         }
 
          this.Draw3DBins();
 
-         this.Render3D();
+         main.Render3D();
 
          this.AddKeysHandler();
       }
 
-      // (re)draw palette by resize while canvas may change dimension
-      this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                             (this.options.Surf===11) || (this.options.Surf===12)));
+      if (main === this) {
 
-      this.DrawTitle();
+         //  (re)draw palette by resize while canvas may change dimension
+         this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                                (this.options.Surf===11) || (this.options.Surf===12)));
+
+         this.DrawTitle();
+      }
 
       JSROOT.CallBack(call_back);
    }
@@ -2590,6 +2626,10 @@
    }
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+
+   JSROOT.TH3Painter.prototype.DrawFuncName = function() {
+      return "Draw3D"; // dummy, not used
+   }
 
    JSROOT.TH3Painter.prototype.ScanContent = function() {
       var histo = this.GetObject();
