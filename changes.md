@@ -12,7 +12,7 @@
 2. Many new draw options for different classes are supported:
     - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
     - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'
-    - TH2     - 'E', 'col1', 'box', 'box1', 'surf3'
+    - TH2     - 'E', 'col1', 'box', 'box1', 'surf3', 'surf7'
     - TH2     - 'same' with 'box' and 'col'
     - TCanvas - logx/y/z, gridx/y, tickx/y 
 3. Implement drawing of TProfile2D

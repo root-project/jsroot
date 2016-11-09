@@ -1826,7 +1826,9 @@
 
       switch(this.options.Surf) {
          case 11: ilevels = this.GetContour(); docolorfaces = true; break;
-         case 12: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
+         case 12:
+         case 15: // make surf5 same as surf2
+         case 17: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
          case 14: dolines = false; donormals = true; break;
          case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
@@ -2140,7 +2142,7 @@
       }
 
 
-      if (this.options.Surf === 13) {
+      if ((this.options.Surf === 13) || (this.options.Surf === 17)) {
 
          // for contour plots one requires handle with full range
          if ((main.zoom_xmin !== main.zoom_xmax) || (main.zoom_ymin !== main.zoom_ymax))
@@ -2157,6 +2159,27 @@
             function(colindx,xp,yp,iminus,iplus) {
                 // ignore less than three points
                 if (iplus - iminus < 3) return;
+
+                if (painter.options.Surf === 17) {
+
+                   var linepos = new Float32Array((iplus-iminus+1)*3), indx = 0;
+                   for (var i=iminus;i<=iplus;++i) {
+                      linepos[indx] = xp[i];
+                      linepos[indx+1] = yp[i];
+                      linepos[indx+2] = layerz;
+                      indx+=3;
+                   }
+
+                   var geometry = new THREE.BufferGeometry();
+                   geometry.addAttribute( 'position', new THREE.BufferAttribute( linepos, 3 ) );
+
+                   var material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
+
+                   var line = new THREE.Line(geometry, material);
+                   painter.toplevel.add(line);
+                   return;
+                }
+
 
                 var pnts = [];
 
