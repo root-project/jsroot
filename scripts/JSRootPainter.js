@@ -9392,8 +9392,11 @@
       // here is not defined - implemented with jquery
    }
 
-   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, call_back) {
+   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
       var h = this;
+
+      if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
+      if (opt===undefined) opt = "";
 
       h.get(itemname, function(item, obj) {
          if (obj) {
@@ -9406,10 +9409,10 @@
                main_painter.PerformDrop(obj, itemname, item);
             else
             if (main_painter && main_painter.accept_drops) {
-               drop_painter = h.draw(divid, obj, "same");
+               drop_painter = h.draw(divid, obj, "same " + opt);
             } else {
                h.CleanupFrame(divid);
-               drop_painter = h.draw(divid, obj);
+               drop_painter = h.draw(divid, obj, opt);
             }
 
             if (drop_painter)
@@ -9517,11 +9520,11 @@
          });
       }
 
-      var dropitems = new Array(items.length);
+      var dropitems = new Array(items.length), dropopts = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension and plus sign
       for (var i = 0; i < items.length; ++i) {
-         dropitems[i] = null;
+         dropitems[i] = dropopts[i] = null;
 
          var item = items[i], can_split = true;
 
@@ -9542,6 +9545,19 @@
                if ((pos>0) && (h.Find(dropitems[i][j])==null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
             }
+
+            if ((options[i].indexOf("[") == 0) && (options[i].indexOf("]") == options[i].length-1)) {
+               dropopts[i] = JSROOT.ParseAsArray(options[i]);
+               options[i] = dropopts[i].shift();
+            } else
+            if (options[i].indexOf("+") > 0) {
+               dropopts[i] = options[i].split("+");
+               options[i] = dropopts[i].shift();
+            } else {
+               dropopts[i] = [];
+            }
+
+            while (dropopts[i].length < dropitems[i].length) dropopts[i].push("");
          }
 
          // also check if subsequent items has _same_, than use name from first item
@@ -9592,7 +9608,7 @@
 
          function DropNextItem(indx, painter) {
             if (painter && dropitems[indx] && (dropitems[indx].length>0))
-               return h.dropitem(dropitems[indx].shift(), painter.divid, DropNextItem.bind(this, indx, painter));
+               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(this, indx, painter));
 
             var isany = false;
             for (var cnt = 0; cnt < items.length; ++cnt)
