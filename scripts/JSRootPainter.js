@@ -7828,15 +7828,14 @@
           pad = this.root_pad(),
           painter = this,
           findbin = null, show_rect = true,
-          grx1, midx, grx2, gry1, midy, gry2,
+          grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           l = left, r = right;
 
       function GetBinGrX(i) {
          var x1 = painter.GetBinX(i);
-         if ((x1<0) && pmain.logx) return null;
-         return pmain.grx(x1);
+         return (pmain.logx && (x1<=0)) ? null : pmain.grx(x1);
       }
 
       function GetBinGrY(i) {
@@ -7846,34 +7845,44 @@
          return Math.round(pmain.gry(y));
       }
 
+      var pnt_x = pmain.swap_xy ? pnt.y : pnt.x,
+          pnt_y = pmain.swap_xy ? pnt.x : pnt.y;
+
       while (l < r-1) {
          var m = Math.round((l+r)*0.5);
 
          var xx = GetBinGrX(m);
-         if (xx === null) { l = m; continue; }
-
-         if (xx < pnt.x - 0.5) l = m; else
-            if (xx > pnt.x + 0.5) r = m; else { l++; r--; }
+         if ((xx === null) || (xx < pnt_x - 0.5)) {
+            if (pmain.swap_xy) r = m; else l = m;
+         } else
+         if (xx > pnt_x + 0.5) {
+            if (pmain.swap_xy) l = m; else r = m;
+         } else { l++; r--; }
       }
 
       findbin = r = l;
       grx1 = GetBinGrX(findbin);
 
-      while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
-      while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
+      if (pmain.swap_xy) {
+         while ((l>left) && (GetBinGrX(l-1) < grx1 + 1.0)) --l;
+         while ((r<right) && (GetBinGrX(r+1) > grx1 - 1.0)) ++r;
+      } else {
+         while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
+         while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
+      }
 
       if (l < r) {
          // many points can be assigned with the same cursor position
          // first try point around mouse y
          var best = height;
          for (var m=l;m<=r;m++) {
-            var dist = Math.abs(GetBinGrY(m) - pnt.y);
+            var dist = Math.abs(GetBinGrY(m) - pnt_y);
             if (dist < best) { best = dist; findbin = m; }
          }
 
          // if best distance still too far from mouse position, just take from between
          if (best > height/10)
-            findbin = Math.round(l + (r-l) / height * pnt.y);
+            findbin = Math.round(l + (r-l) / height * pnt_y);
 
          grx1 = GetBinGrX(findbin);
       }
@@ -7887,10 +7896,24 @@
          grx2 = grx1 + Math.round(this.histo.fBarWidth/1000*w);
       }
 
+      if (grx1 > grx2) { var d = grx1; grx1 = grx2; grx2 = d; }
+
       midx = Math.round((grx1+grx2)/2);
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
+      if (this.options.Bar > 0) {
+         show_rect = true;
+
+         gapx = 0;
+
+         gry1 = Math.round(pmain.gry(((this.options.BaseLine!==false) && (this.options.BaseLine > pmain.scale_ymin)) ? this.options.BaseLine : pmain.scale_ymin));
+
+         if (gry1 > gry2) { var d = gry1; gry1 = gry2; gry2 = d; }
+
+         if (!pnt.touch && (pnt.nproc === 1))
+            if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
+      } else
       if ((this.options.Error > 0) || (this.options.Mark > 0) || (this.options.Line > 0))  {
 
          show_rect = true;
@@ -7915,7 +7938,7 @@
          gry2 = Math.max(gry2, midy + msize);
 
          if (!pnt.touch && (pnt.nproc === 1))
-            if ((pnt.y<gry1) || (pnt.y>gry2)) findbin = null;
+            if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
 
       } else {
 
@@ -7938,12 +7961,11 @@
 
       if (findbin!==null) {
          // if bin on boundary found, check that x position is ok
-         if ((findbin === left) && (grx1 > pnt.x + 2))  findbin = null; else
-         if ((findbin === right-1) && (grx2 < pnt.x - 2)) findbin = null; else
+         if ((findbin === left) && (grx1 > pnt_x + gapx))  findbin = null; else
+         if ((findbin === right-1) && (grx2 < pnt_x - gapx)) findbin = null; else
          // if bars option used check that bar is not match
-         if ((pnt.x < grx1 - 2) || (pnt.x > grx2 + 2)) findbin = null;
+         if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null;
       }
-
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
@@ -7968,18 +7990,18 @@
          res.changed = ttrect.property("current_bin") !== findbin;
 
          if (res.changed)
-            ttrect.attr("x", grx1)
-                  .attr("width", grx2-grx1)
-                  .attr("y", gry1)
-                  .attr("height", gry2-gry1)
+            ttrect.attr("x", pmain.swap_xy ? gry1 : grx1)
+                  .attr("width", pmain.swap_xy ? gry2-gry1 : grx2-grx1)
+                  .attr("y", pmain.swap_xy ? grx1 : gry1)
+                  .attr("height", pmain.swap_xy ? grx2-grx1 : gry2-gry1)
                   .style("opacity", "0.3")
                   .property("current_bin", findbin);
 
-         res.exact = (Math.abs(midy - pnt.y) <= 5) || ((pnt.y>=gry1) && (pnt.y<=gry2));
+         res.exact = (Math.abs(midy - pnt_y) <= 5) || ((pnt_y>=gry1) && (pnt_y<=gry2));
 
          res.menu = true; // one could show context menu
          // distance to middle point, use to decide which menu to activate
-         res.menu_dist = Math.sqrt((midx-pnt.x)*(midx-pnt.x) + (midy-pnt.y)*(midy-pnt.y));
+         res.menu_dist = Math.sqrt((midx-pnt_x)*(midx-pnt_x) + (midy-pnt_y)*(midy-pnt_y));
 
       } else {
          var radius = this.lineatt.width + 3;
