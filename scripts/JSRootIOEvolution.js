@@ -2066,16 +2066,6 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
             case JSROOT.IO.kBool:
                member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
-            case JSROOT.IO.kTString:
-               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
-               break;
-            case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
-               member.func = function(buf, obj) {
-                  var ver = buf.ReadVersion();
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
-                  buf.CheckBytecount(ver, "TString[]");
-               }
-               break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kBool:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
@@ -2222,6 +2212,24 @@
                   obj[this.name] = buf.substring(buf.o, buf.o + len);
                   buf.o += len;
                };
+               break;
+            case JSROOT.IO.kTString:
+               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
+               break;
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
+               member.func = function(buf, obj) {
+                  var ver = buf.ReadVersion();
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
+                  buf.CheckBytecount(ver, "TString[]");
+               }
+               break;
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kTObject:
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kTNamed:
+               member.func = function(buf, obj) {
+                  var ver = buf.ReadVersion();
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) { return buf.ClassStreamer({}, handle.type); });
+                  buf.CheckBytecount(ver, handle.type + "[]");
+               }
                break;
             case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop:
