@@ -10338,13 +10338,14 @@
          if (expanditems.length === 0)
             expanditems = GetDivOptionAsArray("expand");
 
-         if (itemsarr.length === 0) {
+         if (itemsarr.length === 0)
             itemsarr = GetDivOptionAsArray("#item;items");
-            optionsarr = GetDivOptionAsArray("#opt;opts");
-         }
 
          if (jsonarr.length === 0)
             jsonarr = GetDivOptionAsArray("#json;jsons");
+
+         if (optionsarr.length === 0)
+            optionsarr = GetDivOptionAsArray("#opt;opts");
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 
