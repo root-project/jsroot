@@ -540,8 +540,6 @@
       return obj;
    }
 
-   // JSROOT.gdebug = false;
-
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
       if (! ('_typename' in obj)) obj._typename = classname;
@@ -561,18 +559,11 @@
       var streamer = this.fFile.GetStreamer(classname, ver);
 
       if (streamer !== null) {
-         //if (JSROOT.gdebug)
-         //   console.log('Read class', classname, 'pos', this.o, 'ver', ver);
 
          for (var n = 0; n < streamer.length; ++n) {
-         //   if (JSROOT.gdebug) console.log('Read member', streamer[n].name, 'off', this.o, streamer[n]);
             streamer[n].func(this, obj);
-         //   if (JSROOT.gdebug && streamer[n].name)
-         //      console.log('Read member', streamer[n].name, 'res', obj[streamer[n].name]);
          }
 
-         //if (JSROOT.gdebug)
-         //   console.log('Done class', classname, 'pos', this.o);
       } else {
          // just skip bytes belonging to not-recognized object
          // console.warn('skip object ', classname);
@@ -2049,8 +2040,42 @@
                   buf.ClassStreamer(obj, this.name);
                };
                break;
+            case JSROOT.IO.kShort:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
+            case JSROOT.IO.kInt:
+            case JSROOT.IO.kCounter:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi4(); }; break;
+            case JSROOT.IO.kLong:
+            case JSROOT.IO.kLong64:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntoi8(); }; break;
+            case JSROOT.IO.kDouble:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntod(); }; break;
+            case JSROOT.IO.kFloat:
+            case JSROOT.IO.kDouble32:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntof(); }; break;
+            case JSROOT.IO.kLegacyChar:
+            case JSROOT.IO.kUChar:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou1(); }; break;
+            case JSROOT.IO.kUShort:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou2(); }; break;
+            case JSROOT.IO.kBits:
+            case JSROOT.IO.kUInt:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou4(); }; break;
+            case JSROOT.IO.kULong64:
+            case JSROOT.IO.kULong:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
+            case JSROOT.IO.kBool:
+               member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
             case JSROOT.IO.kTString:
-               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }; break;
+               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
+               break;
+            case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
+               member.func = function(buf, obj) {
+                  var ver = buf.ReadVersion();
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
+                  buf.CheckBytecount(ver, "TString[]");
+               }
+               break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kBool:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
@@ -2198,32 +2223,6 @@
                   buf.o += len;
                };
                break;
-            case JSROOT.IO.kShort:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
-            case JSROOT.IO.kInt:
-            case JSROOT.IO.kCounter:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntoi4(); }; break;
-            case JSROOT.IO.kLong:
-            case JSROOT.IO.kLong64:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntoi8(); }; break;
-            case JSROOT.IO.kDouble:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntod(); }; break;
-            case JSROOT.IO.kFloat:
-            case JSROOT.IO.kDouble32:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntof(); }; break;
-            case JSROOT.IO.kLegacyChar:
-            case JSROOT.IO.kUChar:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntou1(); }; break;
-            case JSROOT.IO.kUShort:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntou2(); }; break;
-            case JSROOT.IO.kBits:
-            case JSROOT.IO.kUInt:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntou4(); }; break;
-            case JSROOT.IO.kULong64:
-            case JSROOT.IO.kULong:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntou8(); }; break;
-            case JSROOT.IO.kBool:
-               member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
             case JSROOT.IO.kStreamLoop:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop:
                member.typename = element.fTypeName;
