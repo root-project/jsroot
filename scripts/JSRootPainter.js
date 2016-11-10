@@ -209,6 +209,8 @@
       if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
       var geocomp = JSROOT.GetUrlOption("geocomp", url);
       if (geocomp!==null) JSROOT.gStyle.GeoCompressComp = (geocomp!=='0') && (geocomp!=='false');
+
+      if (JSROOT.GetUrlOption("histminimumzero", url) !== null) JSROOT.gStyle.HistMinimumZero = true;
    }
 
    JSROOT.Painter.Coord = {
@@ -5192,7 +5194,8 @@
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Palette: 0, Optimize: JSROOT.gStyle.OptimizeDraw
+         HighRes: 0, Zero: 0, Palette: 0, BaseLine: false,
+         Optimize: JSROOT.gStyle.OptimizeDraw
       };
       // check for graphical cuts
       var chopt = JSROOT.Painter.clearCuts(opt.toUpperCase());
@@ -5294,6 +5297,9 @@
          if (nch == 4) option.Hist = 1;
          option.Same = 1;
       }
+
+      if (check('BASE0')) option.BaseLine = 0; else
+      if (JSROOT.gStyle.HistMinimumZero) option.BaseLine = 0;
 
       if (check('PIE')) option.Pie = 1;
 
@@ -7423,7 +7429,11 @@
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
-      if (!pmain.logy && (pmain.scale_ymin<=0) && (this.options.Bar!==2)) gry2 = Math.round(pmain.gry(0));
+      if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
+         if (this.options.BaseLine >= pmain.scale_ymin)
+            gry2 = Math.round(pmain.gry(this.options.BaseLine));
+
+      // if (!pmain.logy && (pmain.scale_ymin<=0) && (this.options.Bar!==2)) gry2 = Math.round(pmain.gry(0));
 
       for (i = left; i < right; ++i) {
          x1 = this.GetBinX(i);
