@@ -209,8 +209,6 @@
       if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
       var geocomp = JSROOT.GetUrlOption("geocomp", url);
       if (geocomp!==null) JSROOT.gStyle.GeoCompressComp = (geocomp!=='0') && (geocomp!=='false');
-
-      if (JSROOT.GetUrlOption("histminimumzero", url) !== null) JSROOT.gStyle.HistMinimumZero = true;
    }
 
    JSROOT.Painter.Coord = {
@@ -5299,7 +5297,7 @@
       }
 
       if (check('BASE0')) option.BaseLine = 0; else
-      if (JSROOT.gStyle.HistMinimumZero) option.BaseLine = 0;
+      if (JSROOT.gStyle.fHistMinimumZero) option.BaseLine = 0;
 
       if (check('PIE')) option.Pie = 1;
 
@@ -9932,6 +9930,33 @@
       });
    }
 
+   JSROOT.HierarchyPainter.prototype.ApplyStyle = function(style, call_back) {
+      if (!style)
+         return JSROOT.CallBack(call_back);
+
+      if (typeof style === 'object') {
+         if (style._typename === "TStyle")
+            JSROOT.extend(JSROOT.gStyle, style);
+         return JSROOT.CallBack(call_back);
+      }
+
+      if (typeof style === 'string') {
+
+         var hpainter = this,
+             item = this.Find( { name: style, allow_index: true, check_keys: true } );
+
+         if (item!==null)
+            return this.get(item, function(item2, obj) { hpainter.ApplyStyle(obj, call_back); });
+
+         if (style.indexOf('.json') > 0)
+            return JSROOT.NewHttpRequest(style, 'object', function(res) {
+               hpainter.ApplyStyle(res, call_back);
+            }).send(null);
+      }
+
+      return JSROOT.CallBack(call_back);
+   }
+
    JSROOT.HierarchyPainter.prototype.GetFileProp = function(itemname) {
       var item = this.Find(itemname);
       if (item == null) return null;
@@ -10340,7 +10365,8 @@
           itemsarr = JSROOT.GetUrlOptionAsArray("#item;items"),
           optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts"),
           monitor = JSROOT.GetUrlOption("monitoring"),
-          layout = JSROOT.GetUrlOption("layout");
+          layout = JSROOT.GetUrlOption("layout"),
+          style = JSROOT.GetUrlOptionAsArray("#style");
 
       if (gui_div && !gui_div.empty()) {
 
@@ -10367,17 +10393,11 @@
             if ((filesarr.length>0) && !filesdir) filesdir = gui_div.attr("path");
          }
 
-         if (expanditems.length === 0)
-            expanditems = GetDivOptionAsArray("expand");
-
-         if (itemsarr.length === 0)
-            itemsarr = GetDivOptionAsArray("#item;items");
-
-         if (jsonarr.length === 0)
-            jsonarr = GetDivOptionAsArray("#json;jsons");
-
-         if (optionsarr.length === 0)
-            optionsarr = GetDivOptionAsArray("#opt;opts");
+         if (!expanditems.length) expanditems = GetDivOptionAsArray("expand");
+         if (!itemsarr.length) itemsarr = GetDivOptionAsArray("#item;items");
+         if (!jsonarr.length) jsonarr = GetDivOptionAsArray("#json;jsons");
+         if (!optionsarr.length) optionsarr = GetDivOptionAsArray("#opt;opts");
+         if (!style.length) style = GetDivOptionAsArray("#style");
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 
@@ -10424,6 +10444,8 @@
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
          else if (expanditems.length>0)
             hpainter.expand(expanditems.shift(), OpenAllFiles);
+         else if (style.length>0)
+            hpainter.ApplyStyle(style.shift(), OpenAllFiles);
          else
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();

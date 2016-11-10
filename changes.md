@@ -21,6 +21,9 @@
 5. When superimpose items, one can specify individual options
      ...&item=histo1+histo2&opt=hist+e1
      ...&item=[histo1,histo2]&opt=[hist,e1]
+6. Support loading of TStyle object, providing in URL
+       &style=item_name  or  &style=json_file_name 
+   All values are copied directly to JSROOT.gStyle object.  
      
 
 ## Changes in 4.7.0

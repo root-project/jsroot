@@ -135,6 +135,7 @@
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
 
    // default draw styles, can be changed after loading of JSRootCore.js
+   // this style also can be changed providing style=itemname in the URL
    JSROOT.gStyle = {
          Tooltip : 1, // 0 - off, 1 - on
          ContextMenu : true,
@@ -165,7 +166,7 @@
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
-         HistMinimumZero : false   // when true, BAR and LEGO drawing using base = 0
+         fHistMinimumZero: false   // when true, BAR and LEGO drawing using base = 0
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
