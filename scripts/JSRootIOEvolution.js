@@ -2217,18 +2217,16 @@
                member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
                break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
-               member.func = function(buf, obj) {
-                  var ver = buf.ReadVersion();
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf) { return buf.ReadTString(); });
-                  buf.CheckBytecount(ver, "TString[]");
-               }
-               break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTObject:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTNamed:
+               member.typename = element.fTypeName;
                member.func = function(buf, obj) {
                   var ver = buf.ReadVersion();
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) { return buf.ClassStreamer({}, handle.type); });
-                  buf.CheckBytecount(ver, handle.type + "[]");
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
+                     if (handle.typename === 'TString') return buf.ReadTString();
+                     return buf.ClassStreamer({}, handle.typename);
+                  });
+                  buf.CheckBytecount(ver, this.typename + "[]");
                }
                break;
             case JSROOT.IO.kStreamLoop:

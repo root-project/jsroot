@@ -9,7 +9,7 @@
    - supports different versions of class in the same file
    - support memebers like ClassName* fField; //[fCnt]
    - support const char*
-   - support fixed-size array of TString 
+   - support fixed-size array of TString, TObject and TNamed 
 2. Many new draw options for different classes are supported:
     - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
     - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'
