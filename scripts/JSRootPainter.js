@@ -183,10 +183,10 @@
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
       if (JSROOT.GetUrlOption("notouch", url)!=null) JSROOT.touches = false;
 
-      JSROOT.gStyle.OptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.OptStat);
-      JSROOT.gStyle.OptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.OptFit);
-      JSROOT.gStyle.StatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.StatFormat);
-      JSROOT.gStyle.FitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.FitFormat);
+      JSROOT.gStyle.fOptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.fOptStat);
+      JSROOT.gStyle.fOptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.fOptFit);
+      JSROOT.gStyle.fStatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.fStatFormat);
+      JSROOT.gStyle.fFitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.fFitFormat);
 
       var toolbar = JSROOT.GetUrlOption("toolbar", url);
       if (toolbar !== null)
@@ -596,7 +596,7 @@
 
    JSROOT.Painter.getTimeOffset = function(axis) {
       var idF = axis.fTimeFormat.indexOf('%F');
-      if (idF < 0) return JSROOT.gStyle.TimeOffset;
+      if (idF < 0) return JSROOT.gStyle.fTimeOffset*1000;
       var sof = axis.fTimeFormat.substr(idF + 2);
       // default string in axis offset
       if (sof.indexOf('1995-01-01 00:00:00s0')==0) return 788918400000;
@@ -3563,11 +3563,11 @@
 
       if (fmt=="stat") {
          fmt = pave.fStatFormat;
-         if (!fmt) fmt = JSROOT.gStyle.StatFormat;
+         if (!fmt) fmt = JSROOT.gStyle.fStatFormat;
       } else
       if (fmt=="fit") {
          fmt = pave.fFitFormat;
-         if (!fmt) fmt = JSROOT.gStyle.FitFormat;
+         if (!fmt) fmt = JSROOT.gStyle.fFitFormat;
       } else
       if (fmt=="entries") {
          if (value < 1e9) return value.toFixed(0);
@@ -3686,8 +3686,8 @@
 
       var dostat = new Number(pave.fOptStat);
       var dofit = new Number(pave.fOptFit);
-      if (!dostat) dostat = JSROOT.gStyle.OptStat;
-      if (!dofit) dofit = JSROOT.gStyle.OptFit;
+      if (!dostat) dostat = JSROOT.gStyle.fOptStat;
+      if (!dofit) dofit = JSROOT.gStyle.fOptFit;
 
       // make empty at the beginning
       pave.Clear();
@@ -6128,14 +6128,29 @@
       var stats = this.FindStat();
       if (stats != null) return stats;
 
+      var st = JSROOT.gStyle;
+
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: opt_stat || JSROOT.gStyle.OptStat,
-                             fOptFit: JSROOT.gStyle.OptFit,
+                             fOptStat: opt_stat || st.fOptStat,
+                             fOptFit: st.fOptFit,
                              fBorderSize : 1} );
-      JSROOT.extend(stats, JSROOT.gStyle.StatNDC);
-      JSROOT.extend(stats, JSROOT.gStyle.StatText);
-      JSROOT.extend(stats, JSROOT.gStyle.StatFill);
+
+      stats.fX1NDC = st.fStatX - st.fStatW;
+      stats.fY1NDC = st.fStatY - st.fStatH;
+      stats.fX2NDC = st.fStatX;
+      stats.fY2NDC = st.fStatY;
+
+      stats.fFillColor = st.fStatColor;
+      stats.fFillStyle = st.fStatStyle;
+
+      stats.fTextAngle = 0;
+      stats.fTextSize = st.fStatFontSize; // 9 ??
+      stats.fTextAlign = 12;
+      stats.fTextColor = st.fStatTextColor;
+      stats.fTextFont = st.fStatFont;
+
+//      st.fStatBorderSize : 1,
 
       if (this.histo._typename.match(/^TProfile/) || this.histo._typename.match(/^TH2/))
          stats.fY1NDC = 0.67;
@@ -7596,7 +7611,7 @@
       var use_minmax = ((right-left) > 3*width);
 
       if (this.options.Error == 11) {
-         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize;
+         var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
          dend = Math.floor((this.lineatt.width-1)/2);
@@ -7660,7 +7675,7 @@
                         if (lbl === cont)
                            lbl = cont.toString();
                         else
-                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat);
+                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat);
 
                         var posx = Math.round(mx1 + (mx2-mx1)*0.1), posy = my-2-text_size,
                             sizex = Math.round((mx2-mx1)*0.8), sizey = text_size;
@@ -7806,7 +7821,7 @@
          if (cont === Math.round(cont))
             tips.push("entries = " + cont);
          else
-            tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.StatFormat));
+            tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat));
       }
 
       return tips;

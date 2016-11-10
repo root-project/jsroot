@@ -1768,7 +1768,7 @@
 
       if (this.optionErrors) {
          // to show end of error markers, use line width attribute
-         var lw = this.lineatt.width + JSROOT.gStyle.EndErrorSize, bb = 0,
+         var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
              vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
              hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh,
@@ -3879,7 +3879,7 @@
             if (lbl === binz)
                lbl = binz.toString();
             else
-               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat);
+               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat);
 
             if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);
@@ -4409,7 +4409,7 @@
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else
-         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.StatFormat));
+         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat));
 
       return lines;
    }
@@ -4422,9 +4422,9 @@
       lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
       // lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
 
-      lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.StatFormat))
-      lines.push('m25 = ' + JSROOT.FFormat(p.m25y, JSROOT.gStyle.StatFormat))
-      lines.push('p25 = ' + JSROOT.FFormat(p.p25y, JSROOT.gStyle.StatFormat))
+      lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.fStatFormat))
+      lines.push('m25 = ' + JSROOT.FFormat(p.m25y, JSROOT.gStyle.fStatFormat))
+      lines.push('p25 = ' + JSROOT.FFormat(p.p25y, JSROOT.gStyle.fStatFormat))
 
       return lines;
    }
@@ -4465,7 +4465,7 @@
       lines.push("y = " + pmain.AxisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
-      lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.StatFormat));
+      lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fStatFormat));
       return lines;
    }
 

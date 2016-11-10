@@ -148,25 +148,50 @@
          ToolBar : true,    // show additional tool buttons on the canvas
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat : true,
-         OptStat  : 1111,
-         OptFit   : 0,
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
-         StatNDC  : { fX1NDC: 0.78, fY1NDC: 0.75, fX2NDC: 0.98, fY2NDC: 0.91 },
-         StatText : { fTextAngle: 0, fTextSize: 9, fTextAlign: 12, fTextColor: 1, fTextFont: 42 },
-         StatFill : { fFillColor: 0, fFillStyle: 1001 },
-         TimeOffset : 788918400000, // UTC time at 01/01/95
-         StatFormat : "6.4g",
-         FitFormat : "5.4g",
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,
-         EndErrorSize : 2, // size in pixels of end error for E1 draw options
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
-         fHistMinimumZero: false   // when true, BAR and LEGO drawing using base = 0
+
+         // these are TStyle attributes, which can be chenged via URL 'style' parameter
+
+         fPadBottomMargin : 0.1,
+         fPadTopMargin : 0.1,
+         fPadLeftMargin : 0.1,
+         fPadRightMargin : 0.1,
+         fPadGridX : false,
+         fPadGridY : false,
+         fPadTickX : 0,
+         fPadTickY : 0,
+         fStatColor : 0,
+         fStatTextColor : 1,
+         fStatBorderSize : 1,
+         fStatFont : 42,
+         fStatFontSize : 0,
+         fStatStyle : 1001,
+         fStatFormat : "6.4g",
+         fStatX : 0.98,
+         fStatY : 0.935,
+         fStatW : 0.2,
+         fStatH : 0.16,
+         fFitFormat : "5.4g",
+         fOptStat : 1111,
+         fOptFit : 0,
+         fFrameFillColor : 0,
+         fFrameLineColor : 1,
+         fFrameFillStyle : 1001,
+         fFrameLineStyle : 1,
+         fFrameLineWidth : 1,
+         fFrameBorderSize : 1,
+         fFrameBorderMode : 0,
+         fEndErrorSize : 2,   // size in pixels of end error for E1 draw options
+         fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
+         fTimeOffset : 788918400, // UTC time at 01/01/95
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
@@ -1187,11 +1212,18 @@
                                   fWmax: 100, fWmin: 0 });
             break;
          case 'TAttPad':
-            JSROOT.extend(obj, { fLeftMargin: 0.1, fRightMargin: 0.1, fBottomMargin: 0.1, fTopMargin: 0.1,
+            JSROOT.extend(obj, { fLeftMargin: JSROOT.gStyle.fPadLeftMargin,
+                                 fRightMargin: JSROOT.gStyle.fPadRightMargin,
+                                 fBottomMargin: JSROOT.gStyle.fPadBottomMargin,
+                                 fTopMargin: JSROOT.gStyle.fPadTopMargin,
                                  fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
-                                 fFrameFillColor: 0, fFrameLineColor: 1, fFrameFillStyle: 1001,
-                                 fFrameLineStyle: 1, fFrameLineWidth: 1, fFrameBorderSize: 1,
-                                 fFrameBorderMode: 0 });
+                                 fFrameFillColor: JSROOT.gStyle.fFrameFillColor,
+                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
+                                 fFrameFillStyle: JSROOT.gStyle.fFrameFillStyle,
+                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
+                                 fFrameLineWidth: JSROOT.gStyle.fFrameLineWidth,
+                                 fFrameBorderSize: JSROOT.gStyle.fFrameBorderSize,
+                                 fFrameBorderMode: JSROOT.gStyle.fFrameBorderMode });
             break;
          case 'TPad':
             JSROOT.Create("TObject", obj);
@@ -1206,12 +1238,17 @@
                                  fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
                                  fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
                                  fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
-                                 fNumber: 0, fTickx: 0, fTicky: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fNumber: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fTickx: JSROOT.gStyle.fPadTickX,
+                                 fTicky: JSROOT.gStyle.fPadTickY,
                                  fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
-                                 fBorderMode: 0, fModified: false, fGridx: false, fGridy: false,
+                                 fBorderMode: 0, fModified: false,
+                                 fGridx: JSROOT.gStyle.fPadGridX,
+                                 fGridy: JSROOT.gStyle.fPadGridY,
                                  fAbsCoord: false, fEditable: true, fFixedAspectRatio: false,
                                  fPrimitives: JSROOT.Create("TList"), fExecs: null,
                                  fName: "pad", fTitle: "canvas" });
+
             break;
          case 'TAttCanvas':
             JSROOT.extend(obj, { fXBetween: 2, fYBetween: 2, fTitleFromTop: 1.2,
