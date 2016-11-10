@@ -2216,6 +2216,11 @@
             case JSROOT.IO.kTString:
                member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
                break;
+            case JSROOT.IO.kTObject:
+            case JSROOT.IO.kTNamed:
+               member.typename = element.fTypeName;
+               member.func = function(buf,obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); };
+               break;
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTObject:
             case JSROOT.IO.kOffsetL+JSROOT.IO.kTNamed:
