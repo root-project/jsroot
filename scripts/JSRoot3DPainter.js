@@ -1485,7 +1485,7 @@
           axis_zmax = this.grz.domain()[1],
           handle = this.PrepareColorDraw({ rounding: false, size3d: this.size3d, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
-          i, j, x1, x2, y1, y2, binz, reduced, nobottom, notop,
+          i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
           main = this.main_painter(),
           histo = this.GetObject(),
@@ -1498,6 +1498,15 @@
          if (level>0) return true;
          if (pthis.options.Zero || (axis_zmin>0)) return false;
          return !pthis.ShowEmptyBin(ii,jj);
+      }
+
+      function GetBinContent(ii,jj) {
+         binz1 = axis_zmin;
+         binz2 = histo.getBinContent(ii+1, jj+1);
+         if (pthis.options.BaseLine !== false) {
+            binz1 = pthis.options.BaseLine;
+            if (binz2 < binz1) { var d = binz1; binz1 = binz2; binz2 = d; }
+         }
       }
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
@@ -1514,19 +1523,21 @@
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
 
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = this.grz(zmin), z2 = 0, zzz = this.grz(zmax),
+             z1 = 0, z2 = 0, grzmin = this.grz(zmin), grzmax = this.grz(zmax),
              numvertices = 0, num2vertices = 0;
 
          // now calculate size of buffer geometry for boxes
 
          for (i=i1;i<i2;++i)
             for (j=j1;j<j2;++j) {
-               binz = this.histo.getBinContent(i+1, j+1);
-               if (binz < zmin) continue;
-               reduced = (binz === zmin);
+
+               GetBinContent(i,j);
+
+               if ((binz1 >= zmax) || (binz2 < zmin)) continue;
+               reduced = (binz2 === zmin);
                if (reduced && check_skip_min(nlevel,i,j)) continue;
                nobottom = !reduced && (nlevel>0);
-               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
                numvertices += (reduced ? 12 : indicies.length);
                if (nobottom) numvertices -= 6;
@@ -1556,17 +1567,20 @@
             x1 = handle.grx[i];
             x2 = handle.grx[i+1];
             for (j=j1;j<j2;++j) {
-               binz = this.histo.getBinContent(i+1, j+1);
-               if (binz < zmin) continue;
-               reduced = (binz === zmin);
+
+               GetBinContent(i,j);
+
+               if ((binz1 >= zmax) || (binz2 < zmin)) continue;
+               reduced = (binz2 === zmin);
                if (reduced && check_skip_min(nlevel,i,j)) continue;
                nobottom = !reduced && (nlevel>0);
-               notop = !reduced && (binz > zmax) && (nlevel < levels.length-2);
+               notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
                y1 = handle.gry[j];
                y2 = handle.gry[j+1];
 
-               z2 = (binz > zmax) ? zzz : this.grz(binz);
+               z1 = (binz1 <= zmin) ? grzmin : this.grz(binz1);
+               z2 = (binz2 > zmax) ? grzmax : this.grz(binz2);
 
                nn = 0; // counter over the normals, each normals correspond to 6 vertices
                k = 0; // counter over vertices
@@ -1648,6 +1662,7 @@
          mesh.painter = this;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
+         mesh.baseline = (this.options.BaseLine===false) ? axis_zmin : this.options.BaseLine;
          mesh.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
 
          mesh.tooltip = function(intersect) {
@@ -1664,11 +1679,12 @@
                tip.y1 = Math.max(-p.size3d, p.gry(p.GetBinY(tip.iy-1)));
                tip.y2 = Math.min(p.size3d, p.gry(p.GetBinY(tip.iy)));
             }
-            tip.z1 = p.grz(this.zmin);
-            tip.z2 = p.grz(this.zmax);
 
-            if (tip.value<this.zmin) tip.z2 = tip.z1; else
-            if (tip.value<this.zmax) tip.z2 = p.grz(tip.value);
+            var binz1 = Math.max(this.zmin, Math.min(this.baseline, tip.value)),
+                binz2 = Math.min(this.zmax, Math.max(this.baseline, tip.value));
+
+            tip.z1 = p.grz(binz1);
+            tip.z2 = p.grz(binz2);
 
             tip.color = this.tip_color;
 
@@ -1696,6 +1712,7 @@
             mesh2.tooltip = mesh.tooltip;
             mesh2.zmin = mesh.zmin;
             mesh2.zmax = mesh.zmax;
+            mesh2.baseline = mesh.baseline;
             mesh2.tip_color = mesh.tip_color;
 
             this.toplevel.add(mesh2);
@@ -1713,9 +1730,12 @@
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            binz = this.histo.getBinContent(i+1, j+1);
-            if (binz < axis_zmin) continue;
-            reduced = (binz == axis_zmin);
+
+            GetBinContent(i,j);
+
+            if ((binz1 >= axis_zmax) || (binz2 < axis_zmin)) continue;
+
+            reduced = (binz2 == axis_zmin);
             if (reduced && check_skip_min(0,i,j)) continue;
 
             // calculate required buffer size for line segments
@@ -1736,27 +1756,30 @@
 //          intersect_size = uselineindx ? numsegments : numlinevertices,
 //          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
-      var z1 = this.grz(axis_zmin), zzz = this.grz(axis_zmax),
-          z2 = 0, ll = 0, ii = 0;
+      var z1 = 0, z2 = 0,
+          grzmin = this.grz(axis_zmin),
+          grzmax = this.grz(axis_zmax),
+          ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
          x1 = handle.grx[i];
          x2 = handle.grx[i+1];
          for (j=j1;j<j2;++j) {
-            binz = this.histo.getBinContent(i+1, j+1);
-            if (binz < axis_zmin) continue;
-            reduced = (binz == axis_zmin);
+
+            GetBinContent(i,j);
+
+            if ((binz1 >= axis_zmax) || (binz2 < axis_zmin)) continue;
+            reduced = (binz2 == axis_zmin);
             if (reduced && check_skip_min(0,i,j)) continue;
 
             y1 = handle.gry[j];
             y2 = handle.gry[j+1];
 
-            z2 = (binz > zmax) ? zzz : this.grz(binz);
+            z1 = (binz1 <= axis_zmin) ? grzmin : this.grz(binz1);
+            z2 = (binz2 > axis_zmax) ? grzmax : this.grz(binz2);
 
             var seg = reduced ? rsegments : segments,
                 vvv = reduced ? rvertices : vertices;
-//                bin_index = this.histo.getBin(i+1, j+1);
-
 
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
