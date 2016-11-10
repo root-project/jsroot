@@ -10331,7 +10331,7 @@
          }
 
          if (filesarr.length === 0) {
-            filesarr = GetDivOptionAsArray("#file;files"); // 'files' used in normal UI to give selection list
+            filesarr = GetDivOptionAsArray("#file"); // 'files' used in normal UI to give selection list
             if ((filesarr.length>0) && !filesdir) filesdir = gui_div.attr("path");
          }
 
