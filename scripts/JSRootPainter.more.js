@@ -4702,7 +4702,7 @@
    JSROOT.TH2Painter.prototype.DrawFuncName = function() {
       if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) return "Draw3D";
 
-      if ((this.options.Contour > 0) || !this.is_main_painter()) return this.main_painter().DrawFuncName();
+      if ((this.options.Contour > 0) && !this.is_main_painter()) return this.main_painter().DrawFuncName();
 
       return "Draw2D";
    }
