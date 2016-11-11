@@ -2643,32 +2643,6 @@
 
    // ==============================================================================
 
-   JSROOT.Painter.TGraphPainter_3DTooltip = function(intersect) {
-      var indx = Math.floor(intersect.index / this.nvertex);
-      if ((indx<0) || (indx >= this.index.length)) return null;
-
-      indx = this.index[indx];
-
-      var p = this.painter;
-
-      var tip = { info: "pnt: " + indx + "<br/>" +
-                    "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
-                    "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
-                    "z: " + p.z_handle.format(this.graph.fZ[indx]) };
-
-      var grx = p.grx(this.graph.fX[indx]),
-          gry = p.gry(this.graph.fY[indx]),
-          grz = p.grz(this.graph.fZ[indx]);
-
-      tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-      tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-      tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-      tip.color = this.tip_color;
-
-      return tip;
-   }
-
    JSROOT.Painter.TGraphPainter_Draw3DBins = function() {
 
       var main = this.main_painter(),
@@ -2790,39 +2764,53 @@
             fcolor = palette[indx];
          }
 
+         var mesh = null;
+
          if (use_points) {
             var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
-            var points = new THREE.Points(geom, material);
-
-            main.toplevel.add(points);
-
-            points.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-            points.nvertex = 1;
-            points.graph = graph;
-            points.index = index;
-            points.painter = main;
-            points.scale0 = 0.7*scale;
-
-            points.tooltip = JSROOT.Painter.TGraphPainter_3DTooltip;
-
+            mesh = new THREE.Points(geom, material);
+            mesh.nvertex = 1;
          } else {
-
             // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
             var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
-
-            var mesh = new THREE.Mesh(geom, material);
-
-            main.toplevel.add(mesh);
-
-            mesh.step = step;
+            mesh = new THREE.Mesh(geom, material);
             mesh.nvertex = indicies.length;
-            mesh.graph = graph;
-            mesh.index = index;
-            mesh.painter = main;
-            mesh.scale0 = 0.7*scale;
-            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         }
 
-            mesh.tooltip = JSROOT.Painter.TGraphPainter_3DTooltip;
+         main.toplevel.add(mesh);
+
+         mesh.graph = graph;
+         mesh.index = index;
+         mesh.painter = main;
+         mesh.scale0 = 0.7*scale;
+         mesh.tip_name = this.GetTipName();
+         mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+
+         mesh.tooltip = function(intersect) {
+            var indx = Math.floor(intersect.index / this.nvertex);
+            if ((indx<0) || (indx >= this.index.length)) return null;
+
+            indx = this.index[indx];
+
+            var p = this.painter;
+
+            var tip = { info: this.tip_name + "<br/>" +
+                          "pnt: " + indx + "<br/>" +
+                          "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
+                          "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
+                          "z: " + p.z_handle.format(this.graph.fZ[indx]) };
+
+            var grx = p.grx(this.graph.fX[indx]),
+                gry = p.gry(this.graph.fY[indx]),
+                grz = p.grz(this.graph.fZ[indx]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
          }
 
       }
