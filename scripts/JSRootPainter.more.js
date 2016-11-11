@@ -1304,7 +1304,10 @@
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.TGraphPainter.prototype.Redraw = function() {
-      this.DrawBins();
+      if (this.mode3d)
+         this.Draw3DBins();
+      else
+         this.DrawBins();
    }
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
@@ -1427,6 +1430,10 @@
       }
    }
 
+   JSROOT.TGraphPainter.prototype.Is3DMode = function() {
+      return this.MatchObjectType("TGraph2D") || this.MatchObjectType("TGraph2DErrors");
+   }
+
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
       var gr = this.GetObject();
       if (gr===null) return;
@@ -1436,27 +1443,34 @@
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
-          || gr._typename.match(/^RooHist/)) kind = 2;
+          || gr._typename.match(/^RooHist/)) kind = 2; else
+      if (this.Is3DMode()) kind = -1;
 
       this.bins = [];
 
       for (p=0;p<npoints;++p) {
          var bin = { x: gr.fX[p], y: gr.fY[p] };
-         if (kind === 1) {
-            bin.exlow = bin.exhigh = gr.fEX[p];
-            bin.eylow = bin.eyhigh = gr.fEY[p];
-         } else
-         if (kind === 2) {
-            bin.exlow  = gr.fEXlow[p];
-            bin.exhigh  = gr.fEXhigh[p];
-            bin.eylow  = gr.fEYlow[p];
-            bin.eyhigh = gr.fEYhigh[p];
+         switch(kind) {
+            case 1:
+              bin.exlow = bin.exhigh = gr.fEX[p];
+              bin.eylow = bin.eyhigh = gr.fEY[p];
+              break;
+            case 2:
+               bin.exlow  = gr.fEXlow[p];
+               bin.exhigh  = gr.fEXhigh[p];
+               bin.eylow  = gr.fEYlow[p];
+               bin.eyhigh = gr.fEYhigh[p];
+               break;
+            case -1:
+               bin.z = gr.fZ[p];
+               break;
          }
          this.bins.push(bin);
 
          if (p===0) {
             this.xmin = this.xmax = bin.x;
             this.ymin = this.ymax = bin.y;
+            if (kind<0) this.zmin = this.zmax = bin.z;
          }
 
          if (kind > 0) {
@@ -1469,6 +1483,10 @@
             this.xmax = Math.max(this.xmax, bin.x);
             this.ymin = Math.min(this.ymin, bin.y);
             this.ymax = Math.max(this.ymax, bin.y);
+            if (kind<0) {
+               this.zmin = Math.min(this.zmin, bin.z);
+               this.zmax = Math.max(this.zmax, bin.z);
+            }
          }
 
       }
@@ -1506,6 +1524,51 @@
       histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
       return histo;
    }
+
+   JSROOT.TGraphPainter.prototype.CreateHistogram2D = function() {
+      // bins should be created
+
+      var xmin = this.xmin, xmax = this.xmax,
+          ymin = this.ymin, ymax = this.ymax,
+          zmin = this.zmin, zmax = this.zmax;
+
+      if (xmin >= xmax) xmax = xmin+1;
+      if (ymin >= ymax) ymax = ymin+1;
+      if (zmin >= zmax) zmax = zmin+1;
+      var dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1, dz = (zmax-zmin)*0.1,
+          uxmin = xmin - dx, uxmax = xmax + dx,
+          uymin = ymin - dy, uymax = ymax + dy,
+          uzmin = zmin - dz, uzmax = zmax + dz;
+
+      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
+      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+
+      if ((uymin<0) && (ymin>=0)) uymin = ymin*0.9;
+      if ((uymax>0) && (ymax<=0)) uymax = 0;
+
+      if ((uzmin<0) && (zmin>=0)) uzmin = zmin*0.9;
+      if ((uzmax>0) && (zmax<=0)) uzmax = 0;
+
+      var graph = this.GetObject();
+
+      if (graph.fMinimum != -1111) uzmin = graph.fMinimum;
+      if (graph.fMaximum != -1111) uzmax = graph.fMaximum;
+
+      var histo = JSROOT.CreateTH2(10, 10);
+      histo.fName = graph.fName + "_h";
+      histo.fTitle = graph.fTitle;
+      histo.fXaxis.fXmin = uxmin;
+      histo.fXaxis.fXmax = uxmax;
+      histo.fYaxis.fXmin = uymin;
+      histo.fYaxis.fXmax = uymax;
+      histo.fZaxis.fXmin = uzmin;
+      histo.fZaxis.fXmax = uzmax;
+      histo.fMinimum = uzmin;
+      histo.fMaximum = uzmax;
+      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      return histo;
+   }
+
 
    JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
@@ -2126,11 +2189,23 @@
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       JSROOT.extend(this, new JSROOT.TGraphPainter(graph));
 
-      this.CreateBins();
-
       this.DecodeOptions(opt);
 
       this.SetDivId(divid, -1); // just to get access to existing elements
+
+      this.mode3d = this.Is3DMode();
+
+      if (this.mode3d) {
+         JSROOT.AssertPrerequisites('3d', function() {
+            this.Draw3D = JSROOT.Painter.TGraphPainter_Draw3D;
+            this.Draw3DBins = JSROOT.Painter.TGraphPainter_Draw3DBins;
+            this.Draw3D(divid);
+         }.bind(this));
+
+         return this;
+      }
+
+      this.CreateBins();
 
       if (this.main_painter() == null) {
          if (graph.fHistogram == null)

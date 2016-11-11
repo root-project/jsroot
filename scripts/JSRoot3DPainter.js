@@ -2608,8 +2608,10 @@
          this.zmin = pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
 
+         var zmult = 1.1;
+
          if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
-         if (this.histo.fMaximum !== -1111) this.zmax = this.histo.fMaximum;
+         if (this.histo.fMaximum !== -1111) { this.zmax = this.histo.fMaximum; zmult = 1; }
 
          if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
@@ -2617,7 +2619,7 @@
 
          if (main === this) {
             this.Create3DScene();
-            this.DrawXYZ(this.toplevel, { use_y_for_z: false, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+            this.DrawXYZ(this.toplevel, { use_y_for_z: false, zmult: zmult, zoom: JSROOT.gStyle.Zooming });
          }
 
          this.Draw3DBins();
@@ -2637,6 +2639,195 @@
       }
 
       JSROOT.CallBack(call_back);
+   }
+
+   // ==============================================================================
+
+   JSROOT.Painter.TGraphPainter_Draw3DBins = function() {
+
+      var main = this.main_painter(),
+          graph = this.GetObject();
+
+      if (!main  || !('renderer' in main)) return;
+
+      var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
+          sizelimit = main.webgl ? 50000 : 5000, numselected = 0;
+
+      for (var i=0; i < this.bins.length; ++i) {
+         var bin = this.bins[i];
+
+         if ((bin.x < main.scale_xmin) || (bin.x > main.scale_xmax) ||
+             (bin.y < main.scale_ymin) || (bin.y > main.scale_ymax) ||
+             (bin.z < main.scale_zmin) || (bin.z > main.scale_zmax)) continue;
+
+         numselected++;
+      }
+
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points && (numselected > sizelimit)) {
+         step = Math.floor(numselected / sizelimit);
+         if (step <= 2) step = 2;
+      }
+
+      var size = Math.floor(numselected / step),
+          indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices,
+          lll = 0, select = 0,
+          scale = main.size3d/100, pos, norm;
+
+      if (use_points) {
+         pos = new Float32Array(size*3);
+         norm = null;
+      } else {
+         pos = new Float32Array(indicies.length*3*size);
+         norm = new Float32Array(indicies.length*3*size);
+      }
+
+      for (var i=0; i < this.bins.length; ++i) {
+         var bin = this.bins[i];
+
+         if ((bin.x < main.scale_xmin) || (bin.x > main.scale_xmax) ||
+             (bin.y < main.scale_ymin) || (bin.y > main.scale_ymax) ||
+             (bin.z < main.scale_zmin) || (bin.z > main.scale_zmax)) continue;
+
+         if (step > 1) {
+            select = (select+1) % step;
+            if (select!==0) continue;
+         }
+
+         var x = main.grx(bin.x),
+             y = main.gry(bin.y),
+             z = main.grz(bin.z);
+
+         if (use_points) {
+            pos[lll]   = x;
+            pos[lll+1] = y;
+            pos[lll+2] = z;
+            lll+=3;
+            continue;
+         }
+
+         for (var k=0,nn=-3;k<indicies.length;++k) {
+            var vert = vertices[indicies[k]];
+            pos[lll]   = x + (vert.x - 0.5)*scale;
+            pos[lll+1] = y + (vert.y - 0.5)*scale;
+            pos[lll+2] = z + (vert.z - 0.5)*scale;
+
+            if (k%6===0) nn+=3;
+            norm[lll] = normals[nn];
+            norm[lll+1] = normals[nn+1];
+            norm[lll+2] = normals[nn+2];
+
+            lll+=3;
+         }
+      }
+
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+      var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
+
+      if (use_points) {
+         var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
+         var points = new THREE.Points(geom, material);
+
+         main.toplevel.add(points);
+
+         points.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         points.graph = graph;
+         points.painter = main;
+         points.scale0 = 0.7*scale;
+
+/*         points.tooltip = function(intersect) {
+
+            var indx = intersect.index*3;
+            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
+            var p = this.painter;
+
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+            var grx = p.grx(this.poly.fP[indx]),
+                gry = p.gry(this.poly.fP[indx+1]),
+                grz = p.grz(this.poly.fP[indx+2]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
+         }
+*/
+
+      } else {
+
+         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+
+         var mesh = new THREE.Mesh(geom, material);
+
+         main.toplevel.add(mesh);
+
+         mesh.step = step;
+         mesh.nvertex = indicies.length;
+         mesh.graph = graph;
+         mesh.painter = main;
+         mesh.scale0 = 0.7*scale; // double size
+         mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+/*
+         mesh.tooltip = function(intersect) {
+            var indx = Math.floor(intersect.index / this.nvertex) * this.step;
+            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
+            var p = this.painter;
+
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+            var grx = p.grx(this.poly.fP[indx]),
+                gry = p.gry(this.poly.fP[indx+1]),
+                grz = p.grz(this.poly.fP[indx+2]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
+         }
+*/
+      }
+
+      main.Render3D(100); // set large timeout to be able draw other points
+   }
+
+   JSROOT.Painter.TGraphPainter_Draw3D = function(divid) {
+      // function used with TGraphPainter class
+
+      this.CreateBins();
+
+      if (this.main_painter() == null) {
+
+         var gr = this.GetObject();
+
+         if (gr.fHistogram == null)
+            gr.fHistogram = this.CreateHistogram2D();
+         JSROOT.Painter.drawHistogram2D(divid, gr.fHistogram, "lego " + this.optionAxis);
+         this.ownhisto = true;
+      }
+
+      this.SetDivId(divid);
+
+      this.Draw3DBins();
+
+      this.DrawNextFunction(0, this.DrawingReady.bind(this));
    }
 
    // ==============================================================================
