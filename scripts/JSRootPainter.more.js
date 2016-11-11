@@ -2752,7 +2752,7 @@
 
    JSROOT.THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
 
-      if (nlevels<1) nlevels = 20;
+      if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
       this.fContour = [];
       this.zmin = zmin;
       this.zmax = zmax;
@@ -2801,7 +2801,7 @@
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      var histo = this.GetObject(), nlevels = 20,
+      var histo = this.GetObject(), nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
       if (histo.fContour) nlevels = histo.fContour.length;

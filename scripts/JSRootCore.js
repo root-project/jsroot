@@ -182,6 +182,7 @@
          fFitFormat : "5.4g",
          fOptStat : 1111,
          fOptFit : 0,
+         fNumberContours : 20,
          fGridColor : 0,
          fGridStyle : 11,
          fGridWidth : 1,
