@@ -2648,95 +2648,125 @@
       var main = this.main_painter(),
           graph = this.GetObject();
 
-      if (!main  || !('renderer' in main)) return;
+      if (!graph || !main  || !('renderer' in main)) return;
 
-      var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
-          sizelimit = main.webgl ? 50000 : 5000, numselected = 0;
+      var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/;
 
-      for (var i=0; i < graph.fNpoints; ++i) {
+      function CountSelected(zmin, zmax) {
+         var cnt = 0;
+         for (var i=0; i < graph.fNpoints; ++i) {
+            if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+                (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+                (graph.fZ[i] < zmin) || (graph.fZ[i] > zmax)) continue;
 
-         if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
-             (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
-             (graph.fZ[i] < main.scale_zmin) || (graph.fZ[i] > main.scale_zmax)) continue;
-
-         numselected++;
+            ++cnt;
+         }
+         return cnt;
       }
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points && (numselected > sizelimit)) {
-         step = Math.floor(numselected / sizelimit);
-         if (step <= 2) step = 2;
+      // try to define scale-down factor
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points) {
+          var numselected = CountSelected(main.scale_zmin, main.scale_zmax),
+              sizelimit = main.webgl ? 50000 : 5000;
+
+          if (numselected > sizelimit) {
+             step = Math.floor(numselected / sizelimit);
+             if (step <= 2) step = 2;
+          }
       }
 
-      var size = Math.floor(numselected / step),
-          indicies = JSROOT.Painter.Box_Indexes,
+      var palette = null, levels = [main.scale_zmin, main.scale_zmax];
+
+      if (this.optionColor) {
+         levels = main.GetContour();
+         palette = main.GetPalette();
+      }
+
+      var indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
           vertices = JSROOT.Painter.Box_Vertices,
-          lll = 0, select = 0,
-          scale = main.size3d/100, pos, norm;
+          scale = main.size3d/100;
 
-      if (use_points) {
-         pos = new Float32Array(size*3);
-         norm = null;
-      } else {
-         pos = new Float32Array(indicies.length*3*size);
-         norm = new Float32Array(indicies.length*3*size);
-      }
+      for (var lvl=0;lvl<levels.length-1;++lvl) {
 
-      for (var i=0; i < graph.fNpoints; ++i) {
-         if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
-             (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
-             (graph.fZ[i] < main.scale_zmin) || (graph.fZ[i] > main.scale_zmax)) continue;
+         var lvl_zmin = Math.max(levels[lvl], main.scale_zmin),
+             lvl_zmax = Math.min(levels[lvl+1], main.scale_zmax);
 
-         if (step > 1) {
-            select = (select+1) % step;
-            if (select!==0) continue;
-         }
+         if (lvl_zmin >= lvl_zmax) continue;
 
-         var x = main.grx(graph.fX[i]),
-             y = main.gry(graph.fY[i]),
-             z = main.grz(graph.fZ[i]);
+         var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
+             lll = 0, select = 0, pos, norm;
 
          if (use_points) {
-            pos[lll]   = x;
-            pos[lll+1] = y;
-            pos[lll+2] = z;
-            lll+=3;
-            continue;
+            pos = new Float32Array(size*3);
+            norm = null;
+         } else {
+            pos = new Float32Array(indicies.length*3*size);
+            norm = new Float32Array(indicies.length*3*size);
          }
 
-         for (var k=0,nn=-3;k<indicies.length;++k) {
-            var vert = vertices[indicies[k]];
-            pos[lll]   = x + (vert.x - 0.5)*scale;
-            pos[lll+1] = y + (vert.y - 0.5)*scale;
-            pos[lll+2] = z + (vert.z - 0.5)*scale;
+         for (var i=0; i < graph.fNpoints; ++i) {
+            if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+                (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] > lvl_zmax)) continue;
 
-            if (k%6===0) nn+=3;
-            norm[lll] = normals[nn];
-            norm[lll+1] = normals[nn+1];
-            norm[lll+2] = normals[nn+2];
+            if (step > 1) {
+               select = (select+1) % step;
+               if (select!==0) continue;
+            }
 
-            lll+=3;
+            var x = main.grx(graph.fX[i]),
+                y = main.gry(graph.fY[i]),
+                z = main.grz(graph.fZ[i]);
+
+            if (use_points) {
+               pos[lll]   = x;
+               pos[lll+1] = y;
+               pos[lll+2] = z;
+               lll+=3;
+               continue;
+            }
+
+            for (var k=0,nn=-3;k<indicies.length;++k) {
+               var vert = vertices[indicies[k]];
+               pos[lll]   = x + (vert.x - 0.5)*scale;
+               pos[lll+1] = y + (vert.y - 0.5)*scale;
+               pos[lll+2] = z + (vert.z - 0.5)*scale;
+
+               if (k%6===0) nn+=3;
+               norm[lll] = normals[nn];
+               norm[lll+1] = normals[nn+1];
+               norm[lll+2] = normals[nn+2];
+
+               lll+=3;
+            }
          }
-      }
 
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
-      var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
 
-      if (use_points) {
-         var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
-         var points = new THREE.Points(geom, material);
+         var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
 
-         main.toplevel.add(points);
+         if (palette) {
+            var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
+            if (indx > palette.length-1) indx = palette.length-1;
+            fcolor = palette[indx];
+         }
 
-         points.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-         points.graph = graph;
-         points.painter = main;
-         points.scale0 = 0.7*scale;
+         if (use_points) {
+            var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
+            var points = new THREE.Points(geom, material);
 
-/*         points.tooltip = function(intersect) {
+            main.toplevel.add(points);
+
+            points.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+            points.graph = graph;
+            points.painter = main;
+            points.scale0 = 0.7*scale;
+
+            /*         points.tooltip = function(intersect) {
 
             var indx = intersect.index*3;
             if ((indx<0) || (indx >= this.poly.fP.length)) return null;
@@ -2759,24 +2789,24 @@
 
             return tip;
          }
-*/
+             */
 
-      } else {
+         } else {
 
-         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+            // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+            var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
 
-         var mesh = new THREE.Mesh(geom, material);
+            var mesh = new THREE.Mesh(geom, material);
 
-         main.toplevel.add(mesh);
+            main.toplevel.add(mesh);
 
-         mesh.step = step;
-         mesh.nvertex = indicies.length;
-         mesh.graph = graph;
-         mesh.painter = main;
-         mesh.scale0 = 0.7*scale; // double size
-         mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-/*
+            mesh.step = step;
+            mesh.nvertex = indicies.length;
+            mesh.graph = graph;
+            mesh.painter = main;
+            mesh.scale0 = 0.7*scale; // double size
+            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+            /*
          mesh.tooltip = function(intersect) {
             var indx = Math.floor(intersect.index / this.nvertex) * this.step;
             if ((indx<0) || (indx >= this.poly.fP.length)) return null;
@@ -2799,7 +2829,9 @@
 
             return tip;
          }
-*/
+             */
+         }
+
       }
 
       main.Render3D(100); // set large timeout to be able draw other points

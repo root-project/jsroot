@@ -1328,91 +1328,91 @@
                          this.is_bent || graph._typename.match(/^RooHist/));
       if (this.has_errors) this.optionErrors = 1;
 
-      if (opt && (typeof opt ==='string')) {
-         this.opt = opt.toUpperCase();
-         this.opt.replace('SAME', '');
-      }
-      if (this.opt.indexOf('L') != -1)
-         this.optionLine = 1;
-      if (this.opt.indexOf('F') != -1)
-         this.optionFill = 1;
-      if (this.opt.indexOf('A') != -1)
-         this.optionAxis = "AXIS";
-      if (this.opt.indexOf('X+') != -1)
-         this.optionAxis += "X+";
-      if (this.opt.indexOf('Y+') != -1)
-         this.optionAxis += "Y+";
+      var chopt = (opt && (typeof opt ==='string')) ? opt.toUpperCase() : "";
+      chopt.replace('SAME', '')
 
-      if (this.opt.indexOf('C') != -1) {
+      function check(name) {
+         var pos = chopt.indexOf(name);
+         if (pos < 0) return false;
+         chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
+         return true;
+      }
+
+      if (check('COL')) this.optionColor = 1;
+      if (check('L')) this.optionLine = 1;
+      if (check('F')) this.optionFill = 1;
+      if (check('A')) this.optionAxis = "AXIS";
+      if (check('X+')) this.optionAxis += "X+";
+      if (check('Y+')) this.optionAxis += "Y+";
+
+      if (check('C')) {
          this.optionCurve = 1;
          if (this.optionFill==0) this.optionLine = 1;
       }
-      if (this.opt.indexOf('*') != -1)
-         this.optionMark = 103;
-      if (this.opt.indexOf('P') != -1)
-         this.optionMark = 1;
-      if (this.opt.indexOf('B') != -1) {
+      if (check('*')) this.optionMark = 103;
+      if (check('P')) this.optionMark = 1;
+      if (check('B')) {
          this.optionBar = 1;
          this.optionErrors = 0;
       }
 
-      if (this.opt.indexOf('Z') != -1) {
+      if (check('Z')) {
          this.optionErrors = 1;
          this.draw_ends = 0;
       }
 
-      if (this.opt.indexOf('||') != -1) {
+      if (check('||')) {
          this.optionErrors = 1;
          this.draw_mainerr = false;
          this.draw_ends = 1;
       }
 
-      if (this.opt.indexOf('[]') != -1) {
+      if (check('[]')) {
          this.optionErrors = 1;
          this.draw_mainerr = false;
          this.draw_ends = 2;
       }
 
-      if (this.opt.indexOf('|>') != -1) {
+      if (check('|>')) {
          this.optionErrors = 1;
          this.draw_ends = 3;
       } else
-      if (this.opt.indexOf('>') != -1) {
+      if (check('>')) {
          this.optionErrors = 1;
          this.draw_ends = 4;
       }
 
-      if (this.opt.indexOf('0') != -1) {
+      if (check('0')) {
          this.optionMark = 1;
          this.optionErrors = 1;
          this.out_of_range = true;
       }
 
-      if (this.opt.indexOf('1') != -1) {
+      if (check('1')) {
          if (this.optionBar == 1) this.optionBar = 2;
       }
-      if (this.opt.indexOf('2') != -1) {
+      if (check('2')) {
          this.optionRect = 1;
          this.optionLine = 0;
          this.optionErrors = 0;
       }
-      if (this.opt.indexOf('3') != -1) {
+      if (check('3')) {
          this.optionEF = 1;
          this.optionLine = 0;
          this.optionErrors = 0;
       }
-      if (this.opt.indexOf('4') != -1) {
+      if (check('4')) {
          this.optionEF = 2;
          this.optionLine = 0;
          this.optionErrors = 0;
       }
-      if (this.opt.indexOf('5') != -1) {
+      if (check('5')) {
          this.optionRect = 2;
          this.optionLine = 0;
          this.optionErrors = 0;
       }
 
-      if (this.opt.indexOf('X') != -1) this.optionErrors = 0;
+      if (check('X')) this.optionErrors = 0;
 
       // special case - one could use svg:path to draw many pixels (
       if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 101;
@@ -1420,8 +1420,7 @@
       // if no drawing option is selected and if opt=='' nothing is done.
       if (this.optionLine + this.optionFill + this.optionMark + this.optionBar +
           this.optionEF + this.optionRect + this.optionErrors == 0) {
-         if (this.opt.length == 0)
-            this.optionLine = 1;
+         if (chopt.length == 0) this.optionLine = 1;
       }
 
       if (graph._typename == 'TGraphErrors') {
