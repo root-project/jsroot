@@ -19,13 +19,15 @@ One could use JSROOT directly from local file system. If source code was unpacke
 
 [The main page](https://root.cern.ch/js/latest/) of the JSROOT project provides the possibility to interactively open ROOT files and draw objects like histogram or canvas. 
 
-To automate files loading and objects drawing, 
-one can provide number of URL parameters in address string like:
+To automate files loading and objects drawing, one can provide number of URL parameters in address string like:
 
-- file, files - name of the file(s), which will be automatically open with page loading
+- file - name of the file, which will be automatically open with page loading
+- files - array of file names for loading 
 - json - name of JSON file with stored ROOT object like histogram or canvas 
-- item, items - name of the item(s) to be displayed
-- opt, opts - drawing option(s) for the item(s)
+- item - item name to be displayed
+- opt - drawing option for the item
+- items - array of items name 
+- opts - array of drawing options for the items 
 - layout - can be 'simple', 'flex', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values
 - nobrowser - do not display file browser
 - load - name of extra JavaScript to load
@@ -34,6 +36,7 @@ one can provide number of URL parameters in address string like:
 - interactive - enable/disable interactive functions 0-disable all, 1-enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
+- style - name of TStyle object to define global JSROOT style 
 
 For instance:
 
@@ -41,7 +44,7 @@ For instance:
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
-When specifying `file`, `item` or `opt` parameters, one could provide array like `file=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `item=[file1.root/hpx,file2.root/hpy]` or `opt=['',colz]`. 
+When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`. 
 
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern.ch/js/latest/api.htm) page.   
 
@@ -57,7 +60,7 @@ One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __i
 List of supported classes and draw options:
 
 - TH1 : [hist](https://root.cern.ch/js/latest/examples.htm#th1), [p](https://root.cern.ch/js/latest/examples.htm#th1_p), [p0](https://root.cern.ch/js/latest/examples.htm#th1_p0), [*](http://jsroot.gsi.de/dev/examples.htm#th1_star), [L](http://jsroot.gsi.de/dev/examples.htm#th1_l), [e](https://root.cern.ch/js/latest/examples.htm#th1_e), [e1](https://root.cern.ch/js/latest/examples.htm#th1_e1), [lego](https://root.cern.ch/js/latest/examples.htm#th1_lego), [X+Y+](http://jsroot.gsi.de/dev/examples.htm#th1_x+y+)
-- TH2 : [scat](https://root.cern.ch/js/latest/examples.htm#th2), [col](https://root.cern.ch/js/latest/examples.htm#th2_col), [colz](https://root.cern.ch/js/latest/examples.htm#th2_colz), [box](https://root.cern.ch/js/latest/examples.htm#th2_box), [text](https://root.cern.ch/js/latest/examples.htm#th2_text), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego), [arr](http://jsroot.gsi.de/dev/examples.htm#th2_arr), [cont](http://jsroot.gsi.de/dev/examples.htm#th2_cont), [cont1](http://jsroot.gsi.de/dev/examples.htm#th2_cont1), [cont2](http://jsroot.gsi.de/dev/examples.htm#th2_cont2), [cont3](http://jsroot.gsi.de/dev/examples.htm#th2_cont3), [cont4](http://jsroot.gsi.de/dev/examples.htm#th2_cont4), [surf](http://jsroot.gsi.de/dev/examples.htm#th2_surf), [surf1](http://jsroot.gsi.de/dev/examples.htm#th2_surf1), [surf2](http://jsroot.gsi.de/dev/examples.htm#th2_surf2), [surf4](http://jsroot.gsi.de/dev/examples.htm#th2_surf4), [surf6](http://jsroot.gsi.de/dev/examples.htm#th2_surf6), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern.ch/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern.ch/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern.ch/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern.ch/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern.ch/js/latest/examples.htm#th2_lego4)
+- TH2 : [scat](https://root.cern.ch/js/latest/examples.htm#th2), [col](https://root.cern.ch/js/latest/examples.htm#th2_col), [colz](https://root.cern.ch/js/latest/examples.htm#th2_colz), [box](https://root.cern.ch/js/latest/examples.htm#th2_box), [text](https://root.cern.ch/js/latest/examples.htm#th2_text), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego), [arr](http://jsroot.gsi.de/dev/examples.htm#th2_arr), [cont](http://jsroot.gsi.de/dev/examples.htm#th2_cont), [cont1](http://jsroot.gsi.de/dev/examples.htm#th2_cont1), [cont2](http://jsroot.gsi.de/dev/examples.htm#th2_cont2), [cont3](http://jsroot.gsi.de/dev/examples.htm#th2_cont3), [cont4](http://jsroot.gsi.de/dev/examples.htm#th2_cont4), [surf](http://jsroot.gsi.de/dev/examples.htm#th2_surf), [surf1](http://jsroot.gsi.de/dev/examples.htm#th2_surf1), [surf2](http://jsroot.gsi.de/dev/examples.htm#th2_surf2), [surf3](http://jsroot.gsi.de/dev/examples.htm#th2_surf3), [surf4](http://jsroot.gsi.de/dev/examples.htm#th2_surf4), [surf6](http://jsroot.gsi.de/dev/examples.htm#th2_surf6), [surf7](http://jsroot.gsi.de/dev/examples.htm#th2_surf7), [lego](https://root.cern.ch/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern.ch/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern.ch/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern.ch/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern.ch/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern.ch/js/latest/examples.htm#th2_lego4)
 - TH2Poly : [col](http://jsroot.gsi.de/dev/examples.htm#th2poly_honeycomb),
 [lego](http://jsroot.gsi.de/dev/examples.htm#th2poly_lego), [europe](http://jsroot.gsi.de/dev/examples.htm#th2poly_europe), [usa](http://jsroot.gsi.de/dev/examples.htm#th2poly_usa)
 - TH3 : [box](http://jsroot.gsi.de/dev/examples.htm#th3), [box1](http://jsroot.gsi.de/dev/examples.htm#th3_box1)
@@ -67,7 +70,9 @@ List of supported classes and draw options:
 - TGraph : [dflt](https://root.cern.ch/js/latest/examples.htm#tgraph), [L](https://root.cern.ch/js/latest/examples.htm#tgraph_l), [P](https://root.cern.ch/js/latest/examples.htm#tgraph_p), [*](https://root.cern.ch/js/latest/examples.htm#tgraph_star), [B](https://root.cern.ch/js/latest/examples.htm#tgraph_b)
 - TGraphErrors : [dflt](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors), [l](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_l), [lx](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_lx), [z](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_z), [>](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_>), [|>](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_|>), [||](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_||), [[]](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_[]), [0](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_0), [2](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_2), [3](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_3), [4](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_4), [5](http://jsroot.gsi.de/dev/examples.htm#tgrapherrors_5),
 - TGraphAsymmErrors : [dflt](http://jsroot.gsi.de/dev/examples.htm#tgraphasymmerrors), [z](http://jsroot.gsi.de/dev/examples.htm#tgraphasymmerrors_z) and other from TGraphErrors 
-- TMultiGraph : [example](http://jsroot.gsi.de/dev/examples.htm#tmultigraph_c3), [exclusion] (http://jsroot.gsi.de/dev/examples.htm#tmultigraph_exclusion)
+- TMultiGraph : [example](http://jsroot.gsi.de/dev/examples.htm#tmultigraph_c3), [exclusion](http://jsroot.gsi.de/dev/examples.htm#tmultigraph_exclusion)
+- TGraph2D : [example](http://jsroot.gsi.de/dev/examples.htm#tgraph2d)
+- TProfile2D : [example](http://jsroot.gsi.de/dev/examples.htm#misc_profile2d)
 - TLatex : [example](http://jsroot.gsi.de/dev/examples.htm#tlatex_latex)
 - TMathText : [example](http://jsroot.gsi.de/dev/examples.htm#tlatex_math)
 - TCanvas : [example](http://jsroot.gsi.de/dev/examples.htm#tcanvas_roofit)
@@ -80,6 +85,22 @@ List of supported classes and draw options:
 
 More examples of supported classes can be found on: <http://jsroot.gsi.de/dev/examples.htm>
 
+
+## Superimposing draw objects
+
+In the URL string one could use "+" sign to specify objects superposition:
+
+   - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1+hprof;1>
+
+Analogue, one could specify individual draw options for superimposed objects
+
+   - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=hpx;1+hprof;1&opt=logy+hist>
+  
+Here "logy" option will be used for "hpx1" item and "hist" option for "hprof;1" item.
+While draw option can include "+" sign itself, for superposition one could specify arrays of items and draw options like:  
+
+   - <https://root.cern.ch/js/latest/?file=../files/hsimple.root&item=[hpx;1,hprof;1]&opt=[logy,hist]>
+  
 
 ## Geometry viewer
 
