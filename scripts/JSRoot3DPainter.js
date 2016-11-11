@@ -2653,12 +2653,11 @@
       var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
           sizelimit = main.webgl ? 50000 : 5000, numselected = 0;
 
-      for (var i=0; i < this.bins.length; ++i) {
-         var bin = this.bins[i];
+      for (var i=0; i < graph.fNpoints; ++i) {
 
-         if ((bin.x < main.scale_xmin) || (bin.x > main.scale_xmax) ||
-             (bin.y < main.scale_ymin) || (bin.y > main.scale_ymax) ||
-             (bin.z < main.scale_zmin) || (bin.z > main.scale_zmax)) continue;
+         if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+             (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+             (graph.fZ[i] < main.scale_zmin) || (graph.fZ[i] > main.scale_zmax)) continue;
 
          numselected++;
       }
@@ -2683,21 +2682,19 @@
          norm = new Float32Array(indicies.length*3*size);
       }
 
-      for (var i=0; i < this.bins.length; ++i) {
-         var bin = this.bins[i];
-
-         if ((bin.x < main.scale_xmin) || (bin.x > main.scale_xmax) ||
-             (bin.y < main.scale_ymin) || (bin.y > main.scale_ymax) ||
-             (bin.z < main.scale_zmin) || (bin.z > main.scale_zmax)) continue;
+      for (var i=0; i < graph.fNpoints; ++i) {
+         if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+             (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+             (graph.fZ[i] < main.scale_zmin) || (graph.fZ[i] > main.scale_zmax)) continue;
 
          if (step > 1) {
             select = (select+1) % step;
             if (select!==0) continue;
          }
 
-         var x = main.grx(bin.x),
-             y = main.gry(bin.y),
-             z = main.grz(bin.z);
+         var x = main.grx(graph.fX[i]),
+             y = main.gry(graph.fY[i]),
+             z = main.grz(graph.fZ[i]);
 
          if (use_points) {
             pos[lll]   = x;
@@ -2810,8 +2807,6 @@
 
    JSROOT.Painter.TGraphPainter_Draw3D = function(divid) {
       // function used with TGraphPainter class
-
-      this.CreateBins();
 
       if (this.main_painter() == null) {
 

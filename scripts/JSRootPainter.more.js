@@ -1443,8 +1443,7 @@
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
       if (gr._typename == 'TGraphAsymmErrors' || gr._typename == 'TGraphBentErrors'
-          || gr._typename.match(/^RooHist/)) kind = 2; else
-      if (this.Is3DMode()) kind = -1;
+          || gr._typename.match(/^RooHist/)) kind = 2;
 
       this.bins = [];
 
@@ -1461,16 +1460,12 @@
                bin.eylow  = gr.fEYlow[p];
                bin.eyhigh = gr.fEYhigh[p];
                break;
-            case -1:
-               bin.z = gr.fZ[p];
-               break;
          }
          this.bins.push(bin);
 
          if (p===0) {
             this.xmin = this.xmax = bin.x;
             this.ymin = this.ymax = bin.y;
-            if (kind<0) this.zmin = this.zmax = bin.z;
          }
 
          if (kind > 0) {
@@ -1483,10 +1478,6 @@
             this.xmax = Math.max(this.xmax, bin.x);
             this.ymin = Math.min(this.ymin, bin.y);
             this.ymax = Math.max(this.ymax, bin.y);
-            if (kind<0) {
-               this.zmin = Math.min(this.zmin, bin.z);
-               this.zmax = Math.max(this.zmax, bin.z);
-            }
          }
 
       }
@@ -1526,11 +1517,21 @@
    }
 
    JSROOT.TGraphPainter.prototype.CreateHistogram2D = function() {
-      // bins should be created
 
-      var xmin = this.xmin, xmax = this.xmax,
-          ymin = this.ymin, ymax = this.ymax,
-          zmin = this.zmin, zmax = this.zmax;
+      var gr = this.GetObject();
+
+      var xmin = gr.fX[0], xmax = xmin,
+          ymin = gr.fY[0], ymax = ymin,
+          zmin = gr.fZ[0], zmax = zmin;
+
+      for (var p=1; p < gr.fNpoints;++p) {
+         xmin = Math.min(xmin, gr.fX[p]);
+         xmax = Math.max(xmax, gr.fX[p]);
+         ymin = Math.min(ymin, gr.fY[p]);
+         ymax = Math.max(ymax, gr.fY[p]);
+         zmin = Math.min(zmin, gr.fZ[p]);
+         zmax = Math.max(zmax, gr.fZ[p]);
+      }
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
