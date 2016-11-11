@@ -2643,6 +2643,32 @@
 
    // ==============================================================================
 
+   JSROOT.Painter.TGraphPainter_3DTooltip = function(intersect) {
+      var indx = Math.floor(intersect.index / this.nvertex);
+      if ((indx<0) || (indx >= this.index.length)) return null;
+
+      indx = this.index[indx];
+
+      var p = this.painter;
+
+      var tip = { info: "pnt: " + indx + "<br/>" +
+                    "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
+                    "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
+                    "z: " + p.z_handle.format(this.graph.fZ[indx]) };
+
+      var grx = p.grx(this.graph.fX[indx]),
+          gry = p.gry(this.graph.fY[indx]),
+          grz = p.grz(this.graph.fZ[indx]);
+
+      tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+      tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+      tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+      tip.color = this.tip_color;
+
+      return tip;
+   }
+
    JSROOT.Painter.TGraphPainter_Draw3DBins = function() {
 
       var main = this.main_painter(),
@@ -2657,7 +2683,7 @@
          for (var i=0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
                 (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
-                (graph.fZ[i] < zmin) || (graph.fZ[i] > zmax)) continue;
+                (graph.fZ[i] < zmin) || (graph.fZ[i] >= zmax)) continue;
 
             ++cnt;
          }
@@ -2685,7 +2711,7 @@
       var indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
           vertices = JSROOT.Painter.Box_Vertices,
-          scale = main.size3d/100;
+          scale = main.size3d/100 * ((graph.fMarkerSize > 0) ? graph.fMarkerSize*8 : 1.) ;
 
       for (var lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -2695,7 +2721,9 @@
          if (lvl_zmin >= lvl_zmax) continue;
 
          var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
-             lll = 0, select = 0, pos, norm;
+             lll = 0, select = 0,
+             pos, norm,
+             index = new Int32Array(size), icnt = 0;
 
          if (use_points) {
             pos = new Float32Array(size*3);
@@ -2708,12 +2736,14 @@
          for (var i=0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
                 (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
-                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] > lvl_zmax)) continue;
+                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax)) continue;
 
             if (step > 1) {
                select = (select+1) % step;
                if (select!==0) continue;
             }
+
+            index[icnt++] = i; // remember point index for tooltip
 
             var x = main.grx(graph.fX[i]),
                 y = main.gry(graph.fY[i]),
@@ -2762,34 +2792,13 @@
             main.toplevel.add(points);
 
             points.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+            points.nvertex = 1;
             points.graph = graph;
+            points.index = index;
             points.painter = main;
             points.scale0 = 0.7*scale;
 
-            /*         points.tooltip = function(intersect) {
-
-            var indx = intersect.index*3;
-            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
-            var p = this.painter;
-
-            var tip = { info: "bin: " + indx/3 + "<br/>" +
-                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
-                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
-                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
-
-            var grx = p.grx(this.poly.fP[indx]),
-                gry = p.gry(this.poly.fP[indx+1]),
-                grz = p.grz(this.poly.fP[indx+2]);
-
-            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-            tip.color = this.tip_color;
-
-            return tip;
-         }
-             */
+            points.tooltip = JSROOT.Painter.TGraphPainter_3DTooltip;
 
          } else {
 
@@ -2803,33 +2812,12 @@
             mesh.step = step;
             mesh.nvertex = indicies.length;
             mesh.graph = graph;
+            mesh.index = index;
             mesh.painter = main;
-            mesh.scale0 = 0.7*scale; // double size
+            mesh.scale0 = 0.7*scale;
             mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-            /*
-         mesh.tooltip = function(intersect) {
-            var indx = Math.floor(intersect.index / this.nvertex) * this.step;
-            if ((indx<0) || (indx >= this.poly.fP.length)) return null;
-            var p = this.painter;
 
-            var tip = { info: "bin: " + indx/3 + "<br/>" +
-                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
-                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
-                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
-
-            var grx = p.grx(this.poly.fP[indx]),
-                gry = p.gry(this.poly.fP[indx+1]),
-                grz = p.grz(this.poly.fP[indx+2]);
-
-            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-            tip.color = this.tip_color;
-
-            return tip;
-         }
-             */
+            mesh.tooltip = JSROOT.Painter.TGraphPainter_3DTooltip;
          }
 
       }

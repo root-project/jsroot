@@ -16,7 +16,7 @@
     - TH2     - 'E', 'col1', 'box', 'box1', 'surf3', 'surf7'
     - TH2     - 'same' with 'box', 'col', 'cont'
     - TCanvas - logx/y/z, gridx/y, tickx/y 
-3. Implement drawing of TProfile2D
+3. Implement drawing of TProfile2D and TGraph2D
 4. Fix - correctly place TGAxis relative to frame (when exists) 
 5. When superimpose items, one can specify individual options
      ...&item=histo1+histo2&opt=hist+e1
