@@ -5885,7 +5885,13 @@
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      var pad = this.root_pad(), h = this.frame_height(), w = this.frame_width(), grid;
+      var pad = this.root_pad(), h = this.frame_height(), w = this.frame_width(),
+          grid, grid_style = JSROOT.gStyle.fGridStyle, grid_color = "black";
+
+      if (JSROOT.Painter.fGridColor > 0)
+         grid_color = JSROOT.Painter.root_colors[JSROOT.Painter.fGridColor];
+
+      if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
       // add a grid on x axis, if the option is set
       if (pad && pad.fGridx && this.x_handle) {
@@ -5900,9 +5906,9 @@
           layer.append("svg:path")
                .attr("class", "xgrid")
                .attr("d", grid)
-               .style("stroke", "black")
-               .style("stroke-width", 1)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
+               .style("stroke", grid_color)
+               .style("stroke-width", JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -5918,9 +5924,9 @@
           layer.append("svg:path")
                .attr("class", "ygrid")
                .attr("d", grid)
-               .style("stroke", "black")
-               .style("stroke-width", 1)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[11]);
+               .style("stroke", grid_color)
+               .style("stroke-width", JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
    }
 
