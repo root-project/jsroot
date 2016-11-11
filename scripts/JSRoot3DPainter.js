@@ -2590,6 +2590,8 @@
    JSROOT.Painter.TH2Painter_Draw3D = function(call_back, resize) {
       // function called with this as painter
 
+      this.mode3d = true;
+
       var main = this.main_painter();
 
       if (resize) {

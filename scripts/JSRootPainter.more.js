@@ -4737,7 +4737,7 @@
       this.ScanContent();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas && !this.IsTH2Poly())
+      if (JSROOT.gStyle.AutoStat && this.create_canvas /* && !this.IsTH2Poly()*/)
          this.CreateStat();
 
       var func_name = this.DrawFuncName();

@@ -8109,6 +8109,8 @@
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
 
+      this.mode3d = false;
+
       this.CreateXY();
 
       if (typeof this.DrawColorPalette === 'function')
@@ -8123,6 +8125,7 @@
    }
 
    JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
+      this.mode3d = true;
       JSROOT.AssertPrerequisites('more2d;3d', function() {
          this.Create3DScene = JSROOT.Painter.HPainter_Create3DScene;
          this.PrepareColorDraw = JSROOT.TH2Painter.prototype.PrepareColorDraw;
