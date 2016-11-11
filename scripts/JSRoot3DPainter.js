@@ -3413,133 +3413,138 @@
 
       this.SetDivId(divid);
 
-      var main = this.main_painter();
+      this.Redraw = function() {
 
-      if (!main  || !('renderer' in main)) return this.DrawingReady();
+         var main = this.main_painter();
 
-      var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
-          sizelimit = main.webgl ? 50000 : 5000, numselect = 0;
+         if (!main  || !('renderer' in main)) return;
 
-      for (var i=0;i<poly.fP.length;i+=3) {
-         if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
-             (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
-             (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
-         ++numselect;
-      }
+         var step = 1, use_points = main.webgl /*&& !JSROOT.browser.isWin*/,
+             sizelimit = main.webgl ? 50000 : 5000, numselect = 0;
 
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points && (numselect > sizelimit)) {
-         step = Math.floor(numselect/sizelimit);
-         if (step <= 2) step = 2;
-      }
-
-      var size = Math.floor(numselect/step),
-          indicies = JSROOT.Painter.Box_Indexes,
-          normals = JSROOT.Painter.Box_Normals,
-          vertices = JSROOT.Painter.Box_Vertices,
-          lll = 0, scale = main.size3d/100, pos, norm,
-          index = new Int32Array(size), select = 0, icnt = 0;
-
-      if (use_points) {
-         pos = new Float32Array(size*3);
-         norm = null;
-      } else {
-         pos = new Float32Array(indicies.length*3*size);
-         norm = new Float32Array(indicies.length*3*size);
-      }
-
-      for (var i=0; i < poly.fP.length;i+=3) {
-
-         if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
-             (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
-             (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
-
-         if (step > 1) {
-            select = (select+1) % step;
-            if (select!==0) continue;
+         for (var i=0;i<poly.fP.length;i+=3) {
+            if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
+                  (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
+                  (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
+            ++numselect;
          }
 
-         index[icnt++] = i;
+         if ((JSROOT.gStyle.OptimizeDraw > 0) && !use_points && (numselect > sizelimit)) {
+            step = Math.floor(numselect/sizelimit);
+            if (step <= 2) step = 2;
+         }
 
-         var x = main.grx(poly.fP[i]),
-             y = main.gry(poly.fP[i+1]),
-             z = main.grz(poly.fP[i+2]);
+         var size = Math.floor(numselect/step),
+             indicies = JSROOT.Painter.Box_Indexes,
+             normals = JSROOT.Painter.Box_Normals,
+             vertices = JSROOT.Painter.Box_Vertices,
+             lll = 0, scale = main.size3d/100, pos, norm,
+             index = new Int32Array(size), select = 0, icnt = 0;
 
          if (use_points) {
-            pos[lll]   = x;
-            pos[lll+1] = y;
-            pos[lll+2] = z;
-            lll+=3;
-            continue;
+            pos = new Float32Array(size*3);
+            norm = null;
+         } else {
+            pos = new Float32Array(indicies.length*3*size);
+            norm = new Float32Array(indicies.length*3*size);
          }
 
-         for (var k=0,nn=-3;k<indicies.length;++k) {
-            var vert = vertices[indicies[k]];
-            pos[lll]   = x + (vert.x - 0.5)*scale;
-            pos[lll+1] = y + (vert.y - 0.5)*scale;
-            pos[lll+2] = z + (vert.z - 0.5)*scale;
+         for (var i=0; i < poly.fP.length;i+=3) {
 
-            if (k%6===0) nn+=3;
-            norm[lll] = normals[nn];
-            norm[lll+1] = normals[nn+1];
-            norm[lll+2] = normals[nn+2];
+            if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
+                  (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
+                  (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
 
-            lll+=3;
+            if (step > 1) {
+               select = (select+1) % step;
+               if (select!==0) continue;
+            }
+
+            index[icnt++] = i;
+
+            var x = main.grx(poly.fP[i]),
+                y = main.gry(poly.fP[i+1]),
+                z = main.grz(poly.fP[i+2]);
+
+            if (use_points) {
+               pos[lll]   = x;
+               pos[lll+1] = y;
+               pos[lll+2] = z;
+               lll+=3;
+               continue;
+            }
+
+            for (var k=0,nn=-3;k<indicies.length;++k) {
+               var vert = vertices[indicies[k]];
+               pos[lll]   = x + (vert.x - 0.5)*scale;
+               pos[lll+1] = y + (vert.y - 0.5)*scale;
+               pos[lll+2] = z + (vert.z - 0.5)*scale;
+
+               if (k%6===0) nn+=3;
+               norm[lll] = normals[nn];
+               norm[lll+1] = normals[nn+1];
+               norm[lll+2] = normals[nn+2];
+
+               lll+=3;
+            }
          }
+
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+
+         var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
+
+         var mesh = null;
+
+         if (use_points) {
+            var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
+            mesh = new THREE.Points(geom, material);
+            mesh.nvertex = 1;
+         } else {
+            var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+            mesh = new THREE.Mesh(geom, material);
+            mesh.nvertex = indicies.length;
+         }
+
+         main.toplevel.add(mesh);
+
+         mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         mesh.poly = poly;
+         mesh.painter = main;
+         mesh.scale0 = 0.7*scale;
+         mesh.index = index;
+
+         mesh.tooltip = function(intersect) {
+            var indx = Math.floor(intersect.index / this.nvertex);
+            if ((indx<0) || (indx >= this.index.length)) return null;
+
+            indx = this.index[indx];
+
+            var p = this.painter;
+
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+            var grx = p.grx(this.poly.fP[indx]),
+            gry = p.gry(this.poly.fP[indx+1]),
+            grz = p.grz(this.poly.fP[indx+2]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
+         }
+
+         main.Render3D(100); // set large timeout to be able draw other points
       }
 
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-
-      var fcolor = JSROOT.Painter.root_colors[poly.fMarkerColor];
-
-      var mesh = null;
-
-      if (use_points) {
-         var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
-         mesh = new THREE.Points(geom, material);
-         mesh.nvertex = 1;
-      } else {
-         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
-         mesh = new THREE.Mesh(geom, material);
-         mesh.nvertex = indicies.length;
-      }
-
-      main.toplevel.add(mesh);
-
-      mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-      mesh.poly = poly;
-      mesh.painter = main;
-      mesh.scale0 = 0.7*scale;
-      mesh.index = index;
-
-      mesh.tooltip = function(intersect) {
-         var indx = Math.floor(intersect.index / this.nvertex);
-         if ((indx<0) || (indx >= this.index.length)) return null;
-
-         indx = this.index[indx];
-
-         var p = this.painter;
-
-         var tip = { info: "bin: " + indx/3 + "<br/>" +
-               "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
-               "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
-               "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
-
-         var grx = p.grx(this.poly.fP[indx]),
-             gry = p.gry(this.poly.fP[indx+1]),
-             grz = p.grz(this.poly.fP[indx+2]);
-
-         tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-         tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-         tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-         tip.color = this.tip_color;
-
-         return tip;
-      }
-
-      main.Render3D(100); // set large timeout to be able draw other points
+      this.Redraw();
 
       return this.DrawingReady();
    }
