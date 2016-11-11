@@ -615,6 +615,9 @@
 
             if (sett.expand && !('_childs' in hitem) && (hitem._more || !('_more' in hitem)))
                menu.add("Expand", function() { painter.expand(itemname); });
+
+            if (hitem._kind === "ROOT.TStyle")
+               menu.add("Apply", function() { painter.ApplyStyle(itemname); });
          }
 
          if (typeof hitem._menu == 'function')
