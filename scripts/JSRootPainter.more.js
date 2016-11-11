@@ -1350,6 +1350,7 @@
          if (this.optionFill==0) this.optionLine = 1;
       }
       if (check('*')) this.optionMark = 103;
+      if (check('P0')) this.optionMark = 104;
       if (check('P')) this.optionMark = 1;
       if (check('B')) {
          this.optionBar = 1;

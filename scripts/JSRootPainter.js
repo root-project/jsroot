@@ -307,7 +307,7 @@
 
       if (!style || (style<0)) style = attmarker.fMarkerStyle;
 
-      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, stroke: true, fill: true, marker: "",  ndig: 0, used: true, changed: false };
+      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, scale: 1, stroke: true, fill: true, marker: "",  ndig: 0, used: true, changed: false };
 
       res.Change = function(color, style, size) {
 
@@ -346,11 +346,13 @@
          this.fill = (marker_kind>=100);
 
          switch(this.style) {
-            case 1: size = this.size = 1; break;
-            case 6: size = this.size = 2; break;
-            case 7: size = this.size = 3; break;
-            default: this.size = size; size*=8;
+            case 1: this.size = 1; this.scale = 1; break;
+            case 6: this.size = 2; this.scale = 1; break;
+            case 7: this.size = 3; this.scale = 1; break;
+            default: this.size = size; this.scale = 8;
          }
+
+         size = this.size*this.scale;
 
          this.ndig = (size>7) ? 0 : ((size>2) ? 1 : 2);
          if (shape == 6) this.ndig++;

@@ -2701,6 +2701,11 @@
           }
       }
 
+      if (!this.markeratt)
+         this.markeratt = JSROOT.Painter.createAttMarker(graph, this.optionMark - 100);
+      else
+         this.markeratt.Change(undefined, this.optionMark - 100);
+
       var palette = null, levels = [main.scale_zmin, main.scale_zmax];
 
       if (this.optionColor) {
@@ -2711,7 +2716,7 @@
       var indicies = JSROOT.Painter.Box_Indexes,
           normals = JSROOT.Painter.Box_Normals,
           vertices = JSROOT.Painter.Box_Vertices,
-          scale = main.size3d/100 * ((graph.fMarkerSize > 0) ? graph.fMarkerSize*8 : 1.) ;
+          scale = main.size3d / 100 * this.markeratt.size * this.markeratt.scale;
 
       for (var lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -2781,7 +2786,7 @@
 
          if (palette) {
             var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
-            if (indx > palette.length-1) indx = palette.length-1;
+            if (indx >= palette.length) indx = palette.length-1;
             fcolor = palette[indx];
          }
 
