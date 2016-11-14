@@ -2420,13 +2420,13 @@
       if (pad_painter)
          if (!pad_painter.CheckCanvasResize(size)) return false;
 
-      var size3d = this.size_for_3d();
+      var sz = this.size_for_3d();
 
-      if ((this._scene_width === size3d.width) && (this._scene_height === size3d.height)) return false;
-      if ((size3d.width<10) || (size3d.height<10)) return;
+      if ((this._scene_width === sz.width) && (this._scene_height === sz.height)) return false;
+      if ((sz.width<10) || (sz.height<10)) return;
 
-      this._scene_width = size3d.width;
-      this._scene_height = size3d.height;
+      this._scene_width = sz.width;
+      this._scene_height = sz.height;
 
       this._camera.aspect = this._scene_width / this._scene_height;
       this._camera.updateProjectionMatrix();
