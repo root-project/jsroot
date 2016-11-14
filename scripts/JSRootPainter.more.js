@@ -824,7 +824,7 @@
       //fHistogram->SetContour(fContour.fN, levels);
       hist.fLineColor = func.fLineColor;
       hist.fLineStyle = func.fLineStyle;
-      hist.fLineWidth = func.LineWidth;
+      hist.fLineWidth = func.fLineWidth;
       hist.fFillColor = func.fFillColor;
       hist.fFillStyle = func.fFillStyle;
       hist.fMarkerColor = func.fMarkerColor;
