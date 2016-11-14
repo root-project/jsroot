@@ -2649,7 +2649,14 @@
       this.DecodeOptions = function(opt) {
          var d = new JSROOT.DrawOptions(opt);
 
-         return { Markers: d.check("P") || true, Color: d.check("COL") };
+         var res = { Color: d.check("COL"),
+                     Error: d.check("ERR") && this.MatchObjectType("TGraph2DErrors"),
+                     Markers: d.check("P") };
+
+         if (!res.Markers && !res.Error) res.Markers = true;
+         if (!res.Markers) res.Color = false;
+
+         return res;
       }
 
       this.CreateHistogram = function() {
@@ -2659,30 +2666,36 @@
              ymin = gr.fY[0], ymax = ymin,
              zmin = gr.fZ[0], zmax = zmin;
 
-         for (var p=1; p < gr.fNpoints;++p) {
-            xmin = Math.min(xmin, gr.fX[p]);
-            xmax = Math.max(xmax, gr.fX[p]);
-            ymin = Math.min(ymin, gr.fY[p]);
-            ymax = Math.max(ymax, gr.fY[p]);
-            zmin = Math.min(zmin, gr.fZ[p]);
-            zmax = Math.max(zmax, gr.fZ[p]);
+         for (var p = 0; p < gr.fNpoints;++p) {
+
+            var x = gr.fX[p], y = gr.fY[p], z = gr.fZ[p],
+                errx = this.options.Error ? gr.fEX[p] : 0,
+                erry = this.options.Error ? gr.fEY[p] : 0,
+                errz = this.options.Error ? gr.fEZ[p] : 0;
+
+            xmin = Math.min(xmin, x-errx);
+            xmax = Math.max(xmax, x+errx);
+            ymin = Math.min(ymin, y-erry);
+            ymax = Math.max(ymax, y+erry);
+            zmin = Math.min(zmin, z-errz);
+            zmax = Math.max(zmax, z+errz);
          }
 
          if (xmin >= xmax) xmax = xmin+1;
          if (ymin >= ymax) ymax = ymin+1;
          if (zmin >= zmax) zmax = zmin+1;
-         var dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1, dz = (zmax-zmin)*0.1,
+         var dx = (xmax-xmin)*0.02, dy = (ymax-ymin)*0.02, dz = (zmax-zmin)*0.02,
              uxmin = xmin - dx, uxmax = xmax + dx,
              uymin = ymin - dy, uymax = ymax + dy,
              uzmin = zmin - dz, uzmax = zmax + dz;
 
-         if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
+         if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.98;
          if ((uxmax>0) && (xmax<=0)) uxmax = 0;
 
-         if ((uymin<0) && (ymin>=0)) uymin = ymin*0.9;
+         if ((uymin<0) && (ymin>=0)) uymin = ymin*0.98;
          if ((uymax>0) && (ymax<=0)) uymax = 0;
 
-         if ((uzmin<0) && (zmin>=0)) uzmin = zmin*0.9;
+         if ((uzmin<0) && (zmin>=0)) uzmin = zmin*0.98;
          if ((uzmax>0) && (zmax<=0)) uzmax = 0;
 
          var graph = this.GetObject();
@@ -2703,6 +2716,33 @@
          histo.fMaximum = uzmax;
          histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
          return histo;
+      }
+
+     this.Graph2DTooltip = function(intersect) {
+         var indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx<0) || (indx >= this.index.length)) return null;
+
+         indx = this.index[indx];
+
+         var p = this.painter;
+
+         var tip = { info: this.tip_name + "<br/>" +
+               "pnt: " + indx + "<br/>" +
+               "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
+               "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
+               "z: " + p.z_handle.format(this.graph.fZ[indx]) };
+
+         var grx = p.grx(this.graph.fX[indx]),
+         gry = p.gry(this.graph.fY[indx]),
+         grz = p.grz(this.graph.fZ[indx]);
+
+         tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+         tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+         tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+         tip.color = this.tip_color;
+
+         return tip;
       }
 
       this.Redraw = function() {
@@ -2747,9 +2787,9 @@
          }
 
          var indicies = JSROOT.Painter.Box_Indexes,
-         normals = JSROOT.Painter.Box_Normals,
-         vertices = JSROOT.Painter.Box_Vertices,
-         scale = main.size3d / 100 * markeratt.size * markeratt.scale;
+             normals = JSROOT.Painter.Box_Normals,
+             vertices = JSROOT.Painter.Box_Vertices,
+             scale = main.size3d / 100 * markeratt.size * markeratt.scale;
 
          for (var lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -2760,15 +2800,21 @@
 
             var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
                 lll = 0, select = 0, pos, norm,
-                index = new Int32Array(size), icnt = 0;
+                index = new Int32Array(size), icnt = 0,
+                err = null, ierr = 0;
 
-            if (use_points) {
-               pos = new Float32Array(size*3);
-               norm = null;
-            } else {
-               pos = new Float32Array(indicies.length*3*size);
-               norm = new Float32Array(indicies.length*3*size);
+            if (this.options.Markers) {
+               if (use_points) {
+                  pos = new Float32Array(size*3);
+                  norm = null;
+               } else {
+                  pos = new Float32Array(indicies.length*3*size);
+                  norm = new Float32Array(indicies.length*3*size);
+               }
             }
+
+            if (this.options.Error)
+               err = new Float32Array(size*6*3);
 
             for (var i=0; i < graph.fNpoints; ++i) {
                if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
@@ -2785,6 +2831,32 @@
                var x = main.grx(graph.fX[i]),
                    y = main.gry(graph.fY[i]),
                    z = main.grz(graph.fZ[i]);
+
+               if (err) {
+                  err[ierr]   = main.grx(graph.fX[i] - graph.fEX[i]);
+                  err[ierr+1] = y;
+                  err[ierr+2] = z;
+                  err[ierr+3] = main.grx(graph.fX[i] + graph.fEX[i]);
+                  err[ierr+4] = y;
+                  err[ierr+5] = z;
+                  ierr+=6;
+                  err[ierr]   = x;
+                  err[ierr+1] = main.gry(graph.fY[i] - graph.fEY[i]);
+                  err[ierr+2] = z;
+                  err[ierr+3] = x;
+                  err[ierr+4] = main.gry(graph.fY[i] + graph.fEY[i]);
+                  err[ierr+5] = z;
+                  ierr+=6;
+                  err[ierr]   = x;
+                  err[ierr+1] = y;
+                  err[ierr+2] = main.grz(graph.fZ[i] - graph.fEZ[i]);
+                  err[ierr+3] = x;
+                  err[ierr+4] = y;
+                  err[ierr+5] = main.grz(graph.fZ[i] + graph.fEZ[i]);;
+                  ierr+=6;
+               }
+
+               if (!this.options.Markers) continue;
 
                if (use_points) {
                   pos[lll]   = x;
@@ -2809,76 +2881,77 @@
                }
             }
 
-            var geom = new THREE.BufferGeometry();
-            geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-            if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+            if (err) {
+               var geometry = new THREE.BufferGeometry();
+               geometry.addAttribute( 'position', new THREE.BufferAttribute( err, 3 ) );
 
-            var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
+               var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor];
 
-            if (palette) {
-               var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
-               if (indx >= palette.length) indx = palette.length-1;
-               fcolor = palette[indx];
+               var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+               if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+               var errmesh = new THREE.LineSegments(geometry, material);
+               main.toplevel.add(errmesh);
+
+               errmesh.graph = graph;
+               errmesh.index = index;
+               errmesh.painter = main;
+               errmesh.scale0 = 0.7*scale;
+               errmesh.tip_name = this.GetTipName();
+               errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+               errmesh.nvertex = 6;
+
+               errmesh.tooltip = this.Graph2DTooltip;
             }
 
-            //var rgb = d3.rgb(fcolor), color = new THREE.Color(rgb.r/255., rgb.g/255., rgb.b/255.);
-            //console.log('fcolor', fcolor, rgb);
+            if (this.options.Markers) {
 
-            var mesh = null;
+               var geom = new THREE.BufferGeometry();
+               geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+               if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
-            if (use_points) {
-               var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
-               mesh = new THREE.Points(geom, material);
-               mesh.nvertex = 1;
-            } else {
-               // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-               var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
-               mesh = new THREE.Mesh(geom, material);
-               mesh.nvertex = indicies.length;
+               var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
+
+               if (palette) {
+                  var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
+                  if (indx >= palette.length) indx = palette.length-1;
+                  fcolor = palette[indx];
+               }
+
+               //var rgb = d3.rgb(fcolor), color = new THREE.Color(rgb.r/255., rgb.g/255., rgb.b/255.);
+               //console.log('fcolor', fcolor, rgb);
+
+               var mesh = null;
+
+               if (use_points) {
+                  var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
+                  mesh = new THREE.Points(geom, material);
+                  mesh.nvertex = 1;
+               } else {
+                  // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+                  var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+                  mesh = new THREE.Mesh(geom, material);
+                  mesh.nvertex = indicies.length;
+               }
+
+               main.toplevel.add(mesh);
+
+               mesh.graph = graph;
+               mesh.index = index;
+               mesh.painter = main;
+               mesh.scale0 = 0.7*scale;
+               mesh.tip_name = this.GetTipName();
+               mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+
+               mesh.tooltip = this.Graph2DTooltip;
             }
-
-            main.toplevel.add(mesh);
-
-            mesh.graph = graph;
-            mesh.index = index;
-            mesh.painter = main;
-            mesh.scale0 = 0.7*scale;
-            mesh.tip_name = this.GetTipName();
-            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
-
-            mesh.tooltip = function(intersect) {
-               var indx = Math.floor(intersect.index / this.nvertex);
-               if ((indx<0) || (indx >= this.index.length)) return null;
-
-               indx = this.index[indx];
-
-               var p = this.painter;
-
-               var tip = { info: this.tip_name + "<br/>" +
-                     "pnt: " + indx + "<br/>" +
-                     "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
-                     "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
-                     "z: " + p.z_handle.format(this.graph.fZ[indx]) };
-
-               var grx = p.grx(this.graph.fX[indx]),
-               gry = p.gry(this.graph.fY[indx]),
-               grz = p.grz(this.graph.fZ[indx]);
-
-               tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-               tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-               tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-               tip.color = this.tip_color;
-
-               return tip;
-            }
-
          }
 
          main.Render3D(100); // set large timeout to be able draw other points
       }
 
       this.SetDivId(divid, -1); // just to get access to existing elements
+
+      this.options = this.DecodeOptions(opt);
 
       if (this.main_painter() == null) {
          if (gr.fHistogram == null)
@@ -2888,8 +2961,6 @@
       }
 
       this.SetDivId(divid);
-
-      this.options = this.DecodeOptions(opt);
 
       this.Redraw();
 
