@@ -5210,7 +5210,7 @@
       var hdim = this.Dimension();
       var option = {
          Axis: 0, Bar: 0, Curve: 0, Error: 0, Hist: 0, Line: 0,
-         Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 0, Star: 0,
+         Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
          Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
@@ -5230,8 +5230,6 @@
       if ((hdim===1) && (this.histo.fSumw2.length > 0))
          for (var n=0;n<this.histo.fSumw2.length;++n)
             if (this.histo.fSumw2[n] > 0) { option.Error = 2; break; }
-
-      if (this.histo.fFunctions !== null) option.Func = 1;
 
       var i = chopt.indexOf('PAL');
       if (i>=0) {
@@ -6222,8 +6220,8 @@
    JSROOT.THistPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      if (this.options.Same || (this.histo.fFunctions === null) || (indx >= this.histo.fFunctions.arr.length))
-         return JSROOT.CallBack(callback);
+      if (this.options.Same || !this.options.Func || !this.histo.fFunctions ||
+           (indx >= this.histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
 
       var func = this.histo.fFunctions.arr[indx],
           opt = this.histo.fFunctions.opt[indx],
