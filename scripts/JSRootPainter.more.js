@@ -1299,6 +1299,10 @@
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
       this.wheel_zoomy = true;
+      this.is_bent = (graph._typename == 'TGraphBentErrors');
+      this.has_errors = (graph._typename == 'TGraphErrors') ||
+                        (graph._typename == 'TGraphAsymmErrors') ||
+                         this.is_bent || graph._typename.match(/^RooHist/);
    }
 
    JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1308,128 +1312,58 @@
    }
 
    JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
-      this.draw_all = true;
-      JSROOT.extend(this, { optionLine:0, optionCurve:0, optionRect:0,
-                            optionMark:0, optionBar:0, optionEF:0,
-                            optionFill:0, optionZ:0, optionErrors: 0,
-                            opt:"LP", out_of_range: false,
-                            has_errors: false,
-                            draw_mainerr: true, draw_ends: 1, is_bent:false,
-                            optionAxis: "AXIS" });
+
+      var d = new JSROOT.DrawOptions(opt);
+
+      var res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
+                  Errors: 0, MainError: 1, Ends: 1, Axis: "AXIS" };
 
       var graph = this.GetObject();
 
-      this.is_bent = graph._typename == 'TGraphBentErrors';
-      this.has_errors = (graph._typename == 'TGraphErrors' ||
-                         graph._typename == 'TGraphAsymmErrors' ||
-                         this.is_bent || graph._typename.match(/^RooHist/));
-      if (this.has_errors) this.optionErrors = 1;
+      if (this.has_errors) res.Errors = 1;
 
-      var chopt = (opt && (typeof opt ==='string')) ? opt.toUpperCase() : "";
-      chopt.replace('SAME', '')
-
-      function check(name) {
-         var pos = chopt.indexOf(name);
-         if (pos < 0) return false;
-         chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
-         return true;
-      }
-
-      if (check('COL')) this.optionColor = 1;
-      if (check('L')) this.optionLine = 1;
-      if (check('F')) this.optionFill = 1;
-      if (check('A')) this.optionAxis = "AXIS";
-      if (check('X+')) this.optionAxis += "X+";
-      if (check('Y+')) this.optionAxis += "Y+";
-
-      if (check('C')) {
-         this.optionCurve = 1;
-         if (this.optionFill==0) this.optionLine = 1;
-      }
-      if (check('*')) this.optionMark = 103;
-      if (check('P0')) this.optionMark = 104;
-      if (check('P')) this.optionMark = 1;
-      if (check('B')) {
-         this.optionBar = 1;
-         this.optionErrors = 0;
-      }
-
-      if (check('Z')) {
-         this.optionErrors = 1;
-         this.draw_ends = 0;
-      }
-
-      if (check('||')) {
-         this.optionErrors = 1;
-         this.draw_mainerr = false;
-         this.draw_ends = 1;
-      }
-
-      if (check('[]')) {
-         this.optionErrors = 1;
-         this.draw_mainerr = false;
-         this.draw_ends = 2;
-      }
-
-      if (check('|>')) {
-         this.optionErrors = 1;
-         this.draw_ends = 3;
-      } else
-      if (check('>')) {
-         this.optionErrors = 1;
-         this.draw_ends = 4;
-      }
-
-      if (check('0')) {
-         this.optionMark = 1;
-         this.optionErrors = 1;
-         this.out_of_range = true;
-      }
-
-      if (check('1')) {
-         if (this.optionBar == 1) this.optionBar = 2;
-      }
-      if (check('2')) {
-         this.optionRect = 1;
-         this.optionLine = 0;
-         this.optionErrors = 0;
-      }
-      if (check('3')) {
-         this.optionEF = 1;
-         this.optionLine = 0;
-         this.optionErrors = 0;
-      }
-      if (check('4')) {
-         this.optionEF = 2;
-         this.optionLine = 0;
-         this.optionErrors = 0;
-      }
-      if (check('5')) {
-         this.optionRect = 2;
-         this.optionLine = 0;
-         this.optionErrors = 0;
-      }
-
-      if (check('X')) this.optionErrors = 0;
+      if (d.check('L')) res.Line = 1;
+      if (d.check('F')) res.Fill = 1;
+      if (d.check('A')) res.Axis = "AXIS";
+      if (d.check('X+')) res.Axis += "X+";
+      if (d.check('Y+')) res.Axis += "Y+";
+      if (d.check('C')) { res.Curve = 1; if (!res.Fill) res.Line = 1; }
+      if (d.check('*')) res.Mark = 103;
+      if (d.check('P0')) res.Mark = 104;
+      if (d.check('P')) res.Mark = 1;
+      if (d.check('B')) { res.Bar = 1; res.Errors = 0; }
+      if (d.check('Z')) { res.Errors = 1; res.Ends = 0; }
+      if (d.check('||')) { res.Errors = 1; res.MainError = 0; res.Ends = 1; }
+      if (d.check('[]')) { res.Errors = 1; res.MainError = 0; res.Ends = 2; }
+      if (d.check('|>')) { res.Errors = 1; res.Ends = 3; }
+      if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
+      if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
+      if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
+      if (d.check('2')) { res.Rect = 1; res.Line = 0; res.Errors = 0; }
+      if (d.check('3')) { res.EF = 1; res.Line = 0; res.Errors = 0; }
+      if (d.check('4')) { res.EF = 2; res.Line = 0; res.Errors = 0; }
+      if (d.check('5')) { res.Rect = 2; res.Line = 0; res.Errors = 0; }
+      if (d.check('X')) res.Errors = 0;
 
       // special case - one could use svg:path to draw many pixels (
-      if ((this.optionMark==1) && (graph.fMarkerStyle==1)) this.optionMark = 101;
+      if ((res.Mark==1) && (graph.fMarkerStyle==1)) res.Mark = 101;
 
       // if no drawing option is selected and if opt=='' nothing is done.
-      if (this.optionLine + this.optionFill + this.optionMark + this.optionBar +
-          this.optionEF + this.optionRect + this.optionErrors == 0) {
-         if (chopt.length == 0) this.optionLine = 1;
+      if (res.Line + res.Fill + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
+         if (d.opt.length == 0) res.Line = 1;
       }
 
       if (graph._typename == 'TGraphErrors') {
          if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
-            this.optionErrors = 0;
+            res.Errors = 0;
       }
+
+      return res;
    }
 
    JSROOT.TGraphPainter.prototype.CreateBins = function() {
       var gr = this.GetObject();
-      if (gr===null) return;
+      if (!gr) return;
 
       var p, kind = 0, npoints = gr.fNpoints;
       if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
@@ -1543,11 +1477,11 @@
       lines.push("x = " + pmain.AxisAsText("x", d.x));
       lines.push("y = " + pmain.AxisAsText("y", d.y));
 
-      if (this.optionErrors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+      if (this.options.Errors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
          lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
                               "/+" + pmain.AxisAsText("x", d.exhigh));
 
-      if ((this.optionErrors || (this.optionEF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
+      if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
          lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
                            "/+" + pmain.AxisAsText("y", d.eyhigh));
 
@@ -1581,12 +1515,12 @@
 
       if (this.lineatt.excl_side!=0) {
          excl_width = this.lineatt.excl_side * this.lineatt.excl_width;
-         if (this.lineatt.width>0) this.optionLine = 1;
+         if (this.lineatt.width>0) this.options.Line = 1;
       }
 
       var drawbins = null;
 
-      if (this.optionEF > 0) {
+      if (this.options.EF) {
 
          drawbins = this.OptimizeBins();
 
@@ -1597,7 +1531,7 @@
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         var path1 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "bezier" : "line", drawbins),
+         var path1 = JSROOT.Painter.BuildSvgPath(this.options.EF > 1 ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (var n=drawbins.length-1;n>=0;--n) {
@@ -1607,7 +1541,7 @@
          }
 
          // build upper part (in reverse direction)
-         var path2 = JSROOT.Painter.BuildSvgPath(this.optionEF > 1 ? "Lbezier" : "Lline", bins2);
+         var path2 = JSROOT.Painter.BuildSvgPath(this.options.EF > 1 ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1616,12 +1550,12 @@
          this.draw_kind = "lines";
       }
 
-      if (this.optionLine == 1 || this.optionFill == 1 || (excl_width!==0)) {
+      if (this.options.Line == 1 || this.options.Fill == 1 || (excl_width!==0)) {
 
          var close_symbol = "";
-         if (graph._typename=="TCutG") this.optionFill = 1;
+         if (graph._typename=="TCutG") this.options.Fill = 1;
 
-         if (this.optionFill == 1) {
+         if (this.options.Fill == 1) {
             close_symbol = "Z"; // always close area if we want to fill it
             excl_width=0;
          }
@@ -1635,7 +1569,7 @@
          }
 
          var kind = "line"; // simple line
-         if (this.optionCurve === 1) kind = "bezier"; else
+         if (this.options.Curve === 1) kind = "bezier"; else
          if (excl_width!==0) kind+="calc"; // we need to calculated deltas to build exclusion points
 
          var path = JSROOT.Painter.BuildSvgPath(kind, drawbins);
@@ -1651,7 +1585,7 @@
                extrabins.push(bin);
             }
 
-            var path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.optionCurve === 1) ? "bezier" : "line"), extrabins);
+            var path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
 
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
@@ -1660,15 +1594,15 @@
                        .style('opacity', 0.75);
          }
 
-         if (this.optionLine || this.optionFill) {
+         if (this.options.Line || this.options.Fill) {
             var elem = this.draw_g.append("svg:path")
                            .attr("d", path.path + close_symbol);
-            if (this.optionLine)
+            if (this.options.Line)
                elem.call(this.lineatt.func);
             else
                elem.style('stroke','none');
 
-            if (this.optionFill > 0)
+            if (this.options.Fill)
                elem.call(this.fillatt.func);
             else
                elem.style('fill','none');
@@ -1679,18 +1613,18 @@
 
       var nodes = null;
 
-      if (this.optionErrors || this.optionRect || this.optionBar) {
+      if (this.options.Errors || this.options.Rect || this.options.Bar) {
 
          drawbins = this.OptimizeBins(function(pnt,i) {
 
             var grx = pmain.grx(pnt.x);
 
             // when drawing bars, take all points
-            if (!pthis.optionBar && ((grx<0) || (grx>w))) return true;
+            if (!pthis.options.Bar && ((grx<0) || (grx>w))) return true;
 
             var gry = pmain.gry(pnt.y);
 
-            if (!pthis.optionBar && !pthis.out_of_range && ((gry<0) || (gry>h))) return true;
+            if (!pthis.options.Bar && !pthis.options.OutRange && ((gry<0) || (gry>h))) return true;
 
             pnt.grx1 = Math.round(grx);
             pnt.gry1 = Math.round(gry);
@@ -1725,7 +1659,7 @@
                      .attr("transform", function(d) { return "translate(" + d.grx1 + "," + d.gry1 + ")"; });
       }
 
-      if (this.optionBar) {
+      if (this.options.Bar) {
          // calculate bar width
          for (var i=1;i<drawbins.length-1;++i)
             drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
@@ -1746,18 +1680,18 @@
             .attr("x", function(d) { return Math.round(-d.width/2); })
             .attr("y", function(d) {
                 d.bar = true; // element drawn as bar
-                if (pthis.optionBar!==1) return 0;
+                if (pthis.options.Bar!==1) return 0;
                 return (d.gry1 > yy0) ? yy0-d.gry1 : 0;
              })
             .attr("width", function(d) { return Math.round(d.width); })
             .attr("height", function(d) {
-                if (pthis.optionBar!==1) return h > d.gry1 ? h - d.gry1 : 0;
+                if (pthis.options.Bar!==1) return h > d.gry1 ? h - d.gry1 : 0;
                 return Math.abs(yy0 - d.gry1);
              })
             .call(this.fillatt.func);
       }
 
-      if (this.optionRect)
+      if (this.options.Rect)
          nodes.filter(function(d) { return (d.exlow > 0) && (d.exhigh > 0) && (d.eylow > 0) && (d.eyhigh > 0); })
            .append("svg:rect")
            .attr("x", function(d) { d.rect = true; return d.grx0; })
@@ -1765,19 +1699,19 @@
            .attr("width", function(d) { return d.grx2 - d.grx0; })
            .attr("height", function(d) { return d.gry0 - d.gry2; })
            .call(this.fillatt.func)
-           .call(this.optionRect === 2 ? this.lineatt.func : function() {});
+           .call(this.options.Rect === 2 ? this.lineatt.func : function() {});
 
       this.error_size = 0;
 
-      if (this.optionErrors) {
+      if (this.options.Errors) {
          // to show end of error markers, use line width attribute
          var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
-             vv = this.draw_ends ? "m0," + lw + "v-" + 2*lw : "",
-             hh = this.draw_ends ? "m" + lw + ",0h-" + 2*lw : "",
+             vv = this.options.Ends ? "m0," + lw + "v-" + 2*lw : "",
+             hh = this.options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh,
-             mm = this.draw_mainerr ? "M0,0L" : "M"; // command to draw main errors
+             mm = this.options.MainError ? "M0,0L" : "M"; // command to draw main errors
 
-         switch(this.draw_ends) {
+         switch (this.options.Ends) {
             case 2:  // option []
                bb = Math.max(this.lineatt.width+1, Math.round(lw*0.66));
                vleft = "m"+bb+","+lw + "h-"+bb + "v-"+2*lw + "h"+bb;
@@ -1819,15 +1753,15 @@
               });
       }
 
-      if (this.optionMark > 0) {
+      if (this.options.Mark) {
          // for tooltips use markers only if nodes where not created
          var step = Math.max(1, Math.round(this.bins.length / 50000)),
              path = "", n, pnt, grx, gry;
 
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(graph, this.optionMark - 100);
+            this.markeratt = JSROOT.Painter.createAttMarker(graph, this.options.Mark - 100);
          else
-            this.markeratt.Change(undefined, this.optionMark - 100);
+            this.markeratt.Change(undefined, this.options.Mark - 100);
 
          this.marker_size = this.markeratt.size;
 
@@ -1849,7 +1783,7 @@
                        .attr("d", path)
                        .call(this.markeratt.func);
             if ((nodes===null) && (this.draw_kind=="none"))
-               this.draw_kind = (this.optionMark==101) ? "path" : "mark";
+               this.draw_kind = (this.options.Mark==101) ? "path" : "mark";
 
          }
       }
@@ -1891,7 +1825,7 @@
          if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
-             if (painter.optionBar===1) {
+             if (painter.options.Bar===1) {
                 var yy0 = pmain.gry(0);
                 rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
                 rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
@@ -2012,7 +1946,7 @@
 
       var gry1, gry2;
 
-      if ((this.optionEF > 0) && islines) {
+      if (this.options.EF && islines) {
          gry1 = pmain.gry(bestbin.y - bestbin.eylow);
          gry2 = pmain.gry(bestbin.y + bestbin.eyhigh);
       } else {
@@ -2052,11 +1986,11 @@
             if (!islines) {
                elem.style('stroke', res.color1 == 'black' ? 'green' : 'black').style('fill','none');
             } else {
-               if (this.optionLine)
+               if (this.options.Line)
                   elem.call(this.lineatt.func);
                else
                   elem.style('stroke','black');
-               if (this.optionFill > 0)
+               if (this.options.Fill)
                   elem.call(this.fillatt.func);
                else
                   elem.style('fill','none');
@@ -2129,7 +2063,7 @@
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
       JSROOT.extend(this, new JSROOT.TGraphPainter(graph));
 
-      this.DecodeOptions(opt);
+      this.options = this.DecodeOptions(opt);
 
       this.SetDivId(divid, -1); // just to get access to existing elements
 
@@ -2138,7 +2072,7 @@
       if (this.main_painter() == null) {
          if (graph.fHistogram == null)
             graph.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, this.optionAxis);
+         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, this.options.Axis);
          this.ownhisto = true;
       }
 

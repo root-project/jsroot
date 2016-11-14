@@ -2883,7 +2883,7 @@
       if (this.main_painter() == null) {
          if (gr.fHistogram == null)
             gr.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram2D(divid, gr.fHistogram, "lego " + this.optionAxis);
+         JSROOT.Painter.drawHistogram2D(divid, gr.fHistogram, "lego");
          this.ownhisto = true;
       }
 
