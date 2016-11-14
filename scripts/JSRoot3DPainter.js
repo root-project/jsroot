@@ -2647,21 +2647,9 @@
       // this set to TObjectPainter instance, redefine several functions
 
       this.DecodeOptions = function(opt) {
-         var chopt = opt.toUpperCase().replace('SAME', '');
+         var d = new JSROOT.DrawOptions(opt);
 
-         function check(name) {
-            var pos = chopt.indexOf(name);
-            if (pos < 0) return false;
-            chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
-            return true;
-         }
-
-         var res = { Markers: true, Color: false };
-
-         if (check("COL")) res.Color = true;
-         if (check("P")) res.Marker = true;
-
-         return res;
+         return { Markers: d.check("P") || true, Color: d.check("COL") };
       }
 
       this.CreateHistogram = function() {
@@ -2833,7 +2821,8 @@
                fcolor = palette[indx];
             }
 
-            console.log('fcolor', fcolor);
+            //var rgb = d3.rgb(fcolor), color = new THREE.Color(rgb.r/255., rgb.g/255., rgb.b/255.);
+            //console.log('fcolor', fcolor, rgb);
 
             var mesh = null;
 

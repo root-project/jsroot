@@ -134,6 +134,28 @@
       this.element.remove();
    };
 
+   JSROOT.DrawOptions = function(opt) {
+      this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
+      this.part = "";
+   }
+
+   JSROOT.DrawOptions.prototype.check = function(name,postpart) {
+      var pos = this.opt.indexOf(name);
+      if (pos < 0) return false;
+      this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
+      this.part = "";
+      if (postpart) {
+         var pos2 = pos;
+         while ((pos2<this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
+         if (pos2 > pos) {
+            part = this.opt.substr(pos, pos2-pos);
+            this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
+         }
+      }
+      return true;
+   }
+
+
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
     */
