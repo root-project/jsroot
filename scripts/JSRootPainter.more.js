@@ -812,6 +812,48 @@
       return this.DrawingReady();
    }
 
+   // =================================================================================
+
+   JSROOT.Painter.drawTF2 = function(divid, func, opt) {
+      var hist = JSROOT.CreateTH2(func.fNpx, func.fNpy);
+
+      hist.fName = "Func";
+      hist.fTitle = func.fTitle;
+      hist.fMinimum = func.fMinimum;
+      hist.fMaximum = func.fMaximum;
+      //fHistogram->SetContour(fContour.fN, levels);
+      hist.fLineColor = func.fLineColor;
+      hist.fLineStyle = func.fLineStyle;
+      hist.fLineWidth = func.LineWidth;
+      hist.fFillColor = func.fFillColor;
+      hist.fFillStyle = func.fFillStyle;
+      hist.fMarkerColor = func.fMarkerColor;
+      hist.fMarkerStyle = func.fMarkerStyle;
+      hist.fMarkerSize = func.fMarkerSize;
+
+      hist.fXaxis.fXmin = func.fXmin;
+      hist.fXaxis.fXmax = func.fXmax;
+
+      hist.fYaxis.fXmin = func.fYmin;
+      hist.fYaxis.fXmax = func.fYmax;
+
+      for (var i=0;i<func.fNpx;++i)
+         for (var j=0;j<func.fNpy;++j) {
+           var x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / func.fNpx,
+               y = func.fYmin + (j + 0.5) * (func.fYmax - func.fYmin) / func.fNpy;
+
+           var v = func.evalPar(x,y);
+
+           hist.setBinContent(hist.getBin(i+1,j+1), v);
+         }
+
+      if (!opt)  opt = "cont3"; else
+      if (opt == "same") opt = "cont2 same";
+
+      return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
+   }
+
+
    // ===================================================================================
 
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {

@@ -1418,14 +1418,14 @@
          }
       }
 
-      if (typename.indexOf("TF1") == 0) {
+      if ((typename.indexOf("TF1") == 0) || (typename === "TF2")) {
          m.addFormula = function(obj) {
-            if (obj==null) return;
-            if (!('formulas' in this)) this.formulas = [];
+            if (!obj) return;
+            if (this.formulas === undefined) this.formulas = [];
             this.formulas.push(obj);
          }
 
-         m.evalPar = function(x) {
+         m.evalPar = function(x, y) {
             if (! ('_func' in this) || (this._title !== this.fTitle)) {
 
               var _func = this.fTitle;
@@ -1459,12 +1459,15 @@
               for (var n=2;n<10;++n)
                  _func = _func.replace('x^'+n, 'Math.pow(x,'+n+')');
 
-              this._func = new Function("x", "return " + _func).bind(this);
+              if (this._typename==="TF2")
+                 this._func = new Function("x", "y", "return " + _func).bind(this);
+              else
+                 this._func = new Function("x", "return " + _func).bind(this);
 
               this._title = this.fTitle;
             }
 
-            return this._func(x);
+            return this._func(x, y);
          }
          m.GetParName = function(n) {
             if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
