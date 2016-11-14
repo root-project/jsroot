@@ -520,7 +520,6 @@
          JSROOT.Painter.DisposeThreejsObject(this.scene);
          if (this.control) this.control.dispose();
 
-         delete this.size3d;
          delete this.size_xy3d;
          delete this.size_z3d;
          delete this.scene;
@@ -556,12 +555,8 @@
 
       var sz = this.size_for_3d();
 
-      this.size3d = 100;
-
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
-
-      console.log(this.size_z3d, this.size_xy3d);
 
       // three.js 3D drawing
       this.scene = new THREE.Scene();
@@ -573,7 +568,9 @@
       this.scene_height = sz.height;
 
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
-      this.camera.position.set(-1.4*this.size_xy3d, -2.9*this.size_xy3d, 1.3*this.size_z3d);
+
+      var max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
+      this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );

@@ -2543,7 +2543,8 @@
          this.ymin = box.min.y; this.ymax = box.max.y;
          this.zmin = box.min.z; this.zmax = box.max.z;
 
-         this.size3d = 0; // use min/max values directly as graphical coordinates
+         // use min/max values directly as graphical coordinates
+         this.size_xy3d = this.size_z3d =  0;
 
          this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
 

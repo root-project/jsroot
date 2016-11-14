@@ -1350,7 +1350,7 @@
 
       // if no drawing option is selected and if opt=='' nothing is done.
       if (res.Line + res.Fill + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
-         if (d.opt.length == 0) res.Line = 1;
+         if (d.empty()) res.Line = 1;
       }
 
       if (graph._typename == 'TGraphErrors') {

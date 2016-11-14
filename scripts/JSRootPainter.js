@@ -139,18 +139,22 @@
       this.part = "";
    }
 
+   JSROOT.DrawOptions.prototype.empty = function() {
+      return this.opt.length === 0;
+   }
+
    JSROOT.DrawOptions.prototype.check = function(name,postpart) {
       var pos = this.opt.indexOf(name);
       if (pos < 0) return false;
       this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
       this.part = "";
-      if (postpart) {
-         var pos2 = pos;
-         while ((pos2<this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
-         if (pos2 > pos) {
-            part = this.opt.substr(pos, pos2-pos);
-            this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
-         }
+      if (!postpart) return true;
+
+      var pos2 = pos;
+      while ((pos2<this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
+      if (pos2 > pos) {
+         this.part = this.opt.substr(pos, pos2-pos);
+         this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
       }
       return true;
    }
@@ -4477,27 +4481,21 @@
 
    JSROOT.TPadPainter.prototype.DecodeOptions = function(opt) {
       var pad = this.GetObject();
-      if (!pad || (typeof opt !== 'string')) return;
-      var chopt = opt.toUpperCase();
+      if (!pad) return;
 
-      function check(name) {
-         var pos = chopt.indexOf(name);
-         if (pos < 0) return false;
-         chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
-         return true;
-      }
+      var d = new JSROOT.DrawOptions(opt);
 
-      if (check('WHITE')) pad.fFillColor = 0;
-      if (check('LOGX')) pad.fLogx = 1;
-      if (check('LOGY')) pad.fLogy = 1;
-      if (check('LOGZ')) pad.fLogz = 1;
-      if (check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
-      if (check('GRIDX')) pad.fGridx = 1;
-      if (check('GRIDY')) pad.fGridy = 1;
-      if (check('GRID')) pad.fGridx = pad.fGridy = 1;
-      if (check('TICKX')) pad.fTickx = 1;
-      if (check('TICKY')) pad.fTicky = 1;
-      if (check('TICK')) pad.fTickx = pad.fTicky = 1;
+      if (d.check('WHITE')) pad.fFillColor = 0;
+      if (d.check('LOGX')) pad.fLogx = 1;
+      if (d.check('LOGY')) pad.fLogy = 1;
+      if (d.check('LOGZ')) pad.fLogz = 1;
+      if (d.check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
+      if (d.check('GRIDX')) pad.fGridx = 1;
+      if (d.check('GRIDY')) pad.fGridy = 1;
+      if (d.check('GRID')) pad.fGridx = pad.fGridy = 1;
+      if (d.check('TICKX')) pad.fTickx = 1;
+      if (d.check('TICKY')) pad.fTicky = 1;
+      if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
    }
 
 
@@ -5204,8 +5202,6 @@
 
    JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
 
-      if ((opt == null) || (opt == "")) opt = this.histo.fOption;
-
       /* decode string 'opt' and fill the option structure */
       var hdim = this.Dimension();
       var option = {
@@ -5219,8 +5215,10 @@
          HighRes: 0, Zero: 0, Palette: 0, BaseLine: false,
          Optimize: JSROOT.gStyle.OptimizeDraw
       };
+
+      var d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption);
+
       // check for graphical cuts
-      var chopt = JSROOT.Painter.clearCuts(opt.toUpperCase());
 
       var pad = this.root_pad();
 
@@ -5231,158 +5229,115 @@
          for (var n=0;n<this.histo.fSumw2.length;++n)
             if (this.histo.fSumw2[n] > 0) { option.Error = 2; break; }
 
-      var i = chopt.indexOf('PAL');
-      if (i>=0) {
-         var i2 = i+3;
-         while ((i2<chopt.length) && (chopt.charCodeAt(i2)>=48) && (chopt.charCodeAt(i2)<58)) ++i2;
-         if (i2>i+3) {
-            option.Palette = parseInt(chopt.substring(i+3,i2));
-            chopt = chopt.replace(chopt.substring(i,i2),"");
-         }
-      }
+      if (d.check('PAL', true)) option.Palette = parseInt(d.part);
 
-      var part = ""; // used to return part of string
+      if (d.check('NOOPTIMIZE')) option.Optimize = 0;
+      if (d.check('OPTIMIZE')) option.Optimize = 2;
 
-      function check(name,postpart) {
-         var pos = chopt.indexOf(name);
-         if (pos < 0) return false;
-         chopt = chopt.substr(0, pos) + chopt.substr(pos + name.length);
-         if (postpart) {
-            part = "";
-            var pos2 = pos;
-            while ((pos2<chopt.length) && (chopt[pos2] !== ' ') && (chopt[pos2] !== ',') && (chopt[pos2] !== ';')) pos2++;
-            if (pos2 > pos) {
-               part = chopt.substr(pos, pos2-pos);
-               chopt = chopt.substr(0, pos) + chopt.substr(pos2);
-            }
-         }
-         return true;
-      }
+      if (d.check('AUTOCOL')) { option.AutoColor = 1; option.Hist = 1; }
+      if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
 
+      if (d.check('NOSTAT')) option.NoStat = 1;
 
-      if (check('NOOPTIMIZE')) option.Optimize = 0;
-      if (check('OPTIMIZE')) option.Optimize = 2;
+      if (d.check('LOGX')) pad.fLogx = 1;
+      if (d.check('LOGY')) pad.fLogy = 1;
+      if (d.check('LOGZ')) pad.fLogz = 1;
+      if (d.check('GRIDXY')) pad.fGridx = pad.fGridy = 1;
+      if (d.check('GRIDX')) pad.fGridx = 1;
+      if (d.check('GRIDY')) pad.fGridy = 1;
+      if (d.check('TICKXY')) pad.fTickx = pad.fTicky = 1;
+      if (d.check('TICKX')) pad.fTickx = 1;
+      if (d.check('TICKY')) pad.fTicky = 1;
 
-      if (check('AUTOCOL')) { option.AutoColor = 1; option.Hist = 1; }
-      if (check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
-
-      if (check('NOSTAT')) option.NoStat = 1;
-
-      if (check('LOGX')) pad.fLogx = 1;
-      if (check('LOGY')) pad.fLogy = 1;
-      if (check('LOGZ')) pad.fLogz = 1;
-      if (check('GRIDXY')) pad.fGridx = pad.fGridy = 1;
-      if (check('GRIDX')) pad.fGridx = 1;
-      if (check('GRIDY')) pad.fGridy = 1;
-      if (check('TICKXY')) pad.fTickx = pad.fTicky = 1;
-      if (check('TICKX')) pad.fTickx = 1;
-      if (check('TICKY')) pad.fTicky = 1;
-
-      if (check('FILL_', true)) {
-         if (!isNaN(parseInt(part))) this.histo.fFillColor = parseInt(part); else
+      if (d.check('FILL_', true)) {
+         if (!isNaN(parseInt(d.part))) this.histo.fFillColor = parseInt(d.part); else
             for (var col=0;col<8;++col)
-               if (JSROOT.Painter.root_colors[col].toUpperCase() === part) this.histo.fFillColor = col;
+               if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fFillColor = col;
       }
-      if (check('LINE_', true)) {
-         if (!isNaN(parseInt(part))) this.histo.fLineColor = parseInt(part); else
+      if (d.check('LINE_', true)) {
+         if (!isNaN(parseInt(d.part))) this.histo.fLineColor = parseInt(d.part); else
          for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === part) this.histo.fLineColor = col;
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fLineColor = col;
       }
 
-      var nch = chopt.length;
-      if (!nch) option.Hist = 1;
+      if (d.check('X+')) option.AxisPos = 10;
+      if (d.check('Y+')) option.AxisPos += 1;
 
-      if (check('SPEC')) {
-         option.Scat = 0;
-         option.Spec = Math.max(1600, check('BF(') ? parseInt(chopt) : 0);
-      }
+      if (d.check('SAMES')) option.Same = 2;
+      if (d.check('SAME')) option.Same = 1;
 
-      check('GL');
+      // if here rest option is empty, draw histograms by default
+      if (d.empty()) option.Hist = 1;
 
-      if (check('X+')) option.AxisPos = 10;
-      if (check('Y+')) option.AxisPos += 1;
+      if (d.check('SPEC')) { option.Scat = 0; option.Spec = 1; }
 
-      if ((option.AxisPos == 10 || option.AxisPos == 1) && (nch == 2))
-         option.Hist = 1;
-
-      if (option.AxisPos == 11 && (nch == 4))
-         option.Hist = 1;
-
-      if (check('SAMES')) {
-         if (nch == 5) option.Hist = 1;
-         option.Same = 2;
-      }
-
-      if (check('SAME')) {
-         if (nch == 4) option.Hist = 1;
-         option.Same = 1;
-      }
-
-      if (check('BASE0')) option.BaseLine = 0; else
+      if (d.check('BASE0')) option.BaseLine = 0; else
       if (JSROOT.gStyle.fHistMinimumZero) option.BaseLine = 0;
 
-      if (check('PIE')) option.Pie = 1;
+      if (d.check('PIE')) option.Pie = 1;
 
-      if (check('CANDLE', true)) option.Candle = part;
+      if (d.check('CANDLE', true)) option.Candle = d.part;
 
-      if (check('GLLEGO', true) || check('LEGO', true)) {
+      d.check('GL'); // suppress GL
+
+      if (d.check('LEGO', true)) {
          option.Scat = 0;
          option.Lego = 1;
          option.Zero = 1;
-         if (part.indexOf('0') >= 0) option.Zero = 0;
-         if (part.indexOf('1') >= 0) option.Lego = 11;
-         if (part.indexOf('2') >= 0) option.Lego = 12;
-         if (part.indexOf('3') >= 0) option.Lego = 13;
-         if (part.indexOf('4') >= 0) option.Lego = 14;
-         if (part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (part.indexOf('BB') >= 0) option.BackBox = 0;
-         if (part.indexOf('Z')>=0) option.Zscale = 1;
+         if (d.part.indexOf('0') >= 0) option.Zero = 0;
+         if (d.part.indexOf('1') >= 0) option.Lego = 11;
+         if (d.part.indexOf('2') >= 0) option.Lego = 12;
+         if (d.part.indexOf('3') >= 0) option.Lego = 13;
+         if (d.part.indexOf('4') >= 0) option.Lego = 14;
+         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
+         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
+         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
-      if (check('GLSURF', true) || check('SURF', true)) {
+      if (d.check('SURF', true)) {
          option.Scat = 0;
          option.Surf = 1;
-         if (part.indexOf('FB') >= 0) { option.FrontBox = 0; part = part.replace('FB',''); }
-         if (part.indexOf('BB') >= 0) { option.BackBox = 0; part = part.replace('BB',''); }
-         if ((part.length>0) && !isNaN(parseInt(part))) option.Surf = 10 + parseInt(part);
-         if (part.indexOf('Z')>=0) option.Zscale = 1;
+         if (d.part.indexOf('FB') >= 0) { option.FrontBox = 0; d.part = d.part.replace('FB',''); }
+         if (d.part.indexOf('BB') >= 0) { option.BackBox = 0; d.part = d.part.replace('BB',''); }
+         if ((d.part.length>0) && !isNaN(parseInt(d.part))) option.Surf = 10 + parseInt(d.part);
+         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
-      if (check('TF3', true)) {
-         if (part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (part.indexOf('BB') >= 0) option.BackBox = 0;
+      if (d.check('TF3', true)) {
+         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
+         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
       }
 
-      if (check('ISO', true)) {
-         if (part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (part.indexOf('BB') >= 0) option.BackBox = 0;
+      if (d.check('ISO', true)) {
+         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
+         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
       }
 
-      if (check('LIST')) option.List = 1;
+      if (d.check('LIST')) option.List = 1;
 
-      if (check('CONT', true)) {
+      if (d.check('CONT', true)) {
          if (hdim > 1) {
             option.Scat = 0;
             option.Contour = 1;
-            if (part.indexOf('Z')>=0) option.Zscale = 1;
-            if (part.indexOf('1') >= 0) option.Contour = 11; else
-            if (part.indexOf('2') >= 0) option.Contour = 12; else
-            if (part.indexOf('3') >= 0) option.Contour = 13; else
-            if (part.indexOf('4') >= 0) option.Contour = 14;
+            if (d.part.indexOf('Z')>=0) option.Zscale = 1;
+            if (d.part.indexOf('1') >= 0) option.Contour = 11; else
+            if (d.part.indexOf('2') >= 0) option.Contour = 12; else
+            if (d.part.indexOf('3') >= 0) option.Contour = 13; else
+            if (d.part.indexOf('4') >= 0) option.Contour = 14;
          } else {
             option.Hist = 1;
          }
       }
 
       // decode bar/hbar option
-      if (check('HBAR', true)) option.Bar = 20; else
-      if (check('BAR', true)) option.Bar = 10;
+      if (d.check('HBAR', true)) option.Bar = 20; else
+      if (d.check('BAR', true)) option.Bar = 10;
       if (option.Bar > 0) {
          option.Hist = 0;
-         if (!isNaN(parseInt(part))) option.Bar += parseInt(part);
+         if (!isNaN(parseInt(d.part))) option.Bar += parseInt(d.part);
       }
 
-      if (check('ARR')) {
+      if (d.check('ARR')) {
          if (hdim > 1) {
             option.Arrow = 1;
             option.Scat = 0;
@@ -5391,38 +5346,38 @@
          }
       }
 
-      if (check('BOX1')) option.Box = 11; else
-      if (check('BOX')) option.Box = 1;
+      if (d.check('BOX1')) option.Box = 11; else
+      if (d.check('BOX')) option.Box = 1;
 
       if (option.Box)
          if (hdim > 1) option.Scat = 0;
                   else option.Hist = 1;
 
-      if (check('COL', true)) {
+      if (d.check('COL', true)) {
          option.Color = 1;
 
-         if (part.indexOf('0')>=0) option.Color = 11;
-         if (part.indexOf('1')>=0) option.Color = 11;
-         if (part.indexOf('2')>=0) option.Color = 12;
-         if (part.indexOf('3')>=0) option.Color = 13;
+         if (d.part.indexOf('0')>=0) option.Color = 11;
+         if (d.part.indexOf('1')>=0) option.Color = 11;
+         if (d.part.indexOf('2')>=0) option.Color = 12;
+         if (d.part.indexOf('3')>=0) option.Color = 13;
 
-         if (part.indexOf('Z')>=0) option.Zscale = 1;
+         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
          if (hdim == 1) option.Hist = 1;
                    else option.Scat = 0;
       }
 
-      if (check('CHAR')) { option.Char = 1; option.Scat = 0; }
-      if (check('FUNC')) { option.Func = 2; option.Hist = 0; }
-      if (check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
-      if (check('AXIS')) option.Axis = 1;
-      if (check('AXIG')) option.Axis = 2;
+      if (d.check('CHAR')) { option.Char = 1; option.Scat = 0; }
+      if (d.check('FUNC')) { option.Func = 2; option.Hist = 0; }
+      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
+      if (d.check('AXIS')) option.Axis = 1;
+      if (d.check('AXIG')) option.Axis = 2;
 
-      if (check('TEXT', true)) {
+      if (d.check('TEXT', true)) {
          option.Text = 1;
          option.Scat = 0;
 
-         var angle = parseInt(part.substr(0,2));
-         if (isNaN(angle)) angle = parseInt(part.substr(0,1));
+         var angle = parseInt(d.part.substr(0,2));
+         if (isNaN(angle)) angle = parseInt(d.part.substr(0,1));
          if (!isNaN(angle)) {
             if (angle < 0) angle = 0;
             if (angle > 90) angle = 90;
@@ -5431,70 +5386,70 @@
             angle = 0;
          }
 
-         if (part.indexOf('N')>=0 && this.IsTH2Poly())
+         if (d.part.indexOf('N')>=0 && this.IsTH2Poly())
             option.Text = 3000 + angle;
 
-         if (part.indexOf('E')>=0)
+         if (d.part.indexOf('E')>=0)
             option.Text = 2000 + angle;
       }
 
-      if (check('SCAT=', true)) {
+      if (d.check('SCAT=', true)) {
          option.Scat = 1;
-         option.ScatCoef = parseFloat(part);
+         option.ScatCoef = parseFloat(d.part);
          if (isNaN(option.ScatCoef) || (option.ScatCoef<=0)) option.ScatCoef = 1.;
       }
 
-      if (check('SCAT')) option.Scat = 1;
-      if (check('POL')) option.System = JSROOT.Painter.Coord.kPOLAR;
-      if (check('CYL')) option.System = JSROOT.Painter.Coord.kCYLINDRICAL;
-      if (check('SPH')) option.System = JSROOT.Painter.Coord.kSPHERICAL;
-      if (check('PSR')) option.System = JSROOT.Painter.Coord.kRAPIDITY;
+      if (d.check('SCAT')) option.Scat = 1;
+      if (d.check('POL')) option.System = JSROOT.Painter.Coord.kPOLAR;
+      if (d.check('CYL')) option.System = JSROOT.Painter.Coord.kCYLINDRICAL;
+      if (d.check('SPH')) option.System = JSROOT.Painter.Coord.kSPHERICAL;
+      if (d.check('PSR')) option.System = JSROOT.Painter.Coord.kRAPIDITY;
 
-      if (check('TRI', true)) {
+      if (d.check('TRI', true)) {
          option.Scat = 0;
          option.Color = 0;
          option.Tri = 1;
-         if (part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (part.indexOf('BB') >= 0) option.BackBox = 0;
-         if (part.indexOf('ERR') >= 0) option.Error = 1;
+         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
+         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
+         if (d.part.indexOf('ERR') >= 0) option.Error = 1;
       }
-      if (check('AITOFF')) option.Proj = 1;
-      if (check('MERCATOR')) option.Proj = 2;
-      if (check('SINUSOIDAL')) option.Proj = 3;
-      if (check('PARABOLIC')) option.Proj = 4;
+      if (d.check('AITOFF')) option.Proj = 1;
+      if (d.check('MERCATOR')) option.Proj = 2;
+      if (d.check('SINUSOIDAL')) option.Proj = 3;
+      if (d.check('PARABOLIC')) option.Proj = 4;
 
       if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
 
-      if ((hdim==3) && check('FB')) option.FrontBox = 0;
-      if ((hdim==3) && check('BB')) option.BackBox = 0;
+      if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
+      if ((hdim==3) && d.check('BB')) option.BackBox = 0;
 
-      if (check('A')) option.Axis = -1;
-      if (check('B1')) { option.Bar = 2; option.Hist = -1; }
-      if (check('B')) { option.Bar = 1; option.Hist = -1; }
-      if (check('C')) { option.Curve = 1; option.Hist = -1; }
-      if (check('F')) option.Fill = 1;
-      if (check('][')) { option.Off = 1; option.Hist = 1; }
-      if (check('F2')) option.Fill = 2;
+      if (d.check('A')) option.Axis = -1;
+      if (d.check('B1')) { option.Bar = 2; option.Hist = -1; }
+      if (d.check('B')) { option.Bar = 1; option.Hist = -1; }
+      if (d.check('C')) { option.Curve = 1; option.Hist = -1; }
+      if (d.check('F')) option.Fill = 1;
+      if (d.check('][')) { option.Off = 1; option.Hist = 1; }
+      if (d.check('F2')) option.Fill = 2;
 
-      if (check('L')) { option.Line = 1; option.Hist = -1; }
+      if (d.check('L')) { option.Line = 1; option.Hist = -1; }
 
-      if (check('P0')) { option.Mark = 10; option.Hist = -1; }
-      if (check('P')) { option.Mark = 1; option.Hist = -1; }
-      if (check('Z')) option.Zscale = 1;
-      if (check('*')) { option.Mark = 23; option.Hist = -1; }
-      if (check('H')) option.Hist = 2;
-      if (check('0')) option.Zero = 0;
+      if (d.check('P0')) { option.Mark = 10; option.Hist = -1; }
+      if (d.check('P')) { option.Mark = 1; option.Hist = -1; }
+      if (d.check('Z')) option.Zscale = 1;
+      if (d.check('*')) { option.Mark = 23; option.Hist = -1; }
+      if (d.check('H')) option.Hist = 2;
+      if (d.check('0')) option.Zero = 0;
 
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
       }
 
-      if (check('E', true)) {
+      if (d.check('E', true)) {
          if (hdim == 1) {
             option.Error = 1;
-            if ((part.length>0) && !isNaN(parseInt(part[0])))
-               option.Error = 10 + parseInt(part[0]);
-            if (part.indexOf('X0')>=0) {
+            if ((d.part.length>0) && !isNaN(parseInt(d.part[0])))
+               option.Error = 10 + parseInt(d.part[0]);
+            if (d.part.indexOf('X0')>=0) {
                if (option.Error == 1) option.Error += 20;
                option.Error += 10;
             }
@@ -5505,7 +5460,7 @@
             }
          }
       }
-      if (check('9')) option.HighRes = 1;
+      if (d.check('9')) option.HighRes = 1;
 
       //if (option.Surf == 15)
       //   if (option.System == JSROOT.Painter.Coord.kPOLAR || option.System == JSROOT.Painter.Coord.kCARTESIAN)
