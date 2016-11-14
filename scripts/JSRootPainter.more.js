@@ -3320,9 +3320,9 @@
          res.grx[i] = pmain.grx(x);
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
 
-         if (args.size3d) {
-            if (res.grx[i] < -args.size3d) { res.i1 = i; res.grx[i] = -args.size3d; }
-            if (res.grx[i] > args.size3d) { res.i2 = i; res.grx[i] = args.size3d; }
+         if (args.use3d) {
+            if (res.grx[i] < -this.size_xy3d) { res.i1 = i; res.grx[i] = -this.size_xy3d; }
+            if (res.grx[i] > this.size_xy3d) { res.i2 = i; res.grx[i] = this.size_xy3d; }
          }
       }
 
@@ -3336,9 +3336,9 @@
          res.gry[j] = pmain.gry(y);
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
-         if (args.size3d) {
-            if (res.gry[j] < -args.size3d) { res.j1 = j; res.gry[j] = -args.size3d; }
-            if (res.gry[j] > args.size3d) { res.j2 = j; res.gry[j] = args.size3d; }
+         if (args.use3d) {
+            if (res.gry[j] < -this.size_xy3d) { res.j1 = j; res.gry[j] = -this.size_xy3d; }
+            if (res.gry[j] > this.size_xy3d) { res.j2 = j; res.gry[j] = this.size_xy3d; }
          }
       }
 

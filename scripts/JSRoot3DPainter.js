@@ -390,10 +390,11 @@
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
 
-            // z changes from 0..2*size3d, others -size3d..+size3d
-            if (kind!=="z") position += painter.size3d;
+            // z changes from 0..2*size_z3d, others -size_xy3d..+size_xy3d
+            if (kind!=="z") position = (position + painter.size_xy3d)/2/painter.size_xy3d;
+                       else position = position/2/painter.size_z3d;
 
-            painter.AnalyzeMouseWheelEvent(evnt, item, position/2/painter.size3d, false);
+            painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
 
             painter.Zoom(kind, item.min, item.max);
          }
@@ -428,12 +429,11 @@
                 pos1 = mouse_zoom_mesh.point[kind],
                 pos2 = mouse_zoom_mesh.point2[kind];
 
-            if (kind!=="z") { pos1+=painter.size3d; pos2+=painter.size3d; }
+            if (kind==="z") { pos1 = pos1/2/painter.size_z3d; pos2 = pos2/2/painter.size_z3d; }
+                       else { pos1 = (pos1 + painter.size_xy3d)/2/painter.size_xy3d; pos2=(pos2 + painter.size_xy3d)/2/painter.size_xy3d; }
 
             // we recalculate positions ourself,
             // in the future one should use CreateXY in 3D painters
-
-            pos1 = pos1/2/painter.size3d; pos2 = pos2/2/painter.size3d;
 
             if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
 
@@ -521,6 +521,8 @@
          if (this.control) this.control.dispose();
 
          delete this.size3d;
+         delete this.size_xy3d;
+         delete this.size_z3d;
          delete this.scene;
          delete this.toplevel;
          delete this.tooltip_mesh;
@@ -552,9 +554,14 @@
          return;
       }
 
-      var size = this.size_for_3d();
+      var sz = this.size_for_3d();
 
       this.size3d = 100;
+
+      this.size_z3d = 100;
+      this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
+
+      console.log(this.size_z3d, this.size_xy3d);
 
       // three.js 3D drawing
       this.scene = new THREE.Scene();
@@ -562,17 +569,17 @@
 
       this.toplevel = new THREE.Object3D();
       this.scene.add(this.toplevel);
-      this.scene_width = size.width;
-      this.scene_height = size.height
+      this.scene_width = sz.width;
+      this.scene_height = sz.height;
 
-      this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size3d);
-      this.camera.position.set(-1.6*this.size3d, -3.5*this.size3d, 1.4*this.size3d);
+      this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
+      this.camera.position.set(-1.4*this.size_xy3d, -2.9*this.size_xy3d, 1.3*this.size_z3d);
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add( this.pointLight );
-      this.pointLight.position.set( this.size3d/2, this.size3d/2, this.size3d/2 );
+      this.pointLight.position.set( this.size_xy3d/2, this.size_xy3d/2, this.size_z3d/2 );
 
-      var lookat = new THREE.Vector3(0,0,0.8*this.size3d);
+      var lookat = new THREE.Vector3(0,0,0.8*this.size_z3d);
 
       this.camera.up = new THREE.Vector3(0,0,1);
       this.camera.lookAt(lookat);
@@ -586,7 +593,7 @@
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
 
-      this.add_3d_canvas(size, this.renderer.domElement);
+      this.add_3d_canvas(sz, this.renderer.domElement);
 
       this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
       this.Render3D = JSROOT.Painter.Render3D;
@@ -612,11 +619,11 @@
          }
 
          if (tip && !tip.use_itself) {
-            var delta = 1e-4*painter.size3d;
+            var delta_xy = 1e-4*painter.size_xy3d, delta_z = 1e-4*painter.size_z3d;
             if ((tip.x1 > tip.x2) || (tip.y1 > tip.y2) || (tip.z1 > tip.z2)) console.warn('check 3D hints coordinates');
-            tip.x1 -= delta; tip.x2 += delta;
-            tip.y1 -= delta; tip.y2 += delta;
-            tip.z1 -= delta; tip.z2 += delta;
+            tip.x1 -= delta_xy; tip.x2 += delta_xy;
+            tip.y1 -= delta_xy; tip.y2 += delta_xy;
+            tip.z1 -= delta_z; tip.z2 += delta_z;
          }
 
          painter.BinHighlight3D(tip, mesh);
@@ -697,10 +704,10 @@
    JSROOT.Painter.HPainter_DrawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
-      var grminx = -this.size3d, grmaxx = this.size3d,
-          grminy = -this.size3d, grmaxy = this.size3d,
-          grminz = 0, grmaxz = 2*this.size3d,
-          textsize = Math.round(this.size3d * 0.05),
+      var grminx = -this.size_xy3d, grmaxx = this.size_xy3d,
+          grminy = -this.size_xy3d, grmaxy = this.size_xy3d,
+          grminz = 0, grmaxz = 2*this.size_z3d,
+          textsize = Math.round(this.size_z3d * 0.05),
           pad = this.root_pad(),
           histo = this.histo,
           xmin = this.xmin, xmax = this.xmax,
@@ -708,7 +715,7 @@
           zmin = this.zmin, zmax = this.zmax,
           y_zoomed = false, z_zoomed = false;
 
-      if (this.size3d === 0) {
+      if (!this.size_z3d) {
          grminx = this.xmin; grmaxx = this.xmax;
          grminy = this.ymin; grmaxy = this.ymax;
          grminz = this.zmin; grmaxz = this.zmax;
@@ -877,21 +884,21 @@
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
-      function CreateZoomMesh(kind, size3d) {
+      function CreateZoomMesh(kind, size_3d) {
          var geom = new THREE.Geometry();
 
          if (kind==="z")
             geom.vertices.push(
                   new THREE.Vector3(0,0,0),
                   new THREE.Vector3(ticklen*4, 0, 0),
-                  new THREE.Vector3(ticklen*4, 0, 2*size3d),
-                  new THREE.Vector3(0, 0, 2*size3d));
+                  new THREE.Vector3(ticklen*4, 0, 2*size_3d),
+                  new THREE.Vector3(0, 0, 2*size_3d));
          else
             geom.vertices.push(
-                  new THREE.Vector3(-size3d,0,0),
-                  new THREE.Vector3(size3d,0,0),
-                  new THREE.Vector3(size3d,-ticklen*4,0),
-                  new THREE.Vector3(-size3d,-ticklen*4,0));
+                  new THREE.Vector3(-size_3d,0,0),
+                  new THREE.Vector3(size_3d,0,0),
+                  new THREE.Vector3(size_3d,-ticklen*4,0),
+                  new THREE.Vector3(-size_3d,-ticklen*4,0));
 
          geom.faces.push(new THREE.Face3(0, 2, 1));
          geom.faces.push(new THREE.Face3(0, 3, 2));
@@ -904,7 +911,7 @@
 
          var mesh = new THREE.Mesh(geom, material);
          mesh.zoom = kind;
-         mesh.size3d = size3d;
+         mesh.size_3d = size_3d;
          if (kind=="y") mesh.rotateZ(Math.PI/2).rotateX(Math.PI);
 
          mesh.GlobalIntersect = function(raycaster) {
@@ -921,8 +928,8 @@
 
             if (!pnt) return undefined;
 
-            var min = -this.size3d, max = this.size3d;
-            if (this.zoom==="z") { min = 0; max = 2*this.size3d; }
+            var min = -this.size_3d, max = this.size_3d;
+            if (this.zoom==="z") { min = 0; max = 2*this.size_3d; }
 
             if (pnt[this.zoom] < min) pnt[this.zoom] = min; else
             if (pnt[this.zoom] > max) pnt[this.zoom] = max;
@@ -977,7 +984,7 @@
       xcont.xyid = 2;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg1, textMaterial));
-      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size3d));
+      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
       top.add(xcont);
 
       xcont = new THREE.Object3D();
@@ -986,7 +993,7 @@
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
       xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
-      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size3d));
+      if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
       top.add(xcont);
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
@@ -1052,7 +1059,7 @@
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg1, textMaterial));
          ycont.xyid = 3;
-         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size3d));
+         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size_xy3d));
          top.add(ycont);
 
          ycont = new THREE.Object3D();
@@ -1061,7 +1068,7 @@
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          ycont.add(new THREE.Mesh(ggg2, textMaterial));
          ycont.xyid = 1;
-         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size3d));
+         if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size_xy3d));
          top.add(ycont);
       }
 
@@ -1071,7 +1078,7 @@
       var ticks = []; // just array, will be used for the buffer geometry
 
       var zgridx = null, zgridy = null, lastmajorz = null;
-      if (this.size3d !== 0) {
+      if (this.size_z3d) {
          zgridx = []; zgridy = [];
       }
 
@@ -1185,7 +1192,7 @@
          zcont.push(new THREE.Object3D());
          zcont[n].add(new THREE.Mesh(ggg, textMaterial));
          zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
-         if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size3d));
+         if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size_z3d));
 
          zcont[n].zid = n + 2;
          top.add(zcont[n]);
@@ -1205,7 +1212,7 @@
 
 
       // for TAxis3D do not show final cube
-      if (this.size3d === 0) return;
+      if (this.size_z3d === 0) return;
 
       var linex = new THREE.BufferGeometry();
       linex.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([grminx, 0, 0, grmaxx, 0, 0]), 3 ) );
@@ -1358,7 +1365,7 @@
    JSROOT.Painter.HistPainter_DrawTH2Error = function() {
       var pthis = this,
           main = this.main_painter(),
-          handle = main.PrepareColorDraw({ rounding: false, size3d: main.size3d, extra: 1 }),
+          handle = main.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
@@ -1440,10 +1447,10 @@
               main = p.main_painter(),
               tip = p.Get3DToolTip(this.intersect_index[pos]);
 
-          tip.x1 = Math.max(-main.size3d, main.grx(p.GetBinX(tip.ix-1)));
-          tip.x2 = Math.min(main.size3d, main.grx(p.GetBinX(tip.ix)));
-          tip.y1 = Math.max(-main.size3d, main.gry(p.GetBinY(tip.iy-1)));
-          tip.y2 = Math.min(main.size3d, main.gry(p.GetBinY(tip.iy)));
+          tip.x1 = Math.max(-main.size_xy3d, main.grx(p.GetBinX(tip.ix-1)));
+          tip.x2 = Math.min(main.size_xy3d, main.grx(p.GetBinX(tip.ix)));
+          tip.y1 = Math.max(-main.size_xy3d, main.gry(p.GetBinY(tip.iy-1)));
+          tip.y2 = Math.min(main.size_xy3d, main.gry(p.GetBinY(tip.iy)));
 
           tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
           tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
@@ -1483,7 +1490,8 @@
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
           axis_zmin = this.grz.domain()[0],
           axis_zmax = this.grz.domain()[1],
-          handle = this.PrepareColorDraw({ rounding: false, size3d: this.size3d, extra: 1 }),
+          main = this.main_painter(),
+          handle = main.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
@@ -1670,14 +1678,14 @@
             var p = this.painter,
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-p.size3d, p.grx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(p.size3d, p.grx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-p.size_xy3d, p.grx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(p.size_xy3d, p.grx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
                tip.y1 = p.gry(0);
                tip.y2 = p.gry(1);
             } else {
-               tip.y1 = Math.max(-p.size3d, p.gry(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(p.size3d, p.gry(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-p.size_xy3d, p.gry(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(p.size_xy3d, p.gry(p.GetBinY(tip.iy)));
             }
 
             var binz1 = Math.max(this.zmin, Math.min(this.baseline, tip.value)),
@@ -1835,7 +1843,8 @@
 
    JSROOT.Painter.HistPainter_DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
-      var handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.0 });
+      var main = this.main_painter(),
+          handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
       this.getContourIndex(0);
 
@@ -1844,8 +1853,7 @@
           levels = this.fContour,
           palette = this.GetPalette(),
           painter = this,
-          main = this.main_painter(),
-          layerz = 2*main.size3d;
+          layerz = 2*main.size_z3d;
 
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
@@ -1876,9 +1884,9 @@
 
    JSROOT.Painter.HistPainter_DrawTH2Surf = function() {
       var histo = this.GetObject(),
-          handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 1, middle: 0.5 }),
-          i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           main = this.main_painter(),
+          handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+          i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1];
 
@@ -1907,7 +1915,7 @@
          for (var ll=0;ll<ilevels.length;++ll)
             levels[ll] = main_grz(ilevels[ll]);
       } else {
-         levels = [0, 2*main.size3d]; // just cut top/bottom parts
+         levels = [0, 2*main.size_z3d]; // just cut top/bottom parts
       }
 
       var loop, nfaces = [], pos = [], indx = [],    // buffers for faces
@@ -1923,20 +1931,20 @@
 
       function AddLineSegment(x1,y1,z1, x2,y2,z2) {
          if (!dolines) return;
-         var side1 = CheckSide(z1,0,2*main.size3d),
-             side2 = CheckSide(z2,0,2*main.size3d);
+         var side1 = CheckSide(z1,0,2*main.size_z3d),
+             side2 = CheckSide(z2,0,2*main.size_z3d);
          if ((side1===side2) && (side1!==0)) return;
          if (!loop) return ++nsegments;
 
          if (side1!==0) {
             var diff = z2-z1;
-            z1 = (side1<0) ? 0 : 2*main.size3d;
+            z1 = (side1<0) ? 0 : 2*main.size_z3d;
             x1 = x2 - (x2-x1)/diff*(z2-z1);
             y1 = y2 - (y2-y1)/diff*(z2-z1);
          }
          if (side2!==0) {
             var diff = z1-z2;
-            z2 = (side2<0) ? 0 : 2*main.size3d;
+            z2 = (side2<0) ? 0 : 2*main.size_z3d;
             x2 = x1 - (x1-x2)/diff*(z1-z2);
             y2 = y1 - (y1-y2)/diff*(z1-z2);
          }
@@ -2213,14 +2221,14 @@
 
       if (this.options.Surf === 13) {
 
-         handle = this.PrepareColorDraw({rounding: false, size3d: this.size3d, extra: 100, middle: 0.0 });
+         handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          this.getContourIndex(0);
 
          // get levels
          var levels = this.fContour,
              palette = this.GetPalette(),
-             painter = this, lastcolindx = -1, layerz = 2*this.size3d;
+             painter = this, lastcolindx = -1, layerz = 2*this.size_z3d;
 
          this.BuildContour(handle, levels, palette,
             function(colindx,xp,yp,iminus,iplus) {
@@ -2245,7 +2253,7 @@
 
                 if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
                    lastcolindx = colindx;
-                   layerz+=0.0001*painter.size3d; // change layers Z
+                   layerz+=0.0001*painter.size_z3d; // change layers Z
                 }
 
 
@@ -2336,7 +2344,7 @@
                // run two loops - on the first try to compress data, on second - run as is (removing duplication)
 
                var lastx, lasty, currx, curry,
-                   dist2 = this.size3d*this.size3d,
+                   dist2 = this.size_xy3d*this.size_z3d,
                    dist2limit = (ntry>0) ? 0 : dist2/1e6;
 
                pnts = []; faces = null;
@@ -2530,16 +2538,19 @@
 
    JSROOT.Painter.Resize3D = function() {
 
-      var size3d = this.size_for_3d(this.access_3d_kind());
+      var sz = this.size_for_3d(this.access_3d_kind());
 
-      this.apply_3d_size(size3d);
+      this.apply_3d_size(sz);
 
-      if ((this.scene_width === size3d.width) && (this.scene_height === size3d.height)) return false;
+      if ((this.scene_width === sz.width) && (this.scene_height === sz.height)) return false;
 
-      if ((size3d.width<10) || (size3d.height<10)) return false;
+      if ((sz.width<10) || (sz.height<10)) return false;
 
-      this.scene_width = size3d.width;
-      this.scene_height = size3d.height;
+      // TODO: change xy/z ratio after canvas resize
+      // this.size_xy3d = Math.round(sz.width/sz.height*this.size_z3d);
+
+      this.scene_width = sz.width;
+      this.scene_height = sz.height;
 
       this.camera.aspect = this.scene_width / this.scene_height;
       this.camera.updateProjectionMatrix();
@@ -2789,7 +2800,7 @@
          var indicies = JSROOT.Painter.Box_Indexes,
              normals = JSROOT.Painter.Box_Normals,
              vertices = JSROOT.Painter.Box_Vertices,
-             scale = main.size3d / 100 * markeratt.size * markeratt.scale;
+             scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
 
          for (var lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -3567,7 +3578,7 @@
              indicies = JSROOT.Painter.Box_Indexes,
              normals = JSROOT.Painter.Box_Normals,
              vertices = JSROOT.Painter.Box_Vertices,
-             lll = 0, scale = main.size3d/100, pos, norm,
+             lll = 0, scale = main.size_xy3d/100, pos, norm,
              index = new Int32Array(size), select = 0, icnt = 0;
 
          if (use_points) {
