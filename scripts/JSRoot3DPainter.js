@@ -1370,10 +1370,10 @@
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
           nsegments = 0, lpos = null, binindx = null, lindx = 0;
 
-       function check_skip_min(ii, jj) {
+       function check_skip_min() {
           // return true if minimal histogram value should be skipped
           if (pthis.options.Zero || (zmin>0)) return false;
-          return !pthis.ShowEmptyBin(ii,jj);
+          return !pthis._show_empty_bins;
        }
 
        for (var loop=0;loop<2;++loop) {
@@ -1384,7 +1384,7 @@
              for (j=handle.j1;j<handle.j2;++j) {
                 binz = this.histo.getBinContent(i+1, j+1);
                 if ((binz < zmin) || (binz > zmax)) continue;
-                if ((binz===zmin) && check_skip_min(i,j)) continue;
+                if ((binz===zmin) && check_skip_min()) continue;
 
                 // just count number of segments
                 if (loop===0) { nsegments+=3; continue; }
@@ -1500,11 +1500,11 @@
 
       if ((i1 >= i2) || (j1 >= j2)) return;
 
-      function check_skip_min(level, ii, jj) {
-         // return true if minimal histogram value should be skipped
+      function check_skip_min(level) {
+         // return true if minimal (empty) histogram value should be skipped
          if (level>0) return true;
          if (pthis.options.Zero || (axis_zmin>0)) return false;
-         return !pthis.ShowEmptyBin(ii,jj);
+         return !pthis._show_empty_bins;
       }
 
       function GetBinContent(ii,jj) {
@@ -1543,8 +1543,8 @@
                GetBinContent(i,j);
 
                if ((binz1 >= zmax) || (binz2 < zmin)) continue;
-               reduced = (binz2 === zmin);
-               if (reduced && check_skip_min(nlevel,i,j)) continue;
+               reduced = (binz2 === zmin) || (binz1 >= binz2);
+               if (reduced && check_skip_min(nlevel)) continue;
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
@@ -1580,8 +1580,8 @@
                GetBinContent(i,j);
 
                if ((binz1 >= zmax) || (binz2 < zmin)) continue;
-               reduced = (binz2 === zmin);
-               if (reduced && check_skip_min(nlevel,i,j)) continue;
+               reduced = (binz2 === zmin)|| (binz1 >= binz2);
+               if (reduced && check_skip_min(nlevel)) continue;
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
@@ -1748,8 +1748,8 @@
 
             if ((binz1 >= axis_zmax) || (binz2 < axis_zmin)) continue;
 
-            reduced = (binz2 == axis_zmin);
-            if (reduced && check_skip_min(0,i,j)) continue;
+            reduced = (binz2 == axis_zmin)|| (binz1 >= binz2);
+            if (reduced && check_skip_min(0)) continue;
 
             // calculate required buffer size for line segments
 
@@ -1782,8 +1782,8 @@
             GetBinContent(i,j);
 
             if ((binz1 >= axis_zmax) || (binz2 < axis_zmin)) continue;
-            reduced = (binz2 == axis_zmin);
-            if (reduced && check_skip_min(0,i,j)) continue;
+            reduced = (binz2 == axis_zmin) || (binz1 >= binz2);
+            if (reduced && check_skip_min(0)) continue;
 
             y1 = handle.gry[j];
             y2 = handle.gry[j+1];

@@ -3474,13 +3474,7 @@
       return res;
    }
 
-   JSROOT.TH2Painter.prototype.ShowEmptyBin = function(i,j) {
-      // return true if specified empty bin should be shown
-      if (this.histo._typename !== 'TProfile2D') return false;
-      return this.histo.getBinEntries(i+1, j+1)!==0;
-   }
-
-   JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
+      JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
@@ -3493,7 +3487,7 @@
             colindx = this.getValueColor(binz, true);
             if (binz===0) {
                if (this.options.Color===11) continue;
-               if ((colindx === null) && this.ShowEmptyBin(i,j)) colindx = 0;
+               if ((colindx === null) && this._show_empty_bins) colindx = 0;
             }
             if (colindx === null) continue;
 
@@ -3901,7 +3895,7 @@
       for (i = handle.i1; i < handle.i2; ++i)
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i+1, j+1);
-            if ((binz === 0) && !this.ShowEmptyBin(i,j)) continue;
+            if ((binz === 0) && !this._show_empty_bins) continue;
 
             binw = handle.grx[i+1] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+1];
@@ -4641,10 +4635,10 @@
       if (find === 2) {
          binz = histo.getBinContent(i+1,j+1);
          if (h.hide_only_zeros) {
-            colindx = (binz === 0) && !this.ShowEmptyBin(i,j) ? null : 0;
+            colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
             colindx = this.getValueColor(binz, true);
-            if ((colindx === null) && (binz === 0) && this.ShowEmptyBin(i,j)) colindx = 0;
+            if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
 
@@ -4762,6 +4756,8 @@
          this.options.Color = 1; // default color
          if (this.options.Lego) this.options.Lego = 12; // and lego always 12
       }
+
+      this._show_empty_bins = this.MatchObjectType('TProfile2D');
 
       this._can_move_colz = true;
 

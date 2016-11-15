@@ -8808,7 +8808,7 @@
          top._title = "ROOT." + obj._typename;
 
       for (var key in obj) {
-         if (key == '_typename') continue;
+         if ((key == '_typename') || (key[0]=='$')) continue;
          var fld = obj[key];
          if (typeof fld == 'function') continue;
          if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
