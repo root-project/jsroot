@@ -1327,7 +1327,7 @@
             pos = tooltip_mesh.geometry.attributes.position.array;
             tooltip_mesh.geometry.attributes.position.needsUpdate = true;
             tooltip_mesh.material.color = color;
-            tooltip_mesh.material.opacity = opcaity;
+            tooltip_mesh.material.opacity = opacity;
          }
 
          if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
