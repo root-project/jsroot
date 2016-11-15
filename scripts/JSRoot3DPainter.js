@@ -1312,7 +1312,8 @@
              normals = JSROOT.Painter.Box_Normals,
              vertices = JSROOT.Painter.Box_Vertices,
              pos, norm,
-             color = new THREE.Color(tip.color ? tip.color : 0xFF0000);
+             color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
+             opacity = tip.opacity || 1;
 
          if (!tooltip_mesh) {
             pos = new Float32Array(indicies.length*3);
@@ -1320,12 +1321,13 @@
             var geom = new THREE.BufferGeometry();
             geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
             geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-            var mater = new THREE.MeshBasicMaterial( { color: color, shading: THREE.SmoothShading  } );
+            var mater = new THREE.MeshBasicMaterial( { color: color, opacity: opacity, shading: THREE.SmoothShading  } );
             tooltip_mesh = new THREE.Mesh(geom, mater);
          } else {
             pos = tooltip_mesh.geometry.attributes.position.array;
             tooltip_mesh.geometry.attributes.position.needsUpdate = true;
             tooltip_mesh.material.color = color;
+            tooltip_mesh.material.opacity = opcaity;
          }
 
          if (tip.x1 === tip.x2) console.warn('same tip X', tip.x1, tip.x2);
@@ -3249,6 +3251,7 @@
          tip.z1 = p.grz(p.GetBinZ(tip.iz-1));
          tip.z2 = p.grz(p.GetBinZ(tip.iz));
          tip.color = this.tip_color;
+         tip.opacity = 0.3;
 
          return tip;
       }
