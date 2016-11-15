@@ -1171,6 +1171,13 @@
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
       }
 
+      this.HasErrors = function(hist) {
+         if (hist.fSumw2 && (hist.fSumw2.length > 0))
+            for (var n=0;n<hist.fSumw2.length;++n)
+               if (hist.fSumw2[n] > 0) return true;
+         return false;
+      }
+
       this.BuildStack = function() {
          //  build sum of all histograms
          //  Build a separate list fStack containing the running sum of all histograms
@@ -1181,6 +1188,7 @@
          if (nhists <= 0) return false;
          var lst = JSROOT.Create("TList");
          lst.Add(JSROOT.clone(stack.fHists.arr[0]));
+         this.haserrors = this.HasErrors(stack.fHists.arr[0]);
          for (var i=1;i<nhists;++i) {
             var hnext = JSROOT.clone(stack.fHists.arr[i]);
             var hprev = lst.arr[i-1];
@@ -1194,6 +1202,8 @@
                delete lst;
                return false;
             }
+
+            this.haserrors = this.haserrors || this.HasErrors(stack.fHists.arr[i]);
 
             // trivial sum of histograms
             for (var n = 0; n < hnext.fArray.length; ++n)
@@ -1292,7 +1302,6 @@
          if ((indx > 0) && this.dolego && !this.nostack)
             hist['$baseh'] = harr[indx - 1];
 
-
          var hopt = hist.fOption.toUpperCase();
          if (hopt.indexOf(opt) < 0) hopt += opt;
          if (indx>=0) hopt += " SAME";
@@ -1320,6 +1329,9 @@
          // when building stack, one could fail to sum up histograms
          if (!this.nostack)
             this.nostack = ! this.BuildStack();
+
+         // if any histogram appears with precalculated errors, use E for all histograms
+         if (!this.nostack && this.haserrors && !d.check("HIST")) opt+= " E";
 
          // order used to display histograms in stack direct - true, reverse - false
          this.dolego = d.check("LEGO");
