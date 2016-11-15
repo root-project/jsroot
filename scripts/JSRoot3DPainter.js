@@ -2651,6 +2651,69 @@
 
    // ==============================================================================
 
+   JSROOT.Painter.PointsCreator = function(size, iswebgl, scale) {
+      if (iswebgl === undefined) iswebgl = true;
+      this.webgl = iswebgl;
+      this.scale = scale || 1.;
+
+      if (this.webgl) {
+         this.pos = new Float32Array(size*3);
+      } else {
+         this.pos = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
+         this.norm = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
+      }
+      this.indx = 0;
+   }
+
+   JSROOT.Painter.PointsCreator.prototype.AddPoint = function(x,y,z) {
+      if (this.webgl) {
+         this.pos[this.indx]   = x;
+         this.pos[this.indx+1] = y;
+         this.pos[this.indx+2] = z;
+         this.indx+=3;
+         return;
+      }
+
+      var indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices;
+
+      for (var k=0,nn=-3;k<indicies.length;++k) {
+         var vert = vertices[indicies[k]];
+         this.pos[this.indx]   = x + (vert.x - 0.5)*this.scale;
+         this.pos[this.indx+1] = y + (vert.y - 0.5)*this.scale;
+         this.pos[this.indx+2] = z + (vert.z - 0.5)*this.scale;
+
+         if (k%6===0) nn+=3;
+         this.norm[this.indx] = normals[nn];
+         this.norm[this.indx+1] = normals[nn+1];
+         this.norm[this.indx+2] = normals[nn+2];
+
+         this.indx+=3;
+      }
+   }
+
+   JSROOT.Painter.PointsCreator.prototype.CreateMesh = function(mcolor) {
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      if (this.norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+
+      var mesh = null;
+
+      if (this.webgl) {
+         var material = new THREE.PointsMaterial( { size: 2*this.scale, color: mcolor } );
+         mesh = new THREE.Points(geom, material);
+         mesh.nvertex = 1;
+      } else {
+         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
+         var material = new THREE.MeshBasicMaterial( { color: mcolor, shading: THREE.SmoothShading  } );
+         mesh = new THREE.Mesh(geom, material);
+         mesh.nvertex = JSROOT.Painter.Box_Indexes.length;
+      }
+
+      return mesh;
+   }
+
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
       // this set to TObjectPainter instance, redefine several functions
 
@@ -2794,10 +2857,7 @@
             palette = main.GetPalette();
          }
 
-         var indicies = JSROOT.Painter.Box_Indexes,
-             normals = JSROOT.Painter.Box_Normals,
-             vertices = JSROOT.Painter.Box_Vertices,
-             scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
+         var scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
 
          for (var lvl=0;lvl<levels.length-1;++lvl) {
 
@@ -2807,19 +2867,12 @@
             if (lvl_zmin >= lvl_zmax) continue;
 
             var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
-                lll = 0, select = 0, pos, norm,
+                pnts = null, select = 0,
                 index = new Int32Array(size), icnt = 0,
                 err = null, ierr = 0;
 
-            if (this.options.Markers) {
-               if (use_points) {
-                  pos = new Float32Array(size*3);
-                  norm = null;
-               } else {
-                  pos = new Float32Array(indicies.length*3*size);
-                  norm = new Float32Array(indicies.length*3*size);
-               }
-            }
+            if (this.options.Markers)
+               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale);
 
             if (this.options.Error)
                err = new Float32Array(size*6*3);
@@ -2864,29 +2917,7 @@
                   ierr+=6;
                }
 
-               if (!this.options.Markers) continue;
-
-               if (use_points) {
-                  pos[lll]   = x;
-                  pos[lll+1] = y;
-                  pos[lll+2] = z;
-                  lll+=3;
-                  continue;
-               }
-
-               for (var k=0,nn=-3;k<indicies.length;++k) {
-                  var vert = vertices[indicies[k]];
-                  pos[lll]   = x + (vert.x - 0.5)*scale;
-                  pos[lll+1] = y + (vert.y - 0.5)*scale;
-                  pos[lll+2] = z + (vert.z - 0.5)*scale;
-
-                  if (k%6===0) nn+=3;
-                  norm[lll] = normals[nn];
-                  norm[lll+1] = normals[nn+1];
-                  norm[lll+2] = normals[nn+2];
-
-                  lll+=3;
-               }
+               if (pnts) pnts.AddPoint(x,y,z);
             }
 
             if (err) {
@@ -2911,11 +2942,7 @@
                errmesh.tooltip = this.Graph2DTooltip;
             }
 
-            if (this.options.Markers) {
-
-               var geom = new THREE.BufferGeometry();
-               geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-               if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+            if (pnts) {
 
                var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
 
@@ -2925,21 +2952,7 @@
                   fcolor = palette[indx];
                }
 
-               //var rgb = d3.rgb(fcolor), color = new THREE.Color(rgb.r/255., rgb.g/255., rgb.b/255.);
-               //console.log('fcolor', fcolor, rgb);
-
-               var mesh = null;
-
-               if (use_points) {
-                  var material = new THREE.PointsMaterial( { size: 3*scale, color: fcolor } );
-                  mesh = new THREE.Points(geom, material);
-                  mesh.nvertex = 1;
-               } else {
-                  // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-                  var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
-                  mesh = new THREE.Mesh(geom, material);
-                  mesh.nvertex = indicies.length;
-               }
+               var mesh = pnts.CreateMesh(fcolor);
 
                main.toplevel.add(mesh);
 
@@ -3011,10 +3024,10 @@
       // global min/max, used at the moment in 3D drawing
 
       this.gminbin = this.gmaxbin = histo.getBinContent(1,1,1);
-      var i,j,k;
-      for (i = 0; i < this.nbinsx; ++i)
-         for (j = 0; j < this.nbinsy; ++j)
-            for (k = 0; k < this.nbinsz; ++k) {
+
+      for (var i = 0; i < this.nbinsx; ++i)
+         for (var j = 0; j < this.nbinsy; ++j)
+            for (var k = 0; k < this.nbinsz; ++k) {
                var bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content < this.gminbin) this.gminbin = bin_content; else
                if (bin_content > this.gmaxbin) this.gmaxbin = bin_content;
@@ -3155,15 +3168,57 @@
       return lines;
    }
 
+   JSROOT.TH3Painter.prototype.Draw3DScatter = function() {
+      // try to draw 3D histogram as scatter plot
+      // if too many points, box will be displayed
+
+      var histo = this.GetObject(),
+          main = this.main_painter(),
+          i1 = this.GetSelectIndex("x", "left", 0.5),
+          i2 = this.GetSelectIndex("x", "right", 0),
+          j1 = this.GetSelectIndex("y", "left", 0.5),
+          j2 = this.GetSelectIndex("y", "right", 0),
+          k1 = this.GetSelectIndex("z", "left", 0.5),
+          k2 = this.GetSelectIndex("z", "right", 0),
+          name = this.GetTipName("<br/>"),
+          i, j, k, bin_content;
+
+      if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
+
+      // scale down factor if too large values
+      var coef = this.gmaxbin > 1000 ? 1000/this.gmaxbin : 1,
+          numpixels = 0;
+
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            for (k = k1; k < k2; ++k) {
+               bin_content = histo.getBinContent(i+1, j+1, k+1);
+               if (bin_content <= this.gminbin) continue;
+               numpixels += Math.round(bin_content*coef);
+            }
+         }
+      }
+
+      console.log('Num pixels', numpixels, 'webgl', main.webgl);
+
+
+      // too many pixels - use box drawing
+      if (numpixels > (main.webgl ? 100000 : 10000)) return false;
+
+      return false;
+   }
+
    JSROOT.TH3Painter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
+
+      if (!this.options.Box)
+         if (this.Draw3DScatter()) return;
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = JSROOT.Painter.root_colors[rootcolor],
           material = null, buffer_size = 0, helper = null, helper_kind = 0,
           single_bin_verts, single_bin_norms;
-
 
       if (this.options.Box === 11) {
          // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
