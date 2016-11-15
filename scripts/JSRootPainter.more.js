@@ -815,7 +815,57 @@
    // =================================================================================
 
    JSROOT.Painter.drawTF2 = function(divid, func, opt) {
-      var hist = JSROOT.CreateTH2(func.fNpx, func.fNpy);
+      var hist = null, npx = 0, npy = 0, nsave = 1;
+
+      if ((typeof opt == 'string') && (opt.indexOf("nosave")>=0))
+         { opt = opt.replace("nosave",""); nsave = 0; }
+
+      if (!func.fSave || func.fSave.length<7 || !nsave) {
+         nsave = 0;
+      } else {
+          nsave = func.fSave.length;
+          npx = Math.round(func.fSave[nsave-2]);
+          npy = Math.round(func.fSave[nsave-1]);
+          if (nsave !== (npx+1)*(npy+1) + 6) nsave = 0;
+      }
+
+      if (!nsave) {
+         npx = Math.max(func.fNpx, 2);
+         npy = Math.max(func.fNpy, 2);
+
+         hist = JSROOT.CreateTH2(npx, npy);
+
+         hist.fXaxis.fXmin = func.fXmin;
+         hist.fXaxis.fXmax = func.fXmax;
+
+         hist.fYaxis.fXmin = func.fYmin;
+         hist.fYaxis.fXmax = func.fYmax;
+
+         for (var j=0;j<npy;++j)
+           for (var i=0;i<npx;++i) {
+               var x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / npx,
+                   y = func.fYmin + (j + 0.5) * (func.fYmax - func.fYmin) / npy;
+
+               hist.setBinContent(hist.getBin(i+1,j+1), func.evalPar(x,y));
+            }
+
+      } else {
+         var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
+
+         hist = JSROOT.CreateTH2(npx+1, npy+1);
+
+         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
+         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
+
+         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
+         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
+
+         var k = 0;
+         for (var j=0;j<=npy;++j)
+            for (var i=0;i<=npx;++i)
+               hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
+      }
 
       hist.fName = "Func";
       hist.fTitle = func.fTitle;
@@ -831,27 +881,11 @@
       hist.fMarkerStyle = func.fMarkerStyle;
       hist.fMarkerSize = func.fMarkerSize;
 
-      hist.fXaxis.fXmin = func.fXmin;
-      hist.fXaxis.fXmax = func.fXmax;
-
-      hist.fYaxis.fXmin = func.fYmin;
-      hist.fYaxis.fXmax = func.fYmax;
-
-      for (var i=0;i<func.fNpx;++i)
-         for (var j=0;j<func.fNpy;++j) {
-           var x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / func.fNpx,
-               y = func.fYmin + (j + 0.5) * (func.fYmax - func.fYmin) / func.fNpy;
-
-           var v = func.evalPar(x,y);
-
-           hist.setBinContent(hist.getBin(i+1,j+1), v);
-         }
-
-      if (!opt)  opt = "cont3"; else
+      if (!opt) opt = "cont3"; else
       if (opt == "same") opt = "cont2 same";
 
       return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
-   }
+   };
 
 
    // ===================================================================================
