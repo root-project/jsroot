@@ -1487,14 +1487,13 @@
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
-          axis_zmin = this.grz.domain()[0],
-          axis_zmax = this.grz.domain()[1],
           main = this.main_painter(),
+          axis_zmin = main.grz.domain()[0],
+          axis_zmax = main.grz.domain()[1],
           handle = main.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
-          main = this.main_painter(),
           histo = this.GetObject(),
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
@@ -1530,7 +1529,7 @@
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
 
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = 0, z2 = 0, grzmin = this.grz(zmin), grzmax = this.grz(zmax),
+             z1 = 0, z2 = 0, grzmin = main.grz(zmin), grzmax = main.grz(zmax),
              numvertices = 0, num2vertices = 0;
 
          // now calculate size of buffer geometry for boxes
@@ -1586,8 +1585,8 @@
                y1 = handle.gry[j];
                y2 = handle.gry[j+1];
 
-               z1 = (binz1 <= zmin) ? grzmin : this.grz(binz1);
-               z2 = (binz2 > zmax) ? grzmax : this.grz(binz2);
+               z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1);
+               z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
 
                nn = 0; // counter over the normals, each normals correspond to 6 vertices
                k = 0; // counter over vertices
@@ -1667,6 +1666,7 @@
 
          mesh.bins_index = bins_index;
          mesh.painter = this;
+         mesh.main = main;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
          mesh.baseline = (this.options.BaseLine===false) ? axis_zmin : this.options.BaseLine;
@@ -1677,28 +1677,28 @@
             var p = this.painter,
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-p.size_xy3d, p.grx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(p.size_xy3d, p.grx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-p.size_xy3d, this.main.grx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(p.size_xy3d, this.main.grx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
-               tip.y1 = p.gry(0);
-               tip.y2 = p.gry(1);
+               tip.y1 = this.main.gry(0);
+               tip.y2 = this.main.gry(1);
             } else {
-               tip.y1 = Math.max(-p.size_xy3d, p.gry(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(p.size_xy3d, p.gry(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-p.size_xy3d, this.main.gry(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(p.size_xy3d, this.main.gry(p.GetBinY(tip.iy)));
             }
 
             var binz1 = Math.max(this.zmin, Math.min(this.baseline, tip.value)),
                 binz2 = Math.min(this.zmax, Math.max(this.baseline, tip.value));
 
-            tip.z1 = p.grz(binz1);
-            tip.z2 = p.grz(binz2);
+            tip.z1 = this.main.grz(binz1);
+            tip.z2 = this.main.grz(binz2);
 
             tip.color = this.tip_color;
 
             return tip;
          }
 
-         this.toplevel.add(mesh);
+         main.toplevel.add(mesh);
 
          if (num2vertices > 0) {
             var geom2 = new THREE.BufferGeometry();
@@ -1716,13 +1716,14 @@
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
             mesh2.painter = this;
+            mesh2.main = main;
             mesh2.tooltip = mesh.tooltip;
             mesh2.zmin = mesh.zmin;
             mesh2.zmax = mesh.zmax;
             mesh2.baseline = mesh.baseline;
             mesh2.tip_color = mesh.tip_color;
 
-            this.toplevel.add(mesh2);
+            main.toplevel.add(mesh2);
          }
       }
 
@@ -1764,8 +1765,8 @@
 //          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
 
       var z1 = 0, z2 = 0,
-          grzmin = this.grz(axis_zmin),
-          grzmax = this.grz(axis_zmax),
+          grzmin = main.grz(axis_zmin),
+          grzmax = main.grz(axis_zmax),
           ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
@@ -1782,8 +1783,8 @@
             y1 = handle.gry[j];
             y2 = handle.gry[j+1];
 
-            z1 = (binz1 <= axis_zmin) ? grzmin : this.grz(binz1);
-            z2 = (binz2 > axis_zmax) ? grzmax : this.grz(binz2);
+            z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
+            z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);
 
             var seg = reduced ? rsegments : segments,
                 vvv = reduced ? rvertices : vertices;
@@ -1837,7 +1838,7 @@
       }
       */
 
-      this.toplevel.add(line);
+      main.toplevel.add(line);
    }
 
    JSROOT.Painter.HistPainter_DrawContour3D = function(realz) {
