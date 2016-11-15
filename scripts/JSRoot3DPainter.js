@@ -3203,7 +3203,8 @@
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 10000)) return false;
 
-      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200);
+      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
+          bins = new Int32Array(numpixels), nbin = 0;
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -3216,7 +3217,12 @@
                   var binx = this.GetBinX(i+Math.random()),
                       biny = this.GetBinY(j+Math.random()),
                       binz = this.GetBinZ(k+Math.random());
+
+                  // remeber bin index for tooltip
+                  bins[nbin++] = histo.getBin(i+1, j+1, k+1);
+
                   pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+
                }
             }
          }
@@ -3224,6 +3230,29 @@
 
       var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[histo.fMarkerColor]);
       main.toplevel.add(mesh);
+
+      mesh.bins = bins;
+      mesh.painter = this;
+      mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
+
+      mesh.tooltip = function(intersect) {
+         var indx = Math.floor(intersect.index / this.nvertex);
+         if ((indx<0) || (indx >= this.bins.length)) return null;
+
+         var p = this.painter,
+             tip = p.Get3DToolTip(this.bins[indx]);
+
+         tip.x1 = p.grx(p.GetBinX(tip.ix-1));
+         tip.x2 = p.grx(p.GetBinX(tip.ix));
+         tip.y1 = p.gry(p.GetBinY(tip.iy-1));
+         tip.y2 = p.gry(p.GetBinY(tip.iy));
+         tip.z1 = p.grz(p.GetBinZ(tip.iz-1));
+         tip.z2 = p.grz(p.GetBinZ(tip.iz));
+         tip.color = this.tip_color;
+
+         return tip;
+      }
+
 
       return true;
    }
@@ -3583,7 +3612,10 @@
 
 
    JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
-      menu.addDrawMenu("Draw with", ["box", "box1", "inspect"], function(arg) {
+
+      var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
+
+      menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(),arg);
 
