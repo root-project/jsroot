@@ -1495,6 +1495,7 @@
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
           histo = this.GetObject(),
+          basehisto = histo ? histo['$baseh'] : null,
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       if ((i1 >= i2) || (j1 >= j2)) return;
@@ -1507,12 +1508,14 @@
       }
 
       function GetBinContent(ii,jj) {
-         binz1 = axis_zmin;
          binz2 = histo.getBinContent(ii+1, jj+1);
-         if (pthis.options.BaseLine !== false) {
+         if (basehisto)
+            binz1 = basehisto.getBinContent(ii+1, jj+1);
+         else if (pthis.options.BaseLine !== false)
             binz1 = pthis.options.BaseLine;
-            if (binz2 < binz1) { var d = binz1; binz1 = binz2; binz2 = d; }
-         }
+         else
+            binz1 = axis_zmin;
+         if (binz2 < binz1) { var d = binz1; binz1 = binz2; binz2 = d; }
       }
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes

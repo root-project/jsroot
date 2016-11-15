@@ -1288,6 +1288,11 @@
          if (indx>=0)
             hist = harr[this.horder ? indx : nhists - indx - 1];
 
+         // special workaround - set histogram as base for lego drawing
+         if ((indx > 0) && this.dolego && !this.nostack)
+            hist['$baseh'] = harr[indx - 1];
+
+
          var hopt = hist.fOption.toUpperCase();
          if (hopt.indexOf(opt) < 0) hopt += opt;
          if (indx>=0) hopt += " SAME";
@@ -1317,7 +1322,8 @@
             this.nostack = ! this.BuildStack();
 
          // order used to display histograms in stack direct - true, reverse - false
-         this.horder = this.nostack || d.check("LEGO");
+         this.dolego = d.check("LEGO");
+         this.horder = this.nostack || this.dolego;
 
          var mm = this.GetMinMax(d.check("E"));
 
