@@ -1163,7 +1163,7 @@
 
       this.SetDivId(divid);
 
-      if (!('fHists' in stack) || (stack.fHists.arr.length == 0)) return this.DrawingReady();
+      if (!stack.fHists || (stack.fHists.arr.length == 0)) return this.DrawingReady();
 
       this.Cleanup = function() {
          delete this.firstpainter;
@@ -1176,8 +1176,7 @@
          //  Build a separate list fStack containing the running sum of all histograms
 
          var stack = this.GetObject();
-
-         if (!('fHists' in stack)) return false;
+         if (!stack.fHists) return false;
          var nhists = stack.fHists.arr.length;
          if (nhists <= 0) return false;
          var lst = JSROOT.Create("TList");
@@ -1191,6 +1190,7 @@
                 (hnext.fXaxis.fXmax != hprev.fXaxis.fXmax)) {
                JSROOT.console("When drawing THStack, cannot sum-up histograms " + hnext.fName + " and " + hprev.fName);
                delete hnext;
+               lst.Clear();
                delete lst;
                return false;
             }
@@ -1206,38 +1206,47 @@
       }
 
       this.GetHistMinMax = function(hist, witherr) {
-         var res = { min : 0, max : 0 };
-         var domin = false, domax = false;
-         if (hist.fMinimum != -1111)
+         var res = { min : 0, max : 0 },
+             domin = true, domax = true;
+         if (hist.fMinimum !== -1111) {
             res.min = hist.fMinimum;
-         else
-            domin = true;
-         if (hist.fMaximum != -1111)
+            domin = false;
+         }
+         if (hist.fMaximum !== -1111) {
             res.max = hist.fMaximum;
-         else
-            domax = true;
+            domax = false;
+         }
 
-         if (domin || domax) {
-            var left = 1, right = hist.fXaxis.fNbins;
+         if (!domin && !domax) return res;
 
-            if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               left = hist.fXaxis.fFirst;
-               right = hist.fXaxis.fLast;
-            }
-            for (var bin = left; bin<=right; ++bin) {
-               var val = hist.getBinContent(bin);
-               var err = witherr ? hist.getBinError(bin) : 0;
-               if (domin && ((bin==left) || (val-err < res.min))) res.min = val-err;
-               if (domax && ((bin==left) || (val+err > res.max))) res.max = val+err;
+         var i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
+
+         if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            i1 = hist.fXaxis.fFirst;
+            i2 = hist.fXaxis.fLast;
+         }
+
+         if (hist._typename.indexOf("TH2")===0) {
+            j2 = hist.fYaxis.fNbins;
+            if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+               j1 = hist.fYaxis.fFirst;
+               j2 = hist.fYaxis.fLast;
             }
          }
+         for (var j=j1; j<=j2;++j)
+            for (var i=i1; i<=i2;++i) {
+               var val = hist.getBinContent(i, j),
+                   err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
+               if (domin && (first || (val-err < res.min))) res.min = val-err;
+               if (domax && (first || (val+err > res.max))) res.max = val+err;
+               first = false;
+           }
 
          return res;
       }
 
-      this.GetMinMax = function(opt) {
+      this.GetMinMax = function(iserr) {
          var res = { min : 0, max : 0 },
-             iserr = (opt.indexOf('e')>=0),
              stack = this.GetObject();
 
          if (this.nostack) {
@@ -1269,46 +1278,48 @@
       }
 
       this.DrawNextHisto = function(indx, opt) {
-         var hist = null,
-             stack = this.GetObject(),
-             nhists = stack.fHists.arr.length;
+         var stack = this.GetObject(),
+             hist = stack.fHistogram,
+             harr = this.nostack ? stack.fHists.arr : stack.fStack.arr,
+             nhists = harr ? harr.length : 0;
 
          if (indx>=nhists) return this.DrawingReady();
 
-         if (indx<0) hist = stack.fHistogram; else
-         if (this.nostack) hist = stack.fHists.arr[indx];
-                     else  hist = stack.fStack.arr[nhists - indx - 1];
+         if (indx>=0)
+            hist = harr[this.horder ? indx : nhists - indx - 1];
 
-         var hopt = hist.fOption;
-         if ((opt != "") && (hopt.indexOf(opt) == -1)) hopt += opt;
-         if (indx>=0) hopt += "same";
+         var hopt = hist.fOption.toUpperCase();
+         if (hopt.indexOf(opt) < 0) hopt += opt;
+         if (indx>=0) hopt += " SAME";
+
          var subp = JSROOT.draw(this.divid, hist, hopt);
+
          if (indx<0) this.firstpainter = subp;
                 else this.painters.push(subp);
          subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
       }
 
       this.drawStack = function(opt) {
+
          var pad = this.root_pad(),
              stack = this.GetObject(),
              histos = stack.fHists,
-             nhists = histos.arr.length;
+             nhists = histos.arr.length,
+             d = new JSROOT.DrawOptions(opt),
+             lsame = d.check("SAME");
 
-         if (opt == null) opt = "";
-                     else opt = opt.toLowerCase();
+         opt = d.opt; // use remaining draw options for histogram draw
 
-         var lsame = false;
-         if (opt.indexOf("same") != -1) {
-            lsame = true;
-            opt.replace("same", "");
-         }
-         this.nostack = opt.indexOf("nostack") < 0 ? false : true;
+         this.nostack = d.check("NOSTACK");
 
          // when building stack, one could fail to sum up histograms
          if (!this.nostack)
             this.nostack = ! this.BuildStack();
 
-         var mm = this.GetMinMax(opt);
+         // order used to display histograms in stack direct - true, reverse - false
+         this.horder = this.nostack || d.check("LEGO");
+
+         var mm = this.GetMinMax(d.check("E"));
 
          if (stack.fHistogram === null) {
             // compute the min/max of each axis
@@ -1359,9 +1370,10 @@
          if (this.firstpainter)
             if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
 
-         var nhists = obj.fHists.arr.length;
+         var nhists = obj.fHists.arr.length,
+             harr = this.nostack ? obj.fHists.arr : obj.fStack.arr;
          for (var i = 0; i < nhists; ++i) {
-            var hist = this.nostack ? obj.fHists.arr[i] : obj.fStack.arr[nhists - i - 1];
+            var hist = harr[this.horder ? i : nhists - i - 1];
             if (this.painters[i].UpdateObject(hist)) isany = true;
          }
 

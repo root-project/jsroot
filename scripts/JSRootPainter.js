@@ -8163,7 +8163,7 @@
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
 
-      painter.CheckPadRange();
+      if (!painter.options.Lego) painter.CheckPadRange();
 
       painter.ScanContent();
 
