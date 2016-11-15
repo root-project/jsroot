@@ -1678,23 +1678,25 @@
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             var p = this.painter,
+                hist = p.GetObject(),
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-p.size_xy3d, this.main.grx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(p.size_xy3d, this.main.grx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-this.main.size_xy3d, this.main.grx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(this.main.size_xy3d, this.main.grx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
                tip.y1 = this.main.gry(0);
                tip.y2 = this.main.gry(1);
             } else {
-               tip.y1 = Math.max(-p.size_xy3d, this.main.gry(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(p.size_xy3d, this.main.gry(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-this.main.size_xy3d, this.main.gry(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(this.main.size_xy3d, this.main.gry(p.GetBinY(tip.iy)));
             }
 
-            var binz1 = Math.max(this.zmin, Math.min(this.baseline, tip.value)),
-                binz2 = Math.min(this.zmax, Math.max(this.baseline, tip.value));
+            var binz1 = this.baseline, binz2 = tip.value;
+            if (hist['$baseh']) binz1 = hist['$baseh'].getBinContent(tip.ix, tip.iy);
+            if (binz2<binz1) { var v = binz1; binz1 = binz2; binz2 = v; }
 
-            tip.z1 = this.main.grz(binz1);
-            tip.z2 = this.main.grz(binz2);
+            tip.z1 = this.main.grz(Math.max(this.zmin,binz1));
+            tip.z2 = this.main.grz(Math.min(this.zmax,binz2));
 
             tip.color = this.tip_color;
 
