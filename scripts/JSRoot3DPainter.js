@@ -3186,8 +3186,7 @@
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
 
       // scale down factor if too large values
-      var coef = this.gmaxbin > 1000 ? 1000/this.gmaxbin : 1,
-          numpixels = 0;
+      var coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1, numpixels = 0;
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -3199,13 +3198,34 @@
          }
       }
 
-      console.log('Num pixels', numpixels, 'webgl', main.webgl);
-
+      // console.log('Num pixels', numpixels, 'webgl', main.webgl);
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 10000)) return false;
 
-      return false;
+      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200);
+
+      for (i = i1; i < i2; ++i) {
+         for (j = j1; j < j2; ++j) {
+            for (k = k1; k < k2; ++k) {
+               bin_content = histo.getBinContent(i+1, j+1, k+1);
+               if (bin_content <= this.gminbin) continue;
+               var num = Math.round(bin_content*coef);
+
+               for (var n=0;n<num;++n) {
+                  var binx = this.GetBinX(i+Math.random()),
+                      biny = this.GetBinY(j+Math.random()),
+                      binz = this.GetBinZ(k+Math.random());
+                  pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
+               }
+            }
+         }
+      }
+
+      var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[histo.fMarkerColor]);
+      main.toplevel.add(mesh);
+
+      return true;
    }
 
    JSROOT.TH3Painter.prototype.Draw3DBins = function() {

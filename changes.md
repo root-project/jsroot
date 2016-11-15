@@ -15,6 +15,7 @@
     - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E3', 'E4', 'X+', 'Y+'
     - TH2     - 'E', 'col1', 'box', 'box1', 'surf3', 'surf7'
     - TH2     - 'same' with 'box', 'col', 'cont'
+    - TH3     - 'scat'
     - TCanvas - logx/y/z, gridx/y, tickx/y 
 3. Implement drawing of TProfile2D, TF2, TGraph2D and TGraph2DErrors
 4. Fix - correctly place TGAxis relative to frame (when exists) 
