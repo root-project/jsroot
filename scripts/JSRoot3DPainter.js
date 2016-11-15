@@ -1465,6 +1465,8 @@
 
    JSROOT.Painter.HistPainter_DrawLego = function() {
 
+      if (!this.draw_content) return;
+
       if (this.IsTH2Poly())
          return JSROOT.Painter.HistPainter_DrawPolyLego.call(this);
 
