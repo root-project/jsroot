@@ -815,10 +815,10 @@
    // =================================================================================
 
    JSROOT.Painter.drawTF2 = function(divid, func, opt) {
-      var hist = null, npx = 0, npy = 0, nsave = 1;
+      var hist = null, npx = 0, npy = 0, nsave = 1,
+          d = new JSROOT.DrawOptions(opt);
 
-      if ((typeof opt == 'string') && (opt.indexOf("nosave")>=0))
-         { opt = opt.replace("nosave",""); nsave = 0; }
+      if (d.check('NOSAVE')) nsave = 0;
 
       if (!func.fSave || func.fSave.length<7 || !nsave) {
          nsave = 0;
@@ -829,7 +829,24 @@
           if (nsave !== (npx+1)*(npy+1) + 6) nsave = 0;
       }
 
-      if (!nsave) {
+      if (nsave > 6) {
+         var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
+
+         hist = JSROOT.CreateTH2(npx+1, npy+1);
+
+         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
+         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
+
+         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
+         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
+
+         var k = 0;
+         for (var j=0;j<=npy;++j)
+            for (var i=0;i<=npx;++i)
+               hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
+
+      } else {
          npx = Math.max(func.fNpx, 2);
          npy = Math.max(func.fNpy, 2);
 
@@ -848,23 +865,6 @@
 
                hist.setBinContent(hist.getBin(i+1,j+1), func.evalPar(x,y));
             }
-
-      } else {
-         var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
-             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
-
-         hist = JSROOT.CreateTH2(npx+1, npy+1);
-
-         hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
-         hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
-
-         hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
-         hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
-
-         var k = 0;
-         for (var j=0;j<=npy;++j)
-            for (var i=0;i<=npx;++i)
-               hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
       }
 
       hist.fName = "Func";
@@ -881,8 +881,9 @@
       hist.fMarkerStyle = func.fMarkerStyle;
       hist.fMarkerSize = func.fMarkerSize;
 
-      if (!opt) opt = "cont3"; else
-      if (opt == "same") opt = "cont2 same";
+      if (d.empty()) opt = "cont3"; else
+      if (d.opt === "SAME") opt = "cont2 same";
+      else opt = d.opt;
 
       return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
    };
@@ -910,7 +911,7 @@
             }
          }
 
-         if (tf1.fSave.length > 0) {
+         if ((tf1.fSave.length > 0) && !this.nosave) {
             // in the case where the points have been saved, useful for example
             // if we don't have the user's function
             var np = tf1.fSave.length - 2,
@@ -1139,6 +1140,9 @@
          var histo = this.CreateDummyHisto();
          JSROOT.Painter.drawHistogram1D(divid, histo, "AXIS");
       }
+
+      var d = new JSROOT.DrawOptions(opt);
+      this.nosave = d.check('NOSAVE');
       this.SetDivId(divid);
       this.Redraw();
       return this.DrawingReady();
