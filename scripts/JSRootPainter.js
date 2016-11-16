@@ -1500,9 +1500,8 @@
 
       if (can3d === undefined) can3d = this.embed_3d();
 
-      var pad = this.svg_pad();
+      var pad = this.svg_pad(), clname = this.pad_name;
 
-      var clname = this.pad_name;
       if (clname == '') clname = 'canvas';
       clname = "draw3d_" + clname;
 
@@ -1534,10 +1533,21 @@
       size.height = elem.property("draw_height");
 
       if ((this.frame_painter()===null) && (can3d > 0)) {
-         size.x = Math.round(size.x + size.width*0.1);
-         size.y = Math.round(size.y + size.height*0.1);
-         size.width = Math.round(size.width*0.8);
-         size.height = Math.round(size.height*0.8);
+         size.x = Math.round(size.x + size.width*JSROOT.gStyle.fPadLeftMargin);
+         size.y = Math.round(size.y + size.height*JSROOT.gStyle.fPadTopMargin);
+         size.width = Math.round(size.width*(1 - size.width*JSROOT.gStyle.fPadLeftMargin - size.width*JSROOT.gStyle.fPadRightMargin));
+         size.height = Math.round(size.height*(1- JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
+      }
+
+      var pw = this.pad_width(), x2 = pw - size.x -size.width,
+          ph = this.pad_height(), y2 = ph - size.y -size.height;
+
+      if ((x2 >= 0) && (y2 >= 0)) {
+         // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
+         size.x = Math.round(size.x * 0.3);
+         size.y = Math.round(size.y * 0.9);
+         size.width = pw - size.x - Math.round(x2*0.3);
+         size.height = ph - size.y - Math.round(y2*0.5);
       }
 
       if (can3d === 1)
