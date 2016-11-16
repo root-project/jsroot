@@ -1743,11 +1743,13 @@
 
       // DRAW LINE BOXES
 
-      var numlinevertices = 0, numsegments = 0, uselineindx = true;
+      var numlinevertices = 0, numsegments = 0, uselineindx = true, nskip = 0;
+
+      zmax = axis_zmax; zmin = axis_zmin;
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            if (!GetBinContent(i,j,0)) continue;
+            if (!GetBinContent(i,j,0)) { nskip++; continue; }
 
             // calculate required buffer size for line segments
             numlinevertices += (reduced ? rvertices.length : vertices.length);
