@@ -2704,7 +2704,7 @@
       var mesh = null;
 
       if (this.webgl) {
-         var material = new THREE.PointsMaterial( { size: 2*this.scale, color: mcolor } );
+         var material = new THREE.PointsMaterial( { size: 3*this.scale, color: mcolor } );
          mesh = new THREE.Points(geom, material);
          mesh.nvertex = 1;
       } else {
@@ -2798,17 +2798,15 @@
 
          indx = this.index[indx];
 
-         var p = this.painter;
-
-         var tip = { info: this.tip_name + "<br/>" +
-               "pnt: " + indx + "<br/>" +
-               "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
-               "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
-               "z: " + p.z_handle.format(this.graph.fZ[indx]) };
-
-         var grx = p.grx(this.graph.fX[indx]),
-         gry = p.gry(this.graph.fY[indx]),
-         grz = p.grz(this.graph.fZ[indx]);
+         var p = this.painter,
+             grx = p.grx(this.graph.fX[indx]),
+             gry = p.gry(this.graph.fY[indx]),
+             grz = p.grz(this.graph.fZ[indx]),
+            tip = { info: this.tip_name + "<br/>" +
+                   "pnt: " + indx + "<br/>" +
+                   "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
+                   "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
+                   "z: " + p.z_handle.format(this.graph.fZ[indx]) };
 
          tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
          tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
@@ -2874,7 +2872,7 @@
                 err = null, ierr = 0;
 
             if (this.options.Markers)
-               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale);
+               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
 
             if (this.options.Error)
                err = new Float32Array(size*6*3);
@@ -2962,7 +2960,7 @@
                mesh.graph = graph;
                mesh.index = index;
                mesh.painter = main;
-               mesh.scale0 = 0.7*scale;
+               mesh.scale0 = 0.3*scale;
                mesh.tip_name = this.GetTipName();
                mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
 

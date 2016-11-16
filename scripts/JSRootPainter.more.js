@@ -4775,7 +4775,7 @@
          if (this.options.Lego) this.options.Lego = 12; // and lego always 12
       }
 
-      this._show_empty_bins = this.MatchObjectType('TProfile2D');
+      this._show_empty_bins = false; // this.MatchObjectType('TProfile2D');
 
       this._can_move_colz = true;
 
