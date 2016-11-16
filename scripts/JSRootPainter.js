@@ -3626,6 +3626,95 @@
       return res;
    }
 
+   JSROOT.TPavePainter.prototype.FillContextMenu = function(menu) {
+      var pave = this.GetObject();
+
+      menu.add("header: " + pave._typename + "::" + pave.fName);
+      if (this.IsStats()) {
+         menu.add("Default position", function() {
+            pave.fX2NDC = JSROOT.gStyle.fStatX;
+            pave.fX1NDC = pave.fX2NDC - JSROOT.gStyle.fStatW;
+            pave.fY2NDC = JSROOT.gStyle.fStatY;
+            pave.fY1NDC = pave.fY2NDC - JSROOT.gStyle.fStatH;
+            pave.fInit = 1;
+            this.Redraw();
+         });
+
+         menu.add("SetStatFormat", function() {
+            var fmt = prompt("Enter StatFormat", pave.fStatFormat);
+            if (fmt!=null) {
+               pave.fStatFormat = fmt;
+               this.Redraw();
+            }
+         });
+         menu.add("SetFitFormat", function() {
+            var fmt = prompt("Enter FitFormat", pave.fFitFormat);
+            if (fmt!=null) {
+               pave.fFitFormat = fmt;
+               this.Redraw();
+            }
+         });
+         menu.add("separator");
+         menu.add("sub:SetOptStat", function() {
+            // todo - use jqury dialog here
+            var fmt = prompt("Enter OptStat", pave.fOptStat);
+            if (fmt!=null) { pave.fOptStat = parseInt(fmt); this.Redraw(); }
+         });
+         function AddStatOpt(pos, name) {
+            var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
+            opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
+            menu.addchk(opt, name, opt * 100 + pos, function(arg) {
+               var newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
+               var oldopt = parseInt(arg / 100);
+               newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
+               if (arg % 100 < 10) pave.fOptStat = newopt;
+               else pave.fOptFit = newopt;
+               this.Redraw();
+            });
+         }
+
+         AddStatOpt(0, "Histogram name");
+         AddStatOpt(1, "Entries");
+         AddStatOpt(2, "Mean");
+         AddStatOpt(3, "Std Dev");
+         AddStatOpt(4, "Underflow");
+         AddStatOpt(5, "Overflow");
+         AddStatOpt(6, "Integral");
+         AddStatOpt(7, "Skewness");
+         AddStatOpt(8, "Kurtosis");
+         menu.add("endsub:");
+
+         menu.add("sub:SetOptFit", function() {
+            // todo - use jqury dialog here
+            var fmt = prompt("Enter OptStat", pave.fOptFit);
+            if (fmt!=null) { pave.fOptFit = parseInt(fmt); this.Redraw(); }
+         });
+         AddStatOpt(10, "Fit parameters");
+         AddStatOpt(11, "Par errors");
+         AddStatOpt(12, "Chi square / NDF");
+         AddStatOpt(13, "Probability");
+         menu.add("endsub:");
+
+         menu.add("separator");
+      } else
+      if (pave.fName === "title")
+         menu.add("Default position", function() {
+            pave.fX1NDC = 0.28;
+            pave.fY1NDC = 0.94;
+            pave.fX2NDC = 0.72;
+            pave.fY2NDC = 0.99;
+            pave.fInit = 1;
+            this.Redraw();
+         });
+
+      if (this.UseTextColor)
+         this.TextAttContextMenu(menu);
+
+      this.FillAttContextMenu(menu);
+
+      return menu.size() > 0;
+   }
+
    JSROOT.TPavePainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
          d3.event.stopPropagation(); // disable main context menu
@@ -3635,76 +3724,11 @@
          evnt = d3.event;
       }
 
-      var pthis = this, pave = this.GetObject();
+      var pthis = this;
 
       JSROOT.Painter.createMenu(function(menu) {
          menu.painter = pthis; // set as this in callbacks
-         menu.add("header: " + pave._typename + "::" + pave.fName);
-         if (pthis.IsStats()) {
-
-            menu.add("SetStatFormat", function() {
-               var fmt = prompt("Enter StatFormat", pave.fStatFormat);
-               if (fmt!=null) {
-                  pave.fStatFormat = fmt;
-                  pthis.Redraw();
-               }
-            });
-            menu.add("SetFitFormat", function() {
-               var fmt = prompt("Enter FitFormat", pave.fFitFormat);
-               if (fmt!=null) {
-                  pave.fFitFormat = fmt;
-                  pthis.Redraw();
-               }
-            });
-            menu.add("separator");
-            menu.add("sub:SetOptStat", function() {
-               // todo - use jqury dialog here
-               var fmt = prompt("Enter OptStat", pave.fOptStat);
-               if (fmt!=null) { pave.fOptStat = parseInt(fmt); pthis.Redraw(); }
-            });
-            function AddStatOpt(pos, name) {
-               var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
-               opt = parseInt(parseInt(opt) / parseInt(Math.pow(10,pos % 10))) % 10;
-               menu.addchk(opt, name, opt * 100 + pos, function(arg) {
-                  var newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
-                  var oldopt = parseInt(arg / 100);
-                  newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
-                  if (arg % 100 < 10) pave.fOptStat = newopt;
-                  else pave.fOptFit = newopt;
-                  pthis.Redraw();
-               });
-            }
-
-            AddStatOpt(0, "Histogram name");
-            AddStatOpt(1, "Entries");
-            AddStatOpt(2, "Mean");
-            AddStatOpt(3, "Std Dev");
-            AddStatOpt(4, "Underflow");
-            AddStatOpt(5, "Overflow");
-            AddStatOpt(6, "Integral");
-            AddStatOpt(7, "Skewness");
-            AddStatOpt(8, "Kurtosis");
-            menu.add("endsub:");
-
-            menu.add("sub:SetOptFit", function() {
-               // todo - use jqury dialog here
-               var fmt = prompt("Enter OptStat", pave.fOptFit);
-               if (fmt!=null) { pave.fOptFit = parseInt(fmt); pthis.Redraw(); }
-            });
-            AddStatOpt(10, "Fit parameters");
-            AddStatOpt(11, "Par errors");
-            AddStatOpt(12, "Chi square / NDF");
-            AddStatOpt(13, "Probability");
-            menu.add("endsub:");
-
-            menu.add("separator");
-         }
-
-         if (pthis.UseTextColor)
-            pthis.TextAttContextMenu(menu);
-
-         pthis.FillAttContextMenu(menu);
-
+         pthis.FillContextMenu(menu);
          menu.show(evnt);
       }); // end menu creation
    }
