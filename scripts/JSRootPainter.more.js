@@ -3025,7 +3025,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
          this.options = this.DecodeOptions(arg);
-         this.Redraw();
+         this.RedrawPad();
       });
 
       if (this.options.Color > 0)
@@ -3059,7 +3059,7 @@
                else
                   this.options.Lego = (this.options.Color > 0) ? 12 : 1;
 
-               this.options.Zero = 1;
+               this.options.Zero = 0; // do not show zeros by default
             }
 
             this.RedrawPad();
@@ -4746,19 +4746,27 @@
       }.bind(this));
    }
 
-   JSROOT.TH2Painter.prototype.DrawFuncName = function() {
-      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) return "Draw3D";
+   JSROOT.TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
+      var main = this.main_painter(), is3d = false;
 
-      if ((this.options.Contour > 0) && !this.is_main_painter()) return this.main_painter().DrawFuncName();
+      if ((this.options.Contour > 0) && (main !== this)) is3d = main.mode3d; else
+      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) is3d = true;
 
-      return "Draw2D";
+      if ((main!==this) && (is3d !== main.mode3d)) {
+         is3d = main.mode3d;
+
+         this.options.Lego = main.options.Lego;
+         this.options.Surf = main.options.Surf;
+         this.options.Error = main.options.Error;
+      }
+
+      var funcname = is3d ? "Draw3D" : "Draw2D";
+
+      this[funcname](callback, resize);
    }
 
    JSROOT.TH2Painter.prototype.Redraw = function(resize) {
-
-      var func_name = this.DrawFuncName();
-
-      this[func_name](null, resize);
+      this.CallDrawFunc(null, resize);
    }
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
@@ -4789,9 +4797,7 @@
       if (JSROOT.gStyle.AutoStat && this.create_canvas /* && !this.IsTH2Poly()*/)
          this.CreateStat();
 
-      var func_name = this.DrawFuncName();
-
-      this[func_name](function() {
+      this.CallDrawFunc(function() {
          this.DrawNextFunction(0, function() {
             if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
                if (this.options.AutoZoom) this.AutoZoom();

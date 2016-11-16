@@ -5167,6 +5167,7 @@
       this.y_kind = 'normal'; // 'normal', 'time', 'labels'
       this.keys_handler = null;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
+      this.mode3d = false;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -5181,10 +5182,6 @@
 
    JSROOT.THistPainter.prototype.IsTH2Poly = function() {
       return this.histo && this.histo._typename.match(/^TH2Poly/);
-   }
-
-   JSROOT.THistPainter.prototype.DrawFuncName = function() {
-      return "Draw2D";
    }
 
    JSROOT.THistPainter.prototype.Cleanup = function() {
@@ -8123,9 +8120,21 @@
       return false;
    }
 
-   JSROOT.TH1Painter.prototype.DrawFuncName = function() {
-      return (this.options.Lego > 0) ? "Draw3D" : "Draw2D";
+   JSROOT.TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
+      var is3d = (this.options.Lego > 0) ? true : false,
+          main = this.main_painter();
+
+      if ((main !== this) && (main.mode3d !== is3d)) {
+         // that to do with that case
+         is3d = main.mode3d;
+         this.options.Lego = main.options.Lego;
+      }
+
+      var funcname = is3d ? "Draw3D" : "Draw2D";
+
+      this[funcname](callback, resize);
    }
+
 
    JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene === 'function')
@@ -8187,10 +8196,7 @@
 
 
    JSROOT.TH1Painter.prototype.Redraw = function(resize) {
-
-      var func_name = this.DrawFuncName();
-
-      this[func_name](null, resize);
+      this.CallDrawFunc(null, resize);
    }
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
@@ -8209,9 +8215,7 @@
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
          painter.CreateStat(histo.fCustomStat);
 
-      var func_name = painter.DrawFuncName();
-
-      painter[func_name](function() {
+      painter.CallDrawFunc(function() {
          painter.DrawNextFunction(0, function() {
 
             if (painter.options.Lego === 0) {

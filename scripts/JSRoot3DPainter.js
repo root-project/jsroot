@@ -3002,10 +3002,6 @@
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
-   JSROOT.TH3Painter.prototype.DrawFuncName = function() {
-      return "Draw3D"; // dummy, not used
-   }
-
    JSROOT.TH3Painter.prototype.ScanContent = function() {
       var histo = this.GetObject();
 
