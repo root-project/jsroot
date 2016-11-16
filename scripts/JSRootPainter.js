@@ -1535,7 +1535,7 @@
       if ((this.frame_painter()===null) && (can3d > 0)) {
          size.x = Math.round(size.x + size.width*JSROOT.gStyle.fPadLeftMargin);
          size.y = Math.round(size.y + size.height*JSROOT.gStyle.fPadTopMargin);
-         size.width = Math.round(size.width*(1 - size.width*JSROOT.gStyle.fPadLeftMargin - size.width*JSROOT.gStyle.fPadRightMargin));
+         size.width = Math.round(size.width*(1 - JSROOT.gStyle.fPadLeftMargin - JSROOT.gStyle.fPadRightMargin));
          size.height = Math.round(size.height*(1- JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
       }
 
