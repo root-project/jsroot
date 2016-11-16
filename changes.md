@@ -18,6 +18,7 @@
     - TH3     - 'scat', use by default
     - TF1/TF2 - 'nosave' to ignore saved buffer
     - TCanvas - logx/y/z, gridx/y, tickx/y 
+    - THStack - 'lego'
 3. Implement drawing of TProfile2D, TF2, TGraph2D and TGraph2DErrors
 4. Fix - correctly place TGAxis relative to frame (when exists) 
 5. When superimpose items, one can specify individual options

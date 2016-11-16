@@ -1291,16 +1291,19 @@
          var stack = this.GetObject(),
              hist = stack.fHistogram,
              harr = this.nostack ? stack.fHists.arr : stack.fStack.arr,
-             nhists = harr ? harr.length : 0;
+             nhists = harr ? harr.length : 0,
+             rindx = 0;
 
          if (indx>=nhists) return this.DrawingReady();
 
-         if (indx>=0)
-            hist = harr[this.horder ? indx : nhists - indx - 1];
+         if (indx>=0) {
+            rindx = this.horder ? indx : nhists-indx-1;
+            hist = harr[rindx];
+         }
 
-         // special workaround - set histogram as base for lego drawing
-         if ((indx > 0) && this.dolego && !this.nostack)
-            hist['$baseh'] = harr[indx - 1];
+         // special handling of stacked histograms - set $baseh object for correct drawing
+         // also used to provide tooltips
+         if ((rindx > 0) && !this.nostack) hist['$baseh'] = harr[rindx - 1];
 
          var hopt = hist.fOption.toUpperCase();
          if (hopt.indexOf(opt) < 0) hopt += opt;
@@ -4434,19 +4437,22 @@
 
       lines.push(this.GetTipName());
 
-      if (this.x_kind == 'labels')
+      if (pmain.x_kind == 'labels')
          lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(i)));
       else
          lines.push("x = [" + pmain.AxisAsText("x", this.GetBinX(i)) + ", " + pmain.AxisAsText("x", this.GetBinX(i+1)) + ")");
 
-      if (this.y_kind == 'labels')
+      if (pmain.y_kind == 'labels')
          lines.push("y = " + pmain.AxisAsText("y", this.GetBinY(j)));
       else
          lines.push("y = [" + pmain.AxisAsText("y", this.GetBinY(j)) + ", " + pmain.AxisAsText("y", this.GetBinY(j+1)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 
-      var binz = this.GetObject().getBinContent(i+1,j+1);
+      var histo = this.GetObject(),
+          binz = histo.getBinContent(i+1,j+1);
+      if (histo['$baseh']) binz -= histo['$baseh'].getBinContent(i+1,j+1);
+
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else

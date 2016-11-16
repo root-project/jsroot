@@ -7776,12 +7776,15 @@
    }
 
    JSROOT.TH1Painter.prototype.GetBinTips = function(bin) {
-      var tips = [], name = this.GetTipName(), pmain = this.main_painter();
-      if (name.length>0) tips.push(name);
-
-      var x1 = this.GetBinX(bin),
+      var tips = [],
+          name = this.GetTipName(),
+          pmain = this.main_painter(),
+          histo = this.GetObject(),
+          x1 = this.GetBinX(bin),
           x2 = this.GetBinX(bin+1),
-          cont = this.histo.getBinContent(bin+1);
+          cont = histo.getBinContent(bin+1);
+
+      if (name.length>0) tips.push(name);
 
       if ((this.options.Error > 0) || (this.options.Mark > 0)) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
@@ -7800,6 +7803,8 @@
             tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          else
             tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")");
+
+         if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
 
          if (cont === Math.round(cont))
             tips.push("entries = " + cont);
