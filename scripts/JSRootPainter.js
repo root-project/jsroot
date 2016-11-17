@@ -5472,7 +5472,7 @@
       if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
       if ((hdim==3) && d.check('BB')) option.BackBox = 0;
 
-      if (d.check('LF2')) { option.Line = 2; option.Hist = -1; option.Error = 0; }
+      if (d.check('LF2')) { option.Line = 2; option.Hist = -1; option.Error = 0; need_fillcol = true; }
       if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
 
       if (d.check('A')) option.Axis = -1;
@@ -5513,7 +5513,7 @@
 
       if (interactive) {
          if (need_fillcol && this.fillatt && (this.fillatt.color=='none'))
-            this.fillatt.Change(1,1001);
+            this.fillatt.Change(5,1001);
       }
 
       //if (option.Surf == 15)
@@ -11111,7 +11111,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;B;TEXT;LEGO;same"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;TEXT;LEGO;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;LCOL;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
