@@ -5411,13 +5411,13 @@
 
       if (d.check('CHAR')) { option.Char = 1; option.Scat = 0; }
       if (d.check('FUNC')) { option.Func = 2; option.Hist = 0; }
-      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
       if (d.check('AXIS')) option.Axis = 1;
       if (d.check('AXIG')) option.Axis = 2;
 
       if (d.check('TEXT', true)) {
          option.Text = 1;
          option.Scat = 0;
+         option.Hist = 0;
 
          var angle = parseInt(d.part.substr(0,2));
          if (isNaN(angle)) angle = parseInt(d.part.substr(0,1));
@@ -5480,6 +5480,8 @@
       if (d.check('P')) { option.Mark = 1; option.Hist = -1; option.Zero = 0; }
       if (d.check('Z')) option.Zscale = 1;
       if (d.check('*H') || d.check('*')) { option.Mark = 23; option.Hist = -1; }
+
+      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
 
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
@@ -7286,8 +7288,8 @@
       }
 
       // If no any draw options specified, do not try draw histogram
-      if (!this.options.Bar && !this.options.Hist &&
-          !this.options.Error && !this.options.Same && !this.options.Lego) {
+      if (!this.options.Bar && !this.options.Hist && !this.options.Line &&
+          !this.options.Error && !this.options.Same && !this.options.Lego && !this.options.Text) {
          this.draw_content = false;
       }
       if (this.options.Axis > 0) { // Paint histogram axis only
@@ -7621,12 +7623,12 @@
       if (show_text) {
          text_col = JSROOT.Painter.root_colors[this.histo.fMarkerColor];
          text_angle = (this.options.Text>1000) ? this.options.Text % 1000 : 0;
-         text_size = 15;
+         text_size = 20;
 
          if ((this.histo.fMarkerSize!==1) && (text_angle!==0))
             text_size = 0.02*height*this.histo.fMarkerSize;
 
-         if (text_angle === 0) {
+         if ((text_angle === 0) && (this.options.Text<1000)) {
              var space = width / (right - left + 1);
              if (space < 3 * text_size) {
                 text_angle = 90;
@@ -7707,7 +7709,8 @@
                             posy = Math.round(my-2-text_size),
                             sizex = Math.round((mx2-mx1)*0.8),
                             sizey = text_size,
-                            lbl = Math.round(cont);
+                            lbl = Math.round(cont),
+                            talign = 22;
 
                         if (lbl === cont)
                            lbl = cont.toString();
@@ -7716,11 +7719,14 @@
 
                         if (text_angle!==0) {
                            posx = midx;
+                           posy = Math.round(my - 2 - text_size/5);
                            sizex = 0;
                            sizey = text_angle-360;
+                           talign = 12;
                         }
 
-                        this.DrawText(22, posx, posy, sizex, sizey, lbl, text_col, 0);
+                        if (cont!==0)
+                           this.DrawText(talign, posx, posy, sizex, sizey, lbl, text_col, 0);
                      }
 
                      if (draw_markers) {
@@ -7815,7 +7821,7 @@
                 .call(this.markeratt.func);
 
       } else
-      if (res.length > 0) {
+      if ((res.length > 0) && (this.options.Hist>0)) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
@@ -11037,7 +11043,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;LEGO;B;same"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;B;TEXT;LEGO;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;LCOL;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });

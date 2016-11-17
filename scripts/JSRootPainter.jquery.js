@@ -86,7 +86,7 @@
             if (name=="") name = '&lt;dflt&gt;';
 
             var group = i+1;
-            if ((opts.length>5) && (name.length>1)) {
+            if ((opts.length>5) && (name.length>0)) {
                // check if there are similar options, which can be grouped once again
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
             }
