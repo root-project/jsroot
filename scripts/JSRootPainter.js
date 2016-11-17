@@ -6270,6 +6270,8 @@
 
       if (!this.histo) return false;
 
+      var res = false, painter = this;
+
       function UnzoomTAxis(obj) {
          if (!obj) return false;
          if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
@@ -6279,11 +6281,17 @@
          return true;
       }
 
-      var res = false;
+      function UzoomMinMax(ndim, hist) {
+         if (painter.Dimension()!==ndim) return false;
+         if ((hist.fMinimum===-1111) && (hist.fMaximum===-1111)) return false;
+         hist.fMinimum = hist.fMaximum = -1111;
+         painter.ScanContent(); // to reset ymin/ymax
+         return true;
+      }
 
-      if (dox) res |= UnzoomTAxis(this.histo.fXaxis);
-      if (doy) res |= UnzoomTAxis(this.histo.fYaxis);
-      if (doz) res |= UnzoomTAxis(this.histo.fZaxis);
+      if (dox && UnzoomTAxis(this.histo.fXaxis)) res = true;
+      if (doy && (UnzoomTAxis(this.histo.fYaxis) || UzoomMinMax(1, this.histo))) res = true;
+      if (doz && (UnzoomTAxis(this.histo.fZaxis) || UzoomMinMax(2, this.histo))) res = true;
 
       return res;
    }
@@ -7288,14 +7296,14 @@
 
       hmin = hmax = null;
       var set_zoom = false;
-      if (this.histo.fMinimum != -1111) {
+      if (this.histo.fMinimum !== -1111) {
          hmin = this.histo.fMinimum;
          if (hmin < this.ymin)
             this.ymin = hmin;
          else
             set_zoom = true;
       }
-      if (this.histo.fMaximum != -1111) {
+      if (this.histo.fMaximum !== -1111) {
          hmax = this.histo.fMaximum;
          if (hmax > this.ymax)
             this.ymax = hmax;
