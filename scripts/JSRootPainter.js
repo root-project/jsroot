@@ -5382,7 +5382,7 @@
       if (d.check('HBAR', true)) option.Bar = 20; else
       if (d.check('BAR', true)) option.Bar = 10;
       if (option.Bar > 0) {
-         option.Hist = 0;
+         option.Hist = 0; need_fillcol = true;
          if (!isNaN(parseInt(d.part))) option.Bar += parseInt(d.part);
       }
 
@@ -5476,8 +5476,8 @@
       if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
 
       if (d.check('A')) option.Axis = -1;
-      if (d.check('B1')) { option.Bar = 2; option.Hist = -1; }
-      if (d.check('B')) { option.Bar = 1; option.Hist = -1; }
+      if (d.check('B1')) { option.Bar = 1; option.BaseLine = 0; option.Hist = -1; need_fillcol = true; }
+      if (d.check('B')) { option.Bar = 1; option.Hist = -1; need_fillcol = true; }
       if (d.check('C')) { option.Curve = 1; option.Hist = -1; }
       if (d.check('][')) { option.Off = 1; option.Hist = 1; }
       if (d.check('F')) option.Fill = 1;
@@ -7527,8 +7527,6 @@
       if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
          if (this.options.BaseLine >= pmain.scale_ymin)
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
-
-      // if (!pmain.logy && (pmain.scale_ymin<=0) && (this.options.Bar!==2)) gry2 = Math.round(pmain.gry(0));
 
       for (i = left; i < right; ++i) {
          x1 = this.GetBinX(i);
@@ -11111,7 +11109,7 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;TEXT;LEGO;same"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;LCOL;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
